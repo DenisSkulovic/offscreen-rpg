@@ -45,10 +45,10 @@ These fields form a **human-readable receipt contract**, not a demand for a new 
 
 **Tier 1: current repo-native document locator.** WIKI07's lexical/section `wiki:find` + exact `wiki:read`; source `STATUS` companion for implemented claims; scope and authority labels. Requires only Node/pnpm, no network index.
 
-**Tier 2: optional experimental local adapter.** One read-only retrieval entry point behind a clearly opt-in flag, returning *citations to exact source spans* with authority class, index revision, dirty/freshness state, top-k cap and byte cap; fallback to Tier 0/1 on failure. Candidate technology can be language-server navigation, hybrid lexical/vector search, or a graph, not an assumed 'memory brain'.
+**Tier 2: actively evaluated, opt-in semantic retrieval.** One read-only retrieval entry point behind a clearly opt-in flag, returning *citations to exact source spans* with authority class, index revision, dirty/freshness state, top-k cap and byte cap; fallback to Tier 0/1 on failure. Candidate technology can be language-server navigation, hybrid lexical/vector search, or a graph, not an assumed 'memory brain'.
 
 **Nonnegotiable boundaries:** no bootstrap Docker/start-on-clone; no online indexing/secrets ingestion by default; no independent agent memory mutating canon; no unversioned indexed answer treated as proof; no automatic paid embeddings; no extra MCP tool catalog preloaded when unused. An index is disposable derived data and must be rebuildable/isolated per clone and revision.
 
 ## Intentional omissions
 
-No new platform database, web UI, source-of-truth wiki, always-on rule, broad refactor, gameplay changes, parallel semantic-index rewrite, automatic agent launcher, or always-on monitoring process. This is a developer-tooling experiment, not an Offscreen RPG game feature.
+No new platform database, web UI, source-of-truth wiki, always-on rule, broad refactor, gameplay changes, parallel semantic-index rewrite, automatic agent launcher, or always-on monitoring process. **A deliberately opt-in Grepai/QMD pilot is encouraged**, but must not silently affect clean-clone operation, paid-provider behavior or normal dev setup. This is a developer-tooling experiment, not an Offscreen RPG game feature.

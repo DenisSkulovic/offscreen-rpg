@@ -1,16 +1,17 @@
 # Retrieval evaluation | falsify the need for more tooling
 
-**Status:** study protocol, **not authority to run paid models, install vendors or start services**. Owners: developer harness and the existing [WIKI07](../../../changes/open/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md)/[WIKI08](../../../changes/open/2026-11-16--wiki08-content-quality-gates/CHANGE.md) sequence. Compare on the same frozen Git tree and an independently reviewed answer oracle.
+**Status:** study protocol for an **active opt-in local pilot**. This document alone does not authorize paid agents, global vendor installs or always-on services. Owners: developer harness and the existing [WIKI07](../../../changes/open/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md)/[WIKI08](../../../changes/open/2026-11-16--wiki08-content-quality-gates/CHANGE.md) sequence. Compare on the same frozen Git tree and an independently reviewed answer oracle.
 
-## Gate 0: complete current work and identify real failures
+## Gate 0: establish the real search baseline, then experiment
 
-- Finish WIKI07's independently reviewed ten-question heading test. Record its misses, wrong-authority routes, truncation/continuation defects and source line errors.
-- Use WIKI08's reviewed content claims to identify cases where the text itself is stale. **Do not count a false document as a retrieval failure** and then 'fix' it with a smarter search engine.
-- Measure a few real Cursor tasks with current `rg`, native code search and WIKI07. If no recurring failures remain, **stop**; a Docker service is not a project milestone.
+- Reconfirm on the installed client that Cursor's search route is **Instant Grep**, not presumed embedding search. Claude Code includes bundled ripgrep. Record actual version/settings/tool use and don't equate strong agent reasoning over grep with a local semantic index.
+- Independently check WIKI07 heading correctness as the **documentation** control arm. WIKI08 content-quality repair continues independently; inaccurate text is a content failure rather than a search victory.
+- Proceed to a deliberately small, zero-paid-model semantic CLI pilot on a pinned tree even without a previously observed failure. This is learning, not automatic adoption. See [PILOT](PILOT.md).
+- No Docker graph or automatic model downloading as a side effect of a normal repository clone.
 
 ## Gate 1: build a discriminating task set
 
-Hold out 12–20 tasks, selected across: (a) exact named symbol, (b) natural-language question to ratified product heading, (c) contract + source realization, (d) cross-package caller/reference tracing, (e) hidden dependency with weak lexical overlap, (f) missing/nonexistent feature requiring correct refusal, (g) proposal versus selected boundary, (h) historical Change decoy, (i) same question after a new commit/index becomes stale, (j) dirty-worktree-only change, (k) negative retry/permission path and (l) costly file-read temptation.
+Begin with 16 independently reviewed tasks, 8 code and 8 docs, as defined in [PILOT](PILOT.md). Expand to 12–20 or more held-out tasks if early evidence suggests a real effect; select across: (a) exact named symbol, (b) natural-language question to ratified product heading, (c) contract + source realization, (d) cross-package caller/reference tracing, (e) hidden dependency with weak lexical overlap, (f) missing/nonexistent feature requiring correct refusal, (g) proposal versus selected boundary, (h) historical Change decoy, (i) same question after a new commit/index becomes stale, (j) dirty-worktree-only change, (k) negative retry/permission path and (l) costly file-read temptation.
 
 Each gold record names expected owner path#heading or source symbols **at a pinned SHA**, necessary assertions, strongest counterexample, authority/evidence class, source/test receipt and independent reviewer verdict. Keep the answer oracle outside the agent-visible indexed corpus. WIKI05's training/gold tasks cannot leak into the live retrieval index. Do not score an unratified design as implemented.
 
@@ -19,14 +20,14 @@ Each gold record names expected owner path#heading or source symbols **at a pinn
 Compare on the *same* revision, tasks and safe tool permissions:
 
 - **A (control):** existing agent-native search + Git/`rg` + WIKI07's bounded exact headings.
-- **B (candidate):** A + *one* optional read-only retrieval adapter (e.g. Serena for symbol navigation, or hybrid retrieval for low-overlap conceptual search). Do not test three new indexers at once or let one arm get a better source corpus.
+- **B (candidate):** for code, Grepai natural-language search; for Markdown, QMD candidate discovery followed by `wiki:read` for source-exact verification. Consider SIFS as a separate lower-overhead challenger, not an extra default agent tool. Keep the same corpus/ref and cap results.
 - Before an LLM trial, test the adapter itself with fixture/recorded calls: correct source line, exact SHA, dirty/stale detection, failed no-match, reference crosses package, authority labeling, index refresh after a new commit, and clean behavior with server offline.
 
 Report separately: Recall@5 and first-right-owner; complete-answer correctness; source/status tier correctness; false permission/proposal claims; missed negative cases; wall time; instrumented read bytes; tool calls; startup time; indexing time and RAM; added MCP/tool-definition context cost; freshness delays. Tokens only if actually reported by the client. **Do not convert bytes into invented tokens or use speed of wrong answers as a win.**
 
-## Gate 3: real agent experiment (separate authorization)
+## Gate 3: agent integration, not merely index ranking (separate authorization)
 
-With explicit user approval for the named model, max calls, spend cap and a proven read-only sandbox, run fresh-session same-model paired trials with order/case randomization and independent grading. Use one clearly identified client and tool configuration per arm. Repeated trials are warranted for noisy results; a 12-case exploratory pilot is not statistically conclusive. Missing provider usage measurements remain `unknown`.
+With explicit user approval for the named model, max calls, spend cap and a proven read-only sandbox, run fresh-session same-model trials with order/case randomization and independent grading across **A: existing native tools**, **B: additional search available**, and **C: additional search plus a small conditional invocation instruction**. Use one clearly identified client and tool configuration per arm. Repeated trials are warranted for noisy results; a 12-case exploratory pilot is not statistically conclusive. Missing provider usage measurements remain `unknown`.
 
 **Adoption rule:** no new critical authority/security/permission error, no substantial regression in correctly answering source+target questions, and a reproducible benefit in a task family the baseline actually fails. Illustrative evidence worth considering: resolves at least three previously failed held-out tasks without new severe errors **or** materially reduces correct-answer search time/reads after accounting for startup/indexing. These are decision heuristics, not statistical guarantees or benchmark targets to game.
 
@@ -36,4 +37,4 @@ With explicit user approval for the named model, max calls, spend cap and a prov
 
 Create a *new* narrow implementation Change after owner selection. Make the winning tool explicitly opt-in, disabled by default, scoped to one local clone, read-only, disposable, version-pinned, and uninstallable with no effect on core `pnpm` workflows. No compose stack unless it is actually necessary and measured against a lighter launcher. The agent may prefer native tools for simple symbol/file questions.
 
-**Change governance:** HAR01 and HAR02 below are preparation proposals, not permission for vendor installation. The benchmark runner must not spawn paid models or download large models by default.
+**Change governance:** HAR01 and HAR02 remain preparation proposals; [HAR03](../../../changes/open/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) is a distinct **Proposed** opt-in vendor trial. It deliberately does not wait for WIKI08's entire content repair before evaluating code search. The benchmark runner must not spawn paid models or download large models by default.

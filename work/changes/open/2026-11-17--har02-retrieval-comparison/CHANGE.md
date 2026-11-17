@@ -1,6 +1,6 @@
 # HAR02 | Read-only comparative retrieval evidence harness
 
-**State: Proposed; not selected.** Code-bearing developer-evaluation tooling. **Hard dependencies:** WIKI07 independently verified; WIKI08 source-truth defects classified; HAR01 only if machine-readable local receipt proves useful. No real model trial, third-party installer, MCP or graph DB authorized.
+**State: Proposed; not selected.** Code-bearing developer-evaluation tooling. **Dependencies:** WIKI07 independent check for a trustworthy docs baseline; WIKI08 source-truth work is complementary and must not block a code-search pilot; HAR01 receipt is optional if Git SHA and dirty state are otherwise recorded. No real model trial, third-party installer, MCP or graph DB authorized.
 **Design:** [evaluation gates](../../../designs/open/repository-agent-workbench/EVALUATION.md), [candidate disposition](../../../designs/open/repository-agent-workbench/CANDIDATES.md); existing [WIKI03](../../archive/2026-11/other/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md), WIKI05 benchmark and WIKI07 index must be **reused**, not reimplemented.
 
 ## First-screen Cursor brief
@@ -29,7 +29,7 @@ No vendor installation, Cognee/Serena configuration, embedding model downloads, 
 
 ## Handoff / readiness
 
-**Next permitted step:** after WIKI07 independent review and WIKI08 classification, collect *observed* retrieval misses. If none justify another tool, cancel HAR02. If they do, owner selects it and Cursor re-audits existing benchmark code before writing any new adapter.
+**Next permitted step:** when selected, build or reuse only the minimal deterministic comparison needed for the 16-case [semantic pilot](../../../designs/open/repository-agent-workbench/PILOT.md). Vendor experiments are separate HAR03, not bundled into a giant harness. Do not require pre-existing production defects as a prerequisite for learning, and do not select HAR02 automatically.
 
 ## Reconciliation ledger
 

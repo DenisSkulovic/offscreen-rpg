@@ -1,41 +1,64 @@
-# External retrieval tools | evidence and disposition
+# Developer-agent semantic retrieval | reviewed ecosystem and selection
 
-**Research date:** 2026-11-17. This is a technology watchlist for developer agents. Tool capabilities may evolve; reverify pinned versions and security before local experiments. Vendor benchmarks and marketing assertions are *not* measured Offscreen RPG outcomes.
+**Research updated 2026-11-17.** Scope: code and maintained Markdown retrieval for **coding agents**, not the game's Storyteller. This assessment corrects an earlier assumption that contemporary Cursor always provides an embedding-based code index. Vendor numbers are hypotheses; no candidate has been run locally against Offscreen RPG.
 
-## Existing baseline: do not duplicate blindly
+## Important correction to the baseline
 
-- Cursor documents its native codebase indexing/semantic search and native codebase navigation: https://prod.cursor.com/blog/secure-codebase-indexing ; https://cursor.com/docs/agent/overview .
-- Our existing WIKI07 delivers source-exact, authority-aware Markdown heading routing; code symbol search remains a separate need. No external service has been demonstrated to outperform that combination.
-- Sourcegraph's code-intelligence approach is relevant conceptually, but Sourcegraph announced the sunsetting of Cody on **2026-11-09**: https://sourcegraph.com/blog/sunsetting-cody-future-of-code-intelligence . Do not select Cody as a new dependency.
+Cursor representatives stated in July, August, and September 2026 that newer versions use **Instant Grep plus file reads** rather than their earlier dedicated semantic embedding index. This makes independently provisioned natural-language search potentially complementary rather than necessarily duplicative. Search capabilities may differ between versions/configurations: verify the actual installed client at trial time.
 
-## Candidate comparison
+- Cursor staff statement (2026-08-05): https://forum.cursor.com/t/codebase-indexing-not-working-in-v-3-12-onwards/167527/7
+- Cursor staff clarification (2026-09-07): https://forum.cursor.com/t/how-to-reindexing-my-codebase/170407/6
+- Claude Code supplies bundled **ripgrep**; this is strong lexical/file search but is not itself an embedding index: https://support.claude.com/en/articles/14554922-claude-code-user-faq
 
-| Candidate | Distinct potential benefit | Costs/risks | Recommendation |
+**Correct baseline:** real, observed Cursor/Claude native behavior + scoped `rg` + Git + WIKI07's exact Markdown section router. Do not claim either agent lacks all semantic reasoning: iterative model-guided grep is still semantically *reasoned* search even when the retrieval primitive is lexical. Do not confuse a model guessing better keywords with a maintained vector index.
+
+## What retrieval needs are genuinely different?
+
+| Question | Best candidate primitive | Why |
+| --- | --- | --- |
+| Exact identifier/file/stack trace | `rg`, native file finder, LSP | Embeddings can lose exact strings |
+| “Where do we decide whether an unfinished activity earns a reward?” | Natural-language code search | Question may share few terms with the implementation |
+| “Which product rule authorizes this behavior?” | WIKI07 exact owner heading; optional QMD candidate discovery | Authority cannot be delegated to embeddings |
+| “Show references/callers for this symbol” | LSP/Serena, static call/reference graph | Similarity is not a sound reference graph |
+| “Which docs, code and tests support this guarantee?” | Multi-stage retrieval with original links and explicit status | Requires joining separate authority and source-evidence classes |
+| “What changes after this commit?” | Git diff + index freshness check | A stale vector hit is not current implementation |
+
+## Candidates, in experimental priority
+
+| Candidate | Main capability | Practical dependencies / risk | Decision |
 | --- | --- | --- | --- |
-| **No extra service (native Cursor/`rg`/Git/WIKI07)** | Already available; no new index, daemon, permissions or MCP startup cost | Can miss hidden cross-package semantic relationships | **Default and control arm** |
-| **Serena (language-server/symbol tool)** | Symbol definitions, references and structural navigation; useful for TS/Python/.NET dependency trails | May duplicate editor capabilities; server startup, process/RAM/tool discovery; remote GitHub-only agent cannot use its local workspace | **First optional trial if missing symbol-navigation evidence emerges**, not default install |
-| **Lightweight hybrid code search** (e.g. Semble) | Potentially better weak-keyword queries with lexical + embeddings and bounded snippets | Additional model download/index and freshness; source-data risk; vendor-reported benchmarks may not generalize | **Alternative one-at-a-time trial**, only if lexical retrieval misses diagnosed cases |
-| **Cognee** | Persistent structured/code graph plus MCP, possibly useful for multi-hop concept discovery/cross-session facts | More ingestion and state lifecycle, possible local models/downloads, index staleness, graph hallucination/authority ambiguity, larger attack surface; potentially unnecessary for 74-document wiki | **Research candidate only; do not provision compose/graph DB** |
-| **Full search platform/remote hosted service** | Multi-repository code intelligence at scale | Authentication, external data transfer, cost and setup disproportionate to one pre-POC monorepo | **Reject for current scope** |
+| **Grepai** | Plain-English semantic code search, call tracing, CLI + MCP | Ollama/LM Studio or API embeddings; local index/watch; Windows installers exist; measure cold setup/refresh and cache | **First code search contender** |
+| **QMD** (tobi/qmd) | Local BM25 + vector + rerank over Markdown; CLI + MCP | Local model downloads, native node-llama-cpp dependencies, possible Windows friction; preserve wiki authority metadata externally | **First docs search contender** |
+| **SIFS** | Rust CLI/MCP, offline BM25 and optional local hybrid vectors, bounded context packs | Cargo/binary install and model cache; verify Windows path, retrieval quality and freshness | **Lightweight code-search challenger** |
+| **Serena** | Language-server symbol definitions, references, outlines and structural edits | More MCP/tool calls and language-server startup; not a replacement for natural-language embedding search | **Separate structural trial** if needed |
+| **Cognee** | Persistent code graph + memory + MCP, possible cross-session or multi-hop relations | More complex indexing, graph persistence, version reconciliation and possibly local model configuration; read/write memory can drift from canon | **Keep in research queue**; test only after a multi-hop gap is established |
+| **No additional tool** | Git/rg/native client + WIKI07 | May require multiple attempts, missing weak-vocabulary hits | **Control arm**, always available |
 
-Primary project resources: Serena https://github.com/oraios/serena ; Cognee https://github.com/topoteretes/cognee ; Cognee MCP https://github.com/topoteretes/cognee/tree/main/cognee-mcp ; Semble https://github.com/MinishLab/semble . Cognee's current README describes a **no-LLM-key local mode** with local graph extraction and embeddings; this does not mean zero downloads, zero compute, automatic freshness, or proven value.
+Links, versions and documentation:
+- Grepai: https://github.com/yoanbernabeu/grepai ; install: https://yoanbernabeu.github.io/grepai/installation/ ; search: https://yoanbernabeu.github.io/grepai/search-guide/
+- QMD: https://github.com/tobi/qmd ; Windows issue/reference: https://github.com/tobi/qmd/issues/221
+- SIFS: https://github.com/tristanmanchester/sifs
+- Serena: https://github.com/oraios/serena ; Anthropic plugin catalog: https://claude.com/plugins/serena
+- Cognee: https://github.com/topoteretes/cognee ; code memory design: https://www.cognee.ai/ai-coding-agent-persistent-codebase-memory
 
-## Why the literature does not select our tool
+Grepai's published `97% fewer search-phase input tokens` benchmark uses five tasks and is author-produced, not independent proof for this repo: https://www.reddit.com/r/ClaudeAI/comments/1qiv0d3/open_source_i_reduced_claude_code_input_tokens_by/
 
-- Agent Retrieval Bench (2026) emphasizes *next-action retrieval* and no-gold cases rather than superficial semantic similarity: https://arxiv.org/abs/2607.24882 .
-- A repository QA study comparing indexed semantic search with delegated deep agentic search reports stronger/cheaper answers for semantic retrieval in its tested setup; it is not a Cursor+Offscreen benchmark: https://arxiv.org/abs/2608.01507 .
-- CodeCompass reports strong graph-navigation gains on hidden dependency tasks in its tested FastAPI repository. Useful hypothesis, not independent proof that a persistent LLM-extracted graph is needed here: https://arxiv.org/abs/2602.20048 .
-- A scaling study found that graph-building overhead and graph retrieval accuracy can be unfavorable relative to BM25 under certain tested conditions: https://arxiv.org/abs/2607.26497 .
-- MCP client best-practice guidance cautions against upfront loading of large catalogs of tool definitions: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/docs/2026-07-28/develop/clients/client-best-practices.mdx .
+**Counterevidence must not be buried:** An independent November 2026 community trial measured standalone retrieval improvements but little in-agent lift for Semble/Graphify, sometimes **16–35% more agent tokens**. Its 50-agent-task setup and small models are limited evidence, not a universal negative result: https://www.reddit.com/r/ClaudeCode/comments/1xqru5q/do_semble_and_graphify_help_coding_agents_in_my/
 
-These findings are not contradictory: different tasks reward symbol graphs, exact lexical terms, embedding similarity, or direct source reads. The benchmark **must match the agent's actual task distribution**. Product correctness, runtime proof and authorization remain outside any retrieval score.
+This difference is the experimental thesis: **retriever usefulness is not equivalent to agent actually using it intelligently**. Measure standalone ranking and end-to-end agent outcomes separately.
 
-## Stop-signs before trying any tool
+## Why two initial products instead of one magic brain?
 
-1. Is the failure simply a bad/stale canonical document? Fix under WIKI08, not via embeddings.
-2. Did WIKI07/`rg`/native Cursor already locate the exact source? A new search service must demonstrate a *different* capability, not a more elaborate demo.
-3. Does the index expose ref SHA, line span, authority class, freshness, and local-only data handling? If not, its answers are leads, not citations.
-4. Can a fresh developer clone without Docker/optional packages still complete standard Change workflows? **Must remain yes.**
-5. Is a new tool definition's startup and output cost larger than the source it saves reading? Measure, don't guess.
+Our ratified Markdown wiki and source code have different retrieval and authority needs. QMD is optimized for Markdown; Grepai targets code and call tracing. Both already have a CLI and MCP path. We should *compare*, not require both permanently. A later portable `agent:seek` interface may federate results if they independently earn their place; no wrapper/service is authorized solely by this document.
 
-**Provisional ordering:** baseline first; consider Serena only for a demonstrated symbol/reference gap; consider compact hybrid search for weak keyword retrieval; reserve Cognee for a demonstrated, repeated *multi-hop knowledge* failure that neither simpler approach fixes. These are candidate choices, not installation approvals.
+**No default Docker Compose or graph database.** Grepai's default embeddings involve a local Ollama service but do not require spinning up the entire game platform. QMD's local model runtime also needs to be explicitly tested, not assumed easy on Windows.
+
+## Trial risks and acceptance checks
+
+1. Run against an explicit **pinned Git checkout**. Record branch, SHA, dirty files, index version, included paths, and model/embedder revision. Exclude `.env*`, credentials, `node_modules`, `.git`, build outputs, `out/`, archived change histories by default for normative queries, and benchmark gold labels.
+2. Search returns **citations to exact original source** (path, lines, heading/symbol) with a bounded top-k. Never let an embedding-generated summary become a product decision or code proof.
+3. The local model is a developer dependency: do not automatically download models, contact hosted APIs, run unapproved provider inference or install global MCP configuration. For first pilot, prefer explicit manually invoked CLI over always-on MCP.
+4. Confirm that failed query / missing feature yields honest no-result behavior, and that stale indexes/dirty edits cannot masquerade as HEAD truth. A fresh proof read against current source wins over any index.
+5. No vendor's marketing numbers substitute for the project's A/B measurements. Measure maintenance overhead, index refresh, latency, RAM and agent **adoption rate** as well as correctness.
+
+**Recommendation:** run an actual, opt-in code pilot with Grepai and a docs pilot with QMD, against the current native/WIKI07 baseline. Keep SIFS as a lighter alternative if first candidates are too heavy or flaky. Defer graph memory until a repeatable cross-source/multi-hop failure demands it.
