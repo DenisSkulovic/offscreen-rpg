@@ -1,6 +1,6 @@
 # Semantic retrieval pilot | executable experiment design
 
-**Status:** ready for owner selection as a **local read-only development-tool evaluation**, not permission to install anything by default. **Source:** [candidate assessment](CANDIDATES.md) and [evaluation contract](EVALUATION.md). **Code-bearing packet:** [HAR03](../../../changes/open/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md).
+**Status:** Stage A ran on 2026-11-17 and was not adopted. Stage B was not run. **Source:** [candidate assessment](CANDIDATES.md) and [evaluation contract](EVALUATION.md). **Code-bearing packet:** [HAR03](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md).
 
 ## The experiment we actually want
 

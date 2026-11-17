@@ -21,6 +21,7 @@
     "admin:bootstrap-staff": "node scripts/repo-tools/admin-bootstrap-staff.mjs",
     "repo:brief": "node scripts/repo-tools/brief.mjs",
     "repo:retrieval-compare": "node scripts/repo-tools/retrieval-compare.mjs",
+    "repo:semantic-pilot": "node scripts/repo-tools/semantic-pilot.mjs",
     "repo:snapshot:chatgpt": "node scripts/repo-tools/chatgpt-snapshot.mjs",
     "repo:snapshot:chatgpt:test": "node --test scripts/repo-tools/chatgpt-snapshot.test.mjs",
     "repo:docs-health": "node scripts/repo-tools/docs-health.mjs",
