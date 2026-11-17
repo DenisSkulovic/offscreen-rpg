@@ -8,7 +8,7 @@ Current change: none
 
 ## Open packets
 
-**Repository housekeeping:** [source-grounded audit](../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). HK02 → HK01 are prepared unselected; HK05 waits for UI03; HK03/HK04 require baseline/safety gates. No blanket deletion and no current Change selection.
+**Repository housekeeping:** [source-grounded audit](../designs/open/repository-housekeeping/AUDIT-2026-11-17.md) and [preventive maintenance design](../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md). **Prevention track:** HK02 → HK06 → HK07 → HK08, unselected and strictly sequential; **cleanup track:** HK01 after safety audit, HK05 after UI03; HK03/HK04 remain conditional. No blanket deletion and no current Change selection.
 
 **Visual-system implementation program:** [Phase 3 execution map](../designs/open/player-experience-refoundation/phase-3/README.md). UI01 → UI02 → UI03 → UI04 → UI05 → UI06 → UI07; UI08 conditional; DIR01 after UI03, DIR02 after DIR01 audit, DIR03 blocked pending explicit quality/spend approval. **No packet is currently selected; execute one at a time only upon owner instruction.**
 
@@ -35,6 +35,9 @@ Current change: none
 | [GM03 standing life](open/2026-11-13--gm-standing-life/CHANGE.md) | Proposed | Bounded standing routine |
 | [GM07 delegated decision](open/2026-11-13--gm-delegated-decision/CHANGE.md) | Proposed | Consented fallback after deadline |
 | [SA07 evidence tools](open/2026-11-14--sa07-evidence-tools/CHANGE.md) | Proposed (conditional) | Typed read operations for missing evidence |
+| [HK06 repo inventory and lifecycle guard](open/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md) | **Ready after HK02 (unselected)** | Derive active tracked-artifact inventory, root reachability and precise state/route failures |
+| [HK07 dependency freshness](open/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md) | **Ready after HK06 (unselected)** | Git-backed source-to-owner revalidation candidates and quiet age cohorts |
+| [HK08 CI/brief/status feedback](open/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md) | **Ready after HK07 (unselected)** | Expose objective failures on push/PR, weekly reviews and top-3 agent brief; converge active status |
 | [HK02 documentation-integrity coverage](open/2026-11-17--hk02-repository-doc-integrity/CHANGE.md) | **Ready (unselected)** | Make work/research link checks and Change-only CI trigger reliable; reconcile stale lifecycle labels |
 | [HK01 retire unsupported local repair CLI](open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) | **Ready with evidence gate (unselected)** | Remove one unowned local DB mutation entrypoint only after caller/recovery audit |
 | [HK03 Storyteller integration test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Proposed / QA-SF01 baseline gate** | Characterize then split 5,232-line nested integration suite without losing tests |
