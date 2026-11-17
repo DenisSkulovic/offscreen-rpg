@@ -6,14 +6,15 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
-| [repository-housekeeping/](open/repository-housekeeping/README.md) | **New 2026-11-17 audit:** real stale structures, explicit keep/delete decisions, HK01–HK04 unselected Change packets |
+| [documentation-impact-system/](open/documentation-impact-system/README.md) | **Proposed 2026-11-18:** audit + three-plane change design and typed wiki dependencies; WIKI09–11 remain unselected. HK02, HK06, HK07, and HK08 are Done |
+| [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. Cleanup HK01, HK03, HK04, and HK05 stay gated |
 | [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 3 visual-system program:** product/technical semantic roles prepared; [Phase 3](open/player-experience-refoundation/phase-3/README.md) maps 11 bounded UI/DIR Changes, all unselected. Full final art direction, V2 rich text and generation remain gated |
 | [time-and-autonomy/](open/time-and-autonomy/) | Proposed absence, delegation and standing-life studies. The accepted time rule is the product page |
 | [shared-play/](open/shared-play/) | Proposed group rules. Not accepted |
 | [player-replay/](open/player-replay/) | Proposed player reread. Not the staff forensic capsule |
 | [free-intent/](open/free-intent/) | Future free-form intentions. Not accepted |
 | [prediction-fences/](open/prediction-fences/) | Proposed predictive-outcome study |
-| [legacy-initiatives-index/](open/legacy-initiatives-index/README.md) | **Retained historical reference**, not a current design authorization; canonical and research pages still cite unique legacy analyses. Reclassification is an HK08 review, not automatic deletion |
+| [legacy-initiatives-index/](open/legacy-initiatives-index/README.md) | **Retained historical reference**, not a current design authorization; canonical and research pages still cite unique legacy analyses. HK08 left this route in place |
 | [canon-invention-policy/](open/canon-invention-policy/) | Owner-retained dormant design |
 | [product-open-questions.md](open/product-open-questions.md) | Index of the gates above |
 | [wiki-operating-model/](open/wiki-operating-model/README.md) | **Historical design / follow-up ideas:** WIKI06–08 tooling Changes are Done and archived; remaining governance questions here do not authorize implementation |

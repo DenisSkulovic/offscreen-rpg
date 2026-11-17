@@ -8,12 +8,17 @@ Current change: none
 
 ## Open packets
 
+**Documentation-impact design:** [source audit, target and validation](../designs/open/documentation-impact-system/README.md). **WIKI09 → WIKI10 → WIKI11** remain **Proposed and unselected**. HK02, HK06, HK07, and HK08 are Done. The landed maintenance gate checks routes and freshness. It does not perform WIKI11's planned-versus-actual comparison. These packets do not change the current selection.
+
 **Repository housekeeping:** [source-grounded audit](../designs/open/repository-housekeeping/AUDIT-2026-11-17.md) and [preventive maintenance design](../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md). **Prevention track:** [HK02](archive/2026-11/other/2026-11-17--hk02-repository-doc-integrity/CHANGE.md), [HK06](archive/2026-11/other/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md), [HK07](archive/2026-11/other/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md), and [HK08](archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md) are Done. **Cleanup track:** HK01 after safety audit, HK05 after UI03; HK03/HK04 remain conditional. No blanket deletion.
 
 **Visual-system implementation program:** [Phase 3 execution map](../designs/open/player-experience-refoundation/phase-3/README.md). UI01 → UI02 → UI03 → UI04 → UI05 → UI06 → UI07; UI08 conditional; DIR01 after UI03, DIR02 after DIR01 audit, DIR03 blocked pending explicit quality/spend approval. **No UI or DIR packet is selected; execute one at a time only upon owner instruction.**
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [WIKI09 Change impact planning](open/2026-11-18--wiki09-change-impact-contract/CHANGE.md) | **Proposed (HK02 Done, unselected)** | Require planned product/technical/code/related-doc dispositions before Ready; legacy-safe migration |
+| [WIKI10 Contract dependencies](open/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md) | **Proposed (after WIKI09)** | Contextual links, typed claim dependencies, reverse-impact graph, small high-risk seed |
+| [WIKI11 Impact closure](open/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md) | **Proposed (after WIKI10; HK06 and HK07 Done)** | Compare planned and actual deltas with dependent-claim disposition before Done |
 | [UI01 Design system](open/2026-11-17--ui01-semantic-tokens/CHANGE.md) | **Ready (unselected)** | Platform/Book/scene semantic token foundation; conservative existing appearance |
 | [UI02 Design system](open/2026-11-17--ui02-accessible-primitives/CHANGE.md) | **Ready after UI01** | Shared Action + SystemNotice without changing action ownership |
 | [UI03 Design system](open/2026-11-17--ui03-book-composition/CHANGE.md) | **Ready after UI02** | BookSurface/NarrativeFlow/DecisionGroup composition |
