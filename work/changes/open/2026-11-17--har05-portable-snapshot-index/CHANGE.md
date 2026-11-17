@@ -17,9 +17,15 @@
 4. Manifest v2 preserves original revision fields and adds safe modified tracked paths (sensitive path names redacted), untracked count and `portableWiki` status. Dirty contents are not exported.
 5. **Follow-up policy (2026-11-17): the shortest command requires the wiki index and fails loudly if it cannot be generated.** `--no-index` is the explicit source-only escape hatch; `--require-index` stays an unnecessary compatibility alias. No automatic install, external database, model call, new dependency, or default MCP tool.
 
+## Follow-up: portfolio discoverability and recommended defaults
+
+Owner requested that the documented engineering system be the **front door** to the portfolio, not a hidden agent feature. The public [Engineering System Tour](../../../../ENGINEERING.md), root [README](../../../../README.md), [AGENTS](../../../../AGENTS.md), and [CLAUDE adapter](../../../../CLAUDE.md) now route a fresh evaluator into the methodology. The wiki maintained-root classification includes `ENGINEERING.md` with a deterministic routing self-test. Agent instructions remain brief; the deep public explanation is **on demand**.
+
+The plain `pnpm repo:snapshot:chatgpt` now requires `WIKI-INDEX.json` and fails on an indexing error. The explicit `--no-index` flag skips indexing and creates a source-only ZIP; `--require-index` remains a backward-compatible but unnecessary alias. The exporter fixture was updated to cover the new branch. **The source/test changes are committed, not yet executed here against the installed checkout.**
+
 ## Evidence and required next verification
 
-**Not yet independently executed in the user's repository:** `pnpm repo:snapshot:chatgpt:test`, **the new default** `pnpm repo:snapshot:chatgpt`, archive inspection and `pnpm wiki:health`. The ChatGPT execution environment contains the uploaded source ZIP but not the repository's Node dependencies or live `.git` directory. **Do not mark Done or claim green integration until those commands actually run.**
+**Not yet independently executed in the user's repository:** `pnpm repo:snapshot:chatgpt:test`, **the new default** `pnpm repo:snapshot:chatgpt`, `pnpm wiki:find --self-test`, `pnpm wiki:health`, archive inspection and the CLI negative `--no-index` path. The ChatGPT execution environment contains the uploaded source ZIP but not the repository's Node dependencies or live `.git` directory. **Do not mark Done or claim green integration until those commands actually run.**
 
 Fixtures are included for (a) exact-HEAD source isolation, (b) omitted versus broken path classification, (c) no GitHub fallback for sensitive paths, (d) verified archive metadata and SHA, (e) index absent/fail-closed mode and (f) dirty-path provenance. Run them in Cursor's real checkout, inspect defects, and record actual negative results.
 
