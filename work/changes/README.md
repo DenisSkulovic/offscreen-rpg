@@ -11,6 +11,7 @@ Current change: none
 | Packet | State | Outcome |
 | --- | --- | --- |
 | [HAR03 semantic retrieval pilot](open/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) | **Proposed (opt-in)** | Test Grepai natural-language code search and QMD Markdown search vs existing tools, no automatic install |
+| [HAR05 portable ChatGPT wiki index](open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) | **Verifying** | Export exact-HEAD headings, link-omission inventory and sanitized dirty paths; local repo test pending |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |

@@ -22,7 +22,7 @@
 
 ## Ordinary ChatGPT source transport (implemented)
 
-For design investigations that stay inside ordinary ChatGPT, the [source snapshot runbook](../../../../docs/runbooks/chatgpt-design-snapshot.md) defines a committed-HEAD, gitignored ZIP with embedded source revision and lean/full profiles. This is not a coding-agent session, semantic search, automatic remote sync, or new product authority. It is independent of HAR01, HAR02, and HAR03, does not reopen completed WIKI07/WIKI08 work, and does not select a new Change.
+For design investigations that stay inside ordinary ChatGPT, the [source snapshot runbook](../../../../docs/runbooks/chatgpt-design-snapshot.md) defines a committed-HEAD, gitignored ZIP with embedded source revision and lean/full profiles. [HAR05](../../../changes/open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) adds portable source-exact headings, authority roles and omitted-link reporting using the existing wiki parser, with strict/fallback behavior. This is not a coding-agent session, semantic search, automatic remote sync, or new product authority. It is independent of HAR03 and does not reopen WIKI07/WIKI08.
 
 ## Authority, dependencies and release sequence
 
