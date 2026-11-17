@@ -11,6 +11,7 @@ Current change: [HAR08 agent-native harness evaluation](open/2026-11-17--har08-a
 | Packet | State | Outcome |
 | --- | --- | --- |
 | [HAR08 agent-native harness preflight](open/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md) | **Ready (selected)** | Prepare matched real-agent read-only A/B and WIKI03 safety gates; no model launch under this packet |
+| [HAR09 Cognee architecture-memory pilot](open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md) | **Ready (queued, not selected)** | Compare a bounded local Cognee architecture-memory trial to existing wiki/native retrieval after HAR08; separate model-download gate, no integration |
 | [HAR05 portable ChatGPT wiki index](open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) | **Verifying** | Export exact-HEAD headings, link-omission inventory and sanitized dirty paths; local repo test pending |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
