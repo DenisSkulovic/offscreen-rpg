@@ -1,0 +1,26 @@
+---
+description: End every reply with a short labeled TLDR, one item per line
+alwaysApply: true
+---
+
+# End with a human-readable TLDR
+
+Technical detail may come first. The final section of every user-facing reply is a TLDR.
+
+Put the TLDR last. Start it with the line `TLDR`. Then one bullet per item, in this order. Each bullet is its own line. Do not join the items into a paragraph.
+
+- **What is true:** the result, in plain language.
+- **Next step:** if the next action is already clear, write "I know what to do next:" and name it. Then do that work unless the owner stopped you.
+- **Need from you:** if a decision, approval, secret, or missing fact blocks the work, say exactly what you need. If nothing is needed, write "I don't need anything from you."
+- **Design:** if the work needs a new product or technical decision, say so. If the existing design is enough, write "No new design is needed."
+
+Omit a bullet only when it does not apply. Do not end on a menu of options when one next step is already justified. Do not tell the owner to take the task back to another assistant when the next check is already known.
+
+```
+TLDR
+
+- What is true: The wiki already quotes the transport rule.
+- Next step: I know what to do next: record that and stop.
+- Need from you: I don't need anything from you.
+- Design: No new design is needed.
+```
