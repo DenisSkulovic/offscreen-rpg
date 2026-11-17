@@ -2,7 +2,11 @@
 
 **Status:** Broader art-direction, typography, animation and richer-content work remains OPEN DESIGN. The owner has separately accepted a **limited Living Book POC** in [product](../../../../../docs/product/experience/living-book-poc.md) and [technical](../../../../../docs/technical/client/living-book-poc.md), without accepting these visual mockups or source-V2 proposals. Earlier art-direction, geometry and interaction labs now feed the **source-to-leaf narrative composition study**. **Date:** 2026-11-17. **Implementation permission:** none.
 
-## Current design gate: source-to-leaf composition
+## Post-BOOK01/BOOK02 inspection and next design gate
+
+The [16 · Book implementation, design-system and Storyteller-direction gap audit](16-POST-BOOK-UI-AND-DIRECTION-GAP-AUDIT.md) distinguishes the landed structural book shell/Journal reader from **missing coherent design-system contracts and Storyteller creative-direction production**. The optional current-scene appearance **read bridge does exist** in source, whereas automatic creative authorship and historical retention are unproved. The next design pass should establish semantic foundation tokens, a small compositional component set, and a separately validated author/publish pipeline, not keep piling feature-specific CSS onto the book. No DS or production Change is authorized by the audit.
+
+## Earlier design gate: source-to-leaf composition
 
 The latest design work is [13 · Narrative document compositor](13-NARRATIVE-DOCUMENT-COMPOSITOR.md), [14 · Reader continuity and live updates](14-READER-CONTINUITY-AND-UPDATE-POLICY.md), and [15 · Decisions and readiness](15-DECISION-REGISTER-AND-IMPLEMENTATION-READINESS.md). The [composition lab](composition-lab/README.md) runs a self-contained measured-leaf/continuous comparison and 34 Chromium layout cases. It keeps **published source, semantic document and physical page** as different layers, and treats page animation as replaceable. Browser smoke is not real accessibility or production integration proof. No new rich-publication contract is selected.
 
