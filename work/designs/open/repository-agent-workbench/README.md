@@ -17,7 +17,7 @@
 | --- | --- |
 | What is the desired cross-agent operating model and what is genuinely missing? | [Target and baseline](TARGET.md) |
 | Which external technologies deserve investigation, and why not install one immediately? | [Candidate assessment and sources](CANDIDATES.md) |
-| Can persistent graph memory recover forgotten architecture without corrupting authority? | **[Concluded Cognee trial](../../../changes/archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md)** · [first-class result](../../../..//research/agent-practice/COGNEE-EVALUATION-2026-11-17.md) |
+| Can persistent graph memory recover forgotten architecture without corrupting authority? | **[Concluded Cognee trial](../../../changes/archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md)** · [first-class result](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md) |
 | How do we measure retrieval funnel value without adopting a vendor? | **[HAR06 decision](HAR06-DECISION.md)** · [evaluation gates](EVALUATION.md) · [HAR03 historical pilot](PILOT.md) |
 | What should Cursor implement next? | **[HAR10 retirement](../../../changes/open/2026-11-17--har10-retire-retrieval-experiments/CHANGE.md)** is selected. HAR09 was [stopped without adopting Cognee](../../../changes/archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md). [HAR05](../../../changes/open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) remains Verifying. |
 
