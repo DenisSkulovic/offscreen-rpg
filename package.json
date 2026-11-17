@@ -20,6 +20,8 @@
     "db:reset:test": "node scripts/repo-tools/reset-test-db.mjs",
     "admin:bootstrap-staff": "node scripts/repo-tools/admin-bootstrap-staff.mjs",
     "repo:brief": "node scripts/repo-tools/brief.mjs",
+    "repo:snapshot:chatgpt": "node scripts/repo-tools/chatgpt-snapshot.mjs",
+    "repo:snapshot:chatgpt:test": "node --test scripts/repo-tools/chatgpt-snapshot.test.mjs",
     "repo:docs-health": "node scripts/repo-tools/docs-health.mjs",
     "wiki:health": "node scripts/repo-tools/wiki-health.mjs",
     "wiki:content-health": "node scripts/repo-tools/wiki-content-health.mjs",

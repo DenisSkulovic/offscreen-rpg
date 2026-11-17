@@ -20,6 +20,10 @@
 | How would we decide whether another tool actually improves correctness and cost? | [Evaluation and adoption gates](EVALUATION.md) · [16-case semantic pilot](PILOT.md) |
 | What bounded code work could Cursor eventually do? | [HAR01 structured source receipts](../../../changes/open/2026-11-17--har01-source-receipts/CHANGE.md) · [HAR02 comparative retrieval harness](../../../changes/open/2026-11-17--har02-retrieval-comparison/CHANGE.md) · [HAR03 local semantic pilot](../../../changes/open/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) |
 
+## Ordinary ChatGPT source transport (implemented)
+
+For design investigations that stay inside ordinary ChatGPT, the [source snapshot runbook](../../../../docs/runbooks/chatgpt-design-snapshot.md) defines a committed-HEAD, gitignored ZIP with embedded source revision and lean/full profiles. This is not a coding-agent session, semantic search, automatic remote sync, or new product authority. It is independent of HAR01–03's proposals and does not change the selected WIKI07 work.
+
 ## Authority, dependencies and release sequence
 
 - Canonical agent owner remains [.agents/HARNESS.md](../../../../.agents/HARNESS.md); [context economics](../../../../.agents/references/context-economics.md) and [document navigation](../../../../.agents/references/documentation-navigation-standard.md) remain binding. This design must not become a second always-on agent rule.

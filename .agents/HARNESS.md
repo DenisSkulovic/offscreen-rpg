@@ -59,6 +59,8 @@ For substantial source investigations, design handoffs, reviews and writes, name
 
 **Optional retrieval tooling is evidence-gated, not startup infrastructure.** Built-in agent tools plus existing `wiki:find`/`wiki:read` are the baseline; no automatic Cognee, Serena, semantic DB, Docker stack or always-on MCP additions. A [proposed workbench design](../work/designs/open/repository-agent-workbench/README.md) and HAR01/HAR02 packets describe possible refinements through a separately selected and measured opt-in experiment (HAR03), not a default startup service. Do not preload this design or start services just because it is linked.
 
+**Ordinary ChatGPT without a checkout:** the owner may use `pnpm repo:snapshot:chatgpt` to package committed source/docs into an ignored, versioned ZIP with provenance. Follow the [ChatGPT source snapshot runbook](../docs/runbooks/chatgpt-design-snapshot.md). The upload is a frozen Git revision, not a live worktree or a tested runtime; reconcile remote HEAD before publishing designs. This is optional and never mandatory agent startup context.
+
 ## Context-expansion protocol
 
 - **R0:** task statement, always-on entry, needed constraints.

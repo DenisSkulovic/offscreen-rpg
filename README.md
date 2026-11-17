@@ -29,6 +29,7 @@ A configuration-faithful 10–15-turn campaign with durable change and later rec
 
 - **Returning owner or new contributor:** start with the [engineering priority and work sequence](./ROADMAP.md), then [progress](STATUS.md) and the [documentation map](docs/README.md).
 - **Coding agent:** start with [AGENTS.md](AGENTS.md). Use `pnpm repo:brief` when resuming or disoriented, then route the question via [documentation](docs/README.md) → [technical owner](docs/technical/README.md) → [code navigation](docs/README.md) only as needed.
+- **Investigate with ordinary ChatGPT:** run `pnpm repo:snapshot:chatgpt` and attach the versioned ZIP from `out/chatgpt-snapshots/`. [Snapshot instructions](docs/runbooks/chatgpt-design-snapshot.md).
 - **Try it locally:** [development](docs/runbooks/local-development.md). `pnpm chamber` uses offline development fixtures; `pnpm story:local` opens ordinary local Story mode, with live execution requiring explicit configuration and spending authority. `/demo` is a separate browser-only prototype that resets on refresh.
 - **Understand the intended product:** [vision](docs/product/foundations/vision.md), [concepts](docs/product/foundations/concepts.md), then the relevant product topic in the map.
 - **Understand the engine and its limits:** [engine model](docs/technical/engine/authority-and-transitions.md) connects mechanics, time, memory, authority, failure and next design decisions.

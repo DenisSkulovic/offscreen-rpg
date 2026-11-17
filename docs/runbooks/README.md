@@ -6,3 +6,4 @@ Source-adjacent package procedures may remain beside code.
 | Runbook | Question |
 | --- | --- |
 | [Local development](local-development.md) | How do I run and check the portfolio locally? |
+| [ChatGPT design snapshot](chatgpt-design-snapshot.md) | How do I export a source ZIP for design investigation in ordinary ChatGPT? |
