@@ -38,6 +38,7 @@ Current change: none
 | [HK02 documentation-integrity coverage](open/2026-11-17--hk02-repository-doc-integrity/CHANGE.md) | **Ready (unselected)** | Make work/research link checks and Change-only CI trigger reliable; reconcile stale lifecycle labels |
 | [HK01 retire unsupported local repair CLI](open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) | **Ready with evidence gate (unselected)** | Remove one unowned local DB mutation entrypoint only after caller/recovery audit |
 | [HK03 Storyteller integration test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Proposed / QA-SF01 baseline gate** | Characterize then split 5,232-line nested integration suite without losing tests |
+| [HK05 Play import compatibility shims](open/2026-11-17--hk05-play-compatibility-shims/CHANGE.md) | **Ready after UI03 (unselected)** | Delete two redundant Play reexports after canonical import/mocks move |
 | [HK04 Chamber launcher seams](open/2026-11-17--hk04-chamber-launcher-seams/CHANGE.md) | **Proposed / safety gate** | Separate mode planning from privileged boot and preserve all provider/DB denials |
 | [S3a continuity report](open/2026-11-11--s3a-continuity-report/CHANGE.md) | Parked | Continuity evidence in local Story report |
 
