@@ -1,6 +1,6 @@
 # Target | reliable repo understanding across GitHub API and local coding agents
 
-**Type:** proposed developer-harness design. **Does not amend:** product/technical game contracts. **Existing owners:** root [AGENTS.md](../../../../AGENTS.md), [.agents/HARNESS.md](../../../../.agents/HARNESS.md), [WIKI07](../../../changes/open/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md).
+**Type:** proposed developer-harness design. **Does not amend:** product/technical game contracts. **Existing owners:** root [AGENTS.md](../../../../AGENTS.md), [.agents/HARNESS.md](../../../../.agents/HARNESS.md), [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md).
 
 ## Observed starting point at 8aa952a
 

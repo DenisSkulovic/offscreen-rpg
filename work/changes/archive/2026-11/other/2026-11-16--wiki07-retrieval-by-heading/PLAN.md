@@ -1,12 +1,10 @@
 # WIKI07 | Execution checkpoints
 
-**State:** Implementing. WIKI06 is Done. No provider calls.
+**State:** Done. WIKI06 is Done. No provider calls.
 
 ## Current checkpoint
 
-- A third chat judged ten newer questions on dirty `5263bf50`: three owners, one router, six misses. None of those finds printed the NOT SELECTED line. The ranker now follows a same-page link before a broader title, prefers a heading whose prose covers rarer query words, and puts a named open design in the proposal lane.
-- Re-running all thirty questions now hits the headings those chats named. That is a repair check, not a new exam. The first exam's chamber question still opens the page title. The quiet-hour sentence is on a page marked proposed, so that find uses the NOT SELECTED lane.
-- Do not mark Done from any of the three sets.
+- Closed on `c062ba6677af50051354c3e0bc58151cdf34fb2c`. Three fresh chats reviewed thirty questions, and the ranker now opens the headings they named. The chamber page title remains a known limit. The quiet-hour sentence stays in the NOT SELECTED lane because that page is marked proposed.
 
 ## Remaining steps
 

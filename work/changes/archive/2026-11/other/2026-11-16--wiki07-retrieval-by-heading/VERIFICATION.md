@@ -165,3 +165,17 @@ git diff --check
 ```
 
 Show real exits/outputs, no paid model, no writes beyond gitignored reports, no change to all terminal archive blobs, no source/game behavior modifications.
+
+## Close checks on `c062ba66`
+
+Run on 2026-11-17 before archive. No provider call.
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `git rev-parse HEAD` | 0 | `c062ba6677af50051354c3e0bc58151cdf34fb2c` |
+| `pnpm wiki:find --self-test` | 0 | Passed |
+| `pnpm wiki:read --self-test` | 0 | Passed |
+| `pnpm wiki:bench:static --self-test` | 0 | Passed. The static bench is unchanged by the live ranker |
+| `pnpm wiki:health` | 0 | 74/74 reachable, p50 2, p95 3, max 3, 0 broken paths or anchors. The same 3 dead-end warnings remain. 816 ms |
+
+The first exam's byte table above is the full-page versus bounded-read comparison. It is not a model-token saving. The chamber title, the campaign-bootstrap cut, and the headless-play cut remain recorded limits.

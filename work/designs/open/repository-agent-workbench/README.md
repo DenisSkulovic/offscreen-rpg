@@ -5,7 +5,7 @@
 
 ## Decision in one screen
 
-1. **Reuse what exists.** Agent-native code search, Git, `rg`, existing language services, `AGENTS.md` and source READMEs come first. WIKI06 already enforces Change reconciliation. WIKI07 already implements `pnpm wiki:find` and `pnpm wiki:read`; an independent read of its original ten questions is recorded in that packet, and the packet is not Done. WIKI08 is proposed content-quality work. Do not fork those implementations.
+1. **Reuse what exists.** Agent-native code search, Git, `rg`, existing language services, `AGENTS.md` and source READMEs come first. WIKI06 already enforces Change reconciliation. WIKI07 is Done: `pnpm wiki:find` and `pnpm wiki:read` are the docs baseline, and its three independent reads are in the archived packet. WIKI08 is proposed content-quality work. Do not fork those implementations.
 2. **Report source freshness and evidence class.** Important investigations and Cursor handoffs identify the actual revision, whether a local worktree was dirty or unavailable, source/heading anchors, and whether claims are selected target, source-observed, fixture-tested, or live-observed. A GitHub connector snapshot is **not** a local worktree snapshot.
 3. **Natural-language search is a priority experiment.** Cursor's current Instant Grep is *not* its old embedding index; Claude Code bundles ripgrep. Test code semantic retrieval (Grepai) and Markdown semantic/hybrid retrieval (QMD) separately. No global service or MCP tool is required until the experiment succeeds.
 4. **Try before adopting.** Do not wait for an imagined crisis before prototyping. A pinned-tree, zero-paid-model CLI pilot may proceed as a separately selected developer tooling Change. WIKI07 is the docs baseline; WIKI08 content audit proceeds independently. Measure retrieved-source accuracy **and** whether an agent uses it beneficially.
@@ -23,9 +23,9 @@
 ## Authority, dependencies and release sequence
 
 - Canonical agent owner remains [.agents/HARNESS.md](../../../../.agents/HARNESS.md); [context economics](../../../../.agents/references/context-economics.md) and [document navigation](../../../../.agents/references/documentation-navigation-standard.md) remain binding. This design must not become a second always-on agent rule.
-- [WIKI07](../../../changes/open/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) stays the selected Change. Its independent verification is the first dependency, not a task for this design to take over.
+- [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) is Done and is no longer the selected Change. Its independent reads are recorded. Do not reopen that packet to start this design.
 - [WIKI08](../../../changes/open/2026-11-16--wiki08-content-quality-gates/CHANGE.md) remains an independently selected future content-quality Change, **not a blocking dependency for a source-only semantic search pilot**. Misleading wiki text must not be scored as a retrieval success.
-- HAR01, HAR02 and HAR03 are **Proposed**, not executable merely because their packets exist. WIKI07 remains the selected Change. An owner-selected isolated HAR03 prototype should explicitly provision/pin local tools without altering the default dev environment; real paid-agent trials have a separate authorization gate.
+- HAR01, HAR02 and HAR03 are **Proposed**, not executable merely because their packets exist. No Change is selected. An owner-selected isolated HAR03 prototype should explicitly provision/pin local tools without altering the default dev environment; real paid-agent trials have a separate authorization gate.
 - After any candidate experiment, independently review the evidence and either reject it, keep it opt-in, or author a *new* narrowly scoped integration Change. Never let a benchmark automatically authorize installation.
 
 **Success** is fewer wrong conclusions and unnecessary file reads at the same or lower total engineering cost. Zero new tooling is a valid winning result.
