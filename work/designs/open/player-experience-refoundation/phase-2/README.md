@@ -1,6 +1,6 @@
 # Phase 2 | Visual-direction competition
 
-**Status:** OPEN DESIGN. Three rendered directions and one newer adaptive Living Journal thesis; no visual or technical contract ratified. **Date:** 2026-11-17. **Implementation permission:** none.
+**Status:** OPEN DESIGN. Three earlier directions, a newer Living Journal thesis and a rendered adaptive-leaf laboratory. No visual or technical contract ratified. **Date:** 2026-11-17. **Implementation permission:** none.
 
 ## View first, read second
 
@@ -10,7 +10,7 @@ All UI prose for its primary passages comes from [Phase 1's fixed specimens](../
 
 ## New integrative direction: Living Journal (owner hypothesis, November 17)
 
-Following review of A/B/C, the owner proposed **one recurring reading leaf whose material, surrounding atmosphere, local typography, art slots and bounded decorations are Storyteller-directed**, rather than any fixed medieval/cave/space skins. The leaf is conceptually a page but not necessarily physical paper. The renderer, source text and safety controls remain stable. **No new visual prototype of this fourth direction has yet been rendered; it is a design thesis awaiting proof.**
+Following review of A/B/C, the owner proposed **one recurring reading leaf whose material, surrounding atmosphere, local typography, art slots and bounded decorations are Storyteller-directed**, rather than any fixed medieval/cave/space skins. The leaf is conceptually a page but not necessarily physical paper. The renderer, source text and safety controls remain stable. **This direction now has a [separate inspectable adaptive-leaf visual lab](adaptive-leaf-lab/README.md), still not ratified.**
 
 Read in order:
 
@@ -18,6 +18,8 @@ Read in order:
 - [06 · Rich narrative score](06-RICH-NARRATIVE-SCORE.md) for source-faithful expressive text without model-authored HTML, Markdown as a limited supplement, and a bounded optional score with exact quote anchors.
 - [07 · History, finished volumes and forks](07-EDITION-HISTORY-AND-FORKS.md) for retained page appearance, explicit end state, independent lineage and the hard current limitation on arbitrary historical forking.
 - [08 · Adaptive-page review gates](08-ADAPTIVE-PAGE-REVIEW-GATES.md) for visual specimens, art-direction falsifiers, accessibility/cost tests and the decisions still awaiting owner approval.
+
+The [Adaptive Leaf design laboratory](adaptive-leaf-lab/README.md) offers one self-contained renderer and four bounded fixture documents, plus rich-mark/figure toggles, Now/Journal/Reader/ongoing/ended/branch examples, qualitative critique and Chromium evidence. Its [interactive HTML](adaptive-leaf-lab/index.html) is **not production React or a functioning Storyteller**.
 
 These V2 proposals **extend beyond the already selected V1 presentation runtime**. Their commit here does not override its authority, edit the passage schema or authorize an implementation Change.
 
