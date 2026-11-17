@@ -8,6 +8,8 @@ Current change: none
 
 ## Open packets
 
+**Repository housekeeping:** [source-grounded audit](../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). HK02 → HK01 are prepared unselected; HK03/HK04 require baseline/safety gates. No blanket deletion and no current Change selection.
+
 **Visual-system implementation program:** [Phase 3 execution map](../designs/open/player-experience-refoundation/phase-3/README.md). UI01 → UI02 → UI03 → UI04 → UI05 → UI06 → UI07; UI08 conditional; DIR01 after UI03, DIR02 after DIR01 audit, DIR03 blocked pending explicit quality/spend approval. **No packet is currently selected; execute one at a time only upon owner instruction.**
 
 | Packet | State | Outcome |
@@ -33,6 +35,10 @@ Current change: none
 | [GM03 standing life](open/2026-11-13--gm-standing-life/CHANGE.md) | Proposed | Bounded standing routine |
 | [GM07 delegated decision](open/2026-11-13--gm-delegated-decision/CHANGE.md) | Proposed | Consented fallback after deadline |
 | [SA07 evidence tools](open/2026-11-14--sa07-evidence-tools/CHANGE.md) | Proposed (conditional) | Typed read operations for missing evidence |
+| [HK02 documentation-integrity coverage](open/2026-11-17--hk02-repository-doc-integrity/CHANGE.md) | **Ready (unselected)** | Make work/research link checks and Change-only CI trigger reliable; reconcile stale lifecycle labels |
+| [HK01 retire unsupported local repair CLI](open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) | **Ready with evidence gate (unselected)** | Remove one unowned local DB mutation entrypoint only after caller/recovery audit |
+| [HK03 Storyteller integration test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Proposed / QA-SF01 baseline gate** | Characterize then split 5,232-line nested integration suite without losing tests |
+| [HK04 Chamber launcher seams](open/2026-11-17--hk04-chamber-launcher-seams/CHANGE.md) | **Proposed / safety gate** | Separate mode planning from privileged boot and preserve all provider/DB denials |
 | [S3a continuity report](open/2026-11-11--s3a-continuity-report/CHANGE.md) | Parked | Continuity evidence in local Story report |
 
 ## Layout
