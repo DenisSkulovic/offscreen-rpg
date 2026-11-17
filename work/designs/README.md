@@ -6,7 +6,7 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
-| [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 0 design program:** source audit, experience thesis, story-reading research, art-direction alternatives and staged approval gates. No implementation authorization |
+| [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 0–2 design program:** audit, Phase 1 experience architecture, Phase 2 interactive visual-direction comparisons and staged approval gates. No implementation authorization |
 | [time-and-autonomy/](open/time-and-autonomy/) | Proposed absence, delegation and standing-life studies. The accepted time rule is the product page |
 | [shared-play/](open/shared-play/) | Proposed group rules. Not accepted |
 | [player-replay/](open/player-replay/) | Proposed player reread. Not the staff forensic capsule |
