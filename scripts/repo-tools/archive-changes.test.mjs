@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  changeNeedsLedger,
   classifyChangeText,
   depthUnderChanges,
   programForLeaf,
@@ -27,6 +28,13 @@ test('program and month buckets', () => {
     monthForLeaf('2026-11-15--qa-storyteller-integration-fixtures'),
     '2026-11',
   );
+});
+
+test('partial Done for A; B blocked stays open and does not require a terminal ledger', () => {
+  const obs00 = '**State: Done for A; B blocked.** **Severity:** P0 pre-live correctness.';
+  assert.equal(classifyChangeText(obs00).kind, 'open');
+  assert.equal(changeNeedsLedger(obs00), false);
+  assert.equal(changeNeedsLedger('**State: Done (2026-11-18).**'), true);
 });
 
 test('classify Done / Blocked / Proposed / Cancelled without false cancel on cancel-if', () => {

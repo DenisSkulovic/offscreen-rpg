@@ -1,6 +1,6 @@
 # HK06 | Tracked-artifact inventory and lifecycle integrity guard
 
-**State: Ready (unselected; after HK02).** **Authority:** [repository maintenance target](../../../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md) and [Change standard](../../../../.agents/references/change-work-unit-standard.md). **Baseline:** inspected lean `4e42bd7`; compared GitHub `main@b876318` and current workflow/source; recheck HEAD and worktree before code. **One outcome:** an active documented object cannot be forgotten because it is missing from its owner router or stranded in the wrong lifecycle.
+**State: Done (2026-11-18).** **Authority:** [repository maintenance target](../../../../../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md) and [Change standard](../../../../../../.agents/references/change-work-unit-standard.md). **Baseline:** inspected lean `4e42bd7`; compared GitHub `main@b876318` and current workflow/source; recheck HEAD and worktree before code. **One outcome:** an active documented object cannot be forgotten because it is missing from its owner router or stranded in the wrong lifecycle.
 
 ## Cursor first-screen brief
 
@@ -35,13 +35,25 @@ Reuse `scripts/repo-tools/wiki-core/model.mjs`, `paths.mjs`, `markdown.mjs`, `sc
 
 No Git date logic or source-dependency freshness yet (HK07); no CI/scheduled integration or status-wall refactor (HK08); no deletion, movement or rewriting of legacy dossiers in the detector Change; no change to product/technical semantics. HK02 remains responsible for existing docs workflow scope, not this derived inventory.
 
-## Reconciliation ledger (fill during implementation)
+## Reconciliation ledger
 
-| Affected authority | Intended target | Observed implementation & proof | Disposition |
-| --- | --- | --- | --- |
-| [maintenance target](../../../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md) | owned active routes + precise state | pending | pending |
-| `wiki-core` / existing archive classifier | one graph/parser, no false terminal status | pending | pending |
-| `work/changes/README.md` + `work/designs/README.md` | known routes, no unrelated queue selection | pending | pending |
-| `docs/product/` + `docs/technical/` | no product behavior change | unchanged: repository diagnostic only | pending |
+Proof on dirty worktree based on `f3e3bfe35490932ee363c00aad0fb239893d825e`: `node --test scripts/repo-tools/maintenance.test.mjs scripts/repo-tools/archive-changes.test.mjs` passed 14 tests. `pnpm repo:maintenance --strict` reported markdown 713, strict 0, Current change HK06, and exited 0. `pnpm repo:docs-health` does not list `obs00-live-provider-custody` as a missing terminal ledger. No provider call and no database call.
 
-**Next Cursor action when selected:** inventory full HEAD and write normal/negative fixtures **before** changing docs. Implement one self-contained read-only guard, run tests, reconcile this ledger, then archive HK06. Do not select a Change merely because a scanner recommends work.
+HK06 paths: `package.json`, `scripts/repo-tools/archive-changes.mjs`, `scripts/repo-tools/archive-changes.test.mjs`, `scripts/repo-tools/docs-health.mjs`, `scripts/repo-tools/maintenance-core.mjs`, `scripts/repo-tools/maintenance.mjs`, `scripts/repo-tools/maintenance.test.mjs`, `work/changes/README.md`.
+
+exception: .github/workflows/docs.yml because HK02 already changed the docs workflow filter in this worktree
+exception: evidence/README.md because HK02 already corrected the evidence router in this worktree
+exception: scripts/check_docs.py because HK02 already extended the link checker in this worktree
+exception: scripts/repo-tools/docs-workflow-paths.test.mjs because HK02 already added the path-filter fixture in this worktree
+exception: work/changes/archive/2026-11/README.md because HK02 already indexed its archived packet in this worktree
+exception: work/changes/archive/2026-11/other/2026-11-17--hk02-repository-doc-integrity/CHANGE.md because HK02 already archived that packet in this worktree
+exception: work/changes/open/2026-11-17--hk02-repository-doc-integrity/CHANGE.md because HK02 moved that packet and the old path remains in the diff
+exception: work/changes/ledger/2026-11.md because HK02 already appended its ledger row in this worktree
+exception: work/designs/open/repository-housekeeping/README.md because HK02 already retargeted its housekeeping link in this worktree
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| active route and lifecycle gate | work/designs/open/repository-housekeeping/PREVENTION-SYSTEM.md | changed: a read-only repo:maintenance report now fails unindexed open packets, terminal open packets, and invalid selection | scripts/repo-tools/maintenance-core.mjs and scripts/repo-tools/maintenance.mjs at dirty f3e3bfe35490932ee363c00aad0fb239893d825e | fixture-tested | a lean checkout with a broken link reports the gate unavailable and lists no findings | package.json |
+| Change state parser | scripts/repo-tools/archive-changes.mjs | changed: docs-health uses changeNeedsLedger, so a partial Done with blocked is not a terminal packet | scripts/repo-tools/docs-health.mjs and scripts/repo-tools/archive-changes.test.mjs at dirty f3e3bfe35490932ee363c00aad0fb239893d825e | fixture-tested | the OBS00 string Done for A; B blocked stays open and does not require a terminal ledger | scripts/repo-tools/docs-health.mjs |
+| work queue selection | work/changes/README.md | changed: HK06 is the selected Change while this packet is open | work/changes/README.md at dirty f3e3bfe35490932ee363c00aad0fb239893d825e | source-observed | Current change none remains valid in the fixture, and an archived target fails | work/changes/README.md |
+| product and technical behavior | docs/README.md | no product/technical behavior impacted: this is a repository diagnostic and does not change gameplay | scripts/repo-tools/maintenance.mjs at dirty f3e3bfe35490932ee363c00aad0fb239893d825e | source-observed | docs/product and docs/technical are absent from the HK06 source diff | N/A |

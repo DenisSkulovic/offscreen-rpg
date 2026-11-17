@@ -2,6 +2,7 @@
 // Done-packet reconciliation ledgers. Advisory only; not a repo-wide rewrite.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { changeNeedsLedger } from './archive-changes.mjs';
 import { root } from './process.mjs';
 
 const changesRoot = path.join(root, 'work', 'changes');
@@ -87,14 +88,7 @@ const ledgerResults = packets
         issue: 'CHANGE.md unreadable: ' + error.message,
       };
     }
-    const done =
-      /\*\*State:\*\*[^*]*\bDone\b/i.test(text) ||
-      /\*\*State:[^*]*\bDone\b/i.test(text) ||
-      /\*\*Status:\*\*[^*]*\bDone\b/i.test(text) ||
-      /\*\*Status:[^*]*\bDone\b/i.test(text) ||
-      /^State:\s*[^\n]*\bDone\b/im.test(text) ||
-      /^Status:\s*[^\n]*\bDone\b/im.test(text);
-    if (!done) return null;
+    if (!changeNeedsLedger(text)) return null;
     const hasLedger = /^## Reconciliation ledger\b/m.test(text);
     return {
       name: packet.rel,

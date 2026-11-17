@@ -6,10 +6,10 @@ Start with [the dated audit](AUDIT-2026-11-17.md) for cleanup candidates and [th
 
 ## Execution map
 
-- [HK02 repository documentation integrity](../../../changes/open/2026-11-17--hk02-repository-doc-integrity/CHANGE.md): first; closes blind spots in link checks and change-only commits.
-- [HK06 tracked-artifact inventory and lifecycle guard](../../../changes/open/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md): after HK02, discover active orphans, ambiguous states and unclassified control files.
-- [HK07 dependency-aware freshness](../../../changes/open/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md): after HK06, tie owner docs to changed source/commit evidence and review age cohorts without false truth claims.
-- [HK08 CI, brief and status convergence](../../../changes/open/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md): after HK07, move deterministic failures into push/PR gates, periodic reviews and first-screen hygiene.
+- [HK02 repository documentation integrity](../../../changes/archive/2026-11/other/2026-11-17--hk02-repository-doc-integrity/CHANGE.md): Done; open Change packets and research/evidence routers are in the docs link check, and a Change-only path matches the docs workflow filter.
+- [HK06 tracked-artifact inventory and lifecycle guard](../../../changes/archive/2026-11/other/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md): Done; `pnpm repo:maintenance --strict` checks open routes, selection, and terminal state.
+- [HK07 dependency-aware freshness](../../../changes/archive/2026-11/other/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md): Done; commit order produces review candidates, and age alone is not a false contract.
+- [HK08 CI, brief and status convergence](../../../changes/archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md): Done; strict lifecycle failures are on the maintenance workflow, and `repo:brief --health` shows three candidates.
 - [HK01 retire local response-reconciliation helper](../../../changes/open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md): after independent caller and recovery-path check.
 - [HK03 split Storyteller integration tests](../../../changes/open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md): only after QA-SF01 baseline is characterized.
 - [HK05 retire Play compatibility shims](../../../changes/open/2026-11-17--hk05-play-compatibility-shims/CHANGE.md): after UI03, remove two one-line reexport entrypoints and repair import-sensitive tests.

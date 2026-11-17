@@ -1,10 +1,15 @@
 """Check local Markdown links and heading anchors. No third-party dependencies.
 
-Coverage (W22):
+Coverage (W22, HK02):
 - Root/docs/agent Markdown plus nested README.md under apps/, packages/, tools/
+- Open Change packets and open design dossiers
+- Research and evidence collection routers (README/MANIFEST one level down)
 - Local file/directory targets and GitHub-compatible heading fragments
 - Malformed link labels with an unmatched backtick before ']'
 - One level of nested parentheses in local paths (Next.js route groups)
+
+Archived Change packets and dated evidence bodies stay out of this active pass.
+A missing archive tree is not rewritten; the link fails only when an active page points at it.
 """
 
 from __future__ import annotations
@@ -38,6 +43,28 @@ INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\([^)]+\)")
 EMPHASIS_RE = re.compile(r"[*_~]+")
 
 
+def _consider(files: list[Path], path: Path) -> None:
+    if not path.is_file():
+        return
+    if any(part in SKIP_DIR_NAMES for part in path.parts):
+        return
+    if path.suffix.lower() not in {".md", ".mdc"}:
+        return
+    files.append(path)
+
+
+def _collection_routers(files: list[Path], base: Path) -> None:
+    """README and MANIFEST routers at the collection root and one level down."""
+    if not base.is_dir():
+        return
+    _consider(files, base / "README.md")
+    for child in base.iterdir():
+        if not child.is_dir() or child.name in SKIP_DIR_NAMES:
+            continue
+        _consider(files, child / "README.md")
+        _consider(files, child / "MANIFEST.md")
+
+
 def iter_markdown_files(root: Path) -> list[Path]:
     files: list[Path] = list(root.glob("*.md"))
     for folder in ("docs", ".agents", ".claude", ".cursor", ".github"):
@@ -69,6 +96,18 @@ def iter_markdown_files(root: Path) -> list[Path]:
     designs_index = root / "work" / "designs" / "README.md"
     if designs_index.is_file():
         files.append(designs_index)
+    _consider(files, root / "work" / "changes" / "README.md")
+    open_changes = root / "work" / "changes" / "open"
+    if open_changes.exists():
+        for path in open_changes.rglob("*"):
+            if not path.is_file():
+                continue
+            if any(part in SKIP_DIR_NAMES for part in path.parts):
+                continue
+            if path.suffix.lower() in {".md", ".mdc"}:
+                files.append(path)
+    _collection_routers(files, root / "research")
+    _collection_routers(files, root / "evidence")
     return sorted({path.resolve() for path in files})
 
 
@@ -318,6 +357,61 @@ def self_test() -> int:
         if "thread:the-warning" in joined_open:
             failures.append("open-design fixture flagged a thread: reference")
 
+        broken_change = root / "broken_change"
+        _write(
+            broken_change / "work" / "changes" / "open" / "fixture" / "CHANGE.md",
+            "# Fixture\n\nBroken [missing](../../../../does-not-exist.md).\n",
+        )
+        expect_problem(
+            "broken open change link",
+            broken_change,
+            "broken local link ../../../../does-not-exist.md",
+        )
+
+        valid_archive = root / "valid_archive"
+        _write(
+            valid_archive
+            / "work"
+            / "changes"
+            / "archive"
+            / "2026-11"
+            / "other"
+            / "leaf"
+            / "CHANGE.md",
+            "# Archived\n\n## Kept\n",
+        )
+        _write(
+            valid_archive / "work" / "changes" / "open" / "fixture" / "CHANGE.md",
+            "# Open\n\nValid [archive](../../archive/2026-11/other/leaf/CHANGE.md#kept).\n",
+        )
+        expect_clean("valid archive link from an open change", valid_archive)
+
+        archive_only = root / "archive_only"
+        _write(
+            archive_only / "work" / "changes" / "archive" / "old" / "CHANGE.md",
+            "# Old\n\nBroken [missing](./missing.md).\n",
+        )
+        expect_clean("archived change packet stays outside active traversal", archive_only)
+
+        dated_evidence = root / "dated_evidence"
+        _write(dated_evidence / "evidence" / "README.md", "# Evidence\n")
+        _write(
+            dated_evidence / "evidence" / "runs" / "old-trial" / "README.md",
+            "# Trial\n\nBroken [missing](./missing.md).\n",
+        )
+        expect_clean("dated evidence body stays outside active traversal", dated_evidence)
+
+        research_router = root / "research_router"
+        _write(
+            research_router / "research" / "agent-practice" / "README.md",
+            "# Notes\n\nBroken [missing](./missing.md).\n",
+        )
+        expect_problem(
+            "broken research collection router",
+            research_router,
+            "broken local link ./missing.md",
+        )
+
     if failures:
         print("SELF-TEST FAILURES:")
         for item in failures:
@@ -325,7 +419,8 @@ def self_test() -> int:
         return 1
     print(
         "Self-test passed: nested path, heading, duplicate heading, em-dash "
-        "anchor, route-group path, backtick, encoded path, open-design links."
+        "anchor, route-group path, backtick, encoded path, open-design links, "
+        "open-change link, archive link, archive exemption, dated-evidence exemption."
     )
     return 0
 

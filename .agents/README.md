@@ -40,6 +40,8 @@ Discover under [`skills/`](skills/) — load bodies on demand when the task matc
 - `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`; `--json` prints the local SHA and dirty paths and does not contact a remote)
 - `pnpm repo:snapshot:chatgpt` — export revision-stamped source + **required portable wiki index** for ordinary ChatGPT. Explicit `--no-index` creates a source-only ZIP; see the [runbook](../docs/runbooks/chatgpt-design-snapshot.md).
 - `pnpm repo:docs-health` — Change checkpoints and docs taxonomy checks
+- `pnpm repo:maintenance` — read-only route, lifecycle, and freshness report. `--strict` fails high-confidence lifecycle defects. Warnings are review candidates, not permission to edit product docs. See [repository maintenance](references/repository-maintenance.md).
+- `pnpm repo:brief --health` — the same brief plus the top three maintenance candidates
 - `python scripts/check_docs.py` — Markdown link check
 - `pnpm wiki:health` — maintained wiki graph (`docs/`, open designs, open Changes, source READMEs). Exit 1 on broken paths, broken anchors, or a docs page with no directed route from `docs/README.md`. `pnpm wiki:graph` writes JSON and DOT under gitignored `out/wiki-health/`. Neither command calls a model, and neither score is a quality grade.
 - `pnpm wiki:bench:static` — zero-model routes, Wiki Hopper, and lexical Recall/MRR/nDCG for the frozen 30-question set. A graph hard error marks the run blocked. It is not an agent trial.

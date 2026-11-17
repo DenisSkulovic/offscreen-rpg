@@ -87,6 +87,11 @@ export function classifyChangeText(text) {
   return { label, kind: 'open' };
 }
 
+/** Terminal packets need a reconciliation ledger. Partial "Done … blocked" stays open. */
+export function changeNeedsLedger(text) {
+  return classifyChangeText(text).kind === 'archive';
+}
+
 /**
  * Depth of packet dir under work/changes (number of path segments after changes/).
  * flat leaf → 1; open/leaf → 2; archive/YYYY-MM/program/leaf → 4

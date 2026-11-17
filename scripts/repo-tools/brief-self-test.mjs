@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { collectCheckout, receiptFrom, statusPaths } from './brief.mjs';
+import { collectCheckout, healthSummary, receiptFrom, statusPaths } from './brief.mjs';
 
 function git(cwd, args) {
   const result = spawnSync(
@@ -68,6 +68,29 @@ export function runBriefSelfTest() {
 
     const renamed = statusPaths('R  old.txt -> new file.txt');
     assert.deepEqual(renamed.paths, ['new file.txt']);
+
+    const receiptKeys = Object.keys(receiptFrom(collectCheckout(clean), null)).sort();
+    assert.deepEqual(receiptKeys, [
+      'branch',
+      'change',
+      'detached',
+      'dirty',
+      'environment',
+      'paths',
+      'pathsTruncated',
+      'schema',
+      'sha',
+    ]);
+    const summary = healthSummary({
+      top3: [
+        { code: 'needs-revalidation', path: 'STATUS.md', dependency: 'packages/engine/src/time.ts', suggestion: 'pnpm repo:maintenance' },
+        { code: 'inactive-open-work', path: 'work/changes/open/example/CHANGE.md' },
+        { code: 'no-known-route', path: 'packages/new/src/file.ts' },
+        { code: 'extra', path: 'should-not-show.md' },
+      ],
+    });
+    assert.equal(summary.split('\n').filter((line) => line.startsWith('needs-revalidation') || line.startsWith('inactive') || line.startsWith('no-known')).length, 3);
+    assert.equal(summary.includes('should-not-show.md'), false);
   } finally {
     rmSync(clean, { recursive: true, force: true });
   }

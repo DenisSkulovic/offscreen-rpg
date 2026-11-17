@@ -1,0 +1,73 @@
+name: Repository maintenance
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - 'work/**'
+      - 'research/**'
+      - 'evidence/**'
+      - 'apps/**'
+      - 'packages/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - 'STATUS.md'
+      - 'ROADMAP.md'
+      - 'ENGINEERING.md'
+      - 'AGENTS.md'
+      - 'README.md'
+      - '.github/workflows/maintenance.yml'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'work/**'
+      - 'research/**'
+      - 'evidence/**'
+      - 'apps/**'
+      - 'packages/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - 'STATUS.md'
+      - 'ROADMAP.md'
+      - 'ENGINEERING.md'
+      - 'AGENTS.md'
+      - 'README.md'
+      - '.github/workflows/maintenance.yml'
+      - '.github/workflows/docs.yml'
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  strict:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Strict lifecycle gate
+        run: node scripts/repo-tools/maintenance.mjs --strict | tee "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maintenance-report
+          path: out/maintenance/report.json
+          if-no-files-found: error
+  review:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Full freshness review
+        run: node scripts/repo-tools/maintenance.mjs --strict | tee "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maintenance-review
+          path: out/maintenance/report.json
+          if-no-files-found: error

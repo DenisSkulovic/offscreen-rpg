@@ -58,6 +58,22 @@ test('pull_request and workflow_dispatch always run code and integration', () =>
   }
 });
 
+test('a Change packet push skips code and integration', () => {
+  const scope = classifyChangeScope(
+    [
+      'work/changes/open/example/CHANGE.md',
+      'research/README.md',
+      'evidence/README.md',
+      'STATUS.md',
+    ],
+    { eventName: 'push' },
+  );
+  assert.equal(isDocsPath('work/changes/open/example/CHANGE.md'), true);
+  assert.equal(scope.docsOnly, true);
+  assert.equal(scope.runCode, false);
+  assert.equal(scope.runIntegration, false);
+});
+
 test('mixed docs and web source is not docs-only', () => {
   const scope = classifyChangeScope(
     ['work/changes/README.md', 'apps/web/vitest.config.ts'],

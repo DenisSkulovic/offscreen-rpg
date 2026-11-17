@@ -13,6 +13,10 @@ on:
       - '**/README.md'
       - 'scripts/check_docs.py'
       - '.github/workflows/docs.yml'
+      - 'work/changes/**'
+      - 'work/designs/**'
+      - 'research/**'
+      - 'evidence/**'
   pull_request:
     paths:
       - 'docs/**'
@@ -26,6 +30,10 @@ on:
       - '**/README.md'
       - 'scripts/check_docs.py'
       - '.github/workflows/docs.yml'
+      - 'work/changes/**'
+      - 'work/designs/**'
+      - 'research/**'
+      - 'evidence/**'
   workflow_dispatch:
 permissions:
   contents: read

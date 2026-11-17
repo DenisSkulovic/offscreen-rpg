@@ -23,6 +23,8 @@
     "repo:snapshot:chatgpt": "node scripts/repo-tools/chatgpt-snapshot.mjs",
     "repo:snapshot:chatgpt:test": "node --test scripts/repo-tools/chatgpt-snapshot.test.mjs",
     "repo:docs-health": "node scripts/repo-tools/docs-health.mjs",
+    "repo:maintenance": "node scripts/repo-tools/maintenance.mjs",
+    "repo:maintenance:test": "node --test scripts/repo-tools/maintenance.test.mjs scripts/repo-tools/archive-changes.test.mjs",
     "wiki:health": "node scripts/repo-tools/wiki-health.mjs",
     "wiki:content-health": "node scripts/repo-tools/wiki-content-health.mjs",
     "wiki:graph": "node scripts/repo-tools/wiki-health.mjs --graph",

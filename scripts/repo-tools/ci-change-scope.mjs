@@ -22,7 +22,18 @@ const DOCS_ROOT_FILES = new Set([
   'README.md',
   'LICENSE',
   'LICENSE.md',
+  'STATUS.md',
+  'ROADMAP.md',
+  'ENGINEERING.md',
 ]);
+
+const MAINTENANCE_DOC_PREFIXES = [
+  'work/changes/',
+  'work/designs/',
+  'work/sessions/',
+  'research/',
+  'evidence/',
+];
 
 const INTEGRATION_PREFIXES = [
   'apps/api/',
@@ -52,6 +63,12 @@ export function isDocsPath(path) {
   const p = normalize(path);
   if (DOCS_ROOT_FILES.has(p)) return true;
   if (DOCS_PREFIXES.some((prefix) => p.startsWith(prefix))) return true;
+  if (
+    (p.endsWith('.md') || p.endsWith('.mdc')) &&
+    MAINTENANCE_DOC_PREFIXES.some((prefix) => p.startsWith(prefix))
+  ) {
+    return true;
+  }
   if (p.endsWith('.md') || p.endsWith('.mdc')) {
     // Nested package/app README maps are documentation navigation, not runtime.
     if (

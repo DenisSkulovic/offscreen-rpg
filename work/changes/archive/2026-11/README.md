@@ -92,9 +92,13 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-15--obs06-case-scoped-situation-read](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md)
 - [2026-11-15--obs07-support-situation-ui](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md)
 
-## other (1)
+## other (5)
 
 - [2026-11-13--live-scene-presentation-wire](../../../../work/changes/archive/2026-11/other/2026-11-13--live-scene-presentation-wire/CHANGE.md)
+- [2026-11-17--hk02-repository-doc-integrity](../../../../work/changes/archive/2026-11/other/2026-11-17--hk02-repository-doc-integrity/CHANGE.md)
+- [2026-11-17--hk06-maintenance-inventory-and-lifecycle](../../../../work/changes/archive/2026-11/other/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md)
+- [2026-11-17--hk07-dependency-aware-freshness](../../../../work/changes/archive/2026-11/other/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md)
+- [2026-11-17--hk08-maintenance-feedback-and-status-convergence](../../../../work/changes/archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md)
 
 ## storyteller (11)
 

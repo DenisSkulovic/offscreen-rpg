@@ -107,6 +107,19 @@ export function collectCheckout(cwd = root) {
   return { branch, sha, status, log };
 }
 
+export function healthSummary(report) {
+  if (report?.unavailable) return report.unavailable;
+  const top = Array.isArray(report?.top3) ? report.top3.slice(0, 3) : [];
+  if (top.length === 0) return 'No review candidates.';
+  return top
+    .map((item) => {
+      const next = item.suggestion || 'pnpm repo:maintenance';
+      const dependency = item.dependency ? ` -> ${item.dependency}` : '';
+      return `${item.code}  ${item.path}${dependency}\n  next: ${next}`;
+    })
+    .join('\n');
+}
+
 export function receiptFrom(checkout, change, checkpoint) {
   const listed = statusPaths(checkout.status);
   const receipt = {
@@ -183,30 +196,53 @@ function checkpointFor(change) {
     : section(read(change), '## Handoff and next action', change);
 }
 
+function maintenanceReport() {
+  const result = spawnSync(
+    process.execPath,
+    [path.join(root, 'scripts', 'repo-tools', 'maintenance.mjs'), '--json'],
+    { cwd: root, encoding: 'utf8' },
+  );
+  if (result.error) throw result.error;
+  if (!result.stdout.trim()) {
+    throw new Error((result.stderr || 'maintenance report was empty').trim());
+  }
+  return JSON.parse(result.stdout);
+}
+
 function main() {
   const args = process.argv.slice(2);
   if (args.includes('--help')) {
-    console.log('Usage: pnpm repo:brief [--checkpoint] [--json]');
+    console.log('Usage: pnpm repo:brief [--checkpoint] [--json] [--health]');
     console.log(
-      'Read-only Git/status/priority summary. --checkpoint includes a selected Change checkpoint, when one exists. --json prints a local checkout receipt and does not contact a remote.',
+      'Read-only Git/status/priority summary. --checkpoint includes a selected Change checkpoint, when one exists. --json prints a local checkout receipt and does not contact a remote. --health adds the top three maintenance review candidates.',
     );
     return;
   }
   if (args.includes('--self-test')) {
     return import('./brief-self-test.mjs').then((mod) => mod.runBriefSelfTest());
   }
-  if (args.some((arg) => arg !== '--checkpoint' && arg !== '--json')) {
-    throw new Error('Unknown argument. Usage: pnpm repo:brief [--checkpoint] [--json]');
+  const allowed = new Set(['--checkpoint', '--json', '--health']);
+  if (args.some((arg) => !allowed.has(arg))) {
+    throw new Error('Unknown argument. Usage: pnpm repo:brief [--checkpoint] [--json] [--health]');
   }
   const checkout = collectCheckout(root);
   const { orientation, change } = loadRoute();
   const wantCheckpoint = args.includes('--checkpoint');
   const checkpoint = wantCheckpoint ? checkpointFor(change) : undefined;
+  const health = args.includes('--health') ? maintenanceReport() : null;
   if (args.includes('--json')) {
-    console.log(JSON.stringify(receiptFrom(checkout, change, checkpoint)));
+    const receipt = receiptFrom(checkout, change, checkpoint);
+    if (health) {
+      receipt.health = {
+        unavailable: health.unavailable,
+        top3: (health.top3 ?? []).slice(0, 3),
+      };
+    }
+    console.log(JSON.stringify(receipt));
     return;
   }
-  console.log(renderHuman(checkout, orientation, change, checkpoint));
+  const text = renderHuman(checkout, orientation, change, checkpoint);
+  console.log(health ? `${text}\n\n## Maintenance\n${healthSummary(health)}` : text);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
