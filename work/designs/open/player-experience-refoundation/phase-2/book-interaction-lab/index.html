@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Offscreen | Book interaction study</title>
+<style>
+:root{--paper:#eee2c9;--ink:#29261f;--text-scale:1;--accent:#ab8d60;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#0b1017;color:#ece5d5;font-family:Georgia,'Times New Roman',serif;min-width:0}
+button,select,input{font:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #cfae71;outline-offset:3px}button:disabled{opacity:.34;cursor:default}
+.stage{position:relative;isolation:isolate;min-height:100svh;padding:62px 25px 65px;overflow-x:clip;display:flex;align-items:center;flex-direction:column}
+.stage:before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;transition:background .5s}
+.stage[data-world=cave]:before{background:radial-gradient(ellipse at 45% -10%,#344350 0%,transparent 50%),radial-gradient(ellipse at 0% 75%,#0b1521,transparent 70%),linear-gradient(165deg,#10181d,#070a0c 70%)}
+.stage[data-world=space]:before{background:radial-gradient(1px 1px at 12% 19%,#e0e8ee 95%,transparent),radial-gradient(1px 1px at 78% 10%,#e0e8ee 95%,transparent),radial-gradient(2px 2px at 84% 66%,#c8d8eb 95%,transparent),radial-gradient(1px 1px at 36% 82%,#e0e8ee 95%,transparent),radial-gradient(ellipse at 60% 24%,#233755,transparent 55%),linear-gradient(130deg,#090d1a,#0a0b12)}
+.stage[data-world=signal]:before{background:radial-gradient(ellipse at 28% 18%,#184c50,transparent 48%),radial-gradient(ellipse at 90% 70%,#342854,transparent 57%),linear-gradient(135deg,#071b20,#070c16)}
+.stage:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 50% 70%,transparent 20%,#06080b92 93%)}
+.mast{position:absolute;top:17px;left:clamp(15px,3vw,44px);font:12px Georgia;letter-spacing:.2em;color:#e8d9bb;text-decoration:none}.mast span{color:#ba9c6d;font-size:17px;vertical-align:middle}
+.book-shell{width:min(100%,1050px);position:relative;filter:drop-shadow(0 28px 36px rgba(0,0,0,.65));margin:0 auto}
+.book{border:9px solid #362b24;border-radius:7px 14px 13px 7px;background:#31241e;display:grid;grid-template-columns:1fr 1fr;align-items:stretch;position:relative;isolation:isolate}
+.book:before{content:"";pointer-events:none;position:absolute;inset:2px 49.4% 2px 49.4%;z-index:5;background:linear-gradient(90deg,#2e20136e,#fff9e135,#362b1f99);}
+.book.single{grid-template-columns:minmax(0,1fr);width:min(100%,600px);margin:auto}
+.book.single:before{display:none}.book::after{content:"";pointer-events:none;position:absolute;inset:2px;z-index:6;box-shadow:inset 0 0 25px #4e35111c}
+.leaf{min-width:0;min-height:590px;background:repeating-linear-gradient(98deg,transparent 0 5px,#7c60330c 6px 7px),linear-gradient(115deg,#f0e4cc,#e8dbc1);color:var(--ink);padding:43px clamp(24px,3.5vw,49px) 26px;position:relative;display:flex;flex-direction:column}
+.leaf:first-child{box-shadow:inset -16px 0 20px -16px #2d1a0f8c}.leaf:last-child{box-shadow:inset 16px 0 20px -16px #2d1a0f8c}
+.leaf.blank{justify-content:center;align-items:center;color:#8b795f;text-align:center}
+.book.single .leaf{border-radius:2px 4px 4px 2px;min-height:560px}
+.leaf-kicker{font:10px system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid #99866b67;padding-bottom:13px;color:#796a53;display:flex;justify-content:space-between;gap:8px}
+.leaf h1{overflow-wrap:anywhere;font-size:calc(33px * var(--text-scale));line-height:1.11;font-weight:normal;margin:26px 0 22px;letter-spacing:-.025em}.leaf h2{font-size:calc(23px * var(--text-scale));font-weight:normal;line-height:1.25;margin:20px 0 16px}
+.leaf p{font-size:calc(16px * var(--text-scale));line-height:1.62;margin:0 0 18px;overflow-wrap:break-word}.leaf p:last-of-type{margin-bottom:22px}
+.leaf-footer{font:10px Georgia;text-align:center;letter-spacing:.07em;color:#8e795f;margin-top:auto;padding-top:24px}
+.choice-leaf{border-top:0}.choice-count{font:11px system-ui,sans-serif;color:#77634a;letter-spacing:.1em;text-transform:uppercase;margin:8px 0 22px}
+.choice-list{display:flex;flex-direction:column;border-top:1px solid #b6a58d}.choice{display:flex;align-items:baseline;gap:13px;width:100%;text-align:left;border:0;border-bottom:1px solid #b6a58d;background:transparent;color:#29261f;padding:18px 5px;min-height:54px}.choice:hover,.choice:focus-visible{background:#b8a17624}.choice-index{flex:0 0 22px;color:#89734e;font:12px system-ui}.choice b{display:block;font-size:calc(16px * var(--text-scale));font-weight:normal;line-height:1.35}.choice small{display:block;font-size:calc(13px * var(--text-scale));line-height:1.35;margin-top:5px;color:#73644f}
+.choices-footer{padding-top:15px;color:#77654c;font:italic calc(13px * var(--text-scale)) Georgia}
+.book-tools{display:flex;align-items:center;justify-content:center;gap:15px;margin-top:18px;font:13px Georgia}.book-tools button{border:1px solid #8c7a6540;background:#1b1d1d91;color:#e6d4b8;border-radius:4px;min-height:38px;padding:8px 18px}.book-tools button:hover{background:#383632}.book-tools span{opacity:.65;font:11px system-ui;letter-spacing:.08em;text-align:center}
+.ribbon{position:absolute;right:35px;top:-5px;width:40px;min-height:46px;background:#b0966b;color:#32251a;border:0;clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);z-index:9;font-size:18px;padding:3px 5px 13px}
+.decision-jump{margin-top:20px;align-self:flex-start;border:0;border-bottom:1px solid #856c48;background:none;color:#5f4b32;padding:8px 2px;font-size:calc(16px * var(--text-scale));text-align:left}
+.flowlayout .leaf{min-height:600px}.flowlayout .choice-section{margin-top:10px;border-top:1px solid #b6a58d;padding-top:12px}.flowlayout .choice-section h2{margin-top:9px}
+.index-link{display:block;width:100%;border:0;border-top:1px solid #aa9678;background:transparent;text-align:left;color:#33291e;padding:18px 4px;font-size:calc(17px * var(--text-scale));line-height:1.35}.index-link:last-of-type{border-bottom:1px solid #aa9678}.index-link small{display:block;font-size:.72em;color:#76634c;margin-top:5px}
+.small-note{color:#76644a;font-size:calc(13px * var(--text-scale))!important;font-style:italic}
+.dialog{background:#eadfc9;color:#2e271e;border:7px solid #392b23;border-radius:5px;box-shadow:0 25px 100px #0008;width:min(420px,calc(100% - 30px));max-height:90vh;padding:30px}.dialog::backdrop{background:#020308bf}.dialog h2{font-size:27px;font-weight:normal;margin:0 0 15px}.dialog p{font-size:16px;line-height:1.5}.dialog button{display:block;background:#382c23;color:#eee2cb;border:0;padding:12px 16px;margin:11px 0;min-height:44px;width:100%;text-align:left}.dialog button:hover{background:#5b4834}
+.dev-toggle{position:fixed;right:12px;bottom:12px;z-index:50;font:11px system-ui;border:1px solid #85755c79;border-radius:3px;background:#1c2427e3;color:#d7cdb8;padding:8px}.devpanel{position:fixed;right:12px;bottom:51px;z-index:50;background:#1a2225;color:#e4ded0;padding:20px;box-shadow:0 10px 50px #000b;border:1px solid #826b4e;display:none;font:13px system-ui;max-width:310px}.devpanel.open{display:block}.devpanel label{display:block;margin-bottom:11px}.devpanel select{display:block;margin-top:3px;width:100%;background:#303c3f;color:white;border:1px solid #7b8b86;padding:6px}.devpanel p{font-size:12px;line-height:1.4}
+.status-note{max-width:650px;color:#b7ab94;font:12px system-ui;text-align:center;line-height:1.5;margin:21px auto 0;opacity:.78}
+@media(max-width:760px){.stage{padding:70px 12px 75px;align-items:stretch}.book{grid-template-columns:1fr;max-width:100%}.leaf{min-height:calc(100svh - 160px);padding:31px 23px 24px}.book:before{display:none}.book-tools{gap:7px}.book-tools button{padding:8px 11px}.mast{font-size:11px}.ribbon{right:23px}.status-note{padding:0 10px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.stage:before{transition:none}}
+@media(forced-colors:active){.leaf{background:Canvas;color:CanvasText;border:1px solid CanvasText}.choice,.index-link{color:CanvasText;border-color:CanvasText}.dialog{background:Canvas;color:CanvasText}.book{border:1px solid CanvasText;background:Canvas}.book-tools button,.dev-toggle{forced-color-adjust:auto}}
+</style></head>
+<body><main id="stage" class="stage" data-world="cave"><div class="mast"><span>◌</span> OFFSCREEN</div>
+<section class="book-shell" aria-label="A living book"><button class="ribbon" id="contentsBtn" aria-label="Open book contents" title="Contents and navigation">☷</button><div id="book" class="book" aria-live="off"></div><nav class="book-tools" aria-label="Reading navigation"><button id="prevBtn" aria-label="Previous leaves">← Previous</button><span id="pageIndicator" aria-live="polite"></span><button id="nextBtn" aria-label="Next leaves">Next →</button></nav></section>
+<p class="status-note" id="statusNote">Design-only story fixture. Page turns and menu navigation do not advance game time.</p>
+<button id="devToggle" class="dev-toggle" aria-expanded="false" aria-controls="devPanel">Design lab ⚙</button><div id="devPanel" class="devpanel"><label>Decision layout<select id="layoutSelect"><option value="folio">Dedicated decision folio</option><option value="flow">Continuous source + choices</option></select></label><label>Story length<select id="lengthSelect"><option value="long">Long narration / six intentions</option><option value="short">Short narration / three intentions</option></select></label><label>Text size<select id="scaleSelect"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label><label>Atmosphere<select id="worldSelect"><option value="cave">Cavern</option><option value="space">Space</option><option value="signal">Abstract signal</option></select></label><p>The top-level UI is one consistent book. These are designer-controlled test inputs, not Storyteller themes.</p></div>
+<dialog id="menu" class="dialog" aria-labelledby="menuTitle"><h2 id="menuTitle">Inside this volume</h2><p>Choose what to read. None of these controls change the fictional world.</p><button data-route="now">Now · the latest published situation</button><button data-route="journal">Journal · recorded passages</button><button data-route="reader">Read original · The Seal</button><button data-close="menu">Close book index</button></dialog>
+<dialog id="notice" class="dialog" aria-labelledby="noticeTitle"><h2 id="noticeTitle">Prototype only</h2><p id="noticeText"></p><button data-close="notice">Return to the book</button></dialog>
+<script>
+'use strict';
+const fixtures={
+ title:'The Lamp Above Greywater',
+ short:[
+  'By the third hour, the wind had managed to pry one of the brass plates from its bolts. Mara caught it against her coat before it slipped into the dark.',
+  'The road below the beacon was empty, though the bell at the ferry house had rung twice. She put the plate on the workbench and listened. Someone was climbing the steps.',
+  'The stranger stopped outside the doorway. His right sleeve was soaked through, but the canvas parcel under his arm was dry.'
+ ],
+ additional:[
+  'Along the coast, the windows of the ferry house vanished one after another as the mist thickened. The stranger had come up the exposed stair with no lantern, and yet he had not stumbled once.',
+  'Mara set her wrench down. The iron was still warm from her hand, but the stone beneath it had turned cold. Something knocked once, somewhere below the lantern room.',
+  'For a moment she thought of the storm three winters ago, when the beacon burned through all its oil and the keeper had watched ships disappear into darkness. The memory felt too close.',
+  'The parcel remained dry. No rain crossed its folded cloth, though water ran from the stranger’s sleeve and fell between the stones in a slow uneven rhythm.',
+  'He touched the blue wax at the knot and then pulled his hand away, as though even the seal were dangerous to acknowledge. His expression did not ask for permission.',
+  'Beyond him, down the steps, the sea struck the rocks and returned in a narrow whitened line. The horizon could no longer be seen from the doorway.',
+  'Somewhere inside the house a clock marked the next hour. Mara had forgotten to wind it, yet it sounded perfectly on time.'
+ ],
+ prompt:'He waits for you to speak. What do you do?',
+ options:[
+  ['Ask who sent him.','A brief question that may keep the encounter civil.'],
+  ['Look at the parcel before speaking.','Inspection may take time and be noticed.'],
+  ['Return to the lamp.','Deliberately decline the encounter, if permitted.'],
+  ['Close the door and listen.','You may miss what he says next.'],
+  ['Offer him a dry cloth.','A gesture that might change the tone.'],
+  ['Ask him to leave the parcel outside.','A cautious attempt, not a guaranteed outcome.']
+ ]
+};
+const $=id=>document.getElementById(id);
+const S={route:'now',layout:'folio',length:'long',scale:1,world:'cave',spread:0,nowSpread:0,nowScroll:0,returnFrom:null};
+const as=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+function passage(){return [...fixtures.short,...(S.length==='long'?fixtures.additional:[])];}
+function opts(){return fixtures.options.slice(0,S.length==='long'?6:3);}
+function page(kind,contents,which){const leaf=as('article','leaf '+(kind==='choices'?'choice-leaf':''));leaf.dataset.kind=kind;leaf.dataset.source='A-184';const meta=as('div','leaf-kicker');meta.append(as('span','',S.route==='now'?'THE PRESENT':'THE JOURNAL'),as('span','','GREYWATER'));leaf.append(meta);contents(leaf);leaf.append(as('div','leaf-footer',which||'A continuing life'));return leaf;}
+function makeNarrative(paras,start,end,includeTitle){return page('prose',leaf=>{if(includeTitle)leaf.append(as('h1','',fixtures.title));else leaf.append(as('h2','','The Lamp Above Greywater · continued'));paras.slice(start,end).forEach((p,i)=>{const node=as('p','',p);node.dataset.paragraph=String(i+start);leaf.append(node);});},'Published passage A-184');}
+function choiceSection(){const div=as('section','choice-section');div.dataset.decisionGroup='A-184:offer';div.setAttribute('aria-labelledby','decisionPrompt');const prompt=as('h2','',fixtures.prompt);prompt.id='decisionPrompt';prompt.tabIndex=-1;div.append(prompt,as('div','choice-count',`${opts().length} offered intentions · choose only after reviewing`));const list=as('div','choice-list');opts().forEach((option,i)=>{const btn=as('button','choice');btn.dataset.choiceId='A-184:c'+i;btn.type='button';const num=as('span','choice-index',String(i+1).padStart(2,'0'));const copy=as('span','');copy.append(as('b','',option[0]),as('small','',option[1]));btn.append(num,copy);list.append(btn);});div.append(list,as('div','choices-footer','Each is an intention, not a guaranteed outcome.'));return div;}
+function decisionLeaf(){return page('choices',leaf=>{leaf.append(as('div','choice-count','THE DECISION'));leaf.append(choiceSection());},'Current verified offer · demo');}
+function sourceLeaves(){const blocks=passage();if(S.layout==='flow'){const leaf=makeNarrative(blocks,0,blocks.length,true);const jump=as('button','decision-jump',`Read ${opts().length} intentions ↓`);jump.dataset.jumpChoices='true';jump.style.margin='-4px 0 25px';leaf.insertBefore(jump,leaf.children[2]);leaf.append(choiceSection());leaf.classList.add('flowlayout');return [leaf];}
+// This design study deliberately chunks whole paragraphs, not a final production paginator.
+const leaves=[];for(let i=0;i<blocks.length;i+=2)leaves.push(makeNarrative(blocks,i,Math.min(blocks.length,i+2),i===0));leaves.push(decisionLeaf());return leaves;}
+function journalLeaves(){return [page('journal',leaf=>{leaf.append(as('h1','','Your Journal'));leaf.append(as('p','','The written history of this life. Entries are original published passages, not chapters.'));for(const [id,title,summary] of [['A-185','The Seal','A blue wax seal recalls an old gift.'],['A-184','The Lamp Above Greywater','A stranger approaches the beacon.'],['A-183','The Third Plate','An interrupted afternoon of repair.']]){const b=as('button','index-link');b.dataset.entry=id;b.append(as('span','',title),as('small','',id+' · '+summary));leaf.append(b);}leaf.append(as('p','small-note','Three sample records, not an implemented 2,000-passage archive.'));},'Source order · illustration fixture')];}
+function readerLeaves(){return [page('reader',leaf=>{leaf.append(as('h1','','The Seal'));leaf.append(as('p','','The stranger lowered the parcel onto the bench. Its wax was blue, stamped with a bird whose wings were turned inward.'));leaf.append(as('p','','Mara knew that mark. Years earlier she had carved the same shape on a piece of driftwood and left it with a child who had promised to return.'));leaf.append(as('p','small-note','An original historical passage. No old choices are actionable here.'));const b=as('button','decision-jump','Back to Now →');b.dataset.route='now';leaf.append(b);},'Original passage A-185')];}
+function activeLeaves(){return S.route==='now'?sourceLeaves():S.route==='journal'?journalLeaves():readerLeaves();}
+function render(){document.documentElement.style.setProperty('--text-scale',String(S.scale));$('stage').dataset.world=S.world;const leaves=activeLeaves();const single=window.matchMedia('(max-width:760px)').matches||S.layout==='flow'||S.route!=='now';const max=Math.max(0,(single?leaves.length:Math.ceil(leaves.length/2))-1);if(S.layout==='flow'||S.route!=='now')S.spread=0;else S.spread=Math.min(S.spread,max);
+const book=$('book');book.replaceChildren();book.className='book'+(single?' single':'')+(S.layout==='flow'?' flowlayout':'');
+if(single){const leaf=leaves[Math.min(S.spread,leaves.length-1)];book.append(leaf||page('blank',l=>l.textContent='No entry'));}
+else{const left=leaves[S.spread*2];const right=leaves[S.spread*2+1];book.append(left||page('blank',()=>{},''),right||page('blank',leaf=>leaf.append(as('p','small-note','The page is quiet.')),''));}
+const count=single?leaves.length:Math.ceil(leaves.length/2);const position=S.spread+1;$('pageIndicator').textContent=`${Math.min(position,count)} of ${count} · ${S.route==='now'?'Now':S.route==='journal'?'Journal':'Original'}`;
+$('prevBtn').disabled=S.spread===0;$('nextBtn').disabled=S.spread>=count-1;
+const choiceOnNext=S.route==='now'&&S.layout==='folio'&&S.spread<count-1&&((single&&leaves[S.spread+1]?.dataset.kind==='choices')||(!single&&(leaves[(S.spread+1)*2]?.dataset.kind==='choices'||leaves[(S.spread+1)*2+1]?.dataset.kind==='choices')));
+$('nextBtn').textContent=choiceOnNext?`To ${opts().length} choices →`:'Next →';
+if(S.route==='now'&&S.layout==='folio'&&S.spread<count-1){const last=book.lastElementChild;if(last&&last.dataset.kind==='prose'&&choiceOnNext){const b=as('button','decision-jump',`Continue to ${opts().length} choices →`);b.dataset.next='yes';last.insertBefore(b,last.lastElementChild);}}
+$('statusNote').textContent=S.route==='now'?`Design fixture · ${opts().length} authored intentions; no game commands are dispatched.`:'Design fixture · historical navigation never advances the game.';
+}
+function turn(dir){const leaves=activeLeaves();const single=window.matchMedia('(max-width:760px)').matches||S.layout==='flow'||S.route!=='now';const count=single?leaves.length:Math.ceil(leaves.length/2);S.spread=Math.max(0,Math.min(count-1,S.spread+dir));if(S.route==='now')S.nowSpread=S.spread;render();window.scrollTo({top:0,behavior:'instant'});const heading=$('book').querySelector('h1,h2');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}}
+function navigate(route,fromHistory=false){if(S.route==='now'&&route!=='now'){S.nowSpread=S.spread;S.nowScroll=window.scrollY;}S.route=route;S.spread=route==='now'?S.nowSpread:0;render();if(!fromHistory)history.pushState({route},'',`#${route}`);requestAnimationFrame(()=>{if(route==='now'&&S.layout==='flow')window.scrollTo({top:S.nowScroll,behavior:'instant'});else window.scrollTo({top:0,behavior:'instant'});});}
+function openDialog(id){$(id).showModal();}
+$('contentsBtn').addEventListener('click',()=>openDialog('menu'));
+$('prevBtn').addEventListener('click',()=>turn(-1));$('nextBtn').addEventListener('click',()=>turn(1));
+$('devToggle').addEventListener('click',()=>{const on=$('devPanel').classList.toggle('open');$('devToggle').setAttribute('aria-expanded',String(on));});
+for(const [field,key,convert] of [['layoutSelect','layout',v=>v],['lengthSelect','length',v=>v],['scaleSelect','scale',Number],['worldSelect','world',v=>v]]){$(field).addEventListener('change',e=>{S[key]=convert(e.target.value);S.spread=0;S.nowSpread=0;render();window.scrollTo(0,0);});}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.close){$(b.dataset.close).close();$('contentsBtn').focus();}else if(b.dataset.route){if($('menu').open)$('menu').close();navigate(b.dataset.route);}else if(b.dataset.entry){navigate('reader');}else if(b.dataset.next){turn(1);}else if(b.dataset.jumpChoices){const p=$('decisionPrompt');p?.scrollIntoView({block:'start'});p?.focus({preventScroll:true});}else if(b.dataset.choiceId){$('noticeText').textContent=`You inspected “${b.querySelector('b').textContent}”. No action, fictional time, dice, or model call has occurred.`;openDialog('notice');}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('devPanel').classList.contains('open')){$('devPanel').classList.remove('open');$('devToggle').setAttribute('aria-expanded','false');return;}if(e.altKey||e.ctrlKey||e.metaKey||$('menu').open||$('notice').open)return;const target=e.target;if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(target.tagName)||target.isContentEditable)return;if(e.key==='ArrowRight'){e.preventDefault();turn(1);}if(e.key==='ArrowLeft'){e.preventDefault();turn(-1);}});
+window.addEventListener('popstate',()=>navigate(location.hash.replace('#','')||'now',true));
+window.addEventListener('resize',()=>{const saved=S.spread;render();S.spread=saved;});
+S.route=['now','journal','reader'].includes(location.hash.slice(1))?location.hash.slice(1):'now';render();
+</script></body></html>
