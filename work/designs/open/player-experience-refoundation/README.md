@@ -1,6 +1,6 @@
 # Offscreen RPG | Experience Re-foundation
 
-**Stage:** Phase 0 source audit documented; Phase 1 experience architecture drafted for review. Phase 2 visual concepts not yet selected  
+**Stage:** Phase 0 audited; Phase 1 architecture drafted; Phase 2 three visual directions prototyped for owner review. No art direction selected  
 **Status:** OPEN DESIGN / DRAFT FOR PRODUCT-OWNER REVIEW. Not ratified design; no implementation authorized.  
 **Evidence base:** read-only lean ZIP of `main` at `9e821c6e15bb90444ec711a1b82b1e18cff9539a`, generated 2026-11-17 15:33 UTC.  
 **Date:** 2026-11-17
@@ -15,7 +15,9 @@ Offscreen RPG has credible technical and product rules for truthful persistent s
 
 ## Current design work
 
-**[Phase 1: Player experience architecture](phase-1/README.md)** is now the active design review packet. It maps the player mental model, spaces, first visit / living / return / remembrance journeys, Now state grammar, Journal reading architecture, fixed narrative test specimens, and explicit candidate decisions. This dossier remains unaccepted and cannot authorize an implementation Change.
+**[Phase 2: Visual-direction competition](phase-2/README.md)** is the current art-direction review packet, with an [interactive visual laboratory](phase-2/design-lab.html), twelve annotated references, three comparative concepts, motion/scene-presentation design, and browser QA evidence. No art direction is selected.
+
+**[Phase 1: Player experience architecture](phase-1/README.md)** remains an open design foundation. It maps the player mental model, spaces, first visit / living / return / remembrance journeys, Now state grammar, Journal reading architecture, fixed narrative test specimens, and explicit candidate decisions. This dossier remains unaccepted and cannot authorize an implementation Change.
 
 ## Phase 0 foundations (read order)
 
@@ -28,9 +30,9 @@ Offscreen RPG has credible technical and product rules for truthful persistent s
 
 ## What has **not** been done
 
-- No running browser/screenshot or Figma fidelity review of the deployed UI. Source-level inspection is **not** visual validation.
+- No running-browser screenshot or Figma fidelity review **of the deployed application**. Phase 2 rendered self-contained design prototypes only; these do not establish product UI quality.
 - No player interviews, usability tests, moderated reading tests or validated taste judgments.
-- No selected final visual theme, component API, screen layout, motion system, library installation or implementation changes.
+- No selected final visual theme, component API, production layout, motion system, library installation or implementation changes. Phase 2 provided experimental compositions only.
 - These files are preserved under `work/designs/open/` as **unaccepted proposals**. Their presence in GitHub is not product-owner ratification, a selected target, or implementation authorization.
 - No redefinition of time, mechanics, authorizations, published truth, model permissions or spending.
 
@@ -46,4 +48,4 @@ Product docs remain authoritative over technical contracts; technical contracts 
 
 ## Exit condition for the next review
 
-Review the [Phase 1 decision register](phase-1/07-DECISIONS-AND-QUALITY-GATES.md), challenge the Now/Journal and editorial-moment hypotheses, and agree what the visual concepts must prove. The strongest candidate is not accepted merely because it is documented. After that, Phase 2 should render competing full-screen art directions using the [fixed story specimens](phase-1/06-FIXED-DESIGN-SPECIMENS.md) before any design-system component or implementation Change is selected.
+Review the [Phase 2 concept comparison](phase-2/02-CONCEPT-REVIEW.md) alongside the actual [inspectable compositions](phase-2/design-lab.html); reject, select or evolve directions based on reading, present-scene atmosphere, world neutrality and evidence limits. The best-looking single screenshot is not sufficient. Phase 1 architecture remains reviewable. Only later, after a coherent approved visual grammar and full-screen specifications, should design-system owners and eventual bounded Changes be prepared.
