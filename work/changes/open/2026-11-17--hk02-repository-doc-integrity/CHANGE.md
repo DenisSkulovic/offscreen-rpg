@@ -13,7 +13,7 @@ Read [audit F01/F03](../../../designs/open/repository-housekeeping/AUDIT-2026-11
 1. Add appropriate path triggers for markdown under `work/changes/**`, `work/designs/**` and maintained `research/**` / `evidence/**` entrypoints to `.github/workflows/docs.yml`, using reviewed scopes to avoid costly false triggers.
 2. Extend **existing** link checker to traverse active `work/changes/open` and relevant research/route files; do not blindly classify archived Changes or dated evidence as ratified truth. Validate normal local relative links and nested Next.js route-group paths. Preserve the existing checker self-tests, avoid traversing generated/exported `out`, node_modules or non-source files.
 3. Add a targeted synthetic self-test for a broken open-Change link and one valid link into the archive (on a full checkout). Ensure a Change-only push actually runs the CI docs workflow.
-4. Correct clearly obsolete lifecycle phrases: `work/README.md` “Until P5 cutover” / “DOC01 target”; `work/designs/README.md` sections that label completed WIKI/HAR studies proposed/unselected. Distinguish a concluded *experiment program* from a still-open future question; do not mass-move folders if backlink and ownership analysis is incomplete.
+4. **Baseline reinspection, not duplicate cleanup:** `work/README.md` P5/DOC01 wording and `work/designs/README.md` WIKI/HAR labels were corrected in documentation-only commits `3586e3d`/`e3ba5cf` on 2026-11-17. Verify these remain accurate; do not undo, reword gratuitously or count that pre-existing work as HK02 execution. If a newly discovered stale phrase is in-scope, reconcile it with exact owner and evidence. Any large restructuring is HK08.
 5. Keep one concise authoritative map of where concluded experiment findings live (research register and archive). Do not rewrite `docs/product` or `docs/technical` to match old plans. If moving a historical folder is optional rather than needed for acceptance, defer it.
 
 ## Explicit exclusions
@@ -34,7 +34,7 @@ No link auto-fixer, no generated markdown rewrite, no archive deletion, no reimp
 | --- | --- | --- | --- |
 | `.github/workflows/docs.yml` | Work Changes trigger link gate | pending | pending |
 | `scripts/check_docs.py` | Actual open Change coverage + negative fixture | pending | pending |
-| `work/README.md` / `work/designs/README.md` | No obsolete migration or fake-open status | pending | pending |
+| `work/README.md` / `work/designs/README.md` | Earlier P5 and WIKI/HAR labels already corrected | pre-HK02 docs-only commits `3586e3d`, `e3ba5cf`; verify | no new changes unless drift |
 | `work/changes/README.md` | HK02 Done/archived only after proof | pending | pending |
 
 **Successor HK06** owns repository-wide inventory/lifecycle integrity; HK07 owns dependency/age signals; HK08 owns scheduled/brief/status convergence. HK02 changes only the existing docs workflow/checker and its already named immediate stale prose, not a duplicate general crawler. A partially Done/blocked Change must never be auto-closed by this packet.
