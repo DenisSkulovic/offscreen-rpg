@@ -16,7 +16,7 @@ export const GRAPH_SCHEMA = 'wiki.graph.v1';
 export const HEALTH_SCHEMA = 'wiki.health.v1';
 export const LARGE_PAGE_BYTES = 40_000;
 
-const ROOT_FILES = ['README.md', 'AGENTS.md', 'STATUS.md', 'ROADMAP.md', 'CLAUDE.md'];
+const ROOT_FILES = ['README.md', 'ENGINEERING.md', 'AGENTS.md', 'STATUS.md', 'ROADMAP.md', 'CLAUDE.md'];
 const WORK_FILES = ['work/README.md', 'work/changes/README.md', 'work/designs/README.md'];
 const CITATION =
   /archiv|histor|retir|legacy|evidence|observ|receipt|\bdone\b|expired|proposed|open design|\bdraft\b|not accepted|git history/i;

@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
-const ROOT_INDEXES = new Set(['README.md', 'AGENTS.md', 'STATUS.md', 'ROADMAP.md', 'CLAUDE.md']);
+const ROOT_INDEXES = new Set(['README.md', 'ENGINEERING.md', 'AGENTS.md', 'STATUS.md', 'ROADMAP.md', 'CLAUDE.md']);
 const WORK_INDEXES = new Set([
   'work/README.md',
   'work/changes/README.md',
