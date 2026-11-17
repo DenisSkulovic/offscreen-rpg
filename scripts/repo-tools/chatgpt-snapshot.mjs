@@ -27,7 +27,7 @@ function git(root, args) {
 }
 
 export async function createSnapshot({
-  repoRoot = DEFAULT_ROOT, profile = 'lean', strict = false, requireIndex = false,
+  repoRoot = DEFAULT_ROOT, profile = 'lean', strict = false, requireIndex = true, skipIndex = false,
   now = new Date(), indexBuilder = buildPortableWikiIndex,
 } = {}) {
   if (!['lean', 'full'].includes(profile)) {
@@ -93,7 +93,12 @@ export async function createSnapshot({
     const stagedRoot = path.join(temporary, 'source');
     mkdirSync(stagedRoot);
     const pathspecs = exclusions.map(item => ':(exclude,glob)' + item);
-    try {
+    if (skipIndex) {
+      manifest.portableWiki = {
+        status: 'disabled', reason: 'Explicit --no-index source-only export',
+        fallback: 'Read original Markdown with local filesystem search.',
+      };
+    } else try {
       const indexOwners = [
         'scripts/repo-tools/chatgpt-snapshot.mjs',
         'scripts/repo-tools/chatgpt-snapshot-knowledge.mjs',
@@ -158,28 +163,33 @@ export async function createSnapshot({
 async function main() {
   const args = process.argv.slice(2);
   if (args.includes('--help') || args.includes('-h')) {
-    console.log('Usage: pnpm repo:snapshot:chatgpt [--full] [--strict] [--require-index]');
+    console.log('Usage: pnpm repo:snapshot:chatgpt [--full] [--strict] [--no-index]');
     console.log('Creates a versioned, gitignored ZIP of committed HEAD under out/chatgpt-snapshots/.');
     console.log('Default: lean source/docs. --full adds historical Change/evidence material.');
     console.log('Uncommitted and untracked files are NEVER included. --strict rejects dirty worktrees.');
-    console.log('WIKI-INDEX.json uses the existing wiki parser if available. --require-index fails if not.');
+    console.log('WIKI-INDEX.json is required by default (fail-fast). --no-index explicitly exports source only.');
     return;
   }
-  if (args.some(arg => !['--full', '--strict', '--require-index'].includes(arg))) {
+  if (args.some(arg => !['--full', '--strict', '--no-index', '--require-index'].includes(arg))) {
     throw new Error('Unknown arguments: ' + args.join(' '));
   }
+  if (args.includes('--no-index') && args.includes('--require-index')) {
+    throw new Error('--no-index and --require-index cannot be combined');
+  }
+  const sourceOnly = args.includes('--no-index');
   const result = await createSnapshot({
     profile: args.includes('--full') ? 'full' : 'lean',
     strict: args.includes('--strict'),
-    requireIndex: args.includes('--require-index'),
+    requireIndex: !sourceOnly,
+    skipIndex: sourceOnly,
   });
   console.log('ChatGPT snapshot: ' + result.destination);
   console.log('Revision: ' + result.manifest.source.commit + ' (' + result.manifest.source.branch + ')');
   console.log('Profile: ' + result.manifest.profile + '; size: ' + (result.bytes / 1024 / 1024).toFixed(2) + ' MiB');
   console.log('SHA-256: ' + result.sha256);
   console.log('Portable wiki: ' + result.manifest.portableWiki.status);
-  if (result.manifest.portableWiki.status === 'unavailable') {
-    console.warn('Wiki index unavailable: ' + result.manifest.portableWiki.reason);
+  if (result.manifest.portableWiki.status !== 'ready') {
+    console.warn('Portable wiki not included: ' + result.manifest.portableWiki.reason);
   }
   if (result.manifest.source.worktreeDirtyAtExport) {
     console.warn('WARNING: your worktree is dirty. This ZIP includes committed HEAD only, not your uncommitted edits.');
