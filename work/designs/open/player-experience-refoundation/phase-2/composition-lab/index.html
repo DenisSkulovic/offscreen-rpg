@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Offscreen | Source-to-leaf composition experiment</title>
+<style>
+:root {color-scheme:dark; --paper:#f2e8d1; --ink:#302b24; --fontscale:1}
+* {box-sizing:border-box} html,body {margin:0;min-height:100%} body {background:radial-gradient(ellipse at 80% 24%,#35414c,#151d24 48%,#11151a);font-family:system-ui,sans-serif;color:#f4efdf;}
+button,select {font:inherit;cursor:pointer} button:focus-visible,select:focus-visible,a:focus-visible {outline:3px solid #dca968;outline-offset:3px}
+.research {background:#10151a;border-bottom:1px solid #49565d;padding:9px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px;color:#c6c9cb}
+.research strong {letter-spacing:.04em;color:white}.research select,.research button {border:1px solid #5c6869;border-radius:4px;background:#2b3339;color:#e7e4dc;padding:7px}
+.wrap {padding:18px 12px 65px;max-width:1300px;margin:auto}
+.info {display:flex;gap:14px;align-items:center;justify-content:space-between;max-width:1050px;margin:0 auto 10px;font-size:12px;color:#c9c7b9;flex-wrap:wrap}
+.info .tag {border:1px solid #727c7c;padding:4px 8px;border-radius:20px}
+.book {display:flex;justify-content:center;gap:0;max-width:1120px;margin:auto;filter:drop-shadow(0 18px 25px rgba(0,0,0,.42))}
+.leaf {position:relative;flex:0 0 min(43vw,450px);width:min(43vw,450px);height:645px;background:var(--paper);color:var(--ink);border:1px solid #aa997d;padding:32px 39px 27px;overflow:hidden;box-shadow:inset 0 0 22px #ac957237}
+.leaf:first-child{border-radius:5px 0 0 5px;box-shadow:inset -21px 0 25px #9d8b6c55,inset 0 0 20px #aa977533}
+.leaf:nth-child(2){border-radius:0 5px 5px 0;box-shadow:inset 18px 0 25px #9d8b6c55,inset 0 0 20px #aa977533}
+.leaf-header {font: 10px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#7b6955;border-bottom:1px solid #bbad94;padding:0 0 10px;height:30px}
+.leaf-content {height:calc(100% - 56px);overflow:hidden;font: calc(17px * var(--fontscale))/1.57 Georgia,serif;overflow-wrap:anywhere;white-space:normal}
+.leaf-content h1 {font-size:1.85em;line-height:1.12;font-weight:400;margin:7px 0 20px;overflow-wrap:anywhere}
+.leaf-content p {margin:0 0 .9em;white-space:pre-wrap;overflow-wrap:anywhere}
+.leaf-footer{position:absolute;bottom:12px;left:38px;right:38px;font:11px system-ui;color:#8c785b;display:flex;justify-content:space-between}
+.figure{font:13px/1.5 system-ui,sans-serif;min-height:110px;margin:10px 0 18px;border:1px dashed #9b8068;background:linear-gradient(145deg,#d7c7a4,#e9dbc1);padding:20px;display:flex;align-items:center;justify-content:center;text-align:center}
+.empty-leaf {font:15px Georgia,serif;display:grid;place-items:center;height:80%;opacity:.7}
+.book-controls {display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin:14px auto}
+.book-controls button{border:1px solid #93866e;border-radius:4px;padding:10px 14px;color:#e5dac8;background:#262b2c}
+.book-controls button:disabled {opacity:.35;cursor:not-allowed}
+#readerstatus {font-size:12px;color:#e3d4b8}
+.decision-leaf{max-width:850px;margin:0 auto;background:var(--paper);color:var(--ink);padding:35px 44px;box-shadow:0 12px 35px #0008;border:1px solid #99886f;min-height:365px;}
+.decision-leaf h2 {font:normal calc(26px * var(--fontscale))/1.25 Georgia,serif;margin:12px 0 10px}
+.decision-leaf p{font:calc(16px * var(--fontscale))/1.5 Georgia,serif}
+.decision-options {list-style:none;margin:20px 0 0;padding:0;display:grid;gap:10px}
+.decision-options button {width:100%;text-align:left;background:transparent;border:1px solid #a7987f;color:#302b24;padding:11px;font:calc(16px * var(--fontscale))/1.35 Georgia,serif;white-space:normal;overflow-wrap:anywhere}
+.decision-options button:disabled {opacity:.55;cursor:not-allowed}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.flow-page {background:var(--paper);color:var(--ink);max-width:750px;margin:auto;padding:35px 45px;font:calc(17px * var(--fontscale))/1.57 Georgia,serif}
+.flow-page p{margin:0 0 1em;overflow-wrap:anywhere;white-space:pre-wrap}.flow-page h1{font-size:1.9em;font-weight:400;overflow-wrap:anywhere}
+#stage {min-height:440px} #meter {position:fixed;top:0;left:-3000px;visibility:hidden;pointer-events:none;display:flex} #meter .leaf {box-shadow:none}
+.message {margin:14px auto;text-align:center;font:12px/1.4 system-ui;color:#dcc7aa}
+#journal {max-width:750px;margin:15px auto;padding:25px;background:#efe3c9;color:#302b24}
+#journal button {display:block;width:100%;text-align:left;margin:10px 0;padding:12px;background:#f9f0e0;border:1px solid #a39a89;color:#312b24}
+[data-test="integrity"]{font:12px monospace;padding:6px;text-align:center;max-width:1050px;margin:auto;color:#c3d6c8}
+@media (max-width:740px) { .book{display:block}.leaf {width:min(calc(100vw - 22px),520px);max-width:520px;flex-basis:auto;min-height:645px;margin:auto;padding:28px 27px 25px;border-radius:5px!important}.leaf:nth-child(2){display:none}#meter .leaf:nth-child(2){display:block}.leaf-footer{left:25px;right:25px} .decision-leaf {padding:24px;min-width:0}.flow-page{padding:22px}.research{gap:6px}.leaf-content {height:calc(100% - 56px)} }
+@media (forced-colors: active){.leaf,.decision-leaf,.flow-page {border:1px solid CanvasText;background:Canvas;color:CanvasText}.book-controls button,.decision-options button {forced-color-adjust:auto}}
+</style></head><body>
+<header class="research" aria-label="Research controls, not player interface"><strong>DOCUMENT COMPOSITION LAB</strong><span>Not gameplay • no production API</span><label>Story <select id="story"><option value="long">Long Greywater</option><option value="unicode">Unicode / hostile-looking text</option><option value="max">One 6,000-character paragraph</option></select></label><label>Mode <select id="mode"><option value="pages">Measured leaves</option><option value="flow">Continuous reading</option></select></label><label>Type <select id="scale"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label><label>Figure <select id="art"><option value="no">Absent</option><option value="yes">Available</option></select></label><button id="replace">Simulate new offer</button><button id="publish">Simulate published passage</button><button id="journalBtn">Journal</button><button id="nowBtn">Now</button></header>
+<main class="wrap"><div class="info"><span>One canonical passage → transient leaves · page numbers are not source IDs</span><span class="tag" id="sourceTag">Source P-184</span></div><div id="announcement" role="status" class="message"></div><section id="stage" aria-label="Experimental book reader"></section><div class="book-controls"><button id="prev">‹ Previous leaf</button><span id="readerstatus" role="status"></span><button id="next">Next leaf ›</button><button id="decisionJump">To current decision</button></div><div data-test="integrity" id="integrity"></div></main><div id="meter" aria-hidden="true"></div>
+<script>
+'use strict';
+const p0=[
+"By the third hour, the wind had managed to pry one of the brass plates from its bolts. Mara caught it against her coat before it slipped into the dark.",
+"The road below the beacon was empty, though the bell at the ferry house had rung twice. She put the plate on the workbench and listened. Someone was climbing the steps.",
+"The stranger stopped outside the doorway. His right sleeve was soaked through, but the canvas parcel under his arm was dry."];
+const longExtras=[
+"The rope at the foot of the stairs had soaked up seawater and become almost too heavy to move. Mara remembered the ferryman telling her it was once used to draw boats across the rocks when the tide refused to yield.",
+"She waited until the wind receded, then checked the seam under the lamp. Two rivets had torn through the plate; neither could be replaced until the brass cooled. She found a small cloth and folded it between her fingers.",
+"Outside, the footpath turned a darker shade beneath the distant rain. No tracks were visible from the threshold. The visitor's boots had left small pools beneath the bench, and the water smelled faintly of iron.",
+"There were other questions she could have asked. Who crossed the ferry at this hour? Why had the bell stopped? What was inside the parcel? She settled for the question that might be answered without giving anything away.",
+"The lamp sputtered once, making the window go black. For a heartbeat the stranger's face vanished in its reflection. It returned as the flame steadied, older and more exhausted than she had expected.",
+"She set the broken plate down with the tools and rubbed her thumb over the edge of a small brass fitting. She had polished it the year her father died. There was no reason to think of that now, yet she could not stop.",
+"The stranger looked toward the staircase. Somewhere below, a door opened, then struck the stone wall. He did not reach for the parcel. He simply waited, as though the decision belonged to her, and to no one else."];
+const maxParagraph=('A continuous record of footsteps, shifting light, wind and unspoken questions. ').repeat(90).slice(0,6000);
+const unicode=[
+"A literal-looking string is only prose: <script>alert('not code')<\/script> & the note contains {braces} and **asterisks**.",
+"Русский: Вы слышите шаги на лестнице. Она молчит, потому что не доверяет пришельцу.",
+"עברית: הרוח נושבת בחוץ, והספר נשאר פתוח. שלום, עולם.",
+"Emoji: 👩🏽‍🚀 👨‍👩‍👧‍👦 🌍✨ and combining marks: cafe\u0301, a\u0308, n\u0303.",
+"An unusuallyLongUnbrokenSequenceWithoutSpacesToTestOverflowWrappingWhenRenderedInsideAThinReadingLeafMustStillBePreservedAsExactOriginalTextWithoutInventingWordBreaks0123456789."
+];
+let current={storyId:'fixture-story-A',passageId:'P-184',version:1,offerId:'O-184',offerVersion:1};
+let authoritative={...current};
+const sourceRecords=new Map();
+const offerIds=['ask','inspect','return','follow','request','wait'];
+const optionCopy=['Ask who sent him','Look at the parcel before speaking','Return to the lamp','Follow the sounds below','Request that he leave the parcel','Wait in silence and watch'];
+let source={title:'The Lamp Above Greywater',paragraphs:p0.concat(longExtras)};
+sourceRecords.set('P-184',source);
+let pages=[],index=0,readerLocation='now',layoutVersion=0,sourceAnchor={passageId:'P-184',paragraphIndex:0,offset:0};
+const $=x=>document.getElementById(x);
+function el(tag,cls,text){const v=document.createElement(tag);if(cls)v.className=cls;if(text!==undefined)v.textContent=text;return v;}
+function paragraphPart(i,start,end){const p=el('p');p.dataset.paragraph=String(i);p.dataset.start=String(start);p.dataset.end=String(end);p.textContent=source.paragraphs[i].slice(start,end);return p;}
+function wordSegments(str){const seg=new Intl.Segmenter(undefined,{granularity:'word'});return Array.from(seg.segment(str),x=>x.segment)}
+function graphemeSegments(str){const seg=new Intl.Segmenter(undefined,{granularity:'grapheme'});return Array.from(seg.segment(str),x=>x.segment)}
+function leafShell(pageNo,forMeter=false){const leaf=el('article','leaf'); const hd=el('div','leaf-header','A continuing life  •  '+current.passageId);const flow=el('div','leaf-content');flow.setAttribute('aria-label','Published prose');const foot=el('div','leaf-footer');foot.append(el('span',null,'Original source'),el('span',null,String(pageNo+1)));leaf.append(hd,flow,foot);return {leaf,flow}}
+function renderBlock(b){if(b.kind==='title')return el('h1',null,source.title);if(b.kind==='paragraph')return paragraphPart(b.i,b.start,b.end);if(b.kind==='figure')return el('div','figure','Source-approved illustration slot (fixture)');return el('p',null,'Unknown');}
+function pageFits(pg){const old=$('meter');old.innerHTML='';const shell=leafShell(pages.length,true);shell.leaf.style.setProperty('--fontscale',$('scale').value); old.append(shell.leaf);for(const b of pg){shell.flow.append(renderBlock(b));}const fits=shell.flow.scrollHeight<=shell.flow.clientHeight+2;return fits;}
+function measuredPages(){const result=[];let cur=[];const save=()=>{if(cur.length){result.push(cur);cur=[];}}; const fit=block=>pageFits(cur.concat(block));
+cur.push({kind:'title'});
+for(let i=0;i<source.paragraphs.length;i++){
+ const text=source.paragraphs[i];let offset=0;let segments=wordSegments(text);
+ while(offset<text.length){
+   // Each trial is measured with actual computed font metrics in an offscreen leaf.
+   let low=1,hi=segments.length,accepted=0,bestEnd=offset;const prefix=[0];for(const s of segments)prefix.push(prefix[prefix.length-1]+s.length);
+   while(low<=hi){const mid=(low+hi)>>1;const end=offset+prefix[mid];if(fit([{kind:'paragraph',i,start:offset,end}])){accepted=mid;bestEnd=end;low=mid+1}else hi=mid-1;}
+   if(accepted===0){
+      if(cur.length){save();continue;}
+      // Extremely long indivisible token: split at valid grapheme boundaries instead of clipping.
+      const gs=graphemeSegments(text.slice(offset));const gp=[0];for(const g of gs)gp.push(gp[gp.length-1]+g.length);
+      let a=1,b=gp.length-1,win=0;while(a<=b){const m=(a+b)>>1; if(fit([{kind:'paragraph',i,start:offset,end:offset+gp[m]}])){win=m;a=m+1}else b=m-1;}
+      if(win===0)throw Error('A grapheme cannot fit: use continuous reader');
+      bestEnd=offset+gp[win];accepted=-1;
+   }
+   if(bestEnd<=offset)throw Error('no progress');
+   cur.push({kind:'paragraph',i,start:offset,end:bestEnd});offset=bestEnd;
+   if(offset<text.length){save();}
+   if(accepted>0){segments=segments.slice(accepted)}else{segments=wordSegments(text.slice(offset))}
+ }
+ if(i===1 && $('art').value==='yes'){
+   if(fit([{kind:'figure'}]))cur.push({kind:'figure'});
+   else{save();cur.push({kind:'figure'});if(!pageFits(cur))throw Error('figure must be optional and bounded');}
+ }
+}
+save();return result;
+}
+function getAnchor(pg){const b=pg?.find(x=>x.kind==='paragraph');return b?{passageId:current.passageId,paragraphIndex:b.i,offset:b.start}:{passageId:current.passageId,paragraphIndex:0,offset:0}}
+function indexForAnchor(anchor){if(anchor.passageId!==current.passageId)return 0;const i=pages.findIndex(pg=>pg.some(b=>b.kind==='paragraph'&&b.i===anchor.paragraphIndex&&b.start<=anchor.offset&&anchor.offset<b.end));return Math.max(0,i)}
+function compose({preserve=true}={}){const prior=preserve?sourceAnchor:null;document.documentElement.style.setProperty('--fontscale',$('scale').value);layoutVersion++;
+ if($('mode').value==='flow'){pages=[];index=0;render();return;}
+ try{pages=measuredPages();index=prior?Math.floor(indexForAnchor(prior)/(window.innerWidth>740?2:1)):0;sourceAnchor=getAnchor(pages[index*(window.innerWidth>740?2:1)]);$('integrity').textContent=integrityCheck().ok?'Exact source text preserved through fragmentation':'INTEGRITY FAILURE';render()}catch(e){$('mode').value='flow';pages=[];index=0;$('announcement').textContent='Pagination unavailable: switched to readable continuous mode. '+String(e);render()}}
+function renderDecision(){const section=el('section','decision-leaf');section.dataset.offer=current.offerId;const count=el('small',null,`${offerIds.length} authored intentions • offer ${current.offerId}`);section.append(count,el('h2',null,'He waits for you to speak. What do you do?'));
+ const ul=el('ul','decision-options');for(let i=0;i<offerIds.length;i++){const li=el('li');const btn=el('button',null,`${i+1}. ${optionCopy[i]}`);btn.dataset.choice=offerIds[i];btn.dataset.offer=current.offerId;btn.addEventListener('click',()=>tryChoose(btn.dataset.offer,btn.dataset.choice));li.append(btn);ul.append(li)}section.append(ul);return section;}
+function tryChoose(offerId,optionId){if(offerId!==authoritative.offerId || current.passageId!==authoritative.passageId){$('announcement').textContent='Stale offer rejected. Refresh to current passage.';return false}if(!offerIds.includes(optionId)){return false}$('announcement').textContent=`Design-only choice ${optionId} (no gameplay command or spend).`;return true}
+function renderPage(pg,no){const shell=leafShell(no);for(const b of pg) shell.flow.append(renderBlock(b));return shell.leaf}
+function render(){const stage=$('stage');stage.innerHTML='';$('sourceTag').textContent=`Source ${current.passageId} • offer ${current.offerId}`;
+ if(readerLocation==='journal'){const j=el('section');j.id='journal';j.append(el('h2',null,'Published leaves'));for(const [id,record] of sourceRecords.entries()){const btn=el('button',null,`${id} · ${record.title} (read original)`);btn.onclick=()=>{current={...current,passageId:id};source=record;readerLocation='original';$('announcement').textContent='Historical reading; past options inert.';compose({preserve:false})};j.append(btn)}stage.append(j);$('readerstatus').textContent='Journal · synthetic fixture';$('prev').disabled=$('next').disabled=true;return;}
+ if(readerLocation==='original'){$('readerstatus').textContent='Historical original • choices never actionable'}
+ if($('mode').value==='flow'){
+   const f=el('article','flow-page');f.append(el('h1',null,source.title));source.paragraphs.forEach((p,i)=>f.append(paragraphPart(i,0,p.length)));
+   if($('art').value==='yes')f.append(el('div','figure','Source-approved illustration slot (fixture)'));
+   if(readerLocation==='now')f.append(renderDecision());stage.append(f);$('prev').disabled=$('next').disabled=true;$('readerstatus').textContent='Continuous reading';$('decisionJump').disabled=readerLocation!=='now';return;
+ }
+ const b=el('div','book');const n=index* (window.innerWidth>740?2:1);const count=window.innerWidth>740?2:1;for(let j=0;j<count;j++){if(pages[n+j]) b.append(renderPage(pages[n+j],n+j));else{const blank=leafShell(n+j);blank.flow.append(el('div','empty-leaf',n+j>=pages.length?'End of original passage':'Blank'));b.append(blank.leaf)}} stage.append(b);
+ const max=Math.ceil(pages.length/count)-1; $('prev').disabled=index<=0; $('next').disabled=index>=max; $('readerstatus').textContent=`Derived leaves ${Math.min(n+1,pages.length)}–${Math.min(n+count,pages.length)} / ${pages.length}`;
+ $('decisionJump').disabled=readerLocation!=='now';if(readerLocation==='now' && index>=max){stage.append(renderDecision())}
+}
+function integrityCheck(){const collected=source.paragraphs.map(()=>[]);for(const pg of pages){for(const b of pg){if(b.kind==='paragraph')collected[b.i].push(b)}}const checks=collected.map((r,i)=>{let p=0,v='';for(const x of r){if(x.start!==p)return false;v+=source.paragraphs[i].slice(x.start,x.end);p=x.end}return v===source.paragraphs[i]});return {ok:checks.every(Boolean),checks,leaves:pages.length,sourceChars:source.paragraphs.reduce((a,x)=>a+x.length,0)}}
+function next(){if($('mode').value==='flow')return;const max=Math.ceil(pages.length/(window.innerWidth>740?2:1))-1;index=Math.min(index+1,max);sourceAnchor=getAnchor(pages[index*(window.innerWidth>740?2:1)]);render()}
+function prev(){if($('mode').value==='flow')return;index=Math.max(0,index-1);sourceAnchor=getAnchor(pages[index*(window.innerWidth>740?2:1)]);render()}
+$('next').onclick=next;$('prev').onclick=prev;
+$('decisionJump').onclick=()=>{if(readerLocation!=='now')return;if($('mode').value==='flow'){const d=document.querySelector('.decision-leaf');d?.scrollIntoView({behavior:'instant'});d?.querySelector('button')?.focus({preventScroll:true});return;}index=Math.max(0,Math.ceil(pages.length/(window.innerWidth>740?2:1))-1);sourceAnchor=getAnchor(pages[index*(window.innerWidth>740?2:1)]);render();document.querySelector('.decision-leaf')?.scrollIntoView({behavior:'instant'});};
+for(const field of ['story','mode','scale','art']){$(field).onchange=()=>{if(field==='story'){if($('story').value==='unicode')source={title:'The note with a long bilingual heading',paragraphs:unicode};else if($('story').value==='max')source={title:'An unusually long published paragraph',paragraphs:[maxParagraph]};else source={title:'The Lamp Above Greywater',paragraphs:p0.concat(longExtras)};sourceAnchor={passageId:current.passageId,paragraphIndex:0,offset:0}}compose({preserve:field!=='story'})}}
+$('journalBtn').onclick=()=>{readerLocation='journal';render()};$('nowBtn').onclick=()=>{const changed=current.passageId!==authoritative.passageId;current={...authoritative};if(changed){source=sourceRecords.get(current.passageId)||source;sourceAnchor={passageId:current.passageId,paragraphIndex:0,offset:0};}readerLocation='now';compose({preserve:!changed})};
+$('replace').onclick=()=>{const old=authoritative.offerId;authoritative={...authoritative,offerId:'O-184-v'+(authoritative.offerVersion+1),offerVersion:authoritative.offerVersion+1};document.querySelectorAll('[data-offer]').forEach(el=>{if(el.tagName==='BUTTON')el.disabled=true});$('announcement').textContent=`Offer ${old} superseded by ${authoritative.offerId}; stale choices disabled. Select Now to refresh.`;render()};
+$('publish').onclick=()=>{authoritative={...authoritative,passageId:'P-185',version:authoritative.version+1,offerId:'O-185'};sourceRecords.set('P-185',{title:'The Seal',paragraphs:['The stranger lowered the parcel onto the bench. Its wax was blue, stamped with a bird whose wings were turned inward.','Mara knew that mark. Years earlier she had carved the same shape on a piece of driftwood and left it with a child who had promised to return.']});$('announcement').textContent=`New published source ${authoritative.passageId} available; the old original stays pinned until Now. Prior choices are stale.`;document.querySelectorAll('[data-offer]').forEach(el=>{if(el.tagName==='BUTTON')el.disabled=true});if(readerLocation==='now')readerLocation='original';render()};
+let resizeWork;window.addEventListener('resize',()=>{clearTimeout(resizeWork);resizeWork=setTimeout(()=>compose({preserve:true}),120)});
+window.__lab={get pages(){return pages},get source(){return source},get current(){return current},get authoritative(){return authoritative},get anchor(){return sourceAnchor},get readerLocation(){return readerLocation},integrity:integrityCheck,tryChoose,compose:()=>compose({preserve:true}),setAnchor:(a)=>{sourceAnchor=a;compose({preserve:true})}};
+compose({preserve:false});
+</script></body></html>
