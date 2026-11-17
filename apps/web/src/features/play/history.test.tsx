@@ -93,19 +93,22 @@ describe('StoryHistoryView useInfiniteQuery', () => {
     );
     await waitFor(() => {
       expect(
-        screen.getByRole('heading', { name: '4. Latest passage' }),
-      ).toBeInTheDocument();
-    });
-    await user.click(
-      screen.getByRole('button', { name: 'Read older passages' }),
-    );
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: '2. Older passage' }),
+        screen.getByRole('button', { name: /4\. Latest passage/ }),
       ).toBeInTheDocument();
     });
     expect(
-      screen.getByRole('heading', { name: '4. Latest passage' }),
+      screen.queryByRole('heading', { name: '4. Latest passage' }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Load older' }),
+    );
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /2\. Older passage/ }),
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole('button', { name: /4\. Latest passage/ }),
     ).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent(
       'End of saved passages.',
@@ -156,25 +159,162 @@ describe('StoryHistoryView useInfiniteQuery', () => {
     );
     await waitFor(() => {
       expect(
-        screen.getByRole('heading', { name: '1. Story A only' }),
+        screen.getByRole('button', { name: /1\. Story A only/ }),
       ).toBeInTheDocument();
     });
     first.unmount();
 
     renderHistory(storyB);
-    expect(
-      screen.queryByRole('heading', { name: '1. Story A only' }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Story A only')).not.toBeInTheDocument();
     await user.click(
       screen.getByRole('button', { name: 'Read saved passages' }),
     );
     await waitFor(() => {
       expect(
-        screen.getByRole('heading', { name: '1. Story B only' }),
+        screen.getByRole('button', { name: /1\. Story B only/ }),
       ).toBeInTheDocument();
     });
-    expect(
-      screen.queryByRole('heading', { name: '1. Story A only' }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Story A only')).not.toBeInTheDocument();
+  });
+
+  it('reads one original passage and moves only through loaded records', async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.get(`/api/stories/${storyA}/history`, ({ request }) => {
+        calls += 1;
+        const before = new URL(request.url).searchParams.get('before');
+        if (before === null) {
+          return HttpResponse.json({
+            items: [
+              {
+                id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                sequence: 4,
+                content: {
+                  version: 1,
+                  title: 'Latest passage',
+                  paragraphs: ['Newest sentence.', 'Hidden until opened.'],
+                },
+              },
+              {
+                id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                sequence: 9,
+                content: {
+                  version: 1,
+                  title: 'Duplicate must not appear',
+                  paragraphs: ['Duplicate body.'],
+                },
+              },
+            ],
+            nextBefore: 3,
+          });
+        }
+        return HttpResponse.json({
+          items: [
+            {
+              id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+              sequence: 2,
+              content: {
+                version: 1,
+                title: 'Older passage',
+                paragraphs: ['Earlier sentence.'],
+              },
+            },
+          ],
+          nextBefore: null,
+        });
+      }),
+    );
+
+    renderHistory(storyA);
+    await user.click(screen.getByRole('button', { name: 'Read saved passages' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /4\. Latest passage/ })).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Duplicate must not appear')).not.toBeInTheDocument();
+    expect(screen.queryByText('Hidden until opened.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Passage 1500/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /4\. Latest passage/ }));
+    expect(screen.getByRole('heading', { name: '4. Latest passage' })).toBeInTheDocument();
+    expect(screen.getByText('Hidden until opened.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous saved passage' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next saved passage' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Load older' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Previous saved passage' })).toBeEnabled();
+    });
+    expect(calls).toBe(2);
+    expect(screen.queryByRole('button', { name: 'Load older' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Previous saved passage' }));
+    expect(screen.getByRole('heading', { name: '2. Older passage' })).toBeInTheDocument();
+    expect(screen.queryByText('Hidden until opened.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next saved passage' })).toBeEnabled();
+    expect(screen.getByRole('status')).toHaveTextContent('End of saved passages.');
+
+    await user.click(screen.getByRole('button', { name: 'Back to the overview' }));
+    expect(screen.getByRole('button', { name: /2\. Older passage/ })).toBeInTheDocument();
+    expect(screen.queryByText('Hidden until opened.')).not.toBeInTheDocument();
+    expect(calls).toBe(2);
+  });
+
+  it('shows an empty history without inventing a passage', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`/api/stories/${storyA}/history`, () =>
+        HttpResponse.json({ items: [], nextBefore: null }),
+      ),
+    );
+    renderHistory(storyA);
+    await user.click(screen.getByRole('button', { name: 'Read saved passages' }));
+    await waitFor(() => {
+      expect(screen.getByText(/No passages in this range/)).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: 'Load older' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
+  });
+
+  it('does not keep a private passage after a 401 (negative)', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`/api/stories/${storyA}/history`, () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+              sequence: 1,
+              content: {
+                version: 1,
+                title: 'Private passage',
+                paragraphs: ['Secret sentence.'],
+              },
+            },
+          ],
+          nextBefore: null,
+        }),
+      ),
+    );
+    const first = renderHistory(storyA);
+    await user.click(screen.getByRole('button', { name: 'Read saved passages' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Private passage/ })).toBeInTheDocument();
+    });
+    first.unmount();
+
+    server.use(
+      http.get(`/api/stories/${storyB}/history`, () =>
+        HttpResponse.json({ message: 'expired' }, { status: 401 }),
+      ),
+    );
+    renderHistory(storyB);
+    expect(screen.queryByText('Secret sentence.')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Read saved passages' }));
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent(/could not be loaded/i);
+    });
+    expect(screen.queryByText('Secret sentence.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Private passage')).not.toBeInTheDocument();
   });
 });

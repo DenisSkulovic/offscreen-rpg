@@ -236,6 +236,15 @@
   font-weight: 600;
 }
 
+.story-frame__book .story-frame__intention--explore {
+  color: var(--sf-paper-ink, #1c1915);
+  border-color: #8a7f6e;
+}
+
+.story-frame__book .story-frame__intention--explore .story-frame__intention-support {
+  color: var(--sf-paper-muted, #5c564c);
+}
+
 .story-frame__intention--commit {
   border-style: solid;
   border-color: #4a5d6f;

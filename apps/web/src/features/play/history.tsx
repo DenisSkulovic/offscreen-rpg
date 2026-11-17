@@ -1,11 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { flattenUniqueById } from '@/src/shared/api/list-page';
 import { queryKeys } from '@/src/shared/api/query-keys';
 import { storyHistoryInfiniteOptions } from '@/src/shared/api/story-history-query';
 import './ui/story-frame.css';
+
+type HistoryItem = {
+  id: string;
+  sequence: number;
+  content: { title: string; paragraphs: readonly string[] };
+};
+
+const EXCERPT_LIMIT = 80;
+
+function excerpt(paragraph: string | undefined) {
+  const trimmed = paragraph?.trim() ?? '';
+  if (trimmed.length <= EXCERPT_LIMIT) return trimmed;
+  return `${trimmed.slice(0, EXCERPT_LIMIT - 1)}…`;
+}
+
+function byPublication(items: readonly HistoryItem[]) {
+  return [...items].sort((left, right) => left.sequence - right.sequence);
+}
 
 export function StoryHistoryView({
   viewerId,
@@ -16,6 +34,8 @@ export function StoryHistoryView({
 }) {
   const queryClient = useQueryClient();
   const [opened, setOpened] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [droppedSelection, setDroppedSelection] = useState(false);
   const {
     data,
     error,
@@ -29,8 +49,33 @@ export function StoryHistoryView({
     enabled: opened,
   });
   const items = flattenUniqueById(data?.pages);
-  // Disabled queries stay isPending without data; only busy after the user opens.
   const pending = isFetchingNextPage || (opened && (isLoading || isFetching));
+  const publication = byPublication(items);
+  const selected = items.find((item) => item.id === selectedId) ?? null;
+  const selectedIndex = selected
+    ? publication.findIndex((item) => item.id === selected.id)
+    : -1;
+  const previous = selectedIndex > 0 ? publication[selectedIndex - 1] : null;
+  const next =
+    selectedIndex >= 0 && selectedIndex < publication.length - 1
+      ? publication[selectedIndex + 1]
+      : null;
+  const atOlderEdge = Boolean(
+    selected && publication[0]?.id === selected.id,
+  );
+
+  useEffect(() => {
+    setOpened(false);
+    setSelectedId(null);
+    setDroppedSelection(false);
+  }, [viewerId, storyId]);
+
+  useEffect(() => {
+    if (!opened || pending || selectedId === null) return;
+    if (items.some((item) => item.id === selectedId)) return;
+    setSelectedId(null);
+    setDroppedSelection(true);
+  }, [items, opened, pending, selectedId]);
 
   return (
     <section
@@ -52,6 +97,7 @@ export function StoryHistoryView({
             setOpened(true);
             return;
           }
+          setSelectedId(null);
           void queryClient.resetQueries({
             queryKey: queryKeys.storyHistory(viewerId, storyId),
           });
@@ -59,12 +105,17 @@ export function StoryHistoryView({
       >
         {opened ? 'Show latest passages' : 'Read saved passages'}
       </button>
-      {opened ? (
+      {opened && !selected ? (
         <>
           <p className="story-frame__intention-support">
-            Newest first. Earlier choices are history, not buttons to play
-            again.
+            Newest first. Open one saved passage to read it. Earlier choices
+            are history, not buttons to play again.
           </p>
+          {droppedSelection ? (
+            <p className="story-frame__stage-status" role="status">
+              That saved passage is no longer in the loaded history.
+            </p>
+          ) : null}
           {!pending && items.length === 0 ? (
             <p className="story-frame__intention-support">
               No passages in this range. A quiet stretch with no published
@@ -74,16 +125,19 @@ export function StoryHistoryView({
           <ol className="story-frame__journal-list">
             {items.map((entry) => (
               <li key={entry.id}>
-                <article className="story-frame__journal-entry">
-                  <h3 className="story-frame__passage-title">
-                    {entry.sequence}. {entry.content.title}
-                  </h3>
-                  <div className="story-frame__passage">
-                    {entry.content.paragraphs.map((text, index) => (
-                      <p key={index}>{text}</p>
-                    ))}
-                  </div>
-                </article>
+                <button
+                  type="button"
+                  className="story-frame__intention story-frame__intention--explore"
+                  onClick={() => {
+                    setDroppedSelection(false);
+                    setSelectedId(entry.id);
+                  }}
+                >
+                  {entry.sequence}. {entry.content.title}
+                  <span className="story-frame__intention-support">
+                    {excerpt(entry.content.paragraphs[0])}
+                  </span>
+                </button>
               </li>
             ))}
           </ol>
@@ -93,13 +147,11 @@ export function StoryHistoryView({
               className="story-frame__intention story-frame__intention--explore"
               disabled={pending}
               onClick={() => {
-                if (isFetchingNextPage) {
-                  return;
-                }
+                if (isFetchingNextPage || !hasNextPage) return;
                 void fetchNextPage();
               }}
             >
-              Read older passages
+              Load older
             </button>
           ) : items.length > 0 ? (
             <p className="story-frame__intention-support" role="status">
@@ -107,6 +159,68 @@ export function StoryHistoryView({
             </p>
           ) : null}
         </>
+      ) : null}
+      {selected ? (
+        <article aria-label="Saved passage">
+          <p className="story-frame__intention-support">
+            Saved passage. This is not the current situation.
+          </p>
+          <h3 className="story-frame__passage-title" tabIndex={-1}>
+            {selected.sequence}. {selected.content.title}
+          </h3>
+          <div className="story-frame__passage">
+            {selected.content.paragraphs.map((text, index) => (
+              <p key={index}>{text}</p>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="story-frame__intention story-frame__intention--explore"
+            disabled={!previous || pending}
+            onClick={() => {
+              if (!previous) return;
+              setSelectedId(previous.id);
+            }}
+          >
+            Previous saved passage
+          </button>
+          <button
+            type="button"
+            className="story-frame__intention story-frame__intention--explore"
+            disabled={!next || pending}
+            onClick={() => {
+              if (!next) return;
+              setSelectedId(next.id);
+            }}
+          >
+            Next saved passage
+          </button>
+          {atOlderEdge && hasNextPage ? (
+            <button
+              type="button"
+              className="story-frame__intention story-frame__intention--explore"
+              disabled={pending}
+              onClick={() => {
+                if (isFetchingNextPage || !hasNextPage) return;
+                void fetchNextPage();
+              }}
+            >
+              Load older
+            </button>
+          ) : null}
+          {atOlderEdge && !hasNextPage ? (
+            <p className="story-frame__intention-support" role="status">
+              End of saved passages.
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="story-frame__intention story-frame__intention--explore"
+            onClick={() => setSelectedId(null)}
+          >
+            Back to the overview
+          </button>
+        </article>
       ) : null}
       {error ? (
         <p className="story-frame__stage-status" role="status">
