@@ -7,6 +7,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { inflateRawSync } from 'node:zlib';
 import { createSnapshot } from './chatgpt-snapshot.mjs';
+import { buildPortableWikiIndex, safeGithubOrigin } from './chatgpt-snapshot-knowledge.mjs';
 
 function git(dir, ...args) {
   return execFileSync('git', args, { cwd: dir, encoding: 'utf8' }).trim();
@@ -48,7 +49,7 @@ function listZip(filename) {
   return entries;
 }
 
-test('committed-only lean/full ZIPs preserve source, exclude secrets and identify dirty worktrees', () => {
+test('committed-only lean/full ZIPs preserve source, exclude secrets and identify dirty worktrees', async () => {
   const root = mkdtempSync(path.join(tmpdir(), 'snapshot-fixture-'));
   try {
     git(root, 'init', '-q');
@@ -69,7 +70,14 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
     git(root, 'commit', '-qm', 'fixture');
     put(root, 'packages/game/src/main.ts', 'UNCOMMITTED CHANGES');
     put(root, 'local-untracked.txt', 'not tracked');
-    const lean = createSnapshot({ repoRoot: root, now: new Date('2026-11-17T13:05:02.000Z') });
+    const lean = await createSnapshot({
+      repoRoot: root, now: new Date('2026-11-17T13:05:02.000Z'),
+      indexBuilder: async ({ stagedRoot, head }) => {
+        assert.equal(readFileSync(path.join(stagedRoot, 'packages/game/src/main.ts'), 'utf8'), 'committed source');
+        return { schema: 'wiki.portable-snapshot.v1', source: { commit: head }, sections: [], omittedLinks: [], unresolvedLinks: [], summary: { pages: 0, sections: 0, omittedLinkCount: 0, brokenLinkCount: 0 } };
+      },
+      requireIndex: true,
+    });
     assert.ok(lean.destination.includes('out/chatgpt-snapshots'));
     assert.equal(lean.manifest.source.worktreeDirtyAtExport, true);
     const entries = listZip(lean.destination);
@@ -89,12 +97,25 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
     const metadata = JSON.parse(entries.get(name('SNAPSHOT.json'))());
     assert.equal(metadata.source.commit, git(root, 'rev-parse', 'HEAD'));
     assert.equal(metadata.profile, 'lean');
+    assert.equal(metadata.schema, 'offscreen.chatgpt-snapshot.v2');
+    assert.equal(metadata.portableWiki.status, 'ready');
+    assert.equal(metadata.source.trackedModifiedPathCount, 1);
+    assert.deepEqual(metadata.source.trackedModifiedPaths, ['packages/game/src/main.ts']);
+    assert.equal(metadata.source.untrackedPathCount, 1);
+    assert.ok(name('WIKI-INDEX.json'));
+    assert.equal(JSON.parse(entries.get(name('WIKI-INDEX.json'))()).source.commit, metadata.source.commit);
     assert.equal(createHash('sha256').update(readFileSync(lean.destination)).digest('hex'), lean.sha256);
-    assert.throws(() => createSnapshot({ repoRoot: root, strict: true }), /dirty/);
+    await assert.rejects(() => createSnapshot({ repoRoot: root, strict: true }), /dirty/);
     assert.equal(git(root, 'check-ignore', '-q', lean.destination), '');
-    const full = createSnapshot({
+    const full = await createSnapshot({
       repoRoot: root, profile: 'full', now: new Date('2026-11-17T13:05:03.000Z'),
+      indexBuilder: async () => { throw new Error('Simulated missing parser dependencies'); },
     });
+    assert.equal(full.manifest.portableWiki.status, 'unavailable');
+    assert.equal(full.manifest.portableWiki.reason, 'Simulated missing parser dependencies');
+    await assert.rejects(() => createSnapshot({
+      repoRoot: root, requireIndex: true, indexBuilder: async () => { throw new Error('No parser'); },
+    }), /Portable wiki index required/);
     const fullNames = [...listZip(full.destination).keys()];
     assert.ok(fullNames.some(x => x.endsWith('work/changes/archive/old/CHANGE.md')));
     assert.ok(fullNames.some(x => x.endsWith('evidence/runs/screenshot.png')));
@@ -103,3 +124,59 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('index classifies intentionally omitted history separately from broken links', async () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'snapshot-knowledge-'));
+  try {
+    put(root, 'docs/README.md', '# Docs\n[History](../work/changes/archive/old/CHANGE.md)\n[Bad](missing.md)\n[Fine](owner.md#contract)\n');
+    put(root, 'docs/owner.md', '# Owner\n## Contract\nRule.');
+    const engine = {
+      routePages: () => ['docs/README.md', 'docs/owner.md'],
+      buildSectionIndex: () => ({
+        sections: [
+          { path: 'docs/README.md', anchor: 'docs', heading: 'Docs', depth: 1, lineStart: 1, lineEnd: 4, bytes: 120,
+            preview: 'Docs', rowContext: '', authority: 'router', lane: 'normative', kind: 'canonical-router',
+            outbound: [{ path: 'docs/owner.md', anchor: 'contract', label: 'Fine' }] },
+          { path: 'docs/owner.md', anchor: 'owner', heading: 'Owner', depth: 1, lineStart: 1, lineEnd: 3, bytes: 28,
+            preview: 'Owner', rowContext: '', authority: 'selected-support', lane: 'normative', kind: 'canonical-support',
+            outbound: [] },
+          { path: 'docs/owner.md', anchor: 'contract', heading: 'Contract', depth: 2, lineStart: 2, lineEnd: 3, bytes: 20,
+            preview: 'Rule', rowContext: '', authority: 'selected-support', lane: 'normative', kind: 'canonical-support',
+            outbound: [] },
+        ],
+      }),
+      parseMarkdownDocument: text => ({
+        headings: [...text.matchAll(/^#{1,3}\s+(.+)$/gm)].map(x => ({ id: x[1].toLowerCase(), text: x[1] })),
+        references: [...text.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)].map(x => ({
+          kind: 'link', href: x[2], line: text.slice(0, x.index).split('\n').length,
+        })),
+      }),
+      resolveHref: (staged, from, href) => {
+        const [linkPath, fragment = null] = href.split('#');
+        const rel = linkPath ? path.posix.normalize(path.posix.join(path.posix.dirname(from), linkPath)) : from;
+        const abs = path.join(staged, rel);
+        return requireExists(abs) ? { class: 'local', ok: true, rel, abs, fragment }
+          : { class: 'local', ok: false, code: 'broken-path', rel, requested: rel, fragment };
+      },
+    };
+    const result = await buildPortableWikiIndex({
+      stagedRoot: root, head: 'a'.repeat(40), engine,
+      trackedPaths: ['docs/README.md', 'docs/owner.md', 'work/changes/archive/old/CHANGE.md'],
+      repositoryUrl: 'https://github.com/Example/Repo',
+    });
+    assert.equal(result.summary.omittedLinkCount, 1);
+    assert.equal(result.summary.brokenLinkCount, 1);
+    assert.equal(result.omittedLinks[0].state, 'excluded-by-snapshot-profile');
+    assert.ok(result.omittedLinks[0].githubUrl.includes('/blob/' + 'a'.repeat(40) + '/work/changes/archive/old/CHANGE.md'));
+    assert.equal(result.unresolvedLinks[0].state, 'missing-at-source-revision');
+    assert.equal(result.summary.reachedCanonical, 2);
+    assert.equal(safeGithubOrigin('git@github.com:Example/Repo.git'), 'https://github.com/Example/Repo');
+    assert.equal(safeGithubOrigin('https://private:password@github.com/Example/Repo.git'), 'https://github.com/Example/Repo');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+function requireExists(filename) {
+  try { return readFileSync(filename) !== null; } catch { return false; }
+}
