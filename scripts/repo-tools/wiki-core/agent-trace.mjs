@@ -89,14 +89,22 @@ export function normalizeTrial(input) {
       paths: distinct,
       searches,
     },
-    tokens: {
-      input: input.tokens?.input ?? null,
-      cachedInput: input.tokens?.cachedInput ?? null,
-      output: input.tokens?.output ?? null,
-      reported: input.tokens?.reported === true,
-    },
+    tokens: reportedTokens(input.tokens),
     usageCostUsd: null,
     answer: input.answer ?? '',
+  };
+}
+
+function reportedTokens(tokens) {
+  if (tokens?.reported !== true) {
+    return { input: null, cachedInput: null, output: null, reported: false };
+  }
+  const numberOrNull = (value) => (typeof value === 'number' && Number.isFinite(value) ? value : null);
+  return {
+    input: numberOrNull(tokens.input),
+    cachedInput: numberOrNull(tokens.cachedInput),
+    output: numberOrNull(tokens.output),
+    reported: true,
   };
 }
 

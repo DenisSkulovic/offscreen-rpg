@@ -11,6 +11,9 @@ export const EXCLUDED_PREFIXES = [
   'work/changes/open/2026-11-16--wiki03-isolated-agent-evaluation/',
   'work/changes/archive/2026-11/other/2026-11-16--wiki01-markdown-graph-health/',
   'work/changes/archive/2026-11/other/2026-11-16--wiki02-static-retrieval-and-hopper/',
+  'out/',
+  'scripts/repo-tools/retrieval-funnel-oracle.mjs',
+  'scripts/repo-tools/semantic-pilot-cases.mjs',
 ];
 
 export function buildSnapshotManifest(paths) {

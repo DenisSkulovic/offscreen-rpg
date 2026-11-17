@@ -2,7 +2,7 @@
 
 **Status:** historical semantic-tool evaluation protocol; active next decision is [agent-native harness evaluation](AGENT-NATIVE-EVALUATION.md). This document alone does not authorize paid agents, global vendor installs or always-on services. Owners: developer harness and the existing [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md)/[WIKI08](../../../changes/archive/2026-11/other/2026-11-16--wiki08-content-quality-gates/CHANGE.md) sequence. Compare on the same frozen Git tree and an independently reviewed answer oracle.
 
-**Strategic update (2026-11-17):** HAR03–HAR07 are diagnostics, not demonstrated live-agent wins. [HAR08](../../../changes/open/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md) prepares one real-client A/B. The historical retrieval-tool gates below remain useful **only for a later specialist semantic trial**, not as a mandate to keep tuning DFS or to install Grepai/QMD.
+**Strategic update (2026-11-17):** HAR03–HAR07 are diagnostics, not demonstrated live-agent wins. [HAR08](../../../changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md) prepared one real-client A/B and did not launch it. The historical retrieval-tool gates below remain useful **only for a later specialist semantic trial**, not as a mandate to keep tuning DFS or to install Grepai/QMD.
 
 ## Gate 0: establish the real search baseline, then experiment
 

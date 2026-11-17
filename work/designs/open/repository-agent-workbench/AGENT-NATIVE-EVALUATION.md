@@ -1,6 +1,6 @@
 # Decision | Agent-native harness evaluation
 
-**Accepted direction, 2026-11-17.** Developer-harness investigation, not in-game Storyteller work. **Implementation gate:** [HAR08](../../../changes/open/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md).
+**Accepted direction, 2026-11-17.** Developer-harness investigation, not in-game Storyteller work. **Implementation gate:** [HAR08](../../../changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md) is Done as preparation. The live trial is not authorized.
 
 ## Decision
 

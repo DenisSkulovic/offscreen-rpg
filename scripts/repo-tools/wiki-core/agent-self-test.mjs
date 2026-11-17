@@ -1,9 +1,18 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { normalizeTrial } from './agent-trace.mjs';
 import { scoreAnswer } from './agent-score.mjs';
+import { HAR08_TASKS } from './agent-fixtures/har08-tasks.mjs';
+import {
+  agentPrompt,
+  evaluateLaunchGate,
+  evaluatePair,
+  questionHash,
+  stageHostOracle,
+} from './agent-native-preflight.mjs';
 import {
   assertRealLaunchAllowed,
   buildSnapshotManifest,
@@ -11,6 +20,9 @@ import {
   materializeSnapshot,
   readSnapshotFile,
 } from './agent-harness.mjs';
+import { root } from '../process.mjs';
+import { FUNNEL_CASES } from '../retrieval-funnel-oracle.mjs';
+import { CASES as WIKI_CASES } from '../wiki-benchmarks/static-v1.mjs';
 
 function tool(id, phase, extra = {}) {
   return { type: 'tool', toolCallId: id, phase, atMs: extra.atMs ?? 0, ...extra };
@@ -172,13 +184,133 @@ export function runAgentSelfTest() {
     );
   });
 
+  check('missing usage stays null and a reported zero stays zero', () => {
+    const missing = normalizeTrial({ ...base, tokens: { input: 0, output: 0 }, events: [] });
+    assert.equal(missing.tokens.input, null);
+    assert.equal(missing.tokens.output, null);
+    assert.equal(missing.tokens.reported, false);
+    const reported = normalizeTrial({ ...base, tokens: { reported: true, input: 0, output: 2 }, events: [] });
+    assert.equal(reported.tokens.input, 0);
+    assert.equal(reported.tokens.output, 2);
+  });
+
+  check('held-out questions stay out of the snapshot and off older exams', () => {
+    assert.equal(HAR08_TASKS.length, 6);
+    assert.equal(new Set(HAR08_TASKS.map((task) => task.category)).size, 6);
+    const older = new Set([
+      ...FUNNEL_CASES.map((item) => item.question),
+      ...WIKI_CASES.map((item) => item.question),
+    ]);
+    for (const task of HAR08_TASKS) {
+      assert.equal(task.review, 'unreviewed');
+      assert.equal(older.has(task.question), false);
+      assert.equal(task.question.includes('packages/'), false);
+      assert.equal(task.question.includes('docs/'), false);
+      for (const role of task.roles) assert.equal(task.question.includes(role.path), false);
+    }
+    const hidden = buildSnapshotManifest([
+      'docs/README.md',
+      'out/agent-evaluation/sha/tasks.json',
+      'scripts/repo-tools/wiki-core/agent-fixtures/har08-tasks.mjs',
+      'scripts/repo-tools/retrieval-funnel-oracle.mjs',
+    ]);
+    assert.deepEqual(hidden.included, ['docs/README.md']);
+    const dir = mkdtempSync(path.join(tmpdir(), 'har08-oracle-'));
+    const staged = stageHostOracle(dir, 'a'.repeat(40));
+    const raw = readFileSync(staged.file, 'utf8');
+    assert.equal(JSON.parse(raw).verifiedCount, 0);
+    const snap = mkdtempSync(path.join(tmpdir(), 'har08-snap-'));
+    materializeSnapshot(snap, { 'docs/README.md': '# Docs\n', 'out/agent-evaluation/sha/tasks.json': raw });
+    assert.throws(() => readSnapshotFile(snap, 'out/agent-evaluation/sha/tasks.json'));
+    const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
+    assert.equal(head.status, 0);
+    const host = stageHostOracle(root, head.stdout.trim());
+    assert.equal(host.count, 6);
+    assert.equal(host.verifiedCount, 0);
+  });
+
+  check('A and B match except the navigation cue, and a bad gate refuses', () => {
+    const sha = 'b'.repeat(40);
+    const task = HAR08_TASKS[0];
+    const cap = { minutes: 8, toolCalls: 20, attempts: 1 };
+    const arm = (sessionId, prompt) => ({
+      repoSha: sha,
+      sessionId,
+      resumed: false,
+      question: task.question,
+      questionHash: questionHash(task.question),
+      client: 'cursor',
+      model: 'unlaunched-example',
+      cap,
+      prompt,
+    });
+    const matched = evaluatePair({
+      pinnedSha: sha,
+      orderSeed: '17',
+      goldPaths: task.roles.map((role) => role.path),
+      priorReceiptVisible: false,
+      a: arm('session-a', agentPrompt('A', task.question)),
+      b: arm('session-b', agentPrompt('B', task.question)),
+    });
+    assert.equal(matched.ok, true);
+    const resumed = evaluatePair({
+      pinnedSha: sha,
+      orderSeed: '17',
+      a: { ...arm('session-a', agentPrompt('A', task.question)), resumed: true },
+      b: arm('session-b', agentPrompt('B', task.question)),
+    });
+    assert.equal(resumed.ok, false);
+    assert.equal(resumed.reasons.includes('session-resumed'), true);
+    const wrongSha = evaluatePair({
+      pinnedSha: sha,
+      orderSeed: '17',
+      a: { ...arm('session-a', agentPrompt('A', task.question)), repoSha: 'c'.repeat(40) },
+      b: arm('session-b', agentPrompt('B', task.question)),
+    });
+    assert.equal(wrongSha.reasons.includes('sha-mismatch'), true);
+    const leaked = evaluatePair({
+      pinnedSha: sha,
+      orderSeed: '17',
+      goldPaths: [task.roles[0].path],
+      a: arm('session-a', `${agentPrompt('A', task.question)}\n${task.roles[0].path}`),
+      b: arm('session-b', agentPrompt('B', task.question)),
+    });
+    assert.equal(leaked.reasons.includes('oracle-leak'), true);
+    const gate = evaluateLaunchGate({
+      client: 'unknown',
+      resumedSession: true,
+      goldReadable: true,
+      writesAllowed: true,
+      repoSha: 'c'.repeat(40),
+      pinnedSha: sha,
+    });
+    assert.equal(gate.allowed, false);
+    for (const reason of ['client', 'model', 'usage-policy', 'enforced-caps', 'sandbox', 'sha-mismatch', 'session-resumed', 'oracle-accessible', 'unsafe-write', 'har08-does-not-authorize-launch']) {
+      assert.equal(gate.reasons.includes(reason), true, reason);
+    }
+    const filled = evaluateLaunchGate({
+      approveModelUsage: true,
+      client: 'cursor',
+      model: 'exact',
+      usagePolicy: 'record unknown usage',
+      cap: cap,
+      maxAttempts: 1,
+      sandbox: 'proved',
+      freshProcess: true,
+      pinnedSha: sha,
+      repoSha: sha,
+    });
+    assert.equal(filled.allowed, false);
+    assert.deepEqual(filled.reasons, ['har08-does-not-authorize-launch']);
+  });
+
   if (failures.length > 0) {
     console.error('AGENT HARNESS SELF-TEST FAILURES:');
     for (const failure of failures) console.error(failure);
     return 1;
   }
   console.log(
-    'Agent harness self-test passed: fake traces, null usage, negation and archive rejection, unverified citation, snapshot canary, refused launch. No model was called.',
+    'Agent harness self-test passed: fake traces, null usage, negation and archive rejection, unverified citation, snapshot canary, refused launch, A/B gate, host oracle. No model was called.',
   );
   return 0;
 }
