@@ -2,6 +2,10 @@
 
 **Not run by the design author.** This checks a real content-risk detector and *real corrected claims*, not a green navigation dashboard.
 
+## Run on 2026-11-17
+
+`pnpm wiki:content-health --self-test` passed. A fenced "not yet implemented" snippet does not count, and a sentence that calls an old note dated evidence does not count. The live scan's remaining candidates are the two observability pages that say "proposal only" and "not installed or authorized". They stay in `docs/technical` because STATUS already records them as proposal-status pages. They were not moved and not ratified. `test:fast` and `test:watch` exist in package.json. No test suite was run, so the runbook does not claim they pass. The 30-claim independent sample is not done. This packet stays Implementing.
+
 ## Static risk fixtures
 
 - Detect a current runbook phrase “W20 `test:fast` is not implemented” **as a review candidate** when root `package.json` contains the script. Presence is not proof the command/test succeeds.

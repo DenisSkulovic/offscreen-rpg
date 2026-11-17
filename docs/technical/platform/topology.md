@@ -48,7 +48,7 @@ There is no service per faction, inventory, storyteller or notification type. Ex
 
 ## Code organization
 
-For actual entry points, current coupling and task-oriented reading routes, use [Code navigation](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md). The application and Storyteller package guides linked there describe implemented flows; this document owns the architectural design.
+For current entry points use [apps/api](../../../apps/api/README.md), [packages/application](../../../packages/application/README.md), and [packages/storyteller](../../../packages/storyteller/README.md). The [2026-11 code-navigation inspection](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md) is dated evidence, not the current owner. This document owns the architectural design.
 
 Target layout. Create each package when its first implementation needs it:
 

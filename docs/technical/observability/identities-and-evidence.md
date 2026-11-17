@@ -1,6 +1,6 @@
 # Evidence graph | Typed, durable, historically faithful data
 
-**Status: technical target proposal, 2026-11-15. Not implemented** except where a landed read is named on [the forensic contract](investigation-and-reconstruction.md). Product journeys are [Admin investigation](../../product/admin/ai-engineering-and-investigation.md). Source inventory is the 2026-11-15 observability run. Ownership: [Engine](../engine/authority-and-transitions.md), [Storyteller](../../product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
+**Status: selected evidence-graph target, 2026-11-15. Not implemented** except where a landed read is named on [the forensic contract](investigation-and-reconstruction.md). This page is not a proposal. Product journeys are [Admin investigation](../../product/admin/ai-engineering-and-investigation.md). Source inventory is the 2026-11-15 observability run. Ownership: [Engine](../engine/authority-and-transitions.md), [Storyteller](../../product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
 
 ## 1. Decision: no mega-GameData blob, no telemetry-as-history
 

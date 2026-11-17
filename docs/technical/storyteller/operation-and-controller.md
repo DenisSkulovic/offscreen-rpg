@@ -2,7 +2,8 @@
 
 **Owns:** how a living world decides whether to call a model, how that call is bounded, and how the current prototype runtime differs from the selected target.  
 **Product:** [behavior and quality](../../product/storyteller/behavior-and-quality.md).  
-**Engine spine:** [selected architecture](../engine/selected-architecture.md).
+**Engine spine:** [selected architecture](../engine/selected-architecture.md).  
+**Read one heading:** [which loop](#two-loops) · [what the prototype does now](#current-prototype-runtime) · [what a task may return](#profile-and-task-contracts) · [what context is rejected](#context-and-continuity) · [publication](#execution-and-publication) · [paid calls](#provider-and-budget-boundary) · [what is still unproved](#supported-behavior-and-evidence-limits).
 
 ## Two loops
 

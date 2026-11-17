@@ -1,6 +1,6 @@
 # WIKI08 | Detect false wiki content and repair the highest-risk reader traps
 
-**State: Proposed, not selected.** Code-bearing developer-tooling Change (a local content-risk scanner + tests), bundled with **limited, source-verified wiki copy repairs**. Depends on WIKI06 authority policy and WIKI07 section routing. **No real model/provider calls, gameplay code or production operations.**
+**State: Implementing.** Selected 2026-11-17 after WIKI07. Code-bearing developer-tooling Change (a local content-risk scanner + tests), bundled with **limited, source-verified wiki copy repairs**. Depends on WIKI06 authority policy and WIKI07 section routing. **No real model/provider calls, gameplay code or production operations.**
 **Sources:** [independent content audit](../../../designs/open/wiki-operating-model/CONTENT-AUDIT.md), [quality evaluation](../../../designs/open/wiki-operating-model/QUALITY-AND-EXPERIMENTS.md), [truth/admission contract](../../../designs/open/wiki-operating-model/TRUTH-AND-LIFECYCLE.md).
 **Observed review baseline:** `main@91c28452070c98627656fa633bde74cce24a6241`; inspect fresh current tree before editing.
 

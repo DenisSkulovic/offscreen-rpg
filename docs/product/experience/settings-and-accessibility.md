@@ -1,6 +1,6 @@
 # Settings and accessibility
 
-**Owner (DOC01 P2):** player-facing controls that are not Storyteller creative presets, plus accessibility obligations.  
+**Owns:** player-facing controls that are not Storyteller creative presets, plus accessibility obligations.  
 **Creative Storyteller controls:** [profiles and settings](../storyteller/profiles-and-settings.md).  
 **Technical a11y implementation:** client technical owners (P3).
 

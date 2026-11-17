@@ -11,7 +11,7 @@ description: Translate a settled Offscreen RPG product/technical decision and bo
 
 Use the approved product contract, owning technical section, selected CHANGE.md/PLAN checkpoint (if any) and the small relevant source map. If these conflict, **stop and identify the contradiction**. Do not make Cursor choose product policy by improvising.
 
-Have ChatGPT do the expensive design and wide source investigation before paying a cheap Cursor model. For frontend use the [source atlas](../../../research/legacy-engineering/frontend-execution-playbook.md#6-source-atlas-for-w01w21) to provide 2–5 real paths, named symbols, known API contract and discriminating negative case. Cursor rechecks those anchors locally, widening only for a concrete contradiction. Reuse the selected Change packet. A legacy initiative's FEATURE/PLAN is context, **not** an executable spec by itself. Do not generate a second plan for every small slice.
+Have ChatGPT do the expensive design and wide source investigation before paying a cheap Cursor model. For frontend use [frontend engineering](../frontend-engineering/SKILL.md) to provide 2–5 real paths, named symbols, known API contract and discriminating negative case. The [2026-11 execution playbook](../../../research/legacy-engineering/frontend-execution-playbook.md) is dated evidence, not the current executor. Cursor rechecks those anchors locally, widening only for a concrete contradiction. Reuse the selected Change packet. A legacy initiative's FEATURE/PLAN is context, **not** an executable spec by itself. Do not generate a second plan for every small slice.
 
 ## Deliver this bounded packet
 

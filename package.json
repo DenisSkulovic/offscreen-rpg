@@ -22,6 +22,7 @@
     "repo:brief": "node scripts/repo-tools/brief.mjs",
     "repo:docs-health": "node scripts/repo-tools/docs-health.mjs",
     "wiki:health": "node scripts/repo-tools/wiki-health.mjs",
+    "wiki:content-health": "node scripts/repo-tools/wiki-content-health.mjs",
     "wiki:graph": "node scripts/repo-tools/wiki-health.mjs --graph",
     "wiki:bench:static": "node scripts/repo-tools/wiki-bench-static.mjs",
     "wiki:bench:agent": "node scripts/repo-tools/wiki-bench-agent.mjs",

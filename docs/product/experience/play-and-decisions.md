@@ -1,6 +1,6 @@
 # Play and decisions
 
-**Owner (DOC01 P2):** the in-story interaction surface. From player-experience “Inside a story / Acting and waiting” + experience Living Stage / interaction grammar (reconcile detail from program without copying taxonomy).
+**Owns:** the in-story interaction surface: what the player sees, chooses, and waits on. **Does not own:** mechanical resolution or Storyteller prose quality.
 
 ## Main view
 

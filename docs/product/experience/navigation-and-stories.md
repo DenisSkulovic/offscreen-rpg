@@ -1,6 +1,6 @@
 # Navigation and stories
 
-**Owner (DOC01 P2):** the player’s mental map of spaces. Reconciled from experience `spaces/information-architecture.md` without adopting `flows|patterns|spaces` as permanent taxonomy.
+**Owns:** the player’s mental map of spaces. **Does not own:** a flows, patterns, or spaces taxonomy.
 
 ## Three navigation contexts
 

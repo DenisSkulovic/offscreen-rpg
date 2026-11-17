@@ -1,6 +1,6 @@
 # Presentation
 
-**Owner (DOC01 P2):** what players should perceive—atmosphere, media honesty, non-blocking illustration.  
+**Owns:** what players should perceive: atmosphere, honest media, and illustration that does not block the text.  
 **Technical owner:** presentation runtime / language under `docs/technical/client/` (P3)—not duplicated here.
 
 ## Product promises

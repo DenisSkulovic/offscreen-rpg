@@ -41,7 +41,7 @@ The worker uses `TEMPORAL_ADDRESS` (default `127.0.0.1:7233`), `TEMPORAL_NAMESPA
 
 ## Fast frontend workflow
 
-For React/Next portfolio work with inexpensive Cursor models, use the [chosen frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md) **by heading** and the **one** selected Change. Full `pnpm dev` starts several watchers/services; it is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
+For React/Next portfolio work, use [.agents/skills/frontend-engineering/SKILL.md](../../.agents/skills/frontend-engineering/SKILL.md) and the [client architecture](../technical/client/architecture.md), plus the **one** selected Change. The [2026-11 frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md) is dated evidence, not the current executor. Full `pnpm dev` starts several watchers/services; it is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
 
 Existing direct commands after dependency setup (use only when relevant):
 
@@ -51,7 +51,7 @@ pnpm --filter @offscreen/web typecheck    # Next typegen + incremental tsc, no N
 pnpm exec eslint apps/web/src/features/play/view.tsx  # A single touched file
 ```
 
-**Planned, not yet implemented:** W01 adds Vitest `test:watch`/single-file test scripts; W20 adds a Turbo `test:fast` task that does not build Next first; W21 makes CI code-vs-docs/integration gates selective. Do not invoke these commands before their Change is implemented.
+`pnpm --filter @offscreen/web test:watch`, `pnpm --filter @offscreen/web test:fast`, and root `pnpm test:fast` are present in package.json. `test:fast` runs the web Vitest suite through Turbo and does not build Next first. A script name is not a fresh test pass; this runbook does not record one. Do not treat those commands as still planned.
 
 Keep pnpm's store and warm `.turbo`, `.next/dev`, `dist` and TypeScript incremental output. Use host-side Next/Node; Docker is required only for the actual PostgreSQL/Temporal integration step. Do not run `pnpm install` absent a changed lockfile/new checkout, or restart a successful dev/test watcher after each edit. Check one normal/negative behavior when its code boundary is complete, then batch expensive checks at architecture integration milestones. `pnpm test:focus` destroys/recreates only disposable `offscreen_auth_test`; it is never the quick React test.
 

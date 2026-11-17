@@ -116,7 +116,7 @@ The current source contains two *real* option renderers: legacy `StoryFrame` int
 - `apps/web/src/features/play/ui/campaign-activity.tsx`: action execution/commitment/paused semantics to preserve.
 - `apps/web/app/style.css`: broad element globals and independent demo/creation/Chamber concerns.
 - `apps/web/src/stories/story-frame.stories.tsx`: existing deterministic fixtures, suitable first workbench.
-- `apps/web/src/features/play/README.md`: source-adjacent lifecycle map; `docs/engineering/targets/react-next.md`: non-negotiable framework, SSR, Query, mutation/a11y architecture.
+- `apps/web/src/features/play/README.md`: source-adjacent lifecycle map. The non-negotiable framework, SSR, Query, and mutation/a11y contract is [client architecture](architecture.md).
 
 This source is *evidence of current implementation*, not visual-design authority. Reinspect when Cursor starts; do not assume a historical commit is still HEAD.
 
