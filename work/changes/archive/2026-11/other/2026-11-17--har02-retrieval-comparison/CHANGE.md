@@ -1,7 +1,7 @@
 # HAR02 | Read-only comparative retrieval evidence harness
 
-**State: Proposed; not selected.** Code-bearing developer-evaluation tooling. **Dependencies:** WIKI07 independent check for a trustworthy docs baseline; WIKI08 source-truth work is complementary and must not block a code-search pilot; HAR01 receipt is optional if Git SHA and dirty state are otherwise recorded. No real model trial, third-party installer, MCP or graph DB authorized.
-**Design:** [evaluation gates](../../../designs/open/repository-agent-workbench/EVALUATION.md), [candidate disposition](../../../designs/open/repository-agent-workbench/CANDIDATES.md); existing [WIKI03](../../archive/2026-11/other/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md), WIKI05 benchmark and WIKI07 index must be **reused**, not reimplemented.
+**State: Done.** Selected and closed on 2026-11-17 after HAR01. Code-bearing developer-evaluation tooling. No real model trial, third-party installer, MCP, or graph DB. The comparer does not search and does not install a tool.
+**Design:** [evaluation gates](../../../../../designs/open/repository-agent-workbench/EVALUATION.md), [candidate disposition](../../../../../designs/open/repository-agent-workbench/CANDIDATES.md); existing [WIKI03](../2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md), WIKI05 benchmark and WIKI07 index must be **reused**, not reimplemented.
 
 ## First-screen Cursor brief
 
@@ -29,8 +29,14 @@ No vendor installation, Cognee/Serena configuration, embedding model downloads, 
 
 ## Handoff / readiness
 
-**Next permitted step:** when selected, build or reuse only the minimal deterministic comparison needed for the 16-case [semantic pilot](../../../designs/open/repository-agent-workbench/PILOT.md). Vendor experiments are separate HAR03, not bundled into a giant harness. Do not require pre-existing production defects as a prerequisite for learning, and do not select HAR02 automatically.
+**Next permitted step:** when selected, build or reuse only the minimal deterministic comparison needed for the 16-case [semantic pilot](../../../../../designs/open/repository-agent-workbench/PILOT.md). Vendor experiments are separate HAR03, not bundled into a giant harness. Do not require pre-existing production defects as a prerequisite for learning, and do not select HAR02 automatically.
 
-## Reconciliation ledger
+Close updates STATUS.md, work/changes/README.md, work/changes/ledger/2026-11.md, work/designs/open/repository-agent-workbench/README.md, and work/designs/open/repository-agent-workbench/EVALUATION.md. The tool files are scripts/repo-tools/retrieval-compare.mjs, scripts/repo-tools/wiki-core/retrieval-compare.mjs, scripts/repo-tools/wiki-core/retrieval-compare-self-test.mjs, and the `repo:retrieval-compare` script in package.json. The usage line is .agents/README.md.
 
-**Incomplete by design (Proposed).** Before Done, fill the active Change template's affected-claim ledger. Likely `no product/technical behavior impacted`, proven by bounded tool-only diff and tests; no manufactured implementation evidence.
+## Reconciliation ledger (required before Done)
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | none | unchanged: recorded arms are compared, and no gameplay, Storyteller, or provider rule was edited | scripts/repo-tools/wiki-core/retrieval-compare.mjs | fixture-tested | a proposal hit with fewer bytes does not pass, and two different SHAs are not comparable | N/A |
+| .agents/README.md | evidence | changed: the command list names the comparer and says it does not search or install a tool | scripts/repo-tools/retrieval-compare.mjs | fixture-tested | the self-test refuses a historic decoy and a dirty-worktree excerpt | .agents/README.md |
+| STATUS.md#orientation | evidence | changed: orientation names this comparer as Done and does not claim a model benchmark | STATUS.md | source-observed | wiki bench self-test passing is not a live agent trial | STATUS.md |
