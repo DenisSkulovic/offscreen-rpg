@@ -22,7 +22,7 @@
 
 ## HAR06 retrospective finding (navigation audit)
 
-The [C1–C4 source-route audit](SOURCE-ROUTE-AUDIT-2026-11-17.md) found a decisive measurement defect: a correct source file and rejection line can be counted as missing because the grep snippet does not include the enclosing function name. HAR06 also concatenated wiki hits with lexical results rather than following wiki-to-source links, and fusion could double-count the same lexical evidence. **No new tool adoption or code-changing Change is selected by this design note.** Fix file-candidate/symbol verification and test genuine source-map traversal before interpreting another search benchmark.
+The [C1–C4 source-route audit](SOURCE-ROUTE-AUDIT-2026-11-17.md) found a decisive measurement defect: a correct source file and rejection line can be counted as missing because the grep snippet does not include the enclosing function name. HAR06 also concatenated wiki hits with lexical results rather than following wiki-to-source links, and fusion could double-count the same lexical evidence. **[HAR07 is selected](../../../changes/open/2026-11-17--har07-evidence-verified-source-navigation/CHANGE.md)** to implement this narrow evaluator repair and real wiki-to-code traversal. The design note itself remains a retrospective observation, not source of code truth. No vendor adoption or model run is authorized.
 
 ## Ordinary ChatGPT source transport (implemented)
 
@@ -33,7 +33,7 @@ For design investigations that stay inside ordinary ChatGPT, the [source snapsho
 - Canonical agent owner remains [.agents/HARNESS.md](../../../../.agents/HARNESS.md); [context economics](../../../../.agents/references/context-economics.md) and [document navigation](../../../../.agents/references/documentation-navigation-standard.md) remain binding. This design must not become a second always-on agent rule.
 - [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) is Done and is no longer the selected Change. Its independent reads are recorded. Do not reopen that packet to start this design.
 - [WIKI08](../../../changes/archive/2026-11/other/2026-11-16--wiki08-content-quality-gates/CHANGE.md) is Done and is no longer the selected Change. It is not a blocking dependency for a source-only semantic search pilot. Misleading wiki text must not be scored as a retrieval success.
-- HAR01, HAR02, HAR03, and HAR06 are Done. HAR06 recorded a diagnostic funnel and did not adopt a vendor. No Change is selected. A real-agent or reranker trial requires separate permission.
+- HAR01, HAR02, HAR03 and HAR06 are Done. HAR06 recorded a diagnostic funnel and did not adopt a vendor. **HAR07 is the selected Ready Change** for score fidelity and actual linked source navigation. A real-agent, reranker or vendor adoption trial requires separate permission.
 - After any candidate experiment, independently review the evidence and either reject it, keep it opt-in, or author a *new* narrowly scoped integration Change. Never let a benchmark automatically authorize installation.
 
 **Success** is fewer wrong conclusions and unnecessary file reads at the same or lower total engineering cost. Zero new tooling is a valid winning result.
