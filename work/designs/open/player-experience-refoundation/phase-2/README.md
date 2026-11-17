@@ -1,6 +1,6 @@
 # Phase 2 | Visual-direction competition
 
-**Status:** OPEN DESIGN, visual concepts not selected or ratified. **Date:** 2026-11-17. **Implementation permission:** none.
+**Status:** OPEN DESIGN. Three rendered directions and one newer adaptive Living Journal thesis; no visual or technical contract ratified. **Date:** 2026-11-17. **Implementation permission:** none.
 
 ## View first, read second
 
@@ -8,7 +8,20 @@ Open [the standalone visual laboratory](design-lab.html) in a browser. Select am
 
 All UI prose for its primary passages comes from [Phase 1's fixed specimens](../phase-1/06-FIXED-DESIGN-SPECIMENS.md). Small choice clarifiers and technical labels are explanatory UI-only fixture copy. Original vector artwork is illustrative, not retained historical scene art or real Storyteller output.
 
-## Documents
+## New integrative direction: Living Journal (owner hypothesis, November 17)
+
+Following review of A/B/C, the owner proposed **one recurring reading leaf whose material, surrounding atmosphere, local typography, art slots and bounded decorations are Storyteller-directed**, rather than any fixed medieval/cave/space skins. The leaf is conceptually a page but not necessarily physical paper. The renderer, source text and safety controls remain stable. **No new visual prototype of this fourth direction has yet been rendered; it is a design thesis awaiting proof.**
+
+Read in order:
+
+- [05 · Living Journal art-direction thesis](05-LIVING-JOURNAL-THESIS.md) for the invariant leaf, adaptive layers, and why a journal metaphor does not require a diary-writing character.
+- [06 · Rich narrative score](06-RICH-NARRATIVE-SCORE.md) for source-faithful expressive text without model-authored HTML, Markdown as a limited supplement, and a bounded optional score with exact quote anchors.
+- [07 · History, finished volumes and forks](07-EDITION-HISTORY-AND-FORKS.md) for retained page appearance, explicit end state, independent lineage and the hard current limitation on arbitrary historical forking.
+- [08 · Adaptive-page review gates](08-ADAPTIVE-PAGE-REVIEW-GATES.md) for visual specimens, art-direction falsifiers, accessibility/cost tests and the decisions still awaiting owner approval.
+
+These V2 proposals **extend beyond the already selected V1 presentation runtime**. Their commit here does not override its authority, edit the passage schema or authorize an implementation Change.
+
+## Earlier Phase 2 competition documents
 
 1. [Visual research board](01-REFERENCE-STUDY.md): 12 annotated references and explicit constraints on borrowing.
 2. [Concept review](02-CONCEPT-REVIEW.md): composition systems, strengths, disconfirming cases, preliminary ranking and revision ideas.
@@ -34,7 +47,7 @@ All UI prose for its primary passages comes from [Phase 1's fixed specimens](../
 
 ## Preliminary finding
 
-**Do not select a winner yet.** The current leading **platform-identity hypothesis** is C's portable, consistent editorial grammar, but its headline weight and red accent can overpower contemplative scenes. B yields the richest Now atmosphere but lacks a durable visual identity in Journal and can be overly image-dependent. A has the most naturally cohesive reader but looks too locked to manuscript/historical fiction. The next iteration should test a more deliberate *shared* typographic grid across a restrained Stage and excellent Journal, rather than simply glue three different skins together.
+**No art-direction winner has been selected.** The original C platform-identity hypothesis remains a useful historical assessment of those three prototypes, but the newly proposed **adaptive Living Journal** is the current leading *unrendered* synthesis. It keeps editorial leaf continuity, borrows atmosphere from Stage and navigational discipline from Field without adopting any genre theme. Test it rather than rubber-stamping it. All earlier A/B/C visual critiques and design-lab artifacts remain available for comparison.
 
 The user (product owner) has not reviewed or accepted these alternatives. No production code should be changed from this directory.
 
