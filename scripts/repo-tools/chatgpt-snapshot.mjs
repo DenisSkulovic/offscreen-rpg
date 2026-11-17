@@ -115,8 +115,14 @@ export async function createSnapshot({
       };
     } catch (error) {
       if (requireIndex) throw new Error('Portable wiki index required but unavailable: ' + error.message);
+      const details = String(error.message);
+      const safeReason = /Cannot find package|ERR_MODULE_NOT_FOUND/i.test(details)
+        ? 'Existing wiki parser dependencies are not installed locally'
+        : /spawn.*tar|ENOENT.*tar/i.test(details)
+          ? 'Local tar command is unavailable'
+          : 'Portable index could not be generated; rerun with --require-index for local diagnostics';
       manifest.portableWiki = {
-        status: 'unavailable', reason: String(error.message).slice(0, 240),
+        status: 'unavailable', reason: safeReason,
         fallback: 'Read original Markdown with local filesystem search.',
       };
     }
