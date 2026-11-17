@@ -69,7 +69,7 @@ function canonicalReachability(sections) {
  * A normal repository export uses the real wiki modules (not a simulated parser).
  */
 export async function buildPortableWikiIndex({
-  stagedRoot, head, trackedPaths, repositoryUrl = null, engine = null,
+  stagedRoot, head, profile = 'lean', trackedPaths, repositoryUrl = null, engine = null,
 }) {
   const realEngine = engine ?? await (async () => {
     const [route, markdown, paths] = await Promise.all([
@@ -80,8 +80,8 @@ export async function buildPortableWikiIndex({
     return { ...route, ...markdown, ...paths };
   })();
   const { buildSectionIndex, routePages, parseMarkdownDocument, resolveHref } = realEngine;
-  const original = buildSectionIndex(stagedRoot, { repoSha: head, dirty: false });
-  const pages = routePages(stagedRoot);
+  const original = buildSectionIndex(stagedRoot, { repoSha: head, dirty: false, includeHistoric: profile === 'full' });
+  const pages = routePages(stagedRoot, { includeHistoric: profile === 'full' });
   const tracked = new Set(trackedPaths);
   const sections = original.sections.map(s => ({
     path: s.path, anchor: s.anchor, heading: s.heading, depth: s.depth,
@@ -144,7 +144,7 @@ export async function buildPortableWikiIndex({
   const reachability = canonicalReachability(sections);
   return {
     schema: PORTABLE_WIKI_SCHEMA,
-    source: { commit: head, revisionKind: 'committed-git-tree', parser: 'wiki-core/route.mjs + markdown.mjs' },
+    source: { commit: head, profile, revisionKind: 'committed-git-tree', parser: 'wiki-core/route.mjs + markdown.mjs' },
     sections,
     omittedLinks: defects.filter(d => d.state === 'excluded-by-snapshot-profile' || d.state === 'excluded-sensitive-file'),
     unresolvedLinks: defects.filter(d => d.state !== 'excluded-by-snapshot-profile' && d.state !== 'excluded-sensitive-file'),

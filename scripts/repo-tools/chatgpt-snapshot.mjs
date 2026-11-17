@@ -94,6 +94,18 @@ export async function createSnapshot({
     mkdirSync(stagedRoot);
     const pathspecs = exclusions.map(item => ':(exclude,glob)' + item);
     try {
+      const indexOwners = [
+        'scripts/repo-tools/chatgpt-snapshot.mjs',
+        'scripts/repo-tools/chatgpt-snapshot-knowledge.mjs',
+        'scripts/repo-tools/wiki-core/route.mjs',
+        'scripts/repo-tools/wiki-core/model.mjs',
+        'scripts/repo-tools/wiki-core/markdown.mjs',
+        'scripts/repo-tools/wiki-core/paths.mjs',
+        'scripts/repo-tools/wiki-core/search.mjs',
+        'scripts/repo-tools/wiki-core/slug.mjs',
+      ];
+      const parserDirty = modified.filter(p => indexOwners.includes(p));
+      if (parserDirty.length) throw new Error('Snapshot/index generator has uncommitted code edits');
       // Staging uses exactly the same committed Git pathspec as the final ZIP.
       // Parser modules resolve dependencies from the local development checkout.
       git(root, [
@@ -106,7 +118,7 @@ export async function createSnapshot({
       const trackedPaths = git(root, ['ls-tree', '-r', '-z', '--name-only', head])
         .split('\0').filter(Boolean);
       const index = await indexBuilder({
-        stagedRoot, head, trackedPaths, repositoryUrl: safeGithubOrigin(remote),
+        stagedRoot, head, profile, trackedPaths, repositoryUrl: safeGithubOrigin(remote),
       });
       writeFileSync(knowledgeFile, JSON.stringify(index) + '\n');
       manifest.portableWiki = {
