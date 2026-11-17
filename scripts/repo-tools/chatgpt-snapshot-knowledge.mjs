@@ -26,6 +26,11 @@ function githubFallback(origin, sha, rel, fragment, isDirectory) {
   return origin + '/' + action + '/' + sha + '/' + encodedPath(rel) + (fragment ? '#' + encodeURIComponent(fragment) : '');
 }
 
+function sensitiveTarget(rel) {
+  return /(^|\/)(\.env[^/]*|credentials(?:\.json)?|secrets(?:\.json)?|id_rsa|id_ed25519|node_modules)(\/|$)/i.test(rel ?? '')
+    || /\.(pem|key|p12|pfx)$/i.test(rel ?? '');
+}
+
 function withinTrackedTree(name, tracked) {
   return tracked.has(name) || [...tracked].some(p => p.startsWith(name.replace(/\/$/, '') + '/'));
 }
@@ -107,7 +112,7 @@ export async function buildPortableWikiIndex({
       const rel = target.requested ?? target.rel ?? null;
       if (!target.ok) {
         state = rel && withinTrackedTree(rel, tracked)
-          ? 'excluded-by-snapshot-profile'
+          ? (sensitiveTarget(rel) ? 'excluded-sensitive-file' : 'excluded-by-snapshot-profile')
           : 'missing-at-source-revision';
       } else if (target.fragment && target.rel?.endsWith('.md')) {
         let ids = headings.get(target.rel);
@@ -120,7 +125,7 @@ export async function buildPortableWikiIndex({
         if (!ids.has(target.fragment)) state = 'broken-anchor-at-source-revision';
       }
       if (!state) continue;
-      if (state === 'excluded-by-snapshot-profile') omittedLinkCount++;
+      if (state === 'excluded-by-snapshot-profile' || state === 'excluded-sensitive-file') omittedLinkCount++;
       else brokenLinkCount++;
       const key = [from, ref.line, ref.href, state].join('\0');
       if (seen.has(key)) continue;
@@ -138,8 +143,8 @@ export async function buildPortableWikiIndex({
     schema: PORTABLE_WIKI_SCHEMA,
     source: { commit: head, revisionKind: 'committed-git-tree', parser: 'wiki-core/route.mjs + markdown.mjs' },
     sections,
-    omittedLinks: defects.filter(d => d.state === 'excluded-by-snapshot-profile'),
-    unresolvedLinks: defects.filter(d => d.state !== 'excluded-by-snapshot-profile'),
+    omittedLinks: defects.filter(d => d.state === 'excluded-by-snapshot-profile' || d.state === 'excluded-sensitive-file'),
+    unresolvedLinks: defects.filter(d => d.state !== 'excluded-by-snapshot-profile' && d.state !== 'excluded-sensitive-file'),
     summary: {
       pages: pages.length, sections: sections.length, inspectedInternalLinks,
       omittedLinkCount, brokenLinkCount, ...reachability,
