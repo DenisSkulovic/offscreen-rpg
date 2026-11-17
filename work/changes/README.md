@@ -10,6 +10,8 @@ Current change: [HAR09 architectural memory](open/2026-11-17--har09-architectura
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [BOOK01 Living Book reader shell POC](open/2026-11-17--book01-reader-shell-poc/CHANGE.md) | **Proposed (unselected)** | First V1-compatible book-like Play shell; no page-curl, final styling or new engine/API |
+| [BOOK02 original Journal reader](open/2026-11-17--book02-original-journal-reader/CHANGE.md) | **Proposed (unselected, after BOOK01)** | Compact saved-passages overview and exact original passage reader on existing history cursor |
 | [HAR09 Cognee architecture-memory pilot](open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md) | **Ready (selected)** | Compare a bounded local Cognee architecture-memory trial to existing wiki/native retrieval; model download still needs a separate yes |
 | [HAR05 portable ChatGPT wiki index](open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) | **Verifying** | Export exact-HEAD headings, link-omission inventory and sanitized dirty paths; local repo test pending |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
