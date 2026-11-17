@@ -12,6 +12,7 @@ function write(root, rel, text) {
 
 function fixture() {
   const root = mkdtempSync(path.join(tmpdir(), 'wiki-route-'));
+  write(root, 'ENGINEERING.md', '# Engineering System Tour\n\nDocumented AI engineering methodology and agent workflow.\n');
   write(
     root,
     'docs/README.md',
@@ -182,6 +183,15 @@ export function runRouteSelfTest() {
       failures.push(`${name}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+
+  check('root engineering tour is indexed and discoverable by question', () => {
+    const index = buildSectionIndex(fixture(), { repoSha: 'fixture', dirty: false });
+    const tour = index.sections.find((item) => item.path === 'ENGINEERING.md' && item.heading === 'Engineering System Tour');
+    assert.ok(tour);
+    assert.equal(tour.authority, 'router');
+    const hits = findSections(index, 'Documented AI engineering methodology and agent workflow');
+    assert.ok(hits.normative.some((item) => item.path === 'ENGINEERING.md'), JSON.stringify(hits.normative, null, 2));
+  });
 
   check('question-row context stays on its own link', () => {
     const root = fixture();
