@@ -35,7 +35,7 @@ Discover under [`skills/`](skills/) — load bodies on demand when the task matc
 
 ## Repository commands (read-only orientation)
 
-- `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`)
+- `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`; `--json` prints the local SHA and dirty paths and does not contact a remote)
 - `pnpm repo:docs-health` — Change checkpoints and docs taxonomy checks
 - `python scripts/check_docs.py` — Markdown link check
 - `pnpm wiki:health` — maintained wiki graph (`docs/`, open designs, open Changes, source READMEs). Exit 1 on broken paths, broken anchors, or a docs page with no directed route from `docs/README.md`. `pnpm wiki:graph` writes JSON and DOT under gitignored `out/wiki-health/`. Neither command calls a model, and neither score is a quality grade.

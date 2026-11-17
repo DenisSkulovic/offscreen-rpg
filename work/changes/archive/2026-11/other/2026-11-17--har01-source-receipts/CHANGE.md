@@ -1,6 +1,6 @@
 # HAR01 | Machine-readable repository snapshot receipt
 
-**State: Proposed; not selected.** Developer-tooling only. **Prerequisite:** WIKI07's current selected work is reconciled; source check on fresh main. **Approval:** planning only on 2026-11-17, not code authorization. No paid provider, network probe, gameplay or Storyteller edit.
+**State: Done.** Selected and closed on 2026-11-17 after WIKI08. Developer-tooling only. No paid provider, network probe, gameplay or Storyteller edit.
 **Design:** [agent workbench target](../../../designs/open/repository-agent-workbench/TARGET.md). **Existing tool owner:** `scripts/repo-tools/brief.mjs` and root `package.json` (`pnpm repo:brief`).
 
 ## First-screen Cursor brief
@@ -27,6 +27,12 @@
 
 **Next permitted step:** owner chooses HAR01 after WIKI07; re-read latest `brief.mjs`, agree on minimal JSON shape and implement only then. `Current change` stays WIKI07 until intentionally advanced. Do not include this Proposed packet in an executor's active work.
 
-## Reconciliation ledger
+Close updates STATUS.md, work/changes/README.md, work/changes/ledger/2026-11.md, work/designs/open/repository-agent-workbench/README.md, and work/designs/open/repository-agent-workbench/TARGET.md. The tool files are scripts/repo-tools/brief.mjs and scripts/repo-tools/brief-self-test.mjs. Usage lines are .agents/README.md, .agents/rules/documentation.md, and docs/runbooks/local-development.md.
 
-**Incomplete by design (Proposed).** Before Done, populate the standard affected-claim ledger from [.agents Change template](../../../../.agents/skills/change-workflow/assets/CHANGE.md). Expected selected-impact classification: `no product/technical behavior impacted`; support that claim with actual code diff/negative proofs, not a perfunctory checkbox.
+## Reconciliation ledger (required before Done)
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | none | unchanged: the receipt reads the local checkout and does not change gameplay, Storyteller, or provider rules | scripts/repo-tools/brief.mjs | fixture-tested | a missing Git directory throws, and the JSON does not contain file contents or an environment variable | N/A |
+| .agents/README.md | evidence | changed: the command list names --json as a local SHA and dirty-path receipt | scripts/repo-tools/brief.mjs | fixture-tested | the human brief stays the same text except the working tree lines that Git itself changed | .agents/README.md |
+| STATUS.md#orientation | evidence | changed: orientation names the receipt as Done and does not claim a remote was fetched | STATUS.md | source-observed | a GitHub view of this repository is not this JSON receipt | STATUS.md |

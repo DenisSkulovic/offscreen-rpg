@@ -27,6 +27,7 @@ Repository-local maintenance shortcuts keep repeated Windows and disposable-data
 
 ```sh
 pnpm repo:brief
+pnpm repo:brief --json
 pnpm infra -- ps
 pnpm db:baseline
 pnpm db:reset:test

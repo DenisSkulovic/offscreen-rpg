@@ -37,7 +37,7 @@
 - `verification`: exact commands and outputs actually observed, plus skipped/blocked work.
 - `next_action`: bounded selected Change or named owner decision; no implicit permission.
 
-These fields form a **human-readable receipt contract**, not a demand for a new schema/daemon. HAR01 proposes a tiny machine-readable extension of existing `repo:brief` only if Cursor implements it.
+These fields form a **human-readable receipt contract**, not a demand for a new schema/daemon. HAR01 is Done: `pnpm repo:brief --json` is that local receipt. It does not fetch a remote.
 
 ## Retrieval architecture: earned complexity
 
