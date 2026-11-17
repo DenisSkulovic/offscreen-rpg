@@ -40,7 +40,7 @@ Discover under [`skills/`](skills/) — load bodies on demand when the task matc
 - `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`; `--json` prints the local SHA and dirty paths and does not contact a remote)
 - `pnpm repo:snapshot:chatgpt` — export revision-stamped source + **required portable wiki index** for ordinary ChatGPT. Explicit `--no-index` creates a source-only ZIP; see the [runbook](../docs/runbooks/chatgpt-design-snapshot.md).
 - `pnpm repo:retrieval-compare` — compare two recorded search arms on one pinned SHA. It does not search, install a tool, or call a model.
-- `pnpm repo:semantic-pilot` — replay the local search trial (`--self-test`, `--run`, or `--funnel`). `--funnel` compares short text queries with wiki-guided search and leaves an unattested vendor index uncomparable. A missing binary stays not-configured. It does not install a tool or call a paid model.
+- `pnpm repo:semantic-pilot` — replay the local search trial (`--self-test`, `--run`, or `--funnel`). `--funnel` compares short text queries with wiki-to-source navigation and leaves an unattested vendor index uncomparable. A file hit is not a verified function until an enclosing read says so. A missing binary stays not-configured. It does not install a tool or call a paid model.
 - `pnpm repo:docs-health` — Change checkpoints and docs taxonomy checks
 - `python scripts/check_docs.py` — Markdown link check
 - `pnpm wiki:health` — maintained wiki graph (`docs/`, open designs, open Changes, source READMEs). Exit 1 on broken paths, broken anchors, or a docs page with no directed route from `docs/README.md`. `pnpm wiki:graph` writes JSON and DOT under gitignored `out/wiki-health/`. Neither command calls a model, and neither score is a quality grade.

@@ -1,6 +1,6 @@
 # HAR07 | Evidence-verified source navigation
 
-**State: Ready, selected (2026-11-17).** **Executor: Cursor.** Owner authorized this bounded developer-harness implementation. The next step is code and tests, not a new retrieval platform. **Authority:** [completed C1–C4 source-route audit](../../../designs/open/repository-agent-workbench/SOURCE-ROUTE-AUDIT-2026-11-17.md), [HAR06 decision](../../../designs/open/repository-agent-workbench/HAR06-DECISION.md), and [existing wiki navigation standard](../../../../.agents/references/documentation-navigation-standard.md).
+**State: Done (2026-11-17).** **Executor: Cursor.** The clean diagnostic is `e025943facd5ecb4d910299365750a1124ffbdaa`. No case was independently reviewed. **Authority:** [completed C1–C4 source-route audit](../../../../../designs/open/repository-agent-workbench/SOURCE-ROUTE-AUDIT-2026-11-17.md), [HAR06 decision](../../../../../designs/open/repository-agent-workbench/HAR06-DECISION.md), and [existing wiki navigation standard](../../../../../../.agents/references/documentation-navigation-standard.md).
 
 ## First screen for Cursor
 
@@ -67,10 +67,32 @@ Check additional new focused tests and `pnpm wiki:health` if relevant. Do not in
 
 **Closure:** record source SHA, executed commands and outputs, negative fixtures, reviewed/unreviewed distinctions, A/B increments and costs, unresolved questions and authority impact. Reconcile developer harness docs + `STATUS.md` + Change ledger/queue; archive to `work/changes/archive/2026-11/other/` only on actual verification. Preserve HAR05 separate and Verifying until its own proof exists.
 
-## Reconciliation ledger (pending)
+## Trial result
 
-| Affected owner | Target delta | Source delta / revision | Proof tier | Negative evidence | Status/map |
-| --- | --- | --- | --- | --- | --- |
-| `scripts/repo-tools/wiki-core/retrieval-funnel.mjs` | distinguish file candidate from source-verified symbol/claim | **pending** | **not run** | same-file wrong function, C7 absent, C8 caller | developer harness only |
-| `scripts/repo-tools/retrieval-funnel-run.mjs` (+ small helper if justified) | replace B concatenation with bounded explicit source-route traversal | **pending** | **not run** | missing link, proposal edge, duplicated A evidence, stale SHA | workbench / agent command list |
-| Game product + technical contract | **unchanged** | none | n/a | any discovered doc gap recorded as proposed follow-up, not silently rewritten | STATUS only for validated harness result |
+Clean tree `e025943facd5ecb4d910299365750a1124ffbdaa`. Report schema `repo.retrieval-funnel.v2`. Every case stays `unreviewed`, so `verifiedCount` is 0 and the run is diagnostic only. Arm C stays uncomparable because its index revision is not attested. No model was called.
+
+Commands completed: `pnpm repo:semantic-pilot --self-test`, `pnpm repo:retrieval-compare --self-test`, `pnpm wiki:find --self-test`, and `pnpm repo:semantic-pilot --funnel`. `pnpm wiki:health` was not required for this slice.
+
+C4's rejection line is a file candidate even though that line does not name the function. An enclosing read proves `validateImmediateActionProposal`. Fused rank is 5, so the diagnostic evidence check is true. Arm A (short text search) found that line at rank 2. Arm B did not: `wiki:find` never placed `docs/technical/engine/mechanics-and-capabilities.md` in the eight headings. A separate fixture that starts from that page does follow `@offscreen/game/immediate-actions` to the same function. A line whose enclosing read names a different function stays unverified.
+
+C1, C2 and C3 still miss their owner files in both arms. B's traces show where navigation stopped:
+
+- C1 starts at `docs/technical/platform/data-and-persistence.md#implemented-item-transfer`, resolves `@offscreen/application/stories` to `packages/application/src/stories/index.ts`, and does not follow `./persistence` because that import specifier shares no question token. The 12-edge budget is then spent. `itemTransferBlocked` is not reached.
+- C2 reaches `packages/application/README.md` through two source-map hops. The edge budget is already spent, so the Execution row is not opened and `execution-stages.ts` is not reached.
+- C3 reaches the same application README, after spending edges inside `packages/storyteller` context modules. `publication.ts` is not reached.
+
+Arm B is not a copy of arm A. C4's owner is A-only. The C1–C3 source files above are B-only and are not the oracle owners. Shared provenance is counted once. Distinct symbols in one file stay separate.
+
+N1 stays hidden. C7 abstains. D8 stays freshness-only. A proposal edge does not become selected authority.
+
+Files named for the close check: `scripts/repo-tools/wiki-core/source-route.mjs`, `scripts/repo-tools/wiki-core/retrieval-funnel.mjs`, `scripts/repo-tools/retrieval-funnel-run.mjs`, `scripts/repo-tools/retrieval-funnel-self-test.mjs`, `scripts/repo-tools/semantic-pilot.mjs`, `.agents/README.md`, `STATUS.md`, `work/changes/README.md`, `work/changes/ledger/2026-11.md`, and `work/designs/open/repository-agent-workbench/README.md`.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product or technical game behavior impacted | none | unchanged: navigation scores recorded hits and does not change gameplay or Storyteller rules | scripts/repo-tools/wiki-core/source-route.mjs at e025943facd5ecb4d910299365750a1124ffbdaa | fixture-tested | a different function in the same file stays unverified, and a secret path is not traversed | N/A |
+| scripts/repo-tools/wiki-core/retrieval-funnel.mjs | evidence | changed: file recall is separate from an enclosing-read symbol proof | scripts/repo-tools/wiki-core/retrieval-funnel.mjs at e025943facd5ecb4d910299365750a1124ffbdaa | fixture-tested | the C4 line without a matching enclosing symbol is a file hit and not evidence | retrieval-funnel.mjs |
+| scripts/repo-tools/retrieval-funnel-run.mjs | evidence | changed: arm B follows wiki headings, maps and imports, and does not copy arm A | scripts/repo-tools/wiki-core/source-route.mjs at e025943facd5ecb4d910299365750a1124ffbdaa | source-observed | a missing link, an excluded secret path, and a spent edge budget stop with a reason | retrieval-funnel-run.mjs |
+| .agents/README.md | evidence | changed: the command list says arm B navigates links and an unattested index stays uncomparable | scripts/repo-tools/semantic-pilot.mjs | fixture-tested | the self-test covers the synthetic route, the real mechanics-page route, and a duplicated provenance id | .agents/README.md |
+| STATUS.md#orientation | evidence | changed: orientation records a diagnostic navigation run and does not claim a verified win | STATUS.md | source-observed | zero cases are independently reviewed and C1–C3 still miss | STATUS.md |
