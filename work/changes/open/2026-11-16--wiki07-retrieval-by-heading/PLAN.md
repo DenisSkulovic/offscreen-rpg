@@ -4,9 +4,9 @@
 
 ## Current checkpoint
 
-- P1–P4 are in progress on this dirty worktree. `pnpm wiki:find` and `pnpm wiki:read` exist. Self-test passed.
-- P5 is not accepted. An independent reader judged the original ten questions on clean `8aa952ac`. The ranker was then repaired and the same ten were run again. That second run is a repair check, not a new held-out review. The chamber question still opens the page title.
-- Do not mark Done from the self-test or from re-running these ten questions.
+- A third chat judged ten newer questions on dirty `5263bf50`: three owners, one router, six misses. None of those finds printed the NOT SELECTED line. The ranker now follows a same-page link before a broader title, prefers a heading whose prose covers rarer query words, and puts a named open design in the proposal lane.
+- Re-running all thirty questions now hits the headings those chats named. That is a repair check, not a new exam. The first exam's chamber question still opens the page title. The quiet-hour sentence is on a page marked proposed, so that find uses the NOT SELECTED lane.
+- Do not mark Done from any of the three sets.
 
 ## Remaining steps
 

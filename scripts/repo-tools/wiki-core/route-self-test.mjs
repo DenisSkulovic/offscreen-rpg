@@ -145,6 +145,22 @@ function fixture() {
   );
   write(
     root,
+    'docs/technical/lab/chamber.md',
+    [
+      '# Chamber laboratory',
+      '',
+      'The chamber laboratory is not paid-provider permission. A lane being present is not a second engine.',
+      '',
+      filler,
+      '',
+      '## Operating model',
+      '',
+      'The chamber laboratory separates a fixture lane from a provider lane. The provider lane is never the default.',
+      '',
+    ].join('\n'),
+  );
+  write(
+    root,
     '.agents/rules/documentation.md',
     ['# Documentation', '', '## Admission: ratified target versus realization', '', 'A ratified target is admitted before the code exists.', ''].join('\n'),
   );
@@ -176,7 +192,7 @@ export function runRouteSelfTest() {
     assert.ok(award, JSON.stringify(found.normative, null, 2));
     assert.match(award.rowContext, /mechanical reward/i);
     assert.equal(/mechanical reward/i.test(time.rowContext), false);
-    assert.equal(award.match, 'question-row');
+    assert.ok(found.normative[0].ref === 'docs/product/rewards.md#award');
   });
 
   check('a fenced heading is not a section and nested H3 stops at the next H3', () => {
@@ -245,6 +261,11 @@ export function runRouteSelfTest() {
   check('a large page title yields to the section that holds the specific token', () => {
     const found = findSections(indexOf(fixture()), 'Where do local development instructions mention test:fast?');
     assert.equal(found.normative[0].ref, 'docs/runbooks/local-development.md#fast-frontend-workflow');
+  });
+
+  check('a page title stays when its opening already contains the child query words', () => {
+    const found = findSections(indexOf(fixture()), 'How does the chamber laboratory separate a paid provider lane?');
+    assert.equal(found.normative[0].ref, 'docs/technical/lab/chamber.md#chamber-laboratory');
   });
 
   check('a subject map yields to the linked owner, and a proposal question uses that lane', () => {

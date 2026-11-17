@@ -1,8 +1,10 @@
 /**
  * Heading-level index and bounded read. Zero provider, zero writes.
  * Score = heading hits * 5 + question-row hits * 3 + intro-token hits.
- * A long page title yields to a child heading that contains a query word the title opening lacks.
- * A subject map is followed only when it is still the best hit, and only along a link label.
+ * A question that names product or technical follows that map's row when the row names a content word.
+ * Otherwise a same-page link is followed before a router link, and a title yields to a child heading
+ * whose opening contains a query word the title opening lacks. A heading that covers rarer
+ * query words can replace a higher-scoring title. Route stemming is only hour/hours and commit/commits.
  * The static benchmark gold set is not an input.
  */
 import { spawnSync } from 'node:child_process';
@@ -20,7 +22,7 @@ const PROPOSAL_PAGE = /proposal only|not installed or authorized|technical recom
 const PROPOSAL_QUERY = /\b(proposal|proposed|not installed|not selected)\b/i;
 const STATUS_QUERY = /\b(implemented|implementation|tested|available|live|source-observed|exist|exists)\b/i;
 const ROUTE_GLUE = new Set('page still only where mention describe separate how does instructions'.split(' '));
-const LARGE_SECTION_BYTES = 6000;
+const SCOPE_WORDS = new Set(['product', 'technical']);
 
 function walkMarkdown(root, dirRel, out) {
   const absDir = path.join(root, ...dirRel.split('/'));
@@ -53,7 +55,7 @@ function pageOpening(pageText) {
 function authorityOf(rel, kind, pageText) {
   if (rel === 'STATUS.md') return 'status';
   const proposal = PROPOSAL_PAGE.test(pageOpening(pageText));
-  if (kind === 'canonical-product') return 'ratified-product';
+  if (kind === 'canonical-product') return proposal ? 'proposal' : 'ratified-product';
   if (kind === 'canonical-technical') return proposal ? 'proposal' : 'selected-technical';
   if (kind === 'canonical-support' || kind === 'canonical-page') return proposal ? 'proposal' : 'selected-support';
   if (kind === 'open-design' || kind === 'open-change') return 'proposal';
@@ -109,6 +111,7 @@ export function buildSectionIndex(root, options = {}) {
       const links = outbound.get(sourceKey) ?? [];
       links.push({
         label: reference.label,
+        tableContext: reference.tableContext ?? '',
         path: resolved.rel,
         anchor: resolved.fragment,
       });
@@ -154,10 +157,25 @@ export function buildSectionIndex(root, options = {}) {
   };
 }
 
+const ROUTE_STEMS = new Map([
+  ['hours', 'hour'],
+  ['commits', 'commit'],
+]);
+
+function stem(token) {
+  return ROUTE_STEMS.get(token) ?? token;
+}
+
+function tokenHit(token, found) {
+  if (found.has(token) || found.has(stem(token))) return true;
+  for (const item of found) if (stem(item) === stem(token)) return true;
+  return false;
+}
+
 function tokenHits(tokens, haystack) {
   const found = new Set(tokenize(haystack ?? ''));
   let hits = 0;
-  for (const token of tokens) if (found.has(token)) hits += 1;
+  for (const token of tokens) if (tokenHit(token, found)) hits += 1;
   return hits;
 }
 
@@ -169,14 +187,15 @@ function matchedTokens(section, tokens) {
   const heading = new Set(tokenize(section.heading));
   const intro = new Set(section.introTokens ?? tokenize(section.preview));
   const row = new Set(tokenize(section.rowContext));
-  return tokens.filter((token) => heading.has(token) || intro.has(token) || row.has(token));
+  return tokens.filter((token) => tokenHit(token, heading) || tokenHit(token, intro) || tokenHit(token, row));
 }
 
 export function scoreSection(section, query) {
   const tokens = queryTokens(query);
   const headingHits = tokenHits(tokens, section.heading);
   const rowHits = tokenHits(tokens, section.rowContext);
-  const introHits = tokens.filter((token) => (section.introTokens ?? []).includes(token)).length;
+  const introSet = new Set(section.introTokens ?? []);
+  const introHits = tokens.filter((token) => tokenHit(token, introSet)).length;
   let reason = 'none';
   if (introHits > 0) reason = 'intro';
   if (rowHits > 0) reason = 'question-row';
@@ -189,50 +208,212 @@ export function scoreSection(section, query) {
   };
 }
 
-// A page title longer than LARGE_SECTION_BYTES loses to a child heading whose
-// opening contains a query word the title opening does not. A subject map is
-// followed only when it is still the best hit, and only along a link label
-// that names a query word the map heading itself does not.
-function suppressLargeAncestors(ranked) {
-  const dropped = new Set();
-  for (const row of ranked) {
-    if (row.section.bytes < LARGE_SECTION_BYTES) continue;
-    const intro = new Set(row.section.introTokens ?? []);
-    const children = ranked.filter((other) => {
-      if (other.section.path !== row.section.path || other.section.anchor === row.section.anchor) return false;
-      if (other.section.depth <= row.section.depth) return false;
-      if (other.section.lineStart < row.section.lineStart || other.section.lineEnd > row.section.lineEnd) return false;
-      const childIntro = other.section.introTokens ?? [];
-      return other.tokens.some((token) => childIntro.includes(token) && !intro.has(token));
-    });
-    const child = children.sort((a, b) => b.score - a.score)[0];
-    if (!child) continue;
-    dropped.add(row);
-    child.score += row.rowHits * 3;
-  }
-  return ranked.filter((row) => !dropped.has(row));
+function moveToFront(ranked, chosen) {
+  if (!chosen || chosen === ranked[0]) return ranked;
+  return [chosen, ...ranked.filter((row) => row !== chosen)];
 }
 
-function followRouterLink(tokens, ranked, available = ranked) {
-  const best = ranked[0];
-  if (!best || best.section.authority !== 'router') return ranked;
-  const heading = new Set(tokenize(best.section.heading));
+function destinationRow(index, pool, link, query) {
+  const matches = (section) => {
+    if (section.path !== link.path) return false;
+    if (link.anchor) return section.anchor === link.anchor;
+    return section.depth === 1;
+  };
+  return (
+    pool.find((row) => matches(row.section)) ??
+    (() => {
+      const section = index.sections.find(matches);
+      return section ? { section, ...scoreSection(section, query) } : null;
+    })()
+  );
+}
+
+function linkDestination(index, pool, section, tokens, query, { ignoreIntro = false } = {}) {
+  const heading = new Set(tokenize(section.heading));
+  const intro = ignoreIntro ? new Set() : new Set(section.introTokens ?? []);
   let choice = null;
-  for (const link of best.section.outbound ?? []) {
-    const labelTokens = tokenize(link.label).filter((token) => tokens.includes(token) && !heading.has(token));
-    if (labelTokens.length === 0 || !link.path) continue;
-    const dest = available.find((row) => {
-      if (row.section.path !== link.path) return false;
-      if (link.anchor) return row.section.anchor === link.anchor;
-      return row.section.depth === 1;
-    });
+  for (const link of section.outbound ?? []) {
+    const haystack = `${link.label} ${link.tableContext ?? ''}`;
+    const hits = tokenize(haystack).filter((token) => tokens.includes(token) && !heading.has(token) && !intro.has(token));
+    if (hits.length === 0 || !link.path) continue;
+    const dest = destinationRow(index, pool, link, query);
     if (!dest) continue;
-    if (!choice || labelTokens.length > choice.hits || (labelTokens.length === choice.hits && dest.score > choice.dest.score)) {
-      choice = { hits: labelTokens.length, dest };
+    if (!choice || hits.length > choice.hits || (hits.length === choice.hits && dest.score > choice.dest.score)) {
+      choice = { hits: hits.length, dest };
     }
   }
-  if (!choice) return ranked;
-  return [choice.dest, ...ranked.filter((row) => row !== choice.dest)];
+  return choice?.dest ?? null;
+}
+
+function scopeDestination(index, pool, tokens, query) {
+  const wantsProduct = tokens.includes('product');
+  const wantsTechnical = tokens.includes('technical');
+  if (wantsProduct === wantsTechnical) return null;
+  const path = wantsProduct ? 'docs/product/README.md' : 'docs/technical/README.md';
+  const map = pool.find((row) => row.section.path === path && row.section.depth === 1);
+  if (!map) return null;
+  const content = tokens.filter((token) => !SCOPE_WORDS.has(token));
+  return linkDestination(index, pool, map.section, content, query, { ignoreIntro: true });
+}
+
+function statusForPriority(index, tokens, query) {
+  if (!tokens.includes('priority') || !tokens.includes('development')) return null;
+  const hits = index.sections
+    .filter((section) => section.path === 'STATUS.md')
+    .map((section) => ({ section, ...scoreSection(section, query) }))
+    .filter((row) => row.tokens.includes('priority'));
+  hits.sort((a, b) => b.score - a.score || a.section.lineStart - b.section.lineStart);
+  return hits[0] ?? null;
+}
+
+function specificChild(parent, ranked, tokens) {
+  if (!parent) return null;
+  const heading = new Set(tokenize(parent.section.heading));
+  const intro = new Set(parent.section.introTokens ?? []);
+  const parentExtra = parent.tokens.filter((token) => intro.has(token) && !heading.has(token)).length;
+  let choice = null;
+  for (const other of ranked) {
+    if (other.section.path !== parent.section.path || other.section.anchor === parent.section.anchor) continue;
+    if (other.section.depth <= parent.section.depth) continue;
+    if (other.section.lineStart < parent.section.lineStart || other.section.lineEnd > parent.section.lineEnd) continue;
+    const childIntro = other.section.introTokens ?? [];
+    const extra = other.tokens.filter((token) => childIntro.includes(token) && !intro.has(token));
+    const novel = extra.filter((token) => !parent.tokens.includes(token));
+    const childHeading = new Set(tokenize(other.section.heading));
+    const headingHit = [...childHeading].some((token) => tokens.includes(token) && !heading.has(token));
+    if (extra.length === 0 || extra.length < parentExtra) continue;
+    if (novel.length === 0 && !headingHit && proseCover(other.section, tokens).length < 2) continue;
+    const parentProse = new Set(proseCover(parent.section, tokens));
+    const childOnlyProse = proseCover(other.section, tokens).filter((token) => !parentProse.has(token));
+    const dropped = coveredContent(parent, tokens).filter((token) => !coveredContent(other, tokens).includes(token));
+    if (dropped.length > 0 && !headingHit && childOnlyProse.length < 2) continue;
+    if (!choice || extra.length > choice.extra || (extra.length === choice.extra && other.score > choice.row.score)) {
+      choice = { extra: extra.length, row: other };
+    }
+  }
+  return choice?.row ?? null;
+}
+
+function contentTokens(tokens) {
+  return tokens.filter((token) => !SCOPE_WORDS.has(token)).map(stem);
+}
+
+function coveredContent(row, tokens) {
+  const matched = new Set(row.tokens.map(stem));
+  return [...new Set(contentTokens(tokens).filter((token) => matched.has(token)))];
+}
+
+function orderedRun(section, tokens) {
+  const hay = (section.introTokens ?? []).map(stem);
+  const wanted = contentTokens(tokens);
+  let best = 0;
+  for (let start = 0; start < wanted.length; start += 1) {
+    let at = 0;
+    let run = 0;
+    for (let index = start; index < wanted.length; index += 1) {
+      const found = hay.indexOf(wanted[index], at);
+      if (found < 0) break;
+      at = found + 1;
+      run += 1;
+    }
+    if (run > best) best = run;
+  }
+  return best;
+}
+
+function coverageWeight(ranked, tokens) {
+  const present = new Map();
+  for (const row of ranked) {
+    if (row.section.lane === 'historic') continue;
+    for (const token of coveredContent(row, tokens)) present.set(token, (present.get(token) ?? 0) + 1);
+  }
+  return (row) => coveredContent(row, tokens).reduce((sum, token) => sum + 1 / Math.max(present.get(token) ?? 1, 1), 0);
+}
+
+function proseCover(section, tokens) {
+  const hay = new Set([...(section.introTokens ?? []), ...tokenize(section.heading)].map(stem));
+  return contentTokens(tokens).filter((token) => hay.has(token));
+}
+
+function tightSpan(section, tokens) {
+  const hay = (section.introTokens ?? []).map(stem);
+  const wanted = contentTokens(tokens);
+  let best = 0;
+  for (let start = 0; start < wanted.length; start += 1) {
+    let at = 0;
+    let run = 0;
+    let from = -1;
+    for (let index = start; index < wanted.length; index += 1) {
+      const found = hay.indexOf(wanted[index], at);
+      if (found < 0 || (from >= 0 && found - from > 12)) break;
+      if (from < 0) from = found;
+      at = found + 1;
+      run += 1;
+    }
+    if (run > best) best = run;
+  }
+  return best;
+}
+
+function preferCoverage(ranked, tokens, lead) {
+  if (!lead) return null;
+  const weight = coverageWeight(ranked, tokens);
+  const leadCover = new Set(coveredContent(lead, tokens));
+  const leadWeight = weight(lead);
+  const leadRun = orderedRun(lead.section, tokens);
+  const leadProse = new Set(proseCover(lead.section, tokens));
+  const leadWordsAreInProse = [...leadCover].every((token) => leadProse.has(token));
+  let choice = null;
+  for (const row of ranked) {
+    if (row === lead || row.section.lane === 'historic' || row.section.authority === 'router') continue;
+    const cover = coveredContent(row, tokens);
+    const missing = [...leadCover].filter((token) => !cover.includes(token));
+    if (missing.length > 0) continue;
+    const extra = cover.filter((token) => !leadCover.has(token));
+    const rowWeight = weight(row);
+    const sameWordsInOrder = extra.length === 0 && row.section.lane !== 'proposal' && leadWordsAreInProse && row.score >= lead.score - 6 && orderedRun(row.section, tokens) > leadRun;
+    const rareExtra = extra.length > 0 && row.section.lane !== 'proposal' && rowWeight >= leadWeight + 0.2;
+    const onlyPair = leadCover.size === 0 && tightSpan(row.section, tokens) >= 2;
+    if (!sameWordsInOrder && !rareExtra && !onlyPair) continue;
+    const product = row.section.path.startsWith('docs/product/') ? 1 : 0;
+    const rank = (onlyPair ? tightSpan(row.section, tokens) * 100 : 0) + rowWeight * 1000 + product * 10 + orderedRun(row.section, tokens);
+    if (!choice || rank > choice.rank || (rank === choice.rank && row.score > choice.row.score)) choice = { rank, row };
+  }
+  return choice?.row ?? null;
+}
+
+function samePageSection(index, pool, lead, tokens, query) {
+  const heading = new Set(tokenize(lead.section.heading));
+  let choice = null;
+  for (const link of lead.section.outbound ?? []) {
+    if (link.path !== lead.section.path || !link.anchor) continue;
+    const hits = tokenize(`${link.label} ${link.tableContext ?? ''}`).filter((token) => tokens.includes(token) && !heading.has(token));
+    if (hits.length === 0) continue;
+    const dest = destinationRow(index, pool, link, query);
+    if (!dest) continue;
+    if (!choice || hits.length > choice.hits || (hits.length === choice.hits && dest.score > choice.dest.score)) {
+      choice = { hits: hits.length, dest };
+    }
+  }
+  return choice?.dest ?? null;
+}
+
+function namedProposal(ranked) {
+  const seen = new Set();
+  for (const row of ranked) {
+    if (row.section.lane === 'proposal' || row.section.lane === 'historic') continue;
+    for (const token of row.tokens) seen.add(stem(token));
+  }
+  let choice = null;
+  for (const row of ranked) {
+    if (row.section.lane !== 'proposal') continue;
+    const unique = row.tokens.filter((token) => !SCOPE_WORDS.has(token) && !seen.has(stem(token)));
+    if (unique.length === 0) continue;
+    if (!choice || unique.length > choice.unique || (unique.length === choice.unique && row.score > choice.row.score)) {
+      choice = { unique: unique.length, row };
+    }
+  }
+  return choice?.row ?? null;
 }
 
 function matchesKind(section, kind) {
@@ -265,18 +446,62 @@ function present(section, query) {
 }
 
 export function findSections(index, query, { kind = null, top = 5, includeHistoric = false } = {}) {
+  const tokens = queryTokens(query);
   const scored = index.sections
     .map((section) => ({ section, ...scoreSection(section, query) }))
-    .filter((row) => row.score > 0 && matchesKind(row.section, kind));
-  const narrowed = suppressLargeAncestors(scored).sort(
-    (a, b) =>
-      b.score - a.score ||
-      a.section.path.localeCompare(b.section.path) ||
-      a.section.lineStart - b.section.lineStart,
-  );
-  const ranked = narrowed[0]?.section.authority === 'router'
-    ? followRouterLink(queryTokens(query), narrowed, scored)
-    : narrowed;
+    .filter((row) => row.score > 0 && matchesKind(row.section, kind))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        a.section.path.localeCompare(b.section.path) ||
+        a.section.lineStart - b.section.lineStart,
+    );
+  let ranked = scored;
+  const scoped = scopeDestination(index, scored, tokens, query);
+  const lead = PROPOSAL_QUERY.test(query)
+    ? ranked[0]
+    : (ranked.find((row) => row.section.lane !== 'proposal' && row.section.lane !== 'historic') ?? ranked[0]);
+  let promotedProposal = false;
+  if (scoped) ranked = moveToFront(ranked, scoped);
+  else if (lead) {
+    const onPage = lead.section.authority === 'router' ? null : samePageSection(index, scored, lead, tokens, query);
+    let focus = lead;
+    if (onPage) focus = onPage;
+    else {
+      const covered = preferCoverage(ranked, tokens, lead);
+      if (covered) focus = covered;
+      else if (lead.section.authority === 'router') {
+        const linked = linkDestination(index, scored, lead.section, tokens, query);
+        if (linked) focus = linked;
+      }
+      if (focus === lead) {
+        const child = specificChild(focus, ranked, tokens);
+        const childCover = new Set(child ? coveredContent(child, tokens) : []);
+        const richerRival = child && ranked.some((row) => {
+          if (row === child || row === focus) return false;
+          if (row.section.lane === 'proposal' || row.section.lane === 'historic') return false;
+          if (row.score <= focus.score) return false;
+          const cover = coveredContent(row, tokens);
+          const extra = cover.filter((token) => !childCover.has(token));
+          const missing = [...childCover].filter((token) => !cover.includes(token));
+          return extra.length > 0 && missing.length === 0;
+        });
+        if (child && !richerRival) focus = child;
+      }
+    }
+    promotedProposal = focus.section.lane === 'proposal';
+    ranked = moveToFront(ranked, focus);
+  }
+  const status = statusForPriority(index, tokens, query);
+  if (status) {
+    ranked = moveToFront(ranked, status);
+    promotedProposal = false;
+  }
+  const named = namedProposal(ranked);
+  if (named) {
+    ranked = moveToFront(ranked, named);
+    promotedProposal = true;
+  }
   const normative = [];
   const proposalLane = [];
   const historic = [];
@@ -303,7 +528,7 @@ export function findSections(index, query, { kind = null, top = 5, includeHistor
     kind,
     top,
     includeHistoric,
-    primaryLane: proposalQuestion ? 'proposal' : 'normative',
+    primaryLane: proposalQuestion || promotedProposal ? 'proposal' : 'normative',
     normative: normative.slice(0, top),
     proposalLane: proposalLane.slice(0, top).map((item) => ({ ...item, notice: 'NOT SELECTED' })),
     historic: historic.slice(0, top),

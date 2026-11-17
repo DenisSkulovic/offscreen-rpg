@@ -50,7 +50,12 @@ export async function main(argv = process.argv.slice(2)) {
   console.log(`${payload.schema} find @ ${meta.repoSha ?? 'unknown'}${meta.dirty ? ' dirty' : ''}`);
   console.log(`Query: ${payload.query}`);
   if (payload.primaryLane === 'proposal') {
-    console.log('This question asks for a proposal. The primary hits are the NOT SELECTED lane.');
+    const asked = /\b(proposal|proposed|not installed|not selected)\b/i.test(payload.query);
+    console.log(
+      asked
+        ? 'This question asks for a proposal. The primary hits are the NOT SELECTED lane.'
+        : 'The primary hits are the NOT SELECTED lane.',
+    );
   }
   const printItem = (item) => {
     console.log(
@@ -58,16 +63,26 @@ export async function main(argv = process.argv.slice(2)) {
     );
     console.log(`  ${item.preview.slice(0, 220)}`);
   };
-  console.log('Normative:');
-  if (payload.normative.length === 0) console.log('  (none)');
-  for (const item of payload.normative) printItem(item);
-  if (payload.statusCompanion && !payload.normative.some((item) => item.ref === payload.statusCompanion.ref)) {
-    console.log('Status companion:');
-    printItem(payload.statusCompanion);
-  }
-  if (payload.proposalLane.length > 0) {
+  const printProposal = () => {
+    if (payload.proposalLane.length === 0) return;
     console.log('Proposal lane (NOT SELECTED):');
     for (const item of payload.proposalLane) printItem(item);
+  };
+  const printNormative = () => {
+    console.log('Normative:');
+    if (payload.normative.length === 0) console.log('  (none)');
+    for (const item of payload.normative) printItem(item);
+    if (payload.statusCompanion && !payload.normative.some((item) => item.ref === payload.statusCompanion.ref)) {
+      console.log('Status companion:');
+      printItem(payload.statusCompanion);
+    }
+  };
+  if (payload.primaryLane === 'proposal') {
+    printProposal();
+    printNormative();
+  } else {
+    printNormative();
+    printProposal();
   }
   if (payload.historic.length > 0) {
     console.log('Historic:');

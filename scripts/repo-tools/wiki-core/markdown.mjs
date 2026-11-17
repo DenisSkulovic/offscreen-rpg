@@ -56,6 +56,11 @@ export function parseMarkdownDocument(markdown) {
     currentHeading = assigned;
   }
 
+  function tableContextOf(parents) {
+    const row = [...parents].reverse().find((node) => node.type === 'tableRow');
+    return row ? plain(row).replace(/\s+/g, ' ').trim().slice(0, 500) : '';
+  }
+
   function contextOf(parents) {
     const row = [...parents].reverse().find((node) => node.type === 'tableRow');
     const parent =
@@ -83,6 +88,7 @@ export function parseMarkdownDocument(markdown) {
       headingId: currentHeading?.id ?? null,
       headingText: currentHeading?.text ?? null,
       context: contextOf(parents),
+      tableContext: tableContextOf(parents),
       undefinedReference,
     });
   }

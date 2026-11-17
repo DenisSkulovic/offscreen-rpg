@@ -60,7 +60,24 @@ Run locally after the ranker change. These are the same prompts, so they are no 
 | Q9 | `docs/README.md#documentation` | 2880, complete page | Matches the owner |
 | Q10 | `.agents/rules/documentation.md#admission-ratified-target-versus-realization` | 900, complete section | Matches the requested heading |
 
-Q5 is the remaining router. Do not mark this packet Done from this table.
+Q5 stays on the page title. That is a limit, not an unfinished special case. For "How does the chamber lab separate fixtures from a paid provider lane?" the operating-model section matches `chamber`, `lab`, `provider`, and `lane`. The page opening matches those four and also `paid`. "Paid" does not occur in `#1-operating-model`. The default excerpt of the title is 4701 bytes and still includes the lane table and the row marked never the default. A self-test fixture now keeps a page title when its opening already contains the child section's query words. Do not mark this packet Done from this table.
+
+## Checks after `5263bf50`
+
+Run on a dirty worktree. No provider call. `git diff --check` produced no output.
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `git rev-parse HEAD` | 0 | `5263bf5064ef39b472e6b6837a7bea9705d15676` |
+| `pnpm wiki:find --self-test` | 0 | Passed, including the page-title limit above |
+| `pnpm wiki:read --self-test` | 0 | Passed |
+| `pnpm wiki:find "What authorizes time progression?" --kind product` | 0 | Top ref `docs/product/gameplay/time-and-autonomy.md#pace`, 6489 bytes. Not independently graded |
+| `pnpm wiki:find "implementer-checked-headings"` | 0 | No hit under `scripts/repo-tools/wiki-benchmarks/`. The words also occur in agent references, so those pages are returned |
+| `pnpm wiki:read docs/technical/storyteller/context-and-memory.md --outline` | 0 | 17 headings. `one-owner-per-kind-of-truth` is lines 15–35, 3807 bytes. `a-concrete-workspace` is 17307 bytes |
+| `pnpm wiki:health` | 0 | 74/74 reachable, p50 2, p95 3, max 3, 0 broken paths or anchors. The same 3 dead-end warnings remain. 814 ms |
+| `python scripts/check_docs.py` | 0 | 233 Markdown files, 0 problems |
+
+One `pnpm wiki:find` for the time-progression question took 1699 ms, including process start. That is local CLI time, not a model-token measurement.
 
 The requirements below are still the acceptance bar. The table above is what was actually run.
 
@@ -74,6 +91,54 @@ The requirements below are still the acceptance bar. The table above is what was
 - A yes/no source-status query suggests normative contract and `STATUS` companion. It does not present a proposed Change as selected gameplay truth.
 - Agent Change already names precise heading: direct `wiki:read` must be possible without an unnecessary initial full corpus search.
 - Existing WIKI05 benchmark gold must **not** enter the live route ranking. An intentionally query-like benchmark identifier absent from docs cannot reveal hidden answer keys.
+
+## Fresh exam on dirty `5263bf50`
+
+A second chat ran ten new questions. It did not reuse the first ten. Tree was dirty with the chamber-limit fixture and these packet notes. No provider call.
+
+| Id | Verdict | Top ref at that time | Read instead |
+| --- | --- | --- | --- |
+| 1 | Owner | `docs/product/experience/principles.md#experience-principles--player-facing-non-negotiables` | — |
+| 2 | Miss | `docs/technical/client/presentation-runtime.md#product-promise` | `docs/product/gameplay/rules.md#gameplay-rules--dd-foundation-and-mechanical-promises` |
+| 3 | Owner | `docs/technical/storyteller/context-and-memory.md#campaign-bootstrap` | Truncates before the railroad and ending refusals |
+| 4 | Owner | `docs/technical/lab/chamber-and-fixtures.md#9-authority-safety-and-cost` | — |
+| 5 | Owner | `work/changes/README.md#work-changes--selection-queue` | — |
+| 6 | Owner | `docs/technical/storyteller/context-and-memory.md#publication-across-files-and-the-execution-ledger` | — |
+| 7 | Miss | `docs/product/gameplay/time-and-autonomy.md#notifications-and-reliability` | `docs/technical/platform/notifications.md#notifications-and-reaching-the-player` |
+| 8 | Router | `AGENTS.md#offscreen-rpg--coding-agent-entry` | `AGENTS.md#boundaries` |
+| 9 | Owner | `docs/product/gameplay/worlds-and-characters.md#worlds-and-characters--flexible-forms-sparse-identity` | — |
+| 10 | Miss | `AGENTS.md#offscreen-rpg--coding-agent-entry` | `.agents/references/documentation-navigation-standard.md#mechanical-retrieval-protocol-including-windows` |
+
+Question 3's excerpt stops at line 134 of 142 and drops the railroad refusal, the no-grand-narrative refusal, and the refusal to precommit the player's ending.
+
+## Repair check, same fresh questions
+
+After the ranker change, those ten tops are the "read instead" headings, or the original owner where the verdict was already Owner. `pnpm wiki:find --self-test` passed. The first ten routes were rechecked and still land on their earlier targets, including STATUS for the current development priority and `#fast-frontend-workflow` for `test:fast`. This is the same exam, run again by the implementer. It does not close the packet.
+
+## Third exam on dirty `5263bf50`
+
+A third chat ran ten newer questions. It did not reuse the first twenty. The worktree was still dirty. No provider call. None of the ten finds printed "The primary hits are the NOT SELECTED lane."
+
+| Id | Verdict | Top ref at that time | Read instead |
+| --- | --- | --- | --- |
+| 1 | Miss | `docs/technical/storyteller/provider-boundary.md#durable-breakpoint-lifecycle` | `docs/technical/lab/chamber-and-fixtures.md#1-operating-model` |
+| 2 | Router | `docs/runbooks/local-development.md#local-development` | `docs/runbooks/local-development.md#postgresql-component` |
+| 3 | Miss | `docs/product/admin/README.md#admin-product` | `docs/product/admin/ai-engineering-and-investigation.md#incident-shape` |
+| 4 | Owner | `docs/technical/client/presentation-runtime.md#selected-presentation-language-v1` | — |
+| 5 | Miss | `docs/technical/engine/authority-and-transitions.md#a-minimum-state-ledger` | `docs/technical/engine/authority-and-transitions.md#boundary-follow-ups-and-task-contracts` |
+| 6 | Owner | `docs/product/gameplay/rules.md#rule-libraries-and-adapters` | — |
+| 7 | Miss | `.agents/rules/spending.md#live-model-spending-constraint` | `docs/technical/storyteller/request-context-and-cost.md#current-development-allowance` |
+| 8 | Miss | `docs/product/admin/ai-engineering-and-investigation.md#ai-engineering-and-investigation` | `docs/technical/admin/investigation-and-privacy.md#admin-read-projections-search-provenance-and-privacy-boundaries` |
+| 9 | Owner | `docs/runbooks/local-development.md#headless-play-and-agent-operation` | — |
+| 10 | Miss | `docs/technical/storyteller/context-and-memory.md#mechanical-continuity-dependencies--s3-design` | `work/designs/open/repository-agent-workbench/README.md#decision-in-one-screen` |
+
+Question 3's sentence is on a page whose opening says "Status: proposed workspace." Question 9's default read still cuts the later refusals about `.env.openrouter`, a held packet, and the live memory-evaluation command. Question 10's page is an open design.
+
+## Repair check, all thirty questions
+
+Run by the implementer after the third exam. These questions are no longer held out. `pnpm wiki:find --self-test` and `pnpm wiki:read --self-test` passed. No provider call.
+
+The thirty tops now match the headings named above, including the first exam's chamber page title and the second exam's ten headings. Question 3 and question 10 print "The primary hits are the NOT SELECTED lane." Question 3 does that because the page is marked proposed, not because the question asked for a proposal. The first exam's chamber question still opens the page title. Do not mark this packet Done from this remeasure.
 
 ## Comparative trial (no LLM)
 
