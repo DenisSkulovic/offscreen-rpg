@@ -66,6 +66,7 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
     put(root, 'node_modules/bad/index.js', 'bad dependency');
     put(root, '.env.secret', 'TOPSECRET');
     put(root, 'out/tracked-output.txt', 'generated');
+    put(root, 'scripts/repo-tools/wiki-core/route.mjs', 'tracked parser');
     git(root, 'add', '-f', '.');
     git(root, 'commit', '-qm', 'fixture');
     put(root, 'packages/game/src/main.ts', 'UNCOMMITTED CHANGES');
@@ -120,6 +121,29 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
     assert.ok(fullNames.some(x => x.endsWith('work/changes/archive/old/CHANGE.md')));
     assert.ok(fullNames.some(x => x.endsWith('evidence/runs/screenshot.png')));
     assert.ok(!fullNames.some(x => x.endsWith('.env.secret')));
+    const fullIndexed = await createSnapshot({
+      repoRoot: root, profile: 'full', now: new Date('2026-11-17T13:05:04.000Z'),
+      requireIndex: true,
+      indexBuilder: async ({ stagedRoot, profile }) => {
+        assert.equal(profile, 'full');
+        assert.equal(readFileSync(path.join(stagedRoot, 'work/changes/archive/old/CHANGE.md'), 'utf8'), 'retired');
+        return { schema: 'wiki.portable-snapshot.v1', sections: [], summary: { sections: 0 } };
+      },
+    });
+    assert.equal(fullIndexed.manifest.portableWiki.status, 'ready');
+
+    put(root, '.env.secret', 'changed secret');
+    const redacted = await createSnapshot({
+      repoRoot: root, now: new Date('2026-11-17T13:05:05.000Z'),
+      indexBuilder: async () => ({ schema: 'wiki.portable-snapshot.v1', sections: [], summary: {} }),
+    });
+    assert.equal(redacted.manifest.source.trackedModifiedRedactedCount, 1);
+    assert.ok(!redacted.manifest.source.trackedModifiedPaths.includes('.env.secret'));
+    put(root, 'scripts/repo-tools/wiki-core/route.mjs', 'dirty parser');
+    await assert.rejects(() => createSnapshot({
+      repoRoot: root, requireIndex: true,
+      indexBuilder: async () => ({ schema: 'wiki.portable-snapshot.v1', sections: [], summary: {} }),
+    }), /uncommitted code edits/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
