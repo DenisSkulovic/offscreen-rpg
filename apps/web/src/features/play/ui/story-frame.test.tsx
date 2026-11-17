@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { StoryFrame } from './story-frame';
@@ -17,7 +17,11 @@ const longParagraphs = [
 ];
 
 describe('StoryFrame (UX01)', () => {
-  it('renders single-stage hierarchy without a dead Journal link', async () => {
+  afterEach(() => {
+    window.location.hash = '';
+  });
+
+  it('renders the book shell without a top chrome bar or a dead Journal link', async () => {
     const { container } = render(
       <StoryFrame
         storiesHref="/stories"
@@ -55,7 +59,9 @@ describe('StoryFrame (UX01)', () => {
     expect(
       screen.getByRole('heading', { name: /What will you do/i }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /Journal/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^Journal$/i })).toBeNull();
+    expect(document.querySelector('.story-frame__chrome')).toBeNull();
+    expect(document.querySelector('.story-frame__book')).not.toBeNull();
     expect(await axe(container)).toHaveNoViolations();
   });
 
@@ -122,5 +128,70 @@ describe('StoryFrame (UX01)', () => {
     choice.focus();
     await user.keyboard('{Enter}');
     expect(onIntentionSelect).toHaveBeenCalledWith('ask');
+  });
+
+  it('keeps a long paragraph and every choice in one unscrolled region', () => {
+    const paragraph = 'Salt '.repeat(1200);
+    render(
+      <StoryFrame
+        storiesHref="/stories"
+        storyLabel="Greywake"
+        passageTitle="The long watch"
+        paragraphs={[paragraph]}
+        intentions={[
+          { id: 'one', label: 'Hold the lamp' },
+          { id: 'two', label: 'Call down the path' },
+          { id: 'three', label: 'Check the chain' },
+          { id: 'four', label: 'Close the shutter' },
+          { id: 'five', label: 'Wait in the doorway' },
+          { id: 'six', label: 'Step back inside' },
+        ]}
+      />,
+    );
+    const now = document.getElementById('story-frame-now');
+    expect(now?.textContent).toContain(paragraph);
+    expect(now?.querySelectorAll('button')).toHaveLength(6);
+    expect(now?.querySelector('.story-frame__intentions')?.getAttribute('style') ?? '').not.toMatch(/overflow:\s*auto|max-height/);
+  });
+
+  it('switches Now and Journal from the hash without choosing an intention', async () => {
+    const user = userEvent.setup();
+    const onIntentionSelect = vi.fn();
+    render(
+      <StoryFrame
+        storiesHref="/stories"
+        storyLabel="Greywake"
+        passageTitle="Someone at the door"
+        paragraphs={shortParagraphs}
+        journalHref="#story-journal"
+        journal={<h2>Saved passage</h2>}
+        details={<p>Technical details</p>}
+        intentions={[{ id: 'ask', label: 'Ask who sent the visitor' }]}
+        onIntentionSelect={onIntentionSelect}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Someone at the door' })).toBeVisible();
+    expect(screen.queryByRole('heading', { name: 'Saved passage' })).toBeNull();
+    expect(screen.getByText('Technical details').closest('details')?.textContent).not.toMatch(/Saved passage/);
+
+    await user.click(screen.getByRole('link', { name: 'Journal' }));
+    await act(async () => {
+      window.location.hash = '#story-journal';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+
+    expect(screen.getByRole('heading', { name: 'Saved passage' })).toBeVisible();
+    expect(screen.queryByRole('heading', { name: 'Someone at the door' })).toBeNull();
+    expect(onIntentionSelect).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('link', { name: 'Now' }));
+    await act(async () => {
+      window.location.hash = '#story-frame-now';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+
+    expect(screen.getByRole('heading', { name: 'Someone at the door' })).toBeVisible();
+    expect(onIntentionSelect).not.toHaveBeenCalled();
   });
 });

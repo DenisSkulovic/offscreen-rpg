@@ -1,6 +1,6 @@
 # BOOK01 | Deliver the first live Living Book reader shell
 
-**State:** PROPOSED / scope accepted for POC, **NOT selected for execution**. Design and contract are approved as a *minimal POC direction*; this packet is not permission to interrupt the current selected Change. **Executor when selected:** Cursor (frontend). **Dependency:** none from BOOK02. **User approval:** book structure acceptable for POC; actual visual polish, buttons and top-toolbar layout deliberately deferred.
+**State:** READY / **selected for execution** (2026-11-17). Design and contract are approved as a *minimal POC direction*. HAR09 stays open and is not current. **Executor:** Cursor (frontend). **Dependency:** none from BOOK02. **User approval:** book structure acceptable for POC; actual visual polish, buttons and top-toolbar layout deliberately deferred.
 
 **Outcome:** An authenticated live story at `/play/:id` is presented inside a recognizable, quiet, accessible **book reading surface** instead of the current top-chrome-dominated `StoryFrame`. The player can read all original current prose, see every legitimate live action/wait/recovery, open the saved Journal through a discreet in-book affordance and return to Now. Existing behavior and server authority survive unchanged.
 
@@ -61,11 +61,11 @@ The currently rendered story has `<header className='story-frame__chrome'>` and 
 
 | Authority / owner | Intended treatment | Implementation receipt needed | Status |
 | --- | --- | --- | --- |
-| [POC product](../../../../docs/product/experience/living-book-poc.md) | selected target unchanged unless contradiction found | screenshot & human walkthrough outcome | Pending |
-| [POC technical](../../../../docs/technical/client/living-book-poc.md) | preserve source/reader/command separation | source and test links | Pending |
-| [Client state](../../../../docs/technical/client/state-and-server-boundary.md) | unchanged | Query/intent regression evidence | Pending |
-| [Presentation V1](../../../../docs/technical/client/presentation-runtime.md) | unchanged schema/resolver; fit new shell | invalid appearance fallback test | Pending |
-| [Play source map](../../../../apps/web/src/features/play/README.md) | update if shell owners move | actual path/symbol route | Pending |
-| [STATUS](../../../../STATUS.md) | update source/test tier only on proof | actual performed gates | Pending |
+| [POC product](../../../../docs/product/experience/living-book-poc.md) | selected target unchanged | Storybook shell walkthrough; live `/play` not run | Target unchanged. Shell is source, not final art |
+| [POC technical](../../../../docs/technical/client/living-book-poc.md) | preserve source/reader/command separation | `story-frame.tsx`, `view.tsx`, `story-frame.test.tsx`, `view.test.tsx` | Landed shell noted. No new route or API |
+| [Client state](../../../../docs/technical/client/state-and-server-boundary.md) | unchanged | Journal open/close posts 0 in `view.test.tsx`; choice path still posts once | Unchanged |
+| [Presentation V1](../../../../docs/technical/client/presentation-runtime.md) | unchanged schema/resolver; fit new shell | `story-frame-presentation.test.tsx` still resolves fixture choices by id; book ink is not presentation CSS | Unchanged schema. Book page ignores atmosphere ink |
+| [Play source map](../../../../apps/web/src/features/play/README.md) | update if shell owners move | Living Book shell row | Updated |
+| [STATUS](../../../../STATUS.md) | update source/test tier only on proof | `pnpm test:fast`: 202 passed. Web typecheck and `next build` passed. Storybook shell checked. No paginator, BOOK02, or live Play claim | Updated |
 
 **Handoff when explicitly selected:** Read only this packet, the two POC owner docs and `apps/web/src/features/play/README.md`; recheck source; implement the narrow shell first. If physical two-leaf layout conflicts with long text/choices, use the single flowing leaf rather than inventing a general compositor. Keep other selected queue items intact; this proposal is not itself a Cursor instruction to begin.

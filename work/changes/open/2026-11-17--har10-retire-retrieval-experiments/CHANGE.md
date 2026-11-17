@@ -1,6 +1,6 @@
 # HAR10 | Retire unadopted retrieval and fake-agent experiment code
 
-**State: Ready, selected (owner decision 2026-11-17).** **Executor: Cursor.** **Purpose:** aggressively remove experimental source that did not earn adoption, retain useful wiki/harness fundamentals, and preserve the experiment's conclusion as first-class searchable historical research. **Research authority:** [results register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md), [Cognee evaluation](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md). **Previous HAR09:** [closed, not adopted](../../archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md).
+**State: Ready, open, not current (owner decision 2026-11-17).** BOOK01 is the current Change. This cleanup stays open and is not started. **Executor: Cursor.** **Purpose:** aggressively remove experimental source that did not earn adoption, retain useful wiki/harness fundamentals, and preserve the experiment's conclusion as first-class searchable historical research. **Research authority:** [results register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md), [Cognee evaluation](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md). **Previous HAR09:** [closed, not adopted](../../archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md).
 
 ## First screen
 

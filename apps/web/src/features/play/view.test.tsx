@@ -56,6 +56,47 @@ function renderPlay(story: ReturnType<typeof makeStorySnapshot>) {
 }
 
 describe('PlayScene', () => {
+  afterEach(() => {
+    window.location.hash = '';
+  });
+
+  it('opens Journal from the book without posting a command', async () => {
+    const user = userEvent.setup();
+    let posts = 0;
+    server.use(
+      http.post('/api/*', () => {
+        posts += 1;
+        return HttpResponse.json({}, { status: 500 });
+      }),
+      http.put('/api/*', () => {
+        posts += 1;
+        return HttpResponse.json({}, { status: 500 });
+      }),
+    );
+    renderPlay(makeStorySnapshot());
+
+    expect(screen.queryByRole('heading', { name: 'Journal' })).toBeNull();
+    await user.click(screen.getByRole('link', { name: 'Journal' }));
+    await act(async () => {
+      window.location.hash = '#story-journal';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+
+    expect(screen.getByRole('heading', { name: 'Journal' })).toBeVisible();
+    expect(
+      screen.getByText('Technical details').closest('details')?.textContent ?? '',
+    ).not.toMatch(/Journal/);
+    await user.click(screen.getByRole('link', { name: 'Now' }));
+    await act(async () => {
+      window.location.hash = '#story-frame-now';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    expect(
+      screen.getByRole('heading', { name: 'Ashfall Approach' }),
+    ).toBeVisible();
+    expect(posts).toBe(0);
+  });
+
   it('renders an existing scene and lets the player choose an option', async () => {
     const user = userEvent.setup();
     const initial = makeStorySnapshot();

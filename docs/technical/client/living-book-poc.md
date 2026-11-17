@@ -14,7 +14,9 @@
 - `packages/contracts/src/stories.ts`: V1 passage content `{version:1,title,paragraphs}` (1–10, each 1–6000 chars); history record `{id,sequence,content}` capped at 20/page; current snapshot optional validated `appearance`. No rich block AST, historic choice or original artistic look in history.
 - `apps/web/src/shared/api/story-history-query.ts`: `storyHistoryInfiniteOptions` owns the existing reader source; do not create another cache or guess random history seek.
 
-**Reinspection gate:** Cursor must fetch the latest HEAD/source/dirty state before the first code edit; it may differ from this dated source basis, especially while HAR09 is selected elsewhere.
+**Reinspection gate:** Cursor must fetch the latest HEAD/source/dirty state before the first code edit; it may differ from this dated source basis.
+
+**BOOK01 shell, source after the selected Change:** `StoryFrame` no longer renders `story-frame__chrome`. The player-facing surface is `.story-frame__book`: a stable paper leaf on the existing dark stage, with an in-book contents nav (`← Stories`, `Now`, `Journal`). `#story-frame-now` and `#story-journal` are hash leaves. Journal is the existing `StoryHistoryView`, not a collapsed Details section. Settings and technical details stay in that quiet disclosure. One flowing leaf is the POC geometry; there is no page-curl, no word-level paginator, and no BOOK02 overview/reader. Appearance may still tint the viewport atmosphere. The book page keeps its own ink. This paragraph records the landed shell. It does not accept final art direction.
 
 ## Proposed package/component boundary, implement only what proves useful
 
@@ -72,7 +74,7 @@ Replace existing `StoryFrame` top-chrome/status-dominant layout with a recogniza
 
 Refine the relocated history into a compact overview → original passage reader, previous/next **among loaded authorized entries only**, with existing numeric pagination, source ID/sequence, an explicit Now return and history-specific empty/error/permission states. No new history API, arbitrary jump, search or derived summaries. See [BOOK02 Change](../../../work/changes/open/2026-11-17--book02-original-journal-reader/CHANGE.md).
 
-Both are **independent code-review outcomes**, sequenced BOOK01 → BOOK02. Neither is automatically selected while another Change holds the queue.
+Both are **independent code-review outcomes**, sequenced BOOK01 → BOOK02. BOOK01 is the selected Change. BOOK02 stays unselected.
 
 ## POC test and human acceptance bar
 

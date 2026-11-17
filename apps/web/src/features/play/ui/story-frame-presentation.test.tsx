@@ -26,6 +26,8 @@ describe('StoryFrame presentation', () => {
       />,
     );
     expect(container.querySelector('[data-mocked-presentation]')).toBeNull();
+    expect(container.querySelector('.story-frame__chrome')).toBeNull();
+    expect(container.querySelector('.story-frame__book')).not.toBeNull();
     expect(screen.getByRole('heading', { name: 'Someone at the door' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ask who sent the visitor/i })).toBeEnabled();
   });

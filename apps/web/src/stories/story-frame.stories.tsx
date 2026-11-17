@@ -34,6 +34,13 @@ export const DesktopDecision: Story = {
     passageTitle: 'Someone at the door',
     paragraphs: shortParagraphs,
     memory: 'Repair stopped · 3/9 earned',
+    journalHref: '#story-journal',
+    journal: (
+      <section>
+        <h2>Journal</h2>
+        <p>Saved passage fixture. Opening this leaf does not submit a choice.</p>
+      </section>
+    ),
     intentions: [
       {
         id: 'ask',

@@ -40,23 +40,59 @@
   box-sizing: border-box;
 }
 
-.story-frame__chrome {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.65rem 1rem;
-  margin: 0 0 var(--sf-gap);
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--sf-separator);
+.story-frame__book {
+  --sf-paper-ink: #1c1915;
+  --sf-paper-muted: #5c564c;
+  --sf-paper-quiet: #6e675c;
+  --sf-separator: #d9d0c1;
+  --sf-focus: #1d4e89;
+
+  width: min(42rem, 100%);
+  margin: 0 auto;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  color: var(--sf-paper-ink);
+  background: #f7f1e6;
+  border-radius: 2px 14px 14px 2px;
+  box-shadow:
+    -0.85rem 0 0 #e4d9c8,
+    0 1.1rem 2.4rem rgb(0 0 0 / 28%);
 }
 
-.story-frame__identity {
+.story-frame__book-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   gap: 0.5rem 1rem;
-  min-width: 0;
-  flex: 1 1 12rem;
+  margin: 0 0 var(--sf-gap);
+}
+
+.story-frame__contents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.35rem;
+  margin: 0;
+  padding: 0;
+}
+
+.story-frame__contents a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.55rem;
+  color: var(--sf-paper-muted);
+  text-decoration: none;
+  font: 600 0.9rem/1.2 var(--sf-font-ui);
+}
+
+.story-frame__contents a:hover,
+.story-frame__contents a:focus-visible {
+  color: var(--sf-paper-ink);
+}
+
+.story-frame__contents a[aria-current='page'] {
+  color: var(--sf-paper-ink);
+  box-shadow: inset 0 -2px 0 #6b4e16;
 }
 
 .story-frame__back {
@@ -75,37 +111,14 @@
   min-width: 0;
   overflow-wrap: anywhere;
   font: 600 1rem/1.3 var(--sf-font-ui);
-  color: var(--sf-ink);
+  color: var(--sf-paper-ink, var(--sf-ink));
 }
 
-.story-frame__nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.story-frame__nav a,
-.story-frame__nav span[aria-current='page'] {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0.35rem 0.55rem;
-  color: var(--sf-ink-muted);
-  text-decoration: none;
-  font: 600 0.9rem/1.2 var(--sf-font-ui);
-}
-
-.story-frame__nav a:hover,
-.story-frame__nav a:focus-visible {
-  color: var(--sf-ink);
-}
-
-.story-frame__nav span[aria-current='page'] {
-  color: var(--sf-ink);
-  box-shadow: inset 0 -2px 0 var(--sf-action);
+.story-frame__leaf,
+.story-frame__stage {
+  min-width: 0;
+  overflow: visible;
+  max-height: none;
 }
 
 .story-frame__situation {
@@ -118,7 +131,7 @@
 
 .story-frame__place {
   margin: 0;
-  color: var(--sf-ink-muted);
+  color: var(--sf-paper-muted, var(--sf-ink-muted));
   font: 0.95rem/1.4 var(--sf-font-ui);
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -126,31 +139,31 @@
 
 .story-frame__status {
   margin: 0;
-  color: var(--sf-status-attention);
+  color: #6b4e16;
   font: 600 0.95rem/1.4 var(--sf-font-ui);
 }
 
 .story-frame__stage {
-  max-width: var(--sf-measure);
-  margin: 0 auto;
-  padding: clamp(1.25rem, 3vw, 2rem);
-  border: 1px solid var(--sf-stage-edge);
-  border-radius: 0.2rem;
-  background: linear-gradient(180deg, #1e2732 0%, var(--sf-stage) 100%);
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .story-frame__passage-title {
   margin: 0 0 1rem;
   overflow-wrap: anywhere;
   font: 600 clamp(1.45rem, 2.4vw, 1.9rem) / 1.25 var(--sf-font-narrative);
-  color: var(--sf-ink);
+  color: var(--sf-paper-ink, var(--sf-ink));
 }
 
 .story-frame__passage {
   display: grid;
   gap: 1rem;
   margin: 0;
-  color: var(--sf-ink);
+  color: var(--sf-paper-ink, var(--sf-ink));
   font: 1.125rem / 1.65 var(--sf-font-narrative);
 }
 
@@ -164,7 +177,7 @@
   margin: 1.35rem 0 0;
   padding: 0.75rem 0 0;
   border-top: 1px dashed var(--sf-separator);
-  color: var(--sf-ink-muted);
+  color: var(--sf-paper-muted, var(--sf-ink-muted));
   font: 0.98rem / 1.45 var(--sf-font-ui);
 }
 
@@ -176,7 +189,7 @@
 
 .story-frame__threshold-heading {
   margin: 0 0 0.85rem;
-  color: var(--sf-ink-quiet);
+  color: var(--sf-paper-quiet, var(--sf-ink-quiet));
   font: 600 0.82rem / 1.3 var(--sf-font-ui);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -188,6 +201,8 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  overflow: visible;
+  max-height: none;
 }
 
 .story-frame__intention {
@@ -241,7 +256,7 @@
 
 .story-frame__secondary > summary {
   cursor: pointer;
-  color: var(--sf-ink-muted);
+  color: var(--sf-paper-muted, var(--sf-ink-muted));
   font: 600 0.92rem / 1.4 var(--sf-font-ui);
 }
 
@@ -354,13 +369,10 @@
     padding: 0.9rem 0.85rem 1.5rem;
   }
 
-  .story-frame__chrome {
-    gap: 0.5rem 0.75rem;
-  }
-
-  .story-frame__nav a,
-  .story-frame__nav span[aria-current='page'] {
-    min-height: 2.5rem;
+  .story-frame__book {
+    width: 100%;
+    border-radius: 2px;
+    box-shadow: none;
   }
 
   .story-frame__situation {
@@ -371,10 +383,7 @@
 
   .story-frame__stage {
     max-width: none;
-    padding: 1rem 0.85rem;
-    border-left: 0;
-    border-right: 0;
-    border-radius: 0;
+    padding: 0;
   }
 
   .story-frame__passage {
@@ -424,25 +433,11 @@
   background: transparent;
 }
 
-.story-frame[data-presented='true'] .story-frame__stage {
-  background: var(--sf-stage);
-}
-
-.story-frame[data-presented='true'] .story-frame__chrome,
-.story-frame[data-presented='true'] .story-frame__situation {
-  background: var(--sf-chrome-bg);
-  color: var(--sf-chrome-ink);
-}
-
-.story-frame[data-presented='true'] .story-frame__back,
-.story-frame[data-presented='true'] .story-frame__nav a,
-.story-frame[data-presented='true'] .story-frame__place {
-  color: var(--sf-chrome-muted);
-}
-
-.story-frame[data-presented='true'] .story-frame__label,
-.story-frame[data-presented='true'] .story-frame__nav span[aria-current='page'] {
-  color: var(--sf-chrome-ink);
+.story-viewport .story-frame__book .story-frame__stage,
+.story-frame[data-presented='true'] .story-frame__book .story-frame__stage {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .story-frame[data-presented='true'] .story-frame__intention {
@@ -637,6 +632,18 @@
   .story-viewport[data-ambient='shimmer-soft'] .story-viewport__plane {
     animation: none;
   }
+}
+
+.story-viewport[data-stage] .story-frame__book .story-frame__stage,
+.story-viewport[data-lighting] .story-frame__book .story-frame__stage {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.story-frame__book .story-frame__stage-status {
+  color: #6b4e16;
 }
 
 @media (forced-colors: active) {

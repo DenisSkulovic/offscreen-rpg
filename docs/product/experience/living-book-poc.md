@@ -1,6 +1,6 @@
 # Living Book | Selected player experience for the first POC
 
-**Status:** SELECTED **POC experience target**, 2026-11-17, based on owner review of the book-geometry, decision-flow and source-composition prototypes. **Not implemented** by this specification. Final visual design, typography, motion, button styling and illustrated art direction are **not accepted**. Authority is intentionally limited to the first POC, not the eventual full Living Journal.
+**Status:** SELECTED **POC experience target**, 2026-11-17, based on owner review of the book-geometry, decision-flow and source-composition prototypes. This file does not implement the UI. BOOK01 has a source shell for the book, Now, and Journal entry; final visual design, typography, motion, button styling and illustrated art direction are **not accepted**. Authority is intentionally limited to the first POC, not the eventual full Living Journal.
 
 **Owns:** the player-visible book-reading metaphor and basic in-story Now/Journal behaviors during the initial React implementation. **Other owners:** [navigation](navigation-and-stories.md) owns all story spaces; [play/decisions](play-and-decisions.md) owns action honesty; [return/journal](return-and-journal.md) owns long history; [presentation](presentation.md) owns imagery/atmosphere; [technical POC](../../technical/client/living-book-poc.md) owns client integration. Earlier alternatives and research remain [open design](../../../work/designs/open/player-experience-refoundation/README.md).
 

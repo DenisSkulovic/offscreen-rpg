@@ -222,6 +222,19 @@ export function PlayScene({
         presentation={presentation}
         paragraphs={scene.current.content.paragraphs}
         journalHref="#story-journal"
+        journal={
+          <section aria-label="Saved journal">
+            <h2 className="story-frame__threshold-heading">Journal</h2>
+            <p className="story-frame__intention-support">
+              Return to Now for the current situation. This journal is
+              read-only chronology of published passages.
+            </p>
+            <a className="story-frame__back" href="#story-frame-now">
+              ← Back to Now
+            </a>
+            <StoryHistoryView viewerId={viewerId} storyId={scene.id} />
+          </section>
+        }
         thresholdHeading={offer?.specification.prompt || 'What will you do?'}
         intentions={
           showLegacyOffer
@@ -350,17 +363,6 @@ export function PlayScene({
         }
         details={
           <>
-            <section id="story-journal" aria-label="Journal">
-              <h2 className="story-frame__threshold-heading">Journal</h2>
-              <p className="story-frame__intention-support">
-                Return to Now for the current situation. This journal is
-                read-only chronology of published passages.
-              </p>
-              <a className="story-frame__back" href="#story-frame-now">
-                ← Back to Now
-              </a>
-              <StoryHistoryView viewerId={viewerId} storyId={scene.id} />
-            </section>
             {scene.campaign ? (
               <section aria-label="Story settings">
                 <h2 className="story-frame__threshold-heading">Settings</h2>

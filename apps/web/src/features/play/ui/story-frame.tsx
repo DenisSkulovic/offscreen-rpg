@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { matchLegacyChoice } from '../presentation/resolve';
 import type { ResolvedPresentation } from '../presentation/types';
 import { IntentionChoice } from './intention-choice';
@@ -38,7 +38,12 @@ export type StoryFrameProps = {
    * Pass null/undefined to omit — never render a dead tab.
    */
   journalHref?: string | null | undefined;
-  /** Optional low-attention Details disclosure content. */
+  /**
+   * Read-only Journal body. When present, `#story-journal` is a primary
+   * book leaf. Hash `#story-journal` / `#story-frame-now` selects the leaf.
+   */
+  journal?: ReactNode | undefined;
+  /** Quiet settings and technical disclosure. Not the Journal. */
   details?: ReactNode | undefined;
   /**
    * Extra stage content after the passage/memory strip
@@ -59,9 +64,28 @@ export type StoryFrameProps = {
   presentation?: ResolvedPresentation | null | undefined;
 };
 
+const JOURNAL_HASH = '#story-journal';
+
+function subscribeLocationHash(onStoreChange: () => void) {
+  window.addEventListener('hashchange', onStoreChange);
+  window.addEventListener('popstate', onStoreChange);
+  return () => {
+    window.removeEventListener('hashchange', onStoreChange);
+    window.removeEventListener('popstate', onStoreChange);
+  };
+}
+
+function readLocationHash() {
+  return window.location.hash;
+}
+
+function useLocationHash() {
+  return useSyncExternalStore(subscribeLocationHash, readLocationHash, () => '');
+}
+
 /**
- * Living Situation Stage frame (UX01/UX02).
- * Presentation only: does not own Query, commands, or story truth.
+ * Living Book shell (BOOK01). Presentation only: does not own Query,
+ * commands, or story truth. One flowing leaf; no page-curl.
  */
 export function StoryFrame({
   storiesHref,
@@ -74,6 +98,7 @@ export function StoryFrame({
   intentions = [],
   thresholdHeading = 'What will you do?',
   journalHref = null,
+  journal = null,
   details = null,
   stageExtras = null,
   intentionsDisabled = false,
@@ -84,6 +109,17 @@ export function StoryFrame({
 }: StoryFrameProps) {
   const showSituation = Boolean(situationLabel || statusLabel);
   const presented = Boolean(presentation?.applied);
+  const hash = useLocationHash();
+  const journalMode = Boolean(journal) && hash === JOURNAL_HASH;
+  const mode = journalMode ? 'journal' : 'now';
+  const modeRef = useRef(mode);
+  useEffect(() => {
+    if (modeRef.current === mode) return;
+    modeRef.current = mode;
+    document
+      .getElementById(mode === 'journal' ? 'story-journal' : 'story-frame-now')
+      ?.focus();
+  }, [mode]);
   const identity = `${presentation?.storyId ?? 'story'}:${passageId ?? 'passage'}`;
   const backdropMedia = presentation?.media.find(
     (item) => item.slot.kind === 'backdrop',
@@ -147,24 +183,31 @@ export function StoryFrame({
       className="story-frame"
       data-presented={presented ? 'true' : undefined}
     >
-      <header className="story-frame__chrome">
-        <div className="story-frame__identity">
+      <article className="story-frame__book" aria-labelledby="story-frame-label">
+      <header className="story-frame__book-head">
+        <p id="story-frame-label" className="story-frame__label">
+          {storyLabel}
+        </p>
+        <nav className="story-frame__contents" aria-label="Story spaces">
           <Link className="story-frame__back" href={storiesHref}>
             ← Stories
           </Link>
-          <p className="story-frame__label">{storyLabel}</p>
-        </div>
-        <nav aria-label="Story spaces">
-          <ul className="story-frame__nav">
-            <li>
-              <span aria-current="page">Now</span>
-            </li>
-            {journalHref ? (
-              <li>
-                <Link href={journalHref}>Journal</Link>
-              </li>
-            ) : null}
-          </ul>
+          {journalHref ? (
+            <a
+              href="#story-frame-now"
+              aria-current={mode === 'now' ? 'page' : undefined}
+            >
+              Now
+            </a>
+          ) : null}
+          {journalHref ? (
+            <a
+              href={journalHref}
+              aria-current={mode === 'journal' ? 'page' : undefined}
+            >
+              Journal
+            </a>
+          ) : null}
         </nav>
       </header>
 
@@ -181,7 +224,12 @@ export function StoryFrame({
         </div>
       ) : null}
 
-      <main id="story-frame-now" className="story-frame__stage">
+      <main
+        id="story-frame-now"
+        className="story-frame__stage"
+        tabIndex={-1}
+        hidden={journalMode}
+      >
         {presented ? (
           <NarrativePassage
             passageId={passageId}
@@ -251,12 +299,25 @@ export function StoryFrame({
         ) : null}
       </main>
 
+      {journal ? (
+        <section
+          id="story-journal"
+          className="story-frame__leaf"
+          aria-label="Journal"
+          tabIndex={-1}
+          hidden={!journalMode}
+        >
+          {journal}
+        </section>
+      ) : null}
+
       {details ? (
         <details className="story-frame__secondary">
           <summary>Details</summary>
           {details}
         </details>
       ) : null}
+      </article>
     </div>
     </div>
   );
