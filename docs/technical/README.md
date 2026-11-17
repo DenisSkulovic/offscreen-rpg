@@ -30,6 +30,8 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | What is the accepted client stack? | [Architecture](client/architecture.md) |
 | How do clicks and drafts behave? | [Interaction contracts](client/interaction-contracts.md) |
 | How is the first Living Book POC integrated without changing game authority? | [Living Book POC client target](client/living-book-poc.md) |
+| How are platform/book tokens and reusable controls owned? | [Semantic design foundation](client/semantic-design-foundation.md) |
+| How could source-bound Storyteller art direction be authored? | [Conditional scene production](client/scene-direction-production.md) |
 | What visual runtime is selected? | [Presentation runtime](client/presentation-runtime.md) |
 | What accessibility and cost bars apply? | [Accessibility and performance](client/accessibility-and-performance.md) |
 | What may a staff grant do? | [Admin topology](admin/topology-and-authorization.md) |

@@ -5,6 +5,10 @@
 **Evidence base:** read-only lean ZIP of `main` at `9e821c6e15bb90444ec711a1b82b1e18cff9539a`, generated 2026-11-17 15:33 UTC.  
 **Date:** 2026-11-17
 
+## Phase 3: bounded, executable visual foundation
+
+[Phase 3 program and 11 prepared Changes](phase-3/README.md) now follows the BOOK01/BOOK02 implementation audit. [Product](../../../../docs/product/experience/design-system-and-expression.md) and [client design foundation](../../../../docs/technical/client/semantic-design-foundation.md) define stable semantic roles; [scene production](../../../../docs/technical/client/scene-direction-production.md) is conditional. The final artistic skin and rich text V2 remain unaccepted. **No Change is auto-selected**.
+
 ## The problem
 
 Offscreen RPG has credible technical and product rules for truthful persistent storytelling, but not an equivalently deep, unified, deliberately crafted player-facing visual and interaction experience. Past UX/PX/PF waves established helpful seams and safety rails, not a complete design system or visual acceptance. This program begins with product and design authority, not CSS refactoring or purchasing a large component library.

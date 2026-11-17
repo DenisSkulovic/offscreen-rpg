@@ -12,6 +12,7 @@ What players and staff must be able to rely on. Technical guarantees are [techni
 | What is remembered, and what is only prose? | [Continuity](gameplay/continuity.md) |
 | Which bodies and worlds must work? | [Worlds and characters](gameplay/worlds-and-characters.md) |
 | Which stories define acceptance texture? | [Acceptance scenarios](gameplay/acceptance-scenarios.md) |
+| What reusable visual language and Storyteller expression may the player experience? | [Design system and expressive worlds](experience/design-system-and-expression.md) |
 | What must the screen never fake? | [Principles](experience/principles.md) |
 | How does someone arrive and create a life? | [Entry](experience/entry-and-onboarding.md) |
 | What has been accepted for the first Living Book POC, without approving final art direction? | [Living Book POC](experience/living-book-poc.md) |
