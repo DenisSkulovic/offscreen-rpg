@@ -16,7 +16,8 @@ Do not optimize for shorter text, more links, or a passing arbitrary style score
 2. [Editorial design and review standard](EDITORIAL-STANDARD.md): authorship rules, page types, claim structure, links and ratification controls.
 3. [All-page triage register](PAGE-REGISTER.md): every substantive product and technical owner classified for editorial treatment.
 4. [Execution waves](EDITORIAL-WAVES.md): order, source review responsibilities, output and QA for each documentation-only wave.
-5. [Proposed redlines](REDLINE-SAMPLES.md): exact source excerpts and edited candidates for the highest-risk cases, plus a vision structure revision.
+5. [Proposed redlines](REDLINE-SAMPLES.md): exact source excerpts and edited candidates for the highest-risk cases.
+6. [Full pilot vision rewrite](PILOT-VISION-REWRITE.md): a complete proposed alternative product-vision article, with a claim-preservation review; canonical original unchanged.
 
 ## The main judgment
 
