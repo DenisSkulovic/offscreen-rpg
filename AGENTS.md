@@ -7,7 +7,7 @@
 **Start here:**
 1. [STATUS.md](STATUS.md) — demonstrated boundary and current priority
 2. [work/changes/README.md](work/changes/README.md) — **Current change** selection (`none` is valid). Packets live under [work/changes/](work/changes/README.md).
-3. If a Change is selected: read that packet’s first screen, **one** nearby owner README, then 2–5 named source files. Do **not** preload all maps, minutes, or program handoffs. For an unknown question, run `pnpm wiki:find` and then `pnpm wiki:read` on one heading. Open `STATUS.md` or source only when the question asks what is implemented. Stop when the selected rule, the actual source, and a negative case are known.
+3. If a Change is selected: read that packet’s first screen and named canonical owners. For a **documentation** kind, inspect 2–5 precise product/technical headings, dependent links and factual source evidence only as required; for an **implementation** kind, inspect one nearby source README and 2–5 named source files. Do **not** preload all maps, minutes, or program handoffs. For an unknown question, run `pnpm wiki:find` and then `pnpm wiki:read` on one heading. Open `STATUS.md` or source only when the question asks what is implemented. Stop when the selected rule, the actual source, and a negative case are known.
 
 **Expired trials are not cold-start.** Forensic S0–S6 completed (0 paid). Dated observations live under [evidence/](evidence/README.md). Do not relaunch an archived Change or an old handoff from AGENTS.
 
@@ -25,8 +25,8 @@
 
 - **Local disposable infra:** bring up Postgres/Temporal/Docker/build caches yourself for authorized local proofs. Still require explicit permission for paid providers, deploy, secrets, non-disposable/remote DB, or live spend.
 - Do **not** call paid model providers, deploy, expose secrets, reset non-disposable data, or launch destructive integration tests without task-specific permission.
-- Implement **only** the authorized code scope. Inspect `git status --short` before editing.
+- Execute **only** the authorized Change kind and scope. Documentation Changes edit named Markdown/skills and affected links, not executable code; implementation Changes edit approved source/tests/config. Inspect `git status --short` before editing.
 - If source contradicts approved design, report file/symbol, conflict and a negative case—do not quietly rewrite the bible.
-- A code-bearing Change is **Done** only after its CHANGE.md **Reconciliation ledger** is complete. **Never mark Done while permanent docs are more stale than the landed code.**
+- **Any** Change is **Done** only after its CHANGE.md **Reconciliation ledger** and dependent-claim review are complete. Documentation-only Changes need before/after semantic preservation and a negative reading test, not fake code edits. **Never mark Done while permanent docs are more stale than landed code or selected meaning is silently rewritten.**
 
 **Return briefly:** changed files/diff; normal + meaningful negative proof; commands actually run/skipped; risk/blocker; next dependency; provider-spend status.
