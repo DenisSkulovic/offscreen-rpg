@@ -6,6 +6,7 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
+| [wiki-discovery-coverage/](open/wiki-discovery-coverage/README.md) | **Proposed 2026-11-18:** post-DOC24 wiki navigability, section authority, missing knowledge and practical guides audit; 23 WIKI12–17 / DOC25–41 handoffs are prepared, all unselected |
 | [documentation-editorial-audit/](open/documentation-editorial-audit/README.md) | **Proposed 2026-11-18:** source-grounded 70-page content-quality triage and 20 first-class DOC05–DOC24 editorial Change handoffs, all Proposed/unselected; no executable code Change selected |
 | [documentation-impact-system/](open/documentation-impact-system/README.md) | **Accepted for the sequence, and WIKI09, WIKI10, and WIKI11 are Done.** Not product canon. HK02, HK06, HK07, and HK08 are Done |
 | [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. HK01 is blocked. HK03, HK04, and HK05 stay gated |
