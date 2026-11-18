@@ -1,6 +1,8 @@
 # DIR03 | Optionally produce bounded V1 scene direction within Storyteller publication
 
-**State:** Blocked and parked (2026-11-18). DIR02 found that the publication insert does not write appearance, so there is no verified writer for a model directive. Spend and a quality baseline are also unapproved. This packet is not selected. **Order/dependency:** a proven source-gated appearance writer; provider/task contract review; measured quality/cost acceptance; authorized spend policy.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** Ready for provider-free optional-output/validation first slice after DIR02 (2026-11-18); live model testing/spend remains separately unauthorized.
 
 **Product authority:** [Design system and expressive worlds](../../../../docs/product/experience/design-system-and-expression.md).
 **Technical authority:** [Semantic design foundation](../../../../docs/technical/client/semantic-design-foundation.md) and [Scene-direction production](../../../../docs/technical/client/scene-direction-production.md).

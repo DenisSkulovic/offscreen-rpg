@@ -1,7 +1,9 @@
 # S3a change: distinguish continuity evidence in the existing report
 
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
 **Type:** Code-bearing implementation Change (developer diagnostic tool, not a new product capability).
-**Status:** Proposed; **scheduling: Parked (gameplay track)**. Not the next implementation Change under the November 11 engineering-portfolio priority; no coding is authorized. Revalidate the source and obtain the owner's go-ahead when returning to coding.
+**Status:** Ready for a bounded provider-free read-only report delta (2026-11-18); former gameplay-priority parking no longer applies.
 **Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../../../designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity).
 **Technical authority:** [Canonical files and mechanical dependencies](../../../../docs/technical/storyteller/context-and-memory.md#mechanical-continuity-dependencies--s3-design), [connected proof and corrected October memory diagnosis](../../../../research/legacy-engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 

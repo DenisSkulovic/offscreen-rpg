@@ -1,6 +1,8 @@
 # HK01 | Retire unsupported local Storyteller response-reconciliation CLI
 
-**State: Blocked (2026-11-18).** The pre-delete evidence gate failed. The file stays. **Program:** [housekeeping audit](../../../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). **Dependency:** HK02 is Done and was not required for this audit. **Outcome:** do not remove `scripts/repo-tools/reconcile-storyteller-response.mjs` until a supported replacement can settle an already-uncertain local attempt from saved evidence.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** Ready for replacement-first recovery implementation (2026-11-18). Never delete unique saved-response settlement CLI until safe functional replacement is proved.
 
 ## Cursor first-screen brief
 

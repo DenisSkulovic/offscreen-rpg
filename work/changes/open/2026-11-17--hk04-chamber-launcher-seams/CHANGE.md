@@ -1,6 +1,8 @@
 # HK04 | Separate Chamber launcher modes from privileged environment bootstrapping
 
-**State: Proposed; safety characterization required before Ready.** **Program:** [housekeeping audit](../../../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). **Outcome:** a launch mode has a traceable, independently testable owner without changing database, provider or process authority.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** Ready for pure mode-plan extraction and provider-disabled denial tests (2026-11-18); privileged boot behavior unchanged.
 
 ## Cursor first-screen brief
 

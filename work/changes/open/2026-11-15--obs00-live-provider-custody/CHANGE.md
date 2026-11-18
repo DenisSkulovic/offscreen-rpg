@@ -1,6 +1,8 @@
 # OBS00 | Repair default worker live authority and preserve the reviewed request envelope
 
-**State: Done for A; B blocked.** **Severity:** P0 pre-live correctness and forensic integrity. **Scope:** provider composition contract + server-authority source validation + provider-disabled mock transport tests. **No actual paid dispatch, production funding, model prompts or game engine changes authorized.**
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** OBS00-A Done; OBS00-B Ready for fail-closed independent authority source and mock transport implementation (2026-11-18); live paid dispatch still DENIED.
 
 **Source evidence:** [live-worker wiring preflight](../../../../evidence/runs/observability-program-2026-11-15/live-worker-dispatch-preflight-2026-11-15.md). **A proof:** [obs00-a](../../../../evidence/runs/observability-program-2026-11-15/obs00-a-dispatch-forward-2026-11-15.md). **Related contracts:** [prompt exactness](../../../../docs/technical/observability/identities-and-evidence.md), [capture failure semantics](../../../../docs/technical/observability/capture-and-provenance.md), [private storage](../../../../docs/technical/observability/retention-and-access.md).
 

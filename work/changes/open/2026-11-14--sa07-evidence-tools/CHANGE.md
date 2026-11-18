@@ -1,6 +1,8 @@
 # SA07 | Add only the read operation that a real missing-evidence fixture proves necessary
 
-**State: Proposed / CONDITIONALLY READY after SA04–SA06 + a labelled oracle failure. Not executable solely because named in program.** No code authorization. This packet is a **capability seam with a measured stop gate**, not a mandate to add 20 tools.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** Ready for provider-free corpus discriminator and one demonstrated remedy (2026-11-18); new tool only if actually needed.
 
 ## Cursor first-screen
 

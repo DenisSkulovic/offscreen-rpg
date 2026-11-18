@@ -1,6 +1,8 @@
 # GM03 | One bounded standing routine, not global autoplay
 
-**State:** Proposed, **not Ready**. **2026-11-15 recommended pilot:** [one quiet-watch routine, three 600-fictional-second intervals, strict stop horizon and **cancel-if-existing-itinerary-is-enough** gate](../../../designs/open/time-and-autonomy/gm03-bounded-routine-v1.md). Existing Seyda Neen warehouse shift is intentionally excluded because it has a limited one-time occurrence/payout; no code permission implied. **Approval:** none. **Kind:** deterministic game/autonomy contract + persisted execution + tests. **Parent:** [time and autonomy studies](../../../designs/open/time-and-autonomy/README.md). **Prerequisite:** owner selects [bounded-standing-life target](../../../designs/open/time-and-autonomy/temporal-philosophy.md#model-c--bounded-standing-life-recommended-long-term-direction), after comparing strict vs short-plan vs standing-routine player expectations.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** Ready for quiet-watch existing-itinerary comparator and minimal resulting implementation (2026-11-18), not unrestricted autoplay.
 
 ## Cursor first-screen brief
 

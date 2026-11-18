@@ -1,6 +1,8 @@
 # HAR05 | Portable design-agent wiki snapshot
 
-**State: Verifying (source and tests committed; user checkout run not observed).** Owner authorized direct implementation on 2026-11-17. Developer-harness tooling only; does **not** select an active coding Change, alter game behavior, launch a paid model, or interfere with HAR03.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** Verifying (2026-11-18); real-checkout verification is executable. Uploaded ZIP proves matching indexed export at 92ed12ba; extracted exporter tests 2/2 pass, full installed checks outstanding.
 
 ## First-screen handoff
 

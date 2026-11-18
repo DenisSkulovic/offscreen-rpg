@@ -1,6 +1,8 @@
 # OBS04 | Capture one finite-action commit as typed historical evidence
 
-**State: Proposed, NOT Ready.** **Kind:** additive SQL-backed, source-transaction E0 evidence pilot for finite-action settle/interrupt, strict runtime types and provider-free tests. **Design authority:** [one-commit capture contract](../../../../docs/technical/observability/capture-and-provenance.md), [writer closure](../../../../evidence/runs/observability-program-2026-11-15/writer-closure-and-sequence-2026-11-15.md), [physical storage](../../../../docs/technical/observability/retention-and-access.md), [failure protocol](../../../../docs/technical/observability/capture-and-provenance.md). This Change is **not** a general historical replay engine, generic database audit system or data migration of every campaign.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+
+**State:** Ready for one bounded E0 source-transaction evidence implementation (2026-11-18), with disposable SQL confirmation before migration/tests.
 
 ## Cursor first screen
 
