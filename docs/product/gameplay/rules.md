@@ -34,7 +34,7 @@ The game is D&D checks + LLM dungeon master + time, for arbitrary worlds and cha
 
 Six abilities (STR/DEX/CON/INT/WIS/CHA), modifiers `floor((score - 10) / 2)`, named skill proficiencies, proficiency bonus, hit points. Ability checks: d20 + ability modifier + proficiency when applicable + supported situational modifiers vs DC. Advantage/disadvantage as standard; natural 1/20 do **not** auto fail/succeed on these ability checks. No mandatory currency, wage or profession.
 
-Long-running work contributes rule-defined progress at meaningful tick boundaries via a captured contribution contract (target, cadence, ability check). Failed or check-only boundaries can consume fictional time without contributing. Waiting/traversal process families remain designs where not yet implemented. Encounter occurrence and action success remain **distinct** checks.
+Long-running work contributes rule-defined progress at meaningful tick boundaries via a captured contribution contract (target, cadence, ability check). Failed or check-only boundaries can consume fictional time without contributing. A literal wait and travel are different process meanings. Encounter occurrence and action success remain **distinct** checks.
 
 Unfinished commitments are durable life, not disposable timer slots. Starting different work should suspend conflicting activity rather than erase it. Abandonment and lost progress require explicit player intent or process/world rules.
 
@@ -50,7 +50,7 @@ Choice breadth follows actual opportunity (time, proximity, mobility, equipment,
 
 ## Implemented entry and honest limits
 
-Opening mechanical rehearsal (pineapple/microbe/beacon) proves the boundary with deterministic fixtures—not general model quality. Immediate actions and ability checks share the receipt path. Explicit abandonment, full combat, study/level progression and live-model evaluation remain outside this subset where not separately landed. Existing narrative stories are not silently assigned character sheets.
+Opening mechanical rehearsal (pineapple/microbe/beacon) proves the boundary with deterministic fixtures—not general model quality. Immediate actions and ability checks share the receipt path. A literal wait is a supported activity process (`clock-wait.v1`). A separate traversal family is not that process. Explicit abandonment, full combat, study/level progression and live-model evaluation remain outside this subset where not separately landed. Existing narrative stories are not silently assigned character sheets.
 
 See also: [actions and commitments](actions-and-commitments.md), [time and autonomy](time-and-autonomy.md), [continuity](continuity.md).
 

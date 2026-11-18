@@ -53,7 +53,7 @@ If a wizard is scheduled to arrive at a tower and instead becomes trapped inside
 
 ## Space, movement and maps
 
-Storytelling alone must not redefine established whereabouts, distances or travel conditions from passage to passage. When location affects a choice or consequence, the story needs an authoritative account of where characters are and how they can reach each other. A character interrupted between two places is still on a journey; neither departure nor planned arrival alone describes their position. Shared play makes this essential: proximity, rescue and encounters must fit both characters' circumstances at the same fictional time.
+Storytelling alone must not redefine established whereabouts, distances or travel conditions from passage to passage. When location affects a choice or consequence, the story needs an authoritative account of where characters are and how they can reach each other. A character interrupted between two places is still on a journey; neither departure nor planned arrival alone describes their position. When more than one character can act, proximity, rescue and encounters must fit each character's circumstances at the same fictional time. That multi-character case is the later shared-play ambition, not the solo proof.
 
 A coarse, uniform 3D cube map is a candidate representation, not yet a required format for every world. Within one such map, the cube is the fixed cell unit: no differently sized cells or recursive subdivision. A mountain cell might contain a city, with a dungeon cell beneath it. A separate local map could provide a second level of detail, but two-level navigation is optional and remains undesigned. Locations inside a region do not automatically require their own map.
 

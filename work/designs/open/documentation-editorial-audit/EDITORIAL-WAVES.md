@@ -47,6 +47,8 @@ S1a, first diary pass: the vision's unattended-life paragraph now states the pla
 
 S1b, first vocabulary pass: an offer in actions and commitments is permission to choose. It does not advance fictional time. Hours-long absence applies to an accepted activity. The prepared-life section states the selected promise and points at Prepared local opportunities for the bounded solo realization and the later limits. DOC08 remains unselected and was not executed as a packet.
 
+S1b, rules and continuity: `rules.md` does not treat a displayed choice as accepted work. A literal wait is a supported process, and a separate traversal family is not that process. Vision says carrying an offer forward does not accept it. Continuity keeps the multi-character location rule and marks it as the later shared-play ambition. The persistence ownership split matches the platform pages: PostgreSQL owns committed story state and Temporal owns workflow history. Further tables stay slice migrations.
+
 **Deliverable:** small reviewed canonical edits, optional split of scenarios only after link audit, exact before/after claim list and a recorded unresolved decision request. Not a new code Change.
 
 ## S1 | Product bible: promise, agency, long-life quality
