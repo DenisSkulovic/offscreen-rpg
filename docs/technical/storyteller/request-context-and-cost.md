@@ -1,6 +1,6 @@
 # Context, caching, prompts and spending
 
-**Quick route by question:** [what goes into one request?](#build-context-for-a-specific-decision) · [bounded work and model rounds](#bounded-work-not-an-open-ended-agent) · [continuity summaries](#summaries-without-losing-the-story) · [which cache is which?](#three-different-caches) · [provider budget accounting](#budget-accounting) · [concrete spending envelope](#a-concrete-cost-envelope). This is **in-game Storyteller inference**, not the cost of Claude Code or Cursor developing the repository; see [coding-agent context economics](../../../.agents/references/context-economics.md) for that.
+**Quick route by question:** [what this page owns](#what-this-page-owns) · [what goes into one request?](#build-context-for-a-specific-decision) · [bounded work and model rounds](#bounded-work-not-an-open-ended-agent) · [continuity summaries](#summaries-without-losing-the-story) · [which cache is which?](#three-different-caches) · [provider budget accounting](#budget-accounting) · [concrete spending envelope](#a-concrete-cost-envelope). This is **in-game Storyteller inference**, not the cost of Claude Code or Cursor developing the repository; see [coding-agent context economics](../../../.agents/references/context-economics.md) for that.
 
 The cost objective is a coherent story within an explicit allowance. We cannot promise a few cents per unattended week without measuring frequency, context size, output length, repair rates and model prices. Ordinary waiting itself needs no model invocation.
 
@@ -11,6 +11,12 @@ For concrete request packets, current-versus-proposed tools, per-call token enve
 There is no single globally correct quality/cost point. Use the same gameplay and evidence authorities across a minimal sponsored/free recipe, ordinary subscription recipes and explicitly funded high-context play. Profiles configure models, context, output, exploration, maintenance and frequency independently. A user may prefer a cheap small-context route with terse prose, while another may explicitly fund a frontier route with extremely large context and richer exploration. Both must preserve required truth, committed mechanics and recoverability; only optional breadth, prose richness, exploratory work and latency/cost envelopes differ.
 
 **New Storyteller architecture audit (2026-11-14, design only):** [source-grounded current task and loop analysis](../../../evidence/inspections/doc01-retained-observations/programs/storyteller/evidence/current-flow-audit-2026-11-14.md), [target operating model](./operation-and-controller.md), [source selection](./context-and-memory.md), [effort and money policy](./request-context-and-cost.md), archived SA Changes under `work/changes/archive/`. The existing resource/usage policy remains authoritative for runtime; this new design does not independently change its limits or authorize inference. Current source has an optional connected memory loop, but ordinary tasks use the tool-free default.
+
+## What this page owns
+
+This page owns context selection, omission, derived summaries, and the request-side accounting contract. It does not own canon revision. That stays in [Who owns which promise](context-and-memory.md#who-owns-which-promise). Effective account spending stays in [Usage policy](../platform/spending-and-entitlements.md).
+
+Normal: the request includes the captured source and omits material the task did not select. Negative: a stale revision in the assembled context is not current truth for an already-admitted task. A summary in the request does not replace the original passage.
 
 ## Current development allowance
 

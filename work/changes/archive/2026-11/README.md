@@ -112,6 +112,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-18--doc12-engine-chronology-calendars](../../../../work/changes/archive/2026-11/other/2026-11-18--doc12-engine-chronology-calendars/CHANGE.md)
 - [2026-11-18--doc13-engine-lifecycle-recovery](../../../../work/changes/archive/2026-11/other/2026-11-18--doc13-engine-lifecycle-recovery/CHANGE.md)
 - [2026-11-18--doc14-storyteller-controller-prompts](../../../../work/changes/archive/2026-11/other/2026-11-18--doc14-storyteller-controller-prompts/CHANGE.md)
+- [2026-11-18--doc15-storyteller-memory-context](../../../../work/changes/archive/2026-11/other/2026-11-18--doc15-storyteller-memory-context/CHANGE.md)
 
 ## storyteller (11)
 

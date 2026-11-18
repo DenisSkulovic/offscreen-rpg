@@ -1,17 +1,17 @@
 # DOC15 | Unbundle canon/memory ownership from request-context construction
 
-**State:** Proposed, unselected. **Kind:** documentation. **Editorial wave:** S2d. **Sequence:** after DOC09 and DOC14; refresh current HEAD, working tree and exact headings before choosing Ready. **Baseline:** [70-page register](../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md) and [content audit](../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md), originally against `f3e3bfe`. No implied execution permission or code modification.
+**State:** Done (2026-11-18). **Kind:** documentation. **Editorial wave:** S2d. **Sequence:** after DOC09 and DOC14. **Baseline:** [70-page register](../../../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md) and [content audit](../../../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md). Inspected at `c34373f1`. No model call and no database.
 
 ## Cursor first-screen brief
 
 **Problem:** Two very large Storyteller technical owners cover storage authority, world packages, retrieval, prompt context, memory and provider cost with overlapping explanations. Navigation alone cannot establish one owner per claim.
 
 **Canonical review set:**
-- [docs/product/storyteller/memory-and-continuity.md](../../../../docs/product/storyteller/memory-and-continuity.md)
-- [docs/technical/storyteller/context-and-memory.md](../../../../docs/technical/storyteller/context-and-memory.md)
-- [docs/technical/storyteller/request-context-and-cost.md](../../../../docs/technical/storyteller/request-context-and-cost.md)
+- [docs/product/storyteller/memory-and-continuity.md](../../../../../../docs/product/storyteller/memory-and-continuity.md)
+- [docs/technical/storyteller/context-and-memory.md](../../../../../../docs/technical/storyteller/context-and-memory.md)
+- [docs/technical/storyteller/request-context-and-cost.md](../../../../../../docs/technical/storyteller/request-context-and-cost.md)
 
-Read [editorial standard](../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), [waves](../../../designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md) and exact current owners, not the whole initiative as a coding prompt.
+Read [editorial standard](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), [waves](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md) and exact current owners, not the whole initiative as a coding prompt.
 
 ## Designed editing work
 
@@ -38,10 +38,19 @@ Work in the named document sections, with a before/after claim ledger, exact tar
 
 **Completion evidence:** exact before/after semantic equivalence for selected behavior, revised paths#headings, source/revision for all 'implemented' claims, impact-graph review with explicit unchanged reasons, independent adverse reading, `pnpm wiki:health`, `pnpm wiki:change-guard --mode plan` and `--mode close` plus current docs link checker (only if commands actually executed). A green structural result is not sufficient.
 
-## Reconciliation ledger | fill at execution
+## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/storyteller/context-and-memory.md #heading to verify | technical | pending claim-specific review | no source behavior changed; record doc SHA | not run: Proposed | A revised document after a task snapshot becomes current truth for that already-admitted task, or a lossy summary silently replaces original source identity. | pending inbound/dependent disposition |
+| docs/technical/storyteller/context-and-memory.md#who-owns-which-promise | technical | changed: canon provenance stays here, and the two large files were not split | docs/technical/storyteller/context-and-memory.md at c34373f1 | documentation-only | a later document revision does not become truth for an already-admitted task | the new heading does not replace an existing anchor |
+| docs/technical/storyteller/context-and-memory.md#search-belongs-in-the-poc | technical | unchanged: search and embeddings stay an evaluation scope, not demonstrated semantic recall | docs/technical/storyteller/context-and-memory.md at c34373f1 | documentation-only | a synthetic vector fixture is still not demonstrated semantic recall | the heading stayed in place |
+| docs/technical/storyteller/request-context-and-cost.md#what-this-page-owns | technical | changed: this page owns request selection and omission, not canon revision or account entitlement | docs/technical/storyteller/request-context-and-cost.md at c34373f1 | documentation-only | a summary in the request does not replace the original passage | the new heading does not replace an existing anchor |
+| docs/product/storyteller/memory-and-continuity.md#creative-exploration-is-not-retrieval | product | unchanged: a proposed direction stays noncanonical until publication admits it | docs/product/storyteller/memory-and-continuity.md at c34373f1 | documentation-only | technical prose did not change the player memory promise | the heading stayed in place |
+| docs/technical/platform/spending-and-entitlements.md | technical | unchanged: effective account spending stays on the platform usage policy | docs/technical/platform/spending-and-entitlements.md at c34373f1 | documentation-only | a request-page figure is not an entitlement | no heading on that page was edited |
 
-**Handoff:** after owner selects this packet, inspect HEAD and its individual authorities, execute this one bounded documentation revision, verify and archive. No implementation Change is automatically approved.
+exception: work/changes/README.md because the queue line is the selection route for this documentation packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this documentation packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+exception: work/designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md because the wave table will point at the archived packet
+
+No file was split. No executable diff. Close checks use base c34373f1. No provider call.

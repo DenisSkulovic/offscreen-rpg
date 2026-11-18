@@ -1,8 +1,21 @@
 # Canonical campaign files and the Storyteller workspace
 
-**Quick route by question:** [source of truth](#one-owner-per-kind-of-truth) · [pinned worlds](#reusable-world-libraries-and-campaign-overlays) · [pinned rules](#reusable-rule-libraries) · [bounded model context](#semantic-locality-and-context-cost) · [mechanical continuity dependencies](#mechanical-continuity-dependencies--s3-design) · [publication and transaction fences](#publication-across-files-and-the-execution-ledger) · [recovery](#recovery-inspection-and-portability). This page contains both design target and partially implemented behavior; [progress](../../../STATUS.md) owns demonstrated coverage.
+**Quick route by question:** [who owns the promise](#who-owns-which-promise) · [source of truth](#one-owner-per-kind-of-truth) · [pinned worlds](#reusable-world-libraries-and-campaign-overlays) · [pinned rules](#reusable-rule-libraries) · [bounded model context](#semantic-locality-and-context-cost) · [mechanical continuity dependencies](#mechanical-continuity-dependencies--s3-design) · [publication and transaction fences](#publication-across-files-and-the-execution-ledger) · [recovery](#recovery-inspection-and-portability). This page contains both design target and partially implemented behavior; [progress](../../../STATUS.md) owns demonstrated coverage.
 
 Status: mixed implementation and target contract. Immutable local storage, descriptive admission, canonical narrative passages, pinned package import/Start, narrative-choice document hints, active-scene recall cues, exact world/rule sections and bounded multi-round exploration are implemented. Ordinary admissions can select rule topics and narrative dependencies; ordinary gameplay still defaults to one-shot tasks with tools disabled. Mechanical choices lack explicit document dependencies, selected bodies can be omitted during packing, and sustained recall remains unproved. PostgreSQL still owns live mechanical state/receipts; the structured-document ownership below is a migration target. Use [packages/storyteller](../../../packages/storyteller/README.md) for the implemented package and [progress](../../../STATUS.md) for evidence. The [2026-11 engine-model inspection](../../../evidence/inspections/doc01-retained-observations/engineering/engine-model.md) is dated evidence, not the current owner. [Canonical storage](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#canonical-campaign-storage) and [memory/recall](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall) own remaining work. Read [concepts](../../product/foundations/concepts.md): there are no chapters.
+
+## Who owns which promise
+
+These files stay whole. No heading was moved.
+
+| Promise | Owner |
+| --- | --- |
+| Document revision and canon provenance | This page. A published passage and its revision stay the source identity. |
+| Bounded task context and omission | [Build context for a specific decision](request-context-and-cost.md#build-context-for-a-specific-decision). |
+| Effective spending | [Usage policy](../platform/spending-and-entitlements.md). Figures on the request page are not that entitlement. |
+| Retrieval and summaries | Summaries are derived. See [Extract, summarize and revise deliberately](#extract-summarize-and-revise-deliberately). Search and embeddings in [Search belongs in the POC](#search-belongs-in-the-poc) stay an evaluation scope. A synthetic vector fixture is not demonstrated semantic recall. |
+
+Normal: an admitted task captures the source revision it may use. Publication checks that identity. Negative: a document revised after that snapshot does not become current truth for the already-admitted task. A lossy summary does not replace the original source identity. A private possibility stays noncanonical until publication admits it. See [Six kinds of record](../../product/gameplay/continuity.md#six-kinds-of-record).
 
 ## Product commitment
 
