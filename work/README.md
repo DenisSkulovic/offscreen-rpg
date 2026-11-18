@@ -4,7 +4,7 @@
 
 | Path | Question |
 | --- | --- |
-| [changes/](changes/README.md) | Which code-bearing Change, if any, is currently selected? `Current change: none` is valid. Terminal work lives in `archive/`. |
+| [changes/](changes/README.md) | Which bounded documentation or implementation Change, if any, is currently selected? `Current change: none` is valid. Terminal work lives in `archive/`. |
 | [designs/](designs/README.md) | Which design investigations are still open, dormant, or retained as historical reference? |
 | [sessions/](sessions/README.md) | Short rolling continuity, not a second status or implementation authority. |
 
