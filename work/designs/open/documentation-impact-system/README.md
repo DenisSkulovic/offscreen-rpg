@@ -23,6 +23,10 @@ Editing only executable output while leaving its controlling specs stale is anal
 
 **Sequencing:** WIKI09 after HK02 check-scope changes, WIKI10 after WIKI09, WIKI11 after HK06/HK07 and WIKI10. HK08 CI integration must consume the resulting gate rather than reimplement it. Do not select multiple packets at once.
 
+## Companion program: editorial quality of the actual text
+
+The [canonical content refoundation](../documentation-editorial-audit/README.md) audits and proposes substantive writing, claim-ownership and article-cohesion revisions across all 70 substantive product/technical pages, including a [full vision rewrite pilot](../documentation-editorial-audit/PILOT-VISION-REWRITE.md). **Impact graph correctness does not certify prose truth or comprehensibility.** WIKI09–11 concern plan/graph/closure machinery; editorial sessions fix actual passages, ambiguous acceptance authority and misleading source-status claims without creating fake code-bearing Changes. These are complementary, not duplicate programs.
+
 ## Relation to existing architecture
 
 The current [.agents documentation rule](../../../../.agents/rules/documentation.md), [Change standard](../../../../.agents/references/change-work-unit-standard.md), [Change workflow template](../../../../.agents/skills/change-workflow/assets/CHANGE.md), [reconciliation skill](../../../../.agents/skills/documentation-reconciliation/SKILL.md), [wiki graph](../../../../scripts/repo-tools/wiki-core/model.mjs) and [change guard](../../../../scripts/repo-tools/wiki-core/change-guard.mjs) are real foundations, not mistakes to discard. Current [HK02/HK06/HK07/HK08 housekeeping](../repository-housekeeping/PREVENTION-SYSTEM.md) already owns workflow trigger coverage, inventory/lifecycle, Git freshness and CI/brief orchestration respectively. The new work adds the **missing semantics and authoring obligations**; it must not fork those tools.
