@@ -21,6 +21,8 @@ Historical report attaches to the original history. It cannot supersede Now. An 
 
 If generation is unavailable or the captured budget is exhausted, publication uses only still-valid prepared content or a supported fallback. Otherwise it preserves the last published situation and explains the interruption. It does not invent progress.
 
+A failed or stale case keeps that committed situation. The scene, root, or offer no longer matches the capture, so the operation holds. Narrator text does not transfer an item, roll a die, or move the clock. A second publication of the same accepted action identity is refused. See [Step status](operation-and-controller.md#step-status).
+
 ## Generation identity
 
 The durable generation row is the operation receipt for one admitted task, not a permanent agent thread. Provider request bytes are disposed with the operation. The game keeps the canonical life and the operation receipt: cost, outcomes, evidence-use and redacted evaluation. A new event creates a new task from canonical source. Previous provider round messages are not blindly appended.

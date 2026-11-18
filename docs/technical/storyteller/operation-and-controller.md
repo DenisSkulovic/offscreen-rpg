@@ -3,7 +3,21 @@
 **Owns:** how a living world decides whether to call a model, how that call is bounded, and how the current prototype runtime differs from the selected target.  
 **Product:** [behavior and quality](../../product/storyteller/behavior-and-quality.md).  
 **Engine spine:** [selected architecture](../engine/selected-architecture.md).  
-**Read one heading:** [which loop](#two-loops) · [what the prototype does now](#current-prototype-runtime) · [what a task may return](#profile-and-task-contracts) · [what context is rejected](#context-and-continuity) · [publication](#execution-and-publication) · [paid calls](#provider-and-budget-boundary) · [what is still unproved](#supported-behavior-and-evidence-limits).
+**Read one heading:** [step status](#step-status) · [which loop](#two-loops) · [what the prototype does now](#current-prototype-runtime) · [what a task may return](#profile-and-task-contracts) · [what context is rejected](#context-and-continuity) · [publication](#execution-and-publication) · [paid calls](#provider-and-budget-boundary) · [what is still unproved](#supported-behavior-and-evidence-limits).
+
+## Step status
+
+The [two loops](#two-loops) below are the selected target. They are not a live autonomous investigation loop. [Supported behavior and evidence limits](#supported-behavior-and-evidence-limits) records that no live route is certified. This pass did not re-verify that gap in source.
+
+| Step | Status named on this page |
+| --- | --- |
+| Read | Selected in the two-loop design. An admitted `memory-exploration.v1` recipe may use bounded reads. That recipe is not a continuous agent. |
+| Decide | The normal executor admits `single-turn.v1` or `repairable-turn.v1`. The second recipe is two model rounds, no tools, and one invalid-output repair. |
+| Tool call | The normal executor dispatches no model tools. A funded exploration recipe may ask at most two memory questions and open only shown handles. This note adds no tool entitlement. |
+| Stop | Stop states stay in [Stopping](prompts-and-tools.md#stopping). Exhaustion, refusal, and a stale revision hold. They are not an unbounded continuation. |
+| Publish | The publication fence is the landed prototype for opening, continuation, consequence, and report tasks. A failed or stale publication keeps committed state. See [What publication must refuse](generation-and-publication.md#what-publication-must-refuse). |
+
+One captured `single-turn.v1` task is one model call with no tools. `memory-exploration.v1` may use two or three rounds and bounded reads only when the captured policy funds them. That difference does not certify live adaptive play.
 
 ## Two loops
 

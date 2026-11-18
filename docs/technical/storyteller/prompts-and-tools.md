@@ -1,7 +1,7 @@
 # Storyteller prompts and tools
 
 **Owns:** task recipes, what a model may read, when it must stop, and what a prompt is forbidden to grant.  
-**Selected target** below, dated 2026-11-14. **Not implemented** as a general adaptive loop. The landed runtime still uses versioned task artifacts and a narrower tool surface; see [current prototype runtime](operation-and-controller.md#current-prototype-runtime) and [request context and cost](request-context-and-cost.md).  
+**Selected target** below, dated 2026-11-14. **Not implemented** as a general adaptive loop. The landed runtime still uses versioned task artifacts and a narrower tool surface; see [step status](operation-and-controller.md#step-status) and [request context and cost](request-context-and-cost.md). Tool rights, versioned input capture, stopping, and refusal stay the sections below. This page adds no tool entitlement.  
 **Product:** [behavior](../../product/storyteller/behavior-and-quality.md), [memory](../../product/storyteller/memory-and-continuity.md).
 
 ## Orthogonal authorities
