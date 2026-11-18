@@ -24,7 +24,7 @@ vi.mock('./history', () => ({
 vi.mock('./campaign-settings', () => ({
   CampaignSettingsEditor: () => null,
 }));
-vi.mock('./campaign-play', () => ({
+vi.mock('./ui/campaign-play', () => ({
   CampaignPlay: () => null,
 }));
 vi.mock('@/src/shared/api/story-update-stream', () => ({

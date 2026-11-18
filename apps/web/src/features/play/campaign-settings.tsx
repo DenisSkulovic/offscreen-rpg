@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import type { CampaignView } from '@offscreen/contracts/campaign';
-import { useCampaignCommand } from './use-campaign-command';
+import { useCampaignCommand } from './api/use-campaign-command';
 import {
   creativeToFormValues,
   formValuesToCreative,

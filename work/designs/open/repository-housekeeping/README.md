@@ -12,7 +12,7 @@ Start with [the dated audit](AUDIT-2026-11-17.md) for cleanup candidates and [th
 - [HK08 CI, brief and status convergence](../../../changes/archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md): Done; strict lifecycle failures are on the maintenance workflow, and `repo:brief --health` shows three candidates.
 - [HK01 retire local response-reconciliation helper](../../../changes/open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md): blocked 2026-11-18. The caller search found no package script, and the recovery search found no other way to settle an already-uncertain local attempt.
 - [HK03 split Storyteller integration tests](../../../changes/open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md): only after QA-SF01 baseline is characterized.
-- [HK05 retire Play compatibility shims](../../../changes/open/2026-11-17--hk05-play-compatibility-shims/CHANGE.md): after UI03, remove two one-line reexport entrypoints and repair import-sensitive tests.
+- [HK05 retire Play compatibility shims](../../../changes/archive/2026-11/other/2026-11-17--hk05-play-compatibility-shims/CHANGE.md): Done; PlayScene and Campaign settings import the owner modules, and the two one-line reexports are gone.
 - [HK04 decompose Chamber launcher](../../../changes/open/2026-11-17--hk04-chamber-launcher-seams/CHANGE.md): proposed, with security/provider/billing freeze and harness-proof gate.
 
 **Unselected:** none of these Changes is the current Change. Execute one at a time when the owner tasks Cursor. Documentation-only historical reclassification is maintenance under the [change standard](../../../../.agents/references/change-work-unit-standard.md), not a pretext for a fake code Change.

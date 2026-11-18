@@ -1,5 +1,5 @@
 'use client';
-import { CampaignPlay } from './campaign-play';
+import { CampaignPlay } from './ui/campaign-play';
 import { CampaignSettingsEditor } from './campaign-settings';
 import { StoryHistoryView } from './history';
 import { resolveLivePresentation } from './model/live-presentation';
