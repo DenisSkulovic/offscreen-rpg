@@ -12,7 +12,7 @@ The Storyteller prepares a **turn**; the player receives narration and, when int
 
 ## From intention to continuation
 
-The Storyteller receives the current situation, relevant memories, character capabilities, campaign settings and a bounded selection of canonical material—not an entire setting dump. It offers contextual intentions and can prepare reusable local activities. Supported rules adjudicate a selected attempt and commit checks and effects; narration follows only when accepted policy calls for it. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
+The Storyteller receives the current situation, relevant memories, character capabilities, campaign settings and a bounded selection of canonical material—not an entire setting dump. It offers contextual intentions and can prepare reusable local activities. An offer, including a reusable activity menu, is permission to choose. It does not advance fictional time. Time moves when the player accepts an action, an activity, or an eligible entry in an accepted plan, as [Pace](time-and-autonomy.md#pace) requires. Supported rules adjudicate a selected attempt and commit checks and effects; narration follows only when accepted policy calls for it. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
 
 Player input expresses an **intention**; it does not directly supply resulting world changes. Neither repeated clicks nor reloading may produce free rerolls, duplicate actions or endless regeneration of suggestions.
 
@@ -34,7 +34,7 @@ Routine chitchat does not promise fresh bespoke dialogue; repeated rumor gatheri
 
 ## Storyteller-directed pace
 
-The game must support both rapid narration→choice sequences and hours-long offered activities while the player is elsewhere. They are not a compulsory alternating cycle. Scene resolution does not automatically return to activities; activity completion does not automatically request a scene. Brief dialogue, observation and combat actions still have explicit time costs; menu navigation consumes no fictional time.
+The game must support both rapid narration→choice sequences and hours-long accepted activities while the player is elsewhere. An activity that was only offered does not continue in the player's absence. They are not a compulsory alternating cycle. Scene resolution does not automatically return to activities; activity completion does not automatically request a scene. Brief dialogue, observation and combat actions still have explicit time costs; menu navigation consumes no fictional time.
 
 ## What the game remembers (commitment view)
 
