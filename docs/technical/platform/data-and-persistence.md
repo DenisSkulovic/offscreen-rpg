@@ -1,12 +1,30 @@
 # Data and consistency
 
-**Find the section:** [durable record families](#durable-records) · [selected document store](#selected-document-store) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
+**Find the section:** [who owns the durable record](#who-owns-the-durable-record) · [durable record families](#durable-records) · [selected document store](#selected-document-store) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
+
+## Who owns the durable record
+
+| Promise | Owner |
+| --- | --- |
+| Canonical SQL identity, versioned or append-only source, and the transaction | This page. [Story snapshot and chronology](#story-snapshot-and-chronology) holds the revision and the commit. [Selected document store](#selected-document-store) holds content-addressed prose. [Quantities and ownership](#quantities-and-ownership) holds one mutable authority per scarce fact. |
+| Caches | [Redis boundary](./persistence-and-caching.md#redis-boundary) |
+| Queue, outbox, and Temporal delivery | [Commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery) |
+| Engine result admission | [Admitted action and time](../engine/mechanics-and-capabilities.md#admitted-action-and-time) |
+| Storyteller publication | [What publication is allowed to do](../storyteller/generation-and-publication.md#what-publication-is-allowed-to-do) |
+| Effective spending | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Player record kinds | [Six kinds of record](../../product/gameplay/continuity.md#six-kinds-of-record) |
+
+Engine result admission and Storyteller publication stay on the linked headings. A platform cache does not carry either promise.
+
+Realization records stay under [Durable records](#durable-records) and in the source-observed note of [Selected document store](#selected-document-store). [Planned story records](#planned-story-records) stays the selected family list.
 
 Current implementation stores campaign narrative bodies and continuity notes in PostgreSQL. The [canonical-file contract](../storyteller/context-and-memory.md) remains the target: versioned documents own narrative knowledge and Storyteller guidance; transactional records retain mechanical execution, permissions, publication references and accounting. Local document storage and an S3-compatible adapter exist; see [selected document store](#selected-document-store). Moving already-saved PostgreSQL narrative bodies onto that store is not claimed complete. Do not extend the table families below into new narrative content tables without reconciling that ownership boundary. A rebuildable search index is not the canonical content store.
 
 Application PostgreSQL owns committed story state, chronology, command receipts, decisions and spend reservations. Temporal owns workflow history, timers and execution progress. Published deadlines are projected into PostgreSQL for display and admission checks; no database scheduler separately advances them. That ownership split is the selected model. Create further migrations in working slices, not every future table before the first screen. The world may imply far more people, objects and places than these records store. Do not add NPC, location, relationship, fact, population, schedule or generic world-entity tables because a scene mentioned a crowd. Durable story-scoped identity is created when later correctness depends on that exact person, object or place. See [sparse world](../../product/gameplay/continuity.md#sparse-world-progressive-materialization). Scene-local references for targetable details are a later presentation/interaction concern, not a reason to persist a full world census.
 
 ## Durable records
+
+These subsections are realization records of the tables and migrations already named here. [Planned story records](#planned-story-records) remains the selected family list. Demonstrated tiers, where a row exists, are [capability coverage](../../../STATUS.md#capability-coverage).
 
 ### Implemented private draft
 
@@ -28,7 +46,7 @@ The generic record contains no draft, character, scene or timing fields. The ope
 
 `outbox` stores a unique notice ID, versioned topic, operation UUID, next delivery eligibility, lease token and delivery timestamp. It contains no prompt or player content. Opening admission inserts its notice in the same transaction as the generation record and latest-opening link. The notice ID currently equals the opening operation ID; typed topics select dispatch behavior, not arbitrary workflow names supplied by clients. A partial index serves undelivered notices. Migration `0003_execution_outbox` also admits previously pending scripted requests for delivery.
 
-The reusable relay store leases and acknowledges delivery; it does not own the referenced operation's outcome. No foreign key binds this cross-operation notice table exclusively to generations. The admitting module is responsible for creating a valid reference transactionally; future deletion must account for outstanding notices. Keep receipt retention separate from Temporal history retention and from game chronology.
+The reusable relay store leases and acknowledges delivery; it does not own the referenced operation's outcome. No foreign key binds this cross-operation notice table exclusively to generations. The admitting module is responsible for creating a valid reference transactionally; future deletion must account for outstanding notices. Keep receipt retention separate from Temporal history retention and from game chronology. Queue, outbox relay, and Temporal delivery stay on [commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery).
 
 ### Implemented story initialization
 
@@ -107,6 +125,8 @@ Some families can share a table initially. The purpose is to assign responsibili
 
 ## Interaction contract component
 
+Engine result admission stays on [admitted action and time](../engine/mechanics-and-capabilities.md#admitted-action-and-time). Storyteller publication stays on [what publication is allowed to do](../storyteller/generation-and-publication.md#what-publication-is-allowed-to-do).
+
 Mechanical campaign offers have a separate private authority record. `campaign.offer` is the current public projection. `game_offer` owns the corresponding private immediate-action plans, story identity and narrative-revision fence. Public leaves contain no plan key beyond their offer-local option identity and expose no DC, outcome branch or effects. Replacing an offer inserts a new immutable private record before updating the current projection; selection loads it by story, offer and revision. Old records remain evidence but cannot authorize a current roll.
 
 `@offscreen/contracts/interactions` separates an interaction specification from a submitted answer. A published interaction has its own UUID and a versioned specification; a submission references that UUID and carries a versioned answer. Neither includes a next-scene reference, state changes, actor authority or scheduling commands. The application must load the authoritative current offer rather than accept an offer supplied by the browser.
@@ -127,7 +147,7 @@ A public `viewVersion` changes when snapshot-visible state changes even without 
 
 Record admitted and applied control epochs (or enforce an equivalent pending-control condition), so generation cannot start from the new epoch while an earlier disruptive command is still pending. Command receipts have terminal applied/rejected results with stable error codes; they are not the same as provider attempt status. Domain-operation uniqueness must survive Temporal history retention.
 
-Entries have a unique `(story_id, sequence)` and a unique causation key for their originating resolution/action. A repeated execution can locate its committed result. Preserve actual player or autonomous intent and committed outcome, not hidden reasoning. Product chronology is user content, separate from operational logs.
+Entries have a unique `(story_id, sequence)` and a unique causation key for their originating resolution/action. A repeated execution can locate its committed result. A duplicated Temporal or delivery event does not create a second committed result. See [commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery). A stale cache snapshot does not override the canonical SQL version. See [Redis boundary](./persistence-and-caching.md#redis-boundary). Preserve actual player or autonomous intent and committed outcome, not hidden reasoning. Product chronology is user content, separate from operational logs.
 
 ## Flexible without becoming untyped
 
@@ -149,7 +169,7 @@ Stage objects before the SQL root is promoted. S3 does not join the SQL transact
 
 No automatic deletion in this contract. Referenced objects stay until an explicit deletion policy. Do not delete by age. Do not migrate existing local objects implicitly. Remote mode for an existing story requires copy-by-hash, verify, and a separate cutover. Bounded retries are for transient transport only.
 
-**Source-observed 2026-11-16:** `packages/documents/src/s3-store.ts` and `document-store-config.ts` implement the mode switch and S3 client. That is not a hosted-scale proof, not a backup scheduler, and not permission to put remote reads under a story lock. Production cutover still needs the ENG03 lock evidence. Disposable multi-process acceptance is the proof bar, not an in-process fake.
+**Realization record, source-observed 2026-11-16:** `packages/documents/src/s3-store.ts` and `document-store-config.ts` implement the mode switch and S3 client. That is not a hosted-scale proof, not a backup scheduler, and not permission to put remote reads under a story lock. Production cutover still needs the ENG03 lock evidence. Disposable multi-process acceptance is the proof bar, not an in-process fake. The selected contract above stays. The tier row is [capability coverage](../../../STATUS.md#capability-coverage).
 
 ## Spatial model boundary
 
@@ -183,7 +203,7 @@ Scope every domain record by story. Use composite foreign keys or equivalent con
 
 Initial indexes should serve known queries: membership by user/story; chronology by story/sequence; unprocessed commands by story/sequence; open decisions by story; unpublished outbox notices; unresolved generation attempts and spend reservations. Add partial indexes for pending subsets where appropriate. Do not create a due-action polling index for an application scheduler we do not have, or broad JSONB indexes for fields we never query.
 
-Cache keys include story, visibility and relevant revision, whether cached locally or eventually in Redis. Neither cached responses nor summaries can bypass membership checks. Private character knowledge is not yet a first-version presentation feature; do not add accidental secrecy semantics through a cache key.
+Cache keys include story, visibility and relevant revision, whether cached locally or eventually in Redis. Neither cached responses nor summaries can bypass membership checks. The cache mechanism stays on [Redis boundary](./persistence-and-caching.md#redis-boundary). Private character knowledge is not yet a first-version presentation feature; do not add accidental secrecy semantics through a cache key.
 
 ## Changes, retention and deletion
 
@@ -199,4 +219,4 @@ Temporal history may retain Activity arguments and results after application dat
 
 ## Profiled storyteller storage
 
-Drafts carry a nullable profile reference while incomplete. Started storyteller stories carry captured profile/execution JSON and private derived continuity notes. Each note has story-local identity and source passage evidence. Opening/current/arrival publication updates notes atomically with its passage; prepared arrival notes are not current facts. Profiled generation execution records publication status separately from generation state. Persistent funding accounts, runs and attempts use integer USD microunits; immutable attempt reservations survive uncertain dispatch. Accounting takes a global paid-admission advisory lock, then funding account before run/attempt, and never lock a story in that accounting transaction. Story publication never holds accounting locks.
+Drafts carry a nullable profile reference while incomplete. Started storyteller stories carry captured profile/execution JSON and private derived continuity notes. Each note has story-local identity and source passage evidence. Opening/current/arrival publication updates notes atomically with its passage; prepared arrival notes are not current facts. Profiled generation execution records publication status separately from generation state. Persistent funding accounts, runs and attempts use integer USD microunits; immutable attempt reservations survive uncertain dispatch. Accounting takes a global paid-admission advisory lock, then funding account before run/attempt, and never lock a story in that accounting transaction. Story publication never holds accounting locks. Effective spending stays on [distinct authorities](./spending-and-entitlements.md#distinct-authorities).
