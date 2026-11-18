@@ -38,7 +38,6 @@ Current change: none
 | [SA07 evidence tools](open/2026-11-14--sa07-evidence-tools/CHANGE.md) | **Ready corpus decision** | Typed read operations for missing evidence |
 | [HK01 retire unsupported local repair CLI](open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) | **Ready replacement-first** | The CLI is the only saved-evidence settlement for an already-uncertain local attempt. It stays until a supported replacement exists |
 | [HK03 Storyteller integration test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Ready preserve-red extraction** | Characterize then split 5,232-line nested integration suite without losing tests |
-| [S3a continuity report](open/2026-11-11--s3a-continuity-report/CHANGE.md) | **Ready read-only report** | Continuity evidence in local Story report |
 
 ## Layout
 

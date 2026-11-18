@@ -32,7 +32,7 @@
 | GM03 | Existing bounded accepted plans may satisfy quiet-watch use case | **Compare 3-step existing itinerary vs repeat contract**; ship minimal path | Three exact 600-second segments or documented demonstrated equivalence; no new autoplay bus |
 | GM07 | Timed defaults exist for legacy decision, but per-decision consent does not | **Implement precise one-decision consent and expiry race**, reuse existing atomic selection | No consent -> no auto answer; exact option, revocation/expiry races |
 | SA07 | Existing ask/read memory explorer may cover cases with lexical/alias correction | **Label failure first**, only add one read op if necessary | Verified case retrieval & final packing improve or prove tool unnecessary |
-| S3a | Existing read-only report already collects many relevant fields | **Add only provably missing provenance columns** and negative fixtures | Proposed != committed != retained != packed, no private dump |
+| S3a | The local report separates proposed, published, retained, selected, and packed evidence. A missing field is unknown | **Done** | A proposed body is omitted. A catalogue-only handle is not packed |
 
 **Classification:** closed-but-unarchived 2; verifying 1; source-authorable deterministic 4 (DIR02, HK03, HK04, S3a); constrained runtime repair 2 (QA-SF01, HK01); privacy/spend-critical architectural 1 (OBS00); selected experimental or bounded-mechanics 6 (DIR03, OBS04, ENG03, GM03, GM07, SA07). The exact grouping is for triage, not an implementation metric.
 

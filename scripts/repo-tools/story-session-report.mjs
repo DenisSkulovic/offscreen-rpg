@@ -1,8 +1,112 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, realpathSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
+function invokedDirectly() {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(entry);
+  } catch {
+    return import.meta.url === pathToFileURL(entry).href;
+  }
+}
+
+function textOrUnknown(value) {
+  return typeof value === 'string' && value.length > 0 ? value : 'unknown';
+}
+
+/** Identities and counts only. Bodies, titles, and reasons stay out of this view. */
+export function continuityProvenance(input) {
+  const output = input?.output;
+  const proposed =
+    !output || typeof output !== 'object'
+      ? 'unknown'
+      : {
+          documents: Array.isArray(output.documentChanges)
+            ? output.documentChanges.map((change, index) => ({
+                index,
+                operation: textOrUnknown(change?.operation),
+                kind: textOrUnknown(change?.kind),
+                path: textOrUnknown(change?.path),
+                documentId: textOrUnknown(change?.documentId),
+                expectedRevision: Number.isInteger(change?.expectedRevision)
+                  ? change.expectedRevision
+                  : 'unknown',
+              }))
+            : 'unknown',
+          noteCount: Array.isArray(output.currentNotes)
+            ? output.currentNotes.length
+            : 'unknown',
+        };
+  const published = textOrUnknown(input?.publicationState);
+  const root = input?.retainedRoot;
+  const rootRevision = Number.isInteger(root?.revision) ? root.revision : 'unknown';
+  const rootHash = textOrUnknown(root?.hash);
+  const retained =
+    rootRevision === 'unknown' && rootHash === 'unknown'
+      ? 'unknown'
+      : {
+          rootRevision,
+          rootHash,
+          documents: 'unknown',
+        };
+  const selection = input?.canonicalKnowledge?.documentSelection;
+  const selected =
+    !selection || !Array.isArray(selection.loadedHandles)
+      ? 'unknown'
+      : {
+          handles: selection.loadedHandles.filter(
+            (handle) => typeof handle === 'string',
+          ),
+          omitted: Array.isArray(selection.omitted)
+            ? selection.omitted.map((item) => ({
+                documentId: textOrUnknown(item?.documentId),
+                reason: textOrUnknown(item?.reason),
+              }))
+            : [],
+        };
+  const packed = packRequestHandles(input?.request);
+  return {
+    proposed,
+    published: published === 'unknown' ? 'unknown' : { state: published },
+    retained,
+    selected,
+    packed,
+  };
+}
+
+function packRequestHandles(request) {
+  if (!request || typeof request !== 'object') return 'unknown';
+  const handles = [];
+  const seen = new Set();
+  const visit = (value) => {
+    if (!value || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item);
+      return;
+    }
+    if (
+      typeof value.handle === 'string' &&
+      typeof value.body === 'string' &&
+      !seen.has(value.handle)
+    ) {
+      seen.add(value.handle);
+      handles.push({
+        handle: value.handle,
+        bytes: Buffer.byteLength(value.body, 'utf8'),
+        sha256: createHash('sha256').update(value.body).digest('hex'),
+      });
+    }
+    for (const child of Object.values(value)) visit(child);
+  };
+  visit(request);
+  return { handles };
+}
+
+async function reportSession() {
 const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const requested = process.argv.slice(2).find((value) => !value.startsWith('-'));
@@ -284,6 +388,19 @@ const contextComposition = journey.generations.map(({ generationId }) => {
       input.context?.canonicalKnowledge,
     ),
     result: summarizeResult(output),
+    continuity: continuityProvenance({
+      output,
+      publicationState:
+        journey.resolutions
+          .filter((resolution) => resolution.generationId === generationId)
+          .at(-1)?.publicationState ?? null,
+      retainedRoot: {
+        revision: journey.story.rootRevision ?? null,
+        hash: journey.story.rootHash ?? null,
+      },
+      canonicalKnowledge: input.context?.canonicalKnowledge ?? null,
+      request: input.request ?? null,
+    }),
     request: {
       complete: summarize(request),
       outputSchema: summarize(request.outputSchema ?? null),
@@ -381,3 +498,8 @@ console.log(
     2,
   ),
 );
+}
+
+if (invokedDirectly()) {
+  await reportSession();
+}
