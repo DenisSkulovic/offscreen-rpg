@@ -19,6 +19,7 @@ The goal is not to reward document or link counts. It is to lower wrong-authorit
 2. [Missing and underowned knowledge catalogue](COVERAGE-GAPS.md): evidence from code, content assets and existing docs; what belongs in selected canon, in proposals, in practical guides, or nowhere.
 3. [Target information architecture](TARGET-ARCHITECTURE.md): authority-aware sections, contextual linking, document creation/splitting/merging and practical crosswalks.
 4. [Evaluation and rollout](VALIDATION.md): independent task tests, negative fixtures, packet sequence and evidence acceptance.
+5. [Cursor execution map](EXECUTION-MAP.md): all 23 new packet links, prerequisites, scope classifications and suggested one-at-a-time order.
 
 ## Proposed Change execution route
 
