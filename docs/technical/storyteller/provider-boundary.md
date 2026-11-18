@@ -2,6 +2,23 @@
 
 Status: implemented for the offline POC, with **OBS00-C wire-equality** and **OBS00-L local Story trial guards** landed (2026-11-15). Exact packet construction, attempt-owned durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. `pnpm chamber:memory-packet` materializes the maintained Greywake long-story corpus and captures the ordinary memory controller's exact first-round packet at the same zero-spend boundary. Rebuilding means admitting a fresh immutable generation. Pure packet comparison covers every implemented request purpose plus bounded human/nonhuman active-scene sequences and reports exact byte overlap without inferring cache savings. **OBS00-B** (production/default-worker current entitlement) remains blocked. Live paid release still requires a separate spending and evaluation preflight with a **fresh** owner cap.
 
+**Route:** [attempt custody and an unknown call](#attempt-custody-and-an-unknown-call). Grants and recovery stay in [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities).
+
+## Attempt custody and an unknown call
+
+Preparing and inspecting a provider request are local. Dispatch is a separate authority transition, and this page does not grant it.
+
+| Concern | Where it stays |
+| --- | --- |
+| Durable attempt identity and the held request | [Durable breakpoint lifecycle](#durable-breakpoint-lifecycle). One attempt identity owns the review record. Rebuilding admits a fresh generation. |
+| Reviewed bytes and transport | [Exact packet boundary](#exact-packet-boundary). Equality is what the application handed to transport, not provider receipt. |
+| An unknown transport result or a partial outcome | The same lifecycle. The attempt stays uncertain and blocks further provider work. |
+| Price, grant, window, and recovery | [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities). Figures are not copied here. |
+
+[Safety boundaries](#safety-boundaries) still forbid a release from adding a retry beyond the captured operation envelope. The status paragraph keeps live paid release behind a separate spending and evaluation preflight. This map does not add a live route or a recovery grant.
+
+Negative: an uncertain charged dispatch does not start a second paid call. A changed creative profile does not replace the request or the permissions captured for that attempt.
+
 ## Product contract
 
 Provider inference is a deliberate external effect. Preparing a Storyteller task, assembling its exact provider body and analyzing it are free local operations and must be possible without reserving money or opening network access. Dispatch is a separate authority transition.

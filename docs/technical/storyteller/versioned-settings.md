@@ -2,6 +2,22 @@
 
 Design and current implementation boundary for [editable presets](../../product/storyteller/profiles-and-settings.md). Existing story/task profile snapshots remain provenance; explicit settings commands add subsequent revisions. Preserve that initial snapshot as provenance while adding explicit subsequent revisions; do not mutate old generation artifacts.
 
+**Route:** [what a later edit may change](#captured-revision-and-a-later-edit). Effective spending stays in [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities).
+
+## Captured revision and a later edit
+
+Admission copies the settings revision the task may use. A later save writes a new revision for work prepared after that save.
+
+| Work already in progress | What the later save may change |
+| --- | --- |
+| An existing offer, an admitted model task, its retry, a mechanical plan, or a prepared arrival | Nothing. Each keeps the revision captured with it. |
+| A valid in-flight result | Nothing. The save does not discard it or regenerate it for a new tone. |
+| The next task prepared after the save | The new revision, including creative fields that revision actually stores. |
+
+[Changes during play](../../product/storyteller/profiles-and-settings.md#changes-during-play) owns the player meaning. [Data and commands](#data-and-commands) owns the revision command. [Current adapters](#current-adapters) says canon-invention ceilings and the tag editor are not active, so [Canon invention policy](#canon-invention-policy) stays selected design. Pace stays in [Pace](../../product/gameplay/time-and-autonomy.md#pace). A settings save does not reserve money or open a provider call.
+
+Negative: a changed creative profile does not override the permissions captured for an existing attempt.
+
 ## Data and commands
 
 Store immutable story settings revisions, an active revision reference and the creation-time lock policy. Capture the preset identity/revision, resolved creative fields, custom tag definitions/snippets and separate typed mechanical/clock policies. Copy referenced catalogue content into the revision so a catalogue edit cannot change a saved story. Store private reusable presets under owner identity; another story receives its own snapshot when one is applied.
