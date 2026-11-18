@@ -1,6 +1,6 @@
 # Editorial pilot | proposed replacement for the product vision
 
-**Status:** *Draft replacement text for review; not canonical, not ratified, not source truth.* Based on [existing product vision](../../../../docs/product/foundations/vision.md) at f3e3bfe and the [redline rationale](REDLINE-SAMPLES.md#r3-vision-keep-the-philosophy-reduce-ticketstatus-leakage). The accepted product page remains binding. This prototype tests whether a large editorial rewrite improves the document without changing the product. Internal links below resolve from this design file; **rewrite them relative to docs/product/foundations/vision.md before adopting**.
+**Status:** *Draft replacement text for review; not canonical, not ratified, not source truth.* Based on [existing product vision](../../../../docs/product/foundations/vision.md) at f3e3bfe and the [redline rationale](REDLINE-SAMPLES.md). The accepted product page remains binding. This prototype tests whether a large editorial rewrite improves the document without changing the product. Internal links below resolve from this design file; **rewrite them relative to docs/product/foundations/vision.md before adopting**.
 
 ## Claim-preservation contract
 
