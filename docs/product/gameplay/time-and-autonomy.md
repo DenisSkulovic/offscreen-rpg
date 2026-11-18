@@ -100,7 +100,7 @@ Scheduling must survive service restarts. Multiple devices, duplicate deliveries
 
 ## First playable scope
 
-The next timing proof is the solo [first playable target](../foundations/vision.md#first-playable-target). Support a real wait, an immediate continuation, manual pause and resume, and continuation of already accepted work without an open browser. An unanswered decision stays open until the player returns. A timed fallback is a later phase, and it may close a decision only when the player already authorized it. Define shared decision deadlines and pause permissions before implementing group progression. Defer elaborate per-player calendars and catch-up modes until the basic timing experience is convincing.
+The timing ambition follows the small-group [first playable target](../foundations/vision.md#first-playable-target). The exact live acceptance for that group is Proposed/Blocked. Support a real wait, an immediate continuation, manual pause and resume, and continuation of already accepted work without an open browser. An unanswered decision stays open until the player returns. A timed fallback stays inside that Proposed/Blocked boundary, and it may close a decision only when the player already authorized it. Define shared decision deadlines and pause permissions before implementing group progression. Defer elaborate per-player calendars and catch-up modes until the basic timing experience is convincing.
 
 ## Existing narrative rehearsal adapter
 

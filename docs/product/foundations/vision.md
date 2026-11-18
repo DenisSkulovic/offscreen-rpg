@@ -2,7 +2,7 @@
 
 Offscreen RPG is a story that unfolds over time. You create a character, become familiar with their habits and relationships, and occasionally influence what happens next. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
 
-The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The next milestone is solo. A small group in a common storyline remains the following ambition, and it waits until shared decision and pause rules are settled. Those rules are still [proposed](../../../work/designs/open/shared-play/README.md).
+The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The first-playable ambition includes that small group in a common storyline. The exact live acceptance for shared decisions and pause is Proposed/Blocked until the owner ratifies it. Those rules remain [proposed](../../../work/designs/open/shared-play/README.md).
 
 Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave during a quiet interval the player already accepted. Leaving the page does not authorize a new choice. The accepted rule is in [time and autonomy](../gameplay/time-and-autonomy.md): no accepted execution means no fictional time, and a timed fallback applies only to a decision the player pre-authorized. A general delegated-decision policy remains [proposed](../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md), not accepted. A Chamber timed-default fixture is a developer test, not this player rule. Where a campaign has an authorized pause, that pause stops progression within its declared scope. A character who acts from personality overnight is a long-term aspiration, and only after that specific consent exists.
 
@@ -34,13 +34,13 @@ A messaging service such as Slack could support brief updates and choices during
 
 ## First playable target
 
-Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone. Follow a scene, choose an intention, leave during an already accepted quiet interval, receive a development, and respond. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring the player back. An invited friend is a later expansion. The rules for that friend remain [proposed shared play](../../../work/designs/open/shared-play/README.md). The solo acceptance texture is [what the first playable build should demonstrate](../gameplay/acceptance-scenarios.md#what-the-first-playable-build-should-demonstrate).
+Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone or with an invited friend who controls their own character. Follow a scene, choose an intention, leave during an already accepted quiet interval, receive a development, and respond. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring the player back. The exact release acceptance for that shared play is Proposed/Blocked. See [proposed shared play](../../../work/designs/open/shared-play/README.md). The scenario texture is [what the first playable build should demonstrate](../gameplay/acceptance-scenarios.md#what-the-first-playable-build-should-demonstrate).
 
 This target needs a small relevant world and a reliable story, not a grid map, dedicated work/travel/trade systems or a simulated population. Richer imagery, saved custom storytellers and deeper messaging interaction can grow from the first experience. Separate party adventures and elaborate world simulation are outside this scope.
 
 ## Larger shared worlds
 
-Thousands of players across independent stories, and eventually a world with roughly a hundred participants, are future design ambitions. They are not demonstrated capacity or requirements for the first release. The next milestone is solo play. A small cooperative party comes after shared decision rules are settled, and both come before those larger worlds. Larger worlds need independent scenes, limited pause authority and explicit absence rules; increasing a player-count setting cannot supply those behaviors.
+The first-playable ambition is a small cooperative party in one story. Thousands of players across independent stories, and eventually a world with roughly a hundred participants, come after that party. They are not demonstrated capacity. The exact live acceptance for the small party is Proposed/Blocked. Larger worlds need independent scenes, limited pause authority and explicit absence rules; increasing a player-count setting cannot supply those behaviors.
 
 ## Why build it
 

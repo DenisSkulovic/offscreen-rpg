@@ -2,7 +2,7 @@
 
 **Owns:** living product acceptance texture. Authored scenario traces live in [research/authored-scenarios](../../../research/authored-scenarios/README.md). They are examples, not technical law and not recorded live sessions.
 
-This walkthrough makes the intended experience tangible. Characters, wording, durations and outcomes are illustrative. They do not require goblin mechanics, apple mechanics or separate software concepts called nodes and events. The invited friend, a companion acting at the same time, and a missed-window autonomous choice are stress branches. The next milestone does not require them. Unsettled behavior is identified where it affects the experience.
+This walkthrough makes the intended experience tangible. Characters, wording, durations and outcomes are illustrative. They do not require goblin mechanics, apple mechanics or separate software concepts called nodes and events. The invited friend and a companion acting at the same time belong to the small-group first-playable ambition. A missed-window autonomous choice is an unsettled delegation protocol. The exact live acceptance for that group is Proposed/Blocked. Unsettled behavior is identified where it affects the experience.
 
 The [gameplay execution atlas](../../../research/authored-scenarios/README.md) is the technical companion: concrete scenes/options, exact worked dice and timing, activity interruptions/chains, Storyteller context/tools and illustrative token ledgers for every benchmark below, plus SpongeBob and the beacon fixtures. Read these high-level examples for the feeling, then the corresponding trace to examine authority and implementation gaps. The [proposed connected POC](../../../research/authored-scenarios/poc.md) selects a small proof without making every example a release requirement.
 
@@ -14,7 +14,7 @@ A visitor sees an example of a character's life interrupted by a choice. They se
 
 The player writes: “I am a wizard crossing the mountains to reach a haunted house.” They choose a whimsical but dangerous storytelling direction and a pace suitable for occasional attention during the day. The premise could equally support horror or gentle comedy; selecting this character does not determine the storyteller's style.
 
-In the shared-play stress branch, they invite a friend, who establishes a companion for the journey. Both see the premise and shared expectations for pace and unattended choices. The generated preview introduces the pair, their immediate surroundings and a reason to reach the house. They correct any misunderstanding before starting. The solo proof starts this journey with one player.
+They invite a friend, who establishes a companion for the journey. Both see the premise and shared expectations for pace and unattended choices. The generated preview introduces the pair, their immediate surroundings and a reason to reach the house. They correct any misunderstanding before starting. That invitation is part of the small-group ambition. Its live acceptance is Proposed/Blocked until shared decision rules are ratified.
 
 ## 2. Set out
 
@@ -42,7 +42,7 @@ For this branch, assume nobody intervenes and the apple stays with the goblin. S
 
 ## 5. Respond or miss the window
 
-If the wizard's player responds in time, resolve that intention. If they do not, this stress branch uses a fallback the player already authorized and records that the character acted without the player. A general delegated choice is not accepted. A late response cannot replace an outcome already applied.
+If the wizard's player responds in time, resolve that intention. If they do not, the story must not invent a choice the player did not authorize. A general delegated choice is not accepted. Whether a pre-authorized fallback may answer is Proposed/Blocked with the shared-play acceptance boundary. A late response cannot replace an outcome already applied.
 
 The precise handling of a companion's simultaneous rescue attempt needs a shared decision rule. It must not accidentally produce both a successful rescue and the wizard being swallowed because two continuations ran independently.
 
@@ -50,13 +50,13 @@ If the story is explicitly paused before resolution, its countdown stops. Group 
 
 ## 6. Return and conclude
 
-The next morning, a player sees the current situation and a short account of what happened during their absence. In this stress branch that account can include a fallback the player already authorized. It also includes other meaningful changes. They can inspect the full chronology if interested. An old phone notification opens this current state rather than reviving the old choice.
+The next morning, a player sees the current situation and a short account of what happened during their absence. Whether that account includes a fallback the player already authorized is part of the Proposed/Blocked shared-play boundary. The account includes other meaningful changes. They can inspect the full chronology if interested. An old phone notification opens this current state rather than reviving the old choice.
 
 An eventual conclusion could be escaping the goblin and reaching the house, abandoning the journey or dying during the attempt. The storyteller should connect the conclusion to what happened. Whether the survivors can start another adventure as the same characters is an open product choice, not an assumed continuation feature.
 
 ## What the first playable build should demonstrate
 
-The next milestone is a solo proof. Walk through creation, one scene, a quiet interval the player already accepted, an immediate consequence, and a return after absence. The shared scene and the timed autonomous choice above are stress examples, not acceptance for this milestone. Shared decisions stay [proposed](../../../work/designs/open/shared-play/README.md). A general delegated choice stays [proposed](../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md). Verify that a change of intention invalidates an incompatible prepared development, that a notification opens the current story, and that progression survives pause and restart. Closing the browser does not pause the story and does not authorize a new choice.
+The first-playable ambition includes a small group in one story: creation, one scene, a quiet interval the player already accepted, an immediate consequence, and a return after absence. The exact must-pass acceptance for live small-group play is Proposed/Blocked. Shared decisions stay [proposed](../../../work/designs/open/shared-play/README.md). A general delegated choice stays [proposed](../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md). A scripted shared scene does not authorize a response-window policy. Closing the browser does not authorize a new choice. Verify that a change of intention invalidates an incompatible prepared development, that a notification opens the current story, and that progression survives pause and restart.
 
 Measure inference during both waiting and active exchanges. Show that a remembered fact changes a later outcome. This makes orchestration, persistence and efficient AI visible through an engaging experience rather than requiring a large simulated world.
 
@@ -94,7 +94,7 @@ The player closes the application.
 
 Nothing interesting needs to happen. The game does not call an LLM every minute to narrate looking at a wall.
 
-Fifty minutes later, however, the storyteller may determine that someone approaches the gate and requires judgment. The shift is interrupted by a meaningful situation. The player can return and respond. A fallback the player already authorized can answer for them. With no such fallback, missing the window holds the decision. It does not invent a reaction.
+Fifty minutes later, however, the storyteller may determine that someone approaches the gate and requires judgment. The shift is interrupted by a meaningful situation. The player can return and respond. A fallback the player already authorized is one illustrated possibility. Whether that fallback is live acceptance is Proposed/Blocked. With no ratified fallback, missing the window holds the decision. It does not invent a reaction.
 
 If no interruption occurs, the shift completes. The committed result records the elapsed activity and earned compensation.
 
