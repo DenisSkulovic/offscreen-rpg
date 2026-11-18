@@ -8,6 +8,8 @@ import { useControlCommand } from './use-control-command';
 import { useResolutionCommand } from './use-resolution-command';
 import { useStoryLiveUpdates } from './use-story-live-updates';
 import { StoryFrame } from './ui/story-frame';
+import { Action } from '@/src/shared/ui/action';
+import { SystemNotice } from '@/src/shared/ui/system-notice';
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -326,26 +328,27 @@ export function PlayScene({
               </p>
             ) : null}
             {showRefreshRecovery ? (
-              <section
-                className="story-frame__notice"
-                aria-label="Snapshot refresh"
+              <SystemNotice
+                tone="attention"
+                label="Snapshot refresh"
+                action={
+                  <Action
+                    kind="button"
+                    variant="quiet"
+                    pending={snapshotFetching}
+                    disabled={!online}
+                    onClick={() => {
+                      void refetchSnapshot();
+                    }}
+                  >
+                    Refresh scene
+                  </Action>
+                }
               >
-                <p role="status">
-                  {!online || snapshotPaused
-                    ? 'Offline — last update may be stale. Refresh does not send a command.'
-                    : 'Last update failed. Refresh does not send a command.'}
-                </p>
-                <button
-                  type="button"
-                  className="story-frame__intention"
-                  disabled={snapshotFetching || !online}
-                  onClick={() => {
-                    void refetchSnapshot();
-                  }}
-                >
-                  Refresh scene
-                </button>
-              </section>
+                {!online || snapshotPaused
+                  ? 'Offline — last update may be stale. Refresh does not send a command.'
+                  : 'Last update failed. Refresh does not send a command.'}
+              </SystemNotice>
             ) : null}
             <ResolutionRecovery story={scene} onSnapshot={acceptSnapshot} />
             {scene.campaign?.character ? (

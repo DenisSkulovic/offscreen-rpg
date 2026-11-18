@@ -16,7 +16,7 @@
 | Order | Change | Status | Dependency | Bounded code outcome |
 | --- | --- | --- | --- | --- |
 | 1 | [UI01](../../../../changes/archive/2026-11/other/2026-11-17--ui01-semantic-tokens/CHANGE.md) | Done | none | Semantic design tokens and baseline migration |
-| 2 | [UI02](../../../../changes/open/2026-11-17--ui02-accessible-primitives/CHANGE.md) | Ready after UI01 | UI01 | Small tested Action/Notice primitives |
+| 2 | [UI02](../../../../changes/archive/2026-11/other/2026-11-17--ui02-accessible-primitives/CHANGE.md) | Done | UI01 | Small tested Action/Notice primitives |
 | 3 | [UI03](../../../../changes/open/2026-11-17--ui03-book-composition/CHANGE.md) | Ready after UI02 | UI02 | Book-specific composition boundaries |
 | 4 | [UI04](../../../../changes/open/2026-11-17--ui04-book-contents-navigation/CHANGE.md) | Ready after UI03 | UI03 | Low-chrome accessible book contents |
 | 5 | [UI05](../../../../changes/open/2026-11-17--ui05-stories-library-unification/CHANGE.md) | Ready after UI02 | UI02 | Stories style/use shared controls |
@@ -27,7 +27,7 @@
 | 10 | [DIR02](../../../../changes/open/2026-11-17--dir02-validated-publication-attachment/CHANGE.md) | Conditional | DIR01 + exact publisher audit | Source-bound deterministic appearance publication |
 | 11 | [DIR03](../../../../changes/open/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | Blocked / conditional | DIR02 + spend/quality acceptance | Optional Storyteller-proposed V1 direction |
 
-**Cursor execution policy:** one packet at a time, refreshed HEAD/dirty state and `pnpm repo:brief --json`; all follow the Change standard and each has a negative test. A “Ready after...” packet is still **not current**. UI01 is archived. UI02 is not selected by that fact. The queue remains `Current change: none` until the owner selects one.
+**Cursor execution policy:** one packet at a time, refreshed HEAD/dirty state and `pnpm repo:brief --json`; all follow the Change standard and each has a negative test. A “Ready after...” packet is still **not current**. UI01 and UI02 are archived. UI03 is not selected by that fact. The queue remains `Current change: none` until the owner selects one.
 
 **Critical stop points:** UI07 is a design quality checkpoint, not permission to certify the final visual style. DIR01 is deterministic no-provider proof. DIR02 must first prove the actual source/settlement write seam. DIR03 **cannot** run live creative generation without a separate spend gate and measured story-quality baseline. An audit returning “not safely feasible” can be a valid finding but cannot be falsely closed as a code implementation; update packet status accordingly.
 

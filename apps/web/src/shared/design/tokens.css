@@ -1,7 +1,7 @@
 /* UI01 semantic registry.
    Custom properties only. No element, class, or feature selectors.
    Feature styles alias these where an existing value already agrees.
-   Danger and success are platform status roles. No current control paints them. */
+   Danger and success are platform status roles. SystemNotice and critical Action paint them. */
 
 :root {
   --ui-canvas: #121b22;

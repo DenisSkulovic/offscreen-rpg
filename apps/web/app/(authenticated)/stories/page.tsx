@@ -5,6 +5,7 @@ import { LiveStoryList } from '@/src/features/stories/live-story-list';
 import { DraftList } from '@/src/features/stories/draft-list';
 import Link from 'next/link';
 import { requireViewer } from '@/src/server/viewer';
+import { Action } from '@/src/shared/ui/action';
 import { readNestJson } from '@/src/server/nest-reader';
 import { SignOutButton } from '@/src/features/session/sign-out-button';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
@@ -68,12 +69,12 @@ export default async function Stories() {
           server — nothing here invents progress.
         </p>
         <div className="stories-library__actions">
-          <Link className="stories-library__cta" href="/stories/new">
+          <Action kind="link" variant="primary" href="/stories/new">
             Create a story
-          </Link>
-          <Link className="stories-library__cta stories-library__cta--quiet" href="/demo">
+          </Action>
+          <Action kind="link" variant="quiet" href="/demo">
             Try the public preview
-          </Link>
+          </Action>
         </div>
         <LiveStoryList viewerId={viewerId} />
         <DraftList viewerId={viewerId} />

@@ -6,6 +6,8 @@ import type { Draft } from '@offscreen/contracts/drafts';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
+import { Action } from '@/src/shared/ui/action';
+import { SystemNotice } from '@/src/shared/ui/system-notice';
 import { paceOptions } from '@/src/features/play/model/pace-options';
 import { openingQueryOptions } from '@/src/shared/api/opening-query';
 import { useOpeningGenerate } from './use-opening-generate';
@@ -152,10 +154,10 @@ export function OpeningPreviewPanel({
           </p>
           {(!preview.isCurrent ||
             preview.sourceRevision !== draft.revision) && (
-            <p role="alert">
+            <SystemNotice tone="error">
               This preview is from an earlier draft or request. It is not the
               current opening.
-            </p>
+            </SystemNotice>
           )}
           {preview.candidate ? (
             <div className="story-frame story-frame__stage" aria-label="Opening excerpt">
@@ -206,7 +208,7 @@ export function OpeningPreviewPanel({
             </div>
           ) : null}
           {['pending', 'running'].includes(preview.state) && (
-            <div className="opening-callout" role="status">
+            <SystemNotice tone="attention">
               <h2>
                 {preview.state === 'pending'
                   ? 'Opening queued.'
@@ -216,25 +218,25 @@ export function OpeningPreviewPanel({
                 You may leave this page and return. This screen checks the same
                 saved request; it does not submit another one.
               </p>
-            </div>
+            </SystemNotice>
           )}
           {preview.state === 'uncertain' && (
-            <div className="opening-callout opening-problem" role="alert">
+            <SystemNotice tone="error">
               <h2>Generation stopped for review.</h2>
               <p>
                 The provider response or its billing could not be confirmed, so
                 the game will not retry or spend again automatically.
               </p>
-            </div>
+            </SystemNotice>
           )}
           {preview.state === 'failed' && (
-            <div className="opening-callout opening-problem" role="alert">
+            <SystemNotice tone="error">
               <h2>The opening was not created.</h2>
               <p>
                 The failed request is recorded. You may make one new attempt
                 below.
               </p>
-            </div>
+            </SystemNotice>
           )}
         </section>
       )}
@@ -281,24 +283,23 @@ export function OpeningPreviewPanel({
         </fieldset>
       ) : null}
       <div className="stories-library__actions">
-        <button
-          type="button"
-          className="stories-library__cta--quiet stories-library__more"
+        <Action
+          kind="button"
+          variant="quiet"
+          pending={generate.pending}
           disabled={
-            generate.pending ||
-            start.pending ||
-            !draft.premise.trim() ||
-            Boolean(unresolved)
+            start.pending || !draft.premise.trim() || Boolean(unresolved)
           }
           onClick={() => void onGenerate()}
         >
           {generateLabel}
-        </button>
+        </Action>
         {canStart || start.canRetrySame ? (
-          <button
-            type="button"
-            className="stories-library__cta"
-            disabled={generate.pending || start.pending}
+          <Action
+            kind="button"
+            variant="primary"
+            pending={start.pending}
+            disabled={generate.pending}
             onClick={() =>
               void (start.canRetrySame ? start.retryFrozen() : onStart())
             }
@@ -308,20 +309,30 @@ export function OpeningPreviewPanel({
               : start.canRetrySame
                 ? 'Retry the same Start'
                 : 'Start story'}
-          </button>
+          </Action>
         ) : null}
       </div>
       {!draft.premise.trim() && (
         <p>Add and save a premise before generating.</p>
       )}
-      <p role="status">{statusMessage}</p>
+      {statusMessage ? (
+        <SystemNotice tone="attention">{statusMessage}</SystemNotice>
+      ) : null}
       {statusMessage && (
         <p>
-          <a href={`/stories/${draft.id}/preview`}>Reload this opening</a>
+          <Action
+            kind="link"
+            variant="quiet"
+            href={`/stories/${draft.id}/preview`}
+          >
+            Reload this opening
+          </Action>
         </p>
       )}
       <p>
-        <a href={`/stories/${draft.id}`}>Back to story setup</a>
+        <Action kind="link" variant="quiet" href={`/stories/${draft.id}`}>
+          Back to story setup
+        </Action>
       </p>
     </main>
   );

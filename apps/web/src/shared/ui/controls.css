@@ -1,0 +1,88 @@
+/* UI02 shared controls. Class selectors only. Scene variables are not read. */
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--ui-border);
+  border-radius: 0.2rem;
+  background: transparent;
+  color: var(--ui-ink);
+  font-family: 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.action[data-variant='primary'] {
+  border-color: var(--ui-action);
+  background: var(--ui-action);
+  color: var(--ui-action-ink);
+}
+
+.action[data-variant='quiet'] {
+  background: transparent;
+  color: var(--ui-action);
+  border-color: var(--ui-border);
+}
+
+.action[data-variant='secondary'] {
+  background: transparent;
+  color: inherit;
+  border-color: var(--ui-border);
+}
+
+.action[data-variant='critical'] {
+  background: transparent;
+  color: var(--ui-danger);
+  border-color: var(--ui-danger);
+}
+
+.action:disabled,
+.action[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+
+.system-notice {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  padding: 0.85rem 1rem;
+  border-left: 2px solid var(--ui-border);
+  color: inherit;
+}
+
+.system-notice[data-tone='attention'] {
+  border-left-color: var(--ui-attention);
+}
+
+.system-notice[data-tone='error'] {
+  border-left-color: var(--ui-danger);
+}
+
+.system-notice[data-tone='success'] {
+  border-left-color: var(--ui-success);
+}
+
+.system-notice p,
+.system-notice h2 {
+  margin: 0;
+}
+
+.system-notice__action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
