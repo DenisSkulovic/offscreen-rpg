@@ -4,6 +4,10 @@ Offscreen RPG is a story that unfolds over time. You create a character, become 
 
 The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The first-playable ambition includes that small group in a common storyline. The exact live acceptance for shared decisions and pause is Proposed/Blocked until the owner ratifies it. Those rules remain [proposed](../../../work/designs/open/shared-play/README.md).
 
+## What this page selects
+
+Selected promises on this page are earned time, player consent, D&D-style rules, a Storyteller that does not impose one preferred pace, sparse continuity, world neutrality, and risk where the campaign permits loss. The small-group first-playable ambition stays. Its live acceptance is Proposed/Blocked. The sponsored allowance later in this page is illustrative. It is not a spend authorization. A general delegated choice is not accepted. A personality that acts overnight without that consent is a later aspiration, not a rule.
+
 Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave during a quiet interval the player already accepted. Leaving the page does not authorize a new choice. The accepted rule is in [time and autonomy](../gameplay/time-and-autonomy.md): no accepted execution means no fictional time, and a timed fallback applies only to a decision the player pre-authorized. A general delegated-decision policy remains [proposed](../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md), not accepted. A Chamber timed-default fixture is a developer test, not this player rule. Where a campaign has an authorized pause, that pause stops progression within its declared scope. A character who acts from personality overnight is a long-term aspiration, and only after that specific consent exists.
 
 ## The D&D foundation
@@ -44,7 +48,7 @@ The first-playable ambition is a small cooperative party in one story. Thousands
 
 ## Why build it
 
-This is both a game we want to play and a senior fullstack portfolio project. A small, convincing experience should demonstrate thoughtful abstraction, persistent state, background execution, model orchestration, context management and cost control.
+This section is the portfolio purpose. It does not authorize provider spend, and it does not change the [pace rule](../gameplay/time-and-autonomy.md#pace). This is both a game we want to play and a senior fullstack portfolio project. A small, convincing experience should demonstrate thoughtful abstraction, persistent state, background execution, model orchestration, context management and cost control.
 
 The delivery goal is a hosted, playable link from a CV or portfolio. A visitor should quickly experience a scene, make a meaningful choice and see persistent offscreen progression; inspecting GitHub is optional. Provide a short demonstration path without making the visitor wait ten minutes for their first interesting result. Keep longer real-time play available separately. A bounded sponsored AI trial is a later target, with an illustrative allowance around $2 rather than a settled entitlement or authorization to spend.
 

@@ -1,6 +1,6 @@
 # Gameplay and Storyteller concepts
 
-This is the vocabulary for product descriptions, feature plans and technical contracts. It distinguishes what the player experiences, what the Storyteller does, and what the software stores. These definitions do not require a new table or class for every term. See [progress](../../../STATUS.md) for implemented coverage and [execution language](../../../research/authored-scenarios/execution-language.md) for runtime notation.
+This is the vocabulary for product descriptions, feature plans and technical contracts. It distinguishes what the player experiences, what the Storyteller does, and what the software stores. The tables are selected vocabulary. Names such as `result.scene` and `story_passage` are current storage labels, not extra product objects. The conversation example is illustrative. It is not a live-run receipt. These definitions do not require a new table or class for every term. See [progress](../../../STATUS.md) for implemented coverage and [execution language](../../../research/authored-scenarios/execution-language.md) for runtime notation.
 
 ## The answer to “what does the Storyteller do?”
 

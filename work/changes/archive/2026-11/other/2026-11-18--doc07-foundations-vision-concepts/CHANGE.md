@@ -1,12 +1,12 @@
 # DOC07 | Rewrite the product vision and core concepts without changing product intent
 
-**State:** Proposed (unselected). **Kind:** documentation. **Editorial wave:** S1a. **Order:** after DOC06 status/acceptance classification. **Source basis:** the [editorial audit](../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md) and [page register](../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md), originally inspected at `f3e3bfe`; refresh HEAD, dirty files and real headings before editing. **Current change remains:** none until explicitly selected.
+**State:** Done (2026-11-18). **Kind:** documentation. **Editorial wave:** S1a. **Order:** after DOC06 status/acceptance classification. **Source basis:** the [editorial audit](../../../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md) and [page register](../../../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md). Inspected at `123a2f34`. No model call and no database.
 
 ## Cursor first-screen brief
 
-**Outcome:** Rewrite the product vision and core concepts without changing product intent. **No executable modifications authorized.** Start at [editorial standards](../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), then these canonical owners:
-- [vision.md](../../../../docs/product/foundations/vision.md)
-- [concepts.md](../../../../docs/product/foundations/concepts.md)
+**Outcome:** Rewrite the product vision and core concepts without changing product intent. **No executable modifications authorized.** Start at [editorial standards](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), then these canonical owners:
+- [vision.md](../../../../../../docs/product/foundations/vision.md)
+- [concepts.md](../../../../../../docs/product/foundations/concepts.md)
 
 **Known defect:** The current vision carries strong earned-life, D&D, sparse-world and world-neutral ideas but mixes early proof goals, implementation context and some unqualified autonomy phrases. Concepts mix durable vocabulary with current result-shape annotations.
 
@@ -35,12 +35,20 @@ Produce a compact before/after claim inventory, classification (selected target 
 
 ## Verification and close receipt
 
-When selected, run the actual available link/graph and Change plan/close checks on a full checkout; record exact commands, failure output, current commit and any missing archive/history limits. Compare before/after claim meaning, check known dependent headings and one independent adverse reading. The [documentation-reconciliation skill](../../../../.agents/skills/documentation-reconciliation/SKILL.md) applies. Do not mark Done with unverified factual claims or a blocked normative decision hidden in selected prose.
+When selected, run the actual available link/graph and Change plan/close checks on a full checkout; record exact commands, failure output, current commit and any missing archive/history limits. Compare before/after claim meaning, check known dependent headings and one independent adverse reading. The [documentation-reconciliation skill](../../../../../../.agents/skills/documentation-reconciliation/SKILL.md) applies. Do not mark Done with unverified factual claims or a blocked normative decision hidden in selected prose.
 
-## Reconciliation ledger (fill at execution)
+## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/product/foundations/vision.md (exact #heading at execution) | product | pending: actual claim-level review needed | no source behavior changed; record docs SHA | not run: Proposed | The negative is silently demoting small-party play from the intended initial experience, granting automatic decisions on absence, or treating a proposed full mechanics edition as shipped. | pending impacted links |
+| docs/product/foundations/vision.md#what-this-page-selects | product | changed: the page now names selected promises, the Proposed/Blocked live boundary, and the illustrative spend figure | docs/product/foundations/vision.md at 123a2f34 | documentation-only | a small group is not demoted, and absence does not grant an automatic choice | the new heading does not replace an existing anchor |
+| docs/product/foundations/vision.md#why-build-it | product | changed: the portfolio section now says it does not authorize spend and does not change the pace rule | docs/product/foundations/vision.md at 123a2f34 | documentation-only | the illustrative allowance is not a spend authorization | the heading stayed in place |
+| docs/product/foundations/vision.md#earned-life | product | unchanged: the earned-life, risk, consent, and prepared-life paragraphs stay because the pilot drops those unique clauses | docs/product/foundations/vision.md at 123a2f34 | documentation-only | a proposed full mechanics edition is not treated as shipped | the heading stayed in place |
+| docs/product/foundations/concepts.md#execution-and-storage-concepts | product | changed: the opening now classifies that section's storage names as labels, and the example as illustrative | docs/product/foundations/concepts.md at 123a2f34 | documentation-only | a storage name does not add a scene lifecycle | the heading stayed in place |
 
-**Next executor step when owner selects:** update the new packet to Ready only after checking source/current authority, then implement this one documentation outcome, verify and archive; never auto-select DOC08.
+exception: work/changes/README.md because the queue line is the selection route for this documentation packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this documentation packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+exception: work/designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md because the wave table will point at the archived packet
+
+The pilot in work/designs/open/documentation-editorial-audit/PILOT-VISION-REWRITE.md was reviewed and not adopted as a replacement. It would drop the pause-scope sentence, the developer-fixture distinction, the sparse-world example, transformation applicability, the illustrative allowance limit, prepared local life, and the no-chapter rule. No executable diff. Close checks use base 123a2f34. No provider call.
