@@ -1,6 +1,6 @@
 # DIR03 | Optionally produce bounded V1 scene direction within Storyteller publication
 
-**State:** BLOCKED / CONDITIONAL; not a ready coding task until explicit quality and spend decision (prepared 2026-11-17). **Current Change remains:** none. This is a prepared bounded future implementation unit, **not permission for Cursor to start on its own**. **Order/dependency:** DIR02 verified production attachment; provider/task contract review; measured quality/cost acceptance; authorized spend policy.
+**State:** Blocked and parked (2026-11-18). DIR02 found that the publication insert does not write appearance, so there is no verified writer for a model directive. Spend and a quality baseline are also unapproved. This packet is not selected. **Order/dependency:** a proven source-gated appearance writer; provider/task contract review; measured quality/cost acceptance; authorized spend policy.
 
 **Product authority:** [Design system and expressive worlds](../../../../docs/product/experience/design-system-and-expression.md).
 **Technical authority:** [Semantic design foundation](../../../../docs/technical/client/semantic-design-foundation.md) and [Scene-direction production](../../../../docs/technical/client/scene-direction-production.md).

@@ -1,6 +1,6 @@
 # Long-life benchmark playthroughs
 
-**Owns:** the long-life benchmark atlas. The selected earned-life promise stays [Earned life](../foundations/vision.md#earned-life). The near-term wizard and goblin playthrough stays [Acceptance scenarios](acceptance-scenarios.md#what-the-first-playable-build-should-demonstrate). Authored traces for these benchmarks stay in [research/authored-scenarios](../../../research/authored-scenarios/README.md).
+**Owns:** the long-life benchmark atlas. The selected earned-life promise stays [Earned life](../foundations/vision.md#earned-life). The first solo oracle is [harbor and return](acceptance-scenarios.md#first-solo-acceptance-walkthrough--harbor-and-return). The later wizard and goblin vignette stays on [Acceptance scenarios](acceptance-scenarios.md#1-arrive-and-create). The short obligation list stays [what the first playable build should demonstrate](acceptance-scenarios.md#what-the-first-playable-build-should-demonstrate). Authored traces for these benchmarks stay in [research/authored-scenarios](../../../research/authored-scenarios/README.md).
 
 Selected expectation: time, persistence, and consequence can make a life feel earned, as [Earned life](../foundations/vision.md#earned-life) already states. Durable activity, state, and consequence do not require a wallet, armour, employment, or human-scale movement. That limit is [World-independent foundation](rules.md#world-independent-foundation) and [Flexible settings and protagonists](worlds-and-characters.md#flexible-settings-and-protagonists).
 

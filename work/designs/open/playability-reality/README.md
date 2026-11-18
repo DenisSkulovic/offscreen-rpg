@@ -17,7 +17,7 @@ The game is not a universal Storyteller, agent framework, world simulator or lor
 
 ## Work sequence
 
-1. [REAL01](../../../changes/open/2026-11-18--real01-solo-golden-path/CHANGE.md): **documentation**, use the existing authored harbor example to make the primary solo V0 acceptance actually testable, while preserving wizard/goblin as later stress fiction. No invented pass receipt.
+1. [REAL01](../../../changes/archive/2026-11/other/2026-11-18--real01-solo-golden-path/CHANGE.md): **Done**. The harbor and return walkthrough is the first solo acceptance oracle. It is an authored target, not a logged run. The wizard and goblin scenes remain a later stress vignette.
 2. [REAL02](../../../changes/open/2026-11-18--real02-canon-chain-fixtures/CHANGE.md): **implementation/tests**, characterize the semantic-canon chain with provider-free positive and negative tests. Do not silently add a model extractor or require every noun to become canon.
 3. [REAL03 experiments](EXPERIMENTS.md): one active-play and one closed-browser-return experiment. Evaluation protocol only; **no automatic provider or hosted calls**, no Change ticket for pure evaluation.
 4. [REAL04](../../../changes/open/2026-11-18--real04-v0-scope-provenance/CHANGE.md): **documentation**, reconcile first-playable and onboarding promises against one-setting evidence and prepare a legally clean original setting decision, without silently removing freeform functionality.
