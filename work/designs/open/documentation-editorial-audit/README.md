@@ -31,7 +31,7 @@ This is intentionally *not* a single 129k-word rewrite. Each editorial wave has 
 
 ## Prepared Cursor execution packets
 
-See the [documentation Change queue](../../../changes/README.md) for the individually scoped DOC05–DOC21 handoffs. Each packet has Product/Technical/Code/Related dispositions, exact canonical owners, exclusions and falsifying examples. They are **Proposed**, not selected; resolving product-policy ambiguity may block a subsection even while meaning-preserving clarity work proceeds. No executable code modification is authorized by these packets.
+See the [documentation Change queue](../../../changes/README.md) for the individually scoped DOC05–DOC24 handoffs. Each packet has Product/Technical/Code/Related dispositions, exact canonical owners, exclusions and falsifying examples. They are **Proposed**, not selected; resolving product-policy ambiguity may block a subsection even while meaning-preserving clarity work proceeds. No executable code modification is authorized by these packets.
 
 ## Important division of labor
 
