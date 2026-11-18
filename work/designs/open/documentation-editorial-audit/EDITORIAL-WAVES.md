@@ -45,7 +45,7 @@ Decision 1, using the judgment authorized on 2026-11-18: the next milestone is s
 
 S1a, first diary pass: the vision's unattended-life paragraph now states the player promise and points at the parked queue as a proposal. The concepts conversation example no longer labels turns T1 through T4. The storage-name note stays a boundary, including the path that can publish a present passage and a later arrival from one result. The chapter rule no longer depends on recalling an earlier wording.
 
-S1b, first vocabulary pass: an offer in actions and commitments is permission to choose. It does not advance fictional time. Hours-long absence applies to an accepted activity. DOC08 remains unselected and was not executed as a packet.
+S1b, first vocabulary pass: an offer in actions and commitments is permission to choose. It does not advance fictional time. Hours-long absence applies to an accepted activity. The prepared-life section states the selected promise and points at Prepared local opportunities for the bounded solo realization and the later limits. DOC08 remains unselected and was not executed as a packet.
 
 **Deliverable:** small reviewed canonical edits, optional split of scenarios only after link audit, exact before/after claim list and a recorded unresolved decision request. Not a new code Change.
 

@@ -30,7 +30,7 @@ Known activities can end quietly, produce bounded mechanical results, continue a
 
 Routine chitchat does not promise fresh bespoke dialogue; repeated rumor gathering cannot manufacture unlimited novel lore for free.
 
-> Implementation honesty: this direction is richer than today’s scene-local offer system where that system has not yet landed the full prepared-opportunity contract. See technical opportunity contract.
+The paragraphs above are the selected promise. [Prepared local opportunities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities) records the bounded solo realization and the limits that remain later work.
 
 ## Storyteller-directed pace
 

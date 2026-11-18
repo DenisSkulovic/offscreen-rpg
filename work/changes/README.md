@@ -18,11 +18,11 @@ Current change: none
 
 | Packet | State | Outcome |
 | --- | --- | --- |
-| [DOC5 Time-status source reconciliation](open/2026-11-18--doc5-reconcile-time-status/CHANGE.md) | **Proposed (unselected)** | Documentation-only; time-status source reconciliation |
-| [DOC6 First-playable vs illustrative acceptance](open/2026-11-18--doc6-acceptance-scope/CHANGE.md) | **Proposed (unselected)** | Documentation-only; first-playable vs illustrative acceptance |
-| [DOC7 Vision and core concept prose](open/2026-11-18--doc7-foundations-vision-concepts/CHANGE.md) | **Proposed (unselected)** | Documentation-only; vision and core concept prose |
-| [DOC8 Actions, mechanics and time product semantics](open/2026-11-18--doc8-gameplay-action-rules/CHANGE.md) | **Proposed (unselected)** | Documentation-only; actions, mechanics and time product semantics |
-| [DOC9 World neutrality and continuity product contracts](open/2026-11-18--doc9-world-continuity/CHANGE.md) | **Proposed (unselected)** | Documentation-only; world neutrality and continuity product contracts |
+| [DOC5 Time-status source reconciliation](open/2026-11-18--doc05-reconcile-time-status/CHANGE.md) | **Proposed (unselected)** | Documentation-only; time-status source reconciliation |
+| [DOC6 First-playable vs illustrative acceptance](open/2026-11-18--doc06-acceptance-scope/CHANGE.md) | **Proposed (unselected)** | Documentation-only; first-playable vs illustrative acceptance |
+| [DOC7 Vision and core concept prose](open/2026-11-18--doc07-foundations-vision-concepts/CHANGE.md) | **Proposed (unselected)** | Documentation-only; vision and core concept prose |
+| [DOC8 Actions, mechanics and time product semantics](open/2026-11-18--doc08-gameplay-action-rules/CHANGE.md) | **Proposed (unselected)** | Documentation-only; actions, mechanics and time product semantics |
+| [DOC9 World neutrality and continuity product contracts](open/2026-11-18--doc09-world-continuity/CHANGE.md) | **Proposed (unselected)** | Documentation-only; world neutrality and continuity product contracts |
 | [DOC10 Multi-scene Storyteller product quality](open/2026-11-18--doc10-storyteller-product-quality/CHANGE.md) | **Proposed (unselected)** | Documentation-only; multi-scene storyteller product quality |
 | [DOC11 Engine authority and mechanics selected contracts](open/2026-11-18--doc11-engine-authority-mechanics/CHANGE.md) | **Proposed (unselected)** | Documentation-only; engine authority and mechanics selected contracts |
 | [DOC12 Chronology, calendar and tick precision](open/2026-11-18--doc12-engine-chronology-calendars/CHANGE.md) | **Proposed (unselected)** | Documentation-only; chronology, calendar and tick precision |
