@@ -1,6 +1,6 @@
 # Canonical wiki content refoundation | editorial program
 
-**Status:** Proposed editorial design and source-grounded audit, 2026-11-18. **No code authorization; no selected Change; no automatic ratification.** This is a planned content workstream, not a new graph, CI, or tooling initiative. WIKI09, WIKI10, and WIKI11 are Done and archived. HK02, HK06, HK07, and HK08 are Done. This dossier does not by itself select an editorial wave.
+**Status:** Proposed editorial design and source-grounded audit, 2026-11-18. **No code authorization; no selected Change; no automatic ratification.** This is a planned content workstream, not a new graph, CI, or tooling initiative. Substantive editorial revisions are now first-class **documentation Changes** under the revised Change standard. WIKI09, WIKI10, and WIKI11 are Done and archived. HK02, HK06, HK07, and HK08 are Done. This dossier does not by itself select an editorial wave.
 
 ## What changed in our diagnosis
 
@@ -27,7 +27,11 @@ This is intentionally *not* a single 129k-word rewrite. Each editorial wave has 
 
 ## Dependency on preceding program
 
-[Documentation impact architecture](../documentation-impact-system/README.md) addresses process and semantic edge graph; **this program addresses the content quality of the nodes themselves**. WIKI09–11 help monitor impact after adoption; they cannot decide what an unclear sentence was meant to promise. This editorial work uses those tools when available and can be reviewed manually without inventing a new code-bearing Change packet.
+[Documentation impact architecture](../documentation-impact-system/README.md) addresses process and semantic edge graph; **this program addresses the content quality of the nodes themselves**. WIKI09–11 help monitor impact after adoption; they cannot decide what an unclear sentence was meant to promise. This editorial work uses the landed graph/change guards and prepares bounded **documentation-kind** Change packets, not invented executable deltas.
+
+## Prepared Cursor execution packets
+
+See the [documentation Change queue](../../../changes/README.md) for the individually scoped DOC05–DOC21 handoffs. Each packet has Product/Technical/Code/Related dispositions, exact canonical owners, exclusions and falsifying examples. They are **Proposed**, not selected; resolving product-policy ambiguity may block a subsection even while meaning-preserving clarity work proceeds. No executable code modification is authorized by these packets.
 
 ## Important division of labor
 
@@ -36,4 +40,4 @@ This is intentionally *not* a single 129k-word rewrite. Each editorial wave has 
 - **Technical authority owner:** specifies exact implementation contract subordinate to the product decision; verifies code/evidence truth.
 - **Independent reviewer:** actively attempts to find a counterexample, missing dependency or changed meaning before Done.
 
-No coding-agent permission is created by this dossier. [WIKI09](../../../changes/archive/2026-11/other/2026-11-18--wiki09-change-impact-contract/CHANGE.md), [WIKI10](../../../changes/archive/2026-11/other/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md), and [WIKI11](../../../changes/archive/2026-11/other/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md) are Done. Housekeeping prevention is Done. An editorial wave still needs its own selection.
+No automatic Cursor execution permission is created by this dossier. [Prepared editorial Changes](../../../changes/README.md) are unselected and must be authorized one at a time. [WIKI09](../../../changes/archive/2026-11/other/2026-11-18--wiki09-change-impact-contract/CHANGE.md), [WIKI10](../../../changes/archive/2026-11/other/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md), and [WIKI11](../../../changes/archive/2026-11/other/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md) are Done. Housekeeping prevention is Done. An editorial wave still needs its own selection.
