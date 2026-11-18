@@ -1,18 +1,18 @@
 # DOC12 | Clarify precise time, calendar and tick contracts without revisiting selected policy
 
-**State:** Proposed (unselected). **Kind:** documentation. **Editorial wave:** S2a; execute after DOC05 and DOC11, never automatically. **Source baseline:** [editorial register](../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md) at `f3e3bfe`; refresh exact HEAD, headings, archived evidence and dirty worktree before selection. **Current change remains:** none.
+**State:** Done (2026-11-18). **Kind:** documentation. **Editorial wave:** S2a; execute after DOC05 and DOC11, never automatically. **Source baseline:** [editorial register](../../../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md). Inspected at `1ec0c102`. No model call and no database.
 
 ## Cursor first-screen brief
 
 **Why this Change exists:** Accepted time, execution permission, calendar presentation and exact tick/tag arithmetic are related but different guarantees; status notes can obscure their boundaries.
 
 **Canonical pages to revise:**
-- [docs/product/gameplay/time-and-autonomy.md](../../../../docs/product/gameplay/time-and-autonomy.md)
-- [docs/technical/engine/chronology-and-activities.md](../../../../docs/technical/engine/chronology-and-activities.md)
-- [docs/technical/engine/calendars-and-world-time.md](../../../../docs/technical/engine/calendars-and-world-time.md)
-- [docs/technical/engine/ticks-and-tags.md](../../../../docs/technical/engine/ticks-and-tags.md)
+- [docs/product/gameplay/time-and-autonomy.md](../../../../../../docs/product/gameplay/time-and-autonomy.md)
+- [docs/technical/engine/chronology-and-activities.md](../../../../../../docs/technical/engine/chronology-and-activities.md)
+- [docs/technical/engine/calendars-and-world-time.md](../../../../../../docs/technical/engine/calendars-and-world-time.md)
+- [docs/technical/engine/ticks-and-tags.md](../../../../../../docs/technical/engine/ticks-and-tags.md)
 
-Read the [editorial standards](../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), [execution waves](../../../designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md), and relevant current source/evidence only when factual status is at issue. Never treat a design-only target as shipped.
+Read the [editorial standards](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), [execution waves](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md), and relevant current source/evidence only when factual status is at issue. Never treat a design-only target as shipped.
 
 ## Exact intended editorial delta
 
@@ -39,10 +39,18 @@ No bulk formatting, no blanket shortening, no new product policy, no executable 
 
 **Proof required:** before/after claim inventory and unchanged-contract list, exact affected path/heading/links, real source evidence for any status correction, negative scenario result, `pnpm wiki:health`, `pnpm wiki:change-guard --mode plan` and `--mode close` when available, plus actual link checker. Mark Done only with an independent adverse-reading review and no unresolved material contradiction. Do not claim semantic correctness from a green structural checker.
 
-## Reconciliation ledger | fill at execution
+## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/engine/chronology-and-activities.md #heading to verify at HEAD | technical | pending specific wording/meaning review | no source behavior changed; record doc SHA | not run: Proposed | A changed calendar timezone, background tab or absent player is described as independently advancing fiction; negative settlement case must forbid duplicate reward. | pending dependent links |
+| docs/technical/engine/chronology-and-activities.md#permission-interval-hold-settlement-interruption | technical | changed: permission, interval, hold, settlement, and interruption now have one route, and the earlier evidence list stays | docs/technical/engine/chronology-and-activities.md at 1ec0c102 | documentation-only | a background tab does not start an interval, and a second settlement does not grant the reward again | the new heading does not replace an existing anchor |
+| docs/technical/engine/calendars-and-world-time.md#calendars-label-accepted-time | technical | changed: a calendar label does not grant idle time or validate an activity | docs/technical/engine/calendars-and-world-time.md at 1ec0c102 | documentation-only | a timezone change does not advance fiction | the new heading does not replace an existing anchor |
+| docs/technical/engine/ticks-and-tags.md#what-the-arithmetic-does-not-do | technical | changed: the three time contracts stay, with no new overflow rule and no clock movement from a tag | docs/technical/engine/ticks-and-tags.md at 1ec0c102 | documentation-only | paused real seconds still contribute no fiction | the new heading does not replace an existing anchor |
+| docs/product/gameplay/time-and-autonomy.md#pace | product | unchanged: fictional time still advances only through accepted work | docs/product/gameplay/time-and-autonomy.md at 1ec0c102 | documentation-only | an absent player does not independently advance fiction | the heading stayed in place |
 
-**When selected:** update this plan with verified heading anchors; work only this packet, reconcile and archive; do not start the next DOC packet.
+exception: work/changes/README.md because the queue line is the selection route for this documentation packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this documentation packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+exception: work/designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md because the wave table will point at the archived packet
+
+No new calendrical policy and no executable diff. Close checks use base 1ec0c102. No provider call.

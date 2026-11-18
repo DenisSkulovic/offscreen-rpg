@@ -11,6 +11,18 @@ Status, inspected at `15a997c7`. The tests named here were read and not re-run.
 
 Group progression, a consented general fallback, and the OBS04 transition witness stay outside this proof. [Time and autonomy](../../product/gameplay/time-and-autonomy.md) owns the product intent. This file owns execution permission and its relationship to narration. Unit arithmetic is [ticks and tags](ticks-and-tags.md). Calendar projection is [calendars](calendars-and-world-time.md).
 
+## Permission, interval, hold, settlement, interruption
+
+These five words stay distinct. The status list above remains the evidence boundary.
+
+- **Permission.** An accepted activity or finite action may advance only while unheld. Eligibility `none` is held. A background tab and an absent player do not create permission. [Permission to advance](#permission-to-advance).
+- **Admitted interval.** The captured fictional-second span of that accepted work. A calendar label is not an interval.
+- **Hold.** A decision, pause, or blocking failure stops the affected execution. Optional narration has no permission of its own.
+- **Settlement.** One boundary commits its earned progress and its effects once.
+- **Interruption.** A due obligation or a failed holder check stops later effects. Already committed progress stays.
+
+Normal: an accepted 1,800-fictional-second action earns that span at the selected pace and settles once. Negative: closing the browser, changing a calendar label, or leaving the player absent does not start a new interval, and a second settlement does not grant the reward again. The finite-action settlement named in the status list is that forbidding case. It was not re-run for this note.
+
 ## Units and responsibility — current implementation
 
 The scheduler advances in fixed real-second steps while model-proposed durations, canonical time, cadence and deadlines use fictional seconds. Pace states how many fictional seconds are earned per eligible real second. At 360 fictional seconds per real second, a 1,800-fictional-second action consumes thirty fictional minutes and five active real seconds. Doubling pace changes only the wall wait; the action still advances 1,800 fictional seconds and has the same rule boundaries. Thirty fictional minutes is appropriate for a careful search, not automatically a quick glance. Numerical examples are not universal defaults.

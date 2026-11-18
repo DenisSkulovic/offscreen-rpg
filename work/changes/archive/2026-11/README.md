@@ -109,6 +109,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-18--doc09-world-continuity](../../../../work/changes/archive/2026-11/other/2026-11-18--doc09-world-continuity/CHANGE.md)
 - [2026-11-18--doc10-storyteller-product-quality](../../../../work/changes/archive/2026-11/other/2026-11-18--doc10-storyteller-product-quality/CHANGE.md)
 - [2026-11-18--doc11-engine-authority-mechanics](../../../../work/changes/archive/2026-11/other/2026-11-18--doc11-engine-authority-mechanics/CHANGE.md)
+- [2026-11-18--doc12-engine-chronology-calendars](../../../../work/changes/archive/2026-11/other/2026-11-18--doc12-engine-chronology-calendars/CHANGE.md)
 
 ## storyteller (11)
 

@@ -2,6 +2,10 @@
 
 Status: the fictional-second coordinate, exact arithmetic and campaign-owned application clock are implemented. Activity receipts preserve monotonic game time across A → B → A. A scheduler step is one real second; it is not persisted or exposed as fictional authority. Tag correction remains pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy the tag contract.
 
+## What the arithmetic does not do
+
+The fictional-second coordinate, the real-second scheduler, and the optional calendar stay three contracts. This page does not add overflow behavior or a new calendrical rule. A tag name does not move the clock. Paused or ineligible real seconds still contribute no fiction. A second settlement still must not grant the same reward again. Permission stays in [Permission to advance](chronology-and-activities.md#permission-to-advance). Calendar labels stay in [Calendars label accepted time](calendars-and-world-time.md#calendars-label-accepted-time).
+
 ## Fixed real-second scheduling and fictional time
 
 The [product requirement](../../product/gameplay/time-and-autonomy.md) fixes one scheduler step to one real second. Speed is fictional seconds advanced per eligible real second, not a configurable scheduler period.

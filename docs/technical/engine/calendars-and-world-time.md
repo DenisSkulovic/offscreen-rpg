@@ -2,6 +2,10 @@
 
 Status: implemented and exercised provider-free. K1 projects bounded calendars from the canonical fictional-second coordinate; K2 handles controlling scenes and optional historical reports that do not hold play, including revisions, equal-boundary coalescing and a connected mixed-report/custom-calendar deadline rehearsal. The owner requested careful treatment of custom calendars, eras, seasonal consequences and time-limited plots on 2026-09-19 and reaffirmed optional calendars, seasons and celestial cycles on 2026-09-23. [Time and autonomy](../../product/gameplay/time-and-autonomy.md#calendars-seasons-and-story-deadlines) owns the product behavior, [fictional-time arithmetic](ticks-and-tags.md) owns the simulation coordinate, and [chronology](chronology-and-activities.md) owns permission to advance it.
 
+## Calendars label accepted time
+
+A calendar projects a label from the canonical fictional-second coordinate. It does not grant idle time, and it does not validate a fictional activity. Changing a timezone, leaving a tab in the background, or leaving the player absent does not advance fiction. Permission stays in [Permission to advance](chronology-and-activities.md#permission-to-advance). Exact arithmetic stays in [Fixed real-second scheduling and fictional time](ticks-and-tags.md#fixed-real-second-scheduling-and-fictional-time).
+
 K1 stores the immutable definition in versioned campaign settings, projects a public current label from the authoritative game second, formats durations, and supplies Storyteller tasks with only the compact projected value. The default is honest elapsed fictional time; setup may instead admit ordinal days or one fixed unequal-month repeating year. Pace revisions preserve the definition. This does not create scheduled effects, season mechanics, or another clock.
 
 Current K1/K2 code uses explicit fictional seconds. The scheduler still wakes on fixed real-second steps, but changing the pace only changes how many fictional seconds eligible execution advances. Calendar definitions remain independent of playback speed.
