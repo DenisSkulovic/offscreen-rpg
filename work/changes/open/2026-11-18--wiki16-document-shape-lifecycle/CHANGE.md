@@ -19,7 +19,7 @@ Implement/revise **only** the designed knowledge-system outcome below. The techn
 
 1. Extend the prospective impact plan for documentation-kind Changes to declare intended structural file operations and exact path#heading migration, alongside meaning/ratification. No new giant schema for implementation-kind packets.
 2. Add an optional migration receipt of old owner+heading -> successor/retired with unique-claim conservation and inbound references checked against actual diff. Reuse current link checker and wiki graph; no second crawler.
-3. Add fixtures: split one page into two preserving links, move with broken inbound anchor, merge duplicate with unique negative constraint retained, retired proposed page without ratifying its content, untouched valid page/no-op.
+3. Add fixtures: **planned CREATE of a new Markdown owner whose path does not exist yet must pass plan mode with an explicit creation declaration**, while a misspelled path lacking that declaration still fails; split one page into two preserving links, move with broken inbound anchor, merge duplicate with unique negative constraint retained, retired proposed page without ratifying its content, untouched valid page/no-op. At close, created paths and incoming references must actually exist. New-page editorial packets depend on this compatibility.
 
 Do not invent product policy, treat proposal as selected, require external services, mass rewrite the wiki, copy another registry, or automatically select another packet. A duplicate page/link/score can be worse than a missing one.
 
