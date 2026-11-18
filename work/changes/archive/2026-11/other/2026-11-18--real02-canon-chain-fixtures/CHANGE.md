@@ -1,10 +1,10 @@
 # REAL02 | Prove or classify the gift-to-canon-to-recall chain with existing machinery
 
-**State:** Ready for narrow provider-free characterization when selected; blocked on any required unsafe DB/provider environment. **Kind:** implementation (tests/evidence only; no runtime feature launch). **Owner:** application/Storyteller correctness. **Source observed:** `main@43d5ddfc068aced3825e25692ec1b2bb14259e2a`; re-inspect. **Parent:** [REAL technical chain](../../../designs/open/playability-reality/TECHNICAL-CHAIN.md), [forensic fixture](../../../designs/open/playability-reality/REAL02-SOURCE-MAP.md).
+**State:** Done (2026-11-18). The whole publication-and-restart chain is not claimed. Staging, transfer settlement, and the knowledge loader were tested. Database publication, admission restart, and the budget path were not run. **Kind:** implementation (tests/evidence only; no runtime feature launch). **Owner:** application/Storyteller correctness. **Source observed:** `main@c1d1aab9f9e9b711252a955c4f3d11c7377a7d06`. **Parent:** [REAL technical chain](../../../../../designs/open/playability-reality/TECHNICAL-CHAIN.md), [forensic fixture](../../../../../designs/open/playability-reality/REAL02-SOURCE-MAP.md).
 
 ## Cursor first-screen brief
 
-> **Target:** Show precisely what survives an accepted item transfer and a named social promise across publication, document root, source lookup and the **final captured next task**. **Trap:** a green SA09 helper test, a document staged by itself, or a catalogue hit is **not** evidence of full published narrative recall. **Scope:** test and inspection only with existing source contracts; no new model, graph, embeddings, heuristic noun extractor, production data or paid inference.
+> **Target:** Show precisely what survives an accepted item transfer and a named social promise across publication, document root, source lookup and the **final captured next task**. **Trap:** a green SA09 helper test, a document staged by itself, or a catalogue hit is **not** evidence of full published narrative recall. **Scope:** test and inspection only with existing source contracts; no new model, graph, embeddings, heuristic noun extractor, production data, and no provider inference.
 
 ## Outcome
 
@@ -39,7 +39,7 @@ Preserve docs/product/gameplay/continuity.md#knowledge-and-perspective and #cont
 
 **Step 4: negative semantic gap.** Produce a model-result fixture where gift + stated promise exist but documentChanges=[]. Demonstrate what source still exists and what relationship does not. Tests should check **honest classification** and intentionally preserve the gap; do not add a blanket production error that rejects all unmaterialized prose.
 
-**Output:** compact dated source-linked evidence/inspections REAL02 receipt with table R0–R6 (from REAL02-SOURCE-MAP.md), command results, exact commit, environment, no-provider assertion, tested vs blocked, recommendation: improve prompt/selection / narrow cue / defer. Avoid a green receipt that suppresses a missed semantic record.
+**Output:** compact dated source-linked evidence/inspections REAL02 receipt with table R0–R6 (from REAL02-SOURCE-MAP.md), command results, exact commit, environment, a no provider assertion, tested vs blocked, recommendation: improve prompt/selection / narrow cue / defer. Avoid a receipt that hides a missed semantic record.
 
 ## Explicit exclusions
 
@@ -56,10 +56,33 @@ No provider call, API bill, hosted DB, migrations, existing account mutation, au
 | Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
 | --- | --- | --- | --- |
 | Product | unchanged because no new gameplay semantic policy is selected | docs/product/gameplay/continuity.md; actions-and-commitments.md | Existing identity/gift/rumor principle retained |
-| Technical | unchanged in normative behavior; if observed code deviates, record precise divergence and propose a separate owner-reviewed correction, do not quietly rewrite it | docs/technical/storyteller/context-selection-and-recall.md; generation-and-publication.md | Tested tier, not a capability promotion |
+| Technical | unchanged because this packet records observed behavior and does not rewrite the selected recall or publication contract | docs/technical/storyteller/context-selection-and-recall.md; docs/technical/storyteller/generation-and-publication.md | Tested tier, not a capability promotion |
 | Code | changed: **tests only** in packages/application/test/story-publication-documents.test.mjs and nearest current Storyteller/game integration tests; executable negative classification and exact context assertions. Runtime source unchanged because goal is forensic characterization, not semantic gate rollout | packages/application/src/storyteller/publication.ts; packages/storyteller/src/tasks/descriptive-materialization.ts; packages/game/src/effects.ts | Targeted provider-free runs, no automatic paid tasks |
 | Related | changed: new dated REAL02 evidence receipt **only after tests actually run**; update STATUS.md only for proven tier and source map if needed | evidence/README.md; work/changes/ledger/2026-11.md after Done | Missing-edge and source receipt explicit |
 
 ## Completion and release gate
 
-Use the repo's own supported Node/pnpm and safe test isolation. Record exact commands/output (Node version, worktree revision). If only helper/staging tiers can be exercised, **do not mark whole-chain passed**; mark blocked for the unavailable portion or split an honestly narrow completed packet and a follow-up. Complete the four-plane reconciliation ledger for every authority; archive only the bounded verified result and update queue. Never auto-start REAL03 paid test. Stop if the current source moved beyond the inspected map or a bigger architecture change is needed.
+Use the repo's own supported Node/pnpm and safe test isolation. Record exact commands/output (Node version, worktree revision). If only helper/staging tiers can be exercised, do not mark the whole chain complete; mark blocked for the unavailable portion or split an honestly narrow completed packet and a follow-up. Complete the four-plane reconciliation ledger for every authority; archive only the bounded verified result and update queue. Never auto-start REAL03. Stop if the current source moved beyond the inspected map or a bigger architecture change is needed.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/product/gameplay/continuity.md#possessions-and-exchanges | product | unchanged because a failed holder still does not become a successful gift in the selected rule | packages/application/src/campaign/action-execution-transition.ts at c1d1aab9 | fixture-tested | a roll of 1 returns no world effect, and a wrong holder interrupts | the heading stayed in place |
+| docs/product/gameplay/continuity.md#knowledge-and-perspective | product | unchanged because an attributed rumor is still not world fact | packages/application/test/story-publication-documents.test.mjs at c1d1aab9 | fixture-tested | the beacon rumor is stored as attributed lore | the heading stayed in place |
+| docs/product/gameplay/continuity.md#context-and-cost | product | unchanged because this packet does not select a new recall or spend rule | docs/product/gameplay/continuity.md at c1d1aab9 | source-observed | empty document changes do not invent a relationship | the heading stayed in place |
+| docs/technical/storyteller/context-selection-and-recall.md#mechanical-continuity-dependencies--s3-design | technical | unchanged because mechanical document dependencies remain a design and were not implemented | packages/application/src/storyteller/canonical-knowledge.ts at c1d1aab9 | fixture-tested | nine later identities leave the favor unloaded until its id is requested | the heading stayed in place |
+| docs/technical/storyteller/generation-and-publication.md#what-publication-is-allowed-to-do | technical | unchanged because publication was not given a new semantic refusal | packages/application/src/storyteller/publication.ts at c1d1aab9 | source-observed | the stager stores a favor the failed transfer did not authorize | the heading stayed in place |
+| packages/application/test/story-publication-documents.test.mjs | code | changed: the gift chain is classified at the transfer, staging, and loader seams | packages/application/test/story-publication-documents.test.mjs at c1d1aab9 | fixture-tested | a failed check stages no relationship, and a private possibility is still loaded | evidence/inspections/2026-11-18-real02-gift-recall/README.md |
+| STATUS.md | related | changed: the status note names the tested seams and the unrun database publication | no runtime source edited; baseline c1d1aab9 | fixture-tested | the note does not call this a played recall | the queue records the packet |
+
+exception: evidence/inspections/2026-11-18-real02-gift-recall/README.md because the dated inspection is the receipt for the tests that ran
+exception: work/changes/README.md because the queue line is the selection route for this packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this packet
+exception: evidence/README.md because the inspection index points at the dated REAL02 receipt
+exception: work/designs/open/playability-reality/README.md because the program sequence now points at the archived REAL02 packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+
+## Receipt
+
+Node v24.19.0. `node --test test/story-publication-documents.test.mjs` reported 6 passed. `node --test test/item-transfer-transition.test.mjs` reported 4 passed. No model call. `publishStorytellerResult` was not executed. The private-text load and the favor-after-failure store are recorded gaps, not new production refusals.
