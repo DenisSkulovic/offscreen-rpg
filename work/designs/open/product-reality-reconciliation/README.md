@@ -39,6 +39,8 @@ A heading can be authoritative as a *design preference* and still lack evidence 
 
 **Keep aspirations as aspirations.** Shared worlds, hundred-player interaction, generic 3D cube maps, arbitrarily shaped forms with fully general mechanics, open-ended autonomy, deep multi-month NPC relationships, exhaustive world lore, and Storyteller-owned rich appearance need independent evidence and coherent bounded proposals before entering release obligations.
 
+**Follow-up after Audit II:** [REAL playability proof program](../playability-reality/README.md) and [Cursor handoff](../playability-reality/CURSOR-HANDOFF.md) now own the **proposed next bounded work**, not a new canonical product specification. REAL01–02 are prepared, REAL03 is an unrun experiment protocol, and REAL04 needs a product/rights decision. No paid evaluation is approved by this link.
+
 ## Completed Change sequence (Done 2026-11-18)
 
 | Packet | Scope | Result |
