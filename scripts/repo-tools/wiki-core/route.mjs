@@ -197,7 +197,7 @@ function selfLabel(sentence) {
   if (/^this (?:page|section|family|document) is proposed\/blocked\b/i.test(sentence)) {
     return { role: 'proposal', realization: 'proposed', authorityBasis: 'self' };
   }
-  if (/^this (?:page|section|family|document) is (?:an illustrative evaluation|proposal only|proposed)\b/i.test(sentence)) {
+  if (/^this (?:page|section|family|document|queue) is (?:an illustrative evaluation|proposal only|(?:a )?proposed)\b/i.test(sentence)) {
     return { role: 'proposal', realization: 'proposed', authorityBasis: 'self' };
   }
   if (/^this page is proposal only\b/i.test(sentence)) {

@@ -1,6 +1,6 @@
 # BOOK01 | Planned implementation sequence
 
-**State:** PLAN / BOOK01 selected (2026-11-17). [Bounded outcome and proof](CHANGE.md). Product [selected POC](../../../../docs/product/experience/living-book-poc.md); technical [selected POC](../../../../docs/technical/client/living-book-poc.md).
+**State:** PLAN / BOOK01 selected (2026-11-17). [Bounded outcome and proof](../../archive/2026-11/other/2026-11-17--book01-reader-shell-poc/CHANGE.md). Product [selected POC](../../../../docs/product/experience/living-book-poc.md); technical [selected POC](../../../../docs/technical/client/living-book-poc.md).
 
 ## S0. Recheck code and safe baseline
 
