@@ -28,6 +28,8 @@
 
 In \`scripts/repo-tools/wiki-core/route.mjs\`, \`authorityOf(rel, kind, pageText)\` calls \`PROPOSAL_PAGE.test(pageOpening(pageText))\`; each heading inherits the **same page authority**. The portable index therefore labels \`docs/technical/observability/identities-and-evidence.md#turn-evidence-capsule\` as **\`selected-technical\` in the \`normative\` lane**. Yet that exact section starts: “Status: proposed read contract ... No table, API or code is authorized by this section.”
 
+**It also misses at least one entire proposal page.** `docs/technical/observability/retention-and-access.md` begins "**Status: technical/product recommendation ... not approved for implementation**", yet its portable-index H1 is labelled **selected-technical / normative**. The page-level regex only recognizes narrower spellings such as "technical recommendation". This makes keyword tweaks a fragile fix; explicit local status and unknown honesty matter. `docs/technical/client/scene-direction-production.md` is labeled selected-technical despite being a **conditional** technical target with a missing approved provider-writer seam; selected design and approved execution are different axes.
+
 Other mixed-authority examples:
 - \`docs/product/storyteller/behavior-and-quality.md#multi-day-evaluation-family\` is marked \`ratified-product\` although its introduction says Proposed/Blocked evaluation, not accepted mandatory proof.
 - \`docs/product/gameplay/time-and-autonomy.md#bounded-plans-for-absence\` inherits \`ratified-product\` although the queue is proposed.
