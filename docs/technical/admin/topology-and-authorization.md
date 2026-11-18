@@ -15,6 +15,18 @@
 
 This is a **control plane** (human authorization, observation and intervention) distinct from the **game/data plane** (player commands, mechanics, Storyteller tasks and publications). An operator can observe a legitimate world but cannot become its source of truth.
 
+## Authorization claim map
+
+This map separates the selected control-plane target from proposed module boundaries and from production grants this page withholds. It adds no staff role.
+
+| Selected authorization target | Routes the page already calls implemented | Proposed staff modules | Withheld production grants |
+| --- | --- | --- | --- |
+| Dedicated logical Admin control plane in the existing modular monolith. Staff actor, assurance, and policy gate every admin effect. Authentication proves who. Policy proves the allowed effect on this resource in this context. Player story and draft controllers accept no Admin override header and no staff `ownerId`. | None. This page names `/control` and `/api/admin/*` as that target. It does not call either route implemented. | Suggested boundaries only: `apps/api/src/modules/admin/`; application modules for identity, access, projections, cases, actions, and audit; `packages/contracts/src/admin/`; versioned `admin_*` persistence; `apps/web/app/(control)/control/`; `apps/web/src/features/admin/`. | No production staff role. First delivery withholds live write assistance, raw narrative export, financial actions, arbitrary world repair, and general LiveOps editing. Also withheld: general support impersonation, raw prompt disclosure, a generic admin query of generation input or output, and cross-tenant access. |
+
+A description of Player 360 does not authorize general support impersonation. A description of an investigation read does not authorize raw prompt disclosure. Cross-tenant access stays refused. No heading read for this change selects it.
+
+Command, write, and audit semantics stay on [commands and audit](commands-and-audit.md). Staff-console read models stay on [console and read models](console-and-read-models.md). Investigation reads and redaction stay on [investigation and privacy](investigation-and-privacy.md).
+
 ## 2. Trust boundaries and request flow
 
 ```text

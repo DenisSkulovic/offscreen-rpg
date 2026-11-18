@@ -119,6 +119,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-18--doc19-platform-persistence-delivery](../../../../work/changes/archive/2026-11/other/2026-11-18--doc19-platform-persistence-delivery/CHANGE.md)
 - [2026-11-18--doc20-platform-governance-operations](../../../../work/changes/archive/2026-11/other/2026-11-18--doc20-platform-governance-operations/CHANGE.md)
 - [2026-11-18--doc21-admin-product-charter](../../../../work/changes/archive/2026-11/other/2026-11-18--doc21-admin-product-charter/CHANGE.md)
+- [2026-11-18--doc22-admin-technical-authorization](../../../../work/changes/archive/2026-11/other/2026-11-18--doc22-admin-technical-authorization/CHANGE.md)
 
 ## storyteller (11)
 

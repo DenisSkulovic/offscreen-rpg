@@ -52,6 +52,8 @@ These are **behavioral components**, not specific UI libraries:
 | Work queue | Owner, subject, next action, current dependency and safely redacted preview |
 | Audit timeline | Human/system actor, authority/time, action type, target and verified status without private payload |
 
+Staff-console read models stay on this page. A description of Player 360 does not authorize general support impersonation. Cross-tenant access is not selected. Grant withholding is the [authorization claim map](topology-and-authorization.md#authorization-claim-map).
+
 **Accessible behavior:** semantic controls, keyboard navigation, focus/failure recovery, accessible tables/pagination, deliberate confirmation for risky effects, readable status text, alerts that do not spam screen readers. A 403 (not permitted), 404 (no authorized record), 409 (stale intent), 423/blocked as selected, 429 (rate-limited), 503 (source unavailable) and unknown effect require distinguishable safe user-facing outcomes.
 
 Do not display a generic "permission denied" for source telemetry unavailable, nor an invented `0` allowance for absent billing support.

@@ -79,6 +79,8 @@ The global Command Center and specialist workspace search use the **same Admin a
 
 ## 6. Sensitive evidence hierarchy
 
+Investigation reads and redaction stay on this page. A description of an investigation read does not authorize raw prompt disclosure. Cross-tenant access is not selected. Grant withholding is the [authorization claim map](topology-and-authorization.md#authorization-claim-map).
+
 | Class | Example | Default handling |
 | --- | --- | --- |
 | Operational noncontent | Current request status, timing/error code, cost estimate and source reference | Scoped staff read |
