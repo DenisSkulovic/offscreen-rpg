@@ -18,7 +18,7 @@ Implement/revise **only** the designed knowledge-system outcome below. The techn
 
 1. Implement a conservative section-local authority determination with explicit status/selected/proposed/illustrative inheritance only when safe. Keep normative authority separate from realized implementation/proof status.
 2. Preserve exact source path#heading, SHA and dirty provenance. Mixed or unknown sections must report uncertainty rather than silently become normative or disappear.
-3. Add negative controls: chosen paragraph that mentions another proposal remains selected; proposal nested under selected page remains proposal; status evidence is not gameplay authority; ordinary product page with an example remains product.
+3. Add negative controls: chosen paragraph that mentions another proposal remains selected; proposal nested under selected page remains proposal; status evidence is not gameplay authority; ordinary product page with an example remains product. **Whole-page negative:** `docs/technical/observability/retention-and-access.md` says `technical/product recommendation; not approved` but the portable index currently labels its H1 `selected-technical/normative`; fix that, too. **Conditional target:** scene-direction-production selected *design investigation* must not be inferred as authorized paid production.
 4. Ensure portable WIKI-INDEX and wiki:find agree on authority metadata. If schema changes, version or migrate explicitly and update route self-tests; do not fork a second source index.
 
 Do not invent product policy, treat proposal as selected, require external services, mass rewrite the wiki, copy another registry, or automatically select another packet. A duplicate page/link/score can be worse than a missing one.
