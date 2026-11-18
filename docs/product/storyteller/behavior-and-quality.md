@@ -43,6 +43,20 @@ Caring for a character over several real days can be the main experience. Quiet 
 
 Lethal risk expansion and free-intent paths remain **policy-gated**; current `nonlethal` (where present) is a capability limitation, not an eternal “never kill” prompt dogma.
 
+## Multi-day evaluation family
+
+This family is Proposed/Blocked. It is an illustrative evaluation, not ratified acceptance. It sets no drama percentage and no required incident rate.
+
+Creative temperament, limited initiative, private possibilities, canon invention, and funding or tool permissions stay separate. Temperament is the profile's voice. Limited initiative is whether the campaign allows cultivated pressure, including none. A private possibility is not a public event, as [Six kinds of record](../gameplay/continuity.md#six-kinds-of-record) requires. Canon invention is the domain permission in [Canon invention policy](profiles-and-settings.md#canon-invention-policy). Funding and tools stay with [Provider and budget boundary](../../technical/storyteller/operation-and-controller.md#provider-and-budget-boundary). A future controller design is not a live feature.
+
+The family has three readings, each bounded by source that already exists:
+
+1. **Continuity.** A gift or promise that was admitted can matter in a later scene. The offline rehearsal includes a remembered promise. That fixture does not prove sustained multi-day play.
+2. **Quiet work.** An accepted prepared interval may finish once, and inactivity admits no new generation. The same rehearsal includes a quiet breakfast. A quiet day does not require a dramatic incident.
+3. **Player redirection.** A conditional encounter planned further along an abandoned path must be reconsidered if that route is abandoned. It is not presented as if nothing changed.
+
+Negative: an agent must not force a dramatic incident every quiet day, treat a discarded narrative plan as committed truth, or charge a provider for every idle minute. [Supported behavior and evidence limits](../../technical/storyteller/operation-and-controller.md#supported-behavior-and-evidence-limits) records that these rehearsals do not certify live narrative quality.
+
 ## Narrative initiative
 
 The Storyteller is not limited to extrapolating the last player action. When the campaign's selected direction permits proactive authorship, it may maintain a private, revisable narrative intent and introduce developments that would not arise from the character's immediate routine. A player may spend the day fishing while a war begins or a meteor approaches. The Storyteller may make that pressure real through admitted world changes. It cannot decide that the character heroically stops it, invalidate an accepted action without a supported interruption, or preserve a preferred finale after play makes it impossible.
@@ -67,7 +81,7 @@ Continuing life is a target experience: a character can remain in the same world
 
 ## Selected solo proof boundary
 
-The approved solo proof selects a versioned profile before opening generation. Opening and continuation are separate bounded tasks. The narrative rehearsal uses 2–5 distinct offered intentions. Mechanical openings and consequences use zero to four admitted plans: zero is a visible held state, one is valid when the situation is genuinely constrained, and larger sets must differ in intended approach rather than wording. Public plans communicate the attempted commitment and apparent risk without revealing DCs or unused outcomes. There are no free-text gameplay actions and no automatic life endings. Inactivity admits no new generation. An accepted prepared interval may finish once.
+This rehearsal boundary is the selected Storyteller proof for one profiled story. It does not ratify the small-group live acceptance, which stays Proposed/Blocked in [First playable target](../foundations/vision.md#first-playable-target). The approved solo proof selects a versioned profile before opening generation. Opening and continuation are separate bounded tasks. The narrative rehearsal uses 2–5 distinct offered intentions. Mechanical openings and consequences use zero to four admitted plans: zero is a visible held state, one is valid when the situation is genuinely constrained, and larger sets must differ in intended approach rather than wording. Public plans communicate the attempted commitment and apparent risk without revealing DCs or unused outcomes. There are no free-text gameplay actions and no automatic life endings. Inactivity admits no new generation. An accepted prepared interval may finish once.
 
 Multiple autonomous agents are a possible implementation technique, not a product requirement and not a reason to add extra model calls.
 

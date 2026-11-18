@@ -43,4 +43,4 @@ For a turn that merits deeper authorship, the Storyteller may search through bou
 
 This work is optional and costed. Disabling it must still produce a grounded turn. An explicit no-grand-narrative campaign cannot acquire a secret arc merely because a surprising candidate exists. The application stores inspectable queries, sources and concise direction artifacts, not private chain-of-thought.
 
-**Negative:** paying for a stronger model improves interpretation. It does not purchase a better chance of success, a secret future disclosed as fact, or permission to treat model memory of a franchise setting as supplied canon.
+**Negative:** paying for a stronger model improves interpretation. It does not purchase a better chance of success, a secret future disclosed as fact, or permission to treat model memory of a franchise setting as supplied canon. A multi-day reading of this retrieval is the [Proposed/Blocked evaluation family](behavior-and-quality.md#multi-day-evaluation-family), not ratified acceptance. A discarded narrative plan is not committed truth. Idle minutes do not authorize a provider charge.
