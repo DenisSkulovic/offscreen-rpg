@@ -1,6 +1,15 @@
 # Deliberate execution, action time and Storyteller readiness
 
-Status: the execution gate, finite-action boundary, fail-closed bounded-overlap path and fictional-second coordinate are implemented with deterministic offline evidence. Runtime clock projection requires an explicit accepted activity or finite-action identity; no-hold state alone cannot advance time, and new work starts from the settled frontier. An eligible bounded action draws once under admission, stores a private pending result with source/projected-state digests and prepares one explicitly pending Storyteller task during its wait. Settlement revalidates and promotes that exact result and generation to the authoritative receipt before publication; effects, facts, history, holds and choices remain current-state operations only at or after the target. Any due admitted world obligation forces the sequential path. Chamber/API rehearsals cover early preparation during pause, late held preparation across worker restart, explicit same-generation failure recovery and due-boundary interruption. [Time and autonomy](../../product/gameplay/time-and-autonomy.md) owns the product intent. This file owns execution permission and its relationship to narration. Unit arithmetic is [ticks and tags](ticks-and-tags.md). Calendar projection is [calendars](calendars-and-world-time.md).
+Status, inspected at `15a997c7`. The tests named here were read and not re-run.
+
+- Fictional-second arithmetic, pause, and completion clamp: `packages/game/test/tick-clock.test.mjs`.
+- Fail-closed overlap when a world obligation intervenes, or when the resolution is not a finite action: `packages/game/test/immediate-offer.test.mjs`.
+- Finite-action settlement, a failed check that consumes the duration without the transfer, and a wrong-holder interrupt that does not roll: `packages/application/test/item-transfer-transition.test.mjs`.
+- A due world obligation interrupts before effects and does not roll: `packages/application/test/world-obligation-transition.test.mjs`.
+- Execution gate: `projectCampaignClock` in `packages/application/src/campaign/clock.ts` advances only for a matching accepted activity or finite action while unheld. Any other eligibility, including `none`, is held, and a non-running clock earns nothing in `packages/game/src/time.ts`. No dedicated unit test of that function was found. New activity selection calls it with `none`, so idle wall time is not donated to the new job.
+- Named API and worker cases exist for early preparation during pause, same-generation retry, and worker restart in `tools/api-integration/test/storyteller.integration.ts` and `apps/worker/test/eng06-worker-restart.live.test.ts`. Their assertions were not re-read and they were not re-run.
+
+Group progression, a consented general fallback, and the OBS04 transition witness stay outside this proof. [Time and autonomy](../../product/gameplay/time-and-autonomy.md) owns the product intent. This file owns execution permission and its relationship to narration. Unit arithmetic is [ticks and tags](ticks-and-tags.md). Calendar projection is [calendars](calendars-and-world-time.md).
 
 ## Units and responsibility — current implementation
 

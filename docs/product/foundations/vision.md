@@ -2,7 +2,7 @@
 
 Offscreen RPG is a story that unfolds over time. You create a character, become familiar with their habits and relationships, and occasionally influence what happens next. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
 
-The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The first playable target includes a small group in a common storyline. Shared decision and pause rules still need to be settled before implementing that behavior.
+The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The next milestone is solo. A small group in a common storyline remains the following ambition, and it waits until shared decision and pause rules are settled. Those rules are still [proposed](../../../work/designs/open/shared-play/README.md).
 
 Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave during a quiet interval the player already accepted. Leaving the page does not authorize a new choice. The accepted rule is in [time and autonomy](../gameplay/time-and-autonomy.md): no accepted execution means no fictional time, and a timed fallback applies only to a decision the player pre-authorized. A general delegated-decision policy remains [proposed](../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md), not accepted. A Chamber timed-default fixture is a developer test, not this player rule. Where a campaign has an authorized pause, that pause stops progression within its declared scope. A character who acts from personality overnight is a long-term aspiration, and only after that specific consent exists.
 
@@ -34,13 +34,13 @@ A messaging service such as Slack could support brief updates and choices during
 
 ## First playable target
 
-Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone or with an invited friend. Follow a scene, choose an intention, leave during an already accepted quiet interval, receive a development and respond. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring players back. Shared-play rules for that invited friend are not settled; see [shared play](../../../work/designs/open/shared-play/README.md).
+Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone. Follow a scene, choose an intention, leave during an already accepted quiet interval, receive a development, and respond. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring the player back. An invited friend is a later expansion. The rules for that friend remain [proposed shared play](../../../work/designs/open/shared-play/README.md). The solo acceptance texture is [what the first playable build should demonstrate](../gameplay/acceptance-scenarios.md#what-the-first-playable-build-should-demonstrate).
 
 This target needs a small relevant world and a reliable story, not a grid map, dedicated work/travel/trade systems or a simulated population. Richer imagery, saved custom storytellers and deeper messaging interaction can grow from the first experience. Separate party adventures and elaborate world simulation are outside this scope.
 
 ## Larger shared worlds
 
-Thousands of players across independent stories, and eventually a world with roughly a hundred participants, are future design ambitions. They are not demonstrated capacity or requirements for the first release. Solo play and a small cooperative party come first. Larger worlds need independent scenes, limited pause authority and explicit absence rules; increasing a player-count setting cannot supply those behaviors.
+Thousands of players across independent stories, and eventually a world with roughly a hundred participants, are future design ambitions. They are not demonstrated capacity or requirements for the first release. The next milestone is solo play. A small cooperative party comes after shared decision rules are settled, and both come before those larger worlds. Larger worlds need independent scenes, limited pause authority and explicit absence rules; increasing a player-count setting cannot supply those behaviors.
 
 ## Why build it
 
@@ -48,7 +48,7 @@ This is both a game we want to play and a senior fullstack portfolio project. A 
 
 The delivery goal is a hosted, playable link from a CV or portfolio. A visitor should quickly experience a scene, make a meaningful choice and see persistent offscreen progression; inspecting GitHub is optional. Provide a short demonstration path without making the visitor wait ten minutes for their first interesting result. Keep longer real-time play available separately. A bounded sponsored AI trial is a later target, with an illustrative allowance around $2 rather than a settled entitlement or authorization to spend.
 
-The first proof of concept should let us create a character, experience ordinary life, encounter a development, intervene or let the character choose, and return to a coherent continuation. That gives us something real to play before expanding it.
+The first proof of concept should let us create a character, experience ordinary life, encounter a development, intervene with a choice, and return to a coherent continuation. An unanswered decision stays open until the player returns. A later timed fallback may close one only when the player already authorized it. A character who chooses from personality without that authorization remains the later aspiration in the participation rule above. That gives us something real to play before expanding it.
 
 ## Earned life
 
@@ -80,7 +80,7 @@ The Storyteller also directs the moment-to-moment rhythm within campaign prefere
 
 Here, activity means a commitment extended over time. Immediate dialogue choices or individual attempts remain actions even when they share the same mechanical policies. A Storyteller turn prepares the next narration and authored possibilities; many turns can develop the same scene rapidly. There are no chapters in the game model. The same fiction can change resolution detail: an ordinary patrol uses an admitted routine, while a consequential encounter develops through specific decisions. Both use the same authoritative character and world state. [Concepts](concepts.md) defines these boundaries.
 
-The owner proposed planning rest followed by patrol as an illustration of unattended life. The direction is bounded player-selected intentions, not a mandatory daily timetable, eight-hour sleep rule or universal routine planner. Preparation may involve the Storyteller; executing known routine rules and permitted transitions should need no inference. Spending authority for a new scene is separate from permission to continue routine work. The queue, event-selection and absence policies remain proposals in [bounded autonomy](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry).
+Unattended life is a sequence of intentions the player selected, such as rest and then a patrol. It is not a mandatory daily timetable, an eight-hour sleep rule, or a universal routine planner. Preparation may involve the Storyteller. Executing a known routine and its permitted transitions needs no inference. Permission to spend on a new scene is separate from permission to continue routine work. A queue, automatic event selection, and an absence policy remain [proposals](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry), not part of this promise.
 
 Time creates value through effort, opportunity cost and continuity. Walking to another town or sustained practice cannot be replaced by an unearned narrative montage at an unchanged campaign pace. However, a conversation can establish a relationship, an immediate gift can change possessions, and a supported teleport can change location. Those are legitimate causes with their own rules, not exceptions to conceal. The design should make waiting meaningful and legible without declaring all important change inaccessible outside timers.
 

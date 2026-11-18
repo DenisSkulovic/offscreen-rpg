@@ -23,6 +23,12 @@
 
 **Acceptance:** three fresh questions yield consistent answers from both linked pages: “Does closing a tab advance fictional time?”, “Is a generic missed-window fallback accepted and implemented?”, “What part of deliberate time is implemented at HEAD?”. If the final answer is unknown, the pages explicitly say unknown and point to the unresolved owner; they do not contradict each other.
 
+**Applied 2026-11-18.** Decision 2 was recorded at `15a997c7`: the chronology status names the source-observed gate, the offline tests that were read, and the missing gate unit test. Authority no longer calls that correction unimplemented. The product pace rule is unchanged. STATUS no longer says fictional time has no accepted execution.
+
+Decision 1, using the judgment authorized on 2026-11-18: the next milestone is solo. A small shared party and a timed delegated choice stay later ambitions. Vision, acceptance scenarios, time's first-playable scope, worlds-and-characters, the time-and-autonomy vision reconciliation, and the lifecycle membership recommendation now say that. The goblin walkthrough remains. The friend invite and the missed-window fallback are labeled as stress branches at those sentences. An unanswered decision in the next proof stays open until the player returns. A later timed fallback may close one only when the player already authorized it. This does not retire the long-term shared-story ambition, and it does not accept GM07.
+
+S1a, first diary pass: the vision's unattended-life paragraph now states the player promise and points at the parked queue as a proposal. The concepts conversation example no longer labels turns T1 through T4. The storage-name note stays a boundary, including the path that can publish a present passage and a later arrival from one result. The chapter rule no longer depends on recalling an earlier wording.
+
 **Deliverable:** small reviewed canonical edits, optional split of scenarios only after link audit, exact before/after claim list and a recorded unresolved decision request. Not a new code Change.
 
 ## S1 | Product bible: promise, agency, long-life quality

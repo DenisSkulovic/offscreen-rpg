@@ -5,22 +5,28 @@ alwaysApply: true
 
 # End with a human-readable TLDR
 
-Technical detail may come first. The final section of every user-facing reply is a TLDR.
+Technical detail may come first. The final section of every user-facing reply is a TLDR. It is a brief the owner can scan: what happened, whether the next turn is ready, and whether they are blocking it.
 
 Put the TLDR last. Start it with the line `TLDR`. Then one bullet per item, in this order. Each bullet is its own line. Do not join the items into a paragraph.
 
 - **What is true:** the result, in plain language.
-- **Next step:** if the next action is already clear, write "I know what to do next:" and name it. Then do that work unless the owner stopped you.
-- **Need from you:** if a decision, approval, secret, or missing fact blocks the work, say exactly what you need. If nothing is needed, write "I don't need anything from you."
+- **Next step:** include this only when the next turn has a real task. Write "I know what to do next:" and name that task. The owner should be able to reply "proceed" or "continue" and have that work start. Name a task, a file, or a check. Do not name "stop", "wait", "nothing", "leave it for later", or "pause". Choosing to stop is not a next step. If no real next action is known, omit this bullet.
+- **Need from you:** include this when a decision, approval, secret, missing fact, or unfinished design blocks the work. Say exactly what you need. An unfinished design from another session belongs here. If nothing blocks the named next action, write "I don't need anything from you."
 - **Design:** if the work needs a new product or technical decision, say so. If the existing design is enough, write "No new design is needed."
 
-Omit a bullet only when it does not apply. Do not end on a menu of options when one next step is already justified. Do not tell the owner to take the task back to another assistant when the next check is already known.
+Omit a bullet only when it does not apply. Do not offer a menu of next steps when one next action is already clear. Do not send the owner to another assistant when the next check is already known. If that other session's design is unfinished and the work cannot start without it, say that under Need from you.
 
 ```
 TLDR
 
-- What is true: The wiki already quotes the transport rule.
-- Next step: I know what to do next: record that and stop.
+- What is true: The milestone pages now say the next proof is solo.
+- Next step: I know what to do next: edit the product pages that still describe the first proof as a small group.
 - Need from you: I don't need anything from you.
 - Design: No new design is needed.
+```
+
+This is not a next step:
+
+```
+- Next step: I know what to do next: leave the broader rewrite for a later pass.
 ```

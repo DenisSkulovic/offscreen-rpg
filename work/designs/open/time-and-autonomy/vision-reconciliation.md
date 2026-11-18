@@ -10,7 +10,7 @@ The original vision includes:
 - a character whose ordinary life accumulates meaningful earned time and consequences;
 - a player who can watch, briefly intervene, give general intentions or leave characters to act **according to personality** within a campaign's permissions;
 - unanswered decisions that can normally lead to a **supported autonomous response** when the policy allows;
-- a small shared storyline with invited friends, each owning their own character, as part of the first playable target;
+- a small shared storyline with invited friends, each owning their own character, after the solo milestone and after shared decision rules are settled;
 - **one** notification channel that brings someone back to a development or decision;
 - arbitrary worlds and character forms, from mundane to nonhuman;
 - a short, genuinely compelling hosted portfolio experience.
@@ -27,7 +27,7 @@ The original vision includes:
 | A character may act according to personality after nonresponse | First solo proof holds choices indefinitely; timed/default behavior is separate | **Explicitly bounded autonomous decision delegation** with visible policy/deadline/result | [Decision delegation](./decision-delegation.md), proposed GM07 |
 | An ordinary standing life over multiple days | Finite plan, no free idle advance; reusable opportunities still developing | Optional **bounded standing routine**, not global autoplay | [Three time models](./temporal-philosophy.md), GM03 (future) |
 | Return to meaningful changes | Paged passages, some bounded public activity records | Honest **Recent developments** then source-backed since-viewed chronology | UX07, GM05/GM06 |
-| Invite friend, each owns their character | General shared actor/time authority not proven | Small common storyline with per-person intent, readiness and pause policy | [Shared story](../shared-play/shared-story-collaboration.md), future shared-play engineering program |
+| Invite friend, each owns their character | General shared actor/time authority not proven | Small common storyline with per-person intent, readiness and pause policy | [Shared story](../shared-play/shared-story-collaboration.md). The next milestone is the solo proof. This row is the later ambition |
 | One notification channel in first playable | User channel not selected or proven end-to-end | Important verified decision/results with safe deep link to Now | [Return](../../../../docs/product/experience/return-and-journal.md), future delivery program |
 | Flexible worlds | Nonhuman fixture, versioned rules; broader adaptation unproved | No forced map/body/money, contextual World/You | [Worlds](../../../../docs/product/gameplay/worlds-and-characters.md), UX08 |
 | True AI DM creative freedom | Bounded generated options; no freeform gameplay action | Hybrid curated options plus **interpreted/reviewed** custom attempts | [Custom intent](../free-intent/free-intent-future.md), GM01→GM02 |

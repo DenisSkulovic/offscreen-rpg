@@ -25,4 +25,4 @@ An authored start may assemble world, rules, characters, relationships, known th
 
 ## Shared play (product target, unsettled mechanics)
 
-The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The first playable target includes a small group in a common storyline. **Shared decision and pause rules still need to be settled** before implementing that behavior—do not treat UI prototypes as acceptance.
+The long-term experience includes solo play and inviting friends into a shared story, each controlling their own character. The next milestone is solo, as stated in [First playable target](../foundations/vision.md#first-playable-target). Shared decision and pause rules remain unsettled. Do not treat a UI prototype as acceptance of those rules.

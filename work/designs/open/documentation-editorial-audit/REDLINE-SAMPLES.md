@@ -28,7 +28,7 @@ These stories test the intended *experience*. Each scenario capability has its o
 
 The wizard-and-goblin case remains a **stress benchmark** for future shared and delegated play. For each accepted release scope, maintain an explicit minimal *solo* execution acceptance and separately list any authorized expansion. Do not call a shared or delegated branch shipped merely because a scripted Chamber fixture demonstrates its shape.
 
-**Owner-decision question:** is small-party shared play mandatory for the *next* first playable milestone, or is it a later expansion? Do not resolve the answer by selecting whichever scope matches the code. A final approved milestone sentence must reflect the owner's answer.
+**Owner-decision question:** is small-party shared play mandatory for the *next* first playable milestone, or is it a later expansion? Do not resolve the answer by selecting whichever scope matches the code. A final approved milestone sentence must reflect the owner's answer. On 2026-11-18 the owner said to use judgment: the next milestone is solo, and small-party shared play stays a later expansion.
 
 **Expected negative:** a developer implementing the solo POC must not gain permission to invent a timed default for an absent second player by reading this scenario.
 

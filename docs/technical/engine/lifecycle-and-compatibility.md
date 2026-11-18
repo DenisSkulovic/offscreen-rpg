@@ -89,7 +89,7 @@ If a deadline expired with no permitted default, recovery cannot simply unpause 
 
 ## Membership and settings changes
 
-Recommendation for the first playable scope: invite/join during the draft; defer adding or transferring character control during live play. Participants must still be able to leave or lose access. Revocation takes effect immediately for reads, commands and pending deliveries, even when Temporal is down. It increments the access/control version so in-flight results cannot ignore changed authority.
+The next milestone is one player, so that proof does not include invite or join. When shared play is later accepted, invite and join belong to the draft, and adding or transferring character control during live play stays deferred. When a story has more than one participant, each participant must still be able to leave or lose access. Revocation takes effect immediately for reads, commands and pending deliveries, even when Temporal is down. It increments the access/control version so in-flight results cannot ignore changed authority.
 
 Leaving does not silently kill, delete or transfer the character. Apply an explicitly agreed continuation policy or hold the group until one exists. Owner departure/account deletion likewise needs a defined retain/transfer/delete policy before that user-facing action ships. The application must not trap someone in access merely because the narrative consequence is unresolved.
 

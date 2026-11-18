@@ -12,7 +12,7 @@ A real wiki does not merely say “there exists another article.” At the *clai
 - **Dependent technical:** [chronology and activities § Permission to advance](../../../../docs/technical/engine/chronology-and-activities.md#permission-to-advance) (execution gate, holds, future work).
 - **Co-review:** [authority and transitions § Chain and idle edges](../../../../docs/technical/engine/authority-and-transitions.md#chain-and-idle-edges) and [ticks and tags](../../../../docs/technical/engine/ticks-and-tags.md) where duration or idle semantics are actually shared.
 - **Candidate edge:** technical permission is constrained-by product Pace; a change to the accepted-time invariant requires technical acceptance and negative idle-time proof. Inline link belongs beside the acceptance/idle statement, not just in the first paragraph.
-- **Already suspected drift:** authority-and-transitions intro says deliberate-time correction “prepared but not implemented”; chronology intro describes relevant gates implemented and offline-tested. Inspect code/receipts before choosing which status statement to correct. Do **not** change the product rule to rationalize the current source.
+- **Recorded drift, later split at `15a997c7`:** the authority intro had called the deliberate-time correction “prepared but not implemented,” while the chronology intro called the gate implemented. The chronology page now separates the source-observed gate, the named offline tests, and the missing gate unit test. The product pace rule was not rewritten to match source.
 
 ## B. Mechanical rolls and supported effects | follow-up content coverage
 

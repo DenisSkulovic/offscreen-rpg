@@ -8,7 +8,7 @@ One scheduler step is always one real second. Speed determines how many fictiona
 
 Every offered in-world action declares its time semantics. Conversation, observation and combat attempts consume their admitted fictional duration even when the presentation is a rapid sequence of choices. Extended activities declare supported progress rules and cadences; productive attempts can earn points, while a literal wait needs no contribution check. Different checks can be due at different boundaries. The runtime may batch quiet fictional time or wake at the next meaningful boundary, preserving ordered consequences and interruptions. A check is not required every real second.
 
-The owner clarified deliberate time investment on 2026-09-19. This is the maintained target. Campaign-clock projection now requires the identity of the accepted activity, so empty time cannot accrue merely because no hold exists or become a head start for newly selected work. Terminal/horizon clamping and intent-owned preparation holds remain in T1; short timed actions remain T2. The [committed-time contract](../../technical/engine/chronology-and-activities.md) and its active feature own the correction.
+The owner clarified deliberate time investment on 2026-09-19. This is the maintained target. The [committed-time contract](../../technical/engine/chronology-and-activities.md) records which slices of that target are source-observed, which have named offline tests, and which remain unproved. That record does not change the pace rule below.
 
 ## Pace
 
@@ -100,7 +100,7 @@ Scheduling must survive service restarts. Multiple devices, duplicate deliveries
 
 ## First playable scope
 
-Support a real wait, an immediate continuation, a timed choice with a fallback, manual pause/resume and continuation without an open browser. Define shared decision deadlines and pause permissions before implementing group progression. Defer elaborate per-player calendars and catch-up modes until the basic timing experience is convincing.
+The next timing proof is the solo [first playable target](../foundations/vision.md#first-playable-target). Support a real wait, an immediate continuation, manual pause and resume, and continuation of already accepted work without an open browser. An unanswered decision stays open until the player returns. A timed fallback is a later phase, and it may close a decision only when the player already authorized it. Define shared decision deadlines and pause permissions before implementing group progression. Defer elaborate per-player calendars and catch-up modes until the basic timing experience is convincing.
 
 ## Existing narrative rehearsal adapter
 

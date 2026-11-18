@@ -19,11 +19,11 @@
 
 ## Capability coverage
 
-Inspected `4178e18f93c25c10d44632fd81ac94681673ba70` on 2026-11-16, then rechecked the named symbols on this branch. Tiers: **selected** (contract), **source** (symbol present), **tested** (named automated proof; not re-run for DOC03), **live** (paid or hosted observation), **absent**. A Done Change packet is not itself a live proof.
+Inspected `4178e18f93c25c10d44632fd81ac94681673ba70` on 2026-11-16, then rechecked the named symbols on this branch. The fictional-time row was rechecked at `15a997c7`. Tiers: **selected** (contract), **source** (symbol present), **tested** (named automated proof; not re-run for DOC03), **live** (paid or hosted observation), **absent**. A Done Change packet is not itself a live proof.
 
 | Capability | Target heading | Source inspected | Tier | Still absent |
 | --- | --- | --- | --- | --- |
-| Fictional time | [time and autonomy](docs/product/gameplay/time-and-autonomy.md) | Engine chronology owners | Selected. No accepted execution, no time | General GM07 delegation |
+| Fictional time | [time and autonomy](docs/product/gameplay/time-and-autonomy.md) | `projectCampaignClock` in `packages/application/src/campaign/clock.ts` | Selected rule. Solo accepted execution is in source. Named offline tests cover arithmetic, overlap, and finite-action settle or interrupt; not re-run | General GM07 delegation and group progression |
 | Unanswered choice | [vision](docs/product/foundations/vision.md) | GM07 packet is Proposed | Accepted hold. Chamber `chamber.v4` is a fixture deadline, not the product rule | Consented general fallback |
 | Storyteller loop | [prompts and tools](docs/technical/storyteller/prompts-and-tools.md) | Narrow controller in operation-and-controller | Selected two-loop target. Optional bounded context is source-limited | General adaptive agent, `ask_memory` as the live default |
 | Document CAS | [selected document store](docs/technical/platform/data-and-persistence.md#selected-document-store) | `packages/documents/src/s3-store.ts`, `document-store-config.ts` | Selected. S3 adapter is source-observed | Hosted cutover, automatic GC, implicit migration of old bodies |
