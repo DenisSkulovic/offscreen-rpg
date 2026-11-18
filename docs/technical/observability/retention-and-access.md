@@ -2,6 +2,22 @@
 
 **Status: technical/product recommendation, 2026-11-15; not approved for implementation.** The earlier 30/90-day raw AI windows below were exploratory. The current **candidate**, still awaiting product, legal and cost acceptance, is 90 days by default and up to 180 days for a documented incident hold. It is not an accepted retention policy. [Evidence model](./identities-and-evidence.md) defines durable source and artifacts. Expected replay experiences are the four modes in this file. [Chamber](../lab/chamber-and-fixtures.md) owns isolated test execution. Historic display, deterministic re-execution and a new model run are **different products**.
 
+## Owner map
+
+Retention and access stay on this page and remain unratified where this page already says so. Durable forensic evidence and provenance stay distinct from lossy telemetry.
+
+| Record | Owner | Standing |
+| --- | --- | --- |
+| Evidence identity | [Evidence graph](./identities-and-evidence.md#owner-map) | Selected target. Not a landed store. |
+| Capture and causal identity | [Committed transition capture](./capture-and-provenance.md#owner-map) | Proposal. |
+| Investigation and reconstruction | [Forensic read contract](./investigation-and-reconstruction.md#owner-map) | Proposed read. |
+| Retention and access | This page | Unratified where this page already says so. |
+| Telemetry | [Runtime telemetry](./telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+
+The figures in [Retention classes](#6-retention-classes-with-explicit-trade-offs) stay candidates.
+
+**Negative:** Candidate retention figures stay unratified. A proposed 90-day or 180-day raw-artifact figure does not become a binding retention period. An analyst read does not grant forbidden prompts. Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
+
 ## 1. Four replay modes (do not call them all “replay”)
 
 | Mode | User | What actually happens | Accuracy and hard restriction |

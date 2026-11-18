@@ -2,6 +2,20 @@
 
 **Status: technical recommendation, 2026-11-15; not installed or authorized.** This is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement and not a deployed monitoring stack. It remains under `docs/technical` because the documentation architecture names this path. That placement does not install the stack. The 2026-11-15 source inventory is an evidence run, not this contract. No monitoring service and no paid observability account are authorized.
 
+## Owner map
+
+Telemetry stays on this page. A noninstalled observer stack stays planned. Durable forensic evidence and provenance stay distinct from lossy telemetry.
+
+| Record | Owner | Standing |
+| --- | --- | --- |
+| Evidence identity | [Evidence graph](./identities-and-evidence.md#owner-map) | Selected target. Not a landed store. |
+| Capture and causal identity | [Committed transition capture](./capture-and-provenance.md#owner-map) | Proposal. |
+| Investigation and reconstruction | [Forensic read contract](./investigation-and-reconstruction.md#owner-map) | Proposed read. |
+| Retention and access | [Replay, retention and privacy](./retention-and-access.md#owner-map) | Unratified where that page already says so. |
+| Telemetry | This page | Planned. A noninstalled observer stack stays planned. |
+
+**Negative:** Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
+
 ## 1. Platform choice
 
 **Recommend OpenTelemetry as the instrumentation/transport standard**, with a small local Grafana stack for developer and operations use:

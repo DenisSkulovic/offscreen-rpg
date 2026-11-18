@@ -2,6 +2,22 @@
 
 **Status: proposed security/read architecture, 2026-11-15. No new staff grants or endpoints are implemented or authorized.** Product intent is [AI investigation](../../product/admin/ai-engineering-and-investigation.md). Staff grants that already exist are [Admin authority](../admin/topology-and-authorization.md) and [investigation boundaries](../admin/investigation-and-privacy.md). Audit is [commands and audit](../admin/commands-and-audit.md). The existing AD05 `ai.operation.read` means **redacted operation diagnostics**, not unrestricted private context and not S3 raw prompts. Production Support grants are absent. OBS06/07 Situation UI is synthetic.
 
+## Owner map
+
+Investigation and reconstruction stay on this page. Durable forensic evidence and provenance stay distinct from lossy telemetry.
+
+| Record | Owner | Standing |
+| --- | --- | --- |
+| Evidence identity | [Evidence graph](identities-and-evidence.md#owner-map) | Selected target. Not a landed store. |
+| Capture and causal identity | [Committed transition capture](capture-and-provenance.md#owner-map) | Proposal. |
+| Investigation and reconstruction | This page | Proposed read. |
+| Retention and access | [Replay, retention and privacy](retention-and-access.md#owner-map) | Unratified where that page already says so. |
+| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+
+[Reconstruction steps](#reconstruction-steps) stay on this page. This page does not authorize a new forensic read.
+
+**Negative:** An analyst read does not grant forbidden prompts. Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy.
+
 ## 1. Five increasingly sensitive disclosures
 
 | Tier | Typical data | Intended principal | Default rule |

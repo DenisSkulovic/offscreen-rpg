@@ -2,6 +2,20 @@
 
 **Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code, schema or test is authorized by this page.** It remains under `docs/technical` because the documentation architecture names this path. That placement does not select the writer. The indexed route is the [evidence graph](identities-and-evidence.md), which labels this page as a proposal. The writer-closure note in the 2026-11-15 observability run is the source inventory. This design does **not** require full event sourcing or a function-level log. Reconstruction rules are [on the read contract](investigation-and-reconstruction.md#reconstruction-steps). Physical retention limits are [on the retention owner](retention-and-access.md).
 
+## Owner map
+
+Capture and causal identity stay on this page. Durable forensic evidence and provenance stay distinct from lossy telemetry.
+
+| Record | Owner | Standing |
+| --- | --- | --- |
+| Evidence identity | [Evidence graph](identities-and-evidence.md#owner-map) | Selected target. Not a landed store. |
+| Capture and causal identity | This page | Proposal. |
+| Investigation and reconstruction | [Forensic read contract](investigation-and-reconstruction.md#owner-map) | Proposed read. |
+| Retention and access | [Replay, retention and privacy](retention-and-access.md#owner-map) | Unratified where that page already says so. |
+| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+
+**Negative:** Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
+
 ## 1. Pilot before universal rollout
 
 **Choose one committed finite-action settlement/interrupt path first** at `packages/application/src/campaign/action-executions.ts::settleActionExecution`, with the matching `gameActionExecutionEvent` and `gameActionReceipt` and the caller's `story FOR UPDATE`. Follow-up `campaign/follow-up-intents.ts` and `storyteller` capture are causal descendants but not additional earned action events. This is a **source-backed technical experiment** before accepting all writers.

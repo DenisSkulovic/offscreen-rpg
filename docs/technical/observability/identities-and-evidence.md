@@ -2,6 +2,22 @@
 
 **Status: selected evidence-graph target, 2026-11-15. Not implemented** except where a landed read is named on [the forensic contract](investigation-and-reconstruction.md). This page is not a proposal. Product journeys are [Admin investigation](../../product/admin/ai-engineering-and-investigation.md). Source inventory is the 2026-11-15 observability run. Ownership: [Engine](../engine/authority-and-transitions.md), [Storyteller](../../product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
 
+## Owner map
+
+Evidence identity stays on this page. Durable forensic evidence and provenance stay distinct from lossy telemetry.
+
+| Record | Owner | Standing |
+| --- | --- | --- |
+| Evidence identity | This page | Selected target. Not a landed store. |
+| Capture and causal identity | [Committed transition capture](capture-and-provenance.md#owner-map) | Proposal. |
+| Investigation and reconstruction | [Forensic read contract](investigation-and-reconstruction.md#owner-map) | Proposed read. |
+| Retention and access | [Replay, retention and privacy](retention-and-access.md#owner-map) | Unratified where that page already says so. |
+| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+
+The [Turn Evidence Capsule](#turn-evidence-capsule) stays a proposed read.
+
+**Negative:** Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
+
 ## 1. Decision: no mega-GameData blob, no telemetry-as-history
 
 Use **three cooperating contracts**, each with its own reliability and retention:
