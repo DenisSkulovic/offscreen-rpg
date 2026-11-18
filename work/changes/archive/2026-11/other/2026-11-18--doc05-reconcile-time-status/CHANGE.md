@@ -1,13 +1,13 @@
 # DOC05 | Reconcile the deliberate-time implementation-status disagreement
 
-**State:** Proposed (unselected). **Kind:** documentation. **Editorial wave:** S0. **Order:** first accuracy wave. **Source basis:** the [editorial audit](../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md) and [page register](../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md), originally inspected at `f3e3bfe`; refresh HEAD, dirty files and real headings before editing. **Current change remains:** none until explicitly selected.
+**State:** Done (2026-11-18). **Kind:** documentation. **Editorial wave:** S0. **Order:** first accuracy wave. **Source basis:** the [editorial audit](../../../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md) and [page register](../../../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md). The canonical status text was inspected at `e1efd331`. No model call and no database.
 
 ## Cursor first-screen brief
 
-**Outcome:** Reconcile the deliberate-time implementation-status disagreement. **No executable modifications authorized.** Start at [editorial standards](../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), then these canonical owners:
-- [time-and-autonomy.md](../../../../docs/product/gameplay/time-and-autonomy.md)
-- [authority-and-transitions.md](../../../../docs/technical/engine/authority-and-transitions.md)
-- [chronology-and-activities.md](../../../../docs/technical/engine/chronology-and-activities.md)
+**Outcome:** Reconcile the deliberate-time implementation-status disagreement. **No executable modifications authorized.** Start at [editorial standards](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), then these canonical owners:
+- [time-and-autonomy.md](../../../../../../docs/product/gameplay/time-and-autonomy.md)
+- [authority-and-transitions.md](../../../../../../docs/technical/engine/authority-and-transitions.md)
+- [chronology-and-activities.md](../../../../../../docs/technical/engine/chronology-and-activities.md)
 
 **Known defect:** Establish which execution gate, accepted-time, finite-action and short-action sub-slices are actually implemented at HEAD, which remain selected targets and what evidence supports each statement. The two overlapping technical introductions currently disagree about the implementation boundary.
 
@@ -36,12 +36,20 @@ Produce a compact before/after claim inventory, classification (selected target 
 
 ## Verification and close receipt
 
-When selected, run the actual available link/graph and Change plan/close checks on a full checkout; record exact commands, failure output, current commit and any missing archive/history limits. Compare before/after claim meaning, check known dependent headings and one independent adverse reading. The [documentation-reconciliation skill](../../../../.agents/skills/documentation-reconciliation/SKILL.md) applies. Do not mark Done with unverified factual claims or a blocked normative decision hidden in selected prose.
+When selected, run the actual available link/graph and Change plan/close checks on a full checkout; record exact commands, failure output, current commit and any missing archive/history limits. Compare before/after claim meaning, check known dependent headings and one independent adverse reading. The [documentation-reconciliation skill](../../../../../../.agents/skills/documentation-reconciliation/SKILL.md) applies. Do not mark Done with unverified factual claims or a blocked normative decision hidden in selected prose.
 
-## Reconciliation ledger (fill at execution)
+## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/product/gameplay/time-and-autonomy.md (exact #heading at execution) | product | pending: actual claim-level review needed | no source behavior changed; record docs SHA | not run: Proposed | A reader must correctly distinguish an implemented finite-action path from a proposed generic idle/delegation path. The negative is that clicking nowhere, leaving the tab or opening a stale story must not be misdescribed as permission to advance time. | pending impacted links |
+| docs/product/gameplay/time-and-autonomy.md#pace | product | unchanged because fictional time still advances only through an accepted action, activity, or plan entry | packages/application/src/campaign/clock.ts at e1efd331 | source-observed | an untouched menu or a closed tab does not start fictional time | the pace heading stayed in place |
+| docs/product/gameplay/time-and-autonomy.md#first-playable-scope | product | changed: an unanswered decision stays open, and a timed fallback is a later phase | docs/product/gameplay/time-and-autonomy.md at e1efd331 | source-observed | a generic missed-window fallback is not described as accepted | the heading stayed in place |
+| docs/technical/engine/chronology-and-activities.md#permission-to-advance | technical | changed: the status names the source-observed gate, the offline tests that were read, and the missing gate unit test | packages/game/test/tick-clock.test.mjs at e1efd331 | source-observed | eligibility none does not advance the clock | the heading stayed in place |
+| docs/technical/engine/authority-and-transitions.md#what-is-decided-for-the-first-proof | technical | changed: the opening no longer calls the deliberate-time correction unimplemented | docs/technical/engine/authority-and-transitions.md at e1efd331 | source-observed | group progression and delegated decisions remain separate from this slice | the heading stayed in place |
 
-**Next executor step when owner selects:** update the new packet to Ready only after checking source/current authority, then implement this one documentation outcome, verify and archive; never auto-select DOC06.
+exception: work/changes/README.md because the queue line is the selection route for this documentation packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this documentation packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+exception: work/designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md because the wave table points at the archived packet
+
+Close checks: `pnpm wiki:change-guard --mode plan` and `--mode close --base e1efd331`. `python scripts/check_docs.py` was run on the canonical edits before this close. No provider call.

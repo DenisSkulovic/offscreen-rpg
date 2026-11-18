@@ -102,6 +102,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-18--wiki09-change-impact-contract](../../../../work/changes/archive/2026-11/other/2026-11-18--wiki09-change-impact-contract/CHANGE.md)
 - [2026-11-18--wiki10-contract-dependency-edges](../../../../work/changes/archive/2026-11/other/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md)
 - [2026-11-18--wiki11-impact-closure-and-proof](../../../../work/changes/archive/2026-11/other/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md)
+- [2026-11-18--doc05-reconcile-time-status](../../../../work/changes/archive/2026-11/other/2026-11-18--doc05-reconcile-time-status/CHANGE.md)
 
 ## storyteller (11)
 

@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Current status:** No Change is selected. [WIKI09](archive/2026-11/other/2026-11-18--wiki09-change-impact-contract/CHANGE.md), [WIKI10](archive/2026-11/other/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md), and [WIKI11](archive/2026-11/other/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md) are Done. [HK02](archive/2026-11/other/2026-11-17--hk02-repository-doc-integrity/CHANGE.md), [HK06](archive/2026-11/other/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md), [HK07](archive/2026-11/other/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md), and [HK08](archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md) are Done. BOOK01 and BOOK02 stay open. Completed packets live in the [archive](archive/README.md) and the [November ledger](ledger/2026-11.md). This queue is the open list, not a second archive.
+**Current status:** [DOC05](archive/2026-11/other/2026-11-18--doc05-reconcile-time-status/CHANGE.md) is Done. [WIKI09](archive/2026-11/other/2026-11-18--wiki09-change-impact-contract/CHANGE.md), [WIKI10](archive/2026-11/other/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md), and [WIKI11](archive/2026-11/other/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md) are Done. [HK02](archive/2026-11/other/2026-11-17--hk02-repository-doc-integrity/CHANGE.md), [HK06](archive/2026-11/other/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md), [HK07](archive/2026-11/other/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md), and [HK08](archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md) are Done. BOOK01 and BOOK02 stay open. Completed packets live in the [archive](archive/README.md) and the [November ledger](ledger/2026-11.md). This queue is the open list, not a second archive.
 
 ## Open packets
 
@@ -18,7 +18,6 @@ Current change: none
 
 | Packet | State | Outcome |
 | --- | --- | --- |
-| [DOC5 Time-status source reconciliation](open/2026-11-18--doc05-reconcile-time-status/CHANGE.md) | **Proposed (unselected)** | Documentation-only; time-status source reconciliation |
 | [DOC6 First-playable vs illustrative acceptance](open/2026-11-18--doc06-acceptance-scope/CHANGE.md) | **Proposed (unselected)** | Documentation-only; first-playable vs illustrative acceptance |
 | [DOC7 Vision and core concept prose](open/2026-11-18--doc07-foundations-vision-concepts/CHANGE.md) | **Proposed (unselected)** | Documentation-only; vision and core concept prose |
 | [DOC8 Actions, mechanics and time product semantics](open/2026-11-18--doc08-gameplay-action-rules/CHANGE.md) | **Proposed (unselected)** | Documentation-only; actions, mechanics and time product semantics |

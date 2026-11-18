@@ -8,7 +8,7 @@
 
 | Editorial area | Prepared Change(s) | Intended responsibility |
 | --- | --- | --- |
-| S0 · factual and acceptance boundary | [DOC05](../../../changes/open/2026-11-18--doc05-reconcile-time-status/CHANGE.md), [DOC06](../../../changes/open/2026-11-18--doc06-acceptance-scope/CHANGE.md) | Truth of deliberate-time implementation; selected first-playable vs illustrative scenarios |
+| S0 · factual and acceptance boundary | [DOC05](../../../changes/archive/2026-11/other/2026-11-18--doc05-reconcile-time-status/CHANGE.md), [DOC06](../../../changes/open/2026-11-18--doc06-acceptance-scope/CHANGE.md) | Truth of deliberate-time implementation; selected first-playable vs illustrative scenarios |
 | S1 · product foundations | [DOC07](../../../changes/open/2026-11-18--doc07-foundations-vision-concepts/CHANGE.md), [DOC08](../../../changes/open/2026-11-18--doc08-gameplay-action-rules/CHANGE.md), [DOC09](../../../changes/open/2026-11-18--doc09-world-continuity/CHANGE.md), [DOC10](../../../changes/open/2026-11-18--doc10-storyteller-product-quality/CHANGE.md) | Vision/concepts, action/rules/time, world continuity, Storyteller product quality |
 | S2 · engine and Storyteller technical | [DOC11](../../../changes/open/2026-11-18--doc11-engine-authority-mechanics/CHANGE.md) to [DOC16](../../../changes/open/2026-11-18--doc16-storyteller-settings-provider/CHANGE.md) | Mechanics, chronology/calendar, lifecycle/recovery, controller/prompts, memory/context, provider/settings |
 | S3 · player experience and client | [DOC17](../../../changes/open/2026-11-18--doc17-product-experience/CHANGE.md), [DOC18](../../../changes/open/2026-11-18--doc18-client-tech-contracts/CHANGE.md) | Product UI/Book/decisions/accessibility then technical client ownership |
