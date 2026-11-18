@@ -2,6 +2,22 @@
 
 This is the implementation design; the [implementation overview](../../../STATUS.md) tracks coverage and current priorities, while the [development guide](../../../docs/runbooks/local-development.md) explains how to run and test existing code. The design supports the [product walkthrough](../../product/gameplay/acceptance-scenarios.md). Product choices still open in [questions](../../../work/designs/open/product-open-questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced. Build the broader application with scripted substitutes before connecting paid services.
 
+## Who owns the boundary
+
+| Boundary | Owner |
+| --- | --- |
+| Sessions, invitations, and membership | [Authentication and sessions](./identities-and-access.md#authentication-and-sessions) |
+| Entitlement | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Funding allowance | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Task recipe | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Usage window | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Creative setting | [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings) |
+| Notification delivery | [Delivery flow](./notifications.md#delivery-flow) |
+| Selected topology | This page, [Runtime shape](#runtime-shape) |
+| Compatibility | [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment) |
+
+Selected topology stays on this page.
+
 ## Recommendation
 
 Build a TypeScript modular monolith with a React/Next.js frontend, a NestJS API and Temporal workers. PostgreSQL owns committed application data; Temporal owns durable workflow execution and timers. Start with containers and a straightforward deployment; use Kubernetes later as a deliberate deployment exercise.
@@ -18,7 +34,7 @@ Build a TypeScript modular monolith with a React/Next.js frontend, a NestJS API 
 | Authentication | Better Auth with GitHub OAuth | Library-managed identity/sessions through its Node handler in the Nest Express server. |
 | Models | OpenRouter behind a small application adapter | One initial gateway with controlled model/provider selection. No LiteLLM service initially. |
 | AI workflow | Bounded TypeScript steps orchestrated by Temporal | Model calls and tools execute as Activities. LangGraph is only an optional graph abstraction if agent complexity warrants it. |
-| AI observability | OpenTelemetry-compatible traces; Langfuse as the proposed AI destination | Inspect prompts, attempts, quality and cost without making telemetry part of story correctness. |
+| AI observability | Proposed: OpenTelemetry-compatible traces; Langfuse as the proposed AI destination | Proposed observer path. Inspect prompts, attempts, quality and cost without making telemetry part of story correctness. No inspected proof on this page that either service is deployed or tested. |
 | Media | Object storage with an S3-compatible interface | Database stores metadata and references, not large image blobs. |
 
 Turborepo understands workspace packages and the lockfile; its role here is task execution and caching, not architectural enforcement. Package exports and import rules establish boundaries. [Turborepo repository structure](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository).
@@ -41,6 +57,8 @@ flowchart LR
 ```
 
 The API and Activity workers share application modules and PostgreSQL access without depending on each other. Workflow code is a separate deterministic bundle that calls Activities rather than importing database or network clients. The Chamber and integration workspaces compose deployables only for local development and tests. Long model calls and delivery work do not occupy HTTP request lifetimes. Processes can be scaled differently while remaining one modular application. Temporal is infrastructure, not a reason to split the game into microservices.
+
+A diagram of future infrastructure is not a claim that the service is deployed and tested. OpenTelemetry and Langfuse stay planned on the [recommendation](#recommendation) table. Demonstrated coverage is [capability coverage](../../../STATUS.md#capability-coverage).
 
 The outbox relay forwards durable database notices into Temporal using stable identifiers. Temporal Service has its own managed persistence; its history tables are not application tables. Browser reads come from application PostgreSQL snapshots, not directly from workflow history.
 

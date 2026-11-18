@@ -1,8 +1,24 @@
 # Delivery, operations and validation
 
-**Find the section:** [start locally](#local-development) · [Chamber/testing](#scripted-testing-chamber) · [live proof criteria](#first-live-story-poc-what-the-run-must-mean) · [deployment target](#first-hosted-deployment) · [observability](#observability) · [architecture tests](#tests-that-demonstrate-the-architecture). Read the relevant section rather than loading this entire document.
+**Find the section:** [who owns the boundary](#who-owns-the-boundary) · [start locally](#local-development) · [Chamber/testing](#scripted-testing-chamber) · [live proof criteria](#first-live-story-poc-what-the-run-must-mean) · [deployment target](#first-hosted-deployment) · [observability](#observability) · [architecture tests](#tests-that-demonstrate-the-architecture). Read the relevant section rather than loading this entire document.
 
 The portfolio should demonstrate a coherent system operating under failure, not merely a list of technologies. A visitor should be able to run a local demo, experience a short story and inspect evidence of correct scheduling, state handling and measured AI use.
+
+## Who owns the boundary
+
+| Boundary | Owner |
+| --- | --- |
+| Sessions, invitations, and membership | [Authentication and sessions](./identities-and-access.md#authentication-and-sessions) |
+| Entitlement | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Funding allowance | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Task recipe | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Usage window | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Creative setting | [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings) |
+| Notification delivery | [Delivery flow](./notifications.md#delivery-flow) |
+| Selected topology | [Runtime shape](./topology.md#runtime-shape) |
+| Compatibility | This page, [First hosted deployment](#first-hosted-deployment) |
+
+Compatibility stays on this page. Selected topology stays on [Runtime shape](./topology.md#runtime-shape).
 
 ## Local development
 
@@ -15,6 +31,8 @@ Pin supported runtime/dependency versions, the package manager and container ima
 ## Scripted testing chamber
 
 **Lab owner:** [chamber and fixtures](../lab/chamber-and-fixtures.md). Source-observed CH01–CH16 includes the bench, fault cut points, disposable Postgres, the connected rig and the workbench. This page does not keep a second laboratory design, and it does not say those controls are absent.
+
+The source-observed chamber list and the fixture inventory below are realization records. Demonstrated coverage is [capability coverage](../../../STATUS.md#capability-coverage). The selected chamber rules stay on this page.
 
 The Chamber is local development equipment, not a production game mode. Inspection must not implement gameplay, mutate committed state, or appear on ordinary production `createApp(...)` unless an explicit local `developerTools` option is set. Never add a public login bypass to make the chamber easier to open.
 
@@ -36,7 +54,7 @@ Keep inspection modest and separate from the story presentation. The Chamber ins
 
 Local access is part of the delivery task. Use configured GitHub sign-in for the normal application, or the `tools/chamber` workspace, which composes the built API, web and worker while seeding a disposable test user/story and authenticated browser session through existing test utilities. Cross-process PostgreSQL, Temporal and browser suites live in `tools/api-integration`, outside deployable package graphs. Never add a public login bypass or weaken owner checks to make the chamber easier to open. The documented launch path must not require LLM credentials.
 
-Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See [STATUS](../../../STATUS.md) for current demonstrated coverage.
+Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See [capability coverage](../../../STATUS.md#capability-coverage) for current demonstrated coverage.
 
 ## First live-story POC: what the run must mean
 
@@ -58,6 +76,8 @@ Public delivery requires a deployed acceptance test on phone and desktop: open t
 
 ## First hosted deployment
 
+Selected deployment and compatibility target. A diagram of future infrastructure is not a claim that the service is deployed and tested. Demonstrated coverage is [capability coverage](../../../STATUS.md#capability-coverage).
+
 Use one region with containerized web, API and Temporal workers plus managed application PostgreSQL. Prefer Temporal Cloud for the first hosted release if its measured cost fits the project budget; we still run our own application workers. Confirm current pricing, retention and connectivity before provisioning. Self-hosting Temporal is an alternative only with an explicit plan for its persistence, upgrades, security and recovery. A development server or casual Compose setup is not the production service. [Temporal deployment](https://docs.temporal.io/self-hosted-guide/deployment).
 
 Run application schema migrations once as a controlled release step. Use expand/contract changes where old and new processes overlap. Version Activity and message payloads because executions can outlive a deployment. Use compatible workflow changes or supported worker/workflow versioning, replay representative histories before rollout and drain workers gracefully. A new build must not strand running stories through nondeterministic replay. Temporal persistence upgrades are separate from application migrations. [Temporal workflow versioning](https://docs.temporal.io/develop/typescript/workflows/versioning).
@@ -68,6 +88,8 @@ Back up application PostgreSQL and demonstrate a restore. Also establish Tempora
 
 ## Kubernetes as a deliberate extension
 
+This is a selected later exercise. A diagram of future infrastructure is not a claim that the service is deployed and tested.
+
 Kubernetes is a worthwhile hands-on portfolio exercise after the containerized vertical slice works. It is not needed to make the application modular, nor does it make the database highly available automatically. Production clusters involve availability, access, networking and operational planning beyond writing deployment YAML. [Kubernetes production considerations](https://kubernetes.io/docs/setup/production-environment/).
 
 The learning/demo target is concrete: run the same web/API/worker images in a local cluster, expose the web/API through ingress, configure environment/secrets, add readiness/liveness checks and resource requests/limits, perform a rolling update, kill a worker and verify recovery. Workers poll Temporal over their service connection. Use managed/external PostgreSQL and Temporal for an initial hosted cluster rather than simultaneously learning to operate both stateful systems inside Kubernetes.
@@ -75,6 +97,8 @@ The learning/demo target is concrete: run the same web/API/worker images in a lo
 Keep manifests small. Add autoscaling only after measuring a meaningful signal such as Task Queue schedule-to-start latency or available worker slots; CPU alone may not describe model-waiting workers. Do not introduce service mesh, multi-region replication, operators or Helm abstractions simply to make the repository look advanced.
 
 ## Observability
+
+Selected signal list. Observer services stay planned. OpenTelemetry stays planned on [Recommendation](./topology.md#recommendation). This page has no inspected proof that an observer service is deployed and tested. Demonstrated coverage is [capability coverage](../../../STATUS.md#capability-coverage).
 
 Correlate request, story, command, decision, generation operation, Temporal Workflow ID/Run ID, Activity and delivery identifiers. Structured logs report state transitions and failure categories without exposing secrets or raw private story content by default. Use replay-aware workflow logging to avoid misleading duplicate logs. Trace slow paths across command receipt, Temporal task wait, context assembly, model attempts and commit.
 

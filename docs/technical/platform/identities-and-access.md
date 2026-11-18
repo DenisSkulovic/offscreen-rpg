@@ -3,6 +3,22 @@
 **Owns:** sessions, invitations, membership checks and what an authenticated viewer may read or command.
 **Does not own:** the React/Next F1–F15 target, Query, forms or SSE. That binding design is [client architecture](../client/architecture.md). A dated file under `evidence/inspections/` is not the implementation contract. Shared-play rules are [proposed](../../../work/designs/open/shared-play/README.md), not selected here. Return and journal behavior is [product return](../../product/experience/return-and-journal.md). Scene media honesty is [product presentation](../../product/experience/presentation.md).
 
+## Who owns the boundary
+
+| Boundary | Owner |
+| --- | --- |
+| Sessions, invitations, and membership | This page, [Authentication and sessions](#authentication-and-sessions) |
+| Entitlement | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Funding allowance | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Task recipe | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Usage window | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Creative setting | [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings) |
+| Notification delivery | [Delivery flow](./notifications.md#delivery-flow) |
+| Selected topology | [Runtime shape](./topology.md#runtime-shape) |
+| Compatibility | [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment) |
+
+Identities and membership stay on this page. Entitlement, funding allowance, and task recipe stay distinct on [Distinct authorities](./spending-and-entitlements.md#distinct-authorities).
+
 ## Authentication and sessions
 
 Better Auth owns PostgreSQL-backed sessions and GitHub OAuth. Its official Node handler is mounted directly in Nest's Express server before body parsing, without a community Nest integration wrapper. The API uses ESM. The [development guide](../../../docs/runbooks/local-development.md) describes the implemented identity checks and remaining live-provider validation. Invitation handling remains a separate future product area. [Better Auth Express integration](https://better-auth.com/docs/integrations/express).

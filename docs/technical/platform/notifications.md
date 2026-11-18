@@ -2,6 +2,22 @@
 
 Notifications are part of gameplay, not a decorative integration. A player should be able to leave the page and hear about a development, while the system remains coherent if delivery is late or never arrives.
 
+## Who owns the boundary
+
+| Boundary | Owner |
+| --- | --- |
+| Sessions, invitations, and membership | [Authentication and sessions](./identities-and-access.md#authentication-and-sessions) |
+| Entitlement | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Funding allowance | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Task recipe | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Usage window | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
+| Creative setting | [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings) |
+| Notification delivery | This page, [Delivery flow](#delivery-flow) |
+| Selected topology | [Runtime shape](./topology.md#runtime-shape) |
+| Compatibility | [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment) |
+
+Notifications stay on this page.
+
 ## Recommended first channel
 
 Start with responsive web plus Web Push, using a service worker and a manifest so the site can be installed as a web app. Notifications open the relevant current story; choices happen in the browser initially. This avoids maintaining a separate native application and a second interaction implementation.
@@ -32,7 +48,7 @@ WhatsApp is not part of the proposed first integration. Do not build several pro
 2. The outbox relay starts a bounded Temporal delivery workflow with a stable notification ID. A repeated start must locate the existing operation rather than send again. Delivery proceeds independently of the story workflow so a slow push provider does not block story progression.
 3. Activities resolve recipients, current membership, preferences and channel subscriptions, then persist per-recipient/channel delivery records. Check relevance immediately before sending a short payload with type, safe preview, story reference, decision reference if applicable and deadline.
 4. Configure Activity retries only for eligible transport failures within the notification's useful lifetime, checking recorded delivery state on each attempt. Retain provider acknowledgements when available. Disable expired subscriptions and support unlinking a channel.
-5. Opening the notification fetches current authorized state. If the decision ended, show the outcome; do not execute a stale command from the URL.
+5. Opening the notification fetches current authorized state. If the decision ended, show the outcome; do not execute a stale command from the URL. A push notification does not become command authority. Membership on [Authentication and sessions](./identities-and-access.md#authentication-and-sessions) still decides whether a command is accepted.
 
 Acceptance by a push service is not proof that a person saw the message. Even successful delivery cannot guarantee five minutes of human attention. Response windows begin from an authoritative story publication rule, not an unverifiable read receipt. Best-effort contact and permitted fallback behavior are both necessary.
 

@@ -2,9 +2,27 @@
 
 Status: B1 and the first B2 quota slice implement pure policy resolution, fail-closed task admission and durable per-attempt window allocations. A provider task captures its complete resolved authority, route match and narrowed envelope; started stories retain that authority for later tasks. Reservation atomically covers every captured fixed/rolling request, token, money and background-job window; unsent work releases it, known settlement records actual consumption, and uncertainty retains the conservative allocation. Commercial account selection, operation-wide multi-attempt aggregation, player holds/recovery and billing remain prepared work. The [bounded-cost feature](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-storyteller-effort-and-cost) owns delivery. [Context and cost](../storyteller/request-context-and-cost.md) owns request construction and operation accounting. Commercial prices, tier names and payment processing are not chosen here.
 
+## Who owns the boundary
+
+| Boundary | Owner |
+| --- | --- |
+| Sessions, invitations, and membership | [Authentication and sessions](./identities-and-access.md#authentication-and-sessions) |
+| Entitlement | This page, [Distinct authorities](#distinct-authorities) |
+| Funding allowance | This page, [Distinct authorities](#distinct-authorities) |
+| Task recipe | This page, [Distinct authorities](#distinct-authorities) |
+| Usage window | This page, [Distinct authorities](#distinct-authorities) |
+| Creative setting | [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings) |
+| Notification delivery | [Delivery flow](./notifications.md#delivery-flow) |
+| Selected topology | [Runtime shape](./topology.md#runtime-shape) |
+| Compatibility | [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment) |
+
+Entitlement, funding allowance, and task recipe stay distinct on this page. The usage window stays distinct beside them.
+
 ## Distinct authorities
 
 An **entitlement profile** says which capabilities an account may use. A **usage window** limits consumption over real time. A **funding allowance** authorizes actual provider spending. A **task recipe** limits the work needed for one purpose. A **creative Storyteller profile** controls tone/pacing, not any of these permissions. More available funds do not automatically unlock a model, and an unlocked model does not imply permission to fill its context window.
+
+A creative setting does not grant model budget or account entitlement. Creative settings stay on [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings).
 
 Compute effective policy on the server from versioned platform safety limits, verified account entitlements, payer/funding restrictions, user/account and story caps, task recipe and provider capability. Numeric ceilings intersect by taking the strictest applicable value; allowlists intersect; a disabled capability stays disabled. Cross-field validation then checks total input + generated/reasoning capacity, price bounds and required final-answer capacity. Remaining usage/funding is an additional admission check, not a reason to mutate the saved entitlement. Missing required configuration fails closed; zero is disabled, not unlimited. Do not implement ambiguous precedence with object spreads.
 
