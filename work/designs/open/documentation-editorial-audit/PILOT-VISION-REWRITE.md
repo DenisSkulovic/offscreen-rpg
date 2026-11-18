@@ -6,7 +6,7 @@
 
 The draft must preserve: lives earned over meaningful real time; accepting/finishing as distinct moments; D&D-style dice/abilities/rules; world/body neutrality; player control and consent; background work without constant models; authored initiative without compulsory drama; remembered consequential people/objects; sparse world materialization; risk and possible loss where selected; multi-style Storytellers; solo and future friend participation; small hosted portfolio proof; longer-world ambitions; immediate versus long actions; no hidden auto-choice.
 
-**Intentionally demoted to other owners:** timestamped implementation/approval status, the illustrative sponsored cost amount and detailed first-release acceptance. The product vision still points to those topics; it must not silently approve them.
+**Intentionally routed to other owners:** timestamped implementation/approval status, the illustrative sponsored cost amount and detailed first-release acceptance. **The small-group first-playable ambition must not be removed without explicit owner approval**, even though its execution protocol is unsettled. The product vision still points to those topics; it must not silently approve them.
 
 ---
 
@@ -54,7 +54,7 @@ The browser opens into the current story, with its atmosphere, relevant people a
 
 The first [Living Book experience target](../../../../docs/product/experience/living-book-poc.md) uses a stable reading object and bounded scene expression. It is not approval of final typography or art direction. Notifications can bring a player back, but are not an alternative authority for current state or an obligation to interrupt the player continuously.
 
-The game aims to support solo life and, eventually, friends controlling different characters in a shared story. Shared decisions, group pause authority and generalized delegated choices need their own ratified policies before they become required first-playable behavior. The maintained [acceptance scenarios](../../../../docs/product/gameplay/acceptance-scenarios.md) illustrate both current proof boundaries and longer-term stress cases; the implementation evidence and release milestone live in STATUS and the selected work program.
+The intended first-playable experience includes solo play and inviting a small group of friends, each controlling a different character; the long-term vision extends to larger shared worlds. However, **shared decision collection, pause authority and generalized delegated choices are still unsettled**. Their inclusion as a product ambition does not make a particular group-resolution algorithm or missed-window fallback implementation-ready. The owner must confirm which multiplayer acceptance tests apply to each named milestone. The maintained [acceptance scenarios](../../../../docs/product/gameplay/acceptance-scenarios.md) illustrate both current proof boundaries and longer-term stress cases; the implementation evidence and release milestone live in STATUS and the selected work program.
 
 ## The smallest convincing proof
 
