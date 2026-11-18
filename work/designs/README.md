@@ -6,12 +6,13 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
+| [backlog-convergence-2026-11-18/](open/backlog-convergence-2026-11-18/README.md) | **Accepted bounded execution decisions 2026-11-18:** 16-packet source audit, 2 BOOK POCs Done/archived, 13 remaining Ready for safe work and HAR05 Verifying. [Cursor order](open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md); no paid dispatch grant |
 | [product-reality-reconciliation/](open/product-reality-reconciliation/README.md) | **Done 2026-11-18:** PVAL01–PVAL06 are archived. Solo is the first tested playability milestone. The small party stays a distant later aspiration. The audit itself is not a new mechanic |
 | [playability-reality/](open/playability-reality/README.md) | **Proposed 2026-11-18:** REAL01 first-solo acceptance, REAL02 semantic-canon integration fixtures, REAL03 value/cost protocol, REAL04 V0 and rights honesty. Three prepared Changes, none selected; no paid evaluations |
 | [wiki-discovery-coverage/](open/wiki-discovery-coverage/README.md) | **Proposed 2026-11-18:** post-DOC24 wiki navigability, section authority, missing knowledge and practical guides audit; 23 WIKI12–17 / DOC25–41 handoffs are prepared, all unselected |
 | [documentation-editorial-audit/](open/documentation-editorial-audit/README.md) | **Proposed 2026-11-18:** source-grounded 70-page content-quality triage and 20 first-class DOC05–DOC24 editorial Change handoffs, all Proposed/unselected; no executable code Change selected |
 | [documentation-impact-system/](open/documentation-impact-system/README.md) | **Accepted for the sequence, and WIKI09, WIKI10, and WIKI11 are Done.** Not product canon. HK02, HK06, HK07, and HK08 are Done |
-| [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. HK05 is Done. HK01 is blocked. HK03 and HK04 stay gated |
+| [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. HK05 is Done. HK01 is Ready replacement-first; HK03 is Ready for preserve-red test extraction; HK04 is Ready for safe pure launcher mode planning |
 | [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 3 visual-system program:** product/technical semantic roles prepared; [Phase 3](open/player-experience-refoundation/phase-3/README.md) maps 11 bounded UI/DIR Changes, all unselected. Full final art direction, V2 rich text and generation remain gated |
 | [time-and-autonomy/](open/time-and-autonomy/) | Proposed absence, delegation and standing-life studies. The accepted time rule is the product page |
 | [gameplay-domain-coverage/](open/gameplay-domain-coverage/README.md) | **Proposed, not selected.** Unratified catalogue of economy, progression, space, relationships, collaboration, and content policy. It adds no universal mechanic |

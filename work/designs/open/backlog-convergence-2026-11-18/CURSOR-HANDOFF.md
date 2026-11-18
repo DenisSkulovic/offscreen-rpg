@@ -9,7 +9,7 @@
 2. **HAR05:** in real checkout run `pnpm repo:snapshot:chatgpt:test`, `pnpm repo:snapshot:chatgpt`, `pnpm wiki:find --self-test`, `pnpm wiki:health`. Inspect ZIP `SNAPSHOT.json` and `WIKI-INDEX.json`: same HEAD, no dirty contents, no unsafe fallback; archive Done if green. Uploaded prior ZIP already has matching manifest and portable index; independent extracted exporter tests were 2/2.
 
 **Wave 1, independent no-spend work:**
-3. **DIR02:** optional exact publication INSERT of validated V1 atmosphere through `stories/persistence.ts`, `storyteller/publication.ts`; verify `stories/reads.ts` and `apps/web/src/features/play/ui/appearance-roundtrip.test.tsx`. Deterministic fixture, duplicate/stale/invalid tests. Do not install DIR03 here.
+3. **DIR02:** follow [the exact-source writer blueprint](DIR02-WRITER-BLUEPRINT.md) and implement an optional exact publication INSERT of validated V1 atmosphere through `stories/persistence.ts`, `storyteller/publication.ts`; verify `stories/reads.ts` and `apps/web/src/features/play/ui/appearance-roundtrip.test.tsx`. Deterministic fixture, duplicate/stale/invalid tests. Do not install DIR03 here.
 4. **HK04:** mode matrix and pure launch plan, provider-disabled denial tests, one contained orchestrator extraction. `tools/chamber/src/main.ts`, `modes/cli-flags.ts`, `story-funding.ts`, `story-provider.ts`, `stop.ts`.
 5. **S3a:** `scripts/repo-tools/story-session-report.mjs` only; source-linked five-state provenance, read-only fixtures.
 

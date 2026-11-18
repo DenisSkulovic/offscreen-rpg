@@ -2,7 +2,7 @@
 
 **Authority:** execution/triage decision for the 16 `work/changes/open` packets on committed `main@92ed12ba2884fd9a65d54a83b926c306d49b8833`. This is **not** a substitute for canonical product/technical specifications, code receipts, or completed validation. Owner requested design-to-execution rather than passive Blocked/Parked statuses. **No** paid dispatch, non-disposable DB reset, production entitlement grant, or destructive recovery is authorized.
 
-**Executor entry:** [CURSOR-HANDOFF](CURSOR-HANDOFF.md). **Decisions and migration boundaries:** [CONTRACT-DECISIONS](CONTRACT-DECISIONS.md). The [Change queue](../../../changes/README.md) remains the source for one selected current change at a time. This initiative is not a 17th mega-Change.
+**Executor entry:** [CURSOR-HANDOFF](CURSOR-HANDOFF.md). **DIR02 exact seam:** [writer blueprint](DIR02-WRITER-BLUEPRINT.md). **Decisions and migration boundaries:** [CONTRACT-DECISIONS](CONTRACT-DECISIONS.md). The [Change queue](../../../changes/README.md) remains the source for one selected current change at a time. This initiative is not a 17th mega-Change.
 
 ## What was wrong with the queue
 
