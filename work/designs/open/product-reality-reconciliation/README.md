@@ -1,5 +1,8 @@
 # Product reality reconciliation | feasibility, coherence, and authority
 
+> **Second independent review, 2026-11-18:** [Audit II](AUDIT-II-2026-11-18.md) · [Cursor entry](AUDIT-II-HANDOFF.md). This is an unselected investigation of playable agency, semantic materialization, acceptance-test fit and actual cost/quality proof. The historical 46-claim register below reflects the **pre-PVAL baseline**; for current first-playable scope, use [Vision](../../../../docs/product/foundations/vision.md#first-playable-target) and [STATUS](../../../../STATUS.md). Neither PVAL completion nor this audit proves sustained live play.
+
+
 **State:** Investigation and proposed decisions. **Not selected product canon; not a Change authorization.** Source: clean `main@ec8c652c5b0a` (2026-11-18 lean export). Product documents: 31 Markdown files, approximately 33,206 whitespace-separated words, 1,969 lines. The evidence and work/changes archives were excluded from this snapshot.
 
 ## Core diagnosis
