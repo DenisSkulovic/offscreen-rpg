@@ -8,6 +8,8 @@ Current change: none
 
 ## Open packets
 
+**Product reality reconciliation (PVAL01–06, all Proposed/unselected):** [Audit and Cursor handoff](../designs/open/product-reality-reconciliation/HANDOFF.md). Separate product selection from proven feasibility; prioritize PVAL01 documentation clarity, then seek owner ratification for the first-playable scope before PVAL02. PVAL04 authorizes no provider spend. **Do not select or execute any PVAL packet merely because these files are committed.**
+
 **New wiki explorability and missing-knowledge audit (2026-11-18, source `781c2fc`):** [Measured findings, coverage map and proposed system](../designs/open/wiki-discovery-coverage/README.md). **WIKI12–WIKI17 and DOC25–DOC41 are Done.** They supersede no completed DOC05–DOC24 packet. The new guides and domain pages that say Proposed stay unratified: a proposal page is not a mechanic, a staff grant, a retention policy, or provider spend. **Current change stays `none`.**
 
 **Documentation-impact design:** [source audit, target and validation](../designs/open/documentation-impact-system/README.md). The three-plane model is accepted for this sequence and is not product canon. [WIKI09](archive/2026-11/other/2026-11-18--wiki09-change-impact-contract/CHANGE.md), [WIKI10](archive/2026-11/other/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md), and [WIKI11](archive/2026-11/other/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md) are Done. HK02, HK06, HK07, and HK08 are Done. The landed maintenance gate checks routes and freshness.
