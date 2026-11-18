@@ -89,6 +89,22 @@ export function readOptionalSceneAppearance(
   return parsed.success ? parsed.data : undefined;
 }
 
+/** Keep a saved appearance only when it belongs to this story and passage. */
+export function projectStoredSceneAppearance(
+  value: unknown,
+  source: { storyId: string; passageId: string },
+): PublicSceneAppearanceV1 | undefined {
+  const stored = readOptionalSceneAppearance(value);
+  if (!stored) return undefined;
+  if (
+    stored.source.storyId !== source.storyId ||
+    stored.source.passageId !== source.passageId
+  ) {
+    return undefined;
+  }
+  return stored;
+}
+
 export const storySnapshotSchema = z.strictObject({
   campaign: campaignViewSchema.nullable().optional(),
   id: z.uuid(),

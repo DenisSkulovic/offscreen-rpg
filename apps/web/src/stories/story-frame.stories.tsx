@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { resolveLivePresentation } from '@/src/features/play/model/live-presentation';
+import { fixtureIds, makeStorySnapshot } from '@/src/test/story-fixtures';
 import { StoryFrame } from '@/src/features/play/ui/story-frame';
 
 const shortParagraphs = [
@@ -158,6 +161,58 @@ export const PublishedArrival: Story = {
           ]}
         />
       </>
+    );
+  },
+};
+
+export const SavedAppearance: Story = {
+  args: {
+    storiesHref: '/stories',
+    storyLabel: 'Ashfall Approach',
+    paragraphs: ['The road narrows toward the silt gate.'],
+  },
+  render: function SavedAppearanceStory() {
+    const base = makeStorySnapshot();
+    const story = storySnapshotSchema.parse({
+      ...base,
+      current: {
+        ...base.current,
+        appearance: {
+          source: {
+            storyId: fixtureIds.storyId,
+            passageId: fixtureIds.passageId,
+            interactionId: fixtureIds.interactionId,
+          },
+          directive: {
+            schemaVersion: 1,
+            scene: {
+              palette: {
+                backdrop: '#1a3040',
+                accent: '#d7a15a',
+                surfaceTint: '#1c2830',
+              },
+              atmosphere: { lighting: 'dim', vignette: 0.2 },
+            },
+          },
+        },
+      },
+    });
+    return (
+      <StoryFrame
+        storiesHref="/stories"
+        storyLabel="Ashfall Approach"
+        passageTitle={story.current.content.title}
+        passageId={story.current.id}
+        interactionId={story.current.interaction?.id}
+        paragraphs={story.current.content.paragraphs}
+        presentation={resolveLivePresentation(story)}
+        intentions={
+          story.current.interaction?.specification.options.map((option) => ({
+            id: option.id,
+            label: option.label,
+          })) ?? []
+        }
+      />
     );
   },
 };

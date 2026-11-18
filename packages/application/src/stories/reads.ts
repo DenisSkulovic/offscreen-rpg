@@ -23,7 +23,7 @@ import { storyListSchema } from '@offscreen/contracts/stories';
 import {
   storyHistorySchema,
   passageContentSchema,
-  readOptionalSceneAppearance,
+  projectStoredSceneAppearance,
   storySnapshotSchema,
 } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
@@ -502,13 +502,10 @@ export function createStoryReads(
                   actionReceipts: [],
                 }
               : null);
-          const storedAppearance = readOptionalSceneAppearance(row.appearance);
-          const appearance =
-            storedAppearance &&
-            storedAppearance.source.storyId === row.id &&
-            storedAppearance.source.passageId === row.passageId
-              ? storedAppearance
-              : undefined;
+          const appearance = projectStoredSceneAppearance(row.appearance, {
+            storyId: row.id,
+            passageId: row.passageId,
+          });
           return storySnapshotSchema.parse({
             campaign: campaignView,
             id: row.id,
