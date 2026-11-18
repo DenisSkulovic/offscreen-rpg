@@ -1,5 +1,6 @@
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { projectStoredSceneAppearance } from '@offscreen/contracts/stories';
+import { makeValidatedAppearanceForPublication } from '@offscreen/contracts/stories';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -197,6 +198,34 @@ describe('saved appearance read into the book (DIR01)', () => {
     );
     expect(screen.getAllByRole('button', { name: /Walk the gate road|Wait and watch/ })).toHaveLength(
       2,
+    );
+  });
+
+  it('renders the publication scene subset without restyling the choices', () => {
+    const stored = makeValidatedAppearanceForPublication({
+      storyId: fixtureIds.storyId,
+      passageId: fixtureIds.passageId,
+      candidate: {
+        schemaVersion: 1,
+        scene: {
+          palette: { backdrop: '#1A3040' },
+          atmosphere: { lighting: 'dim' },
+        },
+      },
+    });
+    const { story } = renderBook(stored);
+    expect(story.current.content.paragraphs).toEqual([prose]);
+    expect(story.current.interaction?.specification.options.map((option) => option.id)).toEqual([
+      'walk',
+      'wait',
+    ]);
+    expect(document.querySelector('[data-lighting]')).toHaveAttribute('data-lighting', 'dim');
+    expect(document.querySelector('.story-viewport__plane')?.getAttribute('style')).toContain(
+      '#1a3040',
+    );
+    expect(screen.getByRole('button', { name: /Walk the gate road/i })).not.toHaveAttribute(
+      'data-surface',
+      'filled',
     );
   });
 });

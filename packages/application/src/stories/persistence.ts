@@ -1,3 +1,4 @@
+import type { PublicSceneAppearanceV1 } from '@offscreen/contracts/stories';
 import { interactionSchema } from '@offscreen/contracts/interactions';
 import {
   STORY_VIEW_NOTIFY_CHANNEL,
@@ -252,6 +253,7 @@ export async function insertContinuationPassage(
     sourceGenerationId?: string | null;
     passageId?: string;
     contentDocumentHash?: string;
+    appearance?: PublicSceneAppearanceV1;
   },
 ) {
   const passageId = args.passageId ?? randomUUID();
@@ -282,6 +284,7 @@ export async function insertContinuationPassage(
     sourceGenerationId:
       args.sourceGenerationId ?? args.input.sourceGenerationId ?? null,
     sourceGenerationPart: args.input.sourceGenerationPart ?? null,
+    ...(args.appearance ? { appearance: args.appearance } : {}),
   });
   await appendPublicStoryEvent(tx, {
     storyId: args.storyId,

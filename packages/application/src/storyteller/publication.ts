@@ -57,6 +57,7 @@ import {
   readDatabaseClockMs,
   restartActiveSceneAtPassage,
 } from '../stories/persistence';
+import { publicationAppearanceWrite } from '../stories/scene-appearance';
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
@@ -118,11 +119,13 @@ function activeSceneRecallCues(
   ];
 }
 
+/** Production callers omit `internalAppearance`. An invalid candidate is dropped, not published. */
 export async function publishStorytellerResult(
   database: Database,
   id: string,
   realDurationMs: (gameDurationMs: number) => number,
   documentStore?: DocumentStore,
+  internalAppearance?: { candidate?: unknown },
 ) {
   let stagedDocuments: StagedStoryPublication | undefined;
   const [candidate] = await database.db
@@ -634,12 +637,24 @@ export async function publishStorytellerResult(
           };
         }),
       });
+      const written = publicationAppearanceWrite({
+        generationId: id,
+        storyId: current.id,
+        ...(stagedDocuments
+          ? { stagedPassageId: stagedDocuments.passageId }
+          : {}),
+        ...(internalAppearance?.candidate !== undefined
+          ? { candidate: internalAppearance.candidate }
+          : {}),
+      });
       const passageId = await insertContinuationPassage(tx, {
         storyId: current.id,
         sequence: current.revision + 1,
         transitionId: resolution.operationId,
         sourceGenerationId: id,
         responseSource: null,
+        passageId: written.passageId,
+        ...(written.appearance ? { appearance: written.appearance } : {}),
         input: {
           expectedRevision: current.revision,
           content: result.scene.content,
@@ -652,7 +667,6 @@ export async function publishStorytellerResult(
         },
         ...(stagedDocuments
           ? {
-              passageId: stagedDocuments.passageId,
               contentDocumentHash: stagedDocuments.passageObjectHash,
             }
           : {}),
