@@ -22,7 +22,7 @@ The goal is not to reward document or link counts. It is to lower wrong-authorit
 
 ## Proposed Change execution route
 
-All new packets live under [the sole queue](../../../changes/README.md), using **WIKI12–WIKI17** for navigation/search/process and **DOC25–DOC37** for the content-coverage and practical writing program. Codes are identifiers only; their prospective scope and prerequisites live in individual packets. **One selected packet at a time**. This dossier does not implicitly select one.
+All new packets live under [the sole queue](../../../changes/README.md), using **WIKI12–WIKI17** for navigation/search/process and **DOC25–DOC41** for content coverage, practical guides, domain-policy gap design and source-grounded safety/rights documentation. Codes are identifiers only; their prospective scope and prerequisites live in individual packets. **One selected packet at a time**. This dossier does not implicitly select one.
 
 **Suggested first priority:** WIKI12 authority classification, DOC25 stale editorial residue, WIKI13 dependency neighborhoods, WIKI14 measured navigation, and DOC26 content package authoring. The other document creation/split proposals must establish actual owner/authority and repair inbound links before execution.
 
