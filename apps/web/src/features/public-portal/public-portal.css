@@ -83,10 +83,14 @@
 
 .public-portal__hero {
   display: grid;
+  min-width: 0;
   gap: 1.25rem 2.5rem;
   padding: clamp(2rem, 6vw, 4.5rem) clamp(1.1rem, 4vw, 3rem)
     clamp(2.5rem, 7vw, 4.5rem);
   border-bottom: 1px solid var(--public-line);
+}
+.public-portal__hero > * {
+  min-width: 0;
 }
 
 @media (min-width: 960px) {
@@ -116,7 +120,8 @@
 
 .public-portal__title {
   margin: 0;
-  max-width: 14ch;
+  max-width: min(14ch, 100%);
+  overflow-wrap: anywhere;
   font-family: var(--public-display), Fraunces, Georgia, serif;
   font-size: clamp(2.8rem, 8vw, 5.4rem);
   font-weight: 550;
@@ -145,56 +150,16 @@
 .public-portal__cta-row {
   display: flex;
   flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
   gap: 0.75rem 1rem;
   align-items: center;
   margin-top: 0.35rem;
 }
 
-.public-portal__cta-primary,
-.public-portal__cta-secondary,
-.public-portal__cta-quiet {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.75rem;
-  padding: 0.7rem 1.15rem;
-  border-radius: 0.2rem;
-  font-family: var(--public-sans), system-ui, sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  border: 1px solid transparent;
-}
-
-.public-portal__cta-primary {
-  background: var(--public-ember);
-  color: #1a1208;
-  border-color: var(--public-ember-deep);
-}
-
-.public-portal__cta-primary:hover {
-  background: #ebc57d;
-}
-
-.public-portal__cta-secondary {
-  background: transparent;
-  color: var(--public-fog);
-  border-color: rgba(216, 226, 220, 0.45);
-}
-
-.public-portal__cta-secondary:hover {
-  border-color: var(--public-fog);
-}
-
-.public-portal__cta-quiet {
-  background: transparent;
-  color: var(--public-mist);
-  border-color: transparent;
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  min-height: auto;
-  padding-inline: 0.2rem;
+.public-portal__cta-row .action {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .public-portal__cta-note {
@@ -379,9 +344,7 @@
   color: var(--public-fog);
 }
 
-.public-portal a:focus-visible,
-.public-portal__cta-primary:focus-visible,
-.public-portal__cta-secondary:focus-visible {
+.public-portal a:focus-visible:not(.action) {
   outline: 2px solid var(--public-ember);
   outline-offset: 3px;
 }

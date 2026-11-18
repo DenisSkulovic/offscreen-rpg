@@ -1,4 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { setupServer } from 'msw/node';
 import {
   afterAll,
@@ -286,5 +288,48 @@ describe('DraftEditor RHF lifecycle', () => {
     expect(
       screen.queryByDisplayValue('Background refetch must not win.'),
     ).not.toBeInTheDocument();
+  });
+
+  it('does not start a generation when the editor opens', async () => {
+    const user = userEvent.setup();
+    let writes = 0;
+    server.use(
+      http.post(/.*/, () => {
+        writes += 1;
+        return new HttpResponse(null, { status: 500 });
+      }),
+      http.put(/.*/, () => {
+        writes += 1;
+        return new HttpResponse(null, { status: 500 });
+      }),
+    );
+    const premise = `霧の港 ${'とても長い名前'.repeat(20)}`;
+    renderEditor(makeDraft({ premise }));
+    expect(screen.getByText(premise)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Edit setup' }),
+    ).toHaveAttribute('data-variant', 'quiet');
+    expect(screen.getByRole('link', { name: 'Create the opening' })).toHaveAttribute(
+      'href',
+      `/stories/${fixtureDraftId}/preview`,
+    );
+    await user.click(screen.getByRole('button', { name: 'Edit setup' }));
+    await user.click(screen.getByRole('button', { name: /Back/i }));
+    expect(screen.getByLabelText(/Story title/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/World, character and starting circumstances|Your prisoner/i)).toHaveValue(
+      premise,
+    );
+    expect(writes).toBe(0);
+  });
+
+  it('keeps the global button rule off shared actions and off Admin and Chamber selectors', () => {
+    const css = readFileSync(
+      path.join(__dirname, '../../../app/style.css'),
+      'utf8',
+    );
+    expect(css).toMatch(/button:not\(\.action\)/);
+    expect(css).toMatch(/\.creation-actions\s*\{[^}]*flex-wrap:\s*wrap/s);
+    expect(css).not.toMatch(/^button\s*,/m);
+    expect(css).not.toMatch(/\.chamber\b/);
   });
 });

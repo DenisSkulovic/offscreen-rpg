@@ -16,17 +16,19 @@ describe('PublicPortal (PF01)', () => {
       screen.getByRole('heading', { level: 1, name: 'Offscreen RPG' }),
     ).toBeInTheDocument();
 
-    const primary = screen.getByRole('link', {
+    const row = document.querySelector('.public-portal__cta-row');
+    expect(row).toBeTruthy();
+    const primary = within(row as HTMLElement).getByRole('link', {
       name: 'Try an interactive preview',
     });
     expect(primary).toHaveAttribute('href', '/demo');
+    expect(primary).toHaveAttribute('data-variant', 'primary');
 
-    const heroSecondary = document.querySelector(
-      '.public-portal__cta-secondary',
-    );
-    expect(heroSecondary).toBeTruthy();
+    const heroSecondary = within(row as HTMLElement).getByRole('link', {
+      name: 'Start a real story',
+    });
     expect(heroSecondary).toHaveAttribute('href', '/stories/new');
-    expect(heroSecondary).toHaveTextContent('Start a real story');
+    expect(heroSecondary).toHaveAttribute('data-variant', 'secondary');
 
     expect(
       primary.compareDocumentPosition(heroSecondary!) &

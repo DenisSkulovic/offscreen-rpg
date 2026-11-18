@@ -229,8 +229,8 @@ p {
   }
 }
 
-button,
-.button {
+button:not(.action),
+.button:not(.action) {
   display: inline-block;
   padding: 0.8rem 1.3rem;
   border: 1px solid #d7b87c;
@@ -243,7 +243,7 @@ button,
   text-decoration: none;
   cursor: pointer;
 }
-button:disabled {
+button:not(.action):disabled {
   opacity: 0.6;
   cursor: wait;
 }
@@ -338,6 +338,10 @@ button:disabled {
   justify-content: space-between;
   gap: 1rem;
   margin-top: 2rem;
+}
+.creation-actions .action {
+  min-width: 0;
+  max-width: 100%;
 }
 .creation-actions .quiet-button {
   border-color: #526762;
@@ -459,7 +463,9 @@ textarea {
 }
 textarea {
   resize: vertical;
+  max-width: 100%;
   margin-bottom: 1rem;
+  overflow-wrap: anywhere;
 }
 input:focus-visible,
 select:focus-visible,
@@ -580,7 +586,7 @@ small,
     0.85rem/1.5 system-ui,
     sans-serif;
 }
-a {
+a:not(.action) {
   color: #d7b87c;
 }
 .draft-list {
@@ -599,8 +605,8 @@ a {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-button:focus-visible,
-a:focus-visible {
+button:not(.action):focus-visible,
+a:not(.action):focus-visible {
   outline: 3px solid #fff;
   outline-offset: 4px;
 }

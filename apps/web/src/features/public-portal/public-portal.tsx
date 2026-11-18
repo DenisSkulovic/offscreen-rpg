@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Fraunces, Source_Sans_3 } from 'next/font/google';
+import { Action } from '@/src/shared/ui/action';
 import './public-portal.css';
 
 const display = Fraunces({
@@ -55,15 +56,15 @@ export function PublicPortal() {
             time. Leave, then return to consequences that were actually earned.
           </p>
           <div className="public-portal__cta-row">
-            <Link className="public-portal__cta-primary" href="/demo">
+            <Action kind="link" href="/demo">
               Try an interactive preview
-            </Link>
-            <Link className="public-portal__cta-secondary" href="/stories/new">
+            </Action>
+            <Action kind="link" variant="secondary" href="/stories/new">
               Start a real story
-            </Link>
-            <a className="public-portal__cta-quiet" href={SOURCE_URL} rel="noreferrer">
+            </Action>
+            <Action kind="link" variant="quiet" href={SOURCE_URL} rel="noreferrer">
               View source &amp; proof
-            </a>
+            </Action>
           </div>
           <p className="public-portal__cta-note">
             Preview needs no account · scripted · no AI calls · resets on refresh

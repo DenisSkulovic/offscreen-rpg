@@ -57,15 +57,17 @@ afterAll(() => {
 describe('PF05 A — anonymous first contact', () => {
   it('offers Try preview to /demo before real-story entry; Nest is not required', () => {
     render(<PublicPortal />);
-    const primary = screen.getByRole('link', {
+    const row = document.querySelector('.public-portal__cta-row');
+    expect(row).toBeTruthy();
+    const primary = within(row as HTMLElement).getByRole('link', {
       name: 'Try an interactive preview',
     });
     expect(primary).toHaveAttribute('href', '/demo');
-    const create = document.querySelector(
-      'a.public-portal__cta-secondary',
-    ) as HTMLAnchorElement | null;
-    expect(create?.getAttribute('href')).toBe('/stories/new');
-    expect(create?.textContent).toMatch(/Start a real story/);
+    const create = within(row as HTMLElement).getByRole('link', {
+      name: 'Start a real story',
+    });
+    expect(create).toHaveAttribute('href', '/stories/new');
+    expect(create).toHaveAttribute('data-variant', 'secondary');
     expect(screen.queryByText(/unlimited/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/\$3/i)).not.toBeInTheDocument();
   });

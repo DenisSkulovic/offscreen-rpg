@@ -57,7 +57,8 @@ A component becomes shared only if it has a stable semantic responsibility and e
 4. **Contents/menu (UI04, implemented):** `apps/web/src/features/play/ui/book-contents.tsx` is a button-controlled menu for Stories, Now, and Journal. Closed items are not mounted. Escape and an outside click close it, and Escape returns focus to the trigger. No menu package was added. The quiet Details disclosure stays separate.
 5. **Narrative/Decision grouping (UI03, implemented):** `narrative-flow.tsx` renders the published paragraphs in order. `decision-group.tsx` renders the current option ids. `history.tsx` does not mount that group.
 6. **Stories library (UI05, implemented):** `live-story-list.tsx` and `draft-list.tsx` use `Action` for enter, continue, preview, and pagination, and `SystemNotice` for loading, end, and load failure. The library stays a list. Story titles stay source text in title links. Quiet and panel colors stay local.
-7. **Media slot**: source-authorized placement and alt/role, optional graceful failure, not an image generator.
+7. **Welcome and creation (UI06, implemented):** the public entrance and `draft-editor.tsx` use `Action` for the primary, secondary, and quiet journey controls, and `SystemNotice` for the save message. Field labels, descriptions, and field alerts stay native. Sign-in stays its own button. The global `button` rule does not match `.action`.
+8. **Media slot**: source-authorized placement and alt/role, optional graceful failure, not an image generator.
 
 Prefer `StoryFrame` composition with narrow reusable helpers over a wholesale rewrite. Keep simple JSX where no shared component improves readability or testing. Every shared public API requires Storybook examples and at least focused RTL/a11y coverage.
 

@@ -19,6 +19,8 @@ import {
 } from './draft-content';
 import { StorytellerSelect } from './storyteller-select';
 import { useDraftSave } from './use-draft-save';
+import { Action } from '@/src/shared/ui/action';
+import { SystemNotice } from '@/src/shared/ui/system-notice';
 import './stories-library.css';
 
 type CreationStep = 'foundation' | 'role' | 'storyteller' | 'review';
@@ -228,9 +230,12 @@ export function DraftEditor({
                     <p className="eyebrow">Prepared experience</p>
                     <h3>{entry.name}</h3>
                     <p>{entry.description}</p>
-                    <button type="button" onClick={() => choosePrepared(entry)}>
+                    <Action
+                      kind="button"
+                      onClick={() => choosePrepared(entry)}
+                    >
                       Choose this beginning
-                    </button>
+                    </Action>
                   </article>
                 ))}
                 <article>
@@ -240,9 +245,9 @@ export function DraftEditor({
                     Describe the world, who you are and the situation in which
                     play begins. No prepared lore is silently attached.
                   </p>
-                  <button type="button" onClick={chooseCustom}>
+                  <Action kind="button" onClick={chooseCustom}>
                     Create from scratch
-                  </button>
+                  </Action>
                 </article>
               </div>
             </section>
@@ -314,20 +319,20 @@ export function DraftEditor({
                 </p>
               ) : null}
               <div className="creation-actions">
-                <button
-                  type="button"
-                  className="quiet-button"
+                <Action
+                  kind="button"
+                  variant="quiet"
                   onClick={() => setStep('foundation')}
                 >
                   Back
-                </button>
-                <button
-                  type="button"
+                </Action>
+                <Action
+                  kind="button"
                   disabled={!roleReady}
                   onClick={() => setStep('storyteller')}
                 >
                   Continue to Storyteller
-                </button>
+                </Action>
               </div>
             </section>
           ) : null}
@@ -377,20 +382,20 @@ export function DraftEditor({
                 </p>
               ) : null}
               <div className="creation-actions">
-                <button
-                  type="button"
-                  className="quiet-button"
+                <Action
+                  kind="button"
+                  variant="quiet"
                   onClick={() => setStep('role')}
                 >
                   Back
-                </button>
-                <button
-                  type="button"
+                </Action>
+                <Action
+                  kind="button"
                   disabled={!storytellerReady}
                   onClick={() => setStep('review')}
                 >
                   Review setup
-                </button>
+                </Action>
               </div>
             </section>
           ) : null}
@@ -436,17 +441,18 @@ export function DraftEditor({
                 </div>
               </dl>
               <div className="creation-actions">
-                <button
-                  type="button"
-                  className="quiet-button"
+                <Action
+                  kind="button"
+                  variant="quiet"
                   onClick={() => setStep('storyteller')}
                 >
                   Edit setup
-                </button>
-                <button
+                </Action>
+                <Action
+                  kind="button"
                   type="submit"
+                  pending={pending}
                   disabled={
-                    pending ||
                     !roleReady ||
                     !storytellerReady ||
                     (!isDirty && Boolean(saved))
@@ -457,38 +463,40 @@ export function DraftEditor({
                     : isDirty || !saved
                       ? 'Save setup'
                       : 'Setup saved'}
-                </button>
+                </Action>
               </div>
             </section>
           ) : null}
         </fieldset>
       </form>
 
-      <p
-        role={
-          conflict || /could not be confirmed|session expired/i.test(message)
-            ? 'alert'
-            : 'status'
-        }
-      >
-        {message}
-      </p>
+      {message ? (
+        <SystemNotice
+          tone={
+            conflict || /could not be confirmed|session expired/i.test(message)
+              ? 'error'
+              : 'attention'
+          }
+        >
+          {message}
+        </SystemNotice>
+      ) : null}
       {conflict ? (
         <p>
-          <button
-            type="button"
+          <Action
+            kind="button"
             disabled={pending}
             onClick={() => void loadSaved()}
           >
             Load saved setup
-          </button>
+          </Action>
         </p>
       ) : null}
       {saved && !isDirty && !pending && step === 'review' ? (
         <p className="creation-primary-link">
-          <a className="button" href={`/stories/${id}/preview`}>
+          <Action kind="link" href={`/stories/${id}/preview`}>
             Create the opening
-          </a>
+          </Action>
         </p>
       ) : null}
       <p>
