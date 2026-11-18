@@ -56,7 +56,7 @@ The initial POC may render a straightforward source list before the more focused
 
 ## Data and command invariants
 
-- `PlayScene` remains the sole remote-story owner; no local duplicate copy of `StorySnapshot`.
+- `PlayScene` remains the sole remote-story owner; no local duplicate copy of `StorySnapshot`. Hydration and a stale SSE hint stay in [Commands and hints](state-and-server-boundary.md#commands-and-hints). Scene style stays in [Tokens](semantic-design-foundation.md#tokens-primitive-scales-and-semantic-roles-not-a-hardcoded-genre-palette).
 - `useResolutionCommand`, `useControlCommand`, `CampaignPlay` frozen intents and `writeStorySnapshot` reconciliation stay unchanged except for presentation-safe wiring. New book navigation never calls mutation.
 - An offer changing while a reader is in Journal or mid-navigation invalidates stale handlers. Current campaign offer path already resets by offer identity and **must not** reset/duplicate a frozen command recovery.
 - A new published passage updates the latest Now without changing the text inside a historical reader. Presentation may announce a genuine new publication without claiming current choice is now on the old page.
@@ -74,7 +74,7 @@ Replace existing `StoryFrame` top-chrome/status-dominant layout with a recogniza
 
 `StoryHistoryView` is that reader: compact overview rows, one exact saved passage, and previous/next only inside the loaded authorized set. Load older uses the existing numeric `before` cursor. There is no new history API, arbitrary jump, search, or derived summary. See [BOOK02 Change](../../../work/changes/open/2026-11-17--book02-original-journal-reader/CHANGE.md).
 
-Both are **independent code-review outcomes**, sequenced BOOK01 → BOOK02. BOOK02 is the selected Change. BOOK01 has landed and is not current.
+Both are **independent code-review outcomes**, sequenced BOOK01 → BOOK02. What has landed, and that the queue currently has no selected Change, is recorded in [STATUS](../../../STATUS.md) and the [change queue](../../../work/changes/README.md). This page does not select a Change.
 
 ## POC test and human acceptance bar
 

@@ -41,7 +41,7 @@ Define scale names for spacing, font size, leading, reading measure, focus ring,
 | `--ui-border`, `--ui-action`, `--ui-action-ink` | `--reader-edge`, `--reader-shadow`, `--reader-spacing` | `--scene-motion`, `--scene-vignette`, `--scene-texture` |
 | `--ui-danger`, `--ui-attention`, `--ui-success` | `--reader-serif`, `--reader-line-height` | `--scene-media-slot` (strict renderer, not CSS string) |
 
-These are **illustrative role names approved as architecture direction**, not a frozen names registry; implement names once, document and test them. Never set system success/error/disabled colors from scene mood. Normalize supplied hex/gradient only through the existing V1 resolver. User/OS overrides apply last (forced-colors, zoom, reduced motion, text selection, no-art). A Storyteller cannot inject CSS selectors, image URLs or arbitrary custom properties.
+These are **illustrative role names approved as architecture direction**, not a frozen names registry; implement names once, document and test them. Never set system success/error/disabled colors from scene mood. A creative scene style does not change a command or an error state. Those stay on the platform roles above. Normalize supplied hex/gradient only through the existing V1 resolver. User/OS overrides apply last (forced-colors, zoom, reduced motion, text selection, no-art). A Storyteller cannot inject CSS selectors, image URLs or arbitrary custom properties.
 
 **Safe cascade:** default platform role → consistent Book role → validated scene-specific decoration → platform safety/interaction. A shared button in an error state cannot inherit a red danger meaning from the cave's lighting.
 

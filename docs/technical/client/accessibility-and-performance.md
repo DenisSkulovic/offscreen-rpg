@@ -6,7 +6,7 @@
 
 ## Interaction acceptance
 
-Use native labels and fields, keyboard operation, and focus restoration after error. `aria-live` announces genuine state transitions, not every two-second poll. Dialogs and status use valid semantics. Targets and screen-reader operation must be usable. Reduced motion applies when the user asks for it. Proof is Playwright plus axe and a human keyboard pass.
+Use native labels and fields, keyboard operation, and focus restoration after error. `aria-live` announces genuine state transitions, not every two-second poll. Dialogs and status use valid semantics. Targets and screen-reader operation must be usable. Reduced motion applies when the user asks for it. Proof is Playwright plus axe and a human keyboard pass. A creative scene style does not change keyboard, focus, or error semantics. That split is [Tokens](semantic-design-foundation.md#tokens-primitive-scales-and-semantic-roles-not-a-hardcoded-genre-palette). A retired choice stays retired under [Commands and hints](state-and-server-boundary.md#commands-and-hints).
 
 Error boundaries distinguish authentication, forbidden and transient failure. App Router `loading`, `error` and `not-found` cover the expected scope. Query error reset and Suspense are used only where that boundary is tested.
 

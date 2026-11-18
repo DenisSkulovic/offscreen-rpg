@@ -2,6 +2,23 @@
 
 **State: ARCHITECTURE SELECTED (2026-11-12) + W-program implemented (reconciled 2026-11-15).** This contract owns the **frontend engineering target** (F1–F15). TanStack Query is mandatory. **Architecture selected ≠ “code not implemented.”**
 
+## Who owns the client guarantee
+
+| Guarantee | Owner |
+| --- | --- |
+| F1–F15 target | This page, [§7](#7-required-f1f15-acceptance-contract). A landed W slice is a delivery record, not that acceptance. |
+| Hydration, Query, and a stale SSE hint | [Commands and hints](state-and-server-boundary.md#commands-and-hints) |
+| Frozen command and a retired choice | [Intention](interaction-contracts.md#intention) |
+| Keyboard, motion, and client cost | [Interaction acceptance](accessibility-and-performance.md#interaction-acceptance) |
+| Saved V1 appearance | [Selected presentation language](presentation-runtime.md#selected-presentation-language-v1) |
+| Model-authored direction | [Three links](scene-direction-production.md#three-independently-verifiable-links). Link C stays unproven. This map grants no provider call. |
+| System roles and scene tokens | [Tokens](semantic-design-foundation.md#tokens-primitive-scales-and-semantic-roles-not-a-hardcoded-genre-palette) |
+| Book shell | [Living Book client target](living-book-poc.md). It does not replace the rows above. |
+
+Dated W delivery stays in [Implementation status](#implementation-status-w-program) and the [web source map](../../../apps/web/README.md). Demonstrated tiers for SSE and the presentation language are in [capability coverage](../../../STATUS.md#capability-coverage).
+
+A stale SSE hint or a hydration race does not re-enable an old choice. A creative scene style does not change a command or an error state.
+
 ### Implementation status (W-program)
 
 | Layer | Status | Where |
@@ -11,6 +28,8 @@
 | UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [STATUS](../../../STATUS.md#capability-coverage); product [play](../../product/experience/play-and-decisions.md) |
 | Admin `/control` | **Done** (AD04+) | [admin](../../product/admin/README.md) |
 | New frontend Changes | Only via [work/changes/README.md](../../../work/changes/README.md) | Not authorized by this target alone |
+
+This table is the delivery pointer. It is not the F1–F15 acceptance contract. Current source maps are the [web package](../../../apps/web/README.md). Demonstrated tiers for SSE and the presentation language are [capability coverage](../../../STATUS.md#capability-coverage).
 
 **Later selected visual-shell POC:** [Living Book client target](living-book-poc.md) may replace `StoryFrame` visual markup and in-book navigation while retaining **all** W-program Query, SSR, frozen-intent and privacy contracts below. No code or final art direction is accepted merely by this note.
 

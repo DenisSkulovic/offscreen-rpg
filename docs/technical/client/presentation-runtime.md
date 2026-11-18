@@ -15,7 +15,7 @@ Offscreen RPG is a world-neutral, scene-first, text-led game. A quiet apartment,
 ## Principles and non-negotiable boundaries
 
 1. **Meaning is stable; expression can vary.** Published passage, eligible offers, statuses, actions, focus order and recovery remain the same with every presentation. Decoration may not create authority, imply a guaranteed outcome or rewrite prose.
-2. **Fictional atmosphere is not system status.** Red on a threatening intention is expressive, not the error state; hover, focus, disabled, blocked, pending and receipt semantics remain independently legible. Never make color the only carrier of meaning.
+2. **Fictional atmosphere is not system status.** Red on a threatening intention is expressive, not the error state; hover, focus, disabled, blocked, pending and receipt semantics remain independently legible. Never make color the only carrier of meaning. The token split is [Tokens](semantic-design-foundation.md#tokens-primitive-scales-and-semantic-roles-not-a-hardcoded-genre-palette). Saved V1 appearance is [the language below](#selected-presentation-language-v1). Model-authored direction stays conditional in [Three links](scene-direction-production.md#three-independently-verifiable-links).
 3. **Presentation is a projection, never state truth.** Nest and validated read models own fiction/action authority. TanStack Query owns browser remote data. This feature adds no second server-state cache, clocks, operation controller or provider calls.
 4. **World-neutral by construction.** No mandatory inventory, face, map, human geography, fixed art genre, pictures, animation, music, or always-on HUD. Silence and blank space are valid compositions.
 5. **Reading is sacred.** Narrative stage remains a safe reading surface even over a bright, dark, complex or missing background. Text DOM, contrast, sensible measure, zoom and screen-reader semantics are not configurable by fiction.
@@ -108,6 +108,8 @@ The current source contains two *real* option renderers: legacy `StoryFrame` int
 - No global theme effect may restyle a protected session/permission/recovery control into illegibility. The initial scope is the **player's Now/story stage**, not unrelated authenticated navigation, creation wizard, developer Chamber or public demo. Sharing abstractions with them is a later, separately justified choice.
 
 ## Source-grounded baseline (inspection 2026-11-13; revalidate before PX01)
+
+The demonstrated tier for this language is [capability coverage](../../../STATUS.md#capability-coverage). The file list below is the 2026-11-13 inspection, not a second contract.
 
 - `apps/web/src/features/play/ui/story-frame.tsx`: stage, prose, legacy intentions, additional stage content; passage entrance keyed to title.
 - `apps/web/src/features/play/ui/story-frame.css`: partial `--sf-*` vars alongside literal backgrounds, borders and control colors; mixes composition, typography, action and motion.

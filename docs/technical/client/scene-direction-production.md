@@ -10,6 +10,8 @@
 
 **C. Creator is unproven.** `packages/storyteller/src/tasks/task-contracts.ts` and `playable-proposal.ts` primarily author V1 title/paragraphs/next actions. The inspected `packages/application/src/{stories,generations}/` publication owners do not establish a verified scene-direction producer. Do not invent one by appending random data to JSON or treating `playablePresentation` as the visual-style protocol; it currently means converting a playable proposal into prose/interaction.
 
+Link C remains unproven. This page does not authorize a provider call. A saved V1 appearance stays in [Selected presentation language](presentation-runtime.md#selected-presentation-language-v1). Scene tokens do not restyle a command or an error state: [Tokens](semantic-design-foundation.md#tokens-primitive-scales-and-semantic-roles-not-a-hardcoded-genre-palette).
+
 ## Product authoring policy to establish before production calls
 
 The Storyteller may **propose** optional artistic direction tied to the exact passage; it never chooses gameplay outcomes or system UI. First option is **same-task bounded optional style fields** if the provider schema and accepted cost envelope permit them without lowering story coherence. An independent paid art director is a separate, nondefault budgeted feature and must be compared on coherent fixtures, not enabled by instinct.

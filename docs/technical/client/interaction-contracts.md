@@ -6,7 +6,7 @@
 
 ## Intention
 
-The player selects an offered intention. The client freezes that envelope and submits it once. While the result is being prepared, the choice is not left looking freely clickable in a way that would invite a second distinct action. Repeated clicks resend the same operation identity and payload. They do not roll again and do not create a second effect.
+The player selects an offered intention. The client freezes that envelope and submits it once. While the result is being prepared, the choice is not left looking freely clickable in a way that would invite a second distinct action. Repeated clicks resend the same operation identity and payload. They do not roll again and do not create a second effect. A stale snapshot does not restore a retired choice. That boundary is [Commands and hints](state-and-server-boundary.md#commands-and-hints).
 
 Immediate consequences and started intervals are different server results. An interval shows the saved server deadline. Reload does not restart it. Pause and Resume, when the interval is controllable, are explicit commands against that saved wait, not local timers pretending to be authority.
 
