@@ -71,4 +71,4 @@ The approved solo proof selects a versioned profile before opening generation. O
 
 Multiple autonomous agents are a possible implementation technique, not a product requirement and not a reason to add extra model calls.
 
-**Negative:** a conditional encounter planned further along an abandoned path must be reconsidered if the party turns back. It is not presented as if nothing changed. Model prose cannot spend the same coins twice or apply an already resolved action again.
+**Negative:** a conditional encounter planned further along an abandoned path must be reconsidered if that route is abandoned. It is not presented as if nothing changed. Model prose cannot spend the same coins twice or apply an already resolved action again.
