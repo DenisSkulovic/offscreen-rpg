@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { matchLegacyChoice } from '../presentation/resolve';
 import type { ResolvedPresentation } from '../presentation/types';
+import { BookContents } from './book-contents';
 import { BookSurface } from './book-surface';
 import { DecisionGroup } from './decision-group';
 import { NarrativeFlow } from './narrative-flow';
@@ -183,27 +183,12 @@ export function StoryFrame({
         <p id="story-frame-label" className="story-frame__label">
           {storyLabel}
         </p>
-        <nav className="story-frame__contents" aria-label="Story spaces">
-          <Link className="story-frame__back" href={storiesHref}>
-            ← Stories
-          </Link>
-          {journalHref ? (
-            <a
-              href="#story-frame-now"
-              aria-current={mode === 'now' ? 'page' : undefined}
-            >
-              Now
-            </a>
-          ) : null}
-          {journalHref ? (
-            <a
-              href={journalHref}
-              aria-current={mode === 'journal' ? 'page' : undefined}
-            >
-              Journal
-            </a>
-          ) : null}
-        </nav>
+        <BookContents
+          storiesHref={storiesHref}
+          journalHref={journalHref}
+          mode={mode}
+          storyLabel={storyLabel}
+        />
       </header>
 
       {showSituation ? (

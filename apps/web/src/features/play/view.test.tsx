@@ -76,6 +76,7 @@ describe('PlayScene', () => {
     renderPlay(makeStorySnapshot());
 
     expect(screen.queryByRole('heading', { name: 'Journal' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Contents' }));
     await user.click(screen.getByRole('link', { name: 'Journal' }));
     await act(async () => {
       window.location.hash = '#story-journal';
@@ -86,6 +87,7 @@ describe('PlayScene', () => {
     expect(
       screen.getByText('Technical details').closest('details')?.textContent ?? '',
     ).not.toMatch(/Journal/);
+    await user.click(screen.getByRole('button', { name: 'Contents' }));
     await user.click(screen.getByRole('link', { name: 'Now' }));
     await act(async () => {
       window.location.hash = '#story-frame-now';

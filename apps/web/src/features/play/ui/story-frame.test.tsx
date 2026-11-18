@@ -46,6 +46,9 @@ describe('StoryFrame (UX01)', () => {
       />,
     );
 
+    const user = userEvent.setup();
+    expect(screen.queryByRole('link', { name: /Stories/i })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Contents' }));
     expect(screen.getByRole('link', { name: /Stories/i })).toHaveAttribute(
       'href',
       '/stories',
@@ -65,7 +68,8 @@ describe('StoryFrame (UX01)', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it('shows Journal only when a working history destination is supplied', () => {
+  it('shows Journal only when a working history destination is supplied', async () => {
+    const user = userEvent.setup();
     render(
       <StoryFrame
         storiesHref="/stories"
@@ -74,6 +78,8 @@ describe('StoryFrame (UX01)', () => {
         journalHref="/play/story-a#history"
       />,
     );
+    expect(screen.queryByRole('link', { name: /Journal/i })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Contents' }));
     expect(screen.getByRole('link', { name: /Journal/i })).toHaveAttribute(
       'href',
       '/play/story-a#history',
@@ -175,6 +181,7 @@ describe('StoryFrame (UX01)', () => {
     expect(screen.queryByRole('heading', { name: 'Saved passage' })).toBeNull();
     expect(screen.getByText('Technical details').closest('details')?.textContent).not.toMatch(/Saved passage/);
 
+    await user.click(screen.getByRole('button', { name: 'Contents' }));
     await user.click(screen.getByRole('link', { name: 'Journal' }));
     await act(async () => {
       window.location.hash = '#story-journal';
@@ -185,6 +192,7 @@ describe('StoryFrame (UX01)', () => {
     expect(screen.queryByRole('heading', { name: 'Someone at the door' })).toBeNull();
     expect(onIntentionSelect).not.toHaveBeenCalled();
 
+    await user.click(screen.getByRole('button', { name: 'Contents' }));
     await user.click(screen.getByRole('link', { name: 'Now' }));
     await act(async () => {
       window.location.hash = '#story-frame-now';
