@@ -88,7 +88,7 @@ Set quantitative thresholds only after measuring the baseline on the exact froze
 
 ## Per-session handoff template (documentation-only)
 
-\`\`\`text
+~~~text
 Editorial wave: Sx; current source SHA and dirty status:
 Owner headings under review:
 Known selected product truth (must not change):
@@ -103,6 +103,6 @@ One normal, one discriminating negative scenario:
 Ratification needed? exact question and blocked paragraphs:
 Validation performed (links/graph/heading references, independent semantic check):
 Actual files/links changed; unresolved review debt:
-\`\`\`
+~~~
 
 **Important:** never mark a wave “Done” because all planned files were touched. It is Done only when the intended semantic quality difference is evidenced and the authority/impact review is complete. An approved no-edit page is a legitimate result.
