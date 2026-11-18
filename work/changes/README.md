@@ -1,5 +1,7 @@
 # Work changes | selection queue
 
+**2026-11-18 unblock mandate:** [Source audit, chosen bounded contracts and executable Cursor queue](../designs/open/backlog-convergence-2026-11-18/README.md). The words Blocked/Proposed below are the historic per-packet states at the snapshot; the new source-grounded implementation decisions give executable next steps. A live-paid authorization or destructive DB permission is **not** conferred by this audit. Do not falsely archive unimplemented work.
+
 **Selection owner** for `pnpm repo:brief`. Packets live here (`open/` + `archive/`).
 
 Current change: none
