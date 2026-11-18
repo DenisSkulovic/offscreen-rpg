@@ -20,6 +20,7 @@ The goal is not to reward document or link counts. It is to lower wrong-authorit
 3. [Target information architecture](TARGET-ARCHITECTURE.md): authority-aware sections, contextual linking, document creation/splitting/merging and practical crosswalks.
 4. [Evaluation and rollout](VALIDATION.md): independent task tests, negative fixtures, packet sequence and evidence acceptance.
 5. [Cursor execution map](EXECUTION-MAP.md): all 23 new packet links, prerequisites, scope classifications and suggested one-at-a-time order.
+6. [Verification receipt](REVIEW-RECEIPT.md): what the static audit and GitHub handoff checks actually proved, what could not run and which tests remain for Cursor.
 
 ## Proposed Change execution route
 
