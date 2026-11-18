@@ -13,6 +13,7 @@
 | CH10 UI | [Client API](#7-client-api-and-workbench) |
 | CH11–CH12 connected/packet | [Lanes and provider safety](#2-architecture-and-drivers), [safety](#8-safety-and-lifecycle) |
 | CH13–CH15 cases/compare/launcher | [Catalogue lifecycle](#9-catalogue-evolution-and-handoff) |
+| Which proof tier is this result? | [Proof tiers](#proof-tiers) |
 
 ## 1. Contract and command semantics
 
@@ -115,13 +116,23 @@ Test-only `FaultPlan` is a bounded set of **named semantic boundary hooks**, eac
 - **Run history:** finalized report immutable, new ID for rerun/branch. Existing QA human stage record remains append-only and can reference one `LabRun`; a “manual passed” never automatically becomes “asserted by sandbox” or “live provider proven.”
 - **Evidence redaction:** default export excludes credentials, raw model prompts, private canon/narrative and unredacted operator notes. Current QA export returns freeform observations/references; reconcile with explicit redactor/opt-in private export and tests before calling it sanitized.
 
+### Proof tiers
+
+Selected run labels stay `bench-policy`, `sandbox-db`, `connected`, `held-packet` and `authorized-live`. A green link check is not semantic agreement.
+
+- A synthetic Chamber fixture is a `FixtureRecipe` or checkpoint. A Chamber fixture is not a live player proof.
+- Provider-free integration is a sandbox, connected, or held-packet run with no dispatch. A zero-attempt hold is not a completed model call.
+- An actual provider attempt is an `authorized-live` result only when that run is recorded on its own. An actual provider attempt needs its own recorded run and is not authorized by this page.
+- Live player acceptance is a person accepting play. A manual QA mark, a fixture, and a connected smoke do not become that acceptance. General player mechanics are not owned here.
+- Source-verified evidence is an observation whose producer and consumer boundaries were actually read at a named revision. Module presence and a reachable wiki do not replace that reading.
+
 ## 7. Client API and workbench
 
 **API only if local developer controllers are mounted:** e.g. `GET /api/chamber-tools/lab/scenarios`, `PUT /runs/:runId` (open), `GET /runs/:runId`, `PUT /runs/:runId/steps/:stepId`, `GET /runs/:runId/inspect`, `GET /runs/:runId/evidence`, `POST /runs/:runId/replay` if idempotency semantics are explicit. **No** generic `/execute?js=...` endpoint. Exact verb can follow repo's PUT/idempotency conventions; do not expand HTTP surface for an in-process Bench use case.
 
 **Web:** TanStack Query owns server state, viewer/run/resource scoped; explicit `useMutation` with frozen run/step identity, no automatic retry of an uncertain step. UI owns only local search/selection/inspector expansion and semantic params. End-state components by responsibility: scenario finder, fixture composer, step control, inspector, causal timeline, assertions/diff, evidence history. Use accessible native forms; workbench UX is in scope but game/player art direction is not.
 
-**CLI:** `pnpm chamber:bench -- <scenario-id> --seed=...`, `pnpm chamber:scenario -- <scenario-id> --lane=sandbox --params=...`, `pnpm chamber:inspect -- <run-id>` are candidate stable aliases. They call the *same typed registry* and return concise default output with optional JSON/evidence. Flags are validated; a missing scenario should list nearby matching tags, not dump all source files.
+**CLI:** Bench, scenario, and inspect call the same typed registry. Current usage is owned by `tools/chamber/src/scenario-cli.ts`, `tools/chamber/src/inspect-cli.ts`, and `tools/chamber/src/modes/cli-flags.ts`: `pnpm chamber:bench -- <scenarioId> --seed=N`, `pnpm chamber:scenario -- <scenarioId> [--lane=bench-policy|sandbox-db] [--seed=N]`, and `pnpm chamber:inspect -- <scenarioId> [--seed=N] [--lane=bench-policy]`. The old inspect spelling that passed a run id, `--lane=sandbox`, and `--params` is not that grammar. Flags are validated; a missing scenario should list nearby matching tags, not dump all source files.
 
 **Performance:** never restart complete stack for Bench. Cache warmed builds/fixture templates where safe, use provider-free checks, measure cold/warm times before adding remote infrastructure. Write no giant universal CLI orchestrator. Keep existing `pnpm chamber:review/packet/...` aliases functional until explicitly migrated.
 

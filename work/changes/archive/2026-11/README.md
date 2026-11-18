@@ -121,6 +121,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-18--doc21-admin-product-charter](../../../../work/changes/archive/2026-11/other/2026-11-18--doc21-admin-product-charter/CHANGE.md)
 - [2026-11-18--doc22-admin-technical-authorization](../../../../work/changes/archive/2026-11/other/2026-11-18--doc22-admin-technical-authorization/CHANGE.md)
 - [2026-11-18--doc23-observability-evidence-retention](../../../../work/changes/archive/2026-11/other/2026-11-18--doc23-observability-evidence-retention/CHANGE.md)
+- [2026-11-18--doc24-lab-and-corpus-acceptance](../../../../work/changes/archive/2026-11/other/2026-11-18--doc24-lab-and-corpus-acceptance/CHANGE.md)
 
 ## storyteller (11)
 

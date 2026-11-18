@@ -9,6 +9,7 @@
 | Need | Direct section |
 | --- | --- |
 | Which testing mode, and why? | [Operating model](#1-operating-model) |
+| Which proof tier is this result? | [Proof tiers](#proof-tiers) |
 | “Teleport” to a precise state | [Specimens and checkpoints](#2-state-specimens-and-checkpoints) |
 | Scenario schema, drivers and contracts | [Scenario protocol](#3-scenario-protocol-and-api) · [experiment protocol](experiment-protocol.md) |
 | Clocks, draws and asynchronous work | [Determinism](#4-time-entropy-and-delivery-control) |
@@ -30,6 +31,18 @@ The Chamber is **a developer laboratory with several execution lanes**, sharing 
 | **Connected rig** | Nest, DB, Temporal/worker, optional Next player UI | Cross-service admission, delivery, recovery, browser behavior | Explicit opt-in local services; provider-free by default |
 | **Packet lab** | Real request construction, canonical evidence selection and held generation | Exact would-be provider packet, schema, budget and zero-dispatch hold | No provider dispatch |
 | **Authorized live evaluation** | Real selected route/provider, bounded operation | Model-dependent quality, real usage and failures | Separately authorized, metered; NEVER the default |
+
+### Proof tiers
+
+The lanes above are different claims. A green link check is not semantic agreement.
+
+| Tier | What this page already means | What it does not prove |
+| --- | --- | --- |
+| Synthetic Chamber fixture | A versioned specimen or checkpoint in [State specimens](#2-state-specimens-and-checkpoints) | A Chamber fixture is not a live player proof |
+| Provider-free integration | Sandbox with scripted dependencies, a connected rig that stays provider-free, or the Packet lab hold with zero dispatch | Model quality or a charged attempt |
+| Actual provider attempt | The authorized live evaluation lane | Anything this page authorizes. An actual provider attempt needs its own recorded run and is not authorized by this page |
+| Live player acceptance | A person accepting play on the player surface. An isolated Play view is only an optional browser observation | A fixture, a connected smoke, or a workbench view |
+| Source-verified evidence | A claim checked against named source at an inspected revision, as in the status note above | A passing link graph, or a re-run of every C01–C16 outcome |
 
 No fake Chamber-only rules resolver. A pure run does **not** prove SQL locking, and a fake provider run does **not** prove model quality. Each result labels its tested boundary. CLI, automated test and local web workbench are **three interfaces to the same underlying scenario commands**, not three engines.
 
@@ -214,3 +227,9 @@ Authoritative inspections + assertions + safe evidence envelope
 The [2026-11-12 source audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) records the gaps that existed then. CH01–CH16 modules are in source; the status at the top of this file and [STATUS](../../../STATUS.md#capability-coverage) are the current coverage. This page does not authorize a new Chamber edit or a paid provider call. Another code-bearing Chamber result needs its own selected Change.
 
 Professional design inputs: [testing and evidence](../../../.agents/knowledge/testing-and-quality-evidence.md), [architectural decision space](../../../.agents/knowledge/architecture-decision-space.md), [durable operations](../../../.agents/knowledge/durable-operations.md), [security boundaries](../../../.agents/knowledge/security-and-trust.md). The lane distinction resembles established edit-mode vs play-mode test frameworks ([Unity Test Framework](https://docs.unity3d.com/Manual/com.unity.test-framework.html)); explicit clock injection is a common determinism technique ([Microsoft fake time](https://learn.microsoft.com/en-us/dotnet/core/extensions/timeprovider-testing)). References inform design, not proof of current code.
+
+## Editorial comprehension pass
+
+The held-out editorial comprehension pass is not run in this packet. This page does not publish a question set, an answer key, or a before/after corpus grade. Other documentation changes are still editing the wiki, so a comprehension score here would certify a moving corpus.
+
+A reachable wiki is not a claim that unratified [Admin](../../product/admin/README.md#admin-product), [retention](../observability/retention-and-access.md#replay-retention-and-privacy--time-travel-without-rewriting-history), or spend text is live permission. A green link check is not semantic agreement. A green-link wiki does not make an unratified raw-AI grant into live permission.
