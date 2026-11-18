@@ -1,6 +1,6 @@
 # Cursor execution handoff | backlog convergence, 2026-11-18
 
-**Scope:** 16 packets were open in the source snapshot. BOOK01/BOOK02 are archived Done in commit `024ba05a6` and **must not be re-implemented or re-archived**. HAR05 is Done at `dfb25d72`. DIR02, HK04, and S3a are Done. Execute the **10 remaining open packets**. Read [audit](README.md) and [selected decisions](CONTRACT-DECISIONS.md). This handoff is a sequencing guide **not** a mega-Change; retain the repository's one-current-Change practice. Owner has authorized bounded design and code preparation/implementation in this conversation. No paid provider, actual production spend, nondisposable database reset, unreviewed accounting settlement or bypass of a security boundary.
+**Scope:** 16 packets were open in the source snapshot. BOOK01/BOOK02 are archived Done in commit `024ba05a6` and **must not be re-implemented or re-archived**. HAR05 is Done at `dfb25d72`. DIR02, HK04, S3a, and QA-SF01 are Done. Execute the **9 remaining open packets**. Read [audit](README.md) and [selected decisions](CONTRACT-DECISIONS.md). This handoff is a sequencing guide **not** a mega-Change; retain the repository's one-current-Change practice. Owner has authorized bounded design and code preparation/implementation in this conversation. No paid provider, actual production spend, nondisposable database reset, unreviewed accounting settlement or bypass of a security boundary.
 
 ## Queue in the order that removes dependencies
 
@@ -14,7 +14,7 @@
 5. **S3a: DONE.** The local story report separates proposed, published, retained, selected, and packed evidence. A missing field is unknown. A catalogue-only handle is not packed. Do not rebuild it, and do not start S3b inside this packet.
 
 **Wave 2, recover honest testability and safe uncertain outcomes:**
-6. **QA-SF01:** against the documented disposable `offscreen_auth_test` only, reproduce the named five surviving Storyteller failures at HEAD. Fix runtime owners without changing behavioral expectations; keep separate failure receipts for unrelated faults. Do not run connected test commands without checking the target and safety script.
+6. **QA-SF01: DONE.** Instant settlement stops at a controlling world deadline. The focused suites on offscreen_auth_test had 0 failures: storyteller 33, story-resolution 8, admin-situation 3. The fifty-five second expectation stayed. No model call. Do not rebuild it.
 7. **HK03:** after capturing the red baseline, split the integration suite with test count/name parity, preserve known reds and negatives; then re-run after QA fixes. The extraction does **not** need to wait for every runtime defect to be solved.
 8. **HK01:** pure saved-response validator, safe review command and explicit current local settlement behavior; fixture tests. Replace old recovery script only after the replacement proves uncertain/duplicate/wrong evidence cases.
 

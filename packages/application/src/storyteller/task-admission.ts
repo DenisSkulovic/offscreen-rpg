@@ -85,16 +85,21 @@ export function resourcesForEffectiveUsagePolicy(
       ),
     },
   });
+  const repairRounds = creativeInput?.maxRepairRounds ?? 0;
   const recipe = creativeExploration.enabled
     ? {
         version: 'memory-exploration.v1' as const,
-        maxModelRounds: creativeExploration.limits.maxModelRounds + 1,
+        maxModelRounds: Math.min(
+          3,
+          policy.limits.maxModelRoundsPerOperation,
+          creativeExploration.limits.maxModelRounds + 1 + repairRounds,
+        ),
         maxReads: creativeExploration.limits.maxReads,
         maxRetainedReadBytes: creativeExploration.limits.maxRetainedBytes,
         tools: 'memory-read.v1' as const,
         automaticEscalation: false as const,
         finalAnswerReserveRounds: 1 as const,
-        maxRepairRounds: creativeInput?.maxRepairRounds ?? 0,
+        maxRepairRounds: repairRounds,
       }
     : creativeInput?.maxRepairRounds === 1 &&
         policy.limits.maxModelRoundsPerOperation >= 2

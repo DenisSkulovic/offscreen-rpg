@@ -101,6 +101,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-17--dir02-validated-publication-attachment](../../../../work/changes/archive/2026-11/other/2026-11-17--dir02-validated-publication-attachment/CHANGE.md)
 - [2026-11-17--hk04-chamber-launcher-seams](../../../../work/changes/archive/2026-11/other/2026-11-17--hk04-chamber-launcher-seams/CHANGE.md)
 - [2026-11-11--s3a-continuity-report](../../../../work/changes/archive/2026-11/other/2026-11-11--s3a-continuity-report/CHANGE.md)
+- [2026-11-15--qa-storyteller-integration-fixtures](../../../../work/changes/archive/2026-11/other/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md)
 - [2026-11-17--hk06-maintenance-inventory-and-lifecycle](../../../../work/changes/archive/2026-11/other/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md)
 - [2026-11-17--hk07-dependency-aware-freshness](../../../../work/changes/archive/2026-11/other/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md)
 - [2026-11-17--hk08-maintenance-feedback-and-status-convergence](../../../../work/changes/archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md)

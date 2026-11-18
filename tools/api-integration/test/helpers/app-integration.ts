@@ -52,6 +52,7 @@ export type AppIntegration = {
   cookie: string;
   otherCookie: string;
   restartWorker: () => Promise<void>;
+  stopWorker: () => Promise<void>;
 };
 
 async function release(steps: ReadonlyArray<() => void | Promise<void>>) {
@@ -121,8 +122,12 @@ export async function withAppIntegration(
   let web: ReturnType<typeof spawn> | undefined;
   let exited: Promise<unknown> | undefined;
   let runtime: Awaited<ReturnType<typeof startRuntime>> | undefined;
-  const restartWorker = async () => {
+  const stopWorker = async () => {
     await runtime?.stop();
+    runtime = undefined;
+  };
+  const restartWorker = async () => {
+    await stopWorker();
     runtime = await startRuntime(
       database,
       {
@@ -188,6 +193,7 @@ export async function withAppIntegration(
       cookie,
       otherCookie,
       restartWorker,
+      stopWorker,
     });
   } finally {
     await release([

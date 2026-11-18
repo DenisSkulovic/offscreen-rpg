@@ -79,7 +79,10 @@ async function requestHistoricalReport(
           character: characterSchema.parse(args.state.character),
           storyFacts: storyFactsSchema.parse(args.state.storyFacts),
           gameSecond: args.state.gameSecond,
-          offer: offerSchema.parse(args.state.offer),
+          offer:
+            args.state.offer === null
+              ? null
+              : offerSchema.parse(args.state.offer),
           receipts: [
             {
               id: hookId,

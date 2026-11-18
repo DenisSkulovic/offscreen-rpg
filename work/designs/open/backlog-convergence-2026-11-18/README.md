@@ -25,7 +25,7 @@
 | HK01 | A working local uncertain-attempt settlement path would be lost | **Replace recovery first**, then safely retire old entry | Trusted identity, hash/attempt match, idempotent no-cost dry-run + carefully authorized commit path |
 | HK03 | QA-SF01 baseline red; monolith hard to debug | **Split without asserting green** and preserve exact test IDs and test totals | Full parity and targeted failure isolation, no skip |
 | HK04 | The pure launch plan denies a bad database and a missing Story authorization. Ordinary Chamber stays provider-disabled. The process boot stays in main.ts | **Done** | Live Chamber tests were not executed |
-| QA-SF01 | Fixture and teardown repaired, remaining runtime failures reported | **Reproduce each remaining failing case and fix owning runtime**, not the oracle | Storyteller/story-resolution focused suites green with same semantics |
+| QA-SF01 | Instant settlement stops at a controlling world deadline. The focused suites had 0 failures | **Done** | The fifty-five second expectation stayed. A succeeded generation still cannot keep an operation open |
 | OBS00-B | No independently loaded current policy/entitlement on default worker | **Build server-owned current authority chain; default deny throughout** | Revoke/owner/route/funding negatives + exact on-wire mock attestation |
 | OBS04 | E0 writer and physical schema are not built | **One finite-action transactional witness** with bounded schema | Source/E0 atomically paired; rollback/duplicate/interrupt proof |
 | ENG03 | C1/C2 narrow source capture already implemented; parent describes an overlarge old rewrite | **Source-family inventory then one remaining measured off-lock slice** | 2s slow I/O off lock, exact old source fence, no migration of unrelated purposes |

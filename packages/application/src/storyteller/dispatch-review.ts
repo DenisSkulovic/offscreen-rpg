@@ -323,6 +323,7 @@ export function createDispatchReviewControls(database: Database) {
             .set({
               state: 'failed',
               failureCode: 'dispatch_rejected',
+              attemptId: decision.attemptId,
               statusRevision: sql`${generation.statusRevision} + 1`,
               updatedAt: sql`clock_timestamp()`,
             })

@@ -8,7 +8,7 @@
 
 `tools/api-integration/test/storyteller.integration.ts` is **5,232 lines**, one top-level `test('profiled storyteller...')` with approximately **32 nested `await t.test` cases** under a long shared `withAppIntegration` setup. This is not 5,232 lines of dead code. Related large but separate files: `start-package.integration.ts` (2,392 lines) and `packages/storyteller/test/storyteller.test.ts` (3,293 lines). They are **out of scope** for this slice.
 
-Read `tools/api-integration/package.json`, `test/helpers/app-integration.ts`, `test/helpers/attested-fake-provider.ts`, `test/storyteller.integration.ts`, and [QA-SF01](../2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md). Determine current passed/failed/skipped assertions *before* moving them.
+Read `tools/api-integration/package.json`, `test/helpers/app-integration.ts`, `test/helpers/attested-fake-provider.ts`, `test/storyteller.integration.ts`, and [QA-SF01](../../archive/2026-11/other/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md). The focused suite is 33 with 0 failures. Determine the current case inventory before moving cases.
 
 ## Pre-implementation design gate (do not skip)
 

@@ -583,12 +583,17 @@ export function createStorytellerBudget(database: Database) {
         throw new Error('Invalid charge');
       }
       const operationOutcome = input.operationOutcome ?? 'complete';
+      const retainedInvalidCandidate =
+        input.generationOutcome?.state === 'failed' &&
+        input.generationOutcome.failureCode === 'invalid_output' &&
+        input.generationOutcome.repairCandidate != null &&
+        input.generationOutcome.repairDiagnostic != null;
+      // An omitted generation outcome is an unfinished multi-round operation.
+      // A supplied outcome may continue only for a retained invalid candidate.
       if (
         operationOutcome === 'continue' &&
-        (input.generationOutcome?.state !== 'failed' ||
-          input.generationOutcome.failureCode !== 'invalid_output' ||
-          input.generationOutcome.repairCandidate == null ||
-          input.generationOutcome.repairDiagnostic == null)
+        input.generationOutcome !== undefined &&
+        !retainedInvalidCandidate
       ) {
         throw new Error(
           'Only a retained invalid candidate may keep an operation open',

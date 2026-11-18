@@ -6,7 +6,7 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
-| [backlog-convergence-2026-11-18/](open/backlog-convergence-2026-11-18/README.md) | **Accepted bounded execution decisions 2026-11-18:** 16-packet source audit, BOOK01, BOOK02, HAR05, DIR02, HK04, and S3a are Done. 10 packets remain Ready for safe work. [Cursor order](open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md); no paid dispatch grant |
+| [backlog-convergence-2026-11-18/](open/backlog-convergence-2026-11-18/README.md) | **Accepted bounded execution decisions 2026-11-18:** 16-packet source audit, BOOK01, BOOK02, HAR05, DIR02, HK04, S3a, and QA-SF01 are Done. 9 packets remain Ready for safe work. [Cursor order](open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md); no paid dispatch grant |
 | [product-reality-reconciliation/](open/product-reality-reconciliation/README.md) | **Done 2026-11-18:** PVAL01–PVAL06 are archived. Solo is the first tested playability milestone. The small party stays a distant later aspiration. The audit itself is not a new mechanic |
 | [playability-reality/](open/playability-reality/README.md) | **Proposed 2026-11-18:** REAL01 first-solo acceptance, REAL02 semantic-canon integration fixtures, REAL03 value/cost protocol, REAL04 V0 and rights honesty. Three prepared Changes, none selected; no paid evaluations |
 | [wiki-discovery-coverage/](open/wiki-discovery-coverage/README.md) | **Proposed 2026-11-18:** post-DOC24 wiki navigability, section authority, missing knowledge and practical guides audit; 23 WIKI12–17 / DOC25–41 handoffs are prepared, all unselected |

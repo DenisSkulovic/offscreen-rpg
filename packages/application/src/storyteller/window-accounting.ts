@@ -40,6 +40,14 @@ function reservedValue(
   return task.task === 'report' ? 1n : 0n;
 }
 
+function databaseInstant(value: unknown): Date {
+  const parsed = value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error('Missing funding clock');
+  }
+  return parsed;
+}
+
 function fixedPeriod(window: UsageWindowDefinition, now: Date) {
   if (window.window.kind !== 'fixed') return { startsAt: null, endsAt: null };
   const durationMs = window.window.durationSeconds * 1000;
@@ -70,9 +78,10 @@ export async function reserveUsageWindows(
     .from(storytellerFunding)
     .where(eq(storytellerFunding.id, args.accountId));
   if (!clock) throw new Error('Missing funding clock');
+  const now = databaseInstant(clock.now);
   for (const window of args.policy.windows) {
     const key = scopeKey(window, args.accountId, args.task);
-    const period = fixedPeriod(window, clock.now);
+    const period = fixedPeriod(window, now);
     const rows = await tx
       .select()
       .from(allocation)
@@ -86,17 +95,19 @@ export async function reserveUsageWindows(
       );
     const rollingCutoff =
       window.window.kind === 'rolling'
-        ? clock.now.getTime() - window.window.durationSeconds * 1000
+        ? now.getTime() - window.window.durationSeconds * 1000
         : null;
     const used = rows.reduce((total, row) => {
       const unresolved = ['reserved', 'dispatched', 'uncertain'].includes(
         row.state,
       );
+      const periodStartsAt =
+        row.periodStartsAt == null ? null : databaseInstant(row.periodStartsAt);
       const inPeriod =
         unresolved ||
         (window.window.kind === 'fixed'
-          ? row.periodStartsAt?.getTime() === period.startsAt?.getTime()
-          : row.attributedAt.getTime() > (rollingCutoff ?? 0));
+          ? periodStartsAt?.getTime() === period.startsAt?.getTime()
+          : databaseInstant(row.attributedAt).getTime() > (rollingCutoff ?? 0));
       return inPeriod ? total + (row.consumed ?? row.reserved) : total;
     }, 0n);
     const reserved = reservedValue(
@@ -120,7 +131,7 @@ export async function reserveUsageWindows(
       reserved,
       periodStartsAt: period.startsAt,
       periodEndsAt: period.endsAt,
-      attributedAt: clock.now,
+      attributedAt: now,
     });
   }
 }

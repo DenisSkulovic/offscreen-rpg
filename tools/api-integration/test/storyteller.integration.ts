@@ -118,6 +118,7 @@ test(
         cookie,
         otherCookie,
         restartWorker,
+        stopWorker,
       }) => {
         const drafts = createDrafts(database);
         const openings = createScriptedOpenings(database);
@@ -4144,11 +4145,26 @@ test(
                 error.code === 'provider-uncertain',
             );
             assert.equal(uncertainCalls, 1);
+            // An unresolved uncertain attempt blocks every later paid admission
+            // in this shared database. The assertion above already recorded it.
+            await database.db
+              .update(storytellerAttempt)
+              .set({
+                state: 'unsent',
+                chargedMicrousd: 0n,
+                reconciliation: 'unavailable',
+                dispatchedAt: null,
+                settledAt: new Date(),
+              })
+              .where(
+                eq(storytellerAttempt.generationId, uncertainGenerationId),
+              );
           },
         );
         await t.test(
           'fake provider accounting settles once and unknown dispatch is never repeated',
           async () => {
+            await stopWorker();
             const accountId = randomUUID();
             const runId = randomUUID();
             await database.db.insert(storytellerFunding).values({
@@ -5199,8 +5215,8 @@ test(
                 .getByRole('heading', { name: 'Outside work', exact: true })
                 .waitFor({ timeout: 35000 });
               await page.reload();
-              // The journal lives inside the collapsed secondary "Details" panel.
-              await page.getByText('Details', { exact: true }).click();
+              await page.getByRole('button', { name: 'Contents', exact: true }).click();
+              await page.getByRole('link', { name: 'Journal', exact: true }).click();
               await page
                 .getByRole('button', {
                   name: 'Read saved passages',
@@ -5208,7 +5224,9 @@ test(
                 })
                 .click();
               await page
-                .getByRole('heading', { name: /1. Morning in the pineapple/ })
+                .getByRole('button', {
+                  name: /1\. Morning in the pineapple/,
+                })
                 .waitFor();
               await page.goto(`${origin}/stories`);
               assert.ok(

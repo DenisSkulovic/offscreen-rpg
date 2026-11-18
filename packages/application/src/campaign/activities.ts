@@ -269,6 +269,7 @@ export async function settleActivity(
   let processProgress = storedProgress.process;
   let cursorGameSecond = plan.resolvedThroughGameSecond;
   let worldCursor = state.gameSecond;
+  let controllingStopGameSecond: number | null = null;
   let boundariesSettled = activity.boundariesSettled;
   let nextState = 'running';
   let completionPending = storedProgress.completionPending;
@@ -301,10 +302,14 @@ export async function settleActivity(
     });
     // A hard world cutoff owns equality. Productive effects at that exact gameSecond
     // remain unapplied and the obligation is committed first by the caller.
+    // The campaign clock still reaches the due second so the caller can interrupt.
     if (
       controllingObligation &&
       worldBoundaryGameSecond >= controllingObligation.dueGameSecond
     ) {
+      if (controllingObligation.dueGameSecond > state.gameSecond) {
+        controllingStopGameSecond = controllingObligation.dueGameSecond;
+      }
       break;
     }
     boundariesSettled++;
@@ -397,9 +402,14 @@ export async function settleActivity(
     nextBoundaryGameSecond(plan, cursorGameSecond) <=
       availableEffortGameSeconds;
   const caughtUpRunning = nextState === 'running' && !backlogDue;
-  const nextEffortGameSeconds = caughtUpRunning
-    ? availableEffortGameSeconds
-    : cursorGameSecond;
+  const controllingStopEffort =
+    controllingStopGameSecond === null
+      ? null
+      : storedProgress.effortGameSeconds +
+        (controllingStopGameSecond - state.gameSecond);
+  const nextEffortGameSeconds =
+    controllingStopEffort ??
+    (caughtUpRunning ? availableEffortGameSeconds : cursorGameSecond);
   processProgress = processProgressAtEffortGameSecond(
     plan,
     processProgress,
@@ -410,13 +420,15 @@ export async function settleActivity(
     controllingObligation !== null &&
     clock.elapsedGameSeconds >= controllingObligation.dueGameSecond;
   const nextClock =
-    nextState === 'running' &&
-    (pace.kind !== 'instant' || controllingBoundaryReached)
-      ? clock
-      : wholeGameSeconds(worldCursor);
-  const nextCampaignGameSecond = caughtUpRunning
-    ? nextClock.elapsedGameSeconds
-    : worldCursor;
+    controllingStopGameSecond !== null
+      ? wholeGameSeconds(controllingStopGameSecond)
+      : nextState === 'running' &&
+          (pace.kind !== 'instant' || controllingBoundaryReached)
+        ? clock
+        : wholeGameSeconds(worldCursor);
+  const nextCampaignGameSecond =
+    controllingStopGameSecond ??
+    (caughtUpRunning ? nextClock.elapsedGameSeconds : worldCursor);
   const activityOccurrences =
     nextState === 'complete'
       ? recordActivityOccurrence(
