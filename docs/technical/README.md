@@ -6,7 +6,10 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | --- | --- |
 | What is deployed, and who calls whom? | [Topology](platform/topology.md) |
 | Who is logged in, and what may they read? | [Identities and access](platform/identities-and-access.md) |
+| What must every player route agree about actor, operation id, 202, GET, and errors? | [HTTP and client contracts](platform/http-api-and-client-contracts.md) |
+| Which trust boundary may this actor cross? | [Platform trust boundaries](platform/security-and-trust-boundaries.md) |
 | Where does durable state live? | [Data and persistence](platform/data-and-persistence.md) |
+| May a cache replace the durable record? | [Redis boundary](platform/persistence-and-caching.md#redis-boundary). Optional acceleration. PostgreSQL remains the record |
 | How does a command survive retry? | [Execution and delivery](platform/execution-and-delivery.md) |
 | Who may spend on a model call? | [Spending and entitlements](platform/spending-and-entitlements.md) |
 | How does a release stay compatible? | [Deployment and compatibility](platform/deployment-and-compatibility.md) |
@@ -15,6 +18,7 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | What may commit a transition today? | [Authority and transitions](engine/authority-and-transitions.md) |
 | What may a rule change? | [Mechanics and capabilities](engine/mechanics-and-capabilities.md) |
 | When does fictional time advance? | [Chronology and activities](engine/chronology-and-activities.md) |
+| Does the landed response-deadline code set mechanical engine policy? | [Decisions with deadlines](engine/chronology-and-activities.md#decisions-with-deadlines). Do not import the narrative-rehearsal default. [Implemented decision deadline](platform/data-and-persistence.md#implemented-decision-deadline) and [Implemented solo response deadline](platform/execution-and-delivery.md#implemented-solo-response-deadline) record that fixture. They are not the policy |
 | How do stories start, fork and end? | [Lifecycle](engine/lifecycle-and-compatibility.md) |
 | What lock and capture behavior is proved? | [Concurrency and recovery](engine/concurrency-and-recovery.md) |
 | How do calendars name the same chronology? | [Calendars](engine/calendars-and-world-time.md) |
@@ -37,7 +41,11 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | What may a staff grant do? | [Admin topology](admin/topology-and-authorization.md) |
 | How does the staff console navigate, render and isolate its data? | [Console and read models](admin/console-and-read-models.md) |
 | What may an investigation reveal? | [Investigation and privacy](admin/investigation-and-privacy.md) |
+| Does an Admin command description grant a write? | [Operational intent is not a raw CRUD mutation](admin/commands-and-audit.md#1-operational-intent-is-not-a-raw-crud-mutation). Selected target. No production write grant. The refusal list is [Negative acceptance](admin/commands-and-audit.md#8-negative-acceptance) |
 | What is a forensic turn capsule? | [Identities and evidence](observability/identities-and-evidence.md#turn-evidence-capsule) |
+| Is a raw-artifact retention window already mandatory? | [Retention owner map](observability/retention-and-access.md#owner-map). Unratified recommendation. Candidate day counts are not a grant |
+| Does transition capture authorize a writer? | [Capture owner map](observability/capture-and-provenance.md#owner-map). Proposal. No code, schema, or test is authorized |
 | How is a Chamber fixture not a gameplay proof? | [Chamber and fixtures](lab/chamber-and-fixtures.md) |
+| Which Chamber label is which proof? | [Proof tiers](lab/experiment-protocol.md#proof-tiers). A fixture, a connected smoke, and a manual QA mark are not live player acceptance |
 
 Accepted trade-offs that are not the norm itself: [decisions](../decisions/README.md).

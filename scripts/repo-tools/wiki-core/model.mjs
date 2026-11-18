@@ -167,6 +167,298 @@ export function reverseContractDependents(edges, target, options = {}) {
   };
 }
 
+export const KNOWLEDGE_COVERAGE_DISPOSITIONS = Object.freeze([
+  'already owned heading',
+  'add section',
+  'create authoritative owner',
+  'create proposed design',
+  'task guide',
+  'documented no-op',
+]);
+
+const DISPOSITION_LINE =
+  /^(already owned heading|add section|create authoritative owner|create proposed design|task guide|documented no-op)\s*:\s+`([^`]+)`\s*(.*)$/i;
+const HTTP_VERB =
+  /^[ \t]*@(Get|Post|Put|Patch|Delete|All|Head|Options)\(\s*(?:['"`]([^'"`]*)['"`])?\s*\)/gm;
+const CONTROLLER = /^[ \t]*@Controller\(\s*['"`]([^'"`]*)['"`]\s*\)/m;
+const COMMAND_SCHEMA =
+  /^export const (\w*Command\w*)\s*=\s*z\s*\.\s*(?:strictObject|object|enum|discriminatedUnion)\s*\(/gm;
+const TABLE_EXPORT = /^export const (\w+)\s*=\s*pgTable\s*\(/gm;
+
+function listed(values, limit = 6) {
+  const unique = [...new Set(values)];
+  if (unique.length <= limit) return unique.join(', ');
+  return `${unique.slice(0, limit).join(', ')} and ${unique.length - limit} more`;
+}
+
+function ignoredSource(name) {
+  return (
+    name.includes('/node_modules/') ||
+    name.includes('/dist/') ||
+    name.includes('/test/') ||
+    name.includes('/__tests__/') ||
+    /\.(?:test|spec)\.[cm]?[jt]s$/.test(name)
+  );
+}
+
+function classifyPublicRoute(name, text) {
+  if (!name.startsWith('apps/api/') || !name.endsWith('.ts')) return null;
+  const verbs = [...text.matchAll(HTTP_VERB)].map((match) =>
+    match[2] ? `@${match[1]}('${match[2]}')` : `@${match[1]}()`,
+  );
+  if (verbs.length === 0) return null;
+  const controller = CONTROLLER.exec(text);
+  const prefix = controller ? `@Controller('${controller[1]}') ` : '';
+  return {
+    kind: 'public-api-route',
+    why: `Public API route ${prefix}${listed(verbs)} in ${name}.`,
+  };
+}
+
+function packageExportNames(value) {
+  if (typeof value === 'string' && value.trim()) return [value.trim()];
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+  return Object.keys(value);
+}
+
+function barrelExportNames(text) {
+  const names = [];
+  if (/^export\s+\*\s+(?:as\s+\w+\s+)?from\s+/m.test(text)) names.push('re-export');
+  for (const match of text.matchAll(/^export\s+(?:type\s+)?\{([^}]+)\}/gm)) {
+    for (const part of match[1].split(',')) {
+      const alias = part.trim().split(/\s+as\s+/i).pop()?.trim();
+      if (alias) names.push(alias);
+    }
+  }
+  const declared =
+    /^export\s+(?:default\s+)?(?:async\s+function|function|const|class|enum|interface|type)\s+(\w+)/gm;
+  for (const match of text.matchAll(declared)) names.push(match[1]);
+  return names;
+}
+
+function classifyPackageExport(name, text) {
+  if (/^packages\/[^/]+\/package\.json$/.test(name)) {
+    try {
+      const keys = packageExportNames(JSON.parse(text).exports);
+      if (keys.length === 0) return null;
+      return {
+        kind: 'package-exported-contract',
+        why: `Package exported contract ${listed(keys)} in ${name}.`,
+      };
+    } catch {
+      return null;
+    }
+  }
+  if (!/^packages\/[^/]+\/src\/index\.[cm]?[jt]s$/.test(name)) return null;
+  const names = barrelExportNames(text);
+  if (names.length === 0) return null;
+  return {
+    kind: 'package-exported-contract',
+    why: `Package exported contract ${listed(names)} in ${name}.`,
+  };
+}
+
+function classifyPersistedEntity(name, text) {
+  if (!name.startsWith('packages/db/') || !name.endsWith('.ts')) return null;
+  const tables = [...text.matchAll(TABLE_EXPORT)].map((match) => match[1]);
+  if (tables.length === 0) return null;
+  return {
+    kind: 'persisted-entity',
+    why: `Persisted entity ${listed(tables)} in ${name}.`,
+  };
+}
+
+function collectContentKinds(value, kinds, depth) {
+  if (depth > 8 || value == null || typeof value !== 'object') return;
+  if (Array.isArray(value)) {
+    for (const item of value) collectContentKinds(item, kinds, depth + 1);
+    return;
+  }
+  if (typeof value.kind === 'string' && value.kind.trim()) kinds.add(value.kind.trim());
+  for (const child of Object.values(value)) collectContentKinds(child, kinds, depth + 1);
+}
+
+function classifyContentPackageKind(name, text) {
+  if (!name.startsWith('content/') || !name.endsWith('package.json')) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  const format = typeof parsed.format === 'string' ? parsed.format : '';
+  if (!format.startsWith('offscreen.')) return null;
+  const kinds = new Set();
+  collectContentKinds(parsed, kinds, 0);
+  if (kinds.size === 0) return null;
+  return {
+    kind: 'content-package-kind',
+    why: `Content package kind ${listed([...kinds])} (${format}) in ${name}.`,
+  };
+}
+
+function classifyCommandAuthority(name, text) {
+  if (!/^packages\/[^/]+\/src\/.+\.ts$/.test(name)) return null;
+  const commands = [...text.matchAll(COMMAND_SCHEMA)].map((match) => match[1]);
+  if (commands.length === 0) return null;
+  return {
+    kind: 'command-authority',
+    why: `Command authority ${listed(commands)} in ${name}.`,
+  };
+}
+
+/**
+ * Classify one source already named by the maintenance inventory.
+ * Returns null for ordinary helpers. This does not walk the repo.
+ * @param {string} rel
+ * @param {string} text
+ */
+export function classifyKnowledgeBoundary(rel, text) {
+  const name = String(rel ?? '').replaceAll('\\', '/');
+  const body = String(text ?? '');
+  if (!name || ignoredSource(name)) return null;
+  return (
+    classifyPublicRoute(name, body) ||
+    classifyPackageExport(name, body) ||
+    classifyPersistedEntity(name, body) ||
+    classifyContentPackageKind(name, body) ||
+    classifyCommandAuthority(name, body)
+  );
+}
+
+function exactOwnerSource(rest) {
+  const cleaned = String(rest ?? '')
+    .trim()
+    .replace(/^`([^`]+)`$/, '$1')
+    .trim();
+  const because = /^because\s+(.+)$/i.exec(cleaned);
+  const source = (because ? because[1] : cleaned)
+    .trim()
+    .replace(/^`([^`]+)`$/, '$1')
+    .trim();
+  if (!source) return '';
+  const looksLikePath =
+    source.includes('/') ||
+    source.includes('#') ||
+    /\.mdc?(?:#[A-Za-z0-9_-]+)?$/.test(source) ||
+    /^(?:README|STATUS|ENGINEERING|AGENTS|ROADMAP|CLAUDE|NOTICE)\.md$/.test(source);
+  return looksLikePath ? source : '';
+}
+
+function parseCoverageDispositions(text) {
+  const rows = [];
+  for (const raw of String(text ?? '').split(/\r?\n/)) {
+    const match = DISPOSITION_LINE.exec(raw.trim());
+    if (!match) continue;
+    const disposition = match[1].toLowerCase();
+    const path = match[2].trim().replaceAll('\\', '/');
+    const rest = match[3].trim();
+    if (disposition === 'documented no-op') {
+      const because = /^because\s+(\S.*)$/i.exec(rest);
+      const reason = because?.[1]?.trim() ?? '';
+      rows.push({
+        disposition,
+        path,
+        source: reason ? `because ${reason}` : '',
+        valid: reason.length >= 12,
+      });
+      continue;
+    }
+    const source = exactOwnerSource(rest);
+    rows.push({ disposition, path, source, valid: source.length > 0 });
+  }
+  return rows;
+}
+
+function coverageCandidate(path, boundary, rejected) {
+  const why = `${boundary.why} No linked documentation owner was found.`;
+  let message =
+    `unknown review needed. ${why} Reachable older documents do not make this boundary complete. ` +
+    'This review candidate is not new canon. A newly discovered code path cannot change the product bible.';
+  if (rejected) {
+    message +=
+      ' A recorded disposition was not accepted because it lacked an exact source or an admission reason.';
+  }
+  return {
+    code: 'unknown-review-needed',
+    severity: 'warning',
+    path,
+    boundary: boundary.kind,
+    why,
+    message,
+    suggestion:
+      'Record one disposition — already owned heading, add section, create authoritative owner, create proposed design, task guide, or documented no-op — with an exact source path or an admission reason. Do not auto-create a spec page.',
+    dispositions: [...KNOWLEDGE_COVERAGE_DISPOSITIONS],
+    canon: false,
+    productBible: 'unchanged',
+    ageDays: null,
+    cohort: null,
+    control: false,
+    selected: false,
+  };
+}
+
+export function emptyKnowledgeCoverage(status = 'not-assessed') {
+  return {
+    status,
+    productBible: 'unchanged',
+    canon: false,
+    reviewed: [],
+    candidates: [],
+  };
+}
+
+/**
+ * Review boundaries already read from the maintenance change inventory.
+ * A linked owner or a valid disposition clears the candidate. Nothing is written.
+ * @param {{ path: string, text?: string, boundary?: { kind: string, why: string } | null, owners?: string[] }[]} entries
+ * @param {string} admissionText
+ */
+export function reviewKnowledgeCoverage(entries, admissionText = '') {
+  const dispositions = parseCoverageDispositions(admissionText);
+  const candidates = [];
+  const reviewed = [];
+  for (const entry of entries ?? []) {
+    const path = String(entry.path ?? '').replaceAll('\\', '/');
+    const boundary =
+      entry.boundary === undefined ? classifyKnowledgeBoundary(path, entry.text ?? '') : entry.boundary;
+    if (!boundary) continue;
+    const recorded = dispositions.filter((row) => row.path === path);
+    const accepted = recorded.find((row) => row.valid);
+    if (accepted) {
+      reviewed.push({
+        path,
+        boundary: boundary.kind,
+        disposition: accepted.disposition,
+        source: accepted.source,
+      });
+      continue;
+    }
+    const owners = [...new Set((entry.owners ?? []).map((owner) => String(owner).replaceAll('\\', '/')))].filter(
+      (owner) => owner && owner !== path,
+    );
+    if (owners.length > 0) {
+      reviewed.push({
+        path,
+        boundary: boundary.kind,
+        disposition: 'already owned heading',
+        source: owners[0],
+      });
+      continue;
+    }
+    candidates.push(coverageCandidate(path, boundary, recorded.length > 0));
+  }
+  const status =
+    candidates.length > 0 ? 'unknown review needed' : reviewed.length > 0 ? 'reviewed' : 'no-new-boundary';
+  return {
+    status,
+    productBible: 'unchanged',
+    canon: false,
+    reviewed,
+    candidates,
+  };
+}
+
 /**
  * @param {string} root
  * @param {{ repoSha?: string | null, dirty?: boolean | null }} [meta]

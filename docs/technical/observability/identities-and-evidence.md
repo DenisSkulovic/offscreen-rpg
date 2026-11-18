@@ -265,6 +265,15 @@ Reconstruction output must show:
 
 **Forbidden:** interpreting a log line as authority; re-running dice to fill missing receipts; using current profile `latest` to explain an older task; treating provider request hash as proof the provider was billed; exposing contents from a different story just because a CAS hash matches; letting a sampled trace make an otherwise complete operation appear to never exist.
 
+That cross-story refusal follows [Relationship semantics and current single-owner source](../admin/investigation-and-privacy.md#3-relationship-semantics-and-current-single-owner-source): normal story reads are owner-scoped, and a shared hash is not a shared owner. The viewer still has to pass [Authentication and sessions](../platform/identities-and-access.md#authentication-and-sessions), which checks membership on every snapshot read.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| 7. Read and reconstruction | constrained-by | [Relationship semantics and current single-owner source](../admin/investigation-and-privacy.md#3-relationship-semantics-and-current-single-owner-source) | If owner scope is replaced by content-hash equality, reconstruction could show another story's artifact when the bytes match, which this section forbids |
+| 7. Read and reconstruction | constrained-by | [Authentication and sessions](../platform/identities-and-access.md#authentication-and-sessions) | If a reconstruction read no longer checks membership, this service could return another viewer's story while still looking source-validated |
+
 ## Folded invariants from the 2026-11 essays
 
 **Proposed, not landed.** These clauses used to live only in the essay folder.

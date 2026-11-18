@@ -20,3 +20,6 @@ The adapter accepts only hashes when resolving physical objects. Logical paths
 are validated, relative navigation labels and are used only during bounded
 export. `exportPublishedRoot` writes into a caller-selected empty destination
 using exclusive creates, including `manifest.json` and `checksums.json`.
+
+Preparing a world, rule or start source directory for these importers is
+[Content package authoring](../../docs/runbooks/content-package-authoring.md).

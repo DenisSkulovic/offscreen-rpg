@@ -69,7 +69,7 @@ The format must not force every story into terrestrial geography. Underwater reg
 
 The storyteller may propose places, connections and changes consistent with the setting. Once accepted, those facts constrain subsequent generation. Adjacent cells are not automatically traversable: walls, water, entrances, stairs, vehicles and portals can matter without requiring dedicated simulations for each. A teleport or other exceptional transition is an explicit change, not an unexplained correction of contradictory prose.
 
-An interactive map is deferred. Before implementing authoritative movement, choose the smallest representation that can demonstrate an interrupted journey and two characters' relative whereabouts. Rendering rotating cubes is a separate question from enforcing that consistency.
+An interactive map is deferred. Before implementing authoritative movement, choose the smallest representation that can demonstrate an interrupted journey and two characters' relative whereabouts. Rendering rotating cubes is a separate question from enforcing that consistency. Those open choices stay Proposed in [spatial play](../../../work/designs/open/spatial-play/README.md). The link selects no route, coordinate schema, or movement rule.
 
 The storyteller could propose introducing, retaining or leaving a map when it helps the current situation. This is a presentation and scope choice, not permission to erase established geography. A transition to another realm can switch to a new map or no map while retaining the departure, relevant possessions, companions and any meaningful way back. In shared play, another character may still occupy the previous region. Changing the current view must not relocate them or delete their surroundings.
 
@@ -83,7 +83,7 @@ Give consequential people and objects consistent identity. A golden spear sold t
 
 Characters can have descriptive traits, capabilities, relationships and conditions. Their representation must accommodate unusual bodies and settings. Being miniature changes what is plausible; it need not automatically introduce a physics simulator. A character cannot use a lost object or an established unavailable ability simply because the next generated scene would be convenient.
 
-Important injuries and other lasting changes should constrain subsequent choices until something in the story changes them. Ordinary atmospheric description need not become a tracked attribute.
+Important injuries and other lasting changes should constrain subsequent choices until something in the story changes them. Ordinary atmospheric description need not become a tracked attribute. The open boundary among growth, fatal loss, aging, form change, return, and story ending stays Proposed in [character lifecourse](../../../work/designs/open/character-lifecourse/README.md). The link selects no hit-point track, disease, aging rule, or level ladder.
 
 ## Possessions and exchanges
 
@@ -91,7 +91,7 @@ A short descriptive inventory can cover many needs. Add quantities when decision
 
 An accepted exchange must consistently update what was given and received. Repeated submission cannot purchase twice or restore spent resources. Gifts, favors and promises can matter without being forced into a universal monetary value.
 
-The initial product needs meaningful possession continuity, not equipment slots, carrying-capacity calculations or simulated merchant inventories. The exact extent of counted resources is still to be chosen.
+The initial product needs meaningful possession continuity, not equipment slots, carrying-capacity calculations or simulated merchant inventories. The exact extent of counted resources is still to be chosen. That open extent, including a world where money and work do not apply, stays Proposed in [livelihood and economy](../../../work/designs/open/livelihood-economy/README.md). The link adds no currency, wage, or profession.
 
 ## Knowledge and perspective
 

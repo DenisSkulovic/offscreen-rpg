@@ -8,6 +8,7 @@ import path from 'node:path';
 import { classifyChangeText } from './archive-changes.mjs';
 import { scanDocuments } from './wiki-core/content-health.mjs';
 import { parseMarkdownDocument } from './wiki-core/markdown.mjs';
+import { emptyKnowledgeCoverage, reviewKnowledgeCoverage } from './wiki-core/model.mjs';
 import { classifyRepoPath, resolveHref } from './wiki-core/paths.mjs';
 
 export const MAINTENANCE_SCHEMA = 'repo.maintenance.v1';
@@ -496,17 +497,35 @@ function rankCandidate(item) {
   if (item.control) score += 500;
   if (item.code === 'needs-revalidation') score += 200;
   if (item.code === 'unknown-provenance') score += 150;
+  if (item.code === 'unknown-review-needed') score += 800;
   if (item.code === 'no-known-route') score += 80;
   if (item.code === 'suspected-stale-instruction') score += 40;
   if (item.code === 'inactive-open-work') score += 10;
   return score + Math.min(item.ageDays ?? 0, 90);
 }
 
+function rememberCoverage(report, coverage) {
+  report.coverage = {
+    status: coverage.status,
+    productBible: coverage.productBible,
+    canon: false,
+    reviewed: coverage.reviewed,
+    unknown: coverage.candidates.map((item) => item.path),
+  };
+  for (const candidate of coverage.candidates) report.candidates.push(candidate);
+}
+
 function attachFreshness(report, input, markdown, readText) {
   const history = input.history;
-  if (!history) return report;
+  if (!history) {
+    rememberCoverage(report, emptyKnowledgeCoverage('not-assessed'));
+    return report;
+  }
   report.historyStatus = history.available ? 'available' : 'unavailable';
-  if (!history.available) return report;
+  if (!history.available) {
+    rememberCoverage(report, emptyKnowledgeCoverage('not-assessed'));
+    return report;
+  }
 
   const now = input.now ?? '1970-01-01T00:00:00Z';
   const dirty = new Set((history.dirty ?? []).map(posix));
@@ -648,6 +667,31 @@ function attachFreshness(report, input, markdown, readText) {
       selected: false,
     });
   }
+
+  const changedSources = [
+    ...new Set([...(history.uncited ?? []), ...(history.dirty ?? [])].map(posix)),
+  ].filter((rel) => !rel.endsWith('.md') && !rel.endsWith('.mdc'));
+  const coverageEntries = [];
+  for (const rel of changedSources) {
+    let text = '';
+    try {
+      text = readText(rel);
+    } catch {
+      continue;
+    }
+    coverageEntries.push({
+      path: rel,
+      text,
+      owners: (inbound.get(rel) ?? []).map((edge) => edge.owner),
+    });
+  }
+  rememberCoverage(
+    report,
+    reviewKnowledgeCoverage(
+      coverageEntries,
+      documents.map((doc) => doc.text.replace(/\s*$/, '')).join('\n'),
+    ),
+  );
 
   const stale = scanDocuments(documents, { scripts: input.scriptNames ?? [] });
   for (const item of stale.issues) {

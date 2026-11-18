@@ -2,7 +2,7 @@
 
 **First look:** `StoriesController` is a thin authenticated Nest API facade. It calls application operations using `ownerId` and maps `StoryError` to HTTP; it does **not** decide game rules, effects or private narrative. **Current:** resolution-receipt GET (W19) and story SSE updates (W16) are implemented.
 **Start:** [StoriesController](controller.ts) → [createStoryApplication](../../../../../packages/application/src/stories/index.ts) → [story application map](../../../../../packages/application/src/stories/README.md). For private browser reads see [web transport map](../../../../web/src/lib/README.md).
-**Source basis:** post-W16; recheck symbols before editing. **Never call provider from a GET, retry after ambiguous charged work automatically, or expose internal workflow rows as public DTOs.**
+**Source basis:** post-W16; recheck symbols before editing. **Never call provider from a GET, retry after ambiguous charged work automatically, or expose internal workflow rows as public DTOs.** Cross-route status and identity rules shared with drafts and openings: [HTTP and client contracts](../../../../../docs/technical/platform/http-api-and-client-contracts.md).
 
 ## Route contract map (selected relevant endpoints)
 

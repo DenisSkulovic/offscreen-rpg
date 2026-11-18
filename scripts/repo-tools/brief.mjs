@@ -109,15 +109,26 @@ export function collectCheckout(cwd = root) {
 
 export function healthSummary(report) {
   if (report?.unavailable) return report.unavailable;
+  const lines = [];
+  if (report?.coverage?.status === 'unknown review needed') {
+    const paths = Array.isArray(report.coverage.unknown) ? report.coverage.unknown.filter(Boolean) : [];
+    lines.push(
+      paths.length > 0
+        ? `coverage: unknown review needed  ${paths.slice(0, 3).join(', ')}`
+        : 'coverage: unknown review needed',
+    );
+  }
   const top = Array.isArray(report?.top3) ? report.top3.slice(0, 3) : [];
-  if (top.length === 0) return 'No review candidates.';
-  return top
-    .map((item) => {
+  if (top.length === 0) {
+    lines.push('No review candidates.');
+  } else {
+    for (const item of top) {
       const next = item.suggestion || 'pnpm repo:maintenance';
       const dependency = item.dependency ? ` -> ${item.dependency}` : '';
-      return `${item.code}  ${item.path}${dependency}\n  next: ${next}`;
-    })
-    .join('\n');
+      lines.push(`${item.code}  ${item.path}${dependency}\n  next: ${next}`);
+    }
+  }
+  return lines.join('\n');
 }
 
 export function receiptFrom(checkout, change, checkpoint) {

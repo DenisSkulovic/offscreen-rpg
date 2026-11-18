@@ -1,6 +1,6 @@
 # Worker: Temporal Activities and durable outbox delivery
 
-`@offscreen/worker` connects accepted database notices to Temporal workflows and runs Activity adapters over **application operations**. Workflow timing, outbox delivery and committed business effects are different responsibilities. See the [technical execution contract](../../docs/technical/platform/execution-and-delivery.md).
+`@offscreen/worker` connects accepted database notices to Temporal workflows and runs Activity adapters over **application operations**. Workflow timing, outbox delivery and committed business effects are different responsibilities. See the [technical execution contract](../../docs/technical/platform/execution-and-delivery.md). When the question is which record to read before anyone retries, start at [Uncertain work recovery](../../docs/runbooks/uncertain-work-recovery.md). That guide does not change the exact-once fence below.
 
 ## Route a failure to its owner
 

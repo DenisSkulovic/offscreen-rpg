@@ -46,3 +46,5 @@ ENG03 priorities beyond C1 and C2 — activity, world, reports, continuation and
 ## Recovery the player can see
 
 Commands, delivery and visible recovery for the solo prototype stay in [authority and transitions](authority-and-transitions.md). This page adds only the capture race: settlement and narration are different fences; an interrupted action can have a factual companion passage without a success receipt; provisional capture is not a retryable player button.
+
+The read-only first response for an uncertain operation is [Uncertain work recovery](../../runbooks/uncertain-work-recovery.md). This page still owns the capture race.

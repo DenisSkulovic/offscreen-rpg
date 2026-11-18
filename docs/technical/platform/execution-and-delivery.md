@@ -152,3 +152,5 @@ When Temporal or workers are unavailable, the API may still receive eligible com
 Overdue timers do not authorize a burst of unbounded inference. Honor already published deadlines and their permitted defaults. For a new decision published late after downtime, the proposed policy starts its response window at actual publication rather than retroactively expiring it. Bound catch-up transitions and hold with a reason if permissions, budget or valid content run out.
 
 Recover workflow state through Temporal history, not by guessing execution from a database snapshot. If Temporal persistence is actually lost, restored PostgreSQL alone is insufficient: quarantine affected stories and reconcile controlled restart from a known committed boundary. Test worker restart separately from disaster recovery of both systems.
+
+First-response identification of an uncertain operation is the task guide [Uncertain work recovery](../../runbooks/uncertain-work-recovery.md). That guide does not change this recovery contract.

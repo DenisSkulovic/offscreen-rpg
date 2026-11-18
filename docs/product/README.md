@@ -8,10 +8,10 @@ What players and staff must be able to rely on. Technical guarantees are [techni
 | What do the nouns mean? | [Concepts](foundations/concepts.md) |
 | What do dice, items and forms promise? | [Rules](gameplay/rules.md) |
 | How does an intention become committed work? | [Actions and commitments](gameplay/actions-and-commitments.md) |
-| When does time move if nobody accepts an action? | [Time and autonomy](gameplay/time-and-autonomy.md) |
+| When does time move if nobody accepts an action? | [Pace](gameplay/time-and-autonomy.md#pace) |
 | What is remembered, and what is only prose? | [Continuity](gameplay/continuity.md) |
-| Which bodies and worlds must work? | [Worlds and characters](gameplay/worlds-and-characters.md) |
-| Which stories define acceptance texture? | [Acceptance scenarios](gameplay/acceptance-scenarios.md) |
+| Which bodies and worlds must work? | [Flexible settings and protagonists](gameplay/worlds-and-characters.md#flexible-settings-and-protagonists). Ability applicability stays on that heading. Sparse identity and pinned starts follow on the same page |
+| Which stories define acceptance texture? | [Acceptance scenarios](gameplay/acceptance-scenarios.md) for the near-term playthrough. [Long-life benchmark playthroughs](gameplay/long-life-benchmark-playthroughs.md) for accumulated time. Both are illustrative. The small-party ambition stays an ambition. Each decision point names its governing heading |
 | What reusable visual language and Storyteller expression may the player experience? | [Design system and expressive worlds](experience/design-system-and-expression.md) |
 | What must the screen never fake? | [Principles](experience/principles.md) |
 | How does someone arrive and create a life? | [Entry](experience/entry-and-onboarding.md) |
@@ -27,3 +27,5 @@ What players and staff must be able to rely on. Technical guarantees are [techni
 | What may staff do, and what is still only proposed? | [Admin](admin/README.md) |
 
 Shared play and player-facing replay are proposed, not norms: [shared play](../../work/designs/open/shared-play/README.md), [player replay](../../work/designs/open/player-replay/README.md).
+
+Economy, progression, space, relationships, collaboration, and content policy that are not already selected stay Proposed in the [gameplay domain coverage catalogue](../../work/designs/open/gameplay-domain-coverage/README.md). That catalogue adds no rule.

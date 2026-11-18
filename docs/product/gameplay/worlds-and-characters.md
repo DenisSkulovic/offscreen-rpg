@@ -1,13 +1,13 @@
 # Worlds and characters | flexible forms, sparse identity
 
-**Owner (DOC01 P2):** what kinds of protagonists and settings the product must support, and when identity becomes durable. Drawn from vision, gameplay and continuity sparse-world rules.  
+**Owns:** what kinds of protagonists and settings the product must support, and when identity becomes durable.  
 **Companions:** [continuity](continuity.md), [concepts](../foundations/concepts.md), [rules](rules.md).
 
 ## Flexible settings and protagonists
 
 Settings and characters should be flexible: fantasy, space, everyday life, unusual creatures or mixtures. The core must not require a specific profession, human body, economy or geography. Creative freedom still needs continuity: established facts and player choices have weight.
 
-The selected D&D rules can remain richer than a particular character’s current form. Applicability belongs to the character and situation: a bodiless consciousness may have no current use for Strength; a later embodied form can gain abilities through an admitted transformation. Preserve conventional D&D behavior when the world supports it; do not flatten rules to the smallest common denominator or pretend every rule applies to every form.
+The selected D&D rules can remain richer than a particular character’s current form. Applicability belongs to the character and situation: a bodiless consciousness may have no current use for Strength; a later embodied form can gain abilities through an admitted transformation. Preserve conventional D&D behavior when the world supports it; do not flatten rules to the smallest common denominator or pretend every rule applies to every form. That limit is [World-independent foundation](rules.md#world-independent-foundation). [World-neutral capability kernel](../../technical/engine/selected-architecture.md#world-neutral-capability-kernel) is the selected conceptual target, not a schema and not a source-fixture policy.
 
 **Negative:** do not invent Farmer Bob because farms exist beyond the hill. Do not build one LLM agent per NPC, place or faction. Do not give a microorganism or a disembodied mind a humanoid inventory because a human character has one. A described person is not a canonical actor until later correctness depends on that identity. See [Six kinds of record](continuity.md#six-kinds-of-record).
 

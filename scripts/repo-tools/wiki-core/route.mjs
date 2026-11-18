@@ -6,6 +6,11 @@
  * whose opening contains a query word the title opening lacks. A heading that covers rarer
  * query words can replace a higher-scoring title. Route stemming is only hour/hours and commit/commits.
  * The static benchmark gold set is not an input.
+ * Authority is section-local (wiki.route.v2). v1 copied the page opening onto every
+ * heading. v2 uses an explicit status line or self-label, then inherits only when
+ * the parent label is already settled. Normative authority stays separate from
+ * realization. Uncertain headings stay in the index and out of the normative lane.
+ * Portable WIKI-INDEX copies authority and lane from this same section record.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -15,10 +20,9 @@ import { collectMaintainedPages } from './model.mjs';
 import { classifyRepoPath, resolveHref } from './paths.mjs';
 import { tokenize } from './search.mjs';
 
-export const ROUTE_SCHEMA = 'wiki.route.v1';
+export const ROUTE_SCHEMA = 'wiki.route.v2';
 export const DEFAULT_MAX_CHARS = 5000;
 const PREVIEW_CHARS = 320;
-const PROPOSAL_PAGE = /proposal only|not installed or authorized|technical recommendation|unaccepted future|status:\s*proposed\b/i;
 const PROPOSAL_QUERY = /\b(proposal|proposed|not installed|not selected)\b/i;
 const STATUS_QUERY = /\b(implemented|implementation|tested|available|live|source-observed|exist|exists)\b/i;
 const ROUTE_GLUE = new Set('page still only where mention describe separate how does instructions'.split(' '));
@@ -47,29 +51,223 @@ export function routePages(root, { includeHistoric = false } = {}) {
   return [...new Set([...pages, ...extra])].sort();
 }
 
-function pageOpening(pageText) {
-  const firstSection = pageText.search(/^## /m);
-  return pageText.slice(0, firstSection > 0 ? firstSection : 1200);
-}
-
-function authorityOf(rel, kind, pageText) {
-  if (rel === 'STATUS.md') return 'status';
-  const proposal = PROPOSAL_PAGE.test(pageOpening(pageText));
-  if (kind === 'canonical-product') return proposal ? 'proposal' : 'ratified-product';
-  if (kind === 'canonical-technical') return proposal ? 'proposal' : 'selected-technical';
-  if (kind === 'canonical-support' || kind === 'canonical-page') return proposal ? 'proposal' : 'selected-support';
-  if (kind === 'open-design' || kind === 'open-change') return 'proposal';
-  if (kind === 'historic' || kind === 'evidence') return 'historic';
-  if (kind === 'source-map') return 'source-map';
-  if (kind === 'canonical-router' || kind === 'root-index' || kind === 'work-index') return 'router';
-  return kind;
-}
-
 function laneOf(authority) {
   if (authority === 'proposal') return 'proposal';
   if (authority === 'historic' || authority === 'evidence') return 'historic';
   if (authority === 'status') return 'status';
+  if (authority === 'uncertain') return 'uncertain';
   return 'normative';
+}
+
+function stripMarks(text) {
+  return String(text ?? '').replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function firstParagraph(intro) {
+  const lines = String(intro ?? '').split(/\r?\n/);
+  let index = 1;
+  while (index < lines.length && lines[index].trim() === '') index += 1;
+  const buffer = [];
+  for (; index < lines.length; index += 1) {
+    if (lines[index].trim() === '') break;
+    buffer.push(lines[index]);
+  }
+  return stripMarks(buffer.join(' '));
+}
+
+function firstSentence(text) {
+  const match = /^.+?[.!?](?=\s|$)/.exec(text);
+  return (match ? match[0] : text).trim();
+}
+
+function hasBareWord(label, word) {
+  const re = new RegExp(`(?<!\\b(?:not|no|un)\\s)\\b${word}\\b`, 'i');
+  return re.test(label);
+}
+
+function pathDefault(rel, kind) {
+  if (rel === 'STATUS.md') {
+    return { authority: 'status', lane: 'status', realization: 'status-evidence', authorityBasis: 'path' };
+  }
+  if (kind === 'canonical-product') {
+    return { authority: 'ratified-product', lane: 'normative', realization: 'unknown', authorityBasis: 'path' };
+  }
+  if (kind === 'canonical-technical') {
+    return { authority: 'selected-technical', lane: 'normative', realization: 'unknown', authorityBasis: 'path' };
+  }
+  if (kind === 'canonical-support' || kind === 'canonical-page') {
+    return { authority: 'selected-support', lane: 'normative', realization: 'unknown', authorityBasis: 'path' };
+  }
+  if (kind === 'open-design' || kind === 'open-change') {
+    return { authority: 'proposal', lane: 'proposal', realization: 'proposed', authorityBasis: 'path' };
+  }
+  if (kind === 'historic' || kind === 'evidence') {
+    return { authority: 'historic', lane: 'historic', realization: 'unknown', authorityBasis: 'path' };
+  }
+  if (kind === 'source-map') {
+    return { authority: 'source-map', lane: 'normative', realization: 'unknown', authorityBasis: 'path' };
+  }
+  if (kind === 'canonical-router' || kind === 'root-index' || kind === 'work-index') {
+    return { authority: 'router', lane: 'normative', realization: 'unknown', authorityBasis: 'path' };
+  }
+  return { authority: kind, lane: laneOf(kind), realization: 'unknown', authorityBasis: 'path' };
+}
+
+function realizationFrom(text, role) {
+  if (role === 'proposal') return 'proposed';
+  if (role === 'status') return 'status-evidence';
+  if (role === 'uncertain') {
+    if (/provider-writing|paid-provider|paid provider|provider call/i.test(text)) return 'not-paid-production';
+    return 'unknown';
+  }
+  if (/\bnot implemented\b/i.test(text)) return 'unimplemented';
+  if (/\bno table, api or code is authorized\b/i.test(text) || /\bno code(?:,| or)\b/i.test(text)) return 'unimplemented';
+  if (/\bnot paid-provider permission\b/i.test(text) || /\bdoes not authorize a provider call\b/i.test(text)) return 'not-paid-production';
+  if (/\bnot tested\b/i.test(text)) return 'unknown';
+  if (/\bimplemented\b/i.test(text)) return 'implemented';
+  if (/\btested\b/i.test(text)) return 'tested';
+  return 'unknown';
+}
+
+function selectedName(rel, kind) {
+  if (rel === 'STATUS.md') return 'status';
+  if (kind === 'canonical-product') return 'ratified-product';
+  if (kind === 'canonical-technical') return 'selected-technical';
+  if (kind === 'canonical-support' || kind === 'canonical-page') return 'selected-support';
+  return null;
+}
+
+function openingStatusText(intro) {
+  const lines = String(intro ?? '')
+    .split(/\r?\n/)
+    .slice(1)
+    .filter((line) => line.trim() !== '')
+    .slice(0, 6)
+    .map(stripMarks);
+  const line = lines.find((item) => /^(?:status|state)\s*:/i.test(item));
+  if (line) return line;
+  const parts = firstParagraph(intro).split(/(?<=[.!?])\s+/);
+  return parts.find((part) => /^(?:status|state)\s*:/i.test(part)) ?? null;
+}
+
+/**
+ * Explicit labels only. A later sentence that mentions some other proposal
+ * does not change this heading. A status line we cannot settle is uncertain.
+ */
+function explicitLabel(headingText, intro) {
+  const heading = stripMarks(headingText);
+  if (/^proposed\b/i.test(heading)) {
+    return { role: 'proposal', realization: 'proposed', authorityBasis: 'heading' };
+  }
+  const paragraph = firstParagraph(intro);
+  const sentence = firstSentence(paragraph);
+  const self = selfLabel(sentence);
+  const statusLine = openingStatusText(intro);
+  if (!statusLine) return self;
+  const body = statusLine.replace(/^(?:status|state)\s*:\s*/i, '').trim();
+  const label = firstSentence(body);
+  const realizationText = `${body} ${paragraph}`;
+  if (/conditional technical target/i.test(label)) {
+    return { role: 'uncertain', realization: 'not-paid-production', authorityBasis: 'status' };
+  }
+  const selectedWord = ['selected', 'ratified', 'accepted', 'adopted'].some((word) => hasBareWord(label, word));
+  const proposedWord = /\bproposed\b/i.test(label) || /\bproposal only\b/i.test(label) || /\bproposed\/blocked\b/i.test(label);
+  const bareProposal = /\bproposal\b/i.test(label) && !/\bnot a proposal\b/i.test(label) && !proposedWord;
+  const recommendation = /\brecommendation\b/i.test(label);
+  const withhold = /\bnot approved\b/i.test(label) || /\bnot installed or authorized\b/i.test(label) || /\bunaccepted future\b/i.test(label);
+  if (selectedWord && (proposedWord || bareProposal || recommendation || withhold)) {
+    return { role: 'uncertain', realization: realizationFrom(realizationText, 'uncertain'), authorityBasis: 'status-unrecognized' };
+  }
+  if (proposedWord || recommendation || withhold) {
+    return { role: 'proposal', realization: 'proposed', authorityBasis: 'status' };
+  }
+  if (/\bnot a proposal\b/i.test(label) && selectedWord) {
+    return { role: 'selected', realization: realizationFrom(realizationText, 'selected'), authorityBasis: 'status' };
+  }
+  if (selectedWord) {
+    return { role: 'selected', realization: realizationFrom(realizationText, 'selected'), authorityBasis: 'status' };
+  }
+  if (bareProposal) {
+    return { role: 'uncertain', realization: 'unknown', authorityBasis: 'status-unrecognized' };
+  }
+  return self;
+}
+
+function selfLabel(sentence) {
+  if (/^this (?:page|section|family|document) is proposed\/blocked\b/i.test(sentence)) {
+    return { role: 'proposal', realization: 'proposed', authorityBasis: 'self' };
+  }
+  if (/^this (?:page|section|family|document) is (?:an illustrative evaluation|proposal only|proposed)\b/i.test(sentence)) {
+    return { role: 'proposal', realization: 'proposed', authorityBasis: 'self' };
+  }
+  if (/^this page is proposal only\b/i.test(sentence)) {
+    return { role: 'proposal', realization: 'proposed', authorityBasis: 'self' };
+  }
+  if (/^proposed\b/i.test(sentence)) {
+    return { role: 'proposal', realization: 'proposed', authorityBasis: 'self' };
+  }
+  if (/^the proposed queue is\b/i.test(sentence)) {
+    return { role: 'proposal', realization: 'proposed', authorityBasis: 'self' };
+  }
+  if (/^this (?:page|section|family|document|rehearsal boundary|evidence graph) is the selected\b/i.test(sentence)) {
+    return { role: 'selected', realization: realizationFrom(sentence, 'selected'), authorityBasis: 'self' };
+  }
+  return null;
+}
+
+function settleExplicit(rel, kind, explicit, parent) {
+  if (explicit.role === 'proposal') {
+    return { authority: 'proposal', lane: 'proposal', realization: explicit.realization, authorityBasis: explicit.authorityBasis };
+  }
+  if (explicit.role === 'uncertain') {
+    return {
+      authority: 'uncertain',
+      lane: 'uncertain',
+      realization: explicit.realization,
+      authorityBasis: explicit.authorityBasis,
+    };
+  }
+  const named = selectedName(rel, kind);
+  const parentWithholds = parent?.lane === 'proposal' || (!parent && pathDefault(rel, kind).lane === 'proposal');
+  if (!named || parentWithholds) {
+    return {
+      authority: 'uncertain',
+      lane: 'uncertain',
+      realization: 'unknown',
+      authorityBasis: 'selected-under-proposal',
+    };
+  }
+  return {
+    authority: named,
+    lane: laneOf(named),
+    realization: explicit.realization,
+    authorityBasis: explicit.authorityBasis,
+  };
+}
+
+function classifyHeadings(rel, kind, headings, lines) {
+  const stack = [];
+  return headings.map((heading, index) => {
+    const span = sectionSpan(headings, index, lines.length);
+    const nextHeading = headings[index + 1];
+    const introEnd = nextHeading ? nextHeading.line - 1 : lines.length;
+    const intro = lines.slice(span.lineStart - 1, Math.max(span.lineStart, introEnd)).join('\n');
+    while (stack.length > 0 && stack[stack.length - 1].depth >= heading.depth) stack.pop();
+    const parent = stack.length > 0 ? stack[stack.length - 1].decision : null;
+    const explicit = explicitLabel(heading.text, intro);
+    const decision = explicit
+      ? settleExplicit(rel, kind, explicit, parent)
+      : parent
+        ? {
+            authority: parent.authority,
+            lane: parent.lane,
+            realization: parent.realization,
+            authorityBasis: 'inherited',
+          }
+        : pathDefault(rel, kind);
+    stack.push({ depth: heading.depth, decision });
+    return decision;
+  });
 }
 
 function sectionSpan(headings, index, lineCount) {
@@ -122,7 +320,7 @@ export function buildSectionIndex(root, options = {}) {
   for (const [rel, { text, doc }] of parsed) {
     const lines = text.split(/\r?\n/);
     const kind = classifyRepoPath(rel);
-    const authority = authorityOf(rel, kind, text);
+    const decisions = classifyHeadings(rel, kind, doc.headings, lines);
     doc.headings.forEach((heading, index) => {
       const span = sectionSpan(doc.headings, index, lines.length);
       const nextHeading = doc.headings[index + 1];
@@ -131,6 +329,7 @@ export function buildSectionIndex(root, options = {}) {
       const body = lines.slice(span.lineStart - 1, span.lineEnd).join('\n');
       const specific = contexts.get(`${rel}#${heading.id}`) ?? [];
       const pageLevel = heading.depth === 1 ? (contexts.get(`${rel}#`) ?? []) : [];
+      const decision = decisions[index];
       sections.push({
         path: rel,
         anchor: heading.id,
@@ -143,8 +342,10 @@ export function buildSectionIndex(root, options = {}) {
         introTokens: [...new Set(tokenize(intro))],
         rowContext: [...specific, ...pageLevel].join(' ').slice(0, 500),
         outbound: outbound.get(`${rel}#${heading.id}`) ?? [],
-        authority,
-        lane: laneOf(authority),
+        authority: decision.authority,
+        lane: decision.lane,
+        realization: decision.realization,
+        authorityBasis: decision.authorityBasis,
         kind,
       });
     });
@@ -273,6 +474,7 @@ function specificChild(parent, ranked, tokens) {
   const parentExtra = parent.tokens.filter((token) => intro.has(token) && !heading.has(token)).length;
   let choice = null;
   for (const other of ranked) {
+    if (other.section.lane === 'proposal' || other.section.lane === 'historic' || other.section.lane === 'uncertain') continue;
     if (other.section.path !== parent.section.path || other.section.anchor === parent.section.anchor) continue;
     if (other.section.depth <= parent.section.depth) continue;
     if (other.section.lineStart < parent.section.lineStart || other.section.lineEnd > parent.section.lineEnd) continue;
@@ -324,7 +526,7 @@ function orderedRun(section, tokens) {
 function coverageWeight(ranked, tokens) {
   const present = new Map();
   for (const row of ranked) {
-    if (row.section.lane === 'historic') continue;
+    if (row.section.lane === 'historic' || row.section.lane === 'uncertain') continue;
     for (const token of coveredContent(row, tokens)) present.set(token, (present.get(token) ?? 0) + 1);
   }
   return (row) => coveredContent(row, tokens).reduce((sum, token) => sum + 1 / Math.max(present.get(token) ?? 1, 1), 0);
@@ -365,7 +567,7 @@ function preferCoverage(ranked, tokens, lead) {
   const leadWordsAreInProse = [...leadCover].every((token) => leadProse.has(token));
   let choice = null;
   for (const row of ranked) {
-    if (row === lead || row.section.lane === 'historic' || row.section.authority === 'router') continue;
+    if (row === lead || row.section.lane === 'historic' || row.section.lane === 'uncertain' || row.section.authority === 'router') continue;
     const cover = coveredContent(row, tokens);
     const missing = [...leadCover].filter((token) => !cover.includes(token));
     if (missing.length > 0) continue;
@@ -401,7 +603,7 @@ function samePageSection(index, pool, lead, tokens, query) {
 function namedProposal(ranked) {
   const seen = new Set();
   for (const row of ranked) {
-    if (row.section.lane === 'proposal' || row.section.lane === 'historic') continue;
+    if (row.section.lane === 'proposal' || row.section.lane === 'historic' || row.section.lane === 'uncertain') continue;
     for (const token of row.tokens) seen.add(stem(token));
   }
   let choice = null;
@@ -425,7 +627,7 @@ function matchesKind(section, kind) {
   return true;
 }
 
-function present(section, query) {
+function present(section, query, provenance = null) {
   const scored = scoreSection(section, query);
   return {
     path: section.path,
@@ -435,13 +637,17 @@ function present(section, query) {
     lineEnd: section.lineEnd,
     authority: section.authority,
     lane: section.lane,
-    selected: section.lane !== 'proposal' && section.lane !== 'historic',
+    realization: section.realization ?? 'unknown',
+    authorityBasis: section.authorityBasis ?? null,
+    selected: section.lane === 'normative' && section.authority !== 'uncertain',
     score: scored.score,
     match: scored.reason,
     preview: section.preview,
     rowContext: section.rowContext,
     bytes: section.bytes,
     ref: `${section.path}#${section.anchor}`,
+    repoSha: provenance?.repoSha ?? null,
+    dirty: provenance?.dirty ?? null,
   };
 }
 
@@ -460,10 +666,13 @@ export function findSections(index, query, { kind = null, top = 5, includeHistor
   const scoped = scopeDestination(index, scored, tokens, query);
   const lead = PROPOSAL_QUERY.test(query)
     ? ranked[0]
-    : (ranked.find((row) => row.section.lane !== 'proposal' && row.section.lane !== 'historic') ?? ranked[0]);
+    : (ranked.find((row) => row.section.lane !== 'proposal' && row.section.lane !== 'historic' && row.section.lane !== 'uncertain') ?? ranked[0]);
   let promotedProposal = false;
-  if (scoped) ranked = moveToFront(ranked, scoped);
-  else if (lead) {
+  let focusLane = ranked[0]?.section.lane ?? 'normative';
+  if (scoped) {
+    ranked = moveToFront(ranked, scoped);
+    focusLane = scoped.section.lane;
+  } else if (lead) {
     const onPage = lead.section.authority === 'router' ? null : samePageSection(index, scored, lead, tokens, query);
     let focus = lead;
     if (onPage) focus = onPage;
@@ -479,7 +688,7 @@ export function findSections(index, query, { kind = null, top = 5, includeHistor
         const childCover = new Set(child ? coveredContent(child, tokens) : []);
         const richerRival = child && ranked.some((row) => {
           if (row === child || row === focus) return false;
-          if (row.section.lane === 'proposal' || row.section.lane === 'historic') return false;
+          if (row.section.lane === 'proposal' || row.section.lane === 'historic' || row.section.lane === 'uncertain') return false;
           if (row.score <= focus.score) return false;
           const cover = coveredContent(row, tokens);
           const extra = cover.filter((token) => !childCover.has(token));
@@ -490,27 +699,32 @@ export function findSections(index, query, { kind = null, top = 5, includeHistor
       }
     }
     promotedProposal = focus.section.lane === 'proposal';
+    focusLane = focus.section.lane;
     ranked = moveToFront(ranked, focus);
   }
   const status = statusForPriority(index, tokens, query);
   if (status) {
     ranked = moveToFront(ranked, status);
     promotedProposal = false;
+    focusLane = status.section.lane;
   }
   const named = namedProposal(ranked);
   if (named) {
     ranked = moveToFront(ranked, named);
     promotedProposal = true;
+    focusLane = named.section.lane;
   }
   const normative = [];
   const proposalLane = [];
   const historic = [];
+  const uncertain = [];
   for (const row of ranked) {
-    const item = present(row.section, query);
+    const item = present(row.section, query, index);
     if (row.section.lane === 'proposal') proposalLane.push(item);
     else if (row.section.lane === 'historic') {
       if (includeHistoric) historic.push(item);
-    } else normative.push(item);
+    } else if (row.section.lane === 'uncertain') uncertain.push(item);
+    else normative.push(item);
   }
   let statusCompanion = null;
   if (STATUS_QUERY.test(query)) {
@@ -518,19 +732,25 @@ export function findSections(index, query, { kind = null, top = 5, includeHistor
     const statusSection =
       index.sections.find((section) => section.path === 'STATUS.md' && section.anchor === 'orientation') ??
       index.sections.find((section) => section.path === 'STATUS.md');
-    statusCompanion = already ?? (statusSection ? present(statusSection, query) : null);
+    statusCompanion = already ?? (statusSection ? present(statusSection, query, index) : null);
     if (statusCompanion && statusCompanion.score === 0) statusCompanion = { ...statusCompanion, match: 'status-companion' };
   }
   const proposalQuestion = PROPOSAL_QUERY.test(query) && proposalLane.length > 0;
+  let primaryLane = 'normative';
+  if (proposalQuestion || promotedProposal) primaryLane = 'proposal';
+  else if (focusLane === 'uncertain') primaryLane = 'uncertain';
   return {
     schema: ROUTE_SCHEMA,
     query,
     kind,
     top,
     includeHistoric,
-    primaryLane: proposalQuestion || promotedProposal ? 'proposal' : 'normative',
+    repoSha: index.repoSha ?? null,
+    dirty: index.dirty ?? null,
+    primaryLane,
     normative: normative.slice(0, top),
     proposalLane: proposalLane.slice(0, top).map((item) => ({ ...item, notice: 'NOT SELECTED' })),
+    uncertain: uncertain.slice(0, top).map((item) => ({ ...item, notice: 'UNCERTAIN — not a grant' })),
     historic: historic.slice(0, top),
     statusCompanion,
   };

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildSectionIndex, findSections, readSection } from './route.mjs';
 
 function write(root, rel, text) {
@@ -171,6 +172,86 @@ function fixture() {
     ['# Selected target', '', 'Architecture selected is not the same as code implemented.', ''].join('\n'),
   );
   write(root, 'scripts/repo-tools/wiki-benchmarks/secret.md', '# Secret\n\nZEBRA_GOLD_KEY must not be retrieved.\n');
+  write(
+    root,
+    'docs/product/examples.md',
+    [
+      '# Example rewards',
+      '',
+      '## Award note',
+      '',
+      'The proposed companion schedule is mentioned only as a pointer, and this award note stays the product rule.',
+      '',
+      'For example, the steward records one selected gift. ZED_EXAMPLE_PRODUCT stays product.',
+      '',
+      '## Proposed aside',
+      '',
+      'This section is proposed. It does not become the award rule. ZED_NESTED_PROPOSAL',
+      '',
+    ].join('\n'),
+  );
+  write(
+    root,
+    'docs/technical/capsule-page.md',
+    [
+      '# Evidence sample',
+      '',
+      '**Status: selected evidence-graph target, 2026-11-15. Not implemented.** This page is not a proposal.',
+      '',
+      '## Owner map',
+      '',
+      'The capsule stays a proposed read. This map does not authorize that read. ZED_MENTION_PROPOSAL',
+      '',
+      '## Turn evidence capsule',
+      '',
+      '**Status: proposed read contract, 2026-11-15. No table, API or code is authorized by this section.** ZED_CAPSULE',
+      '',
+    ].join('\n'),
+  );
+  write(
+    root,
+    'docs/technical/retention-like.md',
+    [
+      '# Retention sample',
+      '',
+      '**Status: technical/product recommendation, 2026-11-15; not approved for implementation.** ZED_RETENTION',
+      '',
+      '## Windows',
+      '',
+      'These are proposed starting policies for review, not legal commitments.',
+      '',
+    ].join('\n'),
+  );
+  write(
+    root,
+    'docs/technical/conditional-production.md',
+    [
+      '# Conditional production',
+      '',
+      '**State:** **CONDITIONAL TECHNICAL TARGET**, design approved for investigation but **no automatic provider-writing change is approved**. ZED_CONDITIONAL',
+      '',
+      '## Proposed publication protocol',
+      '',
+      'Do not call a provider. ZED_PAID_PRODUCTION',
+      '',
+    ].join('\n'),
+  );
+  write(
+    root,
+    'docs/technical/mixed-status.md',
+    ['# Mixed status', '', '**Status: selected and proposed for this same section.** ZED_MIXED', ''].join('\n'),
+  );
+  write(
+    root,
+    'docs/product/admin-sample.md',
+    [
+      '# Admin sample',
+      '',
+      '**Owns:** the console surface.',
+      '**Status: proposed, 2026-11-14.** This is not a live dashboard. ZED_OWNS_THEN_STATUS',
+      '',
+    ].join('\n'),
+  );
   return root;
 }
 
@@ -288,8 +369,11 @@ export function runRouteSelfTest() {
     assert.equal(proposed.proposalLane[0].path, 'docs/technical/observability/capture.md');
     const forensic = index.sections.find((item) => item.path === 'docs/technical/observability/forensic.md');
     const evidence = index.sections.find((item) => item.path === 'docs/technical/observability/evidence.md');
+    const contract = index.sections.find((item) => item.path === 'docs/technical/observability/evidence.md' && item.anchor === 'selected-contract');
     assert.equal(forensic.lane, 'proposal');
-    assert.equal(evidence.authority, 'selected-technical');
+    assert.equal(evidence.lane, 'uncertain');
+    assert.equal(evidence.authority, 'uncertain');
+    assert.equal(contract.authority, 'selected-technical');
   });
 
   check('the admission rule is indexed from the agent rules', () => {
@@ -309,13 +393,139 @@ export function runRouteSelfTest() {
     assert.equal(outline.text, undefined);
   });
 
+  check('section authority stays local, and uncertain headings do not become normative', () => {
+    const root = fixture();
+    const index = indexOf(root);
+    assert.equal(index.schema, 'wiki.route.v2');
+    assert.equal(index.repoSha, 'fixture');
+    assert.equal(index.dirty, false);
+    const mention = index.sections.find((item) => item.path === 'docs/product/examples.md' && item.anchor === 'award-note');
+    const nested = index.sections.find((item) => item.path === 'docs/product/examples.md' && item.anchor === 'proposed-aside');
+    const examplePage = index.sections.find((item) => item.path === 'docs/product/examples.md' && item.depth === 1);
+    assert.equal(mention.authority, 'ratified-product');
+    assert.equal(mention.lane, 'normative');
+    assert.equal(examplePage.authority, 'ratified-product');
+    assert.match(mention.preview, /For example/);
+    assert.equal(nested.authority, 'proposal');
+    assert.equal(nested.lane, 'proposal');
+    const status = index.sections.find((item) => item.path === 'STATUS.md');
+    assert.equal(status.authority, 'status');
+    assert.equal(status.lane, 'status');
+    assert.notEqual(status.authority, 'ratified-product');
+    const statusHit = findSections(index, 'Is the reward command implemented?');
+    const statusRow = statusHit.normative.find((item) => item.path === 'STATUS.md');
+    assert.ok(statusRow);
+    assert.equal(statusRow.selected, false);
+    assert.equal(statusRow.authority, 'status');
+    assert.equal(statusRow.repoSha, 'fixture');
+    assert.equal(statusRow.dirty, false);
+    assert.match(statusRow.ref, /^STATUS\.md#/);
+    const sample = index.sections.find((item) => item.path === 'docs/technical/capsule-page.md' && item.depth === 1);
+    const mentioned = index.sections.find((item) => item.path === 'docs/technical/capsule-page.md' && item.anchor === 'owner-map');
+    const capsule = index.sections.find((item) => item.path === 'docs/technical/capsule-page.md' && item.anchor === 'turn-evidence-capsule');
+    assert.equal(sample.authority, 'selected-technical');
+    assert.equal(sample.lane, 'normative');
+    assert.equal(sample.realization, 'unimplemented');
+    assert.equal(mentioned.authority, 'selected-technical');
+    assert.match(mentioned.preview, /proposed read/);
+    assert.equal(capsule.authority, 'proposal');
+    assert.equal(capsule.lane, 'proposal');
+    const capsuleHits = findSections(index, 'ZED_CAPSULE');
+    assert.equal(capsuleHits.normative.some((item) => item.anchor === 'turn-evidence-capsule'), false);
+    assert.ok(capsuleHits.proposalLane.some((item) => item.ref === 'docs/technical/capsule-page.md#turn-evidence-capsule'));
+    assert.equal(capsuleHits.proposalLane[0].authority, capsule.authority);
+    assert.equal(capsuleHits.proposalLane[0].lane, capsule.lane);
+    const retention = index.sections.filter((item) => item.path === 'docs/technical/retention-like.md');
+    assert.ok(retention.length >= 2);
+    assert.equal(retention.some((item) => item.authority === 'selected-technical' || item.lane === 'normative'), false);
+    assert.equal(retention[0].authority, 'proposal');
+    const conditional = index.sections.find((item) => item.path === 'docs/technical/conditional-production.md' && item.depth === 1);
+    const protocol = index.sections.find((item) => item.path === 'docs/technical/conditional-production.md' && item.heading === 'Proposed publication protocol');
+    assert.equal(conditional.authority, 'uncertain');
+    assert.equal(conditional.lane, 'uncertain');
+    assert.equal(conditional.realization, 'not-paid-production');
+    assert.equal(protocol.lane, 'proposal');
+    const conditionalHits = findSections(index, 'ZED_CONDITIONAL');
+    assert.equal(conditionalHits.normative.some((item) => item.path === 'docs/technical/conditional-production.md'), false);
+    assert.ok(conditionalHits.uncertain.some((item) => item.ref === 'docs/technical/conditional-production.md#conditional-production'));
+    assert.equal(conditionalHits.uncertain[0].notice, 'UNCERTAIN — not a grant');
+    const mixed = index.sections.find((item) => item.path === 'docs/technical/mixed-status.md');
+    assert.equal(mixed.lane, 'uncertain');
+    const chamber = index.sections.find((item) => item.path === 'docs/technical/lab/chamber.md' && item.depth === 1);
+    assert.equal(chamber.authority, 'selected-technical');
+    assert.notEqual(chamber.lane, 'uncertain');
+    const admin = index.sections.find((item) => item.path === 'docs/product/admin-sample.md' && item.depth === 1);
+    assert.equal(admin.authority, 'proposal');
+    assert.equal(admin.lane, 'proposal');
+    assert.equal(admin.authorityBasis, 'status');
+  });
+
+  check('checked-in headings keep section authority and source identity', () => {
+    const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+    const index = buildSectionIndex(repo, { repoSha: 'self-test-tree', dirty: true });
+    const byHeading = (rel, heading) => index.sections.find((item) => item.path === rel && item.heading === heading);
+    const h1 = (rel) => index.sections.find((item) => item.path === rel && item.depth === 1);
+    const retention = h1('docs/technical/observability/retention-and-access.md');
+    assert.ok(retention);
+    assert.equal(retention.authority, 'proposal');
+    assert.equal(retention.lane, 'proposal');
+    assert.notEqual(retention.authority, 'selected-technical');
+    const retentionSections = index.sections.filter((item) => item.path === retention.path);
+    assert.equal(retentionSections.some((item) => item.lane === 'normative' || item.authority === 'selected-technical'), false);
+    const capsule = byHeading('docs/technical/observability/identities-and-evidence.md', 'Turn Evidence Capsule');
+    const evidence = h1('docs/technical/observability/identities-and-evidence.md');
+    const ownerMap = byHeading('docs/technical/observability/identities-and-evidence.md', 'Owner map');
+    const decision = byHeading('docs/technical/observability/identities-and-evidence.md', '1. Decision: no mega-GameData blob, no telemetry-as-history');
+    assert.equal(evidence.authority, 'selected-technical');
+    assert.equal(evidence.realization, 'unimplemented');
+    assert.equal(ownerMap.authority, 'selected-technical');
+    const ownerText = readSection(repo, `${ownerMap.path}#${ownerMap.anchor}`, { maxChars: 8000 });
+    assert.match(ownerText.text, /proposed/i);
+    assert.equal(decision.authority, 'selected-technical');
+    const decisionText = readSection(repo, `${decision.path}#${decision.anchor}`, { maxChars: 8000 });
+    assert.match(decisionText.text, /proposals/i);
+    assert.equal(capsule.authority, 'proposal');
+    assert.equal(capsule.lane, 'proposal');
+    assert.equal(`${capsule.path}#${capsule.anchor}`, 'docs/technical/observability/identities-and-evidence.md#turn-evidence-capsule');
+    const capsuleHits = findSections(index, 'Turn Evidence Capsule');
+    assert.equal(capsuleHits.normative.some((item) => item.anchor === 'turn-evidence-capsule'), false);
+    assert.ok(capsuleHits.proposalLane.some((item) => item.ref.endsWith('#turn-evidence-capsule')));
+    assert.equal(capsuleHits.proposalLane.find((item) => item.anchor === 'turn-evidence-capsule').repoSha, 'self-test-tree');
+    assert.equal(capsuleHits.proposalLane.find((item) => item.anchor === 'turn-evidence-capsule').dirty, true);
+    const scene = h1('docs/technical/client/scene-direction-production.md');
+    const sceneSections = index.sections.filter((item) => item.path === scene.path);
+    assert.equal(scene.authority, 'uncertain');
+    assert.equal(scene.lane, 'uncertain');
+    assert.equal(scene.realization, 'not-paid-production');
+    assert.equal(sceneSections.some((item) => item.lane === 'normative'), false);
+    assert.equal(sceneSections.some((item) => item.realization === 'implemented'), false);
+    const multiDay = byHeading('docs/product/storyteller/behavior-and-quality.md', 'Multi-day evaluation family');
+    const solo = byHeading('docs/product/storyteller/behavior-and-quality.md', 'Selected solo proof boundary');
+    assert.equal(multiDay.lane, 'proposal');
+    assert.equal(solo.authority, 'ratified-product');
+    assert.match(solo.preview, /Proposed\/Blocked/);
+    const routine = byHeading('docs/product/gameplay/time-and-autonomy.md', 'Routine execution and event escalation');
+    const queue = byHeading('docs/product/gameplay/time-and-autonomy.md', 'Bounded plans for absence');
+    const routineText = readSection(repo, `${routine.path}#${routine.anchor}`, { maxChars: 20000 });
+    const soloText = readSection(repo, `${solo.path}#${solo.anchor}`, { maxChars: 4000 });
+    assert.equal(routine.authority, 'ratified-product');
+    assert.match(routineText.text, /For example/);
+    assert.match(routineText.text, /proposed first solo policy/);
+    assert.equal(queue.lane, 'proposal');
+    assert.match(soloText.text, /Proposed\/Blocked/);
+    const chamber = h1('docs/technical/lab/chamber-and-fixtures.md');
+    assert.equal(chamber.authority, 'selected-technical');
+    assert.equal(chamber.realization, 'not-paid-production');
+    assert.equal(chamber.lane, 'normative');
+  });
+
   if (failures.length > 0) {
     console.error('ROUTE SELF-TEST FAILURES:');
     for (const failure of failures) console.error(failure);
     return 1;
   }
   console.log(
-    'Route self-test passed: row context, fenced heading, nested range, truncation, proposal lane, status companion, historic opt-in, missing heading.',
+    'Route self-test passed: row context, fenced heading, nested range, truncation, proposal lane, section authority, status companion, historic opt-in, missing heading.',
   );
   return 0;
 }

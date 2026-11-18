@@ -1,6 +1,6 @@
 # Actions and commitments | intention to continuation
 
-**Owner (DOC01 P2):** how player intentions become accepted work and what may continue without fresh inference. Reconciles progression sections of former `foundations/gameplay.md`.  
+**Owns:** how player intentions become accepted work and what may continue without fresh inference.  
 **Companions:** [rules](rules.md), [time and autonomy](time-and-autonomy.md), [concepts](../foundations/concepts.md).  
 **Technical:** [solo gameplay](../../technical/engine/authority-and-transitions.md), [rules and activities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities).
 

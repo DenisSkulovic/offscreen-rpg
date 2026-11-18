@@ -1,8 +1,8 @@
 # Gameplay rules | D&D foundation and mechanical promises
 
-**Owner (DOC01 P2):** player-facing mechanical promises. Reconciles former `foundations/game-rules.md` + mechanical sections of `foundations/gameplay.md`.  
-**Technical companion:** [rules and activities](../../technical/engine/mechanics-and-capabilities.md).  
-**Does not own:** Storyteller creative taste ([behavior](../storyteller/behavior-and-quality.md)), UI choice chrome ([experience](../experience/play-and-decisions.md)), or staff investigation.
+**Owns:** player-facing mechanical promises.  
+**Does not own:** Storyteller creative taste ([behavior](../storyteller/behavior-and-quality.md)), UI choice chrome ([experience](../experience/play-and-decisions.md)), or staff investigation.  
+**Companions:** [rules and activities](../../technical/engine/mechanics-and-capabilities.md).
 
 ## Foundation
 

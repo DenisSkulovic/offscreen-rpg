@@ -8,6 +8,7 @@ import path from 'node:path';
 import { citationEdges } from '../maintenance-core.mjs';
 import { parseMarkdownDocument } from './markdown.mjs';
 import { buildWikiModel, collectMaintainedPages } from './model.mjs';
+import { resolveHref } from './paths.mjs';
 
 export const SCHEMA = 'wiki.change-guard.v1';
 
@@ -248,7 +249,231 @@ function planPaths(cells) {
   return found;
 }
 
-function validatePlanRow(changePath, row, severity, repo) {
+const SHAPE_HEADING = /^##\s+Document shape\s+\|\s+shape-ops\.v1\s*$/im;
+const RECEIPT_HEADING = /^##\s+Migration receipt\s+\|\s+shape-receipt\.v1\s*$/im;
+
+function sectionBody(text, headingRe) {
+  const match = text.match(headingRe);
+  if (!match || match.index == null) return null;
+  const start = match.index + match[0].length;
+  const rest = text.slice(start);
+  const next = rest.search(/^##\s+/m);
+  const body = next >= 0 ? rest.slice(0, next) : rest;
+  return { line: lineNumberAt(text, match.index), body, offset: start };
+}
+
+function tableCells(text) {
+  const rows = [];
+  for (const line of String(text).split(/\r?\n/)) {
+    const cells = splitRow(line);
+    if (!cells || isSeparator(cells)) continue;
+    rows.push(cells);
+  }
+  return rows;
+}
+
+function parseRef(token) {
+  const match = String(token ?? '').match(/([A-Za-z0-9_./()+\-]+\.md)(?:#([A-Za-z0-9._+\-]+))?/);
+  if (!match) return null;
+  return { rel: match[1], fragment: match[2] ?? null };
+}
+
+function parseMigrationCell(cell) {
+  const arrows = [];
+  for (const part of String(cell ?? '').split(';')) {
+    const trimmed = part.trim();
+    if (!trimmed || /^unchanged$/i.test(trimmed)) continue;
+    const sides = trimmed.split(/\s*(?:->|→)\s*/);
+    if (sides.length < 2) continue;
+    const from = parseRef(sides[0]);
+    const right = sides[1].trim();
+    if (/^retired\b/i.test(right)) {
+      arrows.push({ from, to: null, retired: true, unchanged: false });
+      continue;
+    }
+    if (/^unchanged\b/i.test(right)) {
+      arrows.push({ from, to: null, retired: false, unchanged: true });
+      continue;
+    }
+    arrows.push({ from, to: parseRef(right), retired: false, unchanged: false });
+  }
+  return arrows;
+}
+
+function completeArrow(arrow) {
+  return Boolean(arrow?.from?.rel && arrow.from.fragment && arrow.to?.rel && arrow.to.fragment);
+}
+
+function shapeKey(cell) {
+  const value = String(cell ?? '').replace(/\*\*/g, '').trim().toLowerCase();
+  if (value.includes('operation')) return 'op';
+  if (value.includes('conservation') || value.includes('unique')) return 'conservation';
+  if (value.includes('migration') || value.includes('heading')) return 'migration';
+  if (value.includes('path') || value.includes('file')) return 'path';
+  return null;
+}
+
+function receiptKey(cell) {
+  const value = String(cell ?? '').replace(/\*\*/g, '').trim().toLowerCase();
+  if (value.includes('unique') || value.includes('claim') || value.includes('conserv')) return 'claim';
+  if (value.includes('successor') || value.includes('destination')) return 'successor';
+  if (value.includes('old') || value.includes('from')) return 'old';
+  return null;
+}
+
+function rowsInSection(text, section, classify) {
+  if (!section) return [];
+  const lines = section.body.split(/\r?\n/);
+  let header = null;
+  const rows = [];
+  let cursor = section.offset;
+  for (const line of lines) {
+    const cells = splitRow(line);
+    const lineNumber = lineNumberAt(text, cursor);
+    cursor += line.length + 1;
+    if (!cells || isSeparator(cells)) continue;
+    const keys = cells.map(classify);
+    if (!header && keys.filter(Boolean).length >= 2) {
+      header = keys;
+      continue;
+    }
+    if (!header || cells.length !== header.length) continue;
+    const row = { line: lineNumber };
+    header.forEach((key, index) => {
+      if (key) row[key] = cells[index] ?? '';
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseShapeRows(text) {
+  const section = sectionBody(text, SHAPE_HEADING);
+  const rows = rowsInSection(text, section, shapeKey).map((row) => {
+    const op = String(row.op ?? '').match(/\b(CREATE|SPLIT|MERGE|MOVE|RETIRE|NO-OP)\b/);
+    const ref = parseRef(row.path ?? '');
+    return {
+      ...row,
+      operation: op ? op[1] : null,
+      rel: ref?.rel ?? null,
+      fragment: ref?.fragment ?? null,
+      arrows: parseMigrationCell(row.migration ?? ''),
+    };
+  });
+  return { section, rows };
+}
+
+function parseSuccessor(cell) {
+  const trimmed = String(cell ?? '').trim();
+  if (/^retired\b/i.test(trimmed)) return { retired: true, unchanged: false, to: null };
+  if (/^unchanged\b/i.test(trimmed)) return { retired: false, unchanged: true, to: null };
+  return { retired: false, unchanged: false, to: parseRef(trimmed) };
+}
+
+function parseReceiptRows(text) {
+  const section = sectionBody(text, RECEIPT_HEADING);
+  const rows = rowsInSection(text, section, receiptKey).map((row) => ({
+    ...row,
+    old: parseRef(row.old ?? ''),
+    successor: parseSuccessor(row.successor ?? ''),
+  }));
+  return { section, rows };
+}
+
+function inlineNewPaths(cell) {
+  const text = String(cell ?? '');
+  const found = new Set();
+  const createRe = /\bCREATE\b/g;
+  let match;
+  while ((match = createRe.exec(text))) {
+    const before = text.slice(Math.max(0, match.index - 32), match.index);
+    if (/\b(?:do not|don't|without|not)\s+$/i.test(before)) continue;
+    const ref = parseRef(text.slice(match.index, match.index + 300));
+    if (ref) found.add(ref.rel);
+  }
+  if (/\b(?:SPLIT|MOVE)\b/.test(text)) {
+    for (const arrow of parseMigrationCell(text)) {
+      if (arrow.to?.rel) found.add(arrow.to.rel);
+    }
+  }
+  return found;
+}
+
+function inlineLegacyPaths(cell) {
+  const text = String(cell ?? '');
+  const found = new Set();
+  if (!/\b(?:SPLIT|MERGE|MOVE|RETIRE)\b/.test(text)) return found;
+  for (const arrow of parseMigrationCell(text)) {
+    if (arrow.from?.rel) found.add(arrow.from.rel);
+  }
+  return found;
+}
+
+function declaredNewMarkdown(text) {
+  const found = new Set();
+  for (const row of parseShapeRows(text).rows) {
+    if (row.operation === 'CREATE' && row.rel) found.add(row.rel);
+    if (row.operation === 'SPLIT' || row.operation === 'MOVE') {
+      for (const arrow of row.arrows) {
+        if (arrow.to?.rel) found.add(arrow.to.rel);
+      }
+    }
+  }
+  for (const cells of tableCells(text)) {
+    for (const cell of cells) {
+      for (const rel of inlineNewPaths(cell)) found.add(rel);
+    }
+  }
+  return found;
+}
+
+function legacyMarkdown(text) {
+  const found = new Set();
+  for (const row of parseShapeRows(text).rows) {
+    if (['SPLIT', 'MERGE', 'MOVE', 'RETIRE'].includes(row.operation) && row.rel) found.add(row.rel);
+    for (const arrow of row.arrows) {
+      if (arrow.from?.rel) found.add(arrow.from.rel);
+    }
+  }
+  for (const row of parseReceiptRows(text).rows) {
+    if (row.successor?.unchanged) continue;
+    if (row.old?.rel) found.add(row.old.rel);
+  }
+  for (const cells of tableCells(text)) {
+    for (const cell of cells) {
+      for (const rel of inlineLegacyPaths(cell)) found.add(rel);
+    }
+  }
+  return found;
+}
+
+function pathAllowance(mode, declaredNew, legacy) {
+  return (rel) => {
+    if (!String(rel).endsWith('.md')) return null;
+    if (declaredNew.has(rel)) return 'skip';
+    if (mode === 'close' && legacy.has(rel)) return 'skip';
+    return null;
+  };
+}
+
+function deniesRatification(cell) {
+  return /\b(not ratified|unratified|remains proposed|not selected|do not ratify|is not ratified)\b/i.test(
+    String(cell ?? ''),
+  );
+}
+
+function claimNeedle(cell) {
+  const text = String(cell ?? '').trim();
+  const labeled = text.match(/^(?:unique negative|not ratified|conserved):\s*(.+)$/i);
+  return (labeled ? labeled[1] : text).trim();
+}
+
+function includesClaim(text, needle) {
+  const norm = (value) => String(value).toLowerCase().replace(/\s+/g, ' ').trim();
+  return norm(text).includes(norm(needle));
+}
+
+function validatePlanRow(changePath, row, severity, repo, allowance = null) {
   const findings = [];
   const disposition = row.cells[1] ?? '';
   const bare = row.cells.slice(1).join(' ').replace(/\*\*/g, ' ');
@@ -325,14 +550,14 @@ function validatePlanRow(changePath, row, severity, repo) {
   }
   if (repo) {
     for (const item of paths) {
-      const heading = checkHeading(repo, changePath, item.rel, item.fragment, row.line);
+      const heading = checkHeading(repo, changePath, item.rel, item.fragment, row.line, allowance);
       if (heading) findings.push({ ...heading, severity });
     }
   }
   return findings;
 }
 
-function planImpactFindings(changePath, text, repo) {
+function planImpactFindings(changePath, text, repo, allowance = null) {
   const findings = [];
   const state = stateOf(text);
   const proposed = /\bproposed\b/i.test(state ?? '');
@@ -372,7 +597,7 @@ function planImpactFindings(changePath, text, repo) {
   const seen = new Map();
   for (const row of rows) {
     seen.set(row.key, row);
-    findings.push(...validatePlanRow(changePath, row, severity, repo));
+    findings.push(...validatePlanRow(changePath, row, severity, repo, allowance));
   }
   for (const key of PLAN_PLANES) {
     if (seen.has(key)) continue;
@@ -413,7 +638,7 @@ function planImpactFindings(changePath, text, repo) {
   return findings;
 }
 
-function planFindings(changePath, text, repo = null) {
+function planFindings(changePath, text, repo = null, mode = 'plan') {
   const findings = [];
   if (!titleOf(text)) {
     findings.push(finding(changePath, 'error', 'missing-title', 1, 'title', 'CHANGE.md needs an H1 title.'));
@@ -464,16 +689,20 @@ function planFindings(changePath, text, repo = null) {
   if (gm07) findings.push(gm07);
   const pathClaim = pathRatificationFinding(changePath, text);
   if (pathClaim) findings.push(pathClaim);
-  findings.push(...planImpactFindings(changePath, text, repo));
+  const allowance = pathAllowance(mode, declaredNewMarkdown(text), legacyMarkdown(text));
+  const shapeSeverity = /\bproposed\b/i.test(stateOf(text) ?? '') ? 'warning' : 'error';
+  findings.push(...planImpactFindings(changePath, text, repo, allowance));
+  findings.push(...shapePlanFindings(changePath, text, repo, mode, shapeSeverity, allowance));
   return findings;
 }
 
-function checkHeading(repo, changePath, fileRel, fragment, line) {
+function checkHeading(repo, changePath, fileRel, fragment, line, allowance = null) {
   const resolved = resolveInsideRepo(repo, fileRel);
   if (!resolved) {
     return finding(changePath, 'error', 'unsafe-path', line, 'path', `Refused to resolve ${fileRel}.`);
   }
   if (!existsSync(resolved.abs)) {
+    if (allowance && allowance(resolved.rel) === 'skip') return null;
     return finding(
       changePath,
       'error',
@@ -508,7 +737,7 @@ function exceptionCovers(text, rel) {
   });
 }
 
-function closeFindings(repo, changePath, text, changedPaths) {
+function closeFindings(repo, changePath, text, changedPaths, allowance = null) {
   const findings = [];
   const state = stateOf(text);
   const ledgerHeading = text.search(/^##\s+Reconciliation ledger/im);
@@ -612,7 +841,7 @@ function closeFindings(repo, changePath, text, changedPaths) {
     }
     const claimText = `${row.affected ?? ''} ${row.source ?? ''}`;
     for (const item of extractPaths(claimText)) {
-      const heading = checkHeading(repo, changePath, item.rel, item.fragment, row.line);
+      const heading = checkHeading(repo, changePath, item.rel, item.fragment, row.line, allowance);
       if (heading) findings.push(heading);
     }
     const productRewrite = /docs\/product/i.test(`${row.affected} ${row.authority}`)
@@ -792,6 +1021,368 @@ function closeImpactFindings(repo, changePath, text, changedPaths, historyStatus
   return findings;
 }
 
+function shapePlanFindings(changePath, text, repo, mode, severity, allowance) {
+  const shape = parseShapeRows(text);
+  if (!shape.section) return [];
+  const findings = [];
+  if (shape.rows.length === 0) {
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'shape-missing-row',
+        shape.section.line,
+        'shape-ops.v1',
+        'Document shape | shape-ops.v1 needs one row per CREATE, SPLIT, MERGE, MOVE, RETIRE, or NO-OP.',
+      ),
+    );
+    return findings;
+  }
+  for (const row of shape.rows) {
+    if (!row.operation) {
+      findings.push(
+        finding(
+          changePath,
+          severity,
+          'shape-unknown-operation',
+          row.line,
+          'operation',
+          'Operation must be CREATE, SPLIT, MERGE, MOVE, RETIRE, or NO-OP.',
+        ),
+      );
+    }
+    if (!row.rel) {
+      findings.push(
+        finding(
+          changePath,
+          severity,
+          'shape-missing-path',
+          row.line,
+          'path',
+          'Name the Markdown path for this file operation.',
+        ),
+      );
+    }
+    const conservation = String(row.conservation ?? '').trim();
+    if (placeholder(conservation) || conservation.length < 12) {
+      findings.push(
+        finding(
+          changePath,
+          severity,
+          'shape-weak-conservation',
+          row.line,
+          'conservation',
+          'Say what meaning stays, or that a retired claim is not ratified.',
+        ),
+      );
+    }
+    if (row.operation === 'MERGE' && !/negative|must not|cannot|do not/i.test(`${conservation} ${row.migration ?? ''}`)) {
+      findings.push(
+        finding(
+          changePath,
+          severity,
+          'shape-merge-drops-negative',
+          row.line,
+          'conservation',
+          'A merge must name the unique negative constraint that the survivor keeps.',
+        ),
+      );
+    }
+    if (
+      row.operation === 'RETIRE' &&
+      !deniesRatification(conservation) &&
+      !deniesRatification(row.migration ?? '')
+    ) {
+      findings.push(
+        finding(
+          changePath,
+          severity,
+          'retirement-ratifies',
+          row.line,
+          'conservation',
+          'Retiring a page does not ratify its content. Say that the claim is not ratified.',
+        ),
+      );
+    }
+    if (row.operation === 'SPLIT' || row.operation === 'MERGE' || row.operation === 'MOVE') {
+      const complete = row.arrows.filter(completeArrow);
+      if (row.operation === 'SPLIT' && complete.length < 2) {
+        findings.push(
+          finding(
+            changePath,
+            severity,
+            'shape-split-needs-two',
+            row.line,
+            'migration',
+            'A split needs two old.md#heading -> new.md#heading migrations.',
+          ),
+        );
+      } else if (complete.length < 1) {
+        findings.push(
+          finding(
+            changePath,
+            severity,
+            'shape-bad-migration',
+            row.line,
+            'migration',
+            'Use old.md#heading -> new.md#heading for this operation.',
+          ),
+        );
+      }
+    }
+    if (row.operation === 'RETIRE') {
+      const retired = row.arrows.some((arrow) => arrow.retired && arrow.from?.rel && arrow.from.fragment);
+      if (!retired) {
+        findings.push(
+          finding(
+            changePath,
+            severity,
+            'shape-bad-migration',
+            row.line,
+            'migration',
+            'A retirement needs old.md#heading -> retired.',
+          ),
+        );
+      }
+    }
+    if (repo && row.rel) {
+      const heading = checkHeading(repo, changePath, row.rel, row.fragment, row.line, allowance);
+      if (heading) findings.push({ ...heading, severity });
+    }
+    if (mode === 'plan' && repo && row.operation === 'MERGE') {
+      for (const arrow of row.arrows.filter(completeArrow)) {
+        const heading = checkHeading(repo, changePath, arrow.to.rel, arrow.to.fragment, row.line, null);
+        if (heading) findings.push({ ...heading, severity });
+      }
+    }
+  }
+  return findings;
+}
+
+function issueTarget(repo, issue) {
+  const href = String(issue.target ?? '').trim();
+  if (!href || !issue.path) return '';
+  const resolved = resolveHref(repo, issue.path, href);
+  return toRepoPath(resolved.rel || resolved.requested || '');
+}
+
+function migrationCloseFindings(repo, changePath, text, changedPaths) {
+  const findings = [];
+  const shape = parseShapeRows(text);
+  const receipt = parseReceiptRows(text);
+  const declaredNew = declaredNewMarkdown(text);
+  const changed = new Set((changedPaths ?? []).map(toRepoPath));
+  for (const row of shape.rows) {
+    if (row.operation !== 'NO-OP' || !row.rel || !changed.has(row.rel)) continue;
+    findings.push(
+      finding(
+        changePath,
+        'error',
+        'noop-was-edited',
+        row.line,
+        row.rel,
+        `${row.rel} is declared NO-OP and is in the diff.`,
+      ),
+    );
+  }
+  for (const rel of declaredNew) {
+    const resolved = resolveInsideRepo(repo, rel);
+    if (resolved && existsSync(resolved.abs)) continue;
+    findings.push(
+      finding(
+        changePath,
+        'error',
+        'create-missing-at-close',
+        null,
+        rel,
+        `${rel} was declared CREATE or as a split/move successor and does not exist at close.`,
+      ),
+    );
+  }
+  const needsGraph =
+    Boolean(receipt.section) ||
+    declaredNew.size > 0 ||
+    shape.rows.some((row) => ['SPLIT', 'MERGE', 'MOVE', 'RETIRE'].includes(row.operation));
+  if (!needsGraph) return findings;
+  if (receipt.section && receipt.rows.length === 0) {
+    findings.push(
+      finding(
+        changePath,
+        'error',
+        'receipt-missing-row',
+        receipt.section.line,
+        'shape-receipt.v1',
+        'Migration receipt | shape-receipt.v1 needs one old owner, successor, and unique claim row.',
+      ),
+    );
+  }
+  let model = null;
+  try {
+    model = buildWikiModel(repo, { repoSha: null, dirty: true });
+  } catch (error) {
+    findings.push(
+      finding(
+        changePath,
+        'error',
+        'proof-blocked',
+        null,
+        'graph',
+        `The wiki graph could not be read, so inbound anchors were not treated as healthy. ${error instanceof Error ? error.message : String(error)}`,
+      ),
+    );
+    return findings;
+  }
+  const watch = new Set(declaredNew);
+  for (const row of shape.rows) {
+    if (row.rel && row.operation !== 'NO-OP') watch.add(row.rel);
+    for (const arrow of row.arrows) {
+      if (arrow.from?.rel) watch.add(arrow.from.rel);
+      if (arrow.to?.rel) watch.add(arrow.to.rel);
+    }
+  }
+  for (const row of receipt.rows) {
+    if (!row.old?.rel || !row.old.fragment) {
+      findings.push(
+        finding(
+          changePath,
+          'error',
+          'receipt-bad-row',
+          row.line,
+          'old owner',
+          'The old owner must be path#heading.',
+        ),
+      );
+    } else {
+      watch.add(row.old.rel);
+    }
+    const claim = String(row.claim ?? '').trim();
+    const needle = claimNeedle(claim);
+    if (placeholder(claim) || needle.length < 12) {
+      findings.push(
+        finding(
+          changePath,
+          'error',
+          'receipt-bad-row',
+          row.line,
+          'unique claim',
+          'Name the unique claim that must survive, or the retired sentence that must not be ratified.',
+        ),
+      );
+    }
+    if (row.successor?.retired) {
+      if (!deniesRatification(claim)) {
+        findings.push(
+          finding(
+            changePath,
+            'error',
+            'retirement-ratifies',
+            row.line,
+            'successor',
+            'A retired successor must say the old content is not ratified.',
+          ),
+        );
+      }
+      if (needle.length >= 20) {
+        for (const node of model.graph.nodes) {
+          if (node.id === row.old?.rel) continue;
+          if (!/^docs\/(product|technical)\//.test(node.id)) continue;
+          const abs = path.join(repo, ...node.id.split('/'));
+          if (!existsSync(abs) || !includesClaim(readText(abs), needle)) continue;
+          findings.push(
+            finding(
+              changePath,
+              'error',
+              'retirement-ratifies',
+              row.line,
+              node.id,
+              `${node.id} contains the retired claim. Retiring a proposed page does not ratify it.`,
+            ),
+          );
+        }
+      }
+      continue;
+    }
+    if (row.successor?.unchanged) {
+      if (row.old?.rel && changed.has(row.old.rel)) {
+        findings.push(
+          finding(
+            changePath,
+            'error',
+            'noop-was-edited',
+            row.line,
+            row.old.rel,
+            `${row.old.rel} is an unchanged migration and is in the diff.`,
+          ),
+        );
+      }
+    } else if (!row.successor?.to?.rel || !row.successor.to.fragment) {
+      findings.push(
+        finding(
+          changePath,
+          'error',
+          'receipt-bad-row',
+          row.line,
+          'successor',
+          'Successor must be path#heading, retired, or unchanged.',
+        ),
+      );
+      continue;
+    } else {
+      watch.add(row.successor.to.rel);
+      const resolved = resolveInsideRepo(repo, row.successor.to.rel);
+      if (!resolved || !existsSync(resolved.abs)) {
+        findings.push(
+          finding(
+            changePath,
+            'error',
+            'create-missing-at-close',
+            row.line,
+            row.successor.to.rel,
+            `${row.successor.to.rel} is a migration successor and does not exist at close.`,
+          ),
+        );
+      }
+    }
+    const owner = row.successor?.unchanged ? row.old : row.successor?.to;
+    if (!owner?.rel) continue;
+    const resolved = resolveInsideRepo(repo, owner.rel);
+    if (!resolved || !existsSync(resolved.abs)) continue;
+    if (owner.fragment) {
+      const heading = checkHeading(repo, changePath, owner.rel, owner.fragment, row.line, null);
+      if (heading) findings.push(heading);
+    }
+    if (needle.length >= 12 && !includesClaim(readText(resolved.abs), needle)) {
+      findings.push(
+        finding(
+          changePath,
+          'error',
+          'unique-claim-lost',
+          row.line,
+          owner.rel,
+          `${owner.rel} does not contain the unique claim from ${row.old?.rel ?? 'the old owner'}#${row.old?.fragment ?? ''}.`,
+        ),
+      );
+    }
+  }
+  for (const issue of model.issues) {
+    if (issue.severity !== 'error') continue;
+    if (!['broken-anchor', 'broken-path', 'directory-fragment'].includes(issue.code)) continue;
+    const target = issueTarget(repo, issue);
+    if (!watch.has(target)) continue;
+    findings.push(
+      finding(
+        changePath,
+        'error',
+        'broken-inbound-anchor',
+        issue.line,
+        target,
+        `${issue.path} still has a ${issue.code} to ${issue.target}. Inbound references to a created, split, moved, or merged owner must resolve.`,
+      ),
+    );
+  }
+  return findings;
+}
+
 /**
  * @param {{ repo: string, mode: 'plan' | 'close', changePath?: string | null, changedPaths?: string[], readmeText?: string, historyStatus?: string | null }} input
  */
@@ -862,10 +1453,12 @@ export function guardChange(input) {
     };
   }
   const text = readText(resolved.abs);
-  const findings = planFindings(changePath, text, repo);
+  const allowance = pathAllowance(mode, declaredNewMarkdown(text), legacyMarkdown(text));
+  const findings = planFindings(changePath, text, repo, mode);
   if (mode === 'close') {
-    findings.push(...closeFindings(repo, changePath, text, changedPaths));
+    findings.push(...closeFindings(repo, changePath, text, changedPaths, allowance));
     findings.push(...closeImpactFindings(repo, changePath, text, changedPaths, input.historyStatus ?? null));
+    findings.push(...migrationCloseFindings(repo, changePath, text, changedPaths));
   }
   const failed = findings.some((item) => item.severity === 'error');
   return {

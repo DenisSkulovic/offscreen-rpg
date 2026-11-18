@@ -1,0 +1,68 @@
+# DOC25 | Remove actual stale editorial scaffolding and phantom source routes
+
+**State:** Done (2026-11-18).
+
+## Cursor first-screen brief
+
+**Why this is missing:** Post-DOC24 text still has 'Owner (DOC01 P2)' and 'Reconciles former foundations/gameplay.md' headers in product claims; settings-and-accessibility.md ends with 'Source detail for later fold: experience system/accessibility-and-voice.md', a nonlinked former owner not present in docs tree.
+
+**Start with actual current owners:**
+- [docs/product/experience/settings-and-accessibility.md](../../../../../../docs/product/experience/settings-and-accessibility.md)
+- [docs/product/gameplay/worlds-and-characters.md](../../../../../../docs/product/gameplay/worlds-and-characters.md)
+- [docs/product/gameplay/actions-and-commitments.md](../../../../../../docs/product/gameplay/actions-and-commitments.md)
+- [docs/product/gameplay/rules.md](../../../../../../docs/product/gameplay/rules.md)
+
+Do not skim old DOC05–24 archives as if they were live authority. Inspect exact headings and source at HEAD; if the source has moved, correct this packet's paths and affected claims before Ready.
+
+## Designed documentation outcome
+
+1. Enumerate residual migration-stage wording across canonical product and technical pages using exact occurrences, not broad 'legacy' deletion. Classify intentional compatibility words separately from stale ownership metadata.
+2. Replace DOC01/P2 labels with permanent Owns/Does not own/Companions where useful; in accessibility page either link a verified existing current technical owner or explicitly state what is unresolved, deleting the phantom legacy route.
+3. Repair any real inbound routes and check whether WIKI08/DOC24 audits already documented the same omission; record the new residue and why automated link health missed it (backtick path, not Markdown link).
+
+Each output must have a **distinct reader question, normative status, unique owner**, normal procedure/example, negative example and exact related links. A new file is only justified when the task cannot be answered economically inside an existing owner. Record *no page created* with a reason if survey disproves the proposed split.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | changed: docs/product/experience/settings-and-accessibility.md, docs/product/gameplay/worlds-and-characters.md, docs/product/gameplay/actions-and-commitments.md and docs/product/gameplay/rules.md; replace migration-era owner phrases with durable purpose/companion links without changing rules | `docs/product/README.md` and mentioned selected player claims, including Proposed exclusions | No new rights; require owner ratification for changed meaning |
+| Technical | unchanged because no runtime API, timing or mechanics contract is altered by replacing obsolete editorial metadata | `docs/technical/README.md` and selected technical/source owners cited above | Status and evidence must reflect source/fixture reality |
+| Code | unchanged because this Change edits canonical Markdown only; source read may establish real current technical companion | Source path inspection is read-only and not a code-writing permission | Negative: any executable diff or imagined test report blocks Done |
+| Related | unchanged because no heading was renamed and no inbound Markdown hub link broke. The new companion link stays on docs/product/experience/settings-and-accessibility.md | Existing inbound links, docs/runbooks, source-map and work/designs routes as relevant | Hubs were inspected. None needed an edit. |
+
+**Planned CREATE note:** where this packet names a new Markdown path, the file intentionally does not exist at design time. **Do not mark Ready until WIKI16's planned-CREATE guard compatibility is landed and checked**, or the owner explicitly revises the packet to an existing-page edit. A misspelled existing path is not a valid CREATE.
+
+**No page created.** Execution is an existing-page edit. The four named product pages already own these claims, so a new page is not justified. Ready for close does not wait on a new file.
+
+## Acceptance and negative proof
+
+**Normal:** a reader can find the exact owner and perform the correct bounded intellectual/task step, or clearly distinguish unselected policy from an accepted rule. **Negative:** Replacing the header silently deletes the world-neutral ability constraint or makes accessibility a purely visual preference instead of a player requirement.
+
+**Evidence:** Static exact-term/phantom-path inventory, product claim diff and focused Markdown link check; report remaining intentionally historical occurrences. Run actual link/anchor and `wiki:change-guard` checks when selected in a full checkout; record actual command, revision and skipped checks. Independent adversarial reading must verify that the new page did not create shadow product/technical authority.
+
+## Reconciliation ledger (fill at execution)
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/product/experience/settings-and-accessibility.md#settings-and-accessibility | product | changed: removed "client technical owners (P3)". Companions now names the existing technical owner. The Owns sentence is still player-facing controls plus accessibility obligations. Creative presets are labeled Does not own and still link profiles-and-settings.md. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | The accessibility section still requires WCAG 2.2 AA, text equivalents, keyboard focus, and says game fiction is not an exception to accessible controls. It was not rewritten as a visual preference. | Outbound Markdown link added to docs/technical/client/accessibility-and-performance.md. No heading renamed. docs/product/README.md was not edited. |
+| docs/product/experience/settings-and-accessibility.md#accessibility-obligations | product | changed: deleted the final fold sentence that named a former experience route absent from the docs tree. The six obligation bullets above it are the same. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | Removing that pointer leaves text equivalents, semantic passages, keyboard operation, focus behavior, and assistive messaging in place. | Link health missed the route because it was inline code, not a Markdown link. scripts/repo-tools/wiki-core/markdown.mjs skips inlineCode and records only link nodes. WIKI08 claim 29 said the DOC01 owner line was already gone and did not record this residue. DOC24 did not record it. The coverage review receipt did. |
+| docs/product/gameplay/worlds-and-characters.md#worlds-and-characters--flexible-forms-sparse-identity | product | changed: "Owner (DOC01 P2)" became Owns, keeping the same protagonist, setting, and durable-identity sentence. Removed the provenance clause "Drawn from vision, gameplay and continuity sparse-world rules." Companion links are unchanged. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | Flexible settings, the three sparse-world layers, and the negative against inventing unused people or giving a disembodied mind a humanoid inventory remain. | No heading renamed, so no inbound hub repair. |
+| docs/product/gameplay/actions-and-commitments.md#actions-and-commitments--intention-to-continuation | product | changed: "Owner (DOC01 P2)" became Owns, keeping how intentions become accepted work. Removed "Reconciles progression sections of former foundations/gameplay.md." Companion and technical links are unchanged. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | Stable meanings still say narration does not admit an effect and that these meanings add no new action or consent right. | No heading renamed, so no inbound hub repair. |
+| docs/product/gameplay/actions-and-commitments.md#open--deferred-product-policy | product | unchanged: the unsettled-policy sentence still names free-intent paths, changing course, and GM07-style delegated decisions. That phrase is not an ownership label and is not ratified. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | Deleting GM07-style would narrow an unsettled policy. It was left in place. | No link change. |
+| docs/product/gameplay/rules.md#gameplay-rules--dd-foundation-and-mechanical-promises | product | changed: "Owner (DOC01 P2)" became Owns, keeping player-facing mechanical promises. Removed "Reconciles former foundations/game-rules.md + mechanical sections of foundations/gameplay.md." Does not own is unchanged. The technical companion link is now labeled Companions and still targets mechanics-and-capabilities.md. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | The header edit did not delete the world-neutral ability constraint under World-independent foundation. | No heading renamed, so no inbound hub repair. |
+| docs/product/gameplay/rules.md#world-independent-foundation | product | unchanged: current form still declares which abilities apply. An unavailable ability is not a score of zero, cannot be invoked by a generated plan, and inapplicability does not grant unlimited capability. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | Replacing the header did not delete the world-neutral ability constraint or flatten rules to one body plan. | No link change. |
+| docs/product/gameplay/rules.md#foundation | product | unchanged: the edition limit "must not claim full compatibility with a particular edition" and the owner-delegated SRD 5.2.1 baseline stay. Those are live mechanical limits, not migration-stage owner labels. The word legacy does not appear on these four pages, so nothing was broad-deleted under that word. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | A compatibility deletion would change the rules subset. The sentence is still present. | No link change. |
+| docs/product/experience/return-and-journal.md | product | changed: the same DOC01 P2 owner line found by the canonical-page sweep is now Owns / Does not own / Companions. The absence-and-long-life claim is unchanged. Staff forensics and finished replay stay outside this page. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | The recap still must not rewrite what happened, and a generated synopsis still does not replace the saved passage. | Companions link the existing POC Journal and concepts pages. No new page. |
+| Inbound citations of the four edited pages | product | unchanged: docs/README.md, docs/product/README.md, docs/product/foundations/vision.md, docs/product/gameplay/time-and-autonomy.md, docs/product/storyteller/memory-and-continuity.md, docs/product/storyteller/profiles-and-settings.md, docs/technical/client/accessibility-and-performance.md, docs/technical/engine/lifecycle-and-compatibility.md, docs/technical/engine/mechanics-and-capabilities.md, and docs/technical/engine/selected-architecture.md still cite these pages. No heading on the edited pages was renamed, so those citations were not rewritten. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | A see-also citation is not a second copy of the ability constraint or the accessibility requirement. Those claims stay on the edited owners. | No inbound file was edited. |
+| docs/technical/storyteller/context-and-memory.md | technical | unchanged by this Change: that file is a concurrent worktree edit against b3113814. DOC25 does not edit it and does not dispose its claims. | no source behavior changed; git SHA b3113814 | docs text inspected; no source behavior changed | Treating another agent's Storyteller edit as this Change would mix two outcomes. It was left untouched. | No link from this Change. |
+
+exception: docs/runbooks/README.md because a concurrent agent owns that diff and DOC25 does not edit it.
+exception: docs/runbooks/content-package-authoring.md because a concurrent agent owns that diff and DOC25 does not edit it.
+exception: packages/documents/README.md because a concurrent agent owns that diff and DOC25 does not edit it.
+exception: work/changes/archive/2026-11/other/2026-11-18--doc26-content-authoring-guide/CHANGE.md because a concurrent agent owns that packet and DOC25 does not edit it.
+exception: docs/technical/storyteller/context-and-memory.md because a concurrent agent owns that diff and DOC25 does not edit it.
+
+**Checks:** `git rev-parse --short HEAD` was `b3113814`. A focused parse of Markdown links on the four pages resolved every link and anchor. `pnpm wiki:change-guard --mode close --change work/changes/archive/2026-11/other/2026-11-18--doc25-stale-doc-archeology --base b3113814` returned `wiki.change-guard.v1 close ok`. Remaining warnings name only the concurrent storyteller and runbook diff, which this packet does not review. Repo-wide `wiki:health` was not run.
+
+**Stop:** proposed new gameplay/privacy/security or public API behavior cannot be ratified by writing a document. No auto-selection of next packet. Archive only with unique-claim preservation and complete ledger.

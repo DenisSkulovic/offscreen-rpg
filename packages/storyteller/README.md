@@ -47,7 +47,7 @@ The application already selects exact world/rule sections and campaign documents
 
 Ordinary tasks default to one shot. A captured memory recipe can use a bounded multi-round controller: decision rounds request `ask_memory` or `read_memory`, and a protected final round uses the original result schema. Read handles (`m#`/`x#`) differ from provenance citations (`s#`). The application owns retrieval and shared round/read/retained-byte/input/output/cost bounds. Existing retrieval experiments do not establish a reliable default for sustained gameplay.
 
-Read [memory/retrieval](../../docs/technical/storyteller/context-and-memory.md) for strategy, [canonical files](../../docs/technical/storyteller/context-and-memory.md) for authority, and [context/cost](../../docs/technical/storyteller/request-context-and-cost.md) for packing and headroom.
+Read [what source enters a task](../../docs/technical/storyteller/context-selection-and-recall.md#what-source-enters-this-task) for selection, [canonical documents and packages](../../docs/technical/storyteller/canonical-documents-and-packages.md) for revision and import authority, and [context/cost](../../docs/technical/storyteller/request-context-and-cost.md) for packing and headroom. The [storyteller route](../../docs/technical/storyteller/context-and-memory.md) still resolves the old headings.
 
 ## Content and creative ownership
 

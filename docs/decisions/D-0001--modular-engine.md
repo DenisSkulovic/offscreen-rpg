@@ -10,7 +10,7 @@ Keep a modular monolith: PostgreSQL story authority, pure rule capabilities, bou
 
 ## Rejected for now
 
-An LLM-led chat as the source of mechanical truth. A universal world simulation. Event-sourced microservices before domain seams are stable. A turn-based CRPG engine as the whole product.
+An LLM-led chat as the source of mechanical truth. The rationale is [Alternatives that lose for now](../technical/engine/selected-architecture.md#alternatives-that-lose-for-now). A universal world simulation. Event-sourced microservices before domain seams are stable. A turn-based CRPG engine as the whole product.
 
 ## Revisit
 

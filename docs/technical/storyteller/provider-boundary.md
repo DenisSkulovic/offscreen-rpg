@@ -2,7 +2,7 @@
 
 Status: implemented for the offline POC, with **OBS00-C wire-equality** and **OBS00-L local Story trial guards** landed (2026-11-15). Exact packet construction, attempt-owned durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. `pnpm chamber:memory-packet` materializes the maintained Greywake long-story corpus and captures the ordinary memory controller's exact first-round packet at the same zero-spend boundary. Rebuilding means admitting a fresh immutable generation. Pure packet comparison covers every implemented request purpose plus bounded human/nonhuman active-scene sequences and reports exact byte overlap without inferring cache savings. **OBS00-B** (production/default-worker current entitlement) remains blocked. Live paid release still requires a separate spending and evaluation preflight with a **fresh** owner cap.
 
-**Route:** [attempt custody and an unknown call](#attempt-custody-and-an-unknown-call). Grants and recovery stay in [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities).
+**Route:** [attempt custody and an unknown call](#attempt-custody-and-an-unknown-call). Grants and recovery stay in [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities). Where a packet sits among the other trust boundaries is [Platform trust boundaries](../platform/security-and-trust-boundaries.md#boundary-map). The custody table and both constrained-by tables stay as written.
 
 ## Attempt custody and an unknown call
 
@@ -17,7 +17,15 @@ Preparing and inspecting a provider request are local. Dispatch is a separate au
 
 [Safety boundaries](#safety-boundaries) still forbid a release from adding a retry beyond the captured operation envelope. The status paragraph keeps live paid release behind a separate spending and evaluation preflight. This map does not add a live route or a recovery grant.
 
-Negative: an uncertain charged dispatch does not start a second paid call. A changed creative profile does not replace the request or the permissions captured for that attempt.
+Negative: an uncertain charged dispatch does not start a second paid call. That stop follows [Window accounting and admission](../platform/spending-and-entitlements.md#window-accounting-and-admission). A changed creative profile does not replace the request or the permissions captured for that attempt.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Attempt custody and an unknown call | constrained-by | [Window accounting and admission](../platform/spending-and-entitlements.md#window-accounting-and-admission) | If unknown metering may be released or retried, this section's ban on a second paid call would dispatch another attempt for the same uncertain charge |
+
+First-response identification stays in the task guide [Uncertain work recovery](../../runbooks/uncertain-work-recovery.md) and does not change this custody section or the table above.
 
 ## Product contract
 
@@ -84,11 +92,17 @@ Analysis findings are structured diagnostics with severity, stable rule ID, affe
 
 ## Prompt responsibility
 
-The engine, not the model, owns legal game transitions: checks and modifiers, clocks, activity progress, possessions, capabilities, requirements, effects, deadlines and durable facts. A prompt supplies only the subset of those typed contracts and resolved facts needed for the current task. The Storyteller may narrate committed outcomes and propose intentions inside that contract; it does not roll, execute, or invent a parallel rules system.
+The engine, not the model, owns legal game transitions: checks and modifiers, clocks, activity progress, possessions, capabilities, requirements, effects, deadlines and durable facts. A prompt supplies only the subset of those typed contracts and resolved facts needed for the current task. The Storyteller may narrate committed outcomes and propose intentions inside that contract; it does not roll, execute, or invent a parallel rules system. That limit is [What it must not do](../../product/storyteller/behavior-and-quality.md#what-it-must-not-do).
 
 Do not paste a general tabletop rulebook into every request or tell the model merely to “use D&D edition X.” The former wastes context and creates competing authority; the latter is ambiguous, model-dependent and cannot be validated. D&D-inspired mechanics are application contracts. A task should name the relevant check/action vocabulary and admissible values when that task can propose them, while omitting mechanics irrelevant to the turn.
 
 Likewise, do not explain the entire product on every turn. The stable system message states role, authority and universal narrative boundaries. Task guidance states the current output opportunity—opening, continuation, committed consequence or report. The user payload carries the selected Storyteller profile and bounded authoritative context. The JSON Schema is part of the prompt budget and must be task-specific: fields with no legal meaning for that task are defects, not harmless completeness.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Prompt responsibility | constrained-by | [What it must not do](../../product/storyteller/behavior-and-quality.md#what-it-must-not-do) | If the product lets the model decide dice, uncommitted effects, or a second rules system, this prompt would carry authority the engine currently keeps |
 
 ## Evidence retained after a real run
 
@@ -100,4 +114,4 @@ The released packet links to provider attempt, response, validation diagnostics,
 - No release can enable fallback, repair, retry or another round beyond the captured operation envelope.
 - Raw packets remain private developer diagnostics and use bounded local storage/export redaction.
 - A release after authority, source, pricing or packet changes fails closed.
-- The breakpoint does not authorize live evaluation; the spending rules and evaluation gate still apply.
+- The breakpoint does not authorize live evaluation; [Window accounting and admission](../platform/spending-and-entitlements.md#window-accounting-and-admission) and the evaluation gate still apply.

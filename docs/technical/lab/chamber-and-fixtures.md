@@ -233,3 +233,5 @@ Professional design inputs: [testing and evidence](../../../.agents/knowledge/te
 The held-out editorial comprehension pass is not run in this packet. This page does not publish a question set, an answer key, or a before/after corpus grade. Other documentation changes are still editing the wiki, so a comprehension score here would certify a moving corpus.
 
 A reachable wiki is not a claim that unratified [Admin](../../product/admin/README.md#admin-product), [retention](../observability/retention-and-access.md#replay-retention-and-privacy--time-travel-without-rewriting-history), or spend text is live permission. A green link check is not semantic agreement. A green-link wiki does not make an unratified raw-AI grant into live permission.
+
+The maintainer retrieval check at `scripts/repo-tools/wiki-core/heldout-exam.mjs` scores frozen questions with the deterministic finder. It is not a Chamber gameplay proof and not a passed comprehension exam of the whole corpus.

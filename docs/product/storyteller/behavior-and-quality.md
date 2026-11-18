@@ -23,6 +23,8 @@ The engine is creatively unopinionated. Tone, dramatic intensity and unpredictab
 - Retroactively make rewards earned, reroll checks, spend beyond policy, reveal private future plans as fact, or take actions for a human without an admitted decision/delegation rule.
 - Treat model memory of a recognizable franchise setting as supplied canon. Canon invention follows [profiles and settings](profiles-and-settings.md), not temperature or price tier.
 
+The prompt admission that has to stay inside these prohibitions is [What the prompt must not grant](../../technical/storyteller/prompts-and-tools.md#what-the-prompt-must-not-grant).
+
 ## Ordinary life and absence
 
 Caring for a character over several real days can be the main experience. Quiet idle may remain quiet. Supported accepted routines can progress without model calls where prepared opportunities allow. Frequency of unusual incidents and severity when an incident occurs are separate preferences—low incident frequency must not freeze character progress, and routine repetition must not force escalating danger merely to keep the plot busy.

@@ -35,11 +35,18 @@ Stop states are distinct: completed valid candidate, no further evidence needed,
 
 ## What the prompt must not grant
 
-The model may decide emphasis, wording, silence, admissible grounded opportunities, and descriptive text inside the captured canon-invention policy. It may propose finite plans, effects, transfers, obligations and time. Code must admit those against actor, rules, source and permission.
+The model may decide emphasis, wording, silence, admissible grounded opportunities, and descriptive text inside the captured canon-invention policy. It may propose finite plans, effects, transfers, obligations and time. Code must admit those against actor, rules, source and permission. Those admissions stay inside [What it must not do](../../product/storyteller/behavior-and-quality.md#what-it-must-not-do) and [Canon invention policy](../../product/storyteller/profiles-and-settings.md#canon-invention-policy).
 
 The model must not decide dice, a forced player response, the scheduler, the provider key, the payer, retry eligibility, an unknown factual outcome, secret future state as public fact, permission escalation, SQL mutation, or destruction of canon.
 
 **Negative:** a zero-call interval is a successful recipe when accepted work needs no narration. A missing memory search returns partial or no-match. It does not fabricate a remembered sentence. The current hardcoded nonlethal limit is a present capability gap, not a constitutional ban that a more imaginative prompt may lift.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| What the prompt must not grant | constrained-by | [What it must not do](../../product/storyteller/behavior-and-quality.md#what-it-must-not-do) | If the product allows invented success, a reroll, an unearned reward, a private plan as fact, or an action for the player, this prompt would grant a decision code must currently reject |
+| What the prompt must not grant | constrained-by | [Canon invention policy](../../product/storyteller/profiles-and-settings.md#canon-invention-policy) | Descriptive text is allowed only inside the captured domain ceiling; if a domain permission starts allowing executable mechanics, a fabricated citation, or a player choice, admission would accept prose that policy forbids |
 
 ## Selected compilation and tool contract
 
@@ -65,3 +72,9 @@ Three caches stay distinct: canonical source bytes (immutable, still permission-
 Model text is data. It cannot raise round, read, money or latency allowance, publish private knowledge, reroll mechanics, or submit a player command. Bounded repair stays inside the same admitted operation. A sent-but-uncertain attempt is not a free rerun. Public narrative does not expose evidence packets, private directions or raw prompts.
 
 **Negative:** injected instructions inside a canonical document cannot mint tools or reveal private policy. Native function-calling and a JSON envelope are transports, not different permissions. Different narrative directions may change the scene and must not change the dice, clock or item outcome.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Selected compilation and tool contract | constrained-by | [What it must not do](../../product/storyteller/behavior-and-quality.md#what-it-must-not-do) | If the product allows the model to roll, transfer items, or mint tools, the approved read vocabulary and the ban on model text changing dice, clock, or item outcome would admit a tool this section forbids |

@@ -91,11 +91,17 @@ The first implementation may deliver sequential finite actions first, then add t
 
 ### Failure, pause and delivery
 
-Known mechanical execution and narration remain separately recoverable. If optional early preparation fails or cannot obtain budget, the accepted mechanical action may finish its already authorized duration and result; it stops at that boundary awaiting required narration. It cannot start another action or spend beyond the operation envelope. If mechanical safety itself becomes uncertain, stop the execution immediately with its own blocker. Uncertain provider billing stops further dispatch, not an automatic second attempt.
+Known mechanical execution and narration remain separately recoverable. If optional early preparation fails or cannot obtain budget, the accepted mechanical action may finish its already authorized duration and result; it stops at that boundary awaiting required narration. It cannot start another action or spend beyond the operation envelope. If mechanical safety itself becomes uncertain, stop the execution immediately with its own blocker. Uncertain provider billing stops further dispatch, not an automatic second attempt. [Window accounting and admission](../platform/spending-and-entitlements.md#window-accounting-and-admission) keeps unknown metering reserved and blocks further paid admission until reconciliation.
 
 Before accepting a short action requiring a new turn, check available execution/spend authority using the existing bounded admission owner; do not knowingly consume an irreversible command when a known missing mandatory dependency can be reported before acceptance. Admission is not a guarantee against later provider failure. After acceptance, narration failure does not reroll mechanics or refund earned time. Preparation delay before dispatch does not create permission beyond the admitted action.
 
 Manual pause settles earned time and retains the remainder. An in-flight provider result may be saved privately; it cannot complete the remaining action or clear manual pause. Pause after mechanics already completed can still allow the factual result to become readable, without starting anything else. Retry repeats only missing preparation/publication for the same execution; paid retry stays subject to operation limits. Duplicate timer/provider/outbox deliveries are idempotent. The event that observes both readiness conditions invokes the same publication owner, so neither completion ordering loses a wake.
+
+#### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Failure, pause and delivery | constrained-by | [Window accounting and admission](../platform/spending-and-entitlements.md#window-accounting-and-admission) | If unknown metering may be released or retried, this section's stop on a second paid dispatch during an accepted action would admit another provider call |
 
 ## Decisions with deadlines
 

@@ -64,7 +64,7 @@ Private fiction is not misconduct. Tragic, violent or unusual story text is not,
 | Staff audit | Governance review; the subject cannot clean their own log |
 | Data-rights package | Restricted privacy operations; purpose-bound export |
 
-A removed login is not erased data. A processor copy or a lawful audit record may remain, and the workflow must say so. Deletion must not drop another participant's shared history or falsify a ledger. Exact legal deadlines and retention windows are not set on this page. An illustrative retention number does not become product policy.
+A removed login is not erased data. A processor copy or a lawful audit record may remain, and the workflow must say so. Deletion must not drop another participant's shared history or falsify a ledger. Exact legal deadlines and retention windows are not set on this page. An illustrative retention number does not become product policy. Request verification, export audience, and deletion across stored classes stay unratified in [Player data lifecycle](../../../work/designs/open/player-data-lifecycle/README.md#rights-matrix).
 
 **Normal.** A participant reports unwanted contact. Trust checks the real participant relationship, reads only permitted evidence, and applies a scoped restriction with an appeal. Support sees the safe customer-facing status, not the complainant file. An appeal is a new review. It does not let the original reviewer erase the record.
 

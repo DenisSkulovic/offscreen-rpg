@@ -1,8 +1,8 @@
 # Settings and accessibility
 
 **Owns:** player-facing controls that are not Storyteller creative presets, plus accessibility obligations.  
-**Creative Storyteller controls:** [profiles and settings](../storyteller/profiles-and-settings.md).  
-**Technical a11y implementation:** client technical owners (P3).
+**Does not own:** Storyteller creative presets ([profiles and settings](../storyteller/profiles-and-settings.md)).  
+**Companions:** engineering acceptance for operable controls, motion, and client cost is [client accessibility and performance](../../technical/client/accessibility-and-performance.md).
 
 ## Player settings (product)
 
@@ -20,5 +20,3 @@ Design target: WCAG 2.2 AA for player-facing web where applicable, with motion-s
 - New passages should not steal focus or force auto-scroll while someone is reading; offer a discreet “New passage available.”
 - Live updates use modest polite announcements; avoid announcing every timer tick.
 - Distinguish HTTP acknowledgment from completed world consequence in assistive messaging.
-
-Source detail for later fold: experience `system/accessibility-and-voice.md`.

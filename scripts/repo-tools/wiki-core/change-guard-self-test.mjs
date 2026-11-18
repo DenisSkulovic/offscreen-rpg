@@ -803,13 +803,472 @@ export function runChangeGuardSelfTest() {
     assert.ok(result.findings.some((item) => item.code === 'missing-heading'));
   });
 
+  function docPlanes(product) {
+    return [
+      product,
+      '| Technical | unchanged because this fixture changes no engine, API, or retry contract | none | no wire change |',
+      '| Code | unchanged because this documentation fixture authorizes no executable modification | none | no code diff |',
+      '| Related | unchanged because this fixture does not add a second documentation registry | none | no new registry |',
+    ];
+  }
+
+  function shapePacket({ state = 'Ready', planes, shape = '', receipt = '', ledgerRows = [], narrative }) {
+    return [
+      '# Change: shape fixture',
+      '',
+      `**State:** ${state}`,
+      '**Kind:** documentation',
+      '',
+      narrative,
+      '',
+      'No product/technical behavior is impacted beyond this document shape fixture.',
+      '',
+      '## Planned specification and implementation delta | planned-impact.v1',
+      '',
+      '| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |',
+      '| --- | --- | --- | --- |',
+      ...planes,
+      '',
+      shape,
+      '',
+      receipt,
+      '',
+      '## Reconciliation ledger',
+      '',
+      LEDGER_HEAD,
+      ...ledgerRows,
+      '',
+    ].join('\n');
+  }
+
+  const shapeHead = [
+    '## Document shape | shape-ops.v1',
+    '',
+    '| Operation | Path | Heading migration | Conservation |',
+    '| --- | --- | --- | --- |',
+  ].join('\n');
+
+  const receiptHead = [
+    '## Migration receipt | shape-receipt.v1',
+    '',
+    '| Old owner | Successor | Unique claim |',
+    '| --- | --- | --- | --- |',
+  ].join('\n');
+
+  check('planned CREATE of a missing Markdown owner passes plan mode', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-create-'));
+    write(
+      root,
+      'work/changes/open/create-plan/CHANGE.md',
+      shapePacket({
+        planes: docPlanes(
+          '| Product | changed: CREATE docs/guides/content-package-authoring.md#purpose as the new task owner | none | the new page is not a gameplay rule |',
+        ),
+        narrative: 'Negative case: a misspelled path with no creation declaration still fails.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'plan',
+      changePath: 'work/changes/open/create-plan/CHANGE.md',
+    });
+    assert.equal(result.status, 'ok', JSON.stringify(result.findings, null, 2));
+    assert.equal(result.findings.some((item) => item.code === 'missing-path'), false);
+  });
+
+  check('a misspelled path without CREATE still fails plan mode', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-typo-'));
+    write(
+      root,
+      'work/changes/open/typo-plan/CHANGE.md',
+      shapePacket({
+        planes: docPlanes(
+          '| Product | changed: docs/guides/conten-package-authoring.md#purpose is the new task owner | none | a misspelled path must fail |',
+        ),
+        narrative: 'Negative case: a misspelled owner path still fails plan mode.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'plan',
+      changePath: 'work/changes/open/typo-plan/CHANGE.md',
+    });
+    assert.equal(result.status, 'failed');
+    assert.ok(
+      result.findings.some(
+        (item) => item.code === 'missing-path' && String(item.message).includes('conten-package-authoring.md'),
+      ),
+    );
+  });
+
+  check('a declared split passes plan before the successor pages exist', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-split-plan-'));
+    write(
+      root,
+      'docs/product/combined.md',
+      '# Combined\n\n## One\n\nAn accepted action owns duration.\n\n## Two\n\nTravel does not skip consent.\n',
+    );
+    write(
+      root,
+      'work/changes/open/split-plan/CHANGE.md',
+      shapePacket({
+        planes: docPlanes(
+          '| Product | changed: SPLIT docs/product/combined.md#one -> docs/product/part-a.md#one; docs/product/combined.md#two -> docs/product/part-b.md#two | docs/product/combined.md | links will be preserved |',
+        ),
+        shape: [
+          shapeHead,
+          '| SPLIT | docs/product/combined.md | docs/product/combined.md#one -> docs/product/part-a.md#one; docs/product/combined.md#two -> docs/product/part-b.md#two | Each unique claim stays on its successor |',
+        ].join('\n'),
+        narrative: 'Negative case: a split that drops either heading must not pass.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'plan',
+      changePath: 'work/changes/open/split-plan/CHANGE.md',
+    });
+    assert.equal(result.status, 'ok', JSON.stringify(result.findings, null, 2));
+  });
+
+  check('a finished split keeps both claims and resolving inbound links', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-split-close-'));
+    write(root, 'docs/product/part-a.md', '# Part A\n\n## One\n\nAn accepted action owns duration.\n');
+    write(root, 'docs/product/part-b.md', '# Part B\n\n## Two\n\nTravel does not skip consent.\n');
+    write(
+      root,
+      'docs/product/router.md',
+      '# Router\n\nSee [One](part-a.md#one) and [Two](part-b.md#two).\n',
+    );
+    const changed = ['docs/product/part-a.md', 'docs/product/part-b.md', 'docs/product/router.md', 'docs/product/combined.md'];
+    write(
+      root,
+      'work/changes/open/split-close/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | changed: SPLIT docs/product/combined.md#one -> docs/product/part-a.md#one; docs/product/combined.md#two -> docs/product/part-b.md#two | docs/product/router.md | inbound links resolve |',
+        ),
+        shape: [
+          shapeHead,
+          '| SPLIT | docs/product/combined.md | docs/product/combined.md#one -> docs/product/part-a.md#one; docs/product/combined.md#two -> docs/product/part-b.md#two | Each unique claim stays on its successor |',
+        ].join('\n'),
+        receipt: [
+          receiptHead,
+          '| docs/product/combined.md#one | docs/product/part-a.md#one | An accepted action owns duration. |',
+          '| docs/product/combined.md#two | docs/product/part-b.md#two | Travel does not skip consent. |',
+        ].join('\n'),
+        ledgerRows: [
+          '| docs/product/part-a.md#one | product | changed: the duration claim now has its own owner | docs/product/part-a.md @ abcdef12 | fixture-tested | a dropped duration claim would fail | docs/product/router.md |',
+          '| docs/product/part-b.md#two | product | changed: the consent claim now has its own owner | docs/product/part-b.md @ abcdef12 | fixture-tested | a dropped consent claim would fail | docs/product/router.md |',
+          '| docs/product/router.md#router | product | changed: inbound links now name both successors | docs/product/router.md @ abcdef12 | fixture-tested | a broken inbound anchor would fail | N/A |',
+          '| docs/product/combined.md#one | product | changed: the combined page was split and removed | docs/product/combined.md @ abcdef12 | fixture-tested | leaving the old anchor linked would fail | N/A |',
+        ],
+        narrative: 'Negative case: a split whose inbound anchor no longer resolves must fail.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/split-close/CHANGE.md',
+      changedPaths: changed,
+    });
+    assert.equal(result.status, 'ok', JSON.stringify(result.findings, null, 2));
+    assert.equal(result.findings.some((item) => item.code === 'unique-claim-lost'), false);
+    assert.equal(result.findings.some((item) => item.code === 'broken-inbound-anchor'), false);
+  });
+
+  check('a move with a broken inbound anchor fails close', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-move-'));
+    write(root, 'docs/technical/platform/moved.md', '# Moved\n\n## Contract\n\nThe gate follows the product rule.\n');
+    write(
+      root,
+      'docs/technical/clock.md',
+      '# Clock\n\n## Permission to advance\n\nSee the [old anchor](platform/moved.md#old-heading).\n',
+    );
+    write(
+      root,
+      'work/changes/open/move-close/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Technical | changed: MOVE docs/technical/old.md#contract -> docs/technical/platform/moved.md#contract | docs/technical/clock.md | the old anchor must fail |',
+        ),
+        shape: [
+          shapeHead,
+          '| MOVE | docs/technical/old.md | docs/technical/old.md#contract -> docs/technical/platform/moved.md#contract | The authority tier stays the same |',
+        ].join('\n'),
+        receipt: [
+          receiptHead,
+          '| docs/technical/old.md#contract | docs/technical/platform/moved.md#contract | The gate follows the product rule. |',
+        ].join('\n'),
+        ledgerRows: [
+          '| docs/technical/platform/moved.md#contract | technical | changed: the contract heading now lives under platform | docs/technical/platform/moved.md @ abcdef12 | fixture-tested | a broken inbound anchor is the failure | N/A |',
+          '| docs/technical/clock.md#permission-to-advance | technical | unchanged because the gate text was not retargeted and the stale anchor remains | docs/technical/clock.md @ abcdef12 | fixture-tested | the stale anchor must fail | N/A |',
+          '| docs/technical/old.md#contract | technical | changed: the old path was removed by the move | docs/technical/old.md @ abcdef12 | fixture-tested | a live link to the old anchor fails | N/A |',
+        ],
+        narrative: 'Negative case: a move that leaves a broken inbound anchor must fail.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/move-close/CHANGE.md',
+      changedPaths: ['docs/technical/platform/moved.md', 'docs/technical/clock.md', 'docs/technical/old.md'],
+    });
+    assert.equal(result.status, 'failed');
+    assert.ok(result.findings.some((item) => item.code === 'broken-inbound-anchor'));
+  });
+
+  check('a merge keeps the unique negative constraint', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-merge-'));
+    write(
+      root,
+      'docs/product/winner.md',
+      '# Winner\n\n## Do not\n\nA player cannot consent by silence.\n',
+    );
+    write(root, 'docs/product/router.md', '# Router\n\nSee [Do not](winner.md#do-not).\n');
+    write(
+      root,
+      'work/changes/open/merge-close/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | changed: MERGE docs/product/dup.md#do-not -> docs/product/winner.md#do-not | docs/product/winner.md | the negative constraint stays |',
+        ),
+        shape: [
+          shapeHead,
+          '| MERGE | docs/product/dup.md | docs/product/dup.md#do-not -> docs/product/winner.md#do-not | unique negative: A player cannot consent by silence. |',
+        ].join('\n'),
+        receipt: [
+          receiptHead,
+          '| docs/product/dup.md#do-not | docs/product/winner.md#do-not | unique negative: A player cannot consent by silence. |',
+        ].join('\n'),
+        ledgerRows: [
+          '| docs/product/winner.md#do-not | product | changed: the survivor keeps the silence constraint | docs/product/winner.md @ abcdef12 | fixture-tested | dropping the negative would fail | docs/product/router.md |',
+          '| docs/product/router.md#router | product | changed: the inbound link now names the survivor | docs/product/router.md @ abcdef12 | fixture-tested | a broken survivor anchor would fail | N/A |',
+          '| docs/product/dup.md#do-not | product | changed: the duplicate page was merged away | docs/product/dup.md @ abcdef12 | fixture-tested | losing the negative while links stay green fails | N/A |',
+        ],
+        narrative: 'Negative case: deleting the unique negative while links stay green must fail.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/merge-close/CHANGE.md',
+      changedPaths: ['docs/product/winner.md', 'docs/product/router.md', 'docs/product/dup.md'],
+    });
+    assert.equal(result.status, 'ok', JSON.stringify(result.findings, null, 2));
+  });
+
+  check('a merge that drops the unique negative fails while links stay green', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-merge-drop-'));
+    write(root, 'docs/product/winner.md', '# Winner\n\n## Do not\n\nBe concise.\n');
+    write(root, 'docs/product/router.md', '# Router\n\nSee [Do not](winner.md#do-not).\n');
+    write(
+      root,
+      'work/changes/open/merge-drop/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | changed: MERGE docs/product/dup.md#do-not -> docs/product/winner.md#do-not | docs/product/winner.md | the negative constraint was required |',
+        ),
+        shape: [
+          shapeHead,
+          '| MERGE | docs/product/dup.md | docs/product/dup.md#do-not -> docs/product/winner.md#do-not | unique negative: A player cannot consent by silence. |',
+        ].join('\n'),
+        receipt: [
+          receiptHead,
+          '| docs/product/dup.md#do-not | docs/product/winner.md#do-not | unique negative: A player cannot consent by silence. |',
+        ].join('\n'),
+        ledgerRows: [
+          '| docs/product/winner.md#do-not | product | changed: the survivor was supposed to keep the silence constraint | docs/product/winner.md @ abcdef12 | fixture-tested | the missing negative is the failure | docs/product/router.md |',
+          '| docs/product/router.md#router | product | unchanged because the inbound link still resolves | docs/product/router.md @ abcdef12 | fixture-tested | green links do not save a dropped constraint | N/A |',
+          '| docs/product/dup.md#do-not | product | changed: the duplicate page was merged away | docs/product/dup.md @ abcdef12 | fixture-tested | the lost negative must fail | N/A |',
+        ],
+        narrative: 'Negative case: a unique negative can disappear while ordinary links stay green.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/merge-drop/CHANGE.md',
+      changedPaths: ['docs/product/winner.md', 'docs/product/router.md', 'docs/product/dup.md'],
+    });
+    assert.equal(result.status, 'failed');
+    assert.ok(result.findings.some((item) => item.code === 'unique-claim-lost'));
+    assert.equal(result.findings.some((item) => item.code === 'broken-inbound-anchor'), false);
+  });
+
+  check('retiring a proposed page does not ratify its content', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-retire-'));
+    write(
+      root,
+      'work/changes/open/retire-close/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | unchanged because the retired proposal is not ratified into a selected owner | docs/product/proposed-idea.md | the sentence stays unratified |',
+        ),
+        shape: [
+          shapeHead,
+          '| RETIRE | docs/product/proposed-idea.md | docs/product/proposed-idea.md#idea -> retired | not ratified: The council may spend the player\'s gold. |',
+        ].join('\n'),
+        receipt: [
+          receiptHead,
+          '| docs/product/proposed-idea.md#idea | retired | not ratified: The council may spend the player\'s gold. |',
+        ].join('\n'),
+        ledgerRows: [
+          '| docs/product/proposed-idea.md#idea | product | unchanged because the proposal was retired and its sentence was not copied into a selected owner | docs/product/proposed-idea.md @ abcdef12 | fixture-tested | copying the sentence into product canon would ratify it | N/A |',
+        ],
+        narrative: 'Negative case: retired proposed text must not become a selected rule.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/retire-close/CHANGE.md',
+      changedPaths: ['docs/product/proposed-idea.md'],
+    });
+    assert.equal(result.status, 'ok', JSON.stringify(result.findings, null, 2));
+    assert.equal(result.findings.some((item) => item.code === 'retirement-ratifies'), false);
+  });
+
+  check('copying a retired proposed sentence into a selected page fails', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-retire-copy-'));
+    write(
+      root,
+      'docs/product/time.md',
+      '# Time\n\n## Pace\n\nThe council may spend the player\'s gold.\n',
+    );
+    write(
+      root,
+      'work/changes/open/retire-copy/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | unchanged because retiring the proposal must not select its sentence | docs/product/time.md | ratification must fail |',
+        ),
+        shape: [
+          shapeHead,
+          '| RETIRE | docs/product/proposed-idea.md | docs/product/proposed-idea.md#idea -> retired | not ratified: The council may spend the player\'s gold. |',
+        ].join('\n'),
+        receipt: [
+          receiptHead,
+          '| docs/product/proposed-idea.md#idea | retired | not ratified: The council may spend the player\'s gold. |',
+        ].join('\n'),
+        ledgerRows: [
+          '| docs/product/proposed-idea.md#idea | product | unchanged because the proposal was removed | docs/product/proposed-idea.md @ abcdef12 | fixture-tested | the copied sentence is the failure | N/A |',
+          '| docs/product/time.md#pace | product | unchanged because this page was not meant to absorb the proposal | docs/product/time.md @ abcdef12 | fixture-tested | selected prose must not gain the retired sentence | N/A |',
+        ],
+        narrative: 'Negative case: a retired proposed sentence copied into a selected page is ratification.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/retire-copy/CHANGE.md',
+      changedPaths: ['docs/product/proposed-idea.md', 'docs/product/time.md'],
+    });
+    assert.equal(result.status, 'failed');
+    assert.ok(result.findings.some((item) => item.code === 'retirement-ratifies'));
+  });
+
+  check('an untouched valid page declared NO-OP passes close', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-noop-'));
+    write(root, 'docs/product/time.md', '# Time\n\n## Pace\n\nAn accepted action owns duration.\n');
+    write(
+      root,
+      'work/changes/open/noop-close/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | unchanged because docs/product/time.md#pace was reviewed and left untouched | docs/product/time.md | no structural edit |',
+        ),
+        shape: [
+          shapeHead,
+          '| NO-OP | docs/product/time.md | unchanged | Reviewed and left as the owner |',
+        ].join('\n'),
+        ledgerRows: [
+          '| docs/product/time.md#pace | product | unchanged because the page was reviewed and the diff does not touch it | docs/product/time.md @ abcdef12 | fixture-tested | an edited no-op page would fail | N/A |',
+        ],
+        narrative: 'Negative case: a page declared untouched must not be in the diff.',
+      }),
+    );
+    const result = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/noop-close/CHANGE.md',
+      changedPaths: [],
+    });
+    assert.equal(result.status, 'ok', JSON.stringify(result.findings, null, 2));
+  });
+
+  check('created paths and their inbound references must exist at close', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-shape-create-close-'));
+    write(
+      root,
+      'docs/guides/content-package-authoring.md',
+      '# Authoring\n\n## Purpose\n\nAuthors pin a package before import.\n',
+    );
+    write(
+      root,
+      'docs/guides/router.md',
+      '# Guides\n\nSee [Purpose](content-package-authoring.md#purpose).\n',
+    );
+    write(
+      root,
+      'work/changes/open/create-close/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | changed: CREATE docs/guides/content-package-authoring.md#purpose as the new task owner | docs/guides/router.md | the inbound heading must resolve |',
+        ),
+        ledgerRows: [
+          '| no product/technical behavior impacted | none | unchanged because the new guide does not change a player or runtime promise | docs/guides/content-package-authoring.md @ abcdef12 | fixture-tested | a missing created path would fail | docs/guides/router.md |',
+        ],
+        narrative: 'Negative case: a declared creation that is still absent at close must fail.',
+      }),
+    );
+    const present = guardChange({
+      repo: root,
+      mode: 'close',
+      changePath: 'work/changes/open/create-close/CHANGE.md',
+      changedPaths: ['docs/guides/content-package-authoring.md', 'docs/guides/router.md'],
+    });
+    assert.equal(present.status, 'ok', JSON.stringify(present.findings, null, 2));
+
+    const missingRoot = mkdtempSync(path.join(tmpdir(), 'wiki-shape-create-missing-'));
+    write(
+      missingRoot,
+      'work/changes/open/create-missing/CHANGE.md',
+      shapePacket({
+        state: 'Done',
+        planes: docPlanes(
+          '| Product | changed: CREATE docs/guides/content-package-authoring.md#purpose as the new task owner | none | the file is still absent |',
+        ),
+        ledgerRows: [
+          '| no product/technical behavior impacted | none | unchanged because the creation was declared and then not written | no source behavior changed | fixture-tested | the missing created path is the failure | N/A |',
+        ],
+        narrative: 'Negative case: a declared creation that is still absent at close must fail.',
+      }),
+    );
+    const missing = guardChange({
+      repo: missingRoot,
+      mode: 'close',
+      changePath: 'work/changes/open/create-missing/CHANGE.md',
+      changedPaths: [],
+    });
+    assert.equal(missing.status, 'failed');
+    assert.ok(missing.findings.some((item) => item.code === 'create-missing-at-close'));
+  });
+
   if (failures.length > 0) {
     console.error('CHANGE-GUARD SELF-TEST FAILURES:');
     for (const failure of failures) console.error(failure);
     return 1;
   }
   console.log(
-    'Change-guard self-test passed: unratified GM07, path ratification, unchanged target, shallow checkbox, tooling exception, not-run, paid claim, owner review, missing heading, archive immutability, planned-impact.v1, legacy Ready warning, impact closure, empty queue.',
+    'Change-guard self-test passed: unratified GM07, path ratification, unchanged target, shallow checkbox, tooling exception, not-run, paid claim, owner review, missing heading, archive immutability, planned-impact.v1, legacy Ready warning, impact closure, empty queue, document shape create/split/merge/move/retire/no-op.',
   );
   return 0;
 }

@@ -12,7 +12,13 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 | [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. HK01 is blocked. HK03, HK04, and HK05 stay gated |
 | [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 3 visual-system program:** product/technical semantic roles prepared; [Phase 3](open/player-experience-refoundation/phase-3/README.md) maps 11 bounded UI/DIR Changes, all unselected. Full final art direction, V2 rich text and generation remain gated |
 | [time-and-autonomy/](open/time-and-autonomy/) | Proposed absence, delegation and standing-life studies. The accepted time rule is the product page |
-| [shared-play/](open/shared-play/) | Proposed group rules. Not accepted |
+| [gameplay-domain-coverage/](open/gameplay-domain-coverage/README.md) | **Proposed, not selected.** Unratified catalogue of economy, progression, space, relationships, collaboration, and content policy. It adds no universal mechanic |
+| [livelihood-economy/](open/livelihood-economy/README.md) | **Proposed, not selected.** Unratified livelihood and exchange questions. No universal currency or profession |
+| [player-data-lifecycle/](open/player-data-lifecycle/README.md) | **Proposed, not selected.** Unratified access, export, and deletion matrix. No jurisdiction, retention period, export API, or raw-prompt grant |
+| [spatial-play/](open/spatial-play/README.md) | **Proposed, not selected.** Unratified location and travel questions. No coordinate schema and no route-planning engine |
+| [content-provenance-and-rights/](open/content-provenance-and-rights/README.md) | **Proposed, not selected.** Inventory of SRD attribution and the Vvardenfell sample. No license, takedown policy, or hosting promise |
+| [character-lifecourse/](open/character-lifecourse/README.md) | **Proposed, not selected.** Unratified growth, injury, loss, aging, and form questions. No universal damage track or selected death rule |
+| [shared-play/](open/shared-play/) | **Proposed, not selected.** Group rules are not accepted. The consent and resolution matrix keeps invitation, control, deadlines, funding, and leave unratified |
 | [player-replay/](open/player-replay/) | Proposed player reread. Not the staff forensic capsule |
 | [free-intent/](open/free-intent/) | Future free-form intentions. Not accepted |
 | [prediction-fences/](open/prediction-fences/) | Proposed predictive-outcome study |

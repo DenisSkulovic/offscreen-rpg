@@ -1,6 +1,8 @@
 # Return and journal
 
-**Owner (DOC01 P2):** coming back after absence and reading a long life. From player-experience return/chronology sections + experience return-and-memory flows.
+**Owns:** coming back after absence and reading a long life.  
+**Does not own:** staff forensic investigation, or a finished replay feature.  
+**Companions:** [POC Journal](living-book-poc.md#poc-journal-intentionally-modest), [concepts](../foundations/concepts.md).
 
 ## After absence
 

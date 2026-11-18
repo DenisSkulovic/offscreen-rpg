@@ -86,6 +86,8 @@ Separate short control Activities from long model/media work through Temporal Ta
 
 Back up application PostgreSQL and demonstrate a restore. Also establish Temporal history retention and recovery: restoring only application tables cannot recreate a lost execution history. Reconcile restored database revisions against workflow state before resuming affected stories. Define media retention and backup expectations. PostgreSQL connection limits, Temporal capacity, model concurrency and provider rate limits are real constraints; set bounded pools and backpressure before adding replicas. Track timer-to-effect lag rather than claiming arbitrary scale.
 
+The untested classification of those backup and restore requirements is [Release and restore readiness](../../runbooks/release-restore-readiness.md). That checklist does not change this requirement, and it is not a production runbook.
+
 ## Kubernetes as a deliberate extension
 
 This is a selected later exercise. A diagram of future infrastructure is not a claim that the service is deployed and tested.

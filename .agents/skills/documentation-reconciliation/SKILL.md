@@ -17,4 +17,8 @@ Use when a source inspection or completed feature reveals documentation drift, w
 4. Update incoming links and the relevant navigation map, including [technical owners](../../../docs/technical/README.md) or [docs map](../../../docs/README.md) when affected. For a long technical page, prefer a small in-page question-to-heading route rather than duplicating its content. For changed headings/paths, use a focused link check where useful. Don't rewrite unrelated documentation merely to make prose uniform.
 5. Return a small ledger: authoritative owner, redirects/links repaired, contradictions removed, claims still needing verification and next evidence step.
 
+## Structural migration
+
+When a documentation Change creates, splits, merges, moves, or retires an owner, declare it under `## Document shape | shape-ops.v1` and, once the diff exists, under `## Migration receipt | shape-receipt.v1`. A split or merge is not reconciled while a unique claim or negative constraint is missing from the successor, or while an inbound anchor still points at a heading that moved. Retiring a proposed page does not ratify its text. A reviewed page left untouched is `NO-OP` and stays out of the diff. Checked links do not prove the meaning survived.
+
 Token minimization is a side effect of **better information architecture**, not a mandate to remove essential nuance. Prefer clear document ownership and good headings to arbitrary byte caps or generating lots of tiny files.

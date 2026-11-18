@@ -49,6 +49,14 @@ The same `planned-impact.v1` table uses **Product, Technical, Code, Related** ro
 
 **Compatibility requirement:** before selecting the first documentation Change, validate the **existing** `pnpm wiki:change-guard --mode plan` and `--mode close` against a docs-only fixture, including a changed canonical doc and a reasoned unchanged Code row. If the guard rejects it, address that narrow tooling defect separately; do not downgrade the new docs Change standard or mask a failing gate. Old code-bearing Change packets remain valid historical records.
 
+## Structural document operations
+
+A documentation Change that creates, splits, merges, moves, retires, or deliberately leaves a page untouched says so in the planned-impact table and in [Document shape](../skills/change-workflow/assets/CHANGE.md#document-shape). Implementation Changes omit that section. The tokens are uppercase: `CREATE`, `SPLIT`, `MERGE`, `MOVE`, `RETIRE`, and `NO-OP`.
+
+A Markdown path that does not exist yet is valid in plan mode only when the same planned-impact cell says `CREATE` before that path, or when a `SPLIT` or `MOVE` cell gives `old.md#heading -> new.md#heading`. A misspelled path with neither declaration fails. `MERGE` names an existing survivor. The arrow is the declaration; a sentence that only says the page will move does not name a destination.
+
+At close, an optional [migration receipt](../skills/change-workflow/assets/CHANGE.md#document-shape) records `old.md#heading` to a successor `path#heading`, `retired`, or `unchanged`. The unique-claim cell must still be present on a successor. A `not ratified:` sentence must not reappear on a selected product or technical page. Created paths must exist, and inbound links to a declared path must resolve. A `NO-OP` path must stay out of the diff. The guard reuses the wiki graph's broken-anchor results. It does not crawl the repository a second time, and it does not decide that a product sentence is true.
+
 ## Lifecycle and permissions
 
 | State                      | Meaning                                                                                                 | May an agent edit code?              |

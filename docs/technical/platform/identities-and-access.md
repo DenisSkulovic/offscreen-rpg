@@ -35,8 +35,10 @@ Preserve a safe internal return destination through sign-in: a pending invitatio
 
 An expired session during a choice sends the user through sign-in and back to the current scene. Never automatically submit the old choice after login; its deadline or meaning may have changed. Keep unsent text as a local draft only where appropriate. Clearing an expired session is different from leaving the shared story.
 
-Apply account and IP rate limits to account entry, story creation and expensive commands, with stronger per-story/funding limits before inference. Bound submitted text and payload size. OAuth proves a provider identity; it does not make unlimited free generation safe to fund. The demo needs a global allowance even before commercial tiers exist.
+Apply account and IP rate limits to account entry, story creation and expensive commands, with stronger per-story/funding limits before inference. Bound submitted text and payload size. OAuth proves a provider identity; it does not make unlimited free generation safe to fund. The demo needs a global allowance even before commercial tiers exist. Membership checks on this page are not a privacy export and not a right to another person's data. The unratified request matrix is [Player data lifecycle](../../../work/designs/open/player-data-lifecycle/README.md#rights-matrix).
 
 ## Boundaries that stay next door
 
 Next.js is not a second backend for story tables. Do not put authenticated story responses in a public or cross-user cache. A `202` acknowledges a persisted command receipt, not a finished narration. WebSockets do not authorize an absent player and are not the selected story-update transport. A 2026 platform note that suggested one shared situation and one current intent per character is not an accepted multiplayer rule.
+
+The cross-boundary map of the browser, the API, this session, admission, staff, documents, the worker, and a provider is [Platform trust boundaries](./security-and-trust-boundaries.md#boundary-map). The sentences above stay the rule.

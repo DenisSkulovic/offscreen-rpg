@@ -23,11 +23,20 @@ This map separates the selected control-plane target from proposed module bounda
 | --- | --- | --- | --- |
 | Dedicated logical Admin control plane in the existing modular monolith. Staff actor, assurance, and policy gate every admin effect. Authentication proves who. Policy proves the allowed effect on this resource in this context. Player story and draft controllers accept no Admin override header and no staff `ownerId`. | None. This page names `/control` and `/api/admin/*` as that target. It does not call either route implemented. | Suggested boundaries only: `apps/api/src/modules/admin/`; application modules for identity, access, projections, cases, actions, and audit; `packages/contracts/src/admin/`; versioned `admin_*` persistence; `apps/web/app/(control)/control/`; `apps/web/src/features/admin/`. | No production staff role. First delivery withholds live write assistance, raw narrative export, financial actions, arbitrary world repair, and general LiveOps editing. Also withheld: general support impersonation, raw prompt disclosure, a generic admin query of generation input or output, and cross-tenant access. |
 
-A description of Player 360 does not authorize general support impersonation. A description of an investigation read does not authorize raw prompt disclosure. Cross-tenant access stays refused. No heading read for this change selects it.
+A description of Player 360 does not authorize general support impersonation. A description of an investigation read does not authorize raw prompt disclosure. Cross-tenant access stays refused. No heading read for this change selects it. Player story reads stay scoped by [Relationship semantics and current single-owner source](./investigation-and-privacy.md#3-relationship-semantics-and-current-single-owner-source). The caller remains a separate principal under [Authentication and sessions](../platform/identities-and-access.md#authentication-and-sessions).
 
 Command, write, and audit semantics stay on [commands and audit](commands-and-audit.md). Staff-console read models stay on [console and read models](console-and-read-models.md). Investigation reads and redaction stay on [investigation and privacy](investigation-and-privacy.md).
 
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Authorization claim map | constrained-by | [Relationship semantics and current single-owner source](./investigation-and-privacy.md#3-relationship-semantics-and-current-single-owner-source) | If story reads stop being owner-scoped, or ownerId stops meaning the campaign owner, this map's refusal to accept a staff-supplied ownerId would either block a real membership read or let staff impersonate the owner |
+| Authorization claim map | constrained-by | [Authentication and sessions](../platform/identities-and-access.md#authentication-and-sessions) | If a snapshot read no longer checks membership separately from the session, a staff principal could be treated as the story owner and this map's player-route refusal would no longer separate caller from subject |
+
 ## 2. Trust boundaries and request flow
+
+How this staff flow sits beside the player API, the document store, the worker, and a provider is [Platform trust boundaries](../platform/security-and-trust-boundaries.md#boundary-map). That map does not grant a staff read, a raw prompt, or a production role. The diagram below and the withholding in [Authorization claim map](#authorization-claim-map) stay as written.
 
 ```text
 Browser with player or no session                 Browser with explicit staff session

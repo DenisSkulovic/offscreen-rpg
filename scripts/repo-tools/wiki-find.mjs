@@ -47,7 +47,7 @@ export async function main(argv = process.argv.slice(2)) {
     console.log(JSON.stringify(payload, null, 2));
     return 0;
   }
-  console.log(`${payload.schema} find @ ${meta.repoSha ?? 'unknown'}${meta.dirty ? ' dirty' : ''}`);
+  console.log(`${payload.schema} find @ ${payload.repoSha ?? meta.repoSha ?? 'unknown'}${payload.dirty ?? meta.dirty ? ' dirty' : ''}`);
   console.log(`Query: ${payload.query}`);
   if (payload.primaryLane === 'proposal') {
     const asked = /\b(proposal|proposed|not installed|not selected)\b/i.test(payload.query);
@@ -56,17 +56,25 @@ export async function main(argv = process.argv.slice(2)) {
         ? 'This question asks for a proposal. The primary hits are the NOT SELECTED lane.'
         : 'The primary hits are the NOT SELECTED lane.',
     );
+  } else if (payload.primaryLane === 'uncertain') {
+    console.log('The primary hits are uncertain. They are not a normative grant.');
   }
   const printItem = (item) => {
     console.log(
-      `${item.ref}  ${item.authority}  ${item.match}  score ${item.score}  ${item.bytes} bytes  lines ${item.lineStart}-${item.lineEnd}`,
+      `${item.ref}  ${item.authority}  ${item.lane}  ${item.realization ?? 'unknown'}  ${item.match}  score ${item.score}  ${item.bytes} bytes  lines ${item.lineStart}-${item.lineEnd}`,
     );
+    console.log(`  sha ${item.repoSha ?? payload.repoSha ?? 'unknown'}${item.dirty ?? payload.dirty ? ' dirty' : ''}`);
     console.log(`  ${item.preview.slice(0, 220)}`);
   };
   const printProposal = () => {
     if (payload.proposalLane.length === 0) return;
     console.log('Proposal lane (NOT SELECTED):');
     for (const item of payload.proposalLane) printItem(item);
+  };
+  const printUncertain = () => {
+    if (!payload.uncertain || payload.uncertain.length === 0) return;
+    console.log('Uncertain (not a grant, not normative):');
+    for (const item of payload.uncertain) printItem(item);
   };
   const printNormative = () => {
     console.log('Normative:');
@@ -79,9 +87,15 @@ export async function main(argv = process.argv.slice(2)) {
   };
   if (payload.primaryLane === 'proposal') {
     printProposal();
+    printUncertain();
     printNormative();
+  } else if (payload.primaryLane === 'uncertain') {
+    printUncertain();
+    printNormative();
+    printProposal();
   } else {
     printNormative();
+    printUncertain();
     printProposal();
   }
   if (payload.historic.length > 0) {

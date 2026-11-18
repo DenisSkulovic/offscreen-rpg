@@ -169,7 +169,7 @@ Stage objects before the SQL root is promoted. S3 does not join the SQL transact
 
 No automatic deletion in this contract. Referenced objects stay until an explicit deletion policy. Do not delete by age. Do not migrate existing local objects implicitly. Remote mode for an existing story requires copy-by-hash, verify, and a separate cutover. Bounded retries are for transient transport only.
 
-**Realization record, source-observed 2026-11-16:** `packages/documents/src/s3-store.ts` and `document-store-config.ts` implement the mode switch and S3 client. That is not a hosted-scale proof, not a backup scheduler, and not permission to put remote reads under a story lock. Production cutover still needs the ENG03 lock evidence. Disposable multi-process acceptance is the proof bar, not an in-process fake. The selected contract above stays. The tier row is [capability coverage](../../../STATUS.md#capability-coverage).
+**Realization record, source-observed 2026-11-16:** `packages/documents/src/s3-store.ts` and `document-store-config.ts` implement the mode switch and S3 client. That is not a hosted-scale proof, not a backup scheduler, and not permission to put remote reads under a story lock. Production cutover still needs the ENG03 lock evidence. Disposable multi-process acceptance is the proof bar, not an in-process fake. The selected contract above stays. The tier row is [capability coverage](../../../STATUS.md#capability-coverage). Who may carry an object from this store across the API, a model request, or a staff read is [Platform trust boundaries](./security-and-trust-boundaries.md#boundary-map). The store contract in this section stays as written.
 
 ## Spatial model boundary
 
@@ -216,6 +216,8 @@ Keep generated prose needed by the player, compact provenance needed to explain 
 Deleting a story first prevents further actions, invalidates pending work and removes access; subsequent cleanup removes media, derived artifacts and external traces where supported. Backup retention means physical removal is not instantaneous. Disclose that behavior when implementing account deletion. Do not expose a public story merely because its repository is public.
 
 Temporal history may retain Activity arguments and results after application data is deleted. Pass compact references and minimal control metadata; never credentials or full prompts. Define namespace history retention and payload protection before hosting real stories. Operational history and the player's chronology are different records with different retention needs.
+
+Who may use these stores for access, export, correction, revoke, or deletion is unratified in [Player data lifecycle](../../../work/designs/open/player-data-lifecycle/README.md#rights-matrix). This section does not set a retention period.
 
 ## Profiled storyteller storage
 

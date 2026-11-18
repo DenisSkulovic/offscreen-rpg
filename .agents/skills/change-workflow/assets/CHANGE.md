@@ -63,6 +63,14 @@ This is a *prospective design*, mandatory before Ready and separate from the ret
 
 `N/A` and `docs updated` are not dispositions. For a documentation Change, the negative semantic proof remains mandatory even though its Code row says unchanged. A proposal may not be promoted merely by residing under `docs/product`.
 
+A documentation Change names a file operation in that table when a page is created, split, merged, moved, retired, or left untouched. Put the uppercase token in the same cell as the path. A create token followed by the new Markdown path is what allows a file that does not exist yet. Split and move use `old.md#heading -> new.md#heading`, with `;` between two split destinations. Any other missing path fails plan mode. Implementation Changes do not add this vocabulary.
+
+## Document shape
+
+Add a section titled exactly `Document shape | shape-ops.v1` only when this packet really creates, splits, merges, moves, retires, or deliberately leaves a page. Omit that whole section for implementation kind, and for a documentation change that only edits wording inside pages that already exist. One row per real operation. The columns are Operation, Path, Heading migration, and Conservation. Conservation is a real sentence about this packet, at least a short clause. Merge names the unique negative the survivor keeps. Retire says the content is not ratified. Do not leave a sample path in the packet: the guard treats every such row as a declaration, and a sample file that was never created fails close.
+
+Add `Migration receipt | shape-receipt.v1` only after a heading actually moves. Close then checks it against the diff and the wiki graph. The successor cell is a `path#heading`, `retired`, or `unchanged`. `unique negative:` is the sentence that must remain on the successor. `not ratified:` is the sentence that must not be copied onto a selected product or technical page. Omit the receipt until there is a real move.
+
 ## Handoff and next action
 
 - Exact next permitted step when selected: [...]

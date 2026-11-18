@@ -1,6 +1,6 @@
 # Contracts: validated interface shapes
 
-`@offscreen/contracts` owns shared Zod schemas and types. A validated payload has a **shape**, not authorization, accepted gameplay state or a right to disclose private data. [Product concepts](../../docs/product/foundations/concepts.md), [data/consistency design](../../docs/technical/platform/data-and-persistence.md) and [application operations](../application/README.md) explain the other layers.
+`@offscreen/contracts` owns shared Zod schemas and types. A validated payload has a **shape**, not authorization, accepted gameplay state or a right to disclose private data. How a shape is admitted, rejected, or projected on the player HTTP boundary is [HTTP and client contracts](../../docs/technical/platform/http-api-and-client-contracts.md). [Product concepts](../../docs/product/foundations/concepts.md), [data/consistency design](../../docs/technical/platform/data-and-persistence.md) and [application operations](../application/README.md) explain the other layers.
 
 ## Select the contract, not the whole package
 
