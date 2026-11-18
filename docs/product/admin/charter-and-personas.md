@@ -19,6 +19,21 @@ One platform does not mean one giant screen, one security role, or a homemade re
 | Steward trust | Bound private-data access, abuse reports and privacy requests, and recover from a staff mistake |
 | Learn | Connect activation, retention, quality, reliability and economics without treating every metric as real-time or causal |
 
+## Product job owners
+
+A persona is a responsibility pattern. A role is who is on a shift. A capability package is an illustrative bundle on [authority and governance](authority-and-governance.md). A case purpose is the reason a subject is opened. An actual grant is a named permission for one subject, one reason, and stated limits. This map names the page that owns each product job. Those five terms stay distinct from each other and from the map.
+
+| Product job | Owner page |
+| --- | --- |
+| Support | [Player 360 and support](player-360-and-support.md) |
+| Live ops | [Gameplay worlds and live operations](gameplay-and-liveops.md) |
+| Commercial trust | [Commercial operations and trust](commercial-and-trust.md) |
+| AI investigation | [AI engineering and investigation](ai-engineering-and-investigation.md) |
+| Command center | [Command center and insights](command-center-and-insights.md) |
+| Operator workflow | [Operator workflows](operator-workflows.md) |
+
+**Negative:** A Support persona example does not grant raw provider prompt access or cross-tenant impersonation.
+
 ## Principles that survive a mixed role
 
 - Capability, not job title. One person may hold Support, Engineering and Commercial packages and still lack an unrelated power.

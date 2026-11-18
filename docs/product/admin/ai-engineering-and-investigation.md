@@ -1,7 +1,7 @@
 # AI engineering and investigation
 
 **Owns:** how staff explain a Storyteller task: what was admitted, what was attempted, what committed, what the player saw, and what it cost.  
-**Status: proposed workspace, 2026-11-14.** Some redacted diagnostic reads exist from the Admin and observability slices. Those reads are not this workspace, and they are not a production grant to open raw prompts. No observability implementation, storage scheme, provider policy or alert threshold is selected here.
+**Status: proposed workspace, 2026-11-14.** Some redacted diagnostic reads exist from the Admin and observability slices. Those reads are not this workspace, and they are not a production grant to open raw prompts. No observability implementation, storage scheme, provider policy or alert threshold is selected here. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.
 
 Technical companions: [forensic read contract](../../technical/observability/investigation-and-reconstruction.md), [request cost](../../technical/storyteller/request-context-and-cost.md).
 

@@ -1,7 +1,7 @@
 # Commercial operations and trust
 
 **Owns:** how staff explain money, allowances and privacy, and which of those actions stay conditional.  
-**Status: proposed, 2026-11-14.** Owner review is still required. Legal review is still required before a privacy or enforcement workflow is operational. Nothing on this page is a production grant to refund, export, delete, or read private narrative.
+**Status: proposed, 2026-11-14.** Owner review is still required. Legal review is still required before a privacy or enforcement workflow is operational. Nothing on this page is a production grant to refund, export, delete, or read private narrative. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.
 
 Companion: [Player 360](player-360-and-support.md), [authority](authority-and-governance.md).
 
@@ -64,7 +64,7 @@ Private fiction is not misconduct. Tragic, violent or unusual story text is not,
 | Staff audit | Governance review; the subject cannot clean their own log |
 | Data-rights package | Restricted privacy operations; purpose-bound export |
 
-A removed login is not erased data. A processor copy or a lawful audit record may remain, and the workflow must say so. Deletion must not drop another participant's shared history or falsify a ledger. Exact legal deadlines and retention windows are not set on this page.
+A removed login is not erased data. A processor copy or a lawful audit record may remain, and the workflow must say so. Deletion must not drop another participant's shared history or falsify a ledger. Exact legal deadlines and retention windows are not set on this page. An illustrative retention number does not become product policy.
 
 **Normal.** A participant reports unwanted contact. Trust checks the real participant relationship, reads only permitted evidence, and applies a scoped restriction with an appeal. Support sees the safe customer-facing status, not the complainant file. An appeal is a new review. It does not let the original reviewer erase the record.
 

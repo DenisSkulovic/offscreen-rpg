@@ -1,7 +1,7 @@
 # Player 360 and support
 
 **Owns:** how a staff member investigates an account, a campaign and a case without treating payer, participant and character as the same person.  
-**Status: proposed product target, 2026-11-14, except where a landed Admin slice is named.** Player-safe reads and case anchors exist from the Admin wave. Situation UI in OBS06/07 is synthetic. Full Turn Capsule disclosure and production Support grants are **not** implemented.  
+**Status: proposed product target, 2026-11-14, except where a landed Admin slice is named.** Player-safe reads and case anchors exist from the Admin wave. Situation UI in OBS06/07 is synthetic. Full Turn Capsule disclosure and production Support grants are **not** implemented. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.  
 **Technical:** [investigation and privacy](../../technical/admin/investigation-and-privacy.md), [Turn Capsule](../../technical/observability/identities-and-evidence.md#turn-evidence-capsule).
 
 ## Subjects that must stay distinct
@@ -51,4 +51,4 @@ The timeline is typed events, not one list: participation, game operation, publi
 
 Every contextual action names target, intent, scope, authority, impact and outcome. There is no one-click free-form database edit from the 360 page. A player-view mode is not an admin mutation mechanism.
 
-**Negative:** do not claim production Support investigation works end to end while grant issuance for live workers is absent. An uncertain paid dispatch is not silently charged twice. "No event returned" does not mean the player has no history.
+**Negative:** do not claim production Support investigation works end to end while grant issuance for live workers is absent. A Support persona example does not grant raw provider prompt access or cross-tenant impersonation. An uncertain paid dispatch is not silently charged twice. "No event returned" does not mean the player has no history.

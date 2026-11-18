@@ -30,7 +30,7 @@ A delayed aggregate is labeled delayed, not live. An unknown metric is unknown, 
 
 Growth & Insights explains how people arrive, activate, convert and stay, without treating a chart as a cause or as permission to read a story.
 
-Person, account, campaign and activity are different units. Paying-customer acquisition, active paid relationships, renewal, cancellation, behavioral absence, refund rate and a quality-adjusted view are different metrics. Churn from a cancelled subscription is not churn from a quiet week. No 7-day or 30-day policy and no success target is accepted here. Every chart states population, basis, source, window, freshness and gaps.
+Person, account, campaign and activity are different units. Paying-customer acquisition, active paid relationships, renewal, cancellation, behavioral absence, refund rate and a quality-adjusted view are different metrics. Churn from a cancelled subscription is not churn from a quiet week. No 7-day or 30-day policy and no success target is accepted here. An illustrative retention number does not become product policy. Every chart states population, basis, source, window, freshness and gaps.
 
 An uplift after a release may be seasonality, mix, a promotion, or a quality change. Show assignment, windows, comparability and sample size. An underpowered experiment is not "zero impact." A correlation is not a cause. There is no universal enjoyment score.
 

@@ -1,7 +1,7 @@
 # Gameplay worlds and live operations
 
 **Owns:** how staff understand which rules and Storyteller configurations affect which campaigns, and how a future change to behavior is rolled out without rewriting history.  
-**Status: proposed product target, 2026-11-14. Owner review still required.** This page is the proposal, not an accepted production kill-switch and not an implemented LiveOps console.  
+**Status: proposed product target, 2026-11-14. Owner review still required.** This page is the proposal, not an accepted production kill-switch and not an implemented LiveOps console. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.  
 **Does not own:** commercial refunds, provider billing implementation, or the engine's meaning of an accepted action ([selected engine](../../technical/engine/selected-architecture.md)).
 
 ## The question
