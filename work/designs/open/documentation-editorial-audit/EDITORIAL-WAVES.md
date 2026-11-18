@@ -1,6 +1,22 @@
 # Documentation editorial execution waves | semantic quality first
 
-**Status:** Proposed, not selected. **No product permission or code Change is granted.** These are documentation-only editorial sessions consistent with the existing Change standard: do not create fake executable Changes unless a wave genuinely adds/changes scripts or tests. When WIKI09–11 exist, use them for impact checks; when they do not, perform manual impact review and never claim the checks ran. All work is against refreshed HEAD and an inspected clean/dirty source status.
+**Status:** Proposed editorial sequence; no packet is selected. Under the revised [Change standard](../../../../.agents/references/change-work-unit-standard.md), substantive editorial sessions are **documentation Changes**, with no executable code diff. [DOC05–DOC24](../../../changes/README.md) are prepared individually. WIKI09–11 are marked Done; their guards should be used on actual checked-out revisions, but passing structure does not establish semantic quality. All work is against refreshed HEAD and an inspected clean/dirty source status.
+
+## Change packet execution map
+
+**Selection:** one packet at a time through `work/changes/README.md`. Each packet is **Proposed and unselected**, and contains Product/Technical/Code/Related dispositions, explicit no-code scope, a normal and negative reading case, and a seven-column reconciliation ledger to complete at execution. Do not treat this editorial wave document as a second execution queue.
+
+| Editorial area | Prepared Change(s) | Intended responsibility |
+| --- | --- | --- |
+| S0 · factual and acceptance boundary | [DOC05](../../../changes/open/2026-11-18--doc05-reconcile-time-status/CHANGE.md), [DOC06](../../../changes/open/2026-11-18--doc06-acceptance-scope/CHANGE.md) | Truth of deliberate-time implementation; selected first-playable vs illustrative scenarios |
+| S1 · product foundations | [DOC07](../../../changes/open/2026-11-18--doc07-foundations-vision-concepts/CHANGE.md), [DOC08](../../../changes/open/2026-11-18--doc08-gameplay-action-rules/CHANGE.md), [DOC09](../../../changes/open/2026-11-18--doc09-world-continuity/CHANGE.md), [DOC10](../../../changes/open/2026-11-18--doc10-storyteller-product-quality/CHANGE.md) | Vision/concepts, action/rules/time, world continuity, Storyteller product quality |
+| S2 · engine and Storyteller technical | [DOC11](../../../changes/open/2026-11-18--doc11-engine-authority-mechanics/CHANGE.md) to [DOC16](../../../changes/open/2026-11-18--doc16-storyteller-settings-provider/CHANGE.md) | Mechanics, chronology/calendar, lifecycle/recovery, controller/prompts, memory/context, provider/settings |
+| S3 · player experience and client | [DOC17](../../../changes/open/2026-11-18--doc17-product-experience/CHANGE.md), [DOC18](../../../changes/open/2026-11-18--doc18-client-tech-contracts/CHANGE.md) | Product UI/Book/decisions/accessibility then technical client ownership |
+| S4 · platform | [DOC19](../../../changes/open/2026-11-18--doc19-platform-persistence-delivery/CHANGE.md), [DOC20](../../../changes/open/2026-11-18--doc20-platform-governance-operations/CHANGE.md) | Persistence/delivery then identity/spend/notifications/deployment |
+| S5 · Admin and observability | [DOC21](../../../changes/open/2026-11-18--doc21-admin-product-charter/CHANGE.md), [DOC22](../../../changes/open/2026-11-18--doc22-admin-technical-authorization/CHANGE.md), [DOC23](../../../changes/open/2026-11-18--doc23-observability-evidence-retention/CHANGE.md) | Product roles/policies, technical staff controls, evidence/retention/telemetry |
+| S6 · validation | [DOC24](../../../changes/open/2026-11-18--doc24-lab-and-corpus-acceptance/CHANGE.md) | Lab proof taxonomy and held-out cross-corpus semantic evaluation |
+
+**Concurrency:** DOC05/DOC06 lead because their factual/authority ambiguities could infect later rewrites. Within S1–S5, follow each packet’s stated dependencies. An unfinished implementation Change that owns the same file takes precedence; do not clobber concurrent Cursor work.
 
 ## Guardrails before the first wave
 
