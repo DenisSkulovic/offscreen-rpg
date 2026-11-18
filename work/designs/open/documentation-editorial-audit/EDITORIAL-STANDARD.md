@@ -35,7 +35,7 @@ A page may legitimately contain selected and proposed sections. Put the authorit
 Start with the player/staff-facing **promise and causal scenario**, not a class diagram or ticket chronology. State agency, feedback, consequence, unacceptable surprise, and non-goals. Explain why the experience matters. For complex gameplay, pair a normal sequence with a distinguishing negative where another plausible implementation would violate the promise.
 
 A product rule can mention a technical implementation to clarify feasibility, but it **does not delegate authority to code**. Prefer:
-- “A player who merely leaves the tab does not authorize a new action; [time and autonomy](...) governs the accepted-work boundary.”
+- “A player who merely leaves the tab does not authorize a new action; [time and autonomy](../../../../docs/product/gameplay/time-and-autonomy.md#pace) governs the accepted-work boundary.”
 - Not “The Temporal worker keeps ticking while the tab closes,” which confuses mechanism and permission.
 
 Separate **what the player gets** from **how the application currently happens to do it**. Project/portfolio/business delivery goals can remain in a concise product/strategy purpose section where relevant, but a dated Wxx/ENGxx implementation ledger belongs in STATUS/Change evidence/source maps.
@@ -71,7 +71,7 @@ Before splitting, inventory **all inbound paths and heading anchors**, choose st
 When a sentence depends on another selected claim, link to its **exact heading** in the sentence or an adjacent small “Contract dependencies” section. Add one line explaining the *consequence* of changed upstream behavior. Preserve the dependency's direction (technical constrained by product; not product ruled by technical). Plain “related reading” and example/evidence links must not become blocking impact edges.
 
 Bad: “Related: calendars, engine, Storyteller.”  
-Better: “The activity's next eligible boundary uses the [accepted clock and hold rule](...#permission-to-advance); changing that rule requires rerunning the interrupted-work and deadline trace.”
+Better: “The activity's next eligible boundary uses the [accepted clock and hold rule](../../../../docs/technical/engine/chronology-and-activities.md#permission-to-advance); changing that rule requires rerunning the interrupted-work and deadline trace.”
 
 Do not turn natural prose into blue link soup, add a minimum number of links, or link a proposal as though it were ratified.
 
