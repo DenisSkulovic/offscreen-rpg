@@ -108,37 +108,6 @@
   margin: 0 0 2rem;
 }
 
-.stories-library__cta {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0.55rem 1rem;
-  border: 1px solid var(--sl-action);
-  border-radius: 0.2rem;
-  background: var(--sl-action);
-  color: #1a150f;
-  text-decoration: none;
-  font: 600 0.95rem / 1.2 var(--sl-font-ui);
-}
-
-.stories-library__cta--quiet {
-  background: transparent;
-  color: var(--sl-action);
-  border-color: var(--sl-edge);
-}
-
-button.stories-library__cta,
-button.stories-library__cta--quiet {
-  cursor: pointer;
-}
-
-button.stories-library__cta:disabled,
-button.stories-library__cta--quiet:disabled,
-button.stories-library__more:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
 .stories-library__section {
   margin: 0 0 2.25rem;
 }
@@ -187,6 +156,7 @@ button.stories-library__more:disabled {
 
 .stories-library__story-title {
   margin: 0 0 0.35rem;
+  min-width: 0;
   overflow-wrap: anywhere;
   font: 600 1.35rem / 1.25 var(--sl-font-display);
 }
@@ -207,22 +177,8 @@ button.stories-library__more:disabled {
   font: 0.95rem / 1.45 var(--sl-font-ui);
 }
 
-.stories-library__enter {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.5rem;
-  padding: 0.4rem 0.85rem;
-  border: 1px solid var(--sl-edge);
-  border-radius: 0.2rem;
-  background: #243038;
-  color: var(--sl-ink);
-  text-decoration: none;
-  font: 600 0.92rem / 1.2 var(--sl-font-ui);
-}
-
-.stories-library__enter:hover,
-.stories-library__enter:focus-visible {
-  border-color: var(--sl-action);
+.stories-library__action {
+  margin-top: 0.35rem;
 }
 
 .stories-library__list {
@@ -244,32 +200,14 @@ button.stories-library__more:disabled {
   border-bottom: 0;
 }
 
-.stories-library__empty,
-.stories-library__status {
+.stories-library__empty {
   margin: 0.5rem 0 0;
   color: var(--sl-muted);
   font: 0.95rem / 1.45 var(--sl-font-ui);
 }
 
-.stories-library__more {
-  margin-top: 0.85rem;
-  min-height: 2.5rem;
-  padding: 0.4rem 0.85rem;
-  border: 1px dashed var(--sl-edge);
-  border-radius: 0.2rem;
-  background: transparent;
-  color: var(--sl-muted);
-  cursor: pointer;
-  font: 600 0.9rem / 1.2 var(--sl-font-ui);
-}
-
-.stories-library__more:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.stories-library a:focus-visible,
-.stories-library button:focus-visible {
+.stories-library a:focus-visible:not(.action),
+.stories-library button:focus-visible:not(.action) {
   outline: 2px solid var(--sl-focus);
   outline-offset: 3px;
 }

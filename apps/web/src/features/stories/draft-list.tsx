@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { draftsListInfiniteOptions } from '@/src/shared/api/drafts-list-query';
 import { flattenUniqueById } from '@/src/shared/api/list-page';
+import { Action } from '@/src/shared/ui/action';
+import { SystemNotice } from '@/src/shared/ui/system-notice';
 import './stories-library.css';
 
 export function DraftList({ viewerId }: { viewerId: string }) {
@@ -39,21 +41,28 @@ export function DraftList({ viewerId }: { viewerId: string }) {
               <p className="stories-library__meta">
                 {draft.premise.slice(0, 180) || 'An unwritten beginning.'}
               </p>
-              <Link
-                className="stories-library__enter"
+              <Action
+                kind="link"
+                variant="secondary"
+                className="stories-library__action"
                 href={`/stories/${draft.id}`}
               >
                 Continue creation
-              </Link>
+              </Action>
             </li>
           ))}
         </ul>
       ) : null}
+      {isPending && items.length === 0 && !error ? (
+        <SystemNotice tone="attention">Loading drafts.</SystemNotice>
+      ) : null}
       {hasNextPage ? (
-        <button
-          type="button"
-          className="stories-library__more"
-          disabled={pending}
+        <Action
+          kind="button"
+          variant="quiet"
+          className="stories-library__action"
+          pending={isFetchingNextPage}
+          disabled={pending && !isFetchingNextPage}
           onClick={() => {
             if (isFetchingNextPage) {
               return;
@@ -62,16 +71,14 @@ export function DraftList({ viewerId }: { viewerId: string }) {
           }}
         >
           {isFetchingNextPage ? 'Loading…' : 'More drafts'}
-        </button>
+        </Action>
       ) : items.length > 0 ? (
-        <p className="stories-library__status" role="status">
-          End of drafts.
-        </p>
+        <SystemNotice tone="attention">End of drafts.</SystemNotice>
       ) : null}
       {error ? (
-        <p className="stories-library__status" role="alert">
+        <SystemNotice tone="error">
           Drafts could not be loaded. Try again.
-        </p>
+        </SystemNotice>
       ) : null}
     </section>
   );

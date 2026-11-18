@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { flattenUniqueById } from '@/src/shared/api/list-page';
 import { storiesListInfiniteOptions } from '@/src/shared/api/stories-list-query';
+import { Action } from '@/src/shared/ui/action';
+import { SystemNotice } from '@/src/shared/ui/system-notice';
 import './stories-library.css';
 
 function featuredKicker(total: number): string {
@@ -37,8 +39,10 @@ export function LiveStoryList({ viewerId }: { viewerId: string }) {
           </p>
           <p className="stories-library__empty">
             Prefer a rehearsal first?{' '}
-            <Link href="/demo">Try the public preview</Link> — scripted, no
-            account charge.
+            <Action kind="link" variant="quiet" href="/demo">
+              Try the public preview
+            </Action>{' '}
+            — scripted, no account charge.
           </p>
         </div>
       ) : null}
@@ -54,9 +58,14 @@ export function LiveStoryList({ viewerId }: { viewerId: string }) {
             {featured.storyteller?.name ?? 'Scripted story'}
             {featured.status ? ` · ${featured.status}` : null}
           </p>
-          <Link className="stories-library__enter" href={`/play/${featured.id}`}>
+          <Action
+            kind="link"
+            variant="secondary"
+            className="stories-library__action"
+            href={`/play/${featured.id}`}
+          >
             Enter story
-          </Link>
+          </Action>
         </article>
       ) : null}
       {rest.length ? (
@@ -72,22 +81,29 @@ export function LiveStoryList({ viewerId }: { viewerId: string }) {
                   {story.storyteller?.name ?? 'Scripted story'}
                   {story.status ? ` · ${story.status}` : null}
                 </p>
-                <Link
-                  className="stories-library__enter"
+                <Action
+                  kind="link"
+                  variant="secondary"
+                  className="stories-library__action"
                   href={`/play/${story.id}`}
                 >
                   Enter story
-                </Link>
+                </Action>
               </li>
             ))}
           </ul>
         </>
       ) : null}
+      {isPending && items.length === 0 && !error ? (
+        <SystemNotice tone="attention">Loading stories.</SystemNotice>
+      ) : null}
       {hasNextPage ? (
-        <button
-          type="button"
-          className="stories-library__more"
-          disabled={pending}
+        <Action
+          kind="button"
+          variant="quiet"
+          className="stories-library__action"
+          pending={isFetchingNextPage}
+          disabled={pending && !isFetchingNextPage}
           onClick={() => {
             if (isFetchingNextPage) {
               return;
@@ -96,16 +112,14 @@ export function LiveStoryList({ viewerId }: { viewerId: string }) {
           }}
         >
           Older stories
-        </button>
+        </Action>
       ) : items.length > 0 ? (
-        <p className="stories-library__status" role="status">
-          End of live stories.
-        </p>
+        <SystemNotice tone="attention">End of live stories.</SystemNotice>
       ) : null}
       {error ? (
-        <p className="stories-library__status" role="alert">
+        <SystemNotice tone="error">
           Stories could not be loaded. Try again. Drafts below may still work.
-        </p>
+        </SystemNotice>
       ) : null}
     </section>
   );
