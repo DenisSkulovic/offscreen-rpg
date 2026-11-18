@@ -12,6 +12,8 @@
 - Quiet moments do not need artificial activity to fill the screen.
 - Cinematic presentation (shot, lighting, palette) guides prose/illustration generation but does not independently change game state ([continuity](../gameplay/continuity.md)).
 
+This page owns scene expression. It does not accept a final palette, illustration style, or art direction. System danger, focus, and command identity stay in [Visual hierarchy and ownership](design-system-and-expression.md#visual-hierarchy-and-ownership). The published passage stays in [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes).
+
 ## Honesty gate (C3)
 
 Presentation architecture is a **selected** design target. PX portfolio work landed basic parser/resolver/Storybook seams; visual calibration and engine-integration acceptance remain open. Do **not** use present-tense “no implementation authorized by this file” as a status banner, and do **not** claim human UX validation from synthetic screenshots alone.

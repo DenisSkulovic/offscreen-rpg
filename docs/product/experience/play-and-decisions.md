@@ -34,3 +34,14 @@ The Storyteller and the application authorize choices. The UI may organize and d
 Authenticated live stories at `/play/:id` show a saved journey wait against the server deadline, including Pause/Resume when the interval is controllable. Reloading does not restart that wait. Agency between offered decisions needs deliberate limits—the player should understand whether they can change course now and what that means.
 
 See [time and autonomy](../gameplay/time-and-autonomy.md) for when fiction advances; this doc owns only the player-facing honesty of the wait UI.
+
+## Denied, waiting, error, lost connection, and a stale offer
+
+- **Denied.** A blocked or unauthorized intention stays visibly not accepted.
+- **Waiting.** A received intention shows that it was received. The waiting label is not a completed world consequence.
+- **Error.** Validation failure, provider rejection, timeout, and uncertain billing stay different states. Creation uses the same split in [Create the opening](entry-and-onboarding.md#creation-information-architecture).
+- **Lost connection.** The last published passage remains readable. A missing response is not a new success.
+- **Stale offer.** A choice from an older situation is not the current command. Reloading does not turn it into a second accepted action.
+- **Uncertain submit.** An uncertain submit stays uncertain. It is not presented as success.
+
+Command identity stays in [Choice honesty](#choice-honesty). The current passage stays in [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes).

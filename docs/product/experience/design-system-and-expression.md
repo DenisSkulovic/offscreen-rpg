@@ -18,7 +18,7 @@ Offscreen RPG is a **reader's stable book surrounded by the fictional world**. A
 4. **Passage/choice accents:** optional, sparse semantic emphasis attached to exact source spans/offers when a future supported format exists.
 5. **User safety preference:** font enlargement, contrast, reduced motion, no-art/slow connection, keyboard and screen readers override any creative suggestion.
 
-Platform behavior and system status do not inherit arbitrary Storyteller accent colors. The page may catch blue light but its text must remain readable. An image failure cannot prevent reading or leave an empty obligatory picture pane. How the client keeps those roles apart is [Ownership and CSS architecture](../../technical/client/semantic-design-foundation.md#ownership-and-css-architecture).
+Platform behavior and system status do not inherit arbitrary Storyteller accent colors. Scene styling does not recolor system danger, focus, or command identity. The page may catch blue light but its text must remain readable. An image failure cannot prevent reading or leave an empty obligatory picture pane. How the client keeps those roles apart is [Ownership and CSS architecture](../../technical/client/semantic-design-foundation.md#ownership-and-css-architecture). This page does not accept a final palette or art direction.
 
 ## Product component vocabulary to design and then implement incrementally
 

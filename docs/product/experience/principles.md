@@ -7,6 +7,18 @@
 
 The player follows a character’s life through scenes, choices and periods of waiting. Opening the website should feel like **returning to a situation**, not administering a simulation.
 
+## Who owns each reader promise
+
+| Promise | Canonical claim |
+| --- | --- |
+| Current published passage | [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes) |
+| Saved original history | [Reading a long life](return-and-journal.md#reading-a-long-life). The first POC limit is [POC Journal](living-book-poc.md#poc-journal-intentionally-modest). |
+| Command identity | [Choice honesty](play-and-decisions.md#choice-honesty) |
+| Waiting, denial, error, and an uncertain submit | [Denied, waiting, error, lost connection, and a stale offer](play-and-decisions.md#denied-waiting-error-lost-connection-and-a-stale-offer) |
+| Scene expression | [Product promises](presentation.md#product-promises), bounded by [Visual hierarchy and ownership](design-system-and-expression.md#visual-hierarchy-and-ownership) |
+
+Scene styling does not recolor system danger or focus. A generated synopsis does not replace the original published passage. An uncertain submit is not shown as success. A final palette, art direction, and an accessibility exception for fiction stay unaccepted.
+
 ## Non-negotiables
 
 - The character may be a person, microbe, distributed mind or something stranger. No mandatory body sheet, inventory, currency, map or tavern.

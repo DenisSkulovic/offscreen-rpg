@@ -12,7 +12,7 @@ Personal preferences (accessibility, sound, private notifications) remain person
 
 ## Accessibility obligations
 
-Design target: WCAG 2.2 AA for player-facing web where applicable, with motion-sensitivity guidance (SC 2.3.3). Game fiction is **not** an exception to accessible controls.
+Design target: WCAG 2.2 AA for player-facing web where applicable, with motion-sensitivity guidance (SC 2.3.3). Game fiction is **not** an exception to accessible controls. The 320px, enlarged-text, and reduced-motion cases stay in [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes) and [Visual hierarchy and ownership](design-system-and-expression.md#visual-hierarchy-and-ownership).
 
 - Every color, animation, icon or spatial cue that conveys “what is happening / committed / actionable” has a text equivalent.
 - Passages are semantic narrative text with sensible heading hierarchy—not canvas-only bitmaps.

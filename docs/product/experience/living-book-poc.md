@@ -1,6 +1,6 @@
 # Living Book | Selected player experience for the first POC
 
-**Status:** SELECTED **POC experience target**, 2026-11-17, based on owner review of the book-geometry, decision-flow and source-composition prototypes. This file does not implement the UI. BOOK01 has a source shell for the book, Now, and Journal entry; final visual design, typography, motion, button styling and illustrated art direction are **not accepted**. Authority is intentionally limited to the first POC, not the eventual full Living Journal.
+**Status:** SELECTED **POC experience target**, 2026-11-17, based on owner review of the book-geometry, decision-flow and source-composition prototypes. This file does not implement the UI. Final visual design, typography, motion, button styling and illustrated art direction are **not accepted**. What source currently contains is recorded in [STATUS](../../../STATUS.md) and [BOOK01 shell](../../technical/client/living-book-poc.md#book01-book-shell-and-current-now-composition). Authority is intentionally limited to the first POC, not the eventual full Living Journal.
 
 **Owns:** the player-visible book-reading metaphor and basic in-story Now/Journal behaviors during the initial React implementation. **Other owners:** [navigation](navigation-and-stories.md) owns all story spaces; [play/decisions](play-and-decisions.md) owns action honesty; [return/journal](return-and-journal.md) owns long history; [presentation](presentation.md) owns imagery/atmosphere; [technical POC](../../technical/client/living-book-poc.md) owns client integration. Earlier alternatives and research remain [open design](../../../work/designs/open/player-experience-refoundation/README.md).
 
@@ -21,6 +21,8 @@ Its main experience is deliberately quiet. The **book is the primary composition
 5. **Return to Now:** an explicit affordance returns to the currently authorized situation. The prior reading location should survive normal in-book navigation when practical without anchoring to a renderer page number.
 6. **Read anywhere:** mobile 320–375px, keyboard, reduced motion and enlarged text never clip or omit meaningful prose/choices. Native selection, browser scrolling and accessible semantics outrank simulated book physics.
 7. **Stay in the same book:** cave, ship, microbe and mundane bus stories share the same reading architecture. Scene presentation may supply approved palette, lighting and image, but the book silhouette, source truth, system-control semantics and reading behavior remain platform-owned.
+
+Command identity and an uncertain submit stay in [Choice honesty](play-and-decisions.md#choice-honesty) and [the adverse cases](play-and-decisions.md#denied-waiting-error-lost-connection-and-a-stale-offer). A generated synopsis stays in [Reading a long life](return-and-journal.md#reading-a-long-life).
 
 ### Composition without premature pagination
 

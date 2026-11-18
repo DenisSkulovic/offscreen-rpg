@@ -10,7 +10,7 @@ Returning after a long absence should offer a **focused recap** and then make an
 
 A month of ordinary life should remain enjoyable to revisit without becoming hundreds of equally prominent cards. Offer the detailed chronology underneath a shorter narrative overview. Quiet accomplishments, relationships and routines can matter as much as dramatic danger; significance is not a measure of violence or surprise.
 
-Use a focused recap and searchable history linked to people, places, commitments and original passages. Later relevance can change what a recap includes **without rewriting what happened**. Do not discard ordinary entries because they initially seem unimportant, or require every mechanical update to become prose.
+Use a focused recap and searchable history linked to people, places, commitments and original passages. Later relevance can change what a recap includes **without rewriting what happened**. A generated recap or synopsis does not replace the saved original passage. The first POC keeps that limit in [POC Journal](living-book-poc.md#poc-journal-intentionally-modest). Do not discard ordinary entries because they initially seem unimportant, or require every mechanical update to become prose.
 
 ## No chapters
 

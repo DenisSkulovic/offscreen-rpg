@@ -5,7 +5,7 @@
 
 ## First contact
 
-A new visitor should quickly understand the promise: create a character, choose a storytelling direction, and receive developments over time. A representative scene with a choice communicates this better than a feature catalogue.
+A new visitor should quickly understand the promise: create a character, choose a storytelling direction, and receive developments over time. A representative scene with a choice communicates this better than a feature catalogue. A first visit does not present an uncertain or failed opening as a saved playable life. The distinct denied, waiting, and error states for creation are in [Creation information architecture](#creation-information-architecture).
 
 OAuth provides a quick route to an account. Require an account before saving a playable story and spending its generation budget. Whether a visitor can draft a premise before signing in is an onboarding detail to test.
 

@@ -6,6 +6,8 @@
 
 ## Three navigation contexts
 
+Now reads the current passage in [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes). Journal reads saved history in [Reading a long life](return-and-journal.md#reading-a-long-life). Commands stay in [Choice honesty](play-and-decisions.md#choice-honesty). This page owns the map of spaces.
+
 1. **Outside a story:** Welcome / Try demo / Your stories / Create story / Account.
 2. **Inside a story:** **Now** and **Journal** are the primary labelled navigation. **World** and **You** are contextual detail destinations when meaningful content exists; **Story settings** live in an out-of-fiction menu. These are spaces, not six permanent peer tabs.
 3. **During a short task:** one focused layer for selecting intent, inspecting a result, changing course or completing creation. Return to the previous situation without losing the current scene.
