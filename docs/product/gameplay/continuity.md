@@ -45,6 +45,14 @@ The storyteller may propose an updated scene frame alongside a DM turn. Applicat
 
 Scene transitions should be explicit enough to distinguish continuing the same situation, moving to another place, departing into a timed activity and arriving after one. Remote cutaways are not part of the solo POC because they can expose events the player character does not know.
 
+## Six kinds of record
+
+These words stay distinct. Promoting one does not create another.
+
+A **described person** appears in prose or scene detail. Appearance does not make them a canonical actor. A **canonical actor** is a being whose later correctness depends on a stable identity. A human patron, a microorganism the player engages, and a disembodied mind the player addresses can each earn that identity. None receives a humanoid inventory merely by being recorded. A **recorded object** keeps its identity through exchange. Selling a spear does not let a later recap return it. A **private future possibility** is a prepared continuation or a private direction. It is not history. A **durable public event** is a completed development in the chronology. An abandoned arrival is not one. A **derived summary** helps retrieval. It does not transfer an object, create an actor, or replace the current canonical record.
+
+Normal: the player gives a coat to one patron. That patron becomes a canonical actor, and the coat becomes a recorded object. Negative: a recap cannot move the coat back, and a private plan that someone arrives does not become that arrival. This list does not choose a new canon-invention policy. The open choice of how durable identities are stored stays in [Sparse world, progressive materialization](#sparse-world-progressive-materialization).
+
 ## What happened, what is true, what might happen
 
 The chronology records completed developments and choices. The current situation describes the facts relevant now. A prepared continuation is a possible future, not history. These are distinctions in meaning, not a requirement for three particular software entities.
@@ -53,7 +61,7 @@ If a wizard is scheduled to arrive at a tower and instead becomes trapped inside
 
 ## Space, movement and maps
 
-Storytelling alone must not redefine established whereabouts, distances or travel conditions from passage to passage. When location affects a choice or consequence, the story needs an authoritative account of where characters are and how they can reach each other. A character interrupted between two places is still on a journey; neither departure nor planned arrival alone describes their position. When more than one character can act, proximity, rescue and encounters must fit each character's circumstances at the same fictional time. That multi-character case is the later shared-play ambition, not the solo proof.
+Storytelling alone must not redefine established whereabouts, distances or travel conditions from passage to passage. When location affects a choice or consequence, the story needs an authoritative account of where characters are and how they can reach each other. A character interrupted between two places is still on a journey; neither departure nor planned arrival alone describes their position. When more than one character can act, proximity, rescue and encounters must fit each character's circumstances at the same fictional time. That multi-character case belongs to the small-group first-playable ambition. Its live acceptance is Proposed/Blocked.
 
 A coarse, uniform 3D cube map is a candidate representation, not yet a required format for every world. Within one such map, the cube is the fixed cell unit: no differently sized cells or recursive subdivision. A mountain cell might contain a city, with a dungeon cell beneath it. A separate local map could provide a second level of detail, but two-level navigation is optional and remains undesigned. Locations inside a region do not automatically require their own map.
 

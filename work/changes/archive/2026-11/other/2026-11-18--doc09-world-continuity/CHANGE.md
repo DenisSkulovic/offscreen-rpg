@@ -1,14 +1,14 @@
 # DOC09 | Refound persistent world, character neutrality and continuity claims
 
-**State:** Proposed (unselected). **Kind:** documentation. **Editorial wave:** S1b/S1c. **Order:** after DOC07 and DOC08. **Source basis:** the [editorial audit](../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md) and [page register](../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md), originally inspected at `f3e3bfe`; refresh HEAD, dirty files and real headings before editing. **Current change remains:** none until explicitly selected.
+**State:** Done (2026-11-18). **Kind:** documentation. **Editorial wave:** S1b/S1c. **Order:** after DOC07 and DOC08. **Source basis:** the [editorial audit](../../../../../designs/open/documentation-editorial-audit/AUDIT-2026-11-18.md) and [page register](../../../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md). Inspected at `4ac80b27`. No model call and no database.
 
 ## Cursor first-screen brief
 
-**Outcome:** Refound persistent world, character neutrality and continuity claims. **No executable modifications authorized.** Start at [editorial standards](../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), then these canonical owners:
-- [continuity.md](../../../../docs/product/gameplay/continuity.md)
-- [worlds-and-characters.md](../../../../docs/product/gameplay/worlds-and-characters.md)
-- [memory-and-continuity.md](../../../../docs/product/storyteller/memory-and-continuity.md)
-- [context-and-memory.md](../../../../docs/technical/storyteller/context-and-memory.md)
+**Outcome:** Refound persistent world, character neutrality and continuity claims. **No executable modifications authorized.** Start at [editorial standards](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), then these canonical owners:
+- [continuity.md](../../../../../../docs/product/gameplay/continuity.md)
+- [worlds-and-characters.md](../../../../../../docs/product/gameplay/worlds-and-characters.md)
+- [memory-and-continuity.md](../../../../../../docs/product/storyteller/memory-and-continuity.md)
+- [context-and-memory.md](../../../../../../docs/technical/storyteller/context-and-memory.md)
 
 **Known defect:** Clarify the distinction between a described person, canonical actor, recorded object, private future possibility, durable public event and derived summary; some current discussions blend those categories.
 
@@ -37,12 +37,21 @@ Produce a compact before/after claim inventory, classification (selected target 
 
 ## Verification and close receipt
 
-When selected, run the actual available link/graph and Change plan/close checks on a full checkout; record exact commands, failure output, current commit and any missing archive/history limits. Compare before/after claim meaning, check known dependent headings and one independent adverse reading. The [documentation-reconciliation skill](../../../../.agents/skills/documentation-reconciliation/SKILL.md) applies. Do not mark Done with unverified factual claims or a blocked normative decision hidden in selected prose.
+When selected, run the actual available link/graph and Change plan/close checks on a full checkout; record exact commands, failure output, current commit and any missing archive/history limits. Compare before/after claim meaning, check known dependent headings and one independent adverse reading. The [documentation-reconciliation skill](../../../../../../.agents/skills/documentation-reconciliation/SKILL.md) applies. Do not mark Done with unverified factual claims or a blocked normative decision hidden in selected prose.
 
-## Reconciliation ledger (fill at execution)
+## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/product/gameplay/continuity.md (exact #heading at execution) | product | pending: actual claim-level review needed | no source behavior changed; record docs SHA | not run: Proposed | The negative is a private possibility becoming a historical event, a recap transferring a previously sold object, or a humanoid inventory being imposed on an inapplicable form. | pending impacted links |
+| docs/product/gameplay/continuity.md#six-kinds-of-record | product | changed: described person, canonical actor, recorded object, private possibility, public event, and derived summary stay distinct | docs/product/gameplay/continuity.md at 4ac80b27 | documentation-only | a recap does not return a sold spear, and a private plan is not an arrival | the new heading does not replace an existing anchor |
+| docs/product/gameplay/continuity.md#space-movement-and-maps | product | changed: the multi-character whereabouts rule now follows the small-group ambition and leaves its live acceptance Proposed/Blocked | docs/product/gameplay/continuity.md at 4ac80b27 | documentation-only | this sentence does not ratify a shared-play scheduling policy | the heading stayed in place |
+| docs/product/gameplay/worlds-and-characters.md#flexible-settings-and-protagonists | product | changed: an inapplicable form does not inherit a humanoid inventory | docs/product/gameplay/worlds-and-characters.md at 4ac80b27 | documentation-only | a microorganism does not gain a human inventory from a neighboring example | the heading stayed in place |
+| docs/product/storyteller/memory-and-continuity.md#current-truth-versus-inspectable-history | product | unchanged: current truth and inspectable history already stay distinct | docs/product/storyteller/memory-and-continuity.md at 4ac80b27 | documentation-only | a paraphrase is not a remembered fact | the heading stayed in place |
+| docs/technical/storyteller/context-and-memory.md#one-owner-per-kind-of-truth | technical | unchanged: this editorial pass does not amend the storage contract | docs/technical/storyteller/context-and-memory.md at 4ac80b27 | documentation-only | a summary still cannot change an execution-ledger quantity | the heading stayed in place |
 
-**Next executor step when owner selects:** update the new packet to Ready only after checking source/current authority, then implement this one documentation outcome, verify and archive; never auto-select DOC10.
+exception: work/changes/README.md because the queue line is the selection route for this documentation packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this documentation packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+exception: work/designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md because the wave table will point at the archived packet
+
+No new canon-invention policy. No executable diff. Close checks use base 4ac80b27. No provider call.

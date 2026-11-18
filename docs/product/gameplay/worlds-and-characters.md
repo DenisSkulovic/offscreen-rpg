@@ -9,7 +9,7 @@ Settings and characters should be flexible: fantasy, space, everyday life, unusu
 
 The selected D&D rules can remain richer than a particular character’s current form. Applicability belongs to the character and situation: a bodiless consciousness may have no current use for Strength; a later embodied form can gain abilities through an admitted transformation. Preserve conventional D&D behavior when the world supports it; do not flatten rules to the smallest common denominator or pretend every rule applies to every form.
 
-**Negative:** do not invent Farmer Bob because farms exist beyond the hill. Do not build one LLM agent per NPC, place or faction.
+**Negative:** do not invent Farmer Bob because farms exist beyond the hill. Do not build one LLM agent per NPC, place or faction. Do not give a microorganism or a disembodied mind a humanoid inventory because a human character has one. A described person is not a canonical actor until later correctness depends on that identity. See [Six kinds of record](continuity.md#six-kinds-of-record).
 
 ## Sparse world, three layers
 
