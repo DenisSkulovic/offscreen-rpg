@@ -62,6 +62,10 @@ import {
   captureHeldMemoryPacket,
 } from './memory-packet-review.js';
 import { parseLauncherFlags } from './modes/cli-flags.js';
+import {
+  evaluationAuthorizationDenial,
+  planLaunch,
+} from './modes/plan-launch.js';
 import { createLocalStoryProvider } from './story-provider.js';
 import {
   bootstrapLocalStoryFunding,
@@ -86,27 +90,8 @@ const evaluationPacket = launcherFlags.evaluationPacket;
 const evaluationRun = launcherFlags.evaluationRun;
 const storyMode = launcherFlags.storyMode;
 const noBrowser = launcherFlags.noBrowser;
-const resetDatabase = launcherFlags.resetDatabase;
 const configArgument = launcherFlags.configPath
   ? `--config=${launcherFlags.configPath}`
-  : undefined;
-const authorizationArgument = launcherFlags.authorize
-  ? `--authorize=${launcherFlags.authorize}`
-  : undefined;
-const storyModelArgument = launcherFlags.storyModel
-  ? `--story-model=${launcherFlags.storyModel}`
-  : undefined;
-const storyMaxMicrousdArgument = launcherFlags.storyMaxMicrousd
-  ? `--story-max-microusd=${launcherFlags.storyMaxMicrousd}`
-  : undefined;
-const storyMaxInputTokensArgument = launcherFlags.storyMaxInputTokens
-  ? `--story-max-input-tokens=${launcherFlags.storyMaxInputTokens}`
-  : undefined;
-const storyMaxOutputTokensArgument = launcherFlags.storyMaxOutputTokens
-  ? `--story-max-output-tokens=${launcherFlags.storyMaxOutputTokens}`
-  : undefined;
-const storyAuthorizationArgument = launcherFlags.storyAuthorize
-  ? `--authorize-story-model=${launcherFlags.storyAuthorize}`
   : undefined;
 const origin = 'http://127.0.0.1:3100';
 const dryRunRoute = 'openrouter:dry-run-unselected';
@@ -206,68 +191,23 @@ const storyDefaultRunId = '00000000-0000-4000-8000-000000000011';
 // OBS00-L: an explicit finite trial uses its own saved Run; its caps live in SQL.
 const storyTrial = launcherFlags.storyTrial;
 const storyRunId = storyTrial?.runId ?? storyDefaultRunId;
-const storyModel =
-  storyModelArgument?.slice('--story-model='.length) ?? 'openai/gpt-5.6-luna';
-const permittedStoryModels = new Set([
-  'openai/gpt-5.6-luna',
-  'openai/gpt-5.6-terra',
-  'openai/gpt-5.6-sol',
-]);
-if (!permittedStoryModels.has(storyModel)) {
-  throw new Error(
-    'Story mode supports only the reviewed GPT-5.6 Luna, Terra, and Sol routes.',
-  );
-}
-const storyMaxMicrousd = storyMaxMicrousdArgument
-  ? Number(storyMaxMicrousdArgument.slice('--story-max-microusd='.length))
-  : 10_000;
-if (
-  !Number.isInteger(storyMaxMicrousd) ||
-  storyMaxMicrousd < 1 ||
-  storyMaxMicrousd > 250_000
-) {
-  throw new Error(
-    '--story-max-microusd must be an integer from 1 through 250000.',
-  );
-}
-const storyMaxOutputTokens = storyMaxOutputTokensArgument
-  ? Number(
-      storyMaxOutputTokensArgument.slice('--story-max-output-tokens='.length),
-    )
-  : 2_048;
-if (
-  !Number.isInteger(storyMaxOutputTokens) ||
-  storyMaxOutputTokens < 512 ||
-  storyMaxOutputTokens > 8_000
-) {
-  throw new Error(
-    '--story-max-output-tokens must be an integer from 512 through 8000.',
-  );
-}
-const storyMaxInputTokens = storyMaxInputTokensArgument
-  ? Number(
-      storyMaxInputTokensArgument.slice('--story-max-input-tokens='.length),
-    )
-  : 12_000;
-if (
-  !Number.isInteger(storyMaxInputTokens) ||
-  storyMaxInputTokens < 8_000 ||
-  storyMaxInputTokens > 100_000
-) {
-  throw new Error(
-    '--story-max-input-tokens must be an integer from 8000 through 100000.',
-  );
-}
-const storyRoute = `openrouter:${storyModel.slice('openai/'.length)}`;
-if (
-  (storyModel !== 'openai/gpt-5.6-luna' || storyMaxMicrousd > 10_000) &&
-  storyAuthorizationArgument?.slice('--authorize-story-model='.length) !==
-    `${storyModel}@${storyMaxMicrousd}`
-) {
-  throw new Error(
-    `This Story route requires --authorize-story-model=${storyModel}@${storyMaxMicrousd}.`,
-  );
-}
+const chamberDatabaseUrl = process.env['CHAMBER_DATABASE_URL'];
+const storyDatabaseUrl = process.env['STORY_LOCAL_DATABASE_URL'];
+const launchPlan = planLaunch({
+  flags: launcherFlags,
+  ...(chamberDatabaseUrl !== undefined ? { chamberDatabaseUrl } : {}),
+  ...(storyDatabaseUrl !== undefined ? { storyDatabaseUrl } : {}),
+});
+if (!launchPlan.ok) throw new Error(launchPlan.reason);
+const resetDatabase = launchPlan.resetDatabase;
+const localDatabaseName = launchPlan.databaseName;
+const databaseURL = launchPlan.databaseUrl;
+const storyModel = launchPlan.story?.model ?? 'openai/gpt-5.6-luna';
+const storyMaxMicrousd = launchPlan.story?.maxMicrousd ?? 10_000;
+const storyMaxOutputTokens = launchPlan.story?.maxOutputTokens ?? 2_048;
+const storyMaxInputTokens = launchPlan.story?.maxInputTokens ?? 12_000;
+const storyRoute =
+  launchPlan.story?.route ?? `openrouter:${storyModel.slice('openai/'.length)}`;
 const storyProvider = 'OpenAI';
 const storyEndpointTag = 'openai';
 const storyServiceTier = 'default' as const;
@@ -437,23 +377,17 @@ const evaluationAuthority = evaluationConfig
 const memoryEvaluationAuthority = memoryEvaluationConfig
   ? memoryEvaluationPacketAuthority(memoryEvaluationConfig)
   : null;
-if (
-  evaluationRun &&
-  authorizationArgument?.slice('--authorize='.length) !== evaluationConfig?.id
-) {
-  throw new Error(
-    '--evaluation-run requires --authorize=<evaluation-id> matching the config.',
-  );
-}
-if (
-  memoryEvaluationRun &&
-  authorizationArgument?.slice('--authorize='.length) !==
-    memoryEvaluationConfig?.id
-) {
-  throw new Error(
-    '--memory-evaluation-run requires --authorize=<evaluation-id> matching the config.',
-  );
-}
+const evaluationDenial = evaluationAuthorizationDenial({
+  evaluationRun,
+  memoryEvaluationRun,
+  authorize: launcherFlags.authorize,
+  evaluationId: evaluationRun
+    ? (evaluationConfig?.id ?? null)
+    : memoryEvaluationRun
+      ? (memoryEvaluationConfig?.id ?? null)
+      : null,
+});
+if (evaluationDenial) throw new Error(evaluationDenial);
 const evaluationPolicy =
   evaluationAuthority && evaluationConfig
     ? resolveEffectiveUsagePolicy({
@@ -497,25 +431,6 @@ const gitDirty =
     cwd: workspaceRoot,
     encoding: 'utf8',
   }).trim().length > 0;
-const localDatabaseName = storyMode
-  ? 'offscreen_story_local'
-  : 'offscreen_chamber';
-const databaseURL = storyMode
-  ? (process.env['STORY_LOCAL_DATABASE_URL'] ??
-    `postgresql://offscreen:local-development-only@127.0.0.1:5432/${localDatabaseName}`)
-  : (process.env['CHAMBER_DATABASE_URL'] ??
-    `postgresql://offscreen:local-development-only@127.0.0.1:5432/${localDatabaseName}`);
-const parsedURL = new URL(databaseURL);
-if (
-  !['postgres:', 'postgresql:'].includes(parsedURL.protocol) ||
-  !['127.0.0.1', 'localhost'].includes(parsedURL.hostname) ||
-  parsedURL.pathname !== `/${localDatabaseName}` ||
-  parsedURL.search
-) {
-  throw new Error(
-    `Local ${storyMode ? 'Story mode' : 'Chamber'} requires the ${localDatabaseName} database, without connection query overrides.`,
-  );
-}
 function sessionCookiesFromLogin(
   cookieHeader: string | null,
   cookieOrigin: string,
@@ -547,8 +462,8 @@ async function requireFreePort(port: number) {
     });
   });
 }
-await requireFreePort(3001);
-if (!noBrowser) await requireFreePort(3100);
+await requireFreePort(launchPlan.ports.api);
+if (launchPlan.ports.web !== null) await requireFreePort(launchPlan.ports.web);
 const adminURL = new URL(databaseURL);
 adminURL.pathname = '/postgres';
 const admin = createDatabase(

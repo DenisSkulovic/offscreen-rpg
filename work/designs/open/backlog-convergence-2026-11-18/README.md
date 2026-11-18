@@ -24,7 +24,7 @@
 | DIR03 | Depends on DIR02; live model budget/quality genuinely absent | **Build offline optional-output parsing + comparative fixture**, preserve no-spend | Provider-free author sidecar supports valid and absent; live adoption separately requires spend |
 | HK01 | A working local uncertain-attempt settlement path would be lost | **Replace recovery first**, then safely retire old entry | Trusted identity, hash/attempt match, idempotent no-cost dry-run + carefully authorized commit path |
 | HK03 | QA-SF01 baseline red; monolith hard to debug | **Split without asserting green** and preserve exact test IDs and test totals | Full parity and targeted failure isolation, no skip |
-| HK04 | Launcher mode parsing already extracted; main still coordinates privileged startup | **Pure mode-plan seam first**, then one side-effect extraction if characterized | Denials and cleanup exact; no live test |
+| HK04 | The pure launch plan denies a bad database and a missing Story authorization. Ordinary Chamber stays provider-disabled. The process boot stays in main.ts | **Done** | Live Chamber tests were not executed |
 | QA-SF01 | Fixture and teardown repaired, remaining runtime failures reported | **Reproduce each remaining failing case and fix owning runtime**, not the oracle | Storyteller/story-resolution focused suites green with same semantics |
 | OBS00-B | No independently loaded current policy/entitlement on default worker | **Build server-owned current authority chain; default deny throughout** | Revoke/owner/route/funding negatives + exact on-wire mock attestation |
 | OBS04 | E0 writer and physical schema are not built | **One finite-action transactional witness** with bounded schema | Source/E0 atomically paired; rollback/duplicate/interrupt proof |

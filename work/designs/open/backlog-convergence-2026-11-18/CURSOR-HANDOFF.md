@@ -1,6 +1,6 @@
 # Cursor execution handoff | backlog convergence, 2026-11-18
 
-**Scope:** 16 packets were open in the source snapshot. BOOK01/BOOK02 are archived Done in commit `024ba05a6` and **must not be re-implemented or re-archived**. HAR05 is Done at `dfb25d72`. DIR02 is Done. Execute the **12 remaining open packets**. Read [audit](README.md) and [selected decisions](CONTRACT-DECISIONS.md). This handoff is a sequencing guide **not** a mega-Change; retain the repository's one-current-Change practice. Owner has authorized bounded design and code preparation/implementation in this conversation. No paid provider, actual production spend, nondisposable database reset, unreviewed accounting settlement or bypass of a security boundary.
+**Scope:** 16 packets were open in the source snapshot. BOOK01/BOOK02 are archived Done in commit `024ba05a6` and **must not be re-implemented or re-archived**. HAR05 is Done at `dfb25d72`. DIR02 and HK04 are Done. Execute the **11 remaining open packets**. Read [audit](README.md) and [selected decisions](CONTRACT-DECISIONS.md). This handoff is a sequencing guide **not** a mega-Change; retain the repository's one-current-Change practice. Owner has authorized bounded design and code preparation/implementation in this conversation. No paid provider, actual production spend, nondisposable database reset, unreviewed accounting settlement or bypass of a security boundary.
 
 ## Queue in the order that removes dependencies
 
@@ -10,7 +10,7 @@
 
 **Wave 1, independent no-spend work:**
 3. **DIR02: DONE.** The publication insert stores an optional server-validated scene subset. The worker supplies no candidate. SQL publication was not executed. Do not rebuild it, and do not install DIR03 inside that packet.
-4. **HK04:** mode matrix and pure launch plan, provider-disabled denial tests, one contained orchestrator extraction. `tools/chamber/src/main.ts`, `modes/cli-flags.ts`, `story-funding.ts`, `story-provider.ts`, `stop.ts`.
+4. **HK04: DONE.** The pure launch plan denies a remote database and a missing Story authorization. Ordinary Chamber stays provider-disabled. The process boot stays in `main.ts`. Live tests were not executed. Do not rebuild it.
 5. **S3a:** `scripts/repo-tools/story-session-report.mjs` only; source-linked five-state provenance, read-only fixtures.
 
 **Wave 2, recover honest testability and safe uncertain outcomes:**

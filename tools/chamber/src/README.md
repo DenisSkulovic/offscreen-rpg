@@ -8,6 +8,7 @@
 | Pure Bench | [`lab/bench.ts`](lab/bench.ts), `pnpm chamber:bench` | Real `@offscreen/game` only; no DB |
 | Lab scenario / inspect CLIs (CH12) | [`scenario-cli.ts`](scenario-cli.ts), [`inspect-cli.ts`](inspect-cli.ts), `pnpm chamber:scenario` / `chamber:inspect` | LabRun via workbench service; no Nest/DB/browser |
 | Shared flag grammar (CH12) | [`modes/cli-flags.ts`](modes/cli-flags.ts) | Mutual exclusion + cheap lab args; used by `main.ts` |
+| Pure launch plan | [`modes/plan-launch.ts`](modes/plan-launch.ts) | Mode, local database, reset flag, and provider denial. No key, port, or provider transport. `main.ts` still boots processes |
 | Local Story funding / finite trial (OBS00-L) | [`story-funding.ts`](story-funding.ts), `--story-trial-*` flags in `modes/cli-flags.ts` | Restart creates missing rows only; never clears `stopped`/`enabled`, widens a saved trial run or resets counters; denial refuses live start. Not OBS00-B. [Proof](../test/obs00-l-story-trial.live.test.ts) |
 | Local Story provider composition (OBS00-C) | [`story-provider.ts`](story-provider.ts) | `createLocalStoryProvider` is the launcher's exact `createOpenRouterProvider` + evidence hooks, with a test-only `transport` seam; the reviewed packet equals the transport body. [Proof](../test/obs00-c-wire-equality.live.test.ts) |
 | Sandbox DB name guard | [`@offscreen/application` sandbox-guard](../../../packages/application/src/developer-tools/lab/sandbox-guard.ts) | localhost + `offscreen_chamber_run_<32hex>` only; never `offscreen_chamber` / `offscreen_auth_test` |
