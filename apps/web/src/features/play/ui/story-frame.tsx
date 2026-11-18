@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { matchLegacyChoice } from '../presentation/resolve';
 import type { ResolvedPresentation } from '../presentation/types';
 import { BookContents } from './book-contents';
@@ -115,9 +115,31 @@ export function StoryFrame({
   const journalMode = Boolean(journal) && hash === JOURNAL_HASH;
   const mode = journalMode ? 'journal' : 'now';
   const modeRef = useRef(mode);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const readViewCue = useRef(false);
+  const [readViewEnter, setReadViewEnter] = useState(false);
+  useEffect(() => {
+    const root = frameRef.current;
+    if (!root) return;
+    function onClick(event: MouseEvent) {
+      const target = event.target;
+      if (!(target instanceof Element) || !root) return;
+      const link = target.closest('a');
+      if (!link || !root.contains(link)) return;
+      const href = link.getAttribute('href') ?? '';
+      if (href.endsWith('#story-journal') || href.endsWith('#story-frame-now')) {
+        readViewCue.current = true;
+      }
+    }
+    root.addEventListener('click', onClick);
+    return () => root.removeEventListener('click', onClick);
+  }, []);
   useEffect(() => {
     if (modeRef.current === mode) return;
     modeRef.current = mode;
+    const fromLink = readViewCue.current;
+    readViewCue.current = false;
+    setReadViewEnter(fromLink);
     document
       .getElementById(mode === 'journal' ? 'story-journal' : 'story-frame-now')
       ?.focus();
@@ -175,6 +197,7 @@ export function StoryFrame({
         </div>
       ) : null}
     <div
+      ref={frameRef}
       className="story-frame"
       data-presented={presented ? 'true' : undefined}
     >
@@ -209,6 +232,7 @@ export function StoryFrame({
         className="story-frame__stage"
         tabIndex={-1}
         hidden={journalMode}
+        data-read-view={readViewEnter && !journalMode ? 'enter' : undefined}
       >
         {presented ? (
           <NarrativePassage
@@ -218,12 +242,14 @@ export function StoryFrame({
             media={inlineMedia}
             identity={identity}
             arrival={presentation?.passageArrival ?? 'none'}
+            held={intentionsDisabled}
           />
         ) : (
           <NarrativeFlow
             passageId={passageId}
             title={passageTitle}
             paragraphs={paragraphs}
+            held={intentionsDisabled}
           />
         )}
 
@@ -251,6 +277,7 @@ export function StoryFrame({
           aria-label="Journal"
           tabIndex={-1}
           hidden={!journalMode}
+          data-read-view={readViewEnter && journalMode ? 'enter' : undefined}
         >
           {journal}
         </section>

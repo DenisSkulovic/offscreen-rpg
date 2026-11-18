@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { StoryFrame } from '@/src/features/play/ui/story-frame';
 
@@ -108,6 +109,56 @@ export const QuietWithoutInventory: Story = {
     paragraphs: [
       'The wind smells of salt. The harbor watch is changing shifts. The lantern remains dark, but nothing requires you to act immediately.',
     ],
+  },
+};
+
+export const PublishedArrival: Story = {
+  args: {
+    storiesHref: '/stories',
+    storyLabel: 'Greywake',
+    situationLabel: 'The beacon landing',
+    statusLabel: 'Waiting for your choice',
+    passageTitle: 'Someone at the door',
+    paragraphs: shortParagraphs,
+    journalHref: '#story-journal',
+    journal: (
+      <section>
+        <h2>Journal</h2>
+        <p>Opening this leaf does not publish a passage.</p>
+      </section>
+    ),
+    intentions: [
+      {
+        id: 'ask',
+        label: 'Ask who sent the visitor',
+        support: 'The choice stays available during the cue.',
+      },
+    ],
+  },
+  render: function ArrivalStory(args) {
+    const [passageId, setPassageId] = useState('passage-a');
+    const [refresh, setRefresh] = useState(0);
+    return (
+      <>
+        <p>
+          <button type="button" onClick={() => setPassageId('passage-b')}>
+            Publish the next passage
+          </button>{' '}
+          <button type="button" onClick={() => setRefresh((value) => value + 1)}>
+            Refresh the same passage
+          </button>
+        </p>
+        <StoryFrame
+          {...args}
+          passageId={passageId}
+          paragraphs={[
+            refresh % 2 === 0
+              ? 'Someone in a soaked harbor coat has climbed onto the landing.'
+              : 'Someone in a soaked harbor coat has climbed onto the landing. The same source is still here.',
+          ]}
+        />
+      </>
+    );
   },
 };
 

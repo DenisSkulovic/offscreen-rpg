@@ -1,26 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import type { ResolvedMedia, ResolvedPresentation } from '../presentation/types';
+import { usePassageArrival } from './passage-arrival';
 import { SceneMedia } from './scene-media';
-
-function usePassageArrival(
-  passageId: string | undefined,
-  style: ResolvedPresentation['passageArrival'],
-) {
-  const previous = useRef<string | null>(null);
-  const [arrival, setArrival] = useState(false);
-  useEffect(() => {
-    const prior = previous.current;
-    previous.current = passageId ?? null;
-    if (prior === null || style === 'none' || prior === passageId) {
-      setArrival(false);
-      return;
-    }
-    setArrival(true);
-  }, [passageId, style]);
-  return arrival;
-}
 
 export function NarrativePassage({
   passageId,
@@ -29,6 +11,7 @@ export function NarrativePassage({
   media = [],
   identity,
   arrival = 'none',
+  held = false,
 }: {
   passageId?: string | undefined;
   title?: string | null | undefined;
@@ -36,8 +19,10 @@ export function NarrativePassage({
   media?: readonly ResolvedMedia[] | undefined;
   identity: string;
   arrival?: ResolvedPresentation['passageArrival'] | undefined;
+  /** A pending command is not a published arrival. */
+  held?: boolean | undefined;
 }) {
-  const arriving = usePassageArrival(passageId, arrival);
+  const arriving = usePassageArrival(passageId, arrival, held);
   const before = media.filter((item) => item.slot.kind === 'before-passage');
   const after = media.filter((item) => item.slot.kind === 'after-passage');
   return (
