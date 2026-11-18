@@ -147,6 +147,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-18--wiki17-knowledge-coverage-trigger](../../../../work/changes/archive/2026-11/other/2026-11-18--wiki17-knowledge-coverage-trigger/CHANGE.md)
 - [2026-11-18--real01-solo-golden-path](../../../../work/changes/archive/2026-11/other/2026-11-18--real01-solo-golden-path/CHANGE.md)
 - [2026-11-18--real02-canon-chain-fixtures](../../../../work/changes/archive/2026-11/other/2026-11-18--real02-canon-chain-fixtures/CHANGE.md)
+- [2026-11-18--real04-v0-scope-provenance](../../../../work/changes/archive/2026-11/other/2026-11-18--real04-v0-scope-provenance/CHANGE.md)
 
 ## storyteller (11)
 

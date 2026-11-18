@@ -1,6 +1,6 @@
 # REAL04 | Align the first-solo product promise, creation routes and public-demo content provenance
 
-**State:** Proposed, **needs product-owner meaning review before Ready**. **Kind:** documentation. **Owner:** product owner; publication rights require separate legal decision. **Parent:** [REAL product target](../../../designs/open/playability-reality/PRODUCT-CORE.md). **Baseline:** `43d5ddfc` source, audit-only main through `3d67347`.
+**State:** Done (2026-11-18). **Kind:** documentation. **Owner:** product owner; publication rights require a separate legal decision. **Parent:** [REAL product target](../../../../../designs/open/playability-reality/PRODUCT-CORE.md). **Baseline:** `main@404d3c35ef16effc540a1842bac8595b41fa0928`. The selected wording is the packet's recommendation: the freeform route stays, without a reliability pledge, and a public harbor demo stays a later rights review.
 
 ## Outcome
 
@@ -31,7 +31,7 @@ A product reader must not infer that an existing freeform button proves arbitrar
 
 | Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
 | --- | --- | --- | --- |
-| Product | changed (conditional on owner ratification): docs/product/experience/entry-and-onboarding.md#current-poc-honesty and #creation-information-architecture; docs/product/foundations/vision.md#first-playable-target only if a link/status correction is needed | docs/product/README.md; acceptance-scenarios.md | Ratified distinction: UI existence vs reliability pledge |
+| Product | changed: docs/product/experience/entry-and-onboarding.md#current-poc-honesty distinguishes a present route from a reliability pledge; docs/product/foundations/vision.md#first-playable-target keeps the harbor oracle from becoming the only later world | docs/product/README.md; docs/product/gameplay/acceptance-scenarios.md | The freeform route stays, without a playability pledge |
 | Technical | unchanged because no creation schema, route, rights model, package pin or execution code changes | docs/technical/storyteller/canonical-documents-and-packages.md; docs/technical/client/architecture.md | Inspect actual implementation before wording |
 | Code | unchanged because this is documentary scope/provenance clarification; all existing UI, source packages and uploaded drafts must remain untouched | apps/web creation paths; content/starts/seyda-neen-prisoner; content/worlds/vvardenfell-poc | Negative: no silent feature removal |
 | Related | changed: work/designs/open/content-provenance-and-rights/README.md **only for one concise link if necessary**, STATUS.md tier if new evidence is available | NOTICE.md; docs/runbooks/content-package-authoring.md | Existing provenance authority preserved |
@@ -40,4 +40,26 @@ No file split/create/retire. No provider, hosting, publication or legal approval
 
 ## Verification and handoff
 
-Before selection, owner resolves exact wording of the two normative questions above. Cursor then traces actual UI controls and imports at latest HEAD; edits only approved canonical headings; checks links, adjacent claims and original negative rights caveat; completes affected claim ledger and archives. Do not invent a separate research/product canon. REAL01/02 may proceed independently; REAL04 cannot become Done by relabeling uncertain rights as "safe".
+Before selection, owner resolves exact wording of the two normative questions above. Cursor then traces actual UI controls and imports at latest HEAD; edits only approved canonical headings; checks links, adjacent claims and original negative rights caveat; completes affected claim ledger and archives. Do not invent a separate research/product canon. REAL01/02 may proceed independently; REAL04 cannot become Done by relabeling uncertain rights as safe.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/product/experience/entry-and-onboarding.md#current-poc-honesty | product | changed: the two creation routes stay, and the freeform route is not a reliability pledge | apps/web/src/features/stories/draft-editor.tsx at 404d3c35 | source-observed | the editor still offers Create your own story | the product index points at this heading |
+| docs/product/experience/entry-and-onboarding.md#creation-information-architecture | product | unchanged because the staged design, including initiative and invention presets, stays the selected target | apps/web/src/features/stories/storyteller-select.tsx at 404d3c35 | source-observed | those presets are not described as current separate controls | the heading stayed in place |
+| docs/product/foundations/vision.md#first-playable-target | product | changed: the harbor oracle is not a rights clearance and not the only later world | docs/product/foundations/vision.md at 404d3c35 | authored-target | the sentence does not withdraw the solo milestone or the small-party aspiration | the heading stayed in place |
+| docs/product/README.md#product | product | changed: the entry question says both routes are present and freeform is not a playability pledge | apps/web/src/features/stories/draft-editor.tsx at 404d3c35 | source-observed | the index does not say the freeform route was removed | the question links the honesty heading |
+| work/designs/open/content-provenance-and-rights/README.md#open-decisions | related | changed: a public harbor demo is named as an open candidate and is not a license | NOTICE.md at 404d3c35 | source-observed | the SRD attribution still does not cover the Vvardenfell sample | the rights page remains the unique owner |
+| docs/technical/storyteller/canonical-documents-and-packages.md | technical | unchanged because no package pin or rights model changed | content/starts/seyda-neen-prisoner/start-package.json at 404d3c35 | source-observed | the start pin is still present and still has no license key | no heading moved |
+| apps/web/src/features/stories/draft-editor.tsx | code | unchanged because the create route and its controls were inspected and not edited | apps/web/src/features/stories/draft-editor.tsx at 404d3c35 | source-observed | Create from scratch remains a button | no source file moved |
+| STATUS.md | related | changed: the status note lists the present controls and the unlicensed sample | no executable file edited; baseline 404d3c35 | source-observed | the note does not call the Vvardenfell sample a public demo | the queue records the packet |
+
+exception: work/changes/README.md because the queue line is the selection route for this packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+exception: work/designs/open/playability-reality/README.md because the program sequence now points at the archived REAL04 packet
+
+## Receipt
+
+`python scripts/check_docs.py` reported 0 problems. The editor was read at `draft-editor.tsx`, `storyteller-select.tsx`, and `opening-preview.tsx`. No executable file was edited. No model call. No license was selected.

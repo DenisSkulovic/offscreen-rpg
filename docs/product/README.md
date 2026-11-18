@@ -17,7 +17,7 @@ A selected experience target is a product preference, not a demonstration that t
 | Which stories define acceptance texture? | [Harbor and return](gameplay/acceptance-scenarios.md#first-solo-acceptance-walkthrough--harbor-and-return) is the first solo acceptance oracle. It is an authored target, not a logged run. [Acceptance scenarios](gameplay/acceptance-scenarios.md) keeps the later wizard and goblin stress vignette. [Long-life benchmark playthroughs](gameplay/long-life-benchmark-playthroughs.md) covers accumulated time. The first tested milestone is solo. The small-party ambition is a distant later aspiration, not that milestone. Each decision point names its governing heading |
 | What reusable visual language and Storyteller expression may the player experience? | [Design system and expressive worlds](experience/design-system-and-expression.md) |
 | What must the screen never fake? | [Principles](experience/principles.md) |
-| How does someone arrive and create a life? | [Entry](experience/entry-and-onboarding.md) |
+| How does someone arrive and create a life? | [Entry](experience/entry-and-onboarding.md#current-poc-honesty). Prepared starts and Create your own story are both present. The freeform route is not a promise that any premise plays |
 | What has been accepted for the first Living Book POC, without approving final art direction? | [Living Book POC](experience/living-book-poc.md) |
 | How do choice and waiting feel? | [Play and decisions](experience/play-and-decisions.md) |
 | How does return and a long journal work? | [Return and journal](experience/return-and-journal.md) |
