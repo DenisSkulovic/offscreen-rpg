@@ -1,18 +1,18 @@
 # DOC11 | Refactor selected engine architecture and mechanics into claim-led contracts
 
-**State:** Proposed (unselected). **Kind:** documentation. **Editorial wave:** S2a; execute after DOC08 and DOC09, never automatically. **Source baseline:** [editorial register](../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md) at `f3e3bfe`; refresh exact HEAD, headings, archived evidence and dirty worktree before selection. **Current change remains:** none.
+**State:** Done (2026-11-18). **Kind:** documentation. **Editorial wave:** S2a; execute after DOC08 and DOC09, never automatically. **Source baseline:** [editorial register](../../../../../designs/open/documentation-editorial-audit/PAGE-REGISTER.md). Inspected at `88d685aa`. No model call and no database.
 
 ## Cursor first-screen brief
 
 **Why this Change exists:** Causal-spine architecture and capability/mechanics responsibilities are selected design, but long explanation can blur type/authority boundaries with the realized subset.
 
 **Canonical pages to revise:**
-- [docs/product/gameplay/rules.md](../../../../docs/product/gameplay/rules.md)
-- [docs/product/gameplay/worlds-and-characters.md](../../../../docs/product/gameplay/worlds-and-characters.md)
-- [docs/technical/engine/selected-architecture.md](../../../../docs/technical/engine/selected-architecture.md)
-- [docs/technical/engine/mechanics-and-capabilities.md](../../../../docs/technical/engine/mechanics-and-capabilities.md)
+- [docs/product/gameplay/rules.md](../../../../../../docs/product/gameplay/rules.md)
+- [docs/product/gameplay/worlds-and-characters.md](../../../../../../docs/product/gameplay/worlds-and-characters.md)
+- [docs/technical/engine/selected-architecture.md](../../../../../../docs/technical/engine/selected-architecture.md)
+- [docs/technical/engine/mechanics-and-capabilities.md](../../../../../../docs/technical/engine/mechanics-and-capabilities.md)
 
-Read the [editorial standards](../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), [execution waves](../../../designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md), and relevant current source/evidence only when factual status is at issue. Never treat a design-only target as shipped.
+Read the [editorial standards](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-STANDARD.md), [execution waves](../../../../../designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md), and relevant current source/evidence only when factual status is at issue. Never treat a design-only target as shipped.
 
 ## Exact intended editorial delta
 
@@ -39,10 +39,19 @@ No bulk formatting, no blanket shortening, no new product policy, no executable 
 
 **Proof required:** before/after claim inventory and unchanged-contract list, exact affected path/heading/links, real source evidence for any status correction, negative scenario result, `pnpm wiki:health`, `pnpm wiki:change-guard --mode plan` and `--mode close` when available, plus actual link checker. Mark Done only with an independent adverse-reading review and no unresolved material contradiction. Do not claim semantic correctness from a green structural checker.
 
-## Reconciliation ledger | fill at execution
+## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/engine/selected-architecture.md #heading to verify at HEAD | technical | pending specific wording/meaning review | no source behavior changed; record doc SHA | not run: Proposed | An LLM suggestion directly grants a mechanical effect or a nonhumanoid body silently inherits humanoid equipment/ability semantics. | pending dependent links |
+| docs/technical/engine/selected-architecture.md#five-contracts | technical | changed: state, admission, deterministic mechanics, durable effects, and recovery now have one route | docs/technical/engine/selected-architecture.md at 88d685aa | documentation-only | a model suggestion does not grant a mechanical effect | the new heading does not replace an existing anchor |
+| docs/technical/engine/selected-architecture.md#world-neutral-capability-kernel | technical | unchanged: the kernel stays a conceptual target and is not treated as live | docs/technical/engine/selected-architecture.md at 88d685aa | documentation-only | a nonhumanoid form does not inherit a humanoid schema | the heading stayed in place |
+| docs/technical/engine/mechanics-and-capabilities.md#supported-mechanisms-and-the-future-kernel | technical | changed: the supported roll and effect slice stays separate from the future kernel | packages/game/src/checks.ts at 88d685aa | source-observed | an inapplicable Strength attempt throws before a die is drawn | the new heading does not replace an existing anchor |
+| docs/product/gameplay/rules.md#world-independent-foundation | product | unchanged: the player rule already refuses unlimited capability for an inapplicable ability | docs/product/gameplay/rules.md at 88d685aa | documentation-only | technical prose did not revise this player promise | the heading stayed in place |
+| docs/product/gameplay/worlds-and-characters.md#flexible-settings-and-protagonists | product | unchanged: a microorganism still does not inherit a humanoid inventory | docs/product/gameplay/worlds-and-characters.md at 88d685aa | documentation-only | technical prose did not revise this player promise | the heading stayed in place |
 
-**When selected:** update this plan with verified heading anchors; work only this packet, reconcile and archive; do not start the next DOC packet.
+exception: work/changes/README.md because the queue line is the selection route for this documentation packet
+exception: work/changes/ledger/2026-11.md because the closed-work index records this documentation packet
+exception: work/changes/archive/2026-11/README.md because the month index lists the archived packet
+exception: work/designs/open/documentation-editorial-audit/EDITORIAL-WAVES.md because the wave table will point at the archived packet
+
+The actor test in packages/game/test/actor.test.mjs was read and not re-run. No executable diff. Close checks use base 88d685aa. No provider call.

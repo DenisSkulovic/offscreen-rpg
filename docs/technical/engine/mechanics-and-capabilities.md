@@ -1,6 +1,14 @@
 # Rules, admitted actions and storyteller consequences
 
-**Find the section:** [mechanical authority](#content-and-authority) · [accepted action and time](#admitted-action-and-time) · [consequence narration](#consequence-narration) · [prepared opportunities](#prepared-local-opportunities) · [eligibility versus ongoing permission](#start-eligibility-is-not-ongoing-validity) · [storage and limits](#persistence-and-known-limits). Read the relevant section rather than loading this entire document.
+**Find the section:** [supported slice versus kernel](#supported-mechanisms-and-the-future-kernel) · [mechanical authority](#content-and-authority) · [accepted action and time](#admitted-action-and-time) · [consequence narration](#consequence-narration) · [prepared opportunities](#prepared-local-opportunities) · [eligibility versus ongoing permission](#start-eligibility-is-not-ongoing-validity) · [storage and limits](#persistence-and-known-limits). Read the relevant section rather than loading this entire document.
+
+## Supported mechanisms and the future kernel
+
+The supported slice is the typed roll and effect path in [Content and authority](#content-and-authority) and [Admitted action and time](#admitted-action-and-time). It keeps one captured check, one branch, effect identity, and dice stored with the receipt. `fact.set.v1`, `item.create.v1`, and `item.transfer.v1` are that vocabulary. The [world-neutral capability kernel](selected-architecture.md#world-neutral-capability-kernel) remains a selected conceptual target. This page does not treat that kernel as live.
+
+**No applicable body capability.** `resolveCheck` in `packages/game/src/checks.ts` throws before drawing a die when the ability is absent from `applicableAbilities`. Plan admission in `packages/game/src/immediate-actions.ts` records `unavailable-ability` for that case. `packages/game/test/actor.test.mjs` reads a microbe subject and expects a Strength attempt to fail with "not applicable". That test was read at `88d685aa` and was not re-run. A model suggestion does not apply the rejected effect.
+
+**Valid mechanical consequence.** The same test resolves a Wisdom check that the microbe's sheet allows, and expects one successful roll. Immediate settlement then commits that receipt once, as [Admitted action and time](#admitted-action-and-time) describes. Later narration repeats the saved outcome. It does not roll again.
 
 The implemented mechanical slice uses offer-local private immediate-action plans and the existing storyteller execution/publication lifecycle. It remains an authored, offline slice. Opening and consequence tasks now return freshly validated plans, but their scripted source recognizes only controlled benchmark state; this is not general model adjudication or world understanding. Combat, private encounter disclosure and the bounded planning agent are not implemented. Those limits do not change the product requirements in [Game rules](../../product/gameplay/rules.md).
 

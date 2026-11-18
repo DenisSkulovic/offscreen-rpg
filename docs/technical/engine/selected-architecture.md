@@ -5,6 +5,18 @@
 **Not implemented** by the existence of this page. Landed prototype contracts remain in [authority and transitions](authority-and-transitions.md), [mechanics](mechanics-and-capabilities.md), [chronology](chronology-and-activities.md) and [lifecycle](lifecycle-and-compatibility.md). Narrow concurrency proof is in [concurrency and recovery](concurrency-and-recovery.md).  
 **Product:** [rules](../../product/gameplay/rules.md), [actions](../../product/gameplay/actions-and-commitments.md), [time](../../product/gameplay/time-and-autonomy.md).
 
+## Five contracts
+
+These five contracts are the selected target. The generalized capability kernel named later on this page stays conceptual. It is not live.
+
+1. **State ownership.** PostgreSQL owns authoritative mutable state. See [Non-negotiables](#non-negotiables). The product rule is [Possessions and exchanges](../../product/gameplay/continuity.md#possessions-and-exchanges): a recorded object keeps its holder.
+2. **Permission and admission.** Player intent never directly writes an outcome. See [Causal spine](#causal-spine). The product rule is [Stable meanings](../../product/gameplay/actions-and-commitments.md#stable-meanings): an offer is permission to choose.
+3. **Deterministic mechanics.** Rules stay pure. See [World-neutral capability kernel](#world-neutral-capability-kernel). The product rule is [World-independent foundation](../../product/gameplay/rules.md#world-independent-foundation): an unavailable ability does not grant unlimited capability.
+4. **Durable effects.** One committed result stands at its canonical time. See [Causal spine](#causal-spine). A later sentence does not grant that effect again, as [Stable meanings](../../product/gameplay/actions-and-commitments.md#stable-meanings) requires.
+5. **Recovery.** A failed narration leaves the saved mechanical truth. See [Causal spine](#causal-spine). [Pace](../../product/gameplay/time-and-autonomy.md#pace) still requires an accepted execution before fictional time moves.
+
+Negative: a model suggestion does not grant a mechanical effect. A nonhumanoid body does not inherit humanoid equipment or ability semantics. See [Sparse identities](#sparse-identities).
+
 ## Failure model
 
 The engine serves a fiction whose character can live for months and whose decisions can be both creative and mechanically earned. The selected shape is a **modular monolith with a durable, versioned story authority core**, separate pure capability and rule policies, a bounded Storyteller proposal engine, and an event and boundary-driven execution layer. Authoritative mutable state lives in PostgreSQL. Immutable narrative objects hold prose and source-linked description. Workers may scale behind one deployment contract. The browser receives a projection. The server keeps command idempotence. Player intent never directly writes an outcome.
