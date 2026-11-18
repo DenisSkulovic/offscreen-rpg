@@ -97,6 +97,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-13--live-scene-presentation-wire](../../../../work/changes/archive/2026-11/other/2026-11-13--live-scene-presentation-wire/CHANGE.md)
 - [2026-11-17--hk02-repository-doc-integrity](../../../../work/changes/archive/2026-11/other/2026-11-17--hk02-repository-doc-integrity/CHANGE.md)
 - [2026-11-17--hk05-play-compatibility-shims](../../../../work/changes/archive/2026-11/other/2026-11-17--hk05-play-compatibility-shims/CHANGE.md)
+- [2026-11-17--har05-portable-snapshot-index](../../../../work/changes/archive/2026-11/other/2026-11-17--har05-portable-snapshot-index/CHANGE.md)
 - [2026-11-17--hk06-maintenance-inventory-and-lifecycle](../../../../work/changes/archive/2026-11/other/2026-11-17--hk06-maintenance-inventory-and-lifecycle/CHANGE.md)
 - [2026-11-17--hk07-dependency-aware-freshness](../../../../work/changes/archive/2026-11/other/2026-11-17--hk07-dependency-aware-freshness/CHANGE.md)
 - [2026-11-17--hk08-maintenance-feedback-and-status-convergence](../../../../work/changes/archive/2026-11/other/2026-11-17--hk08-maintenance-feedback-and-status-convergence/CHANGE.md)

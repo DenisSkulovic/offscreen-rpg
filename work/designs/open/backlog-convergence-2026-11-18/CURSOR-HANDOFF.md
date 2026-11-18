@@ -1,12 +1,12 @@
 # Cursor execution handoff | backlog convergence, 2026-11-18
 
-**Scope:** 16 packets were open in the source snapshot. BOOK01/BOOK02 are now archived Done in commit `024ba05a6` and **must not be re-implemented or re-archived**. Execute the **14 remaining open packets** to real terminal outcomes (13 bounded Ready, HAR05 Verifying). Read [audit](README.md) and [selected decisions](CONTRACT-DECISIONS.md). This handoff is a sequencing guide **not** a mega-Change; retain the repository's one-current-Change practice. Owner has authorized bounded design and code preparation/implementation in this conversation. No paid provider, actual production spend, nondisposable database reset, unreviewed accounting settlement or bypass of a security boundary.
+**Scope:** 16 packets were open in the source snapshot. BOOK01/BOOK02 are archived Done in commit `024ba05a6` and **must not be re-implemented or re-archived**. HAR05 is Done at `dfb25d72`. Execute the **13 remaining open packets**. Read [audit](README.md) and [selected decisions](CONTRACT-DECISIONS.md). This handoff is a sequencing guide **not** a mega-Change; retain the repository's one-current-Change practice. Owner has authorized bounded design and code preparation/implementation in this conversation. No paid provider, actual production spend, nondisposable database reset, unreviewed accounting settlement or bypass of a security boundary.
 
 ## Queue in the order that removes dependencies
 
 **Wave 0, completed-book reconciliation and HAR05 source verification:**
 1. **BOOK01 and BOOK02: ALREADY DONE.** Archived with receipts and link/ledger reconciliation on 2026-11-18. Verify with `node scripts/repo-tools/archive-changes.mjs --dry-run` and current route health, but **do not execute an archival write or remake their reader**. If the archive tool finds a missed reference, repair the reference only.
-2. **HAR05:** in real checkout run `pnpm repo:snapshot:chatgpt:test`, `pnpm repo:snapshot:chatgpt`, `pnpm wiki:find --self-test`, `pnpm wiki:health`. Inspect ZIP `SNAPSHOT.json` and `WIKI-INDEX.json`: same HEAD, no dirty contents, no unsafe fallback; archive Done if green. Uploaded prior ZIP already has matching manifest and portable index; independent extracted exporter tests were 2/2.
+2. **HAR05: DONE** at `dfb25d72`. The strict lean ZIP is ready, with 294 pages, 2112 sections, and 0 broken links. The source-only ZIP stays disabled. Do not re-export it as the next task.
 
 **Wave 1, independent no-spend work (first implementable code: DIR02):**
 3. **DIR02:** follow [the exact-source writer blueprint](DIR02-WRITER-BLUEPRINT.md) and implement an optional exact publication INSERT of validated V1 atmosphere through `stories/persistence.ts`, `storyteller/publication.ts`; verify `stories/reads.ts` and `apps/web/src/features/play/ui/appearance-roundtrip.test.tsx`. Deterministic fixture, duplicate/stale/invalid tests. Do not install DIR03 here.

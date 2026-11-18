@@ -19,7 +19,7 @@
 | --- | --- | --- | --- |
 | BOOK01 | BookSurface/BookContents/StoryFrame implemented; packet receipt reports 202 fast tests, web build and typecheck | **Close/archive housekeeping** with inbound link repair | Archived Done; no new code |
 | BOOK02 | Journal overview/reader implemented; packet receipt reports 205 fast tests and typecheck | **Close/archive housekeeping** | Archived Done; no fabricated search/recap |
-| HAR05 | Exporter/index code exists; uploaded source ZIP has matching commit and portable index; extracted fixture 2/2 passed | **Verify in real checkout**, inspect exact ZIP, then close | Same HEAD in ZIP manifest/index, no sensitive content, focused commands logged |
+| HAR05 | Clean checkout export at `dfb25d72` is ready: 294 pages, 2112 sections, 0 broken links. The source-only ZIP stays disabled | **Done** | The indexed ZIP matches that commit and a sensitive path has no GitHub fallback |
 | DIR02 | Optional JSONB exists, insert omits appearance; prior packet intentionally stopped | **Build deterministic exact-transaction writer**, no provider | Save/read/render identity, invalid/stale/duplicate negatives |
 | DIR03 | Depends on DIR02; live model budget/quality genuinely absent | **Build offline optional-output parsing + comparative fixture**, preserve no-spend | Provider-free author sidecar supports valid and absent; live adoption separately requires spend |
 | HK01 | A working local uncertain-attempt settlement path would be lost | **Replace recovery first**, then safely retire old entry | Trusted identity, hash/attempt match, idempotent no-cost dry-run + carefully authorized commit path |
