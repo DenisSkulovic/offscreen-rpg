@@ -53,6 +53,19 @@ One observable change to executable code/tests/configuration and why it matters.
 - Decisions/blockers that must be resolved before code work: [...]
 - If this Change spans several independently verifiable code slices, add `PLAN.md` with one active checkpoint. Don't create a second program-level specification here.
 
+## Planned specification and implementation delta | planned-impact.v1
+
+Required before a new packet is marked Ready. This table is the prospective plan. It is not the reconciliation ledger and it is not proof. A legacy Ready packet that lacks this section stays readable; upgrade it when that packet is selected.
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because [concrete player-facing reason], or change: [docs/product/...#heading] | [dependent headings, or none] | [owner decision] |
+| Technical | unchanged because [concrete contract reason], or change: [docs/technical/...#heading] | [dependent headings, or none] | [fixture or negative] |
+| Code | change: [source path]; negative: [the case that would disprove it] | [source map, or none] | [test] |
+| Related | unchanged because [why no other owner moves], or change: [map path] | [inbound route] | [link check] |
+
+`N/A` and `docs updated` are not dispositions. A code row that changes behavior names a path and a negative case. Do not say the code becomes the authority for a game promise the product row left unchanged.
+
 ## Reconciliation ledger (required before Done)
 
 **Product docs are the bible; technical docs second; code is the artifact.** Fill one row per affected selected claim. A pure internal tool still needs one row that says `no product/technical behavior impacted` and why. Do **not** mark Done while a row says `not run`, while a reason is "not needed" or "docs updated", or while permanent docs would remain more stale than the landed code.

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildWikiModel } from './model.mjs';
+import { buildWikiModel, reverseContractDependents } from './model.mjs';
 import { githubHeadingSlug } from './slug.mjs';
 
 function write(root, rel, text) {
@@ -374,6 +374,190 @@ export function runSelfTest() {
     assert.equal(claimed.distance.has('work/changes/archive/old/CHANGE.md'), false);
   });
 
+  check('a contract edge reverses one hop and a see-also link does not', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-contract-ok-'));
+    write(
+      root,
+      'docs/README.md',
+      '# Docs\n\n[Time](product/time.md)\n\n[Clock](technical/clock.md)\n',
+    );
+    write(root, 'docs/product/time.md', '# Time\n\n## Pace\n\nAn unaccepted clock does not move.\n');
+    write(
+      root,
+      'docs/technical/clock.md',
+      [
+        '# Clock',
+        '',
+        '## Permission to advance',
+        '',
+        'Only an accepted action owns duration. See also [Pace](../product/time.md#pace).',
+        '',
+        '### Contract dependencies',
+        '',
+        '| This claim | Relation | Governing claim | Why a change triggers review |',
+        '| --- | --- | --- | --- |',
+        '| Permission to advance | constrained-by | [Pace](../product/time.md#pace) | The execution gate must keep the accepted-action duration rule |',
+        '',
+      ].join('\n'),
+    );
+    const model = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.equal(model.graph.contractEdges.length, 1);
+    assert.equal(model.graph.contractEdges[0].relation, 'constrained-by');
+    assert.equal(model.issues.some((item) => item.code.startsWith('contract-')), false);
+    const found = reverseContractDependents(model.graph.contractEdges, {
+      path: 'docs/product/time.md',
+      anchor: 'pace',
+    });
+    assert.equal(found.knownRoute, true);
+    assert.equal(found.dependents.length, 1);
+    assert.equal(found.dependents[0].from, 'docs/technical/clock.md');
+    assert.equal(found.dependents[0].fromAnchor, 'permission-to-advance');
+    const empty = reverseContractDependents(model.graph.contractEdges, {
+      path: 'docs/product/time.md',
+      anchor: 'missing',
+    });
+    assert.equal(empty.knownRoute, false);
+    assert.deepEqual(empty.dependents, []);
+  });
+
+  check('a product page cannot be governed by a technical page', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-contract-reverse-'));
+    write(root, 'docs/README.md', '# Docs\n\n[Time](product/time.md)\n\n[Clock](technical/clock.md)\n');
+    write(
+      root,
+      'docs/product/time.md',
+      [
+        '# Time',
+        '',
+        '## Pace',
+        '',
+        '### Contract dependencies',
+        '',
+        '| This claim | Relation | Governing claim | Why a change triggers review |',
+        '| --- | --- | --- | --- |',
+        '| Pace | constrained-by | [Permission](../technical/clock.md#permission-to-advance) | This would make the product rule subordinate to the implementation |',
+        '',
+      ].join('\n'),
+    );
+    write(root, 'docs/technical/clock.md', '# Clock\n\n## Permission to advance\n\nGate.\n');
+    const model = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.ok(model.issues.some((item) => item.code === 'contract-reversed-authority'));
+    assert.equal(model.graph.contractEdges.length, 0);
+  });
+
+  check('a proposed page and an archive cannot govern a binding edge', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-contract-proposed-'));
+    write(
+      root,
+      'docs/README.md',
+      '# Docs\n\n[Clock](technical/clock.md)\n\n[Admin](product/admin.md)\n',
+    );
+    write(root, 'docs/product/admin.md', '# Admin\n\nStatus: proposed operating policy.\n\n## Catalog\n\nNot ratified.\n');
+    write(root, 'work/changes/archive/old/CHANGE.md', '# Old\n\n## Historical\n\nDone.\n');
+    write(
+      root,
+      'docs/technical/clock.md',
+      [
+        '# Clock',
+        '',
+        '## Permission to advance',
+        '',
+        '### Contract dependencies',
+        '',
+        '| This claim | Relation | Governing claim | Why a change triggers review |',
+        '| --- | --- | --- | --- |',
+        '| Permission to advance | constrained-by | [Catalog](../product/admin.md#catalog) | A proposal must not become the governing rule |',
+        '| Permission to advance | depends-on | [Historical](../../work/changes/archive/old/CHANGE.md#historical) | An archive is not a live contract |',
+        '',
+      ].join('\n'),
+    );
+    const model = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.ok(model.issues.some((item) => item.code === 'contract-proposed-target'));
+    assert.ok(model.issues.some((item) => item.code === 'contract-nonbinding-target'));
+    assert.equal(model.graph.contractEdges.length, 0);
+  });
+
+  check('a missing governing heading is rejected and a cycle is visited once', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-contract-cycle-'));
+    write(root, 'docs/README.md', '# Docs\n\n[A](technical/a.md)\n\n[B](technical/b.md)\n');
+    write(
+      root,
+      'docs/technical/a.md',
+      [
+        '# A',
+        '',
+        '## Left',
+        '',
+        '### Contract dependencies',
+        '',
+        '| This claim | Relation | Governing claim | Why a change triggers review |',
+        '| --- | --- | --- | --- |',
+        '| Left | depends-on | [Right](b.md#missing) | This heading is not on the page |',
+        '| Left | depends-on | [Right](b.md#right) | Each side names the same shared invariant and review stops after one visit |',
+        '',
+      ].join('\n'),
+    );
+    write(
+      root,
+      'docs/technical/b.md',
+      [
+        '# B',
+        '',
+        '## Right',
+        '',
+        '### Contract dependencies',
+        '',
+        '| This claim | Relation | Governing claim | Why a change triggers review |',
+        '| --- | --- | --- | --- |',
+        '| Right | depends-on | [Left](a.md#left) | The return edge closes a cycle and must not loop |',
+        '',
+      ].join('\n'),
+    );
+    const model = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.ok(model.issues.some((item) => item.code === 'contract-missing-heading'));
+    assert.equal(model.graph.contractEdges.length, 2);
+    const found = reverseContractDependents(model.graph.contractEdges, {
+      path: 'docs/technical/a.md',
+      anchor: 'left',
+    }, { hops: 4 });
+    assert.equal(found.dependents.length, 1);
+    assert.equal(found.dependents[0].from, 'docs/technical/b.md');
+  });
+
+  check('a large dependent set is kept and flagged', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-contract-fanout-'));
+    const links = ['[Time](product/time.md)'];
+    for (let index = 0; index < 31; index += 1) links.push(`[C${index}](technical/c${index}.md)`);
+    write(root, 'docs/README.md', `# Docs\n\n${links.join('\n\n')}\n`);
+    write(root, 'docs/product/time.md', '# Time\n\n## Pace\n\nAccepted time.\n');
+    for (let index = 0; index < 31; index += 1) {
+      write(
+        root,
+        `docs/technical/c${index}.md`,
+        [
+          '# Child',
+          '',
+          '## Gate',
+          '',
+          '### Contract dependencies',
+          '',
+          '| This claim | Relation | Governing claim | Why a change triggers review |',
+          '| --- | --- | --- | --- |',
+          `| Gate | constrained-by | [Pace](../product/time.md#pace) | Child ${index} must be reviewed when the accepted pace rule changes |`,
+          '',
+        ].join('\n'),
+      );
+    }
+    const model = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    const found = reverseContractDependents(model.graph.contractEdges, {
+      path: 'docs/product/time.md',
+      anchor: 'pace',
+    });
+    assert.equal(found.dependents.length, 31);
+    assert.equal(found.fanoutWarning, true);
+    assert.ok(model.issues.some((item) => item.code === 'contract-fanout' && item.severity === 'warning'));
+  });
+
   check('normative archive route', () => {
     const root = mkdtempSync(path.join(tmpdir(), 'wiki-authority-'));
     write(
@@ -395,7 +579,7 @@ export function runSelfTest() {
     return 1;
   }
   console.log(
-    'Self-test passed: GFM links, anchors, Unicode, parentheses, archive exemption, case mismatch, unreachable page, authority route, proposal classification, reclassification receipt, duplicate edge.',
+    'Self-test passed: GFM links, anchors, Unicode, parentheses, archive exemption, case mismatch, unreachable page, authority route, proposal classification, reclassification receipt, duplicate edge, contract edges.',
   );
   return 0;
 }

@@ -48,6 +48,10 @@ For task-oriented tutorials, explanation, reference and how-to, adapt [Diátaxis
 
 **Product canon lives under `docs/product/`**; technical contracts under **`docs/technical/`**; selection under **`work/changes/`**; sessions under **`work/sessions/`**. Topic indexes are **routers, not a fourth authority layer**. An agent should follow one route, not read every router in sequence.
 
+## Contract dependencies
+
+A heading named `Contract dependencies` is a binding review edge, not a see-also list. The row is written on the dependent page. The relation is `depends-on`, `constrained-by`, or `co-change`, and it points at the governing heading. A technical claim may be constrained by a product heading. A product heading is not governed by a technical page. Ordinary see-also, evidence, and example links create no review obligation. An empty reverse lookup means there is no known route. It does not mean the change is safe.
+
 ## Maintenance without documentation theater
 
 - New behavior: settle product, then technical owner, then code. Source verification updates evidence/status separately.

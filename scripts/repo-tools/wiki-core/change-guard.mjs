@@ -5,7 +5,9 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { citationEdges } from '../maintenance-core.mjs';
 import { parseMarkdownDocument } from './markdown.mjs';
+import { buildWikiModel, collectMaintainedPages } from './model.mjs';
 
 export const SCHEMA = 'wiki.change-guard.v1';
 
@@ -194,7 +196,224 @@ function paidClaimFinding(changePath, text) {
   return null;
 }
 
-function planFindings(changePath, text) {
+const PLAN_PLANES = ['product', 'technical', 'code', 'related'];
+
+function declaresPlanSchema(text) {
+  return /planned-impact\.v1/i.test(text);
+}
+
+function planeKey(cell) {
+  const label = String(cell ?? '').replace(/\*\*/g, '').trim().toLowerCase();
+  if (label.startsWith('product')) return 'product';
+  if (label.startsWith('technical')) return 'technical';
+  if (label.startsWith('code')) return 'code';
+  if (label.startsWith('related') || label.startsWith('dependent')) return 'related';
+  if (label.startsWith('development')) return 'development';
+  return null;
+}
+
+function planSection(text) {
+  const match = text.match(/^##\s+Planned specification and implementation delta[^\n]*$/im);
+  if (!match) return null;
+  const start = match.index + match[0].length;
+  const rest = text.slice(start);
+  const next = rest.search(/^##\s+/m);
+  const body = next >= 0 ? rest.slice(0, next) : rest;
+  return { line: lineNumberAt(text, match.index), body, offset: start };
+}
+
+function planRows(section, fullText) {
+  const rows = [];
+  const lines = section.body.split(/\r?\n/);
+  let cursor = section.offset;
+  for (const line of lines) {
+    const cells = splitRow(line);
+    const lineNumber = lineNumberAt(fullText, cursor);
+    cursor += line.length + 1;
+    if (!cells || isSeparator(cells)) continue;
+    const key = planeKey(cells[0]);
+    if (!key) continue;
+    rows.push({ key, cells, line: lineNumber });
+  }
+  return rows;
+}
+
+function planPaths(cells) {
+  const found = [];
+  for (const cell of cells.slice(1)) {
+    for (const item of extractPaths(cell)) {
+      if (item.rel.includes('/')) found.push(item);
+    }
+  }
+  return found;
+}
+
+function validatePlanRow(changePath, row, severity, repo) {
+  const findings = [];
+  const disposition = row.cells[1] ?? '';
+  const bare = row.cells.slice(1).join(' ').replace(/\*\*/g, ' ');
+  if (placeholder(disposition) || /\bdocs updated\b/i.test(disposition)) {
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'plan-placeholder',
+        row.line,
+        row.key,
+        `${row.key} needs a real disposition. N/A and "docs updated" are not a plan.`,
+      ),
+    );
+    return findings;
+  }
+  const unchanged = /unchanged because\b/i.test(bare) || /\bunchanged:/i.test(bare);
+  const changed = !unchanged && (/\bchange:/i.test(bare) || /\bchanged:/i.test(bare));
+  if (!unchanged && !changed) {
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'plan-missing-disposition',
+        row.line,
+        row.key,
+        `${row.key} must say changed or unchanged because, with a concrete reason.`,
+      ),
+    );
+    return findings;
+  }
+  const reason = bare
+    .replace(/unchanged because/gi, '')
+    .replace(/unchanged:/gi, '')
+    .replace(/changed:/gi, '')
+    .replace(/change:/gi, '')
+    .trim();
+  if (reason.length < 12) {
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'plan-weak-reason',
+        row.line,
+        row.key,
+        `${row.key} needs a concrete reason. A label alone is not a disposition.`,
+      ),
+    );
+  }
+  const paths = planPaths(row.cells);
+  if (changed && paths.length === 0) {
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'plan-missing-owner',
+        row.line,
+        row.key,
+        `${row.key} says this plane changes and does not name an owner path.`,
+      ),
+    );
+  }
+  if (row.key === 'code' && changed && !/negative|disprove|reject/i.test(bare)) {
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'plan-missing-negative',
+        row.line,
+        'code',
+        'A code-bearing plan row needs its negative case.',
+      ),
+    );
+  }
+  if (repo) {
+    for (const item of paths) {
+      const heading = checkHeading(repo, changePath, item.rel, item.fragment, row.line);
+      if (heading) findings.push({ ...heading, severity });
+    }
+  }
+  return findings;
+}
+
+function planImpactFindings(changePath, text, repo) {
+  const findings = [];
+  const state = stateOf(text);
+  const proposed = /\bproposed\b/i.test(state ?? '');
+  const ready = /\bready\b/i.test(state ?? '') && !proposed;
+  if (!declaresPlanSchema(text)) {
+    if (ready) {
+      const stateIndex = text.search(/\*\*State:?/i);
+      findings.push(
+        finding(
+          changePath,
+          'warning',
+          'schema-upgrade',
+          stateIndex >= 0 ? lineNumberAt(text, stateIndex) : 1,
+          'planned-impact.v1',
+          'This Ready packet has no planned-impact.v1 table. Upgrade it when it is selected. This guard does not fail the existing queue.',
+        ),
+      );
+    }
+    return findings;
+  }
+  const severity = proposed ? 'warning' : 'error';
+  const section = planSection(text);
+  if (!section) {
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'missing-plan-section',
+        null,
+        'planned-impact.v1',
+        'A planned-impact.v1 packet needs the Planned specification and implementation delta section.',
+      ),
+    );
+    return findings;
+  }
+  const rows = planRows(section, text);
+  const seen = new Map();
+  for (const row of rows) {
+    seen.set(row.key, row);
+    findings.push(...validatePlanRow(changePath, row, severity, repo));
+  }
+  for (const key of PLAN_PLANES) {
+    if (seen.has(key)) continue;
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'plan-missing-plane',
+        section.line,
+        key,
+        `The planned-impact.v1 table is missing the ${key} row.`,
+      ),
+    );
+  }
+  const product = seen.get('product');
+  const code = seen.get('code');
+  if (product && code) {
+    const productText = product.cells.slice(1).join(' ');
+    const codeText = code.cells.slice(1).join(' ');
+    const combined = `${productText} ${codeText}`;
+    if (
+      /unchanged/i.test(productText) &&
+      /unratified game promise|becomes the authority|rewrite the product to match/i.test(codeText) &&
+      !/owner ratified|explicit owner decision/i.test(combined)
+    ) {
+      findings.push(
+        finding(
+          changePath,
+          severity,
+          'plan-contradiction',
+          code.line,
+          'code',
+          'Code cannot become the authority for an unratified game promise while the product row says unchanged.',
+        ),
+      );
+    }
+  }
+  return findings;
+}
+
+function planFindings(changePath, text, repo = null) {
   const findings = [];
   if (!titleOf(text)) {
     findings.push(finding(changePath, 'error', 'missing-title', 1, 'title', 'CHANGE.md needs an H1 title.'));
@@ -245,6 +464,7 @@ function planFindings(changePath, text) {
   if (gm07) findings.push(gm07);
   const pathClaim = pathRatificationFinding(changePath, text);
   if (pathClaim) findings.push(pathClaim);
+  findings.push(...planImpactFindings(changePath, text, repo));
   return findings;
 }
 
@@ -432,8 +652,148 @@ function closeFindings(repo, changePath, text, changedPaths) {
   return findings;
 }
 
+function ledgerCovers(rows, rel) {
+  return rows.some((row) => `${row.affected ?? ''}\n${row.source ?? ''}\n${row.target ?? ''}`.includes(rel));
+}
+
+function closeImpactFindings(repo, changePath, text, changedPaths, historyStatus) {
+  if (!declaresPlanSchema(text)) return [];
+  const findings = [];
+  const proposed = /\bproposed\b/i.test(stateOf(text) ?? '');
+  const severity = proposed ? 'warning' : 'error';
+  if (historyStatus === 'unavailable') {
+    findings.push(
+      finding(
+        changePath,
+        'warning',
+        'proof-blocked',
+        null,
+        'history',
+        'History is shallow or unavailable. This guard will not treat the impact set as fresh.',
+      ),
+    );
+  }
+  let contractEdges = [];
+  try {
+    contractEdges = buildWikiModel(repo, { repoSha: null, dirty: true }).graph.contractEdges ?? [];
+  } catch {
+    findings.push(
+      finding(changePath, 'warning', 'proof-blocked', null, 'graph', 'The contract graph could not be read. No freshness claim was made.'),
+    );
+    return findings;
+  }
+  const changed = changedPaths.map(toRepoPath);
+  const changedSet = new Set(changed);
+  const { rows } = parseLedger(text);
+  for (const edge of contractEdges) {
+    if (!changedSet.has(edge.to)) continue;
+    if (ledgerCovers(rows, edge.from)) continue;
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'missing-dependent-disposition',
+        edge.line,
+        edge.from,
+        `Changing ${edge.to}#${edge.toAnchor} requires a disposition for ${edge.from}#${edge.fromAnchor} (${edge.relation}).`,
+      ),
+    );
+  }
+  const hasDependent = contractEdges.some((edge) => changedSet.has(edge.to));
+  for (const row of rows) {
+    if (!hasDependent || !/docs unaffected|no docs changes/i.test(row.target ?? '')) continue;
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'blanket-disposition',
+        row.line,
+        'target delta',
+        'A blanket docs-unaffected row cannot cover a known dependent.',
+      ),
+    );
+  }
+  for (const rel of changed) {
+    if (!/^docs\/(product|technical)\//.test(rel)) continue;
+    if (ledgerCovers(rows, rel)) continue;
+    findings.push(
+      finding(
+        changePath,
+        severity,
+        'undeclared-changed-contract',
+        null,
+        rel,
+        `${rel} changed and no ledger row disposes of that selected contract.`,
+      ),
+    );
+  }
+  for (const rel of changed) {
+    if (!rel.endsWith('.md') || !rel.startsWith('docs/')) continue;
+    if (!ledgerCovers(rows, rel)) continue;
+    const namedHeading = rows.some((row) =>
+      `${row.affected ?? ''}\n${row.source ?? ''}\n${row.target ?? ''}`.includes(`${rel}#`),
+    );
+    if (namedHeading) continue;
+    findings.push(
+      finding(
+        changePath,
+        'warning',
+        'ambiguous-heading',
+        null,
+        rel,
+        `${rel} changed and the ledger does not name a heading. Review the subsection before calling it fresh.`,
+      ),
+    );
+  }
+  if (historyStatus !== 'unavailable') {
+    let citations = [];
+    try {
+      citations = citationEdges(repo, collectMaintainedPages(repo), (rel) =>
+        readText(path.join(repo, ...rel.split('/'))),
+      );
+    } catch {
+      citations = [];
+    }
+    const citedTargets = new Set(citations.map((edge) => edge.to));
+    const contractTargets = new Set(contractEdges.map((edge) => edge.to));
+    for (const edge of citations) {
+      if (!changedSet.has(edge.to) || !edge.from.startsWith('docs/')) continue;
+      if (ledgerCovers(rows, edge.from)) continue;
+      if (contractEdges.some((item) => item.from === edge.from && changedSet.has(item.to))) continue;
+      findings.push(
+        finding(
+          changePath,
+          'warning',
+          'citation-candidate',
+          null,
+          edge.from,
+          `${edge.from} cites ${edge.to}. That is a review candidate, not a proof that the pages agree.`,
+        ),
+      );
+    }
+    let uncited = 0;
+    for (const rel of changed) {
+      if (!/^(?:packages|apps|tools|scripts)\//.test(rel)) continue;
+      if (citedTargets.has(rel) || contractTargets.has(rel)) continue;
+      uncited += 1;
+      if (uncited > 10) continue;
+      findings.push(
+        finding(
+          changePath,
+          'warning',
+          'no-known-relation',
+          null,
+          rel,
+          `${rel} has no known contract edge or citation. That is an uncharted change, not a statement of no risk.`,
+        ),
+      );
+    }
+  }
+  return findings;
+}
+
 /**
- * @param {{ repo: string, mode: 'plan' | 'close', changePath?: string | null, changedPaths?: string[], readmeText?: string }} input
+ * @param {{ repo: string, mode: 'plan' | 'close', changePath?: string | null, changedPaths?: string[], readmeText?: string, historyStatus?: string | null }} input
  */
 export function guardChange(input) {
   const repo = input.repo;
@@ -502,8 +862,11 @@ export function guardChange(input) {
     };
   }
   const text = readText(resolved.abs);
-  const findings = planFindings(changePath, text);
-  if (mode === 'close') findings.push(...closeFindings(repo, changePath, text, changedPaths));
+  const findings = planFindings(changePath, text, repo);
+  if (mode === 'close') {
+    findings.push(...closeFindings(repo, changePath, text, changedPaths));
+    findings.push(...closeImpactFindings(repo, changePath, text, changedPaths, input.historyStatus ?? null));
+  }
   const failed = findings.some((item) => item.severity === 'error');
   return {
     schema: SCHEMA,

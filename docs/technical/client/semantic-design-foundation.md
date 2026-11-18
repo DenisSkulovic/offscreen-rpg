@@ -23,7 +23,13 @@ apps/web/src/features/play/
   presentation/      /* validates and resolves optional scene V1 */
 ~~~
 
-**Do not replace** TanStack Query, story snapshots, React Hook Form, or current action mutation hooks. Shared UI components receive **presentation and already-authorized event handlers**, not story IDs or server mutation ownership. Native semantic HTML is default; a low-level accessible primitive library can be adopted only for one demonstrated complex need, as a narrow dependency decision with tests.
+**Do not replace** TanStack Query, story snapshots, React Hook Form, or current action mutation hooks. Shared UI components receive **presentation and already-authorized event handlers**, not story IDs or server mutation ownership. Native semantic HTML is default; a low-level accessible primitive library can be adopted only for one demonstrated complex need, as a narrow dependency decision with tests. Scene decoration cannot recolor system status or commands. [Visual hierarchy and ownership](../../product/experience/design-system-and-expression.md#visual-hierarchy-and-ownership) keeps the reader and the system UI separate from scene-driven decoration.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Ownership and CSS architecture | constrained-by | [Visual hierarchy and ownership](../../product/experience/design-system-and-expression.md#visual-hierarchy-and-ownership) | A scene field cannot recolor errors, selection, or commands; those stay platform and reader roles |
 
 ### Tokens: primitive scales and semantic roles, not a hardcoded genre palette
 

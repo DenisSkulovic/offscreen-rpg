@@ -10,7 +10,13 @@ The scheduler heartbeat is not the unit of mechanical truth. Otherwise changing 
 
 ## Permission to advance
 
-Progression requires both an active accepted execution and absence of a blocking hold. An offer is permission to select; only acceptance grants execution. One solo actor has one advancing execution, which may be a finite short action or an activity under its own rule. Reuse the campaign clock and advancing-slot authority. Do not add a conversation clock alongside an activity clock.
+Progression requires both an active accepted execution and absence of a blocking hold. An offer is permission to select; only acceptance grants execution. One solo actor has one advancing execution, which may be a finite short action or an activity under its own rule. Reuse the campaign clock and advancing-slot authority. Do not add a conversation clock alongside an activity clock. Only an accepted action owns duration; [Pace](../../product/gameplay/time-and-autonomy.md#pace) is the product rule that an unaccepted clock does not move.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Permission to advance | constrained-by | [Pace](../../product/gameplay/time-and-autonomy.md#pace) | The execution gate must keep the product rule that only an accepted action owns duration and an unaccepted clock does not move |
 
 An execution captures its identity, source offer and gameplay revision, admitted plan/rule version, start game second, remaining effort or target game second, pace/control revision, continuation authority and status. These are ownership requirements, not a separate table for every noun. An activity needs a meaningful next boundary and termination/accepted horizon; a finite action has an exact completion boundary. Work contribution is still earned by checks, not by a promised completion timestamp.
 

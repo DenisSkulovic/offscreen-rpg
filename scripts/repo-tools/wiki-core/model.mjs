@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { countWords, parseMarkdownDocument } from './markdown.mjs';
+import { countWords, extractContractDependencies, parseMarkdownDocument } from './markdown.mjs';
 import {
   classifyRepoPath,
   clearListingCache,
@@ -16,6 +16,8 @@ export const GRAPH_SCHEMA = 'wiki.graph.v1';
 export const HEALTH_SCHEMA = 'wiki.health.v1';
 export const LARGE_PAGE_BYTES = 40_000;
 
+const CONTRACT_RELATIONS = new Set(['depends-on', 'constrained-by', 'co-change']);
+const CONTRACT_FANOUT = 30;
 const ROOT_FILES = ['README.md', 'ENGINEERING.md', 'AGENTS.md', 'STATUS.md', 'ROADMAP.md', 'CLAUDE.md'];
 const WORK_FILES = ['work/README.md', 'work/changes/README.md', 'work/designs/README.md'];
 const CITATION =
@@ -106,6 +108,63 @@ function proposalPresentedAsCurrent(sourceKind, destKind, ref) {
   const blob = `${ref.headingText ?? ''}\n${ref.context ?? ''}\n${ref.label ?? ''}`;
   if (PROPOSAL_DISCLOSURE.test(blob)) return false;
   return IMPLEMENTED_CLAIM.test(blob);
+}
+
+function contractKey(page, anchor) {
+  return `${page}#${anchor ?? ''}`;
+}
+
+function nonbindingContractTarget(rel) {
+  return (
+    rel.startsWith('work/') ||
+    rel.startsWith('research/') ||
+    rel.startsWith('evidence/') ||
+    rel.includes('/archive/')
+  );
+}
+
+function targetSaysProposed(root, rel) {
+  const abs = path.join(root, ...rel.split('/'));
+  if (!existsSync(abs)) return false;
+  const head = readText(abs).split(/\r?\n/).slice(0, 40).join('\n');
+  return /status:\s*proposed/i.test(head);
+}
+
+/**
+ * One-hop reverse lookup by default. Cycles are visited once.
+ * A count above the fanout limit is kept and flagged, not truncated.
+ * @param {object[]} edges
+ * @param {{ path: string, anchor?: string | null }} target
+ * @param {{ hops?: number }} [options]
+ */
+export function reverseContractDependents(edges, target, options = {}) {
+  const hops = options.hops ?? 1;
+  const start = contractKey(target.path, target.anchor);
+  const dependents = [];
+  const seen = new Set([start]);
+  let frontier = [start];
+  for (let hop = 1; hop <= hops; hop += 1) {
+    const next = [];
+    for (const node of frontier) {
+      for (const edge of edges) {
+        const governing = contractKey(edge.to, edge.toAnchor);
+        const origin = contractKey(edge.from, edge.fromAnchor);
+        const matched = governing === node || (edge.relation === 'co-change' && origin === node);
+        if (!matched) continue;
+        const dependent = governing === node ? origin : governing;
+        if (seen.has(dependent)) continue;
+        seen.add(dependent);
+        dependents.push({ ...edge, hop, dependent });
+        next.push(dependent);
+      }
+    }
+    frontier = next;
+  }
+  return {
+    dependents,
+    knownRoute: dependents.length > 0,
+    fanoutWarning: dependents.length > CONTRACT_FANOUT,
+  };
 }
 
 /**
@@ -506,6 +565,145 @@ export function buildWikiModel(root, meta = {}) {
     );
   }
 
+  /** @type {object[]} */
+  const contractEdges = [];
+  for (const doc of documents.values()) {
+    if (!isLintSource(doc.rel)) continue;
+    for (const row of extractContractDependencies(doc.text)) {
+      if (row.malformed) {
+        issues.push(
+          issue('error', 'contract-malformed-row', doc.rel, row.line, null, 'A contract dependency row needs claim, relation, governing heading, and reason.'),
+        );
+        continue;
+      }
+      if (!row.fromAnchor) {
+        issues.push(
+          issue('error', 'contract-unknown-claim', doc.rel, row.line, row.fromText, 'The contract row does not name a heading on this page.'),
+        );
+        continue;
+      }
+      if (!CONTRACT_RELATIONS.has(row.relation)) {
+        issues.push(
+          issue(
+            'error',
+            'contract-invalid-relation',
+            doc.rel,
+            row.line,
+            row.relation,
+            'Binding relations are depends-on, constrained-by, and co-change. See-also, evidence, and example links are not edges.',
+          ),
+        );
+        continue;
+      }
+      if (row.rationale.length < 12) {
+        issues.push(
+          issue('error', 'contract-empty-rationale', doc.rel, row.line, row.relation, 'A contract edge needs a concrete reason.'),
+        );
+        continue;
+      }
+      if (!row.href) {
+        issues.push(
+          issue('error', 'contract-missing-target', doc.rel, row.line, row.relation, 'The governing claim needs a local heading link.'),
+        );
+        continue;
+      }
+      const resolved = resolveHref(root, doc.rel, row.href);
+      if (!resolved || resolved.class !== 'local' || !resolved.ok || !resolved.rel) {
+        issues.push(
+          issue('error', 'contract-missing-target', doc.rel, row.line, row.href, 'The governing claim does not resolve inside this repository.'),
+        );
+        continue;
+      }
+      if (!resolved.fragment) {
+        issues.push(
+          issue('error', 'contract-missing-heading', doc.rel, row.line, resolved.rel, 'A contract edge must name the governing heading.'),
+        );
+        continue;
+      }
+      if (!anchorsFor(resolved.rel).has(resolved.fragment)) {
+        issues.push(
+          issue(
+            'error',
+            'contract-missing-heading',
+            doc.rel,
+            row.line,
+            `${resolved.rel}#${resolved.fragment}`,
+            'The governing heading does not exist.',
+          ),
+        );
+        continue;
+      }
+      if (nonbindingContractTarget(resolved.rel)) {
+        issues.push(
+          issue(
+            'error',
+            'contract-nonbinding-target',
+            doc.rel,
+            row.line,
+            resolved.rel,
+            'A proposal, archive, research note, or evidence file cannot be a binding governing claim.',
+          ),
+        );
+        continue;
+      }
+      if (targetSaysProposed(root, resolved.rel)) {
+        issues.push(
+          issue(
+            'error',
+            'contract-proposed-target',
+            doc.rel,
+            row.line,
+            resolved.rel,
+            'A page that still says its status is proposed cannot govern a binding edge.',
+          ),
+        );
+        continue;
+      }
+      const dependentIsProduct = doc.rel.startsWith('docs/product/');
+      const governingIsTechnical = resolved.rel.startsWith('docs/technical/');
+      if (dependentIsProduct && governingIsTechnical) {
+        issues.push(
+          issue(
+            'error',
+            'contract-reversed-authority',
+            doc.rel,
+            row.line,
+            resolved.rel,
+            'A product heading is not governed by a technical page.',
+          ),
+        );
+        continue;
+      }
+      contractEdges.push({
+        from: doc.rel,
+        fromAnchor: row.fromAnchor,
+        to: resolved.rel,
+        toAnchor: resolved.fragment,
+        relation: row.relation,
+        rationale: row.rationale,
+        line: row.line,
+      });
+    }
+  }
+  const contractFanout = new Map();
+  for (const edge of contractEdges) {
+    const id = contractKey(edge.to, edge.toAnchor);
+    contractFanout.set(id, (contractFanout.get(id) ?? 0) + 1);
+  }
+  for (const [id, count] of contractFanout) {
+    if (count <= CONTRACT_FANOUT) continue;
+    issues.push(
+      issue(
+        'warning',
+        'contract-fanout',
+        id.split('#')[0],
+        null,
+        id,
+        `${count} direct dependents are listed in full. The set was not truncated.`,
+      ),
+    );
+  }
+
   const nodes = [];
   const nodeIds = new Set(documents.keys());
   for (const edge of edgeList) nodeIds.add(edge.to);
@@ -586,6 +784,7 @@ export function buildWikiModel(root, meta = {}) {
     dirty: meta.dirty ?? null,
     nodes,
     edges: sortedEdges,
+    contractEdges,
   };
   const health = {
     schema: HEALTH_SCHEMA,

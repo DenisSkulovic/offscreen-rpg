@@ -6,7 +6,7 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
-| [documentation-impact-system/](open/documentation-impact-system/README.md) | **Proposed 2026-11-18:** audit + three-plane change design and typed wiki dependencies; WIKI09–11 remain unselected. HK02, HK06, HK07, and HK08 are Done |
+| [documentation-impact-system/](open/documentation-impact-system/README.md) | **Accepted for the sequence, and WIKI09, WIKI10, and WIKI11 are Done.** Not product canon. HK02, HK06, HK07, and HK08 are Done |
 | [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. HK01 is blocked. HK03, HK04, and HK05 stay gated |
 | [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 3 visual-system program:** product/technical semantic roles prepared; [Phase 3](open/player-experience-refoundation/phase-3/README.md) maps 11 bounded UI/DIR Changes, all unselected. Full final art direction, V2 rich text and generation remain gated |
 | [time-and-autonomy/](open/time-and-autonomy/) | Proposed absence, delegation and standing-life studies. The accepted time rule is the product page |

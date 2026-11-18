@@ -12,7 +12,7 @@ The owner clarified deliberate time investment on 2026-09-19. This is the mainta
 
 ## Pace
 
-Fictional time advances only through an accepted action, activity or eligible entry in an accepted plan. No accepted execution means no time progression, even if the page remains open or the player returns days later. An offered option to wait, rest, observe or spend time idly can authorize progression; the engine cannot silently choose it. A displayed reusable activity menu grants possibilities, not acceptance. An empty menu also grants no permission to advance.
+Fictional time advances only through an accepted action, activity or eligible entry in an accepted plan. No accepted execution means no time progression, even if the page remains open or the player returns days later. An offered option to wait, rest, observe or spend time idly can authorize progression; the engine cannot silently choose it. A displayed reusable activity menu grants possibilities, not acceptance. An empty menu also grants no permission to advance. The execution gate that keeps this rule is [Permission to advance](../../technical/engine/chronology-and-activities.md#permission-to-advance).
 
 During an accepted quiet interval, fictional time continues without fresh narration and with the browser closed, up to the accepted limit or first stopping boundary. Completion with no accepted successor stops time. Manual pause, a required decision and a blocking system failure stop the affected execution independently. Ongoing life can span real months through successive commitments without a compulsory ending.
 

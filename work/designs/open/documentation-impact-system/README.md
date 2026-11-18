@@ -1,6 +1,6 @@
 # Documentation impact architecture | design program
 
-**State:** Proposed design, 2026-11-18. **Not ratified and not implementation permission.** Product canon and current development rules remain authoritative until an owner selects changes. This dossier designs a repository knowledge *maintenance system*, not a new game mechanic.
+**State:** Accepted 2026-11-18 for the WIKI09, WIKI10, then WIKI11 sequence. **Not product canon and not a technical game contract.** Product and technical pages remain the authority for game behavior. This dossier designs a repository knowledge maintenance system, not a new game mechanic.
 
 ## Decision requested
 
@@ -15,11 +15,13 @@ Editing only executable output while leaving its controlling specs stale is anal
 3. [High-risk contract neighborhoods](CONTRACT-NEIGHBORHOODS.md): verified starting candidates, selected-vs-proposed gates and documentation-only follow-up coverage.
 4. [Delivery and evaluation](DELIVERY-AND-VALIDATION.md): implementation order, baseline protections, mutation tests and success criteria.
 
-## Execution route (all Proposed; none selected)
+## Execution route
 
-- [WIKI09: plan-time three-plane Change contract](../../../changes/open/2026-11-18--wiki09-change-impact-contract/CHANGE.md). Amend existing authoring template, workflow skill and existing wiki change guard; do not create a second change system.
-- [WIKI10: contextual contract relationships](../../../changes/open/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md). Introduce explicit, bounded, section-level impact edges and seed a small high-risk cross-reference set without changing normative game meaning.
-- [WIKI11: impact closure and independent proof](../../../changes/open/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md). Extend existing graph/guard/maintenance mechanisms after HK07 to report uncovered dependents and verify both planned and actual edits.
+WIKI09, WIKI10, and WIKI11 are Done. No packet in this sequence is selected.
+
+- [WIKI09: plan-time three-plane Change contract](../../../changes/archive/2026-11/other/2026-11-18--wiki09-change-impact-contract/CHANGE.md). Done. The authoring template, workflow skill, and change guard now require the planned table for schema-declaring Ready packets.
+- [WIKI10: contextual contract relationships](../../../changes/archive/2026-11/other/2026-11-18--wiki10-contract-dependency-edges/CHANGE.md). Done. Typed edges reverse from Pace and from visual hierarchy. Ordinary links stay non-binding.
+- [WIKI11: impact closure and independent proof](../../../changes/archive/2026-11/other/2026-11-18--wiki11-impact-closure-and-proof/CHANGE.md). Done. Close compares the plan, the diff, and known contract dependents. A passing report does not mean the pages agree.
 
 **Sequencing:** WIKI09 after HK02 check-scope changes, WIKI10 after WIKI09, WIKI11 after HK06/HK07 and WIKI10. HK08 CI integration must consume the resulting gate rather than reimplement it. Do not select multiple packets at once.
 
@@ -33,4 +35,4 @@ No generated documentation that restates source, mandatory link counts, all-to-a
 
 ## Owner decision gate
 
-Before implementation, accept or amend the three-plane/relationship model and confirm the ordering relative to HK02–HK08. This design commit itself changes no current product/technical requirements, selects no Change and authorizes no coding agent to execute its proposed packets.
+The owner accepted the three-plane model as written on 2026-11-18 and confirmed WIKI09, then WIKI10, then WIKI11. HK02, HK06, HK07, and HK08 are already Done. Acceptance of this design does not change a game rule.

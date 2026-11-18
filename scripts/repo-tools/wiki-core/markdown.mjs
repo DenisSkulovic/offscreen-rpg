@@ -107,6 +107,85 @@ export function parseMarkdownDocument(markdown) {
   return { headings, references };
 }
 
+function cellHref(cell) {
+  let href = null;
+  function walk(node) {
+    if (!node || href) return;
+    if ((node.type === 'link' || node.type === 'linkReference') && node.url) href = node.url;
+    for (const child of node.children ?? []) walk(child);
+  }
+  walk(cell);
+  return href;
+}
+
+/**
+ * Rows from a heading named Contract dependencies. Ordinary links are ignored.
+ * Resolution and authority checks happen in the wiki model.
+ * @param {string} markdown
+ */
+export function extractContractDependencies(markdown) {
+  const source = markdown.charCodeAt(0) === 0xfeff ? markdown.slice(1) : markdown;
+  const tree = parser.parse(source);
+  /** @type {{ id: string, text: string }[]} */
+  const headings = [];
+  /** @type {object[]} */
+  const rows = [];
+  let capture = null;
+
+  function rememberHeading(node) {
+    const text = plain(node).replace(/\s+/g, ' ').trim();
+    const id = githubHeadingSlug(text);
+    if (id) headings.push({ id, text });
+    if (capture && node.depth <= capture.depth) capture = null;
+    if (/^contract dependencies$/i.test(text)) {
+      capture = { depth: node.depth, taken: false };
+    }
+  }
+
+  function takeTable(node) {
+    capture.taken = true;
+    const tableRows = node.children ?? [];
+    for (let index = 1; index < tableRows.length; index += 1) {
+      const row = tableRows[index];
+      const cells = row.children ?? [];
+      const claim = cells[0];
+      const relationCell = cells[1];
+      const governing = cells[2];
+      const why = cells[3];
+      const claimText = plain(claim).replace(/\s+/g, ' ').trim();
+      const claimHref = claim ? cellHref(claim) : null;
+      let fromAnchor = null;
+      if (claimHref && claimHref.includes('#')) {
+        fromAnchor = decodeURIComponent(claimHref.slice(claimHref.indexOf('#') + 1));
+      } else if (claimText) {
+        const slug = githubHeadingSlug(claimText);
+        const match = headings.find(
+          (heading) => heading.id === slug || heading.text.toLowerCase() === claimText.toLowerCase(),
+        );
+        fromAnchor = match?.id ?? null;
+      }
+      rows.push({
+        fromAnchor,
+        fromText: claimText,
+        relation: plain(relationCell).replace(/\s+/g, ' ').trim().toLowerCase(),
+        href: governing ? cellHref(governing) : null,
+        rationale: plain(why).replace(/\s+/g, ' ').trim(),
+        line: row.position?.start?.line ?? null,
+        malformed: cells.length < 4,
+      });
+    }
+  }
+
+  function walk(node) {
+    if (node.type === 'heading') rememberHeading(node);
+    else if (capture && !capture.taken && node.type === 'table') takeTable(node);
+    for (const child of node.children ?? []) walk(child);
+  }
+
+  walk(tree);
+  return rows;
+}
+
 export function countWords(markdown) {
   const withoutFences = markdown.replace(/```[\s\S]*?```/g, ' ');
   const withoutInline = withoutFences.replace(/`[^`]*`/g, ' ');

@@ -1,6 +1,6 @@
 # Delivery and validation | From navigable wiki to impact-aware wiki
 
-**Status:** Proposed delivery plan. Not a selected Change. This document limits the scope of the three [proposed packets](README.md#execution-route-all-proposed-none-selected) and their evidence.
+**Status:** Proposed delivery plan. Not a selected Change. This document limits the scope of the three [execution packets](README.md#execution-route) and their evidence.
 
 ## Existing work to retain and not duplicate
 

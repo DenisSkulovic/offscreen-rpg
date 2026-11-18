@@ -669,6 +669,20 @@ function attachFreshness(report, input, markdown, readText) {
   return report;
 }
 
+export function citationEdges(root, files, readText) {
+  const edges = [];
+  for (const rel of files.map(posix).filter(isActivePage)) {
+    let text = '';
+    try {
+      text = readText(rel);
+    } catch {
+      continue;
+    }
+    for (const target of citedPaths(root, rel, text)) edges.push({ from: rel, to: target });
+  }
+  return edges;
+}
+
 export function pathsForHistory(root, files, readText) {
   const needed = new Set();
   const cited = new Set();

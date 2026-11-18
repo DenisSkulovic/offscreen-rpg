@@ -75,7 +75,15 @@ export async function main(argv = process.argv.slice(2)) {
     }
     changedPaths = diff.paths;
   }
-  const result = guardChange({ repo: root, mode, changePath: change, changedPaths });
+  let historyStatus = null;
+  if (mode === 'close') {
+    const shallow = spawnSync('git', ['rev-parse', '--is-shallow-repository'], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    if (shallow.status !== 0 || shallow.stdout.trim() === 'true') historyStatus = 'unavailable';
+  }
+  const result = guardChange({ repo: root, mode, changePath: change, changedPaths, historyStatus });
   if (json) console.log(JSON.stringify(result, null, 2));
   else printHuman(result);
   return result.status === 'failed' ? 1 : 0;
