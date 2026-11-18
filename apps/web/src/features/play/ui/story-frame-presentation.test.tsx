@@ -61,6 +61,65 @@ describe('StoryFrame presentation', () => {
     expect(onIntentionSelect).toHaveBeenCalledWith('withdraw');
   });
 
+  it('keeps a hostile palette off reader ink, focus, and system status', async () => {
+    const user = userEvent.setup();
+    const onIntentionSelect = vi.fn();
+    const harbor = resolveFixture(harborPresentation, harborScope);
+    const hostile = {
+      ...harbor,
+      narrative: {
+        ...harbor.narrative,
+        ink: '#39ff14',
+        muted: '#39ff14',
+        quiet: '#39ff14',
+      },
+      ink: '#39ff14',
+      muted: '#39ff14',
+      quiet: '#39ff14',
+      focus: '#ff00ff',
+      status: '#ff00ff',
+      accent: '#ff00ff',
+      actionInk: '#00ff88',
+    };
+    render(
+      <StoryFrame
+        storiesHref="/stories"
+        storyLabel="Greywake"
+        passageId="passage-harbor"
+        interactionId="interaction-harbor"
+        passageTitle="Someone at the door"
+        paragraphs={paragraphs}
+        statusLabel="The repair failed"
+        presentation={hostile}
+        intentions={[{ id: 'withdraw', label: 'Withdraw to the shelter' }]}
+        onIntentionSelect={onIntentionSelect}
+      />,
+    );
+    const stage = document.querySelector('.story-viewport');
+    const style = stage?.getAttribute('style') ?? '';
+    for (const key of [
+      '--sf-ink',
+      '--sf-ink-muted',
+      '--sf-ink-quiet',
+      '--sf-focus',
+      '--sf-action',
+      '--sf-action-ink',
+      '--sf-status-attention',
+      '--ui-danger',
+      '--ui-focus',
+      '--ui-action',
+      '--reader-ink',
+    ]) {
+      expect(style, key).not.toContain(key);
+    }
+    expect(style).toContain('--sf-stage');
+    expect(style).not.toContain('#39ff14');
+    expect(style).not.toContain('#ff00ff');
+    expect(screen.getByRole('heading', { name: 'Someone at the door' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: /Withdraw to the shelter/i }));
+    expect(onIntentionSelect).toHaveBeenCalledWith('withdraw');
+  });
+
   it('animates a new passage id and not a same-id refresh', async () => {
     const cave = resolveFixture(cavePresentation, caveScope);
     const { rerender } = render(

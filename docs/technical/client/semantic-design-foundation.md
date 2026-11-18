@@ -45,6 +45,8 @@ These are **illustrative role names approved as architecture direction**, not a 
 
 **Safe cascade:** default platform role → consistent Book role → validated scene-specific decoration → platform safety/interaction. A shared button in an error state cannot inherit a red danger meaning from the cave's lighting.
 
+**Implemented registry (UI01, fixture-tested):** the role names in the table are the registry in `apps/web/src/shared/design/tokens.css`, loaded once from `apps/web/app/style.css`. `:root` copies the existing app-chrome and book-paper values. `.story-frame` and `.stories-library` redefine a role only where that surface already used a different hex, then point the local `--sf-*` or `--sl-*` name at it. A resolved scene may set `--sf-chrome-*`, `--sf-stage`, `--sf-option-*`, `--sf-vignette`, and `--sf-texture` on `.story-viewport`. It does not assign `--ui-danger`, `--ui-focus`, `--ui-action`, `--ui-action-ink`, `--ui-attention`, `--ui-success`, `--reader-ink`, `--sf-ink`, `--sf-focus`, `--sf-action`, or `--sf-status-attention`. `--ui-danger` and `--ui-success` are defined for a later notice and are not painted by a current control. This records the cascade that source now enforces. It does not accept a final palette.
+
 ### Component criteria
 
 A component becomes shared only if it has a stable semantic responsibility and either two real consumers or avoids reimplementing a difficult accessible behavior. No giant `Box`/`Card`/polymorphic-API museum.

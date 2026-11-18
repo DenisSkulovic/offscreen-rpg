@@ -1,13 +1,13 @@
 /* UX05: authenticated Stories library. Scoped; does not restyle /demo. */
 
 .stories-library {
-  --sl-ink: #f3e9d9;
-  --sl-muted: #b9c2c2;
+  --sl-ink: var(--ui-ink);
+  --sl-muted: var(--ui-muted);
   --sl-quiet: #8a9690;
   --sl-panel: #1a242c;
-  --sl-edge: #33434a;
-  --sl-action: #d7b87c;
-  --sl-focus: #8ec8ff;
+  --sl-edge: var(--ui-border);
+  --sl-action: var(--ui-action);
+  --sl-focus: var(--ui-focus);
   --sl-font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
   --sl-font-ui: 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
 

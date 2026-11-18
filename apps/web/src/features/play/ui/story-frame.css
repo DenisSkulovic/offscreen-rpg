@@ -2,23 +2,30 @@
    Scoped under .story-frame so /demo, Chamber, and creation CSS stay untouched. */
 
 .story-frame {
-  --sf-bg: #12181f;
+  --ui-canvas: #12181f;
+  --ui-ink: #e7ece8;
+  --ui-muted: #a7b2ab;
+  --ui-focus: #8ec8ff;
+  --ui-border: #3d4b57;
+  --ui-action: #c4a574;
+  --ui-action-ink: #1a150f;
+  --ui-attention: #e2c27a;
+  --sf-bg: var(--ui-canvas);
   --sf-stage: #1a222c;
   --sf-stage-edge: #2a3644;
-  --sf-ink: #e7ece8;
-  --sf-ink-muted: #a7b2ab;
+  --sf-ink: var(--ui-ink);
+  --sf-ink-muted: var(--ui-muted);
   --sf-ink-quiet: #7d8a84;
-  --sf-action: #c4a574;
-  --sf-action-ink: #1a150f;
-  --sf-focus: #8ec8ff;
-  --sf-status-attention: #e2c27a;
-  --sf-separator: #3d4b57;
-  --sf-font-narrative: 'Iowan Old Style', 'Palatino Linotype', Palatino,
-    'Book Antiqua', Georgia, serif;
+  --sf-action: var(--ui-action);
+  --sf-action-ink: var(--ui-action-ink);
+  --sf-focus: var(--ui-focus);
+  --sf-status-attention: var(--ui-attention);
+  --sf-separator: var(--ui-border);
+  --sf-font-narrative: var(--reader-serif);
   --sf-font-ui: 'Segoe UI', 'Helvetica Neue', sans-serif;
-  --sf-measure: min(42rem, 100%);
-  --sf-gap: clamp(1rem, 2.5vw, 1.75rem);
-  --sf-pad: clamp(1rem, 3vw, 2rem);
+  --sf-measure: var(--reader-measure);
+  --sf-gap: var(--space-stack);
+  --sf-pad: var(--space-pad);
 
   box-sizing: border-box;
   width: 100%;
@@ -41,21 +48,28 @@
 }
 
 .story-frame__book {
-  --sf-paper-ink: #1c1915;
-  --sf-paper-muted: #5c564c;
+  --reader-paper: #f7f1e6;
+  --reader-ink: #1c1915;
+  --reader-muted: #5c564c;
+  --reader-edge: #d9d0c1;
+  --ui-focus: #1d4e89;
+  --ui-danger: #8a332c;
+  --ui-success: #1d5c42;
+  --sf-paper-ink: var(--reader-ink);
+  --sf-paper-muted: var(--reader-muted);
   --sf-paper-quiet: #6e675c;
-  --sf-separator: #d9d0c1;
-  --sf-focus: #1d4e89;
+  --sf-separator: var(--reader-edge);
+  --sf-focus: var(--ui-focus);
 
-  width: min(42rem, 100%);
+  width: var(--reader-measure);
   margin: 0 auto;
   padding: clamp(1.25rem, 3vw, 2.25rem);
   color: var(--sf-paper-ink);
-  background: #f7f1e6;
-  border-radius: 2px 14px 14px 2px;
+  background: var(--reader-paper);
+  border-radius: var(--radius-page) 14px 14px var(--radius-page);
   box-shadow:
     -0.85rem 0 0 #e4d9c8,
-    0 1.1rem 2.4rem rgb(0 0 0 / 28%);
+    var(--elevation-book);
 }
 
 .story-frame__book-head {
@@ -164,7 +178,7 @@
   gap: 1rem;
   margin: 0;
   color: var(--sf-paper-ink, var(--sf-ink));
-  font: 1.125rem / 1.65 var(--sf-font-narrative);
+  font: var(--font-size-narrative) / var(--reader-line-height) var(--sf-font-narrative);
 }
 
 .story-frame__passage p {
@@ -336,13 +350,13 @@
 /* UX10: restrained feedback only. No fake progress or remount flourishes. */
 .story-frame__intention {
   transition:
-    border-color 120ms ease,
-    background-color 120ms ease,
-    opacity 120ms ease;
+    border-color var(--motion-press) ease,
+    background-color var(--motion-press) ease,
+    opacity var(--motion-press) ease;
 }
 
 .story-frame__notice {
-  transition: border-color 160ms ease, background-color 160ms ease;
+  transition: border-color var(--motion-status) ease, background-color var(--motion-status) ease;
 }
 
 .story-frame__passage-title[data-passage-enter='true'] {

@@ -1,0 +1,40 @@
+/* UI01 semantic registry.
+   Custom properties only. No element, class, or feature selectors.
+   Feature styles alias these where an existing value already agrees.
+   Danger and success are platform status roles. No current control paints them. */
+
+:root {
+  --ui-canvas: #121b22;
+  --ui-ink: #f3e9d9;
+  --ui-muted: #b9c2c2;
+  --ui-focus: #8ec8ff;
+  --ui-border: #33434a;
+  --ui-action: #d7b87c;
+  --ui-action-ink: #1a150f;
+  --ui-danger: #f0b4ae;
+  --ui-attention: #e2c27a;
+  --ui-success: #b7d7c4;
+
+  --reader-paper: #f7f1e6;
+  --reader-ink: #1c1915;
+  --reader-muted: #5c564c;
+  --reader-edge: #d9d0c1;
+  --reader-measure: min(42rem, 100%);
+  --reader-line-height: 1.65;
+  --reader-serif:
+    'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia,
+    serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.75rem;
+  --space-stack: clamp(1rem, 2.5vw, 1.75rem);
+  --space-pad: clamp(1rem, 3vw, 2rem);
+  --font-size-narrative: 1.125rem;
+  --elevation-book: 0 1.1rem 2.4rem rgb(0 0 0 / 28%);
+  --radius-page: 2px;
+  --motion-press: 120ms;
+  --motion-status: 160ms;
+}
