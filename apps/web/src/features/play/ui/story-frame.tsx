@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useEffect, useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { matchLegacyChoice } from '../presentation/resolve';
 import type { ResolvedPresentation } from '../presentation/types';
-import { IntentionChoice } from './intention-choice';
+import { BookSurface } from './book-surface';
+import { DecisionGroup } from './decision-group';
+import { NarrativeFlow } from './narrative-flow';
 import { NarrativePassage } from './narrative-passage';
 import { SceneMedia } from './scene-media';
 import './story-frame.css';
@@ -176,7 +178,7 @@ export function StoryFrame({
       className="story-frame"
       data-presented={presented ? 'true' : undefined}
     >
-      <article className="story-frame__book" aria-labelledby="story-frame-label">
+      <BookSurface labelId="story-frame-label">
       <header className="story-frame__book-head">
         <p id="story-frame-label" className="story-frame__label">
           {storyLabel}
@@ -233,63 +235,28 @@ export function StoryFrame({
             arrival={presentation?.passageArrival ?? 'none'}
           />
         ) : (
-          <>
-            {passageTitle ? (
-              <h1
-                key={passageTitle}
-                className="story-frame__passage-title"
-                data-passage-enter="true"
-              >
-                {passageTitle}
-              </h1>
-            ) : null}
-            <div className="story-frame__passage">
-              {paragraphs.map((paragraph, index) => (
-                <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
-              ))}
-            </div>
-          </>
+          <NarrativeFlow
+            passageId={passageId}
+            title={passageTitle}
+            paragraphs={paragraphs}
+          />
         )}
 
         {memory ? <p className="story-frame__memory">{memory}</p> : null}
 
         {stageExtras}
 
-        {intentions.length > 0 ? (
-          <section
-            className="story-frame__threshold"
-            aria-labelledby="story-frame-threshold-heading"
-          >
-            <h2
-              id="story-frame-threshold-heading"
-              className="story-frame__threshold-heading"
-            >
-              {thresholdHeading}
-            </h2>
-            <ul className="story-frame__intentions">
-              {intentions.map((intention) => (
-                <li key={intention.id}>
-                  <IntentionChoice
-                    label={intention.label}
-                    support={intention.support}
-                    behavior="commit"
-                    disabled={intentionsDisabled}
-                    treatment={
-                      presentation && interactionId
-                        ? matchLegacyChoice(
-                            presentation,
-                            interactionId,
-                            intention.id,
-                          )
-                        : undefined
-                    }
-                    onClick={() => onIntentionSelect?.(intention.id)}
-                  />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
+        <DecisionGroup
+          heading={thresholdHeading}
+          intentions={intentions}
+          disabled={intentionsDisabled}
+          treatmentFor={(id) =>
+            presentation && interactionId
+              ? matchLegacyChoice(presentation, interactionId, id)
+              : undefined
+          }
+          onSelect={(id) => onIntentionSelect?.(id)}
+        />
       </main>
 
       {journal ? (
@@ -310,7 +277,7 @@ export function StoryFrame({
           {details}
         </details>
       ) : null}
-      </article>
+      </BookSurface>
     </div>
     </div>
   );

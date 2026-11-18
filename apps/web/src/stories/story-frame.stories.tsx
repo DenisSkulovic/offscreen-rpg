@@ -110,3 +110,27 @@ export const QuietWithoutInventory: Story = {
     ],
   },
 };
+
+export const LongLeaf: Story = {
+  args: {
+    storiesHref: '/stories',
+    storyLabel: 'Greywake',
+    passageTitle: 'The long watch',
+    paragraphs: ['Salt '.repeat(1200)],
+    intentions: [
+      { id: 'one', label: 'Hold the lamp' },
+      { id: 'two', label: 'Call down the path' },
+      { id: 'three', label: 'Check the chain' },
+      { id: 'four', label: 'Close the shutter' },
+      { id: 'five', label: 'Wait in the doorway' },
+      { id: 'six', label: 'Step back inside' },
+    ],
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ width: 320, fontSize: '200%' }}>
+        <Story />
+      </div>
+    ),
+  ],
+};

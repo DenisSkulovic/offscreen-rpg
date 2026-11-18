@@ -53,9 +53,9 @@ A component becomes shared only if it has a stable semantic responsibility and e
 
 1. **Action control (UI02, implemented):** `apps/web/src/shared/ui/action.tsx` is `kind="link"` or `kind="button"`. Variants are primary, secondary, quiet, and critical. `pending` disables the button and sets `aria-busy`. There is no spinner. A `data-surface` value cannot clear `disabled`.
 2. **System notice (UI02, implemented):** `apps/web/src/shared/ui/system-notice.tsx` is always text. `error` uses `role="alert"`. `attention` and `success` use `role="status"`. `neutral` has no live role. The caller supplies any retry. Intention choice, frozen retry, and resolution submit stay outside this control.
-3. **Surface / Reader surface**: one stable Book presentation context, continuous-flow semantics, safe compositional slots; never owns API/query/choice authority.
+3. **Surface / Reader surface (UI03, implemented):** `apps/web/src/features/play/ui/book-surface.tsx` is one flowing book leaf. It has no query and no choice callback. Desktop and mobile both extend that leaf. There is no page count and no second column.
 4. **Contents/menu**: native if sufficient; else one unstyled accessible primitive with focus restoration, Escape, close-on-navigation, correct mobile behavior. No always-visible bar or hover-only access.
-5. **Narrative/Decision grouping**: retains actual prose and original option IDs; only visual container changes. Historical reader never gains a current choice callback.
+5. **Narrative/Decision grouping (UI03, implemented):** `narrative-flow.tsx` renders the published paragraphs in order. `decision-group.tsx` renders the current option ids. `history.tsx` does not mount that group.
 6. **Media slot**: source-authorized placement and alt/role, optional graceful failure, not an image generator.
 
 Prefer `StoryFrame` composition with narrow reusable helpers over a wholesale rewrite. Keep simple JSX where no shared component improves readability or testing. Every shared public API requires Storybook examples and at least focused RTL/a11y coverage.
