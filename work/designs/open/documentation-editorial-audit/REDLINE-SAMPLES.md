@@ -1,6 +1,6 @@
 # Sample editorial redlines | concrete text decisions before implementation
 
-**Status:** Proposed copy and page structure, **not merged into canonical product or technical documents**. These samples show how to improve fidelity and comprehension while protecting approved product policy. Quoted “before” passages come from canonical files in the supplied f3e3bfe lean snapshot. Verify latest HEAD before applying. No normalized text here independently ratifies a currently open decision.
+**Status:** Proposed copy and page structure, **not merged into canonical product or technical documents**. These samples show how to improve fidelity and comprehension while protecting approved product policy. Quoted “before” passages come from canonical files in the supplied f3e3bfe lean snapshot. Verify latest HEAD before applying. No normalized text here independently ratifies a currently open decision. **Links inside the sample replacement prose resolve from this design file for review; change them to canonical relative paths when applying the paragraphs to their owning pages.**
 
 ## R1 | Product acceptance scenarios: separate a benchmark from a release obligation
 
@@ -38,7 +38,7 @@ The wizard-and-goblin case remains a **stress benchmark** for future shared and 
 
 **Proposed editorial shape only after actual source/receipt verification:**
 
-> **Current source boundary (verified at SHA ___):** [list exactly implemented sub-capabilities and tests, e.g., accepted execution gating; finite short-action settlement only if proven]. **Still selected but not proved:** [list remaining sub-capabilities precisely]. The [product accepted-time rule](../../product/gameplay/time-and-autonomy.md#pace) governs both. This section is an integration overview; the exact unit/settlement contract is [chronology § ...](chronology-and-activities.md#...).
+> **Current source boundary (verified at SHA ___):** [list exactly implemented sub-capabilities and tests, e.g., accepted execution gating; finite short-action settlement only if proven]. **Still selected but not proved:** [list remaining sub-capabilities precisely]. The [product accepted-time rule](../../../../docs/product/gameplay/time-and-autonomy.md#pace) governs both. This section is an integration overview; the exact unit/settlement contract is [chronology contract](../../../../docs/technical/engine/chronology-and-activities.md).
 
 Then strip stale broad “not implemented” and “implemented” claims only where verified, moving the receipt detail to STATUS/evidence. The proof must answer: which command identity authorizes time; what happens without permission; what part of publication can overlap action execution; and which negative test demonstrates no double-award.
 
@@ -64,7 +64,7 @@ Then strip stale broad “not implemented” and “implemented” claims only w
 
 The phrase “let the character choose” can be read as general autonomous decision permission. **Proposed owner-safe clarification:**
 
-> The long-term experience supports a continuing character who can spend accepted time on ordinary work, encounter a meaningful development, and resume after the player returns. The initial proof must demonstrate the specific consent and action semantics accepted in [time and autonomy](../gameplay/time-and-autonomy.md); generalized delegated decisions remain a separately ratified policy, not implied by inactivity. The first-playable acceptance boundary is maintained in [acceptance scenarios](../gameplay/acceptance-scenarios.md), and current realization is tracked in STATUS.
+> The long-term experience supports a continuing character who can spend accepted time on ordinary work, encounter a meaningful development, and resume after the player returns. The initial proof must demonstrate the specific consent and action semantics accepted in [time and autonomy](../../../../docs/product/gameplay/time-and-autonomy.md); generalized delegated decisions remain a separately ratified policy, not implied by inactivity. The first-playable acceptance boundary is maintained in [acceptance scenarios](../../../../docs/product/gameplay/acceptance-scenarios.md), and current realization is tracked in STATUS.
 
 A ratified decision may retain the precise “let the character choose” promise with a narrower authorized fallback; do not silently remove that ambition. The rewrite makes its **status** clear, not less ambitious.
 
