@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { citationEdges } from '../maintenance-core.mjs';
 import { parseMarkdownDocument } from './markdown.mjs';
+import { claimImpactFindings } from './content-health.mjs';
 import { buildWikiModel, collectMaintainedPages } from './model.mjs';
 import { resolveHref } from './paths.mjs';
 
@@ -693,6 +694,9 @@ function planFindings(changePath, text, repo = null, mode = 'plan') {
   const shapeSeverity = /\bproposed\b/i.test(stateOf(text) ?? '') ? 'warning' : 'error';
   findings.push(...planImpactFindings(changePath, text, repo, allowance));
   findings.push(...shapePlanFindings(changePath, text, repo, mode, shapeSeverity, allowance));
+  for (const item of claimImpactFindings(text)) {
+    findings.push(finding(changePath, 'error', item.code, item.line, 'claim-impact', item.message));
+  }
   return findings;
 }
 

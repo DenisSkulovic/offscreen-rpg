@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { scanDocuments } from './content-health.mjs';
+import { claimImpactFindings, scanDocuments } from './content-health.mjs';
 
 const codes = (issues, code) => issues.filter((item) => item.code === code);
 
@@ -45,8 +45,31 @@ export function runContentHealthSelfTest() {
   assert.equal(codes(found.issues, 'duplicate-paragraph').length, 1);
   assert.equal(codes(found.issues, 'missing-path').length, 1);
   assert.equal(codes(found.issues, 'missing-path')[0].path, 'docs/runbooks/current.md');
+  const quiet = `
+The goblin must offer an apple. Shared play could be a dream. Solo mechanics are source-observed.
+The Book UX is selected. Cognee was rejected. This prose is not a claim-impact table.
+`;
+  assert.deepEqual(claimImpactFindings(quiet), []);
+  const table = `# Example
+
+## Claim impact | claim-impact.v1
+
+| Claim | Disposition | Evidence |
+| --- | --- | --- |
+| Every world uses a selected cube map | promoted | |
+| The goblin offers an apple | illustrative | |
+| Shared play stays parked | parked | |
+| Solo accepted execution is in source | source-observed | |
+| The Book reader shell is a selected experience | selected-experience | |
+| Cognee becomes game memory | promoted | research/agent-practice/COGNEE-EVALUATION-2026-11-17.md |
+| Cognee stays a developer-agent trial | rejected | research/agent-practice/COGNEE-EVALUATION-2026-11-17.md |
+`;
+  const impact = claimImpactFindings(table);
+  assert.equal(impact.filter((item) => item.code === 'missing-evidence-route').length, 1);
+  assert.equal(impact.filter((item) => item.code === 'rejected-research-promoted').length, 1);
+  assert.equal(impact.length, 2);
   console.log(
-    'Content-health self-test passed: proposal page, stale script, fenced snippet, legacy default, dated exception, large section, duplicate, missing path.',
+    'Content-health self-test passed: proposal page, stale script, fenced snippet, legacy default, dated exception, large section, duplicate, missing path, claim-impact negatives.',
   );
   return 0;
 }

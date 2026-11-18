@@ -43,6 +43,8 @@
 
 Decision 1 was first recorded as a solo next milestone. DOC06 supersedes that record. The small-group first-playable ambition stays in vision, acceptance scenarios, the time first-playable scope, and worlds-and-characters. The exact live acceptance for that group is Proposed/Blocked. The goblin walkthrough remains. A scripted shared scene does not authorize a response-window policy, and a missed window does not invent a choice. This does not accept the proposed general delegated-choice packet.
 
+**Superseded 2026-11-18 by owner ratification in PVAL02.** The first tested playability milestone is solo. The small party remains a distant later aspiration, not cancelled and not implemented. The paragraph above is the DOC06 record, not the current product rule. Read [First playable target](../../../../docs/product/foundations/vision.md#first-playable-target).
+
 S1a, first diary pass: the vision's unattended-life paragraph now states the player promise and points at the parked queue as a proposal. The concepts conversation example no longer labels turns T1 through T4. The storage-name note stays a boundary, including the path that can publish a present passage and a later arrival from one result. The chapter rule no longer depends on recalling an earlier wording.
 
 S1b, first vocabulary pass: an offer in actions and commitments is permission to choose. It does not advance fictional time. Hours-long absence applies to an accepted activity. The prepared-life section states the selected promise and points at Prepared local opportunities for the bounded solo realization and the later limits. DOC08 remains unselected and was not executed as a packet.

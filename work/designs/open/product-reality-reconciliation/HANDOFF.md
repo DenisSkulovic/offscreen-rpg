@@ -1,6 +1,6 @@
 # Cursor handoff | product reality reconciliation
 
-**State: Proposed; no Change selected and no product decision ratified.** Created from the 2026-11-18 clean main@ec8c652c5b0a audit. This is research and a set of proposed work packets, not proof of successful implementation.
+**State: PVAL01–PVAL06 Done on 2026-11-18.** The owner ratified solo as the first tested playability milestone. The small party stays a distant later aspiration. Created from the 2026-11-18 clean main@ec8c652c5b0a audit. The audit text below remains the investigation record.
 
 ## Reading order
 1. [Executive](EXECUTIVE.md): audit judgment and ranking.
@@ -10,12 +10,12 @@
 5. [EDITORIAL POLICY](EDITORIAL-POLICY.md): how to prevent dream ideas hardening into canonical requirements.
 
 ## Proposed sequence
-- [PVAL01](../../../changes/open/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md): first recommended docs-only intervention to separate selected intent from demonstrated viability.
-- [PVAL02](../../../changes/open/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md): **requires owner ratification of the solo milestone**.
-- [PVAL03](../../../changes/open/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md): scope large mechanics, preserving binding invariants.
-- [PVAL04](../../../changes/open/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md): provider-free evidence gates; no live paid experiment authorized.
-- [PVAL05](../../../changes/open/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md): distinguish aspirational examples from acceptance benchmarks.
-- [PVAL06](../../../changes/open/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md): only if previous work demonstrates a minimal automatic guard can be justified.
+- [PVAL01](../../../changes/archive/2026-11/other/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md): Done. The two documentation entrypoints separate selection from demonstrated viability.
+- [PVAL02](../../../changes/archive/2026-11/other/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md): Done. The owner ratified solo as the first tested playability milestone. The small party stays a distant later aspiration.
+- [PVAL03](../../../changes/archive/2026-11/other/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md): Done. Map, generalized forms, and the absence queue stay proposed beside the binding location and time rules.
+- [PVAL04](../../../changes/archive/2026-11/other/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md): Done. Quality and cost notes were added. No live paid experiment was run.
+- [PVAL05](../../../changes/archive/2026-11/other/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md): Done. Scenes now say whether they are solo texture or a later stress test.
+- [PVAL06](../../../changes/archive/2026-11/other/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md): Done. A promoted claim without an evidence route is flagged. Ordinary prose is not scanned.
 
 ## Rules
 - These files are **unselected** and must not be interpreted as canonical product requirements or as blanket permission to implement.

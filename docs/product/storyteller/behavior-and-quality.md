@@ -61,6 +61,8 @@ Negative: an agent must not force a dramatic incident every quiet day, treat a d
 
 ## Narrative initiative
 
+Stored passages and a private narrative intent do not prove that a long life stays coherent or enjoyable. This heading selects permission to author developments inside admitted world changes. It does not make multi-step memory exploration the live default, and it does not claim the sustained creative proof [STATUS](../../../STATUS.md) still lists as unproved. A quality failure is a turn that treats a discarded plan as truth, or that cannot be reviewed against the declared profile. Cost and the unratified experiment notes stay in [product-reality economics](../../../work/designs/open/product-reality-reconciliation/ECONOMICS.md). That page authorizes no spend.
+
 The Storyteller is not limited to extrapolating the last player action. When the campaign's selected direction permits proactive authorship, it may maintain a private, revisable narrative intent and introduce developments that would not arise from the character's immediate routine. A player may spend the day fishing while a war begins or a meteor approaches. The Storyteller may make that pressure real through admitted world changes. It cannot decide that the character heroically stops it, invalidate an accepted action without a supported interruption, or preserve a preferred finale after play makes it impossible.
 
 A grand narrative is optional. A campaign may explicitly prefer observation, ordinary life or a farming rhythm with no cultivated arc. In that case the Storyteller must not invent a looming destiny merely to create momentum.

@@ -128,3 +128,88 @@ export function scanDocuments(documents, options = {}) {
   }
   return { schema: CONTENT_HEALTH_SCHEMA, issues };
 }
+
+const CLAIM_IMPACT_HEADING = /^##\s+Claim impact\s+\|\s+claim-impact\.v1\s*$/im;
+const CLAIM_DISPOSITIONS = new Set([
+  'promoted',
+  'illustrative',
+  'parked',
+  'source-observed',
+  'selected-experience',
+  'rejected',
+]);
+
+function claimCells(line) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith('|')) return null;
+  const parts = trimmed.split('|').map((cell) => cell.trim());
+  if (parts[0] === '') parts.shift();
+  if (parts.length > 0 && parts[parts.length - 1] === '') parts.pop();
+  return parts;
+}
+
+/**
+ * Optional structured check for a Change packet. It does not read product prose.
+ * A missing section is not a finding. English words such as "must" are not claims.
+ */
+export function claimImpactFindings(text) {
+  const source = String(text);
+  const match = source.match(CLAIM_IMPACT_HEADING);
+  if (!match || match.index == null) return [];
+  const start = match.index + match[0].length;
+  const rest = source.slice(start);
+  const next = rest.search(/^##\s+/m);
+  const body = next >= 0 ? rest.slice(0, next) : rest;
+  const baseLine = source.slice(0, start).split(/\r?\n/).length;
+  const findings = [];
+  let header = null;
+  const lines = body.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const cells = claimCells(lines[index]);
+    if (!cells) continue;
+    if (cells.every((cell) => /^:?-{3,}:?$/.test(cell))) continue;
+    const keys = cells.map((cell) => {
+      const value = cell.toLowerCase();
+      if (value.includes('disposition')) return 'disposition';
+      if (value.includes('evidence')) return 'evidence';
+      if (value.includes('claim')) return 'claim';
+      return null;
+    });
+    if (!header && keys.includes('claim') && keys.includes('disposition') && keys.includes('evidence')) {
+      header = keys;
+      continue;
+    }
+    if (!header || cells.length !== header.length) continue;
+    const row = {};
+    header.forEach((key, cellIndex) => {
+      if (key) row[key] = cells[cellIndex];
+    });
+    const line = baseLine + index;
+    const disposition = String(row.disposition ?? '').trim().toLowerCase();
+    const claim = String(row.claim ?? '');
+    const evidence = String(row.evidence ?? '');
+    if (!CLAIM_DISPOSITIONS.has(disposition)) {
+      findings.push({
+        line,
+        code: 'unknown-claim-disposition',
+        message: 'A claim-impact disposition must be promoted, illustrative, parked, source-observed, selected-experience, or rejected.',
+      });
+      continue;
+    }
+    if (disposition === 'promoted' && /cognee/i.test(claim)) {
+      findings.push({
+        line,
+        code: 'rejected-research-promoted',
+        message: 'Cognee stays rejected developer-agent research. A claim-impact row cannot promote it into game memory.',
+      });
+    }
+    if (disposition === 'promoted' && !/\.md(?:#[A-Za-z0-9._+\-]+)?\b/i.test(evidence)) {
+      findings.push({
+        line,
+        code: 'missing-evidence-route',
+        message: 'A promoted claim needs a local Markdown evidence route. The checker does not decide whether the claim is fun or true.',
+      });
+    }
+  }
+  return findings;
+}

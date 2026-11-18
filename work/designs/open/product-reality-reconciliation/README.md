@@ -36,16 +36,16 @@ A heading can be authoritative as a *design preference* and still lack evidence 
 
 **Keep aspirations as aspirations.** Shared worlds, hundred-player interaction, generic 3D cube maps, arbitrarily shaped forms with fully general mechanics, open-ended autonomy, deep multi-month NPC relationships, exhaustive world lore, and Storyteller-owned rich appearance need independent evidence and coherent bounded proposals before entering release obligations.
 
-## Proposed bounded Change sequence (none is selected)
+## Completed Change sequence (Done 2026-11-18)
 
-| Packet | Scope | Gate |
+| Packet | Scope | Result |
 | --- | --- | --- |
-| [PVAL01](../../../changes/open/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md) | Documentation truth / feasibility warning in two front doors | Owner selection |
-| [PVAL02](../../../changes/open/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md) | Distinct solo vs cooperative playability milestones | **Blocked until explicit scope ratification** |
-| [PVAL03](../../../changes/open/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md) | World/map/autonomy risk classification | Owner selection, preserve invariants |
-| [PVAL04](../../../changes/open/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md) | Memory and narrative quality / cost evidence gates | No paid runs permitted |
-| [PVAL05](../../../changes/open/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md) | Benchmark-vs-acceptance clarity | Owner selection |
-| [PVAL06](../../../changes/open/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md) | Conditional automated claim-impact regression | **Blocked pending policy/schema and earlier edits** |
+| [PVAL01](../../../changes/archive/2026-11/other/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md) | Documentation truth / feasibility warning in two front doors | Done. Selection is not feasibility |
+| [PVAL02](../../../changes/archive/2026-11/other/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md) | Distinct solo vs cooperative playability milestones | Done. Owner ratified solo first. The small party stays distant |
+| [PVAL03](../../../changes/archive/2026-11/other/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md) | World/map/autonomy risk classification | Done. Invariants kept; cube, universal forms, and the absence queue stay proposed |
+| [PVAL04](../../../changes/archive/2026-11/other/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md) | Memory and narrative quality / cost evidence gates | Done. No paid run |
+| [PVAL05](../../../changes/archive/2026-11/other/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md) | Benchmark-vs-acceptance clarity | Done. Scenes carry stage markers |
+| [PVAL06](../../../changes/archive/2026-11/other/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md) | Narrow claim-impact check | Done. A promoted row needs an evidence route |
 
 ## Core source grounding
 

@@ -1,6 +1,8 @@
 # Documentation
 
-Product behavior is the bible. Technical contracts say what the system must guarantee. Code and tests are artifacts of those contracts. A selected target is not a claim that it is implemented. A proposed design is not a norm. `pnpm wiki:find` labels each heading from that heading: a nested proposal stays out of the normative lane, and a status or uncertain hit is not a gameplay rule or a paid-production grant.
+Product behavior is the bible. Technical contracts say what the system must guarantee. Code and tests are artifacts of those contracts. A selected target is not a claim that it is implemented, and selection is not proof that the target is coherent, enjoyable, or affordable. A proposed design is not a norm. Deterministic selected invariants stay binding, including consent, no model-owned dice, and no duplicate effects. Naming shared play inside a selected ambition does not make that play deliverable or implemented. `pnpm wiki:find` labels each heading from that heading: a nested proposal stays out of the normative lane, and a status or uncertain hit is not a gameplay rule or a paid-production grant.
+
+Product truth has two questions. Authority asks what the owner selected as a preference or obligation. Evidence asks whether that behavior has been demonstrated. An illustrative scene, an unimplemented selected target, a proposed policy, and a demonstrated playable capability are different things. Before a Change depends on an ambitious or cross-system mechanic, read [STATUS](../STATUS.md) and the unratified [product-reality claim register](../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). That register is an investigation, not a new mechanic. If no play or cost evidence exists, propose a bounded test or a design decision instead of implementation.
 
 Start here, then open the owner. Two steps should be enough for a scoped question.
 
@@ -26,6 +28,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | How do I run a Chamber test without paying a model? | [Chamber fixtures](technical/lab/chamber-and-fixtures.md) · [local development](runbooks/local-development.md) |
 | How do I operate the portfolio locally? | [Runbooks](runbooks/README.md) |
 | Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Application operations](../packages/application/README.md#directory-index) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
+| Is a selected product target already feasible? | [STATUS](../STATUS.md) · [product-reality claims](../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). Selection is not proof. The claim register adds no rule |
 | What is actually true this week, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [change selection](../work/changes/README.md) |
 
 Subject maps: [product](product/README.md), [technical](technical/README.md), [runbooks](runbooks/README.md). Open policy that is not accepted lives under [work/designs](../work/designs/README.md). Dated observations live under [evidence](../evidence/README.md). Coding-agent rules live under `.agents/`, separate from in-game provider cost ([spending](technical/platform/spending-and-entitlements.md)).

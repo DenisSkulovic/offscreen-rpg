@@ -5,6 +5,8 @@
 
 ## Flexible settings and protagonists
 
+Canonical minimum: the core must not require one profession, one human body, one economy, or one geography. The current playable target is one authored setting and the narrow rules subset. Unsupported: six abilities on every creature, a universal profession system, and a claim that arbitrary worlds are already enjoyable. Proposed experiment: [gameplay domain coverage](../../../work/designs/open/gameplay-domain-coverage/README.md). Failure gate: a microorganism or a bodiless mind receives a humanoid inventory because a human character has one.
+
 Settings and characters should be flexible: fantasy, space, everyday life, unusual creatures or mixtures. The core must not require a specific profession, human body, economy or geography. Creative freedom still needs continuity: established facts and player choices have weight.
 
 The selected D&D rules can remain richer than a particular character’s current form. Applicability belongs to the character and situation: a bodiless consciousness may have no current use for Strength; a later embodied form can gain abilities through an admitted transformation. Preserve conventional D&D behavior when the world supports it; do not flatten rules to the smallest common denominator or pretend every rule applies to every form. That limit is [World-independent foundation](rules.md#world-independent-foundation). [World-neutral capability kernel](../../technical/engine/selected-architecture.md#world-neutral-capability-kernel) is the selected conceptual target, not a schema and not a source-fixture policy.
@@ -25,4 +27,4 @@ An authored start may assemble world, rules, characters, relationships, known th
 
 ## Shared play (product target, unsettled mechanics)
 
-The long-term experience includes solo play and inviting friends into a shared story, each controlling their own character. The first-playable ambition includes that small group, as stated in [First playable target](../foundations/vision.md#first-playable-target). The exact live acceptance for shared decision and pause rules is Proposed/Blocked. Do not treat a UI prototype as acceptance of those rules.
+The long-term experience still names inviting friends into a shared story, each controlling their own character. The first tested playability milestone is solo, as [First playable target](../foundations/vision.md#first-playable-target) states. The small group is a distant later aspiration. It is not cancelled and not implemented. The exact live acceptance for shared decision and pause rules is Proposed/Blocked. Do not treat a UI prototype as acceptance of those rules.

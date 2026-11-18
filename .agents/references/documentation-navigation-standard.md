@@ -59,6 +59,7 @@ A heading named `Contract dependencies` is a binding review edge, not a see-also
 - Navigation-only cleanup: preserve all approved content, update routes/headings/links and document current limitations. Do **not** silently change feature claims.
 - On deprecation: inspect incoming links and unique decisions before deleting or moving text. Git retains history, but active canonical knowledge must stay findable.
 - Validate repository links with `python scripts/check_docs.py`. Use `pnpm wiki:health` for the maintained-page graph: broken paths, anchors, and directed reachability from `docs/README.md`. A passing link check is not semantic proof, and a graph metric is not a quality score.
+- A Change that promotes a high-impact product claim may declare `## Claim impact | claim-impact.v1` with claim, disposition, and evidence columns. Disposition is `promoted`, `illustrative`, `parked`, `source-observed`, `selected-experience`, or `rejected`. A `promoted` row needs a local Markdown evidence route. Cognee cannot be promoted. The checker does not scan ordinary prose, and it does not decide whether a dream is fun.
 - Measure with fresh-agent questions: documents read, wrong detours, authoritative answer correctness, duplicate reads, human interventions and actual reported model tokens **if available**. No invented savings percentages.
 
 ## 2026-11-12: explicit layered retrieval contract for cheap coding agents

@@ -217,6 +217,8 @@ Bound consecutive immediate autonomous transitions as well as provider calls. Ev
 
 ## Prompts and experiments
 
+One pinned Sol call settled at 23,294 microusd. That figure is one observation. It does not prove a month of play, and it does not include every repair, retrieval round, or discarded branch. Measure cost per accepted playable turn, including those extras. Scripted runs prove accounting only. A tiny live quality evaluation still needs a separate spend authorization. The unratified arithmetic lives in [product-reality economics](../../../work/designs/open/product-reality-reconciliation/ECONOMICS.md). Adding a vector index does not replace source truth.
+
 Keep prompts and small reusable fragments in `packages/storyteller`, reviewed with code and exercised against fixtures. Compose only fragments with a clear responsibility: behavior, output schema, storyteller preferences, contextual material. Record the resulting prompt version/hash and source versions for each attempt. Do not create a general prompt CMS or dozens of database snippets just because composition is possible.
 
 Langfuse is the proposed tool for AI traces and experiment inspection. Its prompt management supports versions and labels, and its TypeScript observability integrates with OpenTelemetry. Remote prompt management can be added when editing without deployment becomes useful; pin a resolved version per run and retain a last-known-good local fallback. Telemetry or prompt-service downtime must not corrupt or indefinitely block an otherwise valid story. [Prompt versioning](https://langfuse.com/docs/prompt-management/features/prompt-version-control), [TypeScript observability](https://langfuse.com/docs/programs/observability/sdk/overview).

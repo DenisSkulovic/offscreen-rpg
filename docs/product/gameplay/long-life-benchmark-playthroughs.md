@@ -14,6 +14,14 @@ The wizard-and-goblin walkthrough exercises orchestration and interruption. The 
 
 These are benchmark experiences, not requirements for setting-specific subsystems. Names, currencies, durations and mechanics are illustrative.
 
+| Scene | Stage | Missing before it is a release test | Discriminating failure | Provider-work shape |
+| --- | --- | --- | --- | --- |
+| Vvardenfell life, work, and travel | Conceptual stress test, beyond solo V0 | A travel formula, employment content, and a map are not selected | A montage grants armour without admitted time | Many narrated milestones across days, not one cheap call |
+| Space cargo | Conceptual stress test, beyond solo V0 | No galactic economy is selected | Payment arrives before delivery | An overnight journey with rare narration |
+| Microorganism or abstract being | Conceptual stress test, beyond solo V0 | No universal biology is selected | A humanoid inventory is invented | One bounded scene, not a new ruleset |
+| Routine, then a scene | Conceptual stress test | The absence queue is still proposed | Idle time invents a crime boss | The routine is code; one scene may call a model |
+| Chained journey | Conceptual stress test | Chain admission is still proposed | An abandoned leg still completes | Narration only at selected stops |
+
 ## Vvardenfell benchmark: a life that takes time
 
 This is the clearest reference experience.

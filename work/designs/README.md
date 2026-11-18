@@ -6,7 +6,7 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
-| [product-reality-reconciliation/](open/product-reality-reconciliation/README.md) | **Proposed 2026-11-18:** 31-page product viability audit, 46 claims, coherence/economics analysis and six PVAL01–06 packets, all **unselected**; read [Cursor handoff](open/product-reality-reconciliation/HANDOFF.md) |
+| [product-reality-reconciliation/](open/product-reality-reconciliation/README.md) | **Done 2026-11-18:** PVAL01–PVAL06 are archived. Solo is the first tested playability milestone. The small party stays a distant later aspiration. The audit itself is not a new mechanic |
 | [wiki-discovery-coverage/](open/wiki-discovery-coverage/README.md) | **Proposed 2026-11-18:** post-DOC24 wiki navigability, section authority, missing knowledge and practical guides audit; 23 WIKI12–17 / DOC25–41 handoffs are prepared, all unselected |
 | [documentation-editorial-audit/](open/documentation-editorial-audit/README.md) | **Proposed 2026-11-18:** source-grounded 70-page content-quality triage and 20 first-class DOC05–DOC24 editorial Change handoffs, all Proposed/unselected; no executable code Change selected |
 | [documentation-impact-system/](open/documentation-impact-system/README.md) | **Accepted for the sequence, and WIKI09, WIKI10, and WIKI11 are Done.** Not product canon. HK02, HK06, HK07, and HK08 are Done |
