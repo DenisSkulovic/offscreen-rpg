@@ -1,10 +1,10 @@
 # BOOK02 | Browse original saved passages within the book
 
-**State:** READY / **selected** (2026-11-17). **Dependency:** BOOK01 has landed. **Executor:** Cursor (frontend). Product scope is deliberately narrower than the eventual literary/AI-enhanced Journal.
+**State:** Done (original POC implemented 2026-11-17; archival and link reconciliation 2026-11-18). This does not claim final visual art, paid Play, or full Journal search.
 
 **Outcome:** From the in-book Journal, the player scans the saved chronology, opens one **exact original published passage** in a proper reading surface, moves among **loaded authorized** passages and returns to the current Now without treating history as active play. It must work with the existing 20-item `before` cursor API and without an invented search or random seek.
 
-**Authority:** [Living Book POC](../../../../docs/product/experience/living-book-poc.md#poc-journal-intentionally-modest) → [client POC](../../../../docs/technical/client/living-book-poc.md#book02-read-only-original-passage-journal) → [Return/Journal](../../../../docs/product/experience/return-and-journal.md). Use [Play source map](../../../../apps/web/src/features/play/README.md) to locate Query/history owner.
+**Authority:** [Living Book POC](../../../../../../docs/product/experience/living-book-poc.md#poc-journal-intentionally-modest) → [client POC](../../../../../../docs/technical/client/living-book-poc.md#book02-read-only-original-passage-journal) → [Return/Journal](../../../../../../docs/product/experience/return-and-journal.md). Use [Play source map](../../../../../../apps/web/src/features/play/README.md) to locate Query/history owner.
 
 ## Source snapshot and reinspection
 
@@ -42,11 +42,16 @@ Design baseline: `main@7c2fd93a08b718e956a66cdf963ed6ad238a4723`, before BOOK01.
 
 | Owner | Expected disposition | Evidence | State |
 | --- | --- | --- | --- |
-| [POC product](../../../../docs/product/experience/living-book-poc.md) | unchanged POC scope | Storybook Journal reader; live `/play` not run | Target unchanged. Reader is source, not search or recap |
-| [Return/Journal](../../../../docs/product/experience/return-and-journal.md) | still future full history search/recap | no search or gist control | Unchanged. Search remains absent |
-| [Client POC](../../../../docs/technical/client/living-book-poc.md) | preserve source/Query bounds | `history.tsx`, `history.test.tsx` | Reader noted. Same `before` cursor |
-| [Client state boundary](../../../../docs/technical/client/state-and-server-boundary.md) | no duplicate cache or command | one infinite query; `view.test.tsx` Journal posts 0 | Unchanged |
-| [Play source map](../../../../apps/web/src/features/play/README.md) | update if Journal owners move | chronology row | Updated |
-| [STATUS](../../../../STATUS.md) | source/test tier only after proof | `pnpm test:fast` 205 passed; web typecheck passed | Updated |
+| [POC product](../../../../../../docs/product/experience/living-book-poc.md) | unchanged POC scope | Storybook Journal reader; live `/play` not run | Target unchanged. Reader is source, not search or recap |
+| [Return/Journal](../../../../../../docs/product/experience/return-and-journal.md) | still future full history search/recap | no search or gist control | Unchanged. Search remains absent |
+| [Client POC](../../../../../../docs/technical/client/living-book-poc.md) | preserve source/Query bounds | `history.tsx`, `history.test.tsx` | Reader noted. Same `before` cursor |
+| [Client state boundary](../../../../../../docs/technical/client/state-and-server-boundary.md) | no duplicate cache or command | one infinite query; `view.test.tsx` Journal posts 0 | Unchanged |
+| [Play source map](../../../../../../apps/web/src/features/play/README.md) | update if Journal owners move | chronology row | Updated |
+| [STATUS](../../../../../../STATUS.md) | source/test tier only after proof | `pnpm test:fast` 205 passed; web typecheck passed | Updated |
 
 **When selected:** implement only the original-passage Journal reader, not the final Book design system. Preserve all original texts, identities and permissions; if richer history requires API changes, report as a future Change rather than inventing an endpoint.
+
+
+## 2026-11-18 closure receipt
+
+Initial reader shell and source-bound original Journal passage reader are present at source commit 92ed12ba. The packet's previous implementation ledger records frontend test/typecheck outcomes; the later DOC/UI work also uses the same source owners. No new live-game test was run during this archival. Future design polish and history search require separate approved scope. Closed for the **bounded BOOK01/BOOK02 POC outcome**, not a claim that the ultimate Living Book is finished.

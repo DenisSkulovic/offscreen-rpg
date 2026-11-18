@@ -18,3 +18,6 @@ archive/
 | --- | --- |
 | 2026-11 | [2026-11/README.md](../../../work/changes/archive/2026-11/README.md) |
 
+
+- [BOOK01 Living Book shell, Done](2026-11/other/2026-11-17--book01-reader-shell-poc/CHANGE.md) (2026-11-18 archival, bounded POC).
+- [BOOK02 original Journal reader, Done](2026-11/other/2026-11-17--book02-original-journal-reader/CHANGE.md) (2026-11-18 archival).

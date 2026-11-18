@@ -39,3 +39,7 @@ The Storyteller may **propose** optional artistic direction tied to the exact pa
 - If model-authored direction deteriorates narration or fails security/identity/cost gates, keep deterministic/fixture capability and record **not adopted**, rather than force the feature.
 
 This is a **target for phased exploration**, not evidence that the full pipeline exists. Work selection remains under [Change queue](../../../work/changes/README.md).
+
+## 2026-11-18 selected deterministic writer contract (planned, not yet landed)
+
+DIR02 now explicitly includes passing an optional server-validated V1 appearance into the existing **fenced same-transaction** `insertContinuationPassage` publication insert. The optional `story_passage.appearance` JSONB column exists; no migration or paid model call is necessary for this first deterministic proof. A malformed directive is dropped without rolling back valid narrative; a duplicate/stale generation cannot recolor a later committed passage. The source and current read projection remain separate ownership links. This heading is an authorized **implementation target**, not evidence that the writer is already present. [Decision rationale](../../../work/designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md).

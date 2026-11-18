@@ -24,8 +24,8 @@
 | 7 | [UI07](../../../../changes/archive/2026-11/other/2026-11-17--ui07-design-system-evidence/CHANGE.md) | Done | UI03+UI05+UI06 | Storybook and visual/a11y evidence |
 | 8 | [UI08](../../../../changes/archive/2026-11/other/2026-11-17--ui08-motion-language/CHANGE.md) | Done | UI07 review | Meaningful restrained motion; no gratuitous package |
 | 9 | [DIR01](../../../../changes/archive/2026-11/other/2026-11-17--dir01-appearance-roundtrip-proof/CHANGE.md) | Done | UI03 | Test the existing saved appearance read path end to end |
-| 10 | [DIR02](../../../../changes/open/2026-11-17--dir02-validated-publication-attachment/CHANGE.md) | Blocked | DIR01 + exact publisher audit | Publication insert does not write appearance |
-| 11 | [DIR03](../../../../changes/open/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | Blocked and parked | DIR02 writer, which is missing, plus spend/quality acceptance | Optional Storyteller-proposed V1 direction |
+| 10 | [DIR02](../../../../changes/open/2026-11-17--dir02-validated-publication-attachment/CHANGE.md) | Ready | DIR01 + exact publisher audit | Write optional validated appearance in same non-stale passage INSERT; no paid model |
+| 11 | [DIR03](../../../../changes/open/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | Ready offline; live gated | DIR02 writer | Optional V1 provider-free author sidecar; paid creative adoption requires later authorization |
 
 **Cursor execution policy:** one packet at a time, refreshed HEAD/dirty state and `pnpm repo:brief --json`; all follow the Change standard and each has a negative test. A “Ready after...” packet is still **not current**. UI01 through UI08 and DIR01 are archived. DIR02 is blocked: the publication insert does not write appearance. DIR03 is blocked on that missing writer and on unapproved spend and quality. The DIR series is parked. It is not the selected program.
 
@@ -36,3 +36,5 @@
 No named cave/space/microbe theme presets, raw generated HTML/CSS, automatic generated illustrations, user-arbitrary historical forks, book page-curl dependency, V2 rich narrative score, full Journal random seek, large App-wide style replacement, final approved high-fidelity skins, or giant generic component framework.
 
 **Closing criterion:** platform controls are coherent, reusable and testable; the living book is built from stable semantically owned components; the current V1 appearance read path is demonstrably correct; automatic Storyteller art direction is only adopted if the source, validation, cost and creative-quality gates pass. Otherwise keep the useful foundation and explicitly park the expensive extension.
+
+**2026-11-18 design override:** [Backlog convergence decision](../../backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md) selects DIR02's existing-column deterministic writer and DIR03's provider-free optional-output protocol. The earlier blocked/parked narrative above is historical, not a current veto on safe work. No live model dispatch is selected.
