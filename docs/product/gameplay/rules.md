@@ -28,7 +28,7 @@ Rules are a reusable, immutable canonical library pinned by exact root and revis
 
 ## World-independent foundation
 
-The game is D&D checks + LLM dungeon master + time, for arbitrary worlds and characters. Work, wages and fishing are example content, not core systems. A microbe story need not have money or employment. Ability scores remain on the selected rules sheet; the character’s **current form** declares which abilities and skills apply. An unavailable ability is not a score of zero and cannot be invoked by a generated plan.
+The game is D&D checks + LLM dungeon master + time, for arbitrary worlds and characters. Work, wages and fishing are example content, not core systems. A microbe story need not have money or employment. Ability scores remain on the selected rules sheet; the character’s **current form** declares which abilities and skills apply. An unavailable ability is not a score of zero and cannot be invoked by a generated plan. Inapplicability does not grant unlimited capability.
 
 ## First rules subset (POC)
 

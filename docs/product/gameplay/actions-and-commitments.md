@@ -4,6 +4,12 @@
 **Companions:** [rules](rules.md), [time and autonomy](time-and-autonomy.md), [concepts](../foundations/concepts.md).  
 **Technical:** [solo gameplay](../../technical/engine/authority-and-transitions.md), [rules and activities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities).
 
+## Stable meanings
+
+An **offer** is permission to choose. It is not accepted work. A **player decision** selects one authored intention. It does not write the outcome. **Admission** is the application's acceptance of a valid intention into work. Narration does not admit an effect. **Work time** is the fictional duration of admitted work. The clock advances only for that admitted work, as [Pace](time-and-autonomy.md#pace) requires. A **committed effect** is a result the application has recorded. A later sentence cannot grant it again or take it back. A **retry** repeats a player choice only when the previous attempt did not commit. A reload is not a retry.
+
+Normal: the player accepts a walk, leaves, and the walk finishes at its admitted duration. Negative: a sentence that says the character was paid does not move the clock or grant the coins. These meanings add no new action or consent right.
+
 ## One generic progression flow
 
 Walking, noticing a tower, making an agreement, spending an afternoon and meeting a stranger can all become moments in the same chronology. The product does not require a dedicated software system for each verb. No chapters, literary boundaries or fixed turn durations are implied.

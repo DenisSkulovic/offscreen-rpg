@@ -105,6 +105,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-18--doc05-reconcile-time-status](../../../../work/changes/archive/2026-11/other/2026-11-18--doc05-reconcile-time-status/CHANGE.md)
 - [2026-11-18--doc06-acceptance-scope](../../../../work/changes/archive/2026-11/other/2026-11-18--doc06-acceptance-scope/CHANGE.md)
 - [2026-11-18--doc07-foundations-vision-concepts](../../../../work/changes/archive/2026-11/other/2026-11-18--doc07-foundations-vision-concepts/CHANGE.md)
+- [2026-11-18--doc08-gameplay-action-rules](../../../../work/changes/archive/2026-11/other/2026-11-18--doc08-gameplay-action-rules/CHANGE.md)
 
 ## storyteller (11)
 
