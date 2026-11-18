@@ -1,79 +1,83 @@
-# Change: specific code-bearing outcome
+# Change: bounded authoritative documentation or executable implementation outcome
 
-**Create under:** `work/changes/open/YYYY-MM-DD--slug/` (never flat under `work/changes/`). On **Done** or **Cancelled**, after the Reconciliation ledger, `git mv` to `work/changes/archive/YYYY-MM/<program>/YYYY-MM-DD--slug/` and repair inbound links.
+**Create under:** `work/changes/open/YYYY-MM-DD--slug/`. After **Done/Cancelled** and completing reconciliation, `git mv` to `work/changes/archive/YYYY-MM/<program>/YYYY-MM-DD--slug/`; repair all inbound links and update the queue. Existing legacy code-bearing packets retain their original meaning.
 
 **State:** Proposed / Ready / Implementing / Verifying / Blocked / Done / Cancelled.
-**Approval and owner:** [who approved actual code implementation, when, and who executes it; no automatic authority from historical notes].
-**Kind:** behavior / defect / refactor / test code / tool or executable configuration / migration.
-**Parent initiative (optional):** [link only, not a copied plan].
+**Kind:** `documentation` / `implementation` (behavior, defect, refactor, test, executable tool/config, migration).
+**Approval and owner:** [owner ratification of any changed selected meaning, execution authorization and executor; no implied approval from historical notes].
+**Parent initiative (optional):** [link to one program, not a copied dossier].
 
-## Cursor first-screen brief (write this before deep details)
+## Cursor first-screen brief
 
-> **Current-source map:** [one nearest README with source-inspected date, not the entire repository].  
-> **Primary governing heading:** [one exact product/technical or F-criterion `#anchor`].  
-> **Known trap / contrary case:** [one source-grounded race, version, permission, retry or toolchain behavior].  
-> **Scope/permission:** [explicitly permitted code delta, normal/negative proof, and whether tests with side effects are authorized].
+> **Current-source map:** [nearest document hub or source README; inspected SHA/date].  
+> **Primary governing heading:** [exact selected product/technical claim with Markdown link/fragment; distinguish proposals].  
+> **Known trap / contrary case:** [one explicit reason a plausible edit would be wrong].  
+> **Scope/permission:** [for documentation: named canonical heading edits and links only; for implementation: source/tests/config files; both require negative proof and no unapproved side effects].
 
-This brief lets a cheap coding model decide whether it has the correct owner in its **first screen**; it is **not a substitute for reading the remainder of this selected Change before implementation**. The Change is the next code outcome, the nearby README owns current navigation, and permanent specs own normative behavior. Do **not** paste whole historical audits or repeat 10 pages of architecture here.
+This brief is not a substitute for reading this whole selected packet. Permanent product/technical owners, not this handoff, hold authority. Avoid copying whole historical audits or lengthy research.
 
-## Target alignment (required for portfolio-modernization Changes)
+## Target alignment (mandatory for portfolio-modernization work)
 
-- End-state specification and exact target criterion: [link to proposed/approved area target heading; write target before auditing source].
-- Source-grounded gap finding: [link to audit with revision/paths and evidence level].
-- Contribution to final architecture: [which target guarantee this bounded diff enables, and what still remains].
-- Competing alternative and why not chosen: [include keeping current code when plausible].
-- **Readiness gate:** no `Ready` status without owner-reviewed target, grounded gap, code scope and negative proof. Audit/target uncertainty keeps this `Proposed`.
+- End-state accepted specification and target criterion: [...]
+- Source-grounded gap, exact affected section(s), inspected revision and evidence: [...]
+- Contribution to the selected architecture and what remains: [...]
+- Alternative considered (including leaving good text or code alone): [...]
+- **Readiness:** no Ready without owner-reviewed intent, bounded actual delta, side effects and falsifiable proof.
 
 ## Outcome and motivation
 
-One observable change to executable code/tests/configuration and why it matters. What is the smallest complete result a reviewer can verify? If there is **no intended code diff**, do not create a Change: use a design/investigation/evaluation/documentation task instead.
+One coherent, independently reviewable outcome. For `documentation`, specify *which reader inference becomes more accurate* and which existing meaning must remain intact. For `implementation`, specify *which executable behavior/invariant changes* and how it will be proved. Do not invent code merely to qualify an editorial change.
 
 ## Authority and baseline
 
-- Product (when user behavior changes): [specific approved document and heading].
-- Technical contract / invariant: [specific document and heading].
-- Current code/evidence: [verified revision, actual source path/symbol, or explicit reinspection gate].
-- Applicable professional knowledge: [one relevant manual/section if a significant engineering decision remains].
+- **Product:** [selected contract path#heading, or explicit reason no player-facing promise is affected].
+- **Technical:** [selected contract path#heading, or explicit reason no runtime contract is affected].
+- **Evidence / source:** [source revision, test receipt and/or original prose/heading; separate selected design from actual realization].
+- **Proposals / unknowns:** [named unresolved decisions that this Change does **not** ratify].
 
-## Code scope and exclusions
+## Exact scope and exclusions
 
-- Expected touched code/test/config owners: [...]
-- Preserve: [...]
-- Explicitly exclude: [adjacent initiatives, unrelated refactors, provider spend, migrations, deployments].
+- **Canonical document edits:** [path#heading, planned replacement/split/link and preserving invariant; or no-op because ...].
+- **Executable source/tests/config:** [expected delta and negative case, or **unchanged because this is a documentation-only Change**; no executable edits].
+- **Related/inbound owners:** [specific links, dependencies, README/maps, evidence/status disposition].
+- **Preserve:** [non-negotiable product, technical, accessibility, privacy, time, spending and provenance constraints].
+- **Exclude:** [all unratified decisions, unrelated rewrites/refactors, provider/DB/deployment side effects].
 
-## Acceptance and negative proof
+## Acceptance and discriminating negative proof
 
-- Representative successful result: [...]
-- Failure/rejection/edge case that would disprove a plausible incorrect implementation: [...]
-- Cheapest safe test/inspection, side effects and environment authorization: [...]
-
-## Handoff and next action
-
-- Exact next permitted step: [...]
-- Decisions/blockers that must be resolved before code work: [...]
-- If this Change spans several independently verifiable code slices, add `PLAN.md` with one active checkpoint. Don't create a second program-level specification here.
+- **Normal:** [a fresh reader or safe test correctly infers behavior and status from the revised local claims].
+- **Negative:** [a plausible competing interpretation the revision must **not** permit; ideally an adversarial scenario].
+- **Verification:** [before/after claim-equivalence ledger, exact links and anchors, real source/fixture checks only when material; independent reviewer for consequential meaning changes].
+- **Human decision gate:** [exact normative question and blocked section, or none].
 
 ## Planned specification and implementation delta | planned-impact.v1
 
-Required before a new packet is marked Ready. This table is the prospective plan. It is not the reconciliation ledger and it is not proof. A legacy Ready packet that lacks this section stays readable; upgrade it when that packet is selected.
+This is a *prospective design*, mandatory before Ready and separate from the retrospective ledger. **All four planes exist for both Change kinds.** A `documentation` Change may legitimately mark Code as `unchanged because`, with a concrete reason and no fabricated executable delta.
 
 | Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
 | --- | --- | --- | --- |
-| Product | unchanged because [concrete player-facing reason], or change: [docs/product/...#heading] | [dependent headings, or none] | [owner decision] |
-| Technical | unchanged because [concrete contract reason], or change: [docs/technical/...#heading] | [dependent headings, or none] | [fixture or negative] |
-| Code | change: [source path]; negative: [the case that would disprove it] | [source map, or none] | [test] |
-| Related | unchanged because [why no other owner moves], or change: [map path] | [inbound route] | [link check] |
+| Product | changed: [exact docs/product/...#heading] and scope, **or** unchanged because [specific unaffected promise] | [dependent claims or none because...] | [owner review / negative] |
+| Technical | changed: [exact docs/technical/...#heading] and contract consequence, **or** unchanged because [specific unaffected contract] | [dependent claims or none because...] | [source or assertion proof] |
+| Code | changed: [exact source/test/config path]; negative: [disproving case], **or** unchanged because [no executable modification authorized and why] | [source map or no impact because...] | [test or inspected no-code diff] |
+| Related | changed: [exact inbound or hub Markdown path] and routing, **or** unchanged because [reviewed dependents do not change] | [actual reverse dependency/heading set] | [links/negative independent review] |
 
-`N/A` and `docs updated` are not dispositions. A code row that changes behavior names a path and a negative case. Do not say the code becomes the authority for a game promise the product row left unchanged.
+`N/A` and `docs updated` are not dispositions. For a documentation Change, the negative semantic proof remains mandatory even though its Code row says unchanged. A proposal may not be promoted merely by residing under `docs/product`.
+
+## Handoff and next action
+
+- Exact next permitted step when selected: [...]
+- Current HEAD and dirty-worktree reinspection: [...]
+- Known blockers and when to stop/return for an owner decision: [...]
+- Follow-up dependencies, and no automatic selection of next packet: [...]
+
+Use an optional `PLAN.md` only for meaningfully multi-step work or a resumable checkpoint. For editorial work, it must not become a second product spec.
 
 ## Reconciliation ledger (required before Done)
 
-**Product docs are the bible; technical docs second; code is the artifact.** Fill one row per affected selected claim. A pure internal tool still needs one row that says `no product/technical behavior impacted` and why. Do **not** mark Done while a row says `not run`, while a reason is "not needed" or "docs updated", or while permanent docs would remain more stale than the landed code.
+**Product documentation is the bible; technical docs second; code is the artifact.** Fill a row for every changed selected claim and material known dependent, including a reasoned `unchanged` disposition. For documentation-only work, name the **canonical Markdown path, headings, revision and evidence**; a source code SHA is not mandatory when **no source behavior changed**. Link/heading health and semantic preservation are actual verification requirements, not substitutes for owner ratification.
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| [path#heading, or no product/technical behavior impacted] | product / technical / evidence / none | unchanged: concrete reason, or changed: what the ratified wording now says | [path @ sha, or no source behavior changed] | designed / source-observed / fixture-tested / live-observed / not run | [the case that would disprove this row] | [map path, or N/A] |
+| [docs/product/...#claim / docs/technical/...#claim / related dependent] | product / technical / evidence | changed: [new precise meaning] / unchanged: [why] | [document path @ SHA; source path @ SHA if consulted; or no source behavior changed] | reviewed / source-observed / fixture-tested / blocked (never not run when Done) | [counterexample with observed result] | [inbound route or reasoned no-op] |
 
-`unchanged` means the selected contract still says the same thing after the code moved. Do not edit a product page only to announce a passing test. For every `changed` row, and any spec-vs-code mismatch, run [documentation-reconciliation](../../documentation-reconciliation/SKILL.md) on those owners only. Do not rewrite the product bible to rationalize defective code—escalate and write `needs independent owner review`. `pnpm wiki:change-guard` checks that these fields exist. It does not decide that the claim is true.
-
-**Closing rule:** record actual diff and verification, complete the reconciliation ledger above, then retire the active packet. Git retains the historical plan.
+**Closing:** compare actual files against planned P/T/C/Related; check every known reverse dependency and ambiguity, verify anchors and meaningful link routes, and challenge whether any meaning changed unintentionally. If a change needs ratification, remain Proposed/Blocked and do not promote it through prose. Run [documentation-reconciliation](../../documentation-reconciliation/SKILL.md) for changed or drifted owners. `pnpm wiki:change-guard` is structural proof only; a green status does not certify semantics. Record commands that actually ran, then archive and repair queue links.
