@@ -1,6 +1,18 @@
 # Story creation, control and completion
 
-**Find the section:** [forking and state copy](#forked-continuities) · [draft and preview](#drafts-and-generated-previews) · [reviewed Start](#start-exactly-the-reviewed-story) · [pause versus lifecycle](#distinguish-lifecycle-from-interruption) · [membership/settings](#membership-and-settings-changes) · [finish and delete](#finish-and-delete). Read the relevant section rather than loading this entire document.
+**Find the section:** [five owners](#five-owners) · [forking and state copy](#forked-continuities) · [draft and preview](#drafts-and-generated-previews) · [reviewed Start](#start-exactly-the-reviewed-story) · [pause versus lifecycle](#distinguish-lifecycle-from-interruption) · [membership/settings](#membership-and-settings-changes) · [finish and delete](#finish-and-delete). Read the relevant section rather than loading this entire document.
+
+## Five owners
+
+These owners stay distinct. The sections below keep their existing detail.
+
+- **Story lifecycle.** Draft, live, finished, and deleting stay separate from pause and blockers. See [Distinguish lifecycle from interruption](#distinguish-lifecycle-from-interruption).
+- **Command identity.** A retry reuses the captured operation identity. A new intention is a new identity. See [Drafts and generated previews](#drafts-and-generated-previews).
+- **History cursor.** A draft revision and a story revision fence writes. An older cursor does not overwrite a newer one.
+- **Effects.** A settled reward stays settled. Narration does not grant it again. See [Stable meanings](../../product/gameplay/actions-and-commitments.md#stable-meanings).
+- **Fork and compatibility.** A fork is a new story at one committed checkpoint. See [Forked continuities](#forked-continuities). Workflow replay keeps the earlier command history. See [Workflow replay compatibility](#workflow-replay-compatibility).
+
+An uncertain retry reconciles the existing generation and receipt. It does not reroll a settled reward, and it does not publish an outdated generation under a new identity. The proved short-lock subset is [What C1 and C2 actually proved](concurrency-and-recovery.md#what-c1-and-c2-actually-proved). Full ENG03 stays proposed.
 
 ## Forked continuities
 
@@ -89,7 +101,7 @@ If a deadline expired with no permitted default, recovery cannot simply unpause 
 
 ## Membership and settings changes
 
-The next milestone is one player, so that proof does not include invite or join. When shared play is later accepted, invite and join belong to the draft, and adding or transferring character control during live play stays deferred. When a story has more than one participant, each participant must still be able to leave or lose access. Revocation takes effect immediately for reads, commands and pending deliveries, even when Temporal is down. It increments the access/control version so in-flight results cannot ignore changed authority.
+The small-group first-playable ambition includes an invited friend. The exact live acceptance for invite and join is Proposed/Blocked. This page does not implement that invitation. Adding or transferring character control during live play stays deferred. When a story has more than one participant, each participant must still be able to leave or lose access. Revocation takes effect immediately for reads, commands and pending deliveries, even when Temporal is down. It increments the access/control version so in-flight results cannot ignore changed authority.
 
 Leaving does not silently kill, delete or transfer the character. Apply an explicitly agreed continuation policy or hold the group until one exists. Owner departure/account deletion likewise needs a defined retain/transfer/delete policy before that user-facing action ships. The application must not trap someone in access merely because the narrative consequence is unresolved.
 

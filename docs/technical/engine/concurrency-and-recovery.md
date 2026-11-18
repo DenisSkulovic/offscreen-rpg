@@ -5,6 +5,16 @@
 **Landed subset:** ENG03-C1 provisional recovery and ENG03-C2 interrupted-action capture. **Full ENG03 is not finished.** The open packet [ENG03 short-lock context](../../../work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed.  
 **Does not own:** fictional time rules ([chronology](chronology-and-activities.md)) or provider settlement math ([spending](../platform/spending-and-entitlements.md)).
 
+## Before, during, and after the lock
+
+The selected target is still a short capture under the lock, work outside it, and then a fenced publication. C1 and C2 are the landed subset below. They are not the full ENG03 path.
+
+- **Before.** Stage 1 freezes under the story lock in SQL. It does not write the document store or a success receipt.
+- **During.** Stage 2 materializes the interrupted receipt off the lock and keeps the same generation.
+- **After.** Stage 3 publishes only through the fence. A duplicate prepare keeps one generation and no second success receipt.
+
+An uncertain retry reconciles that generation and receipt. It does not reroll a settled reward, and it does not publish an outdated generation under a new identity. This note adds no transaction algorithm.
+
 ## What C1 and C2 actually proved
 
 ENG03-C1-R (2026-11-15, no provider spend) made public snapshots join `generation.kind` with `storyteller_context_capture.state`. A provisional `storyteller.context-capture.v1` always projects `canRetry: false`. A held exhausted provisional projects a safe blocker `{ kind: 'generation', recovery: 'operator' }` with `reason: null`. Migration `0006_eng03_c1r_provisional_recovery` adds `rearm_epoch` and an audit table. Application-private `rearmContextCapture` resets attempts once (epoch 1), enqueues the original `campaign.consequence.v1` wake, and preserves the generation and capture SHA. There is no Admin UI for that rearm.
