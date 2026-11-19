@@ -1,5 +1,7 @@
 # Changes | catalog and lifecycle
 
+**WORK01 taxonomy implementation (2026-11-20):** [first-class Tasks, single work selector and maintenance/brief integration](open/2026-11-20--work01-first-class-operational-tasks/CHANGE.md) has landed source/docs with [Composer verification T01](open/2026-11-20--work01-first-class-operational-tasks/TASKS.md) still NOT-RUN. **State Implementing; not selected, not Done.** The 24-packet audit below is a dated snapshot from before WORK01 was added. [Current work is selected only here](../QUEUE.md); this Change index is a catalog.
+
 **2026-11-18 unblock mandate:** [Source audit, chosen bounded contracts and executable Cursor queue](../designs/open/backlog-convergence-2026-11-18/README.md). State labels in the table and packets describe the current safe implementation slice. Earlier packet receipts remain historical evidence; implement against the latest canonical source and decision contract. A live-paid authorization or destructive DB permission is **not** conferred by this audit. Do not falsely archive unimplemented work.
 
 **Cursor parent quick entry (2026-11-20):** [One-screen Composer dispatch menu, task order, owner locks and refusal rules](CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md). Use this before opening the full audit or loading all 24 packets. The parent manually selects Composer Standard and one authorized T-ID; it does not delegate entire Change folders or trigger an exploratory Grok session.
