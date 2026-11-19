@@ -49,6 +49,7 @@
     "story:server": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --story-mode --no-browser",
     "story:play": "node scripts/repo-tools/story-play.mjs",
     "story:inspect": "node scripts/repo-tools/story-session-report.mjs",
+    "fixture:import": "node scripts/repo-tools/import-pinned-fixture.mjs",
     "chamber:reset": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --reset-database",
     "chamber:packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --packet-review",
     "chamber:memory-packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --memory-packet-review",
