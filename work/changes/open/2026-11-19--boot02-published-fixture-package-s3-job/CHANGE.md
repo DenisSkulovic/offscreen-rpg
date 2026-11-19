@@ -50,6 +50,20 @@ The shared-cluster Pod proof ran on 2026-11-19. One shell held `/tmp/offscreen-k
 
 Touched files: `scripts/repo-tools/import-pinned-fixture.mjs`, `scripts/repo-tools/import-pinned-fixture.test.mjs`, `scripts/repo-tools/read-pinned-fixture.mjs`, `infra/kubernetes/lab/content-bootstrap/`, `docs/runbooks/content-package-authoring.md`, `docs/runbooks/kubernetes-content-bootstrap.md`, `docs/runbooks/README.md`.
 
+Declared paths, each present because this slice needs that file:
+
+- infra/kubernetes/lab/content-bootstrap/Dockerfile because the importer image is built from this file
+- infra/kubernetes/lab/content-bootstrap/build.sh because the image pin is written here
+- infra/kubernetes/lab/content-bootstrap/images.pin because the Job names that digest
+- infra/kubernetes/lab/content-bootstrap/importer-job.yaml because that Job writes the hashes
+- infra/kubernetes/lab/content-bootstrap/namespace.yaml because the Jobs run in that namespace
+- infra/kubernetes/lab/content-bootstrap/package.json because the image install is pinned here
+- infra/kubernetes/lab/content-bootstrap/package-lock.json because the image install is locked here
+- infra/kubernetes/lab/content-bootstrap/reader-job.yaml because that Job reads the hashes after the importer Pod is gone
+- infra/kubernetes/lab/content-bootstrap/smoke.sh because one shell holds the cluster lock for up, Jobs, and down
+- scripts/repo-tools/read-pinned-fixture.mjs because the reader Job calls this script
+- docs/runbooks/kubernetes-content-bootstrap.md because the dated proof lives here
+
 ## Reconciliation ledger
 
 | Affected selected claim/heading                                                   | Authority  | Target delta (changed/unchanged; reason)                                                                                                                 | Source delta & inspected SHA                                                                                                                                    | Status/evidence tier | Negative proof                                                                                                          | Map/link update or N/A |
