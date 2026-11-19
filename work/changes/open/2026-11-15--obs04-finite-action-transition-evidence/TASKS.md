@@ -1,5 +1,7 @@
 # OBS04 | Composer dispatch: atomic finite-action evidence
 
+**Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
+
 **Source baseline:** 584b594. **State:** Ready for E0 bounded evidence, not permission for a generic forensic event-sourcing framework. **Default:** Composer Standard. Canonical owner: docs/technical/engine/chronology-and-activities.md.
 
 **Existing source:** `packages/application/src/campaign/action-execution-transition.ts:decideActionExecutionTransition` returns typed waiting/interrupted/settled facts; `campaign/action-executions.ts:settleActionExecution` runs under the story transaction, `recordActionExecutionEvent` inserts a unique execution revision and `appendPublicStoryEvent` for terminal cases. `packages/db/src/schema/campaign.ts` already has `game_action_execution_event` and `game_action_execution_event_revision` uniqueness. The missing requirement is **evidence richness**, not “create an event table.” A new table/migration is NOT justified until exact absent before/after values are proven.
