@@ -18,7 +18,19 @@ import type { Database } from '@offscreen/db';
 import { storyDraft } from '@offscreen/db/draft-schema';
 import { draftOpening, generation } from '@offscreen/db/generation-schema';
 import { and, eq } from 'drizzle-orm';
-import { initializeStoryInTransaction } from './initialization';
+import {
+  absentOpeningCheckpoint,
+  initializeStoryInTransaction,
+  quiescentCampaignOpeningCheckpoint,
+} from './initialization';
+import {
+  checkpointWriterStore,
+  insertStagedSceneCheckpointSelector,
+  stageSceneCheckpointObject,
+  type StagedSceneCheckpoint,
+} from './scene-checkpoint';
+import { lockedCheckpointMatches } from './continuation';
+import type { InitialStory } from './command-policy';
 import { parseStoryIdentifier, StoryError } from './errors';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import {
@@ -28,6 +40,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import {
+  checkpointPinsForRoot,
   stageStoryBootstrapDocuments,
   type StagedStoryBootstrap,
 } from './passage-documents';
@@ -289,6 +302,10 @@ export function createStoryStart(
       }
     }
     let stagedPassage: StagedStoryBootstrap | undefined;
+    let stagedOpeningCheckpoint: StagedSceneCheckpoint | undefined;
+    let openingInteractionId: string | undefined;
+    let playableInput: InitialStory | undefined;
+    let openingCheckpointKind: 'absent' | 'campaign' | undefined;
     if (
       documentStore &&
       candidateForStaging?.state === 'succeeded' &&
@@ -297,6 +314,7 @@ export function createStoryStart(
       let content;
       let premise;
       let character;
+      let openingInput: InitialStory | undefined;
       if (candidateForStaging.kind === storytellerKind) {
         const task = storytellerTaskSchema.parse(candidateForStaging.input);
         if (task.task !== 'opening') throw new StoryError('invalid');
@@ -308,9 +326,31 @@ export function createStoryStart(
           content = mechanicalOpeningSceneSchema.parse(result.scene).content;
           character = task.context.mechanicalOpening.character;
         } else {
-          content = playablePresentation(
+          const presented = playablePresentation(
             playableProposalSchema.parse(result.scene),
-          ).content;
+          );
+          content = presented.content;
+          openingInteractionId = presented.interaction
+            ? randomUUID()
+            : undefined;
+          openingInput = {
+            source: 'playable.opening.v1',
+            sourceGenerationId: generationId,
+            sourceGenerationPart: 'current',
+            premise: task.context.premise,
+            storyteller: task.profile,
+            execution: task.execution,
+            usagePolicy:
+              task.resources.authority.kind === 'effective-usage-policy'
+                ? task.resources.authority.policy
+                : null,
+            items: [],
+            content,
+            interaction: presented.interaction,
+          };
+          if (campaignOptions.worldObligations.length === 0) {
+            openingCheckpointKind = 'campaign';
+          }
         }
         premise = task.context.premise;
       } else {
@@ -330,17 +370,31 @@ export function createStoryStart(
         const proposal = playableProposalSchema.parse(
           candidateForStaging.output,
         );
-        content = playablePresentation(proposal).content;
+        const presented = playablePresentation(proposal);
+        content = presented.content;
         premise = premiseContentSchema.parse({
           title: draftForStaging.title,
           premise: draftForStaging.premise,
           storytellingDirection: draftForStaging.storytellingDirection,
         });
+        openingInteractionId = presented.interaction ? randomUUID() : undefined;
+        playableInput = {
+          source: playableOpeningStorySource,
+          sourceGenerationId: generationId,
+          sourceGenerationPart: 'current',
+          premise,
+          items: [],
+          content,
+          interaction: presented.interaction,
+        };
+        openingInput = playableInput;
+        openingCheckpointKind = 'absent';
       }
+      const openingPassageId = randomUUID();
       stagedPassage = await stageStoryBootstrapDocuments({
         storage: documentStore,
         storyId: id,
-        passageId: randomUUID(),
+        passageId: openingPassageId,
         sequence: 1,
         operationId: id,
         rootHash: null,
@@ -372,6 +426,38 @@ export function createStoryStart(
           rootRevision: instantiated.manifest.revision,
         };
       }
+      const writer = checkpointWriterStore(documentStore);
+      if (
+        writer &&
+        openingInput &&
+        openingCheckpointKind &&
+        openingInput.items.length === 0
+      ) {
+        const pins = await checkpointPinsForRoot({
+          storage: writer,
+          rootHash: stagedPassage.rootHash,
+          storytellerProfile: openingInput.storyteller ?? null,
+        });
+        const shared = {
+          storyId: id,
+          passageId: openingPassageId,
+          input: openingInput,
+          interactionId: openingInteractionId ?? null,
+          rootHash: stagedPassage.rootHash,
+          rootRevision: stagedPassage.rootRevision,
+          contentDocumentHash: stagedPassage.objectHash,
+          pins,
+        };
+        stagedOpeningCheckpoint = await stageSceneCheckpointObject(
+          writer,
+          openingCheckpointKind === 'campaign'
+            ? quiescentCampaignOpeningCheckpoint({
+                ...shared,
+                pace: campaignOptions.pace,
+              })
+            : absentOpeningCheckpoint(shared),
+        );
+      }
     }
 
     await database.db.transaction(async (tx) => {
@@ -394,6 +480,17 @@ export function createStoryStart(
             ? {}
             : { existingPassageContent }),
         });
+        if (
+          stagedOpeningCheckpoint &&
+          openingCheckpointKind === 'campaign' &&
+          (await lockedCheckpointMatches(tx, stagedOpeningCheckpoint.checkpoint))
+        ) {
+          await insertStagedSceneCheckpointSelector(tx, {
+            ownerId,
+            operationId: id,
+            staged: stagedOpeningCheckpoint,
+          });
+        }
         return;
       }
       if (requestedCampaignOptions.startPackage) {
@@ -448,10 +545,9 @@ export function createStoryStart(
       if (!presentation.interaction) {
         throw new StoryError('invalid');
       }
-      await initializeStoryInTransaction(tx, {
-        ownerId,
-        storyId: id,
-        input: {
+      const opening =
+        playableInput ??
+        ({
           source: playableOpeningStorySource,
           sourceGenerationId: generationId,
           sourceGenerationPart: 'current',
@@ -463,11 +559,19 @@ export function createStoryStart(
           items: [],
           content: presentation.content,
           interaction: presentation.interaction,
-        },
+        } satisfies InitialStory);
+      await initializeStoryInTransaction(tx, {
+        ownerId,
+        storyId: id,
+        input: opening,
         ...(stagedPassage ? { stagedPassage } : {}),
         ...(existingPassageContent === undefined
           ? {}
           : { existingPassageContent }),
+        ...(openingInteractionId ? { interactionId: openingInteractionId } : {}),
+        ...(stagedOpeningCheckpoint && openingCheckpointKind === 'absent'
+          ? { stagedCheckpoint: stagedOpeningCheckpoint }
+          : {}),
       });
     });
   };

@@ -66,7 +66,10 @@ export function createStories(
     options.documentStore,
     options.defaultRules,
   );
-  const continuation = createStoryContinuation(database);
+  const continuation = createStoryContinuation(
+    database,
+    options.documentStore,
+  );
   const resolution = createStoryResolution(database, options.documentStore);
   const resolutionReceipts = createResolutionReceiptReader(database);
   const timing = createStoryTiming(database);

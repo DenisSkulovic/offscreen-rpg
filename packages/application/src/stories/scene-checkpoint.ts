@@ -15,7 +15,7 @@ import { lockOwnedStory } from './persistence';
 
 export type SceneCheckpointStore = Pick<
   DocumentStore,
-  'readManifest'
+  'readManifest' | 'readStructuredDocument'
 > & {
   readSceneCheckpoint(hash: string): Promise<SceneCheckpoint>;
 };
@@ -29,6 +29,16 @@ type InsertSceneCheckpointReference = Readonly<{
   checkpoint: unknown;
   documentStore: SceneCheckpointStore;
 }>;
+
+export type StagedSceneCheckpoint = Readonly<{
+  checkpoint: SceneCheckpoint;
+  checkpointHash: string;
+}>;
+
+/** The real document adapter. A missing method is not a second, local store. */
+export type SceneCheckpointWriterStore = SceneCheckpointStore & {
+  putSceneCheckpoint(checkpoint: SceneCheckpoint): Promise<string>;
+};
 
 type CheckpointRow = typeof storySceneCheckpoint.$inferSelect;
 
@@ -130,37 +140,71 @@ function isUniqueViolation(error: unknown) {
   return false;
 }
 
-/**
- * Insert the SQL selector for a checkpoint object that is already staged.
- * The story row is locked and compared. It is not updated. A second identical
- * insert returns the same hash. A different hash for that scene conflicts.
- * Object storage is read before the story lock and is not a second writer.
- */
-export async function insertSceneCheckpointReference(
-  tx: Transaction,
-  args: InsertSceneCheckpointReference,
-): Promise<{ idempotent: boolean; checkpointHash: string }> {
-  const checkpoint = parseCheckpoint(args.checkpoint);
-  const operationId = parseStoryIdentifier(args.operationId);
-  if (checkpoint.sceneSequence !== args.expectedRevision) {
-    throw new StoryError('conflict', 'stale_story_revision');
-  }
+export function checkpointWriterStore(
+  store: object,
+): SceneCheckpointWriterStore | undefined {
   if (
-    checkpoint.canon.rootHash !== args.expectedRootHash ||
-    checkpoint.canon.rootRevision !== args.expectedRootRevision
+    typeof (store as SceneCheckpointWriterStore).putSceneCheckpoint !==
+      'function' ||
+    typeof (store as SceneCheckpointWriterStore).readSceneCheckpoint !==
+      'function' ||
+    typeof (store as SceneCheckpointWriterStore).readManifest !== 'function'
   ) {
-    throw new StoryError('conflict', 'stale_canon_root');
+    return undefined;
   }
-  const checkpointHash = hashCanonicalJson(checkpoint);
-  await verifyStagedCheckpoint(args.documentStore, checkpoint, checkpointHash);
+  return store as SceneCheckpointWriterStore;
+}
+
+/**
+ * Put the checkpoint on the caller-supplied adapter and read it back.
+ * A transport failure throws. This function does not open a SQL transaction
+ * and does not substitute another store.
+ */
+export async function stageSceneCheckpointObject(
+  documentStore: SceneCheckpointWriterStore,
+  checkpoint: unknown,
+): Promise<StagedSceneCheckpoint> {
+  const parsed = parseCheckpoint(checkpoint);
+  const checkpointHash = hashCanonicalJson(parsed);
+  let storedHash: string;
+  try {
+    storedHash = await documentStore.putSceneCheckpoint(parsed);
+  } catch (error) {
+    storageFailure(error, 'checkpoint');
+  }
+  if (storedHash !== checkpointHash) {
+    throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+  }
+  await verifyStagedCheckpoint(documentStore, parsed, checkpointHash);
+  return { checkpoint: parsed, checkpointHash };
+}
+
+/**
+ * Insert the selector for an object that was staged and verified before this
+ * transaction. The story lock is SQL only. Object storage is not called.
+ */
+export async function insertStagedSceneCheckpointSelector(
+  tx: Transaction,
+  args: Readonly<{
+    ownerId: string;
+    operationId: string;
+    staged: StagedSceneCheckpoint;
+  }>,
+): Promise<{ idempotent: boolean; checkpointHash: string }> {
+  const checkpoint = args.staged.checkpoint;
+  const operationId = parseStoryIdentifier(args.operationId);
+  const checkpointHash = args.staged.checkpointHash;
+  if (hashCanonicalJson(checkpoint) !== checkpointHash) {
+    throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+  }
   const current = await lockOwnedStory(tx, {
     ownerId: args.ownerId,
     storyId: checkpoint.storyId,
   });
   if (
-    current.revision !== args.expectedRevision ||
-    current.documentRootHash !== args.expectedRootHash ||
-    current.documentRootRevision !== args.expectedRootRevision
+    current.revision !== checkpoint.sceneSequence ||
+    current.documentRootHash !== checkpoint.canon.rootHash ||
+    current.documentRootRevision !== checkpoint.canon.rootRevision
   ) {
     throw new StoryError('conflict', 'stale_story_revision');
   }
@@ -224,6 +268,35 @@ export async function insertSceneCheckpointReference(
     throw new StoryError('conflict', 'checkpoint_hash_conflict');
   }
   return { idempotent: false, checkpointHash };
+}
+
+/**
+ * Insert the SQL selector for a checkpoint object that is already staged.
+ * The story row is locked and compared. It is not updated. A second identical
+ * insert returns the same hash. A different hash for that scene conflicts.
+ * Object storage is read before the story lock and is not a second writer.
+ */
+export async function insertSceneCheckpointReference(
+  tx: Transaction,
+  args: InsertSceneCheckpointReference,
+): Promise<{ idempotent: boolean; checkpointHash: string }> {
+  const checkpoint = parseCheckpoint(args.checkpoint);
+  if (checkpoint.sceneSequence !== args.expectedRevision) {
+    throw new StoryError('conflict', 'stale_story_revision');
+  }
+  if (
+    checkpoint.canon.rootHash !== args.expectedRootHash ||
+    checkpoint.canon.rootRevision !== args.expectedRootRevision
+  ) {
+    throw new StoryError('conflict', 'stale_canon_root');
+  }
+  const checkpointHash = hashCanonicalJson(checkpoint);
+  await verifyStagedCheckpoint(args.documentStore, checkpoint, checkpointHash);
+  return insertStagedSceneCheckpointSelector(tx, {
+    ownerId: args.ownerId,
+    operationId: args.operationId,
+    staged: { checkpoint, checkpointHash },
+  });
 }
 
 /**

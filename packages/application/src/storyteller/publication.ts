@@ -48,7 +48,10 @@ import { translateGeneratedContinuation } from '../generations/generated-continu
 import {
   commitStagedStoryPublication,
   commitStoryContinuation,
+  stageSupportedContinuationCheckpoint,
+  type StagedContinuationCheckpoint,
 } from '../stories/continuation';
+import { checkpointWriterStore } from '../stories/scene-checkpoint';
 import {
   lockOwnedStory,
   insertContinuationPassage,
@@ -131,6 +134,7 @@ export async function publishStorytellerResult(
   internalAppearance?: { candidate?: unknown },
 ) {
   let stagedDocuments: StagedStoryPublication | undefined;
+  let stagedContinuation: StagedContinuationCheckpoint | undefined;
   const [candidate] = await database.db
     .select()
     .from(generation)
@@ -145,7 +149,10 @@ export async function publishStorytellerResult(
       !('report' in result)
     ) {
       const [preparedResolution] = await database.db
-        .select({ operationId: storyResolution.operationId })
+        .select({
+          operationId: storyResolution.operationId,
+          submission: storyResolution.submission,
+        })
         .from(storyResolution)
         .where(eq(storyResolution.generationId, id));
       if (!preparedResolution) throw new StoryError('invalid');
@@ -175,6 +182,65 @@ export async function publishStorytellerResult(
         });
       } else if (result.documentChanges.length) {
         throw new StoryError('unavailable', 'document_store');
+      }
+      const writer = documentStore
+        ? checkpointWriterStore(documentStore)
+        : undefined;
+      if (
+        writer &&
+        task.task === 'continuation' &&
+        current &&
+        current.revision === task.source.narrativeRevision
+      ) {
+        const proposed = translateGeneratedContinuation({
+          output: result.scene,
+          generationId: id,
+          response: interactionSubmissionSchema.parse(
+            preparedResolution.submission,
+          ),
+          realDurationMs,
+        });
+        const parsed = continuationSchema.safeParse({
+          ...proposed,
+          expectedRevision: task.source.narrativeRevision,
+        });
+        if (parsed.success) {
+          stagedContinuation = await stageSupportedContinuationCheckpoint(
+            database,
+            writer,
+            {
+              ownerId: candidate.ownerId,
+              storyId: task.source.storyId,
+              transitionId: preparedResolution.operationId,
+              input: parsed.data,
+              ...(stagedDocuments
+                ? {
+                    passageId: stagedDocuments.passageId,
+                    contentDocumentHash: stagedDocuments.passageObjectHash,
+                    nextRootHash: stagedDocuments.rootHash,
+                    nextRootRevision: stagedDocuments.rootRevision,
+                    baseRootHash: stagedDocuments.baseRootHash,
+                    baseRootRevision: stagedDocuments.baseRootRevision,
+                  }
+                : {
+                    baseRootHash: current.rootHash,
+                    baseRootRevision: current.rootRevision,
+                  }),
+              restartActiveScene:
+                result.activeScene?.kind === 'restart-at-current',
+              ...(result.activeScene?.kind === 'restart-at-current'
+                ? {
+                    activeSceneRecallCues: activeSceneRecallCues(
+                      result.documentChanges,
+                      preparedResolution.operationId,
+                      task.context.canonicalKnowledge?.catalogue ?? [],
+                      result.activeScene.recallDocuments,
+                    ),
+                  }
+                : {}),
+            },
+          );
+        }
       }
     }
   }
@@ -770,6 +836,7 @@ export async function publishStorytellerResult(
           }
         : {}),
       ...(stagedDocuments ? { stagedDocuments } : {}),
+      ...(stagedContinuation ? { stagedCheckpoint: stagedContinuation } : {}),
     });
     await setPublication(tx, id, 'published');
   });

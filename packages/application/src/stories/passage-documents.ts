@@ -5,7 +5,9 @@ import {
   documentManifestSchema,
   worldPackageReferenceSchema,
   rulePackageReferenceSchema,
+  startPackageReferenceSchema,
   hashCanonicalJson,
+  type SceneCheckpoint,
   type DocumentManifest,
   type DocumentManifestEntry,
   type DocumentStore,
@@ -74,6 +76,82 @@ export function publicationChangedDocumentId(
 
 export function publicationPassageId(operationId: string) {
   return stableBootstrapDocumentId(operationId, 'published-passage');
+}
+
+const worldReferencesDocumentSchema = z.strictObject({
+  version: z.literal(1),
+  worlds: z.array(worldPackageReferenceSchema).max(8),
+});
+
+const ruleReferenceDocumentSchema = z.strictObject({
+  version: z.literal(1),
+  rules: rulePackageReferenceSchema,
+});
+
+const startReferenceDocumentSchema = z.strictObject({
+  version: z.literal(1),
+  startPackageId: z.uuid(),
+  rootHash: z.string(),
+  revision: z.number().int().positive(),
+});
+
+type CheckpointPinReader = Pick<
+  DocumentStore,
+  'readManifest' | 'readStructuredDocument'
+>;
+
+/** Pins named by the manifest that will be current at the publication fence. */
+export async function checkpointPinsForRoot(args: {
+  storage: CheckpointPinReader;
+  rootHash: string | null;
+  storytellerProfile: unknown;
+}): Promise<SceneCheckpoint['pins']> {
+  const profile = args.storytellerProfile ?? null;
+  if (args.rootHash === null) {
+    return {
+      worlds: [],
+      rules: null,
+      start: null,
+      storytellerProfile: profile,
+    } as SceneCheckpoint['pins'];
+  }
+  const manifest = await args.storage.readManifest(args.rootHash);
+  const worldEntry = manifest.entries.find(
+    (entry) => entry.path === 'world/references.json',
+  );
+  const worlds = worldEntry
+    ? worldReferencesDocumentSchema.parse(
+        (await args.storage.readStructuredDocument(worldEntry.objectHash)).data,
+      ).worlds
+    : [];
+  const ruleEntry = manifest.entries.find(
+    (entry) => entry.path === 'rules/reference.json',
+  );
+  const rules = ruleEntry
+    ? ruleReferenceDocumentSchema.parse(
+        (await args.storage.readStructuredDocument(ruleEntry.objectHash)).data,
+      ).rules
+    : null;
+  const startEntry = manifest.entries.find(
+    (entry) => entry.path === 'start/reference.json',
+  );
+  let start = null;
+  if (startEntry) {
+    const parsed = startReferenceDocumentSchema.parse(
+      (await args.storage.readStructuredDocument(startEntry.objectHash)).data,
+    );
+    start = startPackageReferenceSchema.parse({
+      startPackageId: parsed.startPackageId,
+      rootHash: parsed.rootHash,
+      revision: parsed.revision,
+    });
+  }
+  return {
+    worlds,
+    rules,
+    start,
+    storytellerProfile: profile,
+  } as SceneCheckpoint['pins'];
 }
 
 export async function stageStoryPublicationDocuments(args: {
