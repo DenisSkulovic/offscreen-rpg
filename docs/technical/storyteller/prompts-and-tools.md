@@ -56,6 +56,8 @@ The model must not decide dice, a forced player response, the scheduler, the pro
 
 **Selected task pack, 2026-11-19.** This heading records how one Storyteller task is packed, and which tools that pack may use. This page does not implement the packer. Today's code does not assemble P0–P3 this way. `prepareStorytellerTask` still builds a `bounded-scene.v3` request from the caller-supplied snapshot, the task rules, and the profile. Ordinary admission still captures `single-turn.v1` or `repairable-turn.v1` with tools disabled. A funded `memory-exploration.v1` recipe can ask and read inside one operation. That recipe is the landed exploration controller. The runtime description is [Current prototype runtime](operation-and-controller.md#current-prototype-runtime).
 
+That pack is what a future remote worker would receive: injected current state, a short orientation, and one intention-level memory query. The worker proposes. The engine publishes. A possible paid send is not retried from this pack, and custody adds no model round. Today's code does not assemble the remote worker. Who holds the task is [Remote task custody](generation-and-publication.md#remote-task-custody).
+
 The compiler is deterministic about permissions, version selection, packing, and budgets. Creative interpretation stays with the model. A missing mandatory source is an explicit hold.
 
 - **P0.** Stable universal authority plus the one narrow role recipe for this task. Version it. A prefix discount applies only where the provider bill reports one. Every other role's instructions and tools stay out of the request.
