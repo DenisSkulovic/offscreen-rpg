@@ -6,10 +6,11 @@ Status, inspected at `15a997c7`. The tests named here were read and not re-run.
 - Fail-closed overlap when a world obligation intervenes, or when the resolution is not a finite action: `packages/game/test/immediate-offer.test.mjs`.
 - Finite-action settlement, a failed check that consumes the duration without the transfer, and a wrong-holder interrupt that does not roll: `packages/application/test/item-transfer-transition.test.mjs`.
 - A due world obligation interrupts before effects and does not roll: `packages/application/test/world-obligation-transition.test.mjs`.
+- One preapproved withdrawal on a published two-choice invitation: `packages/application/test/delegated-decision.test.mjs`.
 - Execution gate: `projectCampaignClock` in `packages/application/src/campaign/clock.ts` advances only for a matching accepted activity or finite action while unheld. Any other eligibility, including `none`, is held, and a non-running clock earns nothing in `packages/game/src/time.ts`. No dedicated unit test of that function was found. New activity selection calls it with `none`, so idle wall time is not donated to the new job.
 - Named API and worker cases exist for early preparation during pause, same-generation retry, and worker restart in `tools/api-integration/test/storyteller.integration.ts` and `apps/worker/test/eng06-worker-restart.live.test.ts`. Their assertions were not re-read and they were not re-run.
 
-Group progression, a consented general fallback, and the OBS04 transition witness stay outside this proof. [Time and autonomy](../../product/gameplay/time-and-autonomy.md) owns the product intent. This file owns execution permission and its relationship to narration. Unit arithmetic is [ticks and tags](ticks-and-tags.md). Calendar projection is [calendars](calendars-and-world-time.md).
+Group progression, any consented fallback beyond the one preapproved withdrawal, and the OBS04 transition witness stay outside this proof. [Time and autonomy](../../product/gameplay/time-and-autonomy.md) owns the product intent. This file owns execution permission and its relationship to narration. Unit arithmetic is [ticks and tags](ticks-and-tags.md). Calendar projection is [calendars](calendars-and-world-time.md).
 
 ## Permission, interval, hold, settlement, interruption
 
@@ -109,9 +110,17 @@ The initial solo POC keeps indefinite decisions. The architecture also permits a
 
 This remains owned by the bounded-autonomy feature. Do not enable defaults in the current mechanical campaign by importing the legacy narrative rehearsal deadline behavior.
 
+One published two-choice invitation is a separate expiry, and only when that invitation already carries consent for its withdrawal. `admitDelegatedDecision` in `packages/application/src/campaign/delegated-decision.ts` seals the arrival. The deadline is twenty real minutes after publication. Waiting adds no fictional seconds. At expiry the preapproved withdrawal settles once, with the provenance “Your approved fallback chose to withdraw.” A player choice that commits first is the only settlement; the fallback does not also run. Absent consent, a revoked grant, consent granted after the deadline, a stale withdrawal, a combat choice, a model request, or any question that is not this invitation leaves the decision held. A later delivery returns the same settlement and does not apply a second duration. The caller must submit the next arrival against the returned decision. This module does not take the story-row lock, does not import the narrative-rehearsal timer, and does not call a model. Every other decision stays open. The general timed-default extension remains planned.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Decisions with deadlines | constrained-by | [First playable scope](../../product/gameplay/time-and-autonomy.md#first-playable-scope) | A general timed fallback stays outside this one withdrawal. A change to the product absence rule has to be checked against this expiry |
+
 ## Worked traces and acceptance checklist
 
-All numbers below are fixture values. Sequential finite action, controls, interrupted work, restart/replay, bounded overlap and due-world interruption have focused offline evidence. Timed-default extension remains planned under bounded autonomy. None authorizes live spend or establishes human rhythm quality.
+All numbers below are fixture values. Sequential finite action, controls, interrupted work, restart/replay, bounded overlap and due-world interruption have focused offline evidence. The one preapproved withdrawal has a focused offline test. The general timed-default extension remains planned under bounded autonomy. None authorizes live spend or establishes human rhythm quality.
 
 | Trace | Accepted terms and timing | Required evidence |
 | --- | --- | --- |
@@ -125,6 +134,7 @@ All numbers below are fixture values. Sequential finite action, controls, interr
 | Pause and speed change | Pause during an action, wait, resume at twice the rate | Same fictional duration/result; preserved earned fraction; early prose cannot unpause |
 | Due interruption | A world rule becomes due before action completion | Ordered boundary stops incompatible execution; no premature reserved result or hidden lost event |
 | Default-response extension | Published 30-second response window, authorized five-second default | Held deliberation; single selected command on expiry; ordinary five-second execution follows |
+| Preapproved withdrawal | Published two-choice invitation, twenty real minutes, explicit withdrawal consent | One withdrawal at expiry and zero fictional seconds while waiting; a first player choice or a second delivery does not settle again |
 | Microbe / abstract entity | Explicit finite sensing/connection interval in content-defined units | Same clock/authority contract without a tavern, wallet or human calendar |
 
 Trace artifacts need offer/execution/receipt/generation IDs, accepted terms, fictional-second interval, pace revision, time eligibility/hold transitions, pending versus committed result, publication state, and provider allocations. The structured QA catalogue should gain these cases as **planned** during implementation, then become available only when Chamber controls can reproduce them. Never relabel existing zero-time fixtures as evidence for timed decisions.
