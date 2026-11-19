@@ -1,0 +1,390 @@
+# Placeholder workloads. They are not Next, Nest, the game, or a second BFF.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-api
+  namespace: lab-skeletons
+  labels:
+    app: web-api
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-api
+  template:
+    metadata:
+      labels:
+        app: web-api
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/skeleton: placeholder
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: placeholder
+          image: docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-u", "/opt/placeholder/placeholder.py"]
+          env:
+            - name: ROLE
+              value: web-api
+            - name: PORT
+              value: "8080"
+            - name: ENGINE_URL
+              value: http://engine:8080
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 24
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: script
+              mountPath: /opt/placeholder
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: synthetic-placeholder
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-api
+  namespace: lab-skeletons
+  labels:
+    app: web-api
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  type: ClusterIP
+  selector:
+    app: web-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine
+  namespace: lab-skeletons
+  labels:
+    app: engine
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engine
+  template:
+    metadata:
+      labels:
+        app: engine
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/skeleton: placeholder
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: placeholder
+          image: docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-u", "/opt/placeholder/placeholder.py"]
+          env:
+            - name: ROLE
+              value: engine
+            - name: PORT
+              value: "8080"
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 24
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: script
+              mountPath: /opt/placeholder
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: synthetic-placeholder
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: engine
+  namespace: lab-skeletons
+  labels:
+    app: engine
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  type: ClusterIP
+  selector:
+    app: engine
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storyteller
+  namespace: lab-skeletons
+  labels:
+    app: storyteller
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storyteller
+  template:
+    metadata:
+      labels:
+        app: storyteller
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/skeleton: placeholder
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: placeholder
+          image: docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-u", "/opt/placeholder/placeholder.py"]
+          env:
+            - name: ROLE
+              value: storyteller
+            - name: PORT
+              value: "8080"
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 24
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: script
+              mountPath: /opt/placeholder
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: synthetic-placeholder
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storyteller
+  namespace: lab-skeletons
+  labels:
+    app: storyteller
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  type: ClusterIP
+  selector:
+    app: storyteller
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications
+  namespace: lab-skeletons
+  labels:
+    app: notifications
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications
+  template:
+    metadata:
+      labels:
+        app: notifications
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/skeleton: placeholder
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: placeholder
+          image: docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-u", "/opt/placeholder/placeholder.py"]
+          env:
+            - name: ROLE
+              value: notifications
+            - name: PORT
+              value: "8080"
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 24
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: script
+              mountPath: /opt/placeholder
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: synthetic-placeholder
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications
+  namespace: lab-skeletons
+  labels:
+    app: notifications
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
+spec:
+  type: ClusterIP
+  selector:
+    app: notifications
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
