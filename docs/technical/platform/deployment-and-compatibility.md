@@ -90,6 +90,12 @@ Back up application PostgreSQL and demonstrate a restore. Also establish Tempora
 
 The untested classification of those backup and restore requirements is [Release and restore readiness](../../runbooks/release-restore-readiness.md). That checklist does not change this requirement, and it is not a production runbook.
 
+### Web edge checklist
+
+A later hosted release that claims the web edge has to show four results. The public origin sends `/` and story pages to Next and `/api/**`, including the long-lived story update stream, to Nest. The stream is authenticated on that origin, flushed through the proxy, kept alive by its heartbeat, cleaned up on disconnect, and refused when access is revoked. A lost SSE hint is recovered by GET and does not submit a command, a reroll, or a fork. Two Next replicas and two Nest replicas both serve that contract.
+
+Those four results were not demonstrated. Two Next replicas and two Nest replicas were not tested on Kubernetes. The synthetic loopback procedure is [Kubernetes gateway](../../runbooks/kubernetes-gateway.md). It routed `/` and `/api`, then the cluster was deleted. It did not deploy Next or Nest. The selected laboratory route is [Selected lab edge](./topology.md#selected-lab-edge). This checklist does not meet the backup and restore requirement above.
+
 ## Kubernetes as a deliberate extension
 
 Two different uses of Kubernetes stay on two owners.
