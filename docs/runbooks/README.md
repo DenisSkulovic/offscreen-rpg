@@ -10,6 +10,7 @@ Source-adjacent package procedures may remain beside code.
 | [Kubernetes Postgres](kubernetes-postgres.md) | How do I run one disposable CloudNativePG primary, and what does a Pod deletion keep? |
 | [Kubernetes RabbitMQ](kubernetes-rabbitmq.md) | How do I run one disposable RabbitMQ broker, and what does a consumer crash redeliver? |
 | [Kubernetes object storage](kubernetes-object-storage.md) | How do I run one disposable SeaweedFS store, and what survives a Pod deletion? |
+| [Kubernetes document access](kubernetes-document-access.md) | How do two isolated Jobs share one object, and what fails closed? |
 | [Kubernetes observability](kubernetes-observability.md) | How do I record one synthetic two-hop trace and a missing hop on the disposable cluster? |
 | [Kubernetes Temporal](kubernetes-temporal.md) | How do I run one disposable Temporal server, and what survives a worker stop and a server Pod replacement? |
 | [Kubernetes service skeletons](kubernetes-skeletons.md) | How do I run four synthetic placeholders, and what does a duplicate operation id do? |
