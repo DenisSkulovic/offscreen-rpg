@@ -8,6 +8,8 @@ import { test } from 'node:test';
 import { inflateRawSync } from 'node:zlib';
 import { createSnapshot } from './chatgpt-snapshot.mjs';
 import { buildPortableWikiIndex, safeGithubOrigin } from './chatgpt-snapshot-knowledge.mjs';
+import { documentationHealthReport, LEAN_CONTENT_OMISSIONS, skeletonBanIsPathOnly } from './docs-health.mjs';
+import { executeWikiHealth, WIKI_HEALTH_NOT_RUN_EXIT } from './wiki-health.mjs';
 
 function git(dir, ...args) {
   return execFileSync('git', args, { cwd: dir, encoding: 'utf8' }).trim();
@@ -99,6 +101,14 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
     assert.equal(metadata.source.commit, git(root, 'rev-parse', 'HEAD'));
     assert.equal(metadata.profile, 'lean');
     assert.equal(metadata.schema, 'offscreen.chatgpt-snapshot.v2');
+    assert.equal(metadata.documentationHealth.schema, 'offscreen.snapshot-health.v1');
+    assert.equal(metadata.documentationHealth.fullCheckout.mode, 'full-checkout');
+    assert.equal(metadata.documentationHealth.fullCheckout.status, 'PASS');
+    assert.equal(metadata.documentationHealth.fullCheckout.expectedOmissionCount, 0);
+    assert.equal(metadata.documentationHealth.portableLinks.status, 'PASS');
+    assert.equal(metadata.documentationHealth.portableLinks.unresolvedIncluded, 0);
+    assert.equal(metadata.documentationHealth.portableLinks.excludedBySnapshotProfile, 0);
+    assert.ok(['PASS', 'FAIL', 'NOT-RUN'].includes(metadata.documentationHealth.dependencyChecks[0].status));
     assert.equal(metadata.portableWiki.status, 'ready');
     assert.equal(metadata.source.trackedModifiedPathCount, 1);
     assert.deepEqual(metadata.source.trackedModifiedPaths, ['packages/game/src/main.ts']);
@@ -113,6 +123,7 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
       skipIndex: true, indexBuilder: async () => { throw new Error('Never execute indexBuilder'); },
     });
     assert.equal(full.manifest.portableWiki.status, 'disabled');
+    assert.equal(full.manifest.documentationHealth.portableLinks.status, 'NOT-RUN');
     assert.ok(![...listZip(full.destination).keys()].some(x => x.endsWith('/WIKI-INDEX.json')));
     await assert.rejects(() => createSnapshot({
       repoRoot: root, indexBuilder: async () => { throw new Error('Missing index'); },
@@ -203,6 +214,103 @@ test('index classifies intentionally omitted history separately from broken link
     assert.equal(result.summary.reachedCanonical, 2);
     assert.equal(safeGithubOrigin('git@github.com:Example/Repo.git'), 'https://github.com/Example/Repo');
     assert.equal(safeGithubOrigin('https://private:password@github.com/Example/Repo.git'), 'https://github.com/Example/Repo');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('lean health separates an omitted archive from a broken included link', async () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'snapshot-health-'));
+  try {
+    const archiveLink = '[Old](../../changes/archive/old/CHANGE.md)';
+    const brokenLink = '[Gone](../../../docs/gone.md)';
+    put(root, 'work/designs/open/note.md', `# Note\n${archiveLink}\n${brokenLink}\n`);
+    put(root, 'docs/technical/lab/claim.md', 'Status: skeleton - to be folded later.\n');
+    put(
+      root,
+      'docs/technical/lab/service-link.md',
+      'See [K8S08](../../../work/changes/open/2026-11-19--k8s08-service-skeleton-and-event-contracts/CHANGE.md).\n',
+    );
+    const strict = documentationHealthReport(root);
+    assert.equal(strict.mode, 'full-checkout');
+    assert.equal(strict.status, 'FAIL');
+    assert.equal(strict.expectedOmissions.length, 0);
+    assert.ok(strict.regressions.some((item) => item.includes('archive/old/CHANGE.md')));
+    assert.ok(strict.regressions.some((item) => item.includes('docs/gone.md')));
+    assert.ok(strict.regressions.some((item) => item.includes('claim.md') && item.includes('skeleton')));
+    assert.ok(strict.pathTerminologyExemptions.some((item) => item.includes('service-link.md')));
+    assert.equal(
+      skeletonBanIsPathOnly('Status: skeleton - to be folded later.\n'),
+      false,
+    );
+    assert.equal(
+      skeletonBanIsPathOnly('See [K8S08](../../../work/changes/open/2026-11-19--k8s08-service-skeleton-and-event-contracts/CHANGE.md).\n'),
+      true,
+    );
+
+    put(root, 'SNAPSHOT.json', JSON.stringify({
+      profile: 'lean',
+      packaging: { excludedPatterns: LEAN_CONTENT_OMISSIONS },
+    }));
+    const mixed = documentationHealthReport(root);
+    assert.equal(mixed.mode, 'lean-snapshot');
+    assert.equal(mixed.status, 'FAIL');
+    assert.equal(mixed.expectedOmissions.length, 1);
+    assert.equal(mixed.expectedOmissions[0].href.includes('archive/old/CHANGE.md'), true);
+    assert.equal(mixed.regressions.some((item) => item.includes('archive/old/CHANGE.md')), false);
+    assert.ok(mixed.regressions.some((item) => item.includes('docs/gone.md')));
+    assert.ok(mixed.regressions.some((item) => item.includes('claim.md')));
+
+    put(root, 'work/designs/open/note.md', `# Note\n${archiveLink}\n`);
+    put(root, 'docs/technical/lab/claim.md', 'A normal contract sentence.\n');
+    const omittedOnly = documentationHealthReport(root);
+    assert.equal(omittedOnly.status, 'PASS');
+    assert.equal(omittedOnly.expectedOmissions.length, 1);
+    assert.equal(omittedOnly.regressions.length, 0);
+    assert.ok(omittedOnly.pathTerminologyExemptions.some((item) => item.includes('service-link.md')));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('snapshot metadata keeps included link defects apart from profile omissions', async () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'snapshot-health-export-'));
+  try {
+    git(root, 'init', '-q');
+    git(root, 'config', 'user.name', 'Fixture');
+    git(root, 'config', 'user.email', 'fixture@example.test');
+    put(root, '.gitignore', 'out/\n');
+    put(root, 'docs/product/vision.md', 'approved design');
+    put(root, 'work/changes/archive/old/CHANGE.md', 'retired');
+    git(root, 'add', '-f', '.');
+    git(root, 'commit', '-qm', 'fixture');
+    const exported = await createSnapshot({
+      repoRoot: root,
+      now: new Date('2026-11-19T12:00:00.000Z'),
+      indexBuilder: async () => ({
+        schema: 'wiki.portable-snapshot.v1',
+        sections: [],
+        omittedLinks: [{ state: 'excluded-by-snapshot-profile', target: 'work/changes/archive/old/CHANGE.md' }],
+        unresolvedLinks: [{ state: 'missing-at-source-revision', target: 'docs/gone.md' }],
+        summary: { brokenLinkCount: 1, omittedLinkCount: 1 },
+      }),
+    });
+    assert.equal(exported.manifest.documentationHealth.fullCheckout.mode, 'full-checkout');
+    assert.equal(exported.manifest.documentationHealth.fullCheckout.expectedOmissionCount, 0);
+    assert.equal(exported.manifest.documentationHealth.portableLinks.status, 'FAIL');
+    assert.equal(exported.manifest.documentationHealth.portableLinks.unresolvedIncluded, 1);
+    assert.equal(exported.manifest.documentationHealth.portableLinks.excludedBySnapshotProfile, 1);
+    const missing = new Error("Cannot find package 'unified' imported from wiki-core/markdown.mjs");
+    missing.code = 'ERR_MODULE_NOT_FOUND';
+    const notRun = await executeWikiHealth(root, {}, async () => { throw missing; });
+    assert.equal(notRun.status, 'NOT-RUN');
+    assert.equal(notRun.exitCode, WIKI_HEALTH_NOT_RUN_EXIT);
+    assert.notEqual(notRun.exitCode, 0);
+    assert.notEqual(notRun.exitCode, 1);
+    await assert.rejects(
+      () => executeWikiHealth(root, {}, async () => { throw new Error('parser bug'); }),
+      /parser bug/,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

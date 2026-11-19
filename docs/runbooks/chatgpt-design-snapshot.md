@@ -37,6 +37,12 @@ The index is generated using the **existing** `scripts/repo-tools/wiki-core/{rou
 
 A link to tracked material omitted from a lean ZIP is marked `excluded-by-snapshot-profile`, with an original SHA-pinned GitHub URL when a GitHub origin is configured. Sensitive-name exclusions are marked `excluded-sensitive-file` **without any fallback URL**. Genuine non-existing paths and missing heading anchors remain in `unresolvedLinks`. Do **not** interpret excluded historical pages as defects in the live repository. Reachability and counts refer to the **exported** graph.
 
+### Documentation health statuses
+
+`SNAPSHOT.json.documentationHealth` (`offscreen.snapshot-health.v1`) keeps three results apart. `fullCheckout.status` is the strict checker on the full checkout before export: `PASS`, `FAIL`, or `NOT-RUN`. `portableLinks.status` is `FAIL` when a link among files the ZIP includes is unresolved, and it counts `excluded-by-snapshot-profile` omissions separately. `dependencyChecks` records `wiki-health` as `NOT-RUN` when the wiki parser's Node dependencies are not installed. `NOT-RUN` is neither a pass nor a fail.
+
+On an extracted lean ZIP, `pnpm repo:docs-health` reads that manifest and reports links into `work/changes/archive/**`, `evidence/runs/**`, `evidence/inspections/**`, and the other lean content omissions as expected omissions. A broken link to a file the ZIP includes still fails. A full checkout has no lean `SNAPSHOT.json`, so a missing archived file there still fails. A URL or filesystem path is not a banned gameplay claim. `work/changes/open/2026-11-19--k8s08-service-skeleton-and-event-contracts/CHANGE.md` is such a path. The same wording in ordinary prose still fails.
+
 The manifest's `trackedModifiedPaths` lists only locally modified tracked path names passing a sensitive-filename filter, never their contents. It also records redacted path counts and the number of untracked files, without publishing their names. It is a provenance aid, not a substitute for reviewing the ZIP for secrets.
 
 ### Important behavior

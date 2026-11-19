@@ -5,6 +5,8 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { buildPortableWikiIndex, safeGithubOrigin } from './chatgpt-snapshot-knowledge.mjs';
+import { documentationHealthReport } from './docs-health.mjs';
+import { executeWikiHealth, missingWikiDependency } from './wiki-health.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -19,6 +21,92 @@ const LEAN_EXCLUDES = [
   'work/changes/archive/**', 'work/sessions/legacy-minutes/**',
   'evidence/runs/**', 'evidence/inspections/**', 'research/legacy-engineering/**',
 ];
+
+function portableLinkReport(index, portableStatus) {
+  if (portableStatus !== 'ready' || !index) {
+    return {
+      status: 'NOT-RUN',
+      reason: portableStatus === 'disabled'
+        ? 'Portable index was not generated'
+        : 'Portable index is unavailable',
+    };
+  }
+  const unresolved = Array.isArray(index.unresolvedLinks)
+    ? index.unresolvedLinks.length
+    : Number.isInteger(index.summary?.brokenLinkCount)
+      ? index.summary.brokenLinkCount
+      : null;
+  const excludedBySnapshotProfile = Array.isArray(index.omittedLinks)
+    ? index.omittedLinks.filter((item) => item.state === 'excluded-by-snapshot-profile').length
+    : Number.isInteger(index.summary?.omittedLinkCount)
+      ? index.summary.omittedLinkCount
+      : null;
+  const excludedSensitive = Array.isArray(index.omittedLinks)
+    ? index.omittedLinks.filter((item) => item.state === 'excluded-sensitive-file').length
+    : null;
+  if (unresolved == null) {
+    return {
+      status: 'NOT-RUN',
+      reason: 'Portable index did not report included-link defects',
+      excludedBySnapshotProfile,
+      excludedSensitive,
+    };
+  }
+  return {
+    status: unresolved > 0 ? 'FAIL' : 'PASS',
+    unresolvedIncluded: unresolved,
+    excludedBySnapshotProfile,
+    excludedSensitive,
+    note: 'Excluded archive, evidence, and sensitive paths are omissions. Unresolved counts are defects among included files.',
+  };
+}
+
+async function snapshotDocumentationHealth(repoRoot, index, portableStatus) {
+  let fullCheckout;
+  try {
+    const report = documentationHealthReport(repoRoot);
+    fullCheckout = {
+      scope: 'full-checkout-before-export',
+      mode: report.mode,
+      status: report.status,
+      regressionCount: report.regressions.length,
+      expectedOmissionCount: report.expectedOmissions.length,
+      pathTerminologyExemptionCount: report.pathTerminologyExemptions.length,
+      note: 'Expected lean omissions are not repository regressions. This full-checkout result is independent of files left out of a lean ZIP.',
+    };
+  } catch (error) {
+    if (!missingWikiDependency(error)) throw error;
+    fullCheckout = {
+      scope: 'full-checkout-before-export',
+      status: 'NOT-RUN',
+      reason: 'Node dependencies required by the documentation checker are not installed.',
+    };
+  }
+  let wiki;
+  try {
+    const executed = await executeWikiHealth(repoRoot, { repoSha: null, dirty: null });
+    wiki = {
+      name: 'wiki-health',
+      status: executed.status,
+      ...(executed.reason ? { reason: executed.reason } : {}),
+      ...(Number.isInteger(executed.hardErrors) ? { hardErrors: executed.hardErrors } : {}),
+    };
+  } catch (error) {
+    wiki = {
+      name: 'wiki-health',
+      status: 'NOT-RUN',
+      reason: missingWikiDependency(error)
+        ? 'Node dependencies required by the wiki parser are not installed.'
+        : 'Wiki health could not be executed.',
+    };
+  }
+  return {
+    schema: 'offscreen.snapshot-health.v1',
+    fullCheckout,
+    portableLinks: portableLinkReport(index, portableStatus),
+    dependencyChecks: [wiki],
+  };
+}
 
 function git(root, args) {
   return execFileSync('git', args, {
@@ -93,6 +181,7 @@ export async function createSnapshot({
     const stagedRoot = path.join(temporary, 'source');
     mkdirSync(stagedRoot);
     const pathspecs = exclusions.map(item => ':(exclude,glob)' + item);
+    let portableIndex = null;
     if (skipIndex) {
       manifest.portableWiki = {
         status: 'disabled', reason: 'Explicit --no-index source-only export',
@@ -126,6 +215,7 @@ export async function createSnapshot({
         const index = await indexBuilder({
           stagedRoot, head, profile, trackedPaths, repositoryUrl: safeGithubOrigin(remote),
         });
+        portableIndex = index;
         writeFileSync(knowledgeFile, JSON.stringify(index) + '\n');
         manifest.portableWiki = {
           status: 'ready', schema: index.schema,
@@ -145,6 +235,9 @@ export async function createSnapshot({
         };
       }
     }
+    manifest.documentationHealth = await snapshotDocumentationHealth(
+      root, portableIndex, manifest.portableWiki.status,
+    );
     writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
     git(root, [
       'archive', '--format=zip', '--prefix=offscreen-rpg-' + head.slice(0, 12) + '/',
@@ -190,6 +283,20 @@ async function main() {
   console.log('Profile: ' + result.manifest.profile + '; size: ' + (result.bytes / 1024 / 1024).toFixed(2) + ' MiB');
   console.log('SHA-256: ' + result.sha256);
   console.log('Portable wiki: ' + result.manifest.portableWiki.status);
+  const health = result.manifest.documentationHealth;
+  if (health) {
+    console.log('Full-checkout documentation health: ' + health.fullCheckout.status);
+    const links = health.portableLinks;
+    console.log(
+      'Portable links: ' + links.status
+      + (Number.isInteger(links.unresolvedIncluded)
+        ? `; unresolved included ${links.unresolvedIncluded}; excluded by profile ${links.excludedBySnapshotProfile}`
+        : ''),
+    );
+    for (const check of health.dependencyChecks ?? []) {
+      console.log(check.name + ': ' + check.status + (check.reason ? ' (' + check.reason + ')' : ''));
+    }
+  }
   if (result.manifest.portableWiki.status !== 'ready') {
     console.warn('Portable wiki not included: ' + result.manifest.portableWiki.reason);
   }

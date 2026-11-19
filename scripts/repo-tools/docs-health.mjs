@@ -2,8 +2,151 @@
 // Done-packet reconciliation ledgers. Advisory only; not a repo-wide rewrite.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { changeNeedsLedger } from './archive-changes.mjs';
+import { collectKnowledgeViolations, resolvedLocalLink } from './knowledge-health.mjs';
 import { root } from './process.mjs';
+
+/** Content paths a lean snapshot omits on purpose. Sensitive and build excludes are not in this list. */
+export const LEAN_CONTENT_OMISSIONS = [
+  'work/changes/archive/**',
+  'work/sessions/legacy-minutes/**',
+  'evidence/runs/**',
+  'evidence/inspections/**',
+  'research/legacy-engineering/**',
+];
+
+const SKELETON_CLAIM = /skeleton\s*[—-]/gi;
+
+function globToRegExp(pattern) {
+  let source = '';
+  let index = 0;
+  while (index < pattern.length) {
+    if (pattern.startsWith('**/', index)) {
+      source += '(?:.*/)?';
+      index += 3;
+      continue;
+    }
+    if (pattern.startsWith('**', index)) {
+      source += '.*';
+      index += 2;
+      continue;
+    }
+    const char = pattern[index];
+    if (char === '*') source += '[^/]*';
+    else if ('\\^$+?.()|{}[]'.includes(char)) source += `\\${char}`;
+    else source += char;
+    index += 1;
+  }
+  return new RegExp(`^${source}$`);
+}
+
+function readLeanManifest(repo) {
+  const manifestPath = path.join(repo, 'SNAPSHOT.json');
+  if (!existsSync(manifestPath)) return null;
+  try {
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    if (manifest.profile !== 'lean') return null;
+    return manifest;
+  } catch {
+    return null;
+  }
+}
+
+function leanOmissionMatchers(repo) {
+  const manifest = readLeanManifest(repo);
+  if (!manifest) return null;
+  const declared = manifest.packaging?.excludedPatterns;
+  const patterns = Array.isArray(declared)
+    ? LEAN_CONTENT_OMISSIONS.filter((pattern) => declared.includes(pattern))
+    : LEAN_CONTENT_OMISSIONS;
+  return patterns.map(globToRegExp);
+}
+
+function occurrenceIsPath(text, index, length) {
+  let start = index;
+  while (start > 0 && !/\s/.test(text[start - 1])) start -= 1;
+  let end = index + length;
+  while (end < text.length && !/\s/.test(text[end])) end += 1;
+  const token = text.slice(start, end);
+  if (/^[a-z][a-z0-9+.-]*:/i.test(token)) return true;
+  if (token.includes('/')) return true;
+  const destination = text.lastIndexOf('](', index);
+  if (destination >= 0) {
+    const close = text.indexOf(')', destination + 2);
+    if (close >= index + length) {
+      const href = text.slice(destination + 2, close).trim();
+      if (href.includes('/') || /^[a-z][a-z0-9+.-]*:/i.test(href)) return true;
+    }
+  }
+  return false;
+}
+
+export function skeletonBanIsPathOnly(text) {
+  const matches = [...String(text).matchAll(SKELETON_CLAIM)];
+  if (matches.length === 0) return false;
+  return matches.every((match) => occurrenceIsPath(text, match.index, match[0].length));
+}
+
+function isSkeletonViolation(item) {
+  return /: banned phrasing \/skeleton\\s\*\[/.test(item);
+}
+
+function skeletonViolationIsPathOnly(repo, item) {
+  const rel = item.slice(0, item.indexOf(': banned phrasing /'));
+  const abs = path.join(repo, rel);
+  if (!rel || !existsSync(abs)) return false;
+  return skeletonBanIsPathOnly(readFileSync(abs, 'utf8'));
+}
+
+function parseBrokenLink(item) {
+  const marker = ': broken local link ';
+  const index = item.indexOf(marker);
+  if (index < 0) return null;
+  return { from: item.slice(0, index), href: item.slice(index + marker.length), item };
+}
+
+function isExpectedLeanOmission(broken, matchers) {
+  const target = resolvedLocalLink(broken.from, broken.href);
+  if (!target || target.startsWith('..') || target.startsWith('/')) return false;
+  return matchers.some((pattern) => pattern.test(target));
+}
+
+/**
+ * Split knowledge-health strings into repository regressions, lean packaging
+ * omissions, and path-only terminology exemptions. A full checkout has no
+ * SNAPSHOT.json and stays strict.
+ */
+export function classifyDocumentationFindings(repo, failures) {
+  const matchers = leanOmissionMatchers(repo);
+  const regressions = [];
+  const expectedOmissions = [];
+  const pathTerminologyExemptions = [];
+  for (const item of failures) {
+    if (isSkeletonViolation(item) && skeletonViolationIsPathOnly(repo, item)) {
+      pathTerminologyExemptions.push(item);
+      continue;
+    }
+    const broken = parseBrokenLink(item);
+    if (broken && matchers && isExpectedLeanOmission(broken, matchers)) {
+      expectedOmissions.push(broken);
+      continue;
+    }
+    regressions.push(item);
+  }
+  return {
+    schema: 'offscreen.docs-health.v1',
+    mode: matchers ? 'lean-snapshot' : 'full-checkout',
+    status: regressions.length ? 'FAIL' : 'PASS',
+    regressions,
+    expectedOmissions,
+    pathTerminologyExemptions,
+  };
+}
+
+export function documentationHealthReport(repo = root) {
+  return classifyDocumentationFindings(repo, collectKnowledgeViolations(repo));
+}
 
 const changesRoot = path.join(root, 'work', 'changes');
 const limit = 300; // Advisory review trigger; not a hard gate.
@@ -30,7 +173,31 @@ function listChangePackets(dir = changesRoot, parts = []) {
   return found;
 }
 
-const packets = listChangePackets();
+function reportKnowledge(repo, { json = false } = {}) {
+  const report = documentationHealthReport(repo);
+  const write = json ? console.error : console.log;
+  if (report.mode === 'lean-snapshot' || report.expectedOmissions.length) {
+    write(
+      `Lean omissions: ${report.expectedOmissions.length} (expected missing archive or evidence; not repository regressions)`,
+    );
+  }
+  if (report.pathTerminologyExemptions.length) {
+    write(
+      `Path terminology exemptions: ${report.pathTerminologyExemptions.length} (URL or path text, not a banned claim)`,
+    );
+  }
+  if (!report.regressions.length) {
+    write('knowledge-health: ok');
+  } else {
+    for (const item of report.regressions) console.error(item);
+    console.error(`knowledge-health: ${report.regressions.length} violation(s)`);
+    process.exitCode = 1;
+  }
+  return report;
+}
+
+function main() {
+  const packets = listChangePackets();
 
 const planEntries = packets.filter((packet) =>
   existsSync(path.join(packet.absDir, 'PLAN.md')),
@@ -108,12 +275,13 @@ if (
 } else if (process.argv.includes('--json')) {
   console.log(
     JSON.stringify(
-      {
-        checkpointReviewWords: limit,
-        packetCount: packets.length,
-        results,
-        doneWithoutReconciliationLedger: ledgerResults,
-      },
+        {
+          checkpointReviewWords: limit,
+          packetCount: packets.length,
+          results,
+          doneWithoutReconciliationLedger: ledgerResults,
+          documentationHealth: documentationHealthReport(root),
+        },
       null,
       2,
     ),
@@ -239,13 +407,9 @@ if (
   }
 }
 
-import { collectKnowledgeViolations } from './knowledge-health.mjs';
+  reportKnowledge(root, { json: process.argv.includes('--json') });
+}
 
-const knowledgeFailures = collectKnowledgeViolations();
-if (!knowledgeFailures.length) {
-  console.log('knowledge-health: ok');
-} else {
-  for (const item of knowledgeFailures) console.error(item);
-  console.error(`knowledge-health: ${knowledgeFailures.length} violation(s)`);
-  process.exitCode = 1;
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  main();
 }
