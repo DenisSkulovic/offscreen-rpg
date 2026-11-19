@@ -29,7 +29,7 @@ For significant work, the person or coordinating chat first identifies **the sma
 | Long-running independent workstreams | Distinct sessions/worktrees, only with explicit authorization | Coordination overhead, duplicated infrastructure, merge conflicts |
 | Complex cross-talk between specialists | Agent team, only when coordination itself pays off | High token spend; experimental/fragile in some clients |
 
-**No automatic agent teams.** Claude agent teams are experimental and more expensive than subagents; Cursor also bills subagent requests. A new native subagent costs real allowance, even when its final reply is short. The parent/coordinator must explain the **information gain** before suggesting expansion.
+**No unapproved agent teams.** For an explicitly authorized batch of disjoint Changes, parallel execution is a preferred schedule when it reduces wall-clock time without creating write/resource conflicts. Cursor subagents may consume additional quota and may lack write isolation; the coordinator must verify actual capabilities and use [batch execution rules](../references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). Parallel research can proceed while infrastructure installs wait; shared Kubernetes operations and final integration remain serialized. A new native subagent costs allowance; dispatch should justify expected wall-clock savings and independent scope.
 
 ## Optional native subagents: start with only two
 
@@ -69,7 +69,7 @@ Use the [assignment/receipt shape](assignments.md). Pass **approved decisions an
 
 **Convergence:** owner/architect decides among documented alternatives; update the authoritative product/technical heading; then release a fresh bounded packet. No indefinite peer-review tennis. After an initial review and one corrective pass, persistent disagreement goes to the human with evidence and options, not another automatic debate.
 
-**Parallel writes:** never allow two agents to edit the same owned files simultaneously in one checkout. Read-only comparisons may run in parallel. Independent writes need disjoint ownership, a separate Git worktree/branch, and explicit merge responsibility.
+**Parallel writes:** a user-approved Change batch may be orchestrated concurrently, but never allow two agents to edit the same owned files simultaneously in one checkout. Read-only comparisons may run in parallel. Independent writes need disjoint ownership, a separate Git worktree/branch, and explicit merge responsibility.
 
 ## Why this belongs in layer zero
 
