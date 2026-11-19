@@ -234,13 +234,15 @@ export function scanMaintenance(input) {
 
   const queueRel = 'work/changes/README.md'; // catalog, not selection
   const taskIndexRel = 'work/tasks/open/README.md';
+  const taskArchiveRel = 'work/tasks/archive/README.md';
   const workQueueRel = WORK_QUEUE_FILE;
   const designRel = 'work/designs/README.md';
   const queueTargets = markdown.includes(queueRel) ? consider(queueRel) : null;
   const taskTargets = markdown.includes(taskIndexRel) ? consider(taskIndexRel) : null;
+  const taskArchiveTargets = markdown.includes(taskArchiveRel) ? consider(taskArchiveRel) : null;
   const workQueueTargets = markdown.includes(workQueueRel) ? consider(workQueueRel) : null;
   const designTargets = markdown.includes(designRel) ? consider(designRel) : null;
-  for (const router of ['work/tasks/README.md', 'work/tasks/archive/README.md', 'work/WORK-TAXONOMY.md']) {
+  for (const router of ['work/tasks/README.md', 'work/WORK-TAXONOMY.md']) {
     if (markdown.includes(router)) consider(router);
   }
   if (!workQueueTargets) {
@@ -399,6 +401,14 @@ export function scanMaintenance(input) {
   }
   for (const rel of markdown) {
     if (!/^work\/tasks\/archive\/\d{4}-\d{2}\/[^/]+\/TASK\.md$/.test(rel)) continue;
+    const leaf = rel.slice(0, rel.lastIndexOf('/'));
+    if (!taskArchiveTargets || !covers(taskArchiveTargets, leaf)) {
+      findings.push(finding(
+        'error', 'missing-route', rel,
+        'Archived Task is not linked from work/tasks/archive/README.md.',
+        'Index the archived Task and retain its evidence references.',
+      ));
+    }
     const content = readOrNull(readText, rel);
     if (content == null) continue;
     const state = classifyChangeText(content);
