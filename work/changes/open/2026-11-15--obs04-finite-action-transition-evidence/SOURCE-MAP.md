@@ -1,0 +1,19 @@
+# OBS04 | source investigation: transition evidence without a second event store
+
+**Inspected:** 584b594, 2026-11-20. **No SQL integration was run.**
+
+## Existing authoritative transaction
+
+- `packages/application/src/campaign/action-execution-transition.ts:decideActionExecutionTransition` is a pure reducer returning waiting, interrupted (controlling world obligation or holder-change), or settled with mechanical receipt/follow-ups. The campaign transition result contains clock/state and exact revision/time.
+- `packages/application/src/campaign/action-executions.ts:settleActionExecution` calls this under an existing outer transaction; a waiting result is projection-only. For interrupted it updates `gameActionExecution.state/revision/settledAt`, inserts `gameActionExecutionEvent`, appends `storyPublicEvent`, updates campaign clock/active action, fires required world obligations or requests interruption narration and increments viewVersion. For settled it inserts `gameActionReceipt` (including outcome/effects/roll), applies supported item effects, updates execution, appends the event, applies campaign/obligations/follow-ups **in the same transaction**.
+- `packages/db/src/schema/campaign.ts:gameActionExecutionEvent` has `(executionId,executionRevision)` unique, ordinal, storyId, gameSecond, kind and label. It is not a general before/after state record. `gameActionReceipt` stores roll, effects, declarations, source plan. `storyPublicEvent` is append-only public display with unique source per story.
+- `packages/application/src/storyteller/{context-capture,capture-materialization}.ts` checks the event ID/source revision when preparing interrupted narration, so source provenance already exists. `packages/application/src/admin/situation-reads.ts` resolves action execution event refs for staff. No need to invent a second “story ledger” table.
+- Existing sources for proof: `packages/application/test/{world-obligation-transition,item-transfer-transition,eng01-item-transfer.live}.test.mjs`, `tools/api-integration/test/storyteller-worker-replay.integration.ts`.
+
+## What OBS04 should add, if evidence is really insufficient
+
+One **typed immutable transition witness** for a finite action on terminal commit, linking: `operationId`, old/new execution revision, accepted source offer and passage, old/new gameSecond and root/version, outcome and the already-executed item/obligation/follow-up references. The exact missing fields must be compared against existing receipt, event, source passage, fixed plan and campaign before adding storage. A **new event table** is unnecessary if the committed event can safely reference exact immutable source rows. But if before-state isn't reconstructable from old receipt or campaign projection, decide one narrow JSONB versioned witness on the existing event table **only after** a migration/compatibility review. No generic event sourcing or replay interpreter.
+
+**Negative transaction test:** induce rollback after event insertion, assert receipt/event/public projection/world state all roll back; execute same terminal operation twice, assert one unique revision and exactly one mechanical effect; change holder before settle and assert an interruption witness, not a successful transfer. A fake pure `decideActionExecutionTransition` test cannot prove same-SQL-transaction capture.
+
+**Risk:** “just record before and after entire campaign JSON” duplicates mutable/PII-like state and increases ambiguity. Store minimum necessary identity/digest and provenance; do not produce a second mechanical truth. [TASKS](TASKS.md) keeps schema changes blocked until missing evidence is demonstrated.
