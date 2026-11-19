@@ -30,6 +30,24 @@
 
 **HK03 example:** the 32-case Storyteller integration suite task is **Grok 4.6 Medium Standard + VERIFY** because it has a named command and a sensitive database/Temporal safety boundary. The agent need only inspect status, ensure named disposable prerequisites, run the one test and record counts. It must not treat every repository README as prerequisite reading.
 
+## Approved specialist roster (seven, not an unrestricted agent marketplace)
+
+Cursor automatically discovers custom agents from `.cursor/agents/*.md`; its descriptions influence automatic routing. Prefer **zero subagents** for a short action the parent can perform directly, and never duplicate the same context in a second agent without a distinct verification question.
+
+| Agent | Allowed model | Use exactly when | Do not confuse with |
+| --- | --- | --- | --- |
+| `economical-researcher` | Composer 2.5 Standard | A narrow source-navigation question or small general low-risk task | A full-repo audit |
+| `economical-implementer` | Grok 4.6 Low Standard | Source/test PATCH, low-risk, named symbols and accepted contract | Security/money/state-concurrency work |
+| `careful-engineer` | Grok 4.6 Medium Standard | Correctness-sensitive PATCH or authorized integration | The read-only independent reviewer |
+| `evidence-runner` | Composer 2.5 Standard | VERIFY already specifies the exact test/command, side-effect safety and receipt | A debugger: return failing evidence rather than silently fixing |
+| `documentation-integrator` | Composer 2.5 Standard | PATCH to ratified canonical docs, links or lifecycle facts with one editing owner | Gameplay design or arbitrary backlog processing |
+| `failure-localizer` | Grok 4.6 Low Standard | INVESTIGATE one observed failing stack/command whose root cause is unknown | An implementer: return a patch proposal, no edits |
+| `boundary-reviewer` | Grok 4.6 Medium Standard | Independent, **read-only** adversarial review of specified high-risk diff/commit | Another implementation pass or routine review of every task |
+
+**Dispatch algorithm:** select **needed outcome → DEPTH → risk tier → role**, not role first. If the parent already knows the fix and can do it cheaply, don't spawn a failure-localizer. If a test runner can report PASS/FAIL directly, don't ask it to investigate. Don't launch a boundary-reviewer on every tiny edit; use one for real transaction/attempt/auth/replay/fork risks, ideally after the patch. For shared worktrees, use **one writer** for one file owner and serialize follow-on reviews. Reviewers/localizers are read-only.
+
+**Output contract:** before launch provide `ROLE, DEPTH, ALLOWED MODEL, GOAL, AUTHORITY, ANCHORS, NEGATIVE, VERIFY, DO NOT, RETURN`; keep the route card concise, skip irrelevant fields for VERIFY. The parent records actual billed model and quality (tests, rework), not just the label it requested. **Do not create another specialist solely because the task domain has a new noun.** Add a role only after observing repeated source-grounded need that the seven cannot handle.
+
 ## Strict routing algorithm for the parent
 
 1. **Is this a trivial task that can be done in the parent with no new context?** Do that; subagents have startup/context overhead.
