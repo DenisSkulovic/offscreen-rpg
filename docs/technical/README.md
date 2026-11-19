@@ -6,6 +6,11 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | --- | --- |
 | What is deployed, and who calls whom? | [Topology](platform/topology.md) |
 | What may the educational laboratory practice, and what is still the current runtime? | [Distributed learning target](platform/topology.md#distributed-learning-target). A selected learning target. Not a deployed cluster, not a broker in the game, and not a replacement of [D-0001](../decisions/D-0001--modular-engine.md) |
+| Which proposed service would own a write, and is that service running? | [Proposed service ownership](platform/topology.md#proposed-service-ownership). Proposed target. The current runtime remains the modular monolith on Compose. None of the seven services is proven as a separate process |
+| What is a command, a business event, and a workflow? | [Commands, business events, and workflows](platform/execution-and-delivery.md#commands-business-events-and-workflows). The chamber outbox still wakes Temporal. A broker event is not a committed story fact |
+| Does a shared database cluster allow every service to write every schema? | [Proposed service schemas and delivery records](platform/data-and-persistence.md#proposed-service-schemas-and-delivery-records). No. A shared logical PostgreSQL cluster does not grant shared schema writes |
+| Can a replayed event apply a second inventory or currency change? | [Commands, business events, and workflows](platform/execution-and-delivery.md#commands-business-events-and-workflows). No. A consumer replay cannot authorize a duplicate currency or inventory mutation |
+| Is a service command a new player HTTP route? | [Service calls are not player routes](platform/http-api-and-client-contracts.md#service-calls-are-not-player-routes). No route was added |
 | Who is logged in, and what may they read? | [Identities and access](platform/identities-and-access.md) |
 | What must every player route agree about actor, operation id, 202, GET, and errors? | [HTTP and client contracts](platform/http-api-and-client-contracts.md) |
 | Which trust boundary may this actor cross? | [Platform trust boundaries](platform/security-and-trust-boundaries.md) |

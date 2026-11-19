@@ -1,14 +1,14 @@
 # Cross-route HTTP identity, receipt, and client-read contract
 
-**Owns:** the HTTP rules that apply across player routes and that no single controller owns: authenticated actor scope, frozen operation identity, an accepted `202` versus a committed read, GET truth versus an SSE hint, error and uncertainty recovery, and private DTO projection.
+**Owns:** the HTTP rules that apply across player routes and that no single controller owns: authenticated actor scope, frozen operation identity, an accepted `202` versus a committed read, GET truth versus an SSE hint, error and uncertainty recovery, and private DTO projection. [Service calls are not player routes](#service-calls-are-not-player-routes) says a proposed service command is not one of those routes.
 
-**Does not own:** the route inventory ([API map](../../../apps/api/README.md), [story routes](../../../apps/api/src/modules/stories/README.md), [draft and opening routes](../../../apps/api/src/modules/drafts/README.md)), Zod shapes ([contracts](../../../packages/contracts/README.md)), session policy ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), client cache and reload UX ([Commands and hints](../client/state-and-server-boundary.md#commands-and-hints)), Temporal delivery ([Story execution with Temporal](execution-and-delivery.md)), or staff grants ([Admin topology](../admin/topology-and-authorization.md)).
+**Does not own:** the route inventory ([API map](../../../apps/api/README.md), [story routes](../../../apps/api/src/modules/stories/README.md), [draft and opening routes](../../../apps/api/src/modules/drafts/README.md)), Zod shapes ([contracts](../../../packages/contracts/README.md)), session policy ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), client cache and reload UX ([Commands and hints](../client/state-and-server-boundary.md#commands-and-hints)), Temporal delivery ([Story execution with Temporal](execution-and-delivery.md)), service ownership ([Proposed service ownership](topology.md#proposed-service-ownership)), or staff grants ([Admin topology](../admin/topology-and-authorization.md)).
 
-**Status:** source-inspected at `b3113814`. The statements below are what those files do. This page adds no player right, no endpoint, and no retry. The named integration tests were read and were not re-run. No provider call was made.
+**Status:** source-inspected at `b3113814` for the headings that describe handlers. Those statements are what those files do. [Service calls are not player routes](#service-calls-are-not-player-routes) is a proposed target from 2026-11-19 and was not part of that inspection. This page adds no player right, no endpoint, and no retry. The named integration tests were read and were not re-run. No provider call was made.
 
 **Reader question:** What must a second client respect on every authenticated player route, even when the route list lives in a controller map?
 
-**Read one heading:** [actor](#authenticated-actor-scope) · [frozen id](#frozen-operation-identity) · [202 versus commit](#accepted-response-versus-committed-world) · [GET versus SSE](#get-truth-and-sse-hints) · [errors](#error-and-uncertainty-recovery) · [projection](#private-dto-projection) · [new route review](#review-a-new-route) · [unknowns](#unknowns)
+**Read one heading:** [actor](#authenticated-actor-scope) · [frozen id](#frozen-operation-identity) · [202 versus commit](#accepted-response-versus-committed-world) · [GET versus SSE](#get-truth-and-sse-hints) · [errors](#error-and-uncertainty-recovery) · [projection](#private-dto-projection) · [new route review](#review-a-new-route) · [service calls](#service-calls-are-not-player-routes) · [unknowns](#unknowns)
 
 ## Authenticated actor scope
 
@@ -170,6 +170,20 @@ Chamber inspection can read a selected intention through the developer adapter. 
 | Security | An unowned id and a missing id share 404. The body does not say that another account holds the id. | The notes say 404 means another user owns this id. |
 | Error mapping | 400, 401, 404, 409, 429, and 503 keep the meanings in [Error and uncertainty recovery](#error-and-uncertainty-recovery). | A draft 409 is handled by writing local form text over the server revision. |
 
+## Service calls are not player routes
+
+**Reader question:** Does naming a service add a player HTTP route, or turn a broker message into one?
+
+**Normative status:** proposed target, 2026-11-19. Not a description of the handlers inspected at `b3113814`. This heading adds no route, no request body, and no status code.
+
+**Owner:** this heading, for the boundary between player HTTP and a later service command. The route inventory stays in the module READMEs. Process ownership stays on [Proposed service ownership](topology.md#proposed-service-ownership). Delivery classes stay on [Commands, business events, and workflows](execution-and-delivery.md#commands-business-events-and-workflows).
+
+Current runtime: a player command is direct HTTP to the Nest API in the modular monolith. The actor, frozen operation id, 202, GET, and error headings above still govern that call.
+
+Proposed target: a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept economy, payments, or notification commands from the browser.
+
+Negative: minting a fresh player operation id to recover a lost response stays forbidden on player routes. That fresh id is not an economy causation id. A consumer replay cannot authorize a duplicate currency or inventory mutation. Inventory and currency writes stay on the economy command in [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records). This page does not add a currency or an inventory endpoint.
+
 ## Contract dependencies
 
 | This claim | Relation | Governing claim | Why a change triggers review |
@@ -178,6 +192,8 @@ Chamber inspection can read a selected intention through the developer adapter. 
 | [Frozen operation identity](#frozen-operation-identity) | constrained-by | [Five owners](../engine/lifecycle-and-compatibility.md#five-owners) | Lifecycle command identity says a retry reuses the captured operation. The HTTP rule has to keep that id. |
 | [GET truth and SSE hints](#get-truth-and-sse-hints) | co-change | [Commands and hints](../client/state-and-server-boundary.md#commands-and-hints) | Client invalidation has to keep GET as the scene. A hint payload change has to be reviewed with that client rule. |
 | [Private DTO projection](#private-dto-projection) | constrained-by | [Authentication and sessions](identities-and-access.md#authentication-and-sessions) | What the viewer may read stays the access rule. A public field that exposed another owner's stored row would violate it. |
+| [Service calls are not player routes](#service-calls-are-not-player-routes) | constrained-by | [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records) | A player HTTP replay stays on the frozen operation id. It does not become permission for a second inventory or currency write. |
+| [Service calls are not player routes](#service-calls-are-not-player-routes) | constrained-by | [Commands, business events, and workflows](execution-and-delivery.md#commands-business-events-and-workflows) | Direct HTTP, a broker event, and a Temporal workflow stay different transports. This page cannot turn a broker message into a player route. |
 
 ## Unknowns
 

@@ -1,6 +1,6 @@
 # Story execution with Temporal
 
-**Find the section:** [workflow/DB responsibility](#responsibility-at-the-database-boundary) · [commands and durable delivery](#commands-and-durable-delivery) · [decision to consequence](#from-decision-to-consequence) · [prepared continuation](#publishing-a-prepared-continuation) · [retry and uncertain effects](#retry-boundaries-and-uncertain-side-effects) · [outages and recovery](#outages-and-recovery). Read the relevant section rather than loading this entire document.
+**Find the section:** [workflow/DB responsibility](#responsibility-at-the-database-boundary) · [commands and durable delivery](#commands-and-durable-delivery) · [commands, events, and workflows](#commands-business-events-and-workflows) · [decision to consequence](#from-decision-to-consequence) · [prepared continuation](#publishing-a-prepared-continuation) · [retry and uncertain effects](#retry-boundaries-and-uncertain-side-effects) · [outages and recovery](#outages-and-recovery). Read the relevant section rather than loading this entire document.
 
 Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. Effective spending stays on [distinct authorities](./spending-and-entitlements.md#distinct-authorities). The cadence of future simulation work remains open: scheduled boundaries, lightweight ticks or a hybrid may fit different situations. Temporal coordinates durable waits and commands; a second scheduler must not independently commit the same story outcome. Canonical SQL identity and the transaction stay on [who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record). This page owns the queue, the outbox, and Temporal delivery. Sections headed Implemented are realization records of the chamber flows already described. They stay in place. The delivery contract remains [commands and durable delivery](#commands-and-durable-delivery). Chamber bench tiers, where a row exists, are [capability coverage](../../../STATUS.md#capability-coverage).
 
@@ -87,6 +87,35 @@ Signals are asynchronous notices; Temporal Updates can provide a processed respo
 
 The relay claims bounded outbox batches with short leases and releases database locks before network I/O. Polling an unpublished-message index is sufficient; no queue product is needed for that bridge. A duplicate start locates the existing execution/result; prohibit reuse of a finished live story ID. A duplicated Temporal or delivery event does not create a second committed result. The committed row stays on [story snapshot and chronology](./data-and-persistence.md#story-snapshot-and-chronology). Do not use a generic signal-with-start path for ordinary commands. If a workflow is unexpectedly closed, keep unprocessed receipts visible for controlled recovery; if the domain operation is already terminal, settle obsolete notices without restarting it. Temporal distinguishes stable Workflow IDs from individual Run IDs; target the execution chain and retain application deduplication across runs. [Workflow IDs](https://docs.temporal.io/workflow-execution/workflowid-runid).
 
+## Commands, business events, and workflows
+
+This section separates three deliveries. It does not replace [Commands and durable delivery](#commands-and-durable-delivery), and it does not deploy a broker. Service owners are [Proposed service ownership](./topology.md#proposed-service-ownership). Keys, the inbox, and schema versions are [Proposed service schemas and delivery records](./data-and-persistence.md#proposed-service-schemas-and-delivery-records).
+
+| Class | What it is | What it is not | Label |
+| --- | --- | --- | --- |
+| Authoritative command | A request the owning service executes at most once. The caller supplies the command id. The owner stores the result under that id. | Not a fact. Not a timer. Not permission for a second consumer to repeat the write. | Current runtime for player admission and in-process operations. Proposed target for a command that crosses a process boundary. |
+| Business event | An immutable fact the owner writes after its own transaction commits. Consumers may build a read model or issue their own command. | Not authorization to mutate the owner's aggregate again. Not a Temporal timer. Not a committed story fact merely because a broker accepted it. | Proposed target. Current runtime has the committed row and the outbox notice. It has no broker topic catalog. |
+| Temporal workflow | Durable orchestration: wait, wake, and retry a bounded Activity. A signal asks the workflow to reread durable state. | Not the story ledger. Not the business-event log. Not a general application bus. Task Queues are not publish/subscribe. | Current runtime for the chamber workflows named above. Proposed target keeps Temporal as the orchestrator after a process split. Workflow code still does not open another service's database. |
+
+| Path | Class | Transport | Label |
+| --- | --- | --- | --- |
+| Browser to web/API | Command or read | Direct HTTP | Current runtime |
+| API handler to an application module | Command | In-process call | Current runtime |
+| Outbox relay to Temporal | Start or wake | Poll the outbox, then a Temporal RPC | Current runtime. The implemented sections above are the chamber behavior. This Change did not re-run them. |
+| Activity to PostgreSQL | Command inside the current owner | In-process call | Current runtime |
+| One proposed service to another service's write | Command | Direct HTTP to that owner, or a durable command record the owner consumes. Delivery still passes the owner's idempotency check. | Proposed target. Not a published business event. |
+| Owner to other readers after commit | Business event | Durable outbox, then the laboratory broker | Proposed target. Not deployed. A broker message is not itself the commit. |
+| Timer, model call, image generation, notification send | Workflow and Activity | Temporal | Current runtime for story timers and scripted generation. Proposed target for a later image or notification process. |
+| Payment-processor notice | Command | Direct HTTPS into the payments owner | Proposed target. No processor is selected and no call is claimed. |
+
+Player HTTP stays on [Service calls are not player routes](./http-api-and-client-contracts.md#service-calls-are-not-player-routes). A direct HTTP command between services is not a new player route.
+
+Out-of-order and duplicate delivery, proposed target: the owner applies command id K once and stores the result. A second delivery of K returns that result. Two commands for the same aggregate carry expected versions. Version n+1 waits or conflicts until version n is recorded. It does not skip n, and a late copy of n does not run again. Two aggregates have no global order. A business event carries the version the owner committed. A consumer records that event id in its inbox before any local effect. Replaying the event does not mint a new command id.
+
+Rolling schema, proposed target: a type name ends in a version, such as `story.advanced.v1`. During a rollout the producer may emit v1 and v2. A consumer applies a version it understands, once. A version it does not understand stays unapplied. It is not rewritten into an older type. An optional field may be ignored by an older consumer. Changing the meaning of a field is a new version. Reading an old payload through a newer projection does not execute the command again.
+
+Negative: a consumer replay cannot authorize a duplicate currency or inventory mutation. Redelivering the economy command, or replaying the business event that reported the change, returns the stored result. A notification, illustration, Storyteller, or web read model may observe that fact. None of them may send a second adjust or transfer for the same causation id. The current runtime analogue is the story continuation: `commitStoryContinuation` returns before `applyStoryItemEffects` when the same transition id already matches. That path is not a currency ledger, and it is not the proposed inbox. There is no currency mutation in that function for a replay to double.
+
 ## From decision to consequence
 
 When enough participants are ready or the timer fires, a sealing Activity drains eligible admitted commands and freezes the accepted intentions/defaults in one transaction. Store a stable resolution ID. The workflow then invokes bounded context/generation Activities outside the transaction, followed by a commit Activity.
@@ -154,3 +183,11 @@ Overdue timers do not authorize a burst of unbounded inference. Honor already pu
 Recover workflow state through Temporal history, not by guessing execution from a database snapshot. If Temporal persistence is actually lost, restored PostgreSQL alone is insufficient: quarantine affected stories and reconcile controlled restart from a known committed boundary. Test worker restart separately from disaster recovery of both systems.
 
 First-response identification of an uncertain operation is the task guide [Uncertain work recovery](../../runbooks/uncertain-work-recovery.md). That guide does not change this recovery contract.
+
+## Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| [Commands, business events, and workflows](#commands-business-events-and-workflows) | constrained-by | [Proposed service ownership](./topology.md#proposed-service-ownership) | Delivery classes follow the proposed owners. A workflow cannot write another owner's schema. |
+| [Commands, business events, and workflows](#commands-business-events-and-workflows) | constrained-by | [Commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery) | The chamber outbox bridge remains the current runtime. This section does not replace those steps. |
+| [Commands, business events, and workflows](#commands-business-events-and-workflows) | constrained-by | [Proposed service schemas and delivery records](./data-and-persistence.md#proposed-service-schemas-and-delivery-records) | Idempotency keys and the inbox live with the data. Redelivery still has to return the stored result. |
