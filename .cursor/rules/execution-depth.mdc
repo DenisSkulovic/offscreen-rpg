@@ -5,15 +5,15 @@ alwaysApply: true
 
 # Cursor-only execution depth
 
-Parent MUST give every delegated task `DEPTH=VERIFY|PATCH|INVESTIGATE`. **Depth is not risk or model effort.** A money-sensitive but fully specified test is `VERIFY` with Grok 4.6 Medium, not a broad audit. Allowed model configurations remain in [Cursor cost policy](../../.agents/references/cursor-model-budget-policy.md).
+Parent MUST give every delegated task `DEPTH=VERIFY|PATCH|INVESTIGATE` plus a selected microtask T-ID when TASKS.md exists. **Default model is Composer Standard for parent and child.** **Depth is not risk or model effort.** A money-sensitive but fully specified, safely isolated test is `VERIFY` with Composer Standard; risk controls live in approved preconditions, not model price. Allowed model configurations remain in [Cursor cost policy](../../.agents/references/cursor-model-budget-policy.md).
 
 - **VERIFY:** run the given command/procedure and record factual evidence. Read only the handoff, exact safety preconditions and necessary named runbook heading. Check git status; run the specified check once. No broad wiki/code discovery, speculative fixes, or unrelated tests. If blocked, make at most one error-directed diagnostic, record FAIL/NOT-RUN and stop. No silent promotion to PATCH.
-- **PATCH:** implement an approved bounded change. Read the selected Change/route card, one relevant authority heading and 2–5 named source/test anchors. Then edit, run focused normal/negative proof, reconcile affected docs and required closure guards. Expand reading only for a concrete conflict, and say which uncertainty justified it.
+- **PATCH:** implement ONE owner-selected, planner-resolved microtask (or one tiny Change when TASKS.md is unnecessary). Read the selected Change/route card, one relevant authority heading and 2–5 named source/test anchors. Then edit, run focused normal/negative proof, reconcile affected docs and required closure guards. Expand reading only for a concrete conflict, and say which uncertainty justified it.
 - **INVESTIGATE:** only for an explicitly unresolved source/design question. Search narrowly, compare evidence and return the answer/owner or a proposed bounded Change. No unsolicited full-repo audit or speculative code edits.
 
 **Stop searching** when owner, contract and negative case are known. Do not preload global skills, guard implementations or Markdown parsers. Run a guard first; inspect its implementation only if the error actually requires it. Prefer slices/symbols to large entire files. Do not spawn children to rediscover a parent's findings.
 
-On a mismatch, report exact file/symbol, failed prerequisite and suggested narrow next action. Parent may issue a **new** scoped task; the child may not silently upgrade depth, model, speed or effort. Never High/Fast/Grok 4.7/Auto.
+On a mismatch, report exact file/symbol, failed prerequisite and suggested narrow next action to ChatGPT planner via parent. No self-upgrade to Grok. Parent may issue a **new** scoped task; the child may not silently upgrade depth, model, speed or effort. Never High/Fast/Grok 4.7/Auto.
 
 **Return:** DEPTH, command/edits, result/counts, actual checks, meaningful negative, blocker, source/commit and any justified extra reads. Unknown cost/tokens remain unknown.
 
