@@ -1,5 +1,7 @@
 # DIST04 | Optional post-commit fact relay; the Temporal wake stays a direct RPC
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** optional Rabbit derived projection; never broker-to-Temporal transport. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
+
 **State:** Proposed. Not Ready and not selected (2026-11-19). AUD01 replaced the old implementation semantics. That replacement is not implementation and is not Done.
 **Kind:** implementation
 **Execution:** Not authorized. Select only if a consumer is wanted after DIST02's contract, and only with the cluster lock held by one owner.
