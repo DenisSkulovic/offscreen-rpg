@@ -140,3 +140,18 @@ Parallel execution: K8S03, K8S04, and K8S09 write disjoint paths at the same tim
 **Orchestration:** after BOOT01 reconciles source ownership, BOOT02 and BOOT03 may run in separate Cursor worktrees; coordinate `packages/application/src/stories/start.ts` and package pin handling via a single integrator. BOOT03's initialization/publication edits overlap DATA03, so serialize those files and DB migrations. BOOT04 can develop read-only test scaffolding concurrently but may pass only when all real dependencies are integrated. No source-package imports in runtime replica Pods. In-flight Cursor branches take precedence for file ownership.
 
 **Remaining pre-turn gap:** model execution result handoff back to Game Authority, provider attempt custody, scene/canon proposal validation and complete integrated post-fork proof. The next design pass will refine the remote Storyteller task and publication contract against `DIST05`, `ARCH05`, `DATA06`; it must not be implicitly swallowed by BOOT04.
+
+## DISTURN | Storyteller execution and publication bundle (planned 2026-11-19)
+
+[**D4 source-grounded design**](../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) specifies an independent Storyteller execution worker, durable task/attempt custody, role-scoped canonical reads and Game Authority's publication transaction. Current `createStorytellerRuntime.complete` combines execution/publication; existing ledger states and generation records must be retained. These packets are **not selected** and must not interrupt Cursor's Kubernetes work.
+
+| Change | Gate | Parallel execution | Outcome |
+| --- | --- | --- | --- |
+| [STORY01 custody/publication contract](open/2026-11-19--story01-ratify-task-custody-and-publication-contract/CHANGE.md) | DIST01, ARCH03/05 alignment | parallel-research, serial shared docs | Freeze task/result refs, attempts, GA writer and workflow phases |
+| [STORY02 task/result facade](open/2026-11-19--story02-private-task-and-result-custody/CHANGE.md) | STORY01, DIST03 | parallel-write | Scoped task fetch, persistent attempt claim, idempotent proposal save |
+| [STORY03 executor/workflow split](open/2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md) | STORY02, DIST04/05, Temporal | depends-on, shared runtime/workflows | Distinct executor Task Queue and GA publication Activity |
+| [STORY04 cross-service memory and publish proof](open/2026-11-19--story04-cross-service-memory-and-publish-proof/CHANGE.md) | STORY02/03, DATA03/05/06, Kubernetes | serial integration | Frozen context + real S3 reads + validated fake scene publication |
+
+**Integration ownership:** DIST05 and STORY03 deliberately overlap; when one is selected, the orchestrator must reconcile the other packet's scope, not implement two separate workflows. STORY02 may be built in an isolated worktree alongside DATA02/BOOT02 after contracts settle. Canonical Storyteller/Temporal files and live cluster tests require one owner. STORY04 and DIST06 are related integration gates; run one shared evidence harness with explicit partial-vs-complete claims. Do not grant model executor broad game-table write access as a shortcut; do not let Temporal retries launch a second uncertain paid request.
+
+**After this bundle:** one final design pass should specify *complete* zero-cost golden-path/fork acceptance, migration/release join gates and a separately approved live-provider proof. Image generation, Stripe/customer billing, remote notifications and full HA/load remain deferred.
