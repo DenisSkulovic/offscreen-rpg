@@ -1,5 +1,7 @@
 # WIKI18 | Composer tasks: measure total cost per accepted patch
 
+**Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
+
 **Baseline:** 584b594 plus newer Composer-first policy and task families committed after it. **State:** Implementing; trace parser/route card already landed, no actual paired paid trace. **Default model:** Composer Standard. Source: `.agents/references/{cursor-model-budget-policy,composer-first-execution,change-packet-profiles}.md`, `.cursor/hooks/{model-budget-guard.cjs,model-budget-guard.test.cjs}`, `scripts/repo-tools/` trace parser, task receipts. Keep one true cost owner.
 
 ## T01 | Enforce default Composer and test guard | PLANNER-READY, VERIFY
