@@ -1,0 +1,188 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-edge
+  labels:
+    offscreen.rpg/lab: disposable
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: synthetic-web
+  namespace: lab-edge
+  labels:
+    offscreen.rpg/lab: disposable
+spec:
+  type: ClusterIP
+  selector:
+    app: synthetic-web
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synthetic-web
+  namespace: lab-edge
+  labels:
+    app: synthetic-web
+    offscreen.rpg/lab: disposable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: synthetic-web
+  template:
+    metadata:
+      labels:
+        app: synthetic-web
+        offscreen.rpg/lab: disposable
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-u", "/app/server.py"]
+          env:
+            - name: ROLE
+              value: web
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: app
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: app
+          configMap:
+            name: synthetic-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: synthetic-api
+  namespace: lab-edge
+  labels:
+    offscreen.rpg/lab: disposable
+spec:
+  type: ClusterIP
+  selector:
+    app: synthetic-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synthetic-api
+  namespace: lab-edge
+  labels:
+    app: synthetic-api
+    offscreen.rpg/lab: disposable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: synthetic-api
+  template:
+    metadata:
+      labels:
+        app: synthetic-api
+        offscreen.rpg/lab: disposable
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-u", "/app/server.py"]
+          env:
+            - name: ROLE
+              value: api
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: app
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: app
+          configMap:
+            name: synthetic-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: absent-backend
+  namespace: lab-edge
+  labels:
+    offscreen.rpg/lab: disposable
+spec:
+  type: ClusterIP
+  selector:
+    app: absent-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

@@ -1,0 +1,55 @@
+# Pinned Traefik Helm chart 42.4.1 / Traefik Proxy v3.7.19.
+# Gateway API only. ClusterIP only. No Ingress, no community ingress-nginx provider.
+image:
+  tag: v3.7.19
+  digest: sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4
+deployment:
+  replicas: 1
+ingressClass:
+  enabled: false
+api:
+  dashboard: false
+  insecure: false
+providers:
+  kubernetesCRD:
+    enabled: false
+  kubernetesIngress:
+    enabled: false
+  kubernetesIngressNGINX:
+    enabled: false
+  kubernetesGateway:
+    enabled: true
+    experimentalChannel: false
+    statusAddress:
+      service:
+        enabled: false
+gateway:
+  enabled: false
+gatewayClass:
+  enabled: true
+  name: lab-traefik
+service:
+  spec:
+    type: ClusterIP
+ports:
+  web:
+    forwardedHeaders:
+      insecure: false
+      trustedIPs: []
+    transport:
+      respondingTimeouts:
+        readTimeout: 10s
+        writeTimeout: 10s
+        idleTimeout: 30s
+  websecure:
+    expose:
+      default: false
+    http:
+      tls:
+        enabled: false
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
