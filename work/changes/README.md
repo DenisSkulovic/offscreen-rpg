@@ -125,3 +125,18 @@ Parallel execution: K8S03, K8S04, and K8S09 write disjoint paths at the same tim
 **Concurrency plan:** DATA01 reading/planning and DATA05 configuration research can proceed during infrastructure builds. After ratification, DATA02 and DATA05 have mostly disjoint ownership, but share S3-adapter integration if modified. DATA03 shares publication files with DIST05 and must be serialized at that join. DATA04 can develop contracts/tests concurrently with DATA03 implementation in a separate worktree but cannot merge or claim historical success before checkpoints land. DATA06 is downstream of historical branch rules and Storyteller worker extraction. One coordinator owns migration ordering, common technical headings and the shared cluster.
 
 **Additional design still outstanding:** authored campaign bootstrap across network boundaries, actual remote Storyteller proposal/usage custody, a single durable integrated fake-turn fixture plus eventual budgeted live-turn permission. The earlier [DIST06](open/2026-11-19--dist06-first-distributed-turn-integration/CHANGE.md) remains a *pre-fork* slice. Complete DISTURN POC acceptance needs DATA03/04/05/06 and follow-up integrated proof.
+
+## DISTURN | Campaign bootstrap bundle (planned 2026-11-19)
+
+**Design source:** [D3 candidate/start contract](../designs/open/distributed-turn-poc/D3-CAMPAIGN-BOOTSTRAP.md). Source-observed `PUT /api/stories/:id/start` requires a successful, owned candidate and `expectedDraftRevision`; a pinned Start package **does not replace** that candidate. Existing creation routes remain. The following packets are **unselected** and do not alter the current Cursor K8S batch.
+
+| Change | Execution class | Prerequisite | Bounded outcome / collision owner |
+| --- | --- | --- | --- |
+| [BOOT01 ratify candidate and start ownership](open/2026-11-19--boot01-ratify-candidate-and-start-ownership/CHANGE.md) | parallel-research, serial docs join | DIST01/ARCH02 ownership | Preserve draft→candidate→start and assign Game Authority start writer |
+| [BOOT02 pinned package import job](open/2026-11-19--boot02-published-fixture-package-s3-job/CHANGE.md) | parallel-write, serial shared S3 cluster | BOOT01; DATA05/K8S05 for live proof | Trusted fixture import from content directory once, output digest/root pins |
+| [BOOT03 Game Authority start admission](open/2026-11-19--boot03-game-authority-start-admission/CHANGE.md) | parallel-write with BOOT02, serialized with DATA03 | BOOT01, DIST03, DATA03 | Existing start and idempotency across private Nest→GA boundary |
+| [BOOT04 distributed creation E2E](open/2026-11-19--boot04-distributed-creation-e2e-fixture/CHANGE.md) | fixture prep parallel; integration serial | BOOT02/03, K8S11, DATA03 | Login→draft→successful scripted candidate→start→SSR scene1, real S3+SQL checkpoint |
+
+**Orchestration:** after BOOT01 reconciles source ownership, BOOT02 and BOOT03 may run in separate Cursor worktrees; coordinate `packages/application/src/stories/start.ts` and package pin handling via a single integrator. BOOT03's initialization/publication edits overlap DATA03, so serialize those files and DB migrations. BOOT04 can develop read-only test scaffolding concurrently but may pass only when all real dependencies are integrated. No source-package imports in runtime replica Pods. In-flight Cursor branches take precedence for file ownership.
+
+**Remaining pre-turn gap:** model execution result handoff back to Game Authority, provider attempt custody, scene/canon proposal validation and complete integrated post-fork proof. The next design pass will refine the remote Storyteller task and publication contract against `DIST05`, `ARCH05`, `DATA06`; it must not be implicitly swallowed by BOOT04.
