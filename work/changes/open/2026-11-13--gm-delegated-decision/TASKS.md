@@ -1,5 +1,7 @@
 # GM07 | Composer dispatch: consented published withdrawal
 
+**Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
+
 **Source baseline:** 584b594; **state:** Ready for one bounded withdrawal proposal, **not yet a durable integrated fallback**. **Model:** Composer Standard. Authoritative product choice: docs/product/gameplay/time-and-autonomy.md; technical: docs/technical/engine/chronology-and-activities.md.
 
 **Source-backed distinction:** `packages/application/src/campaign/delegated-decision.ts:admitDelegatedDecision` is already a **pure reducer** with 20-real-minute `PREAPPROVED_WITHDRAWAL_WINDOW_MS`, exactly two published choices, consent version/revocation, idempotent settlement, refusal of combat/model work. Search at 584b594 found only an export in `stories/index.ts`, not a durable expiry scheduler or SQL integration. `packages/db/src/schema/stories.ts:storyPassage.decisionPlan/responseDueAt` is an older timing mechanism; it does **not** automatically persist new GM07 consent or provenance. `packages/contracts/src/stories.ts` exposing dueAt/defaultOptionId is a read projection, not proof of the GM07 scheduler. Don't substitute the old default-choice mechanics without policy.
