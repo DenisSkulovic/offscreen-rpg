@@ -134,6 +134,43 @@ function frequencyRecord(frequencies: ReadonlyMap<string, number>) {
   );
 }
 
+/**
+ * Drop a current identity that matched only a shared title alias when another
+ * current identity matched that alias plus a further query term. The cue has
+ * to be in the stronger identity's matches, and every weaker match has to be
+ * a term of the stronger identity's title. Other kinds stay.
+ */
+export function suppressAmbiguousAliasIdentities<
+  T extends {
+    unit: { kind: string; title: string };
+    matchedTerms: readonly string[];
+  },
+>(candidates: readonly T[]): T[] {
+  const identities = candidates.filter(
+    (candidate) => candidate.unit.kind === 'identity',
+  );
+  if (identities.length < 2) return [...candidates];
+  const suppressed = new Set<T>();
+  for (const weaker of identities) {
+    const weakerTerms = weaker.matchedTerms;
+    const dominated = identities.some((stronger) => {
+      if (
+        stronger === weaker ||
+        stronger.matchedTerms.length <= weakerTerms.length
+      ) {
+        return false;
+      }
+      if (!weakerTerms.every((term) => stronger.matchedTerms.includes(term))) {
+        return false;
+      }
+      const strongerTitle = new Set(terms(stronger.unit.title));
+      return weakerTerms.every((term) => strongerTitle.has(term));
+    });
+    if (dominated) suppressed.add(weaker);
+  }
+  return candidates.filter((candidate) => !suppressed.has(candidate));
+}
+
 function snippet(body: string, queryTerms: readonly string[]) {
   const segments = body
     .split(/\r?\n+/)
@@ -279,12 +316,13 @@ export class LexicalStoryIndex {
         score: { provider: 'field-lexical.v1', value: score },
       });
     }
-    scored.sort(
+    const ranked = suppressAmbiguousAliasIdentities(scored);
+    ranked.sort(
       (left, right) =>
         right.score.value - left.score.value ||
         left.unit.path.localeCompare(right.unit.path),
     );
-    const examined = scored.slice(0, query.maxExaminedUnits);
+    const examined = ranked.slice(0, query.maxExaminedUnits);
     let examinedBytes = 0;
     const withinBytes: StoryRetrievalCandidate[] = [];
     let skippedOversized = 0;
@@ -302,7 +340,7 @@ export class LexicalStoryIndex {
       withinBytes.push(candidate);
     }
     const omissions = [
-      ...(scored.length > examined.length ? (['unit-limit'] as const) : []),
+      ...(ranked.length > examined.length ? (['unit-limit'] as const) : []),
       ...(stoppedByByteLimit ? (['byte-limit'] as const) : []),
       ...(skippedOversized ? (['oversized-unit'] as const) : []),
     ];
@@ -329,7 +367,7 @@ export class LexicalStoryIndex {
         },
         normalizedTerms: queryTerms,
         termsTruncated: allTerms.length > queryTerms.length,
-        matchedUnits: scored.length,
+        matchedUnits: ranked.length,
         returnedUnits: Math.min(withinBytes.length, query.maxResults),
       },
     });
