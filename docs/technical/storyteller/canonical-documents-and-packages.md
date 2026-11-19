@@ -1,6 +1,6 @@
 # Canonical documents and packages
 
-**Quick route by question:** [who owns a fact](#one-owner-per-kind-of-truth) · [pinned worlds](#reusable-world-libraries-and-campaign-overlays) · [pinned rules](#reusable-rule-libraries) · [import and start](#campaign-bootstrap) · [document identity and visibility](#document-envelope) · [publication and content-addressed storage](#publication-across-files-and-the-execution-ledger) · [a summary does not replace a passage](#extract-summarize-and-revise-deliberately) · [recovery and the visibility fence](#recovery-inspection-and-portability) · [what a task reads](context-selection-and-recall.md#what-source-enters-this-task) · [author a content package](../../runbooks/content-package-authoring.md). Provider budget and request packing stay in [Request context and cost](request-context-and-cost.md). This page is package, revision, and publication authority. [The storyteller route](context-and-memory.md) is the short index. [Progress](../../../STATUS.md) owns demonstrated coverage.
+**Quick route by question:** [who owns a fact](#one-owner-per-kind-of-truth) · [scene, passage, checkpoint, and leaf](#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19) · [pinned worlds](#reusable-world-libraries-and-campaign-overlays) · [pinned rules](#reusable-rule-libraries) · [import and start](#campaign-bootstrap) · [document identity and visibility](#document-envelope) · [publication and content-addressed storage](#publication-across-files-and-the-execution-ledger) · [a summary does not replace a passage](#extract-summarize-and-revise-deliberately) · [recovery and the visibility fence](#recovery-inspection-and-portability) · [what a task reads](context-selection-and-recall.md#what-source-enters-this-task) · [author a content package](../../runbooks/content-package-authoring.md). Provider budget and request packing stay in [Request context and cost](request-context-and-cost.md). This page is package, revision, and publication authority. [The storyteller route](context-and-memory.md) is the short index. [Progress](../../../STATUS.md) owns demonstrated coverage.
 
 Status: mixed implementation and target contract. Immutable local storage, descriptive admission, canonical narrative passages, pinned package import/Start, narrative-choice document hints, active-scene recall cues, exact world/rule sections and bounded multi-round exploration are implemented. Ordinary admissions can select rule topics and narrative dependencies; ordinary gameplay still defaults to one-shot tasks with tools disabled. Mechanical choices lack explicit document dependencies, selected bodies can be omitted during packing, and sustained recall remains unproved. PostgreSQL still owns live mechanical state/receipts; the structured-document ownership in [One owner per kind of truth](#one-owner-per-kind-of-truth) is a migration target. Use [packages/storyteller](../../../packages/storyteller/README.md) for the implemented package and [progress](../../../STATUS.md) for evidence. The [2026-11 engine-model inspection](../../../evidence/inspections/doc01-retained-observations/engineering/engine-model.md) is dated evidence, not the current owner. [Canonical storage](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#canonical-campaign-storage) and [memory/recall](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall) own remaining work. Read [concepts](../../product/foundations/concepts.md): there are no chapters.
 
@@ -37,13 +37,62 @@ Keep a small database control layer for ownership, stable references, revision f
 
 ## Scene-rooted canon and fork-safe publication | selected target (2026-11-19)
 
-Each committed scene's branchable checkpoint must identify **both** its reconstructable authoritative mechanical state and the exact committed **campaign document manifest root** visible at that point, together with applicable pinned rules, source-world and Storyteller/profile versions. These are logical references, not a mandate to duplicate every document or SQL row after every scene. Historic canon is a versioned immutable view: the latest campaign root cannot answer what was true at an older scene. A quiet mechanical change between narrative publications remains authoritative and must be represented by its exact state-history boundary; it cannot be silently derived from a stale narrative root.
+This heading is the scene-knowledge contract. It is a selected outcome, not a completed implementation and not a chosen snapshot encoding. The engine remains the single consistency boundary for the committed pair below. A Storyteller process may propose descriptive changes. It does not commit the game-state checkpoint or the canon root. Process ownership stays on [ARCH02](../../../work/changes/archive/2026-11/other/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md). This Change does not install a search index, Cognee, or a vector store, and it does not migrate storage.
 
-A fork from scene N starts a separate campaign/story identity with the checkpoint's valid state and document-root ancestry. It may reuse immutable ancestor objects and pinned world-library roots, but its new document versions, authoritative state, working summaries and private narrative directions belong to the fork's own subsequent history. Access control, document visibility and **character knowledge versus world truth** must be checked in that branch; the fact that the ancestor's source is physically shared does not grant access to a later parent or sibling revision. No universal live mutable `campaign/` directory and no global latest-by-document-ID lookup may merge divergent branches.
+### Scene, passage, checkpoint, and leaf
 
-A scene publication can admit the Storyteller's bounded descriptive document changes and supported mechanical effects against a captured state/document revision fence. The committed scene checkpoint names the resulting state and root; a failed or superseded proposal leaves neither partial canon nor half-published mechanical effect. Immutable passage source, provenance, optional media, document revisions and the exact game-state checkpoint remain associated with the scene for faithful reading. In the currently selected storage direction, object storage retains immutable content and PostgreSQL coordinates atomic publication; **object storage or filesystem paths are not themselves a transaction across services**.
+These four records stay distinct. Naming one does not create the others.
 
-This is a binding architectural **outcome**, not a completed implementation or a preselected snapshot encoding. Detailed lifecycle, branch namespace/identity mapping, manifest retention, access/knowledge scopes, indexing watermarks and migration of the current SQL/document split are reserved for [ARCH03](../../../work/changes/open/2026-11-19--arch03-branch-scoped-storyteller-knowledge/CHANGE.md), coordinated with [ARCH02](../../../work/changes/archive/2026-11/other/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md). Do not assume every scene requires a fresh model-generated summary or wholesale file copies.
+| Record | What it is | What it is not |
+| --- | --- | --- |
+| Scene | The in-fiction situation: a conversation, visit, confrontation, or other stretch of experience. It may contain several passages and decisions, or none. | A database row, a model call, a book page, or a mandatory start/end clock. |
+| Published passage | One immutable source of admitted narration, with branch order and provenance. It is evidence of what was shown. | The mechanical state, a summary, or a client page. |
+| Game-state checkpoint | The engine's reconstructable mechanical record at one admissible committed boundary: capabilities, consequential world facts the engine owns, possession and counted resources when that world has them, fictional time, commitments, control revision, and provenance. | A passage, a prose recap, or a client leaf. |
+| Book leaf | The client's reading surface. One leaf may show part of a passage, a whole passage, or a continuous flow. | A commit, a canon root, or a fork point. Turning a leaf does not advance the story. |
+
+Product vocabulary for a scene and a passage stays in [concepts](../../product/foundations/concepts.md). The book leaf stays a client surface. This table does not add a chapter.
+
+### The committed pair
+
+A **committed scene** is an admissible boundary where one engine commit binds two references together:
+
+1. That scene's game-state checkpoint.
+2. That scene's **canon root**: the campaign document manifest visible at that same boundary.
+
+The same tuple also names the world-library roots, rule-package roots, and Storyteller-bundle revision that tasks at that boundary were allowed to use, plus the narrative revision and control revision that fenced the commit. These are logical references. They are not a demand to copy every document or SQL row after every scene.
+
+The latest campaign root cannot answer what was true at an older scene. A quiet mechanical change between narrative publications remains authoritative when the engine committed it. Recover it from that checkpoint. Do not infer it by rereading an older passage, and do not treat a stale narrative root as the mechanical state. No fresh model-generated summary and no wholesale file copy is required for the boundary to exist.
+
+A failed or superseded proposal leaves neither partial canon nor a half-published mechanical effect. Immutable passage source, provenance, optional media, document revisions, and the checkpoint stay associated with the boundary for faithful reading. Object storage may retain immutable content, and PostgreSQL may coordinate the commit. **Object storage or filesystem paths are not themselves a transaction across services.**
+
+### What is true, whose belief, when, and which branch
+
+Every retrievable claim answers four questions. A document may contain several claims. A top-level canon label does not answer them for every sentence.
+
+| Question | Required answer |
+| --- | --- |
+| What is asserted? | The statement, plus its epistemic kind: admitted world fact, historically observed event, reported belief or rumor, derived interpretation or summary, private Storyteller possibility, or exact published source. |
+| Whose belief is it? | The holder: this branch's world canon, a named actor, the player-known view, or the Storyteller's private notes. |
+| When did it become valid? | The committed-scene boundary where it became effective. A later admission on that branch supersedes its present usefulness and leaves the old version intact. |
+| Which branch may see it? | The branch identity. Ancestor material is visible only through the canon root at or before the branch's fork boundary. |
+
+Stable ids and content hashes are assigned by the application. A friendly path or a title is not a citation. A rumor is authoritative evidence that someone asserted something. It is not the asserted fact, and it cannot grant a mechanical effect. A summary does not replace its sources. A private possibility is not canon. Pretrained model recollection is neither source canon nor evidence.
+
+Character knowledge and world truth are different holders. Access is checked on the branch that is reading. Shared stored bytes do not grant that branch a later parent revision, a sibling revision, or another story's secret.
+
+### Forks use that pair and nothing later
+
+A fork from any committed scene starts a new story identity and a new causation namespace. It initializes from **that scene's checkpoint and that scene's canon root together**. It may reuse immutable ancestor objects and the world-library and rule roots pinned in that tuple. It must not inherit later parent facts or sibling facts. Its later documents, state, summaries, and private directions belong to the fork alone.
+
+Parent workflows still in flight, unsettled rolls, and running parent timers stay on the parent. They are not completed facts on the fork. Creating the fork performs no inference. Story-scoped identifiers are remapped into the fork. They must not alias the parent's later rows. Attachments remain with the publication that introduced them and are visible on the fork only when that publication is inside the ancestor root. Later changes to parent membership do not rewrite the fork's access.
+
+A full snapshot, a persistent snapshot plus deltas, and a versioned immutable manifest are all acceptable encodings when they reconstruct the same pair and cannot read a later parent or sibling fact. This contract does not choose an encoding. It does not add a second mutable owner beside the engine checkpoint and the committed canon root. No universal live `campaign/` directory and no global latest-by-document-id lookup may merge divergent branches.
+
+The current journal and the current-only fork do not implement historical reconstruction. See [Story snapshot and chronology](../platform/data-and-persistence.md#story-snapshot-and-chronology) and [Forked continuities](../engine/lifecycle-and-compatibility.md#forked-continuities).
+
+### Indexes are not authority
+
+Search indexes, Cognee, and vector stores are rebuildable aids. They are not a copy of the checkpoint or the canon root. This Change does not install them. Deleting an index leaves the pair intact. A rebuilt index, a renamed identity document, or a shared graph must not make a later parent or sibling fact visible as this branch's present canon. The read rule is [Fork-scoped retrieval and task input](context-selection-and-recall.md#fork-scoped-retrieval-and-task-input--selected-target-2026-11-19).
 
 ## Reusable world libraries and campaign overlays
 
@@ -154,7 +203,7 @@ Direction becomes reality only through ordinary admission. If the Storyteller de
 
 ## Document envelope
 
-Every stored version has validated metadata: `documentId`, `kind`, `schemaVersion`, `revision`, `visibility`, `authority`, source/derivation references, and any relevant story-time/sequence coverage. The commit manifest binds it to its campaign, path, content hash, author operation and previous version. IDs and hashes are assigned or checked by the application, not accepted as self-certifying model claims.
+Every stored version has validated metadata: `documentId`, `kind`, `schemaVersion`, `revision`, `visibility`, `authority`, source/derivation references, and any relevant story-time/sequence coverage. A claim that play can retrieve also records its branch origin and the committed-scene boundary where it became valid. Those two fields answer the questions in [Scene-rooted canon and fork-safe publication](#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19). The commit manifest binds the version to its campaign, path, content hash, author operation and previous version. IDs and hashes are assigned or checked by the application, not accepted as self-certifying model claims.
 
 Links reference document IDs plus revisions/sections where evidence requires an exact version. Search and excerpts return the actual version/hash read. A mutable friendly path never serves as a frozen citation. A document can contain several claims with different attribution; a top-level `canon` label must not turn every quoted rumor into established truth.
 
@@ -232,7 +281,7 @@ For a turn that establishes required narrative canon:
 
 1. Validate a proposed change set against captured sources, document revisions and allowed content/mechanics. Build new immutable document objects and a candidate manifest outside the database transaction.
 2. Store those immutable objects and verify their hashes/durability before publication. Never overwrite a currently published object in place. The storage adapter must define its durable-write behavior; file-close alone is not an unconditional crash-safety guarantee.
-3. In one short database transaction, lock/recheck the campaign's relevant state and current document-root revision, deduplicate the operation, and commit admitted effects/publication references, the new manifest root and an indexing outbox notice. Do not perform object-store I/O or inference under that lock.
+3. In one short database transaction, lock/recheck the campaign's relevant state and current document-root revision, deduplicate the operation, and commit admitted effects/publication references, the new manifest root and an indexing outbox notice. That transaction is the engine's consistency boundary for the checkpoint and the canon root together. A Storyteller process may have proposed the descriptive changes. It does not commit either half of the pair. Do not perform object-store I/O or inference under that lock.
 4. Index after commit. Readers resolve only objects reachable from their captured published manifest. A staged but unpublished document is never story evidence.
 
 A crash before the transaction leaves unreachable staged objects; cleanup may remove them after a grace period and reachability check. A lost acknowledgement after commit is recovered through the saved operation/root without applying effects again. Concurrent conflicting changes fail their expected-root check; any retry rebuilds against an explicit fresh base. A background summary cannot overwrite a newer document by last-write-wins.
