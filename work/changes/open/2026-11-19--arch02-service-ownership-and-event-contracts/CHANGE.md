@@ -7,7 +7,7 @@
 
 ## Outcome
 
-Ratify proposed service ownership for web/API, engine, storyteller, illustrations, economy, payments, notifications, including the separation between authoritative commands, business events, and Temporal workflows.
+Ratify proposed service ownership for web/API, engine, storyteller, optional media generation, SaaS billing/entitlements if warranted, notifications, including the separation between authoritative commands, business events, and Temporal workflows.
 
 ## Authority and prerequisites
 
@@ -19,14 +19,16 @@ Ratify proposed service ownership for web/API, engine, storyteller, illustration
 
 ## Planned implementation or specification delta
 
-Document which service owns each entity and write, durable outbox/inbox and dedup obligations, event IDs, aggregate/version keys, schema evolution, cross-service consistency and provider spending; classify direct HTTP calls vs async broker events vs Temporal orchestration. Explicitly distinguish current runtime from target. No code or made-up game features.
+**First reconcile proposed services against the actual game vision**: [vision](../../../../docs/product/foundations/vision.md#the-d-d-foundation), [D&D rules](../../../../docs/product/gameplay/rules.md#world-independent-foundation) and [engine capabilities](../../../../docs/technical/engine/mechanics-and-capabilities.md). The LLM Storyteller fills the Dungeon Master role (scene interpretation, narration and proposals), while the deterministic engine validates rules, rolls dice, advances admitted fictional time and commits consequential typed world/character facts. This is a text-first, world-neutral D&D-like game, not an economy simulator. No mandatory gold, object census, inventory, shops, farming or employment systems; when a narrative item or equipment matters, record only the relevant supported possession/effect under game authority. An optional list of gear is legitimate D&D bookkeeping, not a separate Economy microservice. Respect pinned revised-fifth-edition SRD 5.2.1 subset; do not claim full edition coverage.
+
+**Propose, do not assume, the actual process split:** web and API/identity; deterministic game authority; Storyteller/DM orchestration and model activity workers; optional illustration/media processing; notifications/delivery; real-world SaaS billing/entitlements only if deployment isolation justifies it. The last two are platform concerns, not fictional world systems. Other boundaries may be consolidated or split with justified scale, failure isolation or ownership evidence. No service per NPC, item, faction, inventory or fictional economy. For each chosen process, document responsibility, authoritative write ownership, ingress and egress commands/events, synchronous calls, Temporal workflow participation and dependency failure semantics. Document durable outbox/inbox, deduplication, event IDs, aggregate/version keys, schema evolution, consistency and provider-spend authority. Explicitly distinguish selected target from current modular monolith. No code or invented gameplay features.
 
 **Out of scope:** full product rollout, shared production cluster, paid LLM or image calls, real Stripe calls, full game-service extraction. Reuse existing source owners and don't create duplicate planning authority.
 
 ## Acceptance: positive and negative
 
-- **Positive:** A table for every proposed service showing authoritative data, incoming commands, produced events, dependents and failure policy; negative scenario for duplication/out-of-order and rolling schema changes. Technical indexes and maps validated.
-- **Negative:** A consumer replay cannot authorize duplicate currency or inventory mutation; a shared logical PostgreSQL cluster does not grant shared schema writes.
+- **Positive:** A justified service-boundary table (including rejected Economy and optional media/billing), authoritative write and world-fact ownership, commands/events, dependents and failure policy; negative scenarios for duplicate dice/effects, fictional-money assumptions in a microbe story, out-of-order events and schema changes. Validate links and canonical docs.
+- **Negative:** A replay cannot duplicate an admitted D&D roll, item transfer or other committed effect; an imaginary market/economy cannot be introduced as a service. One PostgreSQL cluster does not grant arbitrary cross-service writes.
 - **Documentation is mandatory:** update precisely the source-owner headings above, relevant wiki index and runbooks, factual status/evidence only after actual verification. Do not treat this packet itself as documentation completion.
 - **Evidence:** exact commands/results, versioned dependencies, resource costs, links to test fixtures, observed failures, date and environment. Run repository change/markdown/wiki guards as applicable.
 
