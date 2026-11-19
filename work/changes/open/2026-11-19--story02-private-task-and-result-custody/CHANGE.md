@@ -5,7 +5,7 @@
 **Selection:** Provider-free claim seam only. The Game Authority handler, the workflow split, and any migration stay out of this slice.  
 **Design:** [D4 Storyteller handoff](../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [D1 service choreography](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md)
 
-## Outcome / prerequisites
+**Packet profile:** `CONTRACT`/`STATE`. [SOURCE-MAP.md](SOURCE-MAP.md) is the ChatGPT planner's source map for the missing private GA task/claim/save interface, concrete actor/token checks and test anchors (inspected baseline `584b594`). Read only the relevant section during execution. **An existing claim row is not an exclusive provider-dispatch lease**; provider-free hash dedup is proved separately from spend safety. This packet remains partial/Proposed until remote service tests pass.\n\n## Outcome / prerequisites
 
 **Outcome:** Implement typed private Storyteller task/result custody facade.  
 **Preconditions:** STORY01 selected, DIST03 private GA boundary; scripted source path available without running Rabbit/Temporal.
