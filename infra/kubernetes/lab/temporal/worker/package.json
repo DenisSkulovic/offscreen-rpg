@@ -1,0 +1,11 @@
+{
+  "name": "offscreen-lab-temporal-worker",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@temporalio/activity": "1.24.0",
+    "@temporalio/client": "1.24.0",
+    "@temporalio/worker": "1.24.0",
+    "pg": "8.16.3"
+  }
+}

@@ -1,0 +1,232 @@
+# Temporal server 1.32.2 with PostgreSQL persistence. The process is temporal-server start.
+# The database password is rendered into a file inside the container from the Secret. It is not in this file.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: temporal-server-scripts
+  namespace: lab-temporal
+  labels:
+    app: temporal-server
+    offscreen.rpg/lab: disposable
+data:
+  start.sh: |
+    #!/bin/sh
+    set -eu
+    if [ -z "${POSTGRES_PWD:-}" ]; then
+      echo "POSTGRES_PWD is empty." >&2
+      exit 1
+    fi
+    broadcast="$(getent hosts "$(hostname)" | awk '{print $1; exit}')"
+    if [ -z "$broadcast" ]; then
+      echo "Pod address was not resolved." >&2
+      exit 1
+    fi
+    umask 077
+    cat > /tmp/temporal-config.yaml <<EOF
+    log:
+      stdout: true
+      level: info
+    persistence:
+      numHistoryShards: 4
+      defaultStore: default
+      visibilityStore: visibility
+      datastores:
+        default:
+          sql:
+            pluginName: "postgres12"
+            databaseName: "temporal"
+            connectAddr: "temporal-postgres:5432"
+            connectProtocol: "tcp"
+            user: "temporal"
+            password: "${POSTGRES_PWD}"
+            maxConns: 8
+            maxIdleConns: 4
+            maxConnLifetime: "1h"
+        visibility:
+          sql:
+            pluginName: "postgres12"
+            databaseName: "temporal_visibility"
+            connectAddr: "temporal-postgres:5432"
+            connectProtocol: "tcp"
+            user: "temporal"
+            password: "${POSTGRES_PWD}"
+            maxConns: 4
+            maxIdleConns: 2
+            maxConnLifetime: "1h"
+    global:
+      membership:
+        maxJoinDuration: 30s
+        broadcastAddress: "${broadcast}"
+      pprof:
+        port: 0
+    services:
+      frontend:
+        rpc:
+          grpcPort: 7233
+          membershipPort: 6933
+          bindOnIP: "0.0.0.0"
+          httpPort: 7243
+      matching:
+        rpc:
+          grpcPort: 7235
+          membershipPort: 6935
+          bindOnIP: "0.0.0.0"
+      history:
+        rpc:
+          grpcPort: 7234
+          membershipPort: 6934
+          bindOnIP: "0.0.0.0"
+      worker:
+        rpc:
+          grpcPort: 7239
+          membershipPort: 6939
+          bindOnIP: "0.0.0.0"
+    clusterMetadata:
+      enableGlobalNamespace: false
+      failoverVersionIncrement: 10
+      masterClusterName: "active"
+      currentClusterName: "active"
+      clusterInformation:
+        active:
+          enabled: true
+          initialFailoverVersion: 1
+          rpcName: "frontend"
+          rpcAddress: "127.0.0.1:7233"
+          httpAddress: "127.0.0.1:7243"
+    dcRedirectionPolicy:
+      policy: "noop"
+    archival:
+      history:
+        state: "disabled"
+      visibility:
+        state: "disabled"
+    namespaceDefaults:
+      archival:
+        history:
+          state: "disabled"
+        visibility:
+          state: "disabled"
+    dynamicConfigClient:
+      filepath: "/etc/temporal/config/dynamicconfig/lab.yaml"
+      pollInterval: "60s"
+    EOF
+    exec temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: temporal-dynamic
+  namespace: lab-temporal
+  labels:
+    app: temporal-server
+    offscreen.rpg/lab: disposable
+data:
+  lab.yaml: |
+    limit.maxIDLength:
+      - value: 255
+        constraints: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temporal-server
+  namespace: lab-temporal
+  labels:
+    app: temporal-server
+    offscreen.rpg/lab: disposable
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: temporal-server
+  template:
+    metadata:
+      labels:
+        app: temporal-server
+        offscreen.rpg/lab: disposable
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: temporal-server
+          image: docker.io/temporalio/server:1.32.2
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "/etc/temporal/lab/start.sh"]
+          ports:
+            - name: grpc
+              containerPort: 7233
+              protocol: TCP
+          env:
+            - name: POSTGRES_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-db
+                  key: password
+            - name: GOMEMLIMIT
+              value: 640MiB
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 700m
+              memory: 768Mi
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 36
+          livenessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          volumeMounts:
+            - name: scripts
+              mountPath: /etc/temporal/lab
+              readOnly: true
+            - name: dynamic
+              mountPath: /etc/temporal/config/dynamicconfig
+              readOnly: true
+      volumes:
+        - name: scripts
+          configMap:
+            name: temporal-server-scripts
+            defaultMode: 0555
+        - name: dynamic
+          configMap:
+            name: temporal-dynamic
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: temporal-server
+  namespace: lab-temporal
+  labels:
+    app: temporal-server
+    offscreen.rpg/lab: disposable
+spec:
+  type: ClusterIP
+  selector:
+    app: temporal-server
+  ports:
+    - name: grpc
+      port: 7233
+      targetPort: grpc
+      protocol: TCP

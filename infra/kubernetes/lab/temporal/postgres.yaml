@@ -1,0 +1,130 @@
+# Disposable PostgreSQL for the lab Temporal server. The password is a Secret created at install time.
+# The claim uses the lab local-path class. This is not the Compose game database.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: temporal-postgres-init
+  namespace: lab-temporal
+  labels:
+    app: temporal-postgres
+    offscreen.rpg/lab: disposable
+data:
+  01-lab.sh: |
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname postgres -c "CREATE DATABASE lab;"
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname lab -c "CREATE TABLE lab_effect (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, workflow_id text NOT NULL, run_id text NOT NULL);"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: temporal-postgres
+  namespace: lab-temporal
+  labels:
+    app: temporal-postgres
+    offscreen.rpg/lab: disposable
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temporal-postgres
+  namespace: lab-temporal
+  labels:
+    app: temporal-postgres
+    offscreen.rpg/lab: disposable
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: temporal-postgres
+  template:
+    metadata:
+      labels:
+        app: temporal-postgres
+        offscreen.rpg/lab: disposable
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgres
+          image: docker.io/library/postgres:17.11-bookworm
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_USER
+              value: temporal
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-db
+                  key: password
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "temporal", "-d", "postgres"]
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "temporal", "-d", "postgres"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: temporal-postgres
+        - name: init
+          configMap:
+            name: temporal-postgres-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: temporal-postgres
+  namespace: lab-temporal
+  labels:
+    app: temporal-postgres
+    offscreen.rpg/lab: disposable
+spec:
+  type: ClusterIP
+  selector:
+    app: temporal-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+      protocol: TCP

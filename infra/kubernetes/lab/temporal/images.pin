@@ -1,0 +1,7 @@
+SERVER_IMAGE=docker.io/temporalio/server:1.32.2
+SERVER_DIGEST=sha256:7bf69188a6232fea14869b9cef3d94aa82a1601d99517f7e86c71f22da4e0670
+ADMIN_IMAGE=docker.io/temporalio/admin-tools:1.32.2
+ADMIN_DIGEST=sha256:4a95866efba29d7e17ab012df5232795e8b0ad0f7d5f9d1ec4df321f7792a754
+POSTGRES_IMAGE=docker.io/library/postgres:17.11-bookworm
+POSTGRES_DIGEST=sha256:665dc7b37ac52a17e298511414c21d23ffa4e6a6ef6225b3e5d59c7afb35e994
+WORKER_IMAGE=offscreen-lab-temporal-worker:k8s06

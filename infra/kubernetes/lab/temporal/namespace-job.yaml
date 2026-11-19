@@ -1,0 +1,63 @@
+# Creates the default namespace on the lab server. This is a Temporal namespace, not a Kubernetes namespace.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: temporal-namespace
+  namespace: lab-temporal
+  labels:
+    app: temporal-namespace
+    offscreen.rpg/lab: disposable
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: temporal-namespace
+        offscreen.rpg/lab: disposable
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: namespace
+          image: docker.io/temporalio/admin-tools:1.32.2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: temporal-server:7233
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              i=0
+              while [ "$i" -lt 60 ]; do
+                if temporal operator cluster health --address "$TEMPORAL_ADDRESS"; then
+                  break
+                fi
+                i=$((i + 1))
+                sleep 3
+              done
+              temporal operator cluster health --address "$TEMPORAL_ADDRESS"
+              if temporal operator namespace describe --address "$TEMPORAL_ADDRESS" --namespace default; then
+                echo "Namespace default already exists."
+              else
+                temporal operator namespace create --address "$TEMPORAL_ADDRESS" --namespace default --retention 1d
+              fi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 300m
+              memory: 192Mi
