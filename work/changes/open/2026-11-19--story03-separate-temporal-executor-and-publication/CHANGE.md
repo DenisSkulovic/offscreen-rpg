@@ -41,6 +41,19 @@ Only disjoint Ready Changes may run concurrently in isolated worktrees under an 
 | Code | Bounded API, activity and test implementation in named owners | Source tests; actual runtime evidence where requested |
 | Related | Index, runbook, causal logging and STATUS only as evidenced | Link guards, Change reconciliation |
 
+## Absorbed DIST05 cases (2026-11-19)
+
+HK09 cancelled DIST05 as superseded. These checks were not already stated above. They are not implemented, and this packet stays Proposed. The superseded RabbitMQ-to-Temporal hop is not copied: a story wake stays a direct SQL outbox to Temporal.
+
+- A fake-provider harness keeps the saved attempt and the saved proposal, isolates the Storyteller task queue, survives worker interruption, and refuses a stale canon root.
+- The Storyteller process has no SQL permission to mutate mechanical state or the published root.
+- A stale proposal does not publish.
+- A crash after the provider response does not rerun the paid call.
+- One exact proposal is published once despite workflow replay.
+- No model call runs while the SQL lock is held.
+- If generation or usage rows must be written, that write stays a narrow attempt-recording boundary and must not become broad game-write authority.
+- This split must not be read as a historical fork from an older scene.
+
 ## Reconciliation ledger (fill before closure)
 
 | Authority | Planned delta / no-op | Source SHA/diff | Positive / negative proof | Link/status |

@@ -1,9 +1,11 @@
 # STORY04 | Prove remote bounded canonical reads and one validated Storyteller publication
 
-**State:** Proposed end-to-end gate (2026-11-19)  
+**State:** Cancelled/superseded (2026-11-19). Not Done. Acceptance cases moved to TURN03. The memory proof is not implemented.  
+**Supersession:** HK09 archived this packet as Cancelled/superseded, not Done. The unique acceptance cases and negative tests now live in [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md#absorbed-pre-fork-and-scorecard-cases-2026-11-19). No provider was called.
+  
 **Kind:** implementation  
 **Selection:** Not included in active Kubernetes batch; explicit approval required.  
-**Design:** [D4 Storyteller handoff](../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [D1 service choreography](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md)
+**Design:** [D4 Storyteller handoff](../../../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [D1 service choreography](../../../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md) · [DISTURN](../../../../../designs/open/distributed-turn-poc/README.md)
 
 ## Outcome / prerequisites
 

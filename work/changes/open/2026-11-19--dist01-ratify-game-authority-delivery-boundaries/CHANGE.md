@@ -7,6 +7,8 @@
 
 **Current-head correction, 2026-11-19:** ARCH02 is **Done and merged**, not active/unmerged. The canonical [commands/events/workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows) already selects direct SQL-outbox→Temporal starts/wakes and separate RabbitMQ postcommit **business-event** distribution. Treat any D1 demand for RabbitMQ→Temporal as superseded by [execution reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md). This packet may now resolve the remaining concrete GA RPC, fact/event and consumer ownership, idempotency and extraction exceptions without reopening or rewriting ARCH02's settled decisions. No execution before re-review.
 
+**HK09 disposition, 2026-11-19:** This packet stays open. ARCH02 already records the single consistency boundary, the rejection of a second schema writer, Storyteller proposal without commit, and same-command idempotency. DIST03 already requires one admitted receipt and no leftover Nest writer for its one migrated operation, so no extra writer note was copied there. The remaining requirement is the per-topic route table, the migration and rollback switches, and the two task-queue boundaries. That table does not fit DIST03's one-operation seam, and this Change does not edit the canonical technical docs. The RabbitMQ-to-Temporal hop stays superseded.
+
 ## Goal / independently verifiable outcome
 
 Ratify writer ownership, transport choreography and migration sequence. This Change is one bounded documentation outcome in the [distributed-turn POC](../../../designs/open/distributed-turn-poc/README.md), not authorization to implement the entire initiative.

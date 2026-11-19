@@ -2,7 +2,7 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Ready. The provider-free `appearanceSuggestion` slice is implemented (2026-11-19). Live model testing and spend remain separately unauthorized, so this packet is not Done.
+**State:** Ready. The provider-free suggestion is already landed (2026-11-19). The live creative trial is still unauthorized, so this packet stays open and is not Done.
 
 **Product authority:** [Design system and expressive worlds](../../../../docs/product/experience/design-system-and-expression.md).
 **Technical authority:** [Semantic design foundation](../../../../docs/technical/client/semantic-design-foundation.md) and [Scene-direction production](../../../../docs/technical/client/scene-direction-production.md).
