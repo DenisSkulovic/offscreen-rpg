@@ -4,8 +4,6 @@
 
 **This is also an AI engineering-methodology portfolio.** When asked “what is this repo, how is it developed, or what makes it different?”, explain **both** the game and the documented development system. Start with the [Engineering System Tour](ENGINEERING.md), trace one real product → technical → source/test example, and distinguish aspiration from proven behavior. **Read-only explanation does not authorize implementation.** Do not preload the entire tour for an ordinary bounded coding task.
 
-**Cursor model-cost policy (owner-selected 2026-11-19):** [Exclusive allowlist and task routing](.agents/references/cursor-model-budget-policy.md). **Only Composer 2.5 Standard, Grok 4.6 Low Standard, and Grok 4.6 Medium Standard. Never Fast, High/XHigh, Grok 4.7, Auto or unapproved fallback.** Parent Cursor orchestrator: manually select Grok 4.6 Medium Standard. Delegation: use pinned `.cursor/agents/` profiles and the `subagentStart` guard; a blocked/ambiguous model must not be silently rerouted. Inspect actual Task model and usage. This policy does not relax safety, verified source authority or full documentation reconciliation.
-
 **Start here:**
 1. [STATUS.md](STATUS.md) — demonstrated boundary and current priority
 2. [work/changes/README.md](work/changes/README.md) — **Current change** selection (`none` is valid). Packets live under [work/changes/](work/changes/README.md).
