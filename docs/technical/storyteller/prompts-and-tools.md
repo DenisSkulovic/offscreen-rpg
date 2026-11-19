@@ -1,7 +1,7 @@
 # Storyteller prompts and tools
 
 **Owns:** task recipes, what a model may read, when it must stop, and what a prompt is forbidden to grant.  
-**Selected target** below, dated 2026-11-14. **Not implemented** as a general adaptive loop. The landed runtime still uses versioned task artifacts and a narrower tool surface; see [step status](operation-and-controller.md#step-status) and [request context and cost](request-context-and-cost.md). Tool rights, versioned input capture, stopping, and refusal stay the sections below. This page adds no tool entitlement.  
+**Selected target** below. Task roles stay separate, and the compilation heading records the 2026-11-19 task pack. **Not implemented.** The landed runtime still uses versioned task artifacts and a narrower tool surface; see [step status](operation-and-controller.md#step-status) and [request context and cost](request-context-and-cost.md). Tool rights, versioned input capture, stopping, and refusal stay the sections below. This page adds no tool entitlement. This page does not implement the packer.  
 **Product:** [behavior](../../product/storyteller/behavior-and-quality.md), [memory](../../product/storyteller/memory-and-continuity.md).
 
 ## Orthogonal authorities
@@ -10,7 +10,11 @@ A profile sets how the Storyteller tells and initiates. It does not set the paye
 
 ## Task roles
 
-Each role has one purpose, canonical input, permitted tools, output schema, publication target, latency class and failure semantics. Do not invoke every role on every turn.
+One Storyteller identity serves the campaign. Each role below is a separate recipe: one purpose, canonical input, permitted tools, output schema, publication target, latency class, and failure semantics. The application selects the recipe from the accepted game transition, the evidence that transition requires, and the captured budget. A recipe's instructions stay out of every other request.
+
+A normal scene is one well-packed composition call. It is not a chain of mandatory models. Evidence investigation is a bounded phase of that same operation. Continuity notes can be a section of the same consequence result. A distinct model call is admitted only when a special role must return a short typed, source-linked artifact for the composer. Both prompts and both transmissions share one captured operation budget. Role text does not change dice, payer permissions, world or branch authority, or source visibility.
+
+This heading names the recipes. It does not implement the packer. Today's code does not assemble P0–P3 this way. Landed admission still uses opening, continuation, consequence, and report tasks. See [Current prototype runtime](operation-and-controller.md#current-prototype-runtime). The pack those roles receive is [Selected compilation and tool contract](#selected-compilation-and-tool-contract).
 
 | Task | Mandatory truth | Must not publish |
 | --- | --- | --- |
@@ -23,7 +27,7 @@ Each role has one purpose, canonical input, permitted tools, output schema, publ
 | Continuity curator | Source passage and existing record | Mechanical statistics for a mentioned name |
 | Narrative director | Only if a future policy explicitly accepts initiative | Any automatic world effect |
 
-Evidence investigation is usually a bounded subphase inside the same generation, not a second funded bot. Continuity curation can initially be the notes section of the same consequence result. Default subagent policy is **none**. No recursive delegation, no private story data crossing scope, and no child budget recharge.
+Default subagent policy is **none**. No recursive delegation, no private story data crossing scope, and no child budget recharge. Optional narrative direction is not an automatic second model call.
 
 ## Stopping
 
@@ -50,16 +54,30 @@ The model must not decide dice, a forced player response, the scheduler, the pro
 
 ## Selected compilation and tool contract
 
-**Selected desired architecture, 2026-11-14.** This is not a claim that the general adaptive loop is live. The landed runtime remains the narrower controller described in [operation and controller](operation-and-controller.md#current-prototype-runtime).
+**Selected task pack, 2026-11-19.** This heading records how one Storyteller task is packed, and which tools that pack may use. This page does not implement the packer. Today's code does not assemble P0–P3 this way. `prepareStorytellerTask` still builds a `bounded-scene.v3` request from the caller-supplied snapshot, the task rules, and the profile. Ordinary admission still captures `single-turn.v1` or `repairable-turn.v1` with tools disabled. A funded `memory-exploration.v1` recipe can ask and read inside one operation. That recipe is the landed exploration controller. The runtime description is [Current prototype runtime](operation-and-controller.md#current-prototype-runtime).
 
-Compile layers from stable to changing: world truth the profile cannot buy (P0); versioned task contract (P1); captured creative identity, distinct from the payer (P2); pinned rules and world (P3); the frozen present (P4); optional source-linked past (P5); operation-local investigation feedback (P6). Stable instruction may sit where prefix caching helps. A bloated universal system prompt is not justified by cache overlap.
+The compiler is deterministic about permissions, version selection, packing, and budgets. Creative interpretation stays with the model. A missing mandatory source is an explicit hold.
+
+- **P0.** Stable universal authority plus the one narrow role recipe for this task. Version it. A prefix discount applies only where the provider bill reports one. Every other role's instructions and tools stay out of the request.
+- **P1.** Mandatory exact present, injected before any paid research round: branch, story, and scene; current mechanical constraints; committed receipts; the active intent; relevant actor knowledge; the pinned rule fragments that apply; permitted capabilities; and the selected Storyteller profile.
+- **P2.** Focused orientation: a compact scene, identity, and thread map with stable handles, current status, why the lead is relevant, source revision, and size. A few useful leads are the target. A search lead is not an accepted fact.
+- **P3.** On-demand evidence. Unknown history is one intention-level `ask_memory(question, intent)`. The deterministic backend does the reads: exact ids, source links, structured predicates, and lexical retrieval. It then checks revision, authority, branch and knowledge visibility, provenance, coverage, and byte limits. `read_memory(handle)` opens an exact source when the wording matters. A second overlapping tool is not part of the default facade.
+- **P4.** Optional stronger investigation, only for an unresolved high-value case, inside the same operation's final-output reserve and payer allowance.
+
+The 2026-11-14 compile list numbered world truth, the task contract, creative identity, pinned rules, the frozen present, source-linked past, and investigation feedback as P0 through P6. This pack replaces that list. Known present is injected. Related material is orientation. Unknown history is fetched by the intention-level query. It is not preloaded as its own layer.
+
+A bloated universal system prompt is not justified by cache overlap.
+
+**Fork packing negative.** At scene 10 the king is alive and the hero holds a sword. At parent scene 20 the king is dead and the sword is gone. A fork from scene 10 is packed with the living king and the held sword, from that scene's mechanical checkpoint and canon root. An `ask_memory` lookup on that fork must not return the scene-20 death, including through a stale global index. A rumor that the king died is an attributed rumor, not a committed fact. The same negative is the source rule in [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19). Search indexes are not authority.
 
 Prompt defects to remove from common authority: a blanket “never end the character's life” is the present nonlethal gap, not eternal policy; a compulsory 2–5 options rule contradicts a quiet or single-attempt scene; “cannot execute tools” forbids game mutations, not an explicitly admitted read-only memory phase. The model still cannot reach SQL, the shell, the web, or another player's account.
 
 **Initial approved read vocabulary**, when a recipe admits investigation:
 
-- `ask_memory(question, intent)`: at most two concise queries per round; returns leads, current-root source ids, snippet, relevance and coverage.
-- `read_memory(handle)`: one exact approved current-root record or published passage, bounded bytes, proven source identity.
+- `ask_memory(question, intent)`: the intention-level facade. The deterministic backend performs the reads and returns leads, current-root source ids, a snippet, relevance, and coverage. The [selected retrieval routes](../../product/storyteller/memory-and-continuity.md#selected-retrieval-routes) still allow one or two ordinary-language questions. The landed `memory-exploration.v1` controller accepts at most two per round. That cap is current code. It is not a second tool, and it is not this packer.
+- `read_memory(handle)`: one exact approved current-root record or published passage from a handle the same operation returned, bounded bytes, proven source identity.
+
+Code mode is unselected. It is not the default. A future sandboxed, read-only query over task-scoped handles would have to beat this deterministic resolver on quality, tokens, and latency before it could be admitted. Model-generated shell, SQL, filesystem, or network writes are prohibited. Cognee, vector search, and embedding models stay unselected. An index remains a rebuildable aid: [Indexes are rebuildable aids](context-selection-and-recall.md#indexes-are-rebuildable-aids).
 
 Optional later reads (a pinned rule section, a known identity, a contradiction between two attributed sources) stay proposed until a measured need. Never expose arbitrary SQL, file read, web search, shell, item transfer, dice, grants or a subagent spawn. A read is not a player action.
 
