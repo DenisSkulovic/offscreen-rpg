@@ -11,6 +11,7 @@ import { commandReceipt, saveCommand } from './settings';
 import { requireCampaign } from './persistence';
 import {
   acceptedActivityPlanSchema,
+  quietRepeatableActivity,
   readAcceptedActivityPlan,
 } from './accepted-plans';
 
@@ -41,6 +42,12 @@ export function createAcceptedPlanControls(database: Database) {
       ) {
         throw new StoryError('conflict');
       }
+      const quietRepeat = accepted.entries.every(
+        (entry, _index, entries) =>
+          quietRepeatableActivity(entry.plan) &&
+          entries[0] !== undefined &&
+          entry.plan.key === entries[0].plan.key,
+      );
       const cancelled = acceptedActivityPlanSchema.parse({
         ...accepted,
         revision: accepted.revision + 1,
@@ -50,7 +57,9 @@ export function createAcceptedPlanControls(database: Database) {
             ? { ...entry, state: 'cancelled' as const }
             : entry,
         ),
-        blockedReason: null,
+        blockedReason: quietRepeat
+          ? 'The player cancelled the remaining quiet repetitions. No further iteration is authorized.'
+          : null,
       });
       await tx
         .update(campaign)

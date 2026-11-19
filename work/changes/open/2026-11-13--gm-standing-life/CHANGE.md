@@ -4,6 +4,8 @@
 
 **State:** Ready for quiet-watch existing-itinerary comparator and minimal resulting implementation (2026-11-18), not unrestricted autoplay.
 
+The quiet repeated watch now runs on the existing accepted plan: at most three identical iterations and one hard fictional horizon. General standing life is not implemented, so this packet stays open.
+
 ## Cursor first-screen brief
 
 > **Current-source map:** [campaign operations](../../../../packages/application/README.md#campaign-transition-boundary), inspect §packages/application/src/campaign/accepted-plans.ts§, §activities.ts§, §actions.ts§, §accepted-plan-controls.ts§ and public §packages/contracts/src/campaign.ts§.
@@ -14,6 +16,7 @@
 ## Selected outcome to prove, if later authorized
 
 A solo player can accept a **standing bounded routine** (“repeat this previously authored repair/rest/study method up to N admitted iterations or horizon H, stop when a meaningful new decision is required”) under current scene authorization. The server stores one exact intent/policy and advances only eligible activity time. Each repetition:
+
 1. Retains the activity definition/identity semantics and prevents duplicating one-time rewards.
 2. Revalidates actor, location, resource, rule version, capacity and current offer/standing permission.
 3. Settles deterministic checks once at valid clock boundaries.
@@ -24,7 +27,7 @@ A solo player can accept a **standing bounded routine** (“repeat this previous
 
 ## Why existing short plans are not the whole answer
 
-Current accepted plans contain a finite sequence of specific successor tasks with horizon and revalidation. A standing routine could reduce repetitive scheduling *for a known repeated role*. But if this first experiment performs poorly or isn't safely bounded, **keep short plans** and do not add a second autonomy engine.
+Current accepted plans contain a finite sequence of specific successor tasks with horizon and revalidation. A standing routine could reduce repetitive scheduling _for a known repeated role_. But if this first experiment performs poorly or isn't safely bounded, **keep short plans** and do not add a second autonomy engine.
 
 Alternative: UI can pre-build a short explicit repeated itinerary using existing plan contract. Test whether that satisfies player expectations before modifying engine semantics.
 
@@ -35,6 +38,8 @@ Alternative: UI can pre-build a short explicit repeated itinerary using existing
 ## Code scope
 
 A narrow accepted standing-intent contract, one application state transition path, persistence/identity/clock boundary, safe public projection, tests. Use existing event/receipt/scheduler and pause authority. A user-facing routine preview is a later UX Change, not a backend design excuse to add generic settings widgets.
+
+Focused proof: `packages/application/test/gm03-quiet-repeat.live.test.mjs`. The three copies live in the existing `accepted_activity_plan` JSON entries. No new column and no migration.
 
 **Exclude:** perpetual scheduler, arbitrary life planner, new combat, automatic relationship progression, one agent per NPC, default response at future decision, unbounded spending, silent background provider calls, large-world multiplayer and new map/currency/health engine.
 
@@ -49,3 +54,10 @@ A narrow accepted standing-intent contract, one application state transition pat
 ## Ready gate
 
 Owner chooses exact first activity, horizon semantics, authorization/fallback boundaries and negative proofs after observing an offline prototype. If the change grows to arbitrary safe actions or shared-world plans, split it. **This is a small experiment in a living routine, not the full dream compressed into one Change.**
+
+## Reconciliation ledger
+
+| Affected selected claim/heading                                                                       | Authority                                          | Target delta (changed/unchanged; reason)                                                                                                 | Source delta & inspected SHA                                                                                                                                                                                    | Status/evidence tier | Negative proof                                                                                                                                                        | Map/link update or N/A                         |
+| ----------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| docs/technical/engine/authority-and-transitions.md#chain-and-idle-edges and #one-quiet-repeated-watch | docs/technical/engine/authority-and-transitions.md | changed: one quiet clock-wait may repeat at most three times on the existing accepted plan, and general standing life is not implemented | packages/application/src/campaign/accepted-plans.ts, packages/application/src/campaign/activities.ts, packages/application/src/campaign/actions.ts, packages/application/src/campaign/accepted-plan-controls.ts | tested               | No accepted plan accrues no fictional time; a fourth copy, a one-time payout, and a duplicate delivery are rejected; an event at gameSecond 900 blocks the next watch | The new heading is the only technical addition |
+| docs/product/gameplay/time-and-autonomy.md#bounded-plans-for-absence                                  | docs/product/gameplay/time-and-autonomy.md         | unchanged: the product page still owns absence plans, and this slice does not ratify general standing life                               | packages/application/test/gm03-quiet-repeat.live.test.mjs                                                                                                                                                       | tested               | A rejected repeat and an idle story leave gameSecond at 0                                                                                                             | N/A                                            |
