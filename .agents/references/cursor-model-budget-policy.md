@@ -14,6 +14,22 @@
 
 **Cost vs correctness:** cheaper is not permission to skip test/permission/retry/source documentation obligations. Repeated failures, growing tool exploration or semantic drift are evidence the policy may be worse; record those failures rather than pretending savings. Prefer completing one properly bounded task without an unnecessary extra subagent.
 
+## Task-depth versus model-cost routing
+
+**First choose investigation depth, then model.** Cursor-only [execution-depth rule](../../.cursor/rules/execution-depth.mdc) defines `VERIFY`, `PATCH` and `INVESTIGATE`. The parent MUST pass `DEPTH=...` in every delegated task. **Risk is not depth:** a high-risk but fully specified suite run should use **Medium + VERIFY**, not Medium + repository exploration. An exploratory unknown can be `INVESTIGATE` with Composer for simple discovery; the parent reviews any consequential design decision.
+
+| Known task shape | Depth | Lowest acceptable model | Expected source discovery |
+| --- | --- | --- | --- |
+| Run an already named test or exact CLI, record counts | VERIFY | Composer Standard for ordinary checks, Grok 4.6 Medium for money/persistence/security checks | Exact command, preconditions, diagnostic only if failed |
+| Make trivial links/docs/test edit with exact anchors | PATCH | Composer Standard | Exact owners, focused checks |
+| Make bounded safe multi-file patch with approved interface | PATCH | Grok 4.6 Low Standard | Route card, 2–5 anchors, one negative |
+| Implement retry/transaction/permissions/canon migration | PATCH | Grok 4.6 Medium Standard | Specific authority + relevant source/tests, not whole wiki |
+| Locate unknown implementation owner or assess competing designs | INVESTIGATE | Composer for narrow search; Grok 4.6 Medium if substantive correctness judgment | Explicit unknown/questions, evidence-led expansion only |
+
+**Dispatch quality gate:** the parent must include task kind, depth, goal, exact command or edit, source anchors, negative case, preconditions and stop condition. Do not substitute three skills and a vague request for a route card. Avoid an exploratory subagent where the parent already knows the answer. If VERIFY fails, return NOT-RUN/FAIL and one concrete blocker rather than quietly undertaking an architecture audit. Do not spawn a second agent just to re-read the first agent's context.
+
+**HK03 example:** the 32-case Storyteller integration suite task is **Grok 4.6 Medium Standard + VERIFY** because it has a named command and a sensitive database/Temporal safety boundary. The agent need only inspect status, ensure named disposable prerequisites, run the one test and record counts. It must not treat every repository README as prerequisite reading.
+
 ## Strict routing algorithm for the parent
 
 1. **Is this a trivial task that can be done in the parent with no new context?** Do that; subagents have startup/context overhead.
