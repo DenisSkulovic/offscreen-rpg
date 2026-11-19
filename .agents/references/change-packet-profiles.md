@@ -25,7 +25,13 @@ The value metric is accepted correct work per total spend, including rework and 
 
 `INTEGRATE` here is a **coordination duty**, not a new Cursor agent or a model class. Existing `DEPTH=VERIFY|PATCH|INVESTIGATE`, role catalog, model policies and hard permission rules remain the actual routing contract. A declared `RELEASE` does not grant K8s writes, migration resets or subagent launches.
 
-### Files and ownership
+### The executor's real unit is a microtask
+
+For a multi-file implementation Change, the planner should additionally prepare [Composer-first microtasks](composer-first-execution.md) in an optional `TASKS.md`. This file is a **short dispatch queue**, *not* another Change, approval or canon. T01–Txx contain exact symbols and ownership, settled algorithm, normal/negative tests, stop and receipt, preferably one small diff each. A large STATE/RELEASE Change should not be assigned wholesale to a Grok child just because the architecture is complicated; the planner splits it into Composer-sized tasks. `CHANGE.md` still owns lifecycle/selection; TASKS never mark Proposed work automatically Ready.
+
+The current source-backed examples are BOOT03, STORY02, STORY03, TURN02 and K8S10. Each task's source baseline is 584b594 and must be revalidated against a newer checkout before execution. Composer should be the parent model as well as the usual child model; the agent config and hook cannot change Cursor's parent UI.
+
+## Files and ownership
 
 `CHANGE.md` is **always the sole mandatory front door**, ideally one screen of live route data before historical detail. Use the existing standardized template. Include:
 
