@@ -5,6 +5,8 @@
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
 **Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
 
+**Current-head acceptance correction, 2026-11-19:** The Storyteller workflow must follow the merged canonical **direct SQL outbox→Temporal** delivery path. RabbitMQ is instead proved independently as a **committed business-event** delivery to a derived projection; the projection is disposable and is not needed for authoritative scene publication or exact as-of read. The original DIST06 wording `RabbitMQ→Temporal` in the earlier planned source is superseded, not a required hop. [Reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md). Integration success requires truthful separate assertions for the Temporal work and Rabbit fact consumer; the final historical fork remains TURN03.
+
 ## Goal / independently verifiable outcome
 
 Run one provider-free published scene across the real distributed runtime. This Change is one bounded implementation outcome in the [distributed-turn POC](../../../designs/open/distributed-turn-poc/README.md), not authorization to implement the entire initiative.
