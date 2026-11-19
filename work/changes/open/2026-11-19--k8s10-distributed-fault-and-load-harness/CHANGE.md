@@ -5,7 +5,7 @@
 **Execution selection:** This bounded runner only. Do not auto-run the remaining scenarios.  
 **Program:** [Distributed architecture lab queue](../../README.md)
 
-## Outcome
+**Next source-inspected planning slice (2026-11-19, source baseline `584b594`):** the selected historical Rabbit consumer-loss case remains implemented and its receipt intact. The user has requested a future **zero-LLM-token real-game chaos monkey**, but **no Pod-kill game runner or real cluster game acceptance is implemented/selected by these docs**. [SOURCE-MAP.md](SOURCE-MAP.md) maps actual scripted fixture and lab guards, [EXECUTION.md](EXECUTION.md) specifies safe run modes, [PROOF.md](PROOF.md) is the fault/recovery catalog, and [TASKS.md](TASKS.md) splits future implementation into Composer-sized steps. [Mermaid explanation](../../../../docs/architecture/09-chaos-and-zero-token-play.md) is human-facing. **T01–T03 pure/dry-run are candidates for early selection; T04+ requires successful TURN02/TURN03 real app POC.** Use the existing K8S10 Change instead of creating a competing CHAOS01 or installing a heavy operator. Do not select the rest of K8S10 automatically.\n\n## Outcome
 
 Provide a safe, repeatable architecture experiment suite that proves or disproves our specific resilience hypotheses without provider spend or destructive data access.
 
