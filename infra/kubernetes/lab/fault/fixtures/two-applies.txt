@@ -1,0 +1,2 @@
+APPLY fault-bbbbbbbbbbbbbbbb redelivered=0
+APPLY fault-bbbbbbbbbbbbbbbb redelivered=1

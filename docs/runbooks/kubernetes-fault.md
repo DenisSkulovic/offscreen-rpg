@@ -54,8 +54,8 @@ If that assertion exits 0, the harness fails. A green exactly-once result would 
 The fixture files check the script without a cluster:
 
 ```bash
-python3 infra/kubernetes/lab/fault/assert_exactly_once.py infra/kubernetes/lab/fault/fixtures/one-apply.log
-python3 infra/kubernetes/lab/fault/assert_exactly_once.py infra/kubernetes/lab/fault/fixtures/two-applies.log
+python3 infra/kubernetes/lab/fault/assert_exactly_once.py infra/kubernetes/lab/fault/fixtures/one-apply.txt
+python3 infra/kubernetes/lab/fault/assert_exactly_once.py infra/kubernetes/lab/fault/fixtures/two-applies.txt
 ```
 
 The first command exits 0. The second exits 1. Those files are not a cluster run.

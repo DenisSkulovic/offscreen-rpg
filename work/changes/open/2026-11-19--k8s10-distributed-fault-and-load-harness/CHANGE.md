@@ -26,8 +26,8 @@ This slice lands only the first case:
 - CREATE `infra/kubernetes/lab/fault/run.sh`
 - CREATE `infra/kubernetes/lab/fault/worker_loss.py`
 - CREATE `infra/kubernetes/lab/fault/assert_exactly_once.py`
-- CREATE `infra/kubernetes/lab/fault/fixtures/one-apply.log`
-- CREATE `infra/kubernetes/lab/fault/fixtures/two-applies.log`
+- CREATE `infra/kubernetes/lab/fault/fixtures/one-apply.txt`
+- CREATE `infra/kubernetes/lab/fault/fixtures/two-applies.txt`
 - CREATE `docs/runbooks/kubernetes-fault.md`
 - EDIT `docs/runbooks/README.md` with one index row
 - EDIT `docs/technical/platform/deployment-and-compatibility.md#tests-that-demonstrate-the-architecture`
