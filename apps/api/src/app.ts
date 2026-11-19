@@ -80,7 +80,13 @@ import {
 } from '@offscreen/application/developer-tools';
 import { createStoryApplication } from '@offscreen/application/stories';
 import {
+  readStoryAuthorityConfig,
+  storySeamFor,
+  type StoryAuthorityConfig,
+} from './modules/stories/game-authority-client.js';
+import {
   STORIES,
+  STORY_SEAM,
   STORY_UPDATE_HUB,
   StoriesController,
 } from './modules/stories/controller.js';
@@ -176,6 +182,11 @@ export type CreateAppOptions = Readonly<{
   databaseConfig?: DatabaseConfig;
   /** Test override; when set, skips creating a listener from databaseConfig. */
   storyUpdateHub?: StoryUpdateHub | null;
+  /**
+   * Compose mode keeps the in-process writer. Distributed mode calls Game
+   * Authority for the snapshot read and scripted resolution only.
+   */
+  storyAuthority?: StoryAuthorityConfig;
   qaContext?: {
     git: z.infer<typeof qaGitStateSchema>;
     environment: z.infer<typeof qaEnvironmentSchema>;
@@ -197,6 +208,17 @@ export async function createApp(
   if (storyUpdateHub) {
     await storyUpdateHub.start();
   }
+  const stories = createStoryApplication(database, {
+    ...(options.documentStore ? { documentStore: options.documentStore } : {}),
+    ...(options.defaultRules ? { defaultRules: options.defaultRules } : {}),
+    ...(options.readCache ? { cache: options.readCache } : {}),
+    ...(options.onCacheIncident
+      ? { onCacheIncident: options.onCacheIncident }
+      : {}),
+  });
+  const storyAuthority =
+    options.storyAuthority ?? readStoryAuthorityConfig(process.env);
+  const storySeam = storySeamFor(stories, storyAuthority);
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
@@ -289,21 +311,8 @@ export async function createApp(
             },
           ),
         },
-        {
-          provide: STORIES,
-          useValue: createStoryApplication(database, {
-            ...(options.documentStore
-              ? { documentStore: options.documentStore }
-              : {}),
-            ...(options.defaultRules
-              ? { defaultRules: options.defaultRules }
-              : {}),
-            ...(options.readCache ? { cache: options.readCache } : {}),
-            ...(options.onCacheIncident
-              ? { onCacheIncident: options.onCacheIncident }
-              : {}),
-          }),
-        },
+        { provide: STORIES, useValue: stories },
+        { provide: STORY_SEAM, useValue: storySeam },
         ...(options.developerTools === true
           ? [
               {

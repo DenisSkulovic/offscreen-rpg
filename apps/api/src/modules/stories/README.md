@@ -8,7 +8,7 @@
 
 | HTTP endpoint under `/api/stories` | Method/status in current controller | Application responsibility |
 | --- | --- | --- |
-| `/` and `/:id` | GET 200 | owner-scoped list/snapshot; full public snapshot parsed by Zod web client |
+| `/` and `/:id` | GET 200 | owner-scoped list/snapshot; full public snapshot parsed by Zod web client. Distributed mode reads `/:id` from Game Authority. The list stays in-process |
 | `/:id/history` | GET 200 | owner-scoped chronology, numeric `before` cursor |
 | `/:id/events` | GET 200 | GM05 owner-scoped public committed-event page (`before`/`limit`); coverage `since-enabled`; no seen-cursor mutation |
 | `/:id/updates` | **SSE** | authenticated committed-view hints via [story-update-hub](story-update-hub.ts); no narrative |
@@ -18,7 +18,7 @@
 | `/:id/settings/:operationId` | PUT | owned settings command; expected revision fence |
 | `/:id/actions/:operationId` | PUT | campaign action admission; result is current public view |
 | `/:id/activity-controls/:operationId`, `/:id/action-execution-controls/:operationId` | PUT | activity or action pause/resume/speed; real domain state from application |
-| `/:id/resolutions/:operationId` | **PUT 202** | admits intent; returned snapshot can still be `pending`/`running` |
+| `/:id/resolutions/:operationId` | **PUT 202** | admits intent; returned snapshot can still be `pending`/`running`. Distributed mode sends this command to Game Authority and does not also write the receipt here |
 | `/:id/controls/:operationId` | **PUT 200** | timed interval control, current snapshot |
 | `/:id/retries/:retryId` | PUT | specifically allowed recovery; **not** a duplicate paid request by inference |
 | `/:id/start` | **PUT 200** | starts from reviewed opening; story ID provides GET recovery anchor |

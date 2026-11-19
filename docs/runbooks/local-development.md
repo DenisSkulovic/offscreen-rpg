@@ -104,6 +104,10 @@ Focused integration reset connects to the loopback PostgreSQL service directly t
 
 Use host application processes and Compose dependencies first. Kubernetes comes after a working containerized story slice, when a deployment can demonstrate something useful. The production images and cluster manifests will be built against those actual processes.
 
+## Game Authority seam
+
+`apps/game-authority` is a separate process for one operation: the owned story snapshot read and one scripted resolution admission. Compose does not start it. Leave `GAME_AUTHORITY_MODE` unset and the API keeps the current in-process writer. Set `GAME_AUTHORITY_MODE=distributed` only together with `GAME_AUTHORITY_ORIGIN` and `GAME_AUTHORITY_SERVICE_TOKEN` on the API, and the same token on the Game Authority process. Nest still checks the browser session, then calls `/internal/v1`. A failed call does not fall back to a second SQL write. The process has no `/api` route, no start route, and no publication route. Do not put it on the public gateway. No model call is part of this seam.
+
 ## Checks and boundaries
 
 Checks are optional under the [verification policy](../../.agents/rules/verification.md); choose a focused command when it answers a concrete question. `@offscreen/storyteller/tasks` prepares and validates opening, continuation, consequence and report tasks. Provider-free fixtures and real-provider execution are separate paths. Hosted structured-output and mechanical play have historical live evidence in the [connected proof](../../research/legacy-engineering/connected-poc-proof.md); that does not establish every schema, scenario or recovery path. Ordinary checks must keep live inference disabled.

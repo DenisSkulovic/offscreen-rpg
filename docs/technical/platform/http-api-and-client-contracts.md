@@ -4,7 +4,7 @@
 
 **Does not own:** the route inventory ([API map](../../../apps/api/README.md), [story routes](../../../apps/api/src/modules/stories/README.md), [draft and opening routes](../../../apps/api/src/modules/drafts/README.md)), Zod shapes ([contracts](../../../packages/contracts/README.md)), session policy ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), client cache and reload UX ([Commands and hints](../client/state-and-server-boundary.md#commands-and-hints)), Temporal delivery ([Story execution with Temporal](execution-and-delivery.md)), service ownership ([Proposed service ownership](topology.md#proposed-service-ownership)), or staff grants ([Admin topology](../admin/topology-and-authorization.md)).
 
-**Status:** source-inspected at `b3113814` for the headings that describe handlers. Those statements are what those files do. [Service calls are not player routes](#service-calls-are-not-player-routes) is a proposed target from 2026-11-19 and was not part of that inspection. This page adds no player right, no endpoint, and no retry. The named integration tests were read and were not re-run. No provider call was made.
+**Status:** source-inspected at `b3113814` for the headings that describe handlers. Those statements are what those files do. [Service calls are not player routes](#service-calls-are-not-player-routes) records one internal command and still adds no player route. This page adds no player right and no retry. The named integration tests were read and were not re-run. No provider call was made.
 
 **Reader question:** What must a second client respect on every authenticated player route, even when the route list lives in a controller map?
 
@@ -174,11 +174,11 @@ Chamber inspection can read a selected intention through the developer adapter. 
 
 **Reader question:** Does naming a service add a player HTTP route, or turn a broker message into one?
 
-**Normative status:** proposed target, 2026-11-19. Not a description of the handlers inspected at `b3113814`. This heading adds no route, no request body, and no status code.
+**Normative status:** one internal command is implemented. The rest of this heading remains a proposed target from 2026-11-19. This heading adds no player route.
 
-**Owner:** this heading, for the boundary between player HTTP and a later service command. The route inventory stays in the module READMEs. Process ownership stays on [Proposed service ownership](topology.md#proposed-service-ownership). Delivery classes stay on [Commands, business events, and workflows](execution-and-delivery.md#commands-business-events-and-workflows).
+**Owner:** this heading, for the boundary between player HTTP and a service command. The route inventory stays in the module READMEs. Process ownership stays on [Proposed service ownership](topology.md#proposed-service-ownership). Delivery classes stay on [Commands, business events, and workflows](execution-and-delivery.md#commands-business-events-and-workflows).
 
-Current runtime: a player command is direct HTTP to the Nest API in the modular monolith. The actor, frozen operation id, 202, GET, and error headings above still govern that call.
+Current runtime: a player command is direct HTTP to the Nest API. The actor, frozen operation id, 202, GET, and error headings above still govern that call. With `GAME_AUTHORITY_MODE=distributed`, Nest forwards only the owned snapshot read and one scripted resolution to Game Authority at `GET /internal/v1/stories/:storyId` and `PUT /internal/v1/stories/:storyId/resolutions/:operationId`. The browser still calls `/api/stories/...`. The internal server does not mount `/api`. A forged service credential is refused. A wrong owner is not found. The same operation id returns the stored admission. Start, campaign commands, and publication are not on that server. Compose mode does not make the internal call. The source map is [Game Authority](../../../apps/game-authority/README.md).
 
 Proposed target: a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept a notification command or a fictional-market command from the browser. A player route does not own a committed scene checkpoint and does not assemble that history by asking whichever service answers first. That checkpoint is selected future behavior. The current journal and the current-only fork do not implement it, and this page does not add a route for it.
 

@@ -19,6 +19,10 @@
       "types": "./dist/src/stories.d.ts",
       "default": "./dist/src/stories.js"
     },
+    "./game-authority": {
+      "types": "./dist/src/game-authority.d.ts",
+      "default": "./dist/src/game-authority.js"
+    },
     "./chamber": {
       "types": "./dist/src/chamber.d.ts",
       "default": "./dist/src/chamber.js"

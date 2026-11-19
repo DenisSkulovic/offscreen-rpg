@@ -6,6 +6,7 @@ Source-adjacent package procedures may remain beside code.
 | Runbook | Question |
 | --- | --- |
 | [Local development](local-development.md) | How do I start the portfolio locally without a model call or a disposable-database reset? |
+| [Game Authority seam](local-development.md#game-authority-seam) | How does the optional private story process stay off the public API and off Compose? |
 | [Kubernetes lab](kubernetes-lab.md) | How do I create and delete the disposable kind cluster without touching Compose volumes? |
 | [Kubernetes Postgres](kubernetes-postgres.md) | How do I run one disposable CloudNativePG primary, and what does a Pod deletion keep? |
 | [Kubernetes RabbitMQ](kubernetes-rabbitmq.md) | How do I run one disposable RabbitMQ broker, and what does a consumer crash redeliver? |
