@@ -11,13 +11,13 @@
 >
 > **Primary governing contract:** The current implementation is a modular monolith with Temporal worker(s); the proposed distributed target is a deliberate educational evolution, not a description of working code. ARCH01 must first reconcile the canonical target.
 >
-> **Known trap:** An event redelivery cannot apply test side effects twice; no component advertised as a migrated business service; public ingress disabled unless secured/explicitly approved.
+> **Known trap:** An event redelivery cannot roll dice or apply a game effect twice; no fictional Economy service; no component advertised as migrated gameplay; public ingress disabled unless secured/explicitly approved.
 >
 > **Scope/permission:** Infrastructure-only, on a local disposable lab after scope selection. No product code, payment calls or provider spend.
 
 ## Target alignment
 
-- **Outcome:** Named independently scalable placeholder workloads for web/API/game/storyteller/illustration/economy/payments/notifications, with independent resource boundaries; existing application remains unchanged until later Changes.
+- **Outcome:** Named independently scalable placeholder workloads for web/API and ARCH02-ratified game-rule authority, Storyteller, and genuinely justified optional media/delivery/real SaaS billing components, with independent resource boundaries; existing application remains unchanged until later Changes.
 - **Current-source baseline:** `a00a5beb6b49` from GitHub on 2026-11-19 and repo source owners above; tools/versions and actual machine state require reinspection.
 - **End-state relationship:** This is one independently reviewable slice of an explicitly staged distributed architecture laboratory; not a full service extraction.
 - **Alternative considered:** Keep current Compose/modular monolith. It remains the safe fallback and existing development/test route; educational lab progression justifies an additional environment, not its immediate deletion.
@@ -25,7 +25,7 @@
 
 ## Outcome and motivation
 
-Named independently scalable placeholder workloads for web/API/game/storyteller/illustration/economy/payments/notifications, with independent resource boundaries; existing application remains unchanged until later Changes.
+Named independently scalable placeholder workloads for web/API and ARCH02-ratified game-rule authority, Storyteller, and genuinely justified optional media/delivery/real SaaS billing components, with independent resource boundaries; existing application remains unchanged until later Changes.
 
 ## Authority and baseline
 
@@ -36,10 +36,10 @@ Named independently scalable placeholder workloads for web/API/game/storyteller/
 
 ## Exact scope and exclusions
 
-- **Implementation/design:** Add minimal containers/Deployments/Services and readiness/liveness probes, explicitly demo-only no auth/payments/provider calls; safe synthetic command/event through broker with unique operation ID, simple contract versioning and consumer-side dedup. Pin resource ceilings; no fake fully functional modules or shared arbitrary DB writes.
+- **Implementation/design:** After ARCH02 has ratified each process boundary, deploy only those justified skeletons as minimal containers/Deployments/Services with readiness/liveness probes. Explicit demo-only paths; no real auth, real payments, or model/provider calls. Exercise synthetic D&D-relevant command/event (e.g., permitted action → deterministic synthetic recorded outcome → Storyteller delivery notification), unique operation ID, versioned contract and consumer dedup. Keep game facts and dice separate from narrative proposals. Pin resource ceilings; no fictional Economy service, universal inventory simulation, fake playable modules, or arbitrary shared DB writes.
 - **Documentation (first class):** Reconcile topology, API/execution contract, STATUS and service ownership pages; write truthfully what is skeletal vs implemented.
 - **Exclude:** Game mechanics, Storyteller behavior, client rework, production deployment, Kubernetes cloud charges, shared-live data migrations, destructive operations on non-disposable assets.
-- **Dependencies:** ARCH01 K8S01 K8S03 K8S07; service ownership agreed in canonical specs.
+- **Dependencies:** ARCH01, **ARCH02 ratified domain-aligned ownership**, K8S01 K8S03 K8S07, plus K8S09 for HTTP edge exposure; service skeleton names and count cannot be frozen in advance.
 
 ## Acceptance and discriminating negative proof
 

@@ -105,8 +105,8 @@ This section separates three deliveries. It does not replace [Commands and durab
 | Activity to PostgreSQL | Command inside the current owner | In-process call | Current runtime |
 | One proposed service to another service's write | Command | Direct HTTP to that owner, or a durable command record the owner consumes. Delivery still passes the owner's idempotency check. | Proposed target. Not a published business event. |
 | Owner to other readers after commit | Business event | Durable outbox, then the laboratory broker | Proposed target. Not deployed. A broker message is not itself the commit. |
-| Timer, model call, image generation, notification send | Workflow and Activity | Temporal | Current runtime for story timers and scripted generation. Proposed target for a later image or notification process. |
-| Payment-processor notice | Command | Direct HTTPS into the payments owner | Proposed target. No processor is selected and no call is claimed. |
+| Timer, model call, or notification send | Workflow and Activity | Temporal | Current runtime for story timers and scripted generation. Proposed target for a later notification process. Image generation is optional media, not a required service. |
+| SaaS billing notice, only if isolation later justifies a platform process | Command | Direct HTTPS into that platform owner | Proposed target, not required, and not proven. It never handles a fictional merchant. No processor is selected and no call is claimed. |
 
 Player HTTP stays on [Service calls are not player routes](./http-api-and-client-contracts.md#service-calls-are-not-player-routes). A direct HTTP command between services is not a new player route.
 
@@ -114,7 +114,7 @@ Out-of-order and duplicate delivery, proposed target: the owner applies command 
 
 Rolling schema, proposed target: a type name ends in a version, such as `story.advanced.v1`. During a rollout the producer may emit v1 and v2. A consumer applies a version it understands, once. A version it does not understand stays unapplied. It is not rewritten into an older type. An optional field may be ignored by an older consumer. Changing the meaning of a field is a new version. Reading an old payload through a newer projection does not execute the command again.
 
-Negative: a consumer replay cannot authorize a duplicate currency or inventory mutation. Redelivering the economy command, or replaying the business event that reported the change, returns the stored result. A notification, illustration, Storyteller, or web read model may observe that fact. None of them may send a second adjust or transfer for the same causation id. The current runtime analogue is the story continuation: `commitStoryContinuation` returns before `applyStoryItemEffects` when the same transition id already matches. That path is not a currency ledger, and it is not the proposed inbox. There is no currency mutation in that function for a replay to double.
+Negative: a replay cannot duplicate an admitted roll, a story-item transfer, or another committed effect. Redelivering the same command id returns the stored result. A notification, the Storyteller, or a web read model may observe that fact. None of them may send a second command that applies it again. An imaginary market is not a service. The current runtime analogue is the story continuation: `commitStoryContinuation` returns before `applyStoryItemEffects` when the same transition id already matches. That return is not a new proof run, and it is not a market ledger.
 
 ## From decision to consequence
 

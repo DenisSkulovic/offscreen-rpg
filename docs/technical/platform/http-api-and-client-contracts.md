@@ -180,9 +180,9 @@ Chamber inspection can read a selected intention through the developer adapter. 
 
 Current runtime: a player command is direct HTTP to the Nest API in the modular monolith. The actor, frozen operation id, 202, GET, and error headings above still govern that call.
 
-Proposed target: a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept economy, payments, or notification commands from the browser.
+Proposed target: a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept a notification command or a fictional-market command from the browser.
 
-Negative: minting a fresh player operation id to recover a lost response stays forbidden on player routes. That fresh id is not an economy causation id. A consumer replay cannot authorize a duplicate currency or inventory mutation. Inventory and currency writes stay on the economy command in [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records). This page does not add a currency or an inventory endpoint.
+Negative: minting a fresh player operation id to recover a lost response stays forbidden on player routes. That fresh id cannot duplicate an admitted roll, a story-item transfer, or another committed effect. An imaginary market is not a service. This page does not add a market endpoint. Effect identity stays on [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records).
 
 ## Contract dependencies
 
@@ -192,7 +192,7 @@ Negative: minting a fresh player operation id to recover a lost response stays f
 | [Frozen operation identity](#frozen-operation-identity) | constrained-by | [Five owners](../engine/lifecycle-and-compatibility.md#five-owners) | Lifecycle command identity says a retry reuses the captured operation. The HTTP rule has to keep that id. |
 | [GET truth and SSE hints](#get-truth-and-sse-hints) | co-change | [Commands and hints](../client/state-and-server-boundary.md#commands-and-hints) | Client invalidation has to keep GET as the scene. A hint payload change has to be reviewed with that client rule. |
 | [Private DTO projection](#private-dto-projection) | constrained-by | [Authentication and sessions](identities-and-access.md#authentication-and-sessions) | What the viewer may read stays the access rule. A public field that exposed another owner's stored row would violate it. |
-| [Service calls are not player routes](#service-calls-are-not-player-routes) | constrained-by | [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records) | A player HTTP replay stays on the frozen operation id. It does not become permission for a second inventory or currency write. |
+| [Service calls are not player routes](#service-calls-are-not-player-routes) | constrained-by | [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records) | A player HTTP replay stays on the frozen operation id. It does not become permission to apply a committed effect again. |
 | [Service calls are not player routes](#service-calls-are-not-player-routes) | constrained-by | [Commands, business events, and workflows](execution-and-delivery.md#commands-business-events-and-workflows) | Direct HTTP, a broker event, and a Temporal workflow stay different transports. This page cannot turn a broker message into a player route. |
 
 ## Unknowns

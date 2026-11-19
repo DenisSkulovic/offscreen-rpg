@@ -1,6 +1,6 @@
 # Delivery, operations and validation
 
-**Find the section:** [who owns the boundary](#who-owns-the-boundary) · [start locally](#local-development) · [Chamber/testing](#scripted-testing-chamber) · [live proof criteria](#first-live-story-poc-what-the-run-must-mean) · [deployment target](#first-hosted-deployment) · [observability](#observability) · [architecture tests](#tests-that-demonstrate-the-architecture). Read the relevant section rather than loading this entire document.
+**Find the section:** [who owns the boundary](#who-owns-the-boundary) · [start locally](#local-development) · [Chamber/testing](#scripted-testing-chamber) · [live proof criteria](#first-live-story-poc-what-the-run-must-mean) · [deployment target](#first-hosted-deployment) · [Kubernetes](#kubernetes-as-a-deliberate-extension) · [disposable Postgres proof](#disposable-cloudnativepg-proof) · [observability](#observability) · [architecture tests](#tests-that-demonstrate-the-architecture). Read the relevant section rather than loading this entire document.
 
 The portfolio should demonstrate a coherent system operating under failure, not merely a list of technologies. A visitor should be able to run a local demo, experience a short story and inspect evidence of correct scheduling, state handling and measured AI use.
 
@@ -99,6 +99,10 @@ The hosted release in [First hosted deployment](#first-hosted-deployment) may la
 The educational laboratory is a different environment. Its contract, including local operators and a message broker, is [Distributed learning target](./topology.md#distributed-learning-target). The first local procedure is [Kubernetes lab](../../runbooks/kubernetes-lab.md): a disposable kind cluster that is deleted after its probes. Practicing those tools locally does not satisfy the hosted release and does not mean the game is deployed on Kubernetes. Do not add a service mesh, multi-region replication, or an abstraction whose only purpose is to look advanced. Autoscaling waits on a measured signal such as Task Queue schedule-to-start latency. CPU alone may not describe a worker that is waiting on a model.
 
 A diagram of future infrastructure is not a claim that the service is deployed and tested.
+
+### Disposable CloudNativePG proof
+
+The laboratory can run one CloudNativePG primary in namespace `lab-postgres` on the lab `local-path` storage class. The procedure is [Kubernetes Postgres](../../runbooks/kubernetes-postgres.md). Deleting that primary Pod does not delete a committed row: the row stays on the persistent volume, and the operator starts another Pod on the same claim. Deleting the kind cluster does not preserve local-path volumes, because those files live on the kind node disk and leave with the node. That Pod replacement is not a backup, not a restore, and not a three-replica highly available database. The game database stays on Compose. This proof does not satisfy [First hosted deployment](#first-hosted-deployment).
 
 ## Observability
 
