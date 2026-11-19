@@ -5,6 +5,14 @@
 **Does not own:** mechanical receipts and time ([gameplay continuity](../gameplay/continuity.md), [rules](../gameplay/rules.md)).  
 **Technical companion:** [context and memory](../../technical/storyteller/context-and-memory.md).
 
+## Branch-scoped knowledge | selected long-term invariant (2026-11-19)
+
+The Storyteller must work from **the campaign branch's own truth at the exact admitted scene/state revision**, not from a globally merged memory of every alternative continuation. A new story fork from any committed scene inherits that scene's valid mechanical state and **only the canon and evidence available up to that scene**. Later parent-story revelations, amended relationships and changed possessions must not silently appear in the new branch. The fork may then establish its own descriptions and developments without rewriting its ancestor or sibling branches. A story may intentionally reuse the same pinned source-world library; that shared world reference does not make divergent campaign developments universal facts.
+
+The Storyteller may propose bounded changes to lore, identity, relationships and narrative threads, linked to the scene and source evidence that established them. The engine admits mechanical effects separately. Derived summaries, search results, private plans and the model's conversational recollection can suggest what to inspect but cannot grant truth or write through to a campaign. The Storyteller's remembered information must distinguish what is **true in this branch now**, what a character **knows or believes**, what is **historically evidenced**, and what is merely **possible**.
+
+The exact storage format, reconstruction strategy, indexing engine and amount of historical context to retrieve remain technical design decisions. This selected product guarantee is stronger than today's one-shot recall and current-only fork support. [Scene checkpoints](../foundations/vision.md#scene-history-and-alternate-continuities) establish the product requirement; [canonical documents](../../technical/storyteller/canonical-documents-and-packages.md) and [context selection](../../technical/storyteller/context-selection-and-recall.md) own technical realization. Do not claim that retaining immutable files alone proves the DM can recall an old detail correctly.
+
 ## Current truth versus inspectable history
 
 A useful detail must survive more than the immediately following choice. When later play changes that detail, the Storyteller receives the **current admitted version**, not an obsolete description and its correction as equally live facts. Earlier passages and document versions remain inspectable history. The current canonical record answers what is true now. This applies to a collapsed road, a changed relationship, a repaired wall or a revised private possibility. It is not a quest-specific memory system.

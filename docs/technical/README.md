@@ -4,6 +4,7 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 
 | Question | Owner |
 | --- | --- |
+| What knowledge can a Storyteller read at a forked scene, and what remains only a search candidate? | [Fork-scoped retrieval and task input](storyteller/context-selection-and-recall.md#fork-scoped-retrieval-and-task-input--selected-target-2026-11-19) and [Scene-rooted canon](storyteller/canonical-documents-and-packages.md#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19). Selected target, not proof of working historical recall |
 | What is deployed, and who calls whom? | [Topology](platform/topology.md) |
 | What may the educational laboratory practice, and what is still the current runtime? | [Distributed learning target](platform/topology.md#distributed-learning-target). A selected learning target. Not a deployed cluster, not a broker in the game, and not a replacement of [D-0001](../decisions/D-0001--modular-engine.md) |
 | Who is logged in, and what may they read? | [Identities and access](platform/identities-and-access.md) |
