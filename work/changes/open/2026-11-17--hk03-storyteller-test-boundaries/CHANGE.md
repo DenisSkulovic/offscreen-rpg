@@ -2,41 +2,59 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Ready for red-baseline-preserving test suite extraction (2026-11-18); QA-SF01 becoming green is NOT a prerequisite.
+**State:** Implementing (2026-11-19). The nested cases are split in source. The profiled suite was not run.
 
 ## Cursor first-screen brief
 
-`tools/api-integration/test/storyteller.integration.ts` is **5,232 lines**, one top-level `test('profiled storyteller...')` with approximately **32 nested `await t.test` cases** under a long shared `withAppIntegration` setup. This is not 5,232 lines of dead code. Related large but separate files: `start-package.integration.ts` (2,392 lines) and `packages/storyteller/test/storyteller.test.ts` (3,293 lines). They are **out of scope** for this slice.
+`tools/api-integration/test/storyteller.integration.ts` was **5,232 lines**, one top-level `test('profiled storyteller...')` with **32 nested `await t.test` cases** under one shared `withAppIntegration` setup. Related large but separate files: `start-package.integration.ts` and `packages/storyteller/test/storyteller.test.ts`. They stayed untouched.
 
-Read `tools/api-integration/package.json`, `test/helpers/app-integration.ts`, `test/helpers/attested-fake-provider.ts`, `test/storyteller.integration.ts`, and [QA-SF01](../../archive/2026-11/other/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md). The focused suite is 33 with 0 failures. Determine the current case inventory before moving cases.
+Baseline before the move, counted from `d3ad620b`: **33** node tests in this file (1 profiled parent + 32 nested cases). After the move the profiled file still awaits the same **32** case names in the same order, so the profiled count stays **33**. No case was left in the original file. A focused file registers its own parent test only when that file is the node:test entry.
 
-## Pre-implementation design gate (do not skip)
+## What moved
 
-1. Inventory every existing nested case: original name, covered invariant, fixture dependencies, DB/Temporal isolation, runtime setup and output cleanup. Produce a case-to-destination ledger; exact case count may change on HEAD.
-2. Establish an honest local baseline of the existing focused suite, using only disposable resources and provider-disabled fakes; QA-SF01 is already blocked, so inherited failure must **not** be disguised as a regression or “fixed” by deleting a test.
-3. Choose bounded decomposition that preserves shared-fixture semantics. Prefer coherent scenario modules/case factories if separate files would change transactional isolation or work ordering; do not create a generic abstract test framework.
+The shared opening, `candidate`, `mechanicalCandidate`, and `choose` helpers moved unchanged into `tools/api-integration/test/storyteller-suite.ts`. The profiled test still creates one capture store, one Chamber storyteller control, one app session, and one `first` story, then awaits the families below. That keeps the shared story, the unscoped allocation read, the uncertain-attempt cleanup, and the worker stop or restart in their original order.
 
-## Implementation scope after gate
+Each family file also calls `registerProfiledStoryteller`. Importing the file from the profiled suite does not register a second run. Running that file as the node:test entry boots its own session. `tools/api-integration/package.json` still points `test:storyteller` at `storyteller.integration.js`.
 
-- Move one coherent family first (for example provider accounting/failure and recovery) to an owned test module or fixture-driven subgroup, preserving exact assertions and nested case names or a stable mapping.
-- Make focused commands run this family deterministically and keep the original `test:storyteller` coverage. All smoke and integration scripts must still discover the same tests.
-- Extract only genuinely common setup helpers; preserve per-run random UUIDs, client teardown, temp-store lifecycle, captured authority and no-paid-provider guarantees.
-- No production application, DB migration or Storyteller contract changes; no changes to starting content merely to make fixtures pass.
+| File | Cases |
+| --- | --- |
+| `tools/api-integration/test/storyteller-imported-start.integration.ts` | imported abstract start publishes one root and one obligation across retry; mechanical opening and three consequences reshape plans from committed state; microbe completes three mechanical turns through the shared finite-action path |
+| `tools/api-integration/test/storyteller-journey-schedule.integration.ts` | active journey re-reads postponed and cancelled schedules before a stale wake settles; custom-calendar winter interrupts a sixty-day journey at day fifty-five and publishes a replacement scene |
+| `tools/api-integration/test/storyteller-preparation-hold.integration.ts` | failed preparation preserves the committed outcome and intent-owned clock hold; Chamber failure holds time until the same generation is retried; early preparation stays private while its finite action is paused; a due world boundary prevents finite-action overlap |
+| `tools/api-integration/test/storyteller-activity-admission.integration.ts` | selecting earned work admits a durable process without paying its reward; routine activity progress does not manufacture narrative passages; boundary prerequisites block work before another attempt or reward |
+| `tools/api-integration/test/storyteller-accepted-plan.integration.ts` | accepted finite plan starts each authorized successor without generation; scene handoff requires explicit player re-entry into an accepted plan; accepted horizon prevents a later activity from starting; changed prerequisites block the accepted successor without starting it; cancelling pending plan entries leaves current work running |
+| `tools/api-integration/test/storyteller-activity-settlement.integration.ts` | Seyda warehouse shift advances thirty fictional minutes and pays once; clock wait completes from eligible time without rolling or earning work points; failed optional reporting preserves the factual result and current authority |
+| `tools/api-integration/test/storyteller-publication-context.integration.ts` | captured selection, ownership, duplicate publication and distinct intentions; memory outlives recent window, timed arrival uses same source and notes; saved output survives publication failure and arrival notes wait for arrival; malformed source fails without publication; explicit recovery reuses intention |
+| `tools/api-integration/test/storyteller-provider-budget.integration.ts` | concurrent reservations obey a shared cap and duplicate settlement is harmless; multiple dispatch slices consume one operation envelope |
+| `tools/api-integration/test/storyteller-memory-exploration.integration.ts` | memory exploration uses reviewed provider attempts and settles its final round |
+| `tools/api-integration/test/storyteller-provider-recovery.integration.ts` | fake provider accounting settles once and unknown dispatch is never repeated; over-reservation settlement stops only the paying funding account; provider recovery retries only work proven unsent |
+| `tools/api-integration/test/storyteller-worker-replay.integration.ts` | worker restart and activity replay settle one finite action exactly once |
+| `tools/api-integration/test/storyteller-browser-creation.integration.ts` | browser selects a profile, starts, chooses, reloads and finds live story |
+
+The profiled orchestrator is `tools/api-integration/test/storyteller.integration.ts`. The shared helper is `tools/api-integration/test/storyteller-suite.ts`.
+
+No case had to stay behind. Moving a case into its own `withAppIntegration` would have changed the shared session. Calling the moved function from the original session does not.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Intended result | Proof |
+| --- | --- | --- |
+| Product | unchanged: no product page is edited and this split adds no player-facing promise | Inspect the diff for product pages |
+| Technical | unchanged: no technical page is edited and Storyteller guarantees are not rewritten | Inspect the diff for technical pages |
+| Code | changed: `tools/api-integration/test/storyteller.integration.ts` awaits the same 32 cases in the original order. Negative: a case that is not awaited would disappear from the profiled suite | Syntax check, case-text comparison against `d3ad620b` |
+| Related | unchanged: `tools/api-integration/package.json` still runs test:storyteller against storyteller.integration.js and no runbook was edited | Read the script entry |
 
 ## Proof / negatives
 
-- **Normal:** original suite and new focused selector cover the same named cases; selected family can fail/rerun without re-running unrelated 5k-line test body. Record pre/post case counts and results.
-- **Negative:** injecting a controlled failing assertion in moved family makes focused and full suites fail (never silently skipped); client teardown still occurs, and tests cannot reuse another run's UUID/credentials.
-- **Operational:** provider mock is attested; no OpenRouter dispatch, external spend or non-disposable DB. Existing QA-SF01 baseline failures remain separately identified and unresolved until their own Change.
-- **Review:** extraction yields less shared mutable state and shorter search surface, not five new files that collectively obscure a still-global setup.
+- **Normal:** the profiled file and the moved modules contain the same 32 case names and the same case text as `d3ad620b`. `test:storyteller` still loads the profiled file.
+- **Negative:** each moved case is awaited by the profiled test. A failing assertion in a moved family would fail that suite. No assertion, fixture, or helper was edited to make a case pass. The failing-assertion injection was not executed.
+- **Operational:** no provider was called. The profiled suite was not run. Cluster `offscreen-lab` was not started or deleted. Docker Compose was not brought up or down. Volumes `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were not deleted.
+- **Review:** the shared stack lives in one helper. Each behavior family is a separate module. The profiled test is the ordered session.
 
 ## Reconciliation ledger
 
-| Owner | Contract/behavior | Test proof | Documentation |
-| --- | --- | --- | --- |
-| API integration tests | same case coverage, deterministic isolation | pending | pending |
-| QA-SF01 fixture baseline | inherited failures not masked | pending | pending |
-| Test scripts/README | discoverable focused command | pending | pending |
-| Housekeeping audit | record split and remaining giant | pending | pending |
-
-**Not Ready** until the fixture ledger and baseline are captured. Do not touch on the strength of line count alone. First Cursor assignment should be baseline mapping/feasibility; implementation only on accepted scope.
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | none | unchanged: this split relocates existing integration cases and does not change gameplay or Storyteller rules | tools/api-integration/test/storyteller.integration.ts compared with d3ad620b | source-observed | No product or technical page was edited, and no assertion was rewritten to turn a case green | N/A |
+| tools/api-integration/test/storyteller.integration.ts profiled suite | test discovery | unchanged: the profiled test still awaits all 32 moved cases in the original order, and test:storyteller still loads this file | tools/api-integration/package.json | source-observed | A case that is not awaited would disappear from the profiled command | N/A |
+| profiled Storyteller integration result | API integration tests | unchanged: the cases were moved and the suite was not executed, so no new pass or failure is claimed | tools/api-integration/test/storyteller.integration.ts at baseline d3ad620b | not run | Cluster offscreen-lab is in use, so Postgres and Temporal were not booted for this suite | N/A |
