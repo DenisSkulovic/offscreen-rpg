@@ -1,6 +1,6 @@
 # D2 | Scene checkpoint and canonical-state contract for the distributed POC
 
-**Status:** candidate design, 2026-11-19. Not a selected implementation or proof of running historical forks. Reconcile normative sections via [DATA01](../../../changes/open/2026-11-19--data01-scene-checkpoint-contract/CHANGE.md). This narrows [ARCH03](../../../changes/open/2026-11-19--arch03-branch-scoped-storyteller-knowledge/CHANGE.md), not replaces it. The eventual product requirement is still **review and independently fork from any committed scene**; this POC must prove an actual *non-current* fork without promising unsupported current histories.
+**Status:** candidate design, 2026-11-19. Not a selected implementation or proof of running historical forks. Reconcile normative sections via [DATA01](../../../changes/open/2026-11-19--data01-scene-checkpoint-contract/CHANGE.md). This narrows [ARCH03](../../../changes/archive/2026-11/other/2026-11-19--arch03-branch-scoped-storyteller-knowledge/CHANGE.md), not replaces it. The eventual product requirement is still **review and independently fork from any committed scene**; this POC must prove an actual *non-current* fork without promising unsupported current histories.
 
 ## What source actually stores (inspected HEAD 2026-11-19)
 
