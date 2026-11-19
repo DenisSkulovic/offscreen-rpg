@@ -13,6 +13,8 @@ Use the approved product contract, owning technical section, selected CHANGE.md/
 
 Have ChatGPT do the expensive design and broad source investigation before handing work to Cursor. For documentation Changes, the source is the canonical text, inbound references and the evidence that distinguishes target from realization. For frontend use [frontend engineering](../frontend-engineering/SKILL.md) to provide 2–5 real paths, named symbols, known API contract and discriminating negative case. The [2026-11 execution playbook](../../../research/legacy-engineering/frontend-execution-playbook.md) is dated evidence, not the current executor. Cursor rechecks those anchors locally, widening only for a concrete contradiction. Reuse the selected Change packet. A legacy initiative's FEATURE/PLAN is context, **not** an executable spec by itself. Do not generate a second plan for every small slice.
 
+**Model-budget handoff gate (owner-selected):** Before dispatch, follow [Cursor model routing](../../references/cursor-model-budget-policy.md). Use `economical-researcher` (Composer 2.5 Standard) for doc/search/mechanical work; `economical-implementer` (Grok 4.6 Low Standard) for low-risk bounded code; `careful-engineer` (Grok 4.6 Medium Standard) for persistence, payments, permissions, retries, forks and integration. Specify the pinned profile and require observed actual model/effort/speed in the receipt. **No Auto, Fast, High/XHigh, Grok 4.7 or different-model fallback**, even if the execution is blocked. The parent must be set manually to Grok 4.6 Medium Standard. A model guard cannot itself change Cursor's parent selector.
+
 ## Deliver this bounded packet
 
 ```text
