@@ -2,7 +2,7 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** OBS00-A Done; OBS00-B Ready for fail-closed independent authority source and mock transport implementation (2026-11-18); live paid dispatch still DENIED.
+**State:** OBS00-A Done; OBS00-B fail-closed comparison recorded (2026-11-19); live paid dispatch still DENIED. Mock transport stays deferred. This packet is not Done.
 
 **Source evidence:** [live-worker wiring preflight](../../../../evidence/runs/observability-program-2026-11-15/live-worker-dispatch-preflight-2026-11-15.md). **A proof:** [obs00-a](../../../../evidence/runs/observability-program-2026-11-15/obs00-a-dispatch-forward-2026-11-15.md). **Related contracts:** [prompt exactness](../../../../docs/technical/observability/identities-and-evidence.md), [capture failure semantics](../../../../docs/technical/observability/capture-and-provenance.md), [private storage](../../../../docs/technical/observability/retention-and-access.md).
 
@@ -20,11 +20,11 @@ At `packages/application/src/storyteller/config.ts` the worker adapter conforms 
 
 **Negative proven:** mismatched execution fails before provider; repair dispatch body identity is distinct from `task.request`; live options omit `dispatchAuthority`.
 
-### B. Restore independent current usage authority — **Blocked**
+### B. Restore independent current usage authority — **fail-closed check only; live dispatch still denied**
 
-**Do not hardcode `dispatchAuthority: async()=>task.resources.authority.policy` or `true`.** `retainsCapturedAuthority` is specifically designed to compare captured creative/usage authority to current effective policy. A task snapshot is **not** independent authority, and an environment route string alone isn't entitlement.
+**Do not hardcode `dispatchAuthority: async()=>task.resources.authority.policy` or `true`.** `retainsCapturedAuthority` compares captured creative/usage authority to an independently supplied current policy. `retainsIndependentCurrentAuthority` is the resolution-shaped check: a missing current resolution, a denied resolution (revoked or disabled entitlement, route, or funding), and any unequal policy are denied. Deep equality is the only allow. A task snapshot is **not** an input to that check, and an environment route string alone isn't entitlement.
 
-Before implementing a live resolver, identify actual persistent server-owned sources of **platform policy, account/entitlement profile, active restrictions, route and funding mode**. `packages/application/src/storyteller/usage-policy-resolution.ts::resolveEffectiveUsagePolicy` is a pure intersection helper; this source inspection did **not** find a ready-to-use current-authority DB resolver wired in worker bootstrap. If those policy sources cannot be loaded independently and safely from the current system, leave provider dispatch **denied** and record the missing authority integration as a separate explicit blocker.
+**Missing live source (2026-11-19):** `packages/db` has no platform-policy, entitlement, restriction, or funding-grant table. The only persisted usage document is `story.usage_policy` (`packages/db/src/schema/stories.ts`), and that column is a captured snapshot. `resolveEffectiveUsagePolicy` intersects profiles the caller already holds; it does not load them. No worker bootstrap reads a current grant. This slice does not invent that store and does not wire a live call. `readStorytellerWorkerOptions` still omits `dispatchAuthority`, so paid dispatch stays denied.
 
 **Candidate resolver contract:**
 
@@ -62,6 +62,26 @@ An optional production safety fence can check exact packet identity pre-send if 
 - No new prompt instructions, Storyteller schema/agent orchestration, ENG03 capture redesign, Admin S3 access, production retention migration or paid evaluation.
 - No change to provider selection/limits or loosening `budget.dispatch`. This packet restores **dispatch forwarding**; it does **not** grant spending.
 - No automatic migration of previously `unsent`/`uncertain` attempts into new paid sends without explicit existing recovery gate.
-- OBS00-B remains explicitly blocked pending independent server-owned authority sources.
+- OBS00-B's live resolver remains absent. The fail-closed comparison is recorded, and paid dispatch stays denied until an independent server-owned authority source exists.
 
-**A Done; B not Ready.** Paid/provider launch still gated on OBS00-B.
+**A Done; B's live dispatch is not Done.** Paid launch stays gated. The proof is `packages/application/test/obs00-b-fail-closed-authority.test.mjs` against `packages/application/src/storyteller/dispatch-authority.ts`. A revoked entitlement is denied. An equal independently supplied current policy is the only allow. The task snapshot with no current resolution is denied. The default worker still omits `dispatchAuthority`.
+
+`node --test packages/application/test/obs00-b-fail-closed-authority.test.mjs` passed 2 tests and failed 0 without a provider call. The negative case is a disabled entitlement (`policy_disabled`), a null current resolution, a tightened limit, and a changed profile revision, each denied while the captured snapshot is still present. Live dispatch stays denied because no independent grant store exists.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because this slice does not grant spending, change a player rule, or enable a live provider | docs/product/storyteller/profiles-and-settings.md | Creative settings stay distinct from entitlement |
+| Technical | unchanged because current entitlement must still be rechecked, and this slice does not add a grant store | docs/technical/platform/spending-and-entitlements.md#distinct-authorities | Live dispatch stays denied |
+| Code | changed: packages/application/src/storyteller/dispatch-authority.ts denies a missing, revoked, or changed entitlement. Negative: a task snapshot is not current authority, and the worker still rejects paid dispatch by omitting dispatchAuthority | packages/application/src/storyteller/dispatch-authority.ts | Provider-free unit test; no live resolver |
+| Related | unchanged because mock transport and the live authority store stay outside this slice | work/designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md | OBS00-C remains deferred |
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/technical/platform/spending-and-entitlements.md#distinct-authorities | technical | unchanged because entitlement, funding, and recipe stay distinct and this slice adds no grant | packages/application/src/storyteller/dispatch-authority.ts at baf75f03 | source-observed | a disabled entitlement does not become a current policy | the heading stayed in place |
+| docs/technical/storyteller/provider-boundary.md#attempt-custody-and-an-unknown-call | technical | unchanged because dispatch stays a separate denied transition and this slice does not release a packet | packages/application/src/storyteller/config.ts at baf75f03 | source-observed | live worker options still omit dispatchAuthority | the heading stayed in place |
+| packages/application/src/storyteller/dispatch-authority.ts | code | changed: an independent current resolution must deep-equal the captured policy or the check denies | packages/application/src/storyteller/dispatch-authority.ts at baf75f03 | fixture-tested | a revoked resolution and a changed revision are denied while the snapshot remains | packages/application/test/obs00-b-fail-closed-authority.test.mjs |
+| packages/application/test/obs00-b-fail-closed-authority.test.mjs | code | changed: the provider-free test is the only allow proof for an equal current policy | packages/application/test/obs00-b-fail-closed-authority.test.mjs | fixture-tested | missing, revoked, and changed inputs are denied and the worker supplies no authority callback | the test file is the new proof |
