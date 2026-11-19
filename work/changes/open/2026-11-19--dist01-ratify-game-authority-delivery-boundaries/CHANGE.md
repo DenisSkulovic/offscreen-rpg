@@ -1,5 +1,7 @@
 # DIST01 | Ratify writer ownership, transport choreography and migration sequence
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** docs-only owner/topic reconciliation; ARCH02 is merged and Rabbit is not the wake. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
+
 **State:** Ready for owner-authorized design reconciliation (2026-11-19)  
 **Kind:** documentation  
 **Execution:** Owner may explicitly select this docs reconciliation; inspect the active ARCH02 branch first.  
