@@ -6,7 +6,7 @@ Product truth has two questions. Authority asks what the owner selected as a pre
 
 ## Visual introduction: follow a decision through the software
 
-[**Open the Architecture Atlas**](architecture/README.md) for the human-first diagram tour: system/process maps, Storyteller sequences, SQL/S3 transaction fences, failure state machines, historical forks, Kubernetes and client trust. The atlas explains, but never supersedes, the canonical product and technical pages.
+[**Designing resilience while playing**](architecture/09-chaos-and-zero-token-play.md) maps a scripted campaign, strict zero-provider execution, a guarded Pod chaos monkey and SQL/S3 invariants. This is a proposed test program, **not a passed real-game chaos test**.\n\n[**Open the Architecture Atlas**](architecture/README.md) for the human-first diagram tour: system/process maps, Storyteller sequences, SQL/S3 transaction fences, failure state machines, historical forks, Kubernetes and client trust. The atlas explains, but never supersedes, the canonical product and technical pages.
 
 ```mermaid
 flowchart LR
