@@ -7,6 +7,8 @@
 **Approval and owner:** [owner ratification of any changed selected meaning, execution authorization and executor; no implied approval from historical notes].
 **Parent initiative (optional):** [link to one program, not a copied dossier].
 
+**Planner-to-executor admission (when this is an implementation Change for Cursor):** The authoring assistant, preferably ChatGPT, must first follow [planner-first investigation](../../../references/planner-investigation-standard.md). Do the expensive source/architecture research *before* preparing the first-screen brief. For a substantial change, include a **Planner Source Map** in this Change or its `PLAN.md`: inspected SHA/date; concrete functions/callers and tests; current vs selected authority; entrypoint→data state/writes→consumers; accepted state/ID/root and retry/failure decisions; exact files/ownership/dependencies; normal and negative acceptance; unresolved facts. If a material algorithm, transaction, mapping or interface remains to be chosen by the executor, mark **Proposed / PLANNER BLOCKER**, not Ready. Keep the final route card short; do not make the executor read all planner research. For VERIFY and one-line mechanical fixes use a short equivalent, not ceremony.
+
 ## Cursor first-screen brief
 
 > **Current-source map:** [nearest document hub or source README; inspected SHA/date].  

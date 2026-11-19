@@ -7,6 +7,8 @@ description: Translate one approved documentation or implementation Change/PLAN 
 
 **Trigger:** A bounded documentation or implementation Change is selected and its product/technical authority and scope are settled. For editorial work, the intended new reader inference and claim-preservation boundary must be explicit. This skill prepares the **handoff only**; it does not implement, redefine or automatically dispatch it.
 
+**Pre-handoff quality gate:** Follow [planner-first source investigation](../../references/planner-investigation-standard.md) before formatting any medium/large implementation packet. ChatGPT (or the designated architect) researches the *actual* caller/data/transaction/source/test path and resolves meaningful design choices. A short route card is **not** proof of a complete design if the executor would still need to discover identity remapping, stale-root checks, authority or rollback. If such a gap exists, return to planner research and keep the Change Proposed; do not silently outsource architecture to Cursor. For an exact VERIFY command or trivial patch, keep planning light.
+
 ## Source of truth
 
 Use the approved product contract, owning technical section, selected CHANGE.md/PLAN checkpoint (if any) and the small relevant source map. If these conflict, **stop and identify the contradiction**. Do not make Cursor choose product policy by improvising.
