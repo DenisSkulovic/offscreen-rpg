@@ -297,7 +297,7 @@ export function scanMaintenance(input) {
           'missing-route',
           rel,
           'Open Change packet is missing from work/changes/README.md.',
-          'Add a queue link to this CHANGE.md. none remains a valid Current change.',
+          'Link this CHANGE.md from the Change catalog. No current work selected remains valid.',
         ),
       );
     }
