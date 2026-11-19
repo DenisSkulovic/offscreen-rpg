@@ -1,0 +1,14 @@
+# HK03 | Composer route: finish test split without weakening assertions
+
+**Baseline:** 584b594; **state:** Implementing. Recorded profiled run: 33 tests, 30 passed, **3 failed** (one parent plus two children). The underlying two failures were `imported abstract start ...` ENOENT at `tools/api-integration/content/rules/srd-5.2.1-subset`, and `mechanical opening ...` missing `snapshot.campaign.offer.nodes`. A later isolated imported-start path fix and duplicate assert-import fix landed; *no full rerun proves green*. **Default model:** Composer Standard.
+
+**Source:** `tools/api-integration/test/storyteller.integration.ts` profiled orchestrator, `storyteller-suite.ts` helpers, `storyteller-imported-start.integration.ts`, `storyteller-browser-creation.integration.ts`; `tools/api-integration/package.json:test:storyteller` is `node --test dist/test/storyteller.integration.js`.
+
+## T01 | Verify full suite with one safe environment | PLANNER-READY, VERIFY
+Use approved disposable `offscreen_auth_test` DB only; check DATABASE_TEST_URL, local Temporal and `STORYTELLER_LIVE_ENABLED=false`; build `@offscreen/api-integration` then run **its existing** `test:storyteller` script. Preserve all 32 nested case names/case order; record test count and actual two child failures if any. The prior 30/33 receipt is historical, not current green. No model key, DB reset of real data or changes to game assertions.
+
+## T02 | Fix only a reproducing fixture/test problem | PLANNER-READY ONLY IF ONE FAILS
+For ENOENT: source root via `import.meta.url`/checked-in repo root, not cwd-sensitive `tools/api-integration/content`; verify existing isolated fix before editing. For empty offer.nodes: compare fixture setup and published snapshot contract with `storyteller-imported-start` source; if fixture state is legitimately different, ask ChatGPT to design the corrected *test setup*, not replace assertion with truthy empty nodes. The implementer receives **one failure** and its 2–4 anchors; no global mock rewrite. For TypeScript duplicate import, verify fix; don't change unrelated browser test logic.
+
+## T03 | Proof and reconciliation | PLANNER-READY AFTER T01/T02
+Confirm identical profiled case set/order, independently runnable family files and full `tsc`, no new production semantics; update CHANGE ledger with exact counts/commands. If two nested failures remain, keep HK03 open. **No Grok review necessary for a missing import path.**
