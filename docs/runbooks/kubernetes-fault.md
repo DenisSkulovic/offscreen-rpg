@@ -1,4 +1,4 @@
-# Kubernetes fault harness
+> **Future real-game Chaos Lab:** [architecture overview](../architecture/09-chaos-and-zero-token-play.md), [K8S10 source and execution design](../../work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/EXECUTION.md). That program is **planned only**; the observed proof below is deliberately limited to one Rabbit client losing a message ACK. Do **not** use this existing forced-delete run.sh as a general random app/PG/Temporal Pod killer.\n\n# Kubernetes fault harness
 
 One worker-loss case on the disposable broker from [Kubernetes RabbitMQ](kubernetes-rabbitmq.md). The cluster procedure is [Kubernetes lab](kubernetes-lab.md). This is a laboratory experiment. It is not the game, not a Temporal Activity, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment).
 
