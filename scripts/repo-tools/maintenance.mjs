@@ -75,7 +75,7 @@ function renderHuman(report) {
   lines.push(
     `markdown ${report.markdownCount}  strict ${errors.length}  exceptions ${report.exceptionsApplied.length}`,
   );
-  lines.push(`Current change: ${report.currentChange ?? 'unreadable'}`);
+  lines.push(`Current work: ${report.currentWork ?? 'unreadable'}`);
   if (errors.length === 0) {
     lines.push('No high-confidence lifecycle findings.');
   } else {
