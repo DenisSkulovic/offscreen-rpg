@@ -6,6 +6,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { classifyChangeText } from './archive-changes.mjs';
+import { parseCurrentWork, WORK_QUEUE_FILE } from './work-selection.mjs';
 import { scanDocuments } from './wiki-core/content-health.mjs';
 import { parseMarkdownDocument } from './wiki-core/markdown.mjs';
 import { emptyKnowledgeCoverage, reviewKnowledgeCoverage } from './wiki-core/model.mjs';
@@ -97,27 +98,6 @@ function covers(targets, prefix) {
   );
 }
 
-function parseCurrentChange(text) {
-  const declarations = [...text.matchAll(/^Current change: (.+?)\s*$/gm)];
-  if (declarations.length !== 1) {
-    return {
-      ok: false,
-      message: `work/changes/README.md needs exactly one Current change line; found ${declarations.length}.`,
-    };
-  }
-  const selected = declarations[0][1].trim();
-  if (selected === 'none') return { ok: true, selected: 'none', href: null };
-  const match = /^\[[^\]]+\]\(([^)#]+)\)\s*$/.exec(selected);
-  if (!match) {
-    return {
-      ok: false,
-      selected,
-      message: 'Current change must be none or one relative CHANGE.md link.',
-    };
-  }
-  return { ok: true, selected, href: match[1] };
-}
-
 function exceptionFor(exceptions, rel, today) {
   const row = exceptions.find((item) => posix(item.path) === rel);
   if (!row) return null;
@@ -205,6 +185,8 @@ export function scanMaintenance(input) {
       complete: false,
       counts,
       markdownCount: markdown.length,
+      currentWork: null,
+      selectedWorkPath: null,
       currentChange: null,
       findings: [],
       exceptionsApplied: [],
@@ -250,39 +232,58 @@ export function scanMaintenance(input) {
     return links.targets;
   }
 
-  const queueRel = 'work/changes/README.md';
+  const queueRel = 'work/changes/README.md'; // catalog, not selection
+  const taskIndexRel = 'work/tasks/open/README.md';
+  const workQueueRel = WORK_QUEUE_FILE;
   const designRel = 'work/designs/README.md';
   const queueTargets = markdown.includes(queueRel) ? consider(queueRel) : null;
+  const taskTargets = markdown.includes(taskIndexRel) ? consider(taskIndexRel) : null;
+  const workQueueTargets = markdown.includes(workQueueRel) ? consider(workQueueRel) : null;
   const designTargets = markdown.includes(designRel) ? consider(designRel) : null;
+  for (const router of ['work/tasks/README.md', 'work/tasks/archive/README.md', 'work/WORK-TAXONOMY.md']) {
+    if (markdown.includes(router)) consider(router);
+  }
+  if (!workQueueTargets) {
+    findings.push(finding(
+      'error', 'missing-work-queue', workQueueRel,
+      'The single Current work selector is missing or unreadable.',
+      'Restore work/QUEUE.md with exactly one Current work line; none is valid.',
+    ));
+  }
+  const selected = workQueueTargets ? parseCurrentWork(readText(workQueueRel)) : { ok: false };
+  if (!selected.ok && workQueueTargets) {
+    findings.push(finding(
+      'error', 'invalid-selection', workQueueRel, selected.message,
+      'Use Current work: none or a link to one open CHANGE.md/TASK.md.',
+    ));
+  } else if (selected.ok && selected.target && !files.includes(selected.target)) {
+    findings.push(finding(
+      'error', 'invalid-selection', workQueueRel,
+      `Selected ${selected.target} is not a tracked open packet.`,
+      'Restore the referenced packet or select none; do not select an archived item.',
+    ));
+  }
+  if (queueTargets && /^Current change:/m.test(readText(queueRel))) {
+    findings.push(finding(
+      'error', 'legacy-selection', queueRel,
+      'Change catalog still declares a competing Current change selection.',
+      'Use Current work in work/QUEUE.md as the sole selector; keep this page a catalog.',
+    ));
+  }
 
-  if (queueTargets) {
-    const queueText = readText(queueRel);
-    const current = parseCurrentChange(queueText);
-    if (!current.ok) {
-      findings.push(
-        finding(
-          'error',
-          'invalid-selection',
-          queueRel,
-          current.message,
-          'Set Current change to none or to one open CHANGE.md.',
-        ),
-      );
-    } else if (current.href) {
-      const resolved = resolveHref(root, queueRel, current.href);
-      const target = resolved.ok ? posix(resolved.rel) : '';
-      const openPacket = /^work\/changes\/open\/[^/]+\/CHANGE\.md$/.test(target);
-      if (!openPacket) {
-        findings.push(
-          finding(
-            'error',
-            'invalid-selection',
-            queueRel,
-            `Current change resolves to ${target || current.href}, which is not an open CHANGE.md.`,
-            'Point Current change at work/changes/open/<leaf>/CHANGE.md, or set it to none.',
-          ),
-        );
-      }
+  // A tracked open folder without its front door is an error, even if no
+  // CHANGE.md exists to be discovered by the older packet-only scan.
+  const changeLeaves = new Set(
+    files.filter((rel) => /^work\/changes\/open\/[^/]+\//.test(rel))
+      .map((rel) => rel.split('/').slice(0, 4).join('/')),
+  );
+  for (const leaf of [...changeLeaves].sort()) {
+    if (!files.includes(`${leaf}/CHANGE.md`)) {
+      findings.push(finding(
+        'error', 'orphan-open-folder', leaf,
+        'Tracked open Change folder has no CHANGE.md front door.',
+        'Restore its Change packet or move completed material to the matching archive.',
+      ));
     }
   }
 
@@ -352,6 +353,61 @@ export function scanMaintenance(input) {
           'Move it to open/ and index it, or set a terminal state.',
         ),
       );
+    }
+  }
+
+  const taskLeaves = new Set(
+    files.filter((rel) => /^work\/tasks\/open\/[^/]+\//.test(rel))
+      .map((rel) => rel.split('/').slice(0, 4).join('/')),
+  );
+  for (const leaf of [...taskLeaves].sort()) {
+    if (!files.includes(`${leaf}/TASK.md`)) {
+      findings.push(finding(
+        'error', 'orphan-open-task', leaf,
+        'Tracked open standalone Task folder has no TASK.md front door.',
+        'Restore its TASK.md or archive the completed operational record.',
+      ));
+    }
+  }
+  for (const rel of markdown) {
+    if (!/^work\/tasks\/open\/[^/]+\/TASK\.md$/.test(rel)) continue;
+    const leaf = rel.slice(0, rel.lastIndexOf('/'));
+    if (!taskTargets || !covers(taskTargets, leaf)) {
+      findings.push(finding(
+        'error', 'missing-route', rel,
+        'Open standalone Task is not linked from work/tasks/open/README.md.',
+        'Link the TASK.md in the open Task index; selecting none remains valid.',
+      ));
+    }
+    const content = readOrNull(readText, rel);
+    if (content == null) continue;
+    consider(rel);
+    const state = classifyChangeText(content);
+    if (state.label.startsWith('(no State')) {
+      findings.push(finding(
+        'error', 'unclassified-state', rel,
+        'Open Task has no State or Status line.',
+        'Declare Proposed, Ready, In-progress or Blocked.',
+      ));
+    } else if (state.kind === 'archive') {
+      findings.push(finding(
+        'error', 'terminal-open', rel,
+        `Open Task declares a terminal state (${state.label}).`,
+        'Archive the Task packet with its evidence or correct the state.',
+      ));
+    }
+  }
+  for (const rel of markdown) {
+    if (!/^work\/tasks\/archive\/\d{4}-\d{2}\/[^/]+\/TASK\.md$/.test(rel)) continue;
+    const content = readOrNull(readText, rel);
+    if (content == null) continue;
+    const state = classifyChangeText(content);
+    if (state.label.startsWith('(no State') || state.kind !== 'archive') {
+      findings.push(finding(
+        'error', 'active-archived', rel,
+        'Archived Task is missing a terminal Done or Cancelled state.',
+        'Record actual terminal disposition or return the Task to open.',
+      ));
     }
   }
 
@@ -433,7 +489,9 @@ export function scanMaintenance(input) {
     complete: true,
     counts,
     markdownCount: markdown.length,
-    currentChange: queueTargets ? parseCurrentChange(readText(queueRel)).selected ?? null : null,
+    currentWork: selected.ok ? selected.selected : null,
+    selectedWorkPath: selected.ok ? selected.target : null,
+    currentChange: selected.ok && selected.kind === 'change' ? selected.selected : 'none',
     findings: kept,
     exceptionsApplied,
     delegated: [
@@ -453,8 +511,8 @@ const BACKTICK_PATH =
 
 function isActivePage(rel) {
   if (ROOT_OWNERS.has(rel) || rel.startsWith('docs/')) return true;
-  if (rel.startsWith('work/changes/open/') || rel.startsWith('work/designs/open/')) return true;
-  if (rel === 'work/README.md' || rel === 'work/changes/README.md' || rel === 'work/designs/README.md') {
+  if (rel.startsWith('work/changes/open/') || rel.startsWith('work/designs/open/') || rel.startsWith('work/tasks/open/')) return true;
+  if (['work/README.md', 'work/QUEUE.md', 'work/WORK-TAXONOMY.md', 'work/changes/README.md', 'work/designs/README.md', 'work/tasks/README.md', 'work/tasks/archive/README.md'].includes(rel)) {
     return true;
   }
   if (rel === 'research/README.md' || rel === 'evidence/README.md' || rel === '.agents/README.md') return true;
@@ -531,10 +589,7 @@ function attachFreshness(report, input, markdown, readText) {
   const dirty = new Set((history.dirty ?? []).map(posix));
   const commits = history.commits ?? {};
   const active = markdown.filter(isActivePage);
-  const selectedHref = /^\[[^\]]+\]\(([^)#]+)\)$/.exec(report.currentChange ?? '')?.[1] ?? null;
-  const selectedPath = selectedHref
-    ? posix(resolveHref(input.root, 'work/changes/README.md', selectedHref).rel ?? '')
-    : '';
+  const selectedPath = report.selectedWorkPath ?? '';
 
   /** @type {Map<string, { owner: string, edge: string }[]>} */
   const inbound = new Map();
@@ -592,7 +647,7 @@ function attachFreshness(report, input, markdown, readText) {
     const missing = !sourceCommit && !(history.present ?? (() => true))(source);
     for (const edge of owners) {
       const ownerCommit = commits[edge.owner];
-      const control = ROOT_OWNERS.has(edge.owner) || edge.owner === 'work/changes/README.md';
+      const control = ROOT_OWNERS.has(edge.owner) || edge.owner === 'work/QUEUE.md';
       const selected = Boolean(selectedPath) && (edge.owner === selectedPath || edge.owner.startsWith(selectedPath.replace(/\/CHANGE\.md$/, '/')));
       if (dirty.has(edge.owner) || dirty.has(source) || missing || !sourceCommit || !ownerCommit) {
         report.candidates.push({
