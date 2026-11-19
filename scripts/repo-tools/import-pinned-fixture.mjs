@@ -9,12 +9,14 @@
  * non-zero and leaves the previous pin file unchanged.
  *
  * This is an operator pin. It is not a user-facing catalogue, not an
- * opening candidate, and not a campaign row. The shared-cluster Pod proof
- * is a separate, still-pending step.
+ * opening candidate, and not a campaign row. A local fixture-pin.json is
+ * not the shared-cluster Pod proof. That proof is a second Job that reads
+ * the same hashes from the lab object store.
  *
  * Usage:
  *   node scripts/repo-tools/import-pinned-fixture.mjs --store <directory>
  *   node scripts/repo-tools/import-pinned-fixture.mjs --store <directory> --fixture-root <directory>
+ *   node scripts/repo-tools/import-pinned-fixture.mjs --s3 [--fixture-root <directory>]
  */
 import { lstat, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
@@ -23,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import {
   LocalDocumentStore,
   canonicalJson,
+  createDocumentStoreFromEnv,
   importRulePackageDirectory,
   importStartPackageDirectory,
   importWorldPackageDirectory,
@@ -138,15 +141,45 @@ async function commitPin(storeRoot, pin) {
   return path;
 }
 
-export async function importPinnedFixture({ storeRoot, fixtureRoot }) {
-  if (!storeRoot || !fixtureRoot) {
-    throw new Error('A document store directory and fixture root are required');
+async function openStore({ storeRoot, s3 }) {
+  if (s3) {
+    if (storeRoot) {
+      throw new Error('S3 import does not take --store');
+    }
+    const mode = (process.env.OFFSCREEN_DOCUMENT_STORE ?? '')
+      .trim()
+      .toLowerCase();
+    if (mode !== 's3') {
+      throw new Error('OFFSCREEN_DOCUMENT_STORE=s3 is required');
+    }
+    const store = createDocumentStoreFromEnv(process.env);
+    if (!store) {
+      throw new Error('S3 document store environment is required');
+    }
+    if (typeof store.ensureBucket === 'function') {
+      await store.ensureBucket();
+    }
+    return store;
   }
-  const before = await readPinBytes(storeRoot);
+  if (!storeRoot) {
+    throw new Error('A document store directory is required');
+  }
+  return new LocalDocumentStore(storeRoot);
+}
+
+export async function importPinnedFixture({
+  storeRoot = null,
+  fixtureRoot,
+  s3 = false,
+}) {
+  if (!fixtureRoot) {
+    throw new Error('A fixture root is required');
+  }
+  const before = storeRoot ? await readPinBytes(storeRoot) : null;
   try {
     const paths = fixturePaths(fixtureRoot);
     await readTrustedDescriptor(paths.start);
-    const store = new LocalDocumentStore(storeRoot);
+    const store = await openStore({ storeRoot, s3 });
     const rules = await importRulePackageDirectory(store, paths.rules);
     assertPinnedHash(rules.rootHash, TRUSTED.ruleRootHash, 'rule root');
     const world = await importWorldPackageDirectory(store, {
@@ -195,7 +228,7 @@ export async function importPinnedFixture({ storeRoot, fixtureRoot }) {
         revision: start.manifest.revision,
       },
     };
-    const written = await commitPin(storeRoot, pin);
+    const written = storeRoot ? await commitPin(storeRoot, pin) : null;
     return {
       ok: true,
       fixtureId: TRUSTED.fixtureId,
@@ -209,9 +242,11 @@ export async function importPinnedFixture({ storeRoot, fixtureRoot }) {
       campaignCreated: false,
     };
   } catch (error) {
-    const after = await readPinBytes(storeRoot);
-    if (after !== before) {
-      throw new Error('Failed import changed the previous fixture pin');
+    if (storeRoot) {
+      const after = await readPinBytes(storeRoot);
+      if (after !== before) {
+        throw new Error('Failed import changed the previous fixture pin');
+      }
     }
     throw describeFailure(error);
   }
@@ -222,16 +257,20 @@ function repoRootFromScript() {
 }
 
 async function main() {
-  const storeRoot = arg('--store');
+  const s3 = process.argv.includes('--s3');
+  const storeArg = arg('--store');
   const fixtureRoot = arg('--fixture-root') ?? repoRootFromScript();
-  if (!storeRoot) {
-    console.error('Required: --store <directory> [--fixture-root <directory>]');
+  if (s3 === Boolean(storeArg)) {
+    console.error(
+      'Required: --store <directory> or --s3 [--fixture-root <directory>]',
+    );
     return 2;
   }
   try {
     const result = await importPinnedFixture({
-      storeRoot: resolve(storeRoot),
+      storeRoot: storeArg ? resolve(storeArg) : null,
       fixtureRoot: resolve(fixtureRoot),
+      s3,
     });
     process.stdout.write(canonicalJson(result));
     return 0;

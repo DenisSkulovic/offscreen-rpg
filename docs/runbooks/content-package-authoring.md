@@ -107,8 +107,9 @@ These commands were checked against `package.json` files at the inspected revisi
 | --- | --- | --- |
 | `pnpm --filter @offscreen/documents test` | `packages/documents/package.json` script `test` (`pnpm run build && node --test test/*.test.mjs`); the workspace includes `packages/*` | Builds `@offscreen/documents` and runs that package's importer tests. It takes no author-directory argument. |
 | `pnpm fixture:import -- --store <directory>` | Root `package.json` script `fixture:import` (`node scripts/repo-tools/import-pinned-fixture.mjs`) | Imports the checked-in Seyda Neen world, rule, and start directories into that local document store. Checks the pinned world, rule, and start checksums. Writes `fixture-pin.json` in the store when the three root hashes match. A second run prints the same hashes. |
+| `infra/kubernetes/lab/content-bootstrap/smoke.sh` | `infra/kubernetes/lab/content-bootstrap/smoke.sh` | On an already created `offscreen-lab` cluster, imports that same fixture into the existing SeaweedFS lab store and reads the three pinned hashes from a second Job. |
 
-`pnpm fixture:import` accepts that one trusted fixture. It writes an operator pin in the store directory the caller names. The pin is not a player catalogue, not an opening candidate, and not a campaign row. The shared-cluster Pod proof is a separate step and is not this command.
+`pnpm fixture:import` accepts that one trusted fixture. It writes an operator pin in the store directory the caller names. The pin is not a player catalogue, not an opening candidate, and not a campaign row. A local `fixture-pin.json` is not the shared-cluster Pod proof. That proof is [Kubernetes content bootstrap](kubernetes-content-bootstrap.md).
 
 Refused for authoring validation:
 
@@ -140,7 +141,7 @@ These outcomes remain false. Do not describe them as success.
 
 **A wrong checksum, a symlink, or a missing dependency must not replace the previous pin.** `pnpm fixture:import` exits non-zero and leaves `fixture-pin.json` byte-for-byte as it was. Objects already stored under the previous root hash stay on that hash.
 
-**The local pin is not a player catalogue and not a shared-cluster publication.** The command does not create a campaign. A start package root is not a successful opening candidate. The shared-cluster Pod proof remains unrun.
+**The local pin is not a player catalogue and not a shared-cluster publication.** `pnpm fixture:import` does not create a campaign. A start package root is not a successful opening candidate. A local `fixture-pin.json` is not evidence that a second Pod can read the same object. The cluster command is [Kubernetes content bootstrap](kubernetes-content-bootstrap.md).
 
 ## Where the contract lives
 
