@@ -1,5 +1,7 @@
 # WIKI18 | Measure and reduce coding-agent navigation and guard overhead
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: guard verification and actual cost-per-correct-task traces; no speculative paid benchmark. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
+
 **State:** Implementing (2026-11-19). The owner selected the route card and the local trace parser. No paid agent benchmark is authorized. Not Done: no before/after trace of a live executor has been recorded, so no cost reduction is claimed.
 **Origin:** Owner-supplied HK01 Grok 4.7 screenshots (2026-11-19, ~2–3 minutes into a single isolated worker) and source inspection of `AGENTS.md`, `.agents/skills/{change-workflow,implementation-slice,cursor-handoff}/SKILL.md`, [W2/W3 benchmark](../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md), and current [HK01](../2026-11-17--hk01-retire-local-repair-helper/CHANGE.md). The screenshots are **illustrative**, not a structured token/cost trace.
 **Priority:** Practical before a large subagent wave; read-only tracing/design can overlap HK01 implementation. Coordinator owns any shared agent-rules edits. Do not interrupt the active HK01 worktree.
