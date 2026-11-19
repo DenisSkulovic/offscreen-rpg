@@ -1,0 +1,111 @@
+# One importer of the pinned Seyda Neen fixture. Not apps/api, not apps/worker,
+# and not a second object store. Credentials come from content-importer-s3,
+# which smoke.sh creates and does not commit. The emptyDir is scratch.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fixture-importer
+  namespace: lab-content-bootstrap
+  labels:
+    app: fixture-importer
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/role: content-bootstrap
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 360
+  template:
+    metadata:
+      labels:
+        app: fixture-importer
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/role: content-bootstrap
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: importer
+          image: offscreen-lab-content-bootstrap:boot02
+          imagePullPolicy: Never
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              umask 077
+              node scripts/repo-tools/import-pinned-fixture.mjs --s3 > /tmp/import.json
+              cat /tmp/import.json
+              node --input-type=module -e '
+              import { readFileSync } from "node:fs";
+              const r = JSON.parse(readFileSync("/tmp/import.json", "utf8"));
+              if (r.pinPath) {
+                throw new Error("S3 import wrote a local pin path");
+              }
+              if (r.catalogue || r.openingCandidate || r.campaignCreated) {
+                throw new Error("S3 import claimed a catalogue, candidate, or campaign");
+              }
+              const world = "5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9";
+              const rules = "d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab";
+              const start = "e30eaa27407abe8a015b21cad62f30b81b07ee7af3b89634501fe3787d8d2813";
+              if (r.worldRootHash !== world || r.ruleRootHash !== rules || r.startRootHash !== start) {
+                throw new Error("S3 import hashes were not the pinned roots");
+              }
+              console.log(
+                "content-bootstrap importer world=" + r.worldRootHash +
+                " rule=" + r.ruleRootHash +
+                " start=" + r.startRootHash +
+                " pinPath=null campaignCreated=false",
+              );
+              '
+          env:
+            - name: HOME
+              value: /tmp
+            - name: NPM_CONFIG_CACHE
+              value: /tmp
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: OFFSCREEN_DOCUMENT_STORE
+              value: s3
+            - name: OFFSCREEN_DOCUMENT_S3_BUCKET
+              value: lab-objects
+            - name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
+              value: http://object-store.lab-objects.svc.cluster.local:8333
+            - name: OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE
+              value: "1"
+            - name: OFFSCREEN_DOCUMENT_S3_REGION
+              value: us-east-1
+            - name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: content-importer-s3
+                  key: access-key-id
+            - name: OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: content-importer-s3
+                  key: secret-access-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: scratch
+              mountPath: /tmp
+      volumes:
+        - name: scratch
+          emptyDir: {}

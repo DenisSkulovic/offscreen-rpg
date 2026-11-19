@@ -1,0 +1,8 @@
+# Isolated verification namespace. These jobs are not the Nest API and not the worker.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-content-bootstrap
+  labels:
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/role: content-bootstrap

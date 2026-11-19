@@ -17,6 +17,7 @@ import { LocalDocumentStore } from '../../packages/documents/dist/index.js';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const script = join(repo, 'scripts', 'repo-tools', 'import-pinned-fixture.mjs');
+const readScript = join(repo, 'scripts', 'repo-tools', 'read-pinned-fixture.mjs');
 const worldId = '7c14e5bc-4d72-4f8c-9a6b-97f334b83c11';
 const worldRoot =
   '5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9';
@@ -132,6 +133,58 @@ test('a symlink leaves the previous fixture root unchanged', async () => {
     await unlink(page);
     await symlink('WORLD.md', page);
   }, /symbolic link/);
+});
+
+test('s3 mode without store env does not write a local pin', async () => {
+  const store = await mkdtemp(join(tmpdir(), 'boot02-s3-pin-'));
+  try {
+    const failed = await runScript(['--s3', '--store', store]);
+    assert.equal(failed.code, 2);
+    assert.equal(failed.stdout, '');
+    await assert.rejects(() => readFile(join(store, 'fixture-pin.json')));
+    const missingEnv = await new Promise((resolveRun) => {
+      const child = spawn(process.execPath, [script, '--s3'], {
+        cwd: repo,
+        env: { ...process.env, OFFSCREEN_DOCUMENT_STORE: 's3' },
+      });
+      let stdout = '';
+      let stderr = '';
+      child.stdout.on('data', (chunk) => {
+        stdout += chunk;
+      });
+      child.stderr.on('data', (chunk) => {
+        stderr += chunk;
+      });
+      child.on('close', (code) => {
+        resolveRun({ code, stdout, stderr });
+      });
+    });
+    assert.notEqual(missingEnv.code, 0);
+    assert.match(missingEnv.stderr, /OFFSCREEN_DOCUMENT_S3_BUCKET/);
+    assert.equal(missingEnv.stdout, '');
+    const readFailed = await new Promise((resolveRun) => {
+      const child = spawn(process.execPath, [readScript, '--s3'], {
+        cwd: repo,
+        env: { ...process.env, OFFSCREEN_DOCUMENT_STORE: 's3' },
+      });
+      let stdout = '';
+      let stderr = '';
+      child.stdout.on('data', (chunk) => {
+        stdout += chunk;
+      });
+      child.stderr.on('data', (chunk) => {
+        stderr += chunk;
+      });
+      child.on('close', (code) => {
+        resolveRun({ code, stdout, stderr });
+      });
+    });
+    assert.notEqual(readFailed.code, 0);
+    assert.match(readFailed.stderr, /OFFSCREEN_DOCUMENT_S3_BUCKET/);
+    assert.equal(readFailed.stdout, '');
+  } finally {
+    await rm(store, { recursive: true, force: true });
+  }
 });
 
 test('a missing dependency leaves the previous fixture root unchanged', async () => {

@@ -1,0 +1,9 @@
+{
+  "name": "offscreen-lab-content-bootstrap",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.922.0",
+    "zod": "4.6.5"
+  }
+}
