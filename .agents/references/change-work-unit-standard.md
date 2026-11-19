@@ -17,6 +17,8 @@
 
 A planned Change need not **already** have its diff. It must name exact future document and/or executable modifications with falsifiable completion criteria. “Improve memory” is an initiative. “Make the report distinguish published revisions” is an implementation Change; “separate ratified memory guarantees from unimplemented retrieval proposals in the canonical two-page contract, preserving every inbound anchor” can be a documentation Change. “Check whether recall was accurate” is an evaluation unless it also deliberately changes a maintained spec or executable test.
 
+**Planner-first readiness, added 2026-11-19:** A material implementation Change that is to be carried out by cost-limited Cursor agents must satisfy the [source investigation standard](planner-investigation-standard.md) **on the planning side** before Ready. The planning assistant resolves architecture and verifies source symbols/test routes with an identified baseline. A complex Change has an explicit source/data/identity/failure mapping linked to its short executor route card. A bounded execution slice must not secretly require the child to design a new state machine or service authority. Missing authority/source evidence means Proposed and a planner follow-up, not arbitrary Blocked or a guess. Exact VERIFY and tiny mechanical Changes need only proportionate preflight; do not slow every task with a full audit.
+
 ## The ideal planning unit
 
 A fresh executor should be able to accept a Change packet without reconstructing a whole product program.
