@@ -44,6 +44,7 @@ function baseFiles(fx) {
   fx.add('work/QUEUE.md', '# Work selector\n\nCurrent work: none\n\n[changes](changes/README.md)\n[tasks](tasks/README.md)\n');
   fx.add('work/tasks/README.md', '# Tasks\n\n[open](open/README.md)\n');
   fx.add('work/tasks/open/README.md', '# Open Tasks\n');
+  fx.add('work/tasks/archive/README.md', '# Archived Tasks\n');
 
   fx.add(
     'work/changes/README.md',
@@ -154,6 +155,20 @@ test('orphan folders, unindexed Tasks and terminal Task states are detected', ()
   fx.add('work/tasks/open/job/TASK.md', '# Task\n\n**State:** Done\n');
   report = scan(fx);
   assert.equal(codes(report).includes('terminal-open:work/tasks/open/job/TASK.md'), true);
+  fx.cleanup();
+});
+
+test('archived Task must be terminal and linked from its archive index', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/tasks/archive/2026-11/old/TASK.md', '# Task\n\n**State:** Ready\n');
+  let report = scan(fx);
+  assert.equal(codes(report).includes('active-archived:work/tasks/archive/2026-11/old/TASK.md'), true);
+  assert.equal(codes(report).includes('missing-route:work/tasks/archive/2026-11/old/TASK.md'), true);
+  fx.add('work/tasks/archive/2026-11/old/TASK.md', '# Task\n\n**State:** Done\n');
+  fx.add('work/tasks/archive/README.md', '# Archived Tasks\n\n[old](2026-11/old/TASK.md)\n');
+  report = scan(fx);
+  assert.equal(report.findings.some((item) => item.path === 'work/tasks/archive/2026-11/old/TASK.md'), false);
   fx.cleanup();
 });
 
