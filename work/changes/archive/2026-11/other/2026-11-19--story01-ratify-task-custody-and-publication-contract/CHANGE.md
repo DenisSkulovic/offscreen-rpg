@@ -3,12 +3,12 @@
 **State:** Done
 **Kind:** documentation
 **Approval and owner:** Owner authorized this documentation Change on 2026-11-19. Executor: STORY01 worktree only. No other Change was started.
-**Parent initiative:** [D4 Storyteller handoff](../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [Execution reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md)
+**Parent initiative:** [D4 Storyteller handoff](../../../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [Execution reconciliation](../../../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md)
 
 ## Cursor first-screen brief
 
 > **Current-source map:** `packages/application/src/storyteller/runtime.ts`, `execution.ts`, `publication.ts`, `packages/workflows/src/index.ts`, `apps/worker/src/activities/index.ts`, `packages/db/src/schema/storyteller.ts`, inspected at `0ca9b822`.
-> **Primary governing heading:** [Remote task custody](../../../../docs/technical/storyteller/generation-and-publication.md#remote-task-custody).
+> **Primary governing heading:** [Remote task custody](../../../../../../docs/technical/storyteller/generation-and-publication.md#remote-task-custody).
 > **Known trap / contrary case:** `completeStoryteller` still generates and publishes in one activity. A second reading of that activity is not two operations. A scene-10 task does not publish on the scene-20 canon root.
 > **Scope/permission:** Markdown only. No executable edit, no paid provider, no cluster lock.
 
@@ -18,14 +18,14 @@ A reader can now say who holds a remote Storyteller task, who may retry it, and 
 
 ## Authority and baseline
 
-- **Product:** [What it must not do](../../../../docs/product/storyteller/behavior-and-quality.md#what-it-must-not-do). The player promise is unchanged.
-- **Technical:** [Remote task custody](../../../../docs/technical/storyteller/generation-and-publication.md#remote-task-custody), [Custody of one task](../../../../docs/technical/storyteller/operation-and-controller.md#custody-of-one-task), [Selected compilation and tool contract](../../../../docs/technical/storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract), [Budget accounting](../../../../docs/technical/storyteller/request-context-and-cost.md#budget-accounting), [Storyteller workflow identity](../../../../docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity), [Proposed service ownership](../../../../docs/technical/platform/topology.md#proposed-service-ownership).
+- **Product:** [What it must not do](../../../../../../docs/product/storyteller/behavior-and-quality.md#what-it-must-not-do). The player promise is unchanged.
+- **Technical:** [Remote task custody](../../../../../../docs/technical/storyteller/generation-and-publication.md#remote-task-custody), [Custody of one task](../../../../../../docs/technical/storyteller/operation-and-controller.md#custody-of-one-task), [Selected compilation and tool contract](../../../../../../docs/technical/storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract), [Budget accounting](../../../../../../docs/technical/storyteller/request-context-and-cost.md#budget-accounting), [Storyteller workflow identity](../../../../../../docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity), [Proposed service ownership](../../../../../../docs/technical/platform/topology.md#proposed-service-ownership).
 - **Evidence / source:** baseline `0ca9b822cf6c11303d4e73f253ce1ed59258d028`. No source behavior changed.
 - **Proposals / unknowns:** STORY02, STORY03, and STORY04 remain unselected. This packet does not implement the worker split.
 
 ## Exact scope and exclusions
 
-- **Canonical document edits:** the headings named above. [Publication fence](../../../../docs/technical/platform/data-and-persistence.md#publication-fence) and [Profiled storyteller storage](../../../../docs/technical/platform/data-and-persistence.md#profiled-storyteller-storage) stay with their owner.
+- **Canonical document edits:** the headings named above. [Publication fence](../../../../../../docs/technical/platform/data-and-persistence.md#publication-fence) and [Profiled storyteller storage](../../../../../../docs/technical/platform/data-and-persistence.md#profiled-storyteller-storage) stay with their owner.
 - **Executable source/tests/config:** unchanged because this is a documentation-only Change.
 - **Related/inbound owners:** queue index and ledger index stay with the batch owner. Archive was not performed; see the handoff.
 - **Preserve:** engine commits the checkpoint and the canon root; no Game Economy service; one packed task is injected current state, a short orientation, and one intention-level memory query; today's code does not assemble that pack or a remote worker.
@@ -49,7 +49,7 @@ A reader can now say who holds a remote Storyteller task, who may retry it, and 
 
 ## Handoff and next action
 
-- The contract is recorded. The packet stays under `work/changes/open/` because moving it would break inbound links in `work/changes/README.md` and `work/designs/open/distributed-turn-poc/GAPS.md`, and this Change may not edit those files.
+- The contract is recorded. The orchestrator archived this packet and retargeted the queue and gap-register links.
 - No automatic selection of STORY02 or STORY03.
 
 ## Reconciliation ledger (required before Done)
