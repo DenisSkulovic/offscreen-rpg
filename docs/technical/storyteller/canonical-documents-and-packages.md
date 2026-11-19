@@ -37,7 +37,7 @@ Keep a small database control layer for ownership, stable references, revision f
 
 ## Scene-rooted canon and fork-safe publication | selected target (2026-11-19)
 
-This heading is the scene-knowledge contract. It is a selected outcome, not a completed implementation and not a chosen snapshot encoding. The engine remains the single consistency boundary for the committed pair below. A Storyteller process may propose descriptive changes. It does not commit the game-state checkpoint or the canon root. Process ownership stays on [ARCH02](../../../work/changes/archive/2026-11/other/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md). This Change does not install a search index, Cognee, or a vector store, and it does not migrate storage.
+This heading is the scene-knowledge contract. The checkpoint half of the pair now has a physical form: a content-addressed `offscreen.scene-checkpoint.v1` object and the `story_scene_checkpoint` selector on [Story snapshot and chronology](../platform/data-and-persistence.md#story-snapshot-and-chronology). That store is not a historical fork. The engine remains the single consistency boundary for the committed pair below. A Storyteller process may propose descriptive changes. It does not commit the game-state checkpoint or the canon root. Process ownership stays on [ARCH02](../../../work/changes/archive/2026-11/other/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md). This page does not install a search index, Cognee, or a vector store.
 
 ### Scene, passage, checkpoint, and leaf
 
@@ -86,7 +86,7 @@ A fork from any committed scene starts a new story identity and a new causation 
 
 Parent workflows still in flight, unsettled rolls, and running parent timers stay on the parent. They are not completed facts on the fork. Creating the fork performs no inference. Story-scoped identifiers are remapped into the fork. They must not alias the parent's later rows. Attachments remain with the publication that introduced them and are visible on the fork only when that publication is inside the ancestor root. Later changes to parent membership do not rewrite the fork's access.
 
-A full snapshot, a persistent snapshot plus deltas, and a versioned immutable manifest are all acceptable encodings when they reconstruct the same pair and cannot read a later parent or sibling fact. This contract does not choose an encoding. It does not add a second mutable owner beside the engine checkpoint and the committed canon root. No universal live `campaign/` directory and no global latest-by-document-id lookup may merge divergent branches.
+The checkpoint object is immutable and content-addressed. PostgreSQL keeps the selector and the canon-root pointer. It does not keep a second editable copy of the payload. A fork from a stored scene is not implemented on this page. No universal live `campaign/` directory and no global latest-by-document-id lookup may merge divergent branches.
 
 The current journal and the current-only fork do not implement historical reconstruction. See [Story snapshot and chronology](../platform/data-and-persistence.md#story-snapshot-and-chronology) and [Forked continuities](../engine/lifecycle-and-compatibility.md#forked-continuities).
 

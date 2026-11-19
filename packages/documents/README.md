@@ -9,6 +9,11 @@ Documents contain a validated envelope and a Markdown body. A manifest maps
 stable document IDs and friendly logical paths to exact object hashes. Updating a
 document writes a new object and manifest; it never overwrites an old version.
 PostgreSQL selects the published manifest root atomically with admitted changes.
+`offscreen.scene-checkpoint.v1` (`stateSchemaVersion` 1) uses the same adapters.
+`putSceneCheckpoint` and `readSceneCheckpoint` verify the hash and reject a
+mismatched or missing object. An S3 failure is `unavailable`. It does not write
+the local store. The SQL selector is `story_scene_checkpoint` in `@offscreen/db`;
+this package does not insert that row.
 
 Reusable world and rule libraries use separate immutable manifests over the same
 object store. Rule manifests contain a compact orientation, topic/heading
