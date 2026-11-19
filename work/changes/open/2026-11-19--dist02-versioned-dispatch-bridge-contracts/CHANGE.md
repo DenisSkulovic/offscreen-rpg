@@ -5,6 +5,8 @@
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
 **Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
 
+**Mandatory scope correction, 2026-11-19:** Previous broker→Temporal `dispatch-notice.v1` scope conflicts with merged ARCH02. This packet must be **revised before selection** to define versioned postcommit business fact envelope (candidate `scene.published.v1`: eventId, storyId, passageId, sceneSequence, committed root/revision, causation/correlation and visibility-safe references), plus independent derived read-model consumer inbox/dedup and ordering rules. RabbitMQ is NOT a workflow wake bridge. Preserve the direct outbox→Temporal path. Follow [execution reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md). **Old sections below are historical draft, not implementation instructions where conflicting.**
+
 ## Goal / independently verifiable outcome
 
 Versioned RabbitMQ/Temporal dispatch contracts and provider-free adapters. This Change is one bounded implementation outcome in the [distributed-turn POC](../../../designs/open/distributed-turn-poc/README.md), not authorization to implement the entire initiative.

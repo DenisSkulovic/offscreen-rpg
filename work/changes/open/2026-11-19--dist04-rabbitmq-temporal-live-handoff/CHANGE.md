@@ -5,6 +5,8 @@
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
 **Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
 
+**Mandatory scope correction, 2026-11-19:** **DO NOT IMPLEMENT this packet's original RabbitMQ→Temporal bridge.** Merged ARCH02 keeps direct durable outbox→Temporal starts/wakes; RabbitMQ carries committed business facts to independent consumers. Before implementation, refactor this Change to implement a single `scene.published.v1` fact outbox→RabbitMQ publisher plus branch/root-safe, disposable read-model/index subscriber, with inbox dedup, replay, source hash and stale-index negatives. Preserve existing workflow dispatch route, never dual-route one notice. Broker consumption must not block Storyteller task/pub or become game authority. [Reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md); [canonical execution](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows). **Status remains Proposed and NOT Ready.** Old scope below is superseded where conflicting.
+
 ## Goal / independently verifiable outcome
 
 Use RabbitMQ as the sole selected transport for one existing outbox notice. This Change is one bounded implementation outcome in the [distributed-turn POC](../../../designs/open/distributed-turn-poc/README.md), not authorization to implement the entire initiative.

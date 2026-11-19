@@ -5,6 +5,8 @@
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
 
+**Corrected integrated proof requirement (2026-11-19):** Do not route the Storyteller task through RabbitMQ solely for a decorative hop. Prove **(A)** direct durable SQL-outbox→Temporal start/wake of the Storyteller workflow and **(B)** a separate postcommit `scene.published.v1` business-event flow over RabbitMQ to a branch/root-pinned rebuildable projection. Then prove the existing SSE/GET and independently forkable scene. The earlier `SQL outbox→Rabbit→Temporal` language below is superseded. The derived projection may lag without changing game truth. [Reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md).
+
 ## Precisely bounded outcome
 
 Prove one complete forkable distributed Storyteller turn on a cold kind cluster. This Change exists to join the previously planned bounded slices, not to reimplement them under new names.

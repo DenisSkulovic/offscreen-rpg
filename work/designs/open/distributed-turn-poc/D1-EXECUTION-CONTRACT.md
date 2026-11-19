@@ -2,6 +2,8 @@
 
 **Date:** 2026-11-19. **Status:** candidate architectural decision for [DIST01](../../../changes/open/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md), **not yet selected as canonical technical authority or implemented**. Latest repository evidence was inspected on `main` during this design pass. Preserve ARCH02's current independent Cursor branch and reconcile rather than overwrite it. This page gives precise decisions to accept/challenge in DIST01; after ratification, relevant normative statements belong in the existing platform/game/Storyteller technical owners, not permanently here.
 
+> **Superseding correction (2026-11-19):** This early D1 proposal predates merged ARCH02. Its SQL-outbox→RabbitMQ→Temporal broker *wake* path is **NOT the selected implementation**. [Current canonical execution contract](../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows) keeps durable outbox→direct Temporal RPC for starts/wakes; RabbitMQ carries separate *post-commit business events* to independent consumers. [Execution reconciliation](EXECUTION-RECONCILIATION-2026-11-19.md) governs packet repair. Every paragraph, diagram or alternative below that implies Rabbit→Temporal as required is superseded, and must not be implemented. Do not claim this document is ratified.
+
 ## Proposed deployment units and writer ownership
 
 | Process | Inputs | Has permission to | Explicitly forbidden |

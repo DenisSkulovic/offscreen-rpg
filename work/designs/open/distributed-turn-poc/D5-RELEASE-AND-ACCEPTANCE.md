@@ -2,6 +2,8 @@
 
 **Status:** planned acceptance specification, 2026-11-19; no deployment or live-provider authorization implied. [DISTURN](README.md) is the target, [GAPS](GAPS.md) is the source-aware gap inventory, [D1](D1-EXECUTION-CONTRACT.md) is the candidate delivery handshake, [D2](D2-SCENE-DATA-CONTRACT.md) the candidate historical-state contract, [D3](D3-CAMPAIGN-BOOTSTRAP.md) candidate bootstrap, and [D4](D4-STORYTELLER-HANDOFF.md) candidate model-custody contract. These contracts are **not** automatically ratified by this document.
 
+**Current-head correction (2026-11-19):** The mandatory working model is **durable outbox→direct Temporal** for workflow starts/wakes, and separate outbox→RabbitMQ for committed business-event subscribers. Its proof must count these as two different branches, not require RabbitMQ on the Storyteller execution chain. See [execution reconciliation](EXECUTION-RECONCILIATION-2026-11-19.md) and [canonical event classes](../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows). Historical diagrams below that imply RabbitMQ→Temporal have been superseded.
+
 ## Why a fifth pass exists
 
 DIST06, BOOT04 and STORY04 are **component integration proofs**, not proof of the entire player promise. DATA04 supplies historical read/fork capability but itself does not prove it runs on the same Kubernetes installation as the distributed Storyteller. We must require an explicit **join gate** and avoid four separate fixture harnesses, duplicated credentials, parallel migration runners, and contradictory status claims.
