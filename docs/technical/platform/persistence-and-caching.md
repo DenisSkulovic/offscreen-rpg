@@ -25,6 +25,10 @@ Explicit deletion may reclaim space or improve hit rate, but it is not the consi
 
 Redis never supplies command preconditions, ownership, current private offers, transaction locks, timers, outbox delivery, budget admission, provider settlement or the only copy of a record. An outage degrades eligible reads to PostgreSQL. It must not make commands fail, make stale content authoritative or turn readiness red when caching is configured as optional. A stale cache snapshot does not override the canonical SQL version. That version stays on [story snapshot and chronology](./data-and-persistence.md#story-snapshot-and-chronology). Safe logs include the cache operation, projection type and failure class, not keys containing user data or cached payloads.
 
+A restart, a flush, or a lost connection drops cache entries only. That is not loss of authoritative game state. Do not use Redis for durable workflows or payment locks. Durable waits and delivery stay on Temporal. Spending and settlement stay in PostgreSQL, with the record on [who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record). A miss after expiry, flush, or restart is the expected degraded read. When the application is using the cache port, the next read rebuilds from PostgreSQL.
+
+The disposable Kubernetes lab may run one Redis process behind a ClusterIP Service, with a resource cap and a health probe. That process is acceleration for the lab exercise. It is not wired to the game, and it is not the Compose Redis used by local development. The procedure is [Kubernetes Redis](../../runbooks/kubernetes-redis.md).
+
 ## Current state
 
 This section is a realization record of the cache port and the story-snapshot cache already described here. The cache rule stays in [Redis boundary](#redis-boundary).
