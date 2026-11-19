@@ -1,6 +1,6 @@
 # D1 | Distributed command, workflow and publication handshake
 
-**Date:** 2026-11-19. **Status:** candidate architectural decision for [DIST01](../../../changes/open/2026-11-19--dist01-ratify-distributed-execution-contract/CHANGE.md), **not yet selected as canonical technical authority or implemented**. Latest repository evidence was inspected on `main` during this design pass. Preserve ARCH02's current independent Cursor branch and reconcile rather than overwrite it. This page gives precise decisions to accept/challenge in DIST01; after ratification, relevant normative statements belong in the existing platform/game/Storyteller technical owners, not permanently here.
+**Date:** 2026-11-19. **Status:** candidate architectural decision for [DIST01](../../../changes/open/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md), **not yet selected as canonical technical authority or implemented**. Latest repository evidence was inspected on `main` during this design pass. Preserve ARCH02's current independent Cursor branch and reconcile rather than overwrite it. This page gives precise decisions to accept/challenge in DIST01; after ratification, relevant normative statements belong in the existing platform/game/Storyteller technical owners, not permanently here.
 
 ## Proposed deployment units and writer ownership
 
