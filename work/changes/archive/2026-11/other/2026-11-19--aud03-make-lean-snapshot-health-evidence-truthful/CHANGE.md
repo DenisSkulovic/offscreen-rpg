@@ -3,7 +3,7 @@
 **State:** Done  
 **Kind:** implementation  
 **Selection:** Not part of Cursor's active batch; select explicitly after confirming current head and file ownership.  
-**Origin:** [Snapshot 2f45deed audit](../../../designs/open/distributed-turn-poc/AUDIT-2026-11-19--2f45deed.md) · [Architecture reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md) · [Change queue](../../README.md)
+**Origin:** [Snapshot 2f45deed audit](../../../../../designs/open/distributed-turn-poc/AUDIT-2026-11-19--2f45deed.md) · [Architecture reconciliation](../../../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md) · [Change queue](../../../../README.md)
 
 ## Observable intended outcome
 
@@ -11,7 +11,7 @@ Make lean-snapshot documentation health distinguish exclusions from defects. Fix
 
 ## Current evidence / authority
 
-The audit's baseline is the **committed lean ZIP at `2f45deed`**. The ZIP intentionally excludes archived Changes and historical evidence, so a missing archive file in that ZIP does not prove `main` is broken. Reinspect the latest HEAD and actual branch/merged status before edits. Source authority: [Commands, events and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows), [topology and ownership](../../../../docs/technical/platform/topology.md#proposed-service-ownership), current documentation/Change lifecycle policy and portable snapshot metadata.
+The audit's baseline is the **committed lean ZIP at `2f45deed`**. The ZIP intentionally excludes archived Changes and historical evidence, so a missing archive file in that ZIP does not prove `main` is broken. Reinspect the latest HEAD and actual branch/merged status before edits. Source authority: [Commands, events and workflows](../../../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows), [topology and ownership](../../../../../../docs/technical/platform/topology.md#proposed-service-ownership), current documentation/Change lifecycle policy and portable snapshot metadata.
 
 ## Bounded diff
 
