@@ -1,6 +1,6 @@
 # Open designs
 
-Unaccepted investigations and owner-retained dormant policy. Not product bible. Not a Change authorization.
+Unaccepted designs/investigations and owner-retained dormant policy. Not product bible. Not a Change or standalone Task authorization. [Work taxonomy](../WORK-TAXONOMY.md) distinguishes ongoing investigation from concluded [research](../../research/README.md) and observed [evidence](../../evidence/README.md). [Current work selection](../QUEUE.md) remains separate.
 
 **Design lifecycle:** investigate and compare alternatives here → explicitly review/accept product outcomes → reconcile accepted requirements into the existing `docs/product/` and `docs/technical/` owners → only then prepare and select bounded `work/changes/` packets for implementation. An open design is not a selected Change, and a committed proposal is not an approved spec. The [player experience program](open/player-experience-refoundation/DESIGN-PROCESS.md) records concrete review gates for the ongoing UI/UX overhaul.
 
