@@ -1,85 +1,82 @@
-# Cursor model-budget policy | controlled cost experiment
+# Cursor model-budget policy | Composer-first execution, planner-first reasoning
 
-**Decision:** 2026-11-19. **Status:** selected by owner for all new Offscreen RPG Cursor work, including parent orchestrators, built-in Explore, custom/automatic subagents and background delegation. This is a reversible *quality-versus-cost experiment*, not permission to degrade tests or silently upgrade. The model choice is an **operational execution policy**, not gameplay/product authority.
+**Owner direction:** 2026-11-19, supersedes the earlier default-Grok routing. **Scope:** Cursor parent, custom/built-in subagents, handoffs and test runners in Offscreen RPG. **Status:** selected operational policy, not product architecture. Measure quality and billing before claiming any savings. Maintain the strict allowed-model/speed guard described below.
 
-## Exclusive allowlist
+## Economic contract
 
-| Route | Exact intended configuration | When |
+ChatGPT is the **planner, architect, source investigator, failure-model designer and packet author**. Before implementation, ChatGPT inspects source and contracts, decides ownership, traces state and call paths, names the exact edit and negative test, and writes complete source-grounded instructions. Cursor is a **fast code-writing/building/testing/committing executor**. Its parent routes tiny tasks, checks evidence and integrates disjoint patches. A Cursor child should not need to independently invent a design or conduct a broad investigation.
+
+**Default for ALL Cursor actors, including parent: Composer 2.5 Standard, Fast off.** A well-prepared complex domain can still be implemented as several Composer microtasks; domain risk alone does not force Grok. Validate risky outcomes with actual constraints, failing tests, independent inspection and review by ChatGPT. If novel reasoning is unavoidable, stop and return it to ChatGPT for a stronger packet *before* paying Cursor for exploration. **No automatic upgrade.**
+
+## Only permitted model variants
+
+| Route | Explicit configured model | Decision |
 | --- | --- | --- |
-| C: cheap implementation/research | `composer-2.5[fast=false]` (**Standard only**) | Link repair, doc edits, direct source navigation, code search, mechanical refactors, single-file test/config edits, straightforward fixture updates, lint fixes and basic verification |
-| L: bounded engineer | `grok-4.6[effort=low,fast=false]` (**Low, Standard**) | Narrow multi-file TypeScript changes where source/contract/tests are explicit, familiar component edits, focused unit tests, low-risk review or debugging |
-| M: careful engineer / parent | `grok-4.6[effort=medium,fast=false]` (**Medium, Standard**) | Default parent orchestrator and substantive bounded Changes; PostgreSQL transactions, state reconciliation, concurrency, Temporal/Rabbit retries, funding/provider custody, security, migrations, sensitive context/permission rules, cross-service coordination, high-stakes negative review |
+| **C DEFAULT** | composer-2.5[fast=false] | Parent coordinating edits; almost all PATCH/VERIFY; docs; scripts; focused multi-file feature slices; source-grounded SQL, Temporal, auth and state edits **when a complete preapproved algorithm/constraint/test is supplied** |
+| **L EXCEPTION** | grok-4.6[effort=low,fast=false] | Owner explicitly authorizes one named bounded task **after** C failed for a documented reason or ChatGPT identified an irreducible, justified implementation uncertainty |
+| **M EXCEPTION** | grok-4.6[effort=medium,fast=false] | Owner explicitly authorizes a specified correctness-sensitive novel diagnosis or independent adversarial review after planner investigation, or C/L demonstrably insufficient; never ordinary implementation default |
 
-**Never use:** Grok 4.7 (any tier); Grok 4.6 High or XHigh; Fast of any model; Auto/Intelligence routing; any other model as a substitute; automatic effort escalation. The parent must not dispatch unknown or generic inherited subagents. No 'upgrade because hard'. If Medium fails or is not confident, **stop, report the specific evidence and request a narrower task or owner decision**. Escalation here means from Composer→Low→Medium only, with explicit reason and a new bounded attempt; never High/Fast/4.7.
+Never use Grok 4.7, Grok High/XHigh, Fast, Auto, Inherit, unlisted models, silent substitution or automatic effort escalation. **Grok remains allowed by the subagent guard because there are legitimate exceptions; the hook cannot confirm an owner approval from the fields it currently sees.** A successful guard invocation proves the model is on the allowlist, **not** that the policy justified it. A dispatch receipt must record the exception approval and actual model, or it is a policy violation.
 
-**Cost vs correctness:** cheaper is not permission to skip test/permission/retry/source documentation obligations. Repeated failures, growing tool exploration or semantic drift are evidence the policy may be worse; record those failures rather than pretending savings. Prefer completing one properly bounded task without an unnecessary extra subagent.
+**Parent model is selected manually in Cursor.** Repository files and the subagentStart hook cannot change the parent's model dropdown or constrain internal calls that do not invoke the hook. The parent must start as Composer Standard where Cursor supports it; if unavailable, report the limitation before launching an expensive session. Built-in Explore should also be explicitly pinned to Composer Standard or not used. Existing .cursor/agents with inherit metadata must not be auto-routed; never allow a fallback to an unknown profile.
 
-## Task-depth versus model-cost routing
+## Preferred workflow: one tiny patch at a time
 
-**First choose investigation depth, then model.** Cursor-only [execution-depth rule](../../.cursor/rules/execution-depth.mdc) defines `VERIFY`, `PATCH` and `INVESTIGATE`. The parent MUST pass `DEPTH=...` in every delegated task. **Risk is not depth:** a high-risk but fully specified suite run should use **Medium + VERIFY**, not Medium + repository exploration. An exploratory unknown can be `INVESTIGATE` with Composer for simple discovery; the parent reviews any consequential design decision.
+1. **Select one already authorized Change**, with baseline SHA and canonical technical/product owners. Use the [Composer-ready microtask contract](composer-first-execution.md). A selected large Change is **not** a single child assignment.
+2. **Parent starts lean:** read CHANGE.md plus TASKS.md for the selected Change; open only one task's specified companion section. Do not preload agent skills, all source maps, architecture wiki or past transcripts. Fetch current git status and affected ownership. No automatic subagent swarm.
+3. **One Composer implementer** receives one microtask card: 1 outcome, preferably 1–3 file owners, 2–5 exact source/test anchors, settled code recipe and refusal conditions, one targeted normal+negative proof. It may read more when a specific failing symbol requires it but must explain why.
+4. **Composer evidence-runner only if useful**, not a second mandatory agent for every patch. The implementer can run its own tests and report; parent runs exact integration and required docs guards once at the packet join.
+5. On mismatch, **stop**, return one concrete file/symbol/error and mark the microtask unverified. ChatGPT refreshes design/investigation; then dispatch a newly bounded Composer task. Do not pay Grok to rediscover a stale handoff.
+6. Parent serially integrates shared SQL migrations, Game Authority route files, workflow code and one kind cluster; use multiple workers only for disjoint file/resource ownership. Commit accepted work and keep exact receipt. A built/tested patch is not automatically a working multi-Pod POC.
 
-| Known task shape | Depth | Lowest acceptable model | Expected source discovery |
-| --- | --- | --- | --- |
-| Run an already named test or exact CLI, record counts | VERIFY | Composer Standard for ordinary checks, Grok 4.6 Medium for money/persistence/security checks | Exact command, preconditions, diagnostic only if failed |
-| Make trivial links/docs/test edit with exact anchors | PATCH | Composer Standard | Exact owners, focused checks |
-| Make bounded safe multi-file patch with approved interface | PATCH | Grok 4.6 Low Standard | Route card, 2–5 anchors, one negative |
-| Implement retry/transaction/permissions/canon migration | PATCH | Grok 4.6 Medium Standard | Specific authority + relevant source/tests, not whole wiki |
-| Locate unknown implementation owner or assess competing designs | INVESTIGATE | Composer for narrow search; Grok 4.6 Medium if substantive correctness judgment | Explicit unknown/questions, evidence-led expansion only |
+**Do not replace correctness with blind file editing.** The child still verifies current source, asks one focused question when code conflicts with a documented invariant, runs relevant tests, and refuses unsafe production/destructive work. Source reading is permitted; **open-ended design research** is not the default workload.
 
-**Dispatch quality gate:** the parent must include task kind, depth, goal, exact command or edit, source anchors, negative case, preconditions and stop condition. Do not substitute three skills and a vague request for a route card. Avoid an exploratory subagent where the parent already knows the answer. If VERIFY fails, return NOT-RUN/FAIL and one concrete blocker rather than quietly undertaking an architecture audit. Do not spawn a second agent just to re-read the first agent's context.
+## Subagent roster (pin actual file metadata)
 
-**HK03 example:** the 32-case Storyteller integration suite task is **Grok 4.6 Medium Standard + VERIFY** because it has a named command and a sensitive database/Temporal safety boundary. The agent need only inspect status, ensure named disposable prerequisites, run the one test and record counts. It must not treat every repository README as prerequisite reading.
+| Role | Normal model | Scope |
+| --- | --- | --- |
+| economical-implementer | **Composer Standard** | Default code patch, including small contract/SQL/worker slices with exact design and tests |
+| economical-researcher | **Composer Standard** | Narrow lookup/diagnostic when an unresolved question really requires live workspace |
+| evidence-runner | **Composer Standard** | Run exact authorized command and factual receipt; do not fix by default |
+| documentation-integrator | **Composer Standard** | Update ratified docs/links/Change ledger with named owners |
+| failure-localizer | **Composer Standard** | One failing stack/result, one root cause and proposed correction, no code |
+| careful-engineer | Grok Medium **exception only** | A named authorized high-risk implementation/diagnostic when ChatGPT+Composer cannot safely handle it |
+| boundary-reviewer | Grok Medium **exception only** | A named independent adversarial diff review, not mandatory per Change |
 
-## Approved specialist roster (seven, not an unrestricted agent marketplace)
+The existing custom agents design-challenger and test-strategist use inherit and are **not approved for automatic invocation**. Prefer ChatGPT for those responsibilities; do not use them until their model is explicitly pinned and the owner asks.
 
-Cursor automatically discovers custom agents from `.cursor/agents/*.md`; its descriptions influence automatic routing. Prefer **zero subagents** for a short action the parent can perform directly, and never duplicate the same context in a second agent without a distinct verification question.
+## Execution depth is not model price
 
-| Agent | Allowed model | Use exactly when | Do not confuse with |
-| --- | --- | --- | --- |
-| `economical-researcher` | Composer 2.5 Standard | A narrow source-navigation question or small general low-risk task | A full-repo audit |
-| `economical-implementer` | Grok 4.6 Low Standard | Source/test PATCH, low-risk, named symbols and accepted contract | Security/money/state-concurrency work |
-| `careful-engineer` | Grok 4.6 Medium Standard | Correctness-sensitive PATCH or authorized integration | The read-only independent reviewer |
-| `evidence-runner` | Composer 2.5 Standard | VERIFY already specifies the exact test/command, side-effect safety and receipt | A debugger: return failing evidence rather than silently fixing |
-| `documentation-integrator` | Composer 2.5 Standard | PATCH to ratified canonical docs, links or lifecycle facts with one editing owner | Gameplay design or arbitrary backlog processing |
-| `failure-localizer` | Grok 4.6 Low Standard | INVESTIGATE one observed failing stack/command whose root cause is unknown | An implementer: return a patch proposal, no edits |
-| `boundary-reviewer` | Grok 4.6 Medium Standard | Independent, **read-only** adversarial review of specified high-risk diff/commit | Another implementation pass or routine review of every task |
+- **VERIFY:** execute the exact named safe command/fixture, report pass/fail/NOT-RUN and side effects. Composer for normal **and** high-risk verification. An approved database and clean test environment, not Grok's vocabulary, make a command safe.
+- **PATCH:** follow a selected executable microtask with settled behavior and an explicit test. Composer for low-risk and complicated domains alike, provided the task is actually tiny and precise. High-risk correctness is proved by constraints, negative tests and code review.
+- **INVESTIGATE:** exceptionally used in Cursor, when the live environment alone can answer a narrow question ChatGPT cannot inspect. Composer preferred. If deeper architecture reasoning is needed, return to ChatGPT; do not use a hidden Grok investigator.
 
-**Dispatch algorithm:** select **needed outcome → DEPTH → risk tier → role**, not role first. If the parent already knows the fix and can do it cheaply, don't spawn a failure-localizer. If a test runner can report PASS/FAIL directly, don't ask it to investigate. Don't launch a boundary-reviewer on every tiny edit; use one for real transaction/attempt/auth/replay/fork risks, ideally after the patch. For shared worktrees, use **one writer** for one file owner and serialize follow-on reviews. Reviewers/localizers are read-only.
+**Model selection is not a proxy for safety.** Do not ask a model to perform a SQL migration against important data just because it is Medium. Precondition gates, resource authority, test DB scopes and stop rules still apply to all models.
 
-**Output contract:** before launch provide `ROLE, DEPTH, ALLOWED MODEL, GOAL, AUTHORITY, ANCHORS, NEGATIVE, VERIFY, DO NOT, RETURN`; keep the route card concise, skip irrelevant fields for VERIFY. The parent records actual billed model and quality (tests, rework), not just the label it requested. **Do not create another specialist solely because the task domain has a new noun.** Add a role only after observing repeated source-grounded need that the seven cannot handle.
+## Dispatch and receipt format
 
-## Strict routing algorithm for the parent
+Parent task card:
 
-1. **Is this a trivial task that can be done in the parent with no new context?** Do that; subagents have startup/context overhead.
-2. **Search, narrow doc update, source inventory, simple test/fixture, mechanically described code?** Delegate to **C**.
-3. **Precisely specified low-risk multi-file implementation with explicit source anchors and negative tests?** Delegate to **L**.
-4. **Any money/permissions, schema migration, concurrency, game-state admission, Temporal workflow, broker delivery, durable storage, auth, stale-root, fork safety, unknown architectural contradiction or multi-service joining?** Use **M**. Parent remains **M**.
-5. **Ambiguous complexity:** choose **M** if correctness-sensitive, otherwise C. If the task has no safe explicit scope, **do not delegate**, report the missing contract first.
-6. Parent must name **the selected allowed model** and custom agent role in each Task dispatch when supported; do not use Auto/inherit/default. Each child must report its displayed model, effort, speed and task ID *as actually observed*, or `unverified`. The coordinator checks Cursor task cards and usage dashboard rather than trusting a prompt.
+```text
+CHANGE / TASK: <ID> / T-xx | DEPTH=PATCH | MODEL=Composer 2.5 Standard
+BASE: <verified SHA> | SELECTED: <yes/no> | WRITE OWNER: <paths>
+OUTCOME: <one measurable code or test result>
+READ FIRST: <2-5 source symbols/test files>
+APPLY: <ordered exact edits, contracts, invariants; linked TASKS.md section>
+REFUSE: <specific unsafe state/side effect/scope>
+PROVE: <exact command/cwd + positive and discriminating negative>
+RETURN: <diff, results, owner docs updated, observed actual model, unresolved error>
+```
 
-**Do not subdivide one cheap task into several cheap subagents to manufacture parallelism.** Shared file owners require one integrator.
+Keep this a compact pointer, **not a pasted 15,000-token source research dossier**. Default one child, no subchildren. If a microtask unexpectedly requires broad reasoning, it wasn't Composer-ready and needs ChatGPT repair.
 
-## Model enforcement and limitations
+Receipt after each accepted microtask: HEAD/commit, touched files, exact commands/exit/test count, one negative, doc heading impacted, actual model/speed or unverified, total observed Cursor tokens and charge **if actually available**, time spent/rework, and whether the next microtask's prerequisites still hold. Do not fabricate costs or a baseline.
 
-- Custom profiles in [`.cursor/agents/`](../../.cursor/agents/) pin a model and variants. Grok aliases or frontend overrides vary across Cursor versions; preferred explicit syntax uses `effort=low|medium,fast=false`; alternative official-looking model aliases must be **verified in task card before use**. The base Grok 4.6 model defaults to High on some plans; never omit effort.
-- The project [`subagentStart` hook](../../.cursor/hooks.json) calls [the local model guard](../../.cursor/hooks/model-budget-guard.cjs). It is intentionally **fail closed**: only explicit recognized model IDs/effort/speed are allowed; unknown/missing options or unsupported models are denied rather than silently falling back to a higher-cost model. This covers **subagent starts visible to Cursor hooks**, not the parent model, automatic internal calls that bypass hooks or billing behavior after launch. Confirm actual usage.
-- If Cursor reports only `grok-4.6` or `composer-2.5` without effort/speed details to the hook, the guard rejects it. Do **not** disable the guard or loosen it blindly. Inspect Cursor version/task card; correct model selection or choose manual non-delegated execution and report the limitation.
-- Cursor may fall back to a compatible model if an ID is unavailable and has had reports of custom subagent model pins not being honored. A task can pass a start-time hook yet be billed differently if a later provider choice/fallback happens; verify in the usage dashboard. The repository cannot enforce parent selector or all actual billing. Enterprise/team model access controls provide stronger prevention where available.
-- Cursor **Plus / legacy Start** can fix Grok 4.6 at Medium Standard; Low may not be selectable. If so, use C or M, **do not request High**.
-- The hook intentionally does not send network traffic, read private task content, use a paid API or log user narrative.
+## Guard, manual settings and experiment
 
-## Rollout / test gate
+- [Guard](../../.cursor/hooks/model-budget-guard.cjs) deliberately permits only explicit Composer Standard and Grok 4.6 Low/Medium Standard. It fails closed on ambiguous model/speed. [Guard tests](../../.cursor/hooks/model-budget-guard.test.cjs) validate input parsing, **not actual Cursor billing or fallback**.
+- Parent select **Composer 2.5 Standard** manually, turn Fast/Auto off. Cursor built-in Explore should be Composer Standard or disabled if variant cannot be verified. The hook sees only subagentStart, not all in-product model usage. Inspect Task cards and the usage dashboard for actual billed variants.
+- First perform one small Composer patch and one representative sensitive Composer patch with tests and record measured usage. Only then estimate cost per accepted task versus earlier Grok traces. WIKI18 owns the cost-and-rework experiment. A zero-tool stub, mock PASS, or unverified model selection is not evidence of savings.
+- If cheap execution causes retries, extra context, missed tests or owner correction, report total spend **including rework**, not the attractive price of its first attempt.
 
-1. Before a multi-agent batch, have Cursor run the repository's local policy tests (`node --test .cursor/hooks/model-budget-guard.test.cjs`) and run 3 dry-run subagent launches: Composer Standard, Grok 4.6 Low Standard, Grok 4.6 Medium Standard. **Do not interpret test fixtures as actual Cursor model routing.**
-2. Check the Task cards/usage dashboard for the **actual** variant. If any Fast, High, 4.7, Auto or unknown model is billed, stop launching the batch and investigate model override/fallback; record the discrepancy.
-3. For first 5–10 bounded Changes, record per task: expected vs actual model/effort/speed, reported input/cached/output tokens and USD where available, wall time, unique source files, test outcome and rework. When fields are absent, leave `unknown`, not zero. The existing WIKI18/W2–W3 trace benchmark remains the evaluation owner.
-4. Compare *cost per correctly completed Change*, code quality, regression/rework and time against the earlier baseline. Keep or revert the experiment based on actual evidence, not a synthetic benchmark victory.
-
-## Human setup in Cursor
-
-1. Select **Grok 4.6 Medium, Standard (Fast off)** for parent Chat/Agent sessions. Disable Auto, 4.7, High and Fast in model picker/available-model settings where supported. Repository rules alone do not switch that parent dropdown.
-2. For **Settings → Agents → Subagents**, set the built-in Explore model to **Composer 2.5 Standard** where available. If Cursor provides no way to pin the built-in subagent's exact standard variant, project hook denies ambiguous starts; prefer explicit C/L/M custom subagents.
-3. Inspect each subagent task card/usage row for actual billing model. If a configured subagent silently falls back, abort the cost experiment until fixed. Some plans and Cursor builds have different setting availability.
-4. A blocked subagent is a policy success, not a reason to spawn an unapproved stronger fallback. Choose an allowed task shape/model or request permission to change the policy.
-
-**References checked 2026-11-19:** https://cursor.com/docs/subagents, https://cursor.com/docs/hooks, https://cursor.com/help/models-and-usage/grok-4-6. Product/docs may change; revalidate IDs/hook payload when Cursor updates.
+**Owner command:** the planner spends reasoning tokens; Cursor spends editing/test tokens. The cheapest durable result is the one that is both correct and does not need to be written twice.
