@@ -1,5 +1,7 @@
 # HK03 | Composer route: finish test split without weakening assertions
 
+**Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
+
 **Baseline:** 584b594; **state:** Implementing. Recorded profiled run: 33 tests, 30 passed, **3 failed** (one parent plus two children). The underlying two failures were `imported abstract start ...` ENOENT at `tools/api-integration/content/rules/srd-5.2.1-subset`, and `mechanical opening ...` missing `snapshot.campaign.offer.nodes`. A later isolated imported-start path fix and duplicate assert-import fix landed; *no full rerun proves green*. **Default model:** Composer Standard.
 
 **Source:** `tools/api-integration/test/storyteller.integration.ts` profiled orchestrator, `storyteller-suite.ts` helpers, `storyteller-imported-start.integration.ts`, `storyteller-browser-creation.integration.ts`; `tools/api-integration/package.json:test:storyteller` is `node --test dist/test/storyteller.integration.js`.
