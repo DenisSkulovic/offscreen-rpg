@@ -69,7 +69,43 @@ The direct SQL-outbox to Temporal RPC is the selected wake. It is not a legacy m
 
 RabbitMQ is the laboratory broker for a separately selected post-commit consumer. It is not a second scheduler and not required for the Storyteller to run.
 
-Two Temporal task queues, control and storyteller-execute, remain a proposed process split. They are not deployed. Workflow definitions in `@offscreen/workflows` stay deterministic. A later `storytellerDistributedV1` is a versioning choice for that future split, not permission to insert a broker hop, and not a claim that the workflow already has two stages.
+Two Temporal task queues, `control` and `storyteller-execute`, remain a proposed process split. They are not deployed. The names and the per-topic switch are [below](#two-task-queue-boundaries). Workflow definitions in `@offscreen/workflows` stay deterministic. A later `storytellerDistributedV1` is a versioning choice for that future split, not permission to insert a broker hop, and not a claim that the workflow already has two stages.
+
+## Per-topic route table
+
+Inspected at `d3ad620b` in [dispatch.ts](../../../../apps/worker/src/outbox/dispatch.ts), [runtime](../../../../apps/worker/src/runtime/index.ts), and [worker config](../../../../apps/worker/src/bootstrap/config.ts). `dispatchedNoticeTopics` is the wake and start list. Each start uses `deliverOutboxNotice` and a direct Temporal RPC. Superseded: RabbitMQ-to-Temporal. RabbitMQ carries a post-commit business event to an independent consumer and does not wake Temporal. This table does not claim a Game Authority service, a broker consumer, or a private route is implemented. The same table is in [DIST01](../../../changes/open/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md#per-topic-route-table). That packet stays open.
+
+Every start rejects a duplicate workflow id (`REJECT_DUPLICATE`). The SQL operation id remains the idempotency key. The Compose fallback for every wake and start is the one worker on `offscreen-local`. RabbitMQ is not a fallback wake.
+
+| Topic | Who writes SQL | Who may start a workflow | Queue name selected | What stays in the current Compose process |
+| --- | --- | --- | --- | --- |
+| `campaign.action.v1` | Engine module `createStories` inside the current Compose worker. A separate Game Authority service is not implemented. | The outbox relay, by a direct Temporal RPC, may start `campaignActionV1` as `campaign-action/<id>`. A RabbitMQ consumer may not. | `control` for a later workflow-task split. That queue is not deployed. | Relay, workflow tasks, and `advanceCampaignAction` stay on `offscreen-local` in the one worker. |
+| `campaign.activity.v1` | Engine module `createStories` inside the current Compose worker. A separate Game Authority service is not implemented. | The outbox relay, by a direct Temporal RPC, may start `campaignActivityV1` as `campaign-activity/<id>`. A RabbitMQ consumer may not. | `control` for a later workflow-task split. That queue is not deployed. | Relay, workflow tasks, and `advanceCampaignActivity` stay on `offscreen-local` in the one worker. |
+| `campaign.consequence.v1` | Engine module `createStories` inside the current Compose worker. A separate Game Authority service is not implemented. | The outbox relay, by a direct Temporal RPC, may start `campaignConsequenceV1` as `campaign-consequence/<id>`. A RabbitMQ consumer may not. | `control` for a later workflow-task split. That queue is not deployed. | Relay, workflow tasks, and `prepareCampaignConsequence` stay on `offscreen-local` in the one worker. |
+| `storyteller.profiled.v1` | Engine module `createStorytellerRuntime.complete` inside the current Compose worker. That call is one process. It is not a second schema writer and not a separate Storyteller service. | The outbox relay, by a direct Temporal RPC, may start `storytellerV1` as `storyteller/<id>`. A recovery notice uses its own notice id in the workflow id and still passes the generation id. A RabbitMQ consumer may not start it. | Workflow tasks: `control`. Proposal activity, when split: `storyteller-execute`. Neither queue is deployed. | `storytellerV1` and `completeStoryteller` stay on `offscreen-local` in the one worker. |
+| `opening.playable.scripted.v1` | Engine module `createScriptedOpenings` inside the current Compose worker. A separate service is not implemented. | The outbox relay, by a direct Temporal RPC, may start `scriptedOpeningV1` as `scripted-opening/<id>`. A RabbitMQ consumer may not. | `control` for a later workflow-task split. That queue is not deployed. | Relay, workflow tasks, and `completeScriptedOpening` stay on `offscreen-local` in the one worker. |
+| `continuation.playable.scripted.v1` | Engine module `createScriptedContinuations` inside the current Compose worker. A separate service is not implemented. | The outbox relay, by a direct Temporal RPC, may start `scriptedContinuationV1` as `scripted-continuation/<id>`. A RabbitMQ consumer may not. | `control` for a later workflow-task split. That queue is not deployed. | Relay, workflow tasks, and `completeScriptedContinuation` stay on `offscreen-local` in the one worker. |
+| `story.interval.v1` | Engine module `createStories` inside the current Compose worker. A separate service is not implemented. | The outbox relay, by a direct Temporal RPC, may start `storyIntervalV1` as `controlled-interval/<id>`. A RabbitMQ consumer may not. | `control` for a later workflow-task split. That queue is not deployed. | Relay, workflow tasks, and `advanceControlledInterval` stay on `offscreen-local` in the one worker. |
+| `story.interval.wake.v1` | The same `createStories` module. The signal does not write. The workflow rereads SQL. | No new workflow. The relay may signal `intervalChanged` on `controlled-interval/<id>` by a direct Temporal RPC when the interval still needs a wake. A RabbitMQ consumer may not signal it. | No new queue. The running workflow keeps the queue selected for `story.interval.v1`. | The signal and `advanceControlledInterval` stay on `offscreen-local` in the one worker. |
+| `story.decision.v1` | Engine module `createStories` inside the current Compose worker. A separate service is not implemented. | The outbox relay, by a direct Temporal RPC, may start `storyDecisionV1` as `story-decision/<id>`. A RabbitMQ consumer may not. | `control` for a later workflow-task split. That queue is not deployed. | Relay, workflow tasks, and `resolveStoryDecision` stay on `offscreen-local` in the one worker. |
+| `scene.published.v1` | No consumer writer is selected. A scene commit stays with the engine in the current Compose worker. This topic is not in `dispatchedNoticeTopics`. | Nobody. No consumer is selected, so this topic must not start or signal a workflow. Left unimplemented. | None. No queue name is selected. | The scene commit stays in the current Compose process. The fact stays undispatched. The consumer is unimplemented. |
+
+## Migration and rollback switches
+
+Superseded: RabbitMQ-to-Temporal as a migration switch. A wake or start does not move onto the broker, and rollback does not drain a broker queue. In-flight notices retry from SQL.
+
+These start topics share one switch: `campaign.action.v1`, `campaign.activity.v1`, `campaign.consequence.v1`, `opening.playable.scripted.v1`, `continuation.playable.scripted.v1`, `story.interval.v1`, and `story.decision.v1`. Migration, when a later Change deploys the split, moves that topic's workflow tasks from `offscreen-local` to `control` and leaves the direct RPC in place. Rollback returns those workflow tasks to `offscreen-local` in the current Compose worker. The switch is not deployed.
+
+`storyteller.profiled.v1` uses the same workflow-task switch, plus a second switch for the proposal activity: from `offscreen-local` to `storyteller-execute`. Rollback returns both the workflow tasks and the proposal activity to `offscreen-local`. The wake transport stays the direct RPC. `storytellerDistributedV1` is not the running workflow.
+
+`story.interval.wake.v1` has no queue of its own. It follows the queue of the `story.interval.v1` workflow it signals. Rollback returns that signal to the workflow still running on `offscreen-local`.
+
+`scene.published.v1` has no migration switch. No consumer and no queue are selected. Rollback is to keep that fact undispatched.
+
+## Two task-queue boundaries
+
+1. Current boundary, executable today. One Temporal task queue, `offscreen-local` (`TEMPORAL_TASK_QUEUE` in the worker config). The Compose worker polls it and runs every activity listed above. This is the queue `deliverOutboxNotice` passes for every start. It is one process. It is not a private HTTP route and not a second service.
+2. Proposed boundary, not deployed. Workflow tasks use `control`. Storyteller proposal activities use `storyteller-execute`. Engine SQL activities stay off `storyteller-execute`, so that worker cannot become a second schema writer. Neither name is a running queue. Superseded: RabbitMQ-to-Temporal as a stand-in for this split.
 
 ## Security and state consistency
 
@@ -97,14 +133,14 @@ Two Temporal task queues, control and storyteller-execute, remain a proposed pro
 - The exact internal writer RPC, credential rotation, and the command mapping from current controllers.
 - The checkpoint schema and story constraints. DATA02 owns that implementation. This note does not finish it.
 - The read-only Storyteller task API, proposal schema, and provider reconciliation.
-- Whether any post-commit consumer is worth building. Until one is selected, no broker topology is required for the turn.
+- Whether `scene.published.v1` is worth a consumer. The route table leaves that topic unimplemented. Until a consumer is selected, no broker topology is required for the turn.
 - Resource limits on the local machine. Measure them. Do not invent a second cluster installer.
 - A backfill from current forks to an arbitrary historical scene.
 - Multiple users, autonomous planning, images, payments, and chaos or high-availability work.
 
 ## Ratification and work ordering
 
-ARCH02 is merged. DIST01 reconciles remaining writer RPC and task-queue details with [execution](../../../../docs/technical/platform/execution-and-delivery.md), [topology](../../../../docs/technical/platform/topology.md), [data](../../../../docs/technical/platform/data-and-persistence.md), [Storyteller publication](../../../../docs/technical/storyteller/generation-and-publication.md), and [client HTTP](../../../../docs/technical/platform/http-api-and-client-contracts.md). This design note does not edit those owners. ARCH03 and ARCH05 are merged design contracts. They are not a built checkpoint and not a built context pack. DIST02 and DIST04, as rewritten, describe an optional post-commit fact and consumer. They are Proposed. They are not a wake bridge and they are not selected.
+ARCH02 is merged. DIST01 records the per-topic route table, the migration and rollback switches, and the two task-queue boundaries in this note. The normative classes stay in [execution](../../../../docs/technical/platform/execution-and-delivery.md), [topology](../../../../docs/technical/platform/topology.md), [data](../../../../docs/technical/platform/data-and-persistence.md), [Storyteller publication](../../../../docs/technical/storyteller/generation-and-publication.md), and [client HTTP](../../../../docs/technical/platform/http-api-and-client-contracts.md). This design note does not edit those owners. ARCH03 and ARCH05 are merged design contracts. They are not a built checkpoint and not a built context pack. DIST02 and DIST04, as rewritten, describe an optional post-commit fact and consumer. They are Proposed. They are not a wake bridge and they are not selected.
 
 ## First discriminating tests
 
