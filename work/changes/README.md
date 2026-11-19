@@ -108,3 +108,20 @@ Parallel execution: K8S03, K8S04, and K8S09 write disjoint paths at the same tim
 **Parallel join plan:** after DIST01, DIST02 and DIST03 can run in independent Cursor worktrees. DIST04 may follow DIST02 while DIST03 progresses, but shared worker runtime files and Kubernetes cluster operations must have one owner. DIST05 follows authority ownership and integrates with DIST04 in one controlled worker-runtime merge. DIST06 is a final single-cluster acceptance. Never run current ARCH02 branch and DIST01 canonical edits concurrently. The existing K8S03/K8S09 cluster lock remains binding. Actual memory, provider configuration and migrations must be checked before implementation.
 
 **Next design bundle still needed:** exact scene/checkpoint v1 + historical fork/storage retention; campaign/bootstrap and S3 cross-Pod wiring; branch-scoped context packs; complete fake/live model authorization; further Kubernetes configuration and E2E fixtures. They remain named [gaps](../designs/open/distributed-turn-poc/GAPS.md), not silently folded into DIST06. Images, customer billing/Stripe and full chaos tests remain explicitly deferred per that register.
+
+## DISTURN | Scene-state and canonical-knowledge bundle (planned 2026-11-19)
+
+**Design source:** [D2 scene-state contract](../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) and [gap register](../designs/open/distributed-turn-poc/GAPS.md). These packets **do not join the currently active Cursor K8S03/K8S09 batch**, do not authorize a migration, and do not mean full historical forks or S3 integration are implemented.
+
+| Change | Gate | Parallel class | Deliverable |
+| --- | --- | --- | --- |
+| [DATA01 ratify checkpoint and fork schema](open/2026-11-19--data01-ratify-scene-checkpoint-and-fork-schema/CHANGE.md) | ARCH03/DIST01 reconciliation | parallel-research, serial docs join | Field-by-field snapshot completeness and inherited manifest identity |
+| [DATA02 immutable checkpoint object and SQL index](open/2026-11-19--data02-immutable-checkpoint-schema-and-storage/CHANGE.md) | DATA01 | parallel-write after contract | Content-addressed checkpoint and atomic SQL selector |
+| [DATA03 checkpoint in Start/publication](open/2026-11-19--data03-checkpoint-at-initialization-and-publication/CHANGE.md) | DATA02, Game Authority owner | depends-on, shared publication owner | Scene-1 and later state/root pair without half-commit |
+| [DATA04 historical read/fork](open/2026-11-19--data04-historical-read-and-fork-from-checkpoint/CHANGE.md) | DATA03, branch canon design | depends-on | Snapshot-backed GET, independent branch and journal fork |
+| [DATA05 S3 cross-Pod document access](open/2026-11-19--data05-cross-pod-canonical-s3-connection/CHANGE.md) | K8S05 | parallel-write after storage | Existing S3DocumentStore shared correctly by isolated workloads |
+| [DATA06 scoped Storyteller context](open/2026-11-19--data06-fork-scoped-memory-context-minimum/CHANGE.md) | ARCH03/05, DATA03/04, DIST05 | depends-on | Pinned current state, bounded tools, no sibling/future leak |
+
+**Concurrency plan:** DATA01 reading/planning and DATA05 configuration research can proceed during infrastructure builds. After ratification, DATA02 and DATA05 have mostly disjoint ownership, but share S3-adapter integration if modified. DATA03 shares publication files with DIST05 and must be serialized at that join. DATA04 can develop contracts/tests concurrently with DATA03 implementation in a separate worktree but cannot merge or claim historical success before checkpoints land. DATA06 is downstream of historical branch rules and Storyteller worker extraction. One coordinator owns migration ordering, common technical headings and the shared cluster.
+
+**Additional design still outstanding:** authored campaign bootstrap across network boundaries, actual remote Storyteller proposal/usage custody, a single durable integrated fake-turn fixture plus eventual budgeted live-turn permission. The earlier [DIST06](open/2026-11-19--dist06-first-distributed-turn-integration/CHANGE.md) remains a *pre-fork* slice. Complete DISTURN POC acceptance needs DATA03/04/05/06 and follow-up integrated proof.
