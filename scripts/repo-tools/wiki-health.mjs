@@ -10,8 +10,55 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildWikiModel } from './wiki-core/model.mjs';
 import { root } from './process.mjs';
+
+export const WIKI_HEALTH_NOT_RUN_EXIT = 3;
+
+export function missingWikiDependency(error) {
+  const code = error && error.code;
+  const message = error instanceof Error ? error.message : String(error);
+  return code === 'ERR_MODULE_NOT_FOUND'
+    || /Cannot find package|Cannot find module|ERR_MODULE_NOT_FOUND/i.test(message);
+}
+
+async function defaultWikiLoader() {
+  return import('./wiki-core/model.mjs');
+}
+
+/**
+ * Run the wiki graph checker. A missing Node dependency is NOT-RUN (exit 3),
+ * which is neither PASS (0) nor FAIL (1).
+ */
+export async function executeWikiHealth(repo, meta = {}, loader = defaultWikiLoader) {
+  let imported;
+  try {
+    imported = await loader();
+  } catch (error) {
+    if (missingWikiDependency(error)) {
+      return {
+        status: 'NOT-RUN',
+        exitCode: WIKI_HEALTH_NOT_RUN_EXIT,
+        reason: 'Node dependencies required by the wiki parser are not installed.',
+      };
+    }
+    throw error;
+  }
+  const model = imported.buildWikiModel(repo, meta);
+  const hardErrors = model.health.integrity.hardErrors;
+  return {
+    status: hardErrors > 0 ? 'FAIL' : 'PASS',
+    exitCode: hardErrors > 0 ? 1 : 0,
+    hardErrors,
+    model,
+  };
+}
+
+function reportNotRun(reason) {
+  console.error('Wiki health: NOT-RUN');
+  console.error(reason);
+  console.error('This result is not a pass and not a documentation failure.');
+  process.exit(WIKI_HEALTH_NOT_RUN_EXIT);
+}
 
 function gitMeta(repo) {
   const sha = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' });
@@ -96,12 +143,29 @@ async function main() {
     }
   }
   if (args.has('--self-test')) {
-    const selfTest = await import('./wiki-core/self-test.mjs');
-    process.exit(selfTest.runSelfTest());
+    try {
+      const selfTest = await import('./wiki-core/self-test.mjs');
+      process.exit(selfTest.runSelfTest());
+    } catch (error) {
+      if (missingWikiDependency(error)) {
+        reportNotRun('Node dependencies required by the wiki parser are not installed.');
+      }
+      throw error;
+    }
   }
   const meta = gitMeta(root);
   const started = performance.now();
-  const model = buildWikiModel(root, meta);
+  let executed;
+  try {
+    executed = await executeWikiHealth(root, meta);
+  } catch (error) {
+    if (missingWikiDependency(error)) {
+      reportNotRun('Node dependencies required by the wiki parser are not installed.');
+    }
+    throw error;
+  }
+  if (executed.status === 'NOT-RUN') reportNotRun(executed.reason);
+  const model = executed.model;
   const dir = writeReports(root, model);
   const elapsed = Math.round(performance.now() - started);
   if (args.has('--json')) {
