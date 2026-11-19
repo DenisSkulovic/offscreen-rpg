@@ -1,0 +1,45 @@
+# WIKI18 | Measure and reduce coding-agent navigation and guard overhead
+
+**State:** Proposed, documentation + tooling implementation after owner selection (2026-11-19). **Not selected** and does not authorize any paid agent benchmark. 
+**Origin:** Owner-supplied HK01 Grok 4.7 screenshots (2026-11-19, ~2–3 minutes into a single isolated worker) and source inspection of `AGENTS.md`, `.agents/skills/{change-workflow,implementation-slice,cursor-handoff}/SKILL.md`, [W2/W3 benchmark](../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md), and current [HK01](../2026-11-17--hk01-retire-local-repair-helper/CHANGE.md). The screenshots are **illustrative**, not a structured token/cost trace.
+**Priority:** Practical before a large subagent wave; read-only tracing/design can overlap HK01 implementation. Coordinator owns any shared agent-rules edits. Do not interrupt the active HK01 worktree.
+
+## Actual observed failure hypothesis, not a made-up token count
+
+The screenshots show a worker explicitly instructed to read `AGENTS.md`, the Change skill, the implementation-slice skill and HK01 packet, with `git status` first. At about three minutes, Cursor displays **25 files and 26 searches/explorations** and the agent has read substantial parts of `scripts/repo-tools/change-guard.mjs`, `wiki-change-guard.mjs`, `markdown.mjs`, `slug.mjs`, unrelated technical/product headings and repeated runbook material before editing the bounded recovery helper. It also reasons repeatedly about whether the runbook's “only operator procedure” claim conflicts with adding a library helper. **That is a plausible context and decision overhead**, not proof these reads were all unnecessary: this is a provider-uncertain, money-sensitive path, and change-guard diagnostics may require narrow inspection. Screenshots do **not** report input, cached-input or output tokens, actual USD, successful task completion or final quality. Cursor's “1% used” is not a reliable spend measurement.
+
+The key distinction to test is **wiki retrieval inefficiency vs broad executor workflow / guard friction vs genuinely difficult code**. Avoid attributing everything to wiki graph quality or blaming “too much thinking.” A correct negative proof on provider-double-settlement is worth more than a cheaper false success.
+
+## Concrete code/documentation improvement
+
+1. **Map the route before implementing a rule.** For HK01 and two other contrasting bounded Changes, produce a compact *exact* route card: `Change file (first screen + replacement section) → one technical authority heading → 2–5 expected source/test anchors → one negative boundary → verification commands`. Confirm that the packet/handoff already supplies or can supply this without rerunning broad discovery. Name the HK01 owner: `budget.ts` settle/attempt state, local CLI, specific uncertain recovery runbook, and focused tests. Where a packet omits an exact heading, fix that packet **after** active HK01 finishes instead of changing implementation while agent works.
+2. **Just-in-time guard knowledge.** Keep `AGENTS.md` lightweight. Put a tiny one-page “verification decision tree” into existing implementation-slice/verification guidance: run cheap targeted code tests and `git diff --check` during edits; run guard commands near closure; when a guard fails, read the **actual diagnostic and only the named guard source slice**. Do not preload 1000+ lines of `change-guard.mjs` or Markdown slug internals to predict hypothetical failures. If guard output is unclear, add a focused explanatory diagnostic/test under this Change rather than repeatedly asking agents to reverse-engineer its implementation.
+3. **Stop-condition enforcement:** Once selected contract, precise owner symbol, and one negative case are identified, stop broad documentation retrieval and implement/test. Any further read requires a concrete uncertainty and should record that reason. Repeated full-file reads or unrelated heading detours should be a reviewable exception. For nontrivial source semantic change, still inspect and reconcile permanent docs.
+4. **Make trace metrics real.** Extend the **existing** [W2/W3 research plan](../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md), not create a rival evaluation system. If tool output supports it, add a lightweight parser for redacted Cursor `agent --print --output-format stream-json` trace to count model turns, search/read actions, unique files, repeated reads, bytes delivered, navigation before first edit, first-edit latency, diagnostics/verification-only reads, and source-owner recall. Tokens/cache/USD stay `null` when not reported by the adapter. Store raw traces outside git by default. Do not scrape personal chats or copy private user narrative into evidence. If automatic trace export is unavailable, record screenshots as a low-confidence manual observation only.
+5. **Evaluate two routes on the same small task class** when a user approves the expense: existing instruction stack versus compact source-specific handoff/route card. Compare median/p90 file/tool counts, pre-edit read volume, total host time, reported token/USD, correctness, provider-safety and docs reconciliation; use at least HK01 and a non-provider control task. No paid model experiment by default: implement parser and dry-run fixtures first. Reject any optimization that causes missing authorization, incorrect provider attempt accounting or skipped canonical docs.
+6. **Fix the source of repeated work**, not a decorative “max 10 tool calls” rule. Likely destinations: `.agents/skills/cursor-handoff/SKILL.md` and `.agents/skills/implementation-slice/SKILL.md`, optional small guard diagnostic, and Change-template first-screen contract. Preserve the full change-workflow skill for design/reconciliation but keep it on-demand for small executor slices. Only change `AGENTS.md` if proven necessary, respecting universal boundaries and minimality.
+
+## Tests and acceptance
+
+- A fresh agent can execute the HK01 *same* narrow provider-free function slice by reading a minimal named contract and source anchors; forced reads of large guard implementation files are absent unless a guard actually fails.
+- A negative testcase (already-settled attempt, missing saved usage/telemetry, or uncertain generation) still fails safely. Reconciliation of changed permanent docs remains explicit. No live model, remote DB, secret or money wire operations.
+- CLI parser tests: one synthetic trace with duplicate reads, source/guard distinctions, cached/output/input tokens present; another missing all usage fields preserves `null`. Unknown structure fails closed or reports an unclassified event, never manufactures 0 tokens.
+- Before/after comparison reports actual denominators and correct-outcome rate. If no reliable token telemetry, report tool/read counts only; **do not** claim cost reduction. Link results into the existing W2/W3 benchmark authority and source maps.
+- Run source-local tests, `pnpm repo:docs-health`, `pnpm wiki:health`, and Change guard with project-supported Node/pnpm where feasible; record NOT-RUN when unavailable. Show exact changed docs and why product/technical contracts remain intact.
+
+## Ownership and scheduling
+
+**Read-only survey now:** no conflict with HK01 agent. **Executable edits only after source reinspection and selection:** `.agents/skills/{implementation-slice,cursor-handoff}/SKILL.md`, optional narrowly scoped guard diagnostic/tests under `scripts/repo-tools/`, optional trace parser under same tooling, targeted implementation Change template; update existing W2/W3 benchmark procedure. `change-workflow/SKILL.md` and `AGENTS.md` should be unchanged unless a concrete misrouting demands a small amendment. Coordinator must check active HK01/AUD01/HK09 edits first. Do not claim W2/W3 paid benchmark itself is authorized.
+
+**Out of scope:** new vector database, Cognee, automatic prompt/context compaction framework, arbitrary token limits, model provider payments, changes to Storyteller game context or canonical documents, bulk rewrites of every existing Change.
+
+## Reconciliation ledger for closure
+
+| Owner | Before problem | After diff | Normal/negative test | Evidence & status |
+| --- | --- | --- | --- | --- |
+| Selected Change handoff | Broad orientation / missing exact route, if confirmed | Pending source-backed compact handoff | Pending | Pending |
+| Executor skill / guards | JIT stop conditions insufficient, if confirmed | Pending | Pending | Pending |
+| W2/W3 benchmark / trace parser | No observed HK01 cost measurement | Pending | Missing usage stays null | Pending |
+| Product/technical authority | Must remain unchanged unless real behavior changed | Reasoned unchanged / precise updated heading | No source-truth drift | Pending |
+
+**Closure:** archive Done only after a real demonstrated workflow/trace improvement with guard safety intact; otherwise keep Proposed or Cancelled with a documented rejected hypothesis, not a fabricated “30% cheaper” claim.

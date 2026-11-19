@@ -4,6 +4,8 @@
 
 **Selection owner** for `pnpm repo:brief`. Packets live here (`open/` + `archive/`).
 
+**Agent execution efficiency (WIKI18, proposed 2026-11-19):** [Bounded coding-agent navigation, just-in-time verification and real token/cost traces](open/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md) follows the owner-supplied HK01 Grok/Cursor screenshots. The agent explored ~25 files/26 search actions by roughly minute 3, but screenshots do not expose actual tokens/USD or final correctness. WIKI18 reuses the existing W2/W3 benchmark, tests compact source-specific handoffs against full workflow orientation, and keeps safety/documentation checks. **Not selected; no paid agent benchmark authorized.** Active HK01 work and other Cursor batches are unaffected.
+
 Current change: none
 
 **REAL next proof program:** [Cursor entry](../designs/open/playability-reality/CURSOR-HANDOFF.md) and [program](../designs/open/playability-reality/README.md). [REAL01](archive/2026-11/other/2026-11-18--real01-solo-golden-path/CHANGE.md) is Done. [REAL02](archive/2026-11/other/2026-11-18--real02-canon-chain-fixtures/CHANGE.md) is Done. The gift chain was classified at the staging seam. Database publication and a played recall were not run. [REAL04](archive/2026-11/other/2026-11-18--real04-v0-scope-provenance/CHANGE.md) is Done. Both creation routes stay, and the freeform route is not a playability pledge. [REAL03](../designs/open/playability-reality/EXPERIMENTS.md) is *only an experiment protocol*, not an authorized paid run. No REAL packet is selected.
