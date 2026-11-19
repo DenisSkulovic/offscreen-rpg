@@ -9,6 +9,7 @@ const WORK_INDEXES = new Set([
   'work/QUEUE.md',
   'work/WORK-TAXONOMY.md',
   'work/tasks/README.md',
+  'work/tasks/TEMPLATE.md',
   'work/tasks/open/README.md',
   'work/tasks/archive/README.md',
 ]);
