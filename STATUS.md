@@ -46,7 +46,7 @@
 
 **Current development priority:**
 1. Selection owner: [work/changes/README.md](work/changes/README.md). BOOK01 and BOOK02 were archived Done for their initial POC scope (2026-11-18). Completed packets, including the housekeeping prevention track and the retrieval/wiki experiments, stay in the [archive](work/changes/archive/README.md) and the [November ledger](work/changes/ledger/2026-11.md). Conclusions of the retrieval experiments stay in the [research register](research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md). Those studies are not current commands. QA-SF01 is Done. The last green Storyteller integration run was 33 tests with 0 failures, before the split. The 32 nested cases now live in 12 files and still run in the original order. That suite has not been re-run since the move.
-2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.
+2. Open product/governance gaps (not auto-authorized): production Support grant steward; OBS00-B live dispatch stays denied until an entitlement store exists; OBS04 E0; live Story trial only with a **fresh** spend cap.
 3. Prefer new product/technical subject owners. Coverage for what the source actually contains is the matrix below. Do not treat a retired study or an archived packet as implementation permission.
 
 ## Capability coverage
