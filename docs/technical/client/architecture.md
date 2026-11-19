@@ -123,6 +123,7 @@ Every private key begins with `['viewer', viewerId, ...]` and includes stable re
 | --- | --- | --- | --- |
 | Current story | `['story',storyId,'snapshot']` | `staleTime: 5_000` ms; active pending status refresh separately | Accepted command, SSE hint, focus/resume, explicit refresh |
 | Story history | `['story',storyId,'history',filters]` (infinite) | 30_000 ms | Publication/invalidation or user explicit refresh |
+| Historical scene | `['story',storyId,'scene',sequence]` | 30_000 ms | Never the live snapshot key. Historic offers are not commands |
 | Story list | `['stories','list',filters]` (infinite) | 15_000 ms | Start/fork and relevant publication |
 | Draft list | `['drafts','list',filters]` (infinite) | 15_000 ms | Draft save/create |
 | Draft detail | `['draft',draftId]` | 15_000 ms | Save/conflict reconciliation |

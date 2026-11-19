@@ -270,6 +270,24 @@ export class StoriesController {
       this.seam.read({ ownerId, storyId: id }),
     );
   }
+  @Get(':id/scenes/:sequence')
+  historicalScene(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('sequence') sequence: string,
+  ) {
+    return this.run(request, (ownerId) => {
+      const parsed = Number(sequence);
+      if (!Number.isInteger(parsed) || parsed < 1) {
+        throw new StoryError('invalid');
+      }
+      return this.stories.readHistoricalScene({
+        ownerId,
+        storyId: id,
+        sequence: parsed,
+      });
+    });
+  }
   @Get(':id/history')
   history(
     @Req() request: Request,
@@ -445,6 +463,12 @@ export class StoriesController {
         sourceStoryId,
         forkStoryId,
         expectedRevision: parsed.data.expectedRevision,
+        ...(parsed.data.sourcePassageId
+          ? { sourcePassageId: parsed.data.sourcePassageId }
+          : {}),
+        ...(parsed.data.sourceCheckpointHash
+          ? { sourceCheckpointHash: parsed.data.sourceCheckpointHash }
+          : {}),
       });
     });
   }

@@ -21,6 +21,7 @@ import {
 } from '@offscreen/db/storyteller-schema';
 import { storyListSchema } from '@offscreen/contracts/stories';
 import {
+  historicalSceneSchema,
   storyHistorySchema,
   passageContentSchema,
   projectStoredSceneAppearance,
@@ -28,12 +29,17 @@ import {
 } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
 import {
   story,
   storyPassage,
   storyResolution,
 } from '@offscreen/db/story-schema';
+import {
+  campaignSettingsSchema,
+  campaignViewSchema,
+} from '@offscreen/contracts/campaign';
+import { projectWorldTime } from '@offscreen/game/calendar';
 import { and, desc, eq, lt, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { createHash } from 'node:crypto';
@@ -43,6 +49,11 @@ import { disabledReadCache, type ReadCacheOptions } from '../cache/read-cache';
 import type { DocumentStore } from '@offscreen/documents';
 import { readPassageDocument } from './passage-documents';
 import { storytellerContextCaptureKind } from '../storyteller/context-capture';
+import {
+  readSceneCheckpointReference,
+  type SceneCheckpointStore,
+} from './scene-checkpoint';
+import type { SceneCheckpoint } from '@offscreen/documents';
 
 type StoryReadOptions = ReadCacheOptions &
   Readonly<{
@@ -188,6 +199,66 @@ function listStoryStatus(row: {
 const snapshotCacheContract = 'story-snapshot.v1';
 const snapshotCacheTtlSeconds = 30;
 const snapshotCacheMaximumBytes = 512 * 1024;
+
+function checkpointReadStore(
+  store?: DocumentStore,
+): SceneCheckpointStore | undefined {
+  const candidate = store as unknown as Partial<SceneCheckpointStore>;
+  if (
+    !store ||
+    typeof candidate.readSceneCheckpoint !== 'function' ||
+    typeof store.readManifest !== 'function' ||
+    typeof store.readStructuredDocument !== 'function'
+  ) {
+    return undefined;
+  }
+  return candidate as SceneCheckpointStore;
+}
+
+function parseSceneSequence(value: unknown) {
+  const parsed = z
+    .number()
+    .int()
+    .positive()
+    .max(2147483647)
+    .safeParse(value);
+  if (!parsed.success) throw new StoryError('invalid');
+  return parsed.data;
+}
+
+function projectCheckpointCampaign(
+  checkpoint: SceneCheckpoint,
+  settingsRow: { settings: unknown } | undefined,
+) {
+  if (checkpoint.mechanics.mechanicsAbsent) return null;
+  if (!settingsRow) throw new StoryError('conflict', 'settings_incomplete');
+  const settings = campaignSettingsSchema.parse(settingsRow.settings);
+  const mechanics = checkpoint.mechanics;
+  return campaignViewSchema.parse({
+    settings,
+    character: mechanics.character,
+    storyFacts: mechanics.storyFacts,
+    location: mechanics.location,
+    gameSecond: mechanics.gameSecond,
+    worldTime: projectWorldTime(settings.time, mechanics.gameSecond),
+    holds: [],
+    offer: null,
+    activityAccess: { kind: 'none' },
+    activity: null,
+    actionExecution: null,
+    actionExecutionEvents: [],
+    commitments: [],
+    activityEvents: [],
+    activityReports: [],
+    worldObligationReports: [],
+    worldConditions: mechanics.worldConditions,
+    worldObligations: [],
+    worldObligationEvents: [],
+    acceptedActivityPlan: null,
+    rolls: [],
+    actionReceipts: [],
+  });
+}
 
 function snapshotCacheKey(ownerId: string, storyId: string, identity: unknown) {
   const digest = createHash('sha256')
@@ -634,6 +705,119 @@ export function createStoryReads(
         });
       }
       return snapshot;
+    },
+
+    async readHistoricalScene({
+      ownerId,
+      storyId,
+      sequence,
+    }: OwnedStory & Readonly<{ sequence: unknown }>) {
+      const sceneSequence = parseSceneSequence(sequence);
+      const store = checkpointReadStore(options.documentStore);
+      if (!store) throw new StoryError('unavailable', 'document_store');
+      return database.db.transaction(
+        async (tx) => {
+          const [owned] = await tx
+            .select({
+              id: story.id,
+              forkedFromStoryId: story.forkedFromStoryId,
+              forkedFromPassageId: story.forkedFromPassageId,
+              forkedFromSequence: story.forkedFromSequence,
+              storyteller: story.storyteller,
+              execution: story.execution,
+            })
+            .from(story)
+            .where(
+              and(
+                eq(story.id, parseStoryIdentifier(storyId)),
+                eq(story.ownerId, ownerId),
+              ),
+            );
+          if (!owned) throw new StoryError('not_found');
+          const referenced = await readSceneCheckpointReference(tx, {
+            storyId: owned.id,
+            sceneSequence,
+            documentStore: store,
+          });
+          const checkpoint = referenced.checkpoint;
+          const [passage] = await tx
+            .select({
+              id: storyPassage.id,
+              appearance: storyPassage.appearance,
+            })
+            .from(storyPassage)
+            .where(eq(storyPassage.id, checkpoint.passageId));
+          if (!passage) throw new StoryError('invalid', 'checkpoint_passage_mismatch');
+          const content = await resolvePassageContent(
+            {
+              content: checkpoint.passage.content,
+              contentDocumentHash: checkpoint.passage.contentDocumentHash,
+            },
+            options.documentStore,
+          );
+          let settingsRow;
+          if (!checkpoint.mechanics.mechanicsAbsent) {
+            const [row] = await tx
+              .select({ settings: campaignSettings.settings })
+              .from(campaignSettings)
+              .where(
+                and(
+                  eq(campaignSettings.storyId, owned.id),
+                  eq(
+                    campaignSettings.revision,
+                    checkpoint.mechanics.settingsRevision,
+                  ),
+                ),
+              );
+            settingsRow = row;
+          }
+          const appearance = projectStoredSceneAppearance(passage.appearance, {
+            storyId: owned.id,
+            passageId: passage.id,
+          });
+          return historicalSceneSchema.parse({
+            campaign: projectCheckpointCampaign(checkpoint, settingsRow),
+            id: owned.id,
+            lineage:
+              owned.forkedFromStoryId === null ||
+              owned.forkedFromPassageId === null ||
+              owned.forkedFromSequence === null
+                ? null
+                : {
+                    sourceStoryId: owned.forkedFromStoryId,
+                    sourcePassageId: owned.forkedFromPassageId,
+                    sourceSequence: owned.forkedFromSequence,
+                  },
+            storyteller:
+              owned.storyteller == null
+                ? null
+                : storytellerSummary(
+                    storytellerProfileSchema.parse(owned.storyteller),
+                  ),
+            sourceMode:
+              owned.execution == null
+                ? 'scripted'
+                : executionPolicySchema.parse(owned.execution).mode,
+            revision: checkpoint.sceneSequence,
+            viewVersion: 1,
+            items: checkpoint.mechanics.items,
+            decision: null,
+            waiting: null,
+            current: {
+              id: checkpoint.passageId,
+              content,
+              interaction: checkpoint.passage.interaction,
+              ...(appearance ? { appearance } : {}),
+            },
+            resolution: null,
+            asOfSequence: checkpoint.sceneSequence,
+            checkpointHash: referenced.checkpointHash,
+            canon: checkpoint.canon,
+            canRespond: false,
+          });
+        },
+        { isolationLevel: 'repeatable read', accessMode: 'read only' },
+      );
     },
 
     async readHistory({ ownerId, storyId, before }: ReadStoryHistory) {
