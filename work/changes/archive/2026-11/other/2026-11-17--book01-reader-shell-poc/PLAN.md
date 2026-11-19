@@ -1,6 +1,6 @@
 # BOOK01 | Planned implementation sequence
 
-**State:** historical completed BOOK01 execution plan, archived with the Done Change (2026-11-20). [Bounded outcome and proof](CHANGE.md). Product [selected POC](../../../../docs/product/experience/living-book-poc.md); technical [selected POC](../../../../docs/technical/client/living-book-poc.md).
+**State:** historical completed BOOK01 execution plan, archived with the Done Change (2026-11-20). [Bounded outcome and proof](CHANGE.md). Product [selected POC](../../../../../../docs/product/experience/living-book-poc.md); technical [selected POC](../../../../../../docs/technical/client/living-book-poc.md).
 
 ## S0. Recheck code and safe baseline
 
