@@ -6,7 +6,10 @@
  */
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import {
+  passageContentSchema,
+  publicationSceneDirectiveV1Schema,
+} from '@offscreen/contracts/stories';
 import { startPackageReferenceSchema } from '@offscreen/contracts/campaign';
 import { capturedProviderRequestSchema } from './opening';
 import { storytellerProfileSchema } from '../profiles';
@@ -86,6 +89,7 @@ export const storytellerResultSchema = z.strictObject({
       }),
     ])
     .optional(),
+  appearanceSuggestion: publicationSceneDirectiveV1Schema.optional(),
 });
 export const storytellerReportResultSchema = z.strictObject({
   version: z.literal(1),
@@ -220,11 +224,63 @@ function mechanicalOpeningActivityAccess(
     : ({ kind: 'none' } as const);
 }
 
+const APPEARANCE_SUGGESTION_BUDGET_BYTES = 400;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Opening and report contracts have no stored appearance. Drop the sidecar. */
+export function withoutAppearanceSuggestion(output: unknown): unknown {
+  if (!isRecord(output) || !Object.hasOwn(output, 'appearanceSuggestion')) {
+    return output;
+  }
+  const { appearanceSuggestion: _dropped, ...rest } = output;
+  return rest;
+}
+
+/**
+ * Keep a small V1 scene suggestion. A missing, null, malformed, or over-budget
+ * suggestion is removed so narration admission does not fail.
+ */
+export function admitOptionalAppearanceSuggestion(output: unknown): unknown {
+  if (!isRecord(output) || !Object.hasOwn(output, 'appearanceSuggestion')) {
+    return output;
+  }
+  const { appearanceSuggestion, ...rest } = output;
+  if (appearanceSuggestion === undefined || appearanceSuggestion === null) {
+    return rest;
+  }
+  let encoded = '';
+  try {
+    encoded = JSON.stringify(appearanceSuggestion) ?? '';
+  } catch {
+    return rest;
+  }
+  const lowered = encoded.toLowerCase();
+  if (
+    Buffer.byteLength(encoded) > APPEARANCE_SUGGESTION_BUDGET_BYTES ||
+    (encoded.match(/#[0-9a-fA-F]{6}/g)?.length ?? 0) > 1 ||
+    encoded.includes('<') ||
+    lowered.includes('url(') ||
+    encoded.includes('://') ||
+    encoded.includes('"genre"')
+  ) {
+    return rest;
+  }
+  const parsed = publicationSceneDirectiveV1Schema.safeParse(appearanceSuggestion);
+  if (!parsed.success) return rest;
+  return { ...rest, appearanceSuggestion: parsed.data };
+}
+
 export function compileMechanicalOpeningProviderResult(
   output: unknown,
   authorizedPlans: readonly ImmediateActionPlan[],
 ) {
-  const stored = storytellerResultSchema.safeParse(output);
+  const narration = withoutAppearanceSuggestion(
+    admitOptionalAppearanceSuggestion(output),
+  );
+  const stored = storytellerResultSchema.safeParse(narration);
   if (stored.success) {
     if (stored.data.currentNotes.length || stored.data.arrivalNotes.length) {
       throw new Error('Opening cannot write continuity notes');
@@ -243,7 +299,7 @@ export function compileMechanicalOpeningProviderResult(
       },
     };
   }
-  const legacy = legacyMechanicalOpeningProviderResultSchema.safeParse(output);
+  const legacy = legacyMechanicalOpeningProviderResultSchema.safeParse(narration);
   if (legacy.success) {
     const plans = expandMechanicalOpeningPlans(
       legacy.data.scene.next.plans,
@@ -260,7 +316,7 @@ export function compileMechanicalOpeningProviderResult(
   }
   const parsed = mechanicalOpeningProviderSchema(
     authorizedPlans.length > 0,
-  ).parse(output);
+  ).parse(narration);
   const plans = expandMechanicalOpeningPlans(parsed.plans, authorizedPlans, {
     allowCapturedBodyRehydration: false,
   });
@@ -282,7 +338,10 @@ export function parseOpeningProviderResult<Schema extends z.ZodType>(
   output: unknown,
   schema: Schema,
 ): z.infer<Schema> {
-  const stored = storytellerResultSchema.safeParse(output);
+  const narration = withoutAppearanceSuggestion(
+    admitOptionalAppearanceSuggestion(output),
+  );
+  const stored = storytellerResultSchema.safeParse(narration);
   if (stored.success) {
     if (stored.data.currentNotes.length || stored.data.arrivalNotes.length) {
       throw new Error('Opening cannot write continuity notes');
@@ -292,7 +351,7 @@ export function parseOpeningProviderResult<Schema extends z.ZodType>(
       scene: stored.data.scene,
     });
   }
-  return schema.parse(output);
+  return schema.parse(narration);
 }
 export const resultSchemas = {
   opening: openingProviderResultSchema,

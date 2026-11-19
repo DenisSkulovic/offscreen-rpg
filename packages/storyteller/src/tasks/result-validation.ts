@@ -15,12 +15,14 @@ import {
   validateImmediateActionProposal,
 } from '@offscreen/game/immediate-actions';
 import {
+  admitOptionalAppearanceSuggestion,
   compileMechanicalOpeningProviderResult,
   openingProviderResultSchema,
   parseOpeningProviderResult,
   resultSchemas,
   storytellerReportResultSchema,
   storytellerResultSchema,
+  withoutAppearanceSuggestion,
   type StorytellerTask,
   type StorytellerSceneTask,
   type StorytellerResult,
@@ -63,8 +65,11 @@ export function validateStorytellerResult(
   task: StorytellerTask,
   output: unknown,
 ): StorytellerOutput {
+  const admitted = admitOptionalAppearanceSuggestion(output);
   if (task.task === 'report') {
-    return storytellerReportResultSchema.parse(output);
+    return storytellerReportResultSchema.parse(
+      withoutAppearanceSuggestion(admitted),
+    );
   }
   // An opening has no earlier passage handles or private arrival. Normalize the
   // lean provider contract into the stable stored result used by publication.
@@ -73,14 +78,14 @@ export function validateStorytellerResult(
       ? storytellerResultSchema.parse({
           ...(task.context.mechanicalOpening
             ? compileMechanicalOpeningProviderResult(
-                output,
+                admitted,
                 task.context.mechanicalOpening.authorizedPlans ?? [],
               )
-            : parseOpeningProviderResult(output, openingProviderResultSchema)),
+            : parseOpeningProviderResult(admitted, openingProviderResultSchema)),
           currentNotes: [],
           arrivalNotes: [],
         })
-      : storytellerResultSchema.parse(resultSchemas[task.task].parse(output));
+      : storytellerResultSchema.parse(resultSchemas[task.task].parse(admitted));
   if (
     result.activeScene?.kind !== 'restart-at-current' &&
     result.documentChanges.some((change) => change.recallAs)
@@ -322,7 +327,9 @@ export function publishedStorytellerSlice(
   output: unknown,
   sourcePart: 'current' | 'arrival',
 ) {
-  const result = storytellerResultSchema.parse(output);
+  const result = storytellerResultSchema.parse(
+    admitOptionalAppearanceSuggestion(output),
+  );
   return publishedPlayableFromGeneration({
     output: result.scene,
     sourcePart,

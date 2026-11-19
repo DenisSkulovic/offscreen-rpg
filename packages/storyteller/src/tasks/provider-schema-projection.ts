@@ -438,3 +438,38 @@ export function constrainPlanFactTransitions(
   }
   return result;
 }
+
+/** The transmitted provider schema does not ask a model for scene direction. */
+export function omitTransmittedAppearanceSuggestion(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(omitTransmittedAppearanceSuggestion);
+  }
+  if (!value || typeof value !== 'object') return value;
+  const rewritten = Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, child]) => [
+      key,
+      omitTransmittedAppearanceSuggestion(child),
+    ]),
+  ) as Record<string, unknown>;
+  const properties = rewritten['properties'];
+  if (
+    !properties ||
+    typeof properties !== 'object' ||
+    Array.isArray(properties) ||
+    !Object.hasOwn(properties, 'appearanceSuggestion')
+  ) {
+    return rewritten;
+  }
+  const { appearanceSuggestion: _dropped, ...rest } = properties as Record<
+    string,
+    unknown
+  >;
+  const required = Array.isArray(rewritten['required'])
+    ? rewritten['required'].filter((entry) => entry !== 'appearanceSuggestion')
+    : rewritten['required'];
+  return {
+    ...rewritten,
+    properties: rest,
+    ...(required !== undefined ? { required } : {}),
+  };
+}
