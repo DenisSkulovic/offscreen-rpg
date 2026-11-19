@@ -1,0 +1,35 @@
+# Short-lived client for the Redis smoke. It is not a game process.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-client
+  namespace: lab-a
+  labels:
+    app: redis-client
+    offscreen.rpg/lab: disposable
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: client
+      image: docker.io/library/redis:8.2.1-alpine
+      imagePullPolicy: IfNotPresent
+      command: ["sleep", "3600"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 200m
+          memory: 64Mi
