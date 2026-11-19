@@ -1,5 +1,7 @@
 # HK01 | Composer route: replacement-first uncertain response settlement
 
+**Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
+
 **Baseline:** 584b594; **status:** Implementing, not Done. **Default model:** Composer Standard. **Never delete unique operator recovery before its replacement is proven.**
 
 **Source already landed:** `packages/application/src/storyteller/saved-response-settlement.ts:settleUncertainAttemptFromSavedResponse` validates generation.state=uncertain, attempt.state=uncertain, saved response has usage+telemetry and then calls `createStorytellerBudget().settle`. This is a **pure guarded function supplied with saved input**, not an operator reader/CLI replacement; worker does not call it. `scripts/repo-tools/reconcile-storyteller-response.mjs` remains the sole operator procedure and can mutate sensitive accounting. Do not invoke it against any DB.
