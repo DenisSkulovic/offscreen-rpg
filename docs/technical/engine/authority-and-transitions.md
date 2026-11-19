@@ -125,6 +125,10 @@ The chain alone owns successor admission. A completion hook emits a continuation
 
 Scope validity may explicitly cover an authored itinerary, but a new controlling situation invalidates implicit continuation; resumption requires an authored handoff. Stop on missing preconditions and expose the blocked entry. Do not wake the model merely to invent a replacement. Queue cancellation preserves current/past work unless separately stopped.
 
+### One quiet repeated watch
+
+The accepted-plan record can store one quiet repeated watch without a new table. The player permits one authored `clock-wait.v1` activity that is repeatable, unbounded, and quiet: no completion reward, no check, and no scene or report. The plan holds two or three identical entries and one hard fictional horizon. Three is the maximum. Each later entry starts only after the previous one completes, and only if the actor, offer, and occurrence are still eligible. The horizon cancels a later entry instead of letting it start. A controlling event that is already due, or that would fall inside the next watch, blocks that next iteration until the player authorizes it again. The same activity delivery cannot open a second copy of an iteration. Cancelling pending entries does not choose a replacement action. No accepted plan means fictional time does not accrue. General standing life is not implemented: there is no perpetual scheduler, no combat routine, no paid call for an ordinary watch, and no default decision when the horizon expires.
+
 ## Evidence and implementation discipline
 
 Use the gold session's identities and ordered expected state as the primary acceptance oracle, with BC-04, LO-04 and NH-03 as targeted contrasts. Avoid implementing unsupported travel, combat or anatomy merely to mirror their nouns. Tests are optional under repository policy; when useful, use injected deterministic draws and real application transactions, never production scenario switches or direct database completion/offer restoration.

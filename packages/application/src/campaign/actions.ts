@@ -50,8 +50,10 @@ import {
 import { projectCampaignClock } from './clock';
 import { campaignClockHeld, consumeCampaignDecisionHold } from './holds';
 import {
+  admitAcceptedPlanSuccessor,
   createAcceptedActivityPlan,
   reenterAcceptedActivityPlan,
+  sameQuietRepeat,
 } from './accepted-plans';
 import { readPendingWorldObligations } from './world-obligations';
 import { freezePendingActionResolution } from './action-overlap';
@@ -157,11 +159,23 @@ export function createCampaignActions(
           successor.resolution.kind !== 'process' ||
           authorization.activityAccess.kind !== 'selected' ||
           !authorization.activityAccess.actionKeys.includes(successor.key) ||
-          acceptedSequence.some((entry) => entry.key === successor.key)
+          admitAcceptedPlanSuccessor({
+            accepted: acceptedSequence,
+            successor,
+          }) === 'reject'
         ) {
           throw new StoryError('conflict');
         }
         acceptedSequence.push(successor);
+      }
+      if (
+        acceptedSequence.length > 1 &&
+        acceptedSequence.some(
+          (entry, index) => index > 0 && entry.key === acceptedSequence[0]?.key,
+        ) &&
+        !sameQuietRepeat(acceptedSequence)
+      ) {
+        throw new StoryError('conflict');
       }
       if (
         acceptedSequence.length > 1 &&
@@ -406,7 +420,8 @@ export function createCampaignActions(
       const transfers = positiveItemTransfers(definition);
       if (transfers.length > 0) {
         const items = await readStoryItemHolders(tx, current.id);
-        if (itemTransferBlocked(transfers, items)) throw new StoryError('conflict');
+        if (itemTransferBlocked(transfers, items))
+          throw new StoryError('conflict');
       }
       const overlap = actionOverlapEligibility({
         resolutionKind: definition.resolution.kind,

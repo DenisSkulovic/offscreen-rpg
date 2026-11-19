@@ -3,6 +3,61 @@ import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 
+type ImmediateActionPlan = z.infer<typeof immediateActionPlanSchema>;
+
+/** One quiet watch may be admitted at most three times on the existing plan. */
+export const QUIET_REPEAT_ITERATION_LIMIT = 3;
+
+/**
+ * A quiet repeat is one authored clock-wait: repeatable, unbounded, no reward,
+ * no check, and no scene or report. It is not a general standing-life policy.
+ */
+export function quietRepeatableActivity(plan: ImmediateActionPlan) {
+  if (plan.resolution.kind !== 'process') return false;
+  if (plan.resolution.reuse !== 'repeatable') return false;
+  const action = plan.resolution.action;
+  return (
+    action.process.kind === 'clock-wait.v1' &&
+    action.completionFollowUp === 'quiet' &&
+    action.occurrence.kind === 'unbounded' &&
+    action.checks.length === 0 &&
+    action.completion.effects.length === 0
+  );
+}
+
+export function sameQuietRepeat(plans: readonly ImmediateActionPlan[]) {
+  const first = plans[0];
+  return (
+    Boolean(first) &&
+    plans.length >= 2 &&
+    plans.length <= QUIET_REPEAT_ITERATION_LIMIT &&
+    quietRepeatableActivity(first!) &&
+    plans.every((plan) => isDeepStrictEqual(plan, first))
+  );
+}
+
+/** Duplicate successors are legal only as another copy of that one quiet watch. */
+export function admitAcceptedPlanSuccessor(args: {
+  accepted: readonly ImmediateActionPlan[];
+  successor: ImmediateActionPlan;
+}) {
+  const duplicate = args.accepted.some(
+    (entry) => entry.key === args.successor.key,
+  );
+  if (!duplicate) return 'admit' as const;
+  const first = args.accepted[0];
+  if (
+    !first ||
+    args.accepted.length >= QUIET_REPEAT_ITERATION_LIMIT ||
+    !quietRepeatableActivity(first) ||
+    !args.accepted.every((entry) => isDeepStrictEqual(entry, first)) ||
+    !isDeepStrictEqual(args.successor, first)
+  ) {
+    return 'reject' as const;
+  }
+  return 'admit' as const;
+}
+
 const acceptedPlanEntrySchema = z.strictObject({
   id: z.uuid(),
   plan: immediateActionPlanSchema.refine(

@@ -5,9 +5,13 @@
  */
 import { randomInt, randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
+import {
+  campaign,
+  gameActivity,
+  gameActivityEvent,
+} from '@offscreen/db/campaign-schema';
 import {
   activityBoundaryBlockText,
   activityProgressSchema,
@@ -51,6 +55,7 @@ import {
 import { projectCampaignClock } from './clock';
 import {
   acceptedActivityPlanSchema,
+  quietRepeatableActivity,
   readAcceptedActivityPlan,
 } from './accepted-plans';
 import { campaignClockHeld } from './holds';
@@ -78,13 +83,44 @@ export async function scheduleActivity(tx: Transaction, activityId: string) {
   });
 }
 
+/**
+ * A controlling event already due, or due inside the next quiet watch, stops
+ * that iteration. It does not choose a replacement action.
+ */
+async function quietRepeatInterruption(
+  tx: Transaction,
+  state: CampaignRecord,
+  nextPlan: Parameters<typeof quietRepeatableActivity>[0],
+) {
+  if (!quietRepeatableActivity(nextPlan)) return null;
+  if (campaignClockHeld(state)) {
+    return 'A hold prevents the next quiet iteration until the player authorizes it again.';
+  }
+  const pending = await readNearestPendingWorldObligations(tx, {
+    storyId: state.storyId,
+    throughGameSecond: Number.MAX_SAFE_INTEGER,
+    followUp: 'controlling-scene',
+  });
+  const due = pending[0]?.dueGameSecond;
+  if (due === undefined) return null;
+  const duration =
+    nextPlan.resolution.kind === 'process' &&
+    nextPlan.resolution.action.process.kind === 'clock-wait.v1'
+      ? nextPlan.resolution.action.process.requiredFictionalSeconds
+      : 0;
+  if (due <= state.gameSecond || due < state.gameSecond + duration) {
+    return `An interrupting event at gameSecond ${due} prevents the next quiet iteration.`;
+  }
+  return null;
+}
+
 async function settleAcceptedPlanBoundary(
   tx: Transaction,
   state: CampaignRecord,
   completedActivity: ActivityRecord,
 ) {
   const accepted = readAcceptedActivityPlan(state.acceptedActivityPlan);
-  if (!accepted || accepted.state !== 'active') return state;
+  if (!accepted) return state;
   const currentEntry = accepted.entries[accepted.cursor];
   if (currentEntry?.activityId !== completedActivity.id) return state;
   const completedEntries = accepted.entries.map((entry, index) =>
@@ -92,6 +128,22 @@ async function settleAcceptedPlanBoundary(
       ? { ...entry, state: 'complete' as const }
       : entry,
   );
+  if (accepted.state !== 'active') {
+    const recorded = acceptedActivityPlanSchema.parse({
+      ...accepted,
+      revision: accepted.revision + 1,
+      entries: completedEntries,
+    });
+    await tx
+      .update(campaign)
+      .set({ acceptedActivityPlan: recorded, activeActivityId: null })
+      .where(eq(campaign.storyId, state.storyId));
+    return {
+      ...state,
+      acceptedActivityPlan: recorded,
+      activeActivityId: null,
+    };
+  }
   const nextCursor = accepted.cursor + 1;
   const nextEntry = completedEntries[nextCursor];
   if (!nextEntry) {
@@ -124,6 +176,39 @@ async function settleAcceptedPlanBoundary(
       .set({ acceptedActivityPlan: stopped, activeActivityId: null })
       .where(eq(campaign.storyId, state.storyId));
     return { ...state, acceptedActivityPlan: stopped, activeActivityId: null };
+  }
+  const interruption = await quietRepeatInterruption(tx, state, nextEntry.plan);
+  if (interruption) {
+    const blocked = acceptedActivityPlanSchema.parse({
+      ...accepted,
+      revision: accepted.revision + 1,
+      state: 'blocked',
+      cursor: nextCursor,
+      entries: completedEntries.map((entry, index) =>
+        index === nextCursor ? { ...entry, state: 'blocked' as const } : entry,
+      ),
+      blockedReason: interruption,
+    });
+    await tx
+      .update(campaign)
+      .set({ acceptedActivityPlan: blocked, activeActivityId: null })
+      .where(eq(campaign.storyId, state.storyId));
+    return { ...state, acceptedActivityPlan: blocked, activeActivityId: null };
+  }
+  const causeKey = `accepted-plan:${accepted.id}:entry:${nextEntry.id}`;
+  const [existingStart] = await tx
+    .select({ id: gameActivityEvent.id })
+    .from(gameActivityEvent)
+    .where(
+      and(
+        eq(gameActivityEvent.storyId, state.storyId),
+        eq(gameActivityEvent.causeKey, causeKey),
+        eq(gameActivityEvent.kind, 'started'),
+      ),
+    )
+    .limit(1);
+  if (existingStart || nextEntry.activityId) {
+    return state;
   }
   const authorization = campaignSituationAuthorization(state);
   const prepared = authorization.preparedPlans.find(
@@ -180,7 +265,7 @@ async function settleAcceptedPlanBoundary(
     activityRevision: 0,
     gameSecond: state.gameSecond,
     kind: 'started',
-    causeKey: `accepted-plan:${accepted.id}:entry:${nextEntry.id}`,
+    causeKey,
     label: prepared.label,
     summary: `${prepared.label} started from the accepted activity plan.`,
   });
