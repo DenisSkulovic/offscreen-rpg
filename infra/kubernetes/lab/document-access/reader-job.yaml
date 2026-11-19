@@ -1,0 +1,215 @@
+# A different pod from the writer. Read-only credentials. Not apps/api and not apps/worker.
+# Credentials come from document-reader-s3, which smoke.sh creates and does not commit.
+# The emptyDir is scratch. A file written there is not the canonical object.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: document-reader
+  namespace: lab-document-access
+  labels:
+    app: document-reader
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/role: document-access
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 360
+  template:
+    metadata:
+      labels:
+        app: document-reader
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/role: document-access
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: reader
+          image: public.ecr.aws/aws-cli/aws-cli:2.31.18
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              umask 077
+              cat > /tmp/aws-config <<'CFG'
+              [default]
+              s3 =
+                  addressing_style = path
+              CFG
+              hash_file() {
+                if command -v sha256sum >/dev/null 2>&1; then
+                  sha256sum "$1" | awk '{print $1}'
+                  return
+                fi
+                if command -v openssl >/dev/null 2>&1; then
+                  openssl dgst -sha256 "$1" | awk '{print $NF}'
+                  return
+                fi
+                echo "no sha256 tool in the reader image" >&2
+                exit 1
+              }
+              if ! printf %s "$DOCUMENT_OBJECT_SHA256" | grep -Eq '^[0-9a-f]{64}$'; then
+                echo "document-access reader expected hash was not 64 hex" >&2
+                exit 1
+              fi
+              prefix=$(printf %s "$DOCUMENT_OBJECT_SHA256" | cut -c1-2)
+              expect_key="objects/sha256/${prefix}/${DOCUMENT_OBJECT_SHA256}.json"
+              if [ "$DOCUMENT_OBJECT_KEY" != "$expect_key" ]; then
+                echo "document-access reader key does not match the content hash" >&2
+                exit 1
+              fi
+              mkdir -p /tmp/pod-local-docs
+              printf %s '{"probe":"pod-local-not-canonical"}' > /tmp/pod-local-docs/object.json
+              decoy=$(hash_file /tmp/pod-local-docs/object.json)
+              if [ "$decoy" = "$DOCUMENT_OBJECT_SHA256" ]; then
+                echo "document-access reader pod-local=collides-with-object" >&2
+                exit 1
+              fi
+              aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api get-object \
+                --bucket "$DOCUMENT_S3_BUCKET" \
+                --key "$DOCUMENT_OBJECT_KEY" \
+                /tmp/object-out >/dev/null
+              got=$(hash_file /tmp/object-out)
+              if [ "$got" != "$DOCUMENT_OBJECT_SHA256" ]; then
+                echo "document-access reader hash-mismatch got=${got}" >&2
+                exit 1
+              fi
+              if [ "$got" = "$decoy" ]; then
+                echo "document-access reader pod-local=accepted" >&2
+                exit 1
+              fi
+              echo "document-access reader pod-local=rejected"
+              if aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api get-object \
+                --bucket "$DOCUMENT_S3_BUCKET" \
+                --key "${DOCUMENT_OBJECT_KEY}.missing" \
+                /tmp/missing-out >/tmp/missing.out 2>/tmp/missing.err; then
+                echo "document-access reader missing-key=readable" >&2
+                exit 1
+              fi
+              if [ -e /tmp/pod-local-canonical ]; then
+                echo "document-access reader missing-key=wrote-local-file" >&2
+                exit 1
+              fi
+              if ! grep -Eq '404|NoSuchKey|Not Found|NotFound' /tmp/missing.err; then
+                echo "document-access reader missing-key=not-closed" >&2
+                exit 1
+              fi
+              echo "document-access reader missing-key=fail-closed"
+              if AWS_ACCESS_KEY_ID=denied-document-reader \
+                AWS_SECRET_ACCESS_KEY=denied-document-reader-secret \
+                aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api get-object \
+                  --bucket "$DOCUMENT_S3_BUCKET" \
+                  --key "$DOCUMENT_OBJECT_KEY" \
+                  /tmp/denied-out >/tmp/denied.out 2>/tmp/denied.err; then
+                echo "document-access reader denied-read=succeeded" >&2
+                exit 1
+              fi
+              if [ -s /tmp/denied-out ]; then
+                echo "document-access reader denied-read=wrote-bytes" >&2
+                exit 1
+              fi
+              if [ -e /tmp/pod-local-canonical ]; then
+                echo "document-access reader denied-read=wrote-local-file" >&2
+                exit 1
+              fi
+              if ! grep -Eq '403|AccessDenied|InvalidAccessKeyId|SignatureDoesNotMatch|Forbidden' /tmp/denied.err; then
+                echo "document-access reader denied-read=not-closed" >&2
+                exit 1
+              fi
+              echo "document-access reader denied-read=fail-closed"
+              printf %s '{"probe":"data05-document-access","role":"second-writer"}' > /tmp/alt-body
+              alt=$(hash_file /tmp/alt-body)
+              if [ "$alt" = "$DOCUMENT_OBJECT_SHA256" ]; then
+                echo "document-access reader second-write=same-bytes" >&2
+                exit 1
+              fi
+              if aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api put-object \
+                --bucket "$DOCUMENT_S3_BUCKET" \
+                --key "$DOCUMENT_OBJECT_KEY" \
+                --body /tmp/alt-body >/tmp/alt-put.out 2>/tmp/alt-put.err; then
+                echo "document-access reader second-write=accepted" >&2
+                exit 1
+              fi
+              if ! grep -Eq '403|AccessDenied|Forbidden' /tmp/alt-put.err; then
+                echo "document-access reader second-write=not-denied" >&2
+                exit 1
+              fi
+              if [ -e /tmp/pod-local-canonical ]; then
+                echo "document-access reader second-write=wrote-local-file" >&2
+                exit 1
+              fi
+              echo "document-access reader second-write=denied"
+              aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api get-object \
+                --bucket "$DOCUMENT_S3_BUCKET" \
+                --key "$DOCUMENT_OBJECT_KEY" \
+                /tmp/object-after >/dev/null
+              after=$(hash_file /tmp/object-after)
+              if [ "$after" != "$DOCUMENT_OBJECT_SHA256" ]; then
+                echo "document-access reader object-changed after=${after}" >&2
+                exit 1
+              fi
+              if [ "$after" = "$decoy" ]; then
+                echo "document-access reader pod-local=accepted-after-denial" >&2
+                exit 1
+              fi
+              echo "document-access reader sha256=${after} key=${DOCUMENT_OBJECT_KEY} match=yes"
+          env:
+            - name: HOME
+              value: /tmp
+            - name: AWS_PAGER
+              value: ""
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: AWS_CONFIG_FILE
+              value: /tmp/aws-config
+            - name: DOCUMENT_S3_ENDPOINT
+              value: http://object-store.lab-objects.svc.cluster.local:8333
+            - name: DOCUMENT_S3_BUCKET
+              value: lab-objects
+            - name: DOCUMENT_OBJECT_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: document-access-object
+                  key: object-key
+            - name: DOCUMENT_OBJECT_SHA256
+              valueFrom:
+                configMapKeyRef:
+                  name: document-access-object
+                  key: sha256
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: document-reader-s3
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: document-reader-s3
+                  key: secret-access-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: scratch
+              mountPath: /tmp
+      volumes:
+        - name: scratch
+          emptyDir: {}

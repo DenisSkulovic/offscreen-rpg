@@ -1,0 +1,142 @@
+# One writer of one object. Not apps/api, not apps/worker, and not a second store.
+# Credentials come from document-writer-s3, which smoke.sh creates and does not commit.
+# The emptyDir is scratch for the client. It is not the canonical object.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: document-writer
+  namespace: lab-document-access
+  labels:
+    app: document-writer
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/role: document-access
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 360
+  template:
+    metadata:
+      labels:
+        app: document-writer
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/role: document-access
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: writer
+          image: public.ecr.aws/aws-cli/aws-cli:2.31.18
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              umask 077
+              cat > /tmp/aws-config <<'CFG'
+              [default]
+              s3 =
+                  addressing_style = path
+              CFG
+              hash_file() {
+                if command -v sha256sum >/dev/null 2>&1; then
+                  sha256sum "$1" | awk '{print $1}'
+                  return
+                fi
+                if command -v openssl >/dev/null 2>&1; then
+                  openssl dgst -sha256 "$1" | awk '{print $NF}'
+                  return
+                fi
+                echo "no sha256 tool in the writer image" >&2
+                exit 1
+              }
+              canonical=/tmp/pod-local-canonical
+              printf %s 'failed-s3-must-not-become-local' > /tmp/failed-body
+              if aws --cli-connect-timeout 2 --cli-read-timeout 2 --endpoint-url http://127.0.0.1:9 \
+                s3api put-object --bucket "$DOCUMENT_S3_BUCKET" --key objects/sha256/00/failed.json \
+                --body /tmp/failed-body >/tmp/failed-s3.out 2>/tmp/failed-s3.err; then
+                echo "document-access writer failed-s3=unexpected-success" >&2
+                exit 1
+              fi
+              if [ -e "$canonical" ]; then
+                echo "document-access writer failed-s3=wrote-local-file" >&2
+                exit 1
+              fi
+              echo "document-access writer failed-s3=fail-closed"
+              printf %s '{"probe":"data05-document-access","role":"shared-object"}' > /tmp/object-body
+              hash=$(hash_file /tmp/object-body)
+              if ! printf %s "$hash" | grep -Eq '^[0-9a-f]{64}$'; then
+                echo "document-access writer hash was not 64 hex" >&2
+                exit 1
+              fi
+              prefix=$(printf %s "$hash" | cut -c1-2)
+              key="objects/sha256/${prefix}/${hash}.json"
+              if [ -e "$canonical" ]; then
+                echo "document-access writer pod-local=present-before-put" >&2
+                exit 1
+              fi
+              aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api head-bucket --bucket "$DOCUMENT_S3_BUCKET" \
+                >/tmp/head-bucket.out 2>/tmp/head-bucket.err \
+                || aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api create-bucket --bucket "$DOCUMENT_S3_BUCKET" \
+                  >/tmp/create-bucket.out
+              aws --endpoint-url "$DOCUMENT_S3_ENDPOINT" s3api put-object \
+                --bucket "$DOCUMENT_S3_BUCKET" \
+                --key "$key" \
+                --body /tmp/object-body \
+                --content-type application/json \
+                >/tmp/put-reply.json
+              if [ -e "$canonical" ]; then
+                echo "document-access writer pod-local=accepted" >&2
+                exit 1
+              fi
+              bytes=$(wc -c < /tmp/object-body | tr -d ' ')
+              echo "document-access writer pod-local=absent"
+              echo "document-access writer sha256=${hash} key=${key} bytes=${bytes}"
+          env:
+            - name: HOME
+              value: /tmp
+            - name: AWS_PAGER
+              value: ""
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: AWS_CONFIG_FILE
+              value: /tmp/aws-config
+            - name: DOCUMENT_S3_ENDPOINT
+              value: http://object-store.lab-objects.svc.cluster.local:8333
+            - name: DOCUMENT_S3_BUCKET
+              value: lab-objects
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: document-writer-s3
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: document-writer-s3
+                  key: secret-access-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: scratch
+              mountPath: /tmp
+      volumes:
+        - name: scratch
+          emptyDir: {}
