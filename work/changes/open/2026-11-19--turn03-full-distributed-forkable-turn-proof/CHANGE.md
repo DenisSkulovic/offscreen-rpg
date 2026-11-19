@@ -5,17 +5,17 @@
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
 
-**Corrected integrated proof requirement (2026-11-19):** Do not route the Storyteller task through RabbitMQ solely for a decorative hop. Prove **(A)** direct durable SQL-outbox→Temporal start/wake of the Storyteller workflow and **(B)** a separate postcommit `scene.published.v1` business-event flow over RabbitMQ to a branch/root-pinned rebuildable projection. Then prove the existing SSE/GET and independently forkable scene. The earlier `SQL outbox→Rabbit→Temporal` language below is superseded. The derived projection may lag without changing game truth. [Reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md).
+**Packet profile:** `PROOF` (planner-inspected baseline `584b594`). The high-value zero-spend fixture, actual call-stage ledger and failure probes are in [PROOF.md](PROOF.md); Cursor parent owns its one cold kind run and scorecard, children read only selected tests. No proof has been run by these documentation commits.\n\n**Integrated proof requirement (current D5):** The story wake is **direct durable SQL-outbox→Temporal**, with no Rabbit broker hop, followed by separate executor, GA commit, SSE/GET and independently forkable checkpoint. If separately selected, demonstrate a **postcommit** `scene.published.v1` RabbitMQ event and rebuildable derived projection in a parallel **optional** test. Rabbit lag/absence cannot block the game POC and a provider-free fixture must not be called live model output. [D5](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) and [reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md) govern.
 
 ## Precisely bounded outcome
 
 Prove one complete forkable distributed Storyteller turn on a cold kind cluster. This Change exists to join the previously planned bounded slices, not to reimplement them under new names.
 
-**Prerequisites:** TURN01 and TURN02; working BOOT03/04, DATA03/04/05/06, DIST03/04/05/06, STORY02/03/04 and required K8S services. Must verify source evidence, not trust packet Done labels alone.
+**Prerequisites:** TURN02 real application release, BOOT03 actual GA start, DATA04/06 historical checkpoint+branch constraints, DIST03 private authority, STORY02/03 saved result→GA publication path, K8S11 real web edge and selected deterministic authored fixture. The predecessor proofs TURN01, BOOT04, DIST06, STORY04 and DIST05 were **cancelled into this integrated packet**, not outstanding implementation blockers. DIST04 is optional broker projection, not on turn causality. Verify live source evidence, not packet Done labels.
 
 ## Source-based implementation / documentation work
 
-Use the TURN01 selected **single** scripted golden fixture and TURN02 release profile. Run authenticated draft/candidate, start through Nest→GA, scene1 SQL checkpoint/canon source, one supported command, one SQL outbox→Rabbit→Temporal handoff, distinct Storyteller executor bounded S3 read, saved validated fake proposal/attempt, GA game consequence/publication of scene2, SSE hint + GET and UI update, historical GET of scene1 and noncurrent fork with independent branch state+canon. Verify a new continuation on fork does not import parent future. Collect one correlation ledger from browser to DB/S3 and branch. Execute negatives from D5 covering owner/cookie rejection, duplicate notices/commands/publications, S3 outage, stale root, missed SSE, worker restart, and unavailable Temporal; mark not-run truthfully. Any skipped mandatory gate means POC NOT complete. Reuse/coordinate existing DIST06, BOOT04, STORY04 and DATA04 fixtures rather than build parallel harnesses.
+Use the **single source-supported** scripted Storyteller-kind opening fixture (TURN01's scorecard absorbed here) and TURN02 release profile. Run authenticated draft/candidate, start through Nest→GA, scene1 SQL checkpoint/canon source, one supported command, one **direct SQL outbox→Temporal** handoff, distinct Storyteller executor bounded S3 read, saved validated fake proposal/attempt, GA game consequence/publication of scene2, SSE hint + GET and UI update, historical GET of scene1 and noncurrent fork with independent branch state+canon. Verify a new continuation on fork does not import parent future. Collect one correlation ledger from browser to DB/S3 and branch. Execute negatives from D5 covering owner/cookie rejection, duplicate notices/commands/publications, S3 outage, stale root, missed SSE, worker restart, and unavailable Temporal; mark not-run truthfully. Any skipped mandatory gate means POC NOT complete. Use the **absorbed** DIST06, BOOT04 and STORY04 acceptance cases below and DATA04 checks in the single fixture rather than invent parallel harnesses.
 
 **Owned source and canonical documents:** Existing api-integration/playability tests plus new connected E2E runner under established test/script owner, infra/kubernetes lab runner, repo observability/evaluations evidence and runbook; code changes only for source-demonstrated integration faults, otherwise raise a bounded follow-up Change.
 
@@ -52,14 +52,14 @@ HK09 cancelled DIST06, BOOT04, STORY04, and TURN01 as superseded. These checks w
 
 From DIST06:
 
-- Trace one stable operation id through the direct Temporal wake, the separate Rabbit postcommit fact, SQL, and S3, then record the actual RAM and the known limitations.
+- Trace one stable operation id through direct Temporal wake, SQL, S3, and client; **if** the independent Rabbit consumer is selected, record its postcommit fact separately, plus actual RAM and known limits.
 - A 202 response must not display an uncommitted scene.
 - An SSE failure must not POST the command again.
 - Canonical bytes must not be read from a Pod-local copy.
 
 From BOOT04:
 
-- The browser path is login, then draft, then a successful scripted candidate, then start, then SSR scene 1, then refresh.
+- The browser path is login, then draft, then a succeeded `storyteller.profiled.v1` opening generation with scripted execution and matching pinned `startPackage`, then start, then SSR scene 1, then refresh.
 - Retrying the same start request must not create a new passage.
 - An invalid candidate or a hash mismatch must not start the story.
 - Production-style app Pods must not mount the content directory.
