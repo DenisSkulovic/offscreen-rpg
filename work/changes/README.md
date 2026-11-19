@@ -91,3 +91,20 @@ Current change: none
 | K8S10 | K8S02–K8S09 | depends-on | Wait | Full substrate |
 
 Parallel execution: K8S03, K8S04, and K8S09 write disjoint paths at the same time. Each holds `/tmp/offscreen-k8s-cluster.lock` for the whole `up.sh` → smoke → `down.sh` session. They do not edit the shared kind scripts, the technical index, or the runbook index.
+
+## DISTURN | First service-extraction bundle (planned 2026-11-19)
+
+**Program:** [Full distributed-turn target](../designs/open/distributed-turn-poc/README.md), [27-gap register](../designs/open/distributed-turn-poc/GAPS.md), [D1 candidate execution contract](../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md). This is a **first dependency-aware bundle**, not a whole-turn completion claim. It does not change the existing **Active batch: K8S03, K8S09** or authorize new execution. Coordinate with ARCH02's in-flight branch before changing shared architecture docs. The source current worker still combines game, Storyteller and outbox operations.
+
+| Change | State | Prerequisites | Parallel class | Owned delta / join gate |
+| --- | --- | --- | --- | --- |
+| [DIST01 writer and handoff contract](open/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md) | Ready for docs reconciliation **when selected**, not active | ARCH02 branch reconciliation | parallel-research, **serial-shared-doc** | Ratify single writer, RabbitMQ/Temporal roles, topic routing; integrate canonical docs once |
+| [DIST02 dispatch contract adapters](open/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md) | Proposed | DIST01 | parallel-write | Zod wire envelope and provider-free ACK/ID tests; contract join |
+| [DIST03 private Game Authority](open/2026-11-19--dist03-game-authority-private-boundary/CHANGE.md) | Proposed | DIST01 | parallel-write | One owned read + command over internal network; source security tests |
+| [DIST04 live broker→Temporal relay](open/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md) | Proposed | DIST01, DIST02, K8S03/K8S06 for live tests | depends-on, shared outbox owner | Exactly one selected topic route, ack/replay proof |
+| [DIST05 Storyteller worker split](open/2026-11-19--dist05-storyteller-execution-worker-split/CHANGE.md) | Proposed | DIST01, DIST03, ARCH03/ARCH05 for canon input; coordinate DIST04 worker | depends-on; **serial worker-runtime join** | Separate model execution from single authoritative publication, fake continuation proof |
+| [DIST06 connected provider-free turn](open/2026-11-19--dist06-first-distributed-turn-integration/CHANGE.md) | Proposed | DIST01–05, necessary K8S substrate and real Next/Nest integration | serial integration | Full distributed fake turn, **without** falsely claiming arbitrary historical fork/live provider |
+
+**Parallel join plan:** after DIST01, DIST02 and DIST03 can run in independent Cursor worktrees. DIST04 may follow DIST02 while DIST03 progresses, but shared worker runtime files and Kubernetes cluster operations must have one owner. DIST05 follows authority ownership and integrates with DIST04 in one controlled worker-runtime merge. DIST06 is a final single-cluster acceptance. Never run current ARCH02 branch and DIST01 canonical edits concurrently. The existing K8S03/K8S09 cluster lock remains binding. Actual memory, provider configuration and migrations must be checked before implementation.
+
+**Next design bundle still needed:** exact scene/checkpoint v1 + historical fork/storage retention; campaign/bootstrap and S3 cross-Pod wiring; branch-scoped context packs; complete fake/live model authorization; further Kubernetes configuration and E2E fixtures. They remain named [gaps](../designs/open/distributed-turn-poc/GAPS.md), not silently folded into DIST06. Images, customer billing/Stripe and full chaos tests remain explicitly deferred per that register.
