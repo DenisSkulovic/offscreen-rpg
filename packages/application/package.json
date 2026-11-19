@@ -19,6 +19,14 @@
       "types": "./dist/stories/index.d.ts",
       "default": "./dist/stories/index.js"
     },
+    "./stories/resolution": {
+      "types": "./dist/stories/resolution.d.ts",
+      "default": "./dist/stories/resolution.js"
+    },
+    "./stories/persistence": {
+      "types": "./dist/stories/persistence.d.ts",
+      "default": "./dist/stories/persistence.js"
+    },
     "./developer-tools": {
       "types": "./dist/developer-tools/index.d.ts",
       "default": "./dist/developer-tools/index.js"

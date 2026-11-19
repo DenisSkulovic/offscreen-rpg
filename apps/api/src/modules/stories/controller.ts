@@ -25,9 +25,11 @@ import {
   storyVisitAckBodySchema,
 } from '@offscreen/contracts/stories';
 import { IdentityService } from '../auth/identity.js';
+import type { StorySeam } from './game-authority-client.js';
 import type { StoryUpdateHub } from './story-update-hub.js';
 
 export const STORIES = Symbol('STORIES');
+export const STORY_SEAM = Symbol('STORY_SEAM');
 export const STORY_UPDATE_HUB = Symbol('STORY_UPDATE_HUB');
 @Controller('stories')
 export class StoriesController {
@@ -38,6 +40,8 @@ export class StoriesController {
     @Optional()
     @Inject(STORY_UPDATE_HUB)
     private readonly updates: StoryUpdateHub | null,
+    @Inject(STORY_SEAM)
+    private readonly seam: StorySeam,
   ) {}
   private async run<T>(request: Request, work: (owner: string) => Promise<T>) {
     const user = await this.identity.requireUser(request.headers);
@@ -220,7 +224,7 @@ export class StoriesController {
     }
     const user = await this.identity.requireUser(request.headers);
     try {
-      await this.stories.read({ ownerId: user.id, storyId: id });
+      await this.seam.read({ ownerId: user.id, storyId: id });
     } catch (error) {
       if (error instanceof StoryError) {
         throw new HttpException(
@@ -242,7 +246,7 @@ export class StoriesController {
         stillAuthorized: async () => {
           try {
             await this.identity.requireUser(request.headers);
-            await this.stories.read({ ownerId: user.id, storyId: id });
+            await this.seam.read({ ownerId: user.id, storyId: id });
             return true;
           } catch {
             return false;
@@ -263,7 +267,7 @@ export class StoriesController {
   @Get(':id')
   read(@Req() request: Request, @Param('id') id: string) {
     return this.run(request, (ownerId) =>
-      this.stories.read({ ownerId, storyId: id }),
+      this.seam.read({ ownerId, storyId: id }),
     );
   }
   @Get(':id/history')
@@ -488,7 +492,7 @@ export class StoriesController {
     @Body() body: unknown,
   ) {
     return this.run(request, (ownerId) =>
-      this.stories.admitResolution({
+      this.seam.admitResolution({
         ownerId,
         storyId: id,
         operationId,

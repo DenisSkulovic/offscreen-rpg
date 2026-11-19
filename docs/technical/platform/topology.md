@@ -87,6 +87,8 @@ Selected educational target, recorded 2026-11-19. This section is the only platf
 
 The application path stays the [runtime shape](#runtime-shape) above. [Commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery) remains the bridge from the transactional outbox to Temporal. [Who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record) remains the storage split. [Redis boundary](./persistence-and-caching.md#redis-boundary) remains the cache rule, including inside the laboratory. Compose remains the local development route until a later Change proves a replacement. This section does not delete it.
 
+One host process, [apps/game-authority](../../../apps/game-authority/README.md), can serve the owned story snapshot read and one scripted resolution admission. Nest stays the browser session surface. With `GAME_AUTHORITY_MODE=distributed`, Nest calls `GET /internal/v1/stories/:storyId` and `PUT /internal/v1/stories/:storyId/resolutions/:operationId` using a service credential and the session actor id. That process imports `createStoryApplication`, which admits through `createStoryResolution` and `lockOwnedStory`. It does not insert a second receipt. Unset mode keeps the API process as the writer for that seam. `compose.yaml` does not start the new process. The public gateway still sends `/api/**` to Nest and has no route to `/internal/v1`. Start, campaign commands, and publication stay on their current writers. This process is not a cluster deployment and not a Game Economy service. The local procedure is [Game Authority seam](../../runbooks/local-development.md#game-authority-seam).
+
 The laboratory may host the same modular application before it hosts any extracted service. [Proposed service ownership](#proposed-service-ownership) names web/API, the engine, the Storyteller, and notifications, and it rejects a Game Economy service. The engine is the single consistency boundary for a committed scene checkpoint. That checkpoint is selected future behavior, not a built fork. That section does not extract code, does not deploy those processes, and does not move rule ownership. There is still no service per NPC, item, faction, or inventory. Staff access stays a logical control plane inside the application, as [Dependency and trade-off rationale](../admin/topology-and-authorization.md#7-dependency-and-trade-off-rationale) already requires.
 
 Negative: a diagram, a Change packet, or a running disposable cluster does not mean RabbitMQ, six microservices, a production Temporal cluster, or Kubernetes are the deployed game. Game truth and deterministic rule ownership do not move because processes are split.
@@ -103,7 +105,7 @@ Client recovery stays on [End-to-end update transport](../client/architecture.md
 
 ## Proposed service ownership
 
-Selected proposed target, recorded 2026-11-19, revised the same day to the owner clarification in [Distributed learning target](#distributed-learning-target). The game is text-first, world-neutral, and D&D-style. The Storyteller is the Dungeon Master. The engine validates rules, rolls, and commits. This section names who would own a write if the laboratory later extracts processes. It is not [Runtime shape](#runtime-shape), not a deployed cluster, and not a player feature. No row below is proven as a separate service. Inspected source at `4962e373` has `apps/web`, `apps/api`, and `apps/worker`, plus shared packages. `compose.yaml` runs PostgreSQL, Temporal's development server, Redis, and an S3-compatible mock. It has no RabbitMQ service and no separate game service.
+Selected proposed target, recorded 2026-11-19, revised the same day to the owner clarification in [Distributed learning target](#distributed-learning-target). The game is text-first, world-neutral, and D&D-style. The Storyteller is the Dungeon Master. The engine validates rules, rolls, and commits. This section names who would own a write if the laboratory later extracts processes. It is not [Runtime shape](#runtime-shape), not a deployed cluster, and not a player feature. One local process, `apps/game-authority`, serves the owned snapshot read and one scripted resolution admission. It is not in `compose.yaml` and it is not a cluster deployment. No other row below is a separate service. Inspected source at `4962e373` has `apps/web`, `apps/api`, and `apps/worker`, plus shared packages. `compose.yaml` runs PostgreSQL, Temporal's development server, Redis, and an S3-compatible mock. It has no RabbitMQ service and no separate game service.
 
 | Label | Meaning in this section |
 | --- | --- |
@@ -114,6 +116,8 @@ Selected proposed target, recorded 2026-11-19, revised the same day to the owner
 A local function call inside the monolith stays a local call. This table is not permission to add an in-process bus, an event-sourced engine, or one service per NPC, item, faction, or inventory.
 
 The player edge stays Next.js for the interface and NestJS for authenticated HTTP and the SSE hint. Neither owns a world-state change. That split is [Selected lab edge](#selected-lab-edge). The synthetic gateway substrate is [K8S09](../../../work/changes/archive/2026-11/other/2026-11-19--k8s09-gateway-api-edge-networking/CHANGE.md). Do not add another backend-for-frontend, require WebSockets, or move the story SSE hint onto the broker. GET remains the truth.
+
+One extracted call exists. `apps/game-authority` serves the owned snapshot read and one scripted resolution admission when the API is started with `GAME_AUTHORITY_MODE=distributed`. The API process does not also write that receipt. Compose mode does not start that process and does not make that call. Start, campaign commands, publication, notifications, and the Storyteller stay on their current writers. This is not a cluster service and not a Game Economy service.
 
 | Service | Authoritative data | Incoming commands | Produced events | Dependents | Failure policy | Label |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -140,7 +144,7 @@ Negative: a replay cannot duplicate an admitted roll, a story-item transfer, or 
 
 ## Code organization
 
-For current entry points use [apps/api](../../../apps/api/README.md), [packages/application](../../../packages/application/README.md), and [packages/storyteller](../../../packages/storyteller/README.md). The [2026-11 code-navigation inspection](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md) is dated evidence, not the current owner. This document owns the architectural design.
+For current entry points use [apps/api](../../../apps/api/README.md), [apps/game-authority](../../../apps/game-authority/README.md), [packages/application](../../../packages/application/README.md), and [packages/storyteller](../../../packages/storyteller/README.md). The [2026-11 code-navigation inspection](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md) is dated evidence, not the current owner. This document owns the architectural design.
 
 Target layout. Create each package when its first implementation needs it:
 
@@ -148,6 +152,7 @@ Target layout. Create each package when its first implementation needs it:
 apps/
   web/                 Next.js presentation
   api/                 HTTP, auth integration, SSE, webhooks
+  game-authority/      private snapshot read and scripted resolution
   worker/              Temporal worker bootstrap and Activity bindings
 tools/
   chamber/             local authenticated product launcher

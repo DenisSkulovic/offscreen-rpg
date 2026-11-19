@@ -24,7 +24,9 @@
 
 ```text
 PUT /api/stories/:storyId/resolutions/:operationId
-  -> Nest requires user, passes ownerId -> createStoryApplication.admitResolution
+  -> Nest requires user, passes ownerId
+  -> Compose: createStoryApplication.admitResolution in the API process
+  -> GAME_AUTHORITY_MODE=distributed: Nest calls Game Authority, which calls the same admitResolution once
   -> resolution.admit, lockOwnedStory
   -> existing operation? compare expectedRevision + submitted intent:
           same => idempotent admission/reuse

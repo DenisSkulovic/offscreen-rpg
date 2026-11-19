@@ -1,6 +1,6 @@
 # DIST03 | Introduce independently deployable Game Authority boundary without migrating all gameplay
 
-**State:** Proposed; promote after DIST01 (2026-11-19)  
+**State:** Implemented on `change/dist03-game-authority` (2026-11-19). One story seam. Not archived.  
 **Kind:** implementation  
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
 **Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
@@ -41,22 +41,64 @@ After DIST01, separate worktree from DIST02 transport adapter; no change to work
 
 A user-approved Cursor orchestrator may distribute truly disjoint Ready Changes into isolated worktrees. It must integrate dependencies, shared canonical-doc headings and the same cluster itself. **A Proposed packet is not executable merely because another packet was authorized.**
 
-## Planned-impact.v1 (complete receipt before archiving)
+## Planned specification and implementation delta | planned-impact.v1
 
 | Plane | Exact planned difference | Proof |
 | --- | --- | --- |
-| Product | unchanged; world-neutral D&D, text-first DM, admitted mechanical truth, forkable scenes | No new economy, mandatory inventory or invented rule |
-| Technical | Preserve the selected single writer, pinned canonical roots and nonoverlapping Rabbit/Temporal roles; amend only source-proved gaps | Normal and negative sequence/contract check |
-| Code | Scoped implementation in named file owners above; no unrelated monolith-wide refactor | Actual diff, tests and version compatibility |
-| Related | Update affected source maps, docs index, runbooks, Change queue, dated STATUS only when runtime behavior is proven | Wiki/Change guards, links and evidence |
+| Product | unchanged because the playable game stays text-first and world-neutral, with no new economy, inventory, or player rule | No product page edit |
+| Technical | changed: docs/technical/platform/topology.md#distributed-learning-target now records one local Game Authority process for the owned snapshot read and one scripted resolution. Compose remains the writer. The outbox wake stays a direct Temporal call | Provider-free seam tests. PostgreSQL was not opened |
+| Code | changed: apps/game-authority/src/application.ts calls createStoryApplication for that seam, and apps/api/src/modules/stories/controller.ts calls it only when GAME_AUTHORITY_MODE=distributed. Negative: the Nest story writer stays idle for that operation | @offscreen/game-authority 3 passed. API seam tests 2 passed |
+| Related | changed: the execution, data, HTTP, runbook, and STATUS headings now name that one process | python3 scripts/check_docs.py and the change guard |
 
-## Reconciliation ledger (fill with actual evidence)
+## Reconciliation ledger (affected-claim ledger)
 
-| Owning claim/heading | Expected delta or reasoned no-op | Source SHA / diff | Test or semantic proof | Negative proof | Status/link |
-| --- | --- | --- | --- | --- | --- |
-| Technical runtime owner | Pending | Pending | Pending | Pending | Pending |
-| Execution / outbox owner | Pending | Pending | Pending | Pending | Pending |
-| Product/scene and Storyteller boundary | unchanged unless ratified | Pending | Pending | Pending | Pending |
-| Source implementation / tests | pending | Pending | Pending | Pending | Pending |
+| Affected selected claim/heading | Authority | Target delta and reason | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/technical/platform/topology.md#distributed-learning-target | Technical | changed: one local Game Authority process serves the owned snapshot read and one scripted resolution. Compose remains the writer. This is not a cluster service | apps/game-authority/src/application.ts from 4a556223 | provider-free | A forged credential is HTTP 401. /api is HTTP 404 on that process | docs/runbooks/local-development.md#game-authority-seam |
+| docs/technical/platform/topology.md#proposed-service-ownership | Technical | changed: the same one process is named, and the other service rows stay unextracted | apps/game-authority/src/server.ts from 4a556223 | provider-free | Start is HTTP 404 on Game Authority. No Game Economy route was added | docs/technical/platform/topology.md#distributed-learning-target |
+| docs/technical/platform/topology.md#code-organization | Technical | changed: the layout lists apps/game-authority for this one seam | apps/game-authority/README.md from 4a556223 | reviewed | The process is not a second Nest app | apps/api/README.md |
+| docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows | Technical | changed: distributed mode adds one direct HTTP command for this seam. The outbox wake stays a direct Temporal call | apps/api/src/modules/stories/game-authority-client.ts from 4a556223 | provider-free | Compose mode records zero calls to Game Authority | docs/technical/platform/execution-and-delivery.md#commands-and-durable-delivery |
+| docs/technical/platform/execution-and-delivery.md#commands-and-durable-delivery | Technical | unchanged because the outbox steps, the relay, and the Temporal wake were not rewritten | apps/worker/src/outbox/dispatch.ts was not edited. Baseline 4a556223 | reviewed | A broker message is still not the wake | The new row sits in the following section |
+| docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity | Technical | unchanged because storytellerV1 was not split and no publication route moved | apps/worker/src/activities/index.ts was not edited. Baseline 4a556223 | reviewed | Game Authority does not start Temporal | No new workflow claim |
+| docs/technical/platform/data-and-persistence.md#who-owns-the-durable-record | Technical | changed: distributed mode serves the snapshot and the scripted resolution receipt through createStoryApplication. The receipt table is still story_resolution | apps/game-authority/src/application.ts from 4a556223 | provider-free | The same operation id does not insert a second receipt. Nest's local admit count stays 0 | docs/technical/platform/data-and-persistence.md#proposed-service-schemas-and-delivery-records |
+| docs/technical/platform/data-and-persistence.md#quantities-and-ownership | Technical | unchanged because no scarce quantity, item transfer, or second writer of those facts moved | packages/application/src/stories/resolution.ts was not edited. Baseline 4a556223 | reviewed | A duplicate operation id does not apply a second effect in the reused transaction | No quantity table was added |
+| docs/technical/platform/data-and-persistence.md#proposed-service-schemas-and-delivery-records | Technical | unchanged because no new schema, inbox, or cross-service table was added. One process calls the existing transaction | packages/db was not edited. Baseline 4a556223 | reviewed | There is no second receipt table | The who-owns paragraph points at the same receipt row |
+| docs/technical/platform/http-api-and-client-contracts.md#service-calls-are-not-player-routes | Technical | changed: the internal snapshot GET and resolution PUT exist. The browser still calls Nest /api | apps/game-authority/src/server.ts from 4a556223 | provider-free | A body ownerId is HTTP 400. A wrong owner is HTTP 404 | apps/game-authority/README.md |
+| docs/technical/platform/http-api-and-client-contracts.md#authenticated-actor-scope | Technical | unchanged because the browser session check stays on Nest. The internal actor header is not a player credential | apps/api/src/modules/auth/identity.ts was not edited. Baseline 4a556223 | reviewed | A missing service credential is HTTP 401 on Game Authority and does not become a player session | No player route was added |
+| docs/technical/platform/http-api-and-client-contracts.md#accepted-response-versus-committed-world | Technical | unchanged because resolution admission is still HTTP 202 and the snapshot read is still HTTP 200 | apps/api/src/modules/stories/controller.ts from 4a556223 | provider-free | HTTP 202 is still not a settled world. A timeout is HTTP 503 | The status codes are the existing ones |
+| docs/technical/platform/http-api-and-client-contracts.md#get-truth-and-sse-hints | Technical | unchanged because GET remains the snapshot and SSE remains a hint. The hint stream was not moved onto a broker | apps/api/src/modules/stories/story-update-hub.ts was not edited. Baseline 4a556223 | reviewed | The internal server does not mount the SSE route | Nest still emits the hint |
+| docs/technical/platform/security-and-trust-boundaries.md#boundary-map | Technical | unchanged because staff grants, provider packets, and document handles were not retied. Nest still checks the browser session before the internal call | docs/technical/platform/security-and-trust-boundaries.md was not edited. Baseline 4a556223 | reviewed | A forged service credential does not read a story | No trust-map edit |
+| docs/technical/storyteller/generation-and-publication.md#what-publication-is-allowed-to-do | Technical | unchanged because publication was not migrated and the publication module was not edited | packages/application/src/storyteller/publication.ts was not edited. Baseline 4a556223 | reviewed | Game Authority has no publication route | The heading stayed in place |
+| docs/technical/storyteller/generation-and-publication.md#remote-task-custody | Technical | unchanged because the Storyteller worker was not split and this seam does not hold a model task | apps/worker/src/runtime/index.ts was not edited. Baseline 4a556223 | reviewed | No paid provider is called by the new process | The heading stayed in place |
+| docs/technical/README.md | Technical | changed: the service-ownership row now says one local Game Authority seam exists and is not the Compose default | docs/technical/README.md from 4a556223 | reviewed | The other proposed rows are not separate processes | docs/technical/platform/topology.md#proposed-service-ownership |
+| apps/game-authority/src/application.ts | Code | changed: the process calls createStoryApplication once and imports createStoryResolution and lockOwnedStory without a second insert | apps/game-authority/src/application.ts from 4a556223 | provider-free | Duplicate operation id keeps insert count 1. A different body is HTTP 409 | apps/game-authority/README.md |
+| apps/api/src/modules/stories/controller.ts | Code | changed: the snapshot GET and scripted resolution PUT use the seam. Start and campaign commands stay on the local writer | apps/api/src/modules/stories/controller.ts from 4a556223 | provider-free | Distributed mode leaves the local admit count at 0. Compose mode leaves the remote call count at 0 | apps/api/src/modules/stories/README.md |
+
+Declared paths, each present because this seam needs that file:
+
+- STATUS.md because the demonstrated boundary now includes the local process and still says no cluster game service is deployed
+- apps/api/README.md because the route inventory names the distributed snapshot and resolution calls
+- apps/api/package.json because the API test depends on @offscreen/game-authority
+- apps/api/src/app.ts because Compose and distributed mode select the seam there
+- apps/api/src/modules/stories/README.md because the route map names the same switch
+- apps/api/src/modules/stories/game-authority-client.ts because Nest calls Game Authority only through this client
+- apps/api/test/game-authority-seam.test.mjs because the Nest writer must stay idle for the migrated operation
+- apps/game-authority/package.json because the process is its own workspace package
+- apps/game-authority/tsconfig.json because that package compiles alone
+- apps/game-authority/README.md because the source map names the one seam
+- apps/game-authority/src/application.ts because it calls createStoryApplication once
+- apps/game-authority/src/server.ts because the private routes and credential check live there
+- apps/game-authority/src/config.ts because the service token and timeout are bounded
+- apps/game-authority/src/bootstrap/main.ts because that file is the process entry
+- apps/game-authority/test/story-seam.test.ts because a forged credential, a wrong owner, and a duplicate operation id are tested
+- packages/application/package.json because resolution and persistence are imported by subpath and are not edited
+- packages/application/src/stories/README.md because the admission flow names the distributed call
+- packages/contracts/package.json because the private DTO is exported
+- packages/contracts/src/game-authority.ts because that DTO rejects an owner override
+- packages/contracts/test/game-authority.test.ts because that rejection is tested
+- pnpm-lock.yaml because the new workspace package is linked
+- docs/runbooks/README.md because the seam procedure is indexed
+- docs/runbooks/local-development.md because the seam stays off Compose unless the flag is set
+- work/changes/README.md because the DIST03 row records this seam
 
 **Closure:** Reconcile the ledger, archive Done/Cancelled per established workflow, repair inbound links, stop. No automatic successor selection.
