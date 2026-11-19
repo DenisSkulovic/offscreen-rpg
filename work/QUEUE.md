@@ -1,6 +1,6 @@
 # Work selection | single current-work authority
 
-**Current work: none**
+Current work: none
 
 This is the **one active selection pointer** for independently tracked work. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 
