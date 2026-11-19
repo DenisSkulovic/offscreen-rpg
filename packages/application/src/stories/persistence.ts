@@ -176,24 +176,24 @@ export async function readStoryItemHolders(tx: Transaction, storyId: string) {
     .where(eq(storyItem.storyId, storyId));
 }
 
-export async function applyStoryItemEffects(
-  tx: Transaction,
-  args: { storyId: string; effects: StoryContinuation['effects'] },
-) {
-  const currentItems = await tx
-    .select({
-      key: storyItem.key,
-      label: storyItem.label,
-      holderKey: storyItem.holderKey,
-    })
-    .from(storyItem)
-    .where(eq(storyItem.storyId, args.storyId));
-  const projectedItems = new Map(currentItems.map((item) => [item.key, item]));
+export type StoryItemSnapshot = Readonly<{
+  key: string;
+  label: string;
+  holderKey: string;
+}>;
 
-  // Validate the complete ordered change set before writing. This permits a
-  // newly created item to be transferred later in the same continuation while
-  // preserving all-or-nothing behavior and the registry's bounded size.
-  for (const effect of args.effects) {
+/**
+ * The post-effect item list, sorted by key. Validation matches the write path
+ * so a checkpoint staged from this projection can be rechecked under the lock.
+ */
+export function projectStoryItemEffects(
+  currentItems: readonly StoryItemSnapshot[],
+  effects: StoryContinuation['effects'],
+): StoryItemSnapshot[] {
+  const projectedItems = new Map(
+    currentItems.map((item) => [item.key, { ...item }]),
+  );
+  for (const effect of effects) {
     if (effect.kind === 'item.create.v1') {
       if (projectedItems.has(effect.itemKey) || projectedItems.size >= 50) {
         throw new StoryError('conflict');
@@ -214,6 +214,27 @@ export async function applyStoryItemEffects(
       holderKey: effect.toHolder,
     });
   }
+  return [...projectedItems.values()].sort((left, right) =>
+    left.key < right.key ? -1 : left.key > right.key ? 1 : 0,
+  );
+}
+
+export async function applyStoryItemEffects(
+  tx: Transaction,
+  args: { storyId: string; effects: StoryContinuation['effects'] },
+) {
+  const currentItems = await tx
+    .select({
+      key: storyItem.key,
+      label: storyItem.label,
+      holderKey: storyItem.holderKey,
+    })
+    .from(storyItem)
+    .where(eq(storyItem.storyId, args.storyId));
+  // Validate the complete ordered change set before writing. This permits a
+  // newly created item to be transferred later in the same continuation while
+  // preserving all-or-nothing behavior and the registry's bounded size.
+  projectStoryItemEffects(currentItems, args.effects);
 
   for (const effect of args.effects) {
     if (effect.kind === 'item.create.v1') {
@@ -253,6 +274,7 @@ export async function insertContinuationPassage(
     sourceGenerationId?: string | null;
     passageId?: string;
     contentDocumentHash?: string;
+    interactionId?: string;
     appearance?: PublicSceneAppearanceV1;
   },
 ) {
@@ -277,7 +299,7 @@ export async function insertContinuationPassage(
     contentDocumentHash: args.contentDocumentHash ?? null,
     interaction: args.input.interaction
       ? interactionSchema.parse({
-          id: randomUUID(),
+          id: args.interactionId ?? randomUUID(),
           specification: args.input.interaction,
         })
       : null,

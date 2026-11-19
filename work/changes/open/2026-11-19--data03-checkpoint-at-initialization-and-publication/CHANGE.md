@@ -19,7 +19,7 @@ Inspected GitHub main 2026-11-19. `story` has the latest root, `storyPassage` pr
 
 Use packages/application/src/stories/{initialization,start,continuation,persistence,passage-documents}.ts to stage validated checkpoint object after constructing actual post-effect state, before short commit as needed, then insert checkpoint SQL selector atomically with storyPassage, storyDocumentCommit, items, current story root and outbox. Carefully handle staged S3 writes and SQL transaction scope; if mechanical side effects are only computed in SQL transaction, use a deterministic pre-stage + fence/recheck or a reconstructable DB-contained snapshot captured within TX with postcommit immutable finalize and a safe visibility fence. No provider or external object request under long story lock. Cursor must resolve this precise staged-objects vs transactional post-effect tension in selected contract and **stop on correctness conflict**, not simply reorder calls. Start scene 1 and later continuation code paths are both required for supported state families.
 
-**Files / canonical documentation owners:** packages/application/src/stories/{initialization,start,continuation,persistence,passage-documents}.ts; packages/application/src/storyteller/publication.ts if selected writer migration requires it; packages/db schema/migrations only if DATA02 contract showed gaps; source tests and canonical data/publication docs.
+**Files / canonical documentation owners:** packages/application/src/stories/initialization.ts; packages/application/src/stories/start.ts; packages/application/src/stories/continuation.ts; packages/application/src/stories/persistence.ts; packages/application/src/stories/passage-documents.ts; packages/application/src/stories/scene-checkpoint.ts; packages/application/src/stories/index.ts; packages/application/src/storyteller/publication.ts; packages/application/test/scene-checkpoint-publication.test.mjs. No schema or migration: the merged `story_scene_checkpoint` selector can represent the opening and continuation rows. The technical owner `docs/technical/platform/data-and-persistence.md` is left for the orchestrator. The headings that still say the writers do not insert the row are `Story snapshot and chronology`, `Scene checkpoint v1`, `Publication fence`, and `Scene payloads`.
 
 **Scope exclusions:** No new fictional economy, universally mandatory inventory, image generation, Stripe/subscriptions, global Cognee service, production HA, unbounded source rewrite, provider spend, database reset or unsupported rule mechanics. Do not mark a placeholder field dump complete until DATA01's mutable-table inventory proves completeness.
 
@@ -46,13 +46,21 @@ The Cursor orchestrator may use isolated branches/worktrees for disjoint Ready p
 | Code | Scoped implementation in file owners above, with migrations only after compatibility review | Diff and regression tests |
 | Related | Runbook/source maps/Change queue/dated evidence; no premature Done | Link guards, actual source checks |
 
-## Reconciliation ledger (fill before Done)
+## Implementation record
 
-| Authority | Target claim / no-op | Inspected source SHA and diff | Normal proof | Negative proof | Source link |
-| --- | --- | --- | --- | --- | --- |
-| Product/vision | unchanged | Pending | Pending | Pending | Pending |
-| Data + fork owners | source-backed implementation | Pending | Pending | Pending | Pending |
-| Canonical documents/context | bounded owner changes | Pending | Pending | Pending | Pending |
-| Code/test or documentation-only | pending | Pending | Pending | Pending | Pending |
+Supported openings and continuations stage `offscreen.scene-checkpoint.v1` on the caller-supplied document adapter before the short SQL transaction, then recheck the canon root and post-effect mechanics inside that transaction and insert the existing selector with the story row, passage, document commit, and outbox. Item effects are projected from the pre-lock rows. A failed `putSceneCheckpoint` throws before the transaction and does not fall back to another store. A store that has no checkpoint methods, such as the delayed test wrapper, skips the checkpoint and still commits. Scenes with a decision, a wait, a hold, an offer, an activity, a pending report, a world obligation, or items and no campaign row still commit and do not get a selector. No historical fork, search index, memory summary, provider call, or migration.
 
-**Closure:** complete four-plane ledger, archive per workflow and repair inbound links. No auto-successor.
+The same transition staged against the same passage object returns the committed continuation and does not insert a second selector. `packages/application/test/scene-checkpoint-publication.test.mjs` and `packages/application/test/scene-checkpoint.test.mjs` passed 7 tests, 0 failed, on disposable `offscreen_chamber_run_*` databases. No provider call was executed.
+
+**State stays Proposed.** `docs/technical/platform/data-and-persistence.md#scene-checkpoint-v1` still says `initializeStoryInTransaction` and `commitStoryContinuation` do not write the row, and `#scene-payloads` still says publication does not write that row yet. Marking Done would leave that technical owner staler than the code. The orchestrator owns that heading.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | product | unchanged: the text-first scene promise and optional possessions stay as ratified; this packet does not edit a product page | packages/application/src/stories/continuation.ts at 707e6081, baseline d3ad620b | source-observed | a failed checkpoint put leaves no story row, so the product scene is not half-published | N/A |
+| docs/technical/platform/data-and-persistence.md#scene-checkpoint-v1 | technical | unchanged: the orchestrator owns this heading, and it still says the writers do not insert the selector | packages/application/src/stories/initialization.ts and packages/application/src/stories/continuation.ts at 707e6081, baseline d3ad620b | source-observed | marking Done while Scene checkpoint v1 denies the write would leave the technical owner stale | N/A |
+| docs/technical/storyteller/canonical-documents-and-packages.md | technical | unchanged: the document schema and adapters were not edited; the writer uses the existing checkpoint object | packages/application/src/stories/scene-checkpoint.ts at 707e6081, baseline d3ad620b | source-observed | an unavailable object store does not fall back to a local store | N/A |
+| packages/application/src/stories/continuation.ts | code | changed: supported scenes stage the checkpoint before the lock and insert one selector in the same commit | packages/application/test/scene-checkpoint-publication.test.mjs at 707e6081, baseline d3ad620b | fixture-tested | the same transition and root do not create a second checkpoint; a scripted wait still commits with no suggestion field | N/A |
+
+**Closure:** the technical heading above is the orchestrator's edit. Do not archive this packet or set State to Done until that heading matches the writer. No auto-successor.
