@@ -7,7 +7,7 @@
 
 ## Outcome
 
-Give the disposable kind lab an explicit HTTP edge: one pinned Gateway API controller, a Gateway, and HTTPRoutes. `/` reaches a synthetic web backend. `/api` reaches a synthetic API backend. Databases, brokers, and game processes stay off that edge. This is the synthetic route substrate for the selected Next and Nest edge. It does not deploy those applications. [ARCH04](../../../open/2026-11-19--arch04-web-edge-and-live-interaction-contract/CHANGE.md) owns the live-interaction contract, and [K8S11](../../../open/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) owns the later real traffic proof. The synthetic `/events` streams are timing probes, not the story SSE hint.
+Give the disposable kind lab an explicit HTTP edge: one pinned Gateway API controller, a Gateway, and HTTPRoutes. `/` reaches a synthetic web backend. `/api` reaches a synthetic API backend. Databases, brokers, and game processes stay off that edge. This is the synthetic route substrate for the selected Next and Nest edge. It does not deploy those applications. [ARCH04](./2026-11-19--arch04-web-edge-and-live-interaction-contract/CHANGE.md) owns the live-interaction contract, and [K8S11](../../../open/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) owns the later real traffic proof. The synthetic `/events` streams are timing probes, not the story SSE hint.
 
 ## Authority and prerequisites
 
