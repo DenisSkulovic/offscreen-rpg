@@ -2,7 +2,7 @@
 
 **Status:** gap inventory and integration-program design, 2026-11-19; **not** an authorized implementation Change, a revised game rule, or proof that a complete runtime is deployed. This initiative answers *what still must be designed and joined* before a real, stateful Storyteller turn can run on the new platform. Cursor implements only explicitly selected bounded Changes from [the queue](../../../changes/README.md). [Gap register and decision gates](GAPS.md) is the working checklist. As each gap is solved, update the **canonical** product/technical owner rather than treating this page as a second architecture bible.
 
-**Planning reconciliation notice (2026-11-19):** [Current execution schedule and supersession map](EXECUTION-RECONCILIATION-2026-11-19.md) supersedes the early illustrative RabbitMQ→Temporal path. Merged ARCH02 distinguishes commands, direct Temporal workflow wakes and brokered committed business events. ARCH02/03/04 and K8S09 are Done in the current queue; active batch is K8S03/05/06/07 plus DATA01. Existing diagrams below are historical proposed targets where contradictory, never mandatory implementation instructions.
+**Planning reconciliation (baseline `4447114b7c951696576a50efe74aae5ecbdec9f2`):** [Execution reconciliation](EXECUTION-RECONCILIATION-2026-11-19.md) matches merged ARCH02. A workflow wake is the PostgreSQL outbox delivered by a direct Temporal RPC. RabbitMQ is an optional post-commit fact for an independent consumer, not the Storyteller wake and not the SSE stream. Superseded: the early illustrative RabbitMQ→Temporal path. The queue records ARCH02, ARCH03, ARCH04, ARCH05, K8S03, K8S05, K8S06, K8S07, K8S09, and DATA01 as merged. K8S06 proved a disposable Temporal 1.32.2 laboratory and deleted the cluster. That laboratory is not the Compose development server and not the game workflow. DATA02, the checkpoint implementation, is not merged. This page does not declare an active batch. The queue still has two current-tense active-batch sentences; the orchestrator owns that edit.
 
 ## One acceptance target
 
@@ -10,7 +10,7 @@ From a browser and an authenticated account, create/start a **solo** campaign us
 
 For a useful first real POC, the authored start may replace expensive freeform opening generation. The *continuation* must pass through the genuine Storyteller task/validation/publication contract. Build a repeatable **fake-provider lane** first, then run the *same* contract with a real LLM only under separate explicit user authorization, spending ceiling and provider-custody checks. Passing fake generation is not evidence of live model quality. Full historical arbitrary-scene forking remains the selected target; first integrated demonstration must prove at least one non-current checkpoint and use a mechanism not hardcoded to a passage number.
 
-**Required runtime split:** browser → Gateway → independent Next.js and NestJS Pods → an independently deployed **Game Authority** boundary and **Storyteller execution** boundary (the precise RPC/Temporal topology is still open). At least one real business event crosses RabbitMQ; Temporal owns at least one meaningful durable continuation, rather than both being decorative. PostgreSQL owns committed authority; S3-compatible storage holds immutable canonical objects; Redis is optional cache, never the record. The scene-publish path must join durable game-state checkpoint and canonical root, not ask two services for best-effort latest state. No Economy service.
+**Required runtime split:** browser, then Gateway, then independent Next.js and NestJS Pods, then one writer boundary and one Storyteller execution boundary. The wake topology is not open: the PostgreSQL outbox calls Temporal directly. Temporal owns the durable continuation. A RabbitMQ business event is optional and is not required to finish the turn. PostgreSQL owns committed authority. S3-compatible storage holds immutable canonical objects. Redis is an optional cache, never the record. The scene-publish path joins the engine's checkpoint and the canonical root. The Storyteller does not own that checkpoint. The SSE hint is not a broker message. There is no Game Economy service.
 
 ## The candidate end-to-end causal chain (not yet a ratified wire protocol)
 
@@ -24,25 +24,26 @@ browser / Next SSR
 
 browser POST choice (frozen operationId + expected revision)
   -> Nest auth/DTO; Game Authority admits authoritative command
-  -> SQL transaction: receipt/typed effects/outbox; no LLM under lock
-  -> RabbitMQ durable dispatch/consumer [exact topic + handoff TBD]
-  -> Temporal workflow + separately deployed Storyteller worker [choreography TBD]
+  -> SQL transaction: receipt/typed effects/outbox wake; no LLM under lock
+  -> direct Temporal RPC (RabbitMQ is not this hop)
+  -> Temporal workflow + Storyteller worker
   -> capture branch-scoped state/root + role/task/version + bounded tools
   -> fake provider, then gated real model: proposal (passage/options/canon patches)
   -> validate proposal and mechanical/visibility/document revision fences
   -> stage immutable source + canonical objects in S3-compatible store
   -> Game Authority atomic publish: source refs, state checkpoint/root,
      next offer, stable receipt and viewVersion + outbox
-  -> SSE invalidation hint -> authenticated Nest GET
+  -> optional post-commit fact for a separately selected consumer; absence does not block the turn
+  -> SSE hint by PostgreSQL LISTEN/NOTIFY, not RabbitMQ -> authenticated Nest GET
   -> React/TanStack Query renders new Living Book scene
   -> historical GET and fork use scene-1 state/root, not scene-2 latest
 ```
 
-**Causal chain is a design target, not proof of a specific RabbitMQ→Temporal bridge**. In particular, avoid blindly dispatching one command through two unrelated retry owners or pretending RabbitMQ delivery is a SQL commit. ARCH02 must ratify command/event/workflow identity and who performs the unique authoritative write. Task capture may be after mechanical settlement; the application must preserve a visible pending/uncertain state rather than inventing an already-completed scene.
+**The causal chain is a design target.** It is not a deployed game, and it is not permission to build a broker wake. Superseded: a RabbitMQ→Temporal bridge on the story command. A broker delivery is not a SQL commit. ARCH02 has already ratified the three delivery classes and the engine as the checkpoint boundary. Task capture may follow mechanical settlement. The application keeps a visible pending or uncertain state instead of inventing a finished scene. A consumer that lags does not block publication or GET.
 
 ## Grounded current-source inventory
 
-The checked-in user archive `offscreen-rpg-lean-a00a5beb6b49-20261119T123009119Z.zip` is a **dated source baseline**, not today's full GitHub HEAD. The more recent GitHub queue at 2026-11-19 records **ARCH01, K8S01, K8S02 and K8S04 Done**; K8S03 and K8S09 were the authorized parallel Cursor batch, and ARCH02's branch was not yet merged. The hardware/cluster may have been torn down after each operator proof. Recheck active branch/HEAD, deployed runtime and real test receipts before any implementation or new status statement.
+The checked-in user archive `offscreen-rpg-lean-a00a5beb6b49-20261119T123009119Z.zip` is a **dated source baseline**, not the full repository. Superseded reading of that older zip: K8S03 and K8S09 were the authorized parallel batch, and ARCH02's branch was not yet merged. At baseline `4447114b7c951696576a50efe74aae5ecbdec9f2` those three are merged, and each laboratory cluster was deleted after its proof. A missing archived file inside a later lean zip is an export exclusion, not evidence that the repository lost history. Recheck the queue before any new status sentence. The game is not deployed on Kubernetes.
 
 Evidence of *existing reusable code* in the archive:
 - `apps/web`: Next.js SSR, React/TanStack Query, Story read/action/recovery and EventSource→GET; `apps/api`: Nest, auth, routes, stream hub and PostgreSQL LISTEN/NOTIFY.
@@ -64,14 +65,14 @@ A key threshold: **a bundle is ready for Cursor only when its Change names actua
 
 | Pass | Design outcome to ratify | Prerequisite | May be researched alongside |
 | --- | --- | --- | --- |
-| D1 · Runtime & authority | Service/process ownership, exact call/event/workflow choreography, command identity, transaction & publication owner, high-level sequence chart | ARCH02 source reconciliation; existing outbox/Temporal code | Kubernetes K8S03/05/06/09, read-only docs/storage study |
+| D1 · Runtime and authority | Writer ownership, the direct outbox-to-Temporal wake, command identity, and the publication owner. RabbitMQ is not the wake | ARCH02 merged; remaining notes stay in DIST01 | Read-only comparison with the deleted K8S03, K8S06, and K8S09 laboratories |
 | D2 · Campaign and scene ledger | One supported campaign/start route; scene checkpoint v1; exact game state/canon root/offer identities, fork-at-N and as-of reads | D1's single transaction owner | Frontend route and package pin review |
 | D3 · Canonical object lifecycle | S3 manifests, branch inheritance, write staging, atomic root pointer, crash recovery, GC and old-version visibility | D2 state/root tuple; ARCH03 | Docker image/release engineering |
 | D4 · Storyteller operation | Role/task input and evidence packs, scoped read interface, fake/live adapter, proposal schema, admission and publication handshake | D1–D3 source contracts; ARCH05 | Offline fixture and prompt cost research |
 | D5 · Kubernetes application release | Immutable app images, secrets, migration runner, namespace access, Gateway/SSR/SSE, independent service deployment and scaling | K8S infrastructure and D1–D4 APIs | Implementation in disjoint branches with coordinator |
 | D6 · Integrated proof | scripted scene+choice+DM+canonical publish+SSE+historic fork, cross-service tracing, restart and duplicate negative probes | D1–D5 working in same cluster | Independent tests and runbooks |
 
-These are **design passes**, not newly approved implementation Changes or assertions that the listed existing ARCH/K8S Changes are finished. Promote each pass into bounded documentation/implementation packets only after its contract is detailed; don't create 20 vague executables now. Each pass updates the permanent docs, test fixtures, operational runbooks and status as applicable.
+These rows are **design passes**, not implementation orders. Merged laboratory proofs are not a deployed game, and they are not a finished checkpoint. Promote a pass into a bounded packet only after its contract is detailed. Each pass updates the permanent owner when a claim actually changes.
 
 ## POC hard constraints
 
@@ -80,20 +81,20 @@ These are **design passes**, not newly approved implementation Changes or assert
 - One branch's scene N must resolve its exact mechanical and canon roots; neither parent-future nor sibling updates are eligible.
 - State and canonical documents cannot have two independently writable sources of truth. If a model proposes a fact, deterministic admission selects whether it becomes canon or a typed effect.
 - Storage/object writes before database commit may be staged; uncommitted objects remain unreachable, and a crash cannot publish only half a scene.
-- RabbitMQ and Temporal both need an explicit non-overlapping role. No event is assumed exactly-once; duplicate deliveries cannot repeat dice, document publication or provider charges.
+- Temporal wakes from the SQL outbox. RabbitMQ, if a consumer is later selected, carries only a post-commit fact and must tolerate duplicates. A duplicate cannot repeat dice, publication, or a provider charge. The broker is not required for the turn. The SSE stream stays off RabbitMQ.
 - A model task may not directly mutate SQL or S3. Bounded read tools and validated proposals are the initial harness; Cognee/semantic graphs and Code Mode are not dependencies.
 - The local lab is memory-constrained and disposable. Cold-cluster restoration, secrets, migrations and object durability must be tested; successful individual K8S component smoke tests are not a running integrated game.
 - Existing selected product promises and realistic current statuses remain binding. No new NPC simulation, global economy, compulsory images or unapproved automated spending.
 
 ## Evidence needed to call the POC integrated
 
-A recorded run must name cluster/tool versions, commit SHAs, container digests, database migration, storage roots and scripts. Capture a causal operation trace from authenticated input through gateway/API→authority→broker→workflow→Storyteller→S3 staged objects→SQL publication→SSE/GET, with unique IDs and no secrets. Verify two published scenes, one meaningful typed consequence, one source-backed canonical edit or deliberately unchanged record, and one **historical (non-current) fork** showing no later changes. Repeat after at least worker/API restart, missed SSE, redelivery and index loss; no paid model retries. The fake-provider proof is required; the live-provider proof is separately explicitly budgeted and labelled if/when performed.
+A recorded run must name cluster and tool versions, commit SHAs, container digests, the database migration, storage roots, and scripts. The causal trace runs from authenticated input through the gateway and API, the writer, the SQL outbox, a direct Temporal RPC, the Storyteller, staged objects, SQL publication, and SSE/GET. A broker hop is not part of that trace unless a consumer was separately selected, and then it is a side observation. Verify two published scenes, one meaningful typed consequence, one source-backed canonical edit or a deliberately unchanged record, and one historical fork that shows no later parent changes. Repeat after a worker or API restart, a missed SSE hint, and a duplicate wake. No paid model retries. The fake-provider proof is required. A live-provider proof is a separate budget and is not claimed here.
 
 This is not a 30/90-scene quality benchmark, high availability claim, production cost model or load test. Those are later goals.
 
 ## First executable planning bundle | DIST01–DIST06 (2026-11-19)
 
-The first concrete dependency-aware packet series is in [Change queue](../../../changes/README.md#disturn--first-service-extraction-bundle-planned-2026-11-19). It is deliberately narrower than the full POC: ratify [D1 execution contract](D1-EXECUTION-CONTRACT.md) and ARCH02, create versioned broker/Temporal adapters, prove one private Game Authority boundary, wire a selected durable Rabbit delivery, extract a Storyteller execution-only worker, and run a provider-free distributed continuation. Only **then** create the detailed per-scene historical snapshot/fork, canonical object lifecycle, and role-context implementation packets needed for *complete* DISTURN acceptance. The existing active K8S batch remains selected; these new packets are not automatically executable. In particular, DIST06 does not claim historical arbitrary-scene fork success.
+The first concrete dependency-aware packet series is in the [Change queue](../../../changes/README.md#disturn--first-service-extraction-bundle-planned-2026-11-19). It is narrower than the full POC: keep [D1](D1-EXECUTION-CONTRACT.md) aligned with merged ARCH02, prove one private writer boundary, leave the Temporal wake on the direct RPC, and treat DIST02 and DIST04 as an optional post-commit fact rather than a broker wake. A Storyteller execution-only worker and a provider-free continuation remain later packets. They are not automatically executable. DIST06 does not claim a historical arbitrary-scene fork. This paragraph does not declare an active batch.
 
 
 ## Second design bundle | Scene checkpoints and fork-safe documents

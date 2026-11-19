@@ -2,80 +2,92 @@
 
 **Status:** planned acceptance specification, 2026-11-19; no deployment or live-provider authorization implied. [DISTURN](README.md) is the target, [GAPS](GAPS.md) is the source-aware gap inventory, [D1](D1-EXECUTION-CONTRACT.md) is the candidate delivery handshake, [D2](D2-SCENE-DATA-CONTRACT.md) the candidate historical-state contract, [D3](D3-CAMPAIGN-BOOTSTRAP.md) candidate bootstrap, and [D4](D4-STORYTELLER-HANDOFF.md) candidate model-custody contract. These contracts are **not** automatically ratified by this document.
 
-**Current-head correction (2026-11-19):** The mandatory working model is **durable outbox→direct Temporal** for workflow starts/wakes, and separate outbox→RabbitMQ for committed business-event subscribers. Its proof must count these as two different branches, not require RabbitMQ on the Storyteller execution chain. See [execution reconciliation](EXECUTION-RECONCILIATION-2026-11-19.md) and [canonical event classes](../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows). Historical diagrams below that imply RabbitMQ→Temporal have been superseded.
+The working model is the merged rule in [Commands, business events, and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows). A workflow start or wake is the PostgreSQL outbox delivered by a direct Temporal RPC. RabbitMQ is for a post-commit business event and an independent idempotent consumer, and only if that consumer is separately selected. The two paths are not one chain. The story SSE hint stays off the broker. The engine keeps the scene checkpoint. There is no Game Economy service. See [execution reconciliation](EXECUTION-RECONCILIATION-2026-11-19.md).
+
+Superseded: Gate A, the fixture, and the scorecard below used to require a Rabbit→Temporal bridge on the story command. That hop is not part of any gate on this page.
+
+K8S03, K8S06, and K8S09 are merged laboratory proofs. Each deleted its cluster. K8S06 proved a disposable Temporal 1.32.2 server. That laboratory is not the Compose development server and not the game workflow. This page does not mark a Kubernetes application release, a checkpoint schema, or DATA02 Done.
 
 ## Why a fifth pass exists
 
 DIST06, BOOT04 and STORY04 are **component integration proofs**, not proof of the entire player promise. DATA04 supplies historical read/fork capability but itself does not prove it runs on the same Kubernetes installation as the distributed Storyteller. We must require an explicit **join gate** and avoid four separate fixture harnesses, duplicated credentials, parallel migration runners, and contradictory status claims.
 
-The final POC consists of a repeatable, user-controlled **provider-free** end-to-end run on kind, followed only if separately approved by a narrowly capped **real-LLM turn** through the identical pipeline. POC completion never requires Stripe, illustrations, Cognee, production availability, full D&D coverage, or a background agent.
+The final POC consists of a repeatable, user-controlled **provider-free** end-to-end run on kind, followed only if separately approved by a narrowly capped **real-LLM turn** through the identical pipeline. POC completion never requires Stripe, illustrations, Cognee, production availability, full D&D coverage, a background agent, or a broker on the Storyteller wake.
 
 ## Gate A | Reproducible application release
 
-**Artifact:** one lab deployment profile and one reproducible release command/runbook. Reuse `infra/kubernetes/lab/` and current K8S01–K8S11 plans; do not invent a second cluster installer. It must support rebuilding after disposable teardown.
+**Artifact:** one lab deployment profile and one reproducible release command/runbook. Reuse `infra/kubernetes/lab/` and the existing Kubernetes plans; do not invent a second cluster installer. It must support rebuilding after disposable teardown. Isolated component smokes that already passed, including the deleted Temporal 1.32.2 laboratory, are not this profile.
 
-Expected live processes, subject to D1/DIST01 ratification:
-- Local Gateway API controller and Gateway/HTTPRoutes.
+Expected live processes, once a later release Change is actually selected:
+
+- Local Gateway API controller and Gateway/HTTPRoutes for the real Next and Nest processes. K8S09's synthetic loopback routes are not that deployment.
 - Independently deployed Next Web and Nest player API; one same-origin browser entry.
-- Game Authority runtime as one permitted story/campaign/scene writer, including private authenticated methods.
-- Outbox relay and Rabbit→Temporal bridge, with **only one** dispatch route per selected topic.
-- Temporal server with persistence, control Activity worker, separate Storyteller execution Activity worker.
-- CloudNativePG and S3-compatible immutable object storage, with bound PVs; Redis optional as nonauthoritative cache. RabbitMQ is the delivery substrate, not a second scheduler.
-- Minimum logs/metrics/trace correlation sufficient to diagnose a failed scene operation; no full HA or paid telemetry requirement.
+- One permitted story, campaign, and scene writer. The engine remains the checkpoint boundary.
+- An outbox relay that starts or signals Temporal by a direct RPC. One wake route. RabbitMQ is not on that route.
+- Temporal server with its own persistence, a control Activity worker, and a separate Storyteller execution Activity worker when that split exists. Until then, do not pretend `storytellerV1` is already two stages.
+- CloudNativePG and S3-compatible immutable object storage, with bound persistent volumes. Redis is an optional nonauthoritative cache.
+- RabbitMQ only if a post-commit consumer has been separately selected. It is not the delivery substrate for the story command and not the SSE stream. If no consumer is selected, the release does not add a broker requirement.
+- Minimum logs, metrics, and trace correlation sufficient to diagnose a failed scene operation. No full high-availability or paid telemetry requirement.
 
-The release must define: immutable image tags or digests, build/load commands, dependency startup order, env/Secrets/ServiceAccounts, isolated DB migration Job with single-run ownership, namespace-scoped auth, resource requests/limits, readiness and startup probes, app DNS, API/Next SSR proxy routing, EventSource no-buffer streaming, explicit fake-provider default, known rollout/rollback for existing Compose/local mode and a safe teardown that **does not delete unrelated Compose volumes**.
+The release must define: immutable image tags or digests, build and load commands, dependency startup order, environment and Secrets and ServiceAccounts, one isolated database migration Job, namespace-scoped auth, resource requests and limits, readiness and startup probes, app DNS, API and Next routing, EventSource streaming without buffering, an explicit fake-provider default, rollback to the existing Compose mode, and a teardown that does not delete unrelated Compose volumes.
 
-A Resource/compatibility ledger is mandatory. A cluster Pod in Ready state is not evidence that a scene succeeded, nor is every component's isolated smoke test evidence that all can fit in memory simultaneously. If the local 12GB-ish WSL memory budget is exceeded, reduce replicas/nonessential collectors and report measured footprint, not fabricate HA.
+A resource ledger is mandatory. A Pod in Ready state is not evidence that a scene succeeded. Isolated smoke tests are not evidence that every component fits in memory together. If the local memory budget is exceeded, reduce replicas and nonessential collectors and report the measured footprint.
 
 ## Gate B | Single deterministic golden fixture
 
-Fixture assets from controlled source origins, no raw “fake succeeded” DB insertions. Reuse REAL01/REAL02 authored fixture shapes, source-verified current scripted opening candidate and `content/starts`/world/rule importer where valid. A fixture may use a small proprietary/original neutral setting rather than blindly assuming the example's external licenses or full D&D adapter coverage. Keep one simple D&D-like supported game consequence (e.g. item transfer/HP change only if source supports it) and one descriptive canon change. The same fixture supplies:
-- identity A can create or start story S using a permitted successful **opening candidate** and an immutable package root; identity B cannot;
-- scene1 with frozen authoritative state (e.g. sword with player), source passage, and canon root (e.g. king alive);
-- accepted choice action in scene1 with frozen operation ID and expected revision;
-- exactly one admitted consequence and one captured Storyteller continuation task in GA, dispatched via SQL outbox→Rabbit→Temporal;
-- bounded Storyteller execution under script fixture, with at least one version-pinned canon read from shared S3 and a validated descriptive proposal;
-- Game Authority guarded publish of scene2, exact post-effect game state and canon root, one source passage, view version and committed receipt;
-- same-origin SSE hint triggers a browser GET and live scene2 without a user page reload;
-- *historic* scene1 GET still shows earlier state/canon (not latest mutable tables), and fork from scene1 **after** scene2 exists creates independent branch that retains earlier possessions and descriptive fact;
-- parent can continue separately and fork's next scene can differ; fork/parent IDs and document-root ancestries do not leak into each other's Storyteller context;
-- refresh and safe Pod restart preserve hashes, versions, ownership and journal history.
+Fixture assets come from controlled source origins. Do not insert a raw "fake succeeded" database row. Reuse the authored fixture shapes, the source-verified scripted opening candidate, and the world and rule importer where they are valid. A fixture may use a small original neutral setting. Keep one simple supported game consequence and one descriptive canon change. The same fixture supplies:
 
-A second **no-inventory/microbe** fixture should run at least contract-level and ideally same code path, to guard against making inventory/economy mandatory.
+- Identity A can create or start story S from a permitted opening candidate and an immutable package root. Identity B cannot.
+- Scene 1 has frozen authoritative state, a source passage, and a canon root.
+- An accepted choice in scene 1 carries a frozen operation id and expected revision.
+- Exactly one admitted consequence and one captured Storyteller continuation. The wake is the SQL outbox delivered by a direct Temporal RPC.
+- Bounded Storyteller execution under the script fixture, with at least one version-pinned canon read from shared object storage and a validated descriptive proposal.
+- The writer publishes scene 2: post-effect game state, canon root, one source passage, view version, and committed receipt. The engine still owns the checkpoint.
+- A same-origin SSE hint triggers a browser GET and shows scene 2 without a reload. The hint is PostgreSQL LISTEN/NOTIFY, not a broker message.
+- A historic scene 1 GET still shows the earlier state and canon, and a fork from scene 1 after scene 2 exists keeps the earlier possessions and descriptive fact on the new branch.
+- The parent can continue separately. The fork's next scene can differ. Fork and parent document roots do not leak into each other's Storyteller context.
+- Refresh and a safe Pod restart preserve hashes, versions, ownership, and journal history.
+
+A second fixture with no inventory should run at least at contract level, on the same code path when that is practical, so inventory and economy do not become mandatory. There is no Game Economy service.
+
+An optional post-commit consumer may be observed in the same run only after it has been separately selected. Its lag or absence does not fail this gate. Superseded fixture clause: dispatching the continuation through SQL outbox to RabbitMQ to Temporal.
 
 ## Gate C | Causality and negative proof
 
 Record a deterministic evidence ledger for each controlled failure. Required minimum:
-1. **Identity and authorization:** wrong owner/cookie rejected for SSR, command, historical read, fork and source document; internal GA not exposed through Gateway.
-2. **Retry and duplication:** lost PUT response, repeat frozen command, duplicate Rabbit notice, repeated Temporal workflow start/result, repeated publication and repeated fork ID. One effect, one passage, one checkpoint, one billable attempt if ever enabled.
-3. **Source/data split:** S3 down before staging, hash mismatch or missing historical object, SQL transaction rolled back after staging, stale canon root, incomplete legacy checkpoint. No half-scene, no “latest root” substitution.
-4. **Branch isolation:** scene1 as-of after parent scene2; no later king death or item change in old journal/fork; no sibling visibility in memory tool candidate **or returned snippet**.
-5. **Network and worker recovery:** API/Next/Storyteller restart, dropped SSE notification, broker/Temporal temporary outage. Browser GET convergence, durable pending/held state, no unbounded retry storm.
-6. **Attempt custody:** fake provider automatically safe; real-provider timeout after possible send enters `uncertain` and is never automatically retried as a second charge.
 
-Test scripts must classify `PASS`, `FAIL`, `BLOCKED`, `NOT-RUN`, with exact runtime/build/seed/cluster/versions and evidence. No screenshot-only, Pod-Ready-only or cherry-picked happy path closure.
+1. **Identity and authorization:** a wrong owner or cookie is rejected for SSR, the command, the historical read, the fork, and the source document. The internal writer is not exposed through the Gateway.
+2. **Retry and duplication:** a lost response, a repeated frozen command, a repeated Temporal start, a repeated publication, and a repeated fork id leave one effect, one passage, one checkpoint, and one billable attempt if a paid attempt is ever enabled. A duplicate broker delivery, if a consumer exists, does not add another effect.
+3. **Source and data split:** object storage down before staging, a hash mismatch, a missing historical object, a SQL rollback after staging, a stale canon root, or an incomplete checkpoint. No half-scene and no substitution of the latest root.
+4. **Branch isolation:** scene 1 as-of after the parent's scene 2 shows no later change. A sibling is not visible in a memory-tool candidate or in a returned snippet.
+5. **Recovery:** API, Next, or Storyteller restart; a dropped SSE notification; Temporal temporarily down. The browser converges by GET. Pending and held state stay durable. There is no unbounded retry storm. A broker outage does not block the wake, the commit, or GET.
+6. **Attempt custody:** the fake provider is safe by default. A real-provider timeout after a possible send is `uncertain` and is never automatically retried as a second charge. No paid call is claimed by this specification.
+
+Test scripts classify `PASS`, `FAIL`, `BLOCKED`, and `NOT-RUN`, with the runtime, build, seed, cluster, and versions. No screenshot-only, Pod-Ready-only, or happy-path closure. A broker hop is not required in order to avoid `NOT-RUN`.
 
 ## Gate D | Explicit full-turn acceptance
 
-The final scorecard must link **one and the same run** through: browser identity → candidate/story bootstrap → scene1 state/root → HTTP command/receipt → GA writer → SQL outbox → Rabbit notice → Temporal workflow → separate Storyteller worker → pinned canonical read → bounded proposal and attempt ledger → GA scene2 publication → S3 immutable content + SQL checkpoint/root → SSE/GET client update → historical scene1 as-of GET → independent fork + branch-safe continuation.
+The final scorecard links **one and the same run** through: browser identity, candidate and story bootstrap, scene 1 state and root, HTTP command and receipt, the engine writer, the SQL outbox, a direct Temporal RPC, the Storyteller worker, a pinned canonical read, a bounded proposal and attempt ledger, scene 2 publication, immutable content plus the SQL checkpoint and root, the SSE hint and GET, a historical scene 1 read, and an independent fork.
 
-For each hop, record operation ID, story ID, generation ID, passage ID, checkpoint hash, root hash, relevant workflow/message ID and causal trace link, with secrets and user narrative redacted from operational logs. Store a dated evidence bundle in the existing observability/evaluations or integration report location, not a duplicate dashboard. Include a machine-readable result ledger and short human decision summary.
+For each hop, record the operation id, story id, generation id, passage id, checkpoint hash, root hash, workflow id, and causal trace. Redact secrets and player narrative from operational logs. Store one dated evidence bundle in the existing report location. Include a machine-readable ledger and a short human summary.
 
-**Done** means all gates pass against an actual fresh reconstructed kind profile, using the same source commit/build images and branch-safe data. Success in local/Compose alone is NOT a pass. Distinguish a successfully committed *fake* scene from a genuine live-model generation.
+Superseded scorecard hop: SQL outbox, then a Rabbit notice, then Temporal. That chain is not this gate.
+
+**Done** for this program means the gates pass against a fresh kind profile, using the same source commit and images, with branch-safe data. Success on Compose alone is not a pass. A committed fake scene is not a live-model generation. This document does not itself mark that run Done.
 
 ## Gate E | Real-model proof, separate user-controlled decision
 
-After A–D pass, a **separate approved** optional run may select a real provider/model, hard per-attempt spending ceiling, no blind retries and pre-recorded request/usage policy. It sends a **single continuation request** over the exact same task/proposal/publication path. The existing `storytellerAttempt`, usage and funding/dispatch-review ledger records are mandatory; no Stripe needed. Provider timeout or lost acknowledgment is an uncertain charge, requiring reconciliation before any new attempt. Capture response validity, actual costs, relevant logs and source-linked publication. No provider keys in evidence. Passing fake proof does not auto-trigger E; E does not grant ongoing model usage.
+After A–D pass, a separate approved optional run may select a real provider and model, with a hard per-attempt spending ceiling, no blind retries, and a pre-recorded request and usage policy. It sends a single continuation over the same task, proposal, and publication path. The direct Temporal wake stays in place. The existing attempt, usage, and dispatch-review ledgers are mandatory. Provider timeout or a lost acknowledgement is an uncertain charge. Capture validity, cost, and source-linked publication. No provider keys in evidence. Passing the fake proof does not start this gate, and this gate does not grant ongoing model usage. Nothing in the current record is a passed paid run.
 
 ## Execution packets and ownership of evidence
 
-- [TURN01](../../../changes/open/2026-11-19--turn01-ratify-unified-poc-acceptance/CHANGE.md): documentation-only exact pass/fail fixture and acceptance mapping. Ensure existing DIST06/BOOT04/STORY04 remain separate bounded proofs.
-- [TURN02](../../../changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md): one consolidated local Kubernetes **application release** and operational/evidence substrate. Avoid duplicating existing K8S08, K8S11, DATA05, BOOT02 manifests: reconcile those first; adopt existing source manifests rather than implement competing overlays. May defer actual full-run proof until TURN03.
-- [TURN03](../../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md): execute the full provider-free, same-commit acceptance after underlying BOOT/DATA/DIST/STORY functionality lands, including the historical fork. This is the **sole** final DISTURN POC completion gate.
-- [TURN04](../../../changes/open/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md): optional, explicitly authorized live-provider test with a hard cap, not part of fake POC Done.
+- [TURN01](../../../changes/open/2026-11-19--turn01-ratify-unified-poc-acceptance/CHANGE.md): documentation-only fixture and acceptance mapping. DIST06, BOOT04, and STORY04 stay separate proofs.
+- [TURN02](../../../changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md): one consolidated local Kubernetes application release. Reconcile K8S08, K8S11, DATA05, and BOOT02 before adding manifests. Do not treat merged laboratory smokes as this release.
+- [TURN03](../../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md): the provider-free, same-commit acceptance, including the historical fork, after the underlying work lands. This is the final POC completion gate. It is not Done.
+- [TURN04](../../../changes/open/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md): an optional live-provider test with a hard cap. It is not part of fake POC Done.
 
-**Parallelism:** TURN01 fixture/scorecard design and TURN02 packaging research can proceed while the infrastructure and app implementation agents work. TURN02's owned packaging/config paths conflict with K8S08/09/11, so one coordinator assigns ownership or serializes merges. TURN03 can develop read-only test scaffolding concurrently, but cannot be run/marked passing until services, historical state and Storyteller custody are genuinely integrated. TURN04 stays unselected. Integrate one release profile, one database migration owner, one cluster operator, one evidence ledger.
+**Parallelism:** TURN01 and TURN02 research can proceed while other agents work, under the queue's ownership rules. TURN03 cannot be marked passing until the writer, historical state, and Storyteller custody are actually integrated. TURN04 stays unselected. One release profile, one migration owner, one cluster operator, and one evidence ledger.
 
 ## Beyond POC: preserved parking lot
 
-Illustration generation and assets linked to historical scenes; full customer usage accounting/Stripe subscriptions and webhooks; external notifications; deeper 30/90-scene memory-quality evaluation and semantic search/Cognee if justified; optional bounded Code Mode; real-time multiplayer; advanced D&D mechanics; cloud operation, HA, full K8S10 chaos/load/scale experiments; richer visual book. These are intentionally deferred, **not** silently cancelled.
+Illustration generation tied to historical scenes; customer usage accounting and payment subscriptions; external notifications; a longer memory-quality evaluation and semantic search if justified; optional bounded code execution by the model; real-time multiplayer; advanced rules; cloud operation and load experiments; a richer visual book. These stay deferred. A mandatory broker wake is not parked here as future permission. It is superseded.
