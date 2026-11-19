@@ -5,15 +5,15 @@
 **Execution:** Not part of currently active Kubernetes batch. Select individually or through explicitly approved safe batch.  
 **Related:** [DISTURN program](../../../designs/open/distributed-turn-poc/README.md) · [D2 data design](../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md)
 
-## Independently verifiable outcome
+**Packet profile:** `STATE`. [SOURCE-MAP.md](SOURCE-MAP.md) traces the already-implemented historical checkpoint fork, root validation and source-capture primitives at `584b594`. The gap is **branch-pinned remote context and independent continuation**, not another fork schema. No cross-Pod proof is claimed.\n\n## Independently verifiable outcome
 
 A remote Storyteller task receives exact mechanical state, current effective canon and relevant evidence from its own branch without fetching latest global revisions or requiring Cognee.
 
 ## Preconditions / source baseline
 
-**Dependencies:** ARCH03 and ARCH05 detailed contracts, DATA03 checkpoint, DATA04 branch ancestry or a verified compatible test scope; DIST05 execution worker split.
+**Dependencies:** ARCH03 and ARCH05 detailed contracts, DATA03 checkpoint, DATA04 branch ancestry or a verified compatible test scope; STORY03 separated execution worker (DIST05 was cancelled/absorbed; not a separate dependency).
 
-Inspected GitHub main 2026-11-19. `story` has the latest root, `storyPassage` preserves passage source, `storyDocumentCommit` tracks root revisions. `campaign` and other mechanics are mutable. `forks.ts` is explicitly restricted to current revision 1. `packages/documents` already has typed immutable content and both local/S3 adapters. Recheck HEAD, migrations, source symbol owners and running Cursor branches before implementation. This packet is not proof of actual complete snapshot storage.
+Inspected GitHub main 2026-11-19. `story` has the latest root, `storyPassage` preserves passage source, `storyDocumentCommit` tracks root revisions. `campaign` and other mechanics are mutable. `forks.ts:createStoryForks.fork` already supports requested historical checkpoint selectors for a quiescent supported scene; the older live no-checkpoint fallback remains restricted to revision 1. Do not reimplement the historical path or imply arbitrary active-scene fork is supported. `packages/documents` already has typed immutable content and both local/S3 adapters. Recheck HEAD, migrations, source symbol owners and running Cursor branches before implementation. This packet is not proof of actual complete snapshot storage.
 
 ## Exact bounded delta
 
