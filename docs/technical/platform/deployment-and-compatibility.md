@@ -134,6 +134,8 @@ Use the established Node test runner for pure policy/contract tests and compiled
 
 Temporal test time does not advance PostgreSQL's wall clock. For workflow-only tests, mock timing/admission Activities consistently; for cross-system deadline tests, use short real durations or an explicit test clock adapter aligned on both sides. Include history replay and Continue-As-New tests. Keep real service restart tests separate from time-skipping tests so the demonstration actually proves recovery.
 
+The disposable laboratory records one real consumer restart in [Kubernetes fault harness](../../runbooks/kubernetes-fault.md). On 2026-11-19, run `fault-ed09a6e1b8b5c5f5` was applied once, the consumer pod was deleted before acknowledgement, and the same body was delivered again with `redelivered=1`. An exactly-once assertion then failed because two `APPLY` lines were present. That is at-least-once broker redelivery on one replica. It is a separate check from the table below.
+
 | Scenario | Evidence required |
 | --- | --- |
 | OAuth interrupted while following an invitation | Safe return to the invite; expiry/capacity rechecked; no duplicate membership. |
@@ -163,7 +165,7 @@ Temporal test time does not advance PostgreSQL's wall clock. For workflow-only t
 | Story finishes or is deleted while media/generation completes | Late work cannot advance/recreate the story or replace the current scene. |
 | Provider sends invalid references or negative resources | Rejected or bounded repair, never partially committed. |
 
-These are implementation acceptance cases, not tests already written or passed. Documentation/link checks only validate the documents. Prove the fake-provider slice against the lifecycle and race cases before claiming durable gameplay; live model evaluations then test a different property, narrative quality.
+These are implementation acceptance cases, not tests already written or passed. The fault-harness run does not discharge the row "Worker dies after database commit, before Activity completion is recorded." That row needs a committed database outcome and an Activity retry that returns the existing outcome. The harness has no game database write and no Activity. A passing harness run is also not machine-level high availability. Documentation/link checks only validate the documents. Prove the fake-provider slice against the lifecycle and race cases before claiming durable gameplay; live model evaluations then test a different property, narrative quality.
 
 AI evaluations complement these tests. Maintain a small set of story fixtures spanning tone, unusual characters, long-range callbacks, player agency and shared consequences. Human review checks whether options are meaningful and narration coherent. Repeatable fixtures make model/prompt comparisons possible without claiming deterministic prose.
 
