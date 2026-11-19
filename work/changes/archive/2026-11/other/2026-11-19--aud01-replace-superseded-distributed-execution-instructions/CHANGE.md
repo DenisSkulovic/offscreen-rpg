@@ -6,8 +6,8 @@
 
 ## Cursor first-screen brief
 
-> **Current-source map:** [distributed-turn design](../../../designs/open/distributed-turn-poc/README.md), inspected at `4447114b7c951696576a50efe74aae5ecbdec9f2`.
-> **Primary governing heading:** [Commands, business events, and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows).
+> **Current-source map:** [distributed-turn design](../../../../../designs/open/distributed-turn-poc/README.md), inspected at `4447114b7c951696576a50efe74aae5ecbdec9f2`.
+> **Primary governing heading:** [Commands, business events, and workflows](../../../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows).
 > **Known trap / contrary case:** A lean snapshot that omits an archived file is not a source regression, and this rewrite must not move the scene checkpoint off the engine or put the story SSE stream on RabbitMQ.
 > **Scope/permission:** Markdown named below only. No executable edit. The queue stays with the orchestrator.
 
@@ -19,8 +19,8 @@ Before: D1 steps 4–5, D5 Gate A, and the DIST02 and DIST04 bodies told an agen
 
 ## Authority and baseline
 
-- **Product:** unchanged. No gameplay, scene, or commercial rule is rewritten. [Vision](../../../../docs/product/foundations/vision.md) stays the player-facing promise.
-- **Technical:** [Commands, business events, and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows) and [Proposed service ownership](../../../../docs/technical/platform/topology.md#proposed-service-ownership) were read and not edited. The engine remains the scene-checkpoint boundary. There is no Game Economy service. The story SSE hint stays off the broker.
+- **Product:** unchanged. No gameplay, scene, or commercial rule is rewritten. [Vision](../../../../../../docs/product/foundations/vision.md) stays the player-facing promise.
+- **Technical:** [Commands, business events, and workflows](../../../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows) and [Proposed service ownership](../../../../../../docs/technical/platform/topology.md#proposed-service-ownership) were read and not edited. The engine remains the scene-checkpoint boundary. There is no Game Economy service. The story SSE hint stays off the broker.
 - **Evidence / source:** Baseline `4447114b7c951696576a50efe74aae5ecbdec9f2`. `apps/worker/src/outbox/dispatch.ts` delivers a notice with the Temporal client. `packages/workflows/src/index.ts` `storytellerV1` calls one `completeStoryteller` Activity. No source behavior changed.
 - **Proposals / unknowns:** A post-commit consumer is not selected. DATA02 is not Done. This Change does not ratify a new broker topic.
 
@@ -28,9 +28,9 @@ Before: D1 steps 4–5, D5 Gate A, and the DIST02 and DIST04 bodies told an agen
 
 - **Edited:** `work/designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md`, `work/designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md`, `work/designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md`, `work/designs/open/distributed-turn-poc/README.md`, `work/designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md`, `work/changes/open/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md`, `work/changes/open/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md`.
 - **Executable source/tests/config:** unchanged because this is a documentation-only Change. No intended code diff.
-- **Queue:** `work/changes/README.md` is not edited. It still has two current-tense active-batch sentences: the batch-orchestration note names DATA02, K8S08, STORY01, AUD01, and AUD03, and [the first DISTURN bundle](../../README.md#disturn--first-service-extraction-bundle-planned-2026-11-19) still says the active batch is K8S03 and K8S09. That bundle also still labels DIST04 as a live broker-to-Temporal relay. Left for the orchestrator.
+- **Queue:** `work/changes/README.md` is not edited. The orchestrator dated the historical K8S03 and K8S09 sentence and retargeted the DIST04 row away from a live broker-to-Temporal relay.
 - **Preserve:** engine checkpoint ownership, SSE off the broker, no Game Economy service, K8S06 as a deleted Temporal 1.32.2 laboratory rather than the Compose server or the game workflow.
-- **Exclude:** AUD02, AUD03, canonical technical pages, STATUS, ROADMAP, packages, infra, scripts, cluster lock, kind, and kubectl. Packets outside the edit list that still describe the old hop, including DIST01, TURN02, and TURN03, were not rewritten. D4's pre-existing link to a STORY01 slug that does not exist is AUD02's link repair. This Change did not retarget it. The packet stays under `open/` because the queue and the audit link here, and those files are outside this edit list.
+- **Exclude:** AUD02, AUD03, canonical technical pages, STATUS, ROADMAP, packages, infra, scripts, cluster lock, kind, and kubectl. Packets outside the edit list that still describe the old hop, including DIST01, TURN02, and TURN03, were not rewritten. D4's pre-existing link to a STORY01 slug that does not exist is AUD02's link repair. This Change did not retarget it. The orchestrator archived this packet and retargeted the queue and audit links.
 
 ## Acceptance and discriminating negative proof
 
