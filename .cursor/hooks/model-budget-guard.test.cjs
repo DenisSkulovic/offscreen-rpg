@@ -1,10 +1,10 @@
 "use strict";
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const {evaluate, verdictForModel} = require("./model-budget-guard.cjs");
+const { evaluate, verdictForModel } = require("./model-budget-guard.cjs");
 
-const allowed = [
-  "composer-2.5[fast=false]",
+const composer = "composer-2.5[fast=false]";
+const grokAllowedWithApproval = [
   "grok-4.6[effort=low,fast=false]",
   "grok-4.6[effort=medium,fast=false]",
   "grok-4.6[fast=false,effort=medium]"
@@ -21,20 +21,34 @@ const blocked = [
   "cursor-grok-4.6-medium", "composer-2.5[fast=false,fast=true]"
 ];
 
-test("only explicitly pinned allowlist variants are admitted", () => {
-  for (const model of allowed) {
-    assert.equal(verdictForModel(model), null, model);
-    assert.equal(evaluate({subagent_model:model}).permission, "allow", model);
+test("Composer Standard is the only default subagent model", () => {
+  assert.equal(verdictForModel(composer), null);
+  assert.equal(evaluate({subagent_model: composer}, {grokApproved:false}).permission, "allow");
+  for (const model of grokAllowedWithApproval) {
+    assert.notEqual(verdictForModel(model), null);
+    assert.equal(evaluate({subagent_model:model}, {grokApproved:false}).permission, "deny");
   }
 });
-test("blocked models and ambiguous/default variants fail closed", () => {
+
+test("named local approval enables ONLY pinned Grok low and medium variants", () => {
+  for (const model of grokAllowedWithApproval) {
+    assert.equal(verdictForModel(model, true), null, model);
+    assert.equal(evaluate({subagent_model:model}, {grokApproved:true}).permission, "allow", model);
+  }
   for (const model of blocked) {
-    assert.notEqual(verdictForModel(model), null, String(model));
-    assert.equal(evaluate({subagent_model:model}).permission, "deny", String(model));
+    assert.notEqual(verdictForModel(model, true), null, String(model));
+    assert.equal(evaluate({subagent_model:model}, {grokApproved:true}).permission, "deny", String(model));
   }
 });
-test("missing/malformed hook payload fails closed", () => {
+
+test("missing or malformed payload fails closed", () => {
   for (const payload of [null, undefined, {}, [], "oops", {subagent_model:{}}]) {
-    assert.equal(evaluate(payload).permission, "deny");
+    assert.equal(evaluate(payload, {grokApproved:true}).permission, "deny");
   }
+});
+
+test("unapproved Grok cannot silently fall back and opt-in is not inherited via payload", () => {
+  const model = grokAllowedWithApproval[1];
+  assert.equal(evaluate({subagent_model:model, owner_approved:true}, {grokApproved:false}).permission, "deny");
+  assert.equal(evaluate({subagent_model:composer, owner_approved:false}, {grokApproved:false}).permission, "allow");
 });
