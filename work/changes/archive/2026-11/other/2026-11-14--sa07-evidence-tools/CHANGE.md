@@ -1,14 +1,14 @@
 # SA07 | Add only the read operation that a real missing-evidence fixture proves necessary
 
-**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
+**2026-11-18 executable decision:** [Backlog audit and acceptance](../../../../../designs/open/backlog-convergence-2026-11-18/README.md; [bounded contract choices](../../../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md; [ordered Cursor handoff](../../../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md. The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Ready. The provider-free discriminator selected one alias cue and landed it; no new tool (2026-11-19).
+**State:** Done (2026-11-19). The chosen blue-ledger case is answered by the existing ask path. No new tool was added. A paraphrase with no shared alias still misses the favor.
 
 ## Cursor first-screen
 
 > **Goal:** a Storyteller may ask one safe question about a known entity/relationship/contradictory source (or a pinned rule fragment) that cannot be efficiently answered by current ask_memory/read_memory, and get a small exact authorized answer. The application owns retrieval implementation and its work budget.
 >
-> **Authority:** [tool semantics](../../../../docs/technical/storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract), [source access and proof](../../../../docs/technical/storyteller/context-and-memory.md), [constitution](../../../../docs/product/storyteller/behavior-and-quality.md).
+> **Authority:** [tool semantics](../../../../../../docs/technical/storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract, [source access and proof](../../../../../../docs/technical/storyteller/context-and-memory.md, [constitution](../../../../../../docs/product/storyteller/behavior-and-quality.md.
 >
 > **Source:** `packages/storyteller/src/tasks/memory-exploration.ts::memoryExplorationOperationSchema`, `packages/application/src/storyteller/memory-exploration.ts::createCanonicalMemoryExplorer`, `application/storyteller/canonical-search.ts`, `application/storyteller/lexical-story-index.ts`, `memory-exploration-controller.ts::runMemoryExploration`.
 
