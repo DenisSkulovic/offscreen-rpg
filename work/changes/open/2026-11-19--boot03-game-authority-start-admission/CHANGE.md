@@ -1,0 +1,52 @@
+# BOOT03 | Migrate existing startFromCandidate into private Game Authority
+
+**State:** Proposed; dependency-gated (2026-11-19)  
+**Kind:** implementation  
+**Selection:** Not currently selected; existing active Cursor batch remains untouched.  
+**Program:** [D3 campaign bootstrap](../../../designs/open/distributed-turn-poc/D3-CAMPAIGN-BOOTSTRAP.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
+
+## Exact outcome and preconditions
+
+Migrate existing startFromCandidate into private Game Authority. **Preconditions:** BOOT01, DIST03 narrow private GA boundary, DATA02/03 complete scene-1 checkpoint for final acceptance, BOOT02 roots for full cluster test.
+
+The POC must retain current successful opening-candidate admission. A start package is not a successful candidate. It describes reusable pinned world/rule/start content and activation, but an actual generation candidate and associated current draft are validated separately. Existing current source `packages/application/src/stories/start.ts::createStoryStart` requires `candidateId` and `expectedDraftRevision`, and `packages/contracts/src/stories.ts::startStorySchema` preserves this. Reinspect current main and Cursor branches before changes.
+
+## Scope and implementation boundaries
+
+Move exactly the existing startFromCandidate domain write path into the single GA owner, preserving candidateId, expectedDraftRevision, campaign pins and current validation. Nest authenticated public PUT /api/stories/:id/start forwards a versioned private operation with trusted actor assertion, original request identity and bounded timeout; no duplicate Nest-side start SQL writes in distributed mode. GA reads candidate/draft, validates start package+rules/world/activation, stages existing S3 bootstrap objects and first checkpoint according to DATA03, then initializes SQL story/first passage/settings/root/checkpoint atomically. Keep old Compose/local code path via explicit environment composition, not implicit fallback after GA failure; source-origin client retry semantics remain. Ensure no untrusted user-supplied ownerId and no direct Game Authority public ingress.
+
+**Owner files and first-class docs:** Code: apps/api/src/modules/stories/controller.ts and DI boundary, apps/game-authority route/handler from DIST03, packages/application/src/stories/{start,initialization,passage-documents}.ts only for changed domain boundary, versioned DTO in packages/contracts, tests. Technical: creation/start, runtime topology, data persistence and runbook claims in same diff.
+
+**Do not:** invent another creation API, remove existing freeform/scripted pathways, bypass generation status/owner checks with raw SQL, create a fictional Economy service, treat a world-package root as current campaign state, run LLM/image/Stripe providers, import writable source directories into every Pod, or claim a working historical fork based only on the initial source passage.
+
+## Acceptance: normal and discriminating negatives
+
+Repeat a successful start returns same first passage/scene1 root and checkpoint, no duplicates. Wrong user, stale draft, changed package, missing S3 and disallowed rules leave no visible story. Two GA instances race safely. Current Compose tests remain passing.
+
+Minimum test evidence: exact commands and target environment, current source hashes and diff, typed request/response version, source selection and package pins, idempotent repeated start, permission/root mismatch refusal, source-to-technical-doc impact, and all not-run tests labeled honestly. Compare current local/Compose path and target distributed mode independently.
+
+## Parallelization
+
+After DIST03 can split private DTO/handler read-only analysis from BOOT02 fixture import; publication files overlap DATA03 so single integrator and no concurrent write.
+
+Independent authoring or tests may use separate Git worktrees under the repo's parallel Change policy, but shared `apps/api`/GA private endpoints, scene-1 publication and canonical technical headings must be integrated by one owner. Shared Kubernetes cluster commands run under the existing lock. This packet alone is not approval for execution.
+
+## planned-impact.v1
+
+| Plane | Intended diff | Verification |
+| --- | --- | --- |
+| Product | Unchanged: text-first D&D-like DM, meaningful authored world/rule pins; no mandatory economy or forced inventory | Existing creation promise, no new product mechanic |
+| Technical | Campaign bootstrap + exact scene-1 state/canon root in selected technical owners; current/target/implemented distinguished | Versioned path diagram, negative reading |
+| Code | Bounded source and tests at explicit owners above | Provider-free test and later real cluster evidence |
+| Related | Change queue and impacted runbooks/status, not an invented completed deployment | Wiki and Change guards, link repair |
+
+## Reconciliation ledger (complete at closure)
+
+| Claim owner | Delta or no-op | Source SHA/diff | Normal/negative proof | Link/status |
+| --- | --- | --- | --- | --- |
+| Creation/product | unchanged | Pending | Pending | Pending |
+| Technical bootstrap | reconcile to code | Pending | Pending | Pending |
+| Candidate/game-authority source | bounded migration | Pending | Pending | Pending |
+| Canonical package + scene1 | pending | Pending | Pending | Pending |
+
+Archive only after actual evidence and `pnpm wiki:change-guard --mode plan` / `--mode close` where applicable; no automatic next packet.
