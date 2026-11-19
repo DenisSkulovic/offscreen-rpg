@@ -14,6 +14,7 @@
 | Current projection/version | `reads.ts: createStoryReads/readSnapshot` | Builds owned snapshot in repeatable-read read-only transaction; includes story `viewVersion` and `resolution.version` |
 | Owner/resource lock | `persistence.ts: lockOwnedStory` | WHERE `ownerId` and `storyId`; only application action may admit |
 | Publication | `continuation.ts: commitStoryContinuation` | Persists next passage and calls `advanceStoryView` to increment `viewVersion` in same transaction |
+| Staged scene-checkpoint reference | `scene-checkpoint.ts: insertSceneCheckpointReference` | Inserts `story_scene_checkpoint` for an already staged `offscreen.scene-checkpoint.v1` object when the locked story revision and canon root match. Does not update `story`, does not call publication, and does not build a historical fork |
 | Interval controls | `timing.ts: createStoryTiming` | Calls `incrementStoryViewVersion`, reads database clock, coordinates with committed wait |
 | Start reviewed candidate | `start.ts: createStoryStart` | Checks existing story/candidate/expected draft revision; permanent Start ID is story UUID |
 | Campaign action/passage | [campaign actions](../campaign/actions.ts), [campaign persistence](../campaign/persistence.ts) | Additional `viewVersion` writers **not reached through StoriesController alone** |

@@ -158,6 +158,63 @@ export const storyPassage = pgTable(
   ],
 );
 
+/**
+ * SQL selector for one immutable scene checkpoint. The payload lives in the
+ * document store at checkpoint_hash. This row does not replace story or
+ * story_item, and publication does not write it yet.
+ */
+export const storySceneCheckpoint = pgTable(
+  'story_scene_checkpoint',
+  {
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'restrict' }),
+    sceneSequence: integer('scene_sequence').notNull(),
+    passageId: uuid('passage_id')
+      .notNull()
+      .references(() => storyPassage.id, { onDelete: 'restrict' }),
+    transitionId: uuid('transition_id'),
+    operationId: uuid('operation_id').notNull(),
+    checkpointHash: text('checkpoint_hash').notNull(),
+    canonRootHash: text('canon_root_hash'),
+    canonRootRevision: integer('canon_root_revision').notNull(),
+    stateSchemaVersion: integer('state_schema_version').notNull(),
+    pins: jsonb('pins').notNull().$type<unknown>(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({
+      name: 'story_scene_checkpoint_pkey',
+      columns: [t.storyId, t.sceneSequence],
+    }),
+    unique('story_scene_checkpoint_passage').on(t.passageId),
+    unique('story_scene_checkpoint_operation').on(t.storyId, t.operationId),
+    unique('story_scene_checkpoint_transition').on(t.storyId, t.transitionId),
+    check(
+      'story_scene_checkpoint_sequence',
+      sql`${t.sceneSequence} > 0`,
+    ),
+    check(
+      'story_scene_checkpoint_hash',
+      sql`${t.checkpointHash} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'story_scene_checkpoint_canon',
+      sql`(${t.canonRootHash} IS NULL AND ${t.canonRootRevision} = 0) OR (${t.canonRootHash} ~ '^[0-9a-f]{64}$' AND ${t.canonRootRevision} > 0)`,
+    ),
+    check(
+      'story_scene_checkpoint_schema',
+      sql`${t.stateSchemaVersion} = 1`,
+    ),
+    check(
+      'story_scene_checkpoint_opening',
+      sql`(${t.sceneSequence} = 1 AND ${t.transitionId} IS NULL) OR (${t.sceneSequence} > 1 AND ${t.transitionId} IS NOT NULL)`,
+    ),
+  ],
+);
+
 export const storyControl = pgTable(
   'story_control',
   {

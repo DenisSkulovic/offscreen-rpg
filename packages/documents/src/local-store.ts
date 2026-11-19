@@ -18,6 +18,7 @@ import {
   contentHashSchema,
   documentManifestSchema,
   rulePackageManifestSchema,
+  sceneCheckpointSchema,
   startPackageManifestSchema,
   worldPackageManifestSchema,
   type CanonicalDocument,
@@ -25,6 +26,7 @@ import {
   type CanonicalStructuredDocument,
   type DocumentManifest,
   type RulePackageManifest,
+  type SceneCheckpoint,
   type StartPackageManifest,
   type WorldPackageManifest,
 } from './schema.js';
@@ -138,6 +140,10 @@ export class LocalDocumentStore {
     return this.putValidated(startPackageManifestSchema.parse(manifest));
   }
 
+  putSceneCheckpoint(checkpoint: SceneCheckpoint) {
+    return this.putValidated(sceneCheckpointSchema.parse(checkpoint));
+  }
+
   private async readValidated<T>(
     hash: string,
     schema: z.ZodType<T>,
@@ -188,6 +194,10 @@ export class LocalDocumentStore {
 
   readStartPackageManifest(hash: string) {
     return this.readValidated(hash, startPackageManifestSchema);
+  }
+
+  readSceneCheckpoint(hash: string) {
+    return this.readValidated(hash, sceneCheckpointSchema);
   }
 
   async exportPublishedRoot(rootHash: string, destination: string) {

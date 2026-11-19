@@ -25,6 +25,7 @@ import {
   contentHashSchema,
   documentManifestSchema,
   rulePackageManifestSchema,
+  sceneCheckpointSchema,
   startPackageManifestSchema,
   worldPackageManifestSchema,
   type CanonicalDocument,
@@ -32,6 +33,7 @@ import {
   type CanonicalStructuredDocument,
   type DocumentManifest,
   type RulePackageManifest,
+  type SceneCheckpoint,
   type StartPackageManifest,
   type WorldPackageManifest,
 } from './schema.js';
@@ -203,6 +205,10 @@ export class S3DocumentStore implements DocumentStore {
     return this.putValidated(startPackageManifestSchema.parse(manifest));
   }
 
+  putSceneCheckpoint(checkpoint: SceneCheckpoint) {
+    return this.putValidated(sceneCheckpointSchema.parse(checkpoint));
+  }
+
   readDocument(hash: string) {
     return this.readValidated(hash, canonicalDocumentSchema);
   }
@@ -229,6 +235,10 @@ export class S3DocumentStore implements DocumentStore {
 
   readStartPackageManifest(hash: string) {
     return this.readValidated(hash, startPackageManifestSchema);
+  }
+
+  readSceneCheckpoint(hash: string) {
+    return this.readValidated(hash, sceneCheckpointSchema);
   }
 
   async objectExists(hash: string) {
