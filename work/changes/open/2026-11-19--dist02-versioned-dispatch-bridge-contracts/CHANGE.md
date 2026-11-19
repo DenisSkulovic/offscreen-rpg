@@ -1,5 +1,7 @@
 # DIST02 | Versioned post-commit fact contracts; the Temporal wake stays a direct RPC
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** optional pure postcommit business fact DTO only if a derived consumer is separately selected. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
+
 **State:** Proposed. Not Ready and not selected (2026-11-19). AUD01 corrected this body to merged ARCH02. That correction is not implementation.
 **Kind:** implementation
 **Execution:** Not authorized. Select only after a consumer is actually wanted and DIST01's remaining writer notes are settled.
