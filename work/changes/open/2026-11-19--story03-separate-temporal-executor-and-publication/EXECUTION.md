@@ -1,0 +1,70 @@
+# STORY03 | selected design proposal for the distributed execution/publish bridge
+
+**Profile:** STATE · **Baseline:** `584b594`, 2026-11-19 · **Status:** planner contract, **not implemented, not executable until prerequisites and authorization**. Read [SOURCE-MAP](SOURCE-MAP.md) for verified code and [PROOF](PROOF.md) for acceptance. Superseded by newer source only through a recorded reconciliation, not a silent improvisation.
+
+## Correct separation: who may do what
+
+| Role / Pod | Reads | Writes | Forbidden |
+| --- | --- | --- | --- |
+| Nest public API | Authenticated player request, public DTOs, committed scene GET/SSE | Forwards selected story commands to private GA in distributed mode | Direct POC story start/resolution/publication SQL writes in distributed mode; Storyteller model dispatch |
+| GA private service | Committed generation/task, current branch/revision/root, attempt/result, canonical S3 | Narrow claim/result ledger and **only** authoritative story+checkpoint+canon publication SQL transaction | Running a model provider, exposing private API at public Gateway |
+| Temporal control worker + SQL outbox relay | Durable notices and saved operation identities | Starts/signals deterministic workflows; invokes GA private `publish` endpoint | Source-of-truth story SQL mutation, model provider dispatch |
+| Storyteller execution-only worker | Frozen task by ID and pinned permitted S3 documents | Only `claim` and `save result` through role-scoped GA API | Broad `DATABASE_URL`, story/campaign mutations, manifest HEAD writes, general GA token, unapproved paid provider |
+| RabbitMQ derived projection (if selected separately) | Committed `scene.published.v1` facts | Rebuildable read model only | Story wake, publication, SSE, current game authority |
+
+No general Game Economy service. Redis and Rabbit are not a condition of the first live scene.
+
+## Protocol shapes (versioned; implement as strict contract schemas, not raw unvalidated JSON)
+
+Payload names below are **proposed** for this Change, not claims that they exist.
+
+- `storyteller.distributed.v1` outbox routing selector is durable at generation admission. `generationId` remains the operation identity. Do not repurpose `storyteller.profiled.v1` messages while old workflow histories exist. Exact emission sites to review: `records.ts:insertStorytellerTask`, `capture-materialization.ts`, `dispatch-review.ts`, `recovery.ts`, `openings.ts`, `admission.ts`, `campaign/follow-up-intents.ts`. A single shared creator/selector should avoid leaving one POC variant on the legacy path. Config decides at **enqueue**, not after the notice is committed. Pending legacy notices still route to `storytellerV1`.
+- `storytellerDistributedV1` Workflow identity `storyteller-distributed/{generationId}`; input only `generationId` plus stable route/version, not a free-form story/prompt. Keep `storytellerV1` and its old task queue installed for compatibility until all earlier executions complete.
+- Internal `GET /internal/v1/storyteller-generations/{generationId}/task` returns `{version, generationId, ownerId, task, pinnedRoot, narrativeRevision, branchId/identity}` obtained from the **committed** task; the exact branch field is derived from existing `task.source` and is not trusted from a worker. Never expose arbitrary story IDs or latest-root defaults.
+- Internal `PUT /internal/v1/storyteller-generations/{generationId}/claim` with `{version, pinnedRoot}` returns `{status:'claimed',attemptId,created}` or a refusal. **An already-existing claim is not permission for another paid send.**
+- Internal `PUT /internal/v1/storyteller-generations/{generationId}/result/{resultHash}` with `{version,pinnedRoot,result}` invokes existing `saveValidatedResult`; the server independently hashes and validates against frozen task. Exact same hash may be replayed; distinct hash is 409. Limit body bytes and redact payloads in operational logs.
+- Internal `POST /internal/v1/storyteller-generations/{generationId}/publish` is **control identity only**. It reads the saved validated result, compares pinned task identity, copies/adopts the validated result into the existing generation success contract under a durable idempotent fence, then calls established publication code on GA. Return `published|already_published|stale|held|unavailable` (or a source-conforming semantic equivalent) without a second provider attempt.
+- Bind both internal roles to distinct credentials and route permissions; the existing Nest→GA story credential remains separate. Prefer service-specific minimal DTOs and token configuration; do not grant the Storyteller executor broad GA write privileges.
+
+**No invented second attempt ledger.** The existing `storyteller_attempt` `attribution.custody` stores hash/result; `generation` is the publication input; `storyteller_publication` stores publication decision. A future canonical promotion function MUST reconcile all three before claiming a scene. Snapshot on `generation` and result in attempt must agree or fail. The exact SQL update belongs inside GA, serialized under the existing publication idempotency/expected-revision fences.
+
+## Transition sequence and crash points
+
+1. GA admission stores frozen task, generation and outbox notice **transactionally**. Whether it is `scripted` or a future authorized provider is frozen on the task. New selector routes to `storytellerDistributedV1` only for explicitly selected distributed mode; legacy notices are unchanged.
+2. Outbox relay sends one start to Temporal **directly** with deterministic workflow ID. On acknowledgement loss, retry uses same workflow ID; already-started is benign. Rabbit delivery is not involved.
+3. Control workflow invokes `executeFrozenStoryteller` on `storyteller-execute-v1` task queue. This worker retrieves exact task and pinned root via read-only role-scoped service; validates schema, claims existing attempt through GA. For fake mode, compute one deterministic result from frozen task, save its validated result/hash via GA. For a previously saved result, reuse it. `created:false` without saved result is a **hold or an explicitly proven harmless scripted replay**, not permission to send paid wire again.
+4. The next control Activity invokes GA's `publishSavedStoryteller` with only `generationId`. GA re-loads trusted task+saved result; revalidates hash and current story/root/revision. It promotes the exact saved result to the `generation` success/output contract and invokes `publishStorytellerResult` at the authoritative boundary. The source function may stage immutable S3 objects **outside** the short SQL lock, then commit under the story lock; recheck stale task/root inside the final transaction. Do not publish an attempt-scoped JSON blob by bypassing existing admission.
+5. Committed publication updates passage, canonical root and checkpoint consistently and emits an existing Postgres hint. Browser reads via authenticated GET. Temporal completion is a receipt, **not** the scene commit authority.
+6. A replay after result save or publication returns the same saved/result/publication outcome without model dispatch or a second passage. Failed storage and stale-root cases remain visible as held/stale/blocked and preserve prior scene.
+
+### Versioning and worker mechanics
+
+Do **not** change `storytellerV1` Activity order or reinterpret its persisted history. Register `storytellerDistributedV1` in `packages/workflows/src/{contracts,index}.ts`. Its control/publish Activity runs on a control task queue; `executeFrozenStoryteller` uses a **separate task queue** selected in the `proxyActivities` options. Deploy one controller with the Workflow definition and control activity, and one execution-only Activity Worker with **no** game-publishing collaborator. The current `apps/worker/src/runtime/index.ts` bundles outbox and all activities; split its entrypoint/composition rather than relying on multiple replicas of the old all-in-one worker.
+
+External reading: [Temporal worker deployment and versioning](https://docs.temporal.io/best-practices/worker), [Activity idempotency](https://docs.temporal.io/activity-definition) and [workflow determinism](https://docs.temporal.io/workflow-definition). Activity retry is **at least once**. Temporal's durable workflow history is not an exactly-once guarantee for SQL, S3 or the provider; those need explicit application fences.
+
+### Provider spend safety
+
+For this selected fake-first scope, require `execution.mode=scripted` on the distributed executor and use existing `scriptedStorytellerResult`/injection. No `OPENROUTER_API_KEY` in that Pod, no live execution policy, no automatic provider retry. For later paid `TURN04`, revisit `reserved/dispatched/uncertain/unsent/settled` with source-backed authorization and a held-on-uncertainty contract. A claimed attempt with missing saved result is **not** proof no provider request went out. No service is allowed to "retry until a model answers".
+
+### Body/record integrity
+
+Keep the frozen task source and canonical root in the persisted generation. Validate actor/role and ID at GA; never trust `ownerId` or branch/root supplied by worker alone. Request transport uses bounded timeouts and response sizes; classify unavailable rather than retrying an unsafe semantic write as a new attempt. Prefer structured correlation IDs and hashes; redact model text, prompts, secrets, raw tokens and full memory excerpts from logs. Trace `generationId`, `attemptId`, `workflowId`, `storyId`, `passageId`, `checkpointHash`, `rootHash`.
+
+## Implementation slices to avoid huge Cursor tasks
+
+**STORY02 remains the prerequisite facade owner**: implement task-read / claim / save-result private DTO and GA endpoint, with role auth and provider-free two-client tests. Its current claim seam is landed, the remote facade isn't. Confirm no SQL privilege leaks to executor. Avoid touching Temporal yet.
+
+**STORY03 slice A (CONTRACT / PATCH):** add versioned durable selector and new Workflow + queue declarations, preserving old `storytellerV1` tests. Establish stubbed fake execution activity with a private facade client. This alone is not DONE.
+
+**STORY03 slice B (STATE / PATCH):** implement GA result adoption and publication endpoint using existing `publishStorytellerResult` and root/checkpoint fences; do not rewrite the entire publication module. Test saved result → generation → one passage, with two independent GA calls and stale-root rejection.
+
+**STORY03 slice C (VERIFY / integration):** run two-process fake and control+executor Temporal tests, restart after saved result and check one publication/attempt; test forbidden executor write. Then reconcile technical docs, source README, release env contract and actual state. If any material schema/authority mismatch appears, return it as a **specific planner issue**, never let Cursor invent a new authority.
+
+**Collision ownership:** one writer for `apps/game-authority/src/server.ts` while BOOT03 adds start; one writer for `packages/workflows` while worker queues change; one coordinator for SQL publication and technical headings. Do not fan these into independent agents editing the same file.
+
+## Non-goals and proof tier
+
+No new Cognee/vector store, parallel agents for in-game DM, mandatory Rabbit consumer, invented economy/inventory, customer billing, images or HA deployment. A unit test validates code. A local Temporal test validates choreography. A cold kind multi-Pod run under TURN03 validates the actual distributed system. A paid live DM scene under TURN04 validates model-authored narrative, **with separate authorization**.
+
+**Execution stop:** if the current `generation` / `storyteller_attempt` schema cannot support an idempotent saved→succeeded promotion without misleading attempt/usage state, stop and request a focused SQL/state design correction with an exact failing interleaving; do not alter financial state ad hoc.
