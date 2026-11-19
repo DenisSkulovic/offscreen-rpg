@@ -5,7 +5,7 @@
 **Selection:** Not currently selected; existing active Cursor batch remains untouched.  
 **Program:** [D3 campaign bootstrap](../../../designs/open/distributed-turn-poc/D3-CAMPAIGN-BOOTSTRAP.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
 
-## Exact outcome and preconditions
+**Packet profile:** `CONTRACT`/`STATE` (source-inspected `584b594`). See planner investigation [SOURCE-MAP.md](SOURCE-MAP.md) for exact `startFromCandidate` call path, private GA transport ownership, error states and already-tested offline fixture. It is **not** a runtime pass or a selected implementation. Cursor starts with this route card, reads the map only for the affected symbol or a contradiction.\n\n**Candidate discriminator:** the pinned `startPackage` path requires a `storyteller.profiled.v1` opening candidate, which **may** be generated with `execution.mode=scripted` offline. The older raw `opening.playable.scripted.v1` candidate is explicitly rejected when `startPackage` is present. Reuse `tools/api-integration/test/storyteller-imported-start.integration.ts` instead of weakening `start.ts` to pass a convenient fixture.\n\n## Exact outcome and preconditions
 
 Migrate existing startFromCandidate into private Game Authority. **Preconditions:** BOOT01, DIST03 narrow private GA boundary, DATA02/03 complete scene-1 checkpoint for final acceptance, BOOT02 roots for full cluster test.
 
@@ -44,7 +44,7 @@ Independent authoring or tests may use separate Git worktrees under the repo's p
 
 HK09 cancelled BOOT01 as superseded. These checks were not already an acceptance line above. They are not implemented, and this packet stays Proposed. A start package is still not a successful candidate.
 
-- A successful scripted candidate plus its pinned source is admissible once.
+- A succeeded Storyteller-kind opening candidate with scripted execution and the same pinned start-package source is admissible once.
 - A package by itself must not start a story.
 - An arbitrary success row must not start a story.
 - A changed candidate must not start a story.
