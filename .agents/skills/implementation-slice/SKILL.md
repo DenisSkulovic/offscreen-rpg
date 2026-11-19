@@ -1,11 +1,11 @@
 ---
 name: implementation-slice
-description: Implement one already-approved, bounded Offscreen RPG task or feature PLAN slice; optimize for low context, maintainability and a verifiable handoff. Ideal for Cursor coding agents.
+description: Implement one already-approved, bounded Offscreen RPG task or feature PLAN slice; optimize for low context, maintainability and a verifiable handoff. Usable by any coding agent.
 ---
 
 # Implementation slice (executor mode)
 
-The handoff route card is the read list. Read those files and the one named heading. Do not read `AGENTS.md`, `.agents/skills/change-workflow/SKILL.md`, `scripts/repo-tools/change-guard.mjs`, or Markdown slug internals to prepare for a guard that has not failed.
+The handoff route card is the task-specific read list. Do not *additionally preload* global onboarding, the change-workflow skill, guard implementation or Markdown slug internals to prepare for an unobserved guard failure. Agents may have already received `AGENTS.md` or other global rules from their host; obey them without reopening them unnecessarily. For a command-only verification, read only the exact safety instructions, preconditions and failing diagnostics if any.
 
 During an edit, run the one focused test and `git diff --check`. Near closure, run the guard commands the packet names. If a guard fails, read its printed code and message, then only the file that message names. Stop when the selected contract, the owner symbol, and one negative case are known. Another read needs a named uncertainty. Do not claim a token or dollar saving. A trace with no usage object keeps those fields null.
 
