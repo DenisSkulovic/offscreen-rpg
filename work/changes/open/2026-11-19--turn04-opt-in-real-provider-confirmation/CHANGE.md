@@ -1,5 +1,7 @@
 # TURN04 | Optionally confirm one paid LLM turn through the same distributed pipeline
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: provider-disabled safety preparation only; actual send owner-locked. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
+
 **State:** Proposed; requires separate explicit owner spending authorization (2026-11-19)  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; paid call specifically requires new explicit authorization even if a batch is approved.  
