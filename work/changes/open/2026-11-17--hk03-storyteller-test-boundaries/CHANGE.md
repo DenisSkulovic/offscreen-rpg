@@ -2,7 +2,7 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Implementing (2026-11-19). The nested cases are split in source. The profiled suite ran once and is not green: node:test reported 33 tests, 30 passed, and 3 failed. Two of the 32 nested cases failed, so this packet is not Done.
+**State:** Implementing (2026-11-19). The nested cases are split in source. The profiled suite ran once and is not green: 33 tests, 30 passed, 3 failed. The imported-start rules path now resolves from `tools/api-integration` and that one case passed in isolation. The mechanical opening is unchanged. This packet is not Done.
 
 ## Cursor first-screen brief
 
