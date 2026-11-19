@@ -2,6 +2,21 @@
 
 One owner per guarantee. Product intent is [product](../product/README.md). These pages include selected future design. They are not a status report.
 
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+    Edge[Next and Nest] --> GA[Game Authority]
+    GA --> SQL[(Application SQL)]
+    GA --> S3[(Pinned documents)]
+    SQL --> Outbox[Durable outbox]
+    Outbox --> Temporal[Temporal]
+    Temporal --> Worker[Separate Storyteller executor target]
+    Worker -->|validated proposal only| GA
+```
+
+**Selected distributed target, not current deployed topology.** The current worker still combines execution and publication, and Nest still owns some local story routes. The [Architecture Atlas](../architecture/README.md) distinguishes the actual baseline, transaction/crash paths, checkpoint forks and deployment proof; [current-source audit](../../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) names missing seams. This index continues to route normative contracts, not status claims.
+
 | Question | Owner |
 | --- | --- |
 | What knowledge can a Storyteller read at a forked scene, and what remains only a search candidate? | [Fork-scoped retrieval and task input](storyteller/context-selection-and-recall.md#fork-scoped-retrieval-and-task-input--selected-target-2026-11-19) and [Scene-rooted canon](storyteller/canonical-documents-and-packages.md#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19). Selected target, not proof of working historical recall |
@@ -11,7 +26,7 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | What is a command, a business event, and a workflow? | [Commands, business events, and workflows](platform/execution-and-delivery.md#commands-business-events-and-workflows). The chamber outbox still wakes Temporal. A broker event is not a committed story fact |
 | Does a shared database cluster allow every service to write every schema? | [Proposed service schemas and delivery records](platform/data-and-persistence.md#proposed-service-schemas-and-delivery-records). No. A shared logical PostgreSQL cluster does not grant shared schema writes |
 | Can a replay duplicate an admitted roll, a story-item transfer, or another committed effect? | [Commands, business events, and workflows](platform/execution-and-delivery.md#commands-business-events-and-workflows). No. An imaginary market is not a service |
-| Who owns a committed scene checkpoint for a future fork? | [Proposed service ownership](platform/topology.md#proposed-service-ownership). The engine is the single consistency boundary. Selected future behavior. The current journal and the current-only fork do not implement it. Not proven and not built |
+| Who owns a committed scene checkpoint for a future fork? | [Proposed service ownership](platform/topology.md#proposed-service-ownership). The engine is the single consistency boundary. Selected future behavior. Checkpoint-backed source code now supports a restricted quiescent historical fork in local tests at 584b594; the full cross-Pod scene and arbitrary active-scene fork remain unproven |
 | Is a service command a new player HTTP route? | [Service calls are not player routes](platform/http-api-and-client-contracts.md#service-calls-are-not-player-routes). No route was added |
 | Who is logged in, and what may they read? | [Identities and access](platform/identities-and-access.md) |
 | What must every player route agree about actor, operation id, 202, GET, and errors? | [HTTP and client contracts](platform/http-api-and-client-contracts.md) |
