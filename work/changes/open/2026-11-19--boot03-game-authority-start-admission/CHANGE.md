@@ -1,5 +1,7 @@
 # BOOT03 | Migrate existing startFromCandidate into private Game Authority
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the selected microtask route *once the Change is authorized*; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) records actual source tier and dependency. **Default parent/child model: Composer 2.5 Standard.** Delegation: four prepared narrow GA start tasks, dependency-gated and single route writer. Don't interpret a task marked PLANNER-READY as permission to execute a Proposed Change, promote status or skip negative tests; novel architecture goes back to ChatGPT before a Grok exception.
+
 **State:** Proposed; dependency-gated (2026-11-19)  
 **Kind:** implementation  
 **Selection:** Not currently selected; existing active Cursor batch remains untouched.  
