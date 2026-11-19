@@ -1,0 +1,53 @@
+# K8S10 | Composer-ready future chaos implementation tasks
+
+**Source baseline:** 584b594, 2026-11-19. **Existing K8S10 state:** Implementing, *only the historical Rabbit consumer-loss slice selected and passed*. The tasks below are **planner-prepared** but **not selected**. Merely adding TASKS.md is not authorization. **Default Cursor parent and child model: Composer 2.5 Standard.** See [SOURCE-MAP.md](SOURCE-MAP.md), [EXECUTION.md](EXECUTION.md), [PROOF.md](PROOF.md) and [architecture diagram](../../../../docs/architecture/09-chaos-and-zero-token-play.md). One named task per Composer child, no Grok by default. Shared kind cluster remains one operator with `/tmp/offscreen-k8s-cluster.lock`.
+
+**Guiding shape:** don't assign “implement chaos engineering” as one task. One small tested pure function / command / fault first. Status: `PLANNER-READY` means the recipe is described, not that code is present or Change selected. `BLOCKED-BY-POC` means no honest live game-chaos proof before TURN02/TURN03.
+
+## T01 | Pure target selector and refusal reasons | PLANNER-READY, EARLY
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH | no cluster or docker access.**
+
+**May create:** `infra/kubernetes/lab/chaos/selector.mjs`, `test/selector.test.mjs`; no existing source edits. **Read only:** `infra/kubernetes/lab/lib.sh` (context constants), `infra/kubernetes/lab/skeletons/workloads.yaml` (explicit placeholder labels), selected TURN02 app manifest when landed.
+
+**Algorithm:** implement pure `selectTarget({pods,releaseOwners,seed,excludedUids})` operating on parsed Kubernetes Pod/owner metadata. Eligible iff namespace in exact selected release allowlist, owner kind Deployment with pinned UID/name and image digest, ready and not terminating, explicit `offscreen.rpg/chaos-eligible=true` set on the **owned app release**, no skeleton/fixture/system label and not a data/stateful workload. Stable seed yields deterministic index among **sorted eligible candidates**; return `{status:'selected',podUid,...}` or structured refusal, never fall back to all Pods. Selector must be side-effect-free and must not shell out to kubectl.
+
+**Tests:** synthetic Pod JSON selection deterministic; irrelevant Pods filtered. **Negative:** changed owner UID, missing eligibility marker, target in `lab-postgres`, `lab-objects`, `messaging`, `temporal` or namespace not explicitly allowlisted → refused. **Stop:** real app label conventions not yet ratified; keep pure adapter input contract, don't assume synthetic Pods are eligible. **Receipt:** exact test runner, no cluster touched.
+
+## T02 | Read-only cluster preflight + plan-only CLI | PLANNER-READY, EARLY
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH | read-only commands only.**
+
+**May create:** `infra/kubernetes/lab/chaos/{preflight,controller}.mjs`, `test/preflight.test.mjs`, `README.md`. **Read:** `infra/kubernetes/lab/{lib,up,down}.sh`, T01, package.json Node version, existing `infra/kubernetes/lab/fault/run.sh` first 50 lines.
+
+**Algorithm:** `plan` mode by default takes exact `--seed`, `--release-ref`, `--max-events` and safe runId, calls mocked kubectl subprocess adapter with **explicit** `--context kind-offscreen-lab`, ensures current context and `kind get clusters` name/cluster UID and caller's selected release provenance, snapshots namespace and Pod/owner UIDs, validates one stable target via T01, prints sanitized plan JSON. No `delete`, `exec`, `apply`, `scale`, `kind delete` or image build in plan mode. Needs a live default `--dry-run` with no side effects. `--execute` is rejected until T04 is implemented. Never auto-switch context or create/delete a cluster. **Positive:** fixture cluster yields plan with one eligible app Pod UID. **Negative:** wrong cluster/context/unknown release/low-memory/conflicting run refuses and fake kubectl spy has **zero mutating invocations**. **Stop:** cannot identify cluster UID or selected real image digest from read-only manifest; do not guess ownership.
+
+## T03 | Zero-provider scripted game oracle and optional fixture latency | PLANNER-READY FOR UNIT, LIVE BLOCKED-BY-POC
+
+**MODEL=Composer Standard | DEPTH=PATCH.** Requires same real scripted source and compatible TURN03 fixture as existing source; live cluster only after TURN03 passed.
+
+**May create:** `infra/kubernetes/lab/chaos/{oracle,scripted-driver}.mjs` and `test/{oracle,scripted-driver}.test.mjs`; one approved test-only fixture adapter if current injection seam requires it, **not** normal API endpoints. **Read:** `packages/storyteller/src/fixtures/index.ts:scriptedStorytellerResult`, `packages/application/src/storyteller/config.ts:readStorytellerExecution`, `tools/api-integration/test/storyteller-imported-start.integration.ts`, `tools/api-integration/test/storyteller-publication-context.integration.ts`, `packages/application/src/stories/scene-checkpoint.ts`.
+
+**Algorithm:** use supported Storyteller-kind opening with `execution.mode=scripted`; generate normal and consequence results by the real fixture/validator; freeze chosen legal player option and operationId, drive actual public route through authenticated **test** owner and re-fetch committed scene. Represent verification as `readOnlyOracle(assertions)`: exact SQL current revision/operation/passages + S3 checkpoint/root + GET view version; check no duplicate, no parent-future fork leakage; inject forbiddenProvider spy that throws before network if invoked; verify `modelDispatchAttempts=0` and no billable usage/Secret. Test adapters allow fake HTTP/DB/Store inputs but **do not certify distributed gameplay**. **Negative:** duplicate passage/invalid root/provider spy invocation makes oracle FAIL. **Stop:** no test identity or real GA start path yet; keep unit-only and mark live NOT-RUN, do not fake signed browser cookie.
+
+## T04 | One allowlisted Pod deletion and recovery round | BLOCKED-BY-POC
+
+**MODEL=Composer Standard | DEPTH=PATCH then VERIFY.** Requires real app release TURN02, successful TURN03 baseline, T01–T03, owner opt-in and one cluster operator. **May create:** `infra/kubernetes/lab/chaos/{fault-adapters,observe,report}.mjs`, `test/one-fault.test.mjs`; extend controller only within its owned path.
+
+**Algorithm:** explicit `--execute --confirm-run-id=...` and selected `mode=one`; acquire cluster mutex, check current context and cluster/release/Pod UID **again immediately before mutation**, compute healthy baseline and current campaign hash, select only allowlisted **app Deployment** Pod, execute ordinary `kubectl --context kind-offscreen-lab -n <namespace> delete pod <name> --wait=false` (normal graceful termination). Record target UID/time and whether replacement has different UID; keep oracle polling with bounded deadline; after stable recovery compare hashes/effects and write sanitized JSON receipt, leave cluster running. First named test target should be the actual Storyteller executor with a known scripted in-flight task if possible. **Negative:** wrong UID/owner, unhealthy baseline, timeout or oracle fail aborts **before another injection**. Do not call `--force` or touch StatefulSet. **Stop:** current intended pause/fault cutpoint not available; return exact missing hook for ChatGPT, not improvise SIGKILL.
+
+## T05 | Seeded serial chaos scheduler with cooldown | BLOCKED-BY-POC
+
+**MODEL=Composer Standard | DEPTH=PATCH.** Requires one-fault recovery PASS and stable metrics. **May write:** `infra/kubernetes/lab/chaos/{controller,selector,report}.mjs` + focused tests only. **Algorithm:** new explicit mode `seeded` uses recorded seed and sorted allowlisted **current** eligible Pods, maximum events and wall duration, one fault at a time, recover-to-baseline guard and bounded randomized cooldown; stop on first integrity/recovery failure. Persist each event/UID and actual timestamps. No infinite loop, no abort-hidden auto-heal. **Positive:** mocked 5-round sequence chooses expected target order with budget/cooldown and finishes. **Negative:** healing never completes after one injected fault → no second `kubectl delete`; selecting target whose UID changed → cancel and revalidate; run budget elapsed → stop. **Do not** implement high-rate 3–5s saturation by default.
+
+## T06 | Named saved-result crash and rich failure catalog | BLOCKED-BY-POC
+
+**MODEL=Composer Standard | DEPTH=VERIFY/PATCH only on selected case.** Requires STORY03 GA adoption/publish fence and local Chamber test-only cutpoints. **May write:** named fault scenario and tests in `infra/kubernetes/lab/chaos/test`, plus one selected integration test owner. **Read:** `packages/application/src/storyteller/{execution,publication}.ts`, `docs/technical/lab/experiment-protocol.md#5-fault-cut-points`, STORY03/PROOF.md, TURN03/PROOF.md.
+
+**Algorithm:** arm **after result saved, before GA publication** using existing test-only seam, stop actual executor process, resume same workflow/attempt and assert exactly one passage and exact result hash, no new model call. Separate next work for DB/Temporal/network/latency/Redis and bounded host-only burst; do not bundle all scenarios into this one child. **Negative:** drop publication ACK after commit, replay and require already-published without second root or effect. **Stop:** test-only seam absent across Pods or worker cannot distinguish saved state; return exact source-level gap.
+
+## T07 | Architecture, runbook and measured economics reconciliation | PLANNER-READY AFTER ACTUAL TEST
+
+**MODEL=Composer Standard | DEPTH=PATCH (docs).** **Write:** `docs/runbooks/kubernetes-fault.md`, `docs/architecture/09-chaos-and-zero-token-play.md`, `docs/technical/platform/deployment-and-compatibility.md#tests-that-demonstrate-the-architecture`, current `CHANGE.md` evidence ledger. No other technical claims unless source changed. **Positive:** actual run receipt with a known Pod UID, source/release digest, zero provider calls, recovery time, SQL/S3 assertions, link checks. **Negative:** if only dry-run or synthetic pod, label it `plan-only`, **never** game-chaos PASS. WIKI18 measures actual Cursor usage/rework, not speculation.
+
+**Order:** T01 → T02 → T03 unit-only can be prepared early; wait for TURN02/TURN03 before T04 → T05 → T06 per selected scenario → T07. One microtask, one Composer, one focused normal and negative test. This decomposes the **existing** K8S10 program without creating a duplicate Change or granting new resource authority.
