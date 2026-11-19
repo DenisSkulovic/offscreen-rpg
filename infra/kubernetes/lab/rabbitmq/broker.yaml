@@ -1,0 +1,45 @@
+# One RabbitMQ instance. replicas is 1. This is not high availability.
+# The password for lab-client is created by install.sh and is not stored in Git.
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: lab-broker
+  namespace: messaging
+spec:
+  replicas: 1
+  image: docker.io/library/rabbitmq:4.3.4-management
+  delayStartSeconds: 5
+  service:
+    type: ClusterIP
+  persistence:
+    storageClassName: local-path
+    storage: 1Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1Gi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  secretBackend:
+    externalSecret:
+      name: lab-broker-user
+  rabbitmq:
+    additionalConfig: |
+      default_queue_type = classic
+      loopback_users.guest = true
+  override:
+    statefulSet:
+      spec:
+        template:
+          spec:
+            containers:
+              - name: rabbitmq
+                volumeMounts:
+                  - mountPath: /etc/rabbitmq/definitions.json
+                    subPath: definitions.json
+                    name: definitions
+            volumes:
+              - name: definitions
+                configMap:
+                  name: lab-broker-definitions
