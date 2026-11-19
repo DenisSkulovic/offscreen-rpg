@@ -91,6 +91,16 @@ The laboratory may host the same modular application before it hosts any extract
 
 Negative: a diagram, a Change packet, or a running disposable cluster does not mean RabbitMQ, six microservices, a production Temporal cluster, or Kubernetes are the deployed game. Game truth and deterministic rule ownership do not move because processes are split.
 
+### Selected lab edge
+
+Selected target, recorded 2026-11-19. The gateway sends `/` and story pages to Next.js. It sends `/api/**`, including the long-lived `GET /api/stories/:id/updates` stream, to NestJS. Next renders the page and prefetches the authorized read. Nest admits commands and emits SSE invalidation hints. GET remains authoritative. A missed SSE event is recovered by GET. That recovery does not create a command, a reroll, or a fork.
+
+This is the selected target. Two Next replicas and two Nest replicas were not tested on Kubernetes. [K8S09](../../../work/changes/archive/2026-11/other/2026-11-19--k8s09-gateway-api-edge-networking/CHANGE.md) proved a synthetic Traefik gateway for `/` and `/api` on loopback and then deleted that cluster. It did not deploy Next or Nest. The hosted proof list is [Web edge checklist](./deployment-and-compatibility.md#web-edge-checklist). This subsection is not [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment).
+
+Next server readers call Nest at `API_INTERNAL_ORIGIN`. For local Compose, `apps/web/next.config.ts` rewrites browser `/api` to Nest. On this lab edge the gateway is the public route for that prefix, and the Compose rewrite stays the local stand-in. Cookies, session checks, and resource authorization stay with their current owners. There is no extra backend-for-frontend. WebSockets are not required. The story SSE hint stays off RabbitMQ.
+
+Client recovery stays on [End-to-end update transport](../client/architecture.md#4-end-to-end-update-transport-selected-not-future-conjecture) and [Commands and hints](../client/state-and-server-boundary.md#commands-and-hints). The hint message stays on [GET truth and SSE hints](./http-api-and-client-contracts.md#get-truth-and-sse-hints).
+
 ## Proposed service ownership
 
 Selected proposed target, recorded 2026-11-19, revised the same day to the owner clarification in [Distributed learning target](#distributed-learning-target). The game is text-first, world-neutral, and D&D-style. The Storyteller is the Dungeon Master. The engine validates rules, rolls, and commits. This section names who would own a write if the laboratory later extracts processes. It is not [Runtime shape](#runtime-shape), not a deployed cluster, and not a player feature. No row below is proven as a separate service. Inspected source at `4962e373` has `apps/web`, `apps/api`, and `apps/worker`, plus shared packages. `compose.yaml` runs PostgreSQL, Temporal's development server, Redis, and an S3-compatible mock. It has no RabbitMQ service and no separate game service.
@@ -103,7 +113,7 @@ Selected proposed target, recorded 2026-11-19, revised the same day to the owner
 
 A local function call inside the monolith stays a local call. This table is not permission to add an in-process bus, an event-sourced engine, or one service per NPC, item, faction, or inventory.
 
-The player edge stays Next.js for the interface and NestJS for authenticated HTTP and the SSE hint. Neither owns a world-state change. A later split of that edge is [ARCH04](../../../work/changes/open/2026-11-19--arch04-web-edge-and-live-interaction-contract/CHANGE.md). The synthetic gateway substrate is [K8S09](../../../work/changes/archive/2026-11/other/2026-11-19--k8s09-gateway-api-edge-networking/CHANGE.md). Do not add another backend-for-frontend, require WebSockets, or move the story SSE hint onto the broker. GET remains the truth.
+The player edge stays Next.js for the interface and NestJS for authenticated HTTP and the SSE hint. Neither owns a world-state change. That split is [Selected lab edge](#selected-lab-edge). The synthetic gateway substrate is [K8S09](../../../work/changes/archive/2026-11/other/2026-11-19--k8s09-gateway-api-edge-networking/CHANGE.md). Do not add another backend-for-frontend, require WebSockets, or move the story SSE hint onto the broker. GET remains the truth.
 
 | Service | Authoritative data | Incoming commands | Produced events | Dependents | Failure policy | Label |
 | --- | --- | --- | --- | --- | --- | --- |
