@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { collectCheckout, healthSummary, receiptFrom, statusPaths } from './brief.mjs';
+import { collectCheckout, healthSummary, receiptFrom, selectedWorkFromQueue, statusPaths } from './brief.mjs';
 
 function git(cwd, args) {
   const result = spawnSync(
@@ -30,7 +30,9 @@ export function runBriefSelfTest() {
   try {
     const checkout = collectCheckout(clean);
     const receipt = receiptFrom(checkout, null);
-    assert.equal(receipt.schema, 'repo.brief.v1');
+    assert.equal(receipt.schema, 'repo.brief.v2');
+    assert.equal(receipt.work, null);
+    assert.equal(receipt.workKind, null);
     assert.equal(receipt.environment, 'local-checkout');
     assert.match(receipt.sha, /^[0-9a-f]{40}$/);
     assert.equal(receipt.dirty, false);
@@ -44,6 +46,8 @@ export function runBriefSelfTest() {
     writeFileSync(path.join(clean, 'extra.txt'), 'new\n');
     const dirty = receiptFrom(collectCheckout(clean), 'work/changes/open/example/CHANGE.md', 'checkpoint text');
     assert.equal(dirty.dirty, true);
+    assert.equal(dirty.workKind, 'change');
+    assert.equal(dirty.work, 'work/changes/open/example/CHANGE.md');
     assert.ok(dirty.paths.includes('note.txt'));
     assert.ok(dirty.paths.includes('extra.txt'));
     assert.equal(dirty.checkpoint, 'checkpoint text');
@@ -69,6 +73,29 @@ export function runBriefSelfTest() {
     const renamed = statusPaths('R  old.txt -> new file.txt');
     assert.deepEqual(renamed.paths, ['new file.txt']);
 
+    // One central selector, across both packet types. No second Change-only pointer.
+    assert.equal(selectedWorkFromQueue('Current work: none\n'), null);
+    assert.equal(
+      selectedWorkFromQueue('Current work: [change](changes/open/leaf/CHANGE.md)\n'),
+      'work/changes/open/leaf/CHANGE.md',
+    );
+    const taskPath = 'work/tasks/open/2026-11-20--test-run/TASK.md';
+    assert.equal(
+      selectedWorkFromQueue('Current work: [test run](tasks/open/2026-11-20--test-run/TASK.md)\n'),
+      taskPath,
+    );
+    const taskReceipt = receiptFrom(collectCheckout(clean), taskPath);
+    assert.equal(taskReceipt.work, taskPath);
+    assert.equal(taskReceipt.workKind, 'task');
+    assert.equal(taskReceipt.change, null);
+    assert.throws(() => selectedWorkFromQueue('Current work: none\nCurrent work: none\n'), /exactly one/);
+    assert.throws(() => selectedWorkFromQueue('Current work: [bad](tasks/archive/old/TASK.md)'), /open/);
+    assert.throws(() => selectedWorkFromQueue('Current work: [bad](changes/open/leaf/TASKS.md)'), /open/);
+    assert.throws(() => selectedWorkFromQueue(
+      'Current work: [missing](tasks/open/missing/TASK.md)',
+      () => false,
+    ), /missing/);
+
     const receiptKeys = Object.keys(receiptFrom(collectCheckout(clean), null)).sort();
     assert.deepEqual(receiptKeys, [
       'branch',
@@ -80,6 +107,8 @@ export function runBriefSelfTest() {
       'pathsTruncated',
       'schema',
       'sha',
+      'work',
+      'workKind',
     ]);
     const summary = healthSummary({
       top3: [
