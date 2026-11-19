@@ -1,0 +1,42 @@
+# Cursor parent | next-day distributed Storyteller POC handoff
+
+**Prepared from source SHA:** `584b5947516a8b99778ad0d5690fe957211c0acb` on 2026-11-19. These commits changed **planning documents and queue references only**. The active `work/changes/README.md` still says `Current change: none`. **Only run implementation when the owner selects one packet or an explicit bounded batch.** No paid provider, blanket migrations, cluster deletion or uncontrolled subagent launches are authorized by this handoff.
+
+## Read this and the selected Change card; not the whole wiki
+
+The goal is a **real kind-hosted app** that gives one authenticated owner a supported opening scene, accepts an action, runs the fake Storyteller on a physically separate Temporal worker, commits the resulting scene through Game Authority, refreshes browser from GET and historically forks/continues scene1. A separate *real model-authored* turn is opt-in TURN04 afterward. See [POC audit](POC-READINESS-AUDIT-2026-11-19.md) for the current proven/unproven distinction and [change packet profiles](../../../../.agents/references/change-packet-profiles.md) for progressively revealed task material. Never pretend a scripted fixture is an LLM performance.
+
+**Top 5 facts that prevent waste:**
+
+1. STORY02 custody saves `storyteller_attempt.attribution.custody` but not `generation.output`. STORY03 GA must atomically adopt exact saved attempt ID/output under `generation_state_shape` then publish under existing story lock. Legacy `storytellerV1` history is retained.
+2. A pinned `startPackage` can be used with a succeeded **Storyteller-kind opening candidate whose execution mode is scripted**, not with raw `opening.playable.scripted.v1`. Existing integration fixture: `tools/api-integration/test/storyteller-imported-start.integration.ts`.
+3. Nest `apps/api/src/main.ts` imports local rule directory even in S3 mode. Real game Pods must not mount source content; load verified S3 manifest using pinned rule hash at boot. Next/GA/API local listeners default to 127.0.0.1; Pod listeners need 0.0.0.0.
+4. Kubernetes lab `skeletons`, synthetic Gateway backends and `lab-once` Temporal worker **are not application deployments**. App release needs real Node24/pnpm11 images and one authenticated loopback same-origin Gateway.
+5. Story wake is **SQL outbox→Temporal direct**, broker not on path. RabbitMQ derived read-model is optional; its failure must not fail gameplay. Existing D5 is canonical.
+
+## Proposed selection batches and exact deep routes
+
+| Owner-selected batch | Code/Change owners | ChatGPT-prepared investigation and proof | Stop before claiming success |
+| --- | --- | --- | --- |
+| A. Narrow API authority and custody | DIST03 + [BOOT03](../../../changes/open/2026-11-19--boot03-game-authority-start-admission/CHANGE.md) + [STORY02](../../../changes/open/2026-11-19--story02-private-task-and-result-custody/CHANGE.md) + TURN02 bootstrap slice | BOOT03/SOURCE-MAP.md; STORY02/SOURCE-MAP.md; TURN02/SOURCE-MAP.md R2 | No unvalidated candidate/root; remote token roles; API boot reads S3 without local content; Nest cannot silently write story when distributed mode |
+| B. Real model worker *separation*, fake only | [STORY03](../../../changes/open/2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md), DATA04 and [DATA06](../../../changes/open/2026-11-19--data06-fork-scoped-memory-context-minimum/CHANGE.md) | STORY03/SOURCE-MAP.md, EXECUTION.md, PROOF.md; DATA06/SOURCE-MAP.md | Two distinct task queues and processes, GA publish alone, exact attempt ID/output/root, no repeat after crash or parent-future fork leak |
+| C. Actual Kubernetes application release | [K8S11](../../../changes/open/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) + [TURN02](../../../changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md) | TURN02/SOURCE-MAP.md and EXECUTION.md | Real images/digests/hosts/Gateway, single migration, pinned content, cookie auth, multi-Pod S3 and Temporal; Pod Ready is not game proof |
+| D. One full game proof | [TURN03](../../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | TURN03/PROOF.md machine scorecard and 14 diagnostic negatives | Real browser scene1, command→direct Temporal→saved fake result→GA scene2→SSE/GET→historical branch independent continuation |
+| E. Model-authored trial (later) | TURN04, owner permission separately | Follow existing spend/uncertain dispatch policy, no automatic provider retry | Fake PASS is NOT real-model PASS |
+
+**No new Change IDs invented.** Reuse the existing packets and correct the actual source owner's documentation in the **same implementation diff**. A packet's partial landed work is a starting point, not a reason to restart it or declare it done.
+
+## Cursor token protocol
+
+- Parent reads this page + **one selected CHANGE.md** and verifies Git HEAD/diff/dirty paths. No mass read of every companion, rule, wiki article and prior audit. Short source verification is mandatory; planner notes are baseline `584b594`, may need a small update.
+- For ordinary PATCH, create one task card with goal, 2–5 source anchors, exact edit, one positive + one meaningful negative test, and stop. For STATE/RELEASE, parent opens the **specific needed section** from SOURCE-MAP/EXECUTION and passes a compressed 1-screen route to the child. Only use costly investigation on an actual contradiction.
+- Match the existing three project agent roles, manual model policy and `.cursor/hooks.json` guard. No automatic agent swarm. Do not claim model cost savings until WIKI18 has actual paired traces including failed/rework attempts.
+- One coordinator owns shared GA `server.ts`/controller routes, SQL migration number, `packages/workflows` and the live kind cluster; isolated worktrees do not make overlapping files independent. Read-only fixture/image planning may be parallel.
+- Test small before big. Scripts already grounded: `pnpm test:focus story-start`, `pnpm test:focus story-resolution`, `pnpm test:focus story-updates`, `pnpm test:focus storyteller` (these **reset an approved disposable `offscreen_auth_test`**); `pnpm repo:docs-health`; `pnpm wiki:change-guard --mode plan|close`. Node 24+/pnpm11 required by package.json; don't call a missing runner or reset non-test databases.
+- A packet report must list source SHA, files, tests actually run and NOT-RUN, negative case, image digest/scene IDs when appropriate, canonical product/technical doc reconciliation, follow-up blocker with exact file+symbol if real, and measured Cursor usage only if measured.
+
+## How to request work next
+
+**Recommended first owner message to Cursor:** “Read `work/designs/open/distributed-turn-poc/CURSOR-HANDOFF-2026-11-19.md` and the queue. Show me the exact first safe **Batch A** Change and a one-screen execution card with current HEAD and conflict check. Do not implement adjacent Changes or run paid provider/cluster commands without the explicit selected scope. Use the planner SOURCE-MAP rather than broad re-investigation.”
+
+When the owner approves Batch A, execute the selected bounded Change, test/reconcile it, then return a short receipt before choosing B. A failed red test or unknown SQL fence is a precise diagnostic task, **not** grounds to create a new grand architecture program.
