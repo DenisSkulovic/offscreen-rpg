@@ -139,12 +139,140 @@ Additional supported formats can add their own specification/answer variants and
 
 ## Story snapshot and chronology
 
-**Knowledge root consistency with forks (2026-11-19):** A fork from any committed scene uses that scene's mechanical checkpoint and its canon root together. The checkpoint is the engine's reconstructable mechanical record. The canon root is the campaign document manifest committed at that same boundary. Historical inspection and fork initialization read that pair. They do not pair an old passage with today's item table, today's lore, or a search index. What is true, whose belief it is, when it became valid, and which branch may see it are defined on [Scene-rooted canon](../storyteller/canonical-documents-and-packages.md#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19). This is a logical atomicity requirement, not a demand that all records live in one file. Search indexes, Cognee, and vector stores are rebuildable aids, not authority. This page does not install them. Retention and garbage collection must preserve every ancestor root and immutable object still needed by a supported scene or fork. A full snapshot, a snapshot plus deltas, or a versioned immutable manifest is acceptable only when it reconstructs the same pair and cannot see later parent or sibling facts. This page does not choose the encoding. Current SQL and document ownership remains as stated on this page.
+**Knowledge root consistency with forks (2026-11-19):** A fork from any committed scene uses that scene's mechanical checkpoint and its canon root together. The checkpoint is the engine's reconstructable mechanical record. The canon root is the campaign document manifest committed at that same boundary. Historical inspection and fork initialization read that pair. They do not pair an old passage with today's item table, today's lore, or a search index. What is true, whose belief it is, when it became valid, and which branch may see it are defined on [Scene-rooted canon](../storyteller/canonical-documents-and-packages.md#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19). This is a logical atomicity requirement, not a demand that all records live in one file. Search indexes, Cognee, and vector stores are rebuildable aids, not authority. This page does not install them. Retention and garbage collection must preserve every ancestor root and immutable object still needed by a supported scene or fork. A full snapshot, a snapshot plus deltas, or a versioned immutable manifest is acceptable only when it reconstructs the same pair and cannot see later parent or sibling facts. The logical `offscreen.scene-checkpoint.v1` field contract in this section is selected. Physical bytes, a SQL checkpoint table, and a migration are not part of this page. Current SQL and document ownership remains as stated on this page.
 
 **Selected future completeness requirement (2026-11-19):** In addition to the current live snapshot and ordered passage history, **each committed scene must expose or identify a durable, immutable, reconstructable state checkpoint** paired with the canon root named above. The checkpoint is suitable for faithful historical inspection and a new independent story fork at that scene. The checkpoint's authoritative state includes relevant character/rules capabilities, consequential world facts, possession/item ownership or resource quantities when present, fictional time, commitments/activity state, control/version context and provenance. The history must not silently substitute the latest mutable tables for historical state. Retain a source-faithful passage and any publication-bound presentation metadata as separate but linked historical content. A book leaf is not this checkpoint. Do not infer that one database row per scene containing every table is required: complete snapshots, state versioning, or snapshot-plus-deltas remain design alternatives, subject to bounded recovery and schema-compatibility tests.
 
-**Not implemented:** The current journal and the current-only fork do not implement historical reconstruction. Live snapshots and the `story_passage` history API are not that reconstruction. The journal reads committed passage prose and must stay read-only: it must not reroll, dispatch a provider, or alter current state. The current fork accepts only narrative revision 1 while that revision is still current, and it refuses every later or historical revision, as [Forked continuities](../engine/lifecycle-and-compatibility.md#forked-continuities) states. A later implementation has to prove the pair at the chosen scene, isolation from later parent and sibling facts, identity remapping, and safe handling of timers and pending work. This page does not perform that implementation.
+**Not implemented:** The current journal and the current-only fork do not store this checkpoint and do not reconstruct it. Live snapshots and the `story_passage` history API are not that reconstruction. The journal reads committed passage prose and must stay read-only: it must not reroll, dispatch a provider, or alter current state. The current fork accepts only narrative revision 1 while that revision is still current, and it refuses every later or historical revision, as [Forked continuities](../engine/lifecycle-and-compatibility.md#forked-continuities) states. Search indexes are not authority. A later implementation has to prove the pair at the chosen scene, isolation from later parent and sibling facts, identity remapping, and safe handling of timers and pending work. This page does not perform that implementation.
 
+### Scene checkpoint v1
+
+Source-observed at `af512d1f`. This is the selected logical contract for a future scene checkpoint. It is not a table, a migration, a Zod parser, or a historical fork.
+
+`format` is `offscreen.scene-checkpoint.v1`. `stateSchemaVersion` is `1`. A change of meaning is version 2. An unknown key is rejected. The checkpoint is immutable after the publication fence. The engine is the only writer. The Storyteller returns proposals and does not commit the checkpoint or the canon root. There is no Game Economy service and no second writer.
+
+**Long-term promise.** Every committed scene remains reviewable, and a player can fork an independent story from any committed scene. The fork sees that scene's mechanical checkpoint and that scene's canon root together.
+
+**POC subset.** The first supported historical read and non-current fork is a quiescent checkpoint only: the copied fields below, with `holds` empty, `offer` null, `acceptedActivityPlan` null, `activeActivityId` null, `activeActionOperationId` null, no decision deadline, no wait, no pending resolution, and no world-obligation row. Any other active work is rejected. Rejection does not substitute the latest SQL rows. The long-term promise still includes those scenes once a later change can represent pending work without marking it complete or cloning it. This page does not build that later change.
+
+**Identity.** Story, passage, interaction, activity, obligation, offer, execution, and operation ids are story-scoped UUIDs. The checkpoint records the parent ids. A fork mints new ids and must not alias the parent's later rows. Item keys, holder keys, fact ids, skill ids, quantity ids, activity-occurrence scope keys, and condition ids are stable business keys: the fork keeps the key and changes `storyId`. Content hashes and package-root hashes are shared byte ids. A provenance UUID that is not a foreign key, such as `storyFacts[].declaredBy`, stays unchanged and must not authorize a live read of the parent row.
+
+**Negative fixture.** Parent scene 10 has the king alive, `sword-a` held by the character, and `gameSecond` at that fence. Parent scene 20 has recorded the king dead, moved the sword, and advanced the clock. A fork from scene 10 still has the king alive, the scene-10 holder, the scene-10 clock, and the scene-10 canon root. It does not inherit today's sword holder, a later clock, or a future canon root. A sibling that kills the king is not this fork's present.
+
+### Publication fence
+
+A checkpoint exists at a published `story_passage` and at no quieter boundary.
+
+Scene sequence is `story_passage.sequence`. **Scene 1 includes the opening.** `initializeStoryInTransaction` writes passage 1, the initial `story_item` rows, and the bootstrap canon root when documents were staged. That transaction is the scene-1 fence. There is no scene 0. A draft that has not started has no checkpoint. A started story with no `campaign` row has an explicit mechanics-absent checkpoint: no character, no clock, and no invented items.
+
+A clock tick, a book-leaf turn, a viewer acknowledgement, a provider attempt, an outbox notice, and a search-index update are not scenes and do not rewrite an older checkpoint.
+
+The later-scene fence is `commitStoryContinuation` after `lockOwnedStory`. One SQL transaction applies that passage's item effects, inserts the passage, promotes a staged canon root when `commitStagedStoryPublication` runs, and captures the post-admission state. A failed item precondition rolls the effects, the passage, the root, and the checkpoint back together. The same transition id returns the committed result and does not write a second payload. Objects may be staged before the SQL commit. Object storage is not the transaction coordinator. A mechanical commit between publications stays on the live tables until the next publication. It does not change the previous checkpoint. The next publication includes those already-committed effects because it locks the story and reads the post-admission state. It does not mix in a writer that has not committed.
+
+`gameSecond` and `clock` (`gameTimeProgressSchema`) are the fictional instant at the fence. A historical read returns those stored values. It does not call `projectCampaignClock` against the parent's `clockAnchorAt`. A fork writes a new `clockAnchorAt` at fork-commit time and does not add the parent's elapsed wall time.
+
+### Mutable field inventory
+
+Handling is one of four classes. **Copied** means the payload contains the validated value at the fence and the fork inserts its own row from that value. **Reference** means the payload stores an id or hash of an immutable earlier record and the fork reuses the bytes. **Rejected** means active or unsettled work is not cloned and is not marked complete; the POC refuses the historical read and the fork. **Excluded** means the column is not scene truth.
+
+Inspected modules, not modified here: `packages/db/src/schema/stories.ts`, `packages/db/src/schema/campaign.ts`, `packages/db/src/schema/storyteller.ts`, `packages/application/src/stories/initialization.ts`, `continuation.ts`, `forks.ts`, `reads.ts`, and `packages/documents/src/schema.ts`.
+
+| Field | Class | Validator, version, stable id | Fork |
+| --- | --- | --- | --- |
+| `story.id` | Reference | UUID | New story id. Lineage records the parent id. |
+| `story.owner_id` | Excluded | Account id | The caller owns the fork. Memberships are not copied. |
+| `story.source` | Copied | Text | Copy the creation source string. |
+| `story.premise` | Copied | JSON value captured at start | Copy. |
+| `story.storyteller` | Copied | Captured profile JSON | Copy the captured value. Do not copy `storyteller_preset`. |
+| `story.execution` | Copied | Captured execution JSON | Copy. |
+| `story.usage_policy` | Copied | Policy JSON, not a balance | Copy the policy. Funding balances stay excluded. |
+| `story.continuity_notes` | Rejected unless null or `[]` | Private notes | POC refuses any other value. A note is not an item. Notes published after the fence are excluded. |
+| `story.active_scene_scope` | Copied only for `active-scene-anchor.v1` whose passage ids sit inside the ancestor prefix | Versioned anchor | Remap `requiredPassageIds` to fork passage ids. Any other shape is rejected. |
+| `story.document_root_hash` | Reference | 64-hex SHA-256, or null with revision 0 | Ancestor hash stays provenance. The fork's current root is the branch manifest in [Inherited manifest campaign id](../storyteller/canonical-documents-and-packages.md#inherited-manifest-campaign-id). |
+| `story.document_root_revision` | Reference | Integer paired with the hash | Parent revision stays provenance. A new fork manifest starts at revision 1 when it aliases entries, or 0 when the parent root was null. |
+| `story.forked_from_*` | Excluded from the copied payload | Parent lineage of the parent | The fork writes its own `forkedFromStoryId`, `forkedFromPassageId`, and `forkedFromSequence`. |
+| `story.revision` | Copied as `sceneSequence` | Positive integer, the passage sequence | The fork's own revision starts at 1. The parent sequence is lineage. |
+| `story.view_version` | Excluded | Browser ordering | Fork starts at 1. |
+| `story.created_at` | Excluded | Wall clock of the row | Fork sets its own. Not fictional time. |
+| `story_document_commit` | Reference | Root hash, root revision, and the publication operation id at the fence | Do not copy the parent operation log into the fork's command namespace. |
+| `story_passage.id` | Reference on the payload | UUID | New passage UUID. |
+| `story_passage.story_id` | Copied with remap | Parent story UUID | Fork story id. |
+| `story_passage.sequence` | Copied as `sourceSequence` | Parent sequence | Fork row is sequence 1. Ancestor prose stays reachable through the inherited manifest entries. |
+| `story_passage.transition_id` | Reference | Parent causation UUID, null on the opening | Fork row is null so a parent retry is not a fork command. |
+| `story_passage.response`, `response_source` | Copied | Already admitted answer | Copy. This is not a pending submission. |
+| `story_passage.initial_items` | Copied | `storyItemsSchema` when present | Opening declaration only. Later scenes do not read it as the current holder. Scene 1 agrees with `story_item`. |
+| `story_passage.effects` | Copied | `item.create.v1` or `item.transfer.v1` list already applied | Copy the list. Do not apply it again. |
+| `story_passage.decision_plan`, `response_due_at` | Rejected when non-null | Open or timed decision | POC refuses. Do not clone the window as answered or as already expired. |
+| `story_passage.wait_plan`, `due_at`, `remaining_ms` | Rejected when a wait is present | Running timer | POC refuses. Do not clone the timer as a completed arrival. |
+| `story_passage.control_revision` | Copied on the passage snapshot | Nonnegative epoch at the fence | Do not copy `story_control` receipts. Fork controls use the fork's own epoch. |
+| `story_passage.content` | Copied | Legacy inline JSON when the hash is null | Copy the prose bytes. Not item authority. |
+| `story_passage.content_document_hash` | Reference | `offscreen.source-passage.v1` SHA-256 | Reuse the hash. |
+| `story_passage.interaction` | Copied when no decision deadline is present | Published `choice.v1` specification | Fork assigns a new interaction UUID. A parent submission cannot answer it. |
+| `story_passage.appearance` | Excluded from mechanical authority | Presentation envelope | It may remain on the passage copy. It cannot move an item, a clock, or a canon fact. |
+| `story_passage.source_generation_id`, `source_generation_part` | Reference on the parent payload only | Generation UUID | Fork stores null so one paid attempt is not spend on two stories. Do not copy the generation row. |
+| `story_passage.created_at` | Excluded | Wall clock | Fork sets its own. |
+| `story_control` | Excluded | Idempotency receipt | Not copied. |
+| `story_resolution` | Rejected when any row exists | Pending generation | POC refuses. Do not mark it succeeded on the fork. |
+| `story_item.story_id` | Copied with remap | Parent story UUID | Fork story id. The unique key is `(storyId, key)`. |
+| `story_item.key`, `label` | Copied | `storyItemReferenceSchema`; label text | Same key, new story. Not a parent-row alias. |
+| `story_item.holder_key` | Copied | Holder at the fence | Scene 10's holder stays. Scene 20's holder is a different checkpoint. |
+| `story_item` with zero rows | Copied | Empty list | Legal mechanics. Do not invent items. |
+| `story_viewer_visit`, `story_viewer_visit_open`, `story_viewer_visit_ack` | Excluded | Per-viewer reading progress | Not copied. |
+| `story_public_inspect_target` | Excluded | Current inspect handles | Not historical mechanics. |
+| `custom_intent_candidate` | Excluded | Noncanonical candidate | Never cloned into an accepted action. |
+| `campaign.story_id` | Copied with remap | Parent story UUID | Fork story id. |
+| `campaign.settings_revision` | Copied | Integer | Fork includes `campaign_settings` revisions `1..settingsRevision` and no later revision. |
+| `campaign.locked` | Copied | Integer 0 or 1 | Copy. |
+| `campaign.character` | Copied | `characterSchema`, or null | Null means no character. It does not mean HP 0. HP, abilities, skills, facts, and quantities are this snapshot. Quantities are not a second `story_item` ledger. |
+| `campaign.story_facts` | Copied | `storyFactsSchema` | Fact id stays. `declaredBy` stays as provenance. |
+| `campaign.activity_occurrences` | Copied | `activityOccurrencesSchema` | `scopeKey` stays. A count is not a running activity. |
+| `campaign.accepted_activity_plan` | Rejected when non-null | `acceptedActivityPlanSchema` version 1 | Null is copied. A non-null plan is active work. POC refuses. |
+| `campaign.content` | Copied | JSON already stored by the campaign writer, or null | Descriptive content. Not item authority. |
+| `campaign.location` | Copied | Text or null | Copy the fence value. |
+| `campaign.game_second` | Copied | Nonnegative integer instant | Do not project it forward. |
+| `campaign.clock` | Copied | `gameTimeProgressSchema`, including remainder | The fence instant. Do not earn further seconds from the parent anchor. |
+| `campaign.clock_anchor_at` | Rejected as a live parent anchor | Wall-clock timestamp | The payload stores the fictional instant above. The fork writes a new anchor at fork-commit time. |
+| `campaign.clock_pace` | Copied | `paceSchema` | Copy. Pace is not elapsed time. |
+| `campaign.holds` | Copied only when `[]` | `campaignHoldsSchema` | A hold points at an operation, generation, offer, or obligation. Non-empty holds are rejected. Do not drop them and let the clock run. |
+| `campaign.offer` | Rejected when non-null | Public mechanical offer | Null is copied. An open offer is not a completed action. |
+| `campaign.situation_authorization` | Copied when `offerId` is null and `preparedPlans` is empty | `situationAuthorizationSchema` version 2 | Any prepared plan or offer id is rejected with the offer. |
+| `campaign.active_activity_id` | Rejected when non-null | Activity UUID | Null is copied. |
+| `campaign.active_action_operation_id` | Rejected when non-null | Operation UUID | Null is copied. |
+| `campaign.world_conditions` | Copied | `worldConditionsSchema` | Condition identity stays. A condition admitted later is absent here. |
+| No `campaign` row | Copied | `mechanicsAbsent: true` | Do not invent a character, a clock, or items. |
+| `world_obligation` | Rejected for the POC when any row exists | Mutable `pending`, `fired`, or `cancelled` row | The live row is not an as-of slice. POC refuses. Long-term, the payload stores id, revision, state, and `dueGameSecond` at the fence; pending work is not inserted as fired and does not keep the parent's timer; a settled row is a reference and is not re-fired; the fork remaps id. |
+| `world_obligation_event` | Reference, long-term, for events at or before the fence `gameSecond` | Append-only event id | POC does not clone them. Later events are excluded. Do not replay them as new effects. |
+| `campaign_settings` | Copied through the captured revision | `(storyId, revision)` immutable pair; settings and profile JSON | Remap `storyId`. Keep revision numbers. Exclude a later revision. |
+| `campaign_command` | Excluded | Idempotency receipt | Fork has a new causation namespace. |
+| `game_offer` | Rejected for the POC when any row exists | Private plans keyed by offer id and `narrativeRevision` | Live rows are not an as-of slice. Long-term, an offer at or before the scene sequence is evidence and cannot authorize a current roll. The fork does not copy an open plan. |
+| `game_activity` | Rejected for the POC when any row exists | `plan`, `state`, `boundaries_settled`, `revision`, `progress` | Long-term, only a settled activity may be copied, with a new id. Running or paused progress is not marked settled. |
+| `game_activity_event` | Reference, long-term, at or before the fence `gameSecond` | Append-only cause key | POC does not clone them. Do not re-apply them. |
+| `campaign_report` | Excluded, and rejected while `state` is pending | Derived report | `factual_summary` is not inventory. POC refuses a pending report. A published report is not copied as state. |
+| `game_roll` | Reference | Settled `(operationId, segment, checkKey)` at or before the fence `gameSecond` | Do not copy the row, do not reroll, and do not re-apply `effects`. A later roll is excluded. |
+| `campaign_consequence` | Reference | Receipt whose `baseRevision` is at or before the scene | Do not copy the operation id into the fork and do not re-apply the receipt. |
+| `game_action_receipt` | Reference | Settled offer consumption | `outcome_text` is not inventory. Do not re-apply effects. |
+| `game_action_execution` | Rejected when `state` is `running`, `paused`, or `interrupted` | Execution UUID | Settled executions are references and are not re-settled. POC does not clone them as running work. |
+| `game_action_execution_event` | Reference, long-term, at or before the fence `gameSecond` | Append-only revision | POC does not clone them. |
+| `story_public_event` | Excluded | Projection. The schema comment says it is not game authority | Do not rebuild a checkpoint from it. A later king-death event is not an earlier scene. |
+| `storyteller_preset` | Excluded | Owner library | The captured profile on the story and on `campaign_settings` is the pin. |
+| Every table in `packages/db/src/schema/storyteller.ts` | Excluded | Publication, context capture, memory exploration, dispatch review, funding, run, operation, attempt, usage, retry, prompt provenance, execution stage | Provider and billing operations. A fork copies none of them and performs no inference. Do not snapshot payloads, keys, or balances. |
+| `offscreen.document.v1`, `offscreen.structured-document.v1`, `offscreen.source-passage.v1`, `offscreen.manifest.v1`, world, rule, and start manifests | Reference | Existing document validators. This contract does not change those formats | A markdown body or a structured document is not `story_item` authority. |
+
+Pins on the payload are references, not new columns: the world-package roots, rule-package root, and start-package root already named by the ancestor manifest at the fence, plus the captured Storyteller profile. A library revision adopted after the fence is invisible. `outbox`, `generation`, and account tables are outside this inventory and stay excluded as delivery, provider, and account records.
+
+Id remap for a fork is [Fork identity remap](../engine/lifecycle-and-compatibility.md#fork-identity-remap). The manifest `campaignId` rule is [Inherited manifest campaign id](../storyteller/canonical-documents-and-packages.md#inherited-manifest-campaign-id).
+
+### Scene payloads
+
+These are logical payloads. Nothing in the current database stores them.
+
+**Scene 1, opening included.** An authored campaign publishes the opening with character HP 20, one `story_item` `sword-a` held by the character, `storyFacts` still without a king-death fact, `gameSecond` 0, empty holds, null offer, null wait, and null decision deadline. The king is alive as a document in the bootstrap canon root when that root was staged. `sceneSequence` is 1. `transitionId` is null. `initial_items` and `story_item` agree. A story with no campaign row uses the same format with `mechanicsAbsent: true` and `items: []`.
+
+**Scene 2.** The publication fence transfers `sword-a` and commits a canon revision whose new document says the king is dead. The scene-2 payload has the new holder, the new root hash and revision, and the `gameSecond` committed in that transaction. The scene-1 payload is unchanged.
+
+**No inventory.** An abstract or microbe campaign with no `story_item` rows uses the same format. `items` is `[]`. Absence is empty, not unknown, and not a reason to read a markdown possession into the checkpoint.
+
+**Fork after scene 2 exists.** Forking scene 1 reads the scene-1 payload. The new story id, new passage id, and sequence 1 on the fork show HP 20, `sword-a` still held, the king alive, and `gameSecond` 0. The parent scene 2 stays swordless and records the king dead. The fork's later scene does not appear on the parent.
 
 Keep a current snapshot suitable for rendering and generation, plus a durable sequence of committed entries. Update both in one transaction. This is not full event sourcing: rebuilding all state by replaying years of model prose is neither specified nor reliable.
 
@@ -264,3 +392,5 @@ Negative: a replay cannot duplicate an admitted roll, a story-item transfer, or 
 | [Proposed service schemas and delivery records](#proposed-service-schemas-and-delivery-records) | constrained-by | [Who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record) | The current database remains one application schema. A proposed split does not move Temporal history into application tables. |
 | [Proposed service schemas and delivery records](#proposed-service-schemas-and-delivery-records) | constrained-by | [Quantities and ownership](./data-and-persistence.md#quantities-and-ownership) | A shared cluster cannot create a second writer for the same scarce fact. |
 | [Proposed service schemas and delivery records](#proposed-service-schemas-and-delivery-records) | co-change | [Commands, business events, and workflows](./execution-and-delivery.md#commands-business-events-and-workflows) | The inbox dedup and the delivery classes change together. A replay rule that lived on only one page could drift. |
+| [Story snapshot and chronology](#story-snapshot-and-chronology) | co-change | [Forked continuities](../engine/lifecycle-and-compatibility.md#forked-continuities) | Fork id remap and the refusal to clone active work are the same checkpoint. A fork rule that copied today's sword holder would contradict this inventory. |
+| [Story snapshot and chronology](#story-snapshot-and-chronology) | constrained-by | [Scene-rooted canon and fork-safe publication](../storyteller/canonical-documents-and-packages.md#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19) | The checkpoint is one half of the committed pair. The manifest campaign id rule on that page stops a fork from treating the ancestor root as its own campaign. |
