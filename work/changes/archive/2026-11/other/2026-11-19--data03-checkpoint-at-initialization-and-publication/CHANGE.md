@@ -1,9 +1,9 @@
 # DATA03 | Commit exact scene checkpoint with opening and continuation
 
-**State:** Proposed · 2026-11-19  
+**State:** Done (2026-11-19). Supported openings and continuations insert the selector. A historical fork is not implemented.  
 **Kind:** implementation  
 **Execution:** Not part of currently active Kubernetes batch. Select individually or through explicitly approved safe batch.  
-**Related:** [DISTURN program](../../../designs/open/distributed-turn-poc/README.md) · [D2 data design](../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md)
+**Related:** [DISTURN program](../../../../../designs/open/distributed-turn-poc/README.md · [D2 data design](../../../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md · [Gap register](../../../../../designs/open/distributed-turn-poc/GAPS.md
 
 ## Independently verifiable outcome
 
@@ -42,7 +42,7 @@ The Cursor orchestrator may use isolated branches/worktrees for disjoint Ready p
 | Plane | Owner and intended effect | Evidence |
 | --- | --- | --- |
 | Product | **Unchanged**: text-first, D&D-like DM and fully reviewable/forkable scene promise, optional applicable possessions | No invented inventory/economy rules |
-| Technical | Reconcile [data persistence](../../../../docs/technical/platform/data-and-persistence.md), [fork lifecycle](../../../../docs/technical/engine/lifecycle-and-compatibility.md), [canonical files](../../../../docs/technical/storyteller/canonical-documents-and-packages.md), [context selection](../../../../docs/technical/storyteller/context-selection-and-recall.md) only where affected | Exact heading claims: current vs selected target vs demonstrated |
+| Technical | Reconcile [data persistence](../../../../../../docs/technical/platform/data-and-persistence.md, [fork lifecycle](../../../../../../docs/technical/engine/lifecycle-and-compatibility.md, [canonical files](../../../../../../docs/technical/storyteller/canonical-documents-and-packages.md, [context selection](../../../../../../docs/technical/storyteller/context-selection-and-recall.md only where affected | Exact heading claims: current vs selected target vs demonstrated |
 | Code | Scoped implementation in file owners above, with migrations only after compatibility review | Diff and regression tests |
 | Related | Runbook/source maps/Change queue/dated evidence; no premature Done | Link guards, actual source checks |
 
@@ -52,14 +52,14 @@ Supported openings and continuations stage `offscreen.scene-checkpoint.v1` on th
 
 The same transition staged against the same passage object returns the committed continuation and does not insert a second selector. `packages/application/test/scene-checkpoint-publication.test.mjs` and `packages/application/test/scene-checkpoint.test.mjs` passed 7 tests, 0 failed, on disposable `offscreen_chamber_run_*` databases. No provider call was executed.
 
-**State stays Proposed.** `docs/technical/platform/data-and-persistence.md#scene-checkpoint-v1` still says `initializeStoryInTransaction` and `commitStoryContinuation` do not write the row, and `#scene-payloads` still says publication does not write that row yet. Marking Done would leave that technical owner staler than the code. The orchestrator owns that heading.
+**State is Done.** `docs/technical/platform/data-and-persistence.md#scene-checkpoint-v1` now says the supported writers insert the selector. A historical fork is not implemented.
 
 ## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
 | no product/technical behavior impacted | product | unchanged: the text-first scene promise and optional possessions stay as ratified; this packet does not edit a product page | packages/application/src/stories/continuation.ts at 707e6081, baseline d3ad620b | source-observed | a failed checkpoint put leaves no story row, so the product scene is not half-published | N/A |
-| docs/technical/platform/data-and-persistence.md#scene-checkpoint-v1 | technical | unchanged: the orchestrator owns this heading, and it still says the writers do not insert the selector | packages/application/src/stories/initialization.ts and packages/application/src/stories/continuation.ts at 707e6081, baseline d3ad620b | source-observed | marking Done while Scene checkpoint v1 denies the write would leave the technical owner stale | N/A |
+| docs/technical/platform/data-and-persistence.md#scene-checkpoint-v1 | technical | changed: supported openings and continuations insert the selector | packages/application/src/stories/initialization.ts and packages/application/src/stories/continuation.ts at 707e6081 | fixture-tested | a failed object write leaves no story; a second publication does not add a checkpoint | heading updated on main |
 | docs/technical/storyteller/canonical-documents-and-packages.md | technical | unchanged: the document schema and adapters were not edited; the writer uses the existing checkpoint object | packages/application/src/stories/scene-checkpoint.ts at 707e6081, baseline d3ad620b | source-observed | an unavailable object store does not fall back to a local store | N/A |
 | packages/application/src/stories/continuation.ts | code | changed: supported scenes stage the checkpoint before the lock and insert one selector in the same commit | packages/application/test/scene-checkpoint-publication.test.mjs at 707e6081, baseline d3ad620b | fixture-tested | the same transition and root do not create a second checkpoint; a scripted wait still commits with no suggestion field | N/A |
 
