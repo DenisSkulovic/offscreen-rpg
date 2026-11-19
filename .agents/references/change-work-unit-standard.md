@@ -41,6 +41,23 @@ A fresh executor should be able to accept a Change packet without reconstructing
 
 The selected route is `work/changes/README.md` (hot queue). Create new packets under `work/changes/open/YYYY-MM-DD--slug/`. A small selected Change needs only `CHANGE.md`; `PLAN.md` is optional for a resumable execution checkpoint. On **Done** or **Cancelled/superseded**, after the Reconciliation ledger, `git mv` the leaf into `work/changes/archive/YYYY-MM/<program>/` (month from the date prefix; program from slug: admin, chamber, eng, experience, observability, storyteller, web, other) and repair inbound links—do not leave terminal packets in `open/`.
 
+## Batch execution and parallel Change orchestration (2026-11-19)
+
+**Default for a newly designed bundle:** analyze parallelism before presenting a serial queue. A Change remains one independent, verifiable outcome; a bundle is a scheduling view, **not** a new Change kind or permission to implement everything. Never split tightly coupled behavior merely to manufacture concurrency.
+
+A bundle schedule belongs in the existing `work/changes/README.md` entry (or an initiative index already in use), as a compact table or graph with **Change ID, prerequisite IDs, owned paths/authority headings, execution class, shared resources, verification gate and join/integration owner**. Use these execution classes: `parallel-write`, `parallel-research`, `serial-shared-resource`, `depends-on`. For each Change, add a short `Parallel execution` line naming its safe peers, explicit blockers and path/resource collisions. No giant duplicate orchestrator dossier.
+
+**Execution contract for a user-authorized bundle:** one coordinating Cursor chat may dispatch independent, Ready, explicitly authorized Changes to subagents or independent sessions when the client actually supports them. It owns the dependency graph, scope limits, shared architecture decisions, integration, status and final evidence. Its subagents each receive just their own Change, authority headings, baseline, permitted paths, negative test and expected receipt. Unselected/Proposed/Blocked Changes do not become executable by being on the same diagram. A single `Current change` selector remains valid for serial operation; if owner explicitly approves a bundle, record **Active batch: [IDs]** and its orchestrator in the queue, keeping each Change's own lifecycle truthful. An agent must not infer approval from adjacency or a roadmap.
+
+**Parallel write safety:**
+- Work in separate Git worktrees/branches for independent writes; no concurrent editing of one checkout, canonical document heading, migration sequence, shared manifest, lockfile, package export, or root config. If files overlap, assign one owner or serialize those edits.
+- Shared local resources (kind context, namespaces, cluster-wide operators, database schemas, ports, PVCs and Helm release names) require distinct names/test instances or a serial owner. A command waiting for a cluster is not permission for another subagent to mutate that cluster concurrently.
+- Read-only inspection, specification research, and isolated tests may proceed while a long install waits, provided they do not depend on the pending result.
+- Each subagent commits its bounded diff in its isolated branch and returns a receipt: files, commit SHA, actual checks, evidence tier, docs changes, negative test and unresolved conflicts. The orchestrator integrates in dependency order, reconciles authoritative docs and runs shared/global checks **after** the join. Never report parallel task completion as proof of merged, integrated success.
+- Prefer a small number of genuinely independent tasks over indiscriminate agent swarms. Resource, quota and context usage count as costs; if tool support or isolation is absent, execute serially and record why.
+
+**Join gate:** before closing any parallel Change, recheck current HEAD, collision-free integrated diff, dependency receipts, version compatibility, full four-plane reconciliation ledger, relevant wiki/link guards and cross-service tests. If integration fails, return the smallest failing contract to its owner. No silent automatic successor selection.
+
 ## Documentation-only Change admission and proof
 
 A docs-only packet is a **Change** when it has one bounded canonical-text outcome (for example, making selected vs illustrative first-playable acceptance unambiguous), exact affected headings, a before/after claim map, identified dependents, and a falsifying counterexample. It is **not** a Change for exploratory brainstorming, a pure benchmark run, a trivial typo or an unratified product-policy choice. When a proposed new requirement is found, preserve it as Proposed and ask for owner ratification rather than inserting it into selected canon.
