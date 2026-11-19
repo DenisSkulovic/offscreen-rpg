@@ -5,10 +5,10 @@
 **Selection:** Not included in active Kubernetes batch; explicit approval required.  
 **Design:** [D4 Storyteller handoff](../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [D1 service choreography](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md)
 
-## Outcome / prerequisites
+**Packet profile:** `STATE` (planner-inspected `584b594`). Start with this route card. [SOURCE-MAP.md](SOURCE-MAP.md) traces the existing executable call chain, [EXECUTION.md](EXECUTION.md) settles the versioned queue/authority/transaction design, and [PROOF.md](PROOF.md) lists failure checks. Cursor reads only relevant deep sections. These are **plans, not proof**; the packet stays Proposed and unselected.\n\n**Critical bridge:** `saveValidatedResult` currently writes `storyteller_attempt.attribution.custody`, not succeeded `generation.output`; `publishStorytellerResult` needs the latter. The GA-owned idempotent promote-and-publish step is mandatory.\n\n## Outcome / prerequisites
 
 **Outcome:** Deploy a distinct Storyteller Temporal executor and GA publication activity.  
-**Preconditions:** STORY01 + STORY02 + DIST03 + DIST04 transport, working Temporal K8S06; coordinate DIST05 implementation (merge scopes if duplicate).
+**Preconditions:** merged STORY01 and K8S06, completed STORY02 *private* facade, established DIST03 GA service boundary and BOOT03 coordination. **DIST05 is cancelled into this packet. DIST04 is an optional postcommit Rabbit consumer, not Storyteller transport or a prerequisite.** Follow the ratified direct SQL outbox→Temporal wake.
 
 **Source observed on main 2026-11-19:** `packages/application/src/storyteller/runtime.ts::createStorytellerRuntime.complete` combines generation and publication; `execution.ts::createStorytellerExecution` reads/writes generation and attempt ledger and may call provider; `publication.ts::publishStorytellerResult` validates/canon-stages then locks/adopts game state; `packages/workflows/src/index.ts::storytellerV1` uses a single retryable `completeStoryteller` Activity; `apps/worker/src/activities/index.ts` still shares Storyteller and game collaborators. Durable funding/attempt and uncertainty schema already exists in `packages/db/src/schema/storyteller.ts`. Reinspect latest HEAD, active Cursor branches and test scripts before changing any file.
 
