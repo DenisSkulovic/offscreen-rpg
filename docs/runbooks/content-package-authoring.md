@@ -106,6 +106,9 @@ These commands were checked against `package.json` files at the inspected revisi
 | Command | Where it is defined | What it does for this task |
 | --- | --- | --- |
 | `pnpm --filter @offscreen/documents test` | `packages/documents/package.json` script `test` (`pnpm run build && node --test test/*.test.mjs`); the workspace includes `packages/*` | Builds `@offscreen/documents` and runs that package's importer tests. It takes no author-directory argument. |
+| `pnpm fixture:import -- --store <directory>` | Root `package.json` script `fixture:import` (`node scripts/repo-tools/import-pinned-fixture.mjs`) | Imports the checked-in Seyda Neen world, rule, and start directories into that local document store. Checks the pinned world, rule, and start checksums. Writes `fixture-pin.json` in the store when the three root hashes match. A second run prints the same hashes. |
+
+`pnpm fixture:import` accepts that one trusted fixture. It writes an operator pin in the store directory the caller names. The pin is not a player catalogue, not an opening candidate, and not a campaign row. The shared-cluster Pod proof is a separate step and is not this command.
 
 Refused for authoring validation:
 
@@ -115,7 +118,7 @@ Refused for authoring validation:
 
 Target-only, with no supported command in `package.json`:
 
-- a validator that accepts an arbitrary world, rule or start directory and prints the resulting root hash
+- a validator that accepts an arbitrary world, rule or start directory and prints the resulting root hash. `pnpm fixture:import` is the one trusted Seyda Neen fixture, and it refuses a directory whose imported root differs from the pinned checksum.
 - directory import of a package revision greater than 1, and any operation that points an existing campaign at that new root
 - an author-supplied executable adapter or any other user-authored code inside a content package
 
@@ -134,6 +137,10 @@ These outcomes remain false. Do not describe them as success.
 **A hidden possibility must not be accidentally materialized.** The sample possibility stays `private-possibility`, `noncanonical` and `storyteller-private`. The manifest schema rejects any other combination for that activation, and it rejects `initial-canon` on a `private-possibility` or `world-obligation`. World-directory import cannot apply those private labels. `WORLD.md` is player-known canon orientation, and every other Markdown file under `content/worlds/vvardenfell-poc` is player-known canon lore. Import does not infer a secret from a filename or from prose.
 
 **A package revision must not be described as mutating an existing campaign.** The directory importers publish a new revision-1 root. They do not overwrite the previous root, and they do not retarget campaigns that stored the previous hash. Pointing a campaign at a newer root is the explicit adoption operation in [Reusable world libraries and campaign overlays](../technical/storyteller/canonical-documents-and-packages.md#reusable-world-libraries-and-campaign-overlays). That operation is not a command on this page.
+
+**A wrong checksum, a symlink, or a missing dependency must not replace the previous pin.** `pnpm fixture:import` exits non-zero and leaves `fixture-pin.json` byte-for-byte as it was. Objects already stored under the previous root hash stay on that hash.
+
+**The local pin is not a player catalogue and not a shared-cluster publication.** The command does not create a campaign. A start package root is not a successful opening candidate. The shared-cluster Pod proof remains unrun.
 
 ## Where the contract lives
 
