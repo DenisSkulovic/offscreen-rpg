@@ -23,7 +23,7 @@
 
 The existing `generation_state_shape` constraint requires `succeeded` rows to hold a non-null `generation.attempt_id` and non-null `generation.output`. The new custody `claimGeneration` only inserts the attempt and `saveValidatedResult` saves its result under attempt attribution; neither associates a pending generation with that attempt. Therefore test **both** the initial pending row and the final succeeded row. Run two independent GA adopt calls concurrently with the same saved hash and assert the same attempt ID, one status revision transition (or source-backed exact intended count), no duplicate passage, and no invalid intermediate row. Try a conflicting `generation.attemptId` owned by legacy execution; it must **hold/refuse** instead of adopting a different saved result. A fake-output hash check **without** an actual SQL constraint check does not close STORY03.
 
-## Economical command policy
+**Second constraint:** `generation_repair_shape` also forbids a succeeded generation retaining a repairCandidate/repairDiagnostic pair. Start a valid pending generation with both repair fields present, save a fake custody result, invoke GA promote and prove it **refuses/holds without clearing diagnostics**. Do not call it a successful adoption or fabricate a repair completion.\n\n## Economical command policy
 
 Work from repo root, use the workspace-filtered command that actually exercises the touched package. Intended candidates, **verify script existence at execution HEAD**:
 
