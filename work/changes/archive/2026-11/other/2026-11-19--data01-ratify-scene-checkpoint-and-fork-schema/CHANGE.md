@@ -3,7 +3,7 @@
 **State:** Done · 2026-11-19  
 **Kind:** documentation  
 **Execution:** Not part of currently active Kubernetes batch. Select individually or through explicitly approved safe batch.  
-**Related:** [DISTURN program](../../../designs/open/distributed-turn-poc/README.md) · [D2 data design](../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md)
+**Related:** [DISTURN program](../../../../../../designs/open/distributed-turn-poc/README.md) · [D2 data design](../../../../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) · [Gap register](../../../../../../designs/open/distributed-turn-poc/GAPS.md)
 
 ## Independently verifiable outcome
 
@@ -71,4 +71,4 @@ The current journal and `forkCurrent` do not store or reconstruct this checkpoin
 | docs/technical/platform/topology.md#proposed-service-ownership | technical | unchanged: who owns the durable record, and quantities and ownership, were not edited; the engine remains the only checkpoint writer | docs/technical/platform/data-and-persistence.md#who-owns-the-durable-record @ af512d1f | reviewed | Naming a future checkpoint must not create a Game Economy service | No edit |
 | packages/application/src/stories/forks.ts | evidence | unchanged: no executable modification is authorized; forkCurrent still accepts only revision 1 while it is current | packages/application/src/stories/forks.ts @ af512d1f; packages/application/src/stories/reads.ts @ af512d1f; no source behavior changed | source-observed | Inspecting forkCurrent must not be reported as a stored scene-10 checkpoint | No package, test, or migration edited |
 
-**Closure:** Ledger filled from the source inventory at af512d1f. `pnpm wiki:change-guard` and `python3 scripts/check_docs.py` are the checks. Provider calls were not run. The packet stays in open until the orchestrator can repair work/changes/README.md and work/designs/open/distributed-turn-poc/GAPS.md; those files are outside this packet, so the archive move is not done here. No auto-successor.
+**Closure:** Ledger filled from the source inventory at af512d1f. `pnpm wiki:change-guard` and `python3 scripts/check_docs.py` are the checks. Provider calls were not run. The orchestrator archived this packet and repaired the queue and gap-register links. No auto-successor.
