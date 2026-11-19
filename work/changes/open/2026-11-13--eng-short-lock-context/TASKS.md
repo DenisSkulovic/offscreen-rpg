@@ -1,5 +1,7 @@
 # ENG03 | Composer dispatch plan: short-lock context
 
+**Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
+
 **Source baseline:** 584b594. **State stays Ready only for measured narrow capture**, not generic lock/Task migration. **Model:** Composer Standard for all selected subtasks; complex unknowns return to ChatGPT, not Grok. Canonical owner: docs/technical/engine/concurrency-and-recovery.md.
 
 **Already landed, don't redo:** `campaign/narration.ts:preparePendingActionNarration` labels Stage 1 capture under lock without DocumentStore; `createConsequenceNarration` calls `materializePendingActionCapture(database, operationId, documentStore)` before the story-lock transaction for the supported pending action path. `storyteller/capture-materialization.ts` holds the off-lock materializer. `admission.ts:admitStorytellerInteraction` still calls `loadStorytellerContext(tx,...)` in a separate context; don't claim a repository-wide lock removal.
