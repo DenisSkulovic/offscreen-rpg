@@ -15,6 +15,11 @@ import type { TestContext } from 'node:test';
 import { type ProfiledStoryteller, eq } from './storyteller-suite.js';
 import { registerProfiledStoryteller } from './storyteller-suite.js';
 
+const rulesPackageSource = resolve(
+  process.cwd(),
+  '../../content/rules/srd-5.2.1-subset',
+);
+
 // Moved unchanged from the profiled Storyteller suite.
 export async function checkImportedStart(
   t: TestContext,
@@ -37,7 +42,7 @@ export async function checkImportedStart(
       const storage = new LocalDocumentStore(join(fixtureRoot, 'store'));
       const rules = await importRulePackageDirectory(
         storage,
-        resolve('content/rules/srd-5.2.1-subset'),
+        rulesPackageSource,
       );
       const defaultRules = {
         ruleSetId: rules.manifest.ruleSetId,
