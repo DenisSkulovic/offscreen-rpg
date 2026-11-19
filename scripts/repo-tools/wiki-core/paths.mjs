@@ -6,6 +6,11 @@ const WORK_INDEXES = new Set([
   'work/README.md',
   'work/changes/README.md',
   'work/designs/README.md',
+  'work/QUEUE.md',
+  'work/WORK-TAXONOMY.md',
+  'work/tasks/README.md',
+  'work/tasks/open/README.md',
+  'work/tasks/archive/README.md',
 ]);
 
 export function toPosix(rel) {
@@ -34,10 +39,13 @@ export function classifyRepoPath(rel, { isDirectory = false } = {}) {
     return 'canonical-support';
   }
   if (name.startsWith('docs/')) return 'canonical-page';
+  if (WORK_INDEXES.has(name)) return 'work-index';
   if (name.startsWith('work/designs/open/')) return 'open-design';
+  if (name.startsWith('work/tasks/open/')) return 'open-task';
   if (name.startsWith('work/changes/open/')) return 'open-change';
   if (
     name.startsWith('work/changes/archive/') ||
+    name.startsWith('work/tasks/archive/') ||
     name.startsWith('work/designs/parked/') ||
     name.startsWith('work/sessions/') ||
     name.startsWith('research/')
@@ -62,6 +70,7 @@ export function isLintSource(rel) {
   if (name.startsWith('docs/')) return true;
   if (name.startsWith('work/designs/open/')) return true;
   if (name.startsWith('work/changes/open/')) return true;
+  if (name.startsWith('work/tasks/open/')) return true;
   if (/^(apps|packages|tools)\/(?:.+\/)?README\.md$/.test(name)) return true;
   return false;
 }
@@ -70,6 +79,7 @@ export function isHistoricRequest(rel) {
   const name = toPosix(rel ?? '');
   return (
     name.includes('work/changes/archive/') ||
+    name.includes('work/tasks/archive/') ||
     name.includes('work/designs/parked/') ||
     name.includes('research/legacy-') ||
     name.startsWith('research/') ||
