@@ -47,7 +47,7 @@ function baseFiles(fx) {
 
   fx.add(
     'work/changes/README.md',
-    '# Queue\n\nCurrent change: none\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
+    '# Queue\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
   );
   fx.add(
     'work/changes/open/leaf/CHANGE.md',
@@ -95,7 +95,7 @@ test('unindexed open Change fails until the queue links it', () => {
   baseFiles(fx);
   fx.add(
     'work/changes/README.md',
-    '# Queue\n\nCurrent change: none\n\n[ledger](ledger/)\n',
+    '# Queue\n\n[ledger](ledger/)\n',
   );
   const missing = scan(fx);
   assert.equal(
@@ -104,7 +104,7 @@ test('unindexed open Change fails until the queue links it', () => {
   );
   fx.add(
     'work/changes/README.md',
-    '# Queue\n\nCurrent change: none\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
+    '# Queue\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
   );
   const linked = scan(fx);
   fx.cleanup();
