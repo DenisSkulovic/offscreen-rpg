@@ -1,5 +1,7 @@
 # K8S10 | Reproducible distributed failure and load experiments
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** pure chaos selector/preflight tasks now, app-Pod deletion only after real POC. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
+
 **State:** Implementing (2026-11-19). The first worker-loss runner passed on a disposable cluster. Not Done. The rest of the suite is unbuilt, and this packet is not archived.  
 **Kind:** implementation  
 **Execution selection:** This bounded runner only. Do not auto-run the remaining scenarios.  
