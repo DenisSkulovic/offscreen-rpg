@@ -39,9 +39,13 @@ Use `PLAN.md` **only** for meaningful multi-step execution, including a substant
 
 Use [cursor-handoff](../cursor-handoff/SKILL.md) for an economical executor prompt; it must not send entire initiative histories or let Cursor redefine product intent. A documentation handoff grants **Markdown/skill ownership edits only**, not executable source modification.
 
+### Bundle scheduling and parallel Cursor execution
+
+For a batch of planned Changes, **attempt a dependency/ownership graph before defaulting to serial execution**. Use the canonical [batch execution contract](../../references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). Mark independent pairs and shared-resource serialization explicitly in the work queue. When the owner approves an Active batch and the client supports subagents, let one coordinating Cursor chat delegate disjoint Ready Changes in parallel, preferably with isolated worktrees/branches. It waits at dependency gates, not at arbitrary Change-number boundaries. No agent may edit a shared canonical heading, cluster/operator, migration, lockfile or working tree concurrently. The coordinator alone integrates, runs global checks and closes reconciliation ledgers. Subagents return brief actual evidence receipts; proposed changes are not authorized merely by being in the batch.
+
 ## 4. Implement only when authorized
 
-One owner applies the approved **editorial or executable** delta, inspects diff, runs safe proportionate checks, and evaluates expected *and negative* behavior. Documentation Changes verify claim preservation, exact relative links/heading anchors, and independent reviewer comprehension; executable tests are not mandatory when no code was touched. No automatic unrelated refactors, new provider spend, staging DB reset, agent swarms or new feature invention.
+One owner applies the approved **editorial or executable** delta, inspects diff, runs safe proportionate checks, and evaluates expected *and negative* behavior. Documentation Changes verify claim preservation, exact relative links/heading anchors, and independent reviewer comprehension; executable tests are not mandatory when no code was touched. No automatic unrelated refactors, new provider spend, staging DB reset, **unapproved** agent swarms or new feature invention.
 
 If code or source inspection reveals that the accepted contract is wrong/incomplete, **return that decision to the owning product/technical decision role**, then resume only after explicit ratification. An editorial Change cannot silently ratify a new shared-play, time, security, privacy or spending policy. A green fixture is not proof of connected gameplay.
 
