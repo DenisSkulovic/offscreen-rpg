@@ -18,6 +18,8 @@ Define a **falsifiable, versioned scene-knowledge contract** so game state, desc
 - **Observed baseline:** Current source has immutable document storage, pinned manifests, active-scene cues and bounded selection; live mechanical state/receipts remain in SQL. Ordinary generation is mostly one-shot and sustained months-long recall is not proven. Historical passages currently do **not** contain every branchable state snapshot. Reinspect current HEAD and STATUS before proposing specific migrations.
 - **Cognee research:** [HAR09 evaluation](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md) rejected a tiny *coding-agent repository memory* trial, **not** the RPG Storyteller. No adoption or permanent rejection for game recall follows from that experiment. Also inspect the existing retrieval ladder rather than inventing a second vendor-architecture authority.
 
+**Parallel design companion:** [ARCH05](../2026-11-19--arch05-storyteller-harness-and-context-packs/CHANGE.md) owns role recipes, pre-injected context, intent-level tools and model-turn efficiency. ARCH03 owns branch-safe source/version semantics and scene-root reconstruction. They may be researched concurrently, but avoid creating two authoritative specifications for the same retrieval/privacy guarantee.
+
 ## Design decisions this Change must settle
 
 1. **Scene commitment.** Precisely distinguish an in-fiction scene, published passage, game-state checkpoint and client book leaf. Define the version tuple captured at an admissible scene boundary, including committed game state, document manifest root, rule/world package pins, relevant Storyteller bundle and control revision. Quiet between-scene mechanics must remain recoverable without rewriting history.

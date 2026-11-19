@@ -29,6 +29,12 @@ The recent documentation/wiki consolidation push is **complete for its bounded a
 
 **Currently NOT claimed:** microservices implemented, actual availability guarantees, highly available local databases/brokers, production-ready Temporal, production ingress security, demonstrated stress tolerance, completed platform migration.
 
+## Distributed turn POC | gap-to-implementation program
+
+[One real distributed Storyteller turn](work/designs/open/distributed-turn-poc/README.md) defines the **first integration milestone** after the infrastructure substrate. Its [gap register](work/designs/open/distributed-turn-poc/GAPS.md) covers runtime packaging, cross-service ownership, RabbitMQ/Temporal choreography, S3-backed canonical publication, scene checkpoints/historical forks, campaign bootstrap, role-scoped Storyteller context, browser reconciliation and actual Kubernetes proof. Existing components are reusable but not automatically interconnected. Plan the missing source-level Changes over subsequent design passes before assigning them to Cursor. K8S service skeletons alone do not fulfill this milestone.
+
+The register explicitly **defers but retains** scene image generation, full usage/entitlement/Stripe commercialization, external notifications, richer memory indexing/Code Mode, expanded D&D systems, shared play and full chaos/load/HA work. Minimal per-attempt usage/cost accounting and safe provider authorization remain required if the POC invokes a real paid model.
+
 ## Selected and still binding
 
 - Product and technical contracts outrank code. A selected future design is not an implementation claim.
