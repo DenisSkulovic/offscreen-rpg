@@ -50,6 +50,10 @@ export {
   intervalWakeTopic,
 } from './topics';
 export { campaignActionTopic } from '../campaign/topics';
+export {
+  admitDelegatedDecision,
+  PREAPPROVED_WITHDRAWAL_WINDOW_MS,
+} from '../campaign/delegated-decision';
 
 export function createStories(
   database: Database,
