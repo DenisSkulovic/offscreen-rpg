@@ -4,6 +4,8 @@
 
 This harness governs **how** coding agents navigate the three authority layers: product documentation (what and why), technical documentation (architecture, authority and invariants), generated code (implementation). It never turns code into the product specification. External practice notes are in [industry practices](references/industry-practices.md); practical token hygiene is in [context economics](references/context-economics.md).
 
+**Planner/executor economics:** For a ChatGPT session **designing Changes**, [CHATGPT.md](../CHATGPT.md) and the [planner investigation standard](references/planner-investigation-standard.md) put broad source and architectural discovery upstream of lower-cost Cursor implementers. The selected Cursor child receives a short route card and only verifies the current source, implements and tests. This role distinction does **not** require every agent to preload the planner standard; see the table below for load triggers.
+
 ## What loads, and when?
 
 | Surface                          | Load trigger                                                      | Purpose                                                                          |
