@@ -5,7 +5,7 @@
 **Program:** [Distributed architecture laboratory](../../README.md#distributed-architecture-laboratory-new-2026-11-19)  
 **Execution:** Only when explicitly selected; never inferred from batch adjacency. **No live provider spend.**
 
-## Outcome
+**Source-level execution note:** [TURN02 SOURCE-MAP](../2026-11-19--turn02-compose-real-kubernetes-application-release/SOURCE-MAP.md) identifies exact Next/Nest image/bootstrap issues at `584b594`: Next `start` binds loopback, API defaults `API_HOST=127.0.0.1`, `API_INTERNAL_ORIGIN` (SSR) differs from `API_PROXY_ORIGIN` (rewrite), and `APP_ORIGIN` allows only HTTPS or HTTP localhost/127. Test actual production Next rewrite against Service DNS; do not treat synthetic gateway success as real auth/SSE. TURN02 owns the one final release integrator.\n\n## Outcome
 
 Prove the **actual existing** Next.js web and NestJS API run as independently deployable workloads on the same-origin Kubernetes Gateway and preserve the existing server-render, authenticated HTTP-command, EventSource hint and authoritative GET contracts. This is a deployment/integration Change, not a game-service extraction or browser-state redesign.
 
