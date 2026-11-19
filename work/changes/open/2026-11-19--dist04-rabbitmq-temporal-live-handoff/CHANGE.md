@@ -1,64 +1,59 @@
-# DIST04 | Use RabbitMQ as the sole selected transport for one existing outbox notice
+# DIST04 | Optional post-commit fact relay; the Temporal wake stays a direct RPC
 
-**State:** Proposed; depends on contracts and broker (2026-11-19)  
-**Kind:** implementation  
-**Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
-**Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
+**State:** Proposed. Not Ready and not selected (2026-11-19). AUD01 replaced the old implementation semantics. That replacement is not implementation and is not Done.
+**Kind:** implementation
+**Execution:** Not authorized. Select only if a consumer is wanted after DIST02's contract, and only with the cluster lock held by one owner.
+**Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
 
-**Mandatory scope correction, 2026-11-19:** **DO NOT IMPLEMENT this packet's original RabbitMQ→Temporal bridge.** Merged ARCH02 keeps direct durable outbox→Temporal starts/wakes; RabbitMQ carries committed business facts to independent consumers. Before implementation, refactor this Change to implement a single `scene.published.v1` fact outbox→RabbitMQ publisher plus branch/root-safe, disposable read-model/index subscriber, with inbox dedup, replay, source hash and stale-index negatives. Preserve existing workflow dispatch route, never dual-route one notice. Broker consumption must not block Storyteller task/pub or become game authority. [Reconciliation](../../../designs/open/distributed-turn-poc/EXECUTION-RECONCILIATION-2026-11-19.md); [canonical execution](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows). **Status remains Proposed and NOT Ready.** Old scope below is superseded where conflicting.
+The folder name still says "RabbitMQ Temporal live handoff." That name is historical. Superseded: using RabbitMQ as the transport for an existing outbox wake, and any adapter that consumes a broker message in order to start or signal Temporal.
 
-## Goal / independently verifiable outcome
+## Goal
 
-Use RabbitMQ as the sole selected transport for one existing outbox notice. This Change is one bounded implementation outcome in the [distributed-turn POC](../../../designs/open/distributed-turn-poc/README.md), not authorization to implement the entire initiative.
+If a consumer is separately selected, relay one committed business fact from the SQL outbox to RabbitMQ and let one idempotent subscriber rebuild a disposable projection. The workflow wake stays the direct Temporal RPC already implemented in [relay.ts](../../../../apps/worker/src/outbox/relay.ts) and [dispatch.ts](../../../../apps/worker/src/outbox/dispatch.ts). This packet does not make the broker part of the story command.
 
-## Current source owners and exact baseline
+## Prerequisites
 
-Source inspected on 2026-11-19 at GitHub `main`: [Work queue](../../README.md), [runtime](../../../../apps/worker/src/runtime/index.ts), [worker Activity adapter](../../../../apps/worker/src/activities/index.ts), [outbox](../../../../apps/worker/src/outbox/dispatch.ts), [application stories](../../../../packages/application/src/stories/README.md), [Storyteller publication](../../../../docs/technical/storyteller/generation-and-publication.md), [canonical files](../../../../docs/technical/storyteller/canonical-documents-and-packages.md). Reinspect current HEAD and the user's active Cursor branches. The source currently combines work in `apps/worker`; this plan does **not** claim it is already distributed. Existing local Compose stays a working fallback.
+ARCH02 is merged. Read [Commands, business events, and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows) before any edit. DIST02's fact contract is the schema source if this work is selected. K8S03's broker proof deleted its cluster. K8S06's Temporal 1.32.2 proof deleted its cluster and is not the Compose development server, not the game workflow, and not a reason to wake Temporal from RabbitMQ. No checkpoint Change is Done because of this packet.
 
-**Prerequisites:** DIST01 + DIST02, K8S03 working RabbitMQ; K8S06 Temporal reachable for cluster proof. Can build/test locally against fakes before all deployment.
+## Scope
 
-## Implementation / documentation delta
+Classify outbox topics. Wake and start notices keep the existing Temporal client call. A fact topic, only when selected, is published with publisher confirm, and the SQL notice is acknowledged only after that confirm. The subscriber has its own inbox. It may rebuild a derived projection from the committed root. It does not call Temporal. It does not write the scene checkpoint. It does not publish the story SSE stream. The first Storyteller turn still completes from SQL and object storage when the projection is behind or absent.
 
-Refactor `apps/worker/src/outbox/relay.ts` so one topic-selectable dispatcher chooses either existing **legacy direct Temporal** or the new broker publisher **not both**. Retain SQL lease/ack; broker publisher waits for actual publish confirm before SQL ACK, with explicit uncertain-publish replay rules. Add separate broker→Temporal adapter process/entrypoint that validates `dispatch-notice.v1`, maps the existing `selectNoticeDispatch` topic to the same stable workflow type/ID, starts/wakes Temporal and ACKs Rabbit only after durable confirmation or AlreadyStarted; NACK/retry otherwise, poison quarantine/DLQ as specified. Migrate just `storytellerTopic` or a **safe scripted nonpaid topic after evidence review**; other topics stay legacy until separate changes. Emit causal redacted metrics. Keep Temporal existing history/task queue backward compatible.
+Superseded steps, not to be carried out: choosing the broker instead of the direct relay for one wake topic; adding a broker-to-Temporal process; acknowledging RabbitMQ only after Temporal accepts a start; treating Temporal downtime as a reason to requeue a story command on the broker.
 
-**Specific owners/paths to touch:** `apps/worker/src/outbox/{relay,dispatch}.ts`, isolated new `apps/worker/src/broker` or separate `apps/dispatch-bridge` entrypoint for adapter, `packages/contracts` from DIST02, controlled config under `apps/worker/src/bootstrap`; operational manifests in existing K8S03/K8S06 ownership only after dependency join; event runbook.
+## Paths
 
-**Hard exclusions:** No paid provider dispatch, no Stripe or customer billing, no image generator, no arbitrary new gameplay, no fictional Economy service, no live secrets or destructive data reset. Do not work around a missing architectural contract by claiming the service is 'blocked forever'; report one concrete mismatch with exact sources and revise the narrow contract.
+A later selected diff may classify topics in [relay.ts](../../../../apps/worker/src/outbox/relay.ts) and [dispatch.ts](../../../../apps/worker/src/outbox/dispatch.ts), and may add a separate consumer entrypoint that cannot import the Temporal workflow start. It does not add that consumer under the wake path. Operational manifests wait until the cluster owner is free. This documentation pass edits none of those source files.
 
-## Acceptance: positive and discriminating negative
+## Migration and rollback
 
-**Positive proof:** Test with disposable Rabbit+Temporal and existing SQL fixture, plus injected failures at each acknowledgment boundary, count workflow starts and game effects; deterministic fake provider only; no success claim from publish/consume alone.
+There is one wake route, the direct RPC. Adding a fact publisher later does not create a second route for the same notice. Rollback disables the fact publisher and leaves the relay's Temporal calls as they are. In-flight wake notices are retried from SQL. They are not drained from a broker queue. No dual-write period.
 
-**Negative proof:** Crash before broker confirm leaves SQL notice retryable; crash after broker confirm before SQL ACK causes duplicate broker notice but exactly one Temporal start; Temporal down → Rabbit retry; no dual legacy and broker dispatch for same topic; bad envelope never loops forever.
+## Acceptance
 
-**Evidence/report:** source and SHA inspected; intended/actual command and event state diagram; file diff; exact commands/tests and result counts; status of each normal/negative test; version/compatibility and resource evidence where relevant. Tests on fakes do not count as deployed Rabbit/Temporal proof. Never mark a contract satisfied merely because a Pod is Ready.
+**Positive:** with fakes, one committed fact is published once, a duplicate delivery leaves one projection row, and the count of Temporal workflow starts does not change when the fact is published or withheld. The scene commit and the authoritative GET succeed while the consumer is stopped.
 
-## Documentation is a required implementation plane
+**Negative:** a test that routes a Storyteller wake topic onto RabbitMQ fails. A Temporal outage does not requeue that wake onto the broker. A broker outage does not block the direct wake, the scene commit, or SSE recovery by GET. The consumer cannot insert a checkpoint row. No Pod-Ready result counts as success. No paid provider call is claimed.
 
-Update the **canonical** owning headings as part of the same code diff or ratifying documentation Change: [topology](../../../../docs/technical/platform/topology.md#distributed-learning-target), [execution/outbox](../../../../docs/technical/platform/execution-and-delivery.md#commands-and-durable-delivery), [data](../../../../docs/technical/platform/data-and-persistence.md#who-owns-the-durable-record), [Storyteller](../../../../docs/technical/storyteller/generation-and-publication.md#what-publication-is-allowed-to-do), and the relevant source maps/runbooks/STATUS. Edit **only the owner headings materially changed**; leave reasoned no-ops. Do not copy this packet wholesale into every spec. Historical product promises on D&D, scene forking and canonical files remain intact. Run `pnpm wiki:change-guard --mode plan` and `--mode close`, source-relevant tests and doc link checks where available, report skipped checks honestly.
+## Exclusions
 
-## Parallel orchestration
+No paid provider, payments, image generation, Game Economy service, live secrets, or destructive reset. Do not reverse engine ownership of the scene checkpoint. Do not put the story SSE stream on RabbitMQ. Do not mark Kubernetes release work Done.
 
-Worktree independent from DIST03 HTTP extraction once DIST02 delivered. **Shared worker outbox files** single owner. Deployments touching the shared kind cluster need lock/integration scheduling.
+## Parallelism
 
-A user-approved Cursor orchestrator may distribute truly disjoint Ready Changes into isolated worktrees. It must integrate dependencies, shared canonical-doc headings and the same cluster itself. **A Proposed packet is not executable merely because another packet was authorized.**
+Shared worker outbox files have one owner. This Proposed packet is not executable because a neighbour was authorized. Cluster use takes the existing lock. This correction does not take that lock.
 
-## Planned-impact.v1 (complete receipt before archiving)
+## Planned specification and implementation delta | planned-impact.v1
 
-| Plane | Exact planned difference | Proof |
-| --- | --- | --- |
-| Product | unchanged; world-neutral D&D, text-first DM, admitted mechanical truth, forkable scenes | No new economy, mandatory inventory or invented rule |
-| Technical | Preserve the selected single writer, pinned canonical roots and nonoverlapping Rabbit/Temporal roles; amend only source-proved gaps | Normal and negative sequence/contract check |
-| Code | Scoped implementation in named file owners above; no unrelated monolith-wide refactor | Actual diff, tests and version compatibility |
-| Related | Update affected source maps, docs index, runbooks, Change queue, dated STATUS only when runtime behavior is proven | Wiki/Change guards, links and evidence |
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because no player-facing rule or economy service changes | docs/product/gameplay/rules.md | Checkpoint and SSE behaviour stay with their current owners |
+| Technical | unchanged because the merged wake contract is the constraint, not a page this packet rewrites | docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows | Broker delivery is still not a commit |
+| Code | changed: apps/worker/src/outbox/relay.ts only after a later selection, and only to keep wake delivery on the Temporal client. Negative: publishing a wake topic to RabbitMQ must fail the test | apps/worker/src/outbox/relay.ts | Not selected. No code diff in AUD01 |
+| Related | unchanged because the optional consumer is already described on the execution reconciliation page | work/designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md#operative-execution-rule | Proposed. The queue is not edited here |
 
-## Reconciliation ledger (fill with actual evidence)
+## Reconciliation ledger (implementation has not started)
 
-| Owning claim/heading | Expected delta or reasoned no-op | Source SHA / diff | Test or semantic proof | Negative proof | Status/link |
-| --- | --- | --- | --- | --- | --- |
-| Technical runtime owner | Pending | Pending | Pending | Pending | Pending |
-| Execution / outbox owner | Pending | Pending | Pending | Pending | Pending |
-| Product/scene and Storyteller boundary | unchanged unless ratified | Pending | Pending | Pending | Pending |
-| Source implementation / tests | pending | Pending | Pending | Pending | Pending |
-
-**Closure:** Reconcile the ledger, archive Done/Cancelled per established workflow, repair inbound links, stop. No automatic successor selection.
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows | technical | unchanged: this Proposed packet does not replace the direct Temporal wake | no source behavior changed | reviewed | A broker outage must not be treated as a stuck story command | Left for a later selected implementation |
