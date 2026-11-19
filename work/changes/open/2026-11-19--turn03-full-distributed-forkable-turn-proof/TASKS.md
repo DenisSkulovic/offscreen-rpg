@@ -1,0 +1,17 @@
+# TURN03 | Composer tasks: one real scripted full-campaign acceptance
+
+**Baseline:** 584b594. **State:** Proposed/unselected final provider-free join. **Default:** Composer Standard coordinator and narrow VERIFY/PATCH children. **Complete planner acceptance:** [PROOF.md](PROOF.md). One fixture/scorecard, not four independently invented E2E harnesses; cancelled TURN01, BOOT04, STORY04, DIST06 cases are absorbed.
+
+**Source facts:** `tools/api-integration/test/storyteller-imported-start.integration.ts` supports a **Storyteller-kind candidate executed in scripted mode** with pinned startPackage. A raw playable-scripted candidate with startPackage is rejected by `stories/start.ts`. `apps/worker/src/outbox/dispatch.ts` starts Temporal **directly**. The code has historical fork tests but current full cross-Pod scene/fork remains unproven. Rabbit derived projection is optional and not in the story wake.
+
+## T01 | One immutable zero-spend golden fixture | PLANNER-READY, early pure work
+**Write:** one existing integration-suite-compatible fixture/reference and strict source-pin assertions; no arbitrary new framework. Include actor, draft revision, world/rule/start roots, succeeded scripted Storyteller opening candidate, one supported visible choice and valid fake continuation. Positive: local fixture yields exactly scene1 and expected scene2. Negative: wrong opening kind or source pin refuses without partial story; provider dispatch spy records **zero** calls. Store fixture IDs and root hashes dynamically, no fabricated precomputed runtime IDs.
+
+## T02 | Machine scorecard with NOT-RUN fidelity | PLANNER-READY, early pure work
+**Write:** small report schema/test runner as authorized under existing observability/evaluation owner, not a second gameplay engine. Use exact fields in PROOF.md: source SHA, image digests, owner/story/candidate/attempt/workflow/passage/root/checkpoint IDs, eight mandatory gates and negative outcomes. **Negative:** incomplete/mocked gate cannot set overall PASS; no model call or actual Kubernetes execution from reporter.
+
+## T03 | One cold kind continuous causal trace | GATED ON BOOT03/STORY02/STORY03/TURN02/K8S11/DATA04/06
+Single cluster operator, one migration/import, real signed-in Next→Nest→GA campaign start, scene1 checkpoint, admitted command→SQL outbox→Temporal execution-only queue→saved fake result→GA atomic publication→scene2 GET, SSE invalidation; quiescent scene1 historical fork→child continuation. **Negative:** wrong owner, duplicate command, executor crash after save, missing object, stale root, lost SSE; exact SQL/S3 proofs. No Rabbit requirement; no paid provider. If one mandatory test skipped, mark NOT-RUN/BLOCKED not Done.
+
+## T04 | Reconcile canonical docs and evidence | GATED ON T03
+One finalized report, attached run commands and old/new scene hashes, documentation current-versus-target status, packet ledger. Distinguish simulated scripted result from real model quality. **No Grok needed; if T03 breaks an unknown design assumption, return exact evidence to ChatGPT planner.**
