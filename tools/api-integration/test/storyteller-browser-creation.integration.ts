@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import assert from 'node:assert/strict';
 import { createCustomDraftSetup } from './helpers/draft-wizard.js';
 import { withBrowserSession } from './helpers/browser-session.js';
 import type { TestContext } from 'node:test';
