@@ -2,7 +2,7 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Implementing (2026-11-19). The nested cases are split in source. The profiled suite was not run.
+**State:** Implementing (2026-11-19). The nested cases are split in source. The profiled suite ran once and is not green: node:test reported 33 tests, 30 passed, and 3 failed. Two of the 32 nested cases failed, so this packet is not Done.
 
 ## Cursor first-screen brief
 
@@ -48,8 +48,23 @@ No case had to stay behind. Moving a case into its own `withAppIntegration` woul
 
 - **Normal:** the profiled file and the moved modules contain the same 32 case names and the same case text as `d3ad620b`. `test:storyteller` still loads the profiled file.
 - **Negative:** each moved case is awaited by the profiled test. A failing assertion in a moved family would fail that suite. No assertion, fixture, or helper was edited to make a case pass. The failing-assertion injection was not executed.
-- **Operational:** no provider was called. The profiled suite was not run. Cluster `offscreen-lab` was not started or deleted. Docker Compose was not brought up or down. Volumes `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were not deleted.
+- **Operational:** no provider was called. The profiled suite ran once on 2026-11-19 and failed, as recorded below. Cluster `offscreen-lab` was not started. Volumes `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were not deleted. `offscreen`, `offscreen_story_local`, and `offscreen_chamber` were not reset.
 - **Review:** the shared stack lives in one helper. Each behavior family is a separate module. The profiled test is the ordered session.
+
+## Suite run | 2026-11-19
+
+`pnpm --filter @offscreen/api-integration test:storyteller` with `DATABASE_TEST_URL` naming disposable `offscreen_auth_test` on local Compose Postgres. `STORYTELLER_LIVE_ENABLED` was false. No provider credential was present. Source at the run was `4a556223`.
+
+node:test reported **33** tests, **30** passed, **3** failed, 0 cancelled, 0 skipped, in 59928.898942 ms. The parent test failed. Of the 32 nested cases, **30 passed and 2 failed**.
+
+| Failed case | Observed error |
+| --- | --- |
+| imported abstract start publishes one root and one obligation across retry | `ENOENT` on `realpath` of `tools/api-integration/content/rules/srd-5.2.1-subset`. The filter script uses that package directory as the working directory. The rules package is present at the repository `content/rules/srd-5.2.1-subset`. |
+| mechanical opening and three consequences reshape plans from committed state | `assert.ok(snapshot.campaign?.offer?.nodes.length)` was false. The actual length was 0. |
+
+The other 30 nested cases passed, including the browser case. This is not a green run.
+
+Compose Temporal was down. `pnpm infra:up` started it, and the health check passed. Postgres was already healthy and was not recreated. `offscreen_auth_test` already existed and was not dropped. Ports 3001 and 3100 were free and were not cleared. `tsc` for `@offscreen/api-integration` exited 2 because `storyteller-browser-creation.integration.ts` imports `assert` twice. The emitted JavaScript kept one import, and the suite command ran that output. The behavior files were not edited.
 
 ## Reconciliation ledger
 
@@ -57,4 +72,4 @@ No case had to stay behind. Moving a case into its own `withAppIntegration` woul
 | --- | --- | --- | --- | --- | --- | --- |
 | no product/technical behavior impacted | none | unchanged: this split relocates existing integration cases and does not change gameplay or Storyteller rules | tools/api-integration/test/storyteller.integration.ts compared with d3ad620b | source-observed | No product or technical page was edited, and no assertion was rewritten to turn a case green | N/A |
 | tools/api-integration/test/storyteller.integration.ts profiled suite | test discovery | unchanged: the profiled test still awaits all 32 moved cases in the original order, and test:storyteller still loads this file | tools/api-integration/package.json | source-observed | A case that is not awaited would disappear from the profiled command | N/A |
-| profiled Storyteller integration result | API integration tests | unchanged: the cases were moved and the suite was not executed, so no new pass or failure is claimed | tools/api-integration/test/storyteller.integration.ts at baseline d3ad620b | not run | The suite needs Compose Temporal and a Next production build. The lab cluster was already deleted, and the disposable volumes were not touched | N/A |
+| profiled Storyteller integration result | API integration tests | changed: the profiled command ran once after the split and failed. 33 tests, 30 passed, 3 failed. Two nested cases failed and the parent failed with them. Not a green run and not Done | tools/api-integration/test/storyteller.integration.ts at 4a556223, run against offscreen_auth_test | executed | A missing rules path from the api-integration working directory fails the imported start. An empty campaign offer fails the mechanical opening. The other 30 nested cases passed. No provider was called, and the named volumes were not deleted | N/A |
