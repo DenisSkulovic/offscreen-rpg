@@ -4,6 +4,24 @@ Product behavior is the bible. Technical contracts say what the system must guar
 
 Product truth has two questions. Authority asks what the owner selected as a preference or obligation. Evidence asks whether that behavior has been demonstrated. An illustrative scene, an unimplemented selected target, a proposed policy, and a demonstrated playable capability are different things. Before a Change depends on an ambitious or cross-system mechanic, read [STATUS](../STATUS.md) and the unratified [product-reality claim register](../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). That register is an investigation, not a new mechanic. If no play or cost evidence exists, propose a bounded test or a design decision instead of implementation.
 
+## Visual introduction: follow a decision through the software
+
+[**Open the Architecture Atlas**](architecture/README.md) for the human-first diagram tour: system/process maps, Storyteller sequences, SQL/S3 transaction fences, failure state machines, historical forks, Kubernetes and client trust. The atlas explains, but never supersedes, the canonical product and technical pages.
+
+```mermaid
+flowchart LR
+    Player[Player intent] --> Admission[Game Authority and engine admit]
+    Admission --> Ledger[(SQL command and story)]
+    Ledger --> Temporal[Temporal resumes work]
+    Temporal --> Storyteller[Storyteller proposes narration]
+    Storyteller --> Gate{Canon root still current?}
+    Gate -->|yes| Scene[Commit scene and checkpoint]
+    Gate -->|no| Hold[Hold without rewriting history]
+    Scene --> UI[Browser GET renders committed truth]
+```
+
+**This is the selected full-turn target, not a demonstrated Kubernetes run.** Inspect [current readiness](../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) before treating any arrow as implemented.
+
 Start here, then open the owner. Two steps should be enough for a scoped question.
 
 | Question | Owner |
