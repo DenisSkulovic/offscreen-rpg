@@ -1,0 +1,5 @@
+CNPG_VERSION=1.30.2
+CNPG_URL=https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v1.30.2/cnpg-1.30.2.yaml
+CNPG_SHA256=ea4cc355b394e10661d30c6b409cefb19029dd973bccb76b1ed8c789985bc68c
+CNPG_IMAGE=ghcr.io/cloudnative-pg/cloudnative-pg:1.30.2
+POSTGRES_IMAGE=ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie
