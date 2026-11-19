@@ -1,6 +1,6 @@
 # Story execution with Temporal
 
-**Find the section:** [workflow/DB responsibility](#responsibility-at-the-database-boundary) · [commands and durable delivery](#commands-and-durable-delivery) · [commands, events, and workflows](#commands-business-events-and-workflows) · [decision to consequence](#from-decision-to-consequence) · [prepared continuation](#publishing-a-prepared-continuation) · [retry and uncertain effects](#retry-boundaries-and-uncertain-side-effects) · [outages and recovery](#outages-and-recovery). Read the relevant section rather than loading this entire document.
+**Find the section:** [workflow/DB responsibility](#responsibility-at-the-database-boundary) · [commands and durable delivery](#commands-and-durable-delivery) · [commands, events, and workflows](#commands-business-events-and-workflows) · [decision to consequence](#from-decision-to-consequence) · [prepared continuation](#publishing-a-prepared-continuation) · [retry and uncertain effects](#retry-boundaries-and-uncertain-side-effects) · [outages and recovery](#outages-and-recovery) · [laboratory broker](#laboratory-messaging-broker). Read the relevant section rather than loading this entire document.
 
 Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. Effective spending stays on [distinct authorities](./spending-and-entitlements.md#distinct-authorities). The cadence of future simulation work remains open: scheduled boundaries, lightweight ticks or a hybrid may fit different situations. Temporal coordinates durable waits and commands; a second scheduler must not independently commit the same story outcome. Canonical SQL identity and the transaction stay on [who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record). This page owns the queue, the outbox, and Temporal delivery. Sections headed Implemented are realization records of the chamber flows already described. They stay in place. The delivery contract remains [commands and durable delivery](#commands-and-durable-delivery). Chamber bench tiers, where a row exists, are [capability coverage](../../../STATUS.md#capability-coverage).
 
@@ -185,6 +185,16 @@ Overdue timers do not authorize a burst of unbounded inference. Honor already pu
 Recover workflow state through Temporal history, not by guessing execution from a database snapshot. If Temporal persistence is actually lost, restored PostgreSQL alone is insufficient: quarantine affected stories and reconcile controlled restart from a known committed boundary. Test worker restart separately from disaster recovery of both systems.
 
 First-response identification of an uncertain operation is the task guide [Uncertain work recovery](../../runbooks/uncertain-work-recovery.md). That guide does not change this recovery contract.
+
+## Laboratory messaging broker
+
+The disposable kind cluster can run one RabbitMQ broker in the `messaging` namespace. The procedure is [Kubernetes RabbitMQ](../../runbooks/kubernetes-rabbitmq.md). The game does not publish or consume on that broker. [Commands and durable delivery](#commands-and-durable-delivery) remains the bridge from the PostgreSQL outbox to Temporal. A message on the broker is not a committed story fact. [What handles events and background work](./topology.md#what-handles-events-and-background-work) already says the application path has no separate event broker, and that the laboratory may practice one before a measured production need exists.
+
+The pinned cluster operator runs a single RabbitMQ 4.3.4 instance. The Service is ClusterIP. The declarative user is `lab-client`. Install generates that user's password into a Secret and does not write the password into Git. Guest is not that user. A guest connection from another pod is refused. The queue `lab.durable` is a durable classic queue imported from a definition file after `lab-client` exists. It is not a quorum queue.
+
+One replica is not high availability. Losing the node or its volume can take the queue with it. There is no second broker to fail over to.
+
+Delivery on this queue is at-least-once. The smoke publishes persistent messages, deletes the broker pod, and reads the same messages back from the surviving claim. A consumer that is killed before `basic.ack` loses its connection, and the broker delivers that message again with the redelivered flag set. The second delivery is a duplicate. A consumer must tolerate the duplicate. Redelivery does not make the effect exactly once, and it does not commit a story command. While this single broker is down, a lab publisher cannot append to the queue. Messages already written to the durable queue remain for a restart of that same pod and volume.
 
 ## Contract dependencies
 
