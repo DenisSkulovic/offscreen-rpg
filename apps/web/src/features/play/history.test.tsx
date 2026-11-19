@@ -1,6 +1,14 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -15,6 +23,14 @@ const server = setupServer();
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
+});
+
+beforeEach(() => {
+  server.use(
+    http.get(/\/api\/stories\/[^/]+\/scenes\/\d+$/, () =>
+      HttpResponse.json({ code: 'not_found' }, { status: 404 }),
+    ),
+  );
 });
 
 afterEach(() => {

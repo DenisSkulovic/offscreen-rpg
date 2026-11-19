@@ -77,7 +77,7 @@ export function createStories(
   const resolution = createStoryResolution(database, options.documentStore);
   const resolutionReceipts = createResolutionReceiptReader(database);
   const timing = createStoryTiming(database);
-  const forkCurrent = createStoryForks(database);
+  const forks = createStoryForks(database, options.documentStore);
   const documents = options.documentStore
     ? createCampaignDocuments(database, options.documentStore)
     : null;
@@ -115,6 +115,13 @@ export function createStories(
     read(args: { ownerId: string; storyId: string }) {
       return reads.readSnapshot(args);
     },
+    readHistoricalScene(args: {
+      ownerId: string;
+      storyId: string;
+      sequence: unknown;
+    }) {
+      return reads.readHistoricalScene(args);
+    },
     readResolutionReceipt(args: {
       ownerId: string;
       storyId: string;
@@ -127,13 +134,16 @@ export function createStories(
       sourceStoryId: string;
       forkStoryId: string;
       expectedRevision: number;
+      sourcePassageId?: string;
+      sourceCheckpointHash?: string;
     }) {
-      await forkCurrent(args);
+      await forks.fork(args);
       return reads.readSnapshot({
         ownerId: args.ownerId,
         storyId: args.forkStoryId,
       });
     },
+    forkCurrent: forks.forkCurrent,
     /** Worker-only timeout. The lock and database clock arbitrate with player writes. */
     resolveDecision(args: { passageId: string }) {
       return timing.resolveDecision(args);
@@ -280,6 +290,13 @@ export function createStoryApplication(
   return {
     ...stories,
     read,
+    readHistoricalScene(args: {
+      ownerId: string;
+      storyId: string;
+      sequence: unknown;
+    }) {
+      return stories.readHistoricalScene(args);
+    },
     async fork(args: Parameters<typeof stories.fork>[0]) {
       await stories.fork(args);
       return read({ ownerId: args.ownerId, storyId: args.forkStoryId });

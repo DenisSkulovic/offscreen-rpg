@@ -155,6 +155,14 @@ export function projectStoredSceneAppearance(
   return stored;
 }
 
+export const storyCanonRootSchema = z.strictObject({
+  rootHash: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/)
+    .nullable(),
+  rootRevision: z.number().int().nonnegative().max(2147483647),
+});
+
 export const storySnapshotSchema = z.strictObject({
   campaign: campaignViewSchema.nullable().optional(),
   id: z.uuid(),
@@ -229,6 +237,19 @@ export const storySnapshotSchema = z.strictObject({
     .default(null),
 });
 export type StorySnapshot = z.infer<typeof storySnapshotSchema>;
+
+/**
+ * Owned as-of scene. Mechanics and canon come from that scene's checkpoint.
+ * `canRespond` is always false: a historic interaction is not a live command.
+ */
+export const historicalSceneSchema = storySnapshotSchema.extend({
+  asOfSequence: z.number().int().positive().max(2147483647),
+  checkpointHash: z.string().regex(/^[0-9a-f]{64}$/),
+  canon: storyCanonRootSchema,
+  canRespond: z.literal(false),
+});
+export type HistoricalScene = z.infer<typeof historicalSceneSchema>;
+
 // History is read-only presentation. Past offers are not actionable controls.
 export const storyHistorySchema = z.strictObject({
   items: z
@@ -312,6 +333,11 @@ export const startStorySchema = z.strictObject({
 });
 export const forkStorySchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
+  sourcePassageId: z.uuid().optional(),
+  sourceCheckpointHash: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/)
+    .optional(),
 });
 export const startChamberSchema = z.strictObject({
   scenario: z.enum([

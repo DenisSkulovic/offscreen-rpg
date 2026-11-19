@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { flattenUniqueById } from '@/src/shared/api/list-page';
 import { queryKeys } from '@/src/shared/api/query-keys';
+import { storyHistoricalSceneOptions } from '@/src/shared/api/story-historical-query';
 import { storyHistoryInfiniteOptions } from '@/src/shared/api/story-history-query';
 import './ui/story-frame.css';
 
@@ -63,6 +64,14 @@ export function StoryHistoryView({
   const atOlderEdge = Boolean(
     selected && publication[0]?.id === selected.id,
   );
+  const historicalQuery = useQuery({
+    ...storyHistoricalSceneOptions(
+      viewerId,
+      storyId,
+      selected?.sequence ?? 1,
+    ),
+    enabled: opened && selected !== null,
+  });
 
   useEffect(() => {
     setOpened(false);
@@ -173,6 +182,22 @@ export function StoryHistoryView({
               <p key={index}>{text}</p>
             ))}
           </div>
+          {historicalQuery.data ? (
+            <p className="story-frame__intention-support">
+              Frozen scene {historicalQuery.data.asOfSequence}. Items and facts
+              are this checkpoint, not the live story.
+              {historicalQuery.data.items.length
+                ? ` ${historicalQuery.data.items
+                    .map((item) => `${item.label} (${item.holderKey})`)
+                    .join(', ')}.`
+                : ''}
+            </p>
+          ) : null}
+          {historicalQuery.isError ? (
+            <p className="story-frame__intention-support">
+              This saved scene is not an independent fork point.
+            </p>
+          ) : null}
           <button
             type="button"
             className="story-frame__intention story-frame__intention--explore"

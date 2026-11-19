@@ -3,6 +3,7 @@ import { flattenUniqueById } from './list-page';
 import { storiesListInfiniteOptions } from './stories-list-query';
 import { draftsListInfiniteOptions } from './drafts-list-query';
 import { storyHistoryInfiniteOptions } from './story-history-query';
+import { storyHistoricalSceneOptions } from './story-historical-query';
 import { fixtureIds } from '@/src/test/story-fixtures';
 
 describe('flattenUniqueById', () => {
@@ -78,6 +79,23 @@ describe('infinite list cursor kinds', () => {
         [],
       ),
     ).toBe(12);
+    const historical = storyHistoricalSceneOptions(
+      'viewer-1',
+      fixtureIds.storyId,
+      1,
+    );
+    expect(historical.queryKey).toEqual([
+      'viewer',
+      'viewer-1',
+      'story',
+      fixtureIds.storyId,
+      'scene',
+      1,
+    ]);
+    expect(historical.queryKey).not.toEqual(
+      storyHistoryInfiniteOptions('viewer-1', fixtureIds.storyId).queryKey,
+    );
+
     expect(
       history.getNextPageParam?.(
         {

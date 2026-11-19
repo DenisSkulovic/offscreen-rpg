@@ -11,6 +11,12 @@ export const queryKeys = {
     storyId: string,
     filters: Record<string, string | number | boolean | null | undefined> = {},
   ) => ['viewer', viewerId, 'story', storyId, 'history', filters] as const,
+  storyHistoricalScene: (
+    viewerId: string,
+    storyId: string,
+    sequence: number,
+  ) =>
+    ['viewer', viewerId, 'story', storyId, 'scene', sequence] as const,
   storiesList: (
     viewerId: string,
     filters: Record<string, string | number | boolean | null | undefined> = {},

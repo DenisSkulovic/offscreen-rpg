@@ -1,6 +1,6 @@
 # DATA04 | Historical scene read and independently forked game state
 
-**State:** Proposed · 2026-11-19  
+**State:** In progress · 2026-11-19
 **Kind:** implementation  
 **Execution:** Not part of currently active Kubernetes batch. Select individually or through explicitly approved safe batch.  
 **Related:** [DISTURN program](../../../designs/open/distributed-turn-poc/README.md) · [D2 data design](../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -50,9 +50,9 @@ The Cursor orchestrator may use isolated branches/worktrees for disjoint Ready p
 
 | Authority | Target claim / no-op | Inspected source SHA and diff | Normal proof | Negative proof | Source link |
 | --- | --- | --- | --- | --- | --- |
-| Product/vision | unchanged | Pending | Pending | Pending | Pending |
-| Data + fork owners | source-backed implementation | Pending | Pending | Pending | Pending |
-| Canonical documents/context | bounded owner changes | Pending | Pending | Pending | Pending |
-| Code/test or documentation-only | pending | Pending | Pending | Pending | Pending |
+| Product/vision | Journal stays read-only for historic offers; fork is independent | Inspected `return-and-journal.md`; no product rewrite of inventory/economy | Journal query key disjoint from live snapshot | Historic `canRespond` is false | [Return and journal](../../../../docs/product/experience/return-and-journal.md) |
+| Data + fork owners | Historical GET and checkpoint fork from the scene pair | `reads.ts` `readHistoricalScene`; `forks.ts` `fork` + preserved `forkCurrent` | Two-scene sword/king application test | Cross-user, mismatched identity, missing checkpoint, no live-table rebuild | [Forked continuities](../../../../docs/technical/engine/lifecycle-and-compatibility.md#forked-continuities) |
+| Canonical documents/context | Branch manifest `campaignId` is the fork story id | `writeBranchManifest` in `forks.ts` | Fork manifest campaignId equals fork id; parent root2 is not installed | Invalid checkpoint hash / passage identity | [Inherited manifest campaign id](../../../../docs/technical/storyteller/canonical-documents-and-packages.md#inherited-manifest-campaign-id) |
+| Code/test or documentation-only | Implementation + provider-free tests; packet stays open | See commit on `change/data04-historical-fork` | `historical-fork.test.mjs` | Same file negatives | Nest `GET :id/scenes/:sequence`; journal `storyHistoricalScene` key |
 
-**Closure:** complete four-plane ledger, archive per workflow and repair inbound links. No auto-successor.
+**Closure:** packet stays **open**. Do not archive Done until a two-scene sword/king proof is recorded against this commit; the application test is the current provider-free proof, not a journal E2E or Game Authority move. No auto-successor.
