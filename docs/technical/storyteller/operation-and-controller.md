@@ -21,7 +21,7 @@ One captured `single-turn.v1` task is one model call with no tools. `memory-expl
 
 ## Two loops
 
-**Status: selected long-term design, 2026-11-14. Not an implementation claim.** The prototype section below is what the current generation runtime actually specifies.
+**Status: selected long-term design.** The 2026-11-19 packing rule below is part of that design. This heading does not implement the packer. Today's code does not assemble P0–P3 this way. The prototype section below is what the current generation runtime actually specifies: one captured `single-turn.v1` call with no tools, or a funded `memory-exploration.v1` controller. See [Current prototype runtime](#current-prototype-runtime).
 
 The product needs a dependable creative decision-maker that remembers a fictional life, investigates the evidence actually needed, and proposes the next situation under the selected creative philosophy. It does not need a continuously running language-model mind, a tool per shopkeeper, or a model call on every tick.
 
@@ -36,13 +36,17 @@ LIVING WORLD LOOP (deterministic, durable, potentially weeks)
   -> player, approved routine, silence, or next admitted event
 
 STORYTELLER OPERATION (ephemeral model conversation, durable task state)
-  0. Capture world, actor, story, payer and source identity
-  1. Select task purpose, mandatory evidence and bounded recipe
-  2. Deterministic retrieval with provenance and coverage
-  3. Enough evidence -> final candidate
-     missing and useful -> bounded read with source-linked handles
+  0. Capture world, actor, story, payer, branch, checkpoint, and canon root
+  1. Select one role recipe, the mandatory evidence, and the bounded budget
+  2. Pack before inference
+     inject the known present
+     offer related material as a short orientation with handles
+     leave unknown history out of the pack
+  3. One composition call for a normal scene
+     unknown history uses one intention-level query inside that same operation
+     the deterministic backend does the reads
      mandatory evidence missing or too costly -> typed hold
-  4. Compose with the task prompt and verified evidence
+  4. Compose from the selected role recipe and the verified pack
   5. Validate JSON, mechanics, consistency and provenance
      structural repair only inside the captured budget
      never rewrite a settled receipt
@@ -51,7 +55,9 @@ STORYTELLER OPERATION (ephemeral model conversation, durable task state)
   dispose the provider thread
 ```
 
-No player-action API is a Storyteller tool. The model is not a privileged alternate user. Long stretches of accepted work call no model at all. A familiar exchange may use one round. Reentry after months, a contested identity, or a decisive encounter may use a few focused reads. An optional narrative director, if a future policy accepts it, revisits private goals without committing a world event.
+No player-action API is a Storyteller tool. The model is not a privileged alternate user. Long stretches of accepted work call no model at all. A familiar exchange may use one round. Reentry after months, a contested identity, or a decisive encounter may use a few focused reads inside the same operation. Those reads are not a chain of mandatory models. An optional narrative director, if a future policy accepts it, revisits private goals without committing a world event.
+
+The Storyteller proposes narration, descriptive changes, and evidence dependencies. The engine commits the game-state checkpoint and the canon root. This loop adds no Game Economy service. Process ownership stays in [Proposed service ownership](../platform/topology.md#proposed-service-ownership). The pack is [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19). Role recipes stay in [Task roles](prompts-and-tools.md#task-roles).
 
 Do not hold a SQL row lock while calling a provider. Short-lock capture of source and version is [concurrency](../engine/concurrency-and-recovery.md). This section defines what must be captured, not that every task path already does it.
 
