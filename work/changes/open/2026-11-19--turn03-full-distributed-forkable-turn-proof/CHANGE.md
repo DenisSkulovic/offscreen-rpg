@@ -46,6 +46,40 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 | Code | Bounded deployment/test/provider work described above, not a parallel rewrite of existing implementation Changes | Source tests, integration evidence and no silent skipped gates |
 | Related | Queue pointers, operations runbook, evidence/STATUS and reconciled authoritative docs | Wiki/link guards and truthful status |
 
+## Absorbed pre-fork and scorecard cases (2026-11-19)
+
+HK09 cancelled DIST06, BOOT04, STORY04, and TURN01 as superseded. These checks were not already stated above. They are not implemented, and this packet stays Proposed. One cold-cluster fixture covers them. A story wake stays a direct SQL outbox to Temporal, and RabbitMQ stays the separate postcommit fact.
+
+From DIST06:
+
+- Trace one stable operation id through the direct Temporal wake, the separate Rabbit postcommit fact, SQL, and S3, then record the actual RAM and the known limitations.
+- A 202 response must not display an uncommitted scene.
+- An SSE failure must not POST the command again.
+- Canonical bytes must not be read from a Pod-local copy.
+
+From BOOT04:
+
+- The browser path is login, then draft, then a successful scripted candidate, then start, then SSR scene 1, then refresh.
+- Retrying the same start request must not create a new passage.
+- An invalid candidate or a hash mismatch must not start the story.
+- Production-style app Pods must not mount the content directory.
+- An arbitrary unvalidated database insert must not create the opening.
+
+From STORY04:
+
+- The proof has one proposal, one authoritative passage, one canon root, and one immutable checkpoint.
+- Memory reads stay bounded to the pinned task, either as ask_memory or read_memory or as one prepacked source.
+- The fixture includes one unchanged canon document and one accepted descriptive patch.
+- A wrong branch, a stale task, or an invalid document patch must not create a half-published scene or a second billable request.
+
+From TURN01:
+
+- Choose one source-supported scripted opening and one supported outcome.
+- A reviewer can derive every expected publication hash, state, root transition, and fork outcome from one deterministic authored fixture.
+- A local or Compose shortcut, or a fake database succeeded row, is an explicit fail.
+- The scorecard is machine-readable PASS, FAIL, BLOCKED, or NOT-RUN.
+- Creating a fork without a branch-independent continuation is not a pass.
+
 ## Reconciliation ledger (complete before Done)
 
 | Claim / document | Delta or no-op | Source SHA and diff | Positive evidence | Negative evidence | Link/status |

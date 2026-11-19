@@ -40,6 +40,16 @@ Independent authoring or tests may use separate Git worktrees under the repo's p
 | Code | Bounded source and tests at explicit owners above | Provider-free test and later real cluster evidence |
 | Related | Change queue and impacted runbooks/status, not an invented completed deployment | Wiki and Change guards, link repair |
 
+## Absorbed BOOT01 cases (2026-11-19)
+
+HK09 cancelled BOOT01 as superseded. These checks were not already an acceptance line above. They are not implemented, and this packet stays Proposed. A start package is still not a successful candidate.
+
+- A successful scripted candidate plus its pinned source is admissible once.
+- A package by itself must not start a story.
+- An arbitrary success row must not start a story.
+- A changed candidate must not start a story.
+- The proof names the current code guard and which writer moves.
+
 ## Reconciliation ledger (complete at closure)
 
 | Claim owner | Delta or no-op | Source SHA/diff | Normal/negative proof | Link/status |

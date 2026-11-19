@@ -1,17 +1,19 @@
 # DIST05 | Split model execution and scene publication into separately deployed owners
 
-**State:** Proposed; depends on writer boundary (2026-11-19)  
+**State:** Cancelled/superseded (2026-11-19). Not Done. Acceptance cases moved to STORY03. The split is not implemented.  
+**Supersession:** HK09 archived this packet as Cancelled/superseded, not Done. The unique acceptance cases and negative tests now live in [STORY03](../../../../open/2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md#absorbed-dist05-cases-2026-11-19). No provider was called.
+  
 **Kind:** implementation  
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
-**Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
+**Program:** [Program](../../../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
 
 ## Goal / independently verifiable outcome
 
-Split model execution and scene publication into separately deployed owners. This Change is one bounded implementation outcome in the [distributed-turn POC](../../../designs/open/distributed-turn-poc/README.md), not authorization to implement the entire initiative.
+Split model execution and scene publication into separately deployed owners. This Change is one bounded implementation outcome in the [distributed-turn POC](../../../../../designs/open/distributed-turn-poc/README.md), not authorization to implement the entire initiative.
 
 ## Current source owners and exact baseline
 
-Source inspected on 2026-11-19 at GitHub `main`: [Work queue](../../README.md), [runtime](../../../../apps/worker/src/runtime/index.ts), [worker Activity adapter](../../../../apps/worker/src/activities/index.ts), [outbox](../../../../apps/worker/src/outbox/dispatch.ts), [application stories](../../../../packages/application/src/stories/README.md), [Storyteller publication](../../../../docs/technical/storyteller/generation-and-publication.md), [canonical files](../../../../docs/technical/storyteller/canonical-documents-and-packages.md). Reinspect current HEAD and the user's active Cursor branches. The source currently combines work in `apps/worker`; this plan does **not** claim it is already distributed. Existing local Compose stays a working fallback.
+Source inspected on 2026-11-19 at GitHub `main`: [Work queue](../../../../README.md), [runtime](../../../../../../apps/worker/src/runtime/index.ts), [worker Activity adapter](../../../../../../apps/worker/src/activities/index.ts), [outbox](../../../../../../apps/worker/src/outbox/dispatch.ts), [application stories](../../../../../../packages/application/src/stories/README.md), [Storyteller publication](../../../../../../docs/technical/storyteller/generation-and-publication.md), [canonical files](../../../../../../docs/technical/storyteller/canonical-documents-and-packages.md). Reinspect current HEAD and the user's active Cursor branches. The source currently combines work in `apps/worker`; this plan does **not** claim it is already distributed. Existing local Compose stays a working fallback.
 
 **Prerequisites:** DIST01 + DIST03; DIST02/DIST04 for live distributed dispatch; ARCH03/ARCH05 source and task requirements before real canon publication.
 
@@ -33,7 +35,7 @@ Split `createStorytellerRuntime.complete()` at the **existing durable attempt/pr
 
 ## Documentation is a required implementation plane
 
-Update the **canonical** owning headings as part of the same code diff or ratifying documentation Change: [topology](../../../../docs/technical/platform/topology.md#distributed-learning-target), [execution/outbox](../../../../docs/technical/platform/execution-and-delivery.md#commands-and-durable-delivery), [data](../../../../docs/technical/platform/data-and-persistence.md#who-owns-the-durable-record), [Storyteller](../../../../docs/technical/storyteller/generation-and-publication.md#what-publication-is-allowed-to-do), and the relevant source maps/runbooks/STATUS. Edit **only the owner headings materially changed**; leave reasoned no-ops. Do not copy this packet wholesale into every spec. Historical product promises on D&D, scene forking and canonical files remain intact. Run `pnpm wiki:change-guard --mode plan` and `--mode close`, source-relevant tests and doc link checks where available, report skipped checks honestly.
+Update the **canonical** owning headings as part of the same code diff or ratifying documentation Change: [topology](../../../../../../docs/technical/platform/topology.md#distributed-learning-target), [execution/outbox](../../../../../../docs/technical/platform/execution-and-delivery.md#commands-and-durable-delivery), [data](../../../../../../docs/technical/platform/data-and-persistence.md#who-owns-the-durable-record), [Storyteller](../../../../../../docs/technical/storyteller/generation-and-publication.md#what-publication-is-allowed-to-do), and the relevant source maps/runbooks/STATUS. Edit **only the owner headings materially changed**; leave reasoned no-ops. Do not copy this packet wholesale into every spec. Historical product promises on D&D, scene forking and canonical files remain intact. Run `pnpm wiki:change-guard --mode plan` and `--mode close`, source-relevant tests and doc link checks where available, report skipped checks honestly.
 
 ## Parallel orchestration
 

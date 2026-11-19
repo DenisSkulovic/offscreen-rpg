@@ -1,9 +1,11 @@
 # TURN01 | Ratify one complete forkable-turn acceptance fixture and scorecard
 
-**State:** Ready for owner-selected reconciliation (2026-11-19)  
+**State:** Cancelled/superseded (2026-11-19). Not Done. The fixture and scorecard moved to TURN03. The proof is not implemented.  
+**Supersession:** HK09 archived this packet as Cancelled/superseded, not Done. The unique acceptance cases and negative tests now live in [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md#absorbed-pre-fork-and-scorecard-cases-2026-11-19). No provider was called.
+  
 **Kind:** documentation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
-**Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
+**Program:** [D5 full release and acceptance](../../../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../../../designs/open/distributed-turn-poc/GAPS.md)
 
 ## Precisely bounded outcome
 
@@ -13,7 +15,7 @@ Ratify one complete forkable-turn acceptance fixture and scorecard. This Change 
 
 ## Source-based implementation / documentation work
 
-Ratify [D5](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) as the acceptance program. Inventory the actual existing REAL01/REAL02 fixture/candidate and selected D&D-lite mechanics; choose one source-supported scripted opening and one supported outcome. Specify a single test data seed; fixture identities, story/operation/generation IDs, source pins, scene1/scene2 states and corresponding canon roots, expected canonical descriptive patch and a noncurrent historical fork. Require a real branch-independent continuation, not just fork creation. Specify which existing test suites/scripts can be reused, which new fixture helpers are needed, and a machine-readable PASS/FAIL/BLOCKED/NOT-RUN ledger. Do not copy D5 into permanent docs: publish only exact acceptance claims, links and verified source differences under current owners. Set explicit status of prerequisite probes and per-gate stop-on-failure rules.
+Ratify [D5](../../../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) as the acceptance program. Inventory the actual existing REAL01/REAL02 fixture/candidate and selected D&D-lite mechanics; choose one source-supported scripted opening and one supported outcome. Specify a single test data seed; fixture identities, story/operation/generation IDs, source pins, scene1/scene2 states and corresponding canon roots, expected canonical descriptive patch and a noncurrent historical fork. Require a real branch-independent continuation, not just fork creation. Specify which existing test suites/scripts can be reused, which new fixture helpers are needed, and a machine-readable PASS/FAIL/BLOCKED/NOT-RUN ledger. Do not copy D5 into permanent docs: publish only exact acceptance claims, links and verified source differences under current owners. Set explicit status of prerequisite probes and per-gate stop-on-failure rules.
 
 **Owned source and canonical documents:** Existing REAL01/REAL02 fixture references and their test owners; docs/product/experience/ relevant journal and creation pages only if actual ambiguity; docs/technical/platform/{topology,execution-and-delivery,data-and-persistence}.md; existing observability/evaluation evidence conventions; no executable files.
 

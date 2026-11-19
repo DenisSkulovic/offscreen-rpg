@@ -1,6 +1,6 @@
 # D3 | Campaign bootstrap across Next, Nest, Game Authority and canonical storage
 
-**Status:** proposed architecture 2026-11-19; not yet ratified/implemented on Kubernetes. Leads to [BOOT01](../../../changes/open/2026-11-19--boot01-ratify-candidate-and-start-ownership/CHANGE.md). Source-checked against GitHub `main` during this pass. Preserve the existing two creation routes; choose *one deterministic fixture route* for the initial distributed acceptance only.
+**Status:** proposed architecture 2026-11-19; not yet ratified/implemented on Kubernetes. [BOOT01](../../../changes/archive/2026-11/other/2026-11-19--boot01-ratify-candidate-and-start-ownership/CHANGE.md) is cancelled into [BOOT03](../../../changes/open/2026-11-19--boot03-game-authority-start-admission/CHANGE.md). Start admission is not implemented. Source-checked against GitHub `main` during this pass. Preserve the existing two creation routes; choose *one deterministic fixture route* for the initial distributed acceptance only.
 
 ## The source matters: a start package is NOT an opening candidate
 
