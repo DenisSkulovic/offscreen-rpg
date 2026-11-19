@@ -77,5 +77,10 @@ export function createStorytellerRuntime(
         activeGenerationIds.delete(id);
       }
     },
+    // The claim lives on storyteller_attempt. This set only coalesces one process.
+    fetchCommittedGeneration: execution.fetchCommittedGeneration,
+    claimGeneration: execution.claimGeneration,
+    saveValidatedResult: execution.saveValidatedResult,
+    readValidatedResult: execution.readValidatedResult,
   };
 }

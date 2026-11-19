@@ -2,7 +2,7 @@
 
 **State:** Proposed after STORY01 (2026-11-19)  
 **Kind:** implementation  
-**Selection:** Not included in active Kubernetes batch; explicit approval required.  
+**Selection:** Provider-free claim seam only. The Game Authority handler, the workflow split, and any migration stay out of this slice.  
 **Design:** [D4 Storyteller handoff](../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [D1 service choreography](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md)
 
 ## Outcome / prerequisites
@@ -32,22 +32,27 @@ Can run in independent worktree alongside DATA02 and BOOT02 once STORY01 settled
 
 Only disjoint Ready Changes may run concurrently in isolated worktrees under an owner-approved batch. Shared workflow files, ledger migrations, authentication, canonical doc headings and the kind cluster have one integration owner. No automatic successor selection.
 
-## planned-impact.v1
+## Planned specification and implementation delta | planned-impact.v1
 
-| Plane | Expected result | Required evidence |
-| --- | --- | --- |
-| Product | unchanged; text-first D&D-like game, Storyteller DM plus mechanically authoritative engine | No new gameplay or unapproved agent role |
-| Technical | Update exactly affected Storyteller/Temporal/game authority owners with proven process boundary | Disposition matrix, false-success/duplicate-send negatives |
-| Code | Bounded API, activity and test implementation in named owners | Source tests; actual runtime evidence where requested |
-| Related | Index, runbook, causal logging and STATUS only as evidenced | Link guards, Change reconciliation |
+| Plane     | Expected result                                                                                                                                               | Required evidence                                             |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Product   | unchanged: the text-first game and the Storyteller role stay as written                                                                                       | No new gameplay or unapproved agent role                      |
+| Technical | changed: docs/technical/storyteller/operation-and-controller.md#custody-of-one-task records the attempt-row claim, and the remote workflow is still not split | Disposition of the claim seam and the duplicate-hash negative |
+| Code      | changed: packages/application/src/storyteller/execution.ts claims one generation on storyteller_attempt; negative: a different result hash conflicts          | packages/application/test/story02-task-claim.test.mjs         |
+| Related   | unchanged: STATUS, ROADMAP, and the change index stay untouched because this slice does not close the whole change                                            | No index or status edit                                       |
+
+## Provider-free slice
+
+This branch adds the claim seam in `packages/application/src/storyteller/execution.ts` and exposes it from `packages/application/src/storyteller/runtime.ts`. The provider-free proof is `packages/application/test/story02-task-claim.test.mjs`. The technical note is `docs/technical/storyteller/operation-and-controller.md`. No provider call was made. `storytellerV1` is still one activity. The remote workflow is still not split.
 
 ## Reconciliation ledger (fill before closure)
 
-| Authority | Planned delta / no-op | Source SHA/diff | Positive / negative proof | Link/status |
-| --- | --- | --- | --- | --- |
-| Product | unchanged | Pending | Pending | Pending |
-| Storyteller input + attempt custody | implement | Pending | Pending | Pending |
-| Game Authority publication + canon | review or bounded update | Pending | Pending | Pending |
-| Workflow / runtime / docs | versioned implementation | Pending | Pending | Pending |
+| Affected claim      | Authority                                                                    | Target delta                                                                                                                                    | Source delta                                          | Evidence tier   | Negative proof                                               | Map                        |
+| ------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | --------------- | ------------------------------------------------------------ | -------------------------- |
+| Product gameplay    | docs/product/storyteller/behavior-and-quality.md                             | unchanged: this slice does not change player-facing rules or who publishes a passage                                                            | no source behavior changed for product rules          | source-observed | a custody save does not write a story passage                | no product map change      |
+| Custody of one task | docs/technical/storyteller/operation-and-controller.md#custody-of-one-task   | changed: docs/technical/storyteller/operation-and-controller.md#custody-of-one-task records one attempt-row claim and one validated result hash | packages/application/src/storyteller/execution.ts     | fixture-tested  | a different result hash conflicts and the saved result stays | heading stays on this page |
+| Remote task custody | docs/technical/storyteller/generation-and-publication.md#remote-task-custody | unchanged: the remote workflow is still not split and this slice does not edit that page                                                        | packages/application/src/storyteller/runtime.ts       | source-observed | complete still generates and publishes in one call           | no map change              |
+| Attempt ledger      | packages/db/src/schema/storyteller.ts                                        | unchanged: storyteller_attempt remains the only attempt ledger and no column was added                                                          | packages/db/src/schema/storyteller.ts                 | source-observed | a migration was not added for a result-hash column           | no schema map change       |
+| Executor writes     | packages/application/src/storyteller/execution.ts                            | changed: the claim writes storyteller_attempt and does not write story, campaign, story_passage, or story_document_commit                       | packages/application/test/story02-task-claim.test.mjs | fixture-tested  | the conflicting hash test keeps the first saved result       | no route map change        |
 
 Run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, repair inbound links and archive actual outcome. No unverified Done.
