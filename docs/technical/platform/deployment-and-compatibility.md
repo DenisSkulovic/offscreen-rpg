@@ -128,6 +128,10 @@ Track at least:
 
 Start with structured logs, basic metrics and a useful AI trace destination. Add dashboards that answer operational questions. Hosted tracing must have content redaction/retention settings; local development should still function without the telemetry service.
 
+## Zero-provider game-chaos design (not an implementation result)
+
+The selected testing evolution is [one zero-provider scripted campaign under bounded chaos](../../architecture/09-chaos-and-zero-token-play.md), owned by the existing [K8S10](../../../work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md), not a separate production operator. It uses the real `scriptedStorytellerResult` and schema validation, the same SQL/S3/Temporal publication path, and a strict provider dispatch tripwire rather than lorem ipsum or a paid provider. A deliberate single saved-result crash is first; a seeded, one-fault-at-a-time, recovery-gated application-Pod loop follows only after TURN03 and the real TURN02 release. Saturation, PostgreSQL interruption, DNS/network loss and bounded local load are separate proof profiles with explicit expected degraded availability and stop rules. The one-primary CNPG lab is **not HA**. [Detailed matrix](../../../work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/PROOF.md). Neither the design nor the historical Rabbit consumer-loss smoke is evidence of a running game under chaos.
+
 ## Tests that demonstrate the architecture
 
 Use the established Node test runner for pure policy/contract tests and compiled Nest integration tests, PostgreSQL plus Temporal integration tests for execution, and Playwright for browser flows. Verify compatibility with Temporal's worker/test environment when adding it; there is no need for a second runner without a concrete limitation. Temporal's test environment supports time skipping, allowing multi-hour waits to be exercised quickly. [Temporal testing](https://docs.temporal.io/develop/typescript/best-practices/testing-suite).
