@@ -4,7 +4,7 @@
 
 **Selection owner** for `pnpm repo:brief`. Packets live here (`open/` + `archive/`).
 
-**Agent execution efficiency (WIKI18, proposed 2026-11-19):** [Bounded coding-agent navigation, just-in-time verification and real token/cost traces](open/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md) follows the owner-supplied HK01 Grok/Cursor screenshots. The agent explored ~25 files/26 search actions by roughly minute 3, but screenshots do not expose actual tokens/USD or final correctness. WIKI18 reuses the existing W2/W3 benchmark, tests compact source-specific handoffs against full workflow orientation, and keeps safety/documentation checks. **Not selected; no paid agent benchmark authorized.** Active HK01 work and other Cursor batches are unaffected.
+**Agent execution efficiency (WIKI18, selected 2026-11-19):** [Bounded coding-agent navigation, just-in-time verification and real token/cost traces](open/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md) is selected. The executor reads a route card and does not preload the change-workflow skill or guard source. A local trace parser counts reads and leaves missing usage null. **No paid agent benchmark is authorized, and no cost reduction is claimed.**
 
 Current change: none
 

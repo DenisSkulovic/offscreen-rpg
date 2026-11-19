@@ -1,6 +1,6 @@
 # WIKI18 | Measure and reduce coding-agent navigation and guard overhead
 
-**State:** Proposed, documentation + tooling implementation after owner selection (2026-11-19). **Not selected** and does not authorize any paid agent benchmark. 
+**State:** Implementing (2026-11-19). The owner selected the route card and the local trace parser. No paid agent benchmark is authorized. Not Done: no before/after trace of a live executor has been recorded, so no cost reduction is claimed.
 **Origin:** Owner-supplied HK01 Grok 4.7 screenshots (2026-11-19, ~2–3 minutes into a single isolated worker) and source inspection of `AGENTS.md`, `.agents/skills/{change-workflow,implementation-slice,cursor-handoff}/SKILL.md`, [W2/W3 benchmark](../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md), and current [HK01](../2026-11-17--hk01-retire-local-repair-helper/CHANGE.md). The screenshots are **illustrative**, not a structured token/cost trace.
 **Priority:** Practical before a large subagent wave; read-only tracing/design can overlap HK01 implementation. Coordinator owns any shared agent-rules edits. Do not interrupt the active HK01 worktree.
 
@@ -37,9 +37,9 @@ The key distinction to test is **wiki retrieval inefficiency vs broad executor w
 
 | Owner | Before problem | After diff | Normal/negative test | Evidence & status |
 | --- | --- | --- | --- | --- |
-| Selected Change handoff | Broad orientation / missing exact route, if confirmed | Pending source-backed compact handoff | Pending | Pending |
-| Executor skill / guards | JIT stop conditions insufficient, if confirmed | Pending | Pending | Pending |
-| W2/W3 benchmark / trace parser | No observed HK01 cost measurement | Pending | Missing usage stays null | Pending |
-| Product/technical authority | Must remain unchanged unless real behavior changed | Reasoned unchanged / precise updated heading | No source-truth drift | Pending |
+| Selected Change handoff | A small executor was told to read AGENTS.md, the change-workflow skill, and then discover files | `.agents/skills/cursor-handoff/SKILL.md` now requires a route card and forbids that preload. The Change template first screen names the same card | A handoff that also says "read the change-workflow skill" violates the card | Reviewed. No live executor trace |
+| Executor skill / guards | Executors preloaded guard source before a failure | `.agents/skills/implementation-slice/SKILL.md` says to run the focused test while editing and to open guard source only after a printed failure names a file | An unknown trace event is not treated as a successful empty run | `node --test scripts/repo-tools/agent-trace.test.mjs` |
+| W2/W3 benchmark / trace parser | No local parser, and screenshots are not token counts | `scripts/repo-tools/agent-trace.mjs` writes `wiki.agent-trace.v1`. The benchmark names it. Missing usage stays null | A repeated budget.ts read counts once as a repeat. A mystery event exits 2. A result with no usage keeps tokens null | Parser tests. Paid W2/W3 comparison not run |
+| Product/technical authority | Must remain unchanged unless real behavior changed | Unchanged because this slice does not change player-facing rules or the game runtime. The benchmark page records the parser and the unauthorized paid comparison | A trace without usage is not reported as zero tokens or as a cheaper agent | No product page edit |
 
 **Closure:** archive Done only after a real demonstrated workflow/trace improvement with guard safety intact; otherwise keep Proposed or Cancelled with a documented rejected hypothesis, not a fabricated “30% cheaper” claim.

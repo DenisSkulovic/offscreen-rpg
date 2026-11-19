@@ -5,6 +5,10 @@ description: Implement one already-approved, bounded Offscreen RPG task or featu
 
 # Implementation slice (executor mode)
 
+The handoff route card is the read list. Read those files and the one named heading. Do not read `AGENTS.md`, `.agents/skills/change-workflow/SKILL.md`, `scripts/repo-tools/change-guard.mjs`, or Markdown slug internals to prepare for a guard that has not failed.
+
+During an edit, run the one focused test and `git diff --check`. Near closure, run the guard commands the packet names. If a guard fails, read its printed code and message, then only the file that message names. Stop when the selected contract, the owner symbol, and one negative case are known. Another read needs a named uncertainty. Do not claim a token or dollar saving. A trace with no usage object keeps those fields null.
+
 The user/architect supplies an **approved outcome**, the affected product/technical contracts, likely files/owners and acceptance. The executor should make ordinary local engineering choices but must not change requirements, widen scope or spawn agents to invent a new design.
 
 ## Input packet

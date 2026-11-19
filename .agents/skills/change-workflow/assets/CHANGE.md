@@ -13,6 +13,7 @@
 > **Primary governing heading:** [exact selected product/technical claim with Markdown link/fragment; distinguish proposals].  
 > **Known trap / contrary case:** [one explicit reason a plausible edit would be wrong].  
 > **Scope/permission:** [for documentation: named canonical heading edits and links only; for implementation: source/tests/config files; both require negative proof and no unapproved side effects].
+> **Route card:** [2–5 source or test paths, one negative case, and the verification commands]. The executor reads this card and the primary heading. It does not preload the change-workflow skill or guard source.
 
 This brief is not a substitute for reading this whole selected packet. Permanent product/technical owners, not this handoff, hold authority. Avoid copying whole historical audits or lengthy research.
 

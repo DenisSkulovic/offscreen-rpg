@@ -30,6 +30,18 @@ PROVE: [docs: before/after claim preservation + broken-link/heading health + adv
 RETURN: [diff/files, impacted claims/links, actual checks and failures, authority conflicts, unresolved owner decisions, exact next step]
 ```
 
+```text
+ROUTE CARD:
+CHANGE: [packet path and its first screen only]
+AUTHORITY: [one permanent heading]
+ANCHORS: [2-5 source or test paths]
+NEGATIVE: [one case that must fail closed]
+VERIFY: [the focused command, then the named closure guard]
+DO NOT READ: AGENTS.md, the change-workflow skill, or guard source, unless a printed guard failure names that file.
+```
+
+The executor prompt contains the route card and does not also say "read AGENTS.md and the change-workflow skill." A small slice does not preload the full reconciliation skill. That skill stays available when the slice changes a permanent heading or the guard fails.
+
 **Documentation-mode first-screen condition:** the selected packet must state **Code unchanged because ...** and an exact Markdown-only scope. Do not silently edit application source, run provider calls or mark a proposed policy as accepted merely to make prose coherent. If a current source fact cannot be verified, retain an explicit blocker or unknown rather than inventing a status.
 
 **Economics:** Don't paste hundreds of lines of unchanged specs or code into Cursor. Link the exact headings and source symbols. Don't require a global repository scan, all tests, multi-agent reviews, new architecture, or extra documentation artifacts without a reason. Avoid parallel implementation agents editing the same owner. If a slice needs too much context, **split by accepted outcome**, not arbitrary file/line count.
