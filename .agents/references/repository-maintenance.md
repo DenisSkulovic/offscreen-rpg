@@ -5,7 +5,7 @@ Read-only checks for routes, Change lifecycle, and review candidates. A warning 
 ## Commands
 
 - `pnpm repo:maintenance` writes a human summary and `out/maintenance/report.json`.
-- `pnpm repo:maintenance --strict` exits nonzero for a missing open route, an invalid `Current change`, a terminal packet left in `open/`, an active packet left in `archive/`, an unclassified control document, or an expired exception. Age and freshness candidates stay warnings.
+- `pnpm repo:maintenance --strict` exits nonzero for a missing open route, an invalid `Current work` in work/QUEUE.md, a terminal packet left in `open/`, an active packet left in `archive/`, an unclassified control document, or an expired exception. Age and freshness candidates stay warnings.
 - `pnpm repo:maintenance --json` prints the same report.
 - `pnpm repo:brief --health` prints the top three review candidates. `pnpm repo:brief --json` still prints the local SHA, branch, dirty paths, and selected Change. Adding `--health` to `--json` adds a `health` field.
 
@@ -16,7 +16,7 @@ Shallow or missing Git history is `unavailable`. That is not a zero-age freshnes
 1. Fill the reconciliation ledger.
 2. Run `pnpm wiki:change-guard --mode close --change <packet> --base <sha>`.
 3. Run `pnpm repo:maintenance --strict`.
-4. Archive a terminal packet and update the queue. `Current change: none` is valid.
+4. Archive a terminal packet and update the queue. `Current work: none` in work/QUEUE.md is valid. An open standalone Task must have TASK.md and its own index route; a terminal Task belongs under work/tasks/archive. The Change catalog is not a second selector.
 
 ## CI
 
