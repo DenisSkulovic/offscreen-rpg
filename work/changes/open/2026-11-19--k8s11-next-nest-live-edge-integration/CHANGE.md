@@ -1,5 +1,7 @@
 # K8S11 | Deploy existing Next/Nest edge with real SSE end-to-end in kind
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** Next production origin/SSR/SSE focused proof then one real Gateway join. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
+
 **State:** Proposed (2026-11-19)  
 **Kind:** implementation  
 **Program:** [Distributed architecture laboratory](../../README.md#distributed-architecture-laboratory-new-2026-11-19)  
