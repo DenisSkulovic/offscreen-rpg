@@ -1,6 +1,6 @@
 # Composer-ready execution | how to make implementation cheap without guessing
 
-**Authority:** operational adjunct to [change packet profiles](change-packet-profiles.md), [planner investigation standard](planner-investigation-standard.md), [Cursor budget policy](cursor-model-budget-policy.md) and the established Change lifecycle. **One Change can contain many microtasks.** The Change is the unit of scope and acceptance; an executor task is a **very small code mutation**, not another backlog status or source of product truth.
+**Authority:** Composer T-ID assignments are **subordinate steps inside a Change**. They are not the standalone operational [Tasks](../../work/tasks/README.md). [Work taxonomy](../../work/WORK-TAXONOMY.md) and [central work selector](../../work/QUEUE.md) decide whether a new independent Task is warranted. This is an operational adjunct to [change packet profiles](change-packet-profiles.md), [planner investigation standard](planner-investigation-standard.md), [Cursor budget policy](cursor-model-budget-policy.md) and the established Change lifecycle. **One Change can contain many microtasks.** The Change is the unit of scope and acceptance; an executor task is a **very small code mutation**, not another backlog status or source of product truth.
 
 ## The two different documents
 
