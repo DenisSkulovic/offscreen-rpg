@@ -1,5 +1,7 @@
 # DIST03 | Introduce independently deployable Game Authority boundary without migrating all gameplay
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** verify one already-landed GA read/resolution seam; BOOT03 expands separately. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
+
 **State:** Implemented on `change/dist03-game-authority` (2026-11-19). One story seam. Not archived.  
 **Kind:** implementation  
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
