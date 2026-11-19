@@ -48,3 +48,20 @@ Current change: none
 | [ledger/](ledger/) | Compact closed-work index |
 
 **Standard:** [change work-unit](../../.agents/references/change-work-unit-standard.md). **Tooling:** `node scripts/repo-tools/archive-changes.mjs --dry-run|--apply`.
+
+
+## Distributed architecture laboratory (new, 2026-11-19)
+
+**Owner direction:** build a Kubernetes-hosted, event-driven learning target deliberately, while preserving the current modular-monolith implementation until bounded migration Changes prove each boundary. This is infrastructure education, NOT a claim of live production readiness. **Selection remains `none`**; Cursor must only implement a packet explicitly selected by the owner. [Architecture reconciliation](open/2026-11-19--arch01-distributed-target-contract/CHANGE.md) is the first documentation Change. The following implementation Changes are ordered candidates, not blanket authorization:
+
+- [ARCH01 Ratify a distributed learning target without misrepresenting current runtime](open/2026-11-19--arch01-distributed-target-contract/CHANGE.md) — Ready; dependency: None; execute first.
+- [K8S01 Reproducible kind laboratory with isolated namespaces and infrastructure smoke tests](open/2026-11-19--k8s01-reproducible-kind-foundation/CHANGE.md) — Proposed; dependency: ARCH01; verified WSL/Docker/Desktop and safe resource budget.
+- [K8S02 CloudNativePG single-primary deployment with durable storage and recovery proof](open/2026-11-19--k8s02-postgres-operator-and-data-safety/CHANGE.md) — Proposed; dependency: K8S01; ARCH01 storage contract; backup/destroy semantics agreed.
+- [K8S03 RabbitMQ operator, durable queue baseline and failure demonstration](open/2026-11-19--k8s03-rabbitmq-broker-messaging/CHANGE.md) — Proposed; dependency: K8S01, ARCH01; resource budget after PostgreSQL.
+- [K8S04 Redis disposable cache on Kubernetes with explicit loss behavior](open/2026-11-19--k8s04-redis-cache-contract/CHANGE.md) — Proposed; dependency: K8S01, ARCH01; available memory.
+- [K8S05 Real S3-compatible object storage with persistent testable lifecycle](open/2026-11-19--k8s05-object-storage-and-lifecycle/CHANGE.md) — Proposed; dependency: K8S01, K8S02 resource/storage proof; explicit implementation selection.
+- [K8S06 Temporal server deployment with independent workflow persistence and worker-loss drill](open/2026-11-19--k8s06-temporal-production-style-runtime/CHANGE.md) — Proposed; dependency: K8S01 K8S02; capacity check and current Temporal SDK inventory.
+- [K8S07 Cluster observability with one demonstrable end-to-end trace and failure signal](open/2026-11-19--k8s07-observability-vertical-slice/CHANGE.md) — Proposed; dependency: K8S01 plus selected runtime component; reserve memory budget.
+- [K8S08 Deploy isolated service skeletons and safe event contracts before real code extraction](open/2026-11-19--k8s08-service-skeleton-and-event-contracts/CHANGE.md) — Proposed; dependency: ARCH01 K8S01 K8S03 K8S07; service ownership agreed in canonical specs.
+
+**Stop condition:** Do not migrate current game code, delete Compose, dispatch paid providers, expose credentials, or describe an untested service as production. Every Change updates authoritative technical docs, runbooks, status/evidence and four-plane reconciliation before Done. Cluster creation uses only disposable developer resources after preflight and explicit selection.
