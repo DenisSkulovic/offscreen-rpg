@@ -1,5 +1,7 @@
 # TURN02 | Compose one reproducible Kubernetes release for real application services
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: pinned S3 bootstrap, real images and one serialized cluster join. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
+
 **State:** Proposed, dependency gated (2026-11-19)  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
