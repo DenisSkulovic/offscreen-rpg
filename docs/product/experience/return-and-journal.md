@@ -14,6 +14,12 @@ A month of ordinary life should remain enjoyable to revisit without becoming hun
 
 Use a focused recap and searchable history linked to people, places, commitments and original passages. Later relevance can change what a recap includes **without rewriting what happened**. A generated recap or synopsis does not replace the saved original passage. The first POC keeps that limit in [POC Journal](living-book-poc.md#poc-journal-intentionally-modest). Do not discard ordinary entries because they initially seem unimportant, or require every mechanical update to become prose.
 
+## Scene checkpoints, review and forks | long-term target
+
+**Selected eventual experience, 2026-11-19:** The Living Book must allow the player to navigate back to **any committed scene**, inspect the actual recorded scene and its historical state, then fork a new independently evolving story **from that exact scene**. A scene checkpoint includes enough authoritative information to recover character capabilities, consequential world facts, relationships, applicable inventory/equipment/resources, fictional time and commitments without importing later parent-story outcomes. World-neutrality remains binding: a microbe's relevant facts are not a medieval adventurer's gold ledger. Historical reading and forking are separate actions; reading is side-effect free, and a fork may not reroll the old scene or repeat provider charges.
+
+This exceeds the selected first POC, whose basic journal is only source-faithful passage reading. The present fork implementation supports validated current checkpoints, **not arbitrary historical scenes**. Do not label the historical state/replay or any-scene fork as implemented. Specific scene boundary semantics and historical view schema belong to the technical lifecycle/persistence contracts.
+
 ## No chapters
 
 There are no chapters or chapter boundaries in the experience. A continuous conversation can contain many rapid decisions; quiet life can continue without a literary transition. Internal summary segments serve storage and retrieval only. Vocabulary: [concepts](../foundations/concepts.md).

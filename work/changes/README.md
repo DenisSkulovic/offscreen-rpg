@@ -56,7 +56,7 @@ Current change: none
 
 - [ARCH01 Ratify a distributed learning target without misrepresenting current runtime](archive/2026-11/other/2026-11-19--arch01-distributed-target-contract/CHANGE.md) — Done (2026-11-19); documentation only. The modular engine stays. The laboratory is selected and not deployed.
 - [K8S01 Reproducible kind laboratory with isolated namespaces and infrastructure smoke tests](archive/2026-11/other/2026-11-19--k8s01-reproducible-kind-foundation/CHANGE.md) — Done (2026-11-19). A local kind cluster was created, probed, and deleted. Compose volumes remained.
-- [K8S02 CloudNativePG single-primary deployment with durable storage and recovery proof](open/2026-11-19--k8s02-postgres-operator-and-data-safety/CHANGE.md) — Proposed; dependency: K8S01; ARCH01 storage contract; backup/destroy semantics agreed.
+- [K8S02 CloudNativePG single-primary deployment with durable storage and recovery proof](archive/2026-11/other/2026-11-19--k8s02-postgres-operator-and-data-safety/CHANGE.md) — Done (2026-11-19) and merged. One CloudNativePG 1.30.2 primary kept a committed row after its Pod was deleted. The cluster was deleted. Compose volumes remained.
 - [K8S03 RabbitMQ operator, durable queue baseline and failure demonstration](open/2026-11-19--k8s03-rabbitmq-broker-messaging/CHANGE.md) — Proposed; dependency: K8S01, ARCH01; resource budget after PostgreSQL.
 - [K8S04 Redis disposable cache on Kubernetes with explicit loss behavior](open/2026-11-19--k8s04-redis-cache-contract/CHANGE.md) — Proposed; dependency: K8S01, ARCH01; available memory.
 - [K8S05 Real S3-compatible object storage with persistent testable lifecycle](open/2026-11-19--k8s05-object-storage-and-lifecycle/CHANGE.md) — Proposed; dependency: K8S01, K8S02 resource/storage proof; explicit implementation selection.
@@ -68,4 +68,18 @@ Current change: none
 
 **Additional architecture/verification packets (2026-11-19):** [ARCH02 service ownership and event contracts](open/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md) is proposed after ARCH01 and before service skeletons. [K8S09 Gateway API edge](open/2026-11-19--k8s09-gateway-api-edge-networking/CHANGE.md) is proposed before exposing skeletons; use a maintained Gateway API controller, **not the retired community ingress-nginx**. [K8S10 distributed fault/load harness](open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md) is proposed after the substrate and observability exist. These are unselected, not deployed. [Roadmap priority](../../ROADMAP.md#current-owner-priority--2026-11-19-distributed-architecture-laboratory) now makes infrastructure and resilient event-based architecture the active learning focus. Documentation remains first-class; completed wiki batches do not imply all docs are Done.
 
-**Batch orchestration note (2026-11-19):** New Change bundles should document a dependency/ownership schedule under the [parallel execution standard](../../.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). This is planning guidance only: **Active batch: none** until explicit owner authorization, and the canonical `Current change: none` is unchanged. Cursor may parallelize approved disjoint work using isolated branches/worktrees; cluster operations on one local kind context, shared spec headings, and final integration must be serialized. Current ARCH/K8S packets require reinspection of completed work and dependencies before any batch dispatch.
+**Batch orchestration note (2026-11-19):** Owner authorized the distributed-lab bundle and parallel dispatch of independently implementable Changes. **Active batch: K8S03, K8S04, K8S09.** K8S02 (`22159e28`) is merged. ARCH02 (`9d50b4ff`) is held: its ownership table proposes an Economy service, and the later product boundary on `main` forbids that service. It goes back to its branch before merge. Orchestrator: the coordinating Cursor chat. `Current change: none` stays, because this is a bundle rather than a single serial selection. Schedule under the [parallel execution standard](../../.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19).
+
+| Change | Prerequisites | Execution class | Owns this wave | Shared resource |
+| --- | --- | --- | --- | --- |
+| ARCH02 | ARCH01 Done | parallel-write | Held for revision on `change/arch02-service-ownership` | No Economy service |
+| K8S02 | ARCH01 and K8S01 Done | serial-shared-resource | Merged at `49aa2d95`; cluster deleted | Kind cluster released |
+| K8S03 | ARCH01 and K8S01 Done | parallel-write, cluster under lock | `infra/kubernetes/lab/rabbitmq/`, messaging runbook | Flock around kind/kubectl |
+| K8S04 | ARCH01 and K8S01 Done | parallel-write, cluster under lock | `infra/kubernetes/lab/redis/`, cache runbook, Redis heading | Flock around kind/kubectl |
+| K8S09 | ARCH01 and K8S01 Done | parallel-write, cluster under lock | `infra/kubernetes/lab/gateway/`, gateway runbook | Flock around kind/kubectl |
+| K8S05, K8S06 | K8S02 branch | depends-on | Wait until this cluster wave finishes | Same Docker and kubeconfig |
+| K8S07 | One runtime component | depends-on | Wait | Cluster memory |
+| K8S08 | ARCH02, K8S03, K8S07 | depends-on | Wait | Ownership contract plus broker and traces |
+| K8S10 | K8S02–K8S09 | depends-on | Wait | Full substrate |
+
+Parallel execution: K8S03, K8S04, and K8S09 write disjoint paths at the same time. Each holds `/tmp/offscreen-k8s-cluster.lock` for the whole `up.sh` → smoke → `down.sh` session. They do not edit the shared kind scripts, the technical index, or the runbook index.

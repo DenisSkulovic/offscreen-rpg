@@ -180,7 +180,7 @@ Chamber inspection can read a selected intention through the developer adapter. 
 
 Current runtime: a player command is direct HTTP to the Nest API in the modular monolith. The actor, frozen operation id, 202, GET, and error headings above still govern that call.
 
-Proposed target: a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept a notification command or a fictional-market command from the browser.
+Proposed target: a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept a notification command or a fictional-market command from the browser. A player route does not own a committed scene checkpoint and does not assemble that history by asking whichever service answers first. That checkpoint is selected future behavior. The current journal and the current-only fork do not implement it, and this page does not add a route for it.
 
 Negative: minting a fresh player operation id to recover a lost response stays forbidden on player routes. That fresh id cannot duplicate an admitted roll, a story-item transfer, or another committed effect. An imaginary market is not a service. This page does not add a market endpoint. Effect identity stays on [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records).
 
