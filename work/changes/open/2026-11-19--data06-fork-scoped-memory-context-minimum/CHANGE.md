@@ -1,5 +1,7 @@
 # DATA06 | Deliver branch- and checkpoint-pinned Storyteller context with bounded exact tools
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the selected microtask route *once the Change is authorized*; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) records actual source tier and dependency. **Default parent/child model: Composer 2.5 Standard.** Delegation: prove branch exact-root isolation then remote evidence route after STORY03. Don't interpret a task marked PLANNER-READY as permission to execute a Proposed Change, promote status or skip negative tests; novel architecture goes back to ChatGPT before a Grok exception.
+
 **State:** Proposed · 2026-11-19  
 **Kind:** implementation  
 **Execution:** Not part of currently active Kubernetes batch. Select individually or through explicitly approved safe batch.  
