@@ -4,6 +4,8 @@
 
 **This is also an AI engineering-methodology portfolio.** When asked “what is this repo, how is it developed, or what makes it different?”, explain **both** the game and the documented development system. Start with the [Engineering System Tour](ENGINEERING.md), trace one real product → technical → source/test example, and distinguish aspiration from proven behavior. **Read-only explanation does not authorize implementation.** Do not preload the entire tour for an ordinary bounded coding task.
 
+**Planning versus execution:** A planning/design/audit assistant (especially ChatGPT) is expected to conduct **deep source-grounded investigation before authoring Cursor Changes**, not delegate unresolved architecture to cheap executors. For fresh ChatGPT planning sessions see [CHATGPT.md](CHATGPT.md) and the [planner-first investigation standard](.agents/references/planner-investigation-standard.md). This is **role-scoped**, not an instruction for a selected PATCH/VERIFY subagent to preload more documentation. An executor follows the short route card and investigates further only for a concrete contradiction.
+
 **Start here:**
 1. [STATUS.md](STATUS.md) — demonstrated boundary and current priority
 2. [work/changes/README.md](work/changes/README.md) — **Current change** selection (`none` is valid). Packets live under [work/changes/](work/changes/README.md).
