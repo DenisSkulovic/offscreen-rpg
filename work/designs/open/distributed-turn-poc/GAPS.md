@@ -89,3 +89,14 @@
 Each future executable Change must name **owned files/interfaces/migrations**, exact source-of-truth writers, incoming/outgoing schemas, state revisions, idempotency and retry/rollback decisions, safe launch/teardown, expected metrics, applicable cost/permission gates, normal/negative tests, canonical docs to update, and isolation from parallel agents. A placeholder “create Game Engine service” with no interface contract is **not Ready**.
 
 **Next design pass recommended:** S01–S06 and P01, starting with one process/transaction owner and RabbitMQ/Temporal placement. It is the highest-impact unresolved seam: it determines who can commit scenes, where the canonical S3 staging happens and what each model worker is allowed to know. It should be detailed before a Game Authority/Storyteller implementation Change is created. Existing ARCH02 may own this work after integration, rather than spawning a duplicate specification.
+
+## Mapping the first gap-reduction Changes (2026-11-19)
+
+- [DIST01](../../../changes/open/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md): design gates S01/S04/S05/S06 and P01, reconciled with ARCH02. Until its decisions are integrated, executable transport/extraction packets stay Proposed.
+- [DIST02](../../../changes/open/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): narrow adapter/protocol subset of S04/S05, no live broker mutation.
+- [DIST03](../../../changes/open/2026-11-19--dist03-game-authority-private-boundary/CHANGE.md): narrow API-to-Game Authority proof for S01/S02, not all controllers or historical snapshots.
+- [DIST04](../../../changes/open/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md): one live topic routing between SQL outbox, Rabbit and Temporal for S04/S06.
+- [DIST05](../../../changes/open/2026-11-19--dist05-storyteller-execution-worker-split/CHANGE.md): generation/publication process split for S03/K06/K07, still requiring ARCH03/05 source contracts for full historical context.
+- [DIST06](../../../changes/open/2026-11-19--dist06-first-distributed-turn-integration/CHANGE.md): provider-free integration of I03/I04/I05 and P01/P03 subset; **it does not complete C03/C04, K02/K04 or live provider evaluation.**
+
+**Unplanned implementation Changes still to specify:** C01/C02 campaign bootstrap and package pins across Pods; C03/C04 historical checkpoint storage and branching; C05 history and client DTO; K01/K02 shared S3 publication cutover and crash handling; K04/K05 fork-scoped canon and harness; K07 explicit provider custody; full P02 golden+negative fixture and P04 POC failure drills. They require source-level design passes, not generic placeholders. Refer to the [D1 candidate contract](D1-EXECUTION-CONTRACT.md) for the transport proposal, not as deployed behavior.
