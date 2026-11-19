@@ -94,6 +94,22 @@ The current journal and the current-only fork do not implement historical recons
 
 Search indexes, Cognee, and vector stores are rebuildable aids. They are not a copy of the checkpoint or the canon root. This Change does not install them. Deleting an index leaves the pair intact. A rebuilt index, a renamed identity document, or a shared graph must not make a later parent or sibling fact visible as this branch's present canon. The read rule is [Fork-scoped retrieval and task input](context-selection-and-recall.md#fork-scoped-retrieval-and-task-input--selected-target-2026-11-19).
 
+### Inherited manifest campaign id
+
+Source-observed at `af512d1f`. `documentManifestSchema` in `packages/documents/src/schema.ts` requires `campaignId` to be a UUID. Writers set that UUID to the story id. `stageStoryBootstrapDocuments` and `stageStoryPublicationDocuments` reject a manifest whose `campaignId` differs from `storyId`. A fork's story id differs from the ancestor's `campaignId`, so the fork cannot install the ancestor hash as its own `story.document_root_hash` and still pass that check.
+
+Three alternatives were considered.
+
+1. Rewrite `campaignId` inside the ancestor bytes so it equals the fork story id. That changes the hash, breaks create-if-absent identity, and claims the fork authored the ancestor's documents.
+2. Point the fork's current root at the ancestor hash and drop the `campaignId === storyId` check. That check is what stops one story from publishing onto another story's root.
+3. **Selected.** The checkpoint records provenance `{ ancestorStoryId, ancestorRootHash, ancestorRootRevision }`. The ancestor manifest stays immutable, including `campaignId` equal to the ancestor story id. Before the fork publishes, it writes a branch-specific `offscreen.manifest.v1` whose `campaignId` is the **fork** story id, whose `revision` is 1, and whose `previousRootHash` is null. Its entries reference the same object hashes as the ancestor root at the fork boundary, and no later parent entry. `previousRootHash` does not point at the ancestor hash, because that field is this campaign's contiguous history, and the ancestor is a different `campaignId`. Provenance stays on the checkpoint and on `story.forked_from_*`. This contract does not add a field to `offscreen.manifest.v1` and does not add a writer. The current journal and the current-only fork do not store or reconstruct this manifest. `forkCurrent` does not copy `documentRootHash` at all.
+
+A fork from scene 10, after parent scene 20 has recorded the king dead, includes only the scene-10 root's entries. The king-dead document is not an entry. The fork still sees the king alive. A later parent root is not this branch's root.
+
+### Prose is not inventory
+
+A Storyteller markdown document, a structured document, and a passage body are not `story_item` authority. They cannot move `sword-a`, change `holder_key`, set HP, or advance `gameSecond`. Character quantities inside `characterSchema` are counted resources on the mechanical snapshot. They are not a second inventory and not a Game Economy service. Search indexes are not authority. The holder, the clock, and the canon root used by a fork are the checkpoint pair at [Mutable field inventory](../platform/data-and-persistence.md#mutable-field-inventory).
+
 ## Reusable world libraries and campaign overlays
 
 A campaign workspace is not necessarily the owner of its whole world. A player may create or import a reusable **world library** containing extensive lore, histories, places, cultures, terminology, metaphysics, rules guidance, maps/media references and other authored source material. Story start pins one or more exact world-library roots and mounts them into the campaign's knowledge view. The model's pretrained recollection is never treated as the authoritative substitute for supplied world material, especially with small, cheap or private-setting models.
