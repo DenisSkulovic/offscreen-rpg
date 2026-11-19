@@ -29,4 +29,6 @@
 - If source contradicts approved design, report file/symbol, conflict and a negative case—do not quietly rewrite the bible.
 - **Any** Change is **Done** only after its CHANGE.md **Reconciliation ledger** and dependent-claim review are complete. Documentation-only Changes need before/after semantic preservation and a negative reading test, not fake code edits. **Never mark Done while permanent docs are more stale than landed code or selected meaning is silently rewritten.**
 
+**Batch execution:** If the owner authorizes multiple Changes together, first consult [parallel Change orchestration](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). The coordinating chat may dispatch independent Ready Changes to isolated subagents/worktrees concurrently, while serializing shared docs, cluster resources and final integration. Never infer batch approval from nearby Proposed tickets or autonomously start the next Change.
+
 **Return briefly:** changed files/diff; normal + meaningful negative proof; commands actually run/skipped; risk/blocker; next dependency; provider-spend status.
