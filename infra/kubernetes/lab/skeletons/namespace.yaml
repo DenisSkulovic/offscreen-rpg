@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-skeletons
+  labels:
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/skeleton: placeholder
