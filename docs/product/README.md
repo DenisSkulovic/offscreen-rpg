@@ -4,6 +4,21 @@ What players and staff must be able to rely on. Technical guarantees are [techni
 
 A selected experience target is a product preference, not a demonstration that the experience is playable, coherent, or affordable. [STATUS](../../STATUS.md) records what has been shown. The unratified [product-reality claim register](../../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md) records which ambitions still lack that evidence. It adds no rule. Shared play named on a selected page is not delivered and not implemented. Consent, authoritative dice, and no duplicate effects stay binding.
 
+## The player loop, before the infrastructure
+
+```mermaid
+flowchart LR
+    Enter[Enter a world and character] --> See[Read a committed scene]
+    See --> Choose[Make a supported decision]
+    Choose --> Wait[Consequences are admitted and settled]
+    Wait --> Return[Return to the next committed scene]
+    Return --> See
+    See --> Branch[Optional historical scene fork]
+    Branch --> See
+```
+
+This describes product intent. It does **not** assert that every loop, arbitrary premise, long-life scene or fork can already be played. Read [Living Book target](experience/living-book-poc.md), [rules](gameplay/rules.md), [STATUS](../../STATUS.md), and the [visual architecture atlas](../architecture/README.md) for current-versus-target system details.
+
 | Question | Owner |
 | --- | --- |
 | Is a selected target already feasible? | [STATUS](../../STATUS.md) · [product-reality claims](../../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). Selection is not proof |
