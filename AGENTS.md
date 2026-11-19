@@ -6,6 +6,10 @@
 
 **Planning versus execution:** A planning/design/audit assistant (especially ChatGPT) is expected to conduct **deep source-grounded investigation before authoring Cursor Changes**, not delegate unresolved architecture to cheap executors. For fresh ChatGPT planning sessions see [CHATGPT.md](CHATGPT.md) and the [planner-first investigation standard](.agents/references/planner-investigation-standard.md). This is **role-scoped**, not an instruction for a selected PATCH/VERIFY subagent to preload more documentation. An executor follows the short route card and investigates further only for a concrete contradiction.
 
+**Human architecture entry:** [docs/architecture/README.md](docs/architecture/README.md) is a 39-diagram Mermaid atlas showing **current source vs selected target vs unproven behavior**, including real game turns, persistence fences and the [zero-provider Chaos Lab](docs/architecture/09-chaos-and-zero-token-play.md). It explains rather than overrides product/technical truth.
+
+**Execution economics, selected 2026-11-19:** ChatGPT performs broad source investigations, design, failure modelling and writes [Composer microtasks](.agents/references/composer-first-execution.md) inside complex Changes. **Cursor parent and normal subagents default to Composer 2.5 Standard** and one microtask at a time. Grok variants are exceptional, task-specific owner-approved opt-ins, not the default for SQL/Temporal/security work if the planner has already settled the algorithm. See [budget policy](.agents/references/cursor-model-budget-policy.md). The subagent guard doesn't control the parent dropdown or actual billing. Do not preload entire SOURCE-MAP/EXECUTION/PROOF families into every child.
+
 **Start here:**
 1. [STATUS.md](STATUS.md) — demonstrated boundary and current priority
 2. [work/changes/README.md](work/changes/README.md) — **Current change** selection (`none` is valid). Packets live under [work/changes/](work/changes/README.md).
