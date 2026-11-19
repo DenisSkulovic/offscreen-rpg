@@ -1,0 +1,22 @@
+---
+description: Cursor agent/subagent investigation depth and economical execution routing
+alwaysApply: true
+---
+
+# Cursor execution depth | do not rediscover the repository
+
+**Scope: Cursor only.** This is a task-execution instruction, NOT a replacement for product/technical authority or `AGENTS.md`. Use the project's [.cursor model policy](../../.agents/references/cursor-model-budget-policy.md) for allowed models. Do not load full wiki, global guard implementations, or unrelated Change programs by default.
+
+Before dispatching a child, parent tags the task `DEPTH=VERIFY|PATCH|INVESTIGATE`. **Depth controls discovery. Risk controls model tier.** A money-sensitive but fully specified test run is still VERIFY and may use Grok 4.6 Medium; it does NOT become repository-wide research.
+
+- **VERIFY: execute a known command/fixture/check and report evidence.** Read the exact handoff and only named instructions/commands, inspect `git status --short` and preconditions, run the named check once unless recovery is explicitly authorized, then record exit code, counts, logs and NOT-RUN if blocked. No generic wiki traversal, source refactor or speculative debugging. Open a referenced runbook section only if needed to safely execute the command. If prerequisites fail, make *one bounded diagnostic* justified by the error; otherwise stop with evidence.
+- **PATCH: make an already-designed source/document change.** Read the exact Change section/route card, named technical heading and 2–5 source/test anchors, inspect status, implement, run focused normal and negative tests, reconcile directly affected docs, close with actual guards. No global investigation unless a concrete mismatch blocks correctness. When another read is needed, identify the specific unknown first.
+- **INVESTIGATE: answer an unresolved architectural/source question.** Only when requested, enumerate hypotheses and the minimal candidate owners, use narrow symbols/wiki queries and cited findings. Deliver a decision with source evidence and a suggested bounded PATCH, not an unsolicited whole-repo audit. Investigation can expand when a new contradiction specifically warrants it. Stop once the concrete question is answered.
+
+**Read-expansion gate:** The handoff is a map, not a scavenger hunt. Stop searching once the exact owner, necessary contract and meaningful negative case are known. Do not read code for guards or Markdown slug handling *preemptively*. Run guards, inspect the actual error, and open the named implementation slice **only on failure**. Prefer symbol/range reads to whole large files. Reuse the existing context, do not recapitulate the same docs in nested agents.
+
+**Escalation:** If a VERIFY task needs code/design changes, stop and report which check, prerequisite and minimal failure; do not silently become PATCH. If PATCH reveals a genuinely unresolved contract, stop with file/symbol/negative case; do not silently become INVESTIGATE. The parent can explicitly issue a new bounded request. A hard case never authorizes High/Fast/Grok 4.7/Auto.
+
+**Return concise evidence:** `DEPTH`, actual command/edit, result, tests and meaningful negatives, source/commit, any blocker and whether extra reads were necessary. No invented token savings. A cheap task completed safely is the win, not a high file-read count.
+
+**Example:** HK03's 32-case profiled-suite run is `VERIFY`, **not** code archaeology. Observe status, verify disposable `offscreen_auth_test`, conditionally start Compose Temporal/Next as instructed, run the named suite once, write counts or NOT-RUN, commit on that branch and stop. Do not explore the game engine or new wiki pages just because they exist. Never reset named production/dev databases, delete volumes or call paid providers.
