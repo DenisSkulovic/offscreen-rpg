@@ -1,5 +1,7 @@
 # BOOT02 | Controlled POC fixture publication and pinned S3 package import
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the selected microtask route *once the Change is authorized*; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) records actual source tier and dependency. **Default parent/child model: Composer 2.5 Standard.** Delegation: verify existing package pin and Pod receipt; no duplicate importer or fake candidate. Don't interpret a task marked PLANNER-READY as permission to execute a Proposed Change, promote status or skip negative tests; novel architecture goes back to ChatGPT before a Grok exception.
+
 **State:** Implementing — local fixture import landed; shared-cluster Pod proof recorded (2026-11-19). Packet stays open.
 **Kind:** implementation
 **Selection:** Not currently selected; existing active Cursor batch remains untouched. This slice does not edit the change queue. The packet is not Done.
