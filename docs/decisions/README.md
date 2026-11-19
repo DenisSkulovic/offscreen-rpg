@@ -8,7 +8,7 @@ Only [D-0001](D-0001--modular-engine.md) and [D-0002](D-0002--react-next-client.
 
 | Record | Choice |
 | --- | --- |
-| [D-0001](D-0001--modular-engine.md) | Modular engine. Not an LLM-led mechanical chat. Working target, not a code authorization. |
+| [D-0001](D-0001--modular-engine.md) | Modular engine. Not an LLM-led mechanical chat. Working target, not a code authorization. The [2026-11-19 continuity note](D-0001--modular-engine.md#continuity-on-2026-11-19) adds a local laboratory without replacing this choice. |
 | [D-0002](D-0002--react-next-client.md) | React, Next.js and TanStack Query for the client campaign. |
 
 ## Locator

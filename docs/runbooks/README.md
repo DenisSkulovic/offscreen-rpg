@@ -6,6 +6,7 @@ Source-adjacent package procedures may remain beside code.
 | Runbook | Question |
 | --- | --- |
 | [Local development](local-development.md) | How do I start the portfolio locally without a model call or a disposable-database reset? |
+| [Kubernetes lab](kubernetes-lab.md) | How do I create and delete the disposable kind cluster without touching Compose volumes? |
 | [Local integration tests](local-integration-tests.md) | How do I run provider-free database and identity checks on a disposable database? |
 | [Local Storyteller rehearsal](local-storyteller-rehearsal.md) | How do I run a provider-free Chamber demo, and where does an explicitly authorized paid rehearsal stay separated? |
 | [ChatGPT design snapshot](chatgpt-design-snapshot.md) | How do I export a source ZIP for design investigation in ordinary ChatGPT? |

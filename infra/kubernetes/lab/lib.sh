@@ -1,0 +1,106 @@
+# Shared guards for the disposable offscreen-lab cluster.
+# A script that sources this file must not delete Docker volumes or foreign kubectl contexts.
+
+set -euo pipefail
+
+LAB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLUSTER_NAME="offscreen-lab"
+CONTEXT_NAME="kind-offscreen-lab"
+KUBECTL=(kubectl --context "$CONTEXT_NAME")
+
+snapshot_file() {
+  local path="$1"
+  mkdir -p "$(dirname "$path")"
+  : >"$path"
+}
+
+snapshot_volumes() {
+  local path="$1"
+  snapshot_file "$path"
+  docker volume ls -q | sort >"$path"
+}
+
+snapshot_foreign_contexts() {
+  local path="$1"
+  snapshot_file "$path"
+  kubectl config get-contexts -o name 2>/dev/null | grep -vx "$CONTEXT_NAME" | sort >"$path" || true
+}
+
+assert_same_file() {
+  local before="$1"
+  local after="$2"
+  local label="$3"
+  if ! cmp -s "$before" "$after"; then
+    echo "Refusing to continue: ${label} changed." >&2
+    echo "before:" >&2
+    cat "$before" >&2
+    echo "after:" >&2
+    cat "$after" >&2
+    exit 1
+  fi
+}
+
+assert_no_volume_loss() {
+  local before="$1"
+  local after="$2"
+  local missing
+  missing="$(comm -23 "$before" "$after")"
+  if [[ -n "$missing" ]]; then
+    echo "Refusing to continue: existing Docker volumes disappeared." >&2
+    echo "$missing" >&2
+    exit 1
+  fi
+}
+
+cluster_volume_names() {
+  local path="$1"
+  snapshot_file "$path"
+  local id
+  while read -r id; do
+    [[ -z "$id" ]] && continue
+    docker inspect -f '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}}{{"\n"}}{{end}}{{end}}' "$id"
+  done < <(docker ps -aq --filter "name=${CLUSTER_NAME}-") | sort -u >"$path"
+}
+
+assert_volumes_outside_cluster_remain() {
+  local before_all="$1"
+  local cluster_vols="$2"
+  local after_all="$3"
+  local protected missing
+  protected="$(mktemp)"
+  comm -23 "$before_all" "$cluster_vols" >"$protected"
+  missing="$(comm -23 "$protected" "$after_all")"
+  rm -f "$protected"
+  if [[ -n "$missing" ]]; then
+    echo "Refusing to continue: a Docker volume outside this cluster disappeared." >&2
+    echo "$missing" >&2
+    exit 1
+  fi
+}
+
+require_memory() {
+  local available_kib
+  available_kib="$(awk '/MemAvailable:/ {print $2}' /proc/meminfo)"
+  if [[ -z "$available_kib" || "$available_kib" -lt 4194304 ]]; then
+    echo "Refusing to create a cluster: MemAvailable is ${available_kib:-unknown} KiB, below 4 GiB." >&2
+    exit 1
+  fi
+  echo "MemAvailable KiB: ${available_kib}"
+}
+
+assert_loopback_only() {
+  local ports
+  ports="$(docker ps --filter "name=${CLUSTER_NAME}" --format '{{.Names}} {{.Ports}}')"
+  echo "$ports"
+  if echo "$ports" | grep -E '0\.0\.0\.0:|\[::\]:' >/dev/null; then
+    echo "Refusing to continue: a cluster container publishes a non-loopback port." >&2
+    exit 1
+  fi
+  local exposed
+  exposed="$("${KUBECTL[@]}" get svc -A --no-headers 2>/dev/null | awk '$3=="NodePort" || $3=="LoadBalancer" {print}')"
+  if [[ -n "$exposed" ]]; then
+    echo "Refusing to continue: a Service is NodePort or LoadBalancer." >&2
+    echo "$exposed" >&2
+    exit 1
+  fi
+}

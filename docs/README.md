@@ -20,6 +20,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | What may the Storyteller invent, and what must it refuse? | [Behavior and quality](product/storyteller/behavior-and-quality.md) |
 | What should the player see on return, and what is still a draft? | [Return and journal](product/experience/return-and-journal.md) · [shared play](../work/designs/open/shared-play/README.md) · [player replay](../work/designs/open/player-replay/README.md) |
 | What engine are we building toward, and why not a chat that writes truth? | [Selected engine](technical/engine/selected-architecture.md) · [decision](decisions/D-0001--modular-engine.md) |
+| Is the Kubernetes laboratory the game engine? | [Distributed learning target](technical/platform/topology.md#distributed-learning-target). Selected educational target. The engine remains [D-0001](decisions/D-0001--modular-engine.md). This index does not deploy the laboratory |
 | Does the model have a bounded loop, and when must it stop? | [Controller](technical/storyteller/operation-and-controller.md) · [prompts and tools](technical/storyteller/prompts-and-tools.md) |
 | What may staff see or change, and what is only proposed? | [Authority](product/admin/authority-and-governance.md) · [Player 360](product/admin/player-360-and-support.md) · [LiveOps](product/admin/gameplay-and-liveops.md) |
 | What is a forensic turn, and what was the model shown? | [Turn capsule](technical/observability/identities-and-evidence.md#turn-evidence-capsule) |

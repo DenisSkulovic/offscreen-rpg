@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-a
+  labels:
+    offscreen.rpg/lab: disposable
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-b
+  labels:
+    offscreen.rpg/lab: disposable

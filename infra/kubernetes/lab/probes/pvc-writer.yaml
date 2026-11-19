@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: probe-data
+  namespace: lab-a
+  labels:
+    offscreen.rpg/probe: smoke
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 64Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-writer
+  namespace: lab-a
+  labels:
+    offscreen.rpg/probe: smoke
+spec:
+  restartPolicy: Never
+  enableServiceLinks: false
+  containers:
+    - name: writer
+      image: docker.io/library/busybox:1.36
+      imagePullPolicy: IfNotPresent
+      command:
+        - sh
+        - -c
+        - i=0; while [ "$i" -lt 30 ]; do if echo lab-pvc-ok > /data/marker; then exec sleep 3600; fi; echo "marker write failed"; ls -ld /data; i=$((i + 1)); sleep 1; done; exit 1
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          memory: 64Mi
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: probe-data

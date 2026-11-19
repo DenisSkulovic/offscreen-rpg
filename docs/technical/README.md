@@ -5,6 +5,7 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | Question | Owner |
 | --- | --- |
 | What is deployed, and who calls whom? | [Topology](platform/topology.md) |
+| What may the educational laboratory practice, and what is still the current runtime? | [Distributed learning target](platform/topology.md#distributed-learning-target). A selected learning target. Not a deployed cluster, not a broker in the game, and not a replacement of [D-0001](../decisions/D-0001--modular-engine.md) |
 | Who is logged in, and what may they read? | [Identities and access](platform/identities-and-access.md) |
 | What must every player route agree about actor, operation id, 202, GET, and errors? | [HTTP and client contracts](platform/http-api-and-client-contracts.md) |
 | Which trust boundary may this actor cross? | [Platform trust boundaries](platform/security-and-trust-boundaries.md) |

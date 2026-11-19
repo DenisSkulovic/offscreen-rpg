@@ -12,10 +12,10 @@ The recent documentation/wiki consolidation push is **complete for its bounded a
 
 **Training outcome:** The owner can inspect and explain every introduced component, its alternatives, responsibility, failure modes and operational behavior, rather than simply delegate whole-system architecture to coding agents. Build infrastructure in small demonstrable slices with actual runtime evidence. Failures/stress tests become first-class exercises once the relevant components exist, not theoretical diagrams masquerading as proof.
 
-**Target, not current implementation:** Kubernetes kind lab, PostgreSQL via CloudNativePG, RabbitMQ, Redis cache, Temporal, S3-compatible object storage, Gateway API edge, observable web/API and independently deployed game engine, storyteller, illustration, economy, payments and notifications. Contract-first service ownership; commands/events/workflows deliberately distinguished. The historical modular-monolith recommendation in [D-0001](docs/decisions/D-0001--modular-engine.md) remains the current source contract until [ARCH01](work/changes/open/2026-11-19--arch01-distributed-target-contract/CHANGE.md) reconciles it. [ARCH02](work/changes/open/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md) follows for ownership and event guarantees. The active candidate [Change program](work/changes/README.md#distributed-architecture-laboratory-new-2026-11-19) is the execution queue.
+**Target, not current implementation:** Kubernetes kind lab, PostgreSQL via CloudNativePG, RabbitMQ, Redis cache, Temporal, S3-compatible object storage, Gateway API edge, observable web/API and independently deployed game engine, storyteller, illustration, economy, payments and notifications. Contract-first service ownership; commands/events/workflows deliberately distinguished. The historical modular-monolith recommendation in [D-0001](docs/decisions/D-0001--modular-engine.md) remains the current implementation. [ARCH01](work/changes/archive/2026-11/other/2026-11-19--arch01-distributed-target-contract/CHANGE.md) reconciled the educational laboratory as an additional target. [ARCH02](work/changes/open/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md) follows for ownership and event guarantees. The active candidate [Change program](work/changes/README.md#distributed-architecture-laboratory-new-2026-11-19) is the execution queue.
 
 **Near-term stages:**
-1. Ratify target/current boundary and message/service ownership (ARCH01, ARCH02).
+1. ARCH01 has ratified the target and current boundary. ARCH02 still has to ratify message and service ownership.
 2. Build reproducible kind foundation, Postgres, messaging, cache, storage, Temporal and Gateway API edge (K8S01–06, K8S09). Strict local resource budgets and no silent volume destruction.
 3. Build one observable cross-service vertical slice and independently scalable service skeletons (K8S07–08).
 4. Deliberately inject crashes, network faults, duplicates, ordering problems and load; measure recovery and correctness (K8S10). Increase resilience architecture only when a failure experiment demonstrates why.
@@ -27,7 +27,8 @@ The recent documentation/wiki consolidation push is **complete for its bounded a
 
 - Product and technical contracts outrank code. A selected future design is not an implementation claim.
 - The client campaign uses the accepted React, Next.js and TanStack Query stack in [D-0002](docs/decisions/D-0002--react-next-client.md).
-- The engine *current working implementation* remains a modular monolith as described in [D-0001](docs/decisions/D-0001--modular-engine.md) until reconciled. Full short-lock refactor remains an open Change, not a finished program.
+- The engine working target remains the modular monolith in [D-0001](docs/decisions/D-0001--modular-engine.md). ARCH01 kept that as the current implementation. Full short-lock refactor remains an open Change, not a finished program.
+- An educational distributed laboratory is an additional selected target in [Distributed learning target](docs/technical/platform/topology.md#distributed-learning-target). It is not the current runtime, not a production deployment, and not permission to extract game services. Only a selected Change may execute it. K8S01 proved a disposable kind cluster and then deleted it.
 - Chamber is a developer laboratory for valid fixtures and controlled faults. It is not a player feature and not proof of live play.
 - In-game model spend and coding-agent spend are different budgets. Neither is authorized by this page.
 

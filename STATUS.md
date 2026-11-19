@@ -40,6 +40,8 @@
 
 **What worked (historical gameplay, Sep 24 2026):** Six successful Sol generations, exact 1,800-fictional-second warehouse shift, six septims paid once, coherent short-term conversation. Deterministic mechanics, saved generation/publication, canonical storage and bounded provider accounting are connected. October 23 rediscovery corrected the earlier “no notes/lost all recall” diagnosis without a new live run.
 
+**2026-11-19 educational laboratory:** [Distributed learning target](docs/technical/platform/topology.md#distributed-learning-target) is a selected design. [Kubernetes lab](docs/runbooks/kubernetes-lab.md) created a local two-node kind cluster, passed DNS, cross-namespace HTTP, and a PVC marker, then deleted the cluster. Compose volumes remained. The game is not deployed on Kubernetes. RabbitMQ, CloudNativePG, a production Temporal service, and separately deployed game services are not observed. No model call.
+
 **Current development priority:**
 1. Selection owner: [work/changes/README.md](work/changes/README.md). BOOK01 and BOOK02 were archived Done for their initial POC scope (2026-11-18). Completed packets, including the housekeeping prevention track and the retrieval/wiki experiments, stay in the [archive](work/changes/archive/README.md) and the [November ledger](work/changes/ledger/2026-11.md). Conclusions of the retrieval experiments stay in the [research register](research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md). Those studies are not current commands. QA-SF01 is Done. The focused Storyteller suite is 33 with 0 failures.
 2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.

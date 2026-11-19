@@ -35,6 +35,8 @@ This is close to some current choices because of the product failure model, not 
 
 Full event sourcing is not selected. A transactionally committed causal business ledger plus current projections is enough at first. Event replay as authority is a separate, expensive choice.
 
+The 2026-11-19 educational laboratory does not select the event-sourced microservices row. Its contract is [Distributed learning target](../platform/topology.md#distributed-learning-target). Campaign state stays a PostgreSQL projection.
+
 ## Six logical subsystems
 
 ```text

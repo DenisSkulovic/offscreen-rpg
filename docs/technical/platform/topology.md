@@ -2,6 +2,8 @@
 
 This is the implementation design; the [implementation overview](../../../STATUS.md) tracks coverage and current priorities, while the [development guide](../../../docs/runbooks/local-development.md) explains how to run and test existing code. The design supports the [product walkthrough](../../product/gameplay/acceptance-scenarios.md). Product choices still open in [questions](../../../work/designs/open/product-open-questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced. Build the broader application with scripted substitutes before connecting paid services.
 
+The current application shape is [Recommendation](#recommendation) and [Runtime shape](#runtime-shape). The additional educational laboratory is [Distributed learning target](#distributed-learning-target). That laboratory is not a description of the running system.
+
 ## Who owns the boundary
 
 | Boundary | Owner |
@@ -13,14 +15,14 @@ This is the implementation design; the [implementation overview](../../../STATUS
 | Usage window | [Distinct authorities](./spending-and-entitlements.md#distinct-authorities) |
 | Creative setting | [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings) |
 | Notification delivery | [Delivery flow](./notifications.md#delivery-flow) |
-| Selected topology | This page, [Runtime shape](#runtime-shape) |
+| Selected topology | This page: [Runtime shape](#runtime-shape) for the application, and [Distributed learning target](#distributed-learning-target) for the educational laboratory |
 | Compatibility | [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment) |
 
 Selected topology stays on this page.
 
 ## Recommendation
 
-Build a TypeScript modular monolith with a React/Next.js frontend, a NestJS API and Temporal workers. PostgreSQL owns committed application data; Temporal owns durable workflow execution and timers. Start with containers and a straightforward deployment; use Kubernetes later as a deliberate deployment exercise.
+Build a TypeScript modular monolith with a React/Next.js frontend, a NestJS API and Temporal workers. PostgreSQL owns committed application data; Temporal owns durable workflow execution and timers. Local development stays on containers and Compose. Kubernetes is a separate educational laboratory, specified in [Distributed learning target](#distributed-learning-target). That laboratory is not this table, and it is not a claim that a cluster is running.
 
 | Area | Recommended starting point | Reason and boundary |
 | --- | --- | --- |
@@ -29,7 +31,7 @@ Build a TypeScript modular monolith with a React/Next.js frontend, a NestJS API 
 | Frontend | React + Next.js App Router | Public pages can be prerendered; authenticated story screens use dynamic data and client interaction. |
 | Backend | NestJS, initially its Express adapter | Clear application modules, dependency injection and HTTP integration. No Nest microservice transports. |
 | Database | PostgreSQL + Drizzle + reviewed SQL migrations | Relational integrity and transactions, with JSONB for flexible narrative content. |
-| Durable execution | Temporal TypeScript SDK and Temporal Service | Story workflows, timers, message handling and bounded Activities. No separate background-job broker initially. |
+| Durable execution | Temporal TypeScript SDK and Temporal Service | Story workflows, timers, message handling and bounded Activities. The application path has no separate background-job broker. A laboratory broker is [Distributed learning target](#distributed-learning-target), not this row. |
 | Browser updates | HTTP commands + Server-Sent Events | Players submit occasional actions; the server publishes committed changes. Bidirectional sockets are unnecessary initially. |
 | Authentication | Better Auth with GitHub OAuth | Library-managed identity/sessions through its Node handler in the Nest Express server. |
 | Models | OpenRouter behind a small application adapter | One initial gateway with controlled model/provider selection. No LiteLLM service initially. |
@@ -63,6 +65,24 @@ A diagram of future infrastructure is not a claim that the service is deployed a
 The outbox relay forwards durable database notices into Temporal using stable identifiers. Temporal Service has its own managed persistence; its history tables are not application tables. Browser reads come from application PostgreSQL snapshots, not directly from workflow history.
 
 There is no service per faction, inventory, storyteller or notification type. Extract a service only when a measured scaling, ownership or isolation requirement pays for independent deployment, contracts and failure handling. Kubernetes would not change this decision: it can host a monolith.
+
+This diagram is the current selected application shape. The educational laboratory does not replace it. Hosting these same processes on Kubernetes would still be one modular application. Independently deployable skeletons belong to [Distributed learning target](#distributed-learning-target) and are not deployed by this diagram.
+
+## Distributed learning target
+
+Selected educational target, recorded 2026-11-19. This section is the only platform contract for that laboratory. It is not the current runtime, not [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment), and not a player-facing feature. [D-0001](../../decisions/D-0001--modular-engine.md#continuity-on-2026-11-19) records the same limit: the modular engine stays, and only the deferral of a learning environment moves.
+
+| Reading | What is selected or observed | What this reading does not say |
+| --- | --- | --- |
+| Current implementation | Docker Compose runs PostgreSQL, Redis, Temporal's development server, and an S3-compatible mock. The application is a modular monolith: web, API, and Temporal workers share packages. Inspect `compose.yaml`. | The game is not deployed on Kubernetes. RabbitMQ, CloudNativePG, a production Temporal cluster, and separately deployed game services are not in that Compose file and are not deployed. |
+| Working engine | [D-0001](../../decisions/D-0001--modular-engine.md) and [Alternatives that lose for now](../engine/selected-architecture.md#alternatives-that-lose-for-now). PostgreSQL owns committed story state. Rules stay pure. The Storyteller proposes and does not commit. | A process split does not move those owners. Event-sourced microservices remain rejected. An LLM-led chat remains rejected as mechanical truth. |
+| Educational laboratory | The owner chose to practice a local Kubernetes environment on purpose: a disposable cluster, durable PostgreSQL under an operator, a message broker, Redis as a disposable cache, S3-compatible object storage, a Temporal deployment with its own persistence, observability, and independently deployable service skeletons. The first exercised slice is the kind procedure in [Kubernetes lab](../../runbooks/kubernetes-lab.md). A 2026-11-19 run created that cluster, passed its probes, and deleted it. | The kind procedure is not the hosted release and not the running game. RabbitMQ, CloudNativePG, a production Temporal cluster, and service extraction remain unbuilt. A broker message is not a committed story fact. Redis is not application authority. Object storage is not the story transaction. A service skeleton is not an extracted game module. |
+
+The application path stays the [runtime shape](#runtime-shape) above. [Commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery) remains the bridge from the transactional outbox to Temporal. [Who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record) remains the storage split. [Redis boundary](./persistence-and-caching.md#redis-boundary) remains the cache rule, including inside the laboratory. Compose remains the local development route until a later Change proves a replacement. This section does not delete it.
+
+The laboratory may host the same modular application before it hosts any extracted service. There is still no service per faction, inventory, Storyteller, or notification type. Staff access stays a logical control plane inside the application, as [Dependency and trade-off rationale](../admin/topology-and-authorization.md#7-dependency-and-trade-off-rationale) already requires. A later skeleton Change has to name a process boundary and an event contract without moving rule ownership.
+
+Negative: a diagram, a Change packet, or a running disposable cluster does not mean RabbitMQ, six microservices, a production Temporal cluster, or Kubernetes are the deployed game. Game truth and deterministic rule ownership do not move because processes are split.
 
 ## Code organization
 
@@ -113,7 +133,7 @@ Redis is optional for measured read-cache, distributed rate-limit or live fan-ou
 | New scene reaching connected browsers | SSE, snapshots and lightweight live-change hints. |
 | A local module informing another module | A direct application call unless durable decoupling is actually needed. |
 
-The initial workloads do not justify a separate event broker. Temporal Task Queues dispatch workflow and Activity work; they are not general application publish/subscribe. If several independently operated consumers need durable delivery of the same application fact, evaluate a broker such as RabbitMQ. Keep the outbox relay narrow; do not grow subscriber routing, per-subscriber backlogs and dead-letter administration into a homemade broker.
+The application path still does not use a separate event broker. Temporal Task Queues dispatch workflow and Activity work; they are not general application publish/subscribe. [Commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery) remains the bridge from the transactional outbox to Temporal, and polling that outbox is enough for the bridge. The educational laboratory may practice a broker such as RabbitMQ before a measured production need exists. A message on that broker is not a committed story fact. Keep the application outbox relay narrow; do not grow subscriber routing, per-subscriber backlogs, and dead-letter administration into a homemade broker.
 
 ### Gameplay transitions and durable follow-ups
 

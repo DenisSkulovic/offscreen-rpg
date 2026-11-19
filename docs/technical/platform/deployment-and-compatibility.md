@@ -18,7 +18,7 @@ The portfolio should demonstrate a coherent system operating under failure, not 
 | Selected topology | [Runtime shape](./topology.md#runtime-shape) |
 | Compatibility | This page, [First hosted deployment](#first-hosted-deployment) |
 
-Compatibility stays on this page. Selected topology stays on [Runtime shape](./topology.md#runtime-shape).
+Compatibility stays on this page. Selected application topology stays on [Runtime shape](./topology.md#runtime-shape). The educational laboratory is [Distributed learning target](./topology.md#distributed-learning-target), not a second compatibility contract.
 
 ## Local development
 
@@ -78,6 +78,8 @@ Public delivery requires a deployed acceptance test on phone and desktop: open t
 
 Selected deployment and compatibility target. A diagram of future infrastructure is not a claim that the service is deployed and tested. Demonstrated coverage is [capability coverage](../../../STATUS.md#capability-coverage).
 
+The educational laboratory does not implement this section. A local cluster, an operator-managed database, or a self-hosted Temporal process in that laboratory is not Temporal Cloud, is not a demonstrated backup, and is not a demonstrated restore. The laboratory contract is [Distributed learning target](./topology.md#distributed-learning-target).
+
 Use one region with containerized web, API and Temporal workers plus managed application PostgreSQL. Prefer Temporal Cloud for the first hosted release if its measured cost fits the project budget; we still run our own application workers. Confirm current pricing, retention and connectivity before provisioning. Self-hosting Temporal is an alternative only with an explicit plan for its persistence, upgrades, security and recovery. A development server or casual Compose setup is not the production service. [Temporal deployment](https://docs.temporal.io/self-hosted-guide/deployment).
 
 Run application schema migrations once as a controlled release step. Use expand/contract changes where old and new processes overlap. Version Activity and message payloads because executions can outlive a deployment. Use compatible workflow changes or supported worker/workflow versioning, replay representative histories before rollout and drain workers gracefully. A new build must not strand running stories through nondeterministic replay. Temporal persistence upgrades are separate from application migrations. [Temporal workflow versioning](https://docs.temporal.io/develop/typescript/workflows/versioning).
@@ -90,13 +92,13 @@ The untested classification of those backup and restore requirements is [Release
 
 ## Kubernetes as a deliberate extension
 
-This is a selected later exercise. A diagram of future infrastructure is not a claim that the service is deployed and tested.
+Two different uses of Kubernetes stay on two owners.
 
-Kubernetes is a worthwhile hands-on portfolio exercise after the containerized vertical slice works. It is not needed to make the application modular, nor does it make the database highly available automatically. Production clusters involve availability, access, networking and operational planning beyond writing deployment YAML. [Kubernetes production considerations](https://kubernetes.io/docs/setup/production-environment/).
+The hosted release in [First hosted deployment](#first-hosted-deployment) may later run the same web, API, and worker images. Kubernetes is not required to make the application modular, and a cluster does not make PostgreSQL or Temporal highly available by itself. For that hosted release, prefer managed application PostgreSQL and Temporal Cloud, as the section above already says, rather than learning to operate both stateful systems in the same production cluster. Production clusters need availability, access, networking, and recovery planning beyond deployment YAML. [Kubernetes production considerations](https://kubernetes.io/docs/setup/production-environment/).
 
-The learning/demo target is concrete: run the same web/API/worker images in a local cluster, expose the web/API through ingress, configure environment/secrets, add readiness/liveness checks and resource requests/limits, perform a rolling update, kill a worker and verify recovery. Workers poll Temporal over their service connection. Use managed/external PostgreSQL and Temporal for an initial hosted cluster rather than simultaneously learning to operate both stateful systems inside Kubernetes.
+The educational laboratory is a different environment. Its contract, including local operators and a message broker, is [Distributed learning target](./topology.md#distributed-learning-target). The first local procedure is [Kubernetes lab](../../runbooks/kubernetes-lab.md): a disposable kind cluster that is deleted after its probes. Practicing those tools locally does not satisfy the hosted release and does not mean the game is deployed on Kubernetes. Do not add a service mesh, multi-region replication, or an abstraction whose only purpose is to look advanced. Autoscaling waits on a measured signal such as Task Queue schedule-to-start latency. CPU alone may not describe a worker that is waiting on a model.
 
-Keep manifests small. Add autoscaling only after measuring a meaningful signal such as Task Queue schedule-to-start latency or available worker slots; CPU alone may not describe model-waiting workers. Do not introduce service mesh, multi-region replication, operators or Helm abstractions simply to make the repository look advanced.
+A diagram of future infrastructure is not a claim that the service is deployed and tested.
 
 ## Observability
 
@@ -167,6 +169,6 @@ Use the [implementation overview](../../../STATUS.md) to identify the current ch
 2. **Build a playable scripted story:** settle the affected product rules, then implement start once, current scene, choices, chronology, waiting, pause/resume and reconnect. Test individual components and their interaction. Do not mistake an opening-text generator for the game.
 3. **Cover the broader experience:** shared setup and decisions, absence/default behavior, returning/recap, continuity and notification intents with local delivery substitutes. Exercise context selection, usage accounting with simulated costs and operational visibility. Define channel-specific behavior before implementing its adapter; no paid delivery is needed to test core intent handling.
 4. **Tune and demonstrate the complete application:** use a scripted browser experience, multiple story fixtures, recovery tests and clear setup instructions. Revisit product and technical specs as integration exposes gaps. Spend effort on the visible story experience as well as backend reliability.
-5. **Connect external services when explicitly chosen:** evaluate real bounded generation, provider failures, narrative quality, cache behavior and measured costs against the already tested application. Keep deterministic tests and the no-paid-key demo. Paid media, hosted deployment and Kubernetes are separate later choices, not prerequisites for completing application components.
+5. **Connect external services when explicitly chosen:** evaluate real bounded generation, provider failures, narrative quality, cache behavior and measured costs against the already tested application. Keep deterministic tests and the no-paid-key demo. Paid media, hosted deployment and Kubernetes are separate later choices, not prerequisites for completing application components. The educational laboratory in [Distributed learning target](./topology.md#distributed-learning-target) is a selected learning target and is still not a prerequisite for finishing those components.
 
 No subscription checkout, native app, public matchmaking or multi-agent population simulation is required for this sequence. Technical depth comes from the coherent execution of the intended game.

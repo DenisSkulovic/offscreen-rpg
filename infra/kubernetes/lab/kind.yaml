@@ -1,0 +1,13 @@
+# Disposable educational cluster for kind v0.33.0.
+# The cluster name is the CLI flag --name offscreen-lab, not this file.
+# The API server listens on loopback only. No host port is published for workloads.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  apiServerAddress: "127.0.0.1"
+  apiServerPort: 6443
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.37.0
+  - role: worker
+    image: kindest/node:v1.37.0
