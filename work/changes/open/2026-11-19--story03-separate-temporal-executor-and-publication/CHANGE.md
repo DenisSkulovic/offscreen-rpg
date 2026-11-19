@@ -1,5 +1,7 @@
 # STORY03 | Deploy a distinct Storyteller Temporal executor and GA publication activity
 
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: versioned workflow + saved-attempt CAS and GA publication, scripted only. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
+
 **State:** Proposed after STORY02 (2026-11-19)  
 **Kind:** implementation  
 **Selection:** Not included in active Kubernetes batch; explicit approval required.  
