@@ -19,6 +19,10 @@
 | Missing broker | Stop Rabbit while command→Temporal→publish continues | Story turn commits; optional derived projection lags only | TURN03 conditional if Rabbit projection installed |
 | Expensive ambiguity | A fake scripted claim is recomputable; a real provider attempt with unknown send state is simulated | Scripted re-evaluation deterministic/hash-safe; real provider path **does not** send automatically and is classified held/uncertain | pure policy tests, **zero network provider calls** |
 
+## Mandatory DB-shape probe
+
+The existing `generation_state_shape` constraint requires `succeeded` rows to hold a non-null `generation.attempt_id` and non-null `generation.output`. The new custody `claimGeneration` only inserts the attempt and `saveValidatedResult` saves its result under attempt attribution; neither associates a pending generation with that attempt. Therefore test **both** the initial pending row and the final succeeded row. Run two independent GA adopt calls concurrently with the same saved hash and assert the same attempt ID, one status revision transition (or source-backed exact intended count), no duplicate passage, and no invalid intermediate row. Try a conflicting `generation.attemptId` owned by legacy execution; it must **hold/refuse** instead of adopting a different saved result. A fake-output hash check **without** an actual SQL constraint check does not close STORY03.
+
 ## Economical command policy
 
 Work from repo root, use the workspace-filtered command that actually exercises the touched package. Intended candidates, **verify script existence at execution HEAD**:
