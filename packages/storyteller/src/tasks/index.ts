@@ -34,6 +34,7 @@ import {
   constrainChoiceRetrievalHandles,
   constrainPlanPrerequisites,
   constrainPlanFactTransitions,
+  omitTransmittedAppearanceSuggestion,
 } from './provider-schema-projection.js';
 
 export * from './opening';
@@ -191,14 +192,16 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
       input.task !== 'opening',
     );
   }
-  const outputSchema = constrainQuantityChangeDeltas(
-    withholdImmediateCheckModifiers(
-      input.task === 'consequence' || input.task === 'pending-consequence'
-        ? constrainActionEvidenceHandles(
-            rawOutputSchema,
-            context.evidence.map((passage) => `p${passage.sequence}`),
-          )
-        : rawOutputSchema,
+  const outputSchema = omitTransmittedAppearanceSuggestion(
+    constrainQuantityChangeDeltas(
+      withholdImmediateCheckModifiers(
+        input.task === 'consequence' || input.task === 'pending-consequence'
+          ? constrainActionEvidenceHandles(
+              rawOutputSchema,
+              context.evidence.map((passage) => `p${passage.sequence}`),
+            )
+          : rawOutputSchema,
+      ),
     ),
   );
   return {

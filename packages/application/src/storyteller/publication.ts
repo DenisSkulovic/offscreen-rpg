@@ -57,7 +57,10 @@ import {
   readDatabaseClockMs,
   restartActiveSceneAtPassage,
 } from '../stories/persistence';
-import { publicationAppearanceWrite } from '../stories/scene-appearance';
+import {
+  publicationAppearanceWrite,
+  publicationSceneCandidate,
+} from '../stories/scene-appearance';
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
@@ -119,7 +122,7 @@ function activeSceneRecallCues(
   ];
 }
 
-/** Production callers omit `internalAppearance`. An invalid candidate is dropped, not published. */
+/** Callers may omit `internalAppearance`. A valid result suggestion supplies the candidate. */
 export async function publishStorytellerResult(
   database: Database,
   id: string,
@@ -637,15 +640,17 @@ export async function publishStorytellerResult(
           };
         }),
       });
+      const sceneCandidate = publicationSceneCandidate({
+        internalCandidate: internalAppearance?.candidate,
+        suggestion: result.appearanceSuggestion,
+      });
       const written = publicationAppearanceWrite({
         generationId: id,
         storyId: current.id,
         ...(stagedDocuments
           ? { stagedPassageId: stagedDocuments.passageId }
           : {}),
-        ...(internalAppearance?.candidate !== undefined
-          ? { candidate: internalAppearance.candidate }
-          : {}),
+        ...(sceneCandidate !== undefined ? { candidate: sceneCandidate } : {}),
       });
       const passageId = await insertContinuationPassage(tx, {
         storyId: current.id,
