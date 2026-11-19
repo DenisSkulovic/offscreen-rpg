@@ -1,0 +1,136 @@
+# Disposable lab object store. SeaweedFS 4.54, one PVC, ClusterIP only.
+# Credentials come from the Secret object-store-s3, which smoke.sh creates and does not commit.
+# This Service is not the game store and not the Compose S3Mock.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-objects
+  labels:
+    offscreen.rpg/lab: disposable
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: object-store-data
+  namespace: lab-objects
+  labels:
+    app: object-store
+    offscreen.rpg/lab: disposable
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: object-store
+  namespace: lab-objects
+  labels:
+    app: object-store
+    offscreen.rpg/lab: disposable
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: object-store
+  template:
+    metadata:
+      labels:
+        app: object-store
+        offscreen.rpg/lab: disposable
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: seaweedfs
+          image: docker.io/chrislusf/seaweedfs:4.54
+          imagePullPolicy: IfNotPresent
+          args: ["mini", "-dir=/data"]
+          ports:
+            - name: s3
+              containerPort: 8333
+              protocol: TCP
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: object-store-s3
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: object-store-s3
+                  key: secret-access-key
+            - name: S3_BUCKET
+              value: lab-objects
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+          # Authenticated weed mini answers GET / with 403. 200 is the unauthenticated mode.
+          # Either code means the S3 port responded. Put, get, and delete stay in the smoke.
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - code=$(/usr/bin/curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8333/); [ "$code" = "200" ] || [ "$code" = "403" ]
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 36
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - code=$(/usr/bin/curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8333/); [ "$code" = "200" ] || [ "$code" = "403" ]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: object-store-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: object-store
+  namespace: lab-objects
+  labels:
+    app: object-store
+    offscreen.rpg/lab: disposable
+spec:
+  type: ClusterIP
+  selector:
+    app: object-store
+  ports:
+    - name: s3
+      port: 8333
+      targetPort: s3
+      protocol: TCP

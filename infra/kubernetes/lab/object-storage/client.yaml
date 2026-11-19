@@ -1,0 +1,50 @@
+# Short-lived S3 client for the object-store smoke. It is not a game process.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: object-store-client
+  namespace: lab-objects
+  labels:
+    app: object-store-client
+    offscreen.rpg/lab: disposable
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: client
+      image: public.ecr.aws/aws-cli/aws-cli:2.31.18
+      imagePullPolicy: IfNotPresent
+      command: ["sleep", "3600"]
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: object-store-s3
+              key: access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: object-store-s3
+              key: secret-access-key
+        - name: AWS_DEFAULT_REGION
+          value: us-east-1
+        - name: AWS_PAGER
+          value: ""
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 20m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
