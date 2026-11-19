@@ -19,6 +19,7 @@ Have ChatGPT do the expensive design and broad source investigation before handi
 
 ```text
 ROLE: Cursor executor. Execute exactly one selected Change, documentation or implementation kind. No independent product redesign.
+DEPTH: VERIFY | PATCH | INVESTIGATE; decide before spawning. VERIFY = exact command/evidence only, PATCH = already designed edit, INVESTIGATE = explicit unresolved question.
 KIND: [documentation | implementation]
 GOAL: [exact corrected reader inference or changed executable behavior]
 AUTHORITY: [permanent product file + heading]; [technical file + heading]; [PLAN/checkpoint if applicable]
@@ -41,6 +42,8 @@ NEGATIVE: [one case that must fail closed]
 VERIFY: [the focused command, then the named closure guard]
 DO NOT READ: AGENTS.md, the change-workflow skill, or guard source, unless a printed guard failure names that file.
 ```
+
+For a VERIFY handoff, strip irrelevant implementation sections and include only: workspace/branch, preconditions, exact command, safety boundary, permitted one-step recovery, stop condition, output receipt. Do not force the executor to read source/technical docs unless a failed prerequisite specifically requires them. PATCH uses named anchors; INVESTIGATE is a separately scoped research task. [Cursor execution-depth policy](../../../.cursor/rules/execution-depth.mdc) is applicable to parent and children.
 
 The executor prompt contains the route card and does not also say "read AGENTS.md and the change-workflow skill." A small slice does not preload the full reconciliation skill. That skill stays available when the slice changes a permanent heading or the guard fails.
 
