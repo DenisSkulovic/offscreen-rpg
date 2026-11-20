@@ -1,0 +1,5 @@
+#!/bin/sh
+# Installed locally via pnpm repo:hooks:install; not a server-side enforcement boundary.
+set -eu
+repo_root="$(git rev-parse --show-toplevel)"
+exec node "$repo_root/scripts/repo-tools/check-commit-message.mjs" "$1"
