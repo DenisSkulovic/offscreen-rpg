@@ -1,5 +1,19 @@
 # Technical contracts
 
+## Storyteller evolution | authoritative implementation contracts
+
+| Engineering question | Owner |
+| --- | --- |
+| Library roots, source roles, exact identity, structural sharing | [Canonical documents and packages](storyteller/canonical-documents-and-packages.md#product-commitment) |
+| Context selection, rooted recall and retrieval | [Context selection and recall](storyteller/context-selection-and-recall.md#what-source-enters-this-task) |
+| Durable writer mission and provider/cost custody | [Operation and controller](storyteller/operation-and-controller.md#two-loops) |
+| Writer tools, skills, Workdesk and delegated research | [Prompts and tools](storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract) |
+| Scene publication boundary | [Generation and publication](storyteller/generation-and-publication.md#scene-publication-fence) |
+| Direct launch and historical fork lifecycle | [Lifecycle and compatibility](engine/lifecycle-and-compatibility.md#forked-continuities) |
+| Post-publication state and Game Authority | [Authority and transitions](engine/authority-and-transitions.md#a-minimum-state-ledger) |
+| Fictional time and active commitments | [Chronology and activities](engine/chronology-and-activities.md) · [mechanics and capabilities](engine/mechanics-and-capabilities.md) |
+
+
 One owner per guarantee. Product intent is [product](../product/README.md). These pages include selected future design. They are not a status report.
 
 ## Architecture at a glance
