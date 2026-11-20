@@ -38,7 +38,7 @@ The access key and the secret key are created in memory by the smoke. The store 
 - Do not publish a NodePort or a LoadBalancer. Do not publish on `0.0.0.0` or `[::]`.
 - Do not put an access key or a secret key in Git.
 - Do not create a campaign row. Do not treat a start package as an opening candidate.
-- Do not delete Docker volumes. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` must still be present after `down.sh`.
+- Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Recovery limit
 

@@ -183,6 +183,8 @@ For continuing-life validation after the chamber, advance a scripted character t
 
 CI should run formatting/linting, type checks, contract/policy tests, relevant integration tests, builds and documentation checks. Keep live-provider evaluations opt-in and budgeted. Dependency and secret checks matter for a public repository that uses external credentials. Publish measured demo results only after running them; do not populate the README with invented benchmarks.
 
+The code workflow in `.github/workflows/code.yml` does not start Docker Compose or a kind cluster. When the path classifier selects integration, that workflow parses `infra/kubernetes/lab` YAML and runs `scripts/repo-tools/check-dxk05-ci-guards.mjs`, which refuses a `docker compose` command in the workflow or lab shell scripts, a node image whose digest differs from `infra/kubernetes/lab/app-release/images.pin`, and a lab context other than `kind-offscreen-lab`. Database and identity jobs use a GitHub-hosted Postgres service. A docs-only push skips those jobs. A push that changes only `compose.yaml` does not select the integration lane. Named lab install and smoke scripts snapshot existing Docker volume names and succeed when the historical Compose volumes are absent; they still fail if an unrelated volume disappears. Local application PostgreSQL in [Local development](#local-development) remains Compose until a later Change removes that path. This workflow is not a live cluster proof.
+
 ## Implementation order
 
 Use the [implementation overview](../../../STATUS.md) to identify the current checkpoint and missing components. It owns status; this section defines the delivery approach.

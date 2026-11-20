@@ -37,7 +37,9 @@ test('contracts or lockfile changes are never docs-only and force integration', 
   for (const path of [
     'packages/contracts/src/stories.ts',
     'pnpm-lock.yaml',
-    'compose.yaml',
+    'Tiltfile',
+    'infra/kubernetes/lab/app-release/Dockerfile.api',
+    'infra/kubernetes/lab/dev/stack.yaml',
     'infra/kubernetes/lab/namespaces.yaml',
     'apps/api/src/main.ts',
   ]) {
@@ -73,6 +75,14 @@ test('a Change packet push skips code and integration', () => {
   assert.equal(scope.docsOnly, true);
   assert.equal(scope.runCode, false);
   assert.equal(scope.runIntegration, false);
+});
+
+test('compose-only push runs code but not integration', () => {
+  assert.equal(isIntegrationPath('compose.yaml'), false);
+  const scope = classifyChangeScope(['compose.yaml'], { eventName: 'push' });
+  assert.equal(scope.runIntegration, false);
+  assert.equal(scope.runCode, true);
+  assert.equal(scope.docsOnly, false);
 });
 
 test('mixed docs and web source is not docs-only', () => {
