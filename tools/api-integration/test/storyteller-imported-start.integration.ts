@@ -251,6 +251,7 @@ export async function checkImportedStart(
         },
       ]);
 
+      const sequence = ['take-cover', 'leave-cover', 'calm-gary'] as const;
       for (let round = 0; round < 3; round++) {
         const campaign = requireDefined(
           snapshot.campaign,
@@ -260,9 +261,10 @@ export async function checkImportedStart(
           campaign.offer,
           'Expected a generated mechanical offer',
         );
+        const expectedActionId = sequence[round];
         const action = requireDefined(
-          offer.nodes[0],
-          'Expected an admitted mechanical action',
+          offer.nodes.find((node) => node.id === expectedActionId),
+          `Expected mechanical action ${expectedActionId}`,
         );
         assert.ok(action.action);
         const operationId = randomUUID();
@@ -399,11 +401,34 @@ export async function checkImportedStart(
           'published',
         );
         assert.ok(snapshot.campaign?.offer?.nodes.length);
+        const offerIds = snapshot.campaign?.offer?.nodes.map((node) => node.id);
         if (round === 0) {
-          assert.deepEqual(
-            snapshot.campaign?.offer?.nodes.map((node) => node.id),
-            ['inspect-from-cover', 'leave-cover'],
+          assert.deepEqual(offerIds, ['inspect-from-cover', 'leave-cover']);
+        } else if (round === 1) {
+          assert.deepEqual(offerIds, [
+            'take-cover',
+            'calm-gary',
+            'keep-distance',
+          ]);
+        } else {
+          const publishedReceipt = requireDefined(
+            snapshot.campaign?.actionReceipts.find(
+              (item) => item.id === operationId,
+            ),
+            'Expected the current operation receipt',
           );
+          if (publishedReceipt.outcome === 'success') {
+            assert.deepEqual(offerIds, ['inspect-with-gary']);
+          } else if (publishedReceipt.outcome === 'failure') {
+            assert.deepEqual(offerIds, [
+              'take-cover',
+              'observe-from-doorway',
+            ]);
+          } else {
+            assert.fail(
+              `Unexpected calm-gary outcome ${publishedReceipt.outcome}`,
+            );
+          }
         }
       }
     },

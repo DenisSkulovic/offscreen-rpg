@@ -8,7 +8,7 @@
 | --- | --- |
 | **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **WORK01** |
 | **B. Scope inflated — keep original remainder, do not fake Done** | DATA04 (app historical GET/fork 9/9; GA/journal/three negatives remain), STORY02 (in-process 10/10; combined `storytellerV1` remains) |
-| **C. Unfinished actionable** | HK03 (profiled 31/33; isolated imported-start 4/4), HK01 (CLI still the operator path) |
+| **C. Unfinished actionable** | HK03 (profiled 30/33 after named pineapple sequence; Chamber retry + worker-replay remain), HK01 (CLI still the operator path) |
 | **D. Planner gap** | GM07 durable SQL consent/expiry; ENG03 all-purpose short-lock; OBS04 E0 witness; DATA06 remote branch-pinned facade |
 | **E. Explicitly gated** | OBS00/TURN04 paid dispatch; K8S11/TURN02/TURN03/K8S10 live cluster; BOOT03 two-process remainder already proven in-process but packet Goal still distributed start |
 | **F. Unselected optional** | DIST02, DIST04 Rabbit postcommit projection; WIKI18 live cost benchmark |
@@ -61,7 +61,7 @@
 | Packet | State | Outcome |
 | --- | --- | --- |
 | [DIR03 Storyteller direction](archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | **Done. Provider-free suggestion landed** | One optional suggestion can be admitted. A rejected suggestion still publishes the passage. The live creative trial is still unauthorized |
-| [HK03 storyteller test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Implementing. Isolated slices green; profiled suite 31/33** | Ask Gary publishes Gary’s promise. Mechanical opening still found no offer nodes in the shared profiled suite |
+| [HK03 storyteller test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Implementing. Mechanical opening fixture corrected; profiled 30/33** | Named `take-cover` → `leave-cover` → `calm-gary`. Mechanical opening PASS. Chamber retry and worker-replay still fail in the shared session |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Fail-closed comparison merged. Packet stays open** | A revoked, missing, or changed entitlement is denied. Live dispatch stays denied because there is no entitlement store |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | **Ready E0, disposable SQL required** | First E0 game transition witness |
 | [ENG03 short-lock context](open/2026-11-13--eng-short-lock-context/CHANGE.md) | **Ready measured narrow slice** | Full short-lock capture |
