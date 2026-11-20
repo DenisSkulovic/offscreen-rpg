@@ -38,7 +38,7 @@ A genuine game-chaos driver requires BOOT03 GA start, STORY02 private custody, S
 - **No app product endpoint:** the driving client uses **existing authenticated public routes** and supported Storyteller scripted task creation. No debug `POST /chaos/kill-any-pod` API. The independent oracle reads authenticated snapshots plus read-only diagnostic SQL and S3 hashes from the disposable lab.
 - **Fixtures:** real owned opening candidate + pinned packages, one or more legal visible decisions with stable operation IDs, exact checkpoint and manifest hashes, conflicting replay negative; use existing SCRIPTED fixture adapter and result validation.
 - **Provider dispatch tripwire:** no live policy, key, secret or provider adapter in those Pods; a test-injected provider stub that **throws on invoke** at a composition seam and an observed count of outbound attempts=0. With kind default CNI, *do not assume NetworkPolicy is enforced*. A reviewed CNI may support a verified deny-everything-but-app-endpoints policy later.
-- **Evidence:** `docs/observability/evaluations/` dated run artifacts, current `STATUS`/Change receipt **only on actual execution**. Existing [observability owner](../../../../docs/technical/observability/README.md) governs redaction and trace labeling.
+- **Evidence:** `docs/observability/evaluations/` dated run artifacts, current `STATUS`/Change receipt **only on actual execution**. The [observability evidence model](../../../../docs/technical/observability/identities-and-evidence.md) separates durable forensic records from operational telemetry; apply redaction and access constraints to any run receipt.
 
 ## Exact risks to avoid
 
