@@ -13,10 +13,10 @@ test('one valid empty Current work declaration is allowed', () => {
 });
 
 test('an open Change and an independent Task are distinct top-level selections', () => {
-  const change = parseCurrentWork('Current work: [BOOT03](changes/open/2026-11-19--boot03-game-authority-start-admission/CHANGE.md)\n');
+  const change = parseCurrentWork('Current work: [TURN02](changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md)\n');
   assert.equal(change.ok, true);
   assert.equal(change.kind, 'change');
-  assert.equal(change.target, 'work/changes/open/2026-11-19--boot03-game-authority-start-admission/CHANGE.md');
+  assert.equal(change.target, 'work/changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md');
 
   const task = parseCurrentWork('Current work: [run](tasks/open/2026-11-20--test-run/TASK.md)\n');
   assert.equal(task.ok, true);

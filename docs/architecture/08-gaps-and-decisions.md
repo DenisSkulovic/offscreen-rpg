@@ -26,7 +26,7 @@ flowchart TD
 | Priority | Inspected signal | Missing proof or contract | Owner |
 | --- | --- | --- | --- |
 | **P0** | STORY02 stores attempt custody but generation_state_shape requires succeeded generation to have attemptId **and** output | GA atomic saved-attempt adoption, durable idempotence and crash/retry proof | [STORY03](../../work/changes/open/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md) |
-| **P0** | Nest still starts/forks locally while GA only read/admit-resolution transport is present | All selected POC writes route through GA and fail closed if unavailable; DB privilege enforcement separately characterized | [BOOT03](../../work/changes/open/2026-11-19--boot03-game-authority-start-admission/SOURCE-MAP.md), DIST03 |
+| **P0** | Nest still starts/forks locally while GA only read/admit-resolution transport is present | All selected POC writes route through GA and fail closed if unavailable; DB privilege enforcement separately characterized | [BOOT03](../../work/changes/archive/2026-11/other/2026-11-19--boot03-game-authority-start-admission/SOURCE-MAP.md), DIST03 |
 | **P0** | storytellerV1 is one combined Activity and worker; task custody not remote | New named versioned Workflow, separate queue/credential, legacy history replay preserved | STORY02/STORY03 |
 | **P0** | Kubernetes skeletons and Gateway point at Python placeholder/synthetic Pods | Real application images, listener, auth, SQL and S3 runtime with one operator | [TURN02](../../work/changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/SOURCE-MAP.md), K8S11 |
 | **P0** | API bootstrap imports local rule directory when S3 enabled | Load verified pinned rule manifest from S3 without runtime content mount | TURN02 |

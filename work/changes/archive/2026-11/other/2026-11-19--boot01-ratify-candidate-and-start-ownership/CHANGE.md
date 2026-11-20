@@ -1,7 +1,7 @@
 # BOOT01 | Ratify opening candidate, package and Game Authority start ownership
 
 **State:** Cancelled/superseded (2026-11-19). Not Done. Acceptance cases moved to BOOT03. Start admission is not implemented.  
-**Supersession:** HK09 archived this packet as Cancelled/superseded, not Done. The unique acceptance cases and negative tests now live in [BOOT03](../../../../open/2026-11-19--boot03-game-authority-start-admission/CHANGE.md#absorbed-boot01-cases-2026-11-19). No provider was called.
+**Supersession:** HK09 archived this packet as Cancelled/superseded, not Done. The unique acceptance cases and negative tests now live in [BOOT03](../../../../archive/2026-11/other/2026-11-19--boot03-game-authority-start-admission/CHANGE.md#absorbed-boot01-cases-2026-11-19). No provider was called.
   
 **Kind:** documentation  
 **Selection:** Not currently selected; existing active Cursor batch remains untouched.  

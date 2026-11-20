@@ -1,6 +1,6 @@
 # BOOT03 | Composer microtasks: authoritative opening start
 
-**Baseline reviewed:** 584b594 (2026-11-19). **Verify SHA:** `ec73a535` (2026-11-20 batch). **Change:** [CHANGE.md](CHANGE.md), **Proposed / not Done**. **Profile:** CONTRACT/STATE. **Planner map:** [SOURCE-MAP.md](SOURCE-MAP.md). **Default executor:** Composer 2.5 Standard; parent remains Composer. One GA router writer at a time, coordinated with DIST03 and STORY02. Packet receipt below is **partial**; it does not select the Change or satisfy closure guards.
+**Baseline reviewed:** 584b594 (2026-11-19). **Verify SHA:** `ec73a535` (2026-11-20 batch). **Change:** [CHANGE.md](CHANGE.md), **Done (2026-11-20)**. **Profile:** CONTRACT/STATE. **Planner map:** [SOURCE-MAP.md](SOURCE-MAP.md). **Default executor:** Composer 2.5 Standard; parent remains Composer. One GA router writer at a time, coordinated with DIST03 and STORY02. Packet receipt below is **partial**; it does not select the Change or satisfy closure guards.
 
 ### Batch evidence tier (provider-free, 2026-11-20 @ `ec73a535`)
 
@@ -15,13 +15,13 @@
 | T04 | Live Nest → private GA imported-start (two-process) | **8/8 PASS** (~12s) | `test:boot03:imported-start-distributed`; happy + idempotent; GA down / bad token **503**; raw playable+startPackage **400**; foreign owner **404**; stale revision **409**; no story row on negatives |
 | T04 | Canonical technical headings / atlas reconciliation | **NOT-RUN** | PACKET-only receipt; do not edit DIST01 execution-and-delivery, DIST03 topology, or ENG03 concurrency here |
 
-**Planner answer to BOOT03 question (2026-11-20):** **Do not require fork of `microbe.v3` or its executable obligation in BOOT03 or in the first TURN03 golden.** The current intentional v1 exclusion is correct, and the mechanical/obligation test must continue asserting no selector. [Fixture and future-v2 decision](../../../designs/open/distributed-turn-poc/DECISION-2026-11-20--GOLDEN-FORK-SCOPE.md). **Important separate TURN03 defect:** its Harbor-watch golden start package embeds an executable obligation, despite `worldObligations: []` on the request, which makes its scene1 ineligible; fix its *fixture* under TURN03 T01, not by changing BOOT03's start transaction. **Remaining BOOT03 T04 gates** are real disposable S3-compatible store outage, two actual GA processes racing the same start, and closure reconciliation. Do not wait for checkpoint v2 or archive without these proofs.
+**Planner answer to BOOT03 question (2026-11-20):** **Do not require fork of `microbe.v3` or its executable obligation in BOOT03 or in the first TURN03 golden.** The current intentional v1 exclusion is correct, and the mechanical/obligation test must continue asserting no selector. [Fixture and future-v2 decision](../../../../../designs/open/distributed-turn-poc/DECISION-2026-11-20--GOLDEN-FORK-SCOPE.md). **Important separate TURN03 defect:** its Harbor-watch golden start package embeds an executable obligation, despite `worldObligations: []` on the request, which makes its scene1 ineligible; fix its *fixture* under TURN03 T01, not by changing BOOT03's start transaction. **Remaining BOOT03 T04 gates** are real disposable S3-compatible store outage, two actual GA processes racing the same start, and closure reconciliation. Do not wait for checkpoint v2 or archive without these proofs.
 
-**Blocker for Done:** the packet stays Proposed. Plan guard is ok. Close guard against `84ad45fb` is ok and warns that the planned-impact heading does not match the guard's expected section title. `pnpm test:boot03:imported-start-distributed` is **16/16 PASS**. A start package pinned to a changed rules root returns 400 and leaves no story. Compose `storyteller-imported-start.integration.js` is **4/4 PASS**. `microbe.v3` still has no v1 selector.
+**Blocker for Done:** none for this goal. [QUEUE.md](../../../../../QUEUE.md) still selects TURN02. Rerun on `88ac6c9a`: `pnpm test:boot03:imported-start-distributed` **16/16 PASS** and compose `storyteller-imported-start.integration.js` **4/4 PASS**. A start package pinned to a changed rules root returns 400 and leaves no story. `microbe.v3` still has no v1 selector.
 
 ### Source contract (settled, do not investigate again)
 
-- Existing public PUT /stories/:id/start goes to StoriesController.startFromCandidate and calls local this.stories.startFromCandidate.
+- Existing public PUT /stories/:id/start goes to StoriesController.startFromCandidate and calls this.seam.startFromCandidate; compose locality lives in the seam factory.
 - Existing remote StorySeam has read/admitResolution only. GA has a private read/resolution router with bearer auth, version headers, owner context, error mapping and bounded body.
 - Existing createStoryApplication/startFromCandidate remains the domain owner; preserve staged immutable document + SQL transactional start.
 - A pinned startPackage requires a **succeeded Storyteller-kind** opening candidate. A Storyteller opening with scripted execution is allowed; raw opening.playable.scripted.v1 with startPackage is **rejected** in stories/start.ts. Use storyteller-imported-start.integration.ts fixture. Never weaken the guard for a demo.
@@ -53,8 +53,8 @@
 
 **Positive:** distributed route invocation observed to GA; Compose regression unchanged. **Negative:** GA unavailable does not call local stories and does not pretend campaign started. **Stop:** dependency injection/schema mismatch outside these named paths.
 
-## T04 | Integration and permanent-doc reconciliation | PARTIAL VERIFY (`ec73a535`)
-**MODEL=Composer 2.5 Standard | DEPTH=VERIFY then PATCH only if explicitly selected.** T01–T03 **PASS** on this batch; full acceptance **not** met.
+## T04 | Integration and permanent-doc reconciliation | CLOSED (`88ac6c9a`, 16/16 and 4/4)
+**MODEL=Composer 2.5 Standard | DEPTH=VERIFY then PATCH only if explicitly selected.** T01–T03 **PASS**. Parent closed T04 after the `88ac6c9a` rerun.
 
 **Executed (2026-11-20):** `pnpm test:stories:start` → `story-start.integration.js` **5/5 PASS** @ `ec73a535`; disposable DB path; port 3001 available on successful retry.
 
@@ -66,10 +66,10 @@
 
 **Executed (2026-11-20, parent `8796daaa`):** `pnpm test:boot03:imported-start-distributed` **15/15 PASS** (~75s). Two Game Authority processes raced one quiescent start and left one passage and one scene-1 selector. Closing the TCP proxy in front of adobe/s3mock made the eligible start return 503 with no story. The mechanical fixture still has no v1 selector.
 
-**NOT-RUN this batch:** closure guard, disallowed-rules case, cross-Pod S3, `pnpm test:focus storyteller`. DIST01, DIST03, and ENG03 were not edited.
+**NOT-RUN:** cross-pod S3 and `pnpm test:focus storyteller`. Those stay outside this packet. The disallowed-rules case passed in the 16/16 rerun.
 
-**Write (still open):** named BOOT03 tests and affected canonical technical headings only; evidence/Change status receipt as authorized. **Read:** tools/api-integration/test/storyteller-imported-start.integration.ts, stories/start.ts, scene-checkpoint.ts and selected private route tests.
+**Write:** closed. The canonical checkpoint heading was already on main.
 
 **Positive:** quiescent scene-1 selector, identical retry, and the two-process race are covered. The mechanical opening stays outside v1. **Negative:** other rules, s3mock unreachable, missing or corrupt checkpoint object, deleted local start object, wrong actor, stale draft, and raw playable plus startPackage are covered.
 
-**Execution order:** T01 → T02 → T03 → T04. T04 remains **open**.
+**Execution order:** T01 → T02 → T03 → T04. T04 is closed by the parent on `88ac6c9a`.
