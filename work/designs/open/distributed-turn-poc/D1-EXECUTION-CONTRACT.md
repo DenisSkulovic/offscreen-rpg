@@ -1,5 +1,7 @@
 # D1 | Distributed command, workflow and publication handshake
 
+**Implementation clarification (2026-11-20):** The optional `scene.published.v1` RabbitMQ producer/consumer is **not selected**: DIST02 and [DIST04](../../../changes/archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md) were Cancelled, not Done. D1's optional fact route below is a *possible later design*, not an open code obligation or a readiness gate. Existing direct SQL-outbox→Temporal remains authoritative.
+
 **Date:** 2026-11-19. **Status:** design note aligned to merged ARCH02. Not canonical technical authority, and not an implementation order. Normative delivery classes live in [Commands, business events, and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows). [DIST01](../../../changes/archive/2026-11/other/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md) may still record remaining process details. It must not reopen ARCH02.
 
 ## Operative execution rule

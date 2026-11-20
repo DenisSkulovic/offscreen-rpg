@@ -1,5 +1,7 @@
 # Wiki retrieval and agent benchmarks
 
+**WIKI18 terminal note, 2026-11-20:** [WIKI18 Change](../../../changes/archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md) was Cancelled as partially delivered: small-agent handoff improvements, trace parser and tests remain, but **no paired, accepted-task cost-efficiency result** was measured. W2/W3 stays independent opt-in research requiring separate spend/quality approval; it is not an open implementation obligation or a default Cursor task.
+
 **State:** WIKI02 published `wiki.static.v1`. WIKI05 publishes `wiki.static.v2` beside it. v1 `Recall@5` was complete-answer success, and v1 `MRR` was zero unless every mandatory page was in the top five. v2 reports CompleteAnswer@k, owner Recall@k, standard MRR and one grade per page. Normative search still excludes historic pages, so that lane does not measure authority exposure; the adversarial lane does. The graph no longer blocks the bench. These figures are not gates. Agent runs remain opt-in and were not run.
 
 ## 1. Three independent retrieval tests

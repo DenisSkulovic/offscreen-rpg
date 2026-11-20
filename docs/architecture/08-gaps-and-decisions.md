@@ -33,7 +33,7 @@ flowchart TD
 | **P1** | Historical checkpoint-based fork exists for quiescent source scenes in local tests | Private GA fork path + child distributed continuation proves no parent-future knowledge | DATA04/DATA06/TURN03 |
 | **P1** | Postgres SSE hints exist; Next rewrite and SSR use separate origin configs | Same-origin authenticated actual-browser GET/SSE and missed-event recovery | K8S11/TURN03 |
 | **P1** | Existing attempt claim is idempotent but **not** an exclusive send lease | Provider spend/resend policy for remote executor; real model only under explicit authority | TURN04 |
-| **P2 optional** | Rabbit lab proves broker behavior; no game projection deployed | Postcommit derived read model with separate idempotent consumer, if educationally desired | DIST02 Cancelled (no consumer), DIST04 optional/unselected; not POC critical |
+| **P2 optional** | Rabbit lab proves broker behavior; no game projection deployed | Postcommit derived read model with separate idempotent consumer, if educationally desired | DIST02 and DIST04 Cancelled (no independent consumer); K8S03 Rabbit lab optional; not POC critical |
 | **Later** | Supported checkpoint refuses active work/offer/remap cases | Product decision + extended state remap and new negative proof for arbitrary moments | New explicitly scoped product/design decision, not silently DATA06 |
 
 ## A conflict detected during the diagram review: workflow identity

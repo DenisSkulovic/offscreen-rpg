@@ -9,3 +9,7 @@
 **Selected small-task experiment:** one authorized small Composer task from existing Change backlog, one precise benchmark receipt: actual model/variant (unverified if not shown), tokens from Cursor dashboard or null, tool calls/read breadth, direct source checks, passing normal+negative tests, review/rework. Compare to an **already collected** older Grok trace only when type/difficulty comparable and explicitly label confounding variables. Never authorize a fresh billable Grok run just to fill a spreadsheet.
 
 **Stop conditions:** if the hook rejects a valid actual Composer variant because Cursor renamed its model metadata, stop and inspect the exact hook payload; don't disable the guard, use Auto, or silently switch to Grok. If no usage data, store `null` and report measured tool/read burden. This is an operational evidence program, not permission for paid provider calls or broad worker benchmarking. [TASKS](TASKS.md) gives the bounded executor plan.
+
+## Terminal note (2026-11-20)
+
+WIKI18 is Cancelled/partially delivered, not Done. The source-based route cards, trace parser and cost guard remain installed. The missing accepted-task cost association and before/after study were not executed; this remains an empirical unknown, **not** an engineering dependency. See [terminal Change reconciliation](CHANGE.md#terminal-disposition--partial-delivery-no-fabricated-cost-saving).
