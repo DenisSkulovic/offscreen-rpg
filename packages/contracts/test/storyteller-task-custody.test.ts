@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import {
   hashStorytellerTaskCustodyResult,
   parseStorytellerTaskCustodyClaimRequest,
+  parseStorytellerTaskCustodyEvidenceRequest,
   parseStorytellerTaskCustodyJsonBody,
   parseStorytellerTaskCustodySaveResultRequest,
   pinnedStorytellerRootSchema,
@@ -12,6 +13,9 @@ import {
   storytellerTaskCustodyClaimRequestSchema,
   storytellerTaskCustodyClaimResponseSchema,
   storytellerTaskCustodyContractVersion,
+  storytellerTaskCustodyEvidencePath,
+  storytellerTaskCustodyEvidenceRequestSchema,
+  storytellerTaskCustodyEvidenceResponseSchema,
   storytellerTaskCustodyFetchResponseSchema,
   storytellerTaskCustodyReadSavedPath,
   storytellerTaskCustodySaveResultPath,
@@ -212,6 +216,82 @@ test('response unions match execution custody outcomes', () => {
       generationId,
       attemptId,
       resultHash,
+    }).success,
+    true,
+  );
+});
+
+test('POST evidence path routes to evidence; GET evidence path is absent', () => {
+  const generationId = randomUUID();
+  const evidencePath = storytellerTaskCustodyEvidencePath(generationId);
+  assert.equal(
+    evidencePath,
+    `/internal/v1/storyteller-generations/${generationId}/evidence`,
+  );
+  assert.deepEqual(
+    routeStorytellerTaskCustody('POST', evidencePath),
+    { kind: 'evidence', generationId },
+  );
+  assert.deepEqual(
+    routeStorytellerTaskCustody('GET', evidencePath),
+    { kind: 'absent' },
+  );
+});
+
+test('evidence request schema rejects ownerId and more than eight handles', () => {
+  const storyId = randomUUID();
+  const baseRequest = {
+    schemaVersion: storytellerTaskCustodyContractVersion,
+    storyId,
+    rootHash: root,
+    rootRevision: 1,
+    handles: [randomUUID()],
+  };
+  assert.equal(
+    storytellerTaskCustodyEvidenceRequestSchema.safeParse(baseRequest).success,
+    true,
+  );
+  assert.equal(
+    storytellerTaskCustodyEvidenceRequestSchema.safeParse({
+      ...baseRequest,
+      ownerId: 'owner-a',
+    }).success,
+    false,
+  );
+  const nineHandles = Array.from({ length: 9 }, () => randomUUID());
+  assert.equal(
+    storytellerTaskCustodyEvidenceRequestSchema.safeParse({
+      ...baseRequest,
+      handles: nineHandles,
+    }).success,
+    false,
+  );
+});
+
+test('valid evidence request parses through bounded parser', () => {
+  const storyId = randomUUID();
+  const handle = randomUUID();
+  const body = JSON.stringify({
+    schemaVersion: storytellerTaskCustodyContractVersion,
+    storyId,
+    rootHash: root,
+    rootRevision: 2,
+    handles: [handle],
+  });
+  const parsed = parseStorytellerTaskCustodyEvidenceRequest(body);
+  assert.equal(parsed.ok, true);
+  if (parsed.ok) {
+    assert.equal(parsed.value.storyId, storyId);
+    assert.equal(parsed.value.rootHash, root);
+    assert.deepEqual(parsed.value.handles, [handle]);
+  }
+});
+
+test('evidence response refused root-mismatch parses', () => {
+  assert.equal(
+    storytellerTaskCustodyEvidenceResponseSchema.safeParse({
+      status: 'refused',
+      reason: 'root-mismatch',
     }).success,
     true,
   );

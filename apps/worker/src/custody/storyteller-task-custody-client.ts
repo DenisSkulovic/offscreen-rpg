@@ -6,6 +6,9 @@ import {
   storytellerTaskCustodyClaimResponseSchema,
   storytellerTaskCustodyClaimPath,
   storytellerTaskCustodyContractVersion,
+  storytellerTaskCustodyEvidencePath,
+  storytellerTaskCustodyEvidenceRequestSchema,
+  storytellerTaskCustodyEvidenceResponseSchema,
   storytellerTaskCustodyFetchResponseSchema,
   storytellerTaskCustodyGenerationIdSchema,
   storytellerTaskCustodyHttpErrorSchema,
@@ -18,6 +21,7 @@ import {
   storytellerTaskCustodyTaskPath,
   storytellerTaskCustodyVersionHeader,
   type StorytellerTaskCustodyClaimResponse,
+  type StorytellerTaskCustodyEvidenceResponse,
   type StorytellerTaskCustodyFetchResponse,
   type StorytellerTaskCustodyReadSavedResponse,
   type StorytellerTaskCustodySaveResultResponse,
@@ -106,6 +110,15 @@ export type StorytellerTaskCustodyClient = {
   readSaved(
     generationId: string,
   ): Promise<StorytellerTaskCustodyReadSavedResponse>;
+  readEvidence(
+    generationId: string,
+    input: {
+      storyId: string;
+      rootHash: string;
+      rootRevision: number;
+      handles: string[];
+    },
+  ): Promise<StorytellerTaskCustodyEvidenceResponse>;
 };
 
 function assertBodyLimit(body: string) {
@@ -167,7 +180,7 @@ function mapHttpError(payload: unknown): never {
 async function callExecutor<T>(
   config: StorytellerTaskCustodyClientConfig,
   request: {
-    method: 'GET' | 'PUT';
+    method: 'GET' | 'PUT' | 'POST';
     path: string;
     body?: unknown;
     schema: z.ZodType<T>;
@@ -255,6 +268,22 @@ export function createStorytellerTaskCustodyClient(
         method: 'GET',
         path: storytellerTaskCustodyReadSavedPath(id),
         schema: storytellerTaskCustodyReadSavedResponseSchema,
+      });
+    },
+    readEvidence(generationId, input) {
+      const id = parseGenerationId(generationId);
+      const body = storytellerTaskCustodyEvidenceRequestSchema.parse({
+        schemaVersion: storytellerTaskCustodyContractVersion,
+        storyId: input.storyId,
+        rootHash: input.rootHash,
+        rootRevision: input.rootRevision,
+        handles: input.handles,
+      });
+      return callExecutor(config, {
+        method: 'POST',
+        path: storytellerTaskCustodyEvidencePath(id),
+        body,
+        schema: storytellerTaskCustodyEvidenceResponseSchema,
       });
     },
   };
