@@ -1,5 +1,7 @@
 # Open Change backlog | Composer-first source audit (2026-11-20)
 
+**OBS04 later source finding:** [decision for exact missing mechanical facts](open/2026-11-15--obs04-finite-action-transition-evidence/DECISION-2026-11-20.md) replaces the former T02 planner block with bounded T02–T06. The existing execution event/receipt already commits identities, outcome and effects; a first-slice nullable versioned witness adds only typed interrupt cause and historical before/after clock/hold/affected-item facts. No new internal sequence or second ledger. Docs-only; not yet implemented, optional and not a TURN02 release gate.
+
 **ENG03 later routing correction:** [Finite remaining path contract](open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) identifies actual remote-read-in-transaction call sites. Parent ENG03 remains open for concrete T02–T07, not a generic lock refactor or forever planner gate. Nov 14 old ~8s measured pending path was corrected; current other paths are only source-classified until their own disposable SQL measurement.
 
 **Later terminal update:** [WIKI18 Cancelled/partially delivered](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md), not Done. Parser, model guard and cheap route cards remain in source. The optional live cost comparison was not approved or run; the dated WIKI18 inventory row below is historical, not an executable assignment.

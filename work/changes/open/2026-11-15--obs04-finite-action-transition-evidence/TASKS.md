@@ -1,38 +1,29 @@
-# OBS04 | Composer dispatch: atomic finite-action evidence
+# OBS04 | One finite terminal-event witness; finite bounded Composer tasks
 
-**Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
+**Current state (2026-11-20):** Existing T01 7/7 receipt at `ec73a535`, **T02–T06 NOT RUN**, production witness/migration absent. The old T02 planner-block is resolved in [decision](DECISION-2026-11-20.md). `work/QUEUE.md` still selects TURN02; this packet is **unselected**. Read one T-ID and its 2–5 exact source anchors. Do not redo T01 merely because a historical receipt exists.
 
-**Source baseline:** 584b594; **T01 inspected SHA:** `ec73a535`. **State:** T01 VERIFY PASS (7/7); T02 **PLANNER-BLOCKED** until smallest missing datum is named; migration **NOT-RUN**; packet open, not Done. Ready for one bounded E0 witness only after T02; not permission for a generic forensic event-sourcing framework. **Default:** Composer Standard. Canonical owner: [chronology-and-activities.md](../../../../docs/technical/engine/chronology-and-activities.md).
+## T01 | Existing event source baseline | HISTORICAL PASS, 7/7
 
-**Existing source:** `packages/application/src/campaign/action-execution-transition.ts:decideActionExecutionTransition` returns typed waiting/interrupted/settled facts; `campaign/action-executions.ts:settleActionExecution` runs under the story transaction, `recordActionExecutionEvent` inserts a unique execution revision and `appendPublicStoryEvent` for terminal cases. `packages/db/src/schema/campaign.ts` already has `game_action_execution_event` and `game_action_execution_event_revision` uniqueness. The missing requirement is **evidence richness**, not “create an event table.” A new table/migration is NOT justified until exact absent before/after values are proven.
+Recorded command: `pnpm --filter @offscreen/application exec node --test test/item-transfer-transition.test.mjs test/world-obligation-transition.test.mjs test/eng01-item-transfer.live.test.mjs` (5 pure + 2 disposable SQL). Event/receipt uniqueness and source linkage were observed by source/test, but an execution-event/public-event 1:1 SQL invariant was NOT asserted. No rollback-after-terminal or typed historical witness was tested. Tests not rerun in this planning update.
 
-## T01 | Existing evidence inventory, test-only | VERIFY PASS (`ec73a535`)
+## T02 | Pin non-inferable terminal fields and a small schema | VERIFY/DESIGN FENCE
 
-**Command:** `pnpm --filter @offscreen/application exec node --test test/item-transfer-transition.test.mjs test/world-obligation-transition.test.mjs test/eng01-item-transfer.live.test.mjs` on disposable `offscreen_chamber_run_*` Postgres for the live file only — **7/7**, 0 fail (5 pure + 2 ENG01 live SQL).
+**Read:** `campaign/action-executions.ts:settleActionExecution/recordActionExecutionEvent`, `campaign/action-execution-transition.ts:decideActionExecutionTransition`, `packages/db/src/schema/campaign.ts` execution event/receipt/campaign, `stories/public-events.ts:appendPublicStoryEvent`, `stories/persistence.ts:readStoryItemHolders`. Compare *persisted immutable* source events vs `campaign` mutable state after success/interrupt; record a compact table of missing before clock/hold/item identity and typed interruption cause. Finalize exact V1 strict schema as in [decision](DECISION-2026-11-20.md), bounded item count/JSON bytes and any explicit missing vs available cases. No migration yet; no invented `transitionSequence`. **Stop:** one required datum is already immutable or would require unbounded JSON: shrink contract, not a ledger rewrite.
 
-**Event source identity (terminal finite-action commit, same story transaction):**
+## T03 | Add nullable witness and co-commit from existing writer | PATCH, disposable SQL only
 
-| Durable row | Writer | Role |
-| --- | --- | --- |
-| `game_action_execution_event` | `recordActionExecutionEvent` in `campaign/action-executions.ts` | One append per terminal execution revision; `(execution_id, execution_revision)` unique in schema |
-| `story_public_event` | `appendPublicStoryEvent` from the same helper for terminal kinds | One public projection per terminal path in exercised fixtures; **not** SQL-asserted 1:1 with execution event in this inventory |
-| `game_action_receipt` | `settleActionExecution` on settled paths only | Mechanical receipt/effects; absent on interrupt-without-transfer paths exercised |
+**Read:** `packages/db/src/schema/campaign.ts:gameActionExecutionEvent`, `campaign/action-executions.ts:settleActionExecution`, `campaign/action-execution-transition.ts`, `stories/public-events.ts`. One additive migration: `terminal_evidence jsonb null` on `game_action_execution_event`, older terminal/nonterminal rows remain null. Pure typed V1 validator/builder with source digest and allowed bounded values. Before terminal mutations capture currently locked `campaign` state and only affected `story_item` holder facts. Reuse **the existing event ID** returned by `recordActionExecutionEvent` (capture return in settled path); after all same-tx `fireWorldObligations`/`applyCampaignFollowUpIntents`/holds, reread minimal **final SQL state** and affected item holders, build witness and update **that event row** in the same transaction before return. No new actor, public event sequence, separate counter, task, model, CAS or receipt. Do not edit waiting/started/paused event writers. Stop on cross-file conflict with current GA/Cursor writer, not by weakening SQL atomicity.
 
-**SQL proof tier:** pure transition files **fixture-exercised**; ENG01 live file **live-observed** on disposable chamber SQL only. **Not proved here:** post-terminal transaction rollback after event insert; durable before/after witness (`transitionSequence`, typed `changed[]`, pre/post clock and hold snapshots).
+## T04 | Prove actual terminal outcomes and negative SQL cases | VERIFY
 
-## T02 | E0 missing fields, if demonstrated | PLANNER-BLOCKED UNTIL SOURCE PROOF
-Planner compares actual event/receipt snapshot against requested canonical evidence (before/after clock, item ownership, obligation, source passage) and chooses the **smallest missing typed datum**. Then Composer may add one field/index and one transactional write + rollback test. Do not duplicate values inferable from immutable receipt or invent new tenant-wide event store. One schema migration owner.
+**Read:** `packages/application/test/eng01-item-transfer.live.test.mjs`, `packages/application/test/item-transfer-transition.test.mjs`, `packages/application/test/world-obligation-transition.test.mjs`, `tools/api-integration/test/storyteller-worker-replay.integration.ts`, new witness tests. Disposable `offscreen_chamber_run_*` DB, provider disabled. **Positive:** one terminal settled receipt/event/public projection/evidence with exact gameSecond and affected item holder changes; one source-linked event/witness for holder-change interruption and controlling obligation at due boundary, zero successful receipts. **Negatives:** still waiting no evidence, duplicate worker wake/parallel settle one E0, failed DB TX after event insert or witness update no ghost source effect, corrupt witness rejected, old row null coverage, wrong actor/source no leak, downstream report/obligation failure rolls everything back; never new RNG after prior commit. Include one SQL join assertion from eventId → public sourceId; source/event ordering unchanged.
 
-## T03 | Close/hold correctly | DOC RECEIPT (2026-11-20)
+## T05 | Read-only test projection and overhead guard | VERIFY, no new Admin API
 
-**Result:** Recorded after T01 at `ec73a535` — event source identity and SQL tiers in T01 above; this receipt does not create persisted facts.
+**Read:** `campaign/action-executions.ts`, `packages/db/src/schema/campaign.ts`, `stories/public-events.ts`, new fixture/projection. Add owner-scoped test-only or internal read helper returning typed values and `instrumented|not-instrumented` coverage for terminal events, including historical null witness. Verify multiple stories cannot see each other's evidence, projection does **not** affect game resolution, and no unbounded raw JSON/secret output. Record exact witness byte sizes, additional SQL round-trips, lock duration/wait against the identical fixture with feature on/off or pre/post commit; avoid promises about production latency.
 
-| Item | Label | Basis |
-| --- | --- | --- |
-| Terminal execution event + public link | source-observed under commit | 7/7 transition tests; uniqueness on execution revision; public append on terminal kinds |
-| 1:1 execution-event ↔ public-event | **not SQL-asserted** | T01 inventory only; no dedicated uniqueness join test |
-| Post-terminal rollback harness | **NOT-RUN** | No disposable SQL test induces rollback after terminal event insert |
-| E0 `FiniteActionTransitionEvidenceV1` / migration | **NOT-RUN** | T02 blocked until planner names smallest non-inferable datum; no schema owner |
-| Canonical [chronology status list](../../../../docs/technical/engine/chronology-and-activities.md) | **unchanged** | OBS04 transition witness correctly stays outside that proof boundary |
+## T06 | Reconcile and archive only on actual acceptance | VERIFY/DOC
 
-**Blocker:** T02 planner must pick the smallest missing typed datum (before/after clock, holds, obligation cause, or equivalent) without inventing a tenant-wide event store. **Packet stays open; not Done.** No Grok substitute for rollback or migration measurement.
+**Read:** [decision](DECISION-2026-11-20.md), `docs/technical/engine/chronology-and-activities.md`, `work/changes/open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md`, new test receipts. Run focused unit/disposable SQL, migration upgrade/downgrade on disposable DB, wiki plan/close/link checks. Evidence must explicitly establish 1:1 terminal event/witness/public linkage, rollback, interruption without success receipt, legacy partial coverage, measured bounded overhead, no provider call. Update canonical claims only when code and tests pass, then archive Done. A failed mandatory proof keeps this one Change OPEN with exact failed source/negative, not another indefinite planner gate.
+
+**Safety:** no paid AI, production/shared DB mutation, unowned cluster Pod operations, raw prompt capture or second event-sourcing framework. No new Change folder. TURN02 remains the only selected work until owner handoff.
