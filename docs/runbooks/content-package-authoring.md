@@ -1,5 +1,7 @@
 # Content package authoring
 
+**Storyteller evolution authoring rule:** a prepared experience may own a full versioned Library. Conventional entry points are `START.md` for orientation and `STORYTELLER_PROFILE.md` for creative guidance; a custom player's `STORY_PROMPT.md` is recorded separately as verbatim intent. Authoring Markdown never grants mechanics, spend, clock or security permissions. Commands below describe the **currently implemented** package toolchain until WR02–WR08 replace it.
+
 **Reader question:** How do I prepare a world, rule or start directory, check it, publish an immutable root and pin that root when a campaign starts?
 
 **Normative status:** task guide. This page is not a product rule and not a technical contract. Immutable package roots, adapter identity, visibility and start activation stay in [Context and memory](../technical/storyteller/context-and-memory.md).
