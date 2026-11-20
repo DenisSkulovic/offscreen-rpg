@@ -21,6 +21,18 @@ test('release Dockerfiles do not copy runtime content or accept secret build arg
   }
 });
 
+test('Dockerfile.worker pins Node, ships both entrypoints, and has no database URL', () => {
+  const text = readFileSync(join(appReleaseDir, 'Dockerfile.worker'), 'utf8');
+  assert.match(text, new RegExp(NODE_DIGEST.replace('.', '\\.')));
+  assert.match(text, /node:24\.19\.0-bookworm-slim/);
+  assert.match(text, /pnpm@11\.19\.0/);
+  assert.match(text, /control-main\.js/);
+  assert.match(text, /executor-main\.js/);
+  assert.doesNotMatch(text, /\bCOPY\b[^\n]*\bcontent\//);
+  assert.doesNotMatch(text, /\bARG\b[^\n]*(SECRET|TOKEN|PASSWORD|KEY)/i);
+  assert.doesNotMatch(text, /DATABASE_URL|POSTGRES_URL|PGPASSWORD/);
+});
+
 test('images.pin matches Dockerfile base digest', () => {
   const pin = Object.fromEntries(
     readFileSync(join(appReleaseDir, 'images.pin'), 'utf8')

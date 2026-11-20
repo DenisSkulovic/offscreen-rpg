@@ -88,9 +88,11 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 **Positive (static):** `node --test infra/kubernetes/lab/app-release/test/overlay-guard.test.mjs` **8/8 PASS**.
 
-**Negative:** `install.sh` exits 1 before any `kubectl apply` when `offscreen-lab-app-release-worker:turn02` is missing. It does not switch the current kubectl context. It only uses `--context kind-offscreen-lab` after that context exists.
+**Positive (local worker image, 2026-11-20):** `bash infra/kubernetes/lab/app-release/build-worker.sh` exit 0. Image `offscreen-lab-app-release-worker:turn02` id `sha256:84227fe0974ee3b415bb6a71bfbeaeb3b467e0d320121d234518be07fd0c67d6`. Both `control-main.js` and `executor-main.js` are in the image. `content/` is absent. Image env has no `DATABASE_URL`. Dockerfile guard **4/4 PASS**.
 
-**NOT-RUN:** kind cluster, image load, migration completion, Pod reachability, and imported-manifest proof. No worker image exists. No Kubernetes application release is claimed.
+**Negative:** `install.sh` now gets past the worker-image check and exits 1 because kubectl context `kind-offscreen-lab` is absent. It does not switch contexts and does not apply. The worker Deployments still probe TCP port 8080, and these processes do not listen there, so that probe cannot mean a Temporal poller is alive.
+
+**NOT-RUN:** kind cluster, image load, migration completion, Pod reachability, and imported-manifest proof. No Kubernetes application release is claimed.
 
 ## Reconciliation ledger (complete before Done)
 

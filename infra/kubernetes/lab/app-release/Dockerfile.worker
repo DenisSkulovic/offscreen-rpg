@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1
+# Build context: workspace root (use build-worker.sh staging; do not bake secrets or content trees).
+# One image, two commands: control-main.js and executor-main.js. Deployments override CMD.
+FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS builder
+WORKDIR /app
+ENV PNPM_HOME=/pnpm
+ENV PATH=/pnpm:$PATH
+ENV CI=true
+RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY infra/kubernetes/lab/app-release/docker.npmrc .npmrc
+COPY infra/kubernetes/lab/app-release/prepare-runtime-tree.sh \
+  infra/kubernetes/lab/app-release/release-process-env-shim.mjs \
+  infra/kubernetes/lab/app-release/
+COPY apps apps
+COPY packages packages
+COPY tools tools
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @offscreen/worker... build
+RUN bash infra/kubernetes/lab/app-release/prepare-runtime-tree.sh apps/worker /runtime
+
+FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS runtime
+WORKDIR /app
+# Temporal workers are not HTTP servers and must not receive a database URL.
+ENV NODE_ENV=production
+RUN chown -R node:node /app
+COPY --from=builder --chown=node:node /runtime /app
+RUN test -f apps/worker/dist/src/bootstrap/control-main.js \
+  && test -f apps/worker/dist/src/bootstrap/executor-main.js \
+  && test ! -e content
+USER node
+CMD ["node", "apps/worker/dist/src/bootstrap/control-main.js"]
