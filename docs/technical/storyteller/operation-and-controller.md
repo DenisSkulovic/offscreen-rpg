@@ -25,11 +25,57 @@ One captured `single-turn.v1` task is one model call with no tools. `memory-expl
 
 There are two authority loops, not two fixed model calls.
 
-**Writer loop.** The Storyteller receives a captured mission view, explores the Library and skills as useful, may commission independent bounded research, stages/rereads/revises Workdesk material, and submits one proposal. Provider rounds and tool calls are internal to this loop and may vary by task complexity.
+**Writer loop.** The Storyteller receives a captured mission view, explores the Library and skills as useful, may commission independent bounded research, stages/rereads/revises Workdesk material, and submits one proposal. Provider rounds and tool calls are internal to this loop and vary by task complexity.
 
 **Game loop.** Game Authority validates the submitted proposal against the captured Library/state roots, permissions, mechanics, current version fences and spending/operation identity. It either admits one coherent scene outcome or rejects/holds it. Publication, clock advancement, item/resource effects, accepted commitments and root selection belong here.
 
 A mission never gets more authority because the model asks for it. A skill, source document or assistant output cannot expand its grant. Conversely, the controller must not cripple a difficult mission merely because the old prototype used one shot or three rounds.
+
+### Durable living-world and operation discipline retained
+
+**Status: selected long-term design.** The 2026-11-19 packing rule below is part of that design. This heading does not implement the packer. Today's code does not assemble P0–P3 this way. The prototype section below is what the current generation runtime actually specifies: one captured `single-turn.v1` call with no tools, or a funded `memory-exploration.v1` controller. See [Current prototype runtime](#current-prototype-runtime).
+
+The product needs a dependable creative decision-maker that remembers a fictional life, investigates the evidence actually needed, and proposes the next situation under the selected creative philosophy. It does not need a continuously running language-model mind, a tool per shopkeeper, or a model call on every tick.
+
+```text
+LIVING WORLD LOOP (deterministic, durable, potentially weeks)
+  admitted obligation or accepted activity boundary
+  -> admissibility, rules, frozen time and receipt
+  -> next meaningful wake
+  -> narration needed? if not, sleep with zero provider traffic
+  -> one bounded Storyteller operation when required
+  -> validated publication and new authorized choices
+  -> player, approved routine, silence, or next admitted event
+
+STORYTELLER OPERATION (ephemeral model conversation, durable task state)
+  0. Capture world, actor, story, payer, branch, checkpoint, and canon root
+  1. Select one role recipe, the mandatory evidence, and the bounded budget
+  2. Pack before inference
+     inject the known present
+     offer related material as a short orientation with handles
+     leave unknown history out of the pack
+  3. Current pre-refoundation default: one composition call for a normal scene; target missions may use more bounded rounds/tools when useful
+     unknown history uses bounded rooted reads inside that same operation
+     the deterministic backend does the reads
+     mandatory evidence missing or too costly -> typed hold
+  4. Compose from the selected role recipe and the verified pack
+  5. Validate JSON, mechanics, consistency and provenance
+     structural repair only inside the captured budget
+     never rewrite a settled receipt
+  6. Publication fence -> passage, offer, notes, or report
+  7. Persist cost, outcomes, evidence-use and redacted telemetry
+  dispose the provider thread
+```
+
+No player-action API is a Storyteller tool. The model is not a privileged alternate user. Long stretches of accepted work call no model at all. A familiar exchange may use one round. Reentry after months, a contested identity, or a decisive encounter may use a few focused reads inside the same operation. Those reads are not a chain of mandatory models. An optional narrative director, if a future policy accepts it, revisits private goals without committing a world event.
+
+The Storyteller proposes narration, descriptive changes, and evidence dependencies. The engine commits the game-state checkpoint and the canon root. This loop adds no Game Economy service. Who holds a remote task, who may retry it, and who publishes is [Remote task custody](generation-and-publication.md#remote-task-custody). Process ownership stays in [Proposed service ownership](../platform/topology.md#proposed-service-ownership). The pack is [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19). Role recipes stay in [Task roles](prompts-and-tools.md#task-roles).
+
+Do not hold a SQL row lock while calling a provider. Short-lock capture of source and version is [concurrency](../engine/concurrency-and-recovery.md). This section defines what must be captured, not that every task path already does it.
+
+**Negative:** more money does not grant inventory, unauthorized decisions, or better odds. A disposable provider conversation is the default. An unfulfilled private plan is not an event, does not spawn an NPC, does not move items, and does not consume world time. UI must not claim fictional work continues because a model is processing.
+
+Recipes, task roles and stop states: [prompts and tools](prompts-and-tools.md). Publication fence: [generation and publication](generation-and-publication.md).
 
 ## Current prototype runtime
 
