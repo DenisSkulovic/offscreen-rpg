@@ -4,6 +4,22 @@ Product behavior is the bible. Technical contracts say what the system must guar
 
 Product truth has two questions. Authority asks what the owner selected as a preference or obligation. Evidence asks whether that behavior has been demonstrated. An illustrative scene, an unimplemented selected target, a proposed policy, and a demonstrated playable capability are different things. Before a Change depends on an ambitious or cross-system mechanic, read [STATUS](../STATUS.md) and the unratified [product-reality claim register](../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). That register is an investigation, not a new mechanic. If no play or cost evidence exists, propose a bounded test or a design decision instead of implementation.
 
+## Storyteller evolution | fastest authoritative routes
+
+On `storyteller-evolution-electric-boogaloo`, the permanent wiki describes the **target state that Cursor implementation must realize**. `STATUS.md` still owns implementation evidence until those code Changes land.
+
+| Question | Permanent owner |
+| --- | --- |
+| How does a player start? | [Entry and onboarding](product/experience/entry-and-onboarding.md#creation-information-architecture) |
+| What is the Storyteller now? | [Product behavior](product/storyteller/behavior-and-quality.md#investigative-writing-revision-and-delegation) · [technical controller](technical/storyteller/operation-and-controller.md#two-loops) |
+| What is the Library and exact source identity? | [Canonical documents and packages](technical/storyteller/canonical-documents-and-packages.md#product-commitment) |
+| What tools, skills, Workdesk and assistants exist? | [Prompts and tools](technical/storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract) |
+| How does context stay small across long stories? | [Context selection and recall](technical/storyteller/context-selection-and-recall.md#what-source-enters-this-task) |
+| What exactly is a published scene? | [Generation and publication](technical/storyteller/generation-and-publication.md#scene-publication-fence) · [engine state](technical/engine/authority-and-transitions.md#a-minimum-state-ledger) |
+| How does an active scene fork? | [Lifecycle and compatibility](technical/engine/lifecycle-and-compatibility.md#forked-continuities) |
+| What owns fictional time? | [Chronology and activities](technical/engine/chronology-and-activities.md) |
+| What remains current legacy/runtime evidence? | [STATUS](../STATUS.md) |
+
 ## Visual introduction: follow a decision through the software
 
 [**Designing resilience while playing**](architecture/09-chaos-and-zero-token-play.md) maps a scripted campaign, strict zero-provider execution, a guarded Pod chaos monkey and SQL/S3 invariants. This is a proposed test program, **not a passed real-game chaos test**.\n\n[**Open the Architecture Atlas**](architecture/README.md) for the human-first diagram tour: system/process maps, Storyteller sequences, SQL/S3 transaction fences, failure state machines, historical forks, Kubernetes and client trust. The atlas explains, but never supersedes, the canonical product and technical pages.
