@@ -1,6 +1,6 @@
 # WRITER implementation program | from vision to a real agentic game
 
-**State:** DOCUMENTATION COMPLETE / CODE UNSELECTED, 2026-11-21. **Owners:** user approves product policy; **ChatGPT performs permanent wiki reconciliation first**, then **Cursor implements code**. No execution selection is implied. This program is **not** the global current-work selector: [QUEUE](../QUEUE.md) remains authoritative and is deliberately unchanged. **Inspected code baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (plus provided implementation ZIP `09d5820bcafe` for broad static inspection); check HEAD and any active worktrees before execution. **No code implemented by this program commit.**
+**State:** DOCUMENTATION COMPLETE / CODE UNSELECTED, 2026-11-21. **Owners:** the user approved the Storyteller target-state documentation direction on 2026-11-21; ChatGPT completed permanent wiki reconciliation first, and Cursor owns subsequent code implementation. No execution selection is implied. This program is **not** the global current-work selector: [QUEUE](../QUEUE.md) remains authoritative and is deliberately unchanged. **Inspected code baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (plus provided implementation ZIP `09d5820bcafe` for broad static inspection); check HEAD and any active worktrees before execution. **No code implemented by this program commit.**
 
 ## Target, not the legacy implementation
 
