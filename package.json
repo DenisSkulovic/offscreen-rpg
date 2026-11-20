@@ -66,7 +66,9 @@
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0",
     "repo:commit:check:test": "node --test scripts/repo-tools/check-commit-message.test.mjs",
     "repo:hooks:install": "node scripts/repo-tools/install-git-hooks.mjs",
-    "repo:commit:check": "node scripts/repo-tools/check-commit-message.mjs"
+    "repo:commit:check": "node scripts/repo-tools/check-commit-message.mjs",
+    "repo:cursor-usage": "node scripts/repo-tools/cursor-usage-window.mjs",
+    "repo:cursor-usage:test": "node --test scripts/repo-tools/cursor-usage-window.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
