@@ -1,5 +1,8 @@
 # STORY03 | Deploy a distinct Storyteller Temporal executor and GA publication activity
 
+**2026-11-20 source audit correction (HEAD `3992437`):** The two-stage workflow, control/executor queues, GA control-only publication endpoint and custody client now **exist in source**; the older `State: Proposed after STORY02` paragraph is a historical planning label, not proof that no code landed. However, `storyteller-distributed-control.ts` still performs direct DB adoption/publication, and multiple Storyteller notice creators still hardcode legacy topics. The in-process/manual-start tests do not establish a complete first campaign. [T07 control publication ownership, T08 selector consistency, T09 real-process trace](TASKS.md#2026-11-20-current-head-convergence-addendum--source-backed-not-yet-executed) are finite next tasks; [campaign integration program](../../../../designs/open/first-campaign-readiness-2026-11-20/README.md). **No tests run by ChatGPT in this planning commit; Change not Done; provider remains disabled.**
+
+
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: versioned workflow + saved-attempt CAS and GA publication, scripted only. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
 **State:** Proposed after STORY02 (2026-11-19)  

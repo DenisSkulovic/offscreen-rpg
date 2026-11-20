@@ -1,5 +1,8 @@
 # Changes | catalog and lifecycle
 
+**2026-11-20 first-campaign convergence:** [source-audited mechanism ladder and Cursor handoff](../designs/open/first-campaign-readiness-2026-11-20/README.md). Snapshot `3992437` has **19** open Change folders: 9 relevant to the cold full-turn path, 8 important but not first-campaign prerequisites, 2 explicitly provider-gated. The older 24-packet audit remains dated history. Do **not** open 19 broad child assignments; select the first bounded source correction in STORY03 T07/T08 and use the new causal integration T09. No Change was declared Done by this planning pass.
+
+
 **WORK01 taxonomy implementation (2026-11-20):** [first-class Tasks, single work selector and maintenance/brief integration](archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/CHANGE.md) is **Done**. `pnpm repo:maintenance --strict` is 0 errors. [Current work is selected only here](../QUEUE.md); this Change index is a catalog.
 
 **Backlog reconciliation (2026-11-20, HEAD `447742f6` plus this closure):** T-IDs landing is not Change Done. Archive only independently verified original outcomes. Do not archive DIST03, TURN03, or other unfinished POC Goals. HK03 is archived.
