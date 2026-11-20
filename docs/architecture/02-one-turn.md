@@ -1,5 +1,7 @@
 # 2. One turn: from player click to a committed second scene
 
+**Storyteller evolution turn:** the target sequence is captured scene/root → adaptive writer mission (Library/skills/Workdesk/optional assistants) → structured proposal → Game Authority validation → coherent post-publication scene boundary. Old one-shot or preview/Start paths are current/legacy realization, not the target sequence.
+
 **Reader question:** where is the long-running operation, when is the player's choice accepted, and who declares a scene real? [Execution contract](../technical/platform/execution-and-delivery.md), [generation/publication](../technical/storyteller/generation-and-publication.md), [response contracts](../technical/platform/http-api-and-client-contracts.md). **Baseline:** 584b594; CURRENT and TARGET are intentionally separate.
 
 ## Current source: one combined Storyteller Activity
