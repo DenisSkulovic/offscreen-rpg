@@ -8,7 +8,7 @@ A selected experience target is a product preference, not a demonstration that t
 
 ```mermaid
 flowchart LR
-    Enter[Enter a world and character] --> See[Read a committed scene]
+    Enter[Prepared Play or Story Prompt] --> See[Read a committed scene]
     See --> Choose[Make a supported decision]
     Choose --> Wait[Consequences are admitted and settled]
     Wait --> Return[Return to the next committed scene]
@@ -23,6 +23,10 @@ This describes product intent. It does **not** assert that every loop, arbitrary
 | --- | --- |
 | Is a selected target already feasible? | [STATUS](../../STATUS.md) · [product-reality claims](../../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). Selection is not proof |
 | What persistent life are we building? | [Vision](foundations/vision.md) |
+| How does creation work now? | [Prepared Play / Story Prompt](experience/entry-and-onboarding.md#creation-information-architecture) |
+| What is the Storyteller as a writer? | [Investigative writing, revision and delegation](storyteller/behavior-and-quality.md#investigative-writing-revision-and-delegation) |
+| What does historical forkability promise? | [Scene history and alternate continuities](foundations/vision.md#scene-history-and-alternate-continuities) · [acceptance narratives](gameplay/acceptance-scenarios.md#storyteller-refoundation-acceptance-narratives) |
+
 | What do the nouns mean? | [Concepts](foundations/concepts.md) |
 | What do dice, items and forms promise? | [Rules](gameplay/rules.md) |
 | How does an intention become committed work? | [Actions and commitments](gameplay/actions-and-commitments.md) |
