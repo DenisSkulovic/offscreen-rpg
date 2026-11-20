@@ -1,5 +1,7 @@
 # Storyteller profiles and settings
 
+Creative profiles and authored guidance shape writing; they do not own game authority. Prepared experiences may expose optional customization, while custom Story Prompts provide verbatim player intent. When two sources genuinely conflict, the effective experience must resolve that conflict explicitly rather than relying on prompt ordering as hidden policy.
+
 **Owns:** creative controls a player may set. The former settings essay's unique clauses live in this file.  
 **Companions:** [behavior and quality](behavior-and-quality.md), [story settings technical](../../technical/storyteller/versioned-settings.md), [usage policy](../../technical/platform/spending-and-entitlements.md).
 

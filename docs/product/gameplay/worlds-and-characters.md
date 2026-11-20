@@ -1,5 +1,7 @@
 # Worlds and characters | flexible forms, sparse identity
 
+**Target invariant:** a story does not need a humanoid protagonist or even a conventional “character.” The playable perspective may be personal, collective, microscopic, geographic, observational, distributed or abstract. A prepared experience may constrain that perspective; a custom Story Prompt may establish one through admitted fiction.
+
 **Owns:** what kinds of protagonists and settings the product must support, and when identity becomes durable.  
 **Companions:** [continuity](continuity.md), [concepts](../foundations/concepts.md), [rules](rules.md).
 

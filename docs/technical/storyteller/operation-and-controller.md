@@ -1,5 +1,7 @@
 # Storyteller operation and controller
 
+**Target contract:** one Storyteller mission is a durable, recoverable, multi-round writer operation. It owns provider/tool custody and a reconstructable Workdesk, but it never owns authoritative world mutation. A mission can survive process restart without preserving an immortal model session.
+
 **Owns:** how a living world decides whether to call a model, how that call is bounded, and how the current prototype runtime differs from the selected target.  
 **Product:** [behavior and quality](../../product/storyteller/behavior-and-quality.md).  
 **Engine spine:** [selected architecture](../engine/selected-architecture.md).  
@@ -20,6 +22,16 @@ The [two loops](#two-loops) below are the selected target. They are not a live a
 One captured `single-turn.v1` task is one model call with no tools. `memory-exploration.v1` may use two or three rounds and bounded reads only when the captured policy funds them. That difference does not certify live adaptive play.
 
 ## Two loops
+
+There are two authority loops, not two fixed model calls.
+
+**Writer loop.** The Storyteller receives a captured mission view, explores the Library and skills as useful, may commission independent bounded research, stages/rereads/revises Workdesk material, and submits one proposal. Provider rounds and tool calls are internal to this loop and vary by task complexity.
+
+**Game loop.** Game Authority validates the submitted proposal against the captured Library/state roots, permissions, mechanics, current version fences and spending/operation identity. It either admits one coherent scene outcome or rejects/holds it. Publication, clock advancement, item/resource effects, accepted commitments and root selection belong here.
+
+A mission never gets more authority because the model asks for it. A skill, source document or assistant output cannot expand its grant. Conversely, the controller must not cripple a difficult mission merely because the old prototype used one shot or three rounds.
+
+### Durable living-world and operation discipline retained
 
 **Status: selected long-term design.** The 2026-11-19 packing rule below is part of that design. This heading does not implement the packer. Today's code does not assemble P0–P3 this way. The prototype section below is what the current generation runtime actually specifies: one captured `single-turn.v1` call with no tools, or a funded `memory-exploration.v1` controller. See [Current prototype runtime](#current-prototype-runtime).
 
@@ -42,8 +54,8 @@ STORYTELLER OPERATION (ephemeral model conversation, durable task state)
      inject the known present
      offer related material as a short orientation with handles
      leave unknown history out of the pack
-  3. One composition call for a normal scene
-     unknown history uses one intention-level query inside that same operation
+  3. Current pre-refoundation default: one composition call for a normal scene; target missions may use more bounded rounds/tools when useful
+     unknown history uses bounded rooted reads inside that same operation
      the deterministic backend does the reads
      mandatory evidence missing or too costly -> typed hold
   4. Compose from the selected role recipe and the verified pack
@@ -123,6 +135,14 @@ Report execution deliberately reuses this generation/accounting path, including 
 When a campaign exists, task context also carries a bounded `activitySituation`: current activity access, the exact active identity and up to twenty nonterminal commitments with action identity, revision, lifecycle state and public rule-specific progress. This is private preparation evidence, not authority. It omits terminal history and hidden plans. The scripted beacon consequence demonstrates the intended boundary by selecting an exact retained identity/revision from this context; scene output still passes situation/action validation before publication can offer that resume. Historical reports receive their frozen source state through the same task capture and cannot turn this context into current choices.
 
 ## Provider and budget boundary
+
+Every provider invocation has durable attempt identity under one mission allowance. Unknown delivery, timeout and retry follow the existing custody rules: a sent-but-uncertain paid attempt is not silently rerun as free work. Child research invocations have distinct attempt/spend identities while charging against the parent mission's admitted allowance.
+
+The permanent target deliberately does not select one provider, model, round count, token ceiling or assistant parallelism. Resource policy must be explicit, inspectable and enforceable, with enough reserve for final submission/recovery. No provider call is required merely to “prepare the desk” when deterministic authored sources already supply the needed orientation.
+
+### Current provider adapter and accounting realization
+
+The following details remain binding **current-runtime custody and accounting guarantees** until later Writer Changes deliberately replace them. Their concrete OpenRouter/model knobs are implementation facts, not eternal Storyteller product policy.
 
 The OpenRouter HTTP adapter is constructed explicitly with a credential and opt-in. It accepts one pinned model/provider route, disallows route fallback and redirects, bounds output/response bytes and time, and has no internal retries. Its captured output protocol defaults to native JSON-Schema constrained decoding. OpenAI strict schemas require every declared object property, so the transport projection represents a domain-optional non-nullable property as required-but-nullable. After native-schema delivery, the adapter removes only those synthetic null placeholders by walking the original captured schema; naturally nullable values remain intact, and the unchanged domain validator still rejects wrong values, forbidden combinations and missing required data. This is transport normalization, not a default, repair or general coercion. A separate evaluation compatibility mode may request a plain JSON object when an endpoint's constrained decoder collapses values to schema-minimum placeholders; the exact same task schema remains captured and application validation remains strict, with no coercion or implicit repair. Provider policy also captures the response transport: buffered JSON remains the default, while bounded SSE is an explicit evaluation transport that requests final usage and reconstructs the same locally validated provider envelope from streamed content. This field is part of the exact reviewed packet, not an adapter-only toggle. Its transport is injectable for free tests. Once response headers exist, either transport retains a bounded valid `X-Generation-Id` even when reading or parsing the body fails; the resulting uncertain attempt can therefore carry the provider lookup identity into durable accounting. SSE improves the chance of receiving headers before a long generation finishes, but does not guarantee that a timeout occurs after headers. Missing usage, incomplete streams, ambiguous HTTP outcomes and timeouts retain the reservation and stop further paid admission. Known refusals or malformed output still settle their reported charge.
 

@@ -1,5 +1,7 @@
 # Connected solo gameplay: implementation contract
 
+**Target authority:** a writer may propose prose, descriptive facts, choices and source changes; Game Authority commits one coherent **post-publication** outcome. The scene boundary must contain enough semantic state to review and fork that scene without consulting the parent's later mutable state.
+
 Status: maintained implementation contract. Campaign clock arithmetic, authored quiet reuse, historical reports, bounded accepted chains and explicit post-scene re-entry are implemented. The deliberate-time correction is the [execution-permission and short-action contract](./chronology-and-activities.md). Solo accepted-activity and finite-action projection are source-observed there. Arithmetic, overlap, and finite-action settle or interrupt have named offline tests. The gate function has no dedicated unit test. Broader chain editing, world preparation, group progression, and delegated decisions remain separate. No live inference, deployment or multiplayer behavior is authorized here.
 
 Read the [gold session](../../../research/authored-scenarios/harbor-session.md) alongside this contract. [Rules and activities](./mechanics-and-capabilities.md) owns action/choice authority; [ticks](./ticks-and-tags.md) owns units/exact arithmetic; [bounded autonomy](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) owns follow-ups/queues. This document owns the **integration decisions between those responsibilities**. Do not create a second progression engine to implement it.
@@ -21,6 +23,22 @@ Read the [gold session](../../../research/authored-scenarios/harbor-session.md) 
 These defaults avoid waiting for broad autonomy or world simulation before proving the rhythm. Fallbacks, transformation, traversal, cooperation and long-memory retrieval retain their existing owners and gates. Do not weaken those larger features' acceptance or call them complete after the solo proof.
 
 ## A minimum state ledger
+
+The minimum committed state for each newly published scene is the information required to continue that exact fiction faithfully:
+
+- exact Library root and source/package lineage;
+- admitted world-state frontier, including truth/uncertainty that later correctness depends on;
+- fictional clock and achieved progress;
+- active fictional plans, offers, obligations, holds and choice meanings;
+- applicable capabilities/resources/relationships where the world uses them;
+- effective creative profile, writing-skill and typed rule pins;
+- immutable passage/choice publication identity and causal parent.
+
+This is a **semantic contract**, not a requirement to copy one giant JSON object per scene. Persistent structures, event/checkpoint combinations or other representations may share unchanged state. Operational jobs, provider attempts, leases, billing and account authorization remain separate custody records.
+
+### Existing state owners and revision hazards
+
+The broader scene boundary above does **not** erase the existing engine's finer state ownership. These current responsibilities and revision hazards remain constraints that WR05/WR06 must preserve or deliberately migrate:
 
 These are semantic responsibilities, not literal DTOs or a table per row. Reuse existing storage where it has the right meaning and split it only where independent lifecycle demands it.
 

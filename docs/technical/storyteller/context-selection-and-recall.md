@@ -1,5 +1,7 @@
 # Context selection and recall
 
+**Target contract:** a mission begins with a small pinned mandatory pack and an authorized Library root. The model discovers and reads additional evidence on demand. The Library inventory, full history and search index are never injected wholesale merely because they exist.
+
 **Quick route by question:** [what source enters this task](#what-source-enters-this-task) · [how one task is packed](#task-pack--selected-target-2026-11-19) · [fork-scoped retrieval](#fork-scoped-retrieval-and-task-input--selected-target-2026-11-19) · [semantic locality](#semantic-locality-and-context-cost) · [active-scene cues](#active-scene-recall-cues) · [required controlling state](#required-controlling-state) · [ordinary working read](#agent-working-cycle) · [lexical baseline](#lexical-baseline-and-structured-recall) · [conceptual future retrieval](#conceptual-future-retrieval) · [search evaluation scope](#search-belongs-in-the-poc) · [mechanical dependencies, not current behavior](#mechanical-continuity-dependencies--s3-design). Package pins, publication, and the rule that a summary does not replace a published passage are [Canonical documents and packages](canonical-documents-and-packages.md). Provider budget, caches, and spending envelopes are [Request context and cost](request-context-and-cost.md). The operation loop is [Operation and controller](operation-and-controller.md).
 
 Status: mixed implementation and target contract. Immutable local storage, descriptive admission, canonical narrative passages, pinned package import/Start, narrative-choice document hints, active-scene recall cues, exact world/rule sections and bounded multi-round exploration are implemented. Ordinary admissions can select rule topics and narrative dependencies; ordinary gameplay still defaults to one-shot tasks with tools disabled. Mechanical choices lack explicit document dependencies, selected bodies can be omitted during packing, and sustained recall remains unproved. PostgreSQL still owns live mechanical state/receipts; the structured-document ownership in [One owner per kind of truth](canonical-documents-and-packages.md#one-owner-per-kind-of-truth) is a migration target. Use [packages/storyteller](../../../packages/storyteller/README.md) for the implemented package and [progress](../../../STATUS.md) for evidence. The [2026-11 engine-model inspection](../../../evidence/inspections/doc01-retained-observations/engineering/engine-model.md) is dated evidence, not the current owner. [Canonical storage](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#canonical-campaign-storage) and [memory/recall](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall) own remaining work. Read [concepts](../../product/foundations/concepts.md): there are no chapters.
@@ -10,11 +12,21 @@ A summary, recap, or model restatement does not replace or rewrite a published p
 
 ## What source enters this task
 
+The controller captures one immutable **mission view**: story/branch/scene identity, Library root, admitted world-state frontier, effective profile/skills/rules pins, current intent, resource policy and the minimum present facts needed to understand the task.
+
+Everything else is discoverable. The writer can orient by path/role, find candidate sources, open exact revisions, compare conflicting records and follow source links. A search hit is a lead; the exact rooted source is evidence. The controller must reject a handle that is outside the captured root, invisible to this mission, stale, or from a parent/sibling future.
+
+A difficult task may read many small relevant sources over several rounds. A simple task may read none beyond the mandatory pack. Context cost is controlled by bounded mission resources and purposeful retrieval, not by pretending every mission has the same fixed read count.
+
+### Source revision, visibility and tier invariants
+
 An admitted task captures the source revision it may use. A document revised after that snapshot does not become current truth for the already-admitted task. Authorization is checked again on read. A private or secret document does not become public evidence because it was pinned or indexed. The visibility fence is [Recovery, inspection and portability](canonical-documents-and-packages.md#recovery-inspection-and-portability). Private possibilities stay noncanonical until publication admits them.
 
 Canonical retention is independent of a player's context budget. Every tier keeps the same authoritative history and sources. A constrained recipe reads compact orientation, exact required state and the smallest relevant records; a richer recipe may retrieve more source passages, relationships, texture and alternative leads. It does not receive a different truth, stronger mechanics or exclusive favorable outcomes. A very large model context is permission to select more useful evidence when the task benefits, not a command to dump the entire workspace.
 
-### Task pack | selected target (2026-11-19)
+## Task pack | selected target (2026-11-19)
+
+**Compatibility anchor and detailed current-runtime baseline.** This 2026-11-19 pack remains the exact implementation/migration contract for the code that exists today. The Storyteller refoundation expands the controller above it; numeric catalogue/read/round limits here are **not** permanent ceilings.
 
 This subsection records how one Storyteller task is packed. This page does not implement the packer. Today's code does not assemble P0–P3 this way. `prepareStorytellerTask` still builds a `bounded-scene.v3` request from a caller-supplied snapshot. Ordinary admission still captures `single-turn.v1` or `repairable-turn.v1` with tools disabled. A funded `memory-exploration.v1` recipe can ask and read. The catalogue limits, package pins, and section loading later in this heading are that landed one-shot capture. They are not this pack.
 
@@ -24,7 +36,7 @@ Related material is offered as a short orientation with stable handles, current 
 
 Unknown history is fetched by one intention-level `ask_memory` query. The deterministic backend does the reads and returns relevant, source-grounded evidence inside the captured branch, checkpoint, actor knowledge, and committed root. `read_memory` opens one exact source when the wording matters. The [selected retrieval routes](../../product/storyteller/memory-and-continuity.md#selected-retrieval-routes) still allow one or two ordinary-language questions. The landed controller still caps a round at two.
 
-Role recipes stay separate. Only the recipe selected for this task is packed. A normal scene is one well-packed composition call. It is not a chain of mandatory models. The layer names P0 through P4, the tool facade, and the code-mode prohibition are [Selected compilation and tool contract](prompts-and-tools.md#selected-compilation-and-tool-contract). The recipes are [Task roles](prompts-and-tools.md#task-roles).
+Role recipes stay separate. Only the recipe selected for this task is packed. **Current pre-refoundation realization:** a normal scene is usually one well-packed composition call. The refoundation target permits additional bounded writer rounds/tools when useful; it still rejects mandatory model chains. The layer names P0 through P4, the tool facade, and the code-mode prohibition are [Selected compilation and tool contract](prompts-and-tools.md#selected-compilation-and-tool-contract). The recipes are [Task roles](prompts-and-tools.md#task-roles).
 
 **Fork packing negative.** At scene 10 the king is alive and the hero holds a sword. At parent scene 20 the king is dead and the sword is gone. A fork from scene 10 must be packed with the living king and the held sword. The fork uses that scene's mechanical checkpoint and canon root. An `ask_memory` lookup on that fork must not return the scene-20 death, including through a stale global index. A rumor that the king died is an attributed rumor, not a committed fact. Which versions a read may return stays in [Fork-scoped retrieval and task input](#fork-scoped-retrieval-and-task-input--selected-target-2026-11-19).
 
@@ -101,7 +113,19 @@ supported, preparation stops with explicit coverage/limit evidence.
 
 ## Agent working cycle
 
-The loop owner is [operation and controller](./operation-and-controller.md). This section does not select a second agent. Publication and descriptive-change constraints are [Descriptive changes and the revision fence](canonical-documents-and-packages.md#descriptive-changes-and-the-revision-fence). The [bounded-cost contract](./request-context-and-cost.md#bounded-work-not-an-open-ended-agent) governs cost. A document library is not an instruction to explore it on every turn. Use task-specific context and a small tool set; bounded metadata/sections first, no recursive library loading, no model call just to choose tools. Directory/section reads consume the same task-wide read/byte allowance as memory search. Compact role-specific records link to intact original prose instead of duplicating it. Maintenance thresholds do not authorize paid jobs. These controls are prepared requirements, not implemented runtime behavior.
+A writer mission normally follows this adaptive cycle:
+
+1. **Orient:** understand the task, captured root, current situation and available Library/skill/tool surface.
+2. **Investigate as needed:** browse paths, search, inspect exact sources, compare revisions or ask a bounded assistant to investigate a separable question.
+3. **Draft:** stage notes, proposed source changes and scene prose in the Workdesk.
+4. **Reread and revise:** inspect staged material/diff and the evidence it relies on; repair contradictions or weak prose.
+5. **Submit:** provide one structured scene/publication proposal with source handles, choices/intentions and proposed document changes.
+
+These are capabilities, not mandatory five ceremonial model calls. The controller may collapse trivial steps, loop investigation/revision while admitted resources remain, or stop on a typed hold.
+
+### Existing retrieval/publication discipline retained
+
+The loop owner is [operation and controller](./operation-and-controller.md). This section does not select a second agent. Publication and descriptive-change constraints are [Descriptive changes and the revision fence](canonical-documents-and-packages.md#descriptive-changes-and-the-revision-fence). The [bounded-cost contract](./request-context-and-cost.md#bounded-work-not-an-open-ended-agent) governs cost. A document library is not an instruction to explore it on every turn. Use task-specific context and a small tool set; bounded metadata/sections first, no recursive library loading, no model call just to choose tools. Directory/section reads consume the same task-wide read/byte allowance as memory search. Compact role-specific records link to intact original prose instead of duplicating it. Maintenance thresholds do not authorize paid jobs. These controls remain required target discipline; individual runtime paths may still lag until WR02–WR04 land.
 
 Canonical storage is also the narrative read boundary, not an archival side channel. Once a content kind moves to documents, task construction and developer inspection read the committed document version or a derived index that cites it; they do not continue treating an independently editable SQL body as truth. Capture the manifest root used by each task. Load focused orientation/current-scene material automatically, then use bounded listing, exact reads and search for additional evidence. Changes flow back through typed proposals and admission against expected roots/revisions. Mechanical state continues to come from its transactional owner rather than being reverse-engineered from prose.
 

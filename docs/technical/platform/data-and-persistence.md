@@ -1,5 +1,7 @@
 # Data and consistency
 
+**Target persistence boundary:** every newly published scene can resolve an exact immutable Library root and an exact semantic fictional-state frontier, plus passage/choice and effective source/profile/rule lineage. Physical storage may structurally share state; the requirement is historical exactness and branch isolation, not full copies. Existing v1 checkpoints remain compatibility evidence, not the final schema promise.
+
 **Find the section:** [who owns the durable record](#who-owns-the-durable-record) · [durable record families](#durable-records) · [proposed service schemas](#proposed-service-schemas-and-delivery-records) · [selected document store](#selected-document-store) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
 
 ## Who owns the durable record

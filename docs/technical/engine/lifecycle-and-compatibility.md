@@ -1,5 +1,7 @@
 # Story creation, control and completion
 
+**Target lifecycle on the Storyteller evolution branch:** prepared **Play** or one Story Prompt creates a durable launch operation whose successful first publication is immediately playable. The legacy draft → generated preview → Start sequence is compatibility/migration behavior, not the target lifecycle.
+
 **Find the section:** [five owners](#five-owners) · [forking and state copy](#forked-continuities) · [draft and preview](#drafts-and-generated-previews) · [reviewed Start](#start-exactly-the-reviewed-story) · [pause versus lifecycle](#distinguish-lifecycle-from-interruption) · [membership/settings](#membership-and-settings-changes) · [finish and delete](#finish-and-delete). Read the relevant section rather than loading this entire document.
 
 ## Five owners
@@ -16,15 +18,17 @@ An uncertain retry reconciles the existing generation and receipt. It does not r
 
 ## Forked continuities
 
-A story may record that it forked from one exact committed passage in another owned story. The fork is a new story identity with independent mutable state; its lineage is provenance, not a live parent-child synchronization relationship. Creating it performs no inference and cannot copy pending provider work, unsettled mechanics or running timers as completed facts. That is the current fork. It is not historical reconstruction.
+A fork begins from one exact **published scene boundary**. The child references that scene's immutable Library root, fictional-state frontier, clock, effective creative/rule pins, choices and admitted active fictional commitments. It creates a new branch/story identity and fresh operational ownership.
 
-**Selected long-term target, 2026-11-19:** Every committed scene is an independently addressable fork point. A fork from that scene uses **that scene's mechanical checkpoint and its canon root together**. The checkpoint includes the then-applicable character and rules capabilities, meaningful items, inventory, and counted resources if present, established world facts, relationships, and whereabouts, the fictional clock, accepted commitments and activity state, controlling versions, and provenance. The canon root is the campaign document manifest committed at that same boundary. The fork must not inherit later parent facts or sibling facts. A complete snapshot, a snapshot plus deltas, or a versioned immutable manifest is acceptable when it yields that same pair. The term *scene checkpoint* means this game-state boundary, not a published passage, a book leaf, or a page break. Forking starts a new story with its own state and causation namespace, not a live synchronized branch. Review never replays mechanical effects or spends on inference. Parent workflows still in flight stay on the parent. Story-scoped identifiers are remapped and must not alias the parent's later rows. The knowledge claim on that pair is [Scene-rooted canon](../storyteller/canonical-documents-and-packages.md#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19).
+Already-settled fictional outcomes remain settled. Unresolved admitted plans/offers/obligations remain unresolved and are rehomed under the child's execution identity. Parent provider attempts, worker leases, billing reservations, external side-effect identity and any parent/sibling future are not copied.
 
-**Current narrower implementation:** A quiescent `story_scene_checkpoint` selector plus its content-addressed object is the historical scene. `readHistoricalScene` in `packages/application/src/stories/reads.ts` returns that scene's frozen passage, items, campaign projection, and canon root. It does not fall back to the live snapshot. `createStoryForks(...).fork` reconstructs a new story from that pair: it copies checkpoint items and campaign fields, remaps the boundary passage and interaction ids, writes a branch manifest whose `campaignId` is the fork story id, and records `forkedFromSequence` as the parent scene number. `forkCurrent` remains the revision-1 live-row path for scenes that have no checkpoint; it still refuses a later revision, a mutable campaign, a world obligation, a pending resolution, a timed passage, and continuity notes that need a richer remap. A missing checkpoint is not reconstructed from live tables. Historic interactions are presentation; `canRespond` is false. Search indexes are not authority. The two-scene sword/king application test is the current proof; this page does not claim a journal E2E or a Game Authority move.
+Legacy scenes that lack sufficient historical semantic state remain viewable but are not retroactively fabricated into fully forkable checkpoints. New publication must satisfy the stronger invariant by construction.
 
 ### Fork identity remap
 
-Source-observed at `af512d1f`. The field classes live on [Mutable field inventory](../platform/data-and-persistence.md#mutable-field-inventory). This heading owns how a fork mints ids. The SQL selector is `story_scene_checkpoint`. Historical GET and checkpoint fork are `readHistoricalScene` and `createStoryForks`. `forkCurrent` does not mint a branch manifest.
+**Current compatibility realization.** The v1/checkpoint implementation below remains binding for retained history until WR05/WR06 replace its quiescent-only limits. The new target broadens what can be represented; it does not relax identity isolation, historical-root selection, or clock remapping.
+
+Source-observed compatibility baseline at `af512d1f`. The field classes live on [Mutable field inventory](../platform/data-and-persistence.md#mutable-field-inventory). This heading owns how a fork mints ids. The SQL selector is `story_scene_checkpoint`. Historical GET and checkpoint fork are `readHistoricalScene` and `createStoryForks`. `forkCurrent` does not mint a branch manifest.
 
 A fork from any committed scene, including scene 10 after the parent has published scene 20, loads **that scene's checkpoint and that scene's canon root**. Parent scene 20 may record the king dead, a new sword holder, and a later clock. The fork still has the king alive, the scene-10 holder, the scene-10 `gameSecond`, and the scene-10 root. It does not read the live `story_item` table, the live `campaign` row, or a search index.
 
@@ -34,7 +38,7 @@ Stable business keys stay: item key, holder key, fact id, skill id, quantity id,
 
 `campaign.clock_anchor_at` is not copied. The fork stores the checkpoint's `gameSecond` and `clock`, then writes a new anchor at fork-commit time. The parent's elapsed wall time is not added. `campaign_settings` rows are copied only through the captured `settingsRevision`.
 
-Unsupported active work is not silently cloned. The POC refuses a non-empty hold, a non-null offer, a non-null accepted activity plan, a non-null active activity or action, a decision deadline, a wait, a pending resolution, a world-obligation row, and continuity notes other than null or `[]`. Refusal does not fall back to the latest parent rows and does not mark the work complete. The long-term any-scene promise remains: a later change may represent that pending work as still pending, with new ids and without the parent's timer, or keep refusing it. This page does not implement either choice.
+Unsupported active work is not silently cloned. The POC refuses a non-empty hold, a non-null offer, a non-null accepted activity plan, a non-null active activity or action, a decision deadline, a wait, a pending resolution, a world-obligation row, and continuity notes other than null or `[]`. Refusal does not fall back to the latest parent rows and does not mark the work complete. The target any-scene contract supersedes that old open choice: new-format published scenes must represent admitted pending fictional work so a child can rehome it with new operational ids and without the parent's timer. Legacy v1 checkpoints may still refuse unsupported active work rather than fabricate it. This page does not implement either choice.
 
 The branch manifest's `campaignId` is the fork's story id. The ancestor manifest's `campaignId` is not copied. See [Inherited manifest campaign id](../storyteller/canonical-documents-and-packages.md#inherited-manifest-campaign-id).
 
@@ -43,6 +47,14 @@ Future branch navigation may present ancestry and descendants as a tree of alter
 This document connects account entry, collaborative setup, the first live scene and the end of a story. [Execution](../platform/execution-and-delivery.md) defines how accepted commands run; it must not leave creation and recovery to unrelated ad hoc endpoints.
 
 ## Drafts and generated previews
+
+A private prompt/customization draft is optional convenience. It may be saved without spending or creating a playable story. It is not a required intermediate lifecycle.
+
+Target launch does not require a human-reviewed generated preview. The operation captures the exact Story Prompt or prepared-experience root, effective customization and authorization, then publishes the first admitted scene. Legacy preview records remain readable where retained data or migration requires them.
+
+### Current legacy draft/preview realization
+
+The following contract describes the **implemented pre-refoundation lifecycle** that WR07/WR08 must migrate or retire safely. It is not the target creation UX, but its revision, idempotency, provider-custody, stale-result and ownership guarantees remain real compatibility constraints.
 
 The implemented private draft uses `PUT /api/drafts/:id` with three text fields and `expectedRevision`. The browser assigns a UUID retained in the new-draft URL before the first save; revision zero creates it. Ownership comes from the verified session. Updates lock the owned row and compare its revision. An identical retry at the same or immediately following revision returns the existing result; older or conflicting writes return 409. This protects draft text without introducing a gameplay command journal. `GET /api/drafts/:id` reopens an owned draft; `GET /api/drafts` pages through up to 20 drafts in creation order using an owned draft ID as cursor. Inaccessible drafts return 404.
 
@@ -85,6 +97,14 @@ The first playable branch approaches a gate, offers a reply and ends with a joke
 `PUT /api/stories/:id/controls/:operationId` accepts `{ intervalId, expectedControlRevision, action: "pause" | "resume" }` for a controllable current journey. It requires the owner session and configured origin, returns 200 after the control transaction commits, and rejects stale or inapplicable controls with 409. An identical operation retry returns current state even after later controls; changing its request conflicts. The browser retains the operation ID for uncertain retries and refreshes on conflict. The snapshot's monotonic `viewVersion` orders both polls and command responses, including control changes without new prose. Paused journeys continue to be polled so another device's resume is visible. These controls do not pause an open decision or an in-flight generation.
 
 ## Start exactly the reviewed story
+
+Target **Play** starts exactly the captured launch inputs and publishes exactly one admitted opening. There is no separate reviewed-preview object whose later Start may silently regenerate.
+
+Idempotent retry uses the same durable launch identity. Provider uncertainty, HTTP loss or process restart recovers that operation; it must not create a second story or second paid attempt. The first scene's fictional clock is established by admitted fiction, not by elapsed provider or queue time.
+
+### Current legacy Start realization
+
+Until WR07/WR08 replace the preview/Start seam, the existing endpoint and its validation/idempotency rules remain the compatibility contract:
 
 `PUT /api/stories/:storyId/start` accepts `{ candidateId, expectedDraftRevision }`. It requires the owner's session and configured write origin. The client supplies a stable story UUID in the path; it does not supply prose, interaction structure, owner identity or hidden intentions.
 

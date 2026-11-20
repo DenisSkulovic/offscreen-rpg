@@ -1,5 +1,7 @@
 # 3. Data truth, transaction boundaries and durable messages
 
+**Storyteller evolution data boundary:** scene publication atomically selects an immutable Library root and semantic fictional-state frontier. Workdesk drafts and search indexes are provisional/derived; provider attempts, worker leases and billing remain operational records outside forked fiction.
+
 **Reader question:** which bytes form the story's truth and how do we prevent partial scenes? **Baseline:** 584b594. Canonical [data/persistence](../technical/platform/data-and-persistence.md), [canonical documents](../technical/storyteller/canonical-documents-and-packages.md), [execution](../technical/platform/execution-and-delivery.md).
 
 ## The three different persistence jobs

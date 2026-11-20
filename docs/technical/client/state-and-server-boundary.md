@@ -1,5 +1,7 @@
 # Client state and server boundary
 
+**Target server boundary:** the client owns drafts, navigation and presentation; the server owns durable launch/fork operation identity and authoritative scene status. A reload reconstructs from GET truth. Client cache or SSE hints cannot invent publication, fork completion or fictional time.
+
 **Owns:** who holds story truth, the query cache, server-rendered HTML and a command after reload.  
 **Status: selected client architecture, owner decision 2026-11-12.** The stack decision and F1–F15 list live in [architecture](architecture.md). This page is the boundary contract. Implementation extent is not "the whole target is shipped" merely because the decision is recorded.  
 **Does not own:** player-facing copy ([experience](../../product/experience/play-and-decisions.md)) or game authority ([engine](../engine/authority-and-transitions.md)).

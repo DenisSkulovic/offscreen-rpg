@@ -1,5 +1,7 @@
 # Generation and publication
 
+**Target seam:** generation ends with a **proposal**; publication is Game Authority's coherent commit of passage, visible choices with stored intent, admitted document changes, exact Library root, semantic world-state frontier and effective source/profile/rule pins. The writer never mutates canon or mechanics directly.
+
 **Owns:** when a Storyteller operation may become a published passage, a historical report, or a held state, and what must stay unpublished.  
 **Selected target:** the publication step of the [bounded controller](operation-and-controller.md#two-loops).  
 **Landed prototype:** opening, continuation, mechanical consequence and historical-report tasks on the existing generation row, described in [current prototype runtime](operation-and-controller.md#current-prototype-runtime).  
@@ -7,11 +9,23 @@
 
 ## What publication is allowed to do
 
+Publication may admit one coherent scene outcome against the captured prior frontier: immutable passage/choices; accepted descriptive/document changes; exact resulting Library root; typed mechanical/world effects where supported; fictional clock/progress and active commitments; effective source/profile/rule pins; and causal lineage.
+
+Publication may create branch-local operational follow-up identities after the scene is committed. Those identities are not themselves part of the fictional snapshot.
+
+### Existing publication guarantees retained
+
 A short authoritative publication fence may write a current passage, a fresh valid offer, source-linked descriptive notes, or a historical report attached to its original event. It checks that the scene, canonical root and current offer are still the ones the task captured. If they are stale, the operation holds or redoes only under the captured policy. It never overwrites newer canon.
 
 Historical report attaches to the original history. It cannot supersede Now. An opening candidate never starts fictional time. Speculative or early prepared consequences stay private until exact settlement. A validator must not treat a predicted success as true.
 
 ## What publication must refuse
+
+Publication refuses a proposal when its captured root/frontier is stale, a required source is missing or outside scope, a proposed mechanical effect lacks authority, a visible choice lacks stable intent semantics, document changes cannot produce a valid rooted Library, or the resulting scene would be advertised as forkable without enough admitted semantic state to continue it faithfully.
+
+It also refuses attempts to copy parent/sibling future knowledge, provider attempts, leases, billing identity or external side-effect ownership into a fork. A writer's private possibility remains private possibility unless explicitly admitted as the appropriate record type.
+
+### Existing refusal and hold guarantees retained
 
 - A model-written item transfer, dice result, or clock advance that admission did not commit.
 - A second publication of the same accepted action identity.
@@ -25,7 +39,15 @@ A failed or stale case keeps that committed situation. The scene, root, or offer
 
 ## Scene publication fence
 
-**Selected target, not current behavior.** The records being bound are the [committed pair](canonical-documents-and-packages.md#the-committed-pair): one game-state checkpoint and the canon root committed with it. The engine's publication transaction is the consistency boundary for that pair. A Storyteller process returns bounded descriptive proposals and evidence dependencies. It does not commit the checkpoint or the canon root.
+One scene publication selects the **post-publication** Library root and semantic world-state frontier under the same authority/version fence. The immutable passage, choices and their stored intentions refer to that boundary.
+
+A later mechanical event is a later causal frontier. It cannot retroactively rewrite the state associated with an already published scene. Likewise, a late document-indexing or summary job may improve retrieval projections but cannot change what source root scene 37 historically referenced.
+
+If SQL/state commit fails, staged Workdesk/Library proposals remain unpublished. If the commit succeeds but the HTTP response is lost, retry returns/locates the committed scene identity rather than generating or settling again.
+
+### Existing fence guarantees retained
+
+**Pre-refoundation selected/current fence detail retained.** The records being bound are the [committed pair](canonical-documents-and-packages.md#the-committed-pair): one game-state checkpoint and the canon root committed with it. The engine's publication transaction is the consistency boundary for that pair. A Storyteller process returns bounded descriptive proposals and evidence dependencies. It does not commit the checkpoint or the canon root.
 
 One fence admits the source passage, the accepted descriptive changes, the mechanical effects the engine has already admitted, and the new canon root paired with the resulting checkpoint. It admits all of those, or none of them. A model proposal is not a direct write. Markdown and JSON projections of an accepted passage are application output, not a second model rendering.
 

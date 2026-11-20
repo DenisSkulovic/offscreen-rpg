@@ -1,5 +1,7 @@
 # Continuity and consequences
 
+Every newly published scene is a coherent historical boundary: the exact Library and admitted fictional state known at that point remain reviewable together. Later prose, facts or branch changes must not leak backward into that scene. A fork begins from that boundary rather than pairing old narration with today's mutable state.
+
 **Owns:** sparse-world continuity and lasting consequence. Storyteller retrieval craft lives in [memory and continuity](../storyteller/memory-and-continuity.md).  
 **Explore by question:** [when to materialize a person or place](#sparse-world-progressive-materialization) · [what happened versus what is true](#what-happened-what-is-true-what-might-happen) · [maps and movement](#space-movement-and-maps) · [identities and relationships](#people-objects-and-capabilities) · [possessions/exchanges](#possessions-and-exchanges) · [knowledge/perspective](#knowledge-and-perspective).
 

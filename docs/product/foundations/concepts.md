@@ -4,11 +4,13 @@ This is the vocabulary for product descriptions, feature plans and technical con
 
 ## The answer to “what does the Storyteller do?”
 
-A **Storyteller turn** is one bounded operation to prepare the next playable presentation of the current situation: inspect context, retrieve evidence when useful, compose narration, and propose the available choices or explicit absence of choices. The application validates and publishes the result. The player then sees the narration and, when a choice is requested, a **decision point**.
+The **Storyteller** is a persistent-knowledge writer, not an immortal chat session and not Game Authority. For an opening or continuation it receives a small pinned orientation, then may inspect the rooted Library, search and compare exact sources, consult versioned writing skills, keep a durable task **Workdesk**, revise drafts, and delegate bounded research/editorial questions to independent assistant contexts. It decides how much of that work is useful for the mission; the product does not require a theatrical fixed number of model rounds or agents.
 
-The next player decision can lead to another Storyteller turn. Several turns can develop the same conversation or confrontation. Each selected in-world action has its own admitted time semantics; a rapid presentation does not imply a frozen conversation. Reading choices and generating prose consume no fictional time themselves. A turn can also hand back routine activity access, leave progression held, or establish that no choice is currently available. The game does not require a fixed alternation between turns and activities.
+A **Storyteller mission** ends by proposing a scene, choices/intentions and any source changes that should accompany it. Game Authority validates what may become authoritative and publishes one coherent outcome. Several model rounds, tool calls and draft revisions may therefore belong to one mission; one simple scene may need almost none.
 
-“Turn” here describes the Storyteller's logical work; it does not mean a combat round, fixed duration, player action, model API call or literary division. Reports and memory maintenance are other Storyteller tasks with different outputs. Internal reasoning is not a player-visible gameplay unit or a transcript we need to preserve.
+A published scene is more than prose. It is a historical boundary tied to the exact admitted Library, fictional state, clock, effective creative/rule pins, choices and active fictional commitments at that point. That boundary is reviewable and forkable without replaying the writer.
+
+“Mission,” “turn,” “scene,” “passage” and “model round” are deliberately not synonyms. Internal reasoning is not player-visible history and hidden chain-of-thought is not a persistence requirement.
 
 ## Player and world concepts
 
@@ -16,6 +18,12 @@ The Storyteller is a product identity realized by purpose-specific tasks, creati
 
 | Term | Meaning | Boundary |
 | --- | --- | --- |
+| Story Prompt | Verbatim player intent used to begin or redirect creation | Authoritative as intent, not automatically a fictional fact |
+| Prepared experience | Authored playable package with its own Library, starting constraints and optional customization | Not merely a text seed attached to a generic wizard |
+| Library | Persistent, navigable, versioned collection of story sources, private creative records and published material | Not one giant prompt and not a permission-free filesystem |
+| Workdesk | Reconstructable research/draft workspace for one Storyteller mission | Durable across mission retries; provisional, not canon |
+| Writing skill | Versioned craft guidance the Storyteller may load when useful | Cannot grant runtime permissions, money, clock authority or tools |
+| Research assistant | Independent bounded context commissioned for a separable question | Returns evidence/proposals; does not publish canon directly |
 | Campaign | The continuing character/world experience with its history, rules and settings | Does not need a planned plot or compulsory ending |
 | Narrative direction | The campaign-owned Storyteller intent for what larger pressures, themes or developments to cultivate, when the selected settings permit one | May be absent; it is a revisable private strategy, not a promised sequence or authority over player choices |
 | Situation | The relevant present circumstances, plus currently authorized possibilities | Changes through committed actions/events/work; prose alone cannot fabricate mechanical progress |

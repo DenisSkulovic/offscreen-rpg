@@ -1,6 +1,6 @@
 # ChatGPT documentation handoff | before Cursor implements the Writer refoundation
 
-**State:** PROPOSED/UNSELECTED, 2026-11-21. **Implementation:** ChatGPT edits the **permanent \`docs/\` wiki** in four doc-only Changes. Cursor executes code Changes **only after** the docs wave and owner review. This is a compact routing brief, **not** a replacement product/technical wiki and **not** approval to rewrite it.
+**State:** EXECUTED, 2026-11-21. WR01, WRD02, WRD03 and WRD04 permanent-wiki waves are complete and archived; implementation follows from the selected target documentation. **Implementation:** ChatGPT edits the **permanent \`docs/\` wiki** in four doc-only Changes. Cursor executes code Changes **only after** the docs wave and owner review. This is a compact historical routing brief, **not** a replacement product/technical wiki. Owner approval for the target-state rewrite was explicitly given during execution and is recorded in archived WR01.
 
 ## Launch in a dedicated ChatGPT conversation
 
@@ -14,10 +14,10 @@ Copy/paste this to the ChatGPT model that will own the documentation work (GPT-5
 
 | Sequence | Packet | ChatGPT assignment | Hard completion criterion |
 | --- | --- | --- | --- |
-| 1 | [WR01 product](open/2026-11-21--wr01-accept-storyteller-and-fork-contract/CHANGE.md) | Reconcile vision, concepts, entry, Storyteller behavior, worlds, continuity and time/agency | Player product contract understandable without opening work/designs; statuses and examples preserved |
-| 2 | [WRD02 technical Storyteller + Library](open/2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) | Rooted Library, Workdesk, agent/skills/subagents, context, source identity and cost/custody | Technical Storyteller owners usable by Cursor's WR02/03/04 |
-| 3 | [WRD03 technical Engine + forks](open/2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md) | Coherent scene publication, active-state semantics, fork/clock, direct launch and authority | Engine owners usable by Cursor's WR05/06/07 |
-| 4 | [WRD04 wiki navigation and checks](open/2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md) | Indexes, architecture atlas, relevant runbooks, cross-claim reconciliation, cold-reader and docs/wiki checks | From docs/README to each new authoritative contract in <=2 heading-level hops, no new contradictions; completion receipt |
+| 1 | [WR01 product](archive/2026-11/other/2026-11-21--wr01-accept-storyteller-and-fork-contract/CHANGE.md) | Reconcile vision, concepts, entry, Storyteller behavior, worlds, continuity and time/agency | Player product contract understandable without opening work/designs; statuses and examples preserved |
+| 2 | [WRD02 technical Storyteller + Library](archive/2026-11/other/2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) | Rooted Library, Workdesk, agent/skills/subagents, context, source identity and cost/custody | Technical Storyteller owners usable by Cursor's WR02/03/04 |
+| 3 | [WRD03 technical Engine + forks](archive/2026-11/other/2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md) | Coherent scene publication, active-state semantics, fork/clock, direct launch and authority | Engine owners usable by Cursor's WR05/06/07 |
+| 4 | [WRD04 wiki navigation and checks](archive/2026-11/other/2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md) | Indexes, architecture atlas, relevant runbooks, cross-claim reconciliation, cold-reader and docs/wiki checks | From docs/README to each new authoritative contract in <=2 heading-level hops, no new contradictions; completion receipt |
 
 **Do not rewrite 114 pages wholesale.** Review the actual relevant owners. Long, rich pages may need meaningful sectional rewrites; unrelated admin/Kubernetes/security pages should be NO-OP unless an accepted claim actually depends on them. Don't flatten real product nuance into a dozen shallow summaries.
 

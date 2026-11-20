@@ -1,18 +1,28 @@
-# A character with a life of their own
+# A living story with a life of its own
 
-Offscreen RPG is a story that unfolds over time. You create a character, become familiar with their habits and relationships, and occasionally influence what happens next. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
+Offscreen RPG is a story that unfolds over time. You enter through a prepared experience or a freeform **Story Prompt**, then inhabit a perspective whose world can keep accumulating history between visits. That perspective may be a person, creature, community, organism, place, system, observer, distributed consciousness or something stranger. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
+
+The defining promise is not “AI chat with a character sheet.” It is a **living, persistent, historically exact story**: the Storyteller can investigate and write from durable sources, the game admits consequences under explicit authority, and each published scene becomes a faithful historical point that can later be reviewed or forked.
 
 The intended experience includes a character with a life, and it still names the possibility of inviting friends into a shared story. On 2026-11-18 the owner ratified the first tested playability milestone as solo. The small-party ambition stays a distant, unscheduled aspiration. It is not cancelled, not implemented, and not required before that solo proof. Shared decision and pause rules remain [proposed](../../../work/designs/open/shared-play/README.md).
 
 ## What this page selects
 
-Selected promises on this page are earned time, player consent, D&D-style rules, a Storyteller that does not impose one preferred pace, sparse continuity, world neutrality, and risk where the campaign permits loss. The first tested playability milestone is solo. The small-group ambition is a distant later aspiration, not this page's first-playable obligation, and its live acceptance stays Proposed/Blocked. The sponsored allowance later in this page is illustrative. It is not a spend authorization. A general delegated choice is not accepted. A personality that acts overnight without that consent is a later aspiration, not a rule.
+Selected promises on this page are earned time, player consent, a genuine investigative Storyteller, persistent rooted knowledge, exact scene history/forks, sparse continuity, world neutrality, optional authoritative mechanics, and risk where the campaign permits loss. No universal humanoid body, D&D sheet, inventory, profession or grand quest is required.
 
-Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave during a quiet interval the player already accepted. Leaving the page does not authorize a new choice. The accepted rule is in [time and autonomy](../gameplay/time-and-autonomy.md): no accepted execution means no fictional time, and a timed fallback applies only to a decision the player pre-authorized. A general delegated-decision policy remains [proposed](../../../work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md), not accepted. One owner-enabled harmless invitation is the archived exception. A Chamber timed-default fixture is a developer test, not this player rule. Where a campaign has an authorized pause, that pause stops progression within its declared scope. A character who acts from personality overnight is a long-term aspiration, and only after that specific consent exists.
+The first tested playability milestone remains solo. The small-group ambition is a distant later aspiration. The sponsored allowance later in this page is illustrative and is not spend authorization. A general delegated player choice is not accepted merely because the Storyteller can delegate research to its own assistants; player autonomy and writer-agent delegation are separate concepts.
 
-## The D&D foundation
+Participation is on your terms. Leaving the page does not authorize a new player decision. Accepted unattended work progresses only under the campaign's explicit time/autonomy rules. A personality acting overnight without that consent remains outside the selected player-agency contract.
 
-The storyteller is the dungeon master. D&D-style character abilities, skill checks, dice and recorded consequences are fundamental across work, fishing, travel and combat, not optional narrative decoration. Start with the explicit [POC rules subset](../gameplay/rules.md); full edition fidelity and combat depth are separate scope decisions.
+## Optional mechanical foundations
+
+### The D&D foundation
+
+**Legacy anchor preserved for inbound links.** D&D-style mechanics remain a supported authored rules family, not the universal ontology. The governing text is the remainder of this section.
+
+D&D-style mechanics are one supported authored rules family, not the product's universal ontology. A prepared experience may opt into ability scores, checks, dice, hit points, inventory, professions or other typed mechanics. Another experience may use different mechanics or remain largely narrative.
+
+The engine stays world-neutral: it supplies authority, persistence, time, capabilities, evidence and versioned rules without assuming a humanoid body or fantasy-adventurer schema. When a world enables typed rules, those rules are real and authoritative; prose cannot override them. When a world does not enable them, the Storyteller must not quietly manufacture a D&D sheet as hidden scaffolding. See [gameplay rules](../gameplay/rules.md).
 
 ## Scene history and alternate continuities
 
@@ -44,11 +54,16 @@ A messaging service such as Slack could support brief updates and choices during
 
 ## First playable target
 
-The first tested playability milestone is one solo protagonist in one authored setting. Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone. Follow a scene, choose an intention, leave during an already accepted quiet interval, receive a development, and respond. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring the player back. That proof does not require a map, a party, a world economy, or unbounded NPC autonomy.
+The target creation path has two deliberately simple entrances:
 
-An invited friend who controls their own character is outside this milestone. That small party remains a distant later aspiration in [proposed shared play](../../../work/designs/open/shared-play/README.md). It is not cancelled and not implemented. Simultaneous consent cases stay Proposed in [the consent and resolution matrix](../../../work/designs/open/shared-play/CONSENT-AND-RESOLUTION-MATRIX.md#matrix). The concrete solo story is the [harbor and return walkthrough](../gameplay/acceptance-scenarios.md#first-solo-acceptance-walkthrough--harbor-and-return). It is an authored target, not a logged run, and not a rights clearance. It does not make the harbor the only world the product may later offer. The short obligation list stays [what the first playable build should demonstrate](../gameplay/acceptance-scenarios.md#what-the-first-playable-build-should-demonstrate). The wizard and goblin scenes are a later stress vignette.
+- **Prepared experience:** choose an authored experience and press **Play**. Optional **Customize** changes only the dimensions that experience exposes.
+- **Custom story:** provide one freeform **Story Prompt**. A title, humanoid role, class, rules package, profile picker and review wizard are not mandatory prerequisites.
 
-This target needs a small relevant world and a reliable story, not a grid map, dedicated work/travel/trade systems or a simulated population. Richer imagery, saved custom storytellers and deeper messaging interaction can grow from the first experience. Separate party adventures and elaborate world simulation are outside this scope.
+The Story Prompt is recorded verbatim as player intent. It is not automatically established world canon. The Storyteller may invent an original world where policy permits, then Game Authority admits the opening as one coherent first scene. The player should not need to approve a generated preview before the story becomes playable. A recoverable saved draft is useful, but “draft” is not a second mandatory lifecycle between prompt and play.
+
+The first scene appears without fictitious background time having elapsed merely because generation took time. Provider latency, retries and browser navigation do not advance the world. A prepared experience may require **no setup model call at all** before the opening mission when its authored Library already contains the needed orientation.
+
+The first tested product proof remains solo. Shared-play remains a later ambition. The concrete solo story and broader target journeys live in [acceptance scenarios](../gameplay/acceptance-scenarios.md).
 
 ## Larger shared worlds
 

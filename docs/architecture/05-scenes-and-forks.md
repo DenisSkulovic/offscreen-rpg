@@ -1,5 +1,7 @@
 # 5. Scene checkpoints, historical forks and branch-safe memory
 
+**Storyteller evolution fork model:** every new published scene is a fork point by construction. A child references that scene's exact Library and fictional-state roots, preserves settled outcomes and unresolved fictional commitments, then acquires fresh operational identities. Historical review never replays the provider or imports later parent knowledge.
+
 **Reader question:** after the story reaches scene 2, how can I return to scene 1 without inheriting its future? **Baseline:** 584b594. Canonical [scene-rooted canon](../technical/storyteller/canonical-documents-and-packages.md), [data checkpoint](../technical/platform/data-and-persistence.md#scene-checkpoint-v1), [context selection](../technical/storyteller/context-selection-and-recall.md).
 
 ## Timeline is not one mutable notebook

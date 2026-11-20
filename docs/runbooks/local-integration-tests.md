@@ -1,5 +1,7 @@
 # Local integration tests
 
+**Current-runtime runbook:** these provider-free tests remain valid for the code that exists today. New Storyteller-evolution tests will be added by Cursor with WR02–WR08; this page intentionally does not invent commands for code that has not landed.
+
 Provider-free fixture and integration checks. These commands do not enable live inference. They may create, drop, or recreate only a named disposable database: `offscreen_db_test` or `offscreen_auth_test`. They must not reset `offscreen`, `offscreen_story_local`, `offscreen_chamber`, or a remote database.
 
 Ordinary startup and frontend checks stay on [Local development](local-development.md). A provider-free Chamber demo is [Provider-free Chamber](local-storyteller-rehearsal.md#provider-free-chamber). Live model commands are [Explicitly authorized paid rehearsal](local-storyteller-rehearsal.md#explicitly-authorized-paid-rehearsal). Do not open that heading for a database test.
