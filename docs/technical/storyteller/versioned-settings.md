@@ -1,5 +1,7 @@
 # Versioned story settings and clock policy
 
+**Target contract:** every published scene can identify the effective creative guidance, writing-skill revisions and typed mechanics/clock policy that governed it. Creative guidance follows historical/fork semantics; runtime authorization and spend permissions are freshly checked and are never inherited merely because a document says so.
+
 Design and current implementation boundary for [editable presets](../../product/storyteller/profiles-and-settings.md). Existing story/task profile snapshots remain provenance; explicit settings commands add subsequent revisions. Preserve that initial snapshot as provenance while adding explicit subsequent revisions; do not mutate old generation artifacts.
 
 **Route:** [what a later edit may change](#captured-revision-and-a-later-edit). Effective spending stays in [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities).
@@ -20,15 +22,15 @@ Negative: a changed creative profile does not override the permissions captured 
 
 ## Data and commands
 
-Store immutable story settings revisions, an active revision reference and the creation-time lock policy. Capture the preset identity/revision, resolved creative fields, custom tag definitions/snippets and separate typed mechanical/clock policies. Copy referenced catalogue content into the revision so a catalogue edit cannot change a saved story. Store private reusable presets under owner identity; another story receives its own snapshot when one is applied.
+Versioned settings are split by authority instead of collapsed into one JSON profile.
 
-Use a story-owned settings update command with a stable operation ID and expected settings revision. Under the existing story lock, check owner and lock policy, validate the complete effective configuration, write a new revision and receipt, and increment view version without inventing a narrative passage. Repeated identical commands return the saved result; mismatched reuse or stale edits conflict. Show a settings history entry outside fictional prose, including the effective boundary. Public DTOs expose the owner's editable guidance and effective settings, not runtime system prompts or provider policy.
+- **Creative profile:** voice, taste, pacing preferences, narrative initiative and other writer-facing guidance. A historical scene pins the effective revision.
+- **Writing skills:** optional versioned craft procedures/examples available to the Storyteller. A mission records which skill revisions materially informed the work where useful for audit/history.
+- **World/rule configuration:** typed capability and mechanics packages selected for the story. These constrain executable effects and are not editable by prompt text.
+- **Clock/autonomy policy:** typed authority for time, holds, accepted plans and unattended progression.
+- **Resource/spend policy:** operational authorization for provider/tool/delegation use. This is checked for each new mission/branch and is not a creative document.
 
-Initial editor limits: 16 narrative tags, descriptions up to 400 characters, 4 custom guidance snippets up to 1,200 characters each, with the compiled request still subject to its existing 48 KiB cap. Known mutually exclusive tags use declared conflict groups. Custom tags remain descriptive; mechanical rule references must come from supported definitions. Store structured fields, not one concatenated prompt. Compile only relevant settings into each task, with fixed task rules above player guidance. No dynamic tool permissions from tag text.
-
-Creative revisions affect newly prepared storyteller tasks after the settings save. Existing offered mechanical terms remain pinned; admitted model tasks, retries, mechanical plans and prepared arrivals retain their captures. A later consequence narration is a separate task and captures the then-current creative revision. A settings update does not stale a valid in-flight result by itself: source fences must separate settings revision from narrative/world revision. A setting cannot mutate another field indirectly (for example comedy cannot enable death or accelerate the clock). A future explicit refresh may replace an untouched menu, but the initial editor does not generate on save.
-
-Profiled stories initialize settings revision 1 from the saved snapshot, never the latest catalogue definition. Separate narrative fixtures use their explicit contracts. Incompatible pre-POC data is reset instead of decoded through compatibility paths. Locked settings are chosen at Start and enforced on every write path.
+Prepared-experience customization produces a captured effective configuration. A fork retains the historical creative/rule pins needed to understand the selected scene while obtaining fresh account/security/spend authorization for new work.
 
 ## Canon invention policy
 
