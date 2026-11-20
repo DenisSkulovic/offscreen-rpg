@@ -5,9 +5,9 @@
 
 ## First contact
 
-A new visitor should quickly understand the promise: create a character, choose a storytelling direction, and receive developments over time. A representative scene with a choice communicates this better than a feature catalogue. A first visit does not present an uncertain or failed opening as a saved playable life. The distinct denied, waiting, and error states for creation are in [Creation information architecture](#creation-information-architecture).
+A new visitor should understand the promise quickly: choose a prepared experience and **Play**, or describe any custom story in one freeform **Story Prompt**. A representative living scene communicates the product better than a feature catalogue or character-sheet funnel.
 
-OAuth provides a quick route to an account. Require an account before saving a playable story and spending its generation budget. Whether a visitor can draft a premise before signing in is an onboarding detail to test.
+OAuth provides a quick route to durable stories and paid generation. The UI may let a visitor type a prompt before sign-in, but it must not lose that text when authentication becomes necessary.
 
 ## Stories home
 
@@ -17,53 +17,41 @@ For an empty account, lead directly toward story creation—do not strand the pl
 
 ## Creation information architecture
 
-Creation turns a chosen story foundation into a small, playable beginning. It should invite imagination without asking the player to design a world database, understand canonical-file internals or fill in a long character sheet.
+Creation has two primary paths, intentionally shallower than the legacy staged wizard.
 
-The player makes decisions in dependency order. A later screen must not reveal an earlier decision or silently reinterpret earlier answers:
+### Prepared experience: Play first
 
-1. **Choose a foundation.** Prepared experience, reusable world, or from-scratch. A prepared experience is a cohesive bundle (world, rules, starting situation, role constraints)—not an “opening seed” attached after an unrelated premise.
-2. **Establish the player role.** Accept or customize the compatible character and immediate circumstances. Fixed foundation facts are explained rather than asked again.
-3. **Choose how it is told.** Storyteller profile plus tone/direction, narrative initiative, pace, and an understandable canon-invention preset within world limits (canon-bound / grounded expansion / open world). Advanced per-domain invention, autonomy, risk and cost controls remain progressively disclosed. See [profiles and settings](../storyteller/profiles-and-settings.md).
-4. **Review one setup summary.** Foundation, role, Storyteller, important rules and expected generation cost. Editing returns to the owning step. Generation never begins merely by visiting review.
-5. **Create the opening.** Honest recoverable generation state. Success presents the first playable situation; validation failure, provider rejection, timeout and uncertain billing are different states with different recovery. A retry is never implied by a generic waiting label.
+A prepared experience is already a coherent authored package: Library sources, starting situation, perspective/role constraints where any exist, creative guidance, rules/capabilities where relevant and presentation metadata. Its primary action is **Play**. **Customize** is optional and exposes only supported changes; the player does not have to reconstruct the package through a world picker, character step, profile step and review screen.
 
-This is a short staged flow, not one long settings form. Draft persistence spans the whole flow; returning resumes the last incomplete step.
+### Custom experience: one Story Prompt
+
+A custom story begins with one freeform **Story Prompt**. It may be a paragraph, a sentence or a word such as `BAH`. The prompt is retained verbatim as intent. The Storyteller may establish an original setting and perspective under the selected invention policy. The player is not required to provide a title, humanoid character, profession, D&D rules, profile or structured lore before the first scene.
+
+### Launch and first arrival
+
+Submitting Play or a Story Prompt creates one durable launch operation. The UI shows honest queued/running/uncertain/failed states and can reconnect after reload. Successful publication moves directly into the first playable scene. There is **no mandatory generated preview and separate Start approval** in the target flow. A saved prompt draft may exist for convenience, but opening generation is not a five-step ceremony.
+
+Provider/model latency does not advance fictional time. Retrying after an uncertain response must recover the same launch identity rather than create duplicate stories or duplicate spend.
 
 ### Current POC honesty
 
-First screen can offer two honest routes:
-
-- **Seyda Neen prisoner arrival** — prepared experience with pinned Vvardenfell, rules, participants and starting constraints;
-- **Create your own story** — freeform world/role/circumstances together until reusable-world selection is implemented.
-
-Do not show a one-option world picker inside the prepared route, call developer fixtures “seeds,” or expose a prepared experience in the custom-story preview.
-
-The two routes stay. A route being on the screen is not a promise that every premise plays, and it is not permission to publish a setting.
-
-| Route or control | Present now | Not promised |
-| --- | --- | --- |
-| Prepared Seyda Neen sample | The editor lists prepared starts. The checked-in sample pins Vvardenfell. | A public demo. The SRD notice does not license that setting. See [content provenance](../../../work/designs/open/content-provenance-and-rights/README.md). |
-| Create your own story | The editor offers this route. Saving it does not attach prepared lore. | A human-validated claim that an arbitrary world plays reliably. |
-| Profile, direction, speed, and the lock | The editor selects a Storyteller profile and an optional direction. Start offers game speed and a checkbox that keeps those settings fixed. | Separate narrative-initiative levels, or the canon-bound, grounded-expansion, and open-world presets. Those remain the selected design above. |
-| Original harbor demo | The [harbor walkthrough](../foundations/vision.md#first-playable-target) is the solo acceptance oracle. | Hosting, a copyright license, or a decision that the harbor is the only later world. |
+The existing staged editor/preview/Start flow is legacy implementation to be replaced by this target. Retained drafts or published stories remain migration inputs; they do not define the future creation contract.
 
 ## Drafts vs playable stories
 
-A private creation draft owns incomplete choices. Explicit Save keeps an incomplete idea without generating prose or starting time. The stories page lists drafts separately from playable stories.
+A private draft may preserve an unfinished Story Prompt or optional customization without generating a scene. It is a convenience state, not a required gate. A **playable story** begins when its first scene is admitted and published.
 
-See [acceptance scenarios](../gameplay/acceptance-scenarios.md).
+A launch that is still queued, running or uncertain is neither a disposable draft nor a successfully playable story. The Stories home should represent that honestly and permit recovery without duplicate generation.
 
 ## Premise, stale previews and captured openings
 
-Editing a foundation, role or Storyteller choice makes an older generated opening visibly stale. Starting uses exactly the opening the player reviewed. It never silently regenerates it. If another tab changes a draft, keep the player's unsaved text and offer comparison with the saved version. A failed save or expired session must leave the text available to retry. Drafts are not shared merely because the eventual story may support several players.
+There is no target requirement for a human-reviewed generated preview. Launch captures the exact Story Prompt or prepared-experience revision, effective customization and authorization used for the opening mission. Later catalogue edits cannot rewrite that already-published beginning.
 
-Examples demonstrate variety rather than hard-code supported professions: a wizard on a journey, a creature in a tank, a crew member aboard a ship. The generated beginning establishes the character, immediate surroundings, a few relevant connections and a reason for something to happen next. Distant places and incidental people develop when the story needs them.
+A prepared experience is grounded in its pinned Library. A custom Story Prompt is preserved verbatim and may authorize original-world invention according to the effective creative policy. Recognizable names do not magically grant access to proprietary or absent canon.
 
-World setup is broader than terrain generation. An apartment, an underwater town, a star system and an abstract realm need meaningful places and ways to reach them. They need not share geography or physical scale. Do not ask the player to select a terrain generator before describing the story. A familiar name generated from model memory is an interpretation, not a promise of canonical accuracy.
+World setup is broader than terrain generation. An apartment, underwater town, star system, microorganism colony or abstract realm need meaningful relationships and possibilities appropriate to that fiction; they do not need shared geography, humanoid anatomy or the same rule package.
 
-Creating an opening and starting its real-time progression are different actions. The story must not begin consuming response windows while the creator is still reviewing setup. Show useful progress during generation and allow recovery from failure without duplicate stories or duplicate spending.
-
-**Negative:** a recognizable place name does not authorize the model to fill missing lore from memory. An authored start is grounded in its pinned package. Anything outside that coverage follows the captured invention policy.
+The first scene should establish only what it needs. Consequential identities and facts become durable as the story uses them; incidental background need not become a simulated census.
 
 ## Initiative, invention ceilings and progressive entities
 
