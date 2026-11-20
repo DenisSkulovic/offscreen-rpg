@@ -1,5 +1,7 @@
 # 1. System map and decision ownership
 
+**Storyteller evolution:** the Storyteller is a writer over a rooted Library and Workdesk, while Game Authority remains the sole publisher of authoritative scene state. Treat service/process boxes as deployment choices, not permission to move world authority into the model.
+
 **Reader question:** what parts exist today, what do we want to separate, and who gets to decide the game? **Baseline:** 584b594, 2026-11-19. This map describes inspected source and a **selected target**, not a successful multi-Pod test. Canonical [topology](../technical/platform/topology.md), [engine](../technical/engine/selected-architecture.md).
 
 ## Current source: a modular application, not yet independent game microservices
