@@ -104,7 +104,11 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 **Scripted handoff (2026-11-20):** Game Authority image `offscreen-lab-app-release-ga:turn02` id `sha256:e3037ca55d1489f5395e080e4992809b8a54092cf99fa285cf455febc4101ec2`, kind import `sha256:49e083210842d707068fc657ddd76953d2a1fe292579304bc189b1576a0aa987`. Pod `game-authority-b5fb6dcf9-jgtt8` logged `game-authority.listening`. A scripted `storyteller.profiled.v1` generation `96244611-b4bc-4ffd-b011-7da8642a9528` was inserted in the lab database. Workflow `storyteller/96244611-b4bc-4ffd-b011-7da8642a9528` run `01a1f995-5fbe-79cc-b49d-8bf33c6c7ede` completed. History scheduled and completed `executeFrozenStoryteller`, then `publishSavedStoryteller`. The generation row is `succeeded` with an attempt and output. `storyteller_publication` is `published`. `storyteller_attempt` has one row. No provider call was made.
 
-**NOT-RUN:** signed-in browser play. GitHub OAuth is not the prerequisite for that proof. The cluster placeholders are unused. The local session path is [DXK03 T01](../2026-11-20--dxk03-local-playable-identity-and-fixture/TASKS.md), which is not implemented: `readAuthConfig` still requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`. DXK03 is Ready and not selected. T01 is a gated Better Auth email/password profile; it does not by itself close TURN02. Browser play still needs a real session and a playable campaign, which are DXK03 T02 and T03 or TURN02 T05. Gateway overlap of `/` and `/api` between the synthetic route and `game-edge-routes` is unresolved. No Kubernetes application release is claimed.
+**T05 POC open access (2026-11-20, `5f76bdf7`+):** Lab POC sign-in is **not** required when API `POC_OPEN_ACCESS=1` on loopback `APP_ORIGIN`; the fixed local player is intentional. GitHub OAuth and DXK03 are **not** the current gate for opening the lab game. Staff/admin remains session-gated.
+
+**T05 verify (2026-11-20, `5f76bdf7`, pre-PATCH):** NOT-RUN. Unauthenticated `GET /api/stories` to `game-api` returned 401. Signed-in Next SSR, SSE, and owner isolation were not run.
+
+**NOT-RUN:** full signed-in browser vertical after open access (SSR/SSE/owner isolation). Gateway overlap of `/` and `/api` between the synthetic route and `game-edge-routes` is unresolved. **No Kubernetes application release is claimed.**
 
 ## Reconciliation ledger (complete before Done)
 

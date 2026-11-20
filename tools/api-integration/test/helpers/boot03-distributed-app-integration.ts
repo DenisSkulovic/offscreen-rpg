@@ -186,6 +186,7 @@ export async function withBoot03DistributedAppIntegration(
       secret: 'integration-only-not-a-runtime-secret-1234',
       githubClientId: 'test-client',
       githubClientSecret: 'test-secret',
+      pocOpenAccess: false,
     }),
     plugins: [strictUtilities],
   });

@@ -142,6 +142,8 @@ spec:
               value: "3001"
             - name: APP_ORIGIN
               value: http://127.0.0.1:18080
+            - name: POC_OPEN_ACCESS
+              value: "1"
             - name: GAME_AUTHORITY_MODE
               value: distributed
             - name: GAME_AUTHORITY_ORIGIN
@@ -221,10 +223,32 @@ spec:
       namespace: lab-edge
       sectionName: web
   rules:
+    # Longer than the synthetic fixture's /api prefix, so these game paths win.
     - matches:
         - path:
             type: PathPrefix
-            value: /api
+            value: /api/me
+        - path:
+            type: PathPrefix
+            value: /api/stories
+        - path:
+            type: PathPrefix
+            value: /api/drafts
+        - path:
+            type: PathPrefix
+            value: /api/storytellers
+        - path:
+            type: PathPrefix
+            value: /api/auth
+        - path:
+            type: PathPrefix
+            value: /api/health
+        - path:
+            type: PathPrefix
+            value: /api/chamber-tools
+        - path:
+            type: PathPrefix
+            value: /api/admin
       backendRefs:
         - name: game-api
           port: 3001

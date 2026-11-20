@@ -30,3 +30,16 @@ test('auth config rejects unsafe origins and missing secrets without exposing va
     'https://example.com',
   );
 });
+
+test('POC_OPEN_ACCESS is honored only on loopback HTTP origins', () => {
+  const loopback = { ...valid, POC_OPEN_ACCESS: '1' };
+  assert.equal(readAuthConfig(loopback).pocOpenAccess, true);
+  assert.throws(
+    () =>
+      readAuthConfig({
+        ...valid,
+        APP_ORIGIN: 'https://example.com',
+        POC_OPEN_ACCESS: '1',
+      }),
+  );
+});

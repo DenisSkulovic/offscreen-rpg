@@ -535,6 +535,7 @@ const authConfig = {
   secret: randomBytes(32).toString('hex'),
   githubClientId: 'local-unused',
   githubClientSecret: 'local-unused',
+  pocOpenAccess: false,
 };
 // Provision through existing library test utilities, but never mount that plugin in the API.
 const utilities = testUtils();

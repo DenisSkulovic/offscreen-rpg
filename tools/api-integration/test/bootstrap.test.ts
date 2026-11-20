@@ -17,6 +17,7 @@ test('API binds a real HTTP listener and closes cleanly', async () => {
     secret: 'bootstrap-only-placeholder-secret-1234',
     githubClientId: 'test',
     githubClientSecret: 'test',
+    pocOpenAccess: false,
   });
   const app = await createApp(database, auth, 'http://localhost:3000');
   try {
