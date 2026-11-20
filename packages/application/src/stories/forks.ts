@@ -574,6 +574,29 @@ function matchingPriorFork(
   );
 }
 
+async function assertIdempotentCheckpointHash(
+  tx: Transaction,
+  input: ForkInput,
+  sourceStoryId: string,
+) {
+  if (input.sourceCheckpointHash === undefined) return;
+  const [row] = await tx
+    .select({ checkpointHash: storySceneCheckpoint.checkpointHash })
+    .from(storySceneCheckpoint)
+    .where(
+      and(
+        eq(storySceneCheckpoint.storyId, sourceStoryId),
+        eq(storySceneCheckpoint.sceneSequence, input.expectedRevision),
+      ),
+    );
+  if (
+    !row ||
+    row.checkpointHash !== input.sourceCheckpointHash
+  ) {
+    throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+  }
+}
+
 /** Fork the one snapshot-complete checkpoint currently supported by Phase 1. */
 export function createStoryForks(
   database: Database,
@@ -602,6 +625,7 @@ export function createStoryForks(
         if (!matchingPriorFork(prior, input, sourceStoryId)) {
           forkConflict('destination_in_use');
         }
+        await assertIdempotentCheckpointHash(tx, input, sourceStoryId);
         return;
       }
       await forkLiveRevisionOne(tx, input, source);
@@ -657,6 +681,7 @@ export function createStoryForks(
         if (!matchingPriorFork(prior, input, sourceStoryId)) {
           forkConflict('destination_in_use');
         }
+        await assertIdempotentCheckpointHash(tx, input, sourceStoryId);
         return;
       }
 

@@ -8,7 +8,7 @@ import {
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
 } from '@offscreen/contracts/game-authority';
-import { startStorySchema } from '@offscreen/contracts/stories';
+import { forkStorySchema, startStorySchema } from '@offscreen/contracts/stories';
 import {
   parseStorytellerTaskCustodyClaimRequest,
   parseStorytellerTaskCustodySaveResultRequest,
@@ -163,6 +163,7 @@ type Route =
   | { kind: 'health' }
   | { kind: 'snapshot'; storyId: string }
   | { kind: 'start'; storyId: string }
+  | { kind: 'fork'; storyId: string; forkStoryId: string }
   | { kind: 'resolution'; storyId: string; operationId: string }
   | { kind: 'invalid' }
   | { kind: 'absent' };
@@ -185,6 +186,21 @@ function routeFor(method: string, pathname: string): Route {
     const storyId = gameAuthorityStoryIdSchema.safeParse(parts[3]);
     return storyId.success
       ? { kind: 'start', storyId: storyId.data }
+      : { kind: 'invalid' };
+  }
+  if (
+    parts.length === 6 &&
+    parts[4] === 'forks' &&
+    method === 'PUT'
+  ) {
+    const storyId = gameAuthorityStoryIdSchema.safeParse(parts[3]);
+    const forkStoryId = gameAuthorityStoryIdSchema.safeParse(parts[5]);
+    return storyId.success && forkStoryId.success
+      ? {
+          kind: 'fork',
+          storyId: storyId.data,
+          forkStoryId: forkStoryId.data,
+        }
       : { kind: 'invalid' };
   }
   if (
@@ -506,6 +522,24 @@ async function handle(
           ...(body.data.campaign !== undefined
             ? { campaign: body.data.campaign }
             : {}),
+        }),
+        options.timeoutMs,
+      );
+      send(response, 200, snapshot);
+      return;
+    }
+    if (storyRoute.kind === 'fork') {
+      const body = forkStorySchema.safeParse(await readBody(request));
+      if (!body.success) {
+        sendError(response, 400, 'invalid');
+        return;
+      }
+      const snapshot = await withTimeout(
+        options.seam.fork({
+          ownerId: actor.data,
+          sourceStoryId: storyRoute.storyId,
+          forkStoryId: storyRoute.forkStoryId,
+          body: body.data,
         }),
         options.timeoutMs,
       );

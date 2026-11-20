@@ -524,6 +524,33 @@ test('historical GET and fork keep scene-1 sword and living king after scene 2',
     assert.equal(retry.id, forkStoryId);
     assert.deepEqual(retry.items, forked.items);
     assert.equal(retry.current.content.title, 'The king lives');
+
+    const wrongHash = 'f'.repeat(64);
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.ownerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId,
+          expectedRevision: 1,
+          sourcePassageId: seeded.passage1,
+          sourceCheckpointHash: wrongHash,
+        }),
+      (error) =>
+        error instanceof StoryError &&
+        error.code === 'invalid' &&
+        error.reason === 'checkpoint_hash_mismatch',
+    );
+    const afterWrongHash = await stories.fork({
+      ownerId: seeded.ownerId,
+      sourceStoryId: seeded.storyId,
+      forkStoryId,
+      expectedRevision: 1,
+      sourcePassageId: seeded.passage1,
+      sourceCheckpointHash: historic.checkpointHash,
+    });
+    assert.equal(afterWrongHash.id, forkStoryId);
+    assert.equal(afterWrongHash.current.content.title, 'The king lives');
   });
 });
 
@@ -639,6 +666,87 @@ test('historical GET and fork fail closed for other owners, bad checkpoints, and
         error instanceof StoryError &&
         error.code === 'conflict' &&
         error.reason === 'fork_unsupported_revision',
+    );
+
+    const historic = await stories.readHistoricalScene({
+      ownerId: seeded.ownerId,
+      storyId: seeded.storyId,
+      sequence: 1,
+    });
+    const countForkChildren = async () => {
+      const rows = await database.db
+        .select({ id: story.id })
+        .from(story)
+        .where(eq(story.forkedFromStoryId, seeded.storyId));
+      return rows.length;
+    };
+    const beforeFailedAttempts = await countForkChildren();
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.otherOwnerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId: randomUUID(),
+          expectedRevision: 1,
+          sourcePassageId: seeded.passage1,
+          sourceCheckpointHash: historic.checkpointHash,
+        }),
+      (error) => error instanceof StoryError && error.code === 'not_found',
+    );
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.ownerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId: randomUUID(),
+          expectedRevision: 1,
+          sourcePassageId: seeded.passage2,
+          sourceCheckpointHash: historic.checkpointHash,
+        }),
+      (error) =>
+        error instanceof StoryError &&
+        error.code === 'invalid' &&
+        error.reason === 'checkpoint_passage_mismatch',
+    );
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.ownerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId: randomUUID(),
+          expectedRevision: 1,
+          sourcePassageId: seeded.passage1,
+          sourceCheckpointHash: 'e'.repeat(64),
+        }),
+      (error) =>
+        error instanceof StoryError &&
+        error.code === 'invalid' &&
+        error.reason === 'checkpoint_hash_mismatch',
+    );
+    assert.equal(await countForkChildren(), beforeFailedAttempts);
+
+    const occupiedForkId = randomUUID();
+    await stories.fork({
+      ownerId: seeded.ownerId,
+      sourceStoryId: seeded.storyId,
+      forkStoryId: occupiedForkId,
+      expectedRevision: 1,
+      sourcePassageId: seeded.passage1,
+      sourceCheckpointHash: historic.checkpointHash,
+    });
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.ownerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId: occupiedForkId,
+          expectedRevision: 2,
+          sourcePassageId: seeded.passage2,
+        }),
+      (error) =>
+        error instanceof StoryError &&
+        error.code === 'conflict' &&
+        error.reason === 'fork_destination_in_use',
     );
   });
 });

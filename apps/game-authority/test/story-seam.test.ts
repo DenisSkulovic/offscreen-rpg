@@ -9,7 +9,13 @@ import { startGameAuthorityServer } from '../src/server';
 
 const token = 'test-service-credential';
 const storyId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const forkStoryId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const operationId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+const forkBody = {
+  expectedRevision: 1,
+  sourceCheckpointHash:
+    '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+};
 const ownerId = 'owner-a';
 const resolutionBody = {
   expectedRevision: 1,
@@ -25,8 +31,17 @@ function receiptSeam() {
     { body: string; snapshot: { operationId: string; receiptId: string } }
   >();
   let inserts = 0;
+  let forkCalls = 0;
+  const forkCallArgs: Array<{
+    ownerId: string;
+    sourceStoryId: string;
+    forkStoryId: string;
+    body: unknown;
+  }> = [];
   return {
     inserts: () => inserts,
+    forkCalls: () => forkCalls,
+    forkCallArgs: () => forkCallArgs,
     async read(args: { ownerId: string; storyId: string }) {
       if (args.ownerId !== ownerId || args.storyId !== storyId) {
         throw new StoryError('not_found');
@@ -35,6 +50,19 @@ function receiptSeam() {
     },
     async startFromCandidate() {
       throw new StoryError('not_found');
+    },
+    async fork(args: {
+      ownerId: string;
+      sourceStoryId: string;
+      forkStoryId: string;
+      body: unknown;
+    }) {
+      forkCalls += 1;
+      forkCallArgs.push({ ...args, body: structuredClone(args.body) });
+      if (args.ownerId !== ownerId || args.sourceStoryId !== storyId) {
+        throw new StoryError('not_found');
+      }
+      return { storyId: args.forkStoryId, view: 'forked-snapshot' };
     },
     async admitResolution(args: {
       ownerId: string;
@@ -183,6 +211,169 @@ test('forged credential, wrong owner, and a duplicate operation id', async () =>
   }
 });
 
+test('authorized fork calls the seam once per request', async () => {
+  const seam = receiptSeam();
+  const server = await startGameAuthorityServer({
+    seam,
+    token,
+    timeoutMs: 1000,
+  });
+  try {
+    const path = `/internal/v1/stories/${storyId}/forks/${forkStoryId}`;
+    const first = await call(server.origin, path, {
+      method: 'PUT',
+      token,
+      actor: ownerId,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(forkBody),
+    });
+    assert.equal(first.status, 200);
+    assert.deepEqual(await first.json(), {
+      storyId: forkStoryId,
+      view: 'forked-snapshot',
+    });
+    assert.equal(seam.forkCalls(), 1);
+
+    const second = await call(server.origin, path, {
+      method: 'PUT',
+      token,
+      actor: ownerId,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(forkBody),
+    });
+    assert.equal(second.status, 200);
+    assert.equal(seam.forkCalls(), 2);
+    const calls = seam.forkCallArgs();
+    assert.equal(calls.length, 2);
+    assert.deepEqual(calls[0], calls[1]);
+  } finally {
+    await server.close();
+  }
+});
+
+test('fork rejects bad auth, malformed body, and maps seam errors', async () => {
+  const seam = receiptSeam();
+  const server = await startGameAuthorityServer({
+    seam,
+    token,
+    timeoutMs: 1000,
+  });
+  const path = `/internal/v1/stories/${storyId}/forks/${forkStoryId}`;
+  try {
+    const forged = await call(server.origin, path, {
+      method: 'PUT',
+      token: 'forged-credential-value',
+      actor: ownerId,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(forkBody),
+    });
+    assert.equal(forged.status, 401);
+    assert.equal(seam.forkCalls(), 0);
+
+    const missingActor = await call(server.origin, path, {
+      method: 'PUT',
+      token,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(forkBody),
+    });
+    assert.equal(missingActor.status, 401);
+    assert.equal(seam.forkCalls(), 0);
+
+    const badRevision = await call(server.origin, path, {
+      method: 'PUT',
+      token,
+      actor: ownerId,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ sourceCheckpointHash: forkBody.sourceCheckpointHash }),
+    });
+    assert.equal(badRevision.status, 400);
+    assert.equal(seam.forkCalls(), 0);
+
+    const badHash = await call(server.origin, path, {
+      method: 'PUT',
+      token,
+      actor: ownerId,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        expectedRevision: 1,
+        sourceCheckpointHash: 'not-a-valid-checkpoint-hash',
+      }),
+    });
+    assert.equal(badHash.status, 400);
+    assert.equal(seam.forkCalls(), 0);
+  } finally {
+    await server.close();
+  }
+
+  let conflictForkCalls = 0;
+  const conflictServer = await startGameAuthorityServer({
+    token,
+    timeoutMs: 1000,
+    seam: {
+      async read() {
+        throw new StoryError('not_found');
+      },
+      async startFromCandidate() {
+        throw new StoryError('not_found');
+      },
+      async fork() {
+        conflictForkCalls += 1;
+        throw new StoryError('conflict');
+      },
+      async admitResolution() {
+        throw new StoryError('not_found');
+      },
+    },
+  });
+  try {
+    const conflict = await call(conflictServer.origin, path, {
+      method: 'PUT',
+      token,
+      actor: ownerId,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(forkBody),
+    });
+    assert.equal(conflict.status, 409);
+    assert.equal(conflictForkCalls, 1);
+  } finally {
+    await conflictServer.close();
+  }
+
+  let hashMismatchForkCalls = 0;
+  const invalidServer = await startGameAuthorityServer({
+    token,
+    timeoutMs: 1000,
+    seam: {
+      async read() {
+        throw new StoryError('not_found');
+      },
+      async startFromCandidate() {
+        throw new StoryError('not_found');
+      },
+      async fork() {
+        hashMismatchForkCalls += 1;
+        throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+      },
+      async admitResolution() {
+        throw new StoryError('not_found');
+      },
+    },
+  });
+  try {
+    const invalid = await call(invalidServer.origin, path, {
+      method: 'PUT',
+      token,
+      actor: ownerId,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(forkBody),
+    });
+    assert.equal(invalid.status, 400);
+    assert.equal(hashMismatchForkCalls, 1);
+  } finally {
+    await invalidServer.close();
+  }
+});
+
 test('a slow admission becomes unavailable and does not invent a receipt', async () => {
   let release: () => void = () => {};
   let inserts = 0;
@@ -194,6 +385,9 @@ test('a slow admission becomes unavailable and does not invent a receipt', async
         throw new StoryError('not_found');
       },
       async startFromCandidate() {
+        throw new StoryError('not_found');
+      },
+      async fork() {
         throw new StoryError('not_found');
       },
       admitResolution() {

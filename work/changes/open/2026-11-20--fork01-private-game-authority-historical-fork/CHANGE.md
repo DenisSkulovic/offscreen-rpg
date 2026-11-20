@@ -1,6 +1,6 @@
 # FORK01 | Make historical fork a private Game Authority write
 
-**State:** Proposed, unselected. **Kind:** implementation. **Baseline:** ZIP `64f3de7`, remote main through `09f8d08`. **Roadmap:** [current ordered gates](../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. No code or runtime PASS claimed by this planning packet.
+**State:** In progress on branch `change/fork01-private-ga-fork`. Global queue selection remains TURN02. **Kind:** implementation. **Baseline:** ZIP `64f3de7`, remote main through `09f8d08`, this branch from `a0690c09`. **Roadmap:** [current ordered gates](../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. No code or runtime PASS claimed by this planning packet.
 
 ## Real uncovered boundary
 
@@ -35,4 +35,6 @@
 
 | Authority | Inspected source | Positive/negative run | Docs impact | Remaining |
 | --- | --- | --- | --- | --- |
-| Planner audit | `64f3de7` + `09f8d08` (source only) | NOT RUN, no code changed | proposal only | T01–T04 |
+| Planner audit | `64f3de7` + `09f8d08` (source only) | NOT RUN, no code changed | proposal only | superseded by the rows below |
+| T01 application fork | `packages/application/src/stories/forks.ts` idempotent hash recheck; Harbor-watch scene1 fork in `turn03-distributed-poc-fixture.integration.ts` | historical-fork 3 pass / 0 fail; turn03 fixture 4 pass / 0 fail. Negative: same child id with a different hash returns `checkpoint_hash_mismatch` | none | not Game Authority or Kubernetes |
+| T02 private GA fork | `apps/game-authority` `PUT /internal/v1/stories/:id/forks/:forkId` calls `stories.fork` once | game-authority build pass; story-seam + story-start 8 pass / 0 fail. Negative: forged bearer returns 401 and does not call the seam | none | Nest still calls `this.stories.fork` directly (T03) |

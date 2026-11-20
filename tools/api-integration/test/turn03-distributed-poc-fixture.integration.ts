@@ -302,6 +302,124 @@ export async function checkTurn03DistributedPocFixture({
         passages.map((row: { sequence: number }) => row.sequence),
         [1, 2],
       );
+
+      const countForkChildren = async () => {
+        const rows = await database.db
+          .select({ id: story.id })
+          .from(story)
+          .where(eq(story.forkedFromStoryId, prepared.storyId));
+        return rows.length;
+      };
+      assert.equal(await countForkChildren(), 0);
+      const foreignOwnerId = randomUUID();
+      await assert.rejects(
+        () =>
+          stories.fork({
+            ownerId: foreignOwnerId,
+            sourceStoryId: prepared.storyId,
+            forkStoryId: randomUUID(),
+            expectedRevision: 1,
+            sourcePassageId: checkpoint.passageId,
+            sourceCheckpointHash: checkpoint.checkpointHash,
+          }),
+        (error: unknown) => {
+          assert.ok(error instanceof StoryError);
+          assert.equal(error.code, 'not_found');
+          return true;
+        },
+      );
+      const wrongPassageId = randomUUID();
+      await assert.rejects(
+        () =>
+          stories.fork({
+            ownerId,
+            sourceStoryId: prepared.storyId,
+            forkStoryId: randomUUID(),
+            expectedRevision: 1,
+            sourcePassageId: wrongPassageId,
+            sourceCheckpointHash: checkpoint.checkpointHash,
+          }),
+        (error: unknown) => {
+          assert.ok(error instanceof StoryError);
+          assert.equal(error.code, 'invalid');
+          assert.equal(error.reason, 'checkpoint_passage_mismatch');
+          return true;
+        },
+      );
+      await assert.rejects(
+        () =>
+          stories.fork({
+            ownerId,
+            sourceStoryId: prepared.storyId,
+            forkStoryId: randomUUID(),
+            expectedRevision: 1,
+            sourcePassageId: checkpoint.passageId,
+            sourceCheckpointHash: `${'d'.repeat(64)}`,
+          }),
+        (error: unknown) => {
+          assert.ok(error instanceof StoryError);
+          assert.equal(error.code, 'invalid');
+          assert.equal(error.reason, 'checkpoint_hash_mismatch');
+          return true;
+        },
+      );
+      assert.equal(await countForkChildren(), 0);
+
+      const forkStoryId = randomUUID();
+      const forked = await stories.fork({
+        ownerId,
+        sourceStoryId: prepared.storyId,
+        forkStoryId,
+        expectedRevision: 1,
+        sourcePassageId: checkpoint.passageId,
+        sourceCheckpointHash: checkpoint.checkpointHash,
+      });
+      assert.equal(forked.id, forkStoryId);
+      assert.equal(
+        forked.current.content.title,
+        turn03DistributedPocAuthorship.scene1.title,
+      );
+      assert.notEqual(
+        forked.current.content.title,
+        turn03DistributedPocAuthorship.scene2.title,
+      );
+      const parentAfterFork = await stories.read({
+        ownerId,
+        storyId: prepared.storyId,
+      });
+      assert.equal(parentAfterFork.revision, 2);
+      assert.equal(
+        parentAfterFork.current.content.title,
+        turn03DistributedPocAuthorship.scene2.title,
+      );
+      const forkRetry = await stories.fork({
+        ownerId,
+        sourceStoryId: prepared.storyId,
+        forkStoryId,
+        expectedRevision: 1,
+        sourcePassageId: checkpoint.passageId,
+        sourceCheckpointHash: checkpoint.checkpointHash,
+      });
+      assert.equal(forkRetry.id, forkStoryId);
+      assert.equal(
+        forkRetry.current.content.title,
+        turn03DistributedPocAuthorship.scene1.title,
+      );
+      await assert.rejects(
+        () =>
+          stories.fork({
+            ownerId,
+            sourceStoryId: prepared.storyId,
+            forkStoryId,
+            expectedRevision: 2,
+          }),
+        (error: unknown) => {
+          assert.ok(error instanceof StoryError);
+          assert.equal(error.code, 'conflict');
+          assert.equal(error.reason, 'fork_destination_in_use');
+          return true;
+        },
+      );
     },
   );
 

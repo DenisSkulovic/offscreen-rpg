@@ -45,6 +45,9 @@ function startSeam(): GameAuthoritySeam & { startCalls: number } {
     async admitResolution() {
       throw new StoryError('not_found');
     },
+    async fork() {
+      throw new StoryError('not_found');
+    },
   };
 }
 

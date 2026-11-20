@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
+import { StoryError } from '@offscreen/application/stories';
 import {
   storytellerTaskCustodyContractVersion,
   storytellerTaskCustodyVersionHeader,
@@ -24,6 +25,9 @@ function noopSeam() {
     },
     async admitResolution() {
       return { receiptId: 'receipt-1' };
+    },
+    async fork() {
+      throw new StoryError('not_found');
     },
   };
 }

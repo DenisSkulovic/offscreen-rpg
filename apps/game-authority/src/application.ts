@@ -5,6 +5,8 @@ import { createStorytellerRuntime } from '@offscreen/application/storyteller';
 import { createStorytellerSavedGenerationPublish } from '@offscreen/application/storyteller/saved-generation-publish';
 import type { StorytellerGenerationPublishResponse } from '@offscreen/contracts/storyteller-task-custody';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
+import { forkStorySchema } from '@offscreen/contracts/stories';
+import { StoryError } from '@offscreen/application/stories';
 import type { Database } from '@offscreen/db';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 
@@ -37,6 +39,12 @@ export type GameAuthoritySeam = {
     ownerId: string;
     storyId: string;
     operationId: string;
+    body: unknown;
+  }): Promise<unknown>;
+  fork(args: {
+    ownerId: string;
+    sourceStoryId: string;
+    forkStoryId: string;
     body: unknown;
   }): Promise<unknown>;
 };
@@ -125,6 +133,29 @@ export function createGameAuthoritySeam(
       body: unknown;
     }) {
       return stories.admitResolution(args);
+    },
+    fork(args: {
+      ownerId: string;
+      sourceStoryId: string;
+      forkStoryId: string;
+      body: unknown;
+    }) {
+      const body = forkStorySchema.safeParse(args.body);
+      if (!body.success) {
+        throw new StoryError('invalid');
+      }
+      return stories.fork({
+        ownerId: args.ownerId,
+        sourceStoryId: args.sourceStoryId,
+        forkStoryId: args.forkStoryId,
+        expectedRevision: body.data.expectedRevision,
+        ...(body.data.sourcePassageId !== undefined
+          ? { sourcePassageId: body.data.sourcePassageId }
+          : {}),
+        ...(body.data.sourceCheckpointHash !== undefined
+          ? { sourceCheckpointHash: body.data.sourceCheckpointHash }
+          : {}),
+      });
     },
   };
 }

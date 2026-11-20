@@ -10,6 +10,7 @@ import { storytellerAttempt, storytellerPublication } from '@offscreen/db/storyt
 import { prepareStorytellerTask, type StorytellerTask } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
+import { StoryError } from '@offscreen/application/stories';
 import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';
 import {
   hashStorytellerTaskCustodyResult,
@@ -114,6 +115,9 @@ function noopStorySeam(): GameAuthoritySeam {
     },
     async admitResolution() {
       return { receiptId: randomUUID() };
+    },
+    async fork() {
+      throw new StoryError('not_found');
     },
   };
 }
