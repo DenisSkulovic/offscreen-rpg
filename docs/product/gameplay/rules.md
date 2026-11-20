@@ -1,4 +1,4 @@
-# Gameplay rules | D&D foundation and mechanical promises
+# Gameplay rules | world-neutral authority and optional mechanical packages
 
 **Owns:** player-facing mechanical promises.  
 **Does not own:** Storyteller creative taste ([behavior](../storyteller/behavior-and-quality.md)), UI choice chrome ([experience](../experience/play-and-decisions.md)), or staff investigation.  
@@ -6,11 +6,11 @@
 
 ## Foundation
 
-D&D-style character abilities, skill checks, dice and recorded consequences are fundamental across work, fishing, travel and combat—not optional narrative decoration. The Storyteller fills the dungeon master’s role for interpretation and narration; **code** validates challenges, rolls dice, determines results and applies supported effects.
+Offscreen RPG has a universal **authority model**, not a universal D&D character model. Game Authority validates admitted state transitions, time, permissions, version fences and supported mechanics. A Storyteller may invent and describe fiction inside the world's creative policy, but prose alone cannot grant resources, settle dice, advance protected clocks or manufacture external effects.
 
-The initial product uses a small, explicitly versioned D&D-style rules subset. It must not claim full compatibility with a particular edition. Owner-delegated edition baseline: revised fifth edition, pinned to [SRD 5.2.1](https://www.dndbeyond.com/srd). Full combat, character advancement and long-running progress remain separate scope. Attribution: [rules attribution](../../../NOTICE.md) and `/rules`.
+Prepared experiences may opt into typed mechanical packages. The current repository includes a small D&D-style rules subset based on SRD 5.2.1; that remains a supported package and useful POC, not a requirement imposed on every story. A microbe, galactic observer or abstract consciousness may have no STR/DEX/HP/inventory at all unless its authored world deliberately introduces analogous mechanics.
 
-**Negative:** a model cannot choose a die face, reroll a failure, award an unsupported resource, or narrate away a committed result. The player’s character, resources and completed history survive Storyteller changes.
+**Negative:** a model cannot choose a die face, reroll a failure, award an unsupported resource, or narrate away a committed result. Equally, the engine must not invent a humanoid sheet merely to make a narrative-only world fit an old schema.
 
 ## Authority split
 
@@ -28,7 +28,11 @@ Rules are a reusable, immutable canonical library pinned by exact root and revis
 
 ## World-independent foundation
 
-The game is D&D checks + LLM dungeon master + time, for arbitrary worlds and characters. Work, wages and fishing are example content, not core systems. A microbe story need not have money or employment. Ability scores remain on the selected rules sheet; the character’s **current form** declares which abilities and skills apply. An unavailable ability is not a score of zero and cannot be invoked by a generated plan. Inapplicability does not grant unlimited capability.
+World independence means the engine can host typed mechanics **or** narrative-only interaction without silently converting every fiction into fantasy adventuring. Work, wages, fishing, inventory and combat are content capabilities, not universal systems.
+
+Where a D&D-style package is selected, its ability scores and checks behave according to that pinned package. Applicability belongs to the current form and situation: an unavailable ability is not a score of zero and cannot be invoked by a generated plan. Other packages may define entirely different capabilities.
+
+The common contract is authority: mechanics are explicit, versioned and executable when enabled; descriptive prose never substitutes for them.
 
 ## First rules subset (POC)
 
