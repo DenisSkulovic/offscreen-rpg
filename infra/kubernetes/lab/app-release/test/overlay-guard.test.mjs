@@ -89,6 +89,14 @@ test('workers overlay refuses broad database env and pins rule hash on API', () 
   assert.doesNotMatch(workersWithoutRelay, /DATABASE_URL/);
   assert.match(workers, /name: game-relay[\s\S]*DATABASE_URL[\s\S]*secretKeyRef:[\s\S]*game-db/);
   assert.match(workers, /name: game-relay[\s\S]*bootstrap\/main\.js/);
+  assert.match(
+    workers,
+    /name: game-relay[\s\S]*OFFSCREEN_DOCUMENT_STORE[\s\S]*value:\s*s3/,
+  );
+  assert.match(
+    workers,
+    /name: game-relay[\s\S]*OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID[\s\S]*game-runtime[\s\S]*access-key-id/,
+  );
   assert.match(workers, /name: game-control[\s\S]*bootstrap\/control-main\.js/);
   assert.doesNotMatch(workers, /containerPort:\s*8080/);
   assert.doesNotMatch(workers, /tcpSocket/);

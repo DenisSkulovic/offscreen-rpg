@@ -77,6 +77,17 @@ if ! "${KUBECTL[@]}" -n lab-workers get secret game-db >/dev/null 2>&1; then
     | "${KUBECTL[@]}" apply -f -
 fi
 
+if ! "${KUBECTL[@]}" -n lab-workers get secret game-runtime >/dev/null 2>&1; then
+  if ! "${KUBECTL[@]}" -n lab-edge get secret game-runtime >/dev/null 2>&1; then
+    echo "Refusing install: Secret game-runtime is missing in lab-edge." >&2
+    exit 1
+  fi
+  echo "Copying Secret game-runtime into lab-workers for game-relay document access…"
+  "${KUBECTL[@]}" -n lab-edge get secret game-runtime -o json \
+    | python3 -c 'import json,sys; s=json.load(sys.stdin); s["metadata"]={"name":"game-runtime","namespace":"lab-workers","labels":s.get("metadata",{}).get("labels") or {}}; print(json.dumps(s))' \
+    | "${KUBECTL[@]}" apply -f -
+fi
+
 echo "Applying authority, workers, and edge overlays…"
 "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/authority.yaml"
 "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/workers.yaml"
