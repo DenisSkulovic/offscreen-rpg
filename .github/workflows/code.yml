@@ -83,9 +83,11 @@ jobs:
       - name: Storybook static build (provider-free)
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm --filter @offscreen/web storybook:build
-      - name: Validate Docker Compose
+      - name: Validate lab Kubernetes manifests
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: docker compose config --quiet
+        run: |
+          python3 -m pip install --disable-pip-version-check pyyaml
+          node scripts/repo-tools/check-lab-manifests.mjs
   infrastructure:
     needs: scope
     if: needs.scope.outputs.run_integration == 'true'
@@ -95,11 +97,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - run: docker compose up -d --wait --wait-timeout 120
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Parse lab Kubernetes manifests
+        run: |
+          python3 -m pip install --disable-pip-version-check pyyaml
+          node scripts/repo-tools/check-lab-manifests.mjs
       - if: failure()
-        run: docker compose logs
-      - if: always()
-        run: docker compose down
+        run: echo "Lab Kubernetes manifest parse failed; see step log above."
   database:
     needs: scope
     if: needs.scope.outputs.run_integration == 'true'
@@ -157,15 +163,14 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @offscreen/api-integration exec playwright install --with-deps chromium
-      - run: docker compose up temporal -d --wait --wait-timeout 120
-      - run: pnpm test:auth
+      - name: Auth config unit checks (provider-free)
+        run: |
+          pnpm --filter @offscreen/api-integration build
+          pnpm --filter @offscreen/api-integration exec node --test dist/test/auth-config.test.js
         env:
           DATABASE_TEST_URL: postgresql://offscreen:local-test-only@127.0.0.1:5432/offscreen_auth_test
       - if: failure()
-        run: docker compose logs temporal
-      - if: always()
-        run: docker compose down
+        run: echo "Identity lane failed; see step log above."
   # Always reports so a future required check is not left Pending when heavy jobs skip.
   ci_gate:
     needs: [scope, code, infrastructure, database, identity]

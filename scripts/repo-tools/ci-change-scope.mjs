@@ -38,6 +38,7 @@ const MAINTENANCE_DOC_PREFIXES = [
 const INTEGRATION_PREFIXES = [
   'apps/api/',
   'apps/worker/',
+  'infra/kubernetes/lab/',
   'packages/',
   'tools/',
   'scripts/',

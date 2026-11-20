@@ -38,6 +38,7 @@ test('contracts or lockfile changes are never docs-only and force integration', 
     'packages/contracts/src/stories.ts',
     'pnpm-lock.yaml',
     'compose.yaml',
+    'infra/kubernetes/lab/namespaces.yaml',
     'apps/api/src/main.ts',
   ]) {
     assert.equal(isDocsPath(path), false);
