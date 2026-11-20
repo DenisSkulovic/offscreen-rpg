@@ -1,6 +1,6 @@
 # DXK03 | Secured local login and deterministic playable demonstration
 
-**State:** Ready for bounded source implementation when named dependencies hold; not selected, not tested, not Done.
+**State:** Partial (2026-11-20). Loopback email/password sign-in and the dev seed script are in source. The kind Job and the browser play-through were not run. Not Done.
 **Kind:** implementation. **Date:** 2026-11-20.
 **Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md) · [planner source map](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/SOURCE-MAP.md) · [parent Cursor waves](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/CURSOR-HANDOFF.md).
 **Inspected source:** attached 13bcd6cf + connected GitHub main through 8796daaa on 2026-11-20; unpushed Cursor changes NOT inspected.
@@ -40,4 +40,6 @@ Secured local login and deterministic playable demonstration. **Own/edit:** apps
 
 | Affected selected owner | Observed source SHA/files | Positive and negative exact commands/result | Docs/evidence reconciled | Remaining |
 | --- | --- | --- | --- | --- |
-| Not executed / planning packet | 13bcd6cf + GitHub main inspected, local HEAD pending | NOT-RUN; code not changed by this packet | Implementation plan only | All T01-T03 pending |
+| `apps/api/src/modules/auth/{auth.ts,config.ts}`, sign-in page | branch `change/dxk03-local-playable` from `7cf6a3c1`; T01 `3d9633e3` | `node --test dist/test/auth-config.test.js dist/test/auth-options.test.js dist/test/auth-email-disabled.test.js` — 9 pass, 0 fail. `https://example.com` with `LOCAL_DEMO_AUTH=1` throws `Invalid authentication configuration: LOCAL_DEMO_AUTH`. Email sign-in while the flag is off is not HTTP 200; a foreign origin is 403. | [Authentication and sessions](../../../../docs/technical/platform/identities-and-access.md#authentication-and-sessions), [local development](../../../../docs/runbooks/local-development.md) | Production/remote refusal is the unit proof. A hosted deploy was not run. |
+| `scripts/repo-tools/seed-local-demo.mjs`, `infra/kubernetes/lab/dev/local-demo-seed-job.yaml` | T02 `db6603cd` | `node --test scripts/repo-tools/seed-local-demo.test.mjs` — 5 pass, 0 fail. Missing `LOCAL_DEMO_SEED=1` exits 2. | Seed path named in the identities paragraph. The Job was not applied. | Cluster apply NOT-RUN. No password is stored in the manifest. |
+| Disposable email session | integration worktree | `DATABASE_TEST_URL` pathname `/offscreen_auth_test` and `node --test dist/test/auth-local-demo-session.integration.js` — 1 pass, 0 fail. Sign-up cookie reads `/api/me` as that email. Wrong password is not 200. `Origin: https://evil.example` is 403. | Same two doc headings. STATUS records the session only. | Browser play, `/control`, and one pinned campaign turn on kind are NOT-RUN. This packet stays open. |

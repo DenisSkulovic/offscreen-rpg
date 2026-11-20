@@ -35,7 +35,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to GitHub sign-in and signed-in users to their saved drafts. The web, API and worker watch their own source changes; rebuild shared packages and restart after changing shared package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
+Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to sign-in and signed-in users to their saved drafts. By default that sign-in is GitHub OAuth (client ID and secret required; email/password off). With `LOCAL_DEMO_AUTH=1` on a loopback `APP_ORIGIN` (`http://localhost` or `http://127.0.0.1`) and non-production `NODE_ENV`, the sign-in page also offers email/password and the player chooses the password—that flag is not POC open access and is not an anonymous admin path. The web, API and worker watch their own source changes; rebuild shared packages and restart after changing shared package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
 
 Status commands from the repository root:
 

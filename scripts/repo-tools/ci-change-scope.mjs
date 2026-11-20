@@ -44,10 +44,7 @@ const INTEGRATION_PREFIXES = [
   'scripts/',
 ];
 const INTEGRATION_FILES = new Set([
-  'compose.yaml',
-  'compose.yml',
-  'docker-compose.yaml',
-  'docker-compose.yml',
+  'Tiltfile',
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
   'package.json',
@@ -55,6 +52,19 @@ const INTEGRATION_FILES = new Set([
   '.node-version',
   '.npmrc',
 ]);
+
+const LAB_DEV_PREFIX = 'infra/kubernetes/lab/dev/';
+const LAB_APP_RELEASE_PREFIX = 'infra/kubernetes/lab/app-release/';
+const DOCKERFILE_PATH =
+  /(^|\/)Dockerfile(\.[^/]+)?$/;
+
+/**
+ * @param {string} path
+ */
+function isLabDockerfilePath(path) {
+  const p = normalize(path);
+  return DOCKERFILE_PATH.test(p);
+}
 
 function normalize(path) {
   return path.replaceAll('\\', '/').replace(/^\.\//, '');
@@ -89,6 +99,9 @@ export function isIntegrationPath(path) {
   const p = normalize(path);
   if (INTEGRATION_FILES.has(p)) return true;
   if (p.startsWith('.github/workflows/')) return true;
+  if (p.startsWith(LAB_DEV_PREFIX)) return true;
+  if (p.startsWith(LAB_APP_RELEASE_PREFIX)) return true;
+  if (isLabDockerfilePath(p)) return true;
   if (INTEGRATION_PREFIXES.some((prefix) => p.startsWith(prefix))) return true;
   return false;
 }

@@ -6,6 +6,8 @@ import * as schema from '@offscreen/db/schema';
 import type { AuthConfig } from './config.js';
 
 export function authOptions(database: Database, config: AuthConfig) {
+  const hasGithub =
+    config.githubClientId.length > 0 && config.githubClientSecret.length > 0;
   return {
     appName: 'Offscreen RPG',
     baseURL: config.origin,
@@ -13,13 +15,25 @@ export function authOptions(database: Database, config: AuthConfig) {
     secret: config.secret,
     trustedOrigins: [config.origin],
     database: drizzleAdapter(database.db, { provider: 'pg', schema }),
-    socialProviders: {
-      github: {
-        clientId: config.githubClientId,
-        clientSecret: config.githubClientSecret,
-        scope: ['user:email'],
-      },
-    },
+    ...(hasGithub
+      ? {
+          socialProviders: {
+            github: {
+              clientId: config.githubClientId,
+              clientSecret: config.githubClientSecret,
+              scope: ['user:email'],
+            },
+          },
+        }
+      : {}),
+    ...(config.localDemoAuth
+      ? {
+          emailAndPassword: {
+            enabled: true,
+            disableSignUp: false,
+          },
+        }
+      : {}),
     account: { accountLinking: { enabled: false }, encryptOAuthTokens: true },
     session: {
       expiresIn: 60 * 60 * 24 * 7,

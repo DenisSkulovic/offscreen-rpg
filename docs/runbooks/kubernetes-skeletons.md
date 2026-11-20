@@ -20,7 +20,7 @@ The engine is the only process whose status says `checkpointWriter`. That flag m
 - Do not treat the older-scene check as a historical fork. `scene-older` keeps holder `holder-early` after `scene-later` records holder `holder-late`. The response limit is `contract-assertion`, and `historicalFork` is false. [Scene history and alternate continuities](../product/foundations/vision.md#scene-history-and-alternate-continuities) remains the product promise. This procedure does not implement it.
 - Do not publish a workload on `0.0.0.0` or `[::]`. Do not create a NodePort, a LoadBalancer, or an Ingress.
 - Do not install RabbitMQ or the collector again. This slice does not use them.
-- Do not delete Docker volumes. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, must still be present after `down.sh`.
+- Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Pins
 

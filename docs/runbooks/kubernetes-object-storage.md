@@ -33,7 +33,7 @@ MinIO is not the lab store. `compose.yaml` already records that `minio/minio` pu
 - Do not put an access key, a secret key, or a Secret manifest in Git. The smoke generates both keys, creates the Secret, and does not print them.
 - Do not use a NodePort or LoadBalancer Service. Only port 8333 is on the Service. `weed mini` also listens inside the Pod for its master, filer, and admin ports. Those ports are not published on the host.
 - Do not point the game, the API, or Compose at this Service. `OFFSCREEN_DOCUMENT_STORE` stays unchanged.
-- Do not delete Docker volumes. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, must still be present after `down.sh`.
+- Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Recovery limit
 

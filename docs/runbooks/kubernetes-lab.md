@@ -10,7 +10,7 @@ Scripts and manifests live in `infra/kubernetes/lab/`. Run them from the reposit
 
 ## What it must not do
 
-- Do not delete Docker volumes. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, must still be present afterward.
+- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not delete or switch away from a kubectl context other than `kind-offscreen-lab`. The scripts pass `--context kind-offscreen-lab` and restore a previous current context when one existed.
 - Do not publish a workload on `0.0.0.0` or `[::]`. The only published port is the API server on `127.0.0.1`. A NodePort or LoadBalancer Service fails the check.
 - Do not raise the WSL memory cap. `up.sh` refuses to start when MemAvailable is below 4 GiB. This machine's cap stayed near 12 GiB; do not edit `.wslconfig` to make the lab fit.

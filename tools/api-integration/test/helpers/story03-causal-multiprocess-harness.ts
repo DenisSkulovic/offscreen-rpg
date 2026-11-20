@@ -616,6 +616,7 @@ export async function withStory03CausalMultiprocessHarness(
       githubClientId: 'test-client',
       githubClientSecret: 'test-secret',
       pocOpenAccess: false,
+      localDemoAuth: false,
     }),
     plugins: [strictUtilities],
   });
