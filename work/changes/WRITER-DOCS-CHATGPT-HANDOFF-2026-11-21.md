@@ -1,6 +1,6 @@
 # ChatGPT documentation handoff | before Cursor implements the Writer refoundation
 
-**State:** PROPOSED/UNSELECTED, 2026-11-21. **Implementation:** ChatGPT edits the **permanent \`docs/\` wiki** in four doc-only Changes. Cursor executes code Changes **only after** the docs wave and owner review. This is a compact routing brief, **not** a replacement product/technical wiki and **not** approval to rewrite it.
+**State:** EXECUTED on `storyteller-evolution-electric-boogaloo`, 2026-11-21. WR01, WRD02, WRD03 and WRD04 permanent-wiki waves are complete; Cursor code implementation follows from this branch. **Implementation:** ChatGPT edits the **permanent \`docs/\` wiki** in four doc-only Changes. Cursor executes code Changes **only after** the docs wave and owner review. This is a compact routing brief, **not** a replacement product/technical wiki and **not** approval to rewrite it.
 
 ## Launch in a dedicated ChatGPT conversation
 
