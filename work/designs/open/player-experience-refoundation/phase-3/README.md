@@ -25,7 +25,7 @@
 | 8 | [UI08](../../../../changes/archive/2026-11/other/2026-11-17--ui08-motion-language/CHANGE.md) | Done | UI07 review | Meaningful restrained motion; no gratuitous package |
 | 9 | [DIR01](../../../../changes/archive/2026-11/other/2026-11-17--dir01-appearance-roundtrip-proof/CHANGE.md) | Done | UI03 | Test the existing saved appearance read path end to end |
 | 10 | [DIR02](../../../../changes/archive/2026-11/other/2026-11-17--dir02-validated-publication-attachment/CHANGE.md) | Done | DIR01 | Optional validated scene on the publication insert. The worker supplies no candidate |
-| 11 | [DIR03](../../../../changes/open/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | Ready offline; live gated | DIR02 writer | Optional V1 provider-free author sidecar; paid creative adoption requires later authorization |
+| 11 | [DIR03](../../../../changes/archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | Ready offline; live gated | DIR02 writer | Optional V1 provider-free author sidecar; paid creative adoption requires later authorization |
 
 **Cursor execution policy:** one packet at a time, refreshed HEAD/dirty state and `pnpm repo:brief --json`; all follow the Change standard and each has a negative test. A “Ready after...” packet is still **not current**. UI01 through UI08, DIR01, and DIR02 are archived. DIR03 can add its optional provider-free protocol as a later packet; a live paid creative run is not authorized. No packet in this phase is selected as the single Change.
 

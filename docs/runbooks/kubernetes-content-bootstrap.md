@@ -157,4 +157,4 @@ The following satisfied BOOT02's discriminating positive case without starting t
 - `pinPath=null` and `campaignCreated=false` on both paths
 - Lock pid `188308` on `/tmp/offscreen-k8s-cluster.lock`; baseline `93d57ca6` on branch `change/boot02-cluster-pin`
 
-A new Pod run is required only when importer image or Job manifests change materially (BOOT02 **T03** in [BOOT02 TASKS](../../work/changes/open/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md)).
+A new Pod run is required only when importer image or Job manifests change materially (BOOT02 **T03** in [BOOT02 TASKS](../../work/changes/archive/2026-11/other/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md)).

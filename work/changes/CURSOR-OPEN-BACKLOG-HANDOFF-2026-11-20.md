@@ -12,7 +12,7 @@
 | --- | --- | --- |
 | Re-establish trusted tests | [HK03 T01](open/2026-11-17--hk03-storyteller-test-boundaries/TASKS.md#t01--verify-full-suite-with-one-safe-environment--planner-ready-verify) | Historical 33/30/3 full suite; do not rewrite gameplay assertion |
 | Confirm saved-response safety | [HK01 T01](open/2026-11-17--hk01-retire-local-repair-helper/TASKS.md#t01--existing-guarded-function-and-contract-test--planner-ready-verify) | Pure test first, **no deleting unique CLI** |
-| Prove S3 package pins | [BOOT02 T01](open/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md#t01--repeat-safe-no-cluster-proof--planner-ready) | Second-Pod proof already recorded; don't respin cluster unless source changed |
+| Prove S3 package pins | [BOOT02 T01](archive/2026-11/other/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md#t01--repeat-safe-no-cluster-proof--planner-ready) | Second-Pod proof already recorded; don't respin cluster unless source changed |
 | Reconcile GA single seam | [DIST03 T01](open/2026-11-19--dist03-game-authority-private-boundary/TASKS.md#t01--run-the-exact-one-seam-proof--planner-ready) | Test read/resolution locally before expanding |
 | Confirm checkpoint fork | [DATA04 T01](open/2026-11-19--data04-historical-read-and-fork-from-checkpoint/TASKS.md#t01--current-source-and-negative-proof-reconciliation--planner-ready-verify) | Historical local fork already implemented; don't invent second schema |
 | Move critical story start | [BOOT03 T01](open/2026-11-19--boot03-game-authority-start-admission/TASKS.md#t01--contract-and-remote-client-shape--planner-ready) | Select BOOT03, coordinate GA contract writer; no live provider |

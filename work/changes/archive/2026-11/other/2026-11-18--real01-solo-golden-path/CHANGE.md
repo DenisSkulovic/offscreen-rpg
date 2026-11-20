@@ -69,7 +69,7 @@ exception: work/changes/README.md because the queue line is the selection route 
 exception: work/changes/ledger/2026-11.md because the closed-work index records this documentation packet
 exception: docs/product/README.md because the acceptance question now names the harbor oracle
 exception: docs/product/gameplay/long-life-benchmark-playthroughs.md because its opening no longer calls the wizard the near-term playthrough
-exception: work/changes/open/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md because the parked DIR03 status was recorded in the same turn and is not a REAL01 claim
+exception: work/changes/archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md because the parked DIR03 status was recorded in the same turn and is not a REAL01 claim
 exception: work/designs/open/player-experience-refoundation/phase-3/README.md because the parked DIR rows were recorded in the same turn and are not a REAL01 claim
 exception: work/designs/open/documentation-impact-system/AUDIT-2026-11-18.md because its DIR01 link still pointed at the open path after that packet was archived
 exception: work/designs/open/playability-reality/README.md because the program sequence now points at the archived REAL01 packet
