@@ -1,5 +1,7 @@
 # Selected engine architecture
 
+**Storyteller evolution target:** Game Authority is the single admission boundary between creative proposals and authoritative story history. A published scene binds a rooted Library, a semantic fictional-state frontier, clock/commitments, source/profile/rule pins, passage/choices and causal lineage. The engine is world-neutral: narrative-only worlds and optional typed mechanics share the same authority model.
+
 **Owns:** the long-term engine shape: what kind of runtime can keep a life coherent for months without handing mechanical truth to a chat model.  
 **Status:** **selected working target** from the November 2026 engine architecture pass. The alternatives table in that pass marks modular monolith plus durable workflows plus immutable evidence as the selected working target. The same pass is **not a code authorization**, and the items under [What stays open](#what-stays-open) are not ratified.  
 **Not implemented** by the existence of this page. Landed prototype contracts remain in [authority and transitions](authority-and-transitions.md), [mechanics](mechanics-and-capabilities.md), [chronology](chronology-and-activities.md) and [lifecycle](lifecycle-and-compatibility.md). Narrow concurrency proof is in [concurrency and recovery](concurrency-and-recovery.md).  
