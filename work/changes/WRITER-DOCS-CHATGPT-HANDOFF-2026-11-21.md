@@ -1,6 +1,6 @@
 # ChatGPT documentation handoff | before Cursor implements the Writer refoundation
 
-**State:** EXECUTED, 2026-11-21. WR01, WRD02, WRD03 and WRD04 permanent-wiki waves are complete and archived; implementation follows from the selected target documentation. **Implementation:** ChatGPT edits the **permanent \`docs/\` wiki** in four doc-only Changes. Cursor executes code Changes **only after** the docs wave and owner review. This is a compact routing brief, **not** a replacement product/technical wiki and **not** approval to rewrite it.
+**State:** EXECUTED, 2026-11-21. WR01, WRD02, WRD03 and WRD04 permanent-wiki waves are complete and archived; implementation follows from the selected target documentation. **Implementation:** ChatGPT edits the **permanent \`docs/\` wiki** in four doc-only Changes. Cursor executes code Changes **only after** the docs wave and owner review. This is a compact historical routing brief, **not** a replacement product/technical wiki. Owner approval for the target-state rewrite was explicitly given during execution and is recorded in archived WR01.
 
 ## Launch in a dedicated ChatGPT conversation
 
