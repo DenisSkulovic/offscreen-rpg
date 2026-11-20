@@ -36,10 +36,10 @@
 
 | Disposition | Packets |
 | --- | --- |
-| **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **WORK01**, **HK01**, **STORY02** (scripted custody refusal, 27/27 provider-free; cross-Pod remains STORY03) |
+| **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **GM07** one consented harmless withdrawal, **WORK01**, **HK01**, **STORY02** (scripted custody refusal, 27/27 provider-free; cross-Pod remains STORY03) |
 | **B. Scope inflated — keep original remainder, do not fake Done** | DATA04 (app historical GET/fork 9/9; GA/journal/three negatives remain) |
 | **C. Unfinished actionable** | none |
-| **D. Planner gap** | GM07 durable SQL consent/expiry; ENG03 remaining lock paths; DATA06 remote branch-pinned facade. **OBS04 planner gap resolved** by exact terminal-event witness decision; code still pending |
+| **D. Planner gap** | ENG03 remaining lock paths; DATA06 remote branch-pinned facade. **GM07 one consented withdrawal is archived**; a general timed fallback stays Proposed. **OBS04 planner gap resolved** by exact terminal-event witness decision; code still pending |
 | **E. Explicitly gated** | OBS00/TURN04 paid dispatch; K8S11/TURN02/TURN03/K8S10 live cluster; BOOT03 two-process remainder already proven in-process but packet Goal still distributed start |
 | **F. Unselected optional** | **WIKI18 also cancelled** (tools retained; live cost comparison unmeasured). DIST02 and DIST04 cancelled; no app Rabbit publisher/consumer selected |
 
@@ -96,7 +96,7 @@
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | **Open; T02–T06 planned, no migration yet** | Minimal co-committed source-event witness, no new ledger/sequence; disposable SQL required |
 | [ENG03 short-lock context](open/2026-11-13--eng-short-lock-context/CHANGE.md) | **Ready measured narrow slice** | Full short-lock capture |
 | [GM03 standing life](archive/2026-11/experience/2026-11-13--gm-standing-life/CHANGE.md) | **Done. Quiet watch archived** | Three clock-wait copies stop at the horizon. General standing life stays unselected design |
-| [GM07 delegated decision](open/2026-11-13--gm-delegated-decision/CHANGE.md) | **One withdrawal merged. Packet stays open** | A player choice that arrives first is the only settlement. The module does not take the story-row lock |
+| [GM07 delegated decision](archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md) | **Done. One consented withdrawal archived** | Owner opt-in admits one harmless invitation under the story lock. A general timed fallback stays Proposed. A hosted relay was not run |
 | [SA07 evidence tools](archive/2026-11/other/2026-11-14--sa07-evidence-tools/CHANGE.md) | **Done. No new tool** | The blue-ledger question keeps Mira Vale and leaves Mira Pell out. A paraphrase with no shared alias still misses |
 | [HK01 retire unsupported local repair CLI](archive/2026-11/other/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) | **Done (2026-11-20, T01–T05)** | The legacy reconciliation CLI is deleted. Saved-response inspection, read-only plan, and guarded apply with operator audit replace it; uncertain submit and funding-stopped semantics are unchanged |
 

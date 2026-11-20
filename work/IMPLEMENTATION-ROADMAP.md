@@ -37,7 +37,7 @@ Current `apps/api/src/modules/stories/controller.ts:fork` invokes `this.stories.
 | --- | --- | --- |
 | Critical engine / fork | BOOT03, FORK01, STORY03, DATA04, DATA06, DIST03, TURN03. STORY02 is archived | Complete exact needed contracts, archive genuinely achieved Goals, retain honest negative gaps |
 | Real deployment and usable UX | TURN02, K8S11, DXK01, DXK02, DXK03, DXK04, DXK05, DXK06, DXK07 | Follow R0 then R2–R5; one kind operator, no duplicate release owner |
-| Present but not critical now | ENG03 (real under-lock I/O, prepared finite T02–T07, unselected), GM07, OBS04 (source-event witness T02–T06 planned), HK01, K8S10 | Remain discoverable in Changes. Select later for a real measured defect/owner request, not queue anxiety. Optional Rabbit fact projection and chaos do not gate playable script |
+| Present but not critical now | ENG03 (real under-lock I/O, prepared finite T02–T07, unselected), OBS04 (source-event witness T02–T06 planned), HK01, K8S10 | Remain discoverable in Changes. Select later for a real measured defect/owner request, not queue anxiety. Optional Rabbit fact projection and chaos do not gate playable script. GM07's one consented withdrawal is archived; a general timed fallback stays Proposed |
 | Paid/explicit separate approval | OBS00 (provider-free B grant/dispatch code is plan-ready; activation separately gated), TURN04 | No live provider send, grant seeding, billing or paid distributed execution in zero-provider sprint |
 
 **Do not confuse checkpoint v1 with the long-term any-scene promise:** this POC's first fork is quiescent scene1 only. Real mechanical world obligations, active offers and general historical v2 reconstruction need later ratified design, not tweaks to make the fixture green.

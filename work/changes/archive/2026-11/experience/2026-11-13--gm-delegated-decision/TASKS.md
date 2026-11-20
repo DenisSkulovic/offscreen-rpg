@@ -1,10 +1,10 @@
 # GM07 | bounded source-backed execution after durable design
 
-**Plan baseline:** current main `c93cbc12`, with attached snapshot `64f3de7`. **Selection:** `work/QUEUE.md` still owns one active Change; **GM07 is not selected**. [GM07 exact decision](DECISION-2026-11-20.md) resolves original storage/actor/pause/scheduler blocker. **T01 PASS**, **T02–T05 LANDED**, **T06 in-process path PASS**, and **one local Temporal relay PASS** (`apps/worker/test/gm07-temporal-relay.live.test.ts`, 1 pass) on branch `change/gm07-consented-withdrawal`. A hosted relay was not run. The Change stays open and is not archived. Cursor Standard, one T-ID with 2–5 specified source anchors per batch. No paid providers, destructive DB or unowned cluster actions.
+**Plan baseline:** current main `c93cbc12`, with attached snapshot `64f3de7`. **Selection:** `work/QUEUE.md` still owns one active Change; **GM07 is not selected**. [GM07 exact decision](./DECISION-2026-11-20.md) resolves original storage/actor/pause/scheduler blocker. **T01–T06 are landed.** One local Temporal relay passed. A hosted relay was not run. The Change is Done for that one class and is archived. Cursor Standard. No paid providers, destructive DB, or unowned cluster actions.
 
 ## T01 | Verify pure delegate refusal baseline | VERIFY
 
-**Read first:** `packages/application/src/campaign/delegated-decision.ts`, `packages/application/test/delegated-decision.test.mjs`, [decision](DECISION-2026-11-20.md) "pure" acceptance. Run `pnpm build` and focused Node suite as appropriate. **What to prove:** existing 20-minute, consent/revocation, expired/early, duplicate, player-first and no model/combat cases; list what the reducer does not know (current offer, DB clock, pause, actor, SQL). Correct only a proven pure bug; do not treat passing reducer as an engine integration.
+**Read first:** `packages/application/src/campaign/delegated-decision.ts`, `packages/application/test/delegated-decision.test.mjs`, [decision](./DECISION-2026-11-20.md) "pure" acceptance. Run `pnpm build` and focused Node suite as appropriate. **What to prove:** existing 20-minute, consent/revocation, expired/early, duplicate, player-first and no model/combat cases; list what the reducer does not know (current offer, DB clock, pause, actor, SQL). Correct only a proven pure bug; do not treat passing reducer as an engine integration.
 
 ## T02 | Exact allowed class and owner policy table | PATCH/TEST
 
@@ -24,7 +24,7 @@
 
 ## T06 | End-to-end closure and documentation | VERIFY/DOC
 
-**Read first:** `tools/api-integration/test` existing story and action tests, `docs/product/gameplay/time-and-autonomy.md`, `docs/technical/engine/chronology-and-activities.md`, `work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md`. One actual disposable DB and provider-disabled worker execution: enabled+published offer, user response before due, timeout after due, explicit pause/resume preserves remainingMs, revoke, stale offer, full action-duration effect and factual provenance, repeated/parallel delivery. Check no charge/provider send and no second receipt; current story owner is the only actor; no false success when action merely *started*. Only after real behavior and document reconciliation update STATUS / product and technical claims, perform plan/close/link guards and archive GM07. Record exact PASS/FAIL/NOT-RUN and one commit per bounded batch.
+**Read first:** `tools/api-integration/test` existing story and action tests, `docs/product/gameplay/time-and-autonomy.md`, `docs/technical/engine/chronology-and-activities.md`, `work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md`. One actual disposable DB and provider-disabled worker execution: enabled+published offer, user response before due, timeout after due, explicit pause/resume preserves remainingMs, revoke, stale offer, full action-duration effect and factual provenance, repeated/parallel delivery. Check no charge/provider send and no second receipt; current story owner is the only actor; no false success when action merely *started*. Only after real behavior and document reconciliation update STATUS / product and technical claims, perform plan/close/link guards and archive GM07. Record exact PASS/FAIL/NOT-RUN and one commit per bounded batch.
 
 ## Scope and safety
 

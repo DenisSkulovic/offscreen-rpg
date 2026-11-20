@@ -75,7 +75,7 @@ This retained tree still imitates the deleted `programs/` hierarchy and mixes ep
 
 ### F04 — The founder-level vision implies unanswered automatic behavior still requiring permission (high)
 
-`docs/product/foundations/vision.md` says “unanswered choices normally lead to an autonomous response” and describes leaving the character to act according to personality. However `docs/product/gameplay/time-and-autonomy.md` is explicit: no accepted execution means no fictional progress; a timed default requires prior authorization; `work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md` is **Proposed/not Ready** with unresolved exact consent, safe fallback, pause race and 20-minute policy.
+`docs/product/foundations/vision.md` says “unanswered choices normally lead to an autonomous response” and describes leaving the character to act according to personality. However `docs/product/gameplay/time-and-autonomy.md` is explicit: no accepted execution means no fictional progress; a timed default requires prior authorization; `work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md` is **Proposed/not Ready** with unresolved exact consent, safe fallback, pause race and 20-minute policy.
 
 The vision can express an ambition, but that opening passage does not clearly distinguish a long-term desired autonomy product from today's *accepted rules*. `product/experience/return-and-journal.md` says the chronology includes “autonomous choices” without making their preauthorization visible. A fresh reader might believe a global automatic-decision policy already exists. **Fix by clarifying scope and accepted consent boundaries at the original product owner**, not by pretending the aspiration is wrong.
 

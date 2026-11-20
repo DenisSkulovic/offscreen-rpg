@@ -131,7 +131,7 @@ The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](
 | `work/changes/open/` | 0 | 9 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
 | `work/changes/open/2026-11-11--s3a-continuity-report/` | 2 | 2 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
 | `work/changes/open/2026-11-13--eng-short-lock-context/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
-| `work/changes/open/2026-11-13--gm-delegated-decision/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
+| `work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
 | `work/changes/open/2026-11-13--gm-standing-life/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
 | `work/changes/open/2026-11-14--sa07-evidence-tools/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
 | `work/changes/open/2026-11-15--obs00-live-provider-custody/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |

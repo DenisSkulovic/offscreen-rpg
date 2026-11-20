@@ -150,7 +150,7 @@ A route is an intended **knowledge bucket**, not a one-file-to-one-file move. A 
 | `work/changes/open/2026-11-11--s3a-continuity-report/CHANGE.md` | 4103 | MOVE | work/changes/open/<same-id>/ |
 | `work/changes/open/2026-11-11--s3a-continuity-report/PLAN.md` | 2411 | MOVE | work/changes/open/<same-id>/ |
 | `work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md` | 5313 | MOVE | work/changes/open/<same-id>/ |
-| `work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md` | 6701 | MOVE | work/changes/open/<same-id>/ |
+| `work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md` | 6701 | MOVE | work/changes/open/<same-id>/ |
 | `work/changes/open/2026-11-13--gm-standing-life/CHANGE.md` | 6376 | MOVE | work/changes/open/<same-id>/ |
 | `work/changes/open/2026-11-14--sa07-evidence-tools/CHANGE.md` | 3607 | MOVE | work/changes/open/<same-id>/ |
 | `work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md` | 6884 | MOVE | work/changes/open/<same-id>/ |
