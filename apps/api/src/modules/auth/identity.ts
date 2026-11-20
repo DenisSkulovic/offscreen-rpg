@@ -10,10 +10,8 @@ import {
 import type { Request } from 'express';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { Auth } from './auth.js';
-import { POC_LOCAL_PLAYER } from './config.js';
 
 export const AUTH = Symbol('AUTH');
-export const POC_OPEN_ACCESS = Symbol('POC_OPEN_ACCESS');
 
 export type AuthenticatedUser = Readonly<{
   id: string;
@@ -27,15 +25,9 @@ export interface IdentityResolver {
 
 @Injectable()
 export class IdentityService implements IdentityResolver {
-  constructor(
-    @Inject(AUTH) private readonly auth: Auth,
-    @Inject(POC_OPEN_ACCESS) private readonly pocOpenAccess: boolean,
-  ) {}
+  constructor(@Inject(AUTH) private readonly auth: Auth) {}
 
   async requireUser(headers: Request['headers']) {
-    if (this.pocOpenAccess) {
-      return POC_LOCAL_PLAYER;
-    }
     const session = await this.auth.api
       .getSession({
         headers: fromNodeHeaders(headers),

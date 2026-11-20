@@ -142,8 +142,6 @@ spec:
               value: "3001"
             - name: APP_ORIGIN
               value: http://127.0.0.1:18080
-            - name: POC_OPEN_ACCESS
-              value: "1"
             - name: GAME_AUTHORITY_MODE
               value: distributed
             - name: GAME_AUTHORITY_ORIGIN

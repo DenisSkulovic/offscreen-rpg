@@ -57,8 +57,6 @@ export async function withApiOnlyAuth(
       secret: 'integration-only-not-a-runtime-secret-1234',
       githubClientId: 'test-client',
       githubClientSecret: 'test-secret',
-      pocOpenAccess: false,
-      localDemoAuth: false,
     }),
     plugins: [strictUtilities],
   });

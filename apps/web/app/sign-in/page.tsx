@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignInButton } from '@/src/features/session/sign-in-button';
-import { EmailPasswordSignIn } from '@/src/features/session/email-password-sign-in';
 import {
   DEFAULT_SAFE_ENTRY,
   resolveSafeEntryDestination,
@@ -24,9 +23,6 @@ export default async function SignIn({
 }) {
   const { error, next: nextRaw } = await searchParams;
   const next = resolvePostAuthDestination(nextRaw);
-  const localDemoAuth = process.env.LOCAL_DEMO_AUTH === '1';
-  const githubSignInAvailable =
-    localDemoAuth && Boolean(process.env.GITHUB_CLIENT_ID?.trim());
   const cookie = (await headers()).get('cookie') ?? '';
   try {
     const session = await nestFetch({ cookie }, '/api/me');
@@ -52,14 +48,7 @@ export default async function SignIn({
       {error ? (
         <p role="alert">Sign-in was not completed. You can try again.</p>
       ) : null}
-      {localDemoAuth ? (
-        <EmailPasswordSignIn
-          next={next}
-          githubSignInAvailable={githubSignInAvailable}
-        />
-      ) : (
-        <SignInButton next={next} />
-      )}
+      <SignInButton next={next} />
       <p>
         <Link href="/demo">Back to the public preview</Link>
         {' · '}

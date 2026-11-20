@@ -12,7 +12,7 @@
 
 **No Change is selected.** TURN02 is Done. DXK01 is Done for the warm `kind-offscreen-lab` reconcile: `stack:up` exited 0 and `stack:status` reported the pinned fixture ready. Live `stack:down` and `stack:reset` were not executed. QUEUE is authoritative.
 
-1. **NOW: TURN02 is Done.** A fresh `kind-offscreen-lab` after teardown installed the application release: one migration, a matching content pin, and Ready Next, Nest, Game Authority, control, executor, and relay. The public gateway hides Game Authority. `POC_OPEN_ACCESS=0` returns 401 and `1` returns the local player. The earlier Seyda Neen story was not replayed. This is not the hosted release.
+1. **NOW: TURN02 is Done.** A fresh `kind-offscreen-lab` after teardown installed the application release: one migration, a matching content pin, and Ready Next, Nest, Game Authority, control, executor, and relay. The public gateway hides Game Authority. Anonymous `/api/me` stays 401. There is no open-access player. The earlier Seyda Neen story was not replayed. This is not the hosted release.
 2. **FORK01 is Done.** The local Harbor-watch scene1 fork after scene2 goes through private Game Authority. Cold kind and the browser stay TURN03. Do not select another Change from this list.
 3. **THEN: finish only the critical local ownership gaps** (DIST03) before calling cold-kind TURN03 PASS. STORY02, STORY03, DATA04, and DATA06 are archived. STORY03's local causal suite is **7/7**. No RabbitMQ hop in the Storyteller wake.
 

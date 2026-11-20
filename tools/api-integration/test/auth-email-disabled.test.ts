@@ -5,7 +5,7 @@ import { betterAuth } from 'better-auth';
 import { authOptions } from '@offscreen/api/auth';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 
-test('email sign-in stays unavailable when local demo auth is disabled', async () => {
+test('email sign-in is not a runtime path', async () => {
   const database = createDatabase(
     readDatabaseConfig({
       DATABASE_URL: 'postgresql://localhost/auth_email_disabled_unused',
@@ -19,8 +19,6 @@ test('email sign-in stays unavailable when local demo auth is disabled', async (
       secret: 'integration-only-not-a-runtime-secret-1234',
       githubClientId: 'client',
       githubClientSecret: 'secret',
-      pocOpenAccess: false,
-      localDemoAuth: false,
     }),
     rateLimit: { enabled: false },
   });

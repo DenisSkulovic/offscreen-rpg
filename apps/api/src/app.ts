@@ -26,7 +26,6 @@ import {
   AUTH,
   IdentityController,
   IdentityService,
-  POC_OPEN_ACCESS,
   type IdentityResolver,
 } from './modules/auth/identity.js';
 import {
@@ -192,8 +191,6 @@ export type CreateAppOptions = Readonly<{
     git: z.infer<typeof qaGitStateSchema>;
     environment: z.infer<typeof qaEnvironmentSchema>;
   };
-  /** Lab POC only: fixed local player without a Better Auth session. */
-  pocOpenAccess?: boolean;
 }>;
 
 export async function createApp(
@@ -256,10 +253,6 @@ export async function createApp(
         },
         { provide: STORY_UPDATE_HUB, useValue: storyUpdateHub },
         { provide: AUTH, useValue: auth },
-        {
-          provide: POC_OPEN_ACCESS,
-          useValue: options.pocOpenAccess === true,
-        },
         { provide: ADMIN_ORIGIN, useValue: origin },
         {
           provide: ADMIN_ENVIRONMENT,

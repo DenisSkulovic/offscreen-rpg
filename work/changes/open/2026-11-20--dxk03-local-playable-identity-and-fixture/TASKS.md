@@ -1,6 +1,6 @@
 # DXK03 | bounded Composer tasks
 
-**Status:** T01 and the disposable email session are proved. T02 script guards passed; the Job was not applied. T03 browser and kind play are NOT-RUN. The packet stays open. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
+**Status:** Email/password demo mode and POC open access are removed. GitHub OAuth is the only runtime sign-in. Config and email-disabled tests are the current proof. A real GitHub browser login is blocked until the root `.env` has the local OAuth app credentials. The packet stays open. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
 
 
 ## T01 | Explicitly gated, real Better Auth local identity
