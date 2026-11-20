@@ -81,3 +81,13 @@ Stop/rollback signals: preparation regularly adds low-value or contradictory fil
 - **Evaluation:** preparation value must be judged through opening **and second-scene** quality and correct evidence reuse; a large number of new files is not a success metric.
 
 **Next investigation:** choose the minimum launch/admission contract, authorized original-world invention defaults, role resolution policy and no-hidden-clock principle; then decide if a small first executable Change can be sliced without prematurely implementing the entire Writer's Library.
+
+## Critical versioning/fork constraint | 2026-11-20
+
+The owner explicitly requires **Git-like historical and branch semantics with structural sharing**, **not** whole-Library copies per scene. Source review finds that the v1 system shares unchanged content object hashes, but reserializes a full flat array of manifest entries per document revision and per checkpoint fork, reads entire manifest history with a 256-manifest limit, and identifies source references only by document UUID plus local revision (which can collide on divergent branches). This is a **real architectural scaling and provenance issue**, not only a future performance tweak.
+
+- [Versioned Library source audit](VERSIONED-LIBRARY-SOURCE-AUDIT.md) separates existing CAS reuse from full-flat metadata copying and fork limitations.
+- [Persistent Library DAG design](PERSISTENT-LIBRARY-DAG-DESIGN.md) proposes structurally shared persistent path index with immutable document hashes and scene-root tuples. It does **not** select a particular tree algorithm without benchmarks.
+- [Versioning acceptance vectors](VERSIONING-ACCEPTANCE-VECTORS.md) specify 1,000+ revisions, 10,000 docs in one folder, divergent documentId@2, no-op scene/root reuse, forks/history authorization, Workdesk stages, GC and state checkpoints.
+
+**Sequence constraint:** Before implementing general writable Writer's Workdesk or unlimited scene forks, reconcile/source-proof source identity, root reachability and long-history indexing. A separate state-checkpoint performance/active-work design may be needed; versioning Markdown alone cannot recreate all mechanical truth. The root tuple is selected under the existing Game Authority transaction boundary. Product/tech owners must ratify the target before Cursor Changes.
