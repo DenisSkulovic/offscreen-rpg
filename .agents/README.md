@@ -30,6 +30,7 @@ Permanent product and technical truth lives under [docs/product](../docs/product
 
 ## Conditional rules
 
+- [`git-commits`](rules/git-commits.md) — mandatory format and verifiable rationale/evidence for all new commits.
 - [`working-agreement`](rules/working-agreement.md), [`documentation`](rules/documentation.md), [`domain-design`](rules/domain-design.md), [`storyteller`](rules/storyteller.md), [`verification`](rules/verification.md), [`spending`](rules/spending.md).
 
 ## Skills
