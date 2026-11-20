@@ -30,7 +30,7 @@ import {
 } from '@offscreen/contracts/openings';
 import { GenerationError, validId } from '../generations/index';
 import { insertStorytellerTask, storytellerKind } from './records';
-import { storytellerTopic } from './records';
+import { storytellerNoticeTopicForWake } from './records';
 import { enqueue } from '../outbox/index';
 import { authorizedMechanicalOpeningPlans } from '@offscreen/storyteller/fixtures';
 import {
@@ -435,7 +435,7 @@ export function createStorytellerOpenings(
         await enqueue(tx, {
           id: retryId,
           operationId: record.id,
-          topic: storytellerTopic,
+          topic: await storytellerNoticeTopicForWake(tx, record.id),
         });
       });
       return read(ownerId, id);

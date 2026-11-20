@@ -24,7 +24,7 @@ import {
   type StorytellerAttemptLifecycleState,
   type StorytellerGenerationLifecycleState,
 } from './loop-lifecycle';
-import { storytellerKind, storytellerTopic } from './records';
+import { storytellerKind, storytellerNoticeTopicForWake } from './records';
 
 /** Explicit retry of the same admitted intention. Never creates a second resolution. */
 export async function retryStoryteller(
@@ -176,7 +176,7 @@ export async function retryStoryteller(
     await enqueue(tx, {
       id: input.retryId,
       operationId: record.id,
-      topic: storytellerTopic,
+      topic: await storytellerNoticeTopicForWake(tx, record.id),
     });
     await incrementStoryViewVersion(tx, {
       storyId: input.storyId,

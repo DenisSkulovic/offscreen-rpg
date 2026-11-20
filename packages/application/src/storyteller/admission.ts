@@ -21,7 +21,7 @@ import { enqueue } from '../outbox/index';
 import {
   insertStorytellerTask,
   storytellerKind,
-  storytellerTopic,
+  storytellerNoticeTopicForWake,
 } from './records';
 import {
   canonicalContextDependencies,
@@ -80,7 +80,7 @@ export async function admitStorytellerResolution(
     await enqueue(tx, {
       id: operationId,
       operationId,
-      topic: storytellerTopic,
+      topic: await storytellerNoticeTopicForWake(tx, operationId),
     });
     return;
   }

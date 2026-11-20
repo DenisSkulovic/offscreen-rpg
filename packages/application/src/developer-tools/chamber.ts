@@ -19,7 +19,7 @@ import {
 } from '../stories/index';
 import type { StoryApplicationOptions } from '../stories/index';
 import { enqueue } from '../outbox/index';
-import { storytellerTopic } from '../storyteller/records';
+import { storytellerNoticeTopicForWake } from '../storyteller/records';
 import type { ChamberStorytellerControl } from './storyteller-control';
 
 export { listChamberScenarios };
@@ -180,11 +180,11 @@ export function createChamber(
             ) {
               throw new Error('storyteller_control_conflict');
             }
-            await database.db.transaction((tx) =>
+            await database.db.transaction(async (tx) =>
               enqueue(tx, {
                 id: randomUUID(),
                 operationId: generationId,
-                topic: storytellerTopic,
+                topic: await storytellerNoticeTopicForWake(tx, generationId),
               }),
             );
             return control.release(

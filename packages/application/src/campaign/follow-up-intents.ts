@@ -10,7 +10,7 @@ import type { StoryRecord } from '../stories/persistence';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { transitionStorytellerIntentToGeneration } from './holds';
 import { enqueue } from '../outbox/index';
-import { storytellerTopic } from '../storyteller/records';
+import { storytellerNoticeTopicForWake } from '../storyteller/records';
 import { isProvisionalContextCapture } from '../storyteller/capture-materialization';
 import { campaignConsequenceTopic } from './topics';
 import { randomUUID } from 'node:crypto';
@@ -100,7 +100,10 @@ export async function applyCampaignFollowUpIntents(
           await enqueue(tx, {
             id: randomUUID(),
             operationId: intent.generationId,
-            topic: storytellerTopic,
+            topic: await storytellerNoticeTopicForWake(
+              tx,
+              intent.generationId,
+            ),
           });
         }
         break;

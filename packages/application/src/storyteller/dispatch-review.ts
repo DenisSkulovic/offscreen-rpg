@@ -18,7 +18,7 @@ import {
 } from '@offscreen/storyteller/providers/openrouter';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import { enqueue } from '../outbox/index';
-import { storytellerTopic } from './records';
+import { storytellerNoticeTopicForWake } from './records';
 
 export type DispatchReviewDisposition = 'proceed' | 'held' | 'stopped';
 
@@ -315,7 +315,10 @@ export function createDispatchReviewControls(database: Database) {
           await enqueue(tx, {
             id: decision.decisionId,
             operationId: decision.generationId,
-            topic: storytellerTopic,
+            topic: await storytellerNoticeTopicForWake(
+              tx,
+              decision.generationId,
+            ),
           });
         } else {
           await tx

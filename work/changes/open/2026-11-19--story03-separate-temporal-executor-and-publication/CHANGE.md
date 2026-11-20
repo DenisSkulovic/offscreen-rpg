@@ -101,12 +101,26 @@ The distributed control activity no longer imports the database, adoption, or `p
 
 **Negative reading:** this does not freeze notice topics (T08), does not prove a signed-in Nest admission path (T09), and does not close TURN03. The live handoff still calls `workflow.start` directly.
 
+## T08 evidence | wake topic is the frozen notice (`1a0afb80` parent, 2026-11-20)
+
+**Task:** [TASKS.md T08](TASKS.md). **Depth:** PATCH. **Change state:** still Proposed — **not Done**. No paid provider send. No new outbox column.
+
+Replay, recovery, opening retry, dispatch release, follow-up, and chamber release call `storytellerNoticeTopicForWake`. That helper reads Storyteller topics already stored for the operation. It does not read `STORYTELLER_DISTRIBUTED_V1`. Zero Storyteller notices throw. Two different Storyteller topics throw. Capture materialization may still admit the first Storyteller notice when the generation was created with only a campaign-consequence notice.
+
+| Suite | Result |
+| --- | --- |
+| `packages/application/test/story03-notice-topic-freeze.test.mjs` | **6/6 PASS** on disposable sandbox databases |
+| `packages/application/test/story03-notice-selector.test.mjs` | **2/2 PASS** |
+| `apps/worker/dist/test/storyteller-notice-dispatch.test.js` | **6/6 PASS**. Dispatch code was not edited |
+
+**Negative reading:** this does not prove the signed-in Nest → outbox → Temporal → executor → GA scene2 path (T09) and does not close TURN03.
+
 ## Reconciliation ledger (fill before closure)
 
 | Authority | Planned delta / no-op | Source SHA/diff | Positive / negative proof | Link/status |
 | --- | --- | --- | --- | --- |
 | Product | unchanged | `ec73a535` | No gameplay or Storyteller product rule edit in this slice | unchanged / N/A |
-| Storyteller input + attempt custody | implement (in progress) | `ec73a535`; decomposed application/worker tests; api-integration worker-replay + activity-settlement | **Positive:** application story03 **7/7**, worker **10/10**; live handoff **1/1** teardown clean; `test:story03-t06:worker-replay` **2/2** (~19s), one finite action per replay, orphan outbox **drained=0**; after `pnpm build`, `test:story03-t06:activity-settlement` **4/4**. **Negative:** executor-kill and stale-root e2e **NOT-RUN**; activity-settlement does not claim publication-context or GET scene | PARTIAL VERIFY (T06) |
+| Storyteller input + attempt custody | wake topic copied from the first Storyteller notice | parent `1a0afb80` plus T08 diff; freeze **6/6**, selector **2/2**, dispatch **6/6** | **Positive:** distributed admission stays distributed after the flag is cleared; a second notice uses that topic. **Negative:** legacy admission stays legacy after the flag is set; missing notice throws; inconsistent topics throw and are not rewritten. Executor-kill e2e remains **NOT-RUN** | T08 landed; Change **not Done** |
 | Game Authority publication + canon | control activity is HTTP-only; GA remains the SQL publisher | parent `44272d9a` plus T07 diff; GA publish unit **6/6**; live handoff **1/1** | **Positive:** one published row after saved scripted result through GA HTTP. **Negative:** executor/story tokens **401**; duplicate publish `already_published`; control `DATABASE_URL` refused; GA-down activity is retryable and has no local publisher import. Scene-checkpoint GET and publication-context integration remain **NOT-RUN** | T07 landed; Change **not Done** |
 | Workflow / runtime / docs | control publication owner reconciled; default `storytellerV1` unchanged | parent `44272d9a` plus T07 diff; `generation-and-publication.md`, `execution-and-delivery.md`, architecture chapter 2 | **Positive:** technical owners now say the control activity is GA HTTP and the live handoff published once. **Negative:** T08 topic freeze and T09 player path **not** claimed; publication-context and GET scene once remain **NOT-RUN**; Change stays **Proposed** | T07 docs reconciled; not Done |
 

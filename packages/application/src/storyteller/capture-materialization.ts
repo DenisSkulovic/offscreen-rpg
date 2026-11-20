@@ -36,7 +36,11 @@ import {
   type InterruptedActionContextCaptureV1,
 } from './context-capture';
 import { activeSceneAnchorSchema } from './context';
-import { storytellerKind, storytellerTopic } from './records';
+import {
+  readFrozenStorytellerNoticeTopic,
+  selectStorytellerNoticeTopicAtAdmission,
+  storytellerKind,
+} from './records';
 import { actionProjectedStateDigest } from '../campaign/action-overlap';
 import { campaign } from '@offscreen/db/campaign-schema';
 import {
@@ -795,6 +799,9 @@ async function promoteCapture(
     task,
     captureStatus: 'promoted',
   });
+  const storytellerTopic =
+    (await readFrozenStorytellerNoticeTopic(tx, capture.captureId)) ??
+    selectStorytellerNoticeTopicAtAdmission();
   await enqueue(tx, {
     id: randomUUID(),
     operationId: capture.captureId,
@@ -823,6 +830,9 @@ async function enqueueStorytellerIfReadyPromoted(
     if (!gen || gen.kind !== storytellerKind || gen.state !== 'pending') {
       return;
     }
+    const storytellerTopic =
+      (await readFrozenStorytellerNoticeTopic(tx, capture.captureId)) ??
+      selectStorytellerNoticeTopicAtAdmission();
     await enqueue(tx, {
       id: randomUUID(),
       operationId: capture.captureId,
