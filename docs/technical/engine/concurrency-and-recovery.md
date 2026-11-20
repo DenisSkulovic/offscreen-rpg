@@ -41,7 +41,7 @@ Evidence: [C1 provisional recovery](../../../evidence/inspections/doc01-retained
 
 ## What is still not done
 
-Activity narration, activity historical reports, world-obligation narration, and world-obligation report capture have disposable-SQL proof on `change/eng03-short-lock`. A contended opening-checkpoint measurement does not. Fork-from-checkpoint reads the checkpoint before the source story lock. A 2000ms delay on that read left the competing writer at about 4ms. The branch manifest write still happens after the lock. Opening checkpoint confirmation is still unmeasured. An Admin-granted operator rearm endpoint and Control UI are out of scope of C1-R. Holding a SQL row lock across a remote provider call remains forbidden and is not cleared by these proofs.
+This Change is closed. It does not include an opening-checkpoint measurement or moving the fork branch-manifest write before the source story lock. An Admin-granted operator rearm endpoint and Control UI remain out of scope. Holding a story lock across a paid model call is still forbidden.
 
 **Negative:** do not describe full short-lock refactor as Done because C1 and C2 passed. Do not describe a synthetic disposable grant or a local Chamber race as production Support authority. A retry of an uncertain provider attempt must reconcile the existing receipt. It must not pay again or advance fictional time because the model was slow.
 

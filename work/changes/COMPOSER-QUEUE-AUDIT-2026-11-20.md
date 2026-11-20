@@ -1,6 +1,6 @@
 # Open Change backlog | Composer-first source audit (2026-11-20)
 
-**ENG03 later routing correction:** [Finite remaining path contract](open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) identifies actual remote-read-in-transaction call sites. Parent ENG03 remains open for concrete T02–T07, not a generic lock refactor or forever planner gate. Nov 14 old ~8s measured pending path was corrected; current other paths are only source-classified until their own disposable SQL measurement.
+**ENG03 is Done and archived on `change/eng03-short-lock`.** [Packet](archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md). Do not treat the old open path as current work.
 
 **Later terminal update:** [WIKI18 Cancelled/partially delivered](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md), not Done. Parser, model guard and cheap route cards remain in source. The optional live cost comparison was not approved or run; the dated WIKI18 inventory row below is historical, not an executable assignment.
 
@@ -16,7 +16,7 @@
 
 | ID / folder | Baseline state and observed source | Appropriate next step | Delegation |
 | --- | --- | --- | --- |
-| **ENG03** `2026-11-13--eng-short-lock-context` | Narrow capture already landed in `campaign/narration.ts` + `storyteller/capture-materialization.ts`; generic lock refactor excluded | Measure actual slow source boundary, then only a diagnosed writer-lock fix; no all-purpose rewrite | Composer VERIFY now; bigger edit **PLANNER-BLOCKED until measured** |
+| **ENG03** `2026-11-13--eng-short-lock-context` | Done on `change/eng03-short-lock`, archived, not merged | Do not restart. Merge only if the owner asks | Closed |
 | **GM07** `2026-11-13--gm-delegated-decision` | `admitDelegatedDecision` pure consent/expiry reducer exists; durable scheduler/consent ownership not demonstrated | Fence published offer, revocation and expiry under one SQL owner; precise proof before transport | Composer pure tests; actual persisted integration **PLANNER-BLOCKED** on canonical consent/offer |
 | **GM03** `2026-11-13--gm-standing-life` | `accepted-plans.ts` three-quiet-watch helper and plan controls exist; not unrestricted standing routine | Verify same plan iteration/horizon/interruption; select only a concrete delta | Composer narrow PATCH/VERIFY; broad autonomy deferred |
 | **OBS00** `2026-11-15--obs00-live-provider-custody` | Provider override fix landed; no durable live dispatchAuthority; paid send denied | Provider-disabled contract/negative fixture only; **do not enable live** | Composer VERIFY, later **PLANNER-BLOCKED** money authority |

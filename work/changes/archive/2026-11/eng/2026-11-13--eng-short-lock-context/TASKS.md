@@ -1,6 +1,6 @@
 # ENG03 | Finite one-Change short-lock implementation route
 
-**Current status:** on `change/eng03-short-lock`, resolution, activity narration, world-obligation narration, and both historical-report paths have disposable-SQL proof. T07 caller census: `loadStorytellerContext` has no production caller. Two document reads remain inside an open transaction and are unmeasured: `start.ts:startFromCandidate` confirms a staged checkpoint before the story row lock, and `forks.ts:fork` reads a scene checkpoint while the source story row is locked. ENG03 is not archived. **Selection:** `work/QUEUE.md` stays TURN02.
+**Current status:** Done on `change/eng03-short-lock`. No further ENG03 task. The opening checkpoint and the fork manifest write are recorded leftovers, not open tasks. `work/QUEUE.md` still selects TURN02.
 
 ## T01 | Existing pending-path measurement | DONE verification, not parent closure
 
