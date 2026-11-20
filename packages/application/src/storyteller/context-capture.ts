@@ -41,7 +41,14 @@ import {
   gameActionExecutionEvent,
   gameActionReceipt,
   gameRoll,
+  worldObligation,
 } from '@offscreen/db/campaign-schema';
+import {
+  campaignReportSourceSchema,
+  type CampaignReportSource,
+} from '../campaign/report-source';
+import type { CampaignRecord } from '../campaign/persistence';
+import type { OutcomeEffect } from '@offscreen/game/effects';
 import { positiveItemTransfers } from '@offscreen/game/immediate-actions';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyItem, storyPassage, storyResolution } from '@offscreen/db/story-schema';
@@ -813,12 +820,268 @@ export type WorldObligationConsequenceContextCaptureV1 = z.infer<
   typeof worldObligationConsequenceContextCaptureV1Schema
 >;
 
+const historicalReportRollCaptureSchema = z.strictObject({
+  id: uuid,
+  roll: rollSchema,
+  effects: outcomeEffectsSchema,
+});
+
+const activityHistoricalReportEventCaptureSchema = z.strictObject({
+  label: z.string().min(1).max(200),
+  intention: z.string().min(1).max(500),
+  factualSummary: z.string().min(1).max(500),
+  sourceGameSecond: gameSecond,
+  effects: outcomeEffectsSchema,
+  rolls: z.array(historicalReportRollCaptureSchema).max(50),
+});
+
+const worldObligationHistoricalReportEventCaptureSchema = z.strictObject({
+  label: z.string().min(1).max(200),
+  factualSummary: z.string().min(1).max(500),
+  sourceGameSecond: gameSecond,
+});
+
+const historicalReportCaptureRefine = (
+  v: {
+    narrativeRevision: number;
+    passageId: string;
+    operationId: string;
+    actorAndWorld: {
+      character: unknown;
+      storyFacts: unknown;
+      gameSecond: number;
+      postSettlementStateDigest: string;
+    };
+    settings: { revision: number; capturedSettings: { revision: number } };
+    sourcePassages: { passageId: string; sequence: number }[];
+    narrative: { notes: { sources: string[] }[] };
+    activeSceneScope: { fromSequence: number; requiredPassageIds: string[] } | null;
+    canonicalSelection: { ruleSections: unknown };
+    reportHookId: string;
+  },
+  ctx: z.RefinementCtx,
+  ruleTopics: Parameters<typeof canonicalRuleEvidence>[0],
+) => {
+  const issue = (path: (string | number)[], message: string) =>
+    ctx.addIssue({ code: 'custom', path, message });
+  if (v.operationId !== v.reportHookId) {
+    issue(['operationId'], 'Report capture operation must equal hook id');
+  }
+  if (v.settings.capturedSettings.revision !== v.settings.revision) {
+    issue(['settings'], 'Campaign settings revision mismatch');
+  }
+  if (
+    v.actorAndWorld.postSettlementStateDigest !==
+    actionProjectedStateDigest({
+      character: v.actorAndWorld.character as never,
+      storyFacts: v.actorAndWorld.storyFacts as never,
+      gameSecond: v.actorAndWorld.gameSecond,
+    })
+  ) {
+    issue(['actorAndWorld'], 'Campaign state digest mismatch');
+  }
+  const sequences = v.sourcePassages.map((p) => p.sequence);
+  if (
+    new Set(sequences).size !== sequences.length ||
+    sequences.some((s) => s > v.narrativeRevision)
+  ) {
+    issue(['sourcePassages'], 'Duplicate passage or future source sequence');
+  }
+  const frontier = v.sourcePassages.find(
+    (p) => p.sequence === v.narrativeRevision,
+  );
+  if (!frontier || frontier.passageId !== v.passageId) {
+    issue(['passageId'], 'Current passage missing from captured frontier');
+  }
+  const required = [
+    ...v.narrative.notes.flatMap((n) => n.sources),
+    ...(v.activeSceneScope?.requiredPassageIds ?? []),
+  ];
+  if (required.some((id) => !v.sourcePassages.some((p) => p.passageId === id))) {
+    issue(['sourcePassages'], 'Uncaptured required evidence passage');
+  }
+  if (
+    v.activeSceneScope &&
+    v.activeSceneScope.fromSequence > v.narrativeRevision
+  ) {
+    issue(['activeSceneScope'], 'Active scene begins after source revision');
+  }
+  if (
+    JSON.stringify(v.canonicalSelection.ruleSections) !==
+    JSON.stringify(canonicalRuleEvidence(ruleTopics))
+  ) {
+    issue(['canonicalSelection'], 'Invalid rule evidence selection');
+  }
+  if (Buffer.byteLength(JSON.stringify(v), 'utf8') > 256 * 1024) {
+    issue([], 'context_capture_too_large');
+  }
+};
+
+export const activityHistoricalReportContextCaptureV1Schema = z
+  .strictObject({
+    version: z.literal(1),
+    captureId: uuid,
+    storyId: uuid,
+    ownerId: z.string().min(1),
+    purpose: z.literal('historical-report'),
+    sourceKind: z.literal('campaign-activity-report'),
+    operationId: uuid,
+    reportHookId: uuid,
+    sourceKey: z.string().min(1).max(200),
+    reportSource: campaignReportSourceSchema,
+    passageId: uuid,
+    narrativeRevision,
+    root: z.union([
+      z.strictObject({ hash: z.null(), revision: z.literal(0) }),
+      z.strictObject({ hash: sha256, revision: narrativeRevision }),
+    ]),
+    sourcePassages: z.array(sourcePassage).min(1).max(87),
+    activeSceneScope: activeSceneAnchorSchema.nullable(),
+    narrative: z.strictObject({
+      premise: premiseContentSchema,
+      notes: continuityNotesSchema,
+    }),
+    canonicalSelection: z.strictObject({
+      ruleSections: librarySectionSelectionSchema,
+      campaignDocumentIds: z.array(uuid).length(0),
+    }),
+    actorAndWorld: z.strictObject({
+      character: characterSchema,
+      storyFacts: storyFactsSchema,
+      itemHolders: storyItemsSchema,
+      worldConditions: worldConditionsSchema,
+      activitySituation: activitySituationInner,
+      gameSecond,
+      postSettlementStateDigest: sha256,
+      offer: offerSchema.nullable(),
+    }),
+    settings: z.strictObject({
+      revision: narrativeRevision,
+      capturedSettings: campaignSettingsSchema,
+      profile: storytellerProfileSchema,
+      execution: executionPolicySchema,
+      effectiveUsagePolicy: effectiveUsagePolicySchema.nullable(),
+    }),
+    selected: z.strictObject({
+      id: uuid,
+      label: z.string().min(1).max(200),
+      intention: z.string().min(1).max(500),
+    }),
+    acceptedEvent: activityHistoricalReportEventCaptureSchema,
+    capturedAt: z.iso.datetime(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.reportSource.kind !== 'activity') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['reportSource'],
+        message: 'Activity report source mismatch',
+      });
+      return;
+    }
+  if (v.selected.id !== v.reportSource.activityId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['selected'],
+        message: 'Selected activity identity mismatch',
+      });
+    }
+    historicalReportCaptureRefine(
+      v,
+      ctx,
+      v.acceptedEvent.rolls.length
+        ? (['time', 'contribution', 'ability-check'] as const)
+        : (['time'] as const),
+    );
+  });
+
+export type ActivityHistoricalReportContextCaptureV1 = z.infer<
+  typeof activityHistoricalReportContextCaptureV1Schema
+>;
+
+export const worldObligationHistoricalReportContextCaptureV1Schema = z
+  .strictObject({
+    version: z.literal(1),
+    captureId: uuid,
+    storyId: uuid,
+    ownerId: z.string().min(1),
+    purpose: z.literal('historical-report'),
+    sourceKind: z.literal('campaign-world-obligation-report'),
+    operationId: uuid,
+    reportHookId: uuid,
+    sourceKey: z.string().min(1).max(200),
+    reportSource: campaignReportSourceSchema,
+    passageId: uuid,
+    narrativeRevision,
+    root: z.union([
+      z.strictObject({ hash: z.null(), revision: z.literal(0) }),
+      z.strictObject({ hash: sha256, revision: narrativeRevision }),
+    ]),
+    sourcePassages: z.array(sourcePassage).min(1).max(87),
+    activeSceneScope: activeSceneAnchorSchema.nullable(),
+    narrative: z.strictObject({
+      premise: premiseContentSchema,
+      notes: continuityNotesSchema,
+    }),
+    canonicalSelection: z.strictObject({
+      ruleSections: librarySectionSelectionSchema,
+      campaignDocumentIds: z.array(uuid).length(0),
+    }),
+    actorAndWorld: z.strictObject({
+      character: characterSchema,
+      storyFacts: storyFactsSchema,
+      itemHolders: storyItemsSchema,
+      worldConditions: worldConditionsSchema,
+      activitySituation: activitySituationInner,
+      gameSecond,
+      postSettlementStateDigest: sha256,
+    }),
+    settings: z.strictObject({
+      revision: narrativeRevision,
+      capturedSettings: campaignSettingsSchema,
+      profile: storytellerProfileSchema,
+      execution: executionPolicySchema,
+      effectiveUsagePolicy: effectiveUsagePolicySchema.nullable(),
+    }),
+    selected: z.strictObject({
+      id: uuid,
+      label: z.string().min(1).max(200),
+      intention: z.string().min(1).max(500),
+    }),
+    acceptedEvent: worldObligationHistoricalReportEventCaptureSchema,
+    capturedAt: z.iso.datetime(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.reportSource.kind !== 'world-obligation') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['reportSource'],
+        message: 'World obligation report source mismatch',
+      });
+      return;
+    }
+    if (v.selected.id !== v.reportSource.obligationId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['selected'],
+        message: 'Selected obligation identity mismatch',
+      });
+    }
+    historicalReportCaptureRefine(v, ctx, ['time']);
+  });
+
+export type WorldObligationHistoricalReportContextCaptureV1 = z.infer<
+  typeof worldObligationHistoricalReportContextCaptureV1Schema
+>;
+
 export type AnyContextCaptureV1 =
   | ContextCaptureV1
   | CommittedActionContextCaptureV1
   | InterruptedActionContextCaptureV1
   | ActivityConsequenceContextCaptureV1
-  | WorldObligationConsequenceContextCaptureV1;
+  | WorldObligationConsequenceContextCaptureV1
+  | ActivityHistoricalReportContextCaptureV1
+  | WorldObligationHistoricalReportContextCaptureV1;
 
 export const contextCapturePointerSchema = z.union([
   z.strictObject({
@@ -850,6 +1113,18 @@ export const contextCapturePointerSchema = z.union([
     purpose: z.literal('consequence'),
     sourceKind: z.literal('campaign-world-obligation'),
   }),
+  z.strictObject({
+    version: z.literal(1),
+    captureId: uuid,
+    purpose: z.literal('historical-report'),
+    sourceKind: z.literal('campaign-activity-report'),
+  }),
+  z.strictObject({
+    version: z.literal(1),
+    captureId: uuid,
+    purpose: z.literal('historical-report'),
+    sourceKind: z.literal('campaign-world-obligation-report'),
+  }),
 ]);
 
 export function hashContextCapture(capture: AnyContextCaptureV1) {
@@ -863,6 +1138,19 @@ export function parseContextCapture(raw: unknown): AnyContextCaptureV1 {
     raw && typeof raw === 'object' && 'purpose' in raw
       ? (raw as { purpose?: unknown }).purpose
       : undefined;
+  if (purpose === 'historical-report') {
+    const sourceKind =
+      raw && typeof raw === 'object' && 'sourceKind' in raw
+        ? (raw as { sourceKind?: unknown }).sourceKind
+        : undefined;
+    if (sourceKind === 'campaign-activity-report') {
+      return activityHistoricalReportContextCaptureV1Schema.parse(raw);
+    }
+    if (sourceKind === 'campaign-world-obligation-report') {
+      return worldObligationHistoricalReportContextCaptureV1Schema.parse(raw);
+    }
+    throw new Error('Unknown historical report capture kind');
+  }
   if (purpose === 'consequence') {
     const sourceKind =
       raw && typeof raw === 'object' && 'sourceKind' in raw
@@ -1403,6 +1691,319 @@ export async function captureWorldObligationConsequenceNarration(
         now,
       );
     },
+  });
+}
+
+async function insertProvisionalHistoricalReportCapture(
+  tx: Transaction,
+  current: StoryRecord,
+  input: {
+    capture:
+      | ActivityHistoricalReportContextCaptureV1
+      | WorldObligationHistoricalReportContextCaptureV1;
+    pointer: z.infer<typeof contextCapturePointerSchema>;
+  },
+) {
+  const captureSha256 = hashContextCapture(input.capture);
+  const captureId = input.capture.captureId;
+
+  await tx.insert(generation).values({
+    id: captureId,
+    ownerId: current.ownerId,
+    kind: storytellerContextCaptureKind,
+    input: input.pointer,
+  });
+  await tx.insert(storytellerPublication).values({ generationId: captureId });
+  await tx.insert(storytellerContextCapture).values({
+    captureId,
+    storyId: current.id,
+    operationId: input.capture.operationId,
+    capture: input.capture,
+    captureSha256,
+    state: 'captured',
+    materializationAttempts: 0,
+  });
+  await recordExecutionStage(tx, {
+    generationId: captureId,
+    stage: 'cause-captured',
+    outcome: 'completed',
+    idempotencyKey: 'cause-captured',
+    operationId: input.capture.operationId,
+    sourceKind: 'context-capture',
+    sourceId: captureId,
+    sourceSha256: captureSha256,
+  });
+  await tx.insert(storyResolution).values({
+    generationId: captureId,
+    storyId: current.id,
+    basePassageId: input.capture.passageId,
+    baseRevision: input.capture.narrativeRevision,
+    operationId: input.capture.operationId,
+    submission: {
+      kind: 'historical-report',
+      hookId: input.capture.reportHookId,
+      sourceKey: input.capture.sourceKey,
+    },
+  });
+  await enqueue(tx, {
+    id: randomUUID(),
+    operationId: input.capture.operationId,
+    topic: campaignConsequenceTopic,
+  });
+  return captureId;
+}
+
+/**
+ * ENG03-T05 Stage 1: freeze historical report facts under the mechanical lock.
+ */
+export async function captureHistoricalReport(
+  tx: Transaction,
+  current: StoryRecord,
+  state: CampaignRecord,
+  input: {
+    hookId: string;
+    sourceKey: string;
+    source: CampaignReportSource;
+    passageId: string;
+    selectedId: string;
+    label: string;
+    intention: string;
+    factualSummary: string;
+    sourceGameSecond: number;
+    effects: readonly OutcomeEffect[];
+    receipts?: ReadonlyArray<{
+      id: string;
+      roll: unknown;
+      effects: unknown;
+    }>;
+  },
+) {
+  const source = campaignReportSourceSchema.parse(input.source);
+  const snapshot = await loadCampaignConsequenceCaptureSnapshot(
+    tx,
+    current,
+    input.passageId,
+  );
+  const captureId = randomUUID();
+  const frozenRolls =
+    input.receipts?.map((receipt) => ({
+      id: receipt.id,
+      roll: rollSchema.parse(receipt.roll),
+      effects: outcomeEffectsSchema.parse(receipt.effects),
+    })) ?? [];
+  const ruleSections = canonicalRuleEvidence(
+    frozenRolls.length
+      ? (['time', 'contribution', 'ability-check'] as const)
+      : (['time'] as const),
+  );
+
+  if (source.kind === 'activity') {
+    const [activity] = await tx
+      .select({ id: gameActivity.id, revision: gameActivity.revision })
+      .from(gameActivity)
+      .where(
+        and(
+          eq(gameActivity.id, source.activityId),
+          eq(gameActivity.storyId, current.id),
+        ),
+      );
+    if (!activity || activity.revision !== source.activityRevision) {
+      throw new Error('activity_source_mismatch');
+    }
+    const acceptedEvent = activityHistoricalReportEventCaptureSchema.parse({
+      label: input.label,
+      intention: input.intention,
+      factualSummary: input.factualSummary,
+      sourceGameSecond: input.sourceGameSecond,
+      effects: input.effects,
+      rolls: frozenRolls,
+    });
+    let capture: ActivityHistoricalReportContextCaptureV1;
+    try {
+      capture = activityHistoricalReportContextCaptureV1Schema.parse({
+        version: 1,
+        captureId,
+        storyId: current.id,
+        ownerId: current.ownerId,
+        purpose: 'historical-report',
+        sourceKind: 'campaign-activity-report',
+        operationId: input.hookId,
+        reportHookId: input.hookId,
+        sourceKey: input.sourceKey,
+        reportSource: source,
+        passageId: snapshot.passage.id,
+        narrativeRevision: current.revision,
+        root:
+          current.documentRootHash === null
+            ? { hash: null, revision: 0 as const }
+            : {
+                hash: current.documentRootHash,
+                revision: current.documentRootRevision,
+              },
+        sourcePassages: snapshot.sourcePassages,
+        activeSceneScope: snapshot.activeScene,
+        narrative: {
+          premise: premiseContentSchema.parse(current.premise),
+          notes: snapshot.notes,
+        },
+        canonicalSelection: { ruleSections, campaignDocumentIds: [] },
+        actorAndWorld: {
+          character: snapshot.character,
+          storyFacts: snapshot.storyFacts,
+          itemHolders: snapshot.items,
+          worldConditions: worldConditionsSchema.parse(
+            snapshot.settingsRow.worldConditions,
+          ),
+          activitySituation: snapshot.activitySituation,
+          gameSecond: snapshot.settingsRow.gameSecond,
+          postSettlementStateDigest: snapshot.postSettlementStateDigest,
+          offer:
+            snapshot.settingsRow.offer === null
+              ? null
+              : offerSchema.parse(snapshot.settingsRow.offer),
+        },
+        settings: {
+          revision: snapshot.settingsRow.settingsRevision,
+          capturedSettings: snapshot.acceptedSettings,
+          profile: storytellerProfileSchema.parse(current.storyteller),
+          execution: executionPolicySchema.parse(current.execution),
+          effectiveUsagePolicy:
+            current.usagePolicy === null
+              ? null
+              : effectiveUsagePolicySchema.parse(current.usagePolicy),
+        },
+        selected: {
+          id: input.selectedId,
+          label: input.label,
+          intention: input.intention,
+        },
+        acceptedEvent,
+        capturedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      if (
+        error instanceof z.ZodError &&
+        error.issues.some(
+          (issue) => issue.message === 'context_capture_too_large',
+        )
+      ) {
+        throw new Error('context_capture_too_large');
+      }
+      throw error;
+    }
+    const pointer = contextCapturePointerSchema.parse({
+      version: 1,
+      captureId,
+      purpose: 'historical-report',
+      sourceKind: 'campaign-activity-report',
+    });
+    return insertProvisionalHistoricalReportCapture(tx, current, {
+      capture,
+      pointer,
+    });
+  }
+
+  const [obligation] = await tx
+    .select({
+      id: worldObligation.id,
+      revision: worldObligation.revision,
+    })
+    .from(worldObligation)
+    .where(
+      and(
+        eq(worldObligation.id, source.obligationId),
+        eq(worldObligation.storyId, current.id),
+      ),
+    );
+  if (!obligation || obligation.revision !== source.obligationRevision) {
+    throw new Error('obligation_source_mismatch');
+  }
+  const acceptedEvent = worldObligationHistoricalReportEventCaptureSchema.parse({
+    label: input.label,
+    factualSummary: input.factualSummary,
+    sourceGameSecond: input.sourceGameSecond,
+  });
+  let capture: WorldObligationHistoricalReportContextCaptureV1;
+  try {
+    capture = worldObligationHistoricalReportContextCaptureV1Schema.parse({
+      version: 1,
+      captureId,
+      storyId: current.id,
+      ownerId: current.ownerId,
+      purpose: 'historical-report',
+      sourceKind: 'campaign-world-obligation-report',
+      operationId: input.hookId,
+      reportHookId: input.hookId,
+      sourceKey: input.sourceKey,
+      reportSource: source,
+      passageId: snapshot.passage.id,
+      narrativeRevision: current.revision,
+      root:
+        current.documentRootHash === null
+          ? { hash: null, revision: 0 as const }
+          : {
+              hash: current.documentRootHash,
+              revision: current.documentRootRevision,
+            },
+      sourcePassages: snapshot.sourcePassages,
+      activeSceneScope: snapshot.activeScene,
+      narrative: {
+        premise: premiseContentSchema.parse(current.premise),
+        notes: snapshot.notes,
+      },
+      canonicalSelection: {
+        ruleSections: canonicalRuleEvidence(['time']),
+        campaignDocumentIds: [],
+      },
+      actorAndWorld: {
+        character: snapshot.character,
+        storyFacts: snapshot.storyFacts,
+        itemHolders: snapshot.items,
+        worldConditions: worldConditionsSchema.parse(
+          snapshot.settingsRow.worldConditions,
+        ),
+        activitySituation: snapshot.activitySituation,
+        gameSecond: snapshot.settingsRow.gameSecond,
+        postSettlementStateDigest: snapshot.postSettlementStateDigest,
+      },
+      settings: {
+        revision: snapshot.settingsRow.settingsRevision,
+        capturedSettings: snapshot.acceptedSettings,
+        profile: storytellerProfileSchema.parse(current.storyteller),
+        execution: executionPolicySchema.parse(current.execution),
+        effectiveUsagePolicy:
+          current.usagePolicy === null
+            ? null
+            : effectiveUsagePolicySchema.parse(current.usagePolicy),
+      },
+      selected: {
+        id: input.selectedId,
+        label: input.label,
+        intention: input.intention,
+      },
+      acceptedEvent,
+      capturedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    if (
+      error instanceof z.ZodError &&
+      error.issues.some(
+        (issue) => issue.message === 'context_capture_too_large',
+      )
+    ) {
+      throw new Error('context_capture_too_large');
+    }
+    throw error;
+  }
+  const pointer = contextCapturePointerSchema.parse({
+    version: 1,
+    captureId,
+    purpose: 'historical-report',
+    sourceKind: 'campaign-world-obligation-report',
+  });
+  return insertProvisionalHistoricalReportCapture(tx, current, {
+    capture,
+    pointer,
   });
 }
 

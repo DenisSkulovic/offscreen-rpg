@@ -8,10 +8,13 @@ import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   campaignConsequence,
+  campaignReport,
   gameActionExecution,
   gameActionExecutionEvent,
   gameActionReceipt,
+  gameActivity,
   gameRoll,
+  worldObligation,
 } from '@offscreen/db/campaign-schema';
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import { storytellerContextCapture } from '@offscreen/db/storyteller-schema';
@@ -33,11 +36,17 @@ import {
   storytellerContextCaptureKind,
   type AnyContextCaptureV1,
   type ActivityConsequenceContextCaptureV1,
+  type ActivityHistoricalReportContextCaptureV1,
   type CommittedActionContextCaptureV1,
   type ContextCaptureV1,
   type InterruptedActionContextCaptureV1,
   type WorldObligationConsequenceContextCaptureV1,
+  type WorldObligationHistoricalReportContextCaptureV1,
 } from './context-capture';
+import {
+  campaignReportSourceSchema,
+  campaignReportSourcesMatch,
+} from '../campaign/report-source';
 import { activeSceneAnchorSchema } from './context';
 import {
   readFrozenStorytellerNoticeTopic,
@@ -553,12 +562,221 @@ async function assembleWorldObligationTaskFromCapture(
   );
 }
 
+async function assembleActivityHistoricalReportTaskFromCapture(
+  capture: ActivityHistoricalReportContextCaptureV1,
+  documentStore: DocumentStore,
+) {
+  if (
+    capture.root.hash === null &&
+    capture.sourcePassages.some((passage) => passage.storage === 'cas')
+  ) {
+    throw new Error('missing_historical_root');
+  }
+  const evidence = await loadFrozenPassages(capture, documentStore);
+  const current = evidence.find(
+    (passage) => passage.sequence === capture.narrativeRevision,
+  );
+  if (!current || current.id !== capture.passageId) {
+    throw new Error('source_mismatch');
+  }
+
+  const canonicalKnowledge =
+    capture.root.hash === null
+      ? undefined
+      : await loadCanonicalKnowledge(documentStore, {
+          storyId: capture.storyId,
+          rootHash: capture.root.hash,
+          rootRevision: capture.root.revision,
+          librarySectionSelection: capture.canonicalSelection.ruleSections,
+          campaignDocumentIds: capture.canonicalSelection.campaignDocumentIds,
+          recallCues: capture.activeSceneScope?.recallCues ?? [],
+        });
+
+  const compactSettings = (({ time: _time, ...settings }) => settings)(
+    capture.settings.capturedSettings,
+  );
+  const event = capture.acceptedEvent;
+
+  const context = contextInputSchema.parse({
+    ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
+    ...(capture.activeSceneScope
+      ? {
+          activeSceneScope: {
+            version: 'active-scene.v1' as const,
+            fromSequence: capture.activeSceneScope.fromSequence,
+            throughSequence: capture.narrativeRevision,
+            requiredPassageIds: capture.activeSceneScope.requiredPassageIds,
+          },
+        }
+      : {}),
+    activitySituation: capture.actorAndWorld.activitySituation,
+    campaignSettings: compactSettings,
+    campaignTime: projectWorldTime(
+      capture.settings.capturedSettings.time,
+      event.sourceGameSecond,
+    ),
+    worldConditions: capture.actorAndWorld.worldConditions,
+    premise: capture.narrative.premise,
+    current,
+    items: capture.actorAndWorld.itemHolders,
+    selected: capture.selected,
+    notes: capture.narrative.notes,
+    evidence,
+    resolution: {
+      character: capture.actorAndWorld.character,
+      storyFacts: capture.actorAndWorld.storyFacts,
+      gameSecond: event.sourceGameSecond,
+      offer: capture.actorAndWorld.offer,
+      receipts: [
+        {
+          id: capture.reportHookId,
+          text: event.factualSummary,
+          roll: null,
+          effects: event.effects,
+          declarations: [],
+        },
+        ...event.rolls.map((roll) => ({
+          id: roll.id,
+          roll: roll.roll,
+          effects: roll.effects,
+          declarations: [],
+        })),
+      ],
+    },
+  });
+
+  return prepareAdmittedStorytellerTask(
+    {
+      task: 'report',
+      source: {
+        storyId: capture.storyId,
+        narrativeRevision: capture.narrativeRevision,
+        passageId: capture.passageId,
+        hookId: capture.reportHookId,
+      },
+      profile: capture.settings.profile,
+      execution: capture.settings.execution,
+      context,
+    },
+    capture.settings.effectiveUsagePolicy,
+  );
+}
+
+async function assembleWorldObligationHistoricalReportTaskFromCapture(
+  capture: WorldObligationHistoricalReportContextCaptureV1,
+  documentStore: DocumentStore,
+) {
+  if (
+    capture.root.hash === null &&
+    capture.sourcePassages.some((passage) => passage.storage === 'cas')
+  ) {
+    throw new Error('missing_historical_root');
+  }
+  const evidence = await loadFrozenPassages(capture, documentStore);
+  const current = evidence.find(
+    (passage) => passage.sequence === capture.narrativeRevision,
+  );
+  if (!current || current.id !== capture.passageId) {
+    throw new Error('source_mismatch');
+  }
+
+  const canonicalKnowledge =
+    capture.root.hash === null
+      ? undefined
+      : await loadCanonicalKnowledge(documentStore, {
+          storyId: capture.storyId,
+          rootHash: capture.root.hash,
+          rootRevision: capture.root.revision,
+          librarySectionSelection: capture.canonicalSelection.ruleSections,
+          campaignDocumentIds: capture.canonicalSelection.campaignDocumentIds,
+          recallCues: capture.activeSceneScope?.recallCues ?? [],
+        });
+
+  const compactSettings = (({ time: _time, ...settings }) => settings)(
+    capture.settings.capturedSettings,
+  );
+  const event = capture.acceptedEvent;
+
+  const context = contextInputSchema.parse({
+    ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
+    ...(capture.activeSceneScope
+      ? {
+          activeSceneScope: {
+            version: 'active-scene.v1' as const,
+            fromSequence: capture.activeSceneScope.fromSequence,
+            throughSequence: capture.narrativeRevision,
+            requiredPassageIds: capture.activeSceneScope.requiredPassageIds,
+          },
+        }
+      : {}),
+    activitySituation: capture.actorAndWorld.activitySituation,
+    campaignSettings: compactSettings,
+    campaignTime: projectWorldTime(
+      capture.settings.capturedSettings.time,
+      event.sourceGameSecond,
+    ),
+    worldConditions: capture.actorAndWorld.worldConditions,
+    premise: capture.narrative.premise,
+    current,
+    items: capture.actorAndWorld.itemHolders,
+    selected: capture.selected,
+    notes: capture.narrative.notes,
+    evidence,
+    resolution: {
+      character: capture.actorAndWorld.character,
+      storyFacts: capture.actorAndWorld.storyFacts,
+      gameSecond: event.sourceGameSecond,
+      offer: null,
+      receipts: [
+        {
+          id: capture.reportHookId,
+          text: event.factualSummary,
+          roll: null,
+          effects: [],
+          declarations: [],
+        },
+      ],
+    },
+  });
+
+  return prepareAdmittedStorytellerTask(
+    {
+      task: 'report',
+      source: {
+        storyId: capture.storyId,
+        narrativeRevision: capture.narrativeRevision,
+        passageId: capture.passageId,
+        hookId: capture.reportHookId,
+      },
+      profile: capture.settings.profile,
+      execution: capture.settings.execution,
+      context,
+    },
+    capture.settings.effectiveUsagePolicy,
+  );
+}
+
 async function assembleTaskFromCapture(
   capture: AnyContextCaptureV1,
   documentStore: DocumentStore,
 ) {
   if (capture.purpose === 'pending-consequence') {
     return assemblePendingTaskFromCapture(capture, documentStore);
+  }
+  if (capture.purpose === 'historical-report') {
+    if (capture.sourceKind === 'campaign-activity-report') {
+      return assembleActivityHistoricalReportTaskFromCapture(
+        capture,
+        documentStore,
+      );
+    }
+    if (capture.sourceKind === 'campaign-world-obligation-report') {
+      return assembleWorldObligationHistoricalReportTaskFromCapture(
+        capture,
+        documentStore,
+      );
+    }
+    throw new Error('capture_purpose_mismatch');
   }
   if (capture.sourceKind === 'action-interrupted') {
     return assembleInterruptedTaskFromCapture(capture, documentStore);
@@ -754,24 +972,27 @@ async function promoteCapture(
     storyId: capture.storyId,
     ownerId: capture.ownerId,
   });
-  if (current.revision !== capture.narrativeRevision) {
-    throw new Error('stale_source:revision');
-  }
-  if (
-    (capture.root.hash === null && current.documentRootHash !== null) ||
-    (capture.root.hash !== null &&
-      (current.documentRootHash !== capture.root.hash ||
-        current.documentRootRevision !== capture.root.revision))
-  ) {
-    throw new Error('stale_source:root');
-  }
-  if (
-    !isDeepStrictEqual(
-      normalizeActiveSceneScope(current.activeSceneScope),
-      normalizeActiveSceneScope(capture.activeSceneScope),
-    )
-  ) {
-    throw new Error('stale_source:scene');
+  const historicalReport = capture.purpose === 'historical-report';
+  if (!historicalReport) {
+    if (current.revision !== capture.narrativeRevision) {
+      throw new Error('stale_source:revision');
+    }
+    if (
+      (capture.root.hash === null && current.documentRootHash !== null) ||
+      (capture.root.hash !== null &&
+        (current.documentRootHash !== capture.root.hash ||
+          current.documentRootRevision !== capture.root.revision))
+    ) {
+      throw new Error('stale_source:root');
+    }
+    if (
+      !isDeepStrictEqual(
+        normalizeActiveSceneScope(current.activeSceneScope),
+        normalizeActiveSceneScope(capture.activeSceneScope),
+      )
+    ) {
+      throw new Error('stale_source:scene');
+    }
   }
   const [basePassage] = await tx
     .select({ id: storyPassage.id })
@@ -1034,6 +1255,122 @@ async function promoteCapture(
     ) {
       throw new Error('stale_source:actor');
     }
+  } else if (capture.sourceKind === 'campaign-activity-report') {
+    const reportCapture =
+      capture as ActivityHistoricalReportContextCaptureV1;
+    const [hook] = await tx
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.id, reportCapture.reportHookId))
+      .for('update');
+    const hookSource = hook?.source
+      ? campaignReportSourceSchema.parse(hook.source)
+      : null;
+    if (
+      !hook ||
+      hook.storyId !== capture.storyId ||
+      hook.generationId !== capture.captureId ||
+      hook.sourceKey !== reportCapture.sourceKey ||
+      !hookSource ||
+      !campaignReportSourcesMatch(
+        hookSource,
+        reportCapture.reportSource,
+      ) ||
+      hook.sourcePassageId !== capture.passageId ||
+      hook.sourceRevision !== capture.narrativeRevision ||
+      hook.sourceGameSecond !== reportCapture.acceptedEvent.sourceGameSecond ||
+      hook.label !== reportCapture.acceptedEvent.label ||
+      hook.factualSummary !== reportCapture.acceptedEvent.factualSummary
+    ) {
+      throw new Error('report_mismatch');
+    }
+    if (reportCapture.reportSource.kind !== 'activity') {
+      throw new Error('report_mismatch');
+    }
+    const reportActivitySource = reportCapture.reportSource;
+    const [activity] = await tx
+      .select({ revision: gameActivity.revision })
+      .from(gameActivity)
+      .where(
+        and(
+          eq(gameActivity.id, reportActivitySource.activityId),
+          eq(gameActivity.storyId, capture.storyId),
+        ),
+      );
+    if (!activity || activity.revision !== reportActivitySource.activityRevision) {
+      throw new Error('activity_source_mismatch');
+    }
+    const rolls = await tx
+      .select()
+      .from(gameRoll)
+      .where(eq(gameRoll.operationId, reportActivitySource.activityId))
+      .orderBy(gameRoll.segment, gameRoll.checkKey);
+    const expected = reportCapture.acceptedEvent.rolls;
+    if (
+      rolls.length !== expected.length ||
+      rolls.some((roll, index) => {
+        const frozen = expected[index];
+        return (
+          !frozen ||
+          roll.id !== frozen.id ||
+          !isDeepStrictEqual(rollSchema.parse(roll.result), frozen.roll) ||
+          !isDeepStrictEqual(
+            outcomeEffectsSchema.parse(roll.effects),
+            frozen.effects,
+          )
+        );
+      })
+    ) {
+      throw new Error('receipt_mismatch');
+    }
+  } else if (capture.sourceKind === 'campaign-world-obligation-report') {
+    const reportCapture =
+      capture as WorldObligationHistoricalReportContextCaptureV1;
+    const [hook] = await tx
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.id, reportCapture.reportHookId))
+      .for('update');
+    const hookSource = hook?.source
+      ? campaignReportSourceSchema.parse(hook.source)
+      : null;
+    if (
+      !hook ||
+      hook.storyId !== capture.storyId ||
+      hook.generationId !== capture.captureId ||
+      hook.sourceKey !== reportCapture.sourceKey ||
+      !hookSource ||
+      !campaignReportSourcesMatch(
+        hookSource,
+        reportCapture.reportSource,
+      ) ||
+      hook.sourcePassageId !== capture.passageId ||
+      hook.sourceRevision !== capture.narrativeRevision ||
+      hook.sourceGameSecond !== reportCapture.acceptedEvent.sourceGameSecond ||
+      hook.label !== reportCapture.acceptedEvent.label ||
+      hook.factualSummary !== reportCapture.acceptedEvent.factualSummary
+    ) {
+      throw new Error('report_mismatch');
+    }
+    if (reportCapture.reportSource.kind !== 'world-obligation') {
+      throw new Error('report_mismatch');
+    }
+    const reportObligationSource = reportCapture.reportSource;
+    const [obligation] = await tx
+      .select({ revision: worldObligation.revision })
+      .from(worldObligation)
+      .where(
+        and(
+          eq(worldObligation.id, reportObligationSource.obligationId),
+          eq(worldObligation.storyId, capture.storyId),
+        ),
+      );
+    if (
+      !obligation ||
+      obligation.revision !== reportObligationSource.obligationRevision
+    ) {
+      throw new Error('obligation_source_mismatch');
+    }
   } else if (capture.sourceKind === 'action-receipt') {
     const [receipt] = await tx
       .select()
@@ -1203,7 +1540,8 @@ export async function materializePendingActionCapture(
         ? error.message === 'context_too_large'
           ? 'context_too_large'
           : error.message === 'corrupt_source' ||
-              error.message === 'source_mismatch'
+              error.message === 'source_mismatch' ||
+              error.message === 'missing_historical_root'
             ? error.message
             : 'missing_source'
         : 'materialization_failed';

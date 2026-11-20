@@ -232,7 +232,6 @@ export async function fireWorldObligations(
       dueGameSecond: obligation.dueGameSecond,
       label: obligation.label,
       factualSummary: `${obligation.consequence.condition.label} became ${String(obligation.consequence.condition.value)} at fictional second ${obligation.dueGameSecond}.`,
-      ...(documentStore ? { documentStore } : {}),
     });
   }
   return nextState;
