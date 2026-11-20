@@ -1,0 +1,49 @@
+# One-shot schema migration using the API release image. Not chaos-eligible.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: game-migrate
+  namespace: lab-edge
+  labels:
+    app: game-migrate
+    offscreen.rpg/lab: disposable
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: game-migrate
+        offscreen.rpg/lab: disposable
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrate
+          image: offscreen-lab-app-release-api:turn02
+          imagePullPolicy: Never
+          command:
+            - node
+            - packages/db/dist/src/migrate-cli.js
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: game-db
+                  key: uri
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi

@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: pinned S3 bootstrap, real images and one serialized cluster join. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image built locally** on `9fa937cf` (2026-11-20); kind/cluster **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
+**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image built locally** on `9fa937cf` (2026-11-20); **T04 overlay static PASS** (2026-11-20), live apply **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -81,6 +81,16 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 **Negative:** Pod `nestFetch` throws `NestTransientError` status 0 and does not call `fetch` for loopback or a mismatched origin. Dockerfile guard rejects a `content/` copy and a secret build arg on `Dockerfile.web`. `assertReleaseRewriteNotLoopback` accepted the extracted destination. A second image build with a loopback origin was **NOT-RUN**.
 
 **NOT-RUN:** kind load, Pod Ready, and authenticated browser SSR. The local image unblocks T04 source work. No Kubernetes application release is claimed.
+
+## T04 PATCH receipt (app release overlay, 2026-11-20)
+
+**Landed:** `infra/kubernetes/lab/app-release/overlay/{edge,authority,workers,migrate}.yaml` and `install.sh`. Next and Nest are ClusterIP Services in `lab-edge`. HTTPRoute `game-edge-routes` sends `/api` to `game-api` and `/` to `game-web`. Game Authority is ClusterIP in `lab-authority` and is not a Gateway backend. It has no `DATABASE_URL`. Control and executor are separate Deployments and also have no database env. Migration is Job `game-migrate`, not an API startup command. `offscreen.rpg/chaos-eligible=true` is only on the five app Deployments. `gateway/routes.yaml` still contains `synthetic-api`.
+
+**Positive (static):** `node --test infra/kubernetes/lab/app-release/test/overlay-guard.test.mjs` **8/8 PASS**.
+
+**Negative:** `install.sh` exits 1 before any `kubectl apply` when `offscreen-lab-app-release-worker:turn02` is missing. It does not switch the current kubectl context. It only uses `--context kind-offscreen-lab` after that context exists.
+
+**NOT-RUN:** kind cluster, image load, migration completion, Pod reachability, and imported-manifest proof. No worker image exists. No Kubernetes application release is claimed.
 
 ## Reconciliation ledger (complete before Done)
 

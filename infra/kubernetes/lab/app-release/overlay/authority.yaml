@@ -1,0 +1,91 @@
+# Private Game Authority — ClusterIP only, never on the public Gateway.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-authority
+  labels:
+    offscreen.rpg/lab: disposable
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-authority
+  namespace: lab-authority
+  labels:
+    app: game-authority
+    offscreen.rpg/lab: disposable
+spec:
+  type: ClusterIP
+  selector:
+    app: game-authority
+  ports:
+    - name: http
+      port: 3002
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-authority
+  namespace: lab-authority
+  labels:
+    app: game-authority
+    offscreen.rpg/lab: disposable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-authority
+  template:
+    metadata:
+      labels:
+        app: game-authority
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/chaos-eligible: "true"
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: authority
+          image: offscreen-lab-app-release-ga:turn02
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 3002
+          env:
+            - name: GAME_AUTHORITY_HOST
+              value: "0.0.0.0"
+            - name: GAME_AUTHORITY_PORT
+              value: "3002"
+            - name: GAME_AUTHORITY_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: game-authority-service-token
+            - name: GAME_AUTHORITY_CONTROL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: game-authority-control-token
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 24
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 384Mi
+            limits:
+              memory: 1024Mi
