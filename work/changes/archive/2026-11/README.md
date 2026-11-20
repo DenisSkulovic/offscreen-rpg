@@ -93,9 +93,10 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-15--obs06-case-scoped-situation-read](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md)
 - [2026-11-15--obs07-support-situation-ui](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md)
 
-## other (135)
+## other (136)
 
 - [2026-11-20--work01-first-class-operational-tasks](../../../../work/changes/archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/CHANGE.md)
+- [2026-11-19--wiki18-agent-execution-context-budget-and-navigation](../../../../work/changes/archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md)
 - [2026-11-19--dist04-rabbitmq-temporal-live-handoff](../../../../work/changes/archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md)
 - [2026-11-19--dist02-versioned-dispatch-bridge-contracts](../../../../work/changes/archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md)
 - [2026-11-19--dist01-ratify-game-authority-delivery-boundaries](../../../../work/changes/archive/2026-11/other/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md)

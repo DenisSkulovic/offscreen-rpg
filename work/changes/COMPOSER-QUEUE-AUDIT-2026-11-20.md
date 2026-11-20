@@ -1,5 +1,7 @@
 # Open Change backlog | Composer-first source audit (2026-11-20)
 
+**Later terminal update:** [WIKI18 Cancelled/partially delivered](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md), not Done. Parser, model guard and cheap route cards remain in source. The optional live cost comparison was not approved or run; the dated WIKI18 inventory row below is historical, not an executable assignment.
+
 **Current closure override (2026-11-20):** DIST02 was [Cancelled, not Done](archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): it has no independent consumer, and the original broker→Temporal bridge is rejected. The dated inventory below is historical, not permission to reopen this ticket. DIST04 was also [Cancelled, not Done](archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md) after separate review; no implementation obligation remains.
 
 **Scope:** all **25** directories under `work/changes/open/` in the owner-provided lean snapshot `584b594`. **24** have an actual `CHANGE.md`; the extra BOOK01 directory held only a completed `PLAN.md`, now preserved with archived BOOK01 and removed from `open/`. Current GitHub code was not rebuilt; subsequent HEAD changes before execution must be compared to inspected symbols. The preceding planning pass had already created TASKS for BOOT03, STORY02, STORY03, TURN02 and K8S10; this audit covers those plus the other 19 packets. **No paid provider, shared-cluster or destructive test was run.**
@@ -35,7 +37,7 @@
 | **TURN02** `2026-11-19--turn02-compose-real-kubernetes-application-release` | real images and release absent | Six prepared image/S3/bootstrap/cluster tasks | Composer TASKS exists, single cluster integrator |
 | **TURN03** `2026-11-19--turn03-full-distributed-forkable-turn-proof` | full offline kind campaign not observed | Build one golden fixture/scorecard, then gated cold-kind join | Composer VERIFY/integrator, once dependencies land |
 | **TURN04** `2026-11-19--turn04-opt-in-real-provider-confirmation` | paid provider confirmation unapproved | Offline spend-policy gate test only; owner must authorize exact future send | Composer VERIFY only, no paid run |
-| **WIKI18** `2026-11-19--wiki18-agent-execution-context-budget-and-navigation` | route card/trace parser landed; no measured Composer versus Grok cost | Check current guard, collect paired **actually authorized** usage and rework | Composer VERIFY, no unapproved paid benchmark |
+| **WIKI18** `2026-11-19--wiki18-agent-execution-context-budget-and-navigation` | route card/trace parser landed; no measured Composer versus Grok cost | **No remaining Change tasks**; real paired benchmark unexecuted, no cost savings established | **Terminal cancelled**, useful tooling retained |
 
 **Removed lifecycle defect:** `2026-11-17--book01-reader-shell-poc` had no CHANGE.md, only a completed PLAN.md; [archived BOOK01](archive/2026-11/other/2026-11-17--book01-reader-shell-poc/CHANGE.md) was already Done. Moved that historical plan next to its archived Change and deleted the orphan open file. This **does not** conceal an unfinished feature: live authenticated Playwright/final art remain excluded by the archived Change and separate scopes.
 
@@ -43,7 +45,7 @@
 
 1. **Verification/cleanup first:** HK03's three known test failures; HK01 guarded saved-response function; BOOT02 source pin receipt; DATA04 source/replay and DIST03 service seam. These are bounded Composer checks, not autonomous architecture work. Run only selected safe local tests and record unrun gates.
 2. **Game-critical construction:** BOOT03 and STORY02 private boundaries, STORY03 SQL fence and two queues, TURN02 image/S3 bootstrap, K8S11 authenticated edge, DATA06 branch-pinned context, TURN03 one offline fake-provider full campaign. **Single GA route owner; single workflow owner; single SQL migration and kind operator**.
-3. **Optional learning systems, not blockers:** K8S10 pure preflight now, live app chaos after TURN03, DIST02/04 Cancelled (no selected consumer); future distinct consumer requires a new justified Change, WIKI18 cost experiment with measured real tasks.
+3. **Optional learning systems, not blockers:** K8S10 pure preflight now, live app chaos after TURN03, DIST02/04 Cancelled (no selected consumer); future distinct consumer requires a new justified Change, WIKI18 cancelled as unmeasured study; tools/policy remain.
 4. **Product research not a fake POC prerequisite:** GM03/GM07 standing behavior, OBS04 richer evidence, ENG03 all-purpose lock refactor, DIR03 live creative trial; do not let their names inflate the critical path. These stay visible but not automatically selected.
 5. **Paid work:** OBS00/TURN04 remains denied until separate spend and dispatch-authority review. No Grok exception is needed to *avoid* a paid provider.
 

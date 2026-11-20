@@ -1,4 +1,6 @@
-# WIKI18 | Composer tasks: measure total cost per accepted patch
+# WIKI18 | Historical Composer tasks; cost study cancelled
+
+**Final disposition 2026-11-20:** [Change cancellation](CHANGE.md#terminal-disposition--partial-delivery-no-fabricated-cost-saving). T01 and T04 already had focused test receipts, tools and routing policy survive; T02 and T03 are **cancelled/unrun** because no approved task-linked, quality-controlled usage experiment exists. Do not dispatch these tasks or imply measured savings. Private owner usage-event reports remain outside the public repository.
 
 **Planner investigation:** [SOURCE-MAP.md](SOURCE-MAP.md) establishes actual source-state and forbidden shortcuts at baseline `584b594`. Cursor reads this only for the selected symbol/contradiction, not as compulsory full-context preload.
 
@@ -28,7 +30,7 @@ Use a natural upcoming bounded task (e.g. one BOOT03 Composer T-ID), record plan
 If Composer repeatedly fails a fully specified microtask, show exact missing contract or model limitation. Fix planner material first; only then consider one explicitly approved Low/Medium exception. Collect cost per **correct accepted** result, not cost per first response. Update WIKI18 ledger and canonical agent policy; no blanket “we saved 80%” from token-price arithmetic. **No Grok default.**
 
 
-**WORK01 handoff:** the same scanner also lives under [WORK01](../../archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/CHANGE.md). WIKI18 T04 already recorded `node --test scripts/repo-tools/maintenance.test.mjs` **14/14 PASS**; do not dispatch a duplicate implementer for the same scan. Further maintenance-guard work belongs on archived [WORK01 T01](../../archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/TASKS.md) if reproduced.
+**WORK01 handoff:** the same scanner also lives under [WORK01](../2026-11-20--work01-first-class-operational-tasks/CHANGE.md). WIKI18 T04 already recorded `node --test scripts/repo-tools/maintenance.test.mjs` **14/14 PASS**; do not dispatch a duplicate implementer for the same scan. Further maintenance-guard work belongs on archived [WORK01 T01](../2026-11-20--work01-first-class-operational-tasks/TASKS.md) if reproduced.
 
 ## T04 | Detect orphaned open folders with no CHANGE.md | VERIFY PASS (`ec73a535`)
 

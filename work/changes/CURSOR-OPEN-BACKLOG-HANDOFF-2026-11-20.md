@@ -1,5 +1,7 @@
 # Cursor parent | open Change backlog, Composer-first dispatch
 
+**Later terminal update (2026-11-20):** [WIKI18 retired/cancelled as partially delivered](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md). Its trace parser, model policy, guard and route cards stay installed; T02/T03 live cost comparison was never authorized or completed, so do not dispatch from the old T01 menu row below. Only QUEUE selects current work.
+
 **2026-11-20 terminal correction:** DIST02 and DIST04 were both Cancelled, not Done. No speculative RabbitMQ publisher/consumer work remains in the executable backlog; only the educational K8S03 lab exists. [DIST04 disposition](archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md).
 
 **Priority supersession:** [work/IMPLEMENTATION-ROADMAP.md](../IMPLEMENTATION-ROADMAP.md) is the current now/next/later schedule. This older menu is for task discovery, not autonomous selection. QUEUE remains the sole current selector.
@@ -28,7 +30,7 @@
 | Fix real Pod startup | [TURN02 T01](open/2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md#t01--api-pinned-rule-manifest-load-no-source-dir--planner-ready) | Small source patch, no cluster or paid model |
 | Prepare reproducible full-turn fixture | [TURN03 T01](open/2026-11-19--turn03-full-distributed-forkable-turn-proof/TASKS.md#t01--one-immutable-zero-spend-golden-fixture--planner-ready-early-pure-work) | Pure/scripted only before actual full kind join |
 | Prepare controlled chaos | [K8S10 T01](open/2026-11-19--k8s10-distributed-fault-and-load-harness/TASKS.md#t01--pure-target-selector-and-refusal-reasons--planner-ready-early) | No cluster mutation; game chaos after TURN03 |
-| Measure actual budget | [WIKI18 T01](open/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/TASKS.md#t01--enforce-default-composer-and-test-guard--planner-ready-verify) | Verify hook first, no speculative Grok comparative run |
+| Measure actual budget | [WIKI18 T01](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/TASKS.md#t01--enforce-default-composer-and-test-guard--planner-ready-verify) | Historical focused guard verification; WIKI18 terminal, no further executor assignment |
 
 **The headings after `#` above are navigation conveniences, not authority.** If a heading changed in a new commit, open the same packet's TASKS.md and select its current T-ID. An index link is not a detached task card.
 
