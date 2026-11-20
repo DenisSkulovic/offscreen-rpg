@@ -1,6 +1,6 @@
 # WRD03 | ChatGPT documentation wave 3: world-state, publication, time and historical forks
 
-**State:** Proposed, unselected. **Kind:** documentation-only. **Owner:** ChatGPT; not Cursor. **Depends on:** WR01 product semantics + WRD02 rooted Library/agent authority. **Outcome:** reconcile engine, lifecycle, scene publication and fork technical contracts so a newly published scene has one historical fiction/state boundary and a branch can continue from it, including accepted active fictional commitments.
+**State:** Done on `storyteller-evolution-electric-boogaloo` (documentation-only target contract; runtime implementation follows). **Kind:** documentation-only. **Owner:** ChatGPT; not Cursor. **Depends on:** WR01 product semantics + WRD02 rooted Library/agent authority. **Outcome:** reconcile engine, lifecycle, scene publication and fork technical contracts so a newly published scene has one historical fiction/state boundary and a branch can continue from it, including accepted active fictional commitments.
 
 [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT handoff](../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) · [WRD02](../2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) · [WRD04 next](../2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md).
 
@@ -38,3 +38,14 @@ The Storyteller writes proposals and evidence; Game Authority validates and comm
 Substantive rewrites in existing technical owners, with accepted **target / current POC reality / unresolved or unsafe case** labeled adjacent to the claim; source/semantic negative examples. A concise Change reconciliation ledger must name each co-reviewed page and exact edits/NO-OP. Cross-links to WR01 product and WRD02 Storyteller owners. Link checks and doc-health commands (where available) with honest failures. **No new tables, migrations, provider runs, source code or unapproved cost/security changes.**
 
 **Done means:** WR05–WR07 can be implemented from permanent technical owner pages without interpreting old quiescent-only checkpoints as the desired future, while preserving the real selected engine authority and operational safeguards. **Next:** WRD04 wiki-wide routing/verification.
+
+
+## Reconciliation receipt | 2026-11-21
+
+Rewritten engine/publication owners: lifecycle/compatibility, selected architecture, authority/transitions, chronology/activities, mechanics/capabilities, concurrency/recovery, and Storyteller generation/publication. Platform/client co-owners were updated for durable direct launch, rooted scene persistence, execution identity and historical fork commands.
+
+**Binding target:** each newly published scene is one coherent post-publication historical boundary with exact Library root, semantic fictional-state frontier, clock/progress, active fictional commitments, choices/intents and effective source/profile/rule lineage. Forking that scene structurally reuses immutable history, rehomes unresolved fictional work under fresh child operational identity, and excludes parent provider attempts, workers, billing and future knowledge.
+
+Legacy v1 scenes are not retroactively fabricated into state they never retained. Existing preview/Start/checkpoint behaviors remain compatibility/current-runtime material only where the docs explicitly discuss them.
+
+No application code, schema, migration, provider call, deployment or queue selection changed.
