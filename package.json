@@ -6,7 +6,8 @@
     "node": ">=24.19.0 <25"
   },
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "node scripts/repo-tools/dev-tilt.mjs",
+    "dev:host": "turbo run dev",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",

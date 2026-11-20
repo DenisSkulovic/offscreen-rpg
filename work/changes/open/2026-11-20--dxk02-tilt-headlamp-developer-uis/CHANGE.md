@@ -1,6 +1,6 @@
 # DXK02 | Tilt source-watch and Headlamp GUI integration
 
-**State:** Ready for bounded source implementation when named dependencies hold; not selected, not tested, not Done.
+**State:** Partial. T01–T03 source and unit proofs landed. Live `tilt up`, kind apply, and Headlamp desktop are NOT-RUN. Not Done.
 **Kind:** implementation. **Date:** 2026-11-20.
 **Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md) · [planner source map](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/SOURCE-MAP.md) · [parent Cursor waves](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/CURSOR-HANDOFF.md).
 **Inspected source:** attached 13bcd6cf + connected GitHub main through 8796daaa on 2026-11-20; unpushed Cursor changes NOT inspected.
@@ -40,4 +40,4 @@ Tilt source-watch and Headlamp GUI integration. **Own/edit:** Tiltfile (new), in
 
 | Affected selected owner | Observed source SHA/files | Positive and negative exact commands/result | Docs/evidence reconciled | Remaining |
 | --- | --- | --- | --- | --- |
-| Not executed / planning packet | 13bcd6cf + GitHub main inspected, local HEAD pending | NOT-RUN; code not changed by this packet | Implementation plan only | All T01-T03 pending |
+| DXK02 T01–T03 source | worktree branch `change/dxk02-tilt-headlamp` from `7cf6a3c1`; Tiltfile; `scripts/repo-tools/dev-tilt.mjs`; `scripts/repo-tools/headlamp-kubeconfig.mjs` | Unit: tiltfile 6/0, dev-tilt 7/0, headlamp-kubeconfig 4/0. Negatives: no live_update/compose/skeletons/0.0.0.0; foreign context, foreign :3000, missing tilt, unready game-executor withhold URLs; foreign kube context and in-repo kubeconfig write refused. Live `tilt up`, Pod replace, and Headlamp desktop NOT-RUN (`tilt` not on PATH; cluster `offscreen-lab` left untouched) | `docs/runbooks/kubernetes-developer-ui.md`; pointer in `kubernetes-lab.md` and runbook index; one sentence in `deployment-and-compatibility.md` that the Compose/host section is still the proved local path | Do not archive. Need an observed `tilt up` on `kind-offscreen-lab` and a Headlamp session that deletes one `app=game-web` Pod and sees replacement |
