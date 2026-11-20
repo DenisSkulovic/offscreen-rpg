@@ -1,16 +1,16 @@
 # FORK01 | Make historical fork a private Game Authority write
 
-**State:** Proposed, unselected. **Kind:** implementation. **Baseline:** ZIP \`64f3de7\`, remote main through \`9fa937c\`. **Roadmap:** [current ordered gates](../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. No code or runtime PASS claimed by this planning packet.
+**State:** Proposed, unselected. **Kind:** implementation. **Baseline:** ZIP `64f3de7`, remote main through `09f8d08`. **Roadmap:** [current ordered gates](../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. No code or runtime PASS claimed by this planning packet.
 
 ## Real uncovered boundary
 
-\`apps/api/src/modules/stories/controller.ts\` handles public \`PUT /api/stories/:id/forks/:forkId\` by calling \`this.stories.fork\` (the Nest writer). Meanwhile \`apps/api/src/modules/stories/game-authority-client.ts:StorySeam\` only has read/start/resolution, and \`apps/game-authority/src/application.ts:createGameAuthoritySeam\` and \`server.ts:routeFor\` lack a private fork. The existing \`packages/application/src/stories/forks.ts:createStoryForks.fork\` is the correct *domain* checkpoint implementation. It should not be cloned into a second writer.
+`apps/api/src/modules/stories/controller.ts` handles public `PUT /api/stories/:id/forks/:forkId` by calling `this.stories.fork` (the Nest writer). Meanwhile `apps/api/src/modules/stories/game-authority-client.ts:StorySeam` only has read/start/resolution, and `apps/game-authority/src/application.ts:createGameAuthoritySeam` and `server.ts:routeFor` lack a private fork. The existing `packages/application/src/stories/forks.ts:createStoryForks.fork` is the correct *domain* checkpoint implementation. It should not be cloned into a second writer.
 
-**Goal:** public Nest fork in distributed mode forwards validated \`forkStorySchema\` plus trusted owner, source ID, child ID and exact as-of pair to the versioned, authenticated **private GA** endpoint; GA calls the same application \`stories.fork\` once. Preserve public route, error mapping, transactional checkpoint reconstruction, retry/owner/role guards, S3 pin and no fallback on GA failure. Retain local process seam solely for host tests until DXK06 renames the old \`compose\` mode; Kubernetes always uses distributed. Never expose GA through public Gateway.
+**Goal:** public Nest fork in distributed mode forwards validated `forkStorySchema` plus trusted owner, source ID, child ID and exact as-of pair to the versioned, authenticated **private GA** endpoint; GA calls the same application `stories.fork` once. Preserve public route, error mapping, transactional checkpoint reconstruction, retry/owner/role guards, S3 pin and no fallback on GA failure. Retain local process seam solely for host tests until DXK06 renames the old `compose` mode; Kubernetes always uses distributed. Never expose GA through public Gateway.
 
-**Explicit scope limit:** the only initial fork is quiescent Harbor-watch scene1 *after parent reaches scene2*. Must reread independent child source root, lineage, no future parent state. Do not expand checkpoint v1 to \`microbe.v3\` mechanical/obligation active states; no generic branch-scoped memory feature. DATA04 owns core fork state, DIST03 its original narrow read/resolution scope, TURN03 its full cold-kind/browser proof.
+**Explicit scope limit:** the only initial fork is quiescent Harbor-watch scene1 *after parent reaches scene2*. Must reread independent child source root, lineage, no future parent state. Do not expand checkpoint v1 to `microbe.v3` mechanical/obligation active states; no generic branch-scoped memory feature. DATA04 owns core fork state, DIST03 its original narrow read/resolution scope, TURN03 its full cold-kind/browser proof.
 
-**Source-level concern to check:** \`forks.ts:matchingPriorFork\` compares prior owner/source/revision and optional passage, but not the supplied \`sourceCheckpointHash\`. Prove whether retrying the same child with a *different hash* incorrectly succeeds before deciding on a **coordinated narrow domain repair**. Don't invent a parallel snapshot store.
+**Source-level concern to check:** `forks.ts:matchingPriorFork` compares prior owner/source/revision and optional passage, but not the supplied `sourceCheckpointHash`. Prove whether retrying the same child with a *different hash* incorrectly succeeds before deciding on a **coordinated narrow domain repair**. Don't invent a parallel snapshot store.
 
 ## Acceptance and stops
 
@@ -35,4 +35,4 @@
 
 | Authority | Inspected source | Positive/negative run | Docs impact | Remaining |
 | --- | --- | --- | --- | --- |
-| Planner audit | \`64f3de7\` + \`9fa937c\` (source only) | NOT RUN, no code changed | proposal only | T01–T04 |
+| Planner audit | `64f3de7` + `09f8d08` (source only) | NOT RUN, no code changed | proposal only | T01–T04 |
