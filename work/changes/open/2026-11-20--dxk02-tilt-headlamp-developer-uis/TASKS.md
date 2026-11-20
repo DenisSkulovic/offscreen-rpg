@@ -1,6 +1,6 @@
 # DXK02 | bounded Composer tasks
 
-**Status:** T01–T03 source landed; live Tilt and Headlamp NOT-RUN. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
+**Status:** T01–T03 source landed; `tilt ci` exit 0; Headlamp desktop NOT-RUN. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
 
 
 ## T01 | Tilt as canonical live developer orchestrator
@@ -9,7 +9,7 @@
 
 **Positive:** the named behavior is demonstrated against the correct tier, with real process or Pod evidence where requested. **Negative:** the named failure case discriminates against the old/misleading path and returns nonzero/denial without collateral changes. **Stop:** source drift, unsafe context/secret/volume, unproven predecessor, impossible system assumption or failure after bounded error-directed investigation. **Receipt:** focused test command/count, source SHA, scope, env, redacted IDs, observed failure, NOT-RUN clauses.
 
-**Status (2026-11-20):** Root `Tiltfile` pins `kind-offscreen-lab`, four full image rebuilds, three app-release overlays, resource deps, and `127.0.0.1:3000` for `game-web`. `node --test infra/kubernetes/lab/tilt/tiltfile.test.mjs` 6 pass / 0 fail. `tilt up` NOT-RUN.
+**Status (2026-11-20):** Root `Tiltfile` pins `kind-offscreen-lab`, builds the four images through the app-release scripts, applies the three overlays, and forwards `127.0.0.1:3000` for `game-web`. `node --test infra/kubernetes/lab/tilt/tiltfile.test.mjs` 7 pass / 0 fail. `tilt ci` on the existing cluster exit 0. `pnpm dev` NOT-RUN.
 
 
 ## T02 | pnpm dev and stable localhost URLs

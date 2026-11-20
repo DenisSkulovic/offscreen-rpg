@@ -5,65 +5,83 @@ APP_RELEASE = 'infra/kubernetes/lab/app-release'
 
 allow_k8s_contexts('kind-offscreen-lab')
 
+# Image builds call the release scripts and can exceed the 5 minute CI default.
+ci_settings(timeout='45m', readiness_timeout='45m')
+
 WEB_IMAGE = 'offscreen-lab-game-web:turn02'
 API_IMAGE = 'offscreen-lab-app-release-api:turn02'
 GA_IMAGE = 'offscreen-lab-app-release-ga:turn02'
 WORKER_IMAGE = 'offscreen-lab-app-release-worker:turn02'
 
-# Full image rebuild only: no live_update. Dockerfiles, pnpm-lock, generated code,
-# and DB schema must not hot-swap in the dev loop.
-docker_build(
-    WEB_IMAGE,
-    '.',
-    dockerfile=APP_RELEASE + '/Dockerfile.web',
+# Full image rebuild only: no live_update and no docker_build of the raw repo.
+# Dockerfile.web needs the prune output from build-web.sh. API, Game Authority,
+# and worker images need the staged context from build.sh and build-worker.sh.
+local_resource(
+    'app-release-images',
+    cmd='infra/kubernetes/lab/dev/tilt/build-release-images.sh',
+    deps=[
+        'apps',
+        'packages',
+        'tools',
+        'package.json',
+        'pnpm-lock.yaml',
+        'pnpm-workspace.yaml',
+        'turbo.json',
+        'infra/kubernetes/lab/app-release',
+        'infra/kubernetes/lab/dev/tilt/build-release-images.sh',
+    ],
+    ignore=[
+        '**/node_modules',
+        '**/dist',
+        '**/.next',
+        'out',
+    ],
 )
 
-docker_build(
-    API_IMAGE,
-    '.',
-    dockerfile=APP_RELEASE + '/Dockerfile.api',
-)
+def load_built_image(ref):
+    # Tilt looks up $EXPECTED_REF, not the stable tag the release scripts produce.
+    custom_build(
+        ref,
+        'docker tag ' + ref + ' "$EXPECTED_REF"',
+        deps=['infra/kubernetes/lab/dev/tilt/build-release-images.sh'],
+    )
 
-docker_build(
-    GA_IMAGE,
-    '.',
-    dockerfile=APP_RELEASE + '/Dockerfile.game-authority',
-)
-
-docker_build(
-    WORKER_IMAGE,
-    '.',
-    dockerfile=APP_RELEASE + '/Dockerfile.worker',
-)
+load_built_image(WEB_IMAGE)
+load_built_image(API_IMAGE)
+load_built_image(GA_IMAGE)
+load_built_image(WORKER_IMAGE)
 
 k8s_yaml(APP_RELEASE + '/overlay/authority.yaml')
 k8s_yaml(APP_RELEASE + '/overlay/workers.yaml')
 k8s_yaml(APP_RELEASE + '/overlay/edge.yaml')
 
-k8s_resource('game-authority')
+k8s_resource(
+    'game-authority',
+    resource_deps=['app-release-images'],
+)
 
 k8s_resource(
     'game-api',
-    resource_deps=['game-authority'],
+    resource_deps=['app-release-images', 'game-authority'],
 )
 
 k8s_resource(
     'game-web',
-    resource_deps=['game-api'],
+    resource_deps=['app-release-images', 'game-api'],
     port_forwards=['127.0.0.1:3000:3000'],
 )
 
 k8s_resource(
     'game-control',
-    resource_deps=['game-authority'],
+    resource_deps=['app-release-images', 'game-authority'],
 )
 
 k8s_resource(
     'game-executor',
-    resource_deps=['game-authority'],
+    resource_deps=['app-release-images', 'game-authority'],
 )
 
 k8s_resource(
     'game-relay',
-    resource_deps=['game-authority'],
+    resource_deps=['app-release-images', 'game-authority'],
 )

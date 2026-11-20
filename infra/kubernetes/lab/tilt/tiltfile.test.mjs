@@ -46,6 +46,15 @@ test('Tiltfile does not load lab skeleton manifests', () => {
 
 test('Tiltfile does not use live_update on app images', () => {
   assert.doesNotMatch(tiltfile, /live_update\s*\(/);
+  assert.doesNotMatch(tiltfile, /docker_build\s*\(/);
+});
+
+test('Tiltfile builds images through the app-release scripts', () => {
+  assert.match(tiltfile, /build-release-images\.sh/);
+  assert.match(tiltfile, /app-release-images/);
+  assert.match(tiltfile, /readiness_timeout\s*=\s*['"]45m['"]/);
+  assert.match(tiltfile, /docker tag/);
+  assert.match(tiltfile, /\$EXPECTED_REF/);
 });
 
 test('game-web port-forward is loopback-only on local port 3000', () => {
