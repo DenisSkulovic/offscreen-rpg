@@ -227,6 +227,8 @@ export async function withBoot03DistributedAppIntegration(
       otherCookie,
       restartWorker,
       stopWorker,
+      workerTaskQueue: 'browser-integration',
+      workerErrors: [],
       gameAuthorityOrigin,
       gameAuthorityProcess: gameAuthorityProcess ?? (null as unknown as ChildProcess),
       documentRoot: options.documentRoot,

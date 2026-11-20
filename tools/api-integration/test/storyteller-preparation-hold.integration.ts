@@ -540,4 +540,9 @@ export async function checkPreparationHold(
   );
 }
 
-registerProfiledStoryteller(import.meta.url, 'preparation holds and world-boundary overlap', checkPreparationHold);
+registerProfiledStoryteller(
+  import.meta.url,
+  'preparation holds and world-boundary overlap',
+  checkPreparationHold,
+  { executionMode: 'worker' },
+);

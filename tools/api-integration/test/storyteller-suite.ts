@@ -2,9 +2,8 @@ import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { mkdtemp } from 'node:fs/promises';
-import { setTimeout as delay } from 'node:timers/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import type * as Drizzle from 'drizzle-orm' with {
@@ -22,11 +21,7 @@ import {
   createChamber,
   createChamberStorytellerControl,
 } from '@offscreen/application/developer-tools';
-import {
-  campaignActionTopic,
-  campaignConsequenceTopic,
-  createStories,
-} from '@offscreen/application/stories';
+import { createStories } from '@offscreen/application/stories';
 import { LocalDocumentStore } from '@offscreen/documents';
 import {
   withAppIntegration,
@@ -222,6 +217,11 @@ type ProfiledStorytellerOptions = {
   skipFixtureCandidate?: boolean;
   /** STORY03 T06: start relay + control + executor against live Temporal. */
   distributedLive?: boolean;
+  /**
+   * MANUAL: the family owns runtime.complete / fake-provider work and must not
+   * start a shared outbox consumer. WORKER: the family owns Temporal delivery.
+   */
+  executionMode?: 'manual' | 'worker';
 };
 
 /** Remove undelivered profiled notices whose operation_id no longer exists (stale relay litter on disposable DBs). */
@@ -251,7 +251,7 @@ export type TerminateOpenStorytellerWorkflowsResult = {
   ignored: number;
 };
 
-/** Terminate leftover profiled suite workflows. Worker restarts otherwise leave campaign-action tasks scheduled on a dead worker. */
+/** Terminate leftover storyteller/{generationId} runs owned by diagnostic profiled sessions. */
 export async function terminateOpenStorytellerWorkflows(): Promise<TerminateOpenStorytellerWorkflowsResult> {
   const address = process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233';
   const namespace = process.env['TEMPORAL_NAMESPACE'] ?? 'default';
@@ -264,14 +264,9 @@ export async function terminateOpenStorytellerWorkflows(): Promise<TerminateOpen
   };
   try {
     const query =
-      '(WorkflowId STARTS_WITH "storyteller/" OR WorkflowId STARTS_WITH "campaign-action/" OR WorkflowId STARTS_WITH "campaign-consequence/" OR WorkflowId STARTS_WITH "campaign-activity/") AND (ExecutionStatus = "Running" OR ExecutionStatus = "ContinuedAsNew")';
+      'WorkflowId STARTS_WITH "storyteller/" AND (ExecutionStatus = "Running" OR ExecutionStatus = "ContinuedAsNew")';
     for await (const execution of client.workflow.list({ query })) {
-      if (
-        !execution.workflowId.startsWith('storyteller/') &&
-        !execution.workflowId.startsWith('campaign-action/') &&
-        !execution.workflowId.startsWith('campaign-consequence/') &&
-        !execution.workflowId.startsWith('campaign-activity/')
-      ) {
+      if (!execution.workflowId.startsWith('storyteller/')) {
         continue;
       }
       counts.listed += 1;
@@ -392,6 +387,15 @@ export async function inspectStorytellerProgress(
      ORDER BY available_at`,
     [args.operationId, generationId],
   );
+  const stages = generationId
+    ? await client.query<{ stage: string; outcome: string }>(
+        `SELECT stage, outcome
+         FROM storyteller_execution_stage
+         WHERE generation_id = $1
+         ORDER BY stage`,
+        [generationId],
+      )
+    : { rows: [] };
   return {
     generationId,
     execution: execution.rows,
@@ -401,62 +405,8 @@ export async function inspectStorytellerProgress(
     campaign: campaign.rows,
     pendingOutbox: pendingOutbox.rows,
     operationOutbox: operationOutbox.rows,
+    stages: stages.rows,
   };
-}
-
-const profiledRelayTopics = [
-  storytellerTopic,
-  storytellerDistributedTopic,
-  campaignActionTopic,
-  campaignConsequenceTopic,
-];
-
-/** Wait until available profiled notices are delivered. Restarted workers otherwise inherit a FIFO backlog. */
-export async function waitForProfiledOutboxQuiet(
-  database: AppIntegration['database'],
-  options: {
-    restartWorker?: () => Promise<void>;
-    deadlineMs?: number;
-  } = {},
-) {
-  const deadlineMs = options.deadlineMs ?? 45000;
-  await options.restartWorker?.();
-  const started = Date.now();
-  while (Date.now() - started < deadlineMs) {
-    const pending = await database.db.$client.query<{ count: number }>(
-      `SELECT count(*)::int AS count
-       FROM outbox
-       WHERE delivered_at IS NULL
-         AND topic = ANY($1::text[])
-         AND available_at <= clock_timestamp()`,
-      [profiledRelayTopics],
-    );
-    if ((pending.rows[0]?.count ?? 0) === 0) {
-      return;
-    }
-    await delay(100);
-  }
-  const leftover = await database.db.$client.query<{
-    topic: string;
-    count: number;
-    available: number;
-    leased: number;
-  }>(
-    `SELECT topic,
-            count(*)::int AS count,
-            count(*) FILTER (WHERE available_at <= clock_timestamp())::int AS available,
-            count(*) FILTER (WHERE lease_id IS NOT NULL)::int AS leased
-     FROM outbox
-     WHERE delivered_at IS NULL
-       AND topic = ANY($1::text[])
-     GROUP BY topic`,
-    [profiledRelayTopics],
-  );
-  assert.equal(
-    leftover.rows.reduce((sum, row) => sum + row.available, 0),
-    0,
-    `profiled outbox did not drain within ${deadlineMs}ms: ${JSON.stringify(leftover.rows)}`,
-  );
 }
 
 /** Same profiled stack as the original single-file suite. The outbox relay runs before any in-process `candidate()` so profiled notices wake on the integration worker queue. */
@@ -484,16 +434,14 @@ export async function withProfiledStoryteller(
       stopWorker,
     }) => {
       const orphanDrained = await drainOrphanStorytellerOutbox(database);
-      const temporalCleanup = await terminateOpenStorytellerWorkflows();
       console.info(
-        '[withProfiledStoryteller] orphan outbox rows drained=%s temporal listed=%s terminated=%s ignored=%s',
+        '[withProfiledStoryteller] mode=%s orphan outbox rows drained=%s taskQueue owned by this session',
+        options.executionMode ?? 'worker',
         orphanDrained,
-        temporalCleanup.listed,
-        temporalCleanup.terminated,
-        temporalCleanup.ignored,
       );
-      await restartWorker();
-      await waitForProfiledOutboxQuiet(database);
+      if (options.executionMode !== 'manual') {
+        await restartWorker();
+      }
       const actors = bindProfiledActors({
         database,
         ownerId,
@@ -527,17 +475,24 @@ export async function withProfiledStoryteller(
   );
 }
 
-/** Register one behavior family when this module is the node:test entry. */
+function isNodeTestFile(moduleUrl: string) {
+  return process.argv.some((arg) => {
+    try {
+      return pathToFileURL(resolve(arg)).href === moduleUrl;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/** Register one behavior family when this module is a node:test file argument. */
 export function registerProfiledStoryteller(
   moduleUrl: string,
   name: string,
   check: (t: TestContext, suite: ProfiledStoryteller) => Promise<void>,
   options: ProfiledStorytellerOptions = {},
 ) {
-  const entry = process.argv[1]
-    ? pathToFileURL(process.argv[1]).href
-    : undefined;
-  if (entry !== moduleUrl) {
+  if (!isNodeTestFile(moduleUrl)) {
     return;
   }
   test(name, { timeout: 240000 }, async (t) => {

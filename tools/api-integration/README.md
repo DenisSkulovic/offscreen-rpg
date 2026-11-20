@@ -14,7 +14,7 @@
 | Private SSR / Router back / redacted metrics (W14) | [private-route-evidence.integration.ts](test/private-route-evidence.integration.ts) | `next start` HTML + Playwright; no paid provider |
 | Admin `/control` SSR privacy (AD04) | [admin-control-ssr.integration.ts](test/admin-control-ssr.integration.ts) | `next start` + Nest staff/player/anonymous HTML + Playwright; no paid provider |
 | Committed-view SSE hints | [story-updates.integration.ts](test/story-updates.integration.ts) | Owner hint after NOTIFY; anonymous/other-owner denied |
-| Storyteller accounting/holds/recovery | [storyteller.integration.ts](test/storyteller.integration.ts) | Fake provider and durable attempt state, no real provider needed |
+| Storyteller accounting/holds/recovery | `test:storyteller` (twelve `storyteller-*.integration.ts` families) | Isolated MANUAL/WORKER sessions; no real provider. Legacy shared session is `test:storyteller:profiled` |
 | Reusable world/start-package import | [start-package.integration.ts](test/start-package.integration.ts) | Canonical source and Start behavior |
 | Shared test server/DB/worker setup | [helpers/app-integration.ts](test/helpers/app-integration.ts) | Requires `DATABASE_TEST_URL` naming the **disposable `offscreen_auth_test`** DB |
 | Isolated concern registration | [helpers/story-suite.ts](test/helpers/story-suite.ts) | Per-test boundary/entry behavior |

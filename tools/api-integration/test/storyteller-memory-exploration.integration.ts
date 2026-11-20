@@ -716,4 +716,9 @@ export async function checkMemoryExploration(
   );
 }
 
-registerProfiledStoryteller(import.meta.url, 'memory exploration rounds', checkMemoryExploration);
+registerProfiledStoryteller(
+  import.meta.url,
+  'memory exploration rounds',
+  checkMemoryExploration,
+  { executionMode: 'manual' },
+);

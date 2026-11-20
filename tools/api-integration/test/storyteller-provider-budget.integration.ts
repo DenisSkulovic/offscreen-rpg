@@ -287,4 +287,9 @@ export async function checkProviderBudget(
   );
 }
 
-registerProfiledStoryteller(import.meta.url, 'provider reservation budget', checkProviderBudget);
+registerProfiledStoryteller(
+  import.meta.url,
+  'provider reservation budget',
+  checkProviderBudget,
+  { executionMode: 'manual' },
+);

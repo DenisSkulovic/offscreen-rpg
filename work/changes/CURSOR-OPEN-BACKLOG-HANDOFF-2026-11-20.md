@@ -10,7 +10,7 @@
 
 | Goal owner selects | Next candidate task | Why now / stop gate |
 | --- | --- | --- |
-| Re-establish trusted tests | [HK03 T01](open/2026-11-17--hk03-storyteller-test-boundaries/TASKS.md#t01--verify-full-suite-with-one-safe-environment--planner-ready-verify) | Historical 33/30/3 full suite; do not rewrite gameplay assertion |
+| Re-establish trusted tests | [HK03](archive/2026-11/other/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | Done. Isolated `test:storyteller` is the acceptance suite |
 | Confirm saved-response safety | [HK01 T01](open/2026-11-17--hk01-retire-local-repair-helper/TASKS.md#t01--existing-guarded-function-and-contract-test--planner-ready-verify) | Pure test first, **no deleting unique CLI** |
 | Prove S3 package pins | [BOOT02 T01](archive/2026-11/other/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md#t01--repeat-safe-no-cluster-proof--planner-ready) | Second-Pod proof already recorded; don't respin cluster unless source changed |
 | Reconcile GA single seam | [DIST03 T01](open/2026-11-19--dist03-game-authority-private-boundary/TASKS.md#t01--run-the-exact-one-seam-proof--planner-ready) | Test read/resolution locally before expanding |

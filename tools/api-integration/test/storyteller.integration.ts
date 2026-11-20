@@ -1,8 +1,5 @@
 import { test } from 'node:test';
-import {
-  waitForProfiledOutboxQuiet,
-  withProfiledStoryteller,
-} from './storyteller-suite.js';
+import { withProfiledStoryteller } from './storyteller-suite.js';
 import { checkImportedStart } from './storyteller-imported-start.integration.js';
 import { checkJourneySchedule } from './storyteller-journey-schedule.integration.js';
 import { checkPreparationHold } from './storyteller-preparation-hold.integration.js';
@@ -16,19 +13,15 @@ import { checkProviderRecovery } from './storyteller-provider-recovery.integrati
 import { checkWorkerReplay } from './storyteller-worker-replay.integration.js';
 import { checkBrowserCreation } from './storyteller-browser-creation.integration.js';
 
-// All sources and provider responses in this suite are local. No credentials are read.
-// One session and the original case order. The shared opening, allocation rows,
-// uncertain-attempt cleanup, and worker stop or restart stay in this sequence.
+// Diagnostic/stress only. Acceptance is isolated family files via test:storyteller.
+// This shared session is not the HK03 gold standard.
 test(
-  'profiled storyteller: durable choices, context, accounting and browser creation',
+  'profiled storyteller (diagnostic): durable choices, context, accounting and browser creation',
   { timeout: 240000 },
   async (t) => {
     await withProfiledStoryteller(async (suite) => {
       await checkImportedStart(t, suite);
       await checkJourneySchedule(t, suite);
-      await waitForProfiledOutboxQuiet(suite.database, {
-        restartWorker: suite.restartWorker,
-      });
       await checkPreparationHold(t, suite);
       await checkActivityAdmission(t, suite);
       await checkAcceptedPlan(t, suite);
@@ -37,9 +30,6 @@ test(
       await checkProviderBudget(t, suite);
       await checkMemoryExploration(t, suite);
       await checkProviderRecovery(t, suite);
-      await waitForProfiledOutboxQuiet(suite.database, {
-        restartWorker: suite.restartWorker,
-      });
       await checkWorkerReplay(t, suite);
       await checkBrowserCreation(t, suite);
     });

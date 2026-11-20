@@ -57,9 +57,6 @@ export async function startRuntime(
       activities,
       shutdownGraceTime: '10 seconds',
       maxConcurrentActivityTaskExecutions: 4,
-      // Restarted workers must poll the shared queue. Eager reservations stay
-      // on the dying worker and never start when scheduleToStart is unbounded.
-      maxEagerActivityReservationsPerWorkflowTask: 0,
     });
     const outbox = createOutbox(database);
     const controller = new AbortController();

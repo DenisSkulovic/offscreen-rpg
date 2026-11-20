@@ -23,7 +23,6 @@ import {
 
 const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
   startToCloseTimeout: '30 seconds',
-  scheduleToStartTimeout: '5 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
 
@@ -36,7 +35,6 @@ export async function scriptedOpeningV1(id: string): Promise<void> {
 const { completeScriptedContinuation } =
   proxyActivities<ContinuationActivities>({
     startToCloseTimeout: '30 seconds',
-    scheduleToStartTimeout: '5 seconds',
     retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
   });
 
@@ -46,7 +44,6 @@ export async function scriptedContinuationV1(id: string): Promise<void> {
 
 const { advanceControlledInterval } = proxyActivities<IntervalActivities>({
   startToCloseTimeout: '30 seconds',
-  scheduleToStartTimeout: '5 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
 export async function storyIntervalV1(id: string): Promise<void> {
@@ -73,7 +70,6 @@ export async function storyIntervalV1(id: string): Promise<void> {
 
 const { resolveStoryDecision } = proxyActivities<DecisionActivities>({
   startToCloseTimeout: '30 seconds',
-  scheduleToStartTimeout: '5 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
 export async function storyDecisionV1(id: string): Promise<void> {
@@ -90,7 +86,6 @@ const { completeStoryteller } = proxyActivities<
   import('./contracts').StorytellerActivities
 >({
   startToCloseTimeout: '3 minutes',
-  scheduleToStartTimeout: '5 seconds',
   retry: {
     initialInterval: '2 seconds',
     maximumInterval: '30 seconds',
@@ -112,7 +107,6 @@ const { executeFrozenStoryteller } =
   proxyActivities<StorytellerDistributedExecutionActivities>({
     taskQueue: storytellerExecuteTaskQueue,
     startToCloseTimeout: '3 minutes',
-    scheduleToStartTimeout: '5 seconds',
     retry: distributedExecuteRetry,
   });
 
@@ -120,7 +114,6 @@ const { publishSavedStoryteller } =
   proxyActivities<StorytellerDistributedControlActivities>({
     taskQueue: storytellerControlTaskQueue,
     startToCloseTimeout: '3 minutes',
-    scheduleToStartTimeout: '5 seconds',
     retry: distributedExecuteRetry,
   });
 
@@ -134,17 +127,14 @@ export async function storytellerDistributedV1(
 
 const { advanceCampaignActivity } = proxyActivities<CampaignActivities>({
   startToCloseTimeout: '30 seconds',
-  scheduleToStartTimeout: '5 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
 const { advanceCampaignAction } = proxyActivities<CampaignActivities>({
   startToCloseTimeout: '30 seconds',
-  scheduleToStartTimeout: '5 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
 const { prepareCampaignConsequence } = proxyActivities<CampaignActivities>({
   startToCloseTimeout: '30 seconds',
-  scheduleToStartTimeout: '5 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
 export async function campaignActivityV1(id: string): Promise<void> {

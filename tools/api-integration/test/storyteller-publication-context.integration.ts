@@ -273,6 +273,7 @@ registerProfiledStoryteller(
   'publication context and recovery',
   checkPublicationContext,
   {
+    executionMode: 'manual',
     distributedLive: process.env['STORYTELLER_DISTRIBUTED_V1'] === 'true',
   },
 );

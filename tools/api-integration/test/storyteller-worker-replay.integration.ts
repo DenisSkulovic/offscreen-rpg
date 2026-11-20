@@ -289,6 +289,7 @@ registerProfiledStoryteller(
   'worker restart and activity replay',
   checkWorkerReplay,
   {
+    executionMode: 'worker',
     distributedLive: process.env['STORYTELLER_DISTRIBUTED_V1'] === 'true',
   },
 );

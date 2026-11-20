@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
@@ -57,6 +58,8 @@ export type AppIntegration = {
   otherCookie: string;
   restartWorker: () => Promise<void>;
   stopWorker: () => Promise<void>;
+  workerTaskQueue: string;
+  workerErrors: ReadonlyArray<{ name: string; message: string }>;
 };
 
 /** Nest listen port; must match apps/web next.config build-time API_PROXY_ORIGIN default. */
@@ -139,6 +142,14 @@ export async function withAppIntegration(
   let exited: Promise<unknown> | undefined;
   let runtime: Awaited<ReturnType<typeof startRuntime>> | undefined;
   let distributedLive: StorytellerDistributedLiveWorkers | undefined;
+  const workerTaskQueue = `browser-integration-${randomUUID()}`;
+  const workerErrors: Array<{ name: string; message: string }> = [];
+  const reportWorkerError = (error: unknown) => {
+    workerErrors.push({
+      name: error instanceof Error ? error.name : 'WorkerError',
+      message: error instanceof Error ? error.message : 'worker_error',
+    });
+  };
   const stopWorker = async () => {
     await distributedLive?.stop();
     distributedLive = undefined;
@@ -163,9 +174,9 @@ export async function withAppIntegration(
       {
         address: process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233',
         namespace: 'default',
-        taskQueue: 'browser-integration',
+        taskQueue: workerTaskQueue,
       },
-      () => {},
+      reportWorkerError,
       options.storytellerRuntime,
     );
   };
@@ -229,6 +240,8 @@ export async function withAppIntegration(
       otherCookie,
       restartWorker,
       stopWorker,
+      workerTaskQueue,
+      workerErrors,
     });
   } finally {
     await release([

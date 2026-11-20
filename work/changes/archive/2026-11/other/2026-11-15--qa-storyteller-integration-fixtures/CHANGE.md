@@ -71,4 +71,4 @@ exception: work/designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md be
 exception: STATUS.md because the status page no longer calls this packet blocked
 exception: tools/api-integration/test/storyteller.integration.ts because the suite opens Journal and releases the uncertain admission block after its own assertion
 exception: tools/api-integration/test/helpers/app-integration.ts because inline accounting can stop the worker an earlier case left running
-exception: work/changes/open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md because its link follows this packet into the archive
+exception: work/changes/archive/2026-11/other/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md because its link follows this packet into the archive
