@@ -35,7 +35,7 @@
 | **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **WORK01** |
 | **B. Scope inflated — keep original remainder, do not fake Done** | DATA04 (app historical GET/fork 9/9; GA/journal/three negatives remain), STORY02 (in-process 10/10; combined `storytellerV1` remains) |
 | **C. Unfinished actionable** | HK01 (CLI still the operator path) |
-| **D. Planner gap** | GM07 durable SQL consent/expiry; ENG03 all-purpose short-lock; OBS04 E0 witness; DATA06 remote branch-pinned facade |
+| **D. Planner gap** | GM07 durable SQL consent/expiry; ENG03 remaining lock paths; DATA06 remote branch-pinned facade. **OBS04 planner gap resolved** by exact terminal-event witness decision; code still pending |
 | **E. Explicitly gated** | OBS00/TURN04 paid dispatch; K8S11/TURN02/TURN03/K8S10 live cluster; BOOT03 two-process remainder already proven in-process but packet Goal still distributed start |
 | **F. Unselected optional** | **WIKI18 also cancelled** (tools retained; live cost comparison unmeasured). DIST02 and DIST04 cancelled; no app Rabbit publisher/consumer selected |
 
@@ -89,7 +89,7 @@
 | [DIR03 Storyteller direction](archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | **Done. Provider-free suggestion landed** | One optional suggestion can be admitted. A rejected suggestion still publishes the passage. The live creative trial is still unauthorized |
 | [HK03 storyteller test boundaries](archive/2026-11/other/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Done.** Isolated `test:storyteller` 44/44 twice | Twelve serial family sessions. Shared profiled orchestrator is diagnostic-only |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Fail-closed comparison merged. Packet stays open** | A revoked, missing, or changed entitlement is denied. Live dispatch stays denied because there is no entitlement store |
-| [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | **Ready E0, disposable SQL required** | First E0 game transition witness |
+| [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | **Open; T02–T06 planned, no migration yet** | Minimal co-committed source-event witness, no new ledger/sequence; disposable SQL required |
 | [ENG03 short-lock context](open/2026-11-13--eng-short-lock-context/CHANGE.md) | **Ready measured narrow slice** | Full short-lock capture |
 | [GM03 standing life](archive/2026-11/experience/2026-11-13--gm-standing-life/CHANGE.md) | **Done. Quiet watch archived** | Three clock-wait copies stop at the horizon. General standing life stays unselected design |
 | [GM07 delegated decision](open/2026-11-13--gm-delegated-decision/CHANGE.md) | **One withdrawal merged. Packet stays open** | A player choice that arrives first is the only settlement. The module does not take the story-row lock |
