@@ -1,6 +1,6 @@
 # DXK01 | Safe one-command-capable Kubernetes stack lifecycle
 
-**State:** Selected. T01 preflight unit proof PASS at working tree after `64f3de79`; live kind NOT-RUN. T02–T03 not started. Not Done.
+**State:** In progress, **not selected in QUEUE** while TURN02 owns current selection. T01 preflight unit proof PASS at working tree after `64f3de79`; live kind NOT-RUN. T02–T03 not started. Not Done. Resume according to [implementation roadmap](../../../IMPLEMENTATION-ROADMAP.md).
 **Kind:** implementation. **Date:** 2026-11-20.
 **Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md) · [planner source map](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/SOURCE-MAP.md) · [parent Cursor waves](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/CURSOR-HANDOFF.md).
 **Inspected source:** attached 13bcd6cf + connected GitHub main through 8796daaa on 2026-11-20; unpushed Cursor changes NOT inspected.
