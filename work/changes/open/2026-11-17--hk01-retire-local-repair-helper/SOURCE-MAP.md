@@ -21,3 +21,7 @@ This is much more than “a saved response helper”, and deleting it before rep
 5. **Removal:** Git delete only after replacement proves all old positive and negative cases and runbooks stop naming the old command. “Unused by package scripts” is not enough: it is an operator path.
 
 **Critical source status:** legacy script **cannot** be assumed a broadly safe product API: it hardcodes a local DB credential and evidence path, so replacing it is also hardening. But that is not permission to delete a rare financial recovery route before a safer equivalent exists. [TASKS](TASKS.md) keeps this distinction.
+
+## 2026-11-20 provenance clarification (planning only)
+
+`tools/chamber/src/story-provider.ts` creates an ignored `provider-response-*.json` using `recordResponse` and `wx`; the provider hook includes `requestSha256`, raw response, status, provider ID and purpose. `packages/application/src/storyteller/dispatch-review.ts` records an attempt-specific `storyteller_dispatch_review.packetSha256` **before dispatch**, and requires actual provider wire equality with that digest. This supplies an existing request-association join, reducing the replacement to bounded validator + read-only operator preview + guarded audited budget settlement. It does **not** prove a local file was not edited or disambiguate multiple identical-wire sends; such cases must HOLD. See [decision](DECISION-2026-11-20.md). No runtime DB/provider tests performed by this source audit.
