@@ -9,7 +9,7 @@
 
 The folder name still says "RabbitMQ Temporal live handoff." That name is historical. Superseded: using RabbitMQ as the transport for an existing outbox wake, and any adapter that consumes a broker message in order to start or signal Temporal.
 
-**2026-11-20 dependency cleanup:** [DIST02 cancelled](../../../archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md). No existing source contract is available or required. This Change remains **Proposed and unselected** pending its own disposition, not executable under an imagined prerequisite.
+**2026-11-20 dependency cleanup:** [DIST02 cancelled](../../archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md). No existing source contract is available or required. This Change remains **Proposed and unselected** pending its own disposition, not executable under an imagined prerequisite.
 
 ## Goal
 
