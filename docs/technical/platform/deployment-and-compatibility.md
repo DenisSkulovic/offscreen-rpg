@@ -106,7 +106,7 @@ The educational laboratory is a different environment. Its contract, including l
 
 A diagram of future infrastructure is not a claim that the service is deployed and tested.
 
-**Observed disposable lab (2026-11-20):** `kind-offscreen-lab` was running Ready Next, Nest, Game Authority, control, executor, and relay pods. A public Game Authority health request returned 404 while the private health route returned 200. One `committed-view` hint on the story update stream reached viewVersion 22, and the following story read returned that same viewVersion. Control and executor were an older worker image than the relay. This observation does not satisfy [First hosted deployment](#first-hosted-deployment). Owner isolation and a fresh cluster after teardown were not part of it.
+**Observed disposable lab (2026-11-20):** `kind-offscreen-lab` was running Ready Next, Nest, Game Authority, control, executor, and relay pods. A public Game Authority health request returned 404 while the private health route returned 200. One `committed-view` hint on the story update stream reached viewVersion 22, and the following story read returned that same viewVersion. Control, executor, and relay then shared worker image `sha256:ae8ce0abccad`. This observation does not satisfy [First hosted deployment](#first-hosted-deployment). Owner isolation and a fresh cluster after teardown were not part of it.
 
 ### Disposable CloudNativePG proof
 
