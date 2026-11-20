@@ -6,7 +6,7 @@
 
 ## Cursor first-screen route
 
-**DEPTH=PATCH-L, Next web/integration owner.** Begin at `apps/web/src/features/stories/{draft-editor,opening-preview,draft-content}.tsx` (note `draft-content.ts` is TS), `apps/web/src/features/stories/{use-opening-generate,use-start-story}.ts`, `apps/web/src/features/play/{view,history}.tsx` and `apps/web/src/features/play/ui/campaign-play.tsx`. Inspect exact route page and current API client refs before modifying. **Do not treat a decorative “Play” card with the old wizard behind it as completion.**
+**DEPTH=PATCH-L, Next web/integration owner.** Begin at `apps/web/src/features/stories/draft-editor.tsx`, `opening-preview.tsx`, and `draft-content.ts`, `apps/web/src/features/stories/{use-opening-generate,use-start-story}.ts`, `apps/web/src/features/play/{view,history}.tsx` and `apps/web/src/features/play/ui/campaign-play.tsx`. Inspect exact route page and current API client refs before modifying. **Do not treat a decorative “Play” card with the old wizard behind it as completion.**
 
 ## Product delivery
 
