@@ -4,10 +4,13 @@
 
 **Question:** How do we replace the four-step setup wizard with immediate play from a prepared experience or one freeform Story Prompt, while giving the Storyteller a durable, coherent, appropriately bounded private creative workspace?
 
+**Anti-slop instruction (2026-11-20):** Read [the critical self-review](CRITICAL-SELF-REVIEW.md) before treating any candidate named subsystem as necessary. Prefer the few source-backed failures and provider-free red/green checks over adding further architecture prose.
+
 This dossier is the home for the continuing multi-conversation investigation. It is **not** a competing source of accepted product or technical law. A future chat should start with this page, check the source HEAD against the dated audit, then continue the unresolved design rather than restarting the discussion.
 
 ## Documents
 
+- **[CRITICAL-SELF-REVIEW.md](CRITICAL-SELF-REVIEW.md) — READ FIRST: evidence-ranked retractions, source defects, overengineering risks, concrete next tests and unreconciled archive-link debt. Earlier designs remain unaccepted hypotheses.**
 - [SOURCE-AUDIT.md](SOURCE-AUDIT.md) — observed implementation and source-backed constraints at the inspected SHA.
 - [DESIGN-NOTES.md](DESIGN-NOTES.md) — the player-facing intent, creator's library concept, competing setup architectures, authority and cost rules.
 - [QUESTIONS-AND-EXPERIMENTS.md](QUESTIONS-AND-EXPERIMENTS.md) — decisions not yet taken, risk probes, and bounded evaluation design.

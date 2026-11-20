@@ -1,6 +1,6 @@
 # Scene Commit V2 | coherent post-publication state and resumable branches
 
-**Status:** preferred **candidate technical contract**, 2026-11-20, not ratified and not a production schema migration. The existing selected long-term requirement is [Every committed scene can be forked](../../../../docs/technical/engine/lifecycle-and-compatibility.md#forked-continuities). Source evidence and gaps: [audit](SCENE-COMMIT-AND-ACTIVE-WORK-AUDIT.md). Prior persistent Library design: [DAG](PERSISTENT-LIBRARY-DAG-DESIGN.md).
+**Status:** expansive **candidate only**, 2026-11-20, not ratified and not a production schema migration. **Read [CRITICAL-SELF-REVIEW](CRITICAL-SELF-REVIEW.md) first:** `CompletePostState`, `ChoiceCapsule` and a new `SceneCommit` type may be unnecessary abstractions. Prove existing-code defects and attempt smaller repairs before implementing these names. The existing selected long-term requirement is [Every committed scene can be forked](../../../../docs/technical/engine/lifecycle-and-compatibility.md#forked-continuities). Source evidence and gaps: [audit](SCENE-COMMIT-AND-ACTIVE-WORK-AUDIT.md). Prior persistent Library design: [DAG](PERSISTENT-LIBRARY-DAG-DESIGN.md).
 
 ## Key decision: snapshot a coherent *post-commit* state
 

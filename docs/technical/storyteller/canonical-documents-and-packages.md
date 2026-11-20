@@ -37,7 +37,7 @@ Keep a small database control layer for ownership, stable references, revision f
 
 ## Scene-rooted canon and fork-safe publication | selected target (2026-11-19)
 
-This heading is the scene-knowledge contract. The checkpoint half of the pair now has a physical form: a content-addressed `offscreen.scene-checkpoint.v1` object and the `story_scene_checkpoint` selector on [Story snapshot and chronology](../platform/data-and-persistence.md#story-snapshot-and-chronology). That store is not a historical fork. The engine remains the single consistency boundary for the committed pair below. A Storyteller process may propose descriptive changes. It does not commit the game-state checkpoint or the canon root. Process ownership stays on [ARCH02](../../../work/changes/archive/2026-11/other/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md). This page does not install a search index, Cognee, or a vector store.
+This heading is the scene-knowledge contract. The checkpoint half of the pair now has a physical form: a content-addressed `offscreen.scene-checkpoint.v1` object and the `story_scene_checkpoint` selector on [Story snapshot and chronology](../platform/data-and-persistence.md#story-snapshot-and-chronology). That store is not a historical fork. The engine remains the single consistency boundary for the committed pair below. A Storyteller process may propose descriptive changes. It does not commit the game-state checkpoint or the canon root. Process ownership stays on [ARCH02](../../../work/changes/archive/2026-11/architecture/2026-11-19--arch02-service-ownership-and-event-contracts/CHANGE.md). This page does not install a search index, Cognee, or a vector store.
 
 ### Scene, passage, checkpoint, and leaf
 
