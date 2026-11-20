@@ -5,10 +5,9 @@ Unaccepted designs/investigations and owner-retained dormant policy. Not product
 **Design lifecycle:** investigate and compare alternatives here → explicitly review/accept product outcomes → reconcile accepted requirements into the existing `docs/product/` and `docs/technical/` owners → only then prepare and select bounded `work/changes/` packets for implementation. An open design is not a selected Change, and a committed proposal is not an approved spec. The [player experience program](open/player-experience-refoundation/DESIGN-PROCESS.md) records concrete review gates for the ongoing UI/UX overhaul.
 
 | Item | Status |
-
-| [first-campaign-readiness-2026-11-20/](open/first-campaign-readiness-2026-11-20/README.md) | **Source audit / execution ladder:** 19 open packets reconciled; actual STORY03 routing+publication defects, distinct local real-process and cold-kind proofs, and Composer-sized repair cards. No integrated test or live model claimed |
-
 | --- | --- |
+| [Kubernetes-first developer experience](open/kubernetes-first-developer-experience-2026-11-20/README.md) | **Owner-selected end state / implementation not yet proven:** DXK01–07, finite Cursor handoff, real TURN02/TURN03 predecessors, no active Compose after completion |
+| [first-campaign-readiness-2026-11-20/](open/first-campaign-readiness-2026-11-20/README.md) | **Source audit / execution ladder:** 19 open packets reconciled; actual STORY03 routing+publication defects, distinct local real-process and cold-kind proofs, and Composer-sized repair cards. No integrated test or live model claimed |
 | [backlog-convergence-2026-11-18/](open/backlog-convergence-2026-11-18/README.md) | **Accepted bounded execution decisions 2026-11-18:** 16-packet source audit, BOOK01, BOOK02, HAR05, DIR02, HK04, S3a, and QA-SF01 are Done. 9 packets remain Ready for safe work. [Cursor order](open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md); no paid dispatch grant |
 | [product-reality-reconciliation/](open/product-reality-reconciliation/README.md) | **Done 2026-11-18:** PVAL01–PVAL06 are archived. Solo is the first tested playability milestone. The small party stays a distant later aspiration. The audit itself is not a new mechanic |
 | [playability-reality/](open/playability-reality/README.md) | **Proposed 2026-11-18:** REAL01 first-solo acceptance, REAL02 semantic-canon integration fixtures, REAL03 value/cost protocol, REAL04 V0 and rights honesty. Three prepared Changes, none selected; no paid evaluations |

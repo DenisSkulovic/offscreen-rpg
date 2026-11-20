@@ -1,5 +1,15 @@
 # Changes | catalog and lifecycle
 
+**2026-11-20 Kubernetes-first developer experience (owner-selected outcome, not yet implemented):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Seven distinct DXK01–07 implementation Changes replace default Compose/host watchers with kind + Tilt + Headlamp, safe lifecycle, provider-free playable onboarding, script/CI modernization, complete active-runtime Compose retirement and clean-clone verification. Existing TURN02/BOOT03/STORY03/TURN03 retain their real-release/gameplay ownership; no new packet is currently selected.
+
+- [DXK01: Kubernetes stack lifecycle](open/2026-11-20--dxk01-kubernetes-stack-lifecycle/CHANGE.md)
+- [DXK02: Tilt and Headlamp operator experience](open/2026-11-20--dxk02-tilt-headlamp-developer-uis/CHANGE.md)
+- [DXK03: Local identity and playable campaign](open/2026-11-20--dxk03-local-playable-identity-and-fixture/CHANGE.md)
+- [DXK04: Root package command redesign](open/2026-11-20--dxk04-package-command-surface/CHANGE.md)
+- [DXK05: Kubernetes CI and lab safety replacement](open/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md)
+- [DXK06: Remove Compose runtime and references](open/2026-11-20--dxk06-compose-retirement/CHANGE.md)
+- [DXK07: Clean-clone readiness and regression harness](open/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md)
+
 **2026-11-20 first-campaign convergence:** [source-audited mechanism ladder and Cursor handoff](../designs/open/first-campaign-readiness-2026-11-20/README.md). Snapshot `3992437` has **19** open Change folders: 9 relevant to the cold full-turn path, 8 important but not first-campaign prerequisites, 2 explicitly provider-gated. The older 24-packet audit remains dated history. Do **not** open 19 broad child assignments; select the first bounded source correction in STORY03 T07/T08 and use the new causal integration T09. No Change was declared Done by this planning pass.
 
 
