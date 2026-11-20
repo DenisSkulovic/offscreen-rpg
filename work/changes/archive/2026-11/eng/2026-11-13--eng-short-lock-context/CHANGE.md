@@ -6,7 +6,7 @@
 
 **Design decision update (post-ENG wave, Nov 13):** Remains **Proposed, NOT Ready for a full context-admission refactor**. [Concurrency and recovery](../../../../../../docs/technical/engine/concurrency-and-recovery.md) selects exact 0/250/2000ms external-I/O fault traces, SQL lock timing, source-version capture categories and the required speculation/settlement race. It allows a separately approved, narrowly bounded disposable performance investigation, **not** automatic migration to a second async Storyteller coordinator. Revisit after ENG05 local S3 adapter and observed contention.
 
-**State:** **Done (2026-11-20).** The story-lock work named in the November 20 decision is finished on branch `change/eng03-short-lock`. This branch is not merged. `work/QUEUE.md` still selects TURN02.
+**State:** **Done (2026-11-20).** The story-lock work named in the November 20 decision is finished and merged to local main from branch `change/eng03-short-lock`. `work/QUEUE.md` still selects TURN02.
 
 **Plain closeout:** A slow document read was holding the lock on a story, so another action on that same story had to wait. That wait is gone for choosing an option, for activity and world-event narration, and for historical reports. If the story changes during the read, the choice or narration is refused instead of being saved against the wrong story. Disposable-database tests cover those cases. Two leftovers are written down and are not more work for this Change: the opening checkpoint re-read belongs with the existing start work, and a fork still writes its branch manifest after taking the source story lock.
 

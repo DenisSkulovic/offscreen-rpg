@@ -1,6 +1,6 @@
 # Changes | catalog and lifecycle
 
-**ENG03 is Done on branch `change/eng03-short-lock` and is not merged.** [Archived packet](archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md). Choosing an option, activity and world-event narration, and historical reports no longer hold the story lock during a slow document read. TURN02 stays the selected queue item.
+**ENG03 is Done and merged to local main.** [Archived packet](archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md). Choosing an option, activity and world-event narration, and historical reports no longer hold the story lock during a slow document read. TURN02 stays the selected queue item.
 
 **WIKI18 closeout (2026-11-20):** [Cancelled as a partially delivered experiment, not Done](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md). Keep the implemented trace parser, context routing, model guard and maintenance checks, but do not claim unmeasured cost savings or retain an implementation Change for an unapproved paid benchmark. Normal task evidence remains in actual Change receipts; standalone W2/W3 research is opt-in.
 

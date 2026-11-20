@@ -46,7 +46,7 @@ Current `apps/api/src/modules/stories/controller.ts:fork` invokes `this.stories.
 
 **Experimental work lifecycle:** WIKI18 was [Cancelled/partially delivered](changes/archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md): retain the implemented economical Cursor tooling, but the optional paired cost-effectiveness benchmark is not a standing open Change or a proven savings result. No new ticket is required to record metrics opportunistically in actual task receipts.
 
-**ENG03 is Done on `change/eng03-short-lock` and is not merged.** [Packet](changes/archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md). Do not start it again from the old open folder. TURN02 remains the selected work.
+**ENG03 is Done and merged to local main.** [Packet](changes/archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md). Do not start it again from the old open folder. TURN02 remains the selected work.
 
 ## Prevent self-management drift
 

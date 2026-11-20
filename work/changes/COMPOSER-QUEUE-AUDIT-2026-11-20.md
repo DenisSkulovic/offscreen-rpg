@@ -16,7 +16,7 @@
 
 | ID / folder | Baseline state and observed source | Appropriate next step | Delegation |
 | --- | --- | --- | --- |
-| **ENG03** `2026-11-13--eng-short-lock-context` | Done on `change/eng03-short-lock`, archived, not merged | Do not restart. Merge only if the owner asks | Closed |
+| **ENG03** `2026-11-13--eng-short-lock-context` | Done, archived, merged to local main | Do not restart | Closed |
 | **GM07** `2026-11-13--gm-delegated-decision` | `admitDelegatedDecision` pure consent/expiry reducer exists; durable scheduler/consent ownership not demonstrated | Fence published offer, revocation and expiry under one SQL owner; precise proof before transport | Composer pure tests; actual persisted integration **PLANNER-BLOCKED** on canonical consent/offer |
 | **GM03** `2026-11-13--gm-standing-life` | `accepted-plans.ts` three-quiet-watch helper and plan controls exist; not unrestricted standing routine | Verify same plan iteration/horizon/interruption; select only a concrete delta | Composer narrow PATCH/VERIFY; broad autonomy deferred |
 | **OBS00** `2026-11-15--obs00-live-provider-custody` | Provider override fix landed; no durable live dispatchAuthority; paid send denied | Provider-disabled contract/negative fixture only; **do not enable live** | Composer VERIFY, later **PLANNER-BLOCKED** money authority |
