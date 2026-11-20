@@ -20,14 +20,11 @@ Minimal public package command interface and experiment ownership. **Own/edit:**
 
 **What fails acceptance:** a green unit smoke masking non-working Kubernetes or fabricated app readiness; silent mutation of existing DB/campaign; broad 0.0.0.0 host bind; losing unrelated volumes; an unobserved browser/cluster claim; resurrecting Compose as a second blessed boot path. Stop on a newly discovered authority conflict or failed prerequisite with precise source evidence; do not force a PASS by dropping a necessary assertion.
 
-## Executable plan and proofs
+## Implementation checkpoints (details only in TASKS.md)
 
-- **T01 | Evidence-based 63-script disposition ledger (VERIFY/PATCH):** Inventory every current root package.json script and usages across GitHub CI, docs, agent rules, tests and developer tools, with KEEP_ROOT/MOVE_TO_EXISTING_OWNER/REPLACE/DELETE + consumer migration. Retain build/typecheck/lint/test:fast and repo:brief/wiki navigation; maintain one obvious dev and stack:* surface. Archive useful experiment invocation within tools/chamber or existing tool owner, don't delete historical measurements or create a redundant package solely for aliases. Parent review table in CHANGE.md receipt.
-
-- **T02 | Mechanical relocation and non-Compose story tooling (PATCH-M):** Move Chamber packet, scenario, evaluation and memory routes to tools/chamber; API integration suites remain under tools/api-integration; move specialized storyteller audit/bench to appropriate existing tool or new coherent tool only when ownership requires it. Replace scripts/repo-tools/story-session-report.mjs direct docker compose→docker exec with explicit read-only SQL connection or namespaced kubectl route, or retire if obsolete. Preserve privacy/redaction and SQL read-only guarantees. Remove redundant story:local/story:server as public app startup, not needed game simulation primitives.
-
-- **T03 | Root guard, docs/agent-route reconciliation (PATCH-M):** Implement a stable script-interface test (root affordances, no redundant experimental aliases, all referenced scripts resolve). Update active README, dev docs, .agents command routing, script help and scoped negative tests; preserve useful package-level start commands for container entrypoints and fast host tests. Do not remove running CI commands before DXK05 takes ownership. Proof: every root command resolves to supported operation; no regression to turbo run dev host app orchestration.
-
+- **T01 | Evidence-based 63-script disposition ledger:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T02 | Mechanical relocation and non-Compose story tooling:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T03 | Root guard, docs/agent-route reconciliation:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
 **Verification tiers:** focused static/unit tests may be run before real kind. For a live acceptance tier, use exact current cluster context, actual Pods/Jobs/SQL/S3 and browser; record PASS/FAIL/NOT-RUN for normal and negative cases separately. Repeated runs must be safe. Finish CHANGE.md receipt with executed command, current SHA/image digests/context, failures and residual gaps. Update actual technical docs/STATUS and link health only for changed truths, not guesses. Close/archive only after the bounded goal is proved, then update catalog and work selector without skipping dependent work.
 
 ## Planned impact | planned-impact.v1

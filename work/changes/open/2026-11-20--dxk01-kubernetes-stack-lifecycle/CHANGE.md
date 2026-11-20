@@ -20,14 +20,11 @@ Safe one-command-capable Kubernetes stack lifecycle. **Own/edit:** scripts/repo-
 
 **What fails acceptance:** a green unit smoke masking non-working Kubernetes or fabricated app readiness; silent mutation of existing DB/campaign; broad 0.0.0.0 host bind; losing unrelated volumes; an unobserved browser/cluster claim; resurrecting Compose as a second blessed boot path. Stop on a newly discovered authority conflict or failed prerequisite with precise source evidence; do not force a PASS by dropping a necessary assertion.
 
-## Executable plan and proofs
+## Implementation checkpoints (details only in TASKS.md)
 
-- **T01 | Guarded preflight and ownership (PATCH-M):** Read infra/kubernetes/lab/{up.sh,lib.sh,kind.yaml} and TURN02 T04. Implement one Node24 CLI/bootstrap runner that verifies pinned prerequisites, Docker daemon, kind context ownership, WSL available memory, loopback port availability and resource profile. Do not switch foreign contexts or delete volumes. Negative tests: wrong context and occupied port refuse before mutations.
-
-- **T02 | Idempotent reconciler and lifecycle (PATCH-L):** Implement stack:up, stack:status, stack:down and explicitly confirmed stack:reset against the **single** selected app release; no duplicate manifests. Reapply stable resources and wait for migration/import Jobs with pinned roots, preserve SQL/S3 on warm startup, no orphan port-forward process or false URL on detached run. Stop/down default only touches labeled owned resources, preserve cluster data; reset demands exact context and explicit typed confirmation. Wrong-root/migration-failure reports nonzero.
-
-- **T03 | Three-layer health and disaster negatives (VERIFY/PATCH):** Report cluster, service and playable fixture readiness separately, with actionable namespace/Pod/Job/log diagnostics. Inject missing pinned object, dead GA/worker, failing migration and repeat start; check no READY on failed gameplay, no data reset, no external port. Record WSL memory and cold/warm durations. Only claim kind proofs when actual Pods used.
-
+- **T01 | Guarded preflight and ownership:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T02 | Idempotent reconciler and lifecycle:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T03 | Three-layer health and disaster negatives:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
 **Verification tiers:** focused static/unit tests may be run before real kind. For a live acceptance tier, use exact current cluster context, actual Pods/Jobs/SQL/S3 and browser; record PASS/FAIL/NOT-RUN for normal and negative cases separately. Repeated runs must be safe. Finish CHANGE.md receipt with executed command, current SHA/image digests/context, failures and residual gaps. Update actual technical docs/STATUS and link health only for changed truths, not guesses. Close/archive only after the bounded goal is proved, then update catalog and work selector without skipping dependent work.
 
 ## Planned impact | planned-impact.v1

@@ -20,14 +20,11 @@ Secured local login and deterministic playable demonstration. **Own/edit:** apps
 
 **What fails acceptance:** a green unit smoke masking non-working Kubernetes or fabricated app readiness; silent mutation of existing DB/campaign; broad 0.0.0.0 host bind; losing unrelated volumes; an unobserved browser/cluster claim; resurrecting Compose as a second blessed boot path. Stop on a newly discovered authority conflict or failed prerequisite with precise source evidence; do not force a PASS by dropping a necessary assertion.
 
-## Executable plan and proofs
+## Implementation checkpoints (details only in TASKS.md)
 
-- **T01 | Explicitly gated, real Better Auth local identity (PATCH-L):** Decide settled contract: enable Better Auth email/password solely in explicit local-demo profile with loopback APP_ORIGIN, owned kind context/namespace and single local ephemeral secret; GitHub OAuth remains the regular default when configured. Create unique local account via official Better Auth flow and a usable login UI; no forged cookies, anonymous admin, backdoor route or hard-coded permanent shared password. Production env/remote host + dev flag must refuse startup. Tests demonstrate valid session, invalid credentials, CSRF, foreign/anonymous denial and non-demo refusal.
-
-- **T02 | Idempotent staff bootstrap and pinned content (PATCH-L):** Use real authenticated user IDs and existing admin:bootstrap-staff authorization to provision one dev staff identity in owned cluster, not general admin impersonation. Import/verify pinned rule/world/start docs into S3 once; choose rights-cleared/publicly usable demo fixture consistent with selected campaign (do not silently treat Vvardenfell sample as licensed). Seed a selectable campaign/opening through existing application use cases, not direct fabricated game rows. Repeated deploy preserves user, staff grants, story and source hashes.
-
-- **T03 | Real UI gameplay and negative checks (VERIFY/PATCH):** From browser login launch pinned campaign, play one deterministic meaningful action through Nest→private GA→SQL/S3/Temporal→publication, load scene continuation, inspect history and /control. If checkpoint/fork is prerequisite for declared golden scenario, use TURN03's real fixture; no fake response or green synthetic harness substitute. Wrong user denied, failed provider disabled and missing package have honest UI and readiness failure; capture exact browser/SQL/Pod evidence with zero model calls.
-
+- **T01 | Explicitly gated, real Better Auth local identity:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T02 | Idempotent staff bootstrap and pinned content:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T03 | Real UI gameplay and negative checks:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
 **Verification tiers:** focused static/unit tests may be run before real kind. For a live acceptance tier, use exact current cluster context, actual Pods/Jobs/SQL/S3 and browser; record PASS/FAIL/NOT-RUN for normal and negative cases separately. Repeated runs must be safe. Finish CHANGE.md receipt with executed command, current SHA/image digests/context, failures and residual gaps. Update actual technical docs/STATUS and link health only for changed truths, not guesses. Close/archive only after the bounded goal is proved, then update catalog and work selector without skipping dependent work.
 
 ## Planned impact | planned-impact.v1

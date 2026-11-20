@@ -20,14 +20,11 @@ Executable fresh-clone full-system acceptance and user onboarding. **Own/edit:**
 
 **What fails acceptance:** a green unit smoke masking non-working Kubernetes or fabricated app readiness; silent mutation of existing DB/campaign; broad 0.0.0.0 host bind; losing unrelated volumes; an unobserved browser/cluster claim; resurrecting Compose as a second blessed boot path. Stop on a newly discovered authority conflict or failed prerequisite with precise source evidence; do not force a PASS by dropping a necessary assertion.
 
-## Executable plan and proofs
+## Implementation checkpoints (details only in TASKS.md)
 
-- **T01 | Cold/warm command acceptance harness (PATCH-M):** Create safe read-only/default automated smoke commanding pinned prerequisites, app startup, Job/S3/SQL/POD health, stable origin and meaningful player/role checks. Test cold setup on owned disposable context and warm repeated pnpm dev with preserved story/identity/checkpoint; print elapsed durations and peak memory. Reset test only with explicit owner approval and exact cluster ownership. Wrong context, missing Pod, broken migration and port conflict must all fail visibly.
-
-- **T02 | Real browser, UI and restart proof (PATCH-M):** Use real Playwright/browser acceptance to sign in as local user, start/action/continue/read/fork supported deterministic campaign, inspect admin /control and forbid wrong actor. Observe Tilt rebuild failure and recovery; Headlamp desktop Pod/log/terminal and one app-Pod deletion via UI are manual steps in final operator Task, corroborated by captured Pod UID + replacement + continuity. A smoke that only sees green /health returns FAIL, not success.
-
-- **T03 | Canonical onboarding and measured evidence (DOC PATCH/VERIFY):** Replace default docs/runbooks/local-development.md with Kubernetes-only clone/prereq/pnpm dev/open game/open /control/open Tilt/open Headlamp path; link troubleshooting, existing lab educational-only distinction, safe down/reset, nonprovider default and real Oauth alternative. Reconcile README.md, STATUS.md and deployment/compatibility technical owner **from observed evidence only**. Record exact SHA, OS/WSL/Docker/kind/kubectl/Tilt versions, Pods/images, first/second times, memory and unrun cases. Validate wiki/document links and zero-active-Compose guard.
-
+- **T01 | Cold/warm command acceptance harness:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T02 | Real browser, UI and restart proof:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T03 | Canonical onboarding and measured evidence:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
 **Verification tiers:** focused static/unit tests may be run before real kind. For a live acceptance tier, use exact current cluster context, actual Pods/Jobs/SQL/S3 and browser; record PASS/FAIL/NOT-RUN for normal and negative cases separately. Repeated runs must be safe. Finish CHANGE.md receipt with executed command, current SHA/image digests/context, failures and residual gaps. Update actual technical docs/STATUS and link health only for changed truths, not guesses. Close/archive only after the bounded goal is proved, then update catalog and work selector without skipping dependent work.
 
 ## Planned impact | planned-impact.v1

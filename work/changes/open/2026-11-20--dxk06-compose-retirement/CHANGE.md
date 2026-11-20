@@ -20,14 +20,11 @@ Delete Compose and remaining runtime-era compatibility artifacts. **Own/edit:** 
 
 **What fails acceptance:** a green unit smoke masking non-working Kubernetes or fabricated app readiness; silent mutation of existing DB/campaign; broad 0.0.0.0 host bind; losing unrelated volumes; an unobserved browser/cluster claim; resurrecting Compose as a second blessed boot path. Stop on a newly discovered authority conflict or failed prerequisite with precise source evidence; do not force a PASS by dropping a necessary assertion.
 
-## Executable plan and proofs
+## Implementation checkpoints (details only in TASKS.md)
 
-- **T01 | Delete operational Compose entrypoints (PATCH-M):** Delete compose.yaml and scripts/repo-tools/compose.mjs; remove infra:up/down/infra wrapper/legacy repair advice after their callers use pnpm dev/stack:*. Replace obsolete docs/.env examples and current agent/runbook startup text with one Kubernetes path. Don't touch archives/dated evidence or user Docker volumes. Negative: scripts no longer call docker compose and clone from scratch requires no historical named volume.
-
-- **T02 | Rename internal legacy compose runtime mode without changing authorities (PATCH-M):** In game-authority-client.ts replace literal mode 'compose' with clearly scoped 'embedded' (or 'in-process' consistently); keep 'distributed' as **only** Kubernetes release mode and fail closed if missing in app manifest. Change readStoryAuthorityConfig default intentionally for host test use, but no Kubernetes missing-env fallback; update app.ts, seam tests, integration helper and config docs. Reject now-retired 'compose' env value instead of silent alias. Preserve existing direct local test seam only for unit/integration use. Do not remove distributed auth/custody or change gameplay logic.
-
-- **T03 | Active-tree zero-remnant guard and acceptance (PATCH-M):** Build a scoped structural scan that fails tracked active config/scripts/CI/current docs for compose.yaml, docker compose invocations, old volume identity assumptions, GAME_AUTHORITY_MODE=compose, root infra:up/down old commands or legacy only-local start path. Exclude true historical archived work/evidence and natural function names containing compose. Check references, help text, scripts, README, .env.example, tests, flow; run baseline tests, build and wiki links. Only archive DXK06 when zero active orchestrator/era dependencies remain.
-
+- **T01 | Delete operational Compose entrypoints:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T02 | Rename internal legacy compose runtime mode without changing authorities:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
+- **T03 | Active-tree zero-remnant guard and acceptance:** Execute one bounded task via [TASKS.md](TASKS.md) and attach concrete positive/negative proof to the receipt.
 **Verification tiers:** focused static/unit tests may be run before real kind. For a live acceptance tier, use exact current cluster context, actual Pods/Jobs/SQL/S3 and browser; record PASS/FAIL/NOT-RUN for normal and negative cases separately. Repeated runs must be safe. Finish CHANGE.md receipt with executed command, current SHA/image digests/context, failures and residual gaps. Update actual technical docs/STATUS and link health only for changed truths, not guesses. Close/archive only after the bounded goal is proved, then update catalog and work selector without skipping dependent work.
 
 ## Planned impact | planned-impact.v1
