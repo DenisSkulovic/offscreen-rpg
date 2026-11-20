@@ -2,7 +2,7 @@
 
 ## 2026-11-20 T05/T06 closure
 
-**Current:** T05 and T06 are done on branch `change/story02-scripted-custody`. QUEUE stays TURN02. Historical T01–T03 labels below describe work that already landed.
+**Current:** T05 and T06 are done on `main` at `22512a4c`. QUEUE stays TURN02. Historical T01–T03 labels below describe work that already landed.
 
 ### T05 | Enforce scripted-only GA custody mode and provenance | PATCH PASS
 
