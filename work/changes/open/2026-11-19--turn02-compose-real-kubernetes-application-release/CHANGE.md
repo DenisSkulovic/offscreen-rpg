@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: pinned S3 bootstrap, real images and one serialized cluster join. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image static/unit PASS** on top of `c832593a` (2026-11-20); web image build and kind/cluster **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
+**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image built locally** on `9fa937cf` (2026-11-20); kind/cluster **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -74,11 +74,13 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 **Proved on top of** `c832593a`: `Dockerfile.web` pins `node:24.19.0-bookworm-slim` to the same digest as the API image. The runner sets `HOSTNAME=0.0.0.0` and both `API_PROXY_ORIGIN` and `API_INTERNAL_ORIGIN` to `http://game-api.lab-edge.svc.cluster.local:3001`. Local `dev` and `start` stay on `127.0.0.1`. `releasePodAllowsSsr` blocks Pod SSR before `fetch` when that origin is loopback or differs from `API_PROXY_ORIGIN`.
 
-**Positive (static/unit only):** `node --test` rewrite + dockerfile-guard **8/8 PASS**. `vitest` `api-origin.test.ts` and `nest-reader.test.ts` **11/11 PASS**. Matching lab Service origin still forwards the session cookie.
+**Positive (static/unit):** `node --test` rewrite + dockerfile-guard **8/8 PASS**. `vitest` `api-origin.test.ts` and `nest-reader.test.ts` **11/11 PASS**. Matching lab Service origin still forwards the session cookie.
 
-**Negative:** Pod `nestFetch` throws `NestTransientError` status 0 and does not call `fetch` for loopback or a mismatched origin. Dockerfile guard rejects a `content/` copy and a secret build arg on `Dockerfile.web`.
+**Positive (local image, 2026-11-20, source `9fa937cf`):** `bash infra/kubernetes/lab/app-release/build-web.sh` exit 0 in 42s. Image `offscreen-lab-game-web:turn02` id `sha256:749f69f1865fb8f8cdb1dd1a4ef5d5433462491ae5505db7da0448645d4f93f0`. Runner env: `HOSTNAME=0.0.0.0`, `API_PROXY_ORIGIN` and `API_INTERNAL_ORIGIN` both `http://game-api.lab-edge.svc.cluster.local:3001`. Extracted `apps/web/.next/routes-manifest.json` destination: `http://game-api.lab-edge.svc.cluster.local:3001/api/:path*`. In-image VERIFY step exited 0.
 
-**NOT-RUN:** `docker build` of the web image, `next build` routes-manifest bake, kind load, Pod Ready, and authenticated browser SSR. **T04 stays gated** on that image build. No Kubernetes application release is claimed.
+**Negative:** Pod `nestFetch` throws `NestTransientError` status 0 and does not call `fetch` for loopback or a mismatched origin. Dockerfile guard rejects a `content/` copy and a secret build arg on `Dockerfile.web`. `assertReleaseRewriteNotLoopback` accepted the extracted destination. A second image build with a loopback origin was **NOT-RUN**.
+
+**NOT-RUN:** kind load, Pod Ready, and authenticated browser SSR. The local image unblocks T04 source work. No Kubernetes application release is claimed.
 
 ## Reconciliation ledger (complete before Done)
 
