@@ -42,6 +42,8 @@ For substantial conversations and work, follow [daily session minutes](session-m
 
 ## Checkpoints and Git
 
+**Readable commit provenance:** use [commit message policy](git-commits.md) for every newly authored commit, including source-controlled GitHub API commits that bypass local hooks. A `type(scope): outcome` subject + explicit `Why:` / truthful `Evidence:` is required; record `Remaining:` for important incomplete proof. Install local `commit-msg` hook with `pnpm repo:hooks:install` without overriding a custom hook path. Do not rewrite old history to force the new convention.
+
 At a meaningful interruption, update the selected Change PLAN's **current checkpoint** (if any): revised phase, specific edited files, checks and limits, unresolved issue, exact next step and source revision. The plan is an execution workspace, not a diary. Completed code Changes are retired only after the CHANGE.md **Reconciliation ledger** is filled and durable facts are folded into permanent owners via [documentation-reconciliation](../skills/documentation-reconciliation/SKILL.md) where `updated`; Git is the archive. Historical initiative dossiers remain contextual only until safely reconciled; the [work-unit standard](../references/change-work-unit-standard.md) defines classification and readiness. Preserve explicitly retained dossiers.
 
 Inspect Git status before broad editing and before a commit. Preserve unrelated changes. Prefer coherent commits, but do not silently force push, rewrite history, deploy, or push changes when handoff expectations are unclear. A local checkpoint and explicit report are safer than a surprise remote mutation.

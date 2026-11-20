@@ -63,7 +63,10 @@
     "storyteller:live-comparison": "pnpm --filter @offscreen/contracts build && pnpm --filter @offscreen/application build && node scripts/repo-tools/storyteller-live-comparison.mjs",
     "memory:index-benchmark": "pnpm --filter @offscreen/documents build && pnpm --filter @offscreen/application build && node scripts/repo-tools/memory-index-benchmark.mjs",
     "chamber:review": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber review",
-    "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0"
+    "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0",
+    "repo:commit:check:test": "node --test scripts/repo-tools/check-commit-message.test.mjs",
+    "repo:hooks:install": "node scripts/repo-tools/install-git-hooks.mjs",
+    "repo:commit:check": "node scripts/repo-tools/check-commit-message.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

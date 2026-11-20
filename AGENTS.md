@@ -27,6 +27,8 @@
 - **Temporary work / evidence / research:** [work/](work/README.md), [evidence/](evidence/README.md), [research/](research/README.md)
 - Package maps: [web](apps/web/README.md), [API](apps/api/README.md). Navigation design standard: [.agents/references/documentation-navigation-standard.md](.agents/references/documentation-navigation-standard.md) (on demand).
 
+**Git history is an engineering evidence index:** all new authored commits use [the commit-message rule](.agents/rules/git-commits.md): `type(scope): outcome`, a specific `Why:` and truthful `Evidence:` (plus `Remaining:` for unproved parts). Install repo-local `commit-msg` validation with `pnpm repo:hooks:install`. API-created commits bypass local hooks and must be self-validated. Never invent proof to satisfy the format.
+
 ## Boundaries
 
 - **Local disposable infra:** bring up Postgres/Temporal/Docker/build caches yourself for authorized local proofs. Still require explicit permission for paid providers, deploy, secrets, non-disposable/remote DB, or live spend.
