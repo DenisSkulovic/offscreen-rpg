@@ -1,6 +1,6 @@
 # ENG03 | Finite one-Change short-lock implementation route
 
-**Current status:** on `change/eng03-short-lock`, T02 measured the resolution lock defect and T03–T05 moved resolution, activity narration, activity historical reports, world-obligation consequence narration, and world-obligation historical reports off the story lock. T06 is classification only. The concurrency page records this partial proof. ENG03 is not archived. **Selection:** `work/QUEUE.md` stays TURN02. Disposable SQL and provider-disabled only.
+**Current status:** on `change/eng03-short-lock`, resolution, activity narration, world-obligation narration, and both historical-report paths have disposable-SQL proof. T07 caller census: `loadStorytellerContext` has no production caller. Two document reads remain inside an open transaction and are unmeasured: `start.ts:startFromCandidate` confirms a staged checkpoint before the story row lock, and `forks.ts:fork` reads a scene checkpoint while the source story row is locked. ENG03 is not archived. **Selection:** `work/QUEUE.md` stays TURN02.
 
 ## T01 | Existing pending-path measurement | DONE verification, not parent closure
 
@@ -49,5 +49,7 @@ Previous command `node --test packages/application/test/eng03-narrow-capture.liv
 ## T07 | Closure, guard and archive only on source-proved behavior | VERIFY/DOC
 
 **Read:** [decision](DECISION-2026-11-20.md), `docs/technical/engine/concurrency-and-recovery.md`, `work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md`, relevant focused test receipt. Enumerate all production callers of `loadStorytellerContext`, `readPassageDocument` and `loadCanonicalKnowledge`; close only if every actual lock-held external-read branch in this packet has a proof or an independently owned existing boot fix with explicit receipt, source-version and bound. Run focused/unit/disposable DB/Change guard; evidence tier recorded exactly. Update status/docs, archive only with full positive/negative matrix. If an accepted unsupported source path cannot be fixed safely, keep OPEN with that *one named obstruction*; no indefinite general "planner gate."
+
+**T07 receipt (2026-11-20, source census at `400960e2`, no new test):** `loadStorytellerContext` has no production caller. `readPassageDocument` in resolution and admission runs after the snapshot transaction closes. `loadCanonicalKnowledge` in capture materialization runs before the promote transaction. `reads.ts` story snapshot and historical scene read documents inside a read transaction with no `FOR UPDATE`. Two writes still read storage inside an open transaction: `start.ts:startFromCandidate` calls `confirmStagedCheckpointObject` before `lockOwnedStory`, and `forks.ts:fork` calls `readSceneCheckpointReference` after `FOR UPDATE` on the source story. Neither has a delay measurement. ENG03 stays open. No archive.
 
 **Common safety:** test via independently verified disposable Postgres (never unowned user data), no live provider, no cluster teardown, no new Kubernetes authority, no expense escalation. Follow `work/QUEUE.md` single selected owner; all tasks here are prepared but currently unselected.
