@@ -11,6 +11,7 @@ import {
   campaign,
   campaignReport,
   gameActivity,
+  worldObligation,
 } from '@offscreen/db/campaign-schema';
 import { story, storyPassage } from '@offscreen/db/story-schema';
 import {
@@ -34,8 +35,12 @@ import {
   hashContextCapture,
   parseContextCapture,
   storytellerContextCaptureKind,
+  worldObligationHistoricalReportContextCaptureV1Schema,
 } from '../dist/storyteller/context-capture.js';
-import { requestActivityReport } from '../dist/campaign/reports.js';
+import {
+  requestActivityReport,
+  requestWorldObligationReport,
+} from '../dist/campaign/reports.js';
 import { lockOwnedStory } from '../dist/stories/persistence.js';
 import { createStorytellerRuntime } from '../dist/storyteller/runtime.js';
 
@@ -233,6 +238,148 @@ async function seedActivityReportStory(database, storage) {
   return { ownerId, storyId, hookId, stories, passageId: passage.id, activity };
 }
 
+async function seedWorldObligationReportStory(database, storage) {
+  const ownerId = `eng03t05wo-${randomUUID()}`;
+  const storyId = randomUUID();
+  const passageId = randomUUID();
+  await insertUser(database, ownerId);
+  const content = {
+    version: 1,
+    title: 'Harbor obligation report',
+    paragraphs: ['A quiet world transition completes.'],
+  };
+  const premise = {
+    title: 'Harbor obligation report',
+    premise: 'A quay runner notes a fired world obligation.',
+    storytellingDirection: 'Keep reports factual.',
+  };
+  const staged = await stageStoryBootstrapDocuments({
+    storage,
+    storyId,
+    passageId,
+    sequence: 1,
+    operationId: storyId,
+    rootHash: null,
+    rootRevision: 0,
+    content,
+    premise,
+    items: [],
+  });
+  await database.db.transaction(async (tx) => {
+    await initializeStoryInTransaction(tx, {
+      ownerId,
+      storyId,
+      input: {
+        source: 'playable.opening.v1',
+        premise,
+        storyteller: profile,
+        execution: offlineExecution,
+        usagePolicy: null,
+        items: [],
+        content,
+        interaction: null,
+      },
+      stagedPassage: staged,
+    });
+    await initializeCampaign(
+      tx,
+      storyId,
+      profile,
+      {
+        mechanics: true,
+        locked: false,
+        pace: { kind: 'instant' },
+        time: {
+          kind: 'elapsed',
+          id: 'simulation-game-seconds',
+          revision: 1,
+          unit: {
+            id: 'game-second',
+            label: 'game-second',
+            pluralLabel: 'game-seconds',
+            gameSecondsPerUnit: 1,
+          },
+          epoch: { wholeUnits: 0, gameSecondOfUnit: 0 },
+        },
+        worldObligations: [],
+        worlds: [],
+      },
+      {
+        character: quayCharacter(),
+        storyFacts: [],
+        plans: [],
+        activityAccess: { kind: 'none' },
+      },
+    );
+  });
+
+  const obligationId = randomUUID();
+  const obligationRevision = 2;
+  const dueGameSecond = 900;
+  await database.db.insert(worldObligation).values({
+    id: obligationId,
+    storyId,
+    revision: obligationRevision,
+    definition: {
+      id: obligationId,
+      revision: obligationRevision,
+      label: 'The watch bell',
+      followUp: 'report',
+      dueGameSecond,
+    },
+    dueGameSecond,
+    state: 'fired',
+    firedAtGameSecond: dueGameSecond,
+  });
+
+  const stories = createStories(database, { documentStore: storage });
+  const current = await lockOwnedStory(database.db, { storyId, ownerId });
+  const [campaignState] = await database.db
+    .select()
+    .from(campaign)
+    .where(eq(campaign.storyId, storyId));
+  const [passage] = await database.db
+    .select({ id: storyPassage.id })
+    .from(storyPassage)
+    .where(
+      and(eq(storyPassage.storyId, storyId), eq(storyPassage.sequence, current.revision)),
+    );
+
+  let hookId;
+  await database.db.transaction(async (tx) => {
+    await requestWorldObligationReport(tx, {
+      current,
+      state: campaignState,
+      passageId: passage.id,
+      obligationId,
+      obligationRevision,
+      dueGameSecond,
+      label: 'Watch bell report',
+      factualSummary:
+        'The watch bell condition became true at fictional second 900.',
+    });
+    const [report] = await tx
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.storyId, storyId));
+    assert.equal(report.state, 'generating');
+    hookId = report.id;
+  });
+
+  return {
+    ownerId,
+    storyId,
+    hookId,
+    stories,
+    passageId: passage.id,
+    obligationId,
+    obligationRevision,
+    dueGameSecond,
+    campaignState,
+    current,
+  };
+}
+
 test('ENG03-T05: activity historical report captures off-lock and promotes after scene advance', async () => {
   await withDisposable(async (database) => {
     const root = await mkdtemp(join(tmpdir(), 'eng03t05-'));
@@ -428,5 +575,110 @@ test('ENG03-T05: missing preserved root holds optional prose while report intent
       .where(eq(storytellerContextCapture.captureId, report.generationId));
     assert.equal(captureRow.state, 'held');
     assert.equal(captureRow.failureCode, 'missing_historical_root');
+  });
+});
+
+test('ENG03-T05: world-obligation historical report captures one row and generation', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t05-wo-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedWorldObligationReportStory(database, storage);
+
+    const reports = await database.db
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.storyId, seeded.storyId));
+    assert.equal(reports.length, 1);
+    const report = reports[0];
+    assert.equal(report.id, seeded.hookId);
+    assert.ok(report.generationId);
+
+    const generations = await database.db
+      .select({ id: generation.id })
+      .from(generation)
+      .where(eq(generation.ownerId, seeded.ownerId));
+    assert.equal(generations.length, 1);
+    assert.equal(generations[0].id, report.generationId);
+
+    const [captureRow] = await database.db
+      .select()
+      .from(storytellerContextCapture)
+      .where(eq(storytellerContextCapture.captureId, report.generationId));
+    const capture = worldObligationHistoricalReportContextCaptureV1Schema.parse(
+      captureRow.capture,
+    );
+    assert.equal(capture.sourceKind, 'campaign-world-obligation-report');
+    assert.equal(parseContextCapture(captureRow.capture).purpose, 'historical-report');
+
+    const [provisional] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, report.generationId));
+    assert.equal(provisional.kind, storytellerContextCaptureKind);
+  });
+});
+
+test('ENG03-T05: world-obligation report source conflict leaves mechanical row', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t05-wo-conflict-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedWorldObligationReportStory(database, storage);
+
+    const before = await database.db
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.id, seeded.hookId));
+    assert.equal(before.length, 1);
+    const originalGenerationId = before[0].generationId;
+    assert.ok(originalGenerationId);
+    const conflictedSource = {
+      kind: 'world-obligation',
+      obligationId: seeded.obligationId,
+      obligationRevision: seeded.obligationRevision + 1,
+    };
+    await database.db
+      .update(campaignReport)
+      .set({ source: conflictedSource })
+      .where(eq(campaignReport.id, seeded.hookId));
+
+    await assert.rejects(
+      () =>
+        database.db.transaction(async (tx) => {
+          const current = await lockOwnedStory(tx, {
+            storyId: seeded.storyId,
+            ownerId: seeded.ownerId,
+          });
+          const [state] = await tx
+            .select()
+            .from(campaign)
+            .where(eq(campaign.storyId, seeded.storyId));
+          await requestWorldObligationReport(tx, {
+            current,
+            state,
+            passageId: seeded.passageId,
+            obligationId: seeded.obligationId,
+            obligationRevision: seeded.obligationRevision,
+            dueGameSecond: seeded.dueGameSecond,
+            label: 'Watch bell report',
+            factualSummary: 'Conflicting stored source must not replace the hook.',
+          });
+        }),
+      /report_source_conflict/,
+    );
+
+    const after = await database.db
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.storyId, seeded.storyId));
+    assert.equal(after.length, 1);
+    assert.equal(after[0].id, seeded.hookId);
+    assert.equal(after[0].generationId, originalGenerationId);
+    assert.equal(after[0].state, 'generating');
+
+    const generations = await database.db
+      .select({ id: generation.id })
+      .from(generation)
+      .where(eq(generation.ownerId, seeded.ownerId));
+    assert.equal(generations.length, 1);
   });
 });
