@@ -18,11 +18,13 @@ Status: B1 and the first B2 quota slice implement pure policy resolution, fail-c
 
 Entitlement, funding allowance, and task recipe stay distinct on this page. The usage window stays distinct beside them.
 
-**OBS00-B current-authority implementation decision (2026-11-20):** [Source-backed authorization and atomic dispatch contract](../../../work/changes/open/2026-11-15--obs00-live-provider-custody/DECISION-2026-11-20.md) names the missing independent platform/grant/route SQL sources; they are **planned but not implemented**. A captured `story.usagePolicy` is not current entitlement, and existing allowance rows are not owner grants. Billable dispatch must recheck current authority **inside the same SQL transaction** as `reserved→dispatched`, serializing revocation; the existing detached Boolean check is insufficient for that race. No provider call, grant seed or paid activation is authorized. OBS00-C's per-attempt wire equality was already [Done and tested](../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md); do not implement it again.
+**OBS00-B provider-free custody (2026-11-20):** Independent current dispatch authority and an atomic `budget.dispatch` SQL recheck are [Done in source](../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-live-provider-custody/CHANGE.md). That security capability does **not** authorize operator-approved paid activation, a production grant seed, or TURN04 live send.
 
 ## Distinct authorities
 
 An **entitlement profile** says which capabilities an account may use. A **usage window** limits consumption over real time. A **funding allowance** authorizes actual provider spending. A **task recipe** limits the work needed for one purpose. A **creative Storyteller profile** controls tone/pacing, not any of these permissions. More available funds do not automatically unlock a model, and an unlocked model does not imply permission to fill its context window.
+
+A **funding balance** and a captured `story.usage_policy` are **not** entitlements. They may reserve or attest work already captured on a task; they do not replace current dispatch authority. **Current dispatch authority** is an independent disabled-by-default platform-policy row plus an owner grant keyed to the verified user, funding account, and run. `budget.dispatch` reloads both under the existing funding, run, attempt, and operation locks and rechecks them in the **same transaction** before `reserved` becomes `dispatched`. An empty database denies. A local mocked dispatch proved with synthetic grants is not operator-approved paid activation.
 
 A creative setting does not grant model budget or account entitlement. Creative settings stay on [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings).
 

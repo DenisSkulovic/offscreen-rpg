@@ -113,6 +113,20 @@
       "when": 1794792400000,
       "tag": "0015_gm07_campaign_delegated_offer",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794796000000,
+      "tag": "0016_obs00_current_authority",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794799600000,
+      "tag": "0017_obs00_dispatch_authority_audit",
+      "breakpoints": true
     }
   ]
 }
