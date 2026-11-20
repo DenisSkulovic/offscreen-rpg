@@ -52,6 +52,61 @@ export type StorytellerTaskCustodySaveResultRequest = z.infer<
   typeof storytellerTaskCustodySaveResultRequestSchema
 >;
 
+const storytellerTaskCustodyRootHashSchema = z
+  .string()
+  .regex(/^[0-9a-f]{64}$/);
+
+const storytellerTaskCustodyPositiveRevisionSchema = z.number().int().positive();
+
+export const storytellerTaskCustodyEvidenceRequestSchema = z.strictObject({
+  schemaVersion: storytellerTaskCustodyRequestVersionSchema,
+  storyId: z.uuid(),
+  rootHash: storytellerTaskCustodyRootHashSchema,
+  rootRevision: storytellerTaskCustodyPositiveRevisionSchema,
+  handles: z.array(z.uuid()).max(8),
+});
+
+export type StorytellerTaskCustodyEvidenceRequest = z.infer<
+  typeof storytellerTaskCustodyEvidenceRequestSchema
+>;
+
+const storytellerTaskCustodyEvidenceItemSchema = z.strictObject({
+  documentId: z.uuid(),
+  path: z.string().min(1).max(320),
+  kind: z.string().min(1).max(64),
+  objectHash: storytellerTaskCustodyResultHashSchema,
+  revision: storytellerTaskCustodyPositiveRevisionSchema,
+});
+
+export const storytellerTaskCustodyEvidenceResponseSchema =
+  z.discriminatedUnion('status', [
+    z.strictObject({
+      status: z.literal('ready'),
+      generationId: storytellerTaskCustodyGenerationIdSchema,
+      ownerId: z.string().min(1).max(128),
+      rootHash: storytellerTaskCustodyRootHashSchema,
+      rootRevision: storytellerTaskCustodyPositiveRevisionSchema,
+      partial: z.literal(false),
+      evidence: z.array(storytellerTaskCustodyEvidenceItemSchema).max(8),
+    }),
+    z.strictObject({
+      status: z.literal('refused'),
+      reason: z.enum([
+        'unknown-generation',
+        'unreadable-task',
+        'unsupported-execution',
+        'root-mismatch',
+        'story-mismatch',
+        'unknown-handle',
+        'read-limit',
+      ]),
+    }),
+  ]);
+
+export type StorytellerTaskCustodyEvidenceResponse = z.infer<
+  typeof storytellerTaskCustodyEvidenceResponseSchema
+>;
+
 export const storytellerTaskCustodyFetchResponseSchema = z.discriminatedUnion(
   'status',
   [
@@ -202,6 +257,12 @@ export function storytellerTaskCustodyReadSavedPath(
   return `${storytellerTaskCustodyGenerationBasePath(generationId)}/saved-result`;
 }
 
+export function storytellerTaskCustodyEvidencePath(
+  generationId: string,
+): string {
+  return `${storytellerTaskCustodyGenerationBasePath(generationId)}/evidence`;
+}
+
 export function storytellerGenerationPublishPath(generationId: string): string {
   return `${storytellerTaskCustodyGenerationBasePath(generationId)}/publish`;
 }
@@ -249,6 +310,7 @@ export type StorytellerTaskCustodyRoute =
   | { kind: 'save-result'; generationId: string }
   | { kind: 'read-saved'; generationId: string }
   | { kind: 'publish'; generationId: string }
+  | { kind: 'evidence'; generationId: string }
   | { kind: 'invalid' }
   | { kind: 'absent' };
 
@@ -284,6 +346,9 @@ export function routeStorytellerTaskCustody(
   }
   if (parts.length === 5 && parts[4] === 'publish' && method === 'POST') {
     return { kind: 'publish', generationId: id };
+  }
+  if (parts.length === 5 && parts[4] === 'evidence' && method === 'POST') {
+    return { kind: 'evidence', generationId: id };
   }
   return { kind: 'absent' };
 }
@@ -370,6 +435,21 @@ export function parseStorytellerTaskCustodySaveResultRequest(
   const body = parseStorytellerTaskCustodyJsonBody(raw, limit);
   if (!body.ok) return body;
   const parsed = storytellerTaskCustodySaveResultRequestSchema.safeParse(
+    body.value,
+  );
+  if (!parsed.success) {
+    return { ok: false as const, reason: 'invalid-shape' as const };
+  }
+  return { ok: true as const, value: parsed.data };
+}
+
+export function parseStorytellerTaskCustodyEvidenceRequest(
+  raw: string | Uint8Array,
+  limit = storytellerTaskCustodyBodyByteLimit,
+) {
+  const body = parseStorytellerTaskCustodyJsonBody(raw, limit);
+  if (!body.ok) return body;
+  const parsed = storytellerTaskCustodyEvidenceRequestSchema.safeParse(
     body.value,
   );
   if (!parsed.success) {

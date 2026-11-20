@@ -294,6 +294,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../../packages/game
+      '@offscreen/game-authority':
+        specifier: workspace:*
+        version: link:../game-authority
       '@types/node':
         specifier: 22.20.3
         version: 22.20.3

@@ -1,6 +1,6 @@
 # DATA06 | Composer dispatch: root-pinned future memory for the fork
 
-**Baseline:** 584b594. **Verify SHA:** `ec73a535` (2026-11-20). **State:** Proposed, not selected; **T01 VERIFY PASS**; **not Done**. **Default:** Composer Standard; separate cross-service implementation from data/source design. **Existing deeper investigation:** [SOURCE-MAP.md](SOURCE-MAP.md). Packet receipt does not select the Change or authorize T02/T03.
+**Baseline:** 584b594. **Verify SHA:** `ec73a535` (2026-11-20). **State:** Done · 2026-11-20. Cold-kind continuation stays TURN03. **T03 is not a DATA06 blocker.**
 
 **Observed source:** `stories/forks.ts:forkFromSceneCheckpoint` writes child manifest with child story/campaign ID and root; `storyteller/context-capture.ts` captures frozen source passages and root revision; `storyteller/canonical-knowledge.ts:loadCanonicalKnowledge` rejects mismatched campaignId/root; `storyteller/tasks/memory-exploration.ts` defines bounded ask/read shapes. Lexical story cache has root/branch isolation tests. A separated worker's owner-scoped remote memory service is **not yet implemented**.
 
