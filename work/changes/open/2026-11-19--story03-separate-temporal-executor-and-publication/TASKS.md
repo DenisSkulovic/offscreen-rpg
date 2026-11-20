@@ -34,6 +34,14 @@
 
 **Test route:** `tools/api-integration/package.json` already has `test:turn03-fixture` and `test:boot03:imported-start-distributed`; add one narrowly named script after build for the genuinely causal test. **Stop:** no authenticated candidate/choice path can be constructed from existing fixture without new game rule; return exact missing contract for planner, not synthetic success SQL rows. **Close:** this proves local M1; TURN03 still owns cold kind/browser/fork M2. Never rename a manually started workflow test as a whole-campaign E2E.
 
+### T10 | Drop one committed continuation publish acknowledgement | LANDED (2026-11-20)
+
+**Receipt:** test loopback proxy in `story03-causal-multiprocess-harness.ts`. It forwards `POST .../publish`, and for the continuation generation only, destroys the client socket after Game Authority returns `{ status: 'published' }`. `pnpm --filter @offscreen/api-integration test:story03-t09:causal` **6/6 PASS** (~35s) on `offscreen_auth_test`. Scene 2, sequences `[1, 2]`, one attempt, publication `published`, one dropped acknowledgement. No production fault flag. No provider call. TURN03 still owns cold kind, browser, and fork.
+
+### T11 | Stale saved continuation does not add a passage | LANDED (2026-11-20)
+
+**Receipt:** `packages/application/test/story03-stale-saved-publish.test.mjs` **2/2 PASS** on a disposable sandbox database. `publishSavedGeneration` returns `{ status: 'stale' }` when `narrativeRevision` is behind `story.revision`, keeps the saved output, and does not add a passage. A matching revision is not stale. No edit to `publication.ts`. No Temporal. No provider call.
+
 ---
 
 

@@ -740,4 +740,71 @@ test(
   },
 );
 
-// Activity ACK loss: no production fault hook — covered by worker unit `already_published`; NOT-RUN here.
+test(
+  'STORY03 T10 continuation publish ACK loss retries to already_published',
+  { timeout: 300_000 },
+  async () => {
+    const documentRoot = await mkdtemp(
+      join(tmpdir(), 'offscreen-story03-t10-ack-loss-'),
+    );
+    const { LocalDocumentStore } = await import('@offscreen/documents');
+    const fixture = await provisionTurn03DistributedPocFixture(
+      new LocalDocumentStore(documentRoot),
+    );
+    const continuationGenerationId = { current: '' };
+
+    await withStory03CausalMultiprocessHarness(
+      async (ctx) => {
+        const scene1 = await admitTurn03OpeningAndScene1(ctx, fixture.roots);
+        const operationId = randomUUID();
+        continuationGenerationId.current = operationId;
+        await submitTurn03Resolution(ctx, {
+          storyId: scene1.storyId,
+          operationId,
+          expectedRevision: 1,
+          interactionId: scene1.interactionId,
+          optionId: scene1.visibleOptionId,
+        });
+
+        const scene2 = await waitForStoryRevision(
+          ctx.apiOrigin,
+          ctx.cookie,
+          scene1.storyId,
+          2,
+          60_000,
+        );
+        assert.equal(
+          scene2.current.content.title,
+          turn03DistributedPocAuthorship.scene2.title,
+        );
+
+        await assertContinuationSql(ctx, operationId, scene1.storyId);
+
+        const proxy = requireDefined(
+          ctx.controlPublishProxy,
+          'Expected control publish proxy stats',
+        );
+        assert.equal(proxy.droppedCompletedPublishResponseCount, 1);
+        assert.ok(
+          proxy.publishPostCount >= 2,
+          `expected opening and continuation publish posts (got ${proxy.publishPostCount})`,
+        );
+
+        const stages = await ctx.database.db
+          .select({ id: storytellerAttempt.id })
+          .from(storytellerAttempt)
+          .where(eq(storytellerAttempt.generationId, operationId));
+        assert.equal(stages.length, 1);
+      },
+      {
+        documentRoot,
+        defaultRules: fixture.defaultRules,
+        chamberStorytellerControl,
+        controlPublishProxy: {
+          dropFirstCompletedPublishResponseWhen: (generationId) =>
+            generationId === continuationGenerationId.current,
+        },
+      },
+    );
+  },
+);
