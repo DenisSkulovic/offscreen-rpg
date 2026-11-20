@@ -66,7 +66,7 @@ infra/kubernetes/lab/down.sh
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
-When local Docker already has SeaweedFS and the bootstrap image, the smoke saves each image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used.
+When local Docker already has SeaweedFS and the bootstrap image, the smoke loads each image onto every kind node with `kind load docker-image`. A `docker save | docker exec -i ctr import` loop is not used: that loop can consume the node list and leave the worker without the image. On 2026-11-20 that loop left `offscreen-lab-content-bootstrap:boot02` off `offscreen-lab-worker`, and the importer stayed `ErrImageNeverPull` until `kind load` put the image on both nodes.
 
 ## Failure
 
@@ -143,7 +143,7 @@ Importer and reader Jobs set `OFFSCREEN_DOCUMENT_STORE=s3` and the endpoint, buc
 
 | Owner | Responsibility | Boundary |
 | --- | --- | --- |
-| [TURN02](../../work/changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md) | Run the importer **once** per release overlay, then wire API, GA, and worker Pods to read the **same** S3 endpoint, bucket, and root hashes at runtime | Release must not bundle arbitrary `content/` trees into runtime images or re-import on every Pod start. TURN02 **T01** in that TASKS file loads the default rule manifest by content hash from the imported store instead of `importRulePackageDirectory` from a local path |
+| [TURN02](../../work/changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md) | Run the importer **once** per release overlay, then wire API, GA, and worker Pods to read the **same** S3 endpoint, bucket, and root hashes at runtime | Release must not bundle arbitrary `content/` trees into runtime images or re-import on every Pod start. TURN02 **T01** in that TASKS file loads the default rule manifest by content hash from the imported store instead of `importRulePackageDirectory` from a local path |
 | [BOOT03](../../work/changes/archive/2026-11/other/2026-11-19--boot03-game-authority-start-admission/TASKS.md) | After pins are readable in the real store, admit a **succeeded Storyteller-kind** opening candidate and commit start through Game Authority | Import does not create an owned candidate. A start package root is not a successful opening candidate. Story start is not claimed from the importer or reader Jobs |
 
 Do not treat BOOT02's reader Job as a substitute for BOOT03 integration tests or for TURN02's authenticated application release. Do not point Compose at the disposable lab store unless a separately authorized proof says so.

@@ -42,7 +42,7 @@ Existing TURN02 T03→T04→T05→T06 enables real release; related BOOT03/STORY
 
 ## Read in this order, not all at once
 
-[Planner source investigation](SOURCE-MAP.md) is planner-owned reference, not a mandatory child preload. [Finite Cursor wave handoff](CURSOR-HANDOFF.md) is the parent entry. Pick the selected Change's CHANGE.md then one T-ID in TASKS.md. [TURN02](../../../changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md) is the real release integrator. The [task catalog](../../../tasks/README.md) owns independent operational proofs.
+[Planner source investigation](SOURCE-MAP.md) is planner-owned reference, not a mandatory child preload. [Finite Cursor wave handoff](CURSOR-HANDOFF.md) is the parent entry. Pick the selected Change's CHANGE.md then one T-ID in TASKS.md. [TURN02](../../../changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md) is the real release integrator. The [task catalog](../../../tasks/README.md) owns independent operational proofs.
 
 ## Change catalog
 

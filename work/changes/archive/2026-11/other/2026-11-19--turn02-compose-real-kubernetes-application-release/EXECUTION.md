@@ -1,6 +1,6 @@
 # TURN02 | one release integrator, bounded implementation plan
 
-**Profile:** RELEASE · **Source inspection:** `584b594` · **State:** proposed release strategy, not runnable/selected. Start [SOURCE-MAP](SOURCE-MAP.md) at the specific blocker; do not pass it wholesale to every Cursor subagent. [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) is the only full-campaign gate.
+**Profile:** RELEASE · **Source inspection:** `584b594` · **State:** proposed release strategy, not runnable/selected. Start [SOURCE-MAP](SOURCE-MAP.md) at the specific blocker; do not pass it wholesale to every Cursor subagent. [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) is the only full-campaign gate.
 
 ## Release target
 

@@ -1,6 +1,6 @@
 # 6. Kubernetes: the laboratory versus an actual game release
 
-**Reader question:** what's really running in kind, and how do we prove it serves a player? **Baseline:** 584b594, 2026-11-19. Canonical [topology](../technical/platform/topology.md#distributed-learning-target), [release](../technical/platform/deployment-and-compatibility.md), [Kubernetes runbooks](../runbooks/README.md), [TURN02 plan](../../work/changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/EXECUTION.md).
+**Reader question:** what's really running in kind, and how do we prove it serves a player? **Baseline:** 584b594, 2026-11-19. Canonical [topology](../technical/platform/topology.md#distributed-learning-target), [release](../technical/platform/deployment-and-compatibility.md), [Kubernetes runbooks](../runbooks/README.md), [TURN02 plan](../../work/changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/EXECUTION.md).
 
 ## CURRENT SOURCE: component labs and synthetic applications
 
@@ -20,7 +20,7 @@ flowchart TD
     Kind --> Import[Content importer and reader jobs]
 ```
 
-The infrastructure work is meaningful: component installers and smokes exist under infra/kubernetes/lab. But infra/kubernetes/lab/skeletons/workloads.yaml is explicitly marked **placeholder**. Gateway routes currently target **synthetic-web** and **synthetic-api**, not Next and Nest. The Temporal lab toy is not the actual storytellerV1 Activity worker. **An all-green infrastructure lab is not an all-green game**.
+The infrastructure work is meaningful: component installers and smokes exist under infra/kubernetes/lab. But infra/kubernetes/lab/skeletons/workloads.yaml is explicitly marked **placeholder**. The synthetic HTTPRoute still targets **synthetic-web** and **synthetic-api**. On 2026-11-20 a fresh `kind-offscreen-lab` also routed `/sign-in` to Next and `/api/me` to Nest, and kept Game Authority off the public Gateway. The Temporal lab toy is not the actual storytellerV1 Activity worker. **An all-green infrastructure lab is not an all-green game**. The disposable application release is recorded under [Kubernetes as a deliberate extension](../technical/platform/deployment-and-compatibility.md#kubernetes-as-a-deliberate-extension). It is not the hosted release.
 
 ## SELECTED TARGET: one real disposable release
 
@@ -89,7 +89,7 @@ flowchart TD
     Route -->|yes| Ready[Now begin real campaign proof]
 ```
 
-Observed in code at baseline: apps/web/package.json starts Next bound to 127.0.0.1; apps/api/src/config.ts and apps/game-authority/src/config.ts default to localhost; apps/api/src/main.ts calls importRulePackageDirectory against a local path even with an S3 DocumentStore; Next has a build-sensitive API_PROXY_ORIGIN rewrite while SSR uses API_INTERNAL_ORIGIN. These are documented **release blockers**, not proof that the fixes have shipped.
+Observed in code at baseline: apps/web/package.json starts Next bound to 127.0.0.1; apps/api/src/config.ts and apps/game-authority/src/config.ts default to localhost; apps/api/src/main.ts calls importRulePackageDirectory against a local path even with an S3 DocumentStore; Next has a build-sensitive API_PROXY_ORIGIN rewrite while SSR uses API_INTERNAL_ORIGIN. The 2026-11-20 lab images listen on the Pod interface, read the pinned rule hash, and use the Nest Service origin. Those lab facts do not make the hosted release true.
 
 ## Proof levels are separate
 

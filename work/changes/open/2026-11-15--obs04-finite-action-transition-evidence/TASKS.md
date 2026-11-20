@@ -1,6 +1,6 @@
 # OBS04 | One finite terminal-event witness; finite bounded Composer tasks
 
-**Current state (2026-11-20):** Existing T01 7/7 receipt at `ec73a535`, **T02–T06 NOT RUN**, production witness/migration absent. The old T02 planner-block is resolved in [decision](DECISION-2026-11-20.md). `work/QUEUE.md` still selects TURN02; this packet is **unselected**. Read one T-ID and its 2–5 exact source anchors. Do not redo T01 merely because a historical receipt exists.
+**Current state (2026-11-20):** Existing T01 7/7 receipt at `ec73a535`, **T02–T06 NOT RUN**, production witness/migration absent. The old T02 planner-block is resolved in [decision](DECISION-2026-11-20.md). `work/QUEUE.md` is none. This packet is **unselected**. Read one T-ID and its 2–5 exact source anchors. Do not redo T01 merely because a historical receipt exists.
 
 ## T01 | Existing event source baseline | HISTORICAL PASS, 7/7
 
@@ -26,4 +26,4 @@ Recorded command: `pnpm --filter @offscreen/application exec node --test test/it
 
 **Read:** [decision](DECISION-2026-11-20.md), `docs/technical/engine/chronology-and-activities.md`, `work/changes/open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md`, new test receipts. Run focused unit/disposable SQL, migration upgrade/downgrade on disposable DB, wiki plan/close/link checks. Evidence must explicitly establish 1:1 terminal event/witness/public linkage, rollback, interruption without success receipt, legacy partial coverage, measured bounded overhead, no provider call. Update canonical claims only when code and tests pass, then archive Done. A failed mandatory proof keeps this one Change OPEN with exact failed source/negative, not another indefinite planner gate.
 
-**Safety:** no paid AI, production/shared DB mutation, unowned cluster Pod operations, raw prompt capture or second event-sourcing framework. No new Change folder. TURN02 remains the only selected work until owner handoff.
+**Safety:** no paid AI, production/shared DB mutation, unowned cluster Pod operations, raw prompt capture or second event-sourcing framework. No new Change folder. No Change is selected until the owner names the next handoff.

@@ -51,13 +51,11 @@ volume_guard_begin "$work"
 import_image() {
   local image_ref="$1"
   if docker image inspect "$image_ref" >/dev/null 2>&1; then
-    while read -r node; do
-      [[ -z "$node" ]] && continue
-      echo "Importing ${image_ref} into ${node}"
-      if ! docker save "$image_ref" | docker exec -i "$node" ctr --namespace=k8s.io images import -; then
-        echo "Import into ${node} failed. The kubelet may still pull ${image_ref}."
-      fi
-    done < <(kind get nodes --name "$CLUSTER_NAME")
+    echo "Loading ${image_ref} into ${CLUSTER_NAME}"
+    if ! kind load docker-image "$image_ref" --name "$CLUSTER_NAME"; then
+      echo "Refusing to continue: ${image_ref} did not load into ${CLUSTER_NAME}." >&2
+      exit 1
+    fi
   else
     echo "Local image ${image_ref} is absent. The nodes will pull it."
   fi
