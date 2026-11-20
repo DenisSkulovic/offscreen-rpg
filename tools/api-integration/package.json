@@ -22,6 +22,7 @@
     "test:story03-t06:worker-replay": "node --test dist/test/storyteller-worker-replay.integration.js",
     "test:story03-t06:publication-context": "node --test dist/test/storyteller-publication-context.integration.js",
     "test:story03-t06:activity-settlement": "node --test dist/test/storyteller-activity-settlement.integration.js",
+    "test:story03-t09:causal": "node --test --test-concurrency=1 dist/test/story03-causal-multiprocess.integration.js",
     "test:turn03-fixture": "node --test dist/test/turn03-distributed-poc-fixture.integration.js",
     "test:start-package": "node --test dist/test/start-package.integration.js",
     "test:admin-session": "node --test dist/test/admin-session.integration.js",

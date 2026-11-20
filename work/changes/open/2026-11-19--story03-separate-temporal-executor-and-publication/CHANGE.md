@@ -113,7 +113,24 @@ Replay, recovery, opening retry, dispatch release, follow-up, and chamber releas
 | `packages/application/test/story03-notice-selector.test.mjs` | **2/2 PASS** |
 | `apps/worker/dist/test/storyteller-notice-dispatch.test.js` | **6/6 PASS**. Dispatch code was not edited |
 
-**Negative reading:** this does not prove the signed-in Nest → outbox → Temporal → executor → GA scene2 path (T09) and does not close TURN03.
+**Negative reading:** T08 itself does not run that signed-in path. T09 later did, on local processes only. T08 does not close TURN03.
+
+## T09 evidence | local causal HTTP turn (`0834db2e` parent, 2026-11-20)
+
+**Task:** [TASKS.md T09](TASKS.md). **Depth:** PATCH. **Change state:** still Proposed — **not Done**. **Live gate:** `STORYTELLER_LIVE_ENABLED=false`. No paid provider send. Document tier: local filesystem, not S3 and not kind.
+
+`pnpm --filter @offscreen/api-integration test:story03-t09:causal` — **5/5 PASS** (~31s) with `DATABASE_TEST_URL` pathname `/offscreen_auth_test` and Compose Temporal. The test does not call `workflow.start` or `runtime.complete`.
+
+| Case | Result |
+| --- | --- |
+| Authenticated HTTP opening, start, choice, GET scene 2, worker restart | **PASS**. Titles match the Turn03 pineapple fixture. Continuation topic `storyteller.distributed.v1`, one attempt, publication `published`, sequences `[1, 2]`, same passage ids after restart |
+| Wrong actor | **PASS** |
+| Replay same resolution | **PASS**. Sequences stay `[1, 2]` |
+| Executor stopped, then started | **PASS**. Revision stays 1 until the executor process exists, then scene 2 without a second command |
+| Game Authority stopped before resolution | **PASS**. Revision stays 1 |
+| Activity ACK loss | **NOT-RUN**. No existing fault hook. `already_published` remains a unit result from T07 |
+
+**Negative reading:** this does not close [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md). It is not a browser session, not SSE proof, not a cold kind deploy, and not two executor Pods.
 
 ## Reconciliation ledger (fill before closure)
 
@@ -122,6 +139,6 @@ Replay, recovery, opening retry, dispatch release, follow-up, and chamber releas
 | Product | unchanged | `ec73a535` | No gameplay or Storyteller product rule edit in this slice | unchanged / N/A |
 | Storyteller input + attempt custody | wake topic copied from the first Storyteller notice | parent `1a0afb80` plus T08 diff; freeze **6/6**, selector **2/2**, dispatch **6/6** | **Positive:** distributed admission stays distributed after the flag is cleared; a second notice uses that topic. **Negative:** legacy admission stays legacy after the flag is set; missing notice throws; inconsistent topics throw and are not rewritten. Executor-kill e2e remains **NOT-RUN** | T08 landed; Change **not Done** |
 | Game Authority publication + canon | control activity is HTTP-only; GA remains the SQL publisher | parent `44272d9a` plus T07 diff; GA publish unit **6/6**; live handoff **1/1** | **Positive:** one published row after saved scripted result through GA HTTP. **Negative:** executor/story tokens **401**; duplicate publish `already_published`; control `DATABASE_URL` refused; GA-down activity is retryable and has no local publisher import. Scene-checkpoint GET and publication-context integration remain **NOT-RUN** | T07 landed; Change **not Done** |
-| Workflow / runtime / docs | control publication owner reconciled; default `storytellerV1` unchanged | parent `44272d9a` plus T07 diff; `generation-and-publication.md`, `execution-and-delivery.md`, architecture chapter 2 | **Positive:** technical owners now say the control activity is GA HTTP and the live handoff published once. **Negative:** T08 topic freeze and T09 player path **not** claimed; publication-context and GET scene once remain **NOT-RUN**; Change stays **Proposed** | T07 docs reconciled; not Done |
+| Workflow / runtime / docs | local causal HTTP turn recorded; default `storytellerV1` unchanged | parent `0834db2e` plus T09 diff; generation, execution, architecture chapter 2, STATUS | **Positive:** T09 **5/5** scene 2 GET after real worker processes. **Negative:** ACK loss, browser, SSE, and cold kind **NOT-RUN**; Change stays **Proposed** | T09 landed; not Done |
 
 Run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, repair inbound links and archive actual outcome. No unverified Done.

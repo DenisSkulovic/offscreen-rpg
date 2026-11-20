@@ -1,0 +1,508 @@
+import assert from 'node:assert/strict';
+import { spawn, type ChildProcess } from 'node:child_process';
+import { createServer } from 'node:net';
+import { once } from 'node:events';
+import { setTimeout as delay } from 'node:timers/promises';
+import { fileURLToPath } from 'node:url';
+import { betterAuth } from 'better-auth';
+import { testUtils } from 'better-auth/plugins';
+import {
+  createDatabase,
+  readDatabaseConfig,
+  type Database,
+} from '@offscreen/db';
+import { applyMigrations } from '@offscreen/db/migrate';
+import { createApp } from '@offscreen/api/app';
+import type { ChamberStorytellerControl } from '@offscreen/application/developer-tools';
+import { authOptions } from '@offscreen/api/auth';
+import { LocalDocumentStore, type DocumentStore } from '@offscreen/documents';
+import type { RulePackageReference } from '@offscreen/documents';
+import { requireCookie } from './require.js';
+
+const databaseURL = process.env['DATABASE_TEST_URL'];
+if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
+  throw new Error(
+    'DATABASE_TEST_URL must target the disposable offscreen_auth_test database.',
+  );
+}
+
+export const STORY03_CAUSAL_GA_SERVICE_TOKEN = 'boot03-integration-ga-story-01';
+export const STORY03_CAUSAL_GA_CONTROL_TOKEN = 'boot03-integration-ga-ctrl-02';
+export const STORY03_CAUSAL_GA_EXECUTOR_TOKEN = 'boot03-integration-ga-exec-03';
+export const STORY03_CAUSAL_RELAY_TASK_QUEUE = 'story03-t09';
+
+const defaultRuleSource = fileURLToPath(
+  new URL('../../../../../content/rules/srd-5.2.1-subset', import.meta.url),
+);
+const workerRepoRoot = fileURLToPath(
+  new URL('../../../../../apps/worker', import.meta.url),
+);
+const gaRepoRoot = fileURLToPath(
+  new URL('../../../../../apps/game-authority', import.meta.url),
+);
+
+export type Story03CausalMultiprocessContext = {
+  database: Database;
+  origin: string;
+  apiOrigin: string;
+  cookie: string;
+  otherCookie: string;
+  ownerId: string;
+  otherUser: { id: string };
+  documentRoot: string;
+  documentStore: DocumentStore;
+  defaultRules: RulePackageReference;
+  gameAuthorityOrigin: string;
+  killGameAuthority: () => Promise<void>;
+  restartDistributedWorkers: (options?: { spawnExecutor?: boolean }) => Promise<void>;
+  stopExecutorOnly: () => Promise<void>;
+  spawnExecutorOnly: () => Promise<void>;
+  workerStderrTail: (role: 'relay' | 'control' | 'executor') => string;
+};
+
+type PipedChild = {
+  child: ChildProcess;
+  tail: () => string;
+};
+
+async function reserveLoopbackPort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      const port =
+        address && typeof address === 'object' ? address.port : undefined;
+      if (!port) {
+        server.close(() =>
+          reject(new Error('Failed to reserve an ephemeral loopback port')),
+        );
+        return;
+      }
+      server.close((error) => {
+        if (error) reject(error);
+        else resolve(port);
+      });
+    });
+  });
+}
+
+async function waitForGameAuthorityLive(origin: string) {
+  for (let attempt = 0; attempt < 150; attempt++) {
+    try {
+      const response = await fetch(`${origin}/internal/v1/health/live`);
+      if (response.ok) return;
+    } catch {
+      /* starting */
+    }
+    await delay(100);
+  }
+  throw new Error('Game Authority did not become live on loopback');
+}
+
+function spawnPipedChild(
+  entry: string,
+  env: Record<string, string>,
+): PipedChild {
+  const stderrChunks: Buffer[] = [];
+  const child = spawn(process.execPath, [entry], {
+    cwd: workerRepoRoot,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true,
+  });
+  child.stderr?.on('data', (chunk: Buffer) => {
+    stderrChunks.push(chunk);
+  });
+  child.stdout?.on('data', (chunk: Buffer) => {
+    stderrChunks.push(chunk);
+  });
+  return {
+    child,
+    tail: () =>
+      Buffer.concat(stderrChunks).toString('utf8').slice(-6000),
+  };
+}
+
+async function killPipedChild(piped: PipedChild | undefined) {
+  if (!piped || piped.child.exitCode !== null || piped.child.killed) return;
+  piped.child.kill();
+  await once(piped.child, 'exit').catch(() => undefined);
+}
+
+async function release(steps: ReadonlyArray<() => void | Promise<void>>) {
+  const failures: unknown[] = [];
+  for (const step of steps) {
+    try {
+      await step();
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  if (failures.length === 0) return;
+  if (failures.length === 1) throw failures[0];
+  throw new AggregateError(failures, 'STORY03 causal multiprocess cleanup failed');
+}
+
+function temporalEnv(): { address: string; namespace: string } {
+  return {
+    address: process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233',
+    namespace: process.env['TEMPORAL_NAMESPACE'] ?? 'default',
+  };
+}
+
+/**
+ * Nest + Game Authority + relay/control/(optional) executor as separate OS
+ * processes. Document store tier: local filesystem under `documentRoot`.
+ */
+export async function withStory03CausalMultiprocessHarness(
+  run: (context: Story03CausalMultiprocessContext) => Promise<void>,
+  options: {
+    documentRoot: string;
+    defaultRules: RulePackageReference;
+    chamberStorytellerControl?: ChamberStorytellerControl;
+    skipGameAuthority?: boolean;
+    spawnExecutor?: boolean;
+  },
+) {
+  const previousAuthorityEnv = {
+    GAME_AUTHORITY_MODE: process.env['GAME_AUTHORITY_MODE'],
+    GAME_AUTHORITY_ORIGIN: process.env['GAME_AUTHORITY_ORIGIN'],
+    GAME_AUTHORITY_SERVICE_TOKEN: process.env['GAME_AUTHORITY_SERVICE_TOKEN'],
+    STORYTELLER_DISTRIBUTED_V1: process.env['STORYTELLER_DISTRIBUTED_V1'],
+    OFFSCREEN_DOCUMENT_ROOT: process.env['OFFSCREEN_DOCUMENT_ROOT'],
+  };
+  process.env['STORYTELLER_DISTRIBUTED_V1'] = 'true';
+  process.env['OFFSCREEN_DOCUMENT_ROOT'] = options.documentRoot;
+
+  const config = readDatabaseConfig({ DATABASE_URL: databaseURL });
+  await applyMigrations(
+    config,
+    fileURLToPath(
+      new URL('../../../../../packages/db/migrations', import.meta.url),
+    ),
+  );
+  const database = createDatabase(config, () => {});
+  const documentStore = new LocalDocumentStore(options.documentRoot);
+  const apiPort = await reserveLoopbackPort();
+  const apiOrigin = `http://127.0.0.1:${apiPort}`;
+  const gaPort = await reserveLoopbackPort();
+  const gameAuthorityOrigin = `http://127.0.0.1:${gaPort}`;
+
+  let gameAuthorityProcess: ChildProcess | undefined;
+  const startGameAuthority = async () => {
+    if (gameAuthorityProcess) return;
+    gameAuthorityProcess = spawn(
+      process.execPath,
+      ['dist/src/bootstrap/main.js'],
+      {
+        cwd: gaRepoRoot,
+        env: {
+          ...process.env,
+          DATABASE_URL: databaseURL,
+          STORYTELLER_LIVE_ENABLED: 'false',
+          GAME_AUTHORITY_HOST: '127.0.0.1',
+          GAME_AUTHORITY_PORT: String(gaPort),
+          GAME_AUTHORITY_SERVICE_TOKEN: STORY03_CAUSAL_GA_SERVICE_TOKEN,
+          GAME_AUTHORITY_CONTROL_TOKEN: STORY03_CAUSAL_GA_CONTROL_TOKEN,
+          GAME_AUTHORITY_EXECUTOR_TOKEN: STORY03_CAUSAL_GA_EXECUTOR_TOKEN,
+          OFFSCREEN_DOCUMENT_ROOT: options.documentRoot,
+          OFFSCREEN_DEFAULT_RULE_SOURCE: defaultRuleSource,
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true,
+      },
+    );
+    await waitForGameAuthorityLive(gameAuthorityOrigin);
+  };
+  if (!options.skipGameAuthority) {
+    await startGameAuthority();
+  }
+
+  process.env['GAME_AUTHORITY_MODE'] = 'distributed';
+  process.env['GAME_AUTHORITY_ORIGIN'] = gameAuthorityOrigin;
+  process.env['GAME_AUTHORITY_SERVICE_TOKEN'] = STORY03_CAUSAL_GA_SERVICE_TOKEN;
+
+  const utilities = testUtils();
+  const strictUtilities = {
+    ...utilities,
+    init(context: Parameters<typeof utilities.init>[0]) {
+      const result = utilities.init(context);
+      return { ...result, options: result.options ?? {} };
+    },
+  };
+  const auth = betterAuth({
+    ...authOptions(database, {
+      origin: apiOrigin,
+      secret: 'integration-only-not-a-runtime-secret-1234',
+      githubClientId: 'test-client',
+      githubClientSecret: 'test-secret',
+    }),
+    plugins: [strictUtilities],
+  });
+  const app = await createApp(database, auth, apiOrigin, {
+    developerTools: true,
+    databaseConfig: config,
+    documentStore,
+    defaultRules: options.defaultRules,
+    ...(options.chamberStorytellerControl
+      ? { chamberStorytellerControl: options.chamberStorytellerControl }
+      : {}),
+  });
+  const helpers = (await auth.$context).test;
+  const user = await helpers.saveUser(
+    helpers.createUser({ name: 'STORY03 causal actor A' }),
+  );
+  const otherUser = await helpers.saveUser(helpers.createUser());
+
+  let relay: PipedChild | undefined;
+  let control: PipedChild | undefined;
+  let executor: PipedChild | undefined;
+
+  const spawnWorkers = async (spawnExecutor: boolean) => {
+    const { address, namespace } = temporalEnv();
+    relay = spawnPipedChild('dist/src/bootstrap/main.js', {
+      DATABASE_URL: databaseURL!,
+      TEMPORAL_ADDRESS: address,
+      TEMPORAL_NAMESPACE: namespace,
+      TEMPORAL_TASK_QUEUE: STORY03_CAUSAL_RELAY_TASK_QUEUE,
+      STORYTELLER_LIVE_ENABLED: 'false',
+    });
+    control = spawnPipedChild('dist/src/bootstrap/control-main.js', {
+      TEMPORAL_ADDRESS: address,
+      TEMPORAL_NAMESPACE: namespace,
+      GAME_AUTHORITY_ORIGIN: gameAuthorityOrigin,
+      GAME_AUTHORITY_CONTROL_TOKEN: STORY03_CAUSAL_GA_CONTROL_TOKEN,
+    });
+    if (spawnExecutor) {
+      executor = spawnPipedChild('dist/src/bootstrap/executor-main.js', {
+        TEMPORAL_ADDRESS: address,
+        TEMPORAL_NAMESPACE: namespace,
+        GAME_AUTHORITY_ORIGIN: gameAuthorityOrigin,
+        GAME_AUTHORITY_EXECUTOR_TOKEN: STORY03_CAUSAL_GA_EXECUTOR_TOKEN,
+      });
+    }
+    await delay(500);
+  };
+
+  const stopWorkers = async () => {
+    await killPipedChild(executor);
+    executor = undefined;
+    await killPipedChild(control);
+    control = undefined;
+    await killPipedChild(relay);
+    relay = undefined;
+  };
+
+  const restartDistributedWorkers = async (
+    workerOptions: { spawnExecutor?: boolean } = {},
+  ) => {
+    await stopWorkers();
+    await spawnWorkers(workerOptions.spawnExecutor ?? options.spawnExecutor ?? true);
+  };
+
+  const stopExecutorOnly = async () => {
+    await killPipedChild(executor);
+    executor = undefined;
+  };
+
+  const spawnExecutorOnly = async () => {
+    if (executor) return;
+    const { address, namespace } = temporalEnv();
+    executor = spawnPipedChild('dist/src/bootstrap/executor-main.js', {
+      TEMPORAL_ADDRESS: address,
+      TEMPORAL_NAMESPACE: namespace,
+      GAME_AUTHORITY_ORIGIN: gameAuthorityOrigin,
+      GAME_AUTHORITY_EXECUTOR_TOKEN: STORY03_CAUSAL_GA_EXECUTOR_TOKEN,
+    });
+    await delay(300);
+  };
+
+  const killGameAuthority = async () => {
+    if (!gameAuthorityProcess) return;
+    gameAuthorityProcess.kill();
+    await once(gameAuthorityProcess, 'exit').catch(() => undefined);
+    gameAuthorityProcess = undefined;
+  };
+
+  try {
+    await app.listen(apiPort, '127.0.0.1');
+    await spawnWorkers(options.spawnExecutor ?? true);
+    const login = await helpers.login({ userId: user.id });
+    const cookie = requireCookie(login.headers);
+    const otherLogin = await helpers.login({ userId: otherUser.id });
+    const otherCookie = requireCookie(otherLogin.headers);
+    assert.ok(gameAuthorityProcess || options.skipGameAuthority);
+    await run({
+      database,
+      origin: apiOrigin,
+      apiOrigin,
+      cookie,
+      otherCookie,
+      ownerId: user.id,
+      otherUser,
+      documentRoot: options.documentRoot,
+      documentStore,
+      defaultRules: options.defaultRules,
+      gameAuthorityOrigin,
+      killGameAuthority,
+      restartDistributedWorkers,
+      stopExecutorOnly,
+      spawnExecutorOnly,
+      workerStderrTail(role) {
+        if (role === 'relay') return relay?.tail() ?? '';
+        if (role === 'control') return control?.tail() ?? '';
+        return executor?.tail() ?? '';
+      },
+    });
+  } finally {
+    await release([
+      stopWorkers,
+      killGameAuthority,
+      async () => {
+        await database.db.$client.query(
+          'DELETE FROM draft_opening WHERE draft_id IN (SELECT id FROM story_draft WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM outbox WHERE operation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM outbox WHERE operation_id IN (SELECT p.id FROM story_passage p JOIN story s ON s.id = p.story_id WHERE s.owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_resolution WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_scene_checkpoint WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_passage WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_control WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_item WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_document_commit WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM world_obligation WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story WHERE owner_id = $1',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_usage_allocation WHERE attempt_id IN (SELECT a.id FROM storyteller_attempt a JOIN generation g ON g.id = a.generation_id WHERE g.owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_attempt WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_operation WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_retry WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_publication WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_memory_exploration WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_execution_stage WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_prompt_provenance WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_dispatch_review_decision WHERE attempt_id IN (SELECT r.attempt_id FROM storyteller_dispatch_review r JOIN generation g ON g.id = r.generation_id WHERE g.owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_dispatch_review WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_context_capture_rearm WHERE capture_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_context_capture WHERE capture_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM generation WHERE owner_id = $1',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_draft WHERE owner_id = $1',
+          [user.id],
+        );
+      },
+      async () => {
+        await helpers.deleteUser(otherUser.id);
+        await helpers.deleteUser(user.id);
+      },
+      async () => {
+        await app.close();
+      },
+      async () => {
+        await database.close();
+      },
+      async () => {
+        if (previousAuthorityEnv.GAME_AUTHORITY_MODE === undefined) {
+          delete process.env['GAME_AUTHORITY_MODE'];
+        } else {
+          process.env['GAME_AUTHORITY_MODE'] =
+            previousAuthorityEnv.GAME_AUTHORITY_MODE;
+        }
+        if (previousAuthorityEnv.GAME_AUTHORITY_ORIGIN === undefined) {
+          delete process.env['GAME_AUTHORITY_ORIGIN'];
+        } else {
+          process.env['GAME_AUTHORITY_ORIGIN'] =
+            previousAuthorityEnv.GAME_AUTHORITY_ORIGIN;
+        }
+        if (previousAuthorityEnv.GAME_AUTHORITY_SERVICE_TOKEN === undefined) {
+          delete process.env['GAME_AUTHORITY_SERVICE_TOKEN'];
+        } else {
+          process.env['GAME_AUTHORITY_SERVICE_TOKEN'] =
+            previousAuthorityEnv.GAME_AUTHORITY_SERVICE_TOKEN;
+        }
+        if (previousAuthorityEnv.STORYTELLER_DISTRIBUTED_V1 === undefined) {
+          delete process.env['STORYTELLER_DISTRIBUTED_V1'];
+        } else {
+          process.env['STORYTELLER_DISTRIBUTED_V1'] =
+            previousAuthorityEnv.STORYTELLER_DISTRIBUTED_V1;
+        }
+        if (previousAuthorityEnv.OFFSCREEN_DOCUMENT_ROOT === undefined) {
+          delete process.env['OFFSCREEN_DOCUMENT_ROOT'];
+        } else {
+          process.env['OFFSCREEN_DOCUMENT_ROOT'] =
+            previousAuthorityEnv.OFFSCREEN_DOCUMENT_ROOT;
+        }
+      },
+    ]);
+  }
+}
