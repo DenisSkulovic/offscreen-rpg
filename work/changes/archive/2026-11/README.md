@@ -93,9 +93,10 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-15--obs06-case-scoped-situation-read](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md)
 - [2026-11-15--obs07-support-situation-ui](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md)
 
-## other (8)
+## other (134)
 
 - [2026-11-20--work01-first-class-operational-tasks](../../../../work/changes/archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/CHANGE.md)
+- [2026-11-19--dist02-versioned-dispatch-bridge-contracts](../../../../work/changes/archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md)
 - [2026-11-19--dist01-ratify-game-authority-delivery-boundaries](../../../../work/changes/archive/2026-11/other/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md)
 - [2026-11-19--boot02-published-fixture-package-s3-job](../../../../work/changes/archive/2026-11/other/2026-11-19--boot02-published-fixture-package-s3-job/CHANGE.md)
 - [2026-11-17--dir03-storyteller-art-direction-author](../../../../work/changes/archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md)

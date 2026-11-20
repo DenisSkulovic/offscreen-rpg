@@ -96,7 +96,7 @@ This is not a 30/90-scene quality benchmark, high availability claim, production
 
 ## First executable planning bundle | DIST01–DIST06 (2026-11-19)
 
-The first concrete dependency-aware packet series is in the [Change queue](../../../changes/README.md#disturn--first-service-extraction-bundle-planned-2026-11-19). It is narrower than the full POC: keep [D1](D1-EXECUTION-CONTRACT.md) aligned with merged ARCH02, prove one private writer boundary, leave the Temporal wake on the direct RPC, and treat DIST02 and DIST04 as an optional post-commit fact rather than a broker wake. A Storyteller execution-only worker and a provider-free continuation remain later packets. They are not automatically executable. DIST06 does not claim a historical arbitrary-scene fork. This paragraph does not declare an active batch.
+The first concrete dependency-aware packet series is in the [Change queue](../../../changes/README.md#disturn--first-service-extraction-bundle-planned-2026-11-19). It is narrower than the full POC: keep [D1](D1-EXECUTION-CONTRACT.md) aligned with merged ARCH02, prove one private writer boundary, leave the Temporal wake on the direct RPC, and treat DIST02 (since Cancelled for no consumer) as closed historical context and DIST04 as an optional unselected independent projection, never a broker wake. A Storyteller execution-only worker and a provider-free continuation remain later packets. They are not automatically executable. DIST06 does not claim a historical arbitrary-scene fork. This paragraph does not declare an active batch.
 
 
 ## Second design bundle | Scene checkpoints and fork-safe documents

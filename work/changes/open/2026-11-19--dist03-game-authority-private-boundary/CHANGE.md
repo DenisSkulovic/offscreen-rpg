@@ -39,7 +39,7 @@ Update the **canonical** owning headings as part of the same code diff or ratify
 
 ## Parallel orchestration
 
-After DIST01, separate worktree from DIST02 transport adapter; no change to worker runtime, docs shared headings coordinated in integration. Cluster deploy later with DIST06.
+Historical 2026-11-19 worktree plan: DIST02 was then contemplated. **DIST02 was Cancelled on 2026-11-20** (no consumer); no adapter is running or to be coordinated. Keep this Change focused on the private GA boundary and its current TURN03 integration; DIST06 was separately absorbed into TURN03.
 
 A user-approved Cursor orchestrator may distribute truly disjoint Ready Changes into isolated worktrees. It must integrate dependencies, shared canonical-doc headings and the same cluster itself. **A Proposed packet is not executable merely because another packet was authorized.**
 

@@ -32,7 +32,7 @@
 
 ## Deliberately not in the first execution batch
 
-- **Optional/noncritical**: DIST02/DIST04 business fact projection, DIR03 live aesthetics, GM03 standing-life expansion, GM07 persisted fallback, OBS04 richer evidence, ENG03 broad lock refactor. They are still visible in [audit](COMPOSER-QUEUE-AUDIT-2026-11-20.md), not moved to a hidden postponed bin. Their source/negative tasks can be selected when they answer a real current problem.
+- **Optional/noncritical**: DIST04 conditional business-fact projection (DIST02 cancelled, no consumer), DIR03 live aesthetics, GM03 standing-life expansion, GM07 persisted fallback, OBS04 richer evidence, ENG03 broad lock refactor. They are still visible in [audit](COMPOSER-QUEUE-AUDIT-2026-11-20.md), not moved to a hidden postponed bin. Their source/negative tasks can be selected when they answer a real current problem.
 - **Paid permission boundary**: OBS00/TURN04 live dispatch remains denied until explicit authorization and a source-backed uncertain-provider accounting policy.
 - **Real-cluster join**: TURN02/K8S11/TURN03 and K8S10 Pod injection require single cluster operator, real image/source pins, authenticated source and disposable environment. No child may reset/create/delete shared resources by inference.
 - **Shared files**: BOOT03/STORY02/STORY03 all touch GA server/app/auth contracts. Serialize route and credential merges. STORY03 and TURN02 share worker queues and images. DATA04/DATA06 share fork/canon source. One coordinator owns migration, canonical tech headings and cluster.
