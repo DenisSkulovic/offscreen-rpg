@@ -41,9 +41,14 @@ function baseFiles(fx) {
     '# Manifest\n\n[notes](trial/notes.md)\n',
   );
   fx.add('evidence/runs/trial/notes.md', '# Notes\n');
+  fx.add('work/QUEUE.md', '# Work selector\n\nCurrent work: none\n\n[changes](changes/README.md)\n[tasks](tasks/README.md)\n');
+  fx.add('work/tasks/README.md', '# Tasks\n\n[open](open/README.md)\n');
+  fx.add('work/tasks/open/README.md', '# Open Tasks\n');
+  fx.add('work/tasks/archive/README.md', '# Archived Tasks\n');
+
   fx.add(
     'work/changes/README.md',
-    '# Queue\n\nCurrent change: none\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
+    '# Queue\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
   );
   fx.add(
     'work/changes/open/leaf/CHANGE.md',
@@ -91,7 +96,7 @@ test('unindexed open Change fails until the queue links it', () => {
   baseFiles(fx);
   fx.add(
     'work/changes/README.md',
-    '# Queue\n\nCurrent change: none\n\n[ledger](ledger/)\n',
+    '# Queue\n\n[ledger](ledger/)\n',
   );
   const missing = scan(fx);
   assert.equal(
@@ -100,32 +105,71 @@ test('unindexed open Change fails until the queue links it', () => {
   );
   fx.add(
     'work/changes/README.md',
-    '# Queue\n\nCurrent change: none\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
+    '# Queue\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
   );
   const linked = scan(fx);
   fx.cleanup();
   assert.deepEqual(linked.findings, []);
 });
 
-test('selected archived target fails and none stays valid', () => {
+test('central selector accepts a Change or Task and refuses archived/missing targets', () => {
   const fx = fixture();
   baseFiles(fx);
-  fx.add(
-    'work/changes/README.md',
-    '# Queue\n\nCurrent change: [old](archive/2026-11/other/old/CHANGE.md)\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
-  );
-  const archived = scan(fx);
-  assert.equal(
-    archived.findings.some((item) => item.code === 'invalid-selection'),
-    true,
-  );
-  fx.add(
-    'work/changes/README.md',
-    '# Queue\n\nCurrent change: [missing](open/missing/CHANGE.md)\n\n[leaf](open/leaf/CHANGE.md)\n\n[ledger](ledger/)\n',
-  );
-  const missing = scan(fx);
+  fx.add('work/QUEUE.md', '# Queue\n\nCurrent work: [leaf](changes/open/leaf/CHANGE.md)\n');
+  const change = scan(fx);
+  assert.equal(change.selectedWorkPath, 'work/changes/open/leaf/CHANGE.md');
+  assert.equal(change.currentChange, '[leaf](changes/open/leaf/CHANGE.md)');
+  assert.equal(change.findings.some((item) => item.code === 'invalid-selection'), false);
+
+  fx.add('work/tasks/open/job/TASK.md', '# Task\n\n**State:** Ready\n');
+  fx.add('work/tasks/open/README.md', '# Open Tasks\n\n[job](job/TASK.md)\n');
+  fx.add('work/QUEUE.md', '# Queue\n\nCurrent work: [job](tasks/open/job/TASK.md)\n');
+  const task = scan(fx);
+  assert.equal(task.selectedWorkPath, 'work/tasks/open/job/TASK.md');
+  assert.equal(task.currentChange, 'none');
+  assert.equal(task.findings.some((item) => item.code === 'invalid-selection'), false);
+
+  fx.add('work/QUEUE.md', '# Queue\n\nCurrent work: [old](changes/archive/2026-11/other/old/CHANGE.md)\n');
+  assert.equal(scan(fx).findings.some((item) => item.code === 'invalid-selection'), true);
+  fx.add('work/QUEUE.md', '# Queue\n\nCurrent work: [missing](tasks/open/missing/TASK.md)\n');
+  assert.equal(scan(fx).findings.some((item) => item.code === 'invalid-selection'), true);
+  fx.add('work/QUEUE.md', '# Queue\n\nCurrent work: none\nCurrent work: none\n');
+  assert.equal(scan(fx).findings.some((item) => item.code === 'invalid-selection'), true);
   fx.cleanup();
-  assert.equal(missing.findings.some((item) => item.code === 'invalid-selection'), true);
+});
+
+test('orphan folders, unindexed Tasks and terminal Task states are detected', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/changes/open/orphan/PLAN.md', '# Orphan\n');
+  fx.add('work/tasks/open/job/NOTES.md', '# Orphan Task\n');
+  let report = scan(fx);
+  assert.equal(codes(report).includes('orphan-open-folder:work/changes/open/orphan'), true);
+  assert.equal(codes(report).includes('orphan-open-task:work/tasks/open/job'), true);
+  fx.add('work/tasks/open/job/TASK.md', '# Task\n\n**State:** Ready\n');
+  report = scan(fx);
+  assert.equal(codes(report).includes('missing-route:work/tasks/open/job/TASK.md'), true);
+  fx.add('work/tasks/open/README.md', '# Open Tasks\n\n[job](job/TASK.md)\n');
+  report = scan(fx);
+  assert.equal(codes(report).includes('missing-route:work/tasks/open/job/TASK.md'), false);
+  fx.add('work/tasks/open/job/TASK.md', '# Task\n\n**State:** Done\n');
+  report = scan(fx);
+  assert.equal(codes(report).includes('terminal-open:work/tasks/open/job/TASK.md'), true);
+  fx.cleanup();
+});
+
+test('archived Task must be terminal and linked from its archive index', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/tasks/archive/2026-11/old/TASK.md', '# Task\n\n**State:** Ready\n');
+  let report = scan(fx);
+  assert.equal(codes(report).includes('active-archived:work/tasks/archive/2026-11/old/TASK.md'), true);
+  assert.equal(codes(report).includes('missing-route:work/tasks/archive/2026-11/old/TASK.md'), true);
+  fx.add('work/tasks/archive/2026-11/old/TASK.md', '# Task\n\n**State:** Done\n');
+  fx.add('work/tasks/archive/README.md', '# Archived Tasks\n\n[old](2026-11/old/TASK.md)\n');
+  report = scan(fx);
+  assert.equal(report.findings.some((item) => item.path === 'work/tasks/archive/2026-11/old/TASK.md'), false);
+  fx.cleanup();
 });
 
 test('open leaf packet with optional TASKS and SOURCE-MAP stays green when indexed', () => {

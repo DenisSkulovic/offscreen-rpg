@@ -51,7 +51,7 @@ This is a **lifecycle of authority**, not an assertion that designs need many fi
 
 Each future design slice should state: **question, constraints, candidate solutions, visual artifacts, failure modes, evidence, decision state, next review question**. Prefer working examples and side-by-side comparisons to unsupported adjective piles. Store accessible, reproducible mockups and screenshots in the proposal or evidence as appropriate, with source attribution and dates.
 
-Until Gate 5, this program is **design work**. The Change queue may correctly say `Current change: none`. No agent, including Cursor, should infer implementation instructions from these files.
+Until Gate 5, this program is **design work**. The [central work queue](../../../QUEUE.md) may correctly say `Current work: none`; the Change catalog itself does not select work. No agent, including Cursor, should infer implementation instructions from these files.
 
 ## Immediate next product-design conversation
 

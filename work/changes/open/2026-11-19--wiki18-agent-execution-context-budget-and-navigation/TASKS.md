@@ -28,6 +28,8 @@ Use a natural upcoming bounded task (e.g. one BOOT03 Composer T-ID), record plan
 If Composer repeatedly fails a fully specified microtask, show exact missing contract or model limitation. Fix planner material first; only then consider one explicitly approved Low/Medium exception. Collect cost per **correct accepted** result, not cost per first response. Update WIKI18 ledger and canonical agent policy; no blanket “we saved 80%” from token-price arithmetic. **No Grok default.**
 
 
+**WORK01 handoff:** the same scanner also lives under [WORK01](../2026-11-20--work01-first-class-operational-tasks/CHANGE.md). WIKI18 T04 already recorded `node --test scripts/repo-tools/maintenance.test.mjs` **14/14 PASS**; do not dispatch a duplicate implementer for the same scan. Further maintenance-guard work belongs on [WORK01 T01](../2026-11-20--work01-first-class-operational-tasks/TASKS.md) if reproduced.
+
 ## T04 | Detect orphaned open folders with no CHANGE.md | VERIFY PASS (`ec73a535`)
 
 **DEPTH=PATCH | MODEL=Composer Standard.** **Source inspection:** `scripts/repo-tools/maintenance-core.mjs:scanMaintenance` currently iterates **only** `/^work\/changes\/open\/[^/]+\/CHANGE\.md$/` when checking queue routes. Thus a tracked `work/changes/open/old/PLAN.md` without CHANGE.md escapes the open packet inventory. This happened to BOOK01 and was repaired by moving its plan to archive on 2026-11-20. Preserve the current valid rule: tiny Changes do **not** require TASKS.md.

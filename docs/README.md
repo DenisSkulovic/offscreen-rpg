@@ -48,7 +48,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | How do I operate the portfolio locally? | [Runbooks](runbooks/README.md) |
 | Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Application operations](../packages/application/README.md#directory-index) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
 | Is a selected product target already feasible? | [STATUS](../STATUS.md) · [product-reality claims](../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). Selection is not proof. The claim register adds no rule |
-| What is actually true this week, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [change selection](../work/changes/README.md) |
+| What is actually true this week, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [work selection](../work/QUEUE.md) · [Change catalog](../work/changes/README.md) · [Tasks](../work/tasks/README.md) |
 
 Subject maps: [product](product/README.md), [technical](technical/README.md), [runbooks](runbooks/README.md). Open policy that is not accepted lives under [work/designs](../work/designs/README.md). Dated observations live under [evidence](../evidence/README.md). Coding-agent rules live under `.agents/`, separate from in-game provider cost ([spending](technical/platform/spending-and-entitlements.md)).
 

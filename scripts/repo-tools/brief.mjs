@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fail, root } from './process.mjs';
+import { parseCurrentWork, WORK_QUEUE_FILE } from './work-selection.mjs';
 
 const PATH_LIMIT = 40;
 
@@ -29,35 +30,15 @@ function section(document, heading, source) {
   return value;
 }
 
-// An intentionally empty implementation queue is valid. Never select a parked
-// gameplay Change merely to make the brief happy.
-function currentChange(route, changesDirRelative = 'docs/changes') {
-  const declarations = [...route.matchAll(/^Current change: (.+?)\s*$/gm)];
-  if (declarations.length !== 1) {
-    throw new Error(
-      `${changesDirRelative}/README.md: expected exactly one Current change declaration.`,
-    );
+// The single source of selection for both Change and standalone Task is
+// work/QUEUE.md; no legacy Change-catalog fallback or second selector.
+export function selectedWorkFromQueue(document, exists = () => true) {
+  const result = parseCurrentWork(document);
+  if (!result.ok) throw new Error(result.message);
+  if (result.target && !exists(result.target)) {
+    throw new Error(`Current work target is missing: ${result.target}`);
   }
-  const selected = declarations[0][1].trim();
-  if (selected === 'none') return null;
-  const match = /^\[[^\]]+\]\(([^)]+)\)$/.exec(selected);
-  if (!match || match[1].includes('#')) {
-    throw new Error(
-      'Current change must be none or a relative CHANGE.md link.',
-    );
-  }
-  const changeRoot = path.join(root, ...changesDirRelative.split('/'));
-  const absolute = path.resolve(changeRoot, match[1]);
-  const relativeToRoot = path.relative(root, absolute).split(path.sep).join('/');
-  if (
-    path.basename(absolute) !== 'CHANGE.md' ||
-    !relativeToRoot.startsWith('work/changes/')
-  ) {
-    throw new Error(
-      'Current change must point to CHANGE.md under work/changes/.',
-    );
-  }
-  return relativeToRoot;
+  return result.target;
 }
 
 function git(cwd, args) {
@@ -131,10 +112,13 @@ export function healthSummary(report) {
   return lines.join('\n');
 }
 
-export function receiptFrom(checkout, change, checkpoint) {
+export function receiptFrom(checkout, selectedWork, checkpoint) {
   const listed = statusPaths(checkout.status);
+  const workKind = selectedWork?.startsWith('work/changes/open/') ? 'change'
+    : selectedWork?.startsWith('work/tasks/open/') ? 'task'
+      : null;
   const receipt = {
-    schema: 'repo.brief.v1',
+    schema: 'repo.brief.v2',
     environment: 'local-checkout',
     sha: checkout.sha,
     branch: checkout.branch || null,
@@ -142,13 +126,15 @@ export function receiptFrom(checkout, change, checkpoint) {
     dirty: listed.paths.length > 0,
     paths: listed.paths,
     pathsTruncated: listed.truncated,
-    change,
+    work: selectedWork ?? null,
+    workKind,
+    change: workKind === 'change' ? selectedWork : null,
   };
   if (checkpoint !== undefined) receipt.checkpoint = checkpoint;
   return receipt;
 }
 
-function renderHuman(checkout, orientation, change, checkpoint) {
+function renderHuman(checkout, orientation, work, checkpoint) {
   const lines = [
     '# Repository brief',
     `Branch: ${checkout.branch}`,
@@ -162,8 +148,8 @@ function renderHuman(checkout, orientation, change, checkpoint) {
     '## Orientation (STATUS.md)',
     orientation,
     '',
-    '## Current Change',
-    change ?? 'None selected (valid).',
+    '## Current Work',
+    work ?? 'None selected (valid).',
   ];
   if (checkpoint !== undefined) {
     lines.push('', '## Current checkpoint', checkpoint ?? 'No active implementation Change.');
@@ -173,11 +159,13 @@ function renderHuman(checkout, orientation, change, checkpoint) {
     '## Read next',
     'STATUS.md — demonstrated boundary',
     'ROADMAP.md — owner strategy',
-    'work/changes/README.md — Change queue and execution contract',
+    'work/QUEUE.md — sole selection pointer',
+    'work/changes/README.md — lasting Change packets',
+    'work/tasks/README.md — standalone operations and test runs',
     'docs/product/README.md — product bible map',
     'docs/technical/README.md — technical owner map',
     '.agents/README.md — conditional rules and repository commands',
-    'Use --checkpoint for an active Change handoff; no services or providers are contacted.',
+    'Use --checkpoint for a selected Change or Task; no services or providers are contacted.',
   );
   return lines.join('\n');
 }
@@ -185,26 +173,22 @@ function renderHuman(checkout, orientation, change, checkpoint) {
 function loadRoute() {
   const statusPath = 'STATUS.md';
   const orientation = section(read(statusPath), '## Orientation', statusPath);
-  const workChanges = path.join(root, 'work', 'changes', 'README.md');
-  let changeRoute = 'work/changes/README.md';
-  let changeDoc = read(changeRoute);
-  if (existsSync(workChanges)) {
-    const workDoc = readFileSync(workChanges, 'utf8');
-    if (/^Current change: /m.test(workDoc) && !/^Current change: see /im.test(workDoc)) {
-      changeRoute = 'work/changes/README.md';
-      changeDoc = workDoc;
-    }
-  }
-  const change = currentChange(changeDoc, changeRoute.replace(/\/README\.md$/, ''));
-  return { orientation, change };
+  const work = selectedWorkFromQueue(
+    read(WORK_QUEUE_FILE),
+    (rel) => existsSync(path.join(root, ...rel.split('/'))),
+  );
+  return { orientation, work };
 }
 
-function checkpointFor(change) {
-  if (!change) return null;
-  const plan = path.posix.join(path.posix.dirname(change), 'PLAN.md');
+function checkpointFor(work) {
+  if (!work) return null;
+  if (work.startsWith('work/tasks/open/')) {
+    return section(read(work), '## Procedure', work);
+  }
+  const plan = path.posix.join(path.posix.dirname(work), 'PLAN.md');
   return existsSync(path.join(root, plan))
     ? section(read(plan), '## Current checkpoint', plan)
-    : section(read(change), '## Handoff and next action', change);
+    : section(read(work), '## Handoff and next action', work);
 }
 
 function maintenanceReport() {
@@ -225,7 +209,7 @@ function main() {
   if (args.includes('--help')) {
     console.log('Usage: pnpm repo:brief [--checkpoint] [--json] [--health]');
     console.log(
-      'Read-only Git/status/priority summary. --checkpoint includes a selected Change checkpoint, when one exists. --json prints a local checkout receipt and does not contact a remote. --health adds the top three maintenance review candidates.',
+      'Read-only Git/status/priority summary. --checkpoint includes the selected Change checkpoint or standalone Task procedure, if one exists. --json prints a local checkout receipt and does not contact a remote. --health adds the top three maintenance review candidates.',
     );
     return;
   }
@@ -237,12 +221,12 @@ function main() {
     throw new Error('Unknown argument. Usage: pnpm repo:brief [--checkpoint] [--json] [--health]');
   }
   const checkout = collectCheckout(root);
-  const { orientation, change } = loadRoute();
+  const { orientation, work } = loadRoute();
   const wantCheckpoint = args.includes('--checkpoint');
-  const checkpoint = wantCheckpoint ? checkpointFor(change) : undefined;
+  const checkpoint = wantCheckpoint ? checkpointFor(work) : undefined;
   const health = args.includes('--health') ? maintenanceReport() : null;
   if (args.includes('--json')) {
-    const receipt = receiptFrom(checkout, change, checkpoint);
+    const receipt = receiptFrom(checkout, work, checkpoint);
     if (health) {
       receipt.health = {
         unavailable: health.unavailable,
@@ -252,7 +236,7 @@ function main() {
     console.log(JSON.stringify(receipt));
     return;
   }
-  const text = renderHuman(checkout, orientation, change, checkpoint);
+  const text = renderHuman(checkout, orientation, work, checkpoint);
   console.log(health ? `${text}\n\n## Maintenance\n${healthSummary(health)}` : text);
 }
 

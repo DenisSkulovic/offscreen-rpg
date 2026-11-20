@@ -1,8 +1,8 @@
 # Cursor parent | open Change backlog, Composer-first dispatch
 
-**Inspected baseline:** 584b594, 2026-11-19, with newer planning commits through 2026-11-20. **Current Change: none.** This is a **navigation/selection aid**, not authorization to run all tasks. [Full 24-packet forensic table](COMPOSER-QUEUE-AUDIT-2026-11-20.md); [model budget](../../.agents/references/cursor-model-budget-policy.md); [microtask contract](../../.agents/references/composer-first-execution.md).
+**Inspected baseline:** 584b594, 2026-11-19, with newer planning commits through 2026-11-20. **Current work selection now lives at [work/QUEUE.md](../QUEUE.md);** `none` is valid. This is a **navigation/selection aid**, not authorization to run all tasks. [Full 24-packet forensic table](COMPOSER-QUEUE-AUDIT-2026-11-20.md); [model budget](../../.agents/references/cursor-model-budget-policy.md); [microtask contract](../../.agents/references/composer-first-execution.md).
 
-## Read only this, the selected CHANGE.md and one selected T-ID
+## First [work/QUEUE.md](../QUEUE.md); then, **if a Change is selected**, this guide, that CHANGE.md and one selected T-ID
 
 **Cursor parent:** set **Composer 2.5 Standard manually**. Do not start in Grok Medium on habit. **Child:** `economical-implementer` Composer Standard (or parent itself for a tiny edit). Read the chosen `TASKS.md#T-ID`, 2–5 named anchors; request exact SOURCE-MAP/EXECUTION section only when a given symbol conflicts with HEAD. Don't preload all skills and 24 folders. One child, one write owner, one outcome, focused normal+negative tests, short receipt. No automatic investigation subagent. If a task is PLANNER-BLOCKED, return the concrete missing invariant to **ChatGPT**, not to a Grok child.
 

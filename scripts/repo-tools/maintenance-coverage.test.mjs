@@ -60,7 +60,8 @@ function seed(fx, status = '# Status\n\nPure addition lives in `packages/engine/
   fx.add('docs/product/time.md', '# Time\n\nThe clock stays here.\n');
   fx.add('docs/technical/platform/http.md', '# HTTP\n\nSee `apps/api/README.md`.\n');
   fx.add('apps/api/README.md', '# API\n\nRoute list lives here.\n');
-  fx.add('work/changes/README.md', '# Queue\n\nCurrent change: none\n');
+  fx.add('work/changes/README.md', '# Change catalog\n');
+  fx.add('work/QUEUE.md', '# Work queue\n\nCurrent work: none\n\n[Changes](changes/README.md)\n');
   fx.add(endpoint, endpointText);
   fx.add(helper, helperText);
 }

@@ -2,7 +2,7 @@
 
 **New engineer / portfolio evaluator?** Start with the [Engineering System Tour](../ENGINEERING.md) for the *why*, then this index for the *where*, and [HARNESS.md](HARNESS.md) for the binding operating model. For an ordinary scoped task, skip the public tour and load only what the task needs.
 
-Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the selected Change in [work/changes/README.md](../work/changes/README.md). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
+Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the single selected item in [work/QUEUE.md](../work/QUEUE.md): a Change, a standalone Task or none. See [work taxonomy](../work/WORK-TAXONOMY.md). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
 
 Permanent product and technical truth lives under [docs/product](../docs/product/README.md) and [docs/technical](../docs/technical/README.md). Do not cold-start from an expired handoff or a retired study. Git history is not current authority.
 
@@ -16,7 +16,8 @@ Permanent product and technical truth lives under [docs/product](../docs/product
 | `.agents/skills/<name>/SKILL.md` | Repeatable procedure | Discover description; load body on demand |
 | [`.agents/knowledge/`](knowledge/README.md) | Deep professional manuals | One relevant domain when warranted |
 | `docs/product`, `docs/technical` | Product bible and technical guarantees | Read the relevant owner/section |
-| `work/changes/…/CHANGE.md` | Bounded code-bearing outcome | Only when selected; `none` is valid |
+| `work/changes/…/CHANGE.md` | Bounded implementation or substantive documentation diff | Only when selected; Composer `TASKS.md` is subordinate |
+| `work/tasks/…/TASK.md` | Independent operational verification, migration or controlled run | Only when selected and explicitly authorized for its environment |
 | `work/designs/open`, `evidence`, `research` | Named proposals, proof, nonbinding studies | On demand; never silent product authority |
 | Tests, fixtures, scripts | Executable evidence | Run selectively |
 
@@ -33,11 +34,11 @@ Permanent product and technical truth lives under [docs/product](../docs/product
 
 ## Skills
 
-Discover under [`skills/`](skills/) — load bodies on demand when the task matches the skill description. Change workflow: [`change-workflow`](skills/change-workflow/SKILL.md).
+Discover under [`skills/`](skills/) — load bodies on demand when the task matches the skill description. Change workflow: [`change-workflow`](skills/change-workflow/SKILL.md); standalone operational Task workflow: [`task-workflow`](skills/task-workflow/SKILL.md).
 
 ## Repository commands (read-only orientation)
 
-- `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`; `--json` prints the local SHA and dirty paths and does not contact a remote)
+- `pnpm repo:brief` — STATUS + Current work (Change, standalone Task, or none) (optional `--checkpoint`; `--json` prints the local SHA and dirty paths and does not contact a remote)
 - `pnpm repo:snapshot:chatgpt` — export revision-stamped source + **required portable wiki index** for ordinary ChatGPT. Explicit `--no-index` creates a source-only ZIP; see the [runbook](../docs/runbooks/chatgpt-design-snapshot.md).
 - `pnpm repo:docs-health` — Change checkpoints and docs taxonomy checks
 - `pnpm repo:maintenance` — read-only route, lifecycle, and freshness report. `--strict` fails high-confidence lifecycle defects. Warnings are review candidates, not permission to edit product docs. See [repository maintenance](references/repository-maintenance.md).
