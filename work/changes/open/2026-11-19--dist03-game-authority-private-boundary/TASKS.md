@@ -26,7 +26,7 @@ Negative claims bundled with that seam: forged bearer, wrong owner, duplicate op
 | --- | --- |
 | `startFromCandidate` and campaign start commands on Game Authority | [BOOT03](../2026-11-19--boot03-game-authority-start-admission/CHANGE.md) |
 | Fork and branch-context minimum on Game Authority | [DATA06](../2026-11-19--data06-fork-scoped-memory-context-minimum/CHANGE.md) |
-| Storyteller publication, executor split, generation custody | [STORY03](../2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md) |
+| Storyteller publication, executor split, generation custody | [STORY03](../../archive/2026-11/other/2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md) |
 | Full one-writer migration across all story commands | Program gaps, not this Change |
 
 Source may already route or mock start on the client for coordination; that does not widen DIST03 acceptance. `controller.ts:startFromCandidate` and `fork` staying local at the narrow boundary is expected, not a DIST03 failure.

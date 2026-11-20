@@ -32,9 +32,14 @@ import {
   type Turn03DistributedPocRoots,
 } from './helpers/turn03-distributed-poc-fixture.js';
 import {
+  STORY03_CAUSAL_GA_EXECUTOR_TOKEN,
   withStory03CausalMultiprocessHarness,
   type Story03CausalMultiprocessContext,
 } from './helpers/story03-causal-multiprocess-harness.js';
+import {
+  storytellerTaskCustodyReadSavedPath,
+  storytellerTaskCustodyReadSavedResponseSchema,
+} from '@offscreen/contracts/storyteller-task-custody';
 import { requireDefined } from './helpers/require.js';
 
 const orm: typeof Drizzle = createRequire(import.meta.url)('drizzle-orm');
@@ -328,6 +333,41 @@ async function assertContinuationSql(
   assert.deepEqual(
     passages.map((row) => row.sequence),
     [1, 2],
+  );
+}
+
+async function waitForSavedContinuationWhileRevisionOne(
+  ctx: Story03CausalMultiprocessContext,
+  operationId: string,
+  storyId: string,
+  deadlineMs: number,
+) {
+  const path = storytellerTaskCustodyReadSavedPath(operationId);
+  const started = Date.now();
+  while (Date.now() - started < deadlineMs) {
+    const saved = await fetch(`${ctx.gameAuthorityOrigin}${path}`, {
+      headers: {
+        authorization: `Bearer ${STORY03_CAUSAL_GA_EXECUTOR_TOKEN}`,
+      },
+    });
+    if (saved.status === 200) {
+      const body = storytellerTaskCustodyReadSavedResponseSchema.parse(
+        await saved.json(),
+      );
+      if (body.status === 'saved') {
+        const response = await fetch(`${ctx.apiOrigin}/api/stories/${storyId}`, {
+          headers: { cookie: ctx.cookie },
+        });
+        const revision = storySnapshotSchema.parse(await response.json()).revision;
+        if (revision === 1) {
+          return body;
+        }
+      }
+    }
+    await delay(100);
+  }
+  throw new Error(
+    `Continuation ${operationId} did not reach saved while story revision 1`,
   );
 }
 
@@ -740,4 +780,142 @@ test(
   },
 );
 
-// Activity ACK loss: no production fault hook — covered by worker unit `already_published`; NOT-RUN here.
+test(
+  'STORY03 T10 continuation publish ACK loss retries to already_published',
+  { timeout: 300_000 },
+  async () => {
+    const documentRoot = await mkdtemp(
+      join(tmpdir(), 'offscreen-story03-t10-ack-loss-'),
+    );
+    const { LocalDocumentStore } = await import('@offscreen/documents');
+    const fixture = await provisionTurn03DistributedPocFixture(
+      new LocalDocumentStore(documentRoot),
+    );
+    const continuationGenerationId = { current: '' };
+
+    await withStory03CausalMultiprocessHarness(
+      async (ctx) => {
+        const scene1 = await admitTurn03OpeningAndScene1(ctx, fixture.roots);
+        const operationId = randomUUID();
+        continuationGenerationId.current = operationId;
+        await submitTurn03Resolution(ctx, {
+          storyId: scene1.storyId,
+          operationId,
+          expectedRevision: 1,
+          interactionId: scene1.interactionId,
+          optionId: scene1.visibleOptionId,
+        });
+
+        const scene2 = await waitForStoryRevision(
+          ctx.apiOrigin,
+          ctx.cookie,
+          scene1.storyId,
+          2,
+          60_000,
+        );
+        assert.equal(
+          scene2.current.content.title,
+          turn03DistributedPocAuthorship.scene2.title,
+        );
+
+        await assertContinuationSql(ctx, operationId, scene1.storyId);
+
+        const proxy = requireDefined(
+          ctx.controlPublishProxy,
+          'Expected control publish proxy stats',
+        );
+        assert.equal(proxy.droppedCompletedPublishResponseCount, 1);
+        assert.ok(
+          proxy.publishPostCount >= 2,
+          `expected opening and continuation publish posts (got ${proxy.publishPostCount})`,
+        );
+
+        const stages = await ctx.database.db
+          .select({ id: storytellerAttempt.id })
+          .from(storytellerAttempt)
+          .where(eq(storytellerAttempt.generationId, operationId));
+        assert.equal(stages.length, 1);
+      },
+      {
+        documentRoot,
+        defaultRules: fixture.defaultRules,
+        chamberStorytellerControl,
+        controlPublishProxy: {
+          dropFirstCompletedPublishResponseWhen: (generationId) =>
+            generationId === continuationGenerationId.current,
+        },
+      },
+    );
+  },
+);
+
+test(
+  'STORY03 T12 executor kill after saved result reuses attempt and publishes once',
+  { timeout: 300_000 },
+  async () => {
+    const documentRoot = await mkdtemp(
+      join(tmpdir(), 'offscreen-story03-t12-save-hold-'),
+    );
+    const { LocalDocumentStore } = await import('@offscreen/documents');
+    const fixture = await provisionTurn03DistributedPocFixture(
+      new LocalDocumentStore(documentRoot),
+    );
+    const continuationGenerationId = { current: '' };
+
+    await withStory03CausalMultiprocessHarness(
+      async (ctx) => {
+        const scene1 = await admitTurn03OpeningAndScene1(ctx, fixture.roots);
+        const operationId = randomUUID();
+        continuationGenerationId.current = operationId;
+        await submitTurn03Resolution(ctx, {
+          storyId: scene1.storyId,
+          operationId,
+          expectedRevision: 1,
+          interactionId: scene1.interactionId,
+          optionId: scene1.visibleOptionId,
+        });
+
+        await waitForSavedContinuationWhileRevisionOne(
+          ctx,
+          operationId,
+          scene1.storyId,
+          45_000,
+        );
+
+        const proxy = requireDefined(
+          ctx.executorResultProxy,
+          'Expected executor result proxy stats',
+        );
+        assert.equal(proxy.heldCompletedSaveResponseCount, 1);
+
+        await ctx.stopExecutorOnly();
+        ctx.dropHeldExecutorSaveResponse?.();
+
+        await ctx.spawnExecutorOnly();
+
+        const scene2 = await waitForStoryRevision(
+          ctx.apiOrigin,
+          ctx.cookie,
+          scene1.storyId,
+          2,
+          60_000,
+        );
+        assert.equal(
+          scene2.current.content.title,
+          turn03DistributedPocAuthorship.scene2.title,
+        );
+
+        await assertContinuationSql(ctx, operationId, scene1.storyId);
+      },
+      {
+        documentRoot,
+        defaultRules: fixture.defaultRules,
+        chamberStorytellerControl,
+        executorResultProxy: {
+          holdFirstCompletedSaveResponseWhen: (generationId) =>
+            generationId === continuationGenerationId.current,
+        },
+      },
+    );
+  },
+);

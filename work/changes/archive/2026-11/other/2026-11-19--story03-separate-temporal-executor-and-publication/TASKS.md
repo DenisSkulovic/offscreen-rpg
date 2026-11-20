@@ -2,7 +2,7 @@
 
 ## 2026-11-20 current-HEAD convergence addendum | source-backed, not yet executed
 
-**Audit HEAD:** `3992437187c0`. [First campaign source trace](../../../designs/open/first-campaign-readiness-2026-11-20/MECHANISM-MATRIX.md) · [Cursor order](../../../designs/open/first-campaign-readiness-2026-11-20/CURSOR-EXECUTION.md). These bounded **new** T-IDs respond to actual code paths that have already moved beyond original 2026-11-19 source notes. T01–T06 contain useful historical receipt/proof; do **not** restart T01–T05 or mistake manually-started workflow proof for whole gameplay. **No paid provider, external URL or unowned database/cluster work.** One exact T-ID per change checkpoint; remaining Proposed status still requires owner selection.
+**Audit HEAD:** `3992437187c0`. [First campaign source trace](../../../../../designs/open/first-campaign-readiness-2026-11-20/MECHANISM-MATRIX.md) · [Cursor order](../../../../../designs/open/first-campaign-readiness-2026-11-20/CURSOR-EXECUTION.md). These bounded **new** T-IDs respond to actual code paths that have already moved beyond original 2026-11-19 source notes. T01–T06 contain useful historical receipt/proof; do **not** restart T01–T05 or mistake manually-started workflow proof for whole gameplay. **No paid provider, external URL or unowned database/cluster work.** One exact T-ID per change checkpoint; remaining Proposed status still requires owner selection.
 
 ### T07 | Replace control worker SQL publication with existing GA control HTTP boundary | LANDED (2026-11-20)
 
@@ -33,6 +33,18 @@
 **Build one disposable, bounded real-process integration harness** by reusing the above source fixtures, not another generic test framework. Nest and GA must be distinct HTTP servers, relay/control/executor distinct processes, real Temporal service and dedicated test DB; S3-backed documents when practical for M1, with store tier labeled. Authenticated actor A sends a supported opening candidate/start and option command *over HTTP*; no manual `start` on the workflow and no direct `runtime.complete` in the acceptance path. Persist operation→notice→workflow→attempt→scene identities. **Positive:** scene1 choice, command 202, committed scene2 GET, restart worker and same data, zero provider calls. **Negatives:** wrong actor, replay same command, no executor then resume, GA down with no local fallback, duplicate publish result after Activity ACK loss. Clean up child processes even on assertion fail; a stuck teardown is a failed harness, not a justification for quiet-wait loops.
 
 **Test route:** `tools/api-integration/package.json` already has `test:turn03-fixture` and `test:boot03:imported-start-distributed`; add one narrowly named script after build for the genuinely causal test. **Stop:** no authenticated candidate/choice path can be constructed from existing fixture without new game rule; return exact missing contract for planner, not synthetic success SQL rows. **Close:** this proves local M1; TURN03 still owns cold kind/browser/fork M2. Never rename a manually started workflow test as a whole-campaign E2E.
+
+### T10 | Drop one committed continuation publish acknowledgement | LANDED (2026-11-20)
+
+**Receipt:** test loopback proxy in `story03-causal-multiprocess-harness.ts`. It forwards `POST .../publish`, and for the continuation generation only, destroys the client socket after Game Authority returns `{ status: 'published' }`. `pnpm --filter @offscreen/api-integration test:story03-t09:causal` **6/6 PASS** (~35s) on `offscreen_auth_test`. Scene 2, sequences `[1, 2]`, one attempt, publication `published`, one dropped acknowledgement. No production fault flag. No provider call. TURN03 still owns cold kind, browser, and fork.
+
+### T11 | Stale saved continuation does not add a passage | LANDED (2026-11-20)
+
+**Receipt:** `packages/application/test/story03-stale-saved-publish.test.mjs` **2/2 PASS** on a disposable sandbox database. `publishSavedGeneration` returns `{ status: 'stale' }` when `narrativeRevision` is behind `story.revision`, keeps the saved output, and does not add a passage. A matching revision is not stale. No edit to `publication.ts`. No Temporal. No provider call.
+
+### T12 | Kill the executor after the saved result | LANDED (2026-11-20)
+
+**Receipt:** executor save-response proxy in `story03-causal-multiprocess-harness.ts`. It forwards `PUT .../result` and, for the continuation only, holds the `{ status: 'saved' }` response. The test kills the executor while the story is revision 1, drops that response, and starts the executor again. `pnpm --filter @offscreen/api-integration test:story03-t09:causal` **7/7 PASS** (~46s) on `offscreen_auth_test`. Scene 2, sequences `[1, 2]`, one attempt, publication `published`. No production pause flag. No provider call. Two executor Pods, browser, and cold kind remain TURN03.
 
 ---
 
