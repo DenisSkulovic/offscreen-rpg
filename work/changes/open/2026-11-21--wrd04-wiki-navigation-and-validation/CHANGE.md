@@ -1,6 +1,6 @@
 # WRD04 | ChatGPT documentation wave 4: wiki routing, editorial reconciliation and verification
 
-**State:** Proposed, unselected. **Kind:** documentation-only. **Owner:** ChatGPT; not Cursor. **Depends on:** committed WR01, WRD02, WRD03. **Outcome:** the *existing* rich wiki navigates reliably to the rewritten authoritative sections and is internally consistent enough for Cursor to implement without reading 200 KB of unaccepted design drafts.
+**State:** Done on `storyteller-evolution-electric-boogaloo` (documentation routing/verification complete; runtime implementation follows). **Kind:** documentation-only. **Owner:** ChatGPT; not Cursor. **Depends on:** committed WR01, WRD02, WRD03. **Outcome:** the *existing* rich wiki navigates reliably to the rewritten authoritative sections and is internally consistent enough for Cursor to implement without reading 200 KB of unaccepted design drafts.
 
 [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT handoff](../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md).
 
@@ -31,3 +31,18 @@ Produce one concise **documentation completion receipt** in this Change (or \`RE
 **Done means:** WR01 + WRD02 + WRD03 + WRD04 are finished with real substantive wiki diffs and navigational verification. **Only then is WR02 (Cursor Library implementation) eligible for selection**, after the user approves the final target decisions. Code packets may point to canonical \`docs/\` headings instead of excavating the disposable design dossier.
 
 No application code, package schema, migrations, provider/cluster operations, new game rules, unapproved changes to account policy or unrelated maintenance releases.
+
+
+## Documentation completion receipt | 2026-11-21
+
+**Cold-reader routes:** `docs/README.md` now routes directly to creation, Storyteller writer behavior/controller, rooted Library/source identity, tools/skills/Workdesk/assistants, scene publication, active-state fork semantics and fictional time. Product and technical README maps provide the same owners without requiring `work/designs/`.
+
+**Architecture atlas reconciliation:** system ownership, one-turn flow, data/transactions, scenes/forks, client trust and gaps/decisions now state the Storyteller-evolution target and defer to permanent product/technical owners. They no longer teach preview/Start, flat-manifest, one-shot writer or quiescent-only fork limitations as desired end state.
+
+**Runbooks:** content authoring names the target Library/source roles while clearly marking currently implemented tooling. Local Storyteller rehearsal and integration-test pages remain honest current-runtime procedures; no commands were invented for code that Cursor has not landed.
+
+**NO-OP / preserved:** Living Book visual geometry, presentation styling, admin, Kubernetes, observability and unrelated platform/security owners were not rewritten because the Storyteller target does not alter their owned claims. Existing rich examples and negative constraints remain in place.
+
+**Verification evidence and limitation:** `python scripts/check_docs.py` is available in the uploaded/current-main snapshot and reports broad pre-existing archive/reference debt (445 problems after the WR01 anchor repair). The execution container has no `pnpm`, and outbound GitHub cloning is unavailable, so `pnpm repo:docs-health`, `pnpm wiki:health` and `pnpm wiki:find` could not be run against the connected branch here. GitHub connector reads were used to verify the changed routing pages and owners directly. No generated wiki index was edited manually.
+
+**Release gate:** permanent product/technical owners are now sufficient for Cursor's WR02–WR08 program. Cursor should branch from `storyteller-evolution-electric-boogaloo`, implement against these docs, and update implementation-evidence/status as code lands rather than rewriting the target back to legacy behavior.
