@@ -1,4 +1,5 @@
 import {
+  createGenerationDispatchAuthorityReader,
   createStorytellerRuntime,
   type StorytellerRuntimeOptions,
 } from '@offscreen/application/storyteller';
@@ -43,9 +44,17 @@ export async function startRuntime(
         ? { documentStore: storytellerOptions.documentStore }
         : {}),
     });
+    const resolvedStorytellerOptions: StorytellerRuntimeOptions =
+      storytellerOptions.dispatchAuthority || !storytellerOptions.provider
+        ? storytellerOptions
+        : {
+            ...storytellerOptions,
+            dispatchAuthority:
+              createGenerationDispatchAuthorityReader(database),
+          };
     const activities = createWorkerActivities({
       stories,
-      storyteller: createStorytellerRuntime(database, storytellerOptions),
+      storyteller: createStorytellerRuntime(database, resolvedStorytellerOptions),
       openings: createScriptedOpenings(database),
       continuations: createScriptedContinuations(database),
     });
