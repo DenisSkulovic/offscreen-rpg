@@ -99,7 +99,8 @@ Define `N` = current documents; `K` = changed documents; `F` = tree fanout; `R` 
 | Read one current document by path | O(N) manifest scan + content read | O(log_F N) indexed node reads + content read (with caching) |
 | List `prefix/` | O(N) current entry scan | O(log_F N + matching results) |
 | Update K documents in one admitted revision | O(N) reserialized metadata + K content objects | O(K × log_F N) new nodes, potentially shared upper paths + K content objects |
-| Scene with no document changes | No content change required; must still pin same root | **Exactly reuse prior Library root** |
+| Published passage with no other lore changes | Full manifest rewritten with added `source-passage` entry | Insert only new immutable passage and bounded affected tree nodes; reuse all unaffected material |
+| Document-free control/state transition | No new Library document required | **Exactly reuse prior Library root**; checkpoint/control references may change |
 | Fork at eligible prior scene | O(N) new branch manifest metadata, inherited bodies shared | **O(1) Library-root pointer reuse**, separately remap engine/branch identity |
 | Find old cited version | Historical manifest walk; hard bound 256 | Direct immutable hash/authorized provenance lookup; independent of story age |
 | Compare two Library roots | Usually enumerate flat arrays | Hash-pruned tree diff; skip identical subtrees |
