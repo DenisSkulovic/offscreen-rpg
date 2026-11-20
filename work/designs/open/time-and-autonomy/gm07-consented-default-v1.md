@@ -1,6 +1,6 @@
 # GM07 | One published-decision opt-in safe fallback V1
 
-**Status:** recommended **first-slice product/authority contract**, 2026-11-15; no code authorized. [GM07 Change](../../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md) stays Proposed. Long-term ambitions and alternatives: [decision delegation](./decision-delegation.md).
+**Status:** the one `decline-harmless-invitation.v1` slice is archived as Done. A general delegated-decision policy stays Proposed. This page is the design note, not a second authorization. [GM07 Change](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md). Long-term ambitions and alternatives: [decision delegation](./decision-delegation.md).
 
 ## 1. Make consent tangible, not "AI personality"
 
@@ -87,4 +87,4 @@ The *consent itself is revocable before consumption*, not the accepted past acti
 
 **No paid model calls** for this fixture; no universal personality ranker; no autoplay, auto-combat, money/item transfer, long-term account setting, party voting, battle parser or notifications. Any inability to distinguish consented published decisions from private generated offers is a **stop**, not a reason to use the UI as authority.
 
-**Ready requires:** owner approves the exact "decline harmless invitation" class and real 20-minute window; current-source/Nest/DB mapping to a published decision and normal mechanical command is verified; provider-free deadline/race tests are specified. Then and only then may Cursor begin [GM07](../../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md), separately authorized.
+**Ready requires:** owner approves the exact "decline harmless invitation" class and real 20-minute window; current-source/Nest/DB mapping to a published decision and normal mechanical command is verified; provider-free deadline/race tests are specified. Then and only then may Cursor begin [GM07](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md), separately authorized.

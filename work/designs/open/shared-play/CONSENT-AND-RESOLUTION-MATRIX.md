@@ -1,6 +1,6 @@
 # Consent and resolution matrix
 
-**Status: Proposed. Not selected.** This page is an open design beside the [shared-play index](README.md). It is not a product rule, not a technical contract, and not permission to implement. Owner ratification is still required. Shared play stays unratified. One vote per person stays unratified. An automatic timeout stays unratified. [GM07](../../../changes/open/2026-11-13--gm-delegated-decision/CHANGE.md) is not selected and is not launched from here.
+**Status: Proposed. Not selected.** This page is an open design beside the [shared-play index](README.md). It is not a product rule, not a technical contract, and not permission to implement. Owner ratification is still required. Shared play stays unratified. One vote per person stays unratified. An automatic timeout stays unratified. [GM07](../../../changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md) is archived for one harmless invitation and is not selected from here.
 
 **Reader question:** When two or more people might share one story, who may commit which action, and what happens if consent is stale, late, or withdrawn?
 

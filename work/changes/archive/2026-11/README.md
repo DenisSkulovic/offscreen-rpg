@@ -48,11 +48,12 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-15--eng03-c1-provisional-recovery](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md)
 - [2026-11-15--eng03-c2-interrupted-action-capture](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md)
 
-## experience (30)
+## experience (31)
 
 - [2026-11-13--gm-standing-life](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-standing-life/CHANGE.md)
 - [2026-11-13--gm-custom-intent-admission](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-admission/CHANGE.md)
 - [2026-11-13--gm-custom-intent-proposal](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-proposal/CHANGE.md)
+- [2026-11-13--gm-delegated-decision](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md)
 - [2026-11-13--gm-offer-distinctness](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-offer-distinctness/CHANGE.md)
 - [2026-11-13--gm-return-event-projection](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md)
 - [2026-11-13--gm-viewer-read-position](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md)

@@ -38,6 +38,9 @@ import { and, eq } from 'drizzle-orm';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import { createCampaignDocuments } from './documents';
 import { chamberAllowsResponse } from '../developer-tools/chamber-fixtures';
+import { createStoryDelegationPolicy } from './delegation-policy';
+import { createDelegatedOfferControls } from '../campaign/delegated-offer';
+import { advanceDelegatedWithdrawal as advanceDelegatedWithdrawalFn } from '../campaign/delegated-expiry';
 
 export type StoryApplicationOptions = ReadCacheOptions & {
   documentStore?: DocumentStore;
@@ -54,6 +57,8 @@ export {
   admitDelegatedDecision,
   PREAPPROVED_WITHDRAWAL_WINDOW_MS,
 } from '../campaign/delegated-decision';
+export { DELEGATED_DECISION_NOTICE_TOPIC } from '../campaign/delegated-offer';
+export { advanceDelegatedWithdrawal } from '../campaign/delegated-expiry';
 
 export function createStories(
   database: Database,
@@ -81,8 +86,12 @@ export function createStories(
   const documents = options.documentStore
     ? createCampaignDocuments(database, options.documentStore)
     : null;
+  const delegationPolicy = createStoryDelegationPolicy(database);
+  const delegatedOfferControl = createDelegatedOfferControls(database);
   return {
     documents,
+    delegationPolicy,
+    delegatedOfferControl,
     campaignSettings: createCampaignSettings(database),
     campaignAction: createCampaignActions(database, options.documentStore),
     actionExecutionControl: createActionExecutionControls(database),
@@ -97,6 +106,13 @@ export function createStories(
       database,
       options.documentStore,
     ).advance,
+    advanceDelegatedWithdrawal(wakeOperationId: string) {
+      return advanceDelegatedWithdrawalFn(
+        database,
+        wakeOperationId,
+        options.documentStore,
+      );
+    },
     prepareCampaignConsequence: createConsequenceNarration(
       database,
       options.documentStore,

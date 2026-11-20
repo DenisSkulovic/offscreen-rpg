@@ -113,6 +113,40 @@ export class StoriesController {
       return this.stories.read({ ownerId, storyId });
     });
   }
+  @Put(':id/delegation-policy/:operationId')
+  delegationPolicy(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.delegationPolicy.update({
+        ownerId,
+        storyId,
+        operationId,
+        body,
+      });
+      return this.stories.read({ ownerId, storyId });
+    });
+  }
+  @Put(':id/delegated-offers/:operationId')
+  delegatedOfferControl(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.delegatedOfferControl.control({
+        ownerId,
+        storyId,
+        operationId,
+        body,
+      });
+      return this.stories.read({ ownerId, storyId });
+    });
+  }
   @Put(':id/actions/:operationId')
   campaignAction(
     @Req() request: Request,

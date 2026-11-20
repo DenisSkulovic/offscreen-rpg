@@ -82,6 +82,22 @@ export async function storyDecisionV1(id: string): Promise<void> {
   }
 }
 
+const { advanceDelegatedWithdrawal } = proxyActivities<CampaignActivities>({
+  startToCloseTimeout: '30 seconds',
+  retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
+});
+export async function campaignDelegatedDecisionV1(
+  wakeOperationId: string,
+): Promise<void> {
+  while (true) {
+    const remaining = await advanceDelegatedWithdrawal(wakeOperationId);
+    if (remaining === null) {
+      return;
+    }
+    await sleep(remaining);
+  }
+}
+
 const { completeStoryteller } = proxyActivities<
   import('./contracts').StorytellerActivities
 >({

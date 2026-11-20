@@ -44,8 +44,13 @@ export const storytellerDistributedWorkflowType =
 export interface CampaignActivities {
   advanceCampaignActivity(id: string): Promise<number | null>;
   advanceCampaignAction(id: string): Promise<number | null>;
+  advanceDelegatedWithdrawal(id: string): Promise<number | null>;
   prepareCampaignConsequence(id: string): Promise<void>;
 }
+export const campaignDelegatedDecisionWorkflowType =
+  'campaignDelegatedDecisionV1';
+export const campaignDelegatedDecisionWorkflowId = (id: string) =>
+  `campaign-delegated-decision/${id}`;
 export const campaignActivityWorkflowType = 'campaignActivityV1';
 export const campaignActivityWorkflowId = (id: string) =>
   `campaign-activity/${id}`;

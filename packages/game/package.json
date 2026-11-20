@@ -46,6 +46,10 @@
     "./actor": {
       "types": "./dist/src/actor.d.ts",
       "default": "./dist/src/actor.js"
+    },
+    "./delegation-eligibility": {
+      "types": "./dist/src/delegation-eligibility.d.ts",
+      "default": "./dist/src/delegation-eligibility.js"
     }
   },
   "scripts": {

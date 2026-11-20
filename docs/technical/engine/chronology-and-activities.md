@@ -1,12 +1,12 @@
 # Deliberate execution, action time and Storyteller readiness
 
-Status, inspected at `15a997c7`. The tests named here were read and not re-run.
+Status, inspected at `15a997c7`. The preapproved-withdrawal row was rechecked on `change/gm07-consented-withdrawal` after `e4141c39`, and `gm07-delegated-worker-path.test.mjs` was re-run. The other tests named here were read and not re-run.
 
 - Fictional-second arithmetic, pause, and completion clamp: `packages/game/test/tick-clock.test.mjs`.
 - Fail-closed overlap when a world obligation intervenes, or when the resolution is not a finite action: `packages/game/test/immediate-offer.test.mjs`.
 - Finite-action settlement, a failed check that consumes the duration without the transfer, and a wrong-holder interrupt that does not roll: `packages/application/test/item-transfer-transition.test.mjs`.
 - A due world obligation interrupts before effects and does not roll: `packages/application/test/world-obligation-transition.test.mjs`.
-- One preapproved withdrawal on a published two-choice invitation: `packages/application/test/delegated-decision.test.mjs`.
+- One preapproved withdrawal on a published two-choice invitation: `packages/application/test/delegated-decision.test.mjs` and `packages/application/test/gm07-delegated-worker-path.test.mjs`.
 - Execution gate: `projectCampaignClock` in `packages/application/src/campaign/clock.ts` advances only for a matching accepted activity or finite action while unheld. Any other eligibility, including `none`, is held, and a non-running clock earns nothing in `packages/game/src/time.ts`. No dedicated unit test of that function was found. New activity selection calls it with `none`, so idle wall time is not donated to the new job.
 - Named API and worker cases exist for early preparation during pause, same-generation retry, and worker restart in `tools/api-integration/test/storyteller.integration.ts` and `apps/worker/test/eng06-worker-restart.live.test.ts`. Their assertions were not re-read and they were not re-run.
 
@@ -110,7 +110,7 @@ The initial solo POC keeps indefinite decisions. The architecture also permits a
 
 This remains owned by the bounded-autonomy feature. Do not enable defaults in the current mechanical campaign by importing the legacy narrative rehearsal deadline behavior.
 
-One published two-choice invitation is a separate expiry, and only when that invitation already carries consent for its withdrawal. `admitDelegatedDecision` in `packages/application/src/campaign/delegated-decision.ts` seals the arrival. The deadline is twenty real minutes after publication. Waiting adds no fictional seconds. At expiry the preapproved withdrawal settles once, with the provenance “Your approved fallback chose to withdraw.” A player choice that commits first is the only settlement; the fallback does not also run. Absent consent, a revoked grant, consent granted after the deadline, a stale withdrawal, a combat choice, a model request, or any question that is not this invitation leaves the decision held. A later delivery returns the same settlement and does not apply a second duration. The caller must submit the next arrival against the returned decision. This module does not take the story-row lock, does not import the narrative-rehearsal timer, and does not call a model. Every other decision stays open. The general timed-default extension remains planned.
+One published two-choice invitation is a separate expiry, and only when the story owner enabled `decline-harmless-invitation.v1` before that offer was published. The pure `admitDelegatedDecision` reducer still seals an in-memory arrival and does not take the story lock. The campaign path is the one that can act. Publication stores one `campaign_delegated_offer` and a `campaign.delegated-decision.v1` notice only when the offer has two terminal actions and exactly one passes `isDeclineHarmlessInvitation`. The deadline is twenty real minutes on the database clock. Waiting adds no fictional seconds. `advanceDelegatedWithdrawal` admits the withdrawal through `admitCampaignActionInTransaction` under the story lock. The ordinary action executor then settles that action's own duration. A disposable SQL run of the harmless-invitation fixture, with the provider disabled, observed one settled execution, one receipt, public kind `action-settled`, `game_second` increased by 5, and zero storyteller outbox rows. A player choice that commits first consumes the capture, and the withdrawal does not run. Pause keeps the saved remaining milliseconds. Revoke, a stale wake, and a second tick do not add an execution. This proof calls those worker functions in-process, and one local Temporal worker delivered the same `campaign.delegated-decision.v1` notice and settled that one withdrawal. It is not a cluster or hosted relay. Every other decision stays open. The general timed-default extension remains planned.
 
 ### Contract dependencies
 
@@ -120,7 +120,7 @@ One published two-choice invitation is a separate expiry, and only when that inv
 
 ## Worked traces and acceptance checklist
 
-All numbers below are fixture values. Sequential finite action, controls, interrupted work, restart/replay, bounded overlap and due-world interruption have focused offline evidence. The one preapproved withdrawal has a focused offline test. The general timed-default extension remains planned under bounded autonomy. None authorizes live spend or establishes human rhythm quality.
+All numbers below are fixture values. Sequential finite action, controls, interrupted work, restart/replay, bounded overlap and due-world interruption have focused offline evidence. The one preapproved withdrawal has a disposable SQL test and one local Temporal delivery. A hosted or cluster relay was not run. The general timed-default extension remains planned under bounded autonomy. None authorizes live spend or establishes human rhythm quality.
 
 | Trace | Accepted terms and timing | Required evidence |
 | --- | --- | --- |
@@ -134,7 +134,7 @@ All numbers below are fixture values. Sequential finite action, controls, interr
 | Pause and speed change | Pause during an action, wait, resume at twice the rate | Same fictional duration/result; preserved earned fraction; early prose cannot unpause |
 | Due interruption | A world rule becomes due before action completion | Ordered boundary stops incompatible execution; no premature reserved result or hidden lost event |
 | Default-response extension | Published 30-second response window, authorized five-second default | Held deliberation; single selected command on expiry; ordinary five-second execution follows |
-| Preapproved withdrawal | Published two-choice invitation, twenty real minutes, explicit withdrawal consent | One withdrawal at expiry and zero fictional seconds while waiting; a first player choice or a second delivery does not settle again |
+| Preapproved withdrawal | Published two-choice invitation, twenty real minutes, explicit withdrawal consent | Disposable SQL plus one local Temporal delivery: one settled withdrawal whose own duration is five fictional seconds, zero storyteller notices. A hosted relay was not run |
 | Microbe / abstract entity | Explicit finite sensing/connection interval in content-defined units | Same clock/authority contract without a tavern, wallet or human calendar |
 
 Trace artifacts need offer/execution/receipt/generation IDs, accepted terms, fictional-second interval, pace revision, time eligibility/hold transitions, pending versus committed result, publication state, and provider allocations. The structured QA catalogue should gain these cases as **planned** during implementation, then become available only when Chamber controls can reproduce them. Never relabel existing zero-time fixtures as evidence for timed decisions.

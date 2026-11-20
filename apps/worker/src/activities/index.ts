@@ -75,6 +75,13 @@ export function createWorkerActivities(collaborators: {
         mapStoryActivityError(error, 'IntervalStateError');
       }
     },
+    async advanceDelegatedWithdrawal(id) {
+      try {
+        return await stories.advanceDelegatedWithdrawal(id);
+      } catch (error) {
+        mapStoryActivityError(error, 'IntervalStateError');
+      }
+    },
     async prepareCampaignConsequence(id) {
       try {
         await stories.prepareCampaignConsequence(id);
