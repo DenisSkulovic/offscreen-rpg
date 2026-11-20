@@ -1,5 +1,7 @@
 # Critical self-review | stop architectural inflation
 
+**2026-11-21 priority clarification:** [VISION-FIRST-TARGET.md](VISION-FIRST-TARGET.md) now states the target independently of the current prototype. Treat source-level tests here as migration diagnosis, **not as a requirement to preserve old schemas, read ceilings, quiescent-only forks, or a one-shot controller**. The end state demands real Library-oriented research, skills, optionally delegated contexts and every published scene forkable by construction. Avoid a new Frankenstein formed by gluing old v1 constraints together.
+
 **Status:** independent adversarial review of our own **unaccepted** design dossier, 2026-11-20. This is a correction and triage note, NOT a new ratified architecture, Cursor Change, executed application test, or provider quality evaluation. **Code basis:** supplied repository snapshot `09d5820bcafe`; current GitHub design HEAD before this review `4aea6555`. Source was re-opened, rather than relying on previous chat conclusions.
 
 ## Owner correction: keep the agentic heart

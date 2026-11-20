@@ -4,6 +4,8 @@
 
 **Question:** How do we replace the four-step setup wizard with immediate play from a prepared experience or one freeform Story Prompt, while giving the Storyteller a durable, coherent, appropriately bounded private creative workspace?
 
+**Vision-first reset (2026-11-21):** Read [VISION-FIRST-TARGET](VISION-FIRST-TARGET.md) and [worked behavior tests](VISION-FIRST-TRACES-AND-TESTS.md) **before** legacy POC audits. Existing schema shapes and hard limits are not product constraints. The [critical self-review](CRITICAL-SELF-REVIEW.md) remains useful for rejecting unnecessary machinery, **not** for reducing the Writer to one model call.
+
 **Anti-slop instruction (2026-11-20):** Read [the critical self-review](CRITICAL-SELF-REVIEW.md) before treating any candidate named subsystem as necessary. Prefer the few source-backed failures and provider-free red/green checks over adding further architecture prose.
 
 This dossier is the home for the continuing multi-conversation investigation. It is **not** a competing source of accepted product or technical law. A future chat should start with this page, check the source HEAD against the dated audit, then continue the unresolved design rather than restarting the discussion.
@@ -11,6 +13,8 @@ This dossier is the home for the continuing multi-conversation investigation. It
 ## Documents
 
 - **[CRITICAL-SELF-REVIEW.md](CRITICAL-SELF-REVIEW.md) — READ FIRST: evidence-ranked retractions, source defects, overengineering risks, concrete next tests and unreconciled archive-link debt. Earlier designs remain unaccepted hypotheses.**
+- **[VISION-FIRST-TARGET.md](VISION-FIRST-TARGET.md) — START HERE for target capabilities and invariants, designed independently of current POC schemas, limits and storage choices.**
+- **[VISION-FIRST-TRACES-AND-TESTS.md](VISION-FIRST-TRACES-AND-TESTS.md) — concrete 200-scene research/delegation, active fork, preset, abstract story, and crash traces that could falsify the target.**
 - **[AGENTIC-WRITER-POC.md](AGENTIC-WRITER-POC.md) — OWNER CLARIFICATION: genuine tool-using Storyteller, Library discovery, skills, staged note/re-read and optional bounded read-only subagent. Do not mistake anti-slop review for a one-shot-only product.**
 - [SOURCE-AUDIT.md](SOURCE-AUDIT.md) — observed implementation and source-backed constraints at the inspected SHA.
 - [DESIGN-NOTES.md](DESIGN-NOTES.md) — the player-facing intent, creator's library concept, competing setup architectures, authority and cost rules.
