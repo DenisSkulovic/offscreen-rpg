@@ -18,6 +18,8 @@ Status: B1 and the first B2 quota slice implement pure policy resolution, fail-c
 
 Entitlement, funding allowance, and task recipe stay distinct on this page. The usage window stays distinct beside them.
 
+**OBS00-B current-authority implementation decision (2026-11-20):** [Source-backed authorization and atomic dispatch contract](../../../work/changes/open/2026-11-15--obs00-live-provider-custody/DECISION-2026-11-20.md) names the missing independent platform/grant/route SQL sources; they are **planned but not implemented**. A captured `story.usagePolicy` is not current entitlement, and existing allowance rows are not owner grants. Billable dispatch must recheck current authority **inside the same SQL transaction** as `reserved→dispatched`, serializing revocation; the existing detached Boolean check is insufficient for that race. No provider call, grant seed or paid activation is authorized. OBS00-C's per-attempt wire equality was already [Done and tested](../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md); do not implement it again.
+
 ## Distinct authorities
 
 An **entitlement profile** says which capabilities an account may use. A **usage window** limits consumption over real time. A **funding allowance** authorizes actual provider spending. A **task recipe** limits the work needed for one purpose. A **creative Storyteller profile** controls tone/pacing, not any of these permissions. More available funds do not automatically unlock a model, and an unlocked model does not imply permission to fill its context window.
