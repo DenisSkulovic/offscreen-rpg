@@ -17,6 +17,7 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - [LAUNCH-BOUNDARIES-AUDIT.md](LAUNCH-BOUNDARIES-AUDIT.md) — source trace of draft, opening, start-package import, initial-root selection, first checkpoint and cost boundaries.
 - [PREPLAY-WORKDESK-PROTOCOL.md](PREPLAY-WORKDESK-PROTOCOL.md) — candidate operation-local staging root, complete launch state model, A/B recipes, replay, visibility and failure invariants.
 - [CANONICAL-ENTRYPOINT-RESOLUTION.md](CANONICAL-ENTRYPOINT-RESOLUTION.md) — deterministic standard-file selection, profile compilation, precedence, size budgets and provenance.
+- [fixtures/README.md](fixtures/README.md) — three source-backed launch fixtures (Seyda Neen, BAH and conscious galaxy), expected snapshots, counterexamples, replay and clock-arrival matrix; design-only, no runtime tests.
 
 ## Owner's product direction (from conversation, not yet reconciled into canonical docs)
 
@@ -51,6 +52,6 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - **I1 recorded:** inspect existing creation, profile, start-package, opening and bootstrap implementation; record the user's workbench hypothesis and its architectural costs.
 - **I2 drafted 2026-11-20, not accepted:** compare A (single-round composition) vs B (separate Workdesk preparation) and conditional C; trace prepared preset, `bah`, abstract galaxy, pre-play staging, retry and first-scene root. See [INITIALIZATION-LIFECYCLES](INITIALIZATION-LIFECYCLES.md).
 - **I3 protocol drafted, awaiting owner review:** prefer operation-local pre-play staging, distinguish persisted/staged/admitted/published roots, propose deterministic resolution of conventional entry documents, and identify source-only gaps (opening cannot publish documentChanges, profile guidance can be omitted, start bundles require rules). Read [LAUNCH-BOUNDARIES-AUDIT](LAUNCH-BOUNDARIES-AUDIT.md), [PREPLAY-WORKDESK-PROTOCOL](PREPLAY-WORKDESK-PROTOCOL.md) and [CANONICAL-ENTRYPOINT-RESOLUTION](CANONICAL-ENTRYPOINT-RESOLUTION.md).
-- **I4:** design minimal quality/cost probes; only after product/technical reconciliation prepare bounded executable Changes for Cursor.
+- **I4 fixtures drafted, not executed:** concrete Seyda Neen / `BAH` / conscious galaxy vectors and failure cuts are specified under [fixtures](fixtures/README.md). Next: resolve open owner-level contract decisions, then formulate provider-free executable proof and blinded quality/cost experiments. No Cursor Changes or provider grants yet.
 
 **Do not** auto-select a Change, automatically dispatch a provider, or treat a proposed `STORYTELLER_PROFILE.md` path as an implemented runtime feature.

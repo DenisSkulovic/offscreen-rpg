@@ -69,3 +69,15 @@ Stop/rollback signals: preparation regularly adds low-value or contradictory fil
 - **Checkpoint honesty:** opening checkpoints do not cover all mechanical starts today. The new launch protocol must not pretend a nonexistent first-scene checkpoint makes a fork possible.
 
 **Next conversational starting point:** resolve the few remaining protocol choices using three provider-free fixture traces (ready preset, `bah`, cosmic observer), including an interruption between preparation and composition. Then decide the minimal accepted owner contract before any Cursor Change packet. No model-spending experiment or implementation is authorized here.
+
+## Fixture pressure-test update (2026-11-20; design, not runtime proof)
+
+[Fixture laboratory](fixtures/README.md) records current source inputs, expected pre-play state, prohibited invented defaults and cross-cutting recovery vectors. The three fixtures sharpen several decisions:
+
+- **Prepared authored starts:** existing Seyda Neen source has five documents but no `STORY_PROMPT.md` / `STORYTELLER_PROFILE.md`. New file roles require explicit authored data and validated manifest resolution; do not claim present behavior works.
+- **BAH:** a one-word, minimally specified custom prompt needs an admitted original-world invention default, not obligatory form completion. There is no reason to *require* a paid worldbuilding pass or a character sheet.
+- **Conscious galaxy:** a non-mechanical narrative choice can potentially fit the existing playable schema, but universal actor mechanics and rule-free prepared bundles are not currently solved. Time scale in narration and typed clock advancement must be kept separate.
+- **New gap:** one-click Play eliminates human review *and* the current later Start action. We must explicitly handle **scene publication versus confirmed player arrival** and prevent invisible consequential time accrual after lost HTTP delivery.
+- **Evaluation:** preparation value must be judged through opening **and second-scene** quality and correct evidence reuse; a large number of new files is not a success metric.
+
+**Next investigation:** choose the minimum launch/admission contract, authorized original-world invention defaults, role resolution policy and no-hidden-clock principle; then decide if a small first executable Change can be sliced without prematurely implementing the entire Writer's Library.
