@@ -28,6 +28,22 @@ Commit group: <one cohesive milestone or two separable results>
 
 Keep **one or two concurrent children** by default, only with truly disjoint files/resources. Additional concurrency requires an explicit collision-free schedule and provides no new spending, DB or cluster authority. The parent should do small routing and join work, not another repository-wide investigation.
 
+### Context-isolation delegation: use Auto for boring-but-bulky missions
+
+The parent is not required to personally perform every easy operation. **Context isolation is itself a valid reason to delegate** when the work is straightforward but would generate enough repository reads, terminal output or repetitive edits to pollute the coordinator context.
+
+Prefer the `utility-worker` on **Auto** when all of these hold:
+
+- the mission is bounded and the desired result is already known;
+- success can be stated as factual output or deterministic edits/checks;
+- it is more than one or two tiny parent actions, or is likely to produce noisy intermediate output;
+- no product/architecture/security/transaction decision is being delegated;
+- the child can return a compact receipt instead of raw logs.
+
+Typical examples: inspect a sequence of Git refs/status/diffs and summarize only relevant facts; run a small series of safe repository commands; rename/move/update already-decided documentation across several files; collect exact occurrences/links; reconcile a mechanical list; gather test counts or changed paths. **Do not delegate a two-command triviality merely to spawn an agent**, and do not use Auto for an ambiguous bug hunt or implementation slice just because it is cheap.
+
+The utility child should read/emit the minimum needed, never spawn children, and stop with one precise blocker when the mission stops being mechanical. The parent consumes the receipt, not the transcript. This reduces compounding conversation tax and preserves the parent for integration, judgment and decisions.
+
 ## 2. Cheap children; parent owns reconciliation
 
 Child receives one already-resolved task card: T-ID, 2–5 actual source/test anchors, exact edit/command, negative test, allowed paths, and stop case. Child returns a **short factual receipt**: what changed, tested commands/counts, negative observation, blockers, touched docs and whether work is in the parent checkout or isolated worktree.

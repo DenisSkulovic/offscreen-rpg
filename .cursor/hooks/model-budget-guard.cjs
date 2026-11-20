@@ -1,12 +1,14 @@
 "use strict";
 
-// Invoked by Cursor subagentStart. Default allow ONLY Composer 2.5 Standard.
-// Grok Low/Medium requires explicit user-controlled local opt-in in the hook
+// Invoked by Cursor subagentStart. Allow Auto for bounded utility children and
+// Composer 2.5 Standard for substantive children. Grok Low/Medium requires
+// explicit user-controlled local opt-in in the hook
 // process environment. This is a cost guard, not an authentication boundary:
 // it does not control parent model selection or platform billing.
 function verdictForModel(value, grokApproved = false) {
   if (typeof value !== "string") return "Missing Cursor subagent_model";
   const model = value.trim().toLowerCase();
+  if (model === "auto") return null;
   const match = /^([a-z0-9.-]+)\[([^\]]*)\]$/.exec(model);
   if (!match) return "Model variant must explicitly include effort/speed; bare model and aliases are denied";
   const [, base, raw] = match;
@@ -24,7 +26,7 @@ function verdictForModel(value, grokApproved = false) {
     return grokApproved ? null :
       "Grok requires an explicitly owner-approved task and OFFSCREEN_CURSOR_ALLOW_GROK=owner-approved in the hook environment";
   }
-  return "Only Composer 2.5 Standard or opt-in Grok 4.6 Low/Medium Standard are permitted";
+  return "Only Auto, Composer 2.5 Standard, or opt-in Grok 4.6 Low/Medium Standard are permitted";
 }
 
 function evaluate(payload, options = {}) {
@@ -37,7 +39,7 @@ function evaluate(payload, options = {}) {
   if (problem) return {
     permission: "deny",
     user_message: "Offscreen RPG subagent blocked: " + problem +
-      ". Default to Composer Standard. Never disable this guard as a model fallback."
+      ". Use Auto only for bounded utility missions; otherwise default to Composer Standard. Never disable this guard as a model fallback."
   };
   return {permission: "allow"};
 }

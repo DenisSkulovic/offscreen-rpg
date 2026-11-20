@@ -26,6 +26,12 @@ For Cursor, do not require it to redo costly product design. Provide the `cursor
 
 **Tool costs:** Auto-loading every MCP server description, spinning up parallel subagents, or transferring raw Claude notes to Cursor can waste more than a few extra paragraphs of needed contract. Use a tool or new context only when its information gain justifies it.
 
+## Delegate for context hygiene, not only difficulty
+
+A subagent is also a **context boundary**. The parent should keep judgment, integration state and unresolved decisions in its own conversation, while offloading straightforward missions that are cheap in reasoning but noisy in execution. If a bounded chore needs many reads, Git commands, repeated searches or mechanical edits and the parent only needs the result, prefer an **Auto utility subagent** and request a compact factual receipt.
+
+Do not over-delegate microscopic work: one or two small actions are usually cheaper in the parent. The useful threshold is a **small mission** with enough intermediate chatter to create compounding context tax. Auto utility work must have a known finish line and stop on ambiguity; implementation, architecture, security-sensitive reasoning and open-ended diagnosis stay with the appropriate stronger route.
+
 ## What to measure
 
 Record actual loaded files/skills (not merely linked ones), selected model/tool calls, tokens _if the client reports them_, time, expensive wrong turns, owner intervention and defects caught. Do not convert changed Markdown byte counts into supposed token savings. Benchmark the same accepted scope in a fresh context before claiming improvement.
