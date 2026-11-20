@@ -1,10 +1,12 @@
 # STORY02 | Remaining custody guard and closure
 
-## 2026-11-20 final T05/T06 closure addendum: source verified, not executed
+## 2026-11-20 T05/T06 closure
 
-**Current:** T01–T03 implementations **already exist in main**: versioned contracts, role-separated GA task/claim/save/read and bounded executor HTTP client; do not rebuild. **T04 recorded 10/10 PASS** on provider-free two-client/disposable SQL at `ec73a535`, not fresh current-head evidence. STORY03 T09 separately recorded 5/5 causal local multi-process scripted game, not cold-kind or paid calls. [Exact remaining finding and scoped fix](DECISION-2026-11-20.md). **T05/T06 NOT RUN**, QUEUE still TURN02. Historical T01–T03 "PLANNER-READY" labels below describe 2026-11-19 work that has landed, not current tasks.
+**Current:** T05 and T06 are done on branch `change/story02-scripted-custody`. QUEUE stays TURN02. Historical T01–T03 labels below describe work that already landed.
 
-### T05 | Enforce scripted-only GA custody mode and provenance | PATCH
+### T05 | Enforce scripted-only GA custody mode and provenance | PATCH PASS
+
+**Status (2026-11-20):** `createStorytellerTaskCustody` refuses provider-mode tasks and non-scripted attempts on fetch, claim, save, and read with `unsupported-execution` under the generation/attempt lock.
 
 **Read, then act in one bounded batch:** `packages/application/src/storyteller/execution.ts:readCommittedTask/createStorytellerTaskCustody`, `packages/contracts/src/storyteller-task-custody.ts` refusal unions, `apps/game-authority/src/server.ts:handleCustody`, `packages/application/test/story02-task-claim.test.mjs`, `apps/game-authority/test/storyteller-task-custody-persistence.integration.test.ts`.
 
@@ -14,9 +16,13 @@
 
 **STOP:** cannot distinguish scripted from paid attempt under authoritative DB lock, test unexpectedly needs broad provider-mode adoption/rework, or a current shared GA writer collision. Report source and boundary; do not rewrite STORY03 or invent entitlement tokens.
 
-### T06 | Prove current HEAD and archive STORY02 | VERIFY/DOC
+### T06 | Prove current HEAD and archive STORY02 | VERIFY PASS
 
-**Read:** [decision](DECISION-2026-11-20.md), `docs/technical/storyteller/generation-and-publication.md#remote-task-custody`, `apps/worker/test/storyteller-task-custody-client.test.ts`, `apps/worker/test/storyteller-distributed-execution.test.ts`, `work/changes/open/2026-11-19--story02-private-task-and-result-custody/CHANGE.md`.
+**Proof (worktree, provider-free, 2026-11-20):** contracts custody parser **7/7**; application `story02-task-claim.test.mjs` **6/6**; Game Authority unit **3/3**; disposable PostgreSQL integration **4/4** from `apps/game-authority` (`DATABASE_TEST_URL` pathname `/offscreen_auth_test`); worker custody client plus distributed executor **7/7** after `pnpm --filter @offscreen/worker... build`. **27/27.** Negative: provider-mode custody returns `unsupported-execution`; `executeFrozenStoryteller refuses provider mode without sending`. Same integration file from the repo root fails with `Can't find meta/_journal.json` because migrations resolve from `process.cwd()`; that is a harness cwd constraint, and the package-directory run is the accepted proof. No paid HTTP. Not cross-Pod. STORY03 causal suite not re-run.
+
+### T06 route | VERIFY/DOC
+
+**Read:** [decision](DECISION-2026-11-20.md), `docs/technical/storyteller/generation-and-publication.md#remote-task-custody`, `apps/worker/test/storyteller-task-custody-client.test.ts`, `apps/worker/test/storyteller-distributed-execution.test.ts`, `work/changes/archive/2026-11/other/2026-11-19--story02-private-task-and-result-custody/CHANGE.md`.
 
 Run focused DTO parser, application/GA/worker unit and disposable PostgreSQL custody suite with no provider, then ensure negative/positive T05 cases and current archive links. Include WORKER standalone process proof from STORY03 if available but **do not** fabricate a cross-Pod proof or re-run an entire Kubernetes campaign solely to close the private API facade. Record exact source SHA, commands/test counts, no HTTP billing, local vs multi-process proof tier, linked dependent ownership, current queue and plan/close guard. **If all pass:** mark STORY02 Done, update permanent docs/catalog, archive original folder using repository lifecycle. If not, keep OPEN with the one exact unpassed security invariant, never another "planner-gated" placeholder.
 

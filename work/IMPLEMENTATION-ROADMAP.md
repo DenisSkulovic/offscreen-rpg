@@ -2,7 +2,7 @@
 
 **Decision date:** 2026-11-20. **Source baseline:** clean ZIP/main 64f3de7 plus remote main 09f8d08 (TURN02 T03 actual Next image build receipt; DXK01 T01 preflight). **Goal:** working, provider-free distributed Harbor-watch campaign in real kind, then `pnpm dev` + Tilt + Headlamp + **zero active Docker Compose**. **This file alone owns short-term PRIORITY/ORDER**, not selected work or product requirements. **work/QUEUE.md remains the single Current work selector.** Status comes from Change receipts and real tests; do not quote this schedule as runtime evidence.
 
-**STORY02 short cleanup decision (2026-11-20):** [Original private custody packet](changes/open/2026-11-19--story02-private-task-and-result-custody/CHANGE.md) has delivered versioned GA routes/worker HTTP client and T04 10/10 local provider-free proof. One safety defect remains: GA custody does not enforce scripted-only execution or reject unrelated existing provider attempt provenance, even though executor refuses provider tasks. [T05/T06 closure](changes/open/2026-11-19--story02-private-task-and-result-custody/DECISION-2026-11-20.md) is a small serial fix/test after TURN02 hands off GA ownership, not a new general distributed POC or paid task. No auto-selection.
+**STORY02 (Done, 2026-11-20):** [Private custody](changes/archive/2026-11/other/2026-11-19--story02-private-task-and-result-custody/CHANGE.md) refuses provider-mode tasks and non-scripted attempts at the Game Authority seam (`unsupported-execution`) and keeps scripted claim/save idempotence. **27/27** provider-free tests. Cross-Pod publication stays STORY03/TURN03. Paid custody stays TURN04. No auto-selection; QUEUE stays TURN02.
 
 ## FIRST SCREEN | Cursor parent: what to do next
 

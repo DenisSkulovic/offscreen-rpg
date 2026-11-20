@@ -1,6 +1,6 @@
 # Open Change backlog | Composer-first source audit (2026-11-20)
 
-**STORY02 current-source correction:** [Source-backed T05/T06 closeout](open/2026-11-19--story02-private-task-and-result-custody/DECISION-2026-11-20.md) supersedes the dated "remote facade missing" inventory below: private GA DTO/roles and worker client are already in code, and T04 had 10/10 local HTTP+SQL tests. Missing now: GA must enforce scripted-only task and attempt provenance (worker currently refuses paid mode but SQL custody doesn't); then provider-free negative verification and archive. STORY03 owns distributed workflows/publish, no paid request or new Change folder.
+**STORY02 closed on `change/story02-scripted-custody` (2026-11-20):** the scripted-only guard and **27/27** provider-free proof are Done. The table below is the earlier audit, not the current defect. STORY03 still owns distributed workflows and publication. No paid request.
 
 **OBS00 follow-on source correction:** [B source-backed decision](open/2026-11-15--obs00-live-provider-custody/DECISION-2026-11-20.md) turns the missing grant/atomic recheck into bounded T02–T06 no-paid tasks. **A was Done; C was separately Done 15/15 Nov 15**, even though the parent later did not rerun its suite. Default worker still denies; no production grants/paid provider allowed. Historical planner-block text below is superseded.
 

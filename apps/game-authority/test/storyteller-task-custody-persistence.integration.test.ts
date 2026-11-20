@@ -7,9 +7,10 @@ import { applyMigrations } from '@offscreen/db/migrate';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerAttempt, storytellerPublication } from '@offscreen/db/storyteller-schema';
-import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
+import { prepareStorytellerTask, type StorytellerTask } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
+import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';
 import {
   hashStorytellerTaskCustodyResult,
   storytellerTaskCustodyContractVersion,
@@ -68,6 +69,14 @@ function canonicalKnowledge(rootHash: string) {
       usedBytes: 0,
     },
   };
+}
+
+function providerModeOpeningTask(): StorytellerTask {
+  const entry = createRequestAuditFixtureCases({
+    caseIds: ['opening-narrative'],
+  })[0];
+  assert.ok(entry);
+  return entry.task;
 }
 
 function openingTask(rootHash: string) {
@@ -132,10 +141,12 @@ async function insertUser(database: ReturnType<typeof createDatabase>, ownerId: 
   );
 }
 
-async function seedGeneration(database: ReturnType<typeof createDatabase>) {
+async function seedGeneration(
+  database: ReturnType<typeof createDatabase>,
+  task: StorytellerTask = openingTask(root),
+) {
   const ownerId = `story02-${randomUUID()}`;
   const generationId = randomUUID();
-  const task = openingTask(root);
   await insertUser(database, ownerId);
   await database.db.transaction(async (tx) => {
     await tx.insert(generation).values({
@@ -489,6 +500,92 @@ test(
           token: executorToken,
         });
         assert.equal(blocked.status, 401);
+      } finally {
+        await server.close();
+      }
+    });
+  },
+);
+
+test(
+  'provider-mode generation refuses scripted custody over HTTP',
+  { skip: !pgEnabled },
+  async () => {
+    await withAuthTestDatabase(async (database) => {
+      const providerTask = providerModeOpeningTask();
+      const providerRoot =
+        providerTask.context.canonicalKnowledge?.rootHash ?? null;
+      const { generationId } = await seedGeneration(database, providerTask);
+      const server = await startCustodyServer(database);
+      try {
+        const base = `/internal/v1/storyteller-generations/${generationId}`;
+        const scripted = openingTask(root);
+        const result = scriptedStorytellerResult(scripted);
+        const resultHash = hashStorytellerTaskCustodyResult(result);
+
+        const taskFetch = await call(server.origin, `${base}/task`, {
+          token: executorToken,
+        });
+        assert.equal(taskFetch.status, 200);
+        const taskBody = (await taskFetch.json()) as {
+          status: string;
+          reason?: string;
+        };
+        assert.equal(taskBody.status, 'refused');
+        assert.equal(taskBody.reason, 'unsupported-execution');
+
+        const claim = await call(server.origin, `${base}/claim`, {
+          method: 'PUT',
+          token: executorToken,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            schemaVersion: storytellerTaskCustodyContractVersion,
+            pinnedRoot: providerRoot,
+          }),
+        });
+        const claimBody = (await claim.json()) as {
+          status: string;
+          reason?: string;
+        };
+        assert.equal(claim.status, 200);
+        assert.equal(claimBody.status, 'refused');
+        assert.equal(claimBody.reason, 'unsupported-execution');
+
+        const save = await call(server.origin, `${base}/result`, {
+          method: 'PUT',
+          token: executorToken,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            schemaVersion: storytellerTaskCustodyContractVersion,
+            pinnedRoot: providerRoot,
+            resultHash,
+            result,
+          }),
+        });
+        const saveBody = (await save.json()) as {
+          status: string;
+          reason?: string;
+        };
+        assert.equal(save.status, 200);
+        assert.equal(saveBody.status, 'refused');
+        assert.equal(saveBody.reason, 'unsupported-execution');
+
+        const read = await call(server.origin, `${base}/saved-result`, {
+          token: executorToken,
+        });
+        const readBody = (await read.json()) as {
+          status: string;
+          reason?: string;
+        };
+        assert.equal(read.status, 200);
+        assert.equal(readBody.status, 'refused');
+        assert.equal(readBody.reason, 'unsupported-execution');
+
+        const attempts = await database.db
+          .select({ id: storytellerAttempt.id })
+          .from(storytellerAttempt)
+          .where(eq(storytellerAttempt.generationId, generationId));
+        assert.equal(attempts.length, 0);
       } finally {
         await server.close();
       }
