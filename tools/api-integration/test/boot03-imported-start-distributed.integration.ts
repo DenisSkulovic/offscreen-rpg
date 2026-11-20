@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -9,7 +9,7 @@ import { worldObligation } from '@offscreen/db/campaign-schema';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { generation } from '@offscreen/db/generation-schema';
-import { story } from '@offscreen/db/story-schema';
+import { story, storySceneCheckpoint } from '@offscreen/db/story-schema';
 import { createScriptedOpenings } from '@offscreen/application/generations';
 import { createChamberStorytellerControl } from '@offscreen/application/developer-tools';
 import { createDrafts } from '@offscreen/application/drafts';
@@ -501,5 +501,64 @@ if (entry === moduleUrl) {
       { documentRoot },
     );
   },
+  );
+
+  test(
+    'BOOT03 distributed start leaves no story when the pinned start object is missing',
+    { timeout: 240000 },
+    async () => {
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-missing-object-'),
+      );
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          const prepared = await prepareImportedOpening({
+            database: context.database,
+            ownerId: context.ownerId,
+            documentRoot,
+          });
+          const startRoot = prepared.campaign.startPackage?.rootHash;
+          assert.ok(startRoot);
+          await unlink(
+            join(
+              documentRoot,
+              'objects',
+              'sha256',
+              startRoot.slice(0, 2),
+              `${startRoot}.json`,
+            ),
+          );
+          const storyId = randomUUID();
+          const response = await fetch(
+            `${context.apiOrigin}/api/stories/${storyId}/start`,
+            {
+              method: 'PUT',
+              headers: {
+                cookie: context.cookie,
+                origin: context.origin,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                candidateId: prepared.generationId,
+                expectedDraftRevision: 1,
+                campaign: prepared.campaign,
+              }),
+            },
+          );
+          const responseText = await response.text();
+          assert.ok(
+            response.status === 400 || response.status === 503,
+            responseText,
+          );
+          await assertNoStoryRow(context.database, storyId);
+          const checkpoints = await context.database.db
+            .select({ storyId: storySceneCheckpoint.storyId })
+            .from(storySceneCheckpoint)
+            .where(eq(storySceneCheckpoint.storyId, storyId));
+          assert.equal(checkpoints.length, 0);
+        },
+        { documentRoot },
+      );
+    },
   );
 }

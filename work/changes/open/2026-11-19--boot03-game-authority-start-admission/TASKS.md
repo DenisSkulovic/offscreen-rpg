@@ -15,7 +15,7 @@
 | T04 | Live Nest → private GA imported-start (two-process) | **8/8 PASS** (~12s) | `test:boot03:imported-start-distributed`; happy + idempotent; GA down / bad token **503**; raw playable+startPackage **400**; foreign owner **404**; stale revision **409**; no story row on negatives |
 | T04 | Canonical technical headings / atlas reconciliation | **NOT-RUN** | PACKET-only receipt; do not edit DIST01 execution-and-delivery, DIST03 topology, or ENG03 concurrency here |
 
-**Blocker for Done:** S3 staging failure negative and authorized permanent-doc reconciliation remain open. Two-process imported-start **8/8 PASS** (happy, idempotent retry, GA down/bad token, raw playable+startPackage, foreign owner, stale revision).
+**Blocker for Done:** the imported start with one start-package obligation does not insert `story_scene_checkpoint`. `startFromCandidate` stages an opening checkpoint with `items: []`, then `lockedCheckpointMatches` rejects it because the obligation item is already in `story_item`. Live S3 outage, two-GA race, and permanent-doc reconciliation remain open. Local missing-object negative **PASS** on parent `b4358853`: deleting `objects/sha256/<prefix>/<startRoot>.json` makes `PUT /start` return 400 or 503 and leaves no story or checkpoint row.
 
 ### Source contract (settled, do not investigate again)
 
@@ -60,10 +60,12 @@
 
 **Executed (2026-11-20, two-process):** `pnpm --filter @offscreen/api-integration test:boot03:imported-start-distributed` → **4/4 PASS** (~8.7s). GA bootstrap `defaultRules` restored onto story seam only (STORY02 custody/publication unchanged).
 
-**NOT-RUN this batch:** remaining discriminating negatives from recipe below; `pnpm test:focus storyteller` package sweep; permanent technical-heading reconciliation (authorized separate slice — not DIST01/DIST03/ENG03 shared headings).
+**Executed (2026-11-20, parent `b4358853`):** a scene-1 checkpoint assertion failed (`story_scene_checkpoint.sceneSequence` was `undefined !== 1`) and was removed. Final `pnpm test:boot03:imported-start-distributed` is **9/9 PASS**: the previous eight cases plus unlinking the pinned local start object, which leaves no story or checkpoint row.
+
+**NOT-RUN this batch:** live S3 outage, two Game Authority processes racing one start, `pnpm test:focus storyteller` package sweep, permanent technical-heading reconciliation (authorized separate slice — not DIST01/DIST03/ENG03 shared headings). Scene-1 selector insert remains **NOT MET** for this fixture.
 
 **Write (still open):** named BOOT03 tests and affected canonical technical headings only; evidence/Change status receipt as authorized. **Read:** tools/api-integration/test/storyteller-imported-start.integration.ts, stories/start.ts, scene-checkpoint.ts and selected private route tests.
 
-**Positive (remaining):** same imported world/rule/start pin; scripted Storyteller-kind opening admitted through private GA; first passage/root/checkpoint, identical retry idempotent. **Negative (remaining):** raw playable scripted candidate **with** startPackage rejected, wrong actor/root/draft revision rejected, S3 staging failure leaves no selector.
+**Positive (remaining):** first passage and root are admitted; the scene-1 checkpoint selector is not. Identical retry stays idempotent for the story row. **Negative (remaining):** live S3 staging failure and a two-GA race. Raw playable plus startPackage, wrong actor, and stale draft are already covered. A deleted local start object leaves no story.
 
 **Execution order:** T01 → T02 → T03 → T04. T04 remains **open**.
