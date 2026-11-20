@@ -1,6 +1,6 @@
 # WRD02 | ChatGPT documentation wave 2: Storyteller and versioned Library contracts
 
-**State:** Proposed, unselected. **Kind:** documentation-only. **Owner:** ChatGPT; not Cursor. **Depends on:** accepted WR01 product clauses. **Outcome:** make \`docs/technical/storyteller/\` the true engineering source of authority for Library, Workdesk, writer agent, skills, subagent research, context, provenance and provider custody.
+**State:** Done on `storyteller-evolution-electric-boogaloo` (documentation-only target contract; runtime implementation follows). **Kind:** documentation-only. **Owner:** ChatGPT; not Cursor. **Depends on:** accepted WR01 product clauses. **Outcome:** make \`docs/technical/storyteller/\` the true engineering source of authority for Library, Workdesk, writer agent, skills, subagent research, context, provenance and provider custody.
 
 [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT handoff](../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) · [WR01](../2026-11-21--wr01-accept-storyteller-and-fork-contract/CHANGE.md) · [WRD03 next](../2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md).
 
@@ -38,3 +38,14 @@ The product wiki decides outcomes. Technical docs specify invariants and boundar
 Rewrite owning technical sections substantively. Preserve strong existing custody/error requirements and precise present-day implementation notes instead of deleting anything inconvenient. Capture per-section **selected/proposed/implemented** status and a compact reconciliation/NO-OP ledger in the packet. Verify new headings, inbound source links, citation semantics, cross-links to product and WRD03 and relevant docs/wiki checks. Avoid creating a second 40-KB replacement technical mega-page.
 
 **Done means:** an engineering agent can implement WR02–WR04 using permanent technical docs and their acceptance contracts, with no mandatory excavation of design scratchpads. No code, no migration, no paid model dispatch. **Next:** WRD03.
+
+
+## Reconciliation receipt | 2026-11-21
+
+**Permanent technical owners rewritten:** `canonical-documents-and-packages.md`, `context-selection-and-recall.md`, `operation-and-controller.md`, `prompts-and-tools.md`, `versioned-settings.md`, `request-context-and-cost.md`. `context-and-memory.md` is explicitly a router rather than duplicate authority. `provider-boundary.md` retains its existing dispatch/uncertainty guarantees and now covers delegated assistant attempts.
+
+The target contract now specifies: branch-neutral immutable Library roots; `STORY_PROMPT.md`, `STORYTELLER_PROFILE.md` and `START.md` roles; exact rooted source identity; structurally shared campaign/fork roots; adaptive multi-round writer missions; Workdesk stage/reread/revise; versioned writing skills; bounded independent research contexts; explicit parent adoption; provider-independent browse/find/read/compare/skill/stage/diff/submit capability boundaries; and mission-wide cost/custody.
+
+**Deliberately not frozen:** physical persistent-tree algorithm, provider/model choice, default token/tool/round ceilings, subagent parallelism and one eternal spend envelope. Those are implementation/resource policy under WR02–WR04, not the Storyteller's permanent identity.
+
+**Current-runtime notes were preserved where they explain migration or evidence.** They do not weaken the branch target. No source code, schema, migrations, provider dispatch or queue selection changed.
