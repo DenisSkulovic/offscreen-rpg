@@ -2,6 +2,8 @@
 
 **Profile:** STATE/PROOF. **Inspected baseline:** Git snapshot 584b594, 2026-11-19, plus the preceding K8S10 receipt; the newer design docs are not a verified runtime run. **Existing K8S10 is Implementing**, with only its *Rabbit consumer loss* slice selected/passed. Game-level monkey is **not selected/implemented** by adding these files.
 
+**2026-11-20 source update:** A current TURN02 release [overlay](../../../../infra/kubernetes/lab/app-release/overlay/workers.yaml) **does exist**, contrary to this November 19 snapshot's statement. Its Pod template has the eligibility marker, its Pod is owned by a ReplicaSet, and its image is a local `:turn02` tag with the Pod's runtime digest as the actual identity. The earlier K8S10 selector/preflight was unable to prove that hierarchy and erroneously demanded digest-in-Deployment. Source commit `14e2bf33` fixes the read-only guard; all four chaos test suites locally **43/43 PASS** on Node 22, no cluster. **Not** a live kind plan or real fault proof. [Next T04a/T04b](TASKS.md#2026-11-20-source-backed-status-correction-and-next-gates) distinguishes plan-readiness from mutation authorization.
+
 ## Do not rebuild what we already have
 
 | Existing code | Exact observed behavior | What it is not |

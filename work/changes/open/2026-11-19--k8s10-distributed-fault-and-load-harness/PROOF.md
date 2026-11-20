@@ -1,6 +1,6 @@
 # K8S10 | resilience proof catalog and falsification matrix
 
-**Status:** planned test requirements; **NOT-RUN** except the historical one-replica Rabbit consumer redelivery documented in [CHANGE](CHANGE.md) and [runbook](../../../../docs/runbooks/kubernetes-fault.md). **Source baseline:** 584b594. [Execution](EXECUTION.md) is the proposed implementation contract. No row here is an authorization to inject faults.
+**Status:** source/contract and T01–T03 unit oracles implemented; **T02b real-Kubernetes-shape preflight guard 43/43 local Node22 test PASS** at `14e2bf33` (2026-11-20), but **real kind plan, Pod deletion and app-game recovery NOT-RUN**. Historical Rabbit consumer redelivery in [CHANGE](CHANGE.md) and [runbook](../../../../docs/runbooks/kubernetes-fault.md) is independent. Source baseline 584b594 is historical. [Execution](EXECUTION.md) is the proposed implementation contract. No row here is an authorization to inject faults.
 
 ## What constitutes a trustworthy experiment
 

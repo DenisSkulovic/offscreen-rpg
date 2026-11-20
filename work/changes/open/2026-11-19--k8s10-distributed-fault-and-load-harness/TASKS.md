@@ -4,6 +4,20 @@
 
 **Guiding shape:** don't assign “implement chaos engineering” as one task. One small tested pure function / command / fault first. Status: `PLANNER-READY` means the recipe is described, not that code is present or Change selected. `BLOCKED-BY-POC` means no honest live game-chaos proof before TURN02/TURN03.
 
+## 2026-11-20 source-backed status correction and next gates
+
+**T01–T03:** Existing selector, plan CLI and provider-free oracle implemented. **T02b (DONE on source; no cluster):** `14e2bf33` repairs real Deployment Pod ownership through ReplicaSets, verifies real template/Pod eligibility and exact tag-vs-Pod image digest. Local `node --test infra/kubernetes/lab/chaos/test/*.test.mjs` **43/43 PASS** using Node 22.16.0; Node24/CI, live kind read-only plan and real game-chaos **NOT-RUN**. This supersedes stale 27/27/10/10-only source status below; no cluster mutation or paid provider call occurred.
+
+### T04a | Real release-ref and read-only kind plan | READY when approved kind release is present, NO mutation
+
+**Read:** `infra/kubernetes/lab/chaos/{README,preflight,selector,controller}.mjs`, `infra/kubernetes/lab/app-release/overlay/{edge,authority,workers}.yaml` and exact operator-approved TURN02 release evidence. From read-only `kubectl --context kind-offscreen-lab` queries, select one **real** owner (prefer `game-executor` in `lab-workers`), record exact Deployment UID, Pod→ReplicaSet UIDs, `imageRef` and observed Pod `containerStatuses.imageID` digest in an explicitly operator-reviewed **local** `offscreen.chaos-release-ref.v1` file. Confirm live Pod/template label `offscreen.rpg/chaos-eligible=true`; never fabricate digest from `:turn02`. Run **only** `node infra/kubernetes/lab/chaos/controller.mjs --mode plan --run-id <safe-id> --seed <seed> --release-ref <path>` on the owned cluster. Output sanitized plan receipt with actual UID/digest, 0 mutating invocations and known test owner; refuse if real Pod identity can't be determined. **Do not** create the cluster, modify release manifests or call `--execute`. If the preflight fails against real K8s status, fix exact fixture-proven parsing/owner issue in this packet, not bypass checks.
+
+### T04b | Exactly one real graceful Pod fault/recovery | GATED, not yet authorized
+
+**Requires:** T04a real plan PASS; TURN03 healthy scripted gameplay baseline (valid operation, single committed result, SQL/S3 oracle); exact owner-approved selected cluster, target and run; cluster mutex held by one operator. Implement the first `--execute --confirm-run-id` path with immediate re-read of cluster UID, Deployment and ReplicaSet owner UID, Pod UID, labels, image status and health under the mutex. One normal `kubectl delete pod <exact-name> --wait=false` **without** `--force`, never namespace/StatefulSet deletion. Observe replacement and verify same durable game operation/checkpoint, no duplicate effect/model call, write redacted result and abort on first failure. Distinguish graceful Pod replacement from a SIGKILL/crash or HA/failover proof. **No blanket authorization granted here.**
+
+**T05/T06:** Still bounded seeded serial and one named saved-result fault, not an unbounded stress/load catalog. Do not implement T05 until T04b recovers correctly. The optional high-rate saturation and DB/Temporal failover cases in PROOF are **not** current first-slice acceptance.
+
 ## T01 | Pure target selector and refusal reasons | VERIFY PASS (unit)
 
 **MODEL=Composer 2.5 Standard | DEPTH=PATCH | no cluster or docker access.**
