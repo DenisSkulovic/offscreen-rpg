@@ -7,6 +7,7 @@ const allowed = new Set([
   'API_PORT',
   'APP_ORIGIN',
   'POC_OPEN_ACCESS',
+  'LOCAL_DEMO_AUTH',
   'BETTER_AUTH_SECRET',
   'GITHUB_CLIENT_ID',
   'GITHUB_CLIENT_SECRET',
