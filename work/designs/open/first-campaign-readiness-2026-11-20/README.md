@@ -1,0 +1,28 @@
+# First playable campaign | 2026-11-20 source audit and convergence program
+
+**Status:** planning and source audit, NOT a passing campaign. **Baseline:** main `3992437187c0f2eb8ff29d0af3e074fef4f5e8a2`, exported 2026-11-20 02:18 UTC. Source is in the uploaded lean snapshot at that exact HEAD; no local dependencies, running Postgres, Docker, Kubernetes, session cookies or provider credentials were present in the review environment. Do not infer test PASS from source inspection.
+
+**User outcome:** after Cursor has implemented and *proved* the specified repairs, launch the real app with an authenticated player, open a supported campaign, see the opening scene and offered options, select one, observe an actual background Storyteller continuation through the selected engine authority, then see the committed next scene through GET and the browser. A few successive scenes should work without manual per-button patches. Story history and fork correctness are the larger distributed-PoC acceptance, not a reason to block the first two-scene vertical run.
+
+**Read in order:** [one-page Cursor waves](CURSOR-EXECUTION.md) · [mechanism-by-mechanism proof matrix](MECHANISM-MATRIX.md) · [all currently open packets and dispositions](BACKLOG-RECONCILIATION.md). Existing ratified design: [D5 release/acceptance](../distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) and [TURN03 proof contract](../../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/PROOF.md). Those remain governing authority; this audit routes repairs, does not silently ratify new product features.
+
+## The central diagnosis
+
+1. **Mechanisms exist, but many tests cross only one seam.** Existing `turn03-distributed-poc-fixture.integration.ts` calls `createStorytellerRuntime.complete` in process and uses `LocalDocumentStore`. It proves part of the application flow, NOT a cold real-service chain. `story03-distributed-handoff.live.test.ts` starts a workflow directly and seeds a generation. Neither alone proves browser → API → GA → outbox → Temporal → executor → GA → browser.
+2. **Two actual owner/routing discrepancies remain.** The versioned distributed topic is picked in `insertStorytellerTask`, while multiple recovery/continuation paths enqueue legacy `storytellerTopic` directly. The distributed control Activity, despite a GA control-only publish HTTP route, still imports DB/adoption/publication and writes there itself. Fix identity/topic persistence and one-publication-owner boundaries before calling this distributed.
+3. **The 19 open Changes are not 19 immediate game blockers.** Many are partially implemented overlarge goals, optional experiments, or expressly gated paid/cluster work. This is a Change-cut/lifecycle failure partly created by planning: huge umbrella outcomes became open packets, while small completed T-IDs could not close the umbrella. No “archive it to make green” shortcut is acceptable.
+4. **The existing HK03 isolated Storyteller acceptance families are the current baseline**, archived Done at this HEAD after two reported 44/44 runs. The obsolete shared-session 33-case red run is historical diagnostic evidence, not permission to re-enter timeout/worker-flag whack-a-mole.
+
+## Two honest milestones, not one endless gate
+
+**M1: local playable vertical slice (no provider money).** Real processes (Nest, GA, SQL, Temporal control+executor, optional Next via normal authentication), real API requests, committed scene1 → offered choice → committed scene2, script-backed result clearly labeled `scripted`, no manual runtime.complete shortcut, owned persistent document store and negative failure cases. This is a playable systems demo, **not evidence of actual LLM quality**. First prove this locally with real process boundaries before spending time on cold Kubernetes release.
+
+**M2: distributed cold-kind proof (no provider money).** The same causal fixture and real application images on cold kind with S3-pinned source, SSR+browser/SSE, historical scene fork and branch-safe continuation, with a machine scorecard and worker-stop recovery. TURN02/K8S11/TURN03 own these joins. Rabbit is optional; never put it on the critical turn path.
+
+**M3: explicitly authorized real-model confirmation.** The current separate executor deliberately refuses `task.execution.mode !== 'scripted'`; actual paid Storyteller behavior is therefore **not implemented on the distributed executor**. OBS00/TURN04 require durable current dispatch authority, caps, saved-response uncertainty handling and fresh owner opt-in. No planning, environment setup or offline test grants that permission. Do not call a scripted scene a real-model result.
+
+## No indefinite blocked work
+
+A Change is an independently closeable result; a multi-week infrastructure program is a *design/initiative*. Tomorrow's Cursor should select **one existing Change and one T-ID** with evidence-based preconditions, finish its proof and docs ledger, then either close the legitimately completed packet or record exactly one remaining failing assertion. Do not create new giant Changes, invent another memory layer, dispatch Grok to rediscover this investigation or assign all 19 packets.
+
+**Recommended first bounded work:** STORY03's two source-observed correctness repairs, with the new focused T07/T08 route in that existing packet; then the real-process T09 diagnostic. Leave `work/QUEUE.md` unselected during this planning commit; the owner can explicitly select the existing Change when asking Cursor to execute. [Cursor script](CURSOR-EXECUTION.md#morning-dispatch).
