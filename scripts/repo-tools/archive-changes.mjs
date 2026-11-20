@@ -28,18 +28,28 @@ const SKIP_DIR_NAMES = new Set(['open', 'archive']);
 export function programForLeaf(leaf) {
   const slug = leaf.replace(/^\d{4}-\d{2}-\d{2}--/, '');
   if (slug.startsWith('admin-')) return 'admin';
+  if (/^arch\\d/.test(slug)) return 'architecture';
+  if (/^(doc|wiki|aud)\\d/.test(slug)) return 'documentation';
+  if (/^(k8s|dxk)\\d/.test(slug)) return 'infrastructure';
+  if (/^(dist|boot|turn)\\d/.test(slug)) return 'distributed';
+  if (/^(data|fork)\\d/.test(slug)) return 'data';
+  if (/^(hk|work)\\d/.test(slug)) return 'maintenance';
+  if (/^har\\d/.test(slug)) return 'retrieval';
+  if (/^(pval|real)\\d/.test(slug)) return 'product-validation';
   if (slug.startsWith('chamber-')) return 'chamber';
   if (slug.startsWith('eng') || slug.startsWith('eng03')) return 'eng';
   if (
     slug.startsWith('ux-') ||
     slug.startsWith('px-') ||
     slug.startsWith('pf-') ||
-    slug.startsWith('gm-')
+    slug.startsWith('gm-') ||
+    /^(ui|book|dir)\\d/.test(slug) ||
+    slug === 'live-scene-presentation-wire'
   ) {
     return 'experience';
   }
   if (slug.startsWith('obs') || slug.startsWith('qa-')) return 'observability';
-  if (slug.startsWith('sa')) return 'storyteller';
+  if (slug.startsWith('sa') || /^story\\d/.test(slug)) return 'storyteller';
   if (slug.startsWith('web-')) return 'web';
   return 'other';
 }
