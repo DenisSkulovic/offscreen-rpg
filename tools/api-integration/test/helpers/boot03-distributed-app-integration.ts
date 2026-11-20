@@ -260,6 +260,10 @@ export async function withBoot03DistributedAppIntegration(
           [user.id],
         );
         await database.db.$client.query(
+          'DELETE FROM story_scene_checkpoint WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
           'DELETE FROM story_passage WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
           [user.id],
         );

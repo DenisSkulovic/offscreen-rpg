@@ -565,6 +565,13 @@ export async function commitStoryContinuation(
     if (!continuationRetryMatches(comparable, args.input)) {
       throw new StoryError('conflict');
     }
+    if (current.revision < prior.sequence) {
+      await advanceStoryView(tx, {
+        storyId: args.storyId,
+        revision: prior.sequence,
+        viewVersion: current.viewVersion + 1,
+      });
+    }
     return;
   }
   if (current.revision !== args.input.expectedRevision) {
@@ -636,17 +643,6 @@ export async function commitStoryContinuation(
       staged: args.stagedDocuments,
     });
   }
-  if (current.storyteller != null && args.input.sourceGenerationId) {
-    await publishStorytellerNotes(tx, {
-      storyId: args.storyId,
-      generationId: args.input.sourceGenerationId,
-      passageId,
-      revision: nextRevision,
-      sourcePart:
-        args.input.sourceGenerationPart === 'arrival' ? 'arrival' : 'current',
-      notes: current.continuityNotes,
-    });
-  }
   if (args.restartActiveScene) {
     await restartActiveSceneAtPassage(tx, {
       storyId: args.storyId,
@@ -670,6 +666,17 @@ export async function commitStoryContinuation(
       ownerId: args.ownerId,
       operationId: args.transitionId,
       staged: stagedCheckpoint,
+    });
+  }
+  if (current.storyteller != null && args.input.sourceGenerationId) {
+    await publishStorytellerNotes(tx, {
+      storyId: args.storyId,
+      generationId: args.input.sourceGenerationId,
+      passageId,
+      revision: nextRevision,
+      sourcePart:
+        args.input.sourceGenerationPart === 'arrival' ? 'arrival' : 'current',
+      notes: current.continuityNotes,
     });
   }
   await enqueueContinuationNotices(tx, { passageId, input: args.input });

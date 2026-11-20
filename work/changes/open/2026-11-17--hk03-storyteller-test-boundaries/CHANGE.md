@@ -4,7 +4,7 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Implementing (2026-11-19). The nested cases are split in source. The profiled suite ran once and is not green: 33 tests, 30 passed, 3 failed. The imported-start rules path now resolves from `tools/api-integration` and that one case passed in isolation. The duplicate `assert` import in the browser case is gone. The mechanical opening is unchanged. This packet is not Done.
+**State:** Implementing (2026-11-20). The nested cases are split in source. Isolated `storyteller-browser-creation` is green (exit 0, 2/2) after Ask Gary publication and teardown fixes. The profiled suite has not been re-run; the 2026-11-19 33/30/3 receipt still stands for `test:storyteller`. The mechanical opening case is unchanged. This packet is not Done.
 
 ## Cursor first-screen brief
 
@@ -68,6 +68,16 @@ The other 30 nested cases passed, including the browser case. This is not a gree
 
 Compose Temporal was down. `pnpm infra:up` started it, and the health check passed. Postgres was already healthy and was not recreated. `offscreen_auth_test` already existed and was not dropped. Ports 3001 and 3100 were free and were not cleared. `tsc` for `@offscreen/api-integration` exited 2 because `storyteller-browser-creation.integration.ts` imports `assert` twice. The emitted JavaScript kept one import, and the suite command ran that output. The behavior files were not edited.
 
+## Isolated browser-creation | 2026-11-20
+
+`cd tools/api-integration && STORYTELLER_LIVE_ENABLED=false DATABASE_TEST_URL=postgresql://offscreen:local-development-only@127.0.0.1:5432/offscreen_auth_test node --test dist/test/storyteller-browser-creation.integration.js` against disposable `offscreen_auth_test`. Ports 3001/3100 were free. Compose Postgres/Temporal were already up. No DROP DATABASE. No provider call. Gary’s heading assertion was not weakened.
+
+Working-tree publication path: `commitStoryContinuation` publishes continuity notes after `insertStagedSceneCheckpointSelector`; integration teardown deletes `story_scene_checkpoint` before `story_passage`. Structured `storyteller_publication.failure_code` is `publication_blocked:<StoryError.code>[:reason]` when publication is swallowed.
+
+node:test reported **2** tests, **2** passed, **0** failed, process exit **0**, ~34944 ms. Inner case `browser selects a profile, starts, chooses, reloads and finds live story` passed (~31727 ms). No cleanup `AggregateError`. This is **not** a green `test:storyteller` run.
+
+Earlier isolated FAIL on the same file (same day) stored `storyteller_publication.state=blocked` with `failure_code=publication_blocked:conflict:stale_story_revision` while generation `succeeded` and Temporal `COMPLETED`.
+
 ## Reconciliation ledger
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
@@ -75,3 +85,4 @@ Compose Temporal was down. `pnpm infra:up` started it, and the health check pass
 | no product/technical behavior impacted | none | unchanged: this split relocates existing integration cases and does not change gameplay or Storyteller rules | tools/api-integration/test/storyteller.integration.ts compared with d3ad620b | source-observed | No product or technical page was edited, and no assertion was rewritten to turn a case green | N/A |
 | tools/api-integration/test/storyteller.integration.ts profiled suite | test discovery | unchanged: the profiled test still awaits all 32 moved cases in the original order, and test:storyteller still loads this file | tools/api-integration/package.json | source-observed | A case that is not awaited would disappear from the profiled command | N/A |
 | profiled Storyteller integration result | API integration tests | changed: the profiled command ran once after the split and failed. 33 tests, 30 passed, 3 failed. Two nested cases failed and the parent failed with them. Not a green run and not Done | tools/api-integration/test/storyteller.integration.ts at 4a556223, run against offscreen_auth_test | executed | A missing rules path from the api-integration working directory fails the imported start. An empty campaign offer fails the mechanical opening. The other 30 nested cases passed. No provider was called, and the named volumes were not deleted | N/A |
+| isolated browser-creation family | API integration tests | changed: isolated `storyteller-browser-creation.integration.js` passed 2/2 exit 0 on 2026-11-20 after notes-after-checkpoint commit order and checkpoint-before-passage teardown. Profiled `test:storyteller` was not re-run. Packet stays Implementing | tools/api-integration/test/storyteller-browser-creation.integration.ts; packages/application/src/stories/continuation.ts; tools/api-integration/test/helpers/app-integration.ts; uncommitted on 42b994dc | executed | A `stale_story_revision` publication_blocked row with generation succeeded and Temporal COMPLETED is a rolled-back seq-2, not a UI-only miss. Teardown that deletes `story_passage` while `story_scene_checkpoint` remains fails with FK AggregateError after a green inner case | N/A |

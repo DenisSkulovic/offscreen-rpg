@@ -10,6 +10,13 @@ import {
 import { publishStorytellerResult } from './publication';
 import { storytellerKind } from './records';
 import { StoryError } from '../stories/errors';
+
+/** Durable publication-blocked class for swallowed StoryError publication failures. */
+export function formatPublicationBlockedFailureCode(error: StoryError): string {
+  const code = `publication_blocked:${error.code}`;
+  return error.reason ? `${code}:${error.reason}` : code;
+}
+
 export {
   storytellerTopic,
   storytellerDistributedTopic,
@@ -72,10 +79,11 @@ export function createStorytellerRuntime(
           ) {
             throw error;
           }
+          const failureCode = formatPublicationBlockedFailureCode(error);
           await database.db.transaction(async (tx) => {
             await tx
               .update(storytellerPublication)
-              .set({ state: 'blocked', failureCode: 'publication_blocked' })
+              .set({ state: 'blocked', failureCode })
               .where(eq(storytellerPublication.generationId, id));
             await tx
               .update(generation)

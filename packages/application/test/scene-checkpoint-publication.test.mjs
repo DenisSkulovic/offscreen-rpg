@@ -17,7 +17,15 @@ import {
   DocumentStorageError,
   LocalDocumentStore,
 } from '@offscreen/documents';
+import { generation } from '@offscreen/db/generation-schema';
+import { continuityNotesSchema } from '@offscreen/storyteller/context';
+import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
+import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
+import {
+  validateStorytellerResult,
+} from '@offscreen/storyteller/tasks';
+import { storytellerKind } from '../dist/storyteller/records.js';
 import { initializeCampaign } from '../dist/campaign/settings.js';
 import {
   scriptedTimedContinuation,
@@ -397,6 +405,121 @@ test('opening and continuation commit one checkpoint per scene and keep the prio
   });
 });
 
+test('idempotent continuation retry advances a lagging story revision', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-data03-retry-rev-'));
+  const store = new LocalDocumentStore(root);
+  await withDisposable(async (database) => {
+    const ownerId = `data03-${randomUUID()}`;
+    const storyId = randomUUID();
+    await insertUser(database, ownerId);
+    await createStoryInitialization(database, store)({
+      ownerId,
+      storyId,
+      initial: {
+        source: 'playable.opening.v1',
+        items: [],
+        content: openingContent,
+        interaction: choice(),
+      },
+    });
+    const transitionId = randomUUID();
+    const input = {
+      expectedRevision: 1,
+      effects: [],
+      content: {
+        version: 1,
+        title: 'After the choice',
+        paragraphs: ['You inspect the change.'],
+      },
+      interaction: null,
+      response: {
+        interactionId: (
+          await database.db
+            .select({ interaction: storyPassage.interaction })
+            .from(storyPassage)
+            .where(eq(storyPassage.storyId, storyId))
+        )[0].interaction.id,
+        answer: { kind: 'choice.v1', optionId: 'inspect-change' },
+      },
+      wait: null,
+      decision: null,
+      sourceGenerationId: null,
+      sourceGenerationPart: null,
+    };
+    const commitArgs = {
+      ownerId,
+      storyId,
+      transitionId,
+      input,
+      completingIntervalPassageId: undefined,
+      completingDecisionPassageId: undefined,
+    };
+    await database.db.transaction((tx) =>
+      commitStoryContinuation(tx, commitArgs),
+    );
+    const [afterFirstCommit] = await database.db
+      .select({ revision: story.revision, viewVersion: story.viewVersion })
+      .from(story)
+      .where(eq(story.id, storyId));
+    assert.equal(afterFirstCommit.revision, 2);
+
+    await database.db
+      .update(story)
+      .set({ revision: 1 })
+      .where(eq(story.id, storyId));
+
+    const passageCountBefore = (
+      await database.db
+        .select({ id: storyPassage.id })
+        .from(storyPassage)
+        .where(eq(storyPassage.storyId, storyId))
+    ).length;
+
+    await database.db.transaction((tx) =>
+      commitStoryContinuation(tx, commitArgs),
+    );
+    const [afterRetry] = await database.db
+      .select({ revision: story.revision, viewVersion: story.viewVersion })
+      .from(story)
+      .where(eq(story.id, storyId));
+    assert.equal(afterRetry.revision, 2);
+    assert.ok(afterRetry.viewVersion > afterFirstCommit.viewVersion);
+    const passageCountAfter = (
+      await database.db
+        .select({ id: storyPassage.id })
+        .from(storyPassage)
+        .where(eq(storyPassage.storyId, storyId))
+    ).length;
+    assert.equal(passageCountAfter, passageCountBefore);
+
+    await database.db.transaction((tx) =>
+      commitStoryContinuation(tx, commitArgs),
+    );
+    const [afterSecondRetry] = await database.db
+      .select({ revision: story.revision })
+      .from(story)
+      .where(eq(story.id, storyId));
+    assert.equal(afterSecondRetry.revision, 2);
+
+    await assert.rejects(
+      () =>
+        database.db.transaction((tx) =>
+          commitStoryContinuation(tx, {
+            ...commitArgs,
+            input: {
+              ...input,
+              content: {
+                ...input.content,
+                paragraphs: ['Different prose on retry.'],
+              },
+            },
+          }),
+        ),
+      (error) => error instanceof StoryError && error.code === 'conflict',
+    );
+  });
+});
+
 test('a scripted continuation commits when the suggestion field is absent', async () => {
   const root = await mkdtemp(join(tmpdir(), 'offscreen-data03-scripted-'));
   const store = new LocalDocumentStore(root);
@@ -464,5 +587,220 @@ test('a scripted continuation commits when the suggestion field is absent', asyn
       .from(storySceneCheckpoint)
       .where(eq(storySceneCheckpoint.storyId, storyId));
     assert.equal(after.length, before.length);
+  });
+});
+
+test('document-staged continuation commits after storyteller notes publish when checkpoint staged', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-data03-notes-'));
+  const store = new LocalDocumentStore(root);
+  await withDisposable(async (database) => {
+    const ownerId = `data03-${randomUUID()}`;
+    const storyId = randomUUID();
+    await insertUser(database, ownerId);
+    const initialize = createStoryInitialization(database, store);
+    await initialize({
+      ownerId,
+      storyId,
+      initial: {
+        source: 'playable.opening.v1',
+        premise: null,
+        items: [],
+        content: openingContent,
+        interaction: null,
+      },
+    });
+    await database.db.transaction(async (tx) => {
+      await initializeCampaign(tx, storyId, profile, {
+        mechanics: false,
+        locked: false,
+        pace: { kind: 'instant' },
+        time: {
+          kind: 'elapsed',
+          id: 'simulation-game-seconds',
+          revision: 1,
+          unit: {
+            id: 'game-second',
+            label: 'game-second',
+            pluralLabel: 'game-seconds',
+            gameSecondsPerUnit: 1,
+          },
+          epoch: { wholeUnits: 0, gameSecondOfUnit: 0 },
+        },
+        worldObligations: [],
+        worlds: [],
+      });
+      await tx
+        .update(campaign)
+        .set({
+          character: {
+            name: 'A quay runner',
+            scores: {
+              strength: 10,
+              dexterity: 12,
+              constitution: 12,
+              intelligence: 10,
+              wisdom: 12,
+              charisma: 14,
+            },
+            applicableAbilities: [
+              'strength',
+              'dexterity',
+              'constitution',
+              'intelligence',
+              'wisdom',
+              'charisma',
+            ],
+            skills: [{ id: 'persuasion', label: 'Persuasion' }],
+            proficientSkills: ['persuasion'],
+            proficiencyBonus: 2,
+            hp: 20,
+            maxHp: 20,
+            facts: [],
+            quantities: [],
+          },
+        })
+        .where(eq(campaign.storyId, storyId));
+    });
+    await database.db
+      .update(story)
+      .set({ storyteller: profile, continuityNotes: [] })
+      .where(eq(story.id, storyId));
+    await database.db.insert(storyItem).values({
+      storyId,
+      key: 'sword-a',
+      label: 'Sword',
+      holderKey: 'character',
+    });
+
+    const [storyRow] = await database.db
+      .select()
+      .from(story)
+      .where(eq(story.id, storyId));
+    const generationId = randomUUID();
+    const task = createRequestAuditFixtureCases({
+      caseIds: ['scene-continuation'],
+      profile: { id: profile.id, revision: profile.revision },
+    })[0].task;
+    const baseline = scriptedStorytellerResult(task);
+    const storytellerOutput = validateStorytellerResult(task, {
+      ...baseline,
+      currentNotes: [
+        {
+          kind: 'create',
+          key: 'gary-watch',
+          text: 'Gary is watching the delivery.',
+          evidence: ['current'],
+        },
+      ],
+    });
+    await database.db.insert(generation).values({
+      id: generationId,
+      ownerId,
+      kind: storytellerKind,
+      state: 'succeeded',
+      attemptId: randomUUID(),
+      input: task,
+      output: storytellerOutput,
+    });
+
+    const transitionId = randomUUID();
+    const stagedDocuments = await stageStoryPublicationDocuments({
+      storage: store,
+      storyId,
+      passageId: randomUUID(),
+      sequence: 2,
+      operationId: transitionId,
+      rootHash: storyRow.documentRootHash,
+      rootRevision: storyRow.documentRootRevision,
+      content: {
+        version: 1,
+        title: 'Gary answers',
+        paragraphs: ['Gary mutters about the crate.'],
+      },
+      changes: [],
+    });
+    const writer = checkpointWriterStore(store);
+    assert.ok(writer);
+    const input = {
+      expectedRevision: 1,
+      effects: [
+        {
+          kind: 'item.transfer.v1',
+          itemKey: 'sword-a',
+          fromHolder: 'character',
+          toHolder: 'ground',
+        },
+      ],
+      content: {
+        version: 1,
+        title: 'Gary answers',
+        paragraphs: ['Gary mutters about the crate.'],
+      },
+      interaction: null,
+      response: null,
+      wait: null,
+      decision: null,
+      sourceGenerationId: generationId,
+      sourceGenerationPart: 'current',
+    };
+    const staged = await stageSupportedContinuationCheckpoint(
+      database,
+      writer,
+      {
+        ownerId,
+        storyId,
+        transitionId,
+        input,
+        passageId: stagedDocuments.passageId,
+        contentDocumentHash: stagedDocuments.passageObjectHash,
+        nextRootHash: stagedDocuments.rootHash,
+        nextRootRevision: stagedDocuments.rootRevision,
+        baseRootHash: stagedDocuments.baseRootHash,
+        baseRootRevision: stagedDocuments.baseRootRevision,
+      },
+    );
+    assert.ok(staged);
+  // Before the notes-publish reorder, publishStorytellerNotes ran before
+  // lockedCheckpointMatches and this commit threw StoryError conflict
+  // stale_story_revision because checkpointNotes([]) no longer matched.
+    await database.db.transaction((tx) =>
+      commitStoryContinuation(tx, {
+        ownerId,
+        storyId,
+        transitionId,
+        input,
+        completingIntervalPassageId: undefined,
+        completingDecisionPassageId: undefined,
+        stagedDocuments,
+        stagedCheckpoint: staged,
+        sourceGenerationId: generationId,
+      }),
+    );
+
+    const [advanced] = await database.db
+      .select({
+        revision: story.revision,
+        continuityNotes: story.continuityNotes,
+      })
+      .from(story)
+      .where(eq(story.id, storyId));
+    assert.equal(advanced.revision, 2);
+    const notes = continuityNotesSchema.parse(advanced.continuityNotes);
+    assert.ok(notes.some((note) => note.key === 'gary-watch'));
+    const [continued] = await database.db
+      .select({ id: storyPassage.id })
+      .from(storyPassage)
+      .where(
+        and(eq(storyPassage.storyId, storyId), eq(storyPassage.sequence, 2)),
+      );
+    assert.ok(continued);
+    const selectors = await database.db
+      .select()
+      .from(storySceneCheckpoint)
+      .where(eq(storySceneCheckpoint.storyId, storyId));
+    assert.equal(
+      selectors.filter((row) => row.sceneSequence === 2).length,
+      1,
+    );
   });
 });
