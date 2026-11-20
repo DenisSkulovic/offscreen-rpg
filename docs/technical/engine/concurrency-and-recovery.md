@@ -1,5 +1,7 @@
 # Engine concurrency and recovery
 
+**Target recovery boundary:** Storyteller Workdesk staging is provisional. Scene publication atomically selects the admitted Library root and semantic world-state frontier under one version fence. A crash before that selection cannot leave half-published canon; a retry after commit observes the committed identity rather than replaying paid or mechanical side effects.
+
 **Owns:** how a story lock, a capture, an outbox wake and a retry interact so one accepted action has one effect.  
 **Selected target:** short capture under the lock, materialization and provider work outside the lock, then a fenced publication. See [selected architecture](selected-architecture.md).  
 **Landed subset:** ENG03-C1 provisional recovery, ENG03-C2 interrupted-action capture, and the isolated `change/eng03-short-lock` proofs below. **Full ENG03 is not finished and is not archived.** The packet stays open. `work/QUEUE.md` is none after the TURN02 close.  
