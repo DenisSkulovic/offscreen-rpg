@@ -57,7 +57,7 @@ pnpm wiki:bench:static
 - `wiki:bench:static` evaluates deterministic routing over a maintained question set. **It is not a live-model agent-quality grade.**
 - `wiki:content-health` flags content risks for review; no score automatically authorizes rewrites.
 
-Read the [wiki operating design](work/designs/open/wiki-operating-model/README.md) and [agent navigation standard](.agents/references/documentation-navigation-standard.md). The objective is *correct source discovery with bounded context*, not keeping an agent busy reading.
+Read the [wiki operating design](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/wiki-operating-model/README.md) and [agent navigation standard](.agents/references/documentation-navigation-standard.md). The objective is *correct source discovery with bounded context*, not keeping an agent busy reading.
 
 ## 4. Separate responsibilities from models and tools
 

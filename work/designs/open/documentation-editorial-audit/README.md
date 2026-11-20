@@ -27,7 +27,7 @@ This is intentionally *not* a single 129k-word rewrite. Each editorial wave has 
 
 ## Dependency on preceding program
 
-[Documentation impact architecture](../documentation-impact-system/README.md) addresses process and semantic edge graph; **this program addresses the content quality of the nodes themselves**. WIKI09–11 help monitor impact after adoption; they cannot decide what an unclear sentence was meant to promise. This editorial work uses the landed graph/change guards and prepares bounded **documentation-kind** Change packets, not invented executable deltas.
+[Documentation impact architecture](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/documentation-impact-system/README.md) addresses process and semantic edge graph; **this program addresses the content quality of the nodes themselves**. WIKI09–11 help monitor impact after adoption; they cannot decide what an unclear sentence was meant to promise. This editorial work uses the landed graph/change guards and prepares bounded **documentation-kind** Change packets, not invented executable deltas.
 
 ## Prepared Cursor execution packets
 
