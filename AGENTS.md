@@ -39,6 +39,8 @@
 
 **Bounded Cursor parent (2026-11-20):** [finite integration-batch policy](.agents/references/bounded-parent-orchestration.md) is mandatory for coordinated subagent execution: preselect a small authorized T-ID set; checkpoint, test, reconcile and commit at a meaningful boundary; archive truly Done Changes, otherwise record exact remaining proof; then stop/report. **Shared-checkout children do not commit or archive**. A child receipt never means its parent Change is Done. No parent-level unbounded queue draining or automatic next batch.
 
+**Compact child returns:** [bounded parent orchestration](.agents/references/bounded-parent-orchestration.md#2-cheap-children-parent-owns-reconciliation) now specifies six-line ordinary receipts and deduplicated completion notices. Full logs stay in existing proof artifacts; the parent summarizes once per integration checkpoint. [Cursor session measurement](.agents/references/cursor-usage-evaluation.md) is opt-in and does not attribute unlabeled CSV events to children.
+
 **Batch execution:** If the owner authorizes multiple Changes together, first consult [parallel Change orchestration](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). The coordinating chat may dispatch independent Ready Changes to isolated subagents/worktrees concurrently, while serializing shared docs, cluster resources and final integration. Never infer batch approval from nearby Proposed tickets or autonomously start the next Change.
 
 **Return briefly:** changed files/diff; normal + meaningful negative proof; commands actually run/skipped; risk/blocker; next dependency; provider-spend status.

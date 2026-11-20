@@ -32,6 +32,19 @@ Keep **one or two concurrent children** by default, only with truly disjoint fil
 
 Child receives one already-resolved task card: T-ID, 2–5 actual source/test anchors, exact edit/command, negative test, allowed paths, and stop case. Child returns a **short factual receipt**: what changed, tested commands/counts, negative observation, blockers, touched docs and whether work is in the parent checkout or isolated worktree.
 
+**Compact child-completion protocol (selected after November 20 usage review):** Prefer a **six-line maximum receipt** for an ordinary successful child. A child may provide more detail only when an assertion failed, the task departed from design, or a safety/authority decision needs evidence; keep full test output in terminal logs or an existing evidence artifact, not pasted twice into the parent chat. The six lines are:
+
+```text
+<ID> | PATCH/VERIFY | PASS/FAIL/NOT-RUN | <one achieved outcome>
+Files: <owned changed paths or none>; worktree/commit <ref or none>
+Proof: <command + exact result / exit>; tier <pure|DB|two-process|browser|kind>
+Negative: <one discriminating refusal or NOT RUN (reason)>
+Docs: <canonical owner changed or none required>
+Blocker/next: <precise missing condition or none>
+```
+
+**Parent notification discipline:** A completion notification and a child return for the same T-ID are **one event**, not two new tasks. Acknowledge only the decision taken (integrate, retry once with new hypothesis, or stop). Do not copy the child receipt into a second long parent report or issue TLDR after every notification. Integrate as soon as the dependency is relevant; do not refill idle child slots simply to maintain utilization. Consolidate results **once** at the batch checkpoint. Preserve exact detailed logs elsewhere when a failure actually requires reconstruction.
+
 **No child-run bureaucracy:** do not make each T-ID write a Change reconciliation ledger, run the whole repo suite, archive a packet, generate a long report, or create a Git commit merely to be "complete." Children operating in the **shared checkout must not stage or commit**; only the parent integrates and commits. An isolated worktree child **may** create a local branch commit when necessary for clean cherry-pick/merge, but it is not mandatory, and the parent still owns the final integration and Change closure. This supersedes older blanket "each subagent commits" wording.
 
 The parent executes no new speculative architecture. On an actual source discrepancy, localize once; if resolving it requires selecting retry/transaction/role semantics or new product intent, return the smallest concrete question to ChatGPT with exact code/error. Repeated identical failures are not an invitation to spawn an endless loop of new agents.
@@ -52,6 +65,8 @@ The parent executes no new speculative architecture. On an actual source discrep
 ## 4. Parent stop conditions and context budget
 
 **Stop, checkpoint and report** on any of: five dispatches completed; one high-risk cross-service integration achieved; a Change closure/ownership transition; two repeated failures without a new diagnostic; an unexpected schema/product authority decision; unsafe/uncertain external side effect; shared-file collision; or a parent context that can no longer state precisely what is staged, uncommitted and accepted. If a clean commit is currently unsafe, do not start new writing children; return the dirty-state/ownership summary and exact next safe action.
+
+**Repeated failure escalation:** after one focused diagnosis and one materially changed-hypothesis retry, stop that line of work. Infrastructure prerequisites and stale builds may be repaired once with evidence; repeated timeout/quiet-wait/worker-flag perturbations without changed explanation are not independent progress. Return the exact failing invariant and owning source to ChatGPT. The existing two-failure stop rule still controls. Never downgrade correctness to meet this budget.
 
 **One parent turn normally handles one bounded batch.** If the owner specifically authorizes a multi-batch campaign, the parent can perform up to **two clearly separate, committed/reconciled checkpoints** in that turn, then return a succinct status and ask for fresh selection/continuation. This is a **default stop discipline**, not a claim the repo can technically cap a Cursor model's tokens or stop its internal UI. No hidden auto-next task loops, no automatic Grok escalation.
 
@@ -75,5 +90,7 @@ Keep this in the parent response. Persist a short batch note under `work/session
 Existing [maintenance](../../work/changes/README.md) and archive/Change guards can detect malformed routes, terminal packets left under `open/`, broken links and some missing reconciliation. They **cannot infer** that Gary's promise appears in the browser, that two processes share real DB authority, or that an unfinished Goal was secretly achieved merely because several T-IDs are marked LANDED. Do **not** build an auto-archiver that guesses from commits or child receipts.
 
 A parent integration checklist and an actual **acceptance-vs-proof comparison** are the primary control. Automate only a demonstrated mechanical gap with one small tested Change. Do not move the remaining acceptance to a new Change just to improve archive counts; don't keep a genuinely completed, scoped outcome open because some distant product dream could be added later.
+
+**Measurement, not utilization theater:** [Cursor session usage and outcome measurement](cursor-usage-evaluation.md) explains the opt-in CSV window tool and accepted-outcome comparison. The parent is not expected to parse exports during every Change or retain private chat transcripts in the repo. Keep one small batch receipt, preserve actual evidence tiers, and evaluate total rework. Model defaults remain unchanged.
 
 **Success metric:** accepted correct outcomes, truthful unfinished boundaries, recoverable clean commits, low parent/child context and actual overall usage if measurable. The number of Done folders is not the target.
