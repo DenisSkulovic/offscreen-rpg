@@ -2,6 +2,10 @@ import { lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { createDatabase } from '../../packages/db/dist/src/index.js';
 import {
+  applySavedRepair,
+  SavedRepairApplyError,
+} from '../../packages/application/dist/storyteller/saved-repair-apply.js';
+import {
   previewSavedRepair,
   SavedRepairPlanRefusal,
 } from '../../packages/application/dist/storyteller/saved-repair-plan.js';
@@ -13,12 +17,16 @@ const REPAIR_TEST_DB = '/offscreen_hk01_repair_test';
 function parseArgs(argv) {
   const values = {
     plan: false,
+    apply: false,
     localDisposable: false,
     databaseUrl: null,
     evidenceRoot: null,
     evidence: null,
     generation: null,
     attempt: null,
+    planFingerprint: null,
+    operator: null,
+    reason: null,
     expectedStatusRevision: undefined,
   };
 
@@ -26,6 +34,10 @@ function parseArgs(argv) {
     const token = argv[index];
     if (token === '--plan') {
       values.plan = true;
+      continue;
+    }
+    if (token === '--apply') {
+      values.apply = true;
       continue;
     }
     if (token === '--local-disposable') {
@@ -50,6 +62,18 @@ function parseArgs(argv) {
     }
     if (token === '--attempt') {
       values.attempt = argv[++index];
+      continue;
+    }
+    if (token === '--plan-fingerprint') {
+      values.planFingerprint = argv[++index];
+      continue;
+    }
+    if (token === '--operator') {
+      values.operator = argv[++index];
+      continue;
+    }
+    if (token === '--reason') {
+      values.reason = argv[++index];
       continue;
     }
     if (token === '--expected-status-revision') {
@@ -99,8 +123,17 @@ async function resolveEvidence(evidenceRoot, evidenceArgument) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!args.plan) {
-    hold('plan_required');
+  if (!args.plan && !args.apply) {
+    hold('plan_or_apply_required');
+  }
+  if (args.plan && args.apply) {
+    hold('plan_apply_exclusive');
+  }
+  if (args.apply && !args.planFingerprint) {
+    hold('plan_fingerprint_required');
+  }
+  if (args.apply && (!args.operator || !args.reason)) {
+    hold('operator_reason_required');
   }
   if (!args.localDisposable) {
     hold('local_disposable_required');
@@ -128,7 +161,7 @@ async function main() {
     () => {},
   );
   try {
-    const input = {
+    const sharedInput = {
       generationId: args.generation,
       attemptId: args.attempt,
       evidenceBytes,
@@ -136,12 +169,23 @@ async function main() {
         ? {}
         : { expectedStatusRevision: args.expectedStatusRevision }),
     };
-    const plan = await previewSavedRepair(database, input);
-    process.stdout.write(`${JSON.stringify(plan)}\n`);
+    if (args.plan) {
+      const plan = await previewSavedRepair(database, sharedInput);
+      process.stdout.write(`${JSON.stringify(plan)}\n`);
+      return;
+    }
+    const result = await applySavedRepair(database, {
+      ...sharedInput,
+      planFingerprint: args.planFingerprint,
+      operatorId: args.operator,
+      reason: args.reason,
+    });
+    process.stdout.write(`${JSON.stringify(result)}\n`);
   } catch (error) {
     if (
       error instanceof SavedRepairPlanRefusal ||
-      error instanceof SavedRepairInspectionRefusal
+      error instanceof SavedRepairInspectionRefusal ||
+      error instanceof SavedRepairApplyError
     ) {
       hold(error.code);
     }

@@ -759,3 +759,41 @@ export const storytellerExecutionStage = pgTable(
     ),
   ],
 );
+
+/** HK01: immutable operator audit for one guarded saved-response settlement. */
+export const storytellerSavedRepairAudit = pgTable(
+  'storyteller_saved_repair_audit',
+  {
+    attemptId: uuid('attempt_id')
+      .primaryKey()
+      .references(() => storytellerAttempt.id, { onDelete: 'restrict' }),
+    operatorId: text('operator_id').notNull(),
+    reason: text('reason').notNull(),
+    planFingerprint: text('plan_fingerprint').notNull(),
+    reviewPacketSha256: text('review_packet_sha256').notNull(),
+    evidenceSha256: text('evidence_sha256').notNull(),
+    priorGenerationState: text('prior_generation_state').notNull(),
+    priorStatusRevision: integer('prior_status_revision').notNull(),
+    settlementResult: text('settlement_result').notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check(
+      'storyteller_saved_repair_audit_plan_fingerprint',
+      sql`${t.planFingerprint} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_saved_repair_audit_review_packet_sha256',
+      sql`${t.reviewPacketSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_saved_repair_audit_evidence_sha256',
+      sql`${t.evidenceSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+  ],
+);
