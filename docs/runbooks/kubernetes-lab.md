@@ -60,3 +60,7 @@ On 2026-11-19 the scripts created the cluster, saw both nodes Ready, and saw eve
 The cluster was deleted, created again, and smoked again. The second smoke passed. `down.sh` then removed `offscreen-lab`. Afterward `kubectl config get-contexts` listed no contexts. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, and the anonymous volume `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`. MemTotal stayed 12249872 kB. MemAvailable was 9915544 kB before the first create, about 9 GiB while the cluster was up, and 10067660 kB after the final delete.
 
 The first smoke on the recreated cluster failed before the writer retried a late volume mount. The writer command now retries that write for 30 seconds. The smoke that followed that change passed. No model call was made.
+
+## Developer UI
+
+The educational lab cluster is not the game application stack. For Tilt, loopback browser origins, and Headlamp on Windows against `kind-offscreen-lab`, see [Kubernetes developer UI](kubernetes-developer-ui.md). Compose is unchanged.

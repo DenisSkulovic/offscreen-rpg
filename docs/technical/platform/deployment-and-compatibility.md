@@ -28,6 +28,8 @@ Provide a deterministic fake storyteller/provider for tests and a no-paid-key de
 
 Pin supported runtime/dependency versions, the package manager and container image versions when scaffolding. Keep a single lockfile. Application code is TypeScript; SQL migrations, Compose YAML and a small documentation checker do not violate that preference.
 
+A separate [Kubernetes developer UI](../../runbooks/kubernetes-developer-ui.md) route wires `pnpm dev` to Tilt on `kind-offscreen-lab` and a Windows Headlamp kubeconfig. That route is source-tested only. This section remains the Compose and host-process local path until a live cluster boot is observed.
+
 ## Scripted testing chamber
 
 **Lab owner:** [chamber and fixtures](../lab/chamber-and-fixtures.md). Source-observed CH01–CH16 includes the bench, fault cut points, disposable Postgres, the connected rig and the workbench. This page does not keep a second laboratory design, and it does not say those controls are absent.
