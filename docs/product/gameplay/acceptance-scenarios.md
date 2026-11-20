@@ -12,6 +12,32 @@ These playthroughs are a living product reference, not disposable scaffolding fo
 
 **How to read a scene.** `solo V0` is texture for the first tested solo milestone. It is not an executed test. `beyond V0` is a feature combination that milestone does not require. A vivid sentence does not implement a map, a co-op resolver, or a biological ruleset.
 
+## Storyteller refoundation acceptance narratives
+
+These are **authored target scenarios**, not claims of current implementation or passed tests. They complement the harbor fixture by exercising assumptions the old wizard/character flow could not.
+
+### Prepared Play without setup ceremony
+
+A player selects a fully authored experience and presses **Play**. Its Library already contains orientation, creative guidance and starting material. No mandatory setup model call exists merely to manufacture fields the author already supplied. The opening mission reads the pinned sources it needs and publishes the first scene directly. Optional Customize remains optional.
+
+### One-word original world
+
+The player enters `BAH` as the complete Story Prompt. The system preserves that text verbatim as intent. The Storyteller may invent a coherent original fiction rather than rejecting it for lack of title, class, character sheet or lore package. The admitted opening establishes only the facts it actually needs.
+
+### Conscious galaxy / observer perspective
+
+The player asks to experience a conscious galaxy observing civilizations inside itself. The story does not fabricate hands, inventory, profession, tavern choices or six D&D abilities. Meaningful choices fit the perspective: attend to a signal, reshape a stellar region if the world's capabilities allow it, communicate, wait, observe, or pursue another fictionally valid intention.
+
+### Two-hundred-scene callback
+
+Much later, the Storyteller needs the exact wording and circumstances of an old promise. The mission does not receive 200 scenes in its initial prompt. It discovers likely Library sources, reads the exact historical evidence, optionally consults a continuity-writing skill, stages/revises a note or draft, and writes the continuation with source-grounded recall. A separate bounded assistant may investigate another thread without inheriting the parent's full context.
+
+### Fork during an unfinished journey
+
+At scene 137 a caravan has completed part of a long journey, carries an accepted obligation, and still has unresolved work. The player forks scene 137. Both branches inherit exactly the facts, progress, clock and source versions that existed there. The child creates fresh operational ownership for remaining work; it does not copy parent provider attempts, leases, billing identity or knowledge from scenes 138+. Parent and child may then diverge independently.
+
+A system that can show old prose but cannot faithfully resume the admitted active fiction at that point has historical viewing, not the target fork contract.
+
 ## First solo acceptance walkthrough | harbor and return
 
 **Stage:** authored solo V0 target. **Missing:** a logged run of this story, a provider-connected quality judgment, and a proved restart through the published snapshot. **Failure:** reading the harbor prose as acceptance, or treating a synthetic receipt as a human play. **Provider shape:** none in this page. The arithmetic lives in [the harbor session](../../../research/authored-scenarios/harbor-session.md).
