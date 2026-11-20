@@ -23,6 +23,18 @@ test('program and month buckets', () => {
   );
   assert.equal(programForLeaf('2026-11-14--sa01-operation-trace'), 'storyteller');
   assert.equal(programForLeaf('2026-11-11--web-test-foundation'), 'web');
+  assert.equal(programForLeaf('2026-11-18--doc17-product-experience'), 'documentation');
+  assert.equal(programForLeaf('2026-11-19--wiki18-agent-execution-context-budget-and-navigation'), 'documentation');
+  assert.equal(programForLeaf('2026-11-19--arch01-distributed-target-contract'), 'architecture');
+  assert.equal(programForLeaf('2026-11-19--k8s01-reproducible-kind-foundation'), 'infrastructure');
+  assert.equal(programForLeaf('2026-11-20--dxk06-compose-retirement'), 'infrastructure');
+  assert.equal(programForLeaf('2026-11-19--dist01-ratify-game-authority-delivery-boundaries'), 'distributed');
+  assert.equal(programForLeaf('2026-11-19--data01-ratify-scene-checkpoint-and-fork-schema'), 'data');
+  assert.equal(programForLeaf('2026-11-17--hk06-maintenance-inventory-and-lifecycle'), 'maintenance');
+  assert.equal(programForLeaf('2026-11-17--har10-retire-retrieval-experiments'), 'retrieval');
+  assert.equal(programForLeaf('2026-11-18--pval01-product-source-of-truth-warning'), 'product-validation');
+  assert.equal(programForLeaf('2026-11-17--ui01-semantic-tokens'), 'experience');
+  assert.equal(programForLeaf('2026-11-19--story03-separate-temporal-executor-and-publication'), 'storyteller');
   assert.equal(programForLeaf('2026-11-11--s3a-continuity-report'), 'other');
   assert.equal(
     monthForLeaf('2026-11-15--qa-storyteller-integration-fixtures'),
