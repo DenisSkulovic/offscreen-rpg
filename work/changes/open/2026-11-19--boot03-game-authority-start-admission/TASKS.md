@@ -17,7 +17,7 @@
 
 **Planner answer to BOOT03 question (2026-11-20):** **Do not require fork of `microbe.v3` or its executable obligation in BOOT03 or in the first TURN03 golden.** The current intentional v1 exclusion is correct, and the mechanical/obligation test must continue asserting no selector. [Fixture and future-v2 decision](../../../designs/open/distributed-turn-poc/DECISION-2026-11-20--GOLDEN-FORK-SCOPE.md). **Important separate TURN03 defect:** its Harbor-watch golden start package embeds an executable obligation, despite `worldObligations: []` on the request, which makes its scene1 ineligible; fix its *fixture* under TURN03 T01, not by changing BOOT03's start transaction. **Remaining BOOT03 T04 gates** are real disposable S3-compatible store outage, two actual GA processes racing the same start, and closure reconciliation. Do not wait for checkpoint v2 or archive without these proofs.
 
-**Blocker for Done:** the closure guard has not been run, and a disallowed-rules start is not in this suite. The s3mock outage and the two-process race passed on parent `8796daaa` (`15/15`). `microbe.v3` still commits one obligation and an active offer with no v1 selector. Checkpoint v2 is not part of BOOT03. The first golden campaign does not fork that opening.
+**Blocker for Done:** the packet stays Proposed. Plan guard is ok. Close guard against `84ad45fb` is ok and warns that the planned-impact heading does not match the guard's expected section title. `pnpm test:boot03:imported-start-distributed` is **16/16 PASS**. A start package pinned to a changed rules root returns 400 and leaves no story. Compose `storyteller-imported-start.integration.js` is **4/4 PASS**. `microbe.v3` still has no v1 selector.
 
 ### Source contract (settled, do not investigate again)
 
@@ -70,6 +70,6 @@
 
 **Write (still open):** named BOOT03 tests and affected canonical technical headings only; evidence/Change status receipt as authorized. **Read:** tools/api-integration/test/storyteller-imported-start.integration.ts, stories/start.ts, scene-checkpoint.ts and selected private route tests.
 
-**Positive:** quiescent scene-1 selector, identical retry, and the two-process race are covered. The mechanical opening stays outside v1. **Negative:** s3mock unreachable, missing or corrupt checkpoint object, deleted local start object, wrong actor, stale draft, and raw playable plus startPackage are covered. A disallowed-rules start and the closure guard are not.
+**Positive:** quiescent scene-1 selector, identical retry, and the two-process race are covered. The mechanical opening stays outside v1. **Negative:** other rules, s3mock unreachable, missing or corrupt checkpoint object, deleted local start object, wrong actor, stale draft, and raw playable plus startPackage are covered.
 
 **Execution order:** T01 → T02 → T03 → T04. T04 remains **open**.

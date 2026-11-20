@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { mkdir, mkdtemp, unlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, unlink, writeFile } from 'node:fs/promises';
 import { createConnection, createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -770,6 +770,136 @@ if (entry === moduleUrl) {
               assert.equal(checkpoints.length, 0);
             });
           }
+        },
+        { documentRoot },
+      );
+    },
+  );
+
+  test(
+    'BOOT03 distributed start rejects a package pinned to other rules',
+    { timeout: 240000 },
+    async () => {
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-other-rules-'),
+      );
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          const storage = new LocalDocumentStore(context.documentRoot);
+          const rulesCopy = join(documentRoot, 'alt-rules');
+          await cp(rulesPackageSource, rulesCopy, { recursive: true });
+          await writeFile(
+            join(rulesCopy, 'RULES.md'),
+            '\nThis sentence is not the authority default.\n',
+            { flag: 'a' },
+          );
+          const alternate = await importRulePackageDirectory(storage, rulesCopy);
+          const alternateRules = {
+            ruleSetId: alternate.manifest.ruleSetId,
+            rootHash: alternate.rootHash,
+            revision: alternate.manifest.revision,
+            engine: alternate.manifest.engine,
+          };
+          const source = join(documentRoot, 'other-rules-start');
+          await mkdir(source, { recursive: true });
+          await writeFile(
+            join(source, 'START.md'),
+            '# Other rules\n\nThis opening is pinned away from the authority default.',
+          );
+          const startPackageId = randomUUID();
+          await writeFile(
+            join(source, 'start-package.json'),
+            JSON.stringify({
+              format: 'offscreen.start-package-source.v1',
+              startPackageId,
+              authorOperationId: randomUUID(),
+              title: 'Other rules',
+              worlds: [],
+              rules: alternateRules,
+              documents: [
+                {
+                  path: 'START.md',
+                  kind: 'orientation',
+                  activation: 'initial-canon',
+                  authority: 'canon',
+                  visibility: 'player-known',
+                },
+              ],
+            }),
+          );
+          const imported = await importStartPackageDirectory(storage, source);
+          const drafts = createDrafts(context.database);
+          const draftId = randomUUID();
+          await drafts.save(context.ownerId, draftId, {
+            title: 'Disallowed rules',
+            premise: 'A quiet room with the wrong rulebook.',
+            storytellingDirection: 'Do not invent a second rules engine.',
+            storyteller: { id: 'absurd-action-comedy', revision: 1 },
+            expectedRevision: 0,
+          });
+          const generationId = randomUUID();
+          await createScriptedOpenings(
+            context.database,
+            offlineExecution,
+            undefined,
+            { documentStore: storage },
+          ).request(context.ownerId, draftId, generationId, 1, undefined, {
+            startPackageId,
+            rootHash: imported.rootHash,
+            revision: imported.manifest.revision,
+          });
+          await createStorytellerRuntime(context.database, {
+            documentStore: storage,
+            realDurationMs: () => 100,
+          }).complete(generationId);
+          const storyId = randomUUID();
+          const response = await fetch(
+            `${context.apiOrigin}/api/stories/${storyId}/start`,
+            {
+              method: 'PUT',
+              headers: {
+                cookie: context.cookie,
+                origin: context.origin,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                candidateId: generationId,
+                expectedDraftRevision: 1,
+                campaign: {
+                  mechanics: false,
+                  locked: false,
+                  pace: { kind: 'instant' },
+                  time: {
+                    kind: 'elapsed',
+                    id: 'simulation-game-seconds',
+                    revision: 1,
+                    unit: {
+                      id: 'game-second',
+                      label: 'game-second',
+                      pluralLabel: 'gameSeconds',
+                      gameSecondsPerUnit: 1,
+                    },
+                    epoch: { wholeUnits: 0, gameSecondOfUnit: 0 },
+                  },
+                  worldObligations: [],
+                  worlds: [],
+                  startPackage: {
+                    startPackageId,
+                    rootHash: imported.rootHash,
+                    revision: imported.manifest.revision,
+                  },
+                },
+              }),
+            },
+          );
+          const responseText = await response.text();
+          assert.equal(response.status, 400, responseText);
+          await assertNoStoryRow(context.database, storyId);
+          const checkpoints = await context.database.db
+            .select({ storyId: storySceneCheckpoint.storyId })
+            .from(storySceneCheckpoint)
+            .where(eq(storySceneCheckpoint.storyId, storyId));
+          assert.equal(checkpoints.length, 0);
         },
         { documentRoot },
       );
