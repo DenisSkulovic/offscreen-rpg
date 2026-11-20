@@ -34,7 +34,7 @@ type DelegationCaptureCandidate = {
   capturedPolicyVersion: number;
 };
 
-function canonicalPlanFingerprint(
+export function canonicalPlanFingerprint(
   fallbackPlan: ImmediateActionPlan,
   fallbackActionKey: string,
 ): string {
