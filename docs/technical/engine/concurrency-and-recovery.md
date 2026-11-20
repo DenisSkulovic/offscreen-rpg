@@ -3,6 +3,8 @@
 **Owns:** how a story lock, a capture, an outbox wake and a retry interact so one accepted action has one effect.  
 **Selected target:** short capture under the lock, materialization and provider work outside the lock, then a fenced publication. See [selected architecture](selected-architecture.md).  
 **Landed subset:** ENG03-C1 provisional recovery and ENG03-C2 interrupted-action capture. **Full ENG03 is not finished.** The open packet [ENG03 short-lock context](../../../work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed.  
+**Current ENG03 scope note (2026-11-20):** [Source-backed remaining-boundary contract](../../../work/changes/open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) maps the yet-unfixed production call sites: player Storyteller/legacy resolution, activity/world consequence narration and historical reports can still load CAS/canonical knowledge in a story transaction. That is source-observed structural risk, **not** a measured duration regression on those routes. The historical measured `~8s` waiting defect was repaired for pending finite action (~30ms in its scoped remeasure); do not extrapolate C1/C2 success to the other paths. ENG03 remains open with one concrete T02–T07 completion route; TURN02 is separately selected. Opening/checkpoint staging is assessed with BOOT03/TURN02 ownership rather than duplicated.
+
 **Does not own:** fictional time rules ([chronology](chronology-and-activities.md)) or provider settlement math ([spending](../platform/spending-and-entitlements.md)).
 
 ## Before, during, and after the lock

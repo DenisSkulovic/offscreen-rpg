@@ -35,7 +35,7 @@ Current `apps/api/src/modules/stories/controller.ts:fork` invokes `this.stories.
 | --- | --- | --- |
 | Critical engine / fork | BOOT03, FORK01, STORY02, STORY03, DATA04, DATA06, DIST03, TURN03 | Complete exact needed contracts, archive genuinely achieved Goals, retain honest negative gaps |
 | Real deployment and usable UX | TURN02, K8S11, DXK01, DXK02, DXK03, DXK04, DXK05, DXK06, DXK07 | Follow R0 then R2–R5; one kind operator, no duplicate release owner |
-| Present but not critical now | ENG03, GM07, OBS04, HK01, K8S10 | Remain discoverable in Changes. Select later for a real measured defect/owner request, not queue anxiety. Optional Rabbit fact projection and chaos do not gate playable script |
+| Present but not critical now | ENG03 (real under-lock I/O, prepared finite T02–T07, unselected), GM07, OBS04, HK01, K8S10 | Remain discoverable in Changes. Select later for a real measured defect/owner request, not queue anxiety. Optional Rabbit fact projection and chaos do not gate playable script |
 | Paid/explicit separate approval | OBS00, TURN04 | No live provider send, billing or new dispatch authority in zero-provider sprint |
 
 **Do not confuse checkpoint v1 with the long-term any-scene promise:** this POC's first fork is quiescent scene1 only. Real mechanical world obligations, active offers and general historical v2 reconstruction need later ratified design, not tweaks to make the fixture green.
@@ -45,6 +45,8 @@ Current `apps/api/src/modules/stories/controller.ts:fork` invokes `this.stories.
 **Backlog cleanup:** DIST02 was [Cancelled, not Done](changes/archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md) on 2026-11-20 because no consumer exists. No implementation task or Rabbit wake route remains; no replacement ticket is authorized without a real client.
 
 **Experimental work lifecycle:** WIKI18 was [Cancelled/partially delivered](changes/archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md): retain the implemented economical Cursor tooling, but the optional paired cost-effectiveness benchmark is not a standing open Change or a proven savings result. No new ticket is required to record metrics opportunistically in actual task receipts.
+
+**ENG03 correction (Nov 20):** [ENG03 concrete closeout path](changes/open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) replaces its stale "planner-gated" placeholder: the pending-action fix is proved, but narrative resolution, consequence and historical-report DocumentStore reads still occur under transaction. This is a real integrity/latency issue, not an optional Rabbit-style speculative Change. Select it when TURN02/BOOT03 release shared writers and execute the bounded test/fix chain. Do not auto-archive or use the old 8s baseline as a present measurement.
 
 ## Prevent self-management drift
 

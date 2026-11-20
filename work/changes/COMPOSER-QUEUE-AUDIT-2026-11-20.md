@@ -1,5 +1,7 @@
 # Open Change backlog | Composer-first source audit (2026-11-20)
 
+**ENG03 later routing correction:** [Finite remaining path contract](open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) identifies actual remote-read-in-transaction call sites. Parent ENG03 remains open for concrete T02–T07, not a generic lock refactor or forever planner gate. Nov 14 old ~8s measured pending path was corrected; current other paths are only source-classified until their own disposable SQL measurement.
+
 **Later terminal update:** [WIKI18 Cancelled/partially delivered](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md), not Done. Parser, model guard and cheap route cards remain in source. The optional live cost comparison was not approved or run; the dated WIKI18 inventory row below is historical, not an executable assignment.
 
 **Current closure override (2026-11-20):** DIST02 was [Cancelled, not Done](archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): it has no independent consumer, and the original broker→Temporal bridge is rejected. The dated inventory below is historical, not permission to reopen this ticket. DIST04 was also [Cancelled, not Done](archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md) after separate review; no implementation obligation remains.

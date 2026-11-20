@@ -1,5 +1,7 @@
 # Changes | catalog and lifecycle
 
+**ENG03 parent closure route, Nov 20:** [exact remaining under-lock DocumentStore paths and T02–T07](open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) replace the former ownerless "planner-gated" follow-up. Existing pending-consequence proof remains valid but not universal. ENG03 stays **open**, unselected, with no new extra Change folders; don't call it Done until direct resolution, consequence/report and checkpoint boundaries are tested and reconciled.
+
 **WIKI18 closeout (2026-11-20):** [Cancelled as a partially delivered experiment, not Done](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md). Keep the implemented trace parser, context routing, model guard and maintenance checks, but do not claim unmeasured cost savings or retain an implementation Change for an unapproved paid benchmark. Normal task evidence remains in actual Change receipts; standalone W2/W3 research is opt-in.
 
 
