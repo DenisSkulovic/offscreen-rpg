@@ -8,11 +8,13 @@ The intended experience includes a character with a life, and it still names the
 
 ## What this page selects
 
-Selected promises on this page are earned time, player consent, D&D-style rules, a Storyteller that does not impose one preferred pace, sparse continuity, world neutrality, and risk where the campaign permits loss. The first tested playability milestone is solo. The small-group ambition is a distant later aspiration, not this page's first-playable obligation, and its live acceptance stays Proposed/Blocked. The sponsored allowance later in this page is illustrative. It is not a spend authorization. A general delegated choice is not accepted. A personality that acts overnight without that consent is a later aspiration, not a rule.
+Selected promises on this page are earned time, player consent, a genuine investigative Storyteller, persistent rooted knowledge, exact scene history/forks, sparse continuity, world neutrality, optional authoritative mechanics, and risk where the campaign permits loss. No universal humanoid body, D&D sheet, inventory, profession or grand quest is required.
 
-Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave during a quiet interval the player already accepted. Leaving the page does not authorize a new choice. The accepted rule is in [time and autonomy](../gameplay/time-and-autonomy.md): no accepted execution means no fictional time, and a timed fallback applies only to a decision the player pre-authorized. A general delegated-decision policy remains [proposed](../../../work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md), not accepted. One owner-enabled harmless invitation is the archived exception. A Chamber timed-default fixture is a developer test, not this player rule. Where a campaign has an authorized pause, that pause stops progression within its declared scope. A character who acts from personality overnight is a long-term aspiration, and only after that specific consent exists.
+The first tested playability milestone remains solo. The small-group ambition is a distant later aspiration. The sponsored allowance later in this page is illustrative and is not spend authorization. A general delegated player choice is not accepted merely because the Storyteller can delegate research to its own assistants; player autonomy and writer-agent delegation are separate concepts.
 
-## The D&D foundation
+Participation is on your terms. Leaving the page does not authorize a new player decision. Accepted unattended work progresses only under the campaign's explicit time/autonomy rules. A personality acting overnight without that consent remains outside the selected player-agency contract.
+
+## Optional mechanical foundations
 
 D&D-style mechanics are one supported authored rules family, not the product's universal ontology. A prepared experience may opt into ability scores, checks, dice, hit points, inventory, professions or other typed mechanics. Another experience may use different mechanics or remain largely narrative.
 
