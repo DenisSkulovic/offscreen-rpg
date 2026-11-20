@@ -3,7 +3,7 @@
  */
 import { createHash, randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gt, lte } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
@@ -11,6 +11,7 @@ import {
   gameActionExecution,
   gameActionExecutionEvent,
   gameActionReceipt,
+  gameRoll,
 } from '@offscreen/db/campaign-schema';
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import { storytellerContextCapture } from '@offscreen/db/storyteller-schema';
@@ -31,9 +32,11 @@ import {
   parseContextCapture,
   storytellerContextCaptureKind,
   type AnyContextCaptureV1,
+  type ActivityConsequenceContextCaptureV1,
   type CommittedActionContextCaptureV1,
   type ContextCaptureV1,
   type InterruptedActionContextCaptureV1,
+  type WorldObligationConsequenceContextCaptureV1,
 } from './context-capture';
 import { activeSceneAnchorSchema } from './context';
 import {
@@ -43,6 +46,9 @@ import {
 } from './records';
 import { actionProjectedStateDigest } from '../campaign/action-overlap';
 import { campaign } from '@offscreen/db/campaign-schema';
+import { campaignHoldsSchema } from '../campaign/holds';
+import { outcomeEffectsSchema } from '@offscreen/game/effects';
+import { rollSchema } from '@offscreen/game/checks';
 import {
   captureMaterializationStartedKey,
   captureTerminalStageKey,
@@ -376,6 +382,177 @@ async function assembleInterruptedTaskFromCapture(
   );
 }
 
+async function assembleActivityConsequenceTaskFromCapture(
+  capture: ActivityConsequenceContextCaptureV1,
+  documentStore: DocumentStore,
+) {
+  const evidence = await loadFrozenPassages(capture, documentStore);
+  const current = evidence.find(
+    (passage) => passage.sequence === capture.narrativeRevision,
+  );
+  if (!current || current.id !== capture.passageId) {
+    throw new Error('source_mismatch');
+  }
+
+  const canonicalKnowledge =
+    capture.root.hash === null
+      ? undefined
+      : await loadCanonicalKnowledge(documentStore, {
+          storyId: capture.storyId,
+          rootHash: capture.root.hash,
+          rootRevision: capture.root.revision,
+          librarySectionSelection: capture.canonicalSelection.ruleSections,
+          campaignDocumentIds: capture.canonicalSelection.campaignDocumentIds,
+          recallCues: capture.activeSceneScope?.recallCues ?? [],
+        });
+
+  const compactSettings = (({ time: _time, ...settings }) => settings)(
+    capture.settings.capturedSettings,
+  );
+  const receipt = capture.acceptedReceipt;
+
+  const context = contextInputSchema.parse({
+    ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
+    ...(capture.activeSceneScope
+      ? {
+          activeSceneScope: {
+            version: 'active-scene.v1' as const,
+            fromSequence: capture.activeSceneScope.fromSequence,
+            throughSequence: capture.narrativeRevision,
+            requiredPassageIds: capture.activeSceneScope.requiredPassageIds,
+          },
+        }
+      : {}),
+    activitySituation: capture.actorAndWorld.activitySituation,
+    campaignSettings: compactSettings,
+    campaignTime: projectWorldTime(
+      capture.settings.capturedSettings.time,
+      capture.actorAndWorld.gameSecond,
+    ),
+    worldConditions: capture.actorAndWorld.worldConditions,
+    premise: capture.narrative.premise,
+    current,
+    items: capture.actorAndWorld.itemHolders,
+    selected: capture.selected,
+    notes: capture.narrative.notes,
+    evidence,
+    resolution: {
+      character: capture.actorAndWorld.character,
+      storyFacts: capture.actorAndWorld.storyFacts,
+      gameSecond: capture.actorAndWorld.gameSecond,
+      offer: capture.actorAndWorld.offer,
+      receipts: receipt.rolls.map((roll) => ({
+        id: roll.id,
+        roll: roll.result,
+        effects: roll.effects,
+        declarations: [],
+      })),
+    },
+  });
+
+  return prepareAdmittedStorytellerTask(
+    {
+      task: 'consequence',
+      source: {
+        storyId: capture.storyId,
+        narrativeRevision: capture.narrativeRevision,
+        passageId: capture.passageId,
+      },
+      profile: capture.settings.profile,
+      execution: capture.settings.execution,
+      context,
+    },
+    capture.settings.effectiveUsagePolicy,
+  );
+}
+
+async function assembleWorldObligationTaskFromCapture(
+  capture: WorldObligationConsequenceContextCaptureV1,
+  documentStore: DocumentStore,
+) {
+  const evidence = await loadFrozenPassages(capture, documentStore);
+  const current = evidence.find(
+    (passage) => passage.sequence === capture.narrativeRevision,
+  );
+  if (!current || current.id !== capture.passageId) {
+    throw new Error('source_mismatch');
+  }
+
+  const canonicalKnowledge =
+    capture.root.hash === null
+      ? undefined
+      : await loadCanonicalKnowledge(documentStore, {
+          storyId: capture.storyId,
+          rootHash: capture.root.hash,
+          rootRevision: capture.root.revision,
+          librarySectionSelection: capture.canonicalSelection.ruleSections,
+          campaignDocumentIds: capture.canonicalSelection.campaignDocumentIds,
+          recallCues: capture.activeSceneScope?.recallCues ?? [],
+        });
+
+  const compactSettings = (({ time: _time, ...settings }) => settings)(
+    capture.settings.capturedSettings,
+  );
+  const receipt = capture.acceptedReceipt;
+
+  const context = contextInputSchema.parse({
+    ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
+    ...(capture.activeSceneScope
+      ? {
+          activeSceneScope: {
+            version: 'active-scene.v1' as const,
+            fromSequence: capture.activeSceneScope.fromSequence,
+            throughSequence: capture.narrativeRevision,
+            requiredPassageIds: capture.activeSceneScope.requiredPassageIds,
+          },
+        }
+      : {}),
+    activitySituation: capture.actorAndWorld.activitySituation,
+    campaignSettings: compactSettings,
+    campaignTime: projectWorldTime(
+      capture.settings.capturedSettings.time,
+      capture.actorAndWorld.gameSecond,
+    ),
+    worldConditions: capture.actorAndWorld.worldConditions,
+    premise: capture.narrative.premise,
+    current,
+    items: capture.actorAndWorld.itemHolders,
+    selected: capture.selected,
+    notes: capture.narrative.notes,
+    evidence,
+    resolution: {
+      character: capture.actorAndWorld.character,
+      storyFacts: capture.actorAndWorld.storyFacts,
+      gameSecond: capture.actorAndWorld.gameSecond,
+      offer: null,
+      receipts: [
+        {
+          id: receipt.operationId,
+          text: receipt.intention,
+          roll: null,
+          effects: [],
+          declarations: [],
+        },
+      ],
+    },
+  });
+
+  return prepareAdmittedStorytellerTask(
+    {
+      task: 'consequence',
+      source: {
+        storyId: capture.storyId,
+        narrativeRevision: capture.narrativeRevision,
+        passageId: capture.passageId,
+      },
+      profile: capture.settings.profile,
+      execution: capture.settings.execution,
+      context,
+    },
+    capture.settings.effectiveUsagePolicy,
+  );
+}
+
 async function assembleTaskFromCapture(
   capture: AnyContextCaptureV1,
   documentStore: DocumentStore,
@@ -385,6 +562,12 @@ async function assembleTaskFromCapture(
   }
   if (capture.sourceKind === 'action-interrupted') {
     return assembleInterruptedTaskFromCapture(capture, documentStore);
+  }
+  if (capture.sourceKind === 'campaign-activity') {
+    return assembleActivityConsequenceTaskFromCapture(capture, documentStore);
+  }
+  if (capture.sourceKind === 'campaign-world-obligation') {
+    return assembleWorldObligationTaskFromCapture(capture, documentStore);
   }
   return assembleCommittedTaskFromCapture(capture, documentStore);
 }
@@ -714,7 +897,144 @@ async function promoteCapture(
     ) {
       throw new Error('stale_source:actor');
     }
-  } else {
+  } else if (capture.sourceKind === 'campaign-activity') {
+    const [consequence] = await tx
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, capture.operationId))
+      .for('update');
+    const expected = capture.acceptedReceipt;
+    const stored =
+      consequence?.receipt &&
+      typeof consequence.receipt === 'object' &&
+      'kind' in consequence.receipt &&
+      (consequence.receipt as { kind?: string }).kind === 'activity'
+        ? (consequence.receipt as typeof expected)
+        : null;
+    if (
+      !consequence ||
+      consequence.generationId !== capture.captureId ||
+      consequence.storyId !== capture.storyId ||
+      consequence.baseRevision !== capture.narrativeRevision ||
+      !stored ||
+      stored.passageId !== expected.passageId ||
+      stored.operationId !== expected.operationId ||
+      stored.afterSegment !== expected.afterSegment ||
+      stored.throughSegment !== expected.throughSegment ||
+      stored.label !== expected.label ||
+      stored.intention !== expected.intention
+    ) {
+      throw new Error('consequence_mismatch');
+    }
+    const rolls = await tx
+      .select()
+      .from(gameRoll)
+      .where(
+        and(
+          eq(gameRoll.storyId, capture.storyId),
+          eq(gameRoll.operationId, capture.operationId),
+          gt(gameRoll.segment, expected.afterSegment),
+          lte(gameRoll.segment, expected.throughSegment),
+        ),
+      )
+      .orderBy(gameRoll.segment, gameRoll.checkKey);
+    if (
+      rolls.length !== expected.rolls.length ||
+      rolls.some((roll, index) => {
+        const frozen = expected.rolls[index];
+        return (
+          !frozen ||
+          roll.id !== frozen.id ||
+          roll.segment !== frozen.segment ||
+          roll.checkKey !== frozen.checkKey ||
+          !isDeepStrictEqual(rollSchema.parse(roll.result), frozen.result) ||
+          !isDeepStrictEqual(
+            outcomeEffectsSchema.parse(roll.effects),
+            frozen.effects,
+          )
+        );
+      })
+    ) {
+      throw new Error('receipt_mismatch');
+    }
+    const [campaignState] = await tx
+      .select()
+      .from(campaign)
+      .where(eq(campaign.storyId, capture.storyId));
+    const holds = campaignState
+      ? campaignHoldsSchema.parse(campaignState.holds)
+      : [];
+    if (
+      !campaignState ||
+      !holds.some(
+        (hold) =>
+          hold.kind === 'storyteller' &&
+          hold.generationId === capture.captureId,
+      ) ||
+      actionProjectedStateDigest({
+        character: campaignState.character,
+        storyFacts: campaignState.storyFacts,
+        gameSecond: campaignState.gameSecond,
+      }) !== capture.actorAndWorld.postSettlementStateDigest
+    ) {
+      throw new Error('stale_source:actor');
+    }
+  } else if (capture.sourceKind === 'campaign-world-obligation') {
+    const [consequence] = await tx
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, capture.operationId))
+      .for('update');
+    const expected = capture.acceptedReceipt;
+    const stored =
+      consequence?.receipt &&
+      typeof consequence.receipt === 'object' &&
+      'kind' in consequence.receipt &&
+      (consequence.receipt as { kind?: string }).kind === 'world-obligation'
+        ? (consequence.receipt as typeof expected)
+        : null;
+    if (
+      !consequence ||
+      consequence.generationId !== capture.captureId ||
+      consequence.storyId !== capture.storyId ||
+      consequence.baseRevision !== capture.narrativeRevision ||
+      !stored ||
+      stored.passageId !== expected.passageId ||
+      stored.operationId !== expected.operationId ||
+      stored.label !== expected.label ||
+      stored.intention !== expected.intention ||
+      !isDeepStrictEqual(stored.obligationIds, expected.obligationIds)
+    ) {
+      throw new Error('consequence_mismatch');
+    }
+    const [campaignState] = await tx
+      .select()
+      .from(campaign)
+      .where(eq(campaign.storyId, capture.storyId));
+    const holds = campaignState
+      ? campaignHoldsSchema.parse(campaignState.holds)
+      : [];
+    if (
+      !campaignState ||
+      !holds.some(
+        (hold) =>
+          hold.kind === 'storyteller' &&
+          hold.generationId === capture.captureId,
+      ) ||
+      holds.some(
+        (hold) =>
+          hold.kind === 'world-obligation' &&
+          hold.obligationId === capture.operationId,
+      ) ||
+      actionProjectedStateDigest({
+        character: campaignState.character,
+        storyFacts: campaignState.storyFacts,
+        gameSecond: campaignState.gameSecond,
+      }) !== capture.actorAndWorld.postSettlementStateDigest
+    ) {
+      throw new Error('stale_source:actor');
+    }
+  } else if (capture.sourceKind === 'action-receipt') {
     const [receipt] = await tx
       .select()
       .from(gameActionReceipt)
@@ -757,6 +1077,8 @@ async function promoteCapture(
     ) {
       throw new Error('stale_source:actor');
     }
+  } else {
+    throw new Error('capture_purpose_mismatch');
   }
 
   const task = storytellerTaskSchema.parse(input.task);
