@@ -44,6 +44,7 @@ export async function startStorytellerCandidate(
     candidate: typeof generation.$inferSelect;
     stagedPassage?: StagedStoryBootstrap;
     existingPassageContent?: unknown;
+    interactionId?: string;
   },
 ) {
   const task = storytellerTaskSchema.parse(input.candidate.input);
@@ -126,6 +127,7 @@ export async function startStorytellerCandidate(
     ...(input.existingPassageContent === undefined
       ? {}
       : { existingPassageContent: input.existingPassageContent }),
+    ...(input.interactionId ? { interactionId: input.interactionId } : {}),
   });
   if (!created) {
     // A retry must recover the accepted creation settings, not silently accept

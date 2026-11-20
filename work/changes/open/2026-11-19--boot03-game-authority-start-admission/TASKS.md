@@ -15,7 +15,7 @@
 | T04 | Live Nest → private GA imported-start (two-process) | **8/8 PASS** (~12s) | `test:boot03:imported-start-distributed`; happy + idempotent; GA down / bad token **503**; raw playable+startPackage **400**; foreign owner **404**; stale revision **409**; no story row on negatives |
 | T04 | Canonical technical headings / atlas reconciliation | **NOT-RUN** | PACKET-only receipt; do not edit DIST01 execution-and-delivery, DIST03 topology, or ENG03 concurrency here |
 
-**Blocker for Done:** the imported start with one start-package obligation does not insert `story_scene_checkpoint`. `startFromCandidate` stages an opening checkpoint with `items: []`, then `lockedCheckpointMatches` rejects it because the obligation item is already in `story_item`. Live S3 outage, two-GA race, and permanent-doc reconciliation remain open. Local missing-object negative **PASS** on parent `b4358853`: deleting `objects/sha256/<prefix>/<startRoot>.json` makes `PUT /start` return 400 or 503 and leaves no story or checkpoint row.
+**Blocker for Done:** live S3 outage, two Game Authority processes racing one start, and closure-guard reconciliation remain open. Checkpoint v1 now has a proved quiescent imported start. The `microbe.v3` opening is outside v1: it commits one `world_obligation` and an active offer, and it does not get a selector. That is not an item-list bug. A forkable mechanical opening needs checkpoint v2, designed separately.
 
 ### Source contract (settled, do not investigate again)
 
@@ -60,12 +60,12 @@
 
 **Executed (2026-11-20, two-process):** `pnpm --filter @offscreen/api-integration test:boot03:imported-start-distributed` → **4/4 PASS** (~8.7s). GA bootstrap `defaultRules` restored onto story seam only (STORY02 custody/publication unchanged).
 
-**Executed (2026-11-20, parent `b4358853`):** a scene-1 checkpoint assertion failed (`story_scene_checkpoint.sceneSequence` was `undefined !== 1`) and was removed. Final `pnpm test:boot03:imported-start-distributed` is **9/9 PASS**: the previous eight cases plus unlinking the pinned local start object, which leaves no story or checkpoint row.
+**Executed (2026-11-20, parent `13bcd6cf`):** `pnpm test:boot03:imported-start-distributed` **13/13 PASS** (~8.2s). The mechanical fixture asserts its remapped obligation, active offer, source pin, idempotent retry, and zero v1 selector rows. A separate quiescent fixture asserts one scene-1 selector, a readable checkpoint object, the canon root, the same hash after retry, and a 409 when the retry pace changes. An eligible start whose staged checkpoint object is missing or corrupt rolls back with no story row. `data-and-persistence.md` records that distinction.
 
-**NOT-RUN this batch:** live S3 outage, two Game Authority processes racing one start, `pnpm test:focus storyteller` package sweep, permanent technical-heading reconciliation (authorized separate slice — not DIST01/DIST03/ENG03 shared headings). Scene-1 selector insert remains **NOT MET** for this fixture.
+**NOT-RUN this batch:** live S3 outage, two Game Authority processes racing one start, `pnpm test:focus storyteller` package sweep. DIST01 execution-and-delivery, DIST03 topology, and ENG03 concurrency were not edited.
 
 **Write (still open):** named BOOT03 tests and affected canonical technical headings only; evidence/Change status receipt as authorized. **Read:** tools/api-integration/test/storyteller-imported-start.integration.ts, stories/start.ts, scene-checkpoint.ts and selected private route tests.
 
-**Positive (remaining):** first passage and root are admitted; the scene-1 checkpoint selector is not. Identical retry stays idempotent for the story row. **Negative (remaining):** live S3 staging failure and a two-GA race. Raw playable plus startPackage, wrong actor, and stale draft are already covered. A deleted local start object leaves no story.
+**Positive (remaining):** the mechanical opening's gameplay state is covered and is not a v1 checkpoint. The quiescent scene-1 selector is covered. **Negative (remaining):** live S3 staging failure and a two-GA race. Raw playable plus startPackage, wrong actor, stale draft, a deleted local start object, and a missing or corrupt checkpoint object are covered.
 
 **Execution order:** T01 → T02 → T03 → T04. T04 remains **open**.

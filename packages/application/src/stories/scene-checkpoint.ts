@@ -104,6 +104,18 @@ async function verifyStagedCheckpoint(
   }
 }
 
+/** Re-read a checkpoint that was staged before the SQL transaction. */
+export async function confirmStagedCheckpointObject(
+  documentStore: SceneCheckpointStore,
+  staged: StagedSceneCheckpoint,
+) {
+  await verifyStagedCheckpoint(
+    documentStore,
+    staged.checkpoint,
+    staged.checkpointHash,
+  );
+}
+
 function sameReference(
   existing: CheckpointRow,
   proposed: {

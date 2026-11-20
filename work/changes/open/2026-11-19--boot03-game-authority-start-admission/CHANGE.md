@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the selected microtask route *once the Change is authorized*; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) records actual source tier and dependency. **Default parent/child model: Composer 2.5 Standard.** Delegation: four prepared narrow GA start tasks, dependency-gated and single route writer. Don't interpret a task marked PLANNER-READY as permission to execute a Proposed Change, promote status or skip negative tests; novel architecture goes back to ChatGPT before a Grok exception.
 
-**State:** Proposed; dependency-gated (2026-11-19). **Batch receipt (T04 slice, 2026-11-20):** unit/seam/start-integration tiers **PASS** @ `ec73a535`; imported-start Compose **4/4 PASS**; two-process discriminator re-run on parent `b4358853` with a local missing-object negative; **not Done**.  
+**State:** Proposed; dependency-gated (2026-11-19). **Batch receipt (T04 slice, 2026-11-20):** unit/seam/start-integration tiers **PASS** @ `ec73a535`; two-process suite on parent `13bcd6cf` is **13/13 PASS**, including a quiescent scene-1 checkpoint and a mechanical opening that stays outside checkpoint v1; **not Done**.
 **Kind:** implementation  
 **Selection:** Selected in [QUEUE.md](../../../QUEUE.md) for this receipt.  
 **Program:** [D3 campaign bootstrap](../../../designs/open/distributed-turn-poc/D3-CAMPAIGN-BOOTSTRAP.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -36,11 +36,11 @@ Minimum test evidence: exact commands and target environment, current source has
 | T03 | Nest PUT `/stories/:id/start` via distributed seam | **5/5 PASS** | controller/seam tests |
 | T04 | `pnpm test:stories:start` → `story-start.integration.js` | **5/5 PASS** | disposable DB; port **3001** free on successful retry; prior `OpeningStateError` `not_found` not seen that run |
 | T04 | `storyteller-imported-start.integration.js` (Compose / `withAppIntegration`) | **4/4 PASS** (~5.1s) | `GAME_AUTHORITY_MODE` unset → compose; in-process Nest + spawned Next; **no** private GA child; `STORYTELLER_LIVE_ENABLED=false`; port **3001** free @ `ec73a535` |
-| T04 | Nest + GA two-process `test:boot03:imported-start-distributed` | **9/9 PASS** on parent `b4358853` | Prior 8 cases plus one local missing start object. Happy path still does not assert a checkpoint row |
-| T04 | Scene-1 `story_scene_checkpoint` on the happy imported start | **NOT MET** | Start commits the story and one remapped obligation. The opening checkpoint is staged with `items: []`. `lockedCheckpointMatches` then compares that empty list with the obligation item and skips `insertStagedSceneCheckpointSelector`. No scene-1 selector row |
-| T04 | Permanent technical reconciliation | **NOT-RUN** | packet receipt only; no edit to DIST01/DIST03/ENG03 canonical headings this batch |
+| T04 | Nest + GA two-process `test:boot03:imported-start-distributed` | **13/13 PASS** (~8.2s) on parent `13bcd6cf` | Mechanical `microbe.v3` start keeps one remapped obligation, an active offer, and no v1 selector. Quiescent start writes one scene-1 selector and a readable object; identical retry keeps the hash; a different pace returns 409. Missing or corrupt staged checkpoint object leaves no story. Local missing start object still leaves no story |
+| T04 | Live S3 outage and two Game Authority processes racing one start | **NOT-RUN** | Still required before Done |
+| T04 | Checkpoint v2 for mechanical openings and world obligations | **NOT THIS CHANGE** | v1 stays quiescent. A forkable mechanical opening needs a separate design |
 
-**Done eligibility:** **No.** The scene-1 checkpoint selector is still absent on the imported start that carries a start-package obligation. A live S3 outage, a two-GA race, and reconciliation ledger closure guards are still open. Final two-process command: **9/9 PASS**, including the local missing-object case.
+**Done eligibility:** **No.** The supported v1 route now has a scene-1 selector. The mechanical imported start is intentionally not checkpointable. A live S3 outage, a two-GA race, and closure-guard reconciliation remain open. Final command: **13/13 PASS**.
 
 **Blocker:** full T04 negative matrix and authorized wiki reconciliation before `pnpm wiki:change-guard --mode close`.
 
@@ -76,6 +76,6 @@ HK09 cancelled BOOT01 as superseded. These checks were not already an acceptance
 | Creation/product | unchanged | `ec73a535` | N/A (no product edit) | open; no bible delta |
 | Technical bootstrap | reconcile to code | `ec73a535` | **Partial:** start seam tests PASS; full bootstrap doc reconcile **NOT-RUN** | open; packet receipt only |
 | Candidate/game-authority source | bounded migration | `ec73a535` | **Partial:** T01–T03 PASS; imported-start Compose **4/4 PASS**; two-process **4/4 PASS** | open; BOOT03 not Done |
-| Canonical package + scene1 | pending | parent `b4358853` | two-process happy path **PASS** without a `story_scene_checkpoint` row; local missing start object leaves no story; live S3 and two-GA race **NOT-RUN** | open; selector insert skipped when the start obligation is not in the opening checkpoint items |
+| Canonical package + scene1 | partial | parent `13bcd6cf` | quiescent imported start **PASS** with one scene-1 selector; mechanical `microbe.v3` start **PASS** with an obligation and no v1 selector; live S3 and two-GA race **NOT-RUN** | open; checkpoint v2 is a separate design |
 
 Archive only after actual evidence and `pnpm wiki:change-guard --mode plan` / `--mode close` where applicable; no automatic next packet.

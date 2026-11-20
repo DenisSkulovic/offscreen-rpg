@@ -25,8 +25,10 @@ import {
 } from './initialization';
 import {
   checkpointWriterStore,
+  confirmStagedCheckpointObject,
   insertStagedSceneCheckpointSelector,
   stageSceneCheckpointObject,
+  type SceneCheckpointWriterStore,
   type StagedSceneCheckpoint,
 } from './scene-checkpoint';
 import { lockedCheckpointMatches } from './continuation';
@@ -303,6 +305,7 @@ export function createStoryStart(
     }
     let stagedPassage: StagedStoryBootstrap | undefined;
     let stagedOpeningCheckpoint: StagedSceneCheckpoint | undefined;
+    let openingCheckpointStore: SceneCheckpointWriterStore | undefined;
     let openingInteractionId: string | undefined;
     let playableInput: InitialStory | undefined;
     let openingCheckpointKind: 'absent' | 'campaign' | undefined;
@@ -448,6 +451,7 @@ export function createStoryStart(
           contentDocumentHash: stagedPassage.objectHash,
           pins,
         };
+        openingCheckpointStore = writer;
         stagedOpeningCheckpoint = await stageSceneCheckpointObject(
           writer,
           openingCheckpointKind === 'campaign'
@@ -479,12 +483,26 @@ export function createStoryStart(
           ...(existingPassageContent === undefined
             ? {}
             : { existingPassageContent }),
+          ...(openingInteractionId
+            ? { interactionId: openingInteractionId }
+            : {}),
         });
-        if (
-          stagedOpeningCheckpoint &&
-          openingCheckpointKind === 'campaign' &&
-          (await lockedCheckpointMatches(tx, stagedOpeningCheckpoint.checkpoint))
-        ) {
+        if (stagedOpeningCheckpoint && openingCheckpointKind === 'campaign') {
+          if (!openingCheckpointStore) {
+            throw new StoryError('unavailable', 'document_store');
+          }
+          await confirmStagedCheckpointObject(
+            openingCheckpointStore,
+            stagedOpeningCheckpoint,
+          );
+          if (
+            !(await lockedCheckpointMatches(
+              tx,
+              stagedOpeningCheckpoint.checkpoint,
+            ))
+          ) {
+            throw new StoryError('conflict', 'checkpoint_state_mismatch');
+          }
           await insertStagedSceneCheckpointSelector(tx, {
             ownerId,
             operationId: id,
