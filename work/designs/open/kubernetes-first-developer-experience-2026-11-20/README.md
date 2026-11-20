@@ -53,7 +53,7 @@ Existing TURN02 T03→T04→T05→T06 enables real release; related BOOT03/STORY
 | [DXK03](../../../changes/open/2026-11-20--dxk03-local-playable-identity-and-fixture/CHANGE.md) | Local identity and playable campaign |
 | [DXK04](../../../changes/archive/2026-11/other/2026-11-20--dxk04-package-command-surface/CHANGE.md) | Root package command redesign |
 | [DXK05](../../../changes/archive/2026-11/other/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md) | Kubernetes CI and lab safety replacement |
-| [DXK06](../../../changes/open/2026-11-20--dxk06-compose-retirement/CHANGE.md) | Remove Compose runtime and references |
+| [DXK06](../../../changes/archive/2026-11/other/2026-11-20--dxk06-compose-retirement/CHANGE.md) | Done: Compose runtime and the retired compose mode are removed. Clean-clone proof stays DXK07 |
 | [DXK07](../../../changes/open/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) | Clean-clone readiness and regression harness |
 
 Nothing here makes a change Done or permits paid provider calls, foreign-cluster changes, automatic data deletion, unsafe host binding or automatic selection of all packets.

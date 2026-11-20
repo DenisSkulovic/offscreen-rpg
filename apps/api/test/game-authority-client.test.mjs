@@ -110,7 +110,7 @@ test('distributed fork uses private PUT with actor and forkStory body without ow
   }
 });
 
-test('compose mode delegates fork to the in-process writer', async () => {
+test('embedded mode delegates fork to the in-process writer', async () => {
   let remoteCalls = 0;
   const restore = withFetch(async () => {
     remoteCalls += 1;
@@ -131,7 +131,7 @@ test('compose mode delegates fork to the in-process writer', async () => {
     },
   };
   try {
-    const seam = storySeamFor(local, { mode: 'compose' });
+    const seam = storySeamFor(local, { mode: 'embedded' });
     const snapshot = await seam.fork({
       ownerId,
       sourceStoryId: storyId,
@@ -226,7 +226,7 @@ test('GA fork conflict maps to StoryError conflict', async () => {
   }
 });
 
-test('compose mode delegates startFromCandidate to the in-process writer', async () => {
+test('embedded mode delegates startFromCandidate to the in-process writer', async () => {
   let remoteCalls = 0;
   const restore = withFetch(async () => {
     remoteCalls += 1;
@@ -247,7 +247,7 @@ test('compose mode delegates startFromCandidate to the in-process writer', async
     },
   };
   try {
-    const seam = storySeamFor(local, { mode: 'compose' });
+    const seam = storySeamFor(local, { mode: 'embedded' });
     const snapshot = await seam.startFromCandidate({
       ownerId,
       storyId,

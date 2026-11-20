@@ -39,7 +39,7 @@ export type Turn03OverallStatus = z.infer<typeof turn03OverallStatusSchema>;
 export const turn03ExecutionTierSchema = z.enum([
   'pure',
   'local',
-  'compose',
+  'embedded',
   'kind-cross-pod',
 ]);
 

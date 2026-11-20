@@ -8,7 +8,7 @@ This page is the safe local boot route: install, loopback dependencies, `pnpm de
 
 | Job | What it touches | Where |
 | --- | --- | --- |
-| Safe initial boot | Host processes and loopback Compose volumes. No model credentials | [Requirements and startup](#requirements-and-startup) |
+| Safe initial boot | Host processes and the local kind lab cluster. No model credentials | [Requirements and startup](#requirements-and-startup) |
 | Frontend only | Next or Vitest on the host. Docker is not required | [Fast frontend workflow](#fast-frontend-workflow) |
 | Ordinary no-spend checks | Format, lint, typecheck, `pnpm test`, and build. Live inference stays disabled | [Checks and boundaries](#checks-and-boundaries) |
 | Provider-free integration | Recreates only `offscreen_db_test` or `offscreen_auth_test` | [Local integration tests](local-integration-tests.md) |
@@ -24,7 +24,7 @@ To inspect just the public story prototype, run `pnpm --filter @offscreen/contra
 
 Use Node **24.19.0** (also recorded in `.node-version`) and pnpm **11.19.0**. The system's default Node must match before running package scripts. Install the pinned pnpm with `npm install --global pnpm@11.19.0` if necessary.
 
-Install Docker with Compose v2 and start the dependencies below. Copy `.env.example` to `.env` in the repository root. Generate `BETTER_AUTH_SECRET` using the command in that file; supply your own GitHub OAuth app client ID and secret. Set its homepage to `http://localhost:3000` and callback to `http://localhost:3000/api/auth/callback/github`. Keep `.env` private; it is ignored by Git. Use `localhost` consistently in the browser so the configured origin and cookies agree.
+Install Docker for the kind lab and start the stack below. Copy `.env.example` to `.env` in the repository root. Generate `BETTER_AUTH_SECRET` using the command in that file; supply your own GitHub OAuth app client ID and secret. Set its homepage to `http://localhost:3000` and callback to `http://localhost:3000/api/auth/callback/github`. Keep `.env` private; it is ignored by Git. Use `localhost` consistently in the browser so the configured origin and cookies agree.
 
 From the repository root:
 
@@ -69,7 +69,7 @@ Keep pnpm's store and warm `.turbo`, `.next/dev`, `dist` and TypeScript incremen
 
 ## Local dependencies
 
-With Docker and Compose v2 installed:
+With Docker installed for the kind lab:
 
 ```sh
 pnpm stack:up
@@ -89,24 +89,21 @@ reset container data, or clean only one directory first; the first failed
 restart creates another socket that becomes stale before the second repair.
 
 `wsl --update` confirms that this workstation's Store WSL is current, and its
-kernel, DNS and outbound HTTPS are healthy. Docker Engine and Compose are also
-installed directly in `Ubuntu-24.04` as a recovery option, but do not run both
-engines' project stacks simultaneously because they publish the same loopback
-ports. Docker Desktop remains the normal development runtime.
+kernel, DNS and outbound HTTPS are healthy. Docker Engine may also be installed
+directly in `Ubuntu-24.04` as a recovery option. Docker Desktop remains the
+normal development runtime for the kind lab.
 
-Compose defines application PostgreSQL on localhost:5432, Temporal on localhost:7233 with its UI on localhost:8233, and optional Redis on localhost:6379. Named volumes preserve PostgreSQL and Temporal data when stopped; Redis is deliberately disposable and has persistence disabled. `stack:down` retains the named volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API admits requests in PostgreSQL; the application worker relays their outbox notices and executes scripted preview workflows in Temporal. `REDIS_URL` enables version-addressed public snapshot caching; omitting it keeps the same application behavior without a cache.
+`pnpm stack:up` installs the lab release on `kind-offscreen-lab`. Loopback port-forwards expose application PostgreSQL on localhost:5432, Temporal on localhost:7233, and optional Redis on localhost:6379 when the release provides them. `stack:down` removes app workloads while keeping cluster data policies described in [deployment and compatibility](../technical/platform/deployment-and-compatibility.md#local-development). The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API admits requests in PostgreSQL; the application worker relays their outbox notices and executes scripted preview workflows in Temporal. `REDIS_URL` enables version-addressed public snapshot caching; omitting it keeps the same application behavior without a cache.
 
-Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. Local boot, including `pnpm stack:up` and `pnpm dev`, is not a restore rehearsal. The untested checklist is [Release and restore readiness](release-restore-readiness.md). CI starts both containers and waits for their health checks. Local startup is verified on Windows through Docker Desktop's WSL 2 backend. After installing Docker, reopen terminals so the CLI and credential helper are available on PATH. The scripted opening integration suite exercises saved-request processing and duplicate delivery after worker restart.
+Local boot, including `pnpm stack:up` and `pnpm dev`, is not a restore rehearsal. The untested checklist is [Release and restore readiness](release-restore-readiness.md). CI uses a GitHub-hosted Postgres service and does not require a local cluster. Local startup is verified on Windows through Docker Desktop's WSL 2 backend. After installing Docker, reopen terminals so the CLI and credential helper are available on PATH. The scripted opening integration suite exercises saved-request processing and duplicate delivery after worker restart.
 
 Repository launchers also resolve Docker Desktop's standard Windows CLI path directly when their inherited process PATH is stale. CLI discovery uses `docker --version` and does not contact the daemon; a stopped backend, inaccessible named pipe or Docker configuration permission error is therefore reported as that actual runtime failure rather than “Docker CLI was not found.”
 
-Focused integration reset connects to the loopback PostgreSQL service directly through the database package's installed driver. It does not require Docker CLI or named-pipe access once the Compose services are running. Infrastructure lifecycle commands still use Docker Compose.
-
-Use the Kubernetes stack commands (`pnpm stack:preflight`, `pnpm stack:up`, `pnpm stack:status`, `pnpm stack:down`, `pnpm stack:reset`) and `pnpm dev` for ordinary local application boot. Checked-in Compose files remain until DXK06; they are not a supported application boot command.
+Focused integration reset connects to the loopback PostgreSQL service directly through the database package's installed driver. It does not require Docker CLI or named-pipe access once `pnpm stack:up` has published the database port. Infrastructure lifecycle commands are `pnpm stack:preflight`, `pnpm stack:up`, `pnpm stack:status`, `pnpm stack:down`, and `pnpm stack:reset`.
 
 ## Game Authority seam
 
-`apps/game-authority` is a separate process for one operation: the owned story snapshot read and one scripted resolution admission. Compose does not start it. Leave `GAME_AUTHORITY_MODE` unset and the API keeps the current in-process writer. Set `GAME_AUTHORITY_MODE=distributed` only together with `GAME_AUTHORITY_ORIGIN` and `GAME_AUTHORITY_SERVICE_TOKEN` on the API, and the same token on the Game Authority process. Nest still checks the browser session, then calls `/internal/v1`. A failed call does not fall back to a second SQL write. The process has no `/api` route, no start route, and no publication route. Do not put it on the public gateway. No model call is part of this seam.
+`apps/game-authority` is a separate process for one operation: the owned story snapshot read and one scripted resolution admission. The lab release can run it as a Pod when configured for distributed mode. Leave `GAME_AUTHORITY_MODE` unset on host API processes and the API keeps the embedded in-process writer for that seam. The lab release requires `GAME_AUTHORITY_MODE=distributed`; `GAME_AUTHORITY_MODE=compose` is rejected. Set `GAME_AUTHORITY_MODE=distributed` only together with `GAME_AUTHORITY_ORIGIN` and `GAME_AUTHORITY_SERVICE_TOKEN` on the API, and the same token on the Game Authority process. Nest still checks the browser session, then calls `/internal/v1`. A failed call does not fall back to a second SQL write. The process has no `/api` route, no start route, and no publication route. Do not put it on the public gateway. No model call is part of this seam.
 
 ## Checks and boundaries
 

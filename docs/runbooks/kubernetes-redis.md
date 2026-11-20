@@ -32,7 +32,7 @@ The cluster comes from [Kubernetes lab](kubernetes-lab.md). This procedure adds 
 
 | Tool or image | Pin |
 | --- | --- |
-| Redis | `docker.io/library/redis:8.2.1-alpine` (the same tag as `compose.yaml`) |
+| Redis | `docker.io/library/redis:8.2.1-alpine` (the same tag as the lab release Redis image) |
 
 The container runs as uid 999 and gid 1000, which is the `redis` account in that image. The memory limit is 128Mi and the CPU limit is 500m. `maxmemory` inside Redis is 32mb.
 

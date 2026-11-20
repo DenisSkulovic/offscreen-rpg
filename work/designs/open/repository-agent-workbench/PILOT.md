@@ -71,7 +71,7 @@ Use fresh sessions with identical question wording, available source snapshot, p
 ## Setup and portability
 
 - Target workstation baseline: Windows x64 first, Mac secondary; validate vendor-specific requirements rather than claiming portability from a README. Keep tool versions pinned and installs opt-in/outside the main pnpm dependency graph.
-- Never add optional vendor packages to the game `compose.yaml`. If a vendor needs an embedding process, scope it to the trial. Inspect model download size, disk and RAM before retrieving anything. Do not automatically run `curl|sh` or install a global agent MCP server.
+- Never add optional vendor packages to the game lab manifests or root `package.json` scripts. If a vendor needs an embedding process, scope it to the trial. Inspect model download size, disk and RAM before retrieving anything. Do not automatically run `curl|sh` or install a global agent MCP server.
 - Baseline works with no optional software. Missing vendor tool yields `not configured` and normal fallback, never task failure or blocked repository boot.
 - Only after CLI results demonstrate value should an MCP registration be tested, with a minimal **read-only tool surface**, limited output and no always-on session-memory write privileges.
 

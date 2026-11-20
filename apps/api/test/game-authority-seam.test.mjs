@@ -181,7 +181,7 @@ test('distributed mode calls Game Authority and leaves the Nest writer idle', as
   }
 });
 
-test('compose mode keeps the in-process writer and does not call Game Authority', async () => {
+test('embedded mode keeps the in-process writer and does not call Game Authority', async () => {
   let remoteCalls = 0;
   const server = await startGameAuthorityServer({
     token,
@@ -210,7 +210,7 @@ test('compose mode keeps the in-process writer and does not call Game Authority'
     identity,
     local,
     null,
-    storySeamFor(local, { mode: 'compose' }),
+    storySeamFor(local, { mode: 'embedded' }),
   );
   try {
     const admitted = await controller.admitResolution(
@@ -222,7 +222,25 @@ test('compose mode keeps the in-process writer and does not call Game Authority'
     assert.equal(admitted.receiptId, 'local-receipt');
     assert.equal(local.calls.admit, 1);
     assert.equal(remoteCalls, 0);
-    assert.deepEqual(readStoryAuthorityConfig({}), { mode: 'compose' });
+    assert.deepEqual(readStoryAuthorityConfig({}), { mode: 'embedded' });
+    assert.throws(
+      () => readStoryAuthorityConfig({ GAME_AUTHORITY_MODE: 'compose' }),
+      (error) => {
+        assert.match(error.message, /GAME_AUTHORITY_MODE/);
+        return true;
+      },
+    );
+    assert.throws(
+      () =>
+        readStoryAuthorityConfig(
+          { OFFSCREEN_DOCUMENT_STORE: 's3' },
+          { requireExplicitMode: true },
+        ),
+      (error) => {
+        assert.match(error.message, /GAME_AUTHORITY_MODE/);
+        return true;
+      },
+    );
     const secret = 'super-secret-token-value';
     assert.throws(
       () =>
@@ -275,7 +293,7 @@ test('distributed mode routes start to Game Authority and leaves the Nest writer
   }
 });
 
-test('compose mode keeps in-process start and does not call Game Authority', async () => {
+test('embedded mode keeps in-process start and does not call Game Authority', async () => {
   let remoteCalls = 0;
   const server = await startGameAuthorityServer({
     token,
@@ -304,7 +322,7 @@ test('compose mode keeps in-process start and does not call Game Authority', asy
     identity,
     local,
     null,
-    storySeamFor(local, { mode: 'compose' }),
+    storySeamFor(local, { mode: 'embedded' }),
   );
   try {
     const started = await controller.startFromCandidate(
@@ -414,7 +432,7 @@ test('distributed mode routes fork to Game Authority and leaves the Nest writer 
   }
 });
 
-test('compose mode keeps in-process fork and does not call Game Authority', async () => {
+test('embedded mode keeps in-process fork and does not call Game Authority', async () => {
   let remoteCalls = 0;
   const server = await startGameAuthorityServer({
     token,
@@ -443,7 +461,7 @@ test('compose mode keeps in-process fork and does not call Game Authority', asyn
     identity,
     local,
     null,
-    storySeamFor(local, { mode: 'compose' }),
+    storySeamFor(local, { mode: 'embedded' }),
   );
   try {
     const forked = await controller.fork(

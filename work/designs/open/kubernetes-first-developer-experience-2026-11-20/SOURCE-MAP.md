@@ -6,20 +6,20 @@
 
 | Entry/authority | Observed source and current effect | Chosen owner |
 | --- | --- | --- |
-| root package.json | 63 root scripts on inspected GitHub main; dev=turbo run dev; infra, infra:up/down call scripts/repo-tools/compose.mjs. Tests/docs/chamber experiments intermingled | DXK01/DXK02 create new interface, DXK04 migrates old aliases |
-| compose.yaml + scripts/repo-tools/compose.mjs | Compose-backed Postgres/Redis/Temporal/S3 mock normal development and wrapper | DXK06 deletes after replacement |
+| root package.json | dev=pnpm dev (Tilt); stack:* lifecycle; no root infra/infra:up/down | DXK04 migrated aliases; DXK06 removed compose wrapper |
+| compose.yaml + scripts/repo-tools/compose.mjs | **Deleted (DXK06 T01).** Normal development is kind lab + stack:* | — |
 | infra/kubernetes/lab/{up.sh,lib.sh,down.sh,kind.yaml} | Existing dedicated kind cluster, context/volume safety and loopback guard; not application release | DXK01 reuses, DXK05 removes hardcoded old volumes from component smokes |
 | infra/kubernetes/lab/app-release/ | API/GA and Next image build/test pieces exist; TURN02 T04/T05/T06 still required; no proven full playable release | **TURN02**, not DXK |
 | infra/kubernetes/lab/{cnpg,temporal,content-bootstrap,object-storage,gateway} | Real component labs and pinned S3 package import, many are test-specific, not one installed app | TURN02 composes production-like subset; DXK01 makes idempotent lifecycle |
 | apps/api/src/main.ts + default-rules-startup.ts | Postgres, cache, S3, pinned-rule boot, Better Auth config before listen | TURN02 release readiness; DXK03 auth only |
 | apps/api/src/modules/auth/{auth.ts,config.ts} | Better Auth GitHub-only; GitHub credentials and secret mandatory, APP_ORIGIN is HTTPS or localhost/127.0.0.1 | DXK03 local-only email/password profile with real sessions |
 | apps/web/next.config.ts + src/server/api-origin.ts | Next /api rewrite target and SSR API_INTERNAL_ORIGIN require distinct build/runtime Pod DNS verification | TURN02 T03/T05; DXK02 published UI links only |
-| apps/api/src/modules/stories/game-authority-client.ts | GAME_AUTHORITY_MODE defaults to literal compose; distributed is explicit; both test families use compose branch | DXK06 renames old embedded/local mode and tests; shipped app always distributed |
-| scripts/repo-tools/story-session-report.mjs | Directly shells out to docker compose ps -q postgres, then docker exec psql | DXK04 replaces with explicit DB connection/owned kubectl utility or retires as redundant |
+| apps/api/src/modules/stories/game-authority-client.ts | Host default is `embedded`; `distributed` is explicit; retired `compose` is rejected; S3 lab release requires an explicit mode | DXK06 T02 |
+| scripts/repo-tools/story-session-report.mjs | Read-only `psql` via `OFFSCREEN_STORY_DATABASE_URL` | DXK04 landed; no Docker Compose |
 | .github/workflows/code.yml | Compose validation, infrastructure up/down, Temporal auth dependency; database job separately already uses native GitHub Postgres service | DXK05 replaces Compose CI with scoped Kubernetes/test services |
 | scripts/repo-tools/ci-change-scope.mjs + .test.mjs | Compose filenames in CI classifier/fixtures | DXK05 rewrites classification and tests |
-| scripts/repo-tools/repair-docker-desktop.ps1 | References pnpm infra:up; may remain only if still genuinely useful for Docker engine failure | DXK04/DXK06 remove obsolete launcher advice, reconcile HK01 work |
-| docs/runbooks/local-development.md + kubernetes-lab.md | Canonical default local boot still Compose/host pnpm dev; lab runbook explicitly not game | DXK07 canonical runbook; DXK06 cleanup compatibility narratives |
+| scripts/repo-tools/repair-docker-desktop.ps1 | Repairs Windows Docker Desktop sockets; advises `pnpm stack:up` after restart | Retained for engine recovery only |
+| docs/runbooks/local-development.md + kubernetes-lab.md | Default local boot is `pnpm stack:*` and `pnpm dev` on kind. Compose files are gone. The lab runbook is still not the game. | DXK06 removed the Compose boot narrative. DXK07 still owns the clean-clone acceptance runbook. |
 
 ## Concrete old-volume dependencies to remove
 
