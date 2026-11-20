@@ -6,6 +6,7 @@ Unaccepted designs/investigations and owner-retained dormant policy. Not product
 
 | Item | Status |
 | --- | --- |
+| [Story creation and writer's workbench](open/story-creation-and-writers-workbench/README.md) | **Active investigation 2026-11-20:** de-wizard one-prompt entry, bundled creative-guidance documents, optional bounded workbench-preparation mission, first-scene/root lifecycle and explicit quality/cost questions. No executable Change or provider grant |
 | [Kubernetes-first developer experience](open/kubernetes-first-developer-experience-2026-11-20/README.md) | **Owner-selected end state / implementation not yet proven:** DXK01–07, finite Cursor handoff, real TURN02/TURN03 predecessors, no active Compose after completion |
 | [first-campaign-readiness-2026-11-20/](open/first-campaign-readiness-2026-11-20/README.md) | **Source audit / execution ladder:** 19 open packets reconciled; actual STORY03 routing+publication defects, distinct local real-process and cold-kind proofs, and Composer-sized repair cards. No integrated test or live model claimed |
 | [backlog-convergence-2026-11-18/](open/backlog-convergence-2026-11-18/README.md) | **Accepted bounded execution decisions 2026-11-18:** 16-packet source audit, BOOK01, BOOK02, HAR05, DIR02, HK04, S3a, and QA-SF01 are Done. 9 packets remain Ready for safe work. [Cursor order](open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md); no paid dispatch grant |

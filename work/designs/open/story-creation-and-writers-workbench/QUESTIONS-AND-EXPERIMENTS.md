@@ -1,0 +1,62 @@
+# Open decisions and bounded experiments
+
+**Status:** investigation backlog, not selected engineering Changes. The goal is to discriminate between competing designs, not to manufacture confidence by adding more files.
+
+## Decision log
+
+| Question | Current working answer | What could change it? |
+| --- | --- | --- |
+| Should the player fill four setup steps? | **No**, owner explicitly rejects this product flow; preserve immediate preset Play and one freeform prompt for custom. | UX evidence might justify an optional advanced editor, not a required wizard. |
+| Is a Storyteller profile a versioned document? | **Plausible target.** Existing `creative-guidance` and bundle contract support the substrate; runtime still captures strict JSON profiles. | Need a precise resolver/snapshot and a contrast with existing typed settings. |
+| Should core profile instructions be injected automatically? | **Likely yes** for a bounded, pinned core; examples and large background can remain on demand. | Input-token measurements and source-priority tests. |
+| Must setup be a separate model call? | **Undecided.** Compare one-round output plus initial document proposals with a separate preparation round. | Blind quality evaluations and actual latency/cost difference. |
+| Is a pre-first-scene workbench already committed canon? | **Undecided; caution.** No first-scene checkpoint exists yet. | Failure/restart/fork protocol design and Game Authority ownership review. |
+| Does every story need a planned plot? | **No.** A private direction can be absent, tentative, or explicitly “no grand arc”. | Long-play evaluations in directed and emergent fiction. |
+| Can the agent write any file it imagines? | **No.** Documents are admitted, typed and revision-fenced; model proposes changes only within scoped permissions. | New supported document types require an explicit contract. |
+| Can a creative pacing pill set clock speed? | **No.** Mechanical pace is typed and separate; product default requires an explicit decision. | Time/UX experiments determining what new players find tolerable. |
+
+## Next investigation: launch lifecycle
+
+For each scenario trace: original prompt; preset/world/rule pins; resolved creative guidance; initial workspace identity; tasks and cost; proposed documents; validation; first scene/checkpoint/root; failure and retry behavior; settings changes; later fork eligibility.
+
+1. **Prepared Seyda Neen:** pinned authored documents plus optional profile, user presses Play without modifying anything. What is loaded automatically? What is cloned vs referenced? What is copyrighted fixture-only?
+2. **Custom `bah`:** no character/setting constraints. How much invention is permitted? Which defaults are deterministic? How does the Storyteller choose a useful immediate situation without inventing false user intent?
+3. **Conscious galaxy:** no human body, inventory or standard location. Does any input, candidate schema or bootstrap implicitly require a humanoid? Can a scene and meaningful choice be valid without one?
+4. **Contradictory customization:** a prepared world's start defines an arriving prisoner; user requests being a timeless cosmic observer. Should this be a custom branch, refusal, or explicit replacement of the start? Never silently mix incompatible authority.
+5. **Crash and race:** setup artifact exists but model crashes; provider delivered output without acknowledgement; concurrent edit occurs; package revision changes; first scene published but response lost. Does retry reproduce the same captured result exactly once?
+6. **Future fork:** start/root and first scene commit must not import unrelated parent/sibling future knowledge.
+
+## Candidate quality/cost comparison (no live dispatch authorized)
+
+Hold source packages, prompts, task contracts, maximum budget and scoring rubric fixed. Compare:
+
+- A: one grounded opening task proposing minimal setup documents alongside first scene.
+- B: bounded preparation operation followed by a separately grounded opening task.
+- C later only if A/B show a strong capability gap: conditional extra work based on observable complexity.
+
+Assess outputs blind for: attractive first situation; coherence; originality without empty purple prose; player agency; suitable options; fidelity to supplied world and user prompt; no involuntary plot railroading; nonhuman compatibility; useful setup artifacts; continuity hooks; recovery; input/output tokens; real dispatch spend; elapsed time; number of reads/writes/rounds. Do **not** equate the larger token count with quality.
+
+Stop/rollback signals: preparation regularly adds low-value or contradictory files; opening becomes slower with no visible story gain; cost doubles without clear wins; hidden world facts become prematurely committed; a model must read its own basic profile via unnecessary tool calls; provider failures lose work or duplicate charges.
+
+## Specific unanswered design questions
+
+- Is one Story Prompt persisted verbatim as a **user-intent source document**, a pinned launch input, or both? What are the authority/visibility and prompt-injection constraints?
+- Which exact `creative-guidance` document takes precedence when a reusable world, authored start, user-created preset and later settings revision all define a voice? How are collisions reported?
+- If the effective profile is synthesized from many texts, what exact **compiled snapshot** is retained with a task and checkpoint? Do we need a readable core plus structured companion fields?
+- Which data belongs in a preparation result versus a proposed first-scene result? Can one structured response contain both without blurring approval?
+- Who validates and publishes a preparation-only draft manifest? Can it be staged without making the story active, and how is it garbage-collected if abandoned?
+- Which canonical documents, if any, are mandatory before opening? Could a prepared start already be sufficient with **zero** setup writes?
+- How does the agent locate a relevant document efficiently after 200 scenes? Which required context is injected without searches, and which evidence gets selected by bounded navigation?
+- How should typed time/pace, consent, characterless interactions and world invention permissions be defaulted without burdening the player with forms?
+- How do we present loading, paid generation failure, held state and resume without showing a setup-review page?
+- What is the actual rights and content-policy distinction between local licensed/development fixtures and publishable prepared experiences?
+
+## Future acceptance gates (only after decisions)
+
+1. Product owner agrees on player-facing behavior and confirms updated accepted contracts in `docs/product/`.
+2. Technical owner diagrams initial root lifecycle and preserves game-authority, revision, fork, retry and budget fences in `docs/technical/`.
+3. Small provider-free fixtures prove minimal prompt / authored bundle / nonhuman start and safe resumability.
+4. Human-reviewed optional paid quality/cost experiment under separately approved funding.
+5. Only then create **bounded, dependency-ordered Change packets**, avoiding UI edits that assume unresolved backend contracts.
+
+**Next conversational starting point:** design the two complete lifecycle diagrams (prepared preset vs arbitrary prompt), identify the earliest legally committed root, and compare A/B preparation at the protocol level.
