@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: pinned S3 bootstrap, real images and one serialized cluster join. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Proposed, dependency gated (2026-11-19); **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); kind/cluster **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
+**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image static/unit PASS** on top of `c832593a` (2026-11-20); web image build and kind/cluster **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -69,6 +69,16 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 **NOT-RUN:** kind image load, migration Job, overlay apply, Pod Ready, authenticated edge, or any end-to-end Kubernetes game path. **`Dockerfile.web` (T03) on MAIN was not overwritten** by this slice.
 
 **Done eligibility:** **No.** T03–T06, cluster integrator work, and ledger closure guards remain open (T01 verified separately). This receipt does not promote the Change to Done and does not claim a reproducible Kubernetes release.
+
+## T03 PATCH receipt (Next image and internal origins, 2026-11-20)
+
+**Proved on top of** `c832593a`: `Dockerfile.web` pins `node:24.19.0-bookworm-slim` to the same digest as the API image. The runner sets `HOSTNAME=0.0.0.0` and both `API_PROXY_ORIGIN` and `API_INTERNAL_ORIGIN` to `http://game-api.lab-edge.svc.cluster.local:3001`. Local `dev` and `start` stay on `127.0.0.1`. `releasePodAllowsSsr` blocks Pod SSR before `fetch` when that origin is loopback or differs from `API_PROXY_ORIGIN`.
+
+**Positive (static/unit only):** `node --test` rewrite + dockerfile-guard **8/8 PASS**. `vitest` `api-origin.test.ts` and `nest-reader.test.ts` **11/11 PASS**. Matching lab Service origin still forwards the session cookie.
+
+**Negative:** Pod `nestFetch` throws `NestTransientError` status 0 and does not call `fetch` for loopback or a mismatched origin. Dockerfile guard rejects a `content/` copy and a secret build arg on `Dockerfile.web`.
+
+**NOT-RUN:** `docker build` of the web image, `next build` routes-manifest bake, kind load, Pod Ready, and authenticated browser SSR. **T04 stays gated** on that image build. No Kubernetes application release is claimed.
 
 ## Reconciliation ledger (complete before Done)
 

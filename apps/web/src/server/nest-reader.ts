@@ -1,7 +1,7 @@
 import 'server-only';
 import { notFound, redirect } from 'next/navigation';
 import type { ZodType } from 'zod';
-import { apiInternalOrigin } from './api-origin';
+import { apiInternalOrigin, releasePodAllowsSsr } from './api-origin';
 import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
 import { NestTransientError } from '@/src/shared/api/nest-errors';
 import { parseNestJson } from './parse-nest-json';
@@ -20,8 +20,12 @@ export async function nestFetch(
   options?: { timeoutMs?: number; signal?: AbortSignal },
 ): Promise<Response> {
   const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const origin = apiInternalOrigin();
+  if (!releasePodAllowsSsr(origin)) {
+    throw new NestTransientError(0, 'Nest SSR origin refused in release Pod');
+  }
   try {
-    return await fetch(`${apiInternalOrigin()}${path}`, {
+    return await fetch(`${origin}${path}`, {
       headers: { cookie: ctx.cookie },
       cache: 'no-store',
       signal: options?.signal ?? AbortSignal.timeout(timeoutMs),
