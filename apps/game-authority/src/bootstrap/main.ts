@@ -133,6 +133,7 @@ async function main() {
       database,
       applicationOptions,
     ),
+    ...(documentStore === undefined ? {} : { documentStore }),
     token: config.token,
     executorToken,
     controlToken: config.controlToken,

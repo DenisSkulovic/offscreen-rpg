@@ -24,6 +24,8 @@ import {
 import {
   storytellerGenerationPublishResponseSchema,
 } from '@offscreen/contracts/storyteller-task-custody';
+import type { DocumentStore } from '@offscreen/documents';
+import { handleBranchEvidence } from './branch-evidence.js';
 import type {
   GameAuthoritySeam,
   StorytellerPublicationSeam,
@@ -46,6 +48,7 @@ export type GameAuthorityServerOptions = {
   controlToken?: string;
   custody?: StorytellerTaskCustodySeam;
   publication?: StorytellerPublicationSeam;
+  documentStore?: DocumentStore;
   timeoutMs: number;
   host?: string;
   port?: number;
@@ -341,7 +344,7 @@ async function handleCustody(
   response: ServerResponse,
   route: Exclude<
     ReturnType<typeof routeStorytellerTaskCustody>,
-    { kind: 'absent' | 'invalid' | 'publish' }
+    { kind: 'absent' | 'invalid' | 'publish' | 'evidence' }
   >,
   options: GameAuthorityServerOptions,
 ) {
@@ -472,6 +475,21 @@ async function handle(
     }
     if (custodyRoute.kind === 'invalid') {
       sendCustodyHttpError(response, 400, 'invalid');
+      return;
+    }
+    if (custodyRoute.kind === 'evidence') {
+      await handleBranchEvidence(
+        request,
+        response,
+        custodyRoute.generationId,
+        options,
+        {
+          withTimeout,
+          readRawBody,
+          sendCustody,
+          sendCustodyHttpError,
+        },
+      );
       return;
     }
     await handleCustody(request, response, custodyRoute, options);
