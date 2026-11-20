@@ -36,7 +36,7 @@ Current `apps/api/src/modules/stories/controller.ts:fork` invokes `this.stories.
 | Critical engine / fork | BOOT03, FORK01, STORY02, STORY03, DATA04, DATA06, DIST03, TURN03 | Complete exact needed contracts, archive genuinely achieved Goals, retain honest negative gaps |
 | Real deployment and usable UX | TURN02, K8S11, DXK01, DXK02, DXK03, DXK04, DXK05, DXK06, DXK07 | Follow R0 then R2–R5; one kind operator, no duplicate release owner |
 | Present but not critical now | ENG03 (real under-lock I/O, prepared finite T02–T07, unselected), GM07, OBS04 (source-event witness T02–T06 planned), HK01, K8S10 | Remain discoverable in Changes. Select later for a real measured defect/owner request, not queue anxiety. Optional Rabbit fact projection and chaos do not gate playable script |
-| Paid/explicit separate approval | OBS00, TURN04 | No live provider send, billing or new dispatch authority in zero-provider sprint |
+| Paid/explicit separate approval | OBS00 (provider-free B grant/dispatch code is plan-ready; activation separately gated), TURN04 | No live provider send, grant seeding, billing or paid distributed execution in zero-provider sprint |
 
 **Do not confuse checkpoint v1 with the long-term any-scene promise:** this POC's first fork is quiescent scene1 only. Real mechanical world obligations, active offers and general historical v2 reconstruction need later ratified design, not tweaks to make the fixture green.
 
@@ -49,6 +49,8 @@ Current `apps/api/src/modules/stories/controller.ts:fork` invokes `this.stories.
 **ENG03 correction (Nov 20):** [ENG03 concrete closeout path](changes/open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) replaces its stale "planner-gated" placeholder: the pending-action fix is proved, but narrative resolution, consequence and historical-report DocumentStore reads still occur under transaction. This is a real integrity/latency issue, not an optional Rabbit-style speculative Change. Select it when TURN02/BOOT03 release shared writers and execute the bounded test/fix chain. Do not auto-archive or use the old 8s baseline as a present measurement.
 
 **OBS04 backlog resolution (Nov 20):** [Typed terminal-event witness decision](changes/open/2026-11-15--obs04-finite-action-transition-evidence/DECISION-2026-11-20.md) removes the earlier unspecified-missing-datum blocker: existing receipt/event lacks the exact typed interrupt cause and pre/post clock/holds/affected-item state. One nullable witness on existing terminal event, no new ledger, is planned. OBS04 remains **unselected and unimplemented**; do not make it a prerequisite for TURN02 gameplay unless a concrete forensic test depends on it.
+
+**OBS00 status correction (2026-11-20):** [Independent current authority design](changes/open/2026-11-15--obs00-live-provider-custody/DECISION-2026-11-20.md) resolves the old B planner-gate into provider-free T02–T06. OBS00-C wire equality was independently Done/archived Nov 15; parent T01's omission of the suite is not evidence it was undone. Preserve no-default-grant and no-paid-send constraints; distributed executor stays scripted-only until a separate owner-approved design and TURN04 activation. No auto-selection.
 
 ## Prevent self-management drift
 
