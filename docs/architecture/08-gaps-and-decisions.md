@@ -1,5 +1,7 @@
 # 8. Gaps found by drawing the architecture
 
+**Storyteller evolution baseline:** the permanent docs now select the target architecture. Remaining gaps on this branch are implementation gaps unless explicitly named as policy choices. Do not list the legacy wizard, flat manifest, one-shot writer or quiescent-only fork limitation as desired end-state decisions.
+
 **Reader question:** which arrows are real, which are merely selected, and which architectural choices still need proof? **Inspection:** source snapshot 584b594 and current documentation handoff, 2026-11-19. This is a **diagnostic ledger**, not a new authoritative spec or an automatic Change selector. Canonical [source audit](../../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md), [queue](../../work/changes/README.md) and [STATUS](../../STATUS.md).
 
 ## The POC gates, ordered by dependency rather than fashion
