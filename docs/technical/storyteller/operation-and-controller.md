@@ -1,5 +1,7 @@
 # Storyteller operation and controller
 
+**Target contract:** one Storyteller mission is a durable, recoverable, multi-round writer operation. It owns provider/tool custody and a reconstructable Workdesk, but it never owns authoritative world mutation. A mission can survive process restart without preserving an immortal model session.
+
 **Owns:** how a living world decides whether to call a model, how that call is bounded, and how the current prototype runtime differs from the selected target.  
 **Product:** [behavior and quality](../../product/storyteller/behavior-and-quality.md).  
 **Engine spine:** [selected architecture](../engine/selected-architecture.md).  
@@ -21,49 +23,13 @@ One captured `single-turn.v1` task is one model call with no tools. `memory-expl
 
 ## Two loops
 
-**Status: selected long-term design.** The 2026-11-19 packing rule below is part of that design. This heading does not implement the packer. Today's code does not assemble P0–P3 this way. The prototype section below is what the current generation runtime actually specifies: one captured `single-turn.v1` call with no tools, or a funded `memory-exploration.v1` controller. See [Current prototype runtime](#current-prototype-runtime).
+There are two authority loops, not two fixed model calls.
 
-The product needs a dependable creative decision-maker that remembers a fictional life, investigates the evidence actually needed, and proposes the next situation under the selected creative philosophy. It does not need a continuously running language-model mind, a tool per shopkeeper, or a model call on every tick.
+**Writer loop.** The Storyteller receives a captured mission view, explores the Library and skills as useful, may commission independent bounded research, stages/rereads/revises Workdesk material, and submits one proposal. Provider rounds and tool calls are internal to this loop and may vary by task complexity.
 
-```text
-LIVING WORLD LOOP (deterministic, durable, potentially weeks)
-  admitted obligation or accepted activity boundary
-  -> admissibility, rules, frozen time and receipt
-  -> next meaningful wake
-  -> narration needed? if not, sleep with zero provider traffic
-  -> one bounded Storyteller operation when required
-  -> validated publication and new authorized choices
-  -> player, approved routine, silence, or next admitted event
+**Game loop.** Game Authority validates the submitted proposal against the captured Library/state roots, permissions, mechanics, current version fences and spending/operation identity. It either admits one coherent scene outcome or rejects/holds it. Publication, clock advancement, item/resource effects, accepted commitments and root selection belong here.
 
-STORYTELLER OPERATION (ephemeral model conversation, durable task state)
-  0. Capture world, actor, story, payer, branch, checkpoint, and canon root
-  1. Select one role recipe, the mandatory evidence, and the bounded budget
-  2. Pack before inference
-     inject the known present
-     offer related material as a short orientation with handles
-     leave unknown history out of the pack
-  3. One composition call for a normal scene
-     unknown history uses one intention-level query inside that same operation
-     the deterministic backend does the reads
-     mandatory evidence missing or too costly -> typed hold
-  4. Compose from the selected role recipe and the verified pack
-  5. Validate JSON, mechanics, consistency and provenance
-     structural repair only inside the captured budget
-     never rewrite a settled receipt
-  6. Publication fence -> passage, offer, notes, or report
-  7. Persist cost, outcomes, evidence-use and redacted telemetry
-  dispose the provider thread
-```
-
-No player-action API is a Storyteller tool. The model is not a privileged alternate user. Long stretches of accepted work call no model at all. A familiar exchange may use one round. Reentry after months, a contested identity, or a decisive encounter may use a few focused reads inside the same operation. Those reads are not a chain of mandatory models. An optional narrative director, if a future policy accepts it, revisits private goals without committing a world event.
-
-The Storyteller proposes narration, descriptive changes, and evidence dependencies. The engine commits the game-state checkpoint and the canon root. This loop adds no Game Economy service. Who holds a remote task, who may retry it, and who publishes is [Remote task custody](generation-and-publication.md#remote-task-custody). Process ownership stays in [Proposed service ownership](../platform/topology.md#proposed-service-ownership). The pack is [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19). Role recipes stay in [Task roles](prompts-and-tools.md#task-roles).
-
-Do not hold a SQL row lock while calling a provider. Short-lock capture of source and version is [concurrency](../engine/concurrency-and-recovery.md). This section defines what must be captured, not that every task path already does it.
-
-**Negative:** more money does not grant inventory, unauthorized decisions, or better odds. A disposable provider conversation is the default. An unfulfilled private plan is not an event, does not spawn an NPC, does not move items, and does not consume world time. UI must not claim fictional work continues because a model is processing.
-
-Recipes, task roles and stop states: [prompts and tools](prompts-and-tools.md). Publication fence: [generation and publication](generation-and-publication.md).
+A mission never gets more authority because the model asks for it. A skill, source document or assistant output cannot expand its grant. Conversely, the controller must not cripple a difficult mission merely because the old prototype used one shot or three rounds.
 
 ## Current prototype runtime
 
@@ -124,11 +90,11 @@ When a campaign exists, task context also carries a bounded `activitySituation`:
 
 ## Provider and budget boundary
 
-The OpenRouter HTTP adapter is constructed explicitly with a credential and opt-in. It accepts one pinned model/provider route, disallows route fallback and redirects, bounds output/response bytes and time, and has no internal retries. Its captured output protocol defaults to native JSON-Schema constrained decoding. OpenAI strict schemas require every declared object property, so the transport projection represents a domain-optional non-nullable property as required-but-nullable. After native-schema delivery, the adapter removes only those synthetic null placeholders by walking the original captured schema; naturally nullable values remain intact, and the unchanged domain validator still rejects wrong values, forbidden combinations and missing required data. This is transport normalization, not a default, repair or general coercion. A separate evaluation compatibility mode may request a plain JSON object when an endpoint's constrained decoder collapses values to schema-minimum placeholders; the exact same task schema remains captured and application validation remains strict, with no coercion or implicit repair. Provider policy also captures the response transport: buffered JSON remains the default, while bounded SSE is an explicit evaluation transport that requests final usage and reconstructs the same locally validated provider envelope from streamed content. This field is part of the exact reviewed packet, not an adapter-only toggle. Its transport is injectable for free tests. Once response headers exist, either transport retains a bounded valid `X-Generation-Id` even when reading or parsing the body fails; the resulting uncertain attempt can therefore carry the provider lookup identity into durable accounting. SSE improves the chance of receiving headers before a long generation finishes, but does not guarantee that a timeout occurs after headers. Missing usage, incomplete streams, ambiguous HTTP outcomes and timeouts retain the reservation and stop further paid admission. Known refusals or malformed output still settle their reported charge.
+Every provider invocation has durable attempt identity under one mission allowance. Unknown delivery, timeout and retry follow the existing custody rules: a sent-but-uncertain paid attempt is not silently rerun as free work. Child research invocations have distinct attempt/spend identities while charging against the parent mission's admitted allowance.
 
-Funding, run and attempt tables use integer USD microunits and decimal-string JSON boundaries. The captured task envelope is the non-renewable ceiling for a complete operation. Each dispatch reserves its exact packet and an explicit byte/input/generated/reasoning slice beneath that ceiling; the current one-shot executor defaults that slice to the full envelope. Usage windows reserve the same dispatch slice. Known intermediate settlement consumes the slice and leaves the operation open, known final settlement closes it, and uncertain dispatch retains liability and closes admission. A byte-based input upper bound includes request/schema framing; exceeding it holds the operation. Accounting takes a global admission lock, then account, run and attempt locks; these transactions never acquire a story lock. Independent story publication does not acquire accounting locks. Account/run caps and attempt limits are shared across concurrent work. Unexpected over-reservation charges stop all funding accounts. Reconciliation does not automatically clear a stop.
+The permanent contract deliberately does not select one provider, model, round count, token ceiling or assistant parallelism. Resource policy must be explicit, inspectable and enforceable, with enough reserve for final submission/recovery. The controller may choose a cheaper/simple route for easy work and a deeper route for genuinely difficult work only within the admitted policy.
 
-Normal startup and the local launcher use the offline source. Merely storing a key cannot enable inference. Production composition requires `STORYTELLER_LIVE_ENABLED=true`, a validated `STORYTELLER_EXECUTION_JSON`, a matching approved worker policy, a current dispatch-authority resolver and pre-provisioned funding/run records. The environment-only worker composition deliberately supplies no authority resolver yet, so even an otherwise configured provider task is released before transport. No account or allowance is fabricated at startup. There is currently no commercial entitlement selection, operator provisioning/reconciliation UI or selected live route. Before a deliberately authorized evaluation, connect current server-owned authority, verify the real allowance and current route/pricing and prepare the operator procedure; do not infer a balance from the original deposit. See [context and spending](./request-context-and-cost.md).
+No provider call is required merely to “prepare the desk” when deterministic authored sources already supply the needed orientation.
 
 ## Tools, rules and the remaining DM task
 
