@@ -1,6 +1,6 @@
 # WORK01 | First-class operational Tasks and one work selector
 
-**State:** Implementing (repository documentation and tooling edits landed; runtime tests NOT-RUN as of 2026-11-20)
+**State:** Implementing (2026-11-20). T02 removed duplicate `orphan-open-folder` findings; `pnpm repo:maintenance:test` **26/26 PASS**; `brief.mjs --self-test` PASS. `pnpm repo:maintenance --strict` still FAIL (8 findings: unclassified Markdown, one STORY03 broken relative link, missing design route). Packet not Done.
 **Kind:** implementation (repository tooling and substantive operating documentation)
 **Selection:** Not selected; this file records the owner-authorized taxonomy implementation and remaining local verification.
 **Authority:** [work taxonomy](../../../WORK-TAXONOMY.md), [single queue](../../../QUEUE.md), [Task catalog](../../../tasks/README.md), [Change standard](../../../../.agents/references/change-work-unit-standard.md).
@@ -16,7 +16,7 @@
 
 ## Verification and diagnostic negatives
 
-**NOT-RUN:** source edits and unit-test files are committed, but no full checkout with the required Node 24/pnpm setup and dependencies was available for an authoritative validation run during authoring. Before claiming Done, execute [TASKS.md T01](TASKS.md) in a full workspace and record actual commands/results.
+**T01/T02 (2026-11-20, HEAD `447742f6` plus this patch):** `pnpm repo:maintenance:test` **26/26 PASS** after collapsing two identical `orphan-open-folder` emitters in `scripts/repo-tools/maintenance-core.mjs`. `node scripts/repo-tools/brief.mjs --self-test` PASS. **Remaining before Done:** `pnpm repo:maintenance --strict` (8 errors: unclassified `CHATGPT.md`, two lab READMEs, design-system inventory, two dated Change-catalog notes; STORY03 broken `../../` TURN03 link; `work/designs/open/distributed-turn-poc` missing from the design index). Do not archive while `--strict` is red.
 
 Expected: `pnpm repo:maintenance:test`, `node scripts/repo-tools/brief.mjs --self-test`, `pnpm repo:maintenance --strict`, `pnpm repo:docs-health` and `pnpm wiki:health` as available in an authorized full checkout. One selected Change, one selected Task and none should all be valid. Diagnostics must reject a second selector, archived path, orphan `PLAN.md`, orphan Task, unindexed Task, terminal packet left in open and unknown link. All links must stay intact.
 

@@ -273,22 +273,6 @@ export function scanMaintenance(input) {
     ));
   }
 
-  // A tracked open folder without its front door is an error, even if no
-  // CHANGE.md exists to be discovered by the older packet-only scan.
-  const changeLeaves = new Set(
-    files.filter((rel) => /^work\/changes\/open\/[^/]+\//.test(rel))
-      .map((rel) => rel.split('/').slice(0, 4).join('/')),
-  );
-  for (const leaf of [...changeLeaves].sort()) {
-    if (!files.includes(`${leaf}/CHANGE.md`)) {
-      findings.push(finding(
-        'error', 'orphan-open-folder', leaf,
-        'Tracked open Change folder has no CHANGE.md front door.',
-        'Restore its Change packet or move completed material to the matching archive.',
-      ));
-    }
-  }
-
   for (const rel of markdown) {
     if (!/^work\/changes\/open\/[^/]+\/CHANGE\.md$/.test(rel)) continue;
     const leaf = rel.slice(0, rel.lastIndexOf('/'));

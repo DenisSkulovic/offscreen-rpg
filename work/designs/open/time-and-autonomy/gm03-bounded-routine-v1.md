@@ -1,6 +1,6 @@
 # GM03 | One real bounded routine, without an autoplay engine
 
-**Status:** selected **pilot recommendation** for owner review, 2026-11-15; no code authorized. Parent [temporal alternatives](./temporal-philosophy.md) still governs the long-term choice. [GM03 Change](../../../../work/changes/open/2026-11-13--gm-standing-life/CHANGE.md) remains Proposed. This is an **offline deterministic product experiment**, not the full standing-life product.
+**Status:** selected **pilot recommendation** for owner review, 2026-11-15; no code authorized. Parent [temporal alternatives](./temporal-philosophy.md) still governs the long-term choice. The quiet-watch [GM03 Change](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-standing-life/CHANGE.md) is Done. This file remains an **offline deterministic product experiment** for broader standing life, not a second implementation ticket.
 
 ## 1. Fixture decision and existing-rule constraint
 
