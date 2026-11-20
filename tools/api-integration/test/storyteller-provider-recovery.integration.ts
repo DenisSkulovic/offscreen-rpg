@@ -21,6 +21,7 @@ export async function checkProviderRecovery(
     database,
     ownerId,
     stopWorker,
+    restartWorker,
     drafts,
     stories,
     candidate,
@@ -785,6 +786,9 @@ export async function checkProviderRecovery(
       );
     },
   );
+  // Isolated provider-recovery does not need the worker; the profiled suite
+  // continues into worker-replay, which admits a timed campaignAction.
+  await restartWorker();
 }
 
 registerProfiledStoryteller(import.meta.url, 'provider settlement and recovery', checkProviderRecovery);

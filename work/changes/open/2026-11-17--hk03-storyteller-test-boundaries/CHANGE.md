@@ -4,7 +4,7 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Implementing (2026-11-20). The nested cases are split in source. Isolated `storyteller-browser-creation` is green (exit 0, 2/2) after Ask Gary publication and teardown fixes. The profiled suite has not been re-run; the 2026-11-19 33/30/3 receipt still stands for `test:storyteller`. The mechanical opening case is unchanged. This packet is not Done.
+**State:** Implementing (2026-11-20). Isolated `storyteller-browser-creation` is green (2/2). Isolated `storyteller-publication-context` is green (5/5) after `publicResolutionReason` maps SQL `publication_blocked:*` to public `publication_blocked`. Isolated preparation-hold **5/5** and worker-replay **2/2** PASS. After provider-recovery restores the worker, profiled worker-replay **PASS**. Latest profiled T01: **31/33** (mechanical opening `offer.nodes.length` 0). Isolated `storyteller-imported-start` **4/4** including that mechanical case **PASS**. Packet not Done.
 
 ## Cursor first-screen brief
 

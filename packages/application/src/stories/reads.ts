@@ -125,6 +125,23 @@ function publicResolutionEvidence(submission: unknown) {
     : ('committed' as const);
 }
 
+/** Stable public token for blocked publication; SQL keeps structured failure_code. */
+export function publicResolutionReason(
+  publicationFailure: string | null,
+  failureCode: string | null,
+): string | null {
+  if (publicationFailure !== null) {
+    if (
+      publicationFailure === 'publication_blocked' ||
+      publicationFailure.startsWith('publication_blocked:')
+    ) {
+      return 'publication_blocked';
+    }
+    return publicationFailure;
+  }
+  return failureCode;
+}
+
 function publicResolutionBlocker(
   state: 'pending' | 'running' | 'succeeded' | 'failed' | 'uncertain' | null,
   publication: 'pending' | 'published' | 'stale' | 'blocked' | null,
@@ -677,7 +694,10 @@ export function createStoryReads(
                       version: row.resolutionVersion ?? 0,
                       reason: provisional
                         ? null
-                        : (row.publicationFailure ?? row.failureCode),
+                        : publicResolutionReason(
+                            row.publicationFailure,
+                            row.failureCode,
+                          ),
                       blocker,
                       canRetry: provisional
                         ? false
