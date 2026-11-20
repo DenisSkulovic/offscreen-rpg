@@ -1,6 +1,6 @@
 # TURN02 | executable Kubernetes release source map and discovered blockers
 
-**Profile:** `RELEASE`. **Evidence:** inspected lean snapshot `584b5947516a8b99778ad0d5690fe957211c0acb` (2026-11-19), not a cluster run. Read relevant section only. This is the ChatGPT planner's prior investigation, not an instruction for Cursor to rediscover the whole stack. [Execution](EXECUTION.md) holds the chosen release route. [POC audit](../../../designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) records cross-cutting gates.
+**Profile:** `RELEASE`. **Evidence:** inspected lean snapshot `584b5947516a8b99778ad0d5690fe957211c0acb` (2026-11-19), not a cluster run. Read relevant section only. This is the ChatGPT planner's prior investigation, not an instruction for Cursor to rediscover the whole stack. [Execution](EXECUTION.md) holds the chosen release route. [POC audit](../../../../../designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) records cross-cutting gates.
 
 ## Real artifacts versus lab stand-ins
 

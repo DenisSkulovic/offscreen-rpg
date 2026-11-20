@@ -1,8 +1,8 @@
 # Work selection | single current-work authority
 
-**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is the sole selected Change**; finish its live release slice before the FORK01 handoff. BOOT03 is archived. DXK01 T01 preflight progress is recorded, but its packet heading does not override this selector. No implicit model spend or unsafe cluster authorization.
+**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is Done and archived.** Current work is none. BOOT03 is archived. Do not select FORK01 from this sentence. DXK01 T01 preflight progress is recorded, but its packet heading does not override this selector. No implicit model spend or unsafe cluster authorization.
 
-Current work: [TURN02](changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md)
+Current work: none
 
 This is the **one active selection pointer** for independently tracked work. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 
