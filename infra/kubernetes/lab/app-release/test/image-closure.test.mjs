@@ -78,6 +78,7 @@ import { existsSync } from 'node:fs';
 if (existsSync('content')) throw new Error('content tree must not ship in the GA image');
 readGameAuthorityConfig({
   GAME_AUTHORITY_SERVICE_TOKEN: 'smoke-service-token-01',
+  GAME_AUTHORITY_CONTROL_TOKEN: 'smoke-control-token-02',
 });
 console.log('ga-closure-ok');`,
   );

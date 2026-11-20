@@ -78,6 +78,11 @@ spec:
                 secretKeyRef:
                   name: game-runtime
                   key: game-authority-control-token
+            - name: GAME_AUTHORITY_EXECUTOR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: game-authority-executor-token
           readinessProbe:
             tcpSocket:
               port: http
