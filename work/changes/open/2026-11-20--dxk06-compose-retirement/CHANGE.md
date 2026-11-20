@@ -1,6 +1,6 @@
 # DXK06 | Delete Compose and remaining runtime-era compatibility artifacts
 
-**State:** Ready for bounded source implementation when named dependencies hold; not selected, not tested, not Done.
+**State:** In progress on `change/dxk06-compose-retirement`. T01 landed in the isolated worktree. T02 and T03 remain. Not Done.
 **Kind:** implementation. **Date:** 2026-11-20.
 **Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md) · [planner source map](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/SOURCE-MAP.md) · [parent Cursor waves](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/CURSOR-HANDOFF.md).
 **Inspected source:** attached 13bcd6cf + connected GitHub main through 8796daaa on 2026-11-20; unpushed Cursor changes NOT inspected.
@@ -40,4 +40,4 @@ Delete Compose and remaining runtime-era compatibility artifacts. **Own/edit:** 
 
 | Affected selected owner | Observed source SHA/files | Positive and negative exact commands/result | Docs/evidence reconciled | Remaining |
 | --- | --- | --- | --- | --- |
-| Not executed / planning packet | 13bcd6cf + GitHub main inspected, local HEAD pending | NOT-RUN; code not changed by this packet | Implementation plan only | All T01-T03 pending |
+| Compose entrypoints and current startup docs | worktree base 871b62b6; deleted compose.yaml and scripts/repo-tools/compose.mjs | `node --test scripts/repo-tools/root-command-surface.test.mjs scripts/repo-tools/check-dxk05-ci-guards.test.mjs scripts/repo-tools/ci-change-scope.test.mjs` 14/14. Negative: active tree has no docker compose boot path and no root infra:up script. Live kind NOT RUN. | local-development, deployment-and-compatibility, topology, data-and-persistence, telemetry, STATUS, .env.example | T02 mode rename and T03 remnant guard still open |

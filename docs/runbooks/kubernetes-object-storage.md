@@ -2,7 +2,7 @@
 
 Disposable S3-compatible object store on the [Kubernetes lab](kubernetes-lab.md) cluster. This is not the game, not Compose, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment).
 
-The game document adapter stays on [Selected document store](../technical/platform/data-and-persistence.md#selected-document-store). Compose keeps `adobe/s3mock:4.9.1` in `compose.yaml`. This procedure does not point the game, the API, or Compose at the lab Service.
+The game document adapter stays on [Selected document store](../technical/platform/data-and-persistence.md#selected-document-store). Local document storage uses the configured adapter in the lab release, not this disposable SeaweedFS slice. This procedure does not point the game or the API at the lab object-store Service.
 
 ## What this procedure is
 
@@ -24,7 +24,7 @@ SeaweedFS 4.54, published 2026-11-16, is the store. The image is `docker.io/chri
 
 Garage v2.5.0, published 2026-10-24, is also maintained and can run as one node. It is AGPL-3.0. Its single-node command does not replicate, and keeping data across a restart needs a config file that splits metadata and data directories. This lab uses SeaweedFS so the image pin stays Apache-2.0 and the volume is one directory. That choice does not say Garage cannot store an object.
 
-MinIO is not the lab store. `compose.yaml` already records that `minio/minio` pulls are blocked in this environment. Compose S3Mock stays the local adapter route until a later Change migrates it. This cluster store does not replace that container.
+MinIO is not the lab store. `minio/minio` pulls are blocked in this environment, so this lab uses SeaweedFS for object-storage exercises. This cluster store does not replace the game document adapter.
 
 ## What it must not do
 
@@ -32,7 +32,7 @@ MinIO is not the lab store. `compose.yaml` already records that `minio/minio` pu
 - Do not treat Pod replacement as a backup. The object is on the local-path volume. Deleting the kind cluster deletes the node disk that holds that volume. There is no backup job and no second replica.
 - Do not put an access key, a secret key, or a Secret manifest in Git. The smoke generates both keys, creates the Secret, and does not print them.
 - Do not use a NodePort or LoadBalancer Service. Only port 8333 is on the Service. `weed mini` also listens inside the Pod for its master, filer, and admin ports. Those ports are not published on the host.
-- Do not point the game, the API, or Compose at this Service. `OFFSCREEN_DOCUMENT_STORE` stays unchanged.
+- Do not point the game or the API at this Service. `OFFSCREEN_DOCUMENT_STORE` stays unchanged.
 - Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Recovery limit
