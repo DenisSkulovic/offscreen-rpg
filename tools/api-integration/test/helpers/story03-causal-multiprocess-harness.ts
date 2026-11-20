@@ -65,11 +65,19 @@ export type Story03CausalMultiprocessContext = {
   spawnExecutorOnly: () => Promise<void>;
   workerStderrTail: (role: 'relay' | 'control' | 'executor') => string;
   controlPublishProxy?: Story03ControlPublishProxyStats;
+  executorResultProxy?: Story03ExecutorResultProxyStats;
+  releaseHeldExecutorSaveResponse?: () => void;
+  dropHeldExecutorSaveResponse?: () => void;
 };
 
 export type Story03ControlPublishProxyStats = {
   droppedCompletedPublishResponseCount: number;
   publishPostCount: number;
+};
+
+export type Story03ExecutorResultProxyStats = {
+  heldCompletedSaveResponseCount: number;
+  savePutCount: number;
 };
 
 type PipedChild = {
@@ -171,6 +179,23 @@ function isStorytellerGenerationPublishPost(
     method === 'POST' &&
     /^\/internal\/v1\/storyteller-generations\/[^/]+\/publish$/.test(pathname)
   );
+}
+
+function isStorytellerGenerationResultPut(
+  method: string | undefined,
+  pathname: string,
+): boolean {
+  return (
+    method === 'PUT' &&
+    /^\/internal\/v1\/storyteller-generations\/[^/]+\/result$/.test(pathname)
+  );
+}
+
+function storytellerSaveResultGenerationId(pathname: string): string | undefined {
+  const match = pathname.match(
+    /^\/internal\/v1\/storyteller-generations\/([^/]+)\/result$/,
+  );
+  return match?.[1];
 }
 
 type ControlPublishProxy = {
@@ -300,6 +325,172 @@ async function startControlGameAuthorityPublishProxy(options: {
   };
 }
 
+type ExecutorResultProxy = {
+  origin: string;
+  stats: Story03ExecutorResultProxyStats;
+  releaseHeldSaveResponse: () => void;
+  dropHeldSaveResponse: () => void;
+  close: () => Promise<void>;
+};
+
+const EXECUTOR_RESULT_PROXY_MAX_HOLD_MS = 90_000;
+
+/**
+ * Loopback reverse proxy so the executor worker can exercise transport loss on
+ * an otherwise successful Game Authority save commit.
+ */
+async function startExecutorGameAuthorityResultProxy(options: {
+  upstreamOrigin: string;
+  holdFirstCompletedSaveResponseWhen?: (generationId: string) => boolean;
+}): Promise<ExecutorResultProxy> {
+  const upstream = new URL(options.upstreamOrigin);
+  const stats: Story03ExecutorResultProxyStats = {
+    heldCompletedSaveResponseCount: 0,
+    savePutCount: 0,
+  };
+  const heldGenerationIds = new Set<string>();
+  let heldResponse:
+    | {
+        clientResponse: ServerResponse;
+        statusCode: number;
+        headers: import('node:http').OutgoingHttpHeaders;
+        body: Buffer;
+        holdTimer: ReturnType<typeof setTimeout>;
+      }
+    | undefined;
+
+  const clearHeld = (drop: boolean) => {
+    if (!heldResponse) return;
+    clearTimeout(heldResponse.holdTimer);
+    if (drop) {
+      heldResponse.clientResponse.socket?.destroy();
+    } else if (!heldResponse.clientResponse.writableEnded) {
+      heldResponse.clientResponse.writeHead(
+        heldResponse.statusCode,
+        heldResponse.headers,
+      );
+      heldResponse.clientResponse.end(heldResponse.body);
+    }
+    heldResponse = undefined;
+  };
+
+  const server = createHttpServer(
+    (clientRequest: IncomingMessage, clientResponse: ServerResponse) => {
+      const requestUrl = new URL(
+        clientRequest.url ?? '/',
+        options.upstreamOrigin,
+      );
+      const isSave = isStorytellerGenerationResultPut(
+        clientRequest.method,
+        requestUrl.pathname,
+      );
+      const saveGenerationId = isSave
+        ? storytellerSaveResultGenerationId(requestUrl.pathname)
+        : undefined;
+
+      const proxyRequest = httpRequest(
+        {
+          hostname: upstream.hostname,
+          port: upstream.port,
+          path: clientRequest.url,
+          method: clientRequest.method,
+          headers: {
+            ...clientRequest.headers,
+            host: upstream.host,
+          },
+        },
+        (proxyResponse) => {
+          const bodyChunks: Buffer[] = [];
+          proxyResponse.on('data', (chunk: Buffer) => {
+            bodyChunks.push(chunk);
+          });
+          proxyResponse.on('end', () => {
+            const body = Buffer.concat(bodyChunks);
+            if (isSave && saveGenerationId) stats.savePutCount += 1;
+
+            let holdAck = false;
+            if (
+              isSave &&
+              saveGenerationId &&
+              !heldGenerationIds.has(saveGenerationId) &&
+              proxyResponse.statusCode === 200 &&
+              options.holdFirstCompletedSaveResponseWhen?.(saveGenerationId)
+            ) {
+              try {
+                const payload = JSON.parse(body.toString('utf8')) as {
+                  status?: string;
+                };
+                if (payload.status === 'saved') {
+                  holdAck = true;
+                  heldGenerationIds.add(saveGenerationId);
+                  stats.heldCompletedSaveResponseCount += 1;
+                }
+              } catch {
+                /* forward */
+              }
+            }
+
+            if (holdAck) {
+              const holdTimer = setTimeout(() => {
+                clearHeld(true);
+              }, EXECUTOR_RESULT_PROXY_MAX_HOLD_MS);
+              heldResponse = {
+                clientResponse,
+                statusCode: proxyResponse.statusCode ?? 502,
+                headers: proxyResponse.headers,
+                body,
+                holdTimer,
+              };
+              clientResponse.on('close', () => {
+                if (heldResponse?.clientResponse === clientResponse) {
+                  clearTimeout(holdTimer);
+                  heldResponse = undefined;
+                }
+              });
+              return;
+            }
+
+            clientResponse.writeHead(
+              proxyResponse.statusCode ?? 502,
+              proxyResponse.headers,
+            );
+            clientResponse.end(body);
+          });
+          proxyResponse.on('error', () => {
+            clientResponse.destroy();
+          });
+        },
+      );
+
+      proxyRequest.on('error', () => {
+        clientResponse.destroy();
+      });
+      clientRequest.on('error', () => {
+        proxyRequest.destroy();
+      });
+      clientRequest.pipe(proxyRequest);
+    },
+  );
+
+  const proxyPort = await reserveLoopbackPort();
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(proxyPort, '127.0.0.1', () => resolve());
+  });
+
+  return {
+    origin: `http://127.0.0.1:${proxyPort}`,
+    stats,
+    releaseHeldSaveResponse: () => clearHeld(false),
+    dropHeldSaveResponse: () => clearHeld(true),
+    close: () =>
+      new Promise<void>((resolve, reject) => {
+        clearHeld(true);
+        server.close((error) => (error ? reject(error) : resolve()));
+      }),
+  };
+}
+
 /**
  * Nest + Game Authority + relay/control/(optional) executor as separate OS
  * processes. Document store tier: local filesystem under `documentRoot`.
@@ -314,6 +505,9 @@ export async function withStory03CausalMultiprocessHarness(
     spawnExecutor?: boolean;
     controlPublishProxy?: {
       dropFirstCompletedPublishResponseWhen?: (generationId: string) => boolean;
+    };
+    executorResultProxy?: {
+      holdFirstCompletedSaveResponseWhen?: (generationId: string) => boolean;
     };
   },
 ) {
@@ -387,6 +581,22 @@ export async function withStory03CausalMultiprocessHarness(
   const controlGameAuthorityOrigin =
     controlPublishProxy?.origin ?? gameAuthorityOrigin;
 
+  let executorResultProxy: ExecutorResultProxy | undefined;
+  if (options.executorResultProxy && gameAuthorityOrigin) {
+    const proxyOptions: Parameters<
+      typeof startExecutorGameAuthorityResultProxy
+    >[0] = { upstreamOrigin: gameAuthorityOrigin };
+    if (options.executorResultProxy.holdFirstCompletedSaveResponseWhen) {
+      proxyOptions.holdFirstCompletedSaveResponseWhen =
+        options.executorResultProxy.holdFirstCompletedSaveResponseWhen;
+    }
+    executorResultProxy = await startExecutorGameAuthorityResultProxy(
+      proxyOptions,
+    );
+  }
+  const executorGameAuthorityOrigin =
+    executorResultProxy?.origin ?? gameAuthorityOrigin;
+
   process.env['GAME_AUTHORITY_MODE'] = 'distributed';
   process.env['GAME_AUTHORITY_ORIGIN'] = gameAuthorityOrigin;
   process.env['GAME_AUTHORITY_SERVICE_TOKEN'] = STORY03_CAUSAL_GA_SERVICE_TOKEN;
@@ -447,7 +657,7 @@ export async function withStory03CausalMultiprocessHarness(
       executor = spawnPipedChild('dist/src/bootstrap/executor-main.js', {
         TEMPORAL_ADDRESS: address,
         TEMPORAL_NAMESPACE: namespace,
-        GAME_AUTHORITY_ORIGIN: gameAuthorityOrigin,
+        GAME_AUTHORITY_ORIGIN: executorGameAuthorityOrigin,
         GAME_AUTHORITY_EXECUTOR_TOKEN: STORY03_CAUSAL_GA_EXECUTOR_TOKEN,
       });
     }
@@ -481,7 +691,7 @@ export async function withStory03CausalMultiprocessHarness(
     executor = spawnPipedChild('dist/src/bootstrap/executor-main.js', {
       TEMPORAL_ADDRESS: address,
       TEMPORAL_NAMESPACE: namespace,
-      GAME_AUTHORITY_ORIGIN: gameAuthorityOrigin,
+      GAME_AUTHORITY_ORIGIN: executorGameAuthorityOrigin,
       GAME_AUTHORITY_EXECUTOR_TOKEN: STORY03_CAUSAL_GA_EXECUTOR_TOKEN,
     });
     await delay(300);
@@ -526,12 +736,24 @@ export async function withStory03CausalMultiprocessHarness(
       ...(controlPublishProxy
         ? { controlPublishProxy: controlPublishProxy.stats }
         : {}),
+      ...(executorResultProxy
+        ? {
+            executorResultProxy: executorResultProxy.stats,
+            releaseHeldExecutorSaveResponse:
+              executorResultProxy.releaseHeldSaveResponse,
+            dropHeldExecutorSaveResponse:
+              executorResultProxy.dropHeldSaveResponse,
+          }
+        : {}),
     });
   } finally {
     await release([
       stopWorkers,
       async () => {
         if (controlPublishProxy) await controlPublishProxy.close();
+      },
+      async () => {
+        if (executorResultProxy) await executorResultProxy.close();
       },
       killGameAuthority,
       async () => {

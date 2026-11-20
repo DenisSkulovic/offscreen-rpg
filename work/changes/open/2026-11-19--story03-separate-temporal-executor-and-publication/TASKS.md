@@ -42,6 +42,10 @@
 
 **Receipt:** `packages/application/test/story03-stale-saved-publish.test.mjs` **2/2 PASS** on a disposable sandbox database. `publishSavedGeneration` returns `{ status: 'stale' }` when `narrativeRevision` is behind `story.revision`, keeps the saved output, and does not add a passage. A matching revision is not stale. No edit to `publication.ts`. No Temporal. No provider call.
 
+### T12 | Kill the executor after the saved result | LANDED (2026-11-20)
+
+**Receipt:** executor save-response proxy in `story03-causal-multiprocess-harness.ts`. It forwards `PUT .../result` and, for the continuation only, holds the `{ status: 'saved' }` response. The test kills the executor while the story is revision 1, drops that response, and starts the executor again. `pnpm --filter @offscreen/api-integration test:story03-t09:causal` **7/7 PASS** (~46s) on `offscreen_auth_test`. Scene 2, sequences `[1, 2]`, one attempt, publication `published`. No production pause flag. No provider call. Two executor Pods, browser, and cold kind remain TURN03.
+
 ---
 
 

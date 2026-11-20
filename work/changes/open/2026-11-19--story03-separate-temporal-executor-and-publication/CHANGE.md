@@ -158,13 +158,27 @@ A lagging saved continuation returns `{ status: 'stale' }`, keeps the advanced s
 
 **Negative reading:** this is one database process. It does not replace the multi-process campaign, and it does not close TURN03.
 
+## T12 evidence | executor killed after the result is saved (`change/story03-local-negatives`, 2026-11-20)
+
+**Task:** kill the executor after Game Authority has stored the continuation result and before that execute activity returns. **Depth:** PATCH. **Change state:** still Proposed — **not Done**. **Live gate:** `STORYTELLER_LIVE_ENABLED=false`. No paid provider send.
+
+A test loopback proxy holds the executor's save response after Game Authority returns `{ status: 'saved' }`. The test sees that saved result while the story is still revision 1, kills the executor, drops the held response, and starts the executor again.
+
+| Suite | Result |
+| --- | --- |
+| `pnpm --filter @offscreen/api-integration test:story03-t09:causal` on `offscreen_auth_test` and Compose Temporal | **7/7 PASS** (~46s) |
+
+The new case reaches scene 2 “Gary’s promise”, sequences `[1, 2]`, one continuation attempt, and publication `published`.
+
+**Negative reading:** this is local OS processes, not two executor Pods, not a browser session, and not a cold kind deploy. The hold lives in the test proxy.
+
 ## Reconciliation ledger (fill before closure)
 
 | Authority | Planned delta / no-op | Source SHA/diff | Positive / negative proof | Link/status |
 | --- | --- | --- | --- | --- |
 | Product | unchanged | `ec73a535` | No gameplay or Storyteller product rule edit in this slice | unchanged / N/A |
-| Storyteller input + attempt custody | wake topic copied from the first Storyteller notice | parent `1a0afb80` plus T08 diff; freeze **6/6**, selector **2/2**, dispatch **6/6** | **Positive:** distributed admission stays distributed after the flag is cleared; a second notice uses that topic. **Negative:** legacy admission stays legacy after the flag is set; missing notice throws; inconsistent topics throw and are not rewritten. Executor-kill e2e remains **NOT-RUN** | T08 landed; Change **not Done** |
+| Storyteller input + attempt custody | wake topic copied from the first Storyteller notice | parent `1a0afb80` plus T08 diff; T12 causal kill-after-save | **Positive:** distributed admission stays distributed after the flag is cleared; a second notice uses that topic. T12 kills the executor after the saved result and the retry keeps one attempt. **Negative:** legacy admission stays legacy after the flag is set; missing notice throws; inconsistent topics throw and are not rewritten. Two executor Pods remain **NOT-RUN** | T08 and T12 landed; Change **not Done** |
 | Game Authority publication + canon | control activity is HTTP-only; GA remains the SQL publisher | T07 parent `44272d9a`; T11 sandbox test, no publication SQL edit | **Positive:** one published row after saved scripted result through GA HTTP. **Negative:** executor/story tokens **401**; duplicate publish `already_published`; control `DATABASE_URL` refused; GA-down activity is retryable and has no local publisher import. T11 **2/2**: lagging revision returns `stale` and adds no passage. Scene-checkpoint GET and the old publication-context suite remain **NOT-RUN** | T07 and T11 landed; Change **not Done** |
-| Workflow / runtime / docs | local causal HTTP turn recorded; default `storytellerV1` unchanged | T09 parent `0834db2e`; T10 harness proxy on `change/story03-local-negatives`; generation doc, architecture chapter 2, STATUS | **Positive:** causal suite **6/6**, including one dropped continuation publish acknowledgement and one published scene. **Negative:** browser, SSE, and cold kind **NOT-RUN**; Change stays **Proposed** | T09 and T10 landed; not Done |
+| Workflow / runtime / docs | local causal HTTP turn recorded; default `storytellerV1` unchanged | T09 parent `0834db2e`; T10 harness proxy on `change/story03-local-negatives`; generation doc, architecture chapter 2, STATUS | **Positive:** causal suite **7/7**, including one dropped continuation publish acknowledgement and one kill after the saved result, each ending in one published scene. **Negative:** browser, SSE, and cold kind **NOT-RUN**; Change stays **Proposed** | T09, T10, and T12 landed; not Done |
 
 Run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, repair inbound links and archive actual outcome. No unverified Done.
