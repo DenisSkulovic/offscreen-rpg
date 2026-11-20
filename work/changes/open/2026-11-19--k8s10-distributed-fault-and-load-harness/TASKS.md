@@ -4,7 +4,7 @@
 
 **Guiding shape:** don't assign “implement chaos engineering” as one task. One small tested pure function / command / fault first. Status: `PLANNER-READY` means the recipe is described, not that code is present or Change selected. `BLOCKED-BY-POC` means no honest live game-chaos proof before TURN02/TURN03.
 
-## T01 | Pure target selector and refusal reasons | PLANNER-READY, EARLY
+## T01 | Pure target selector and refusal reasons | VERIFY PASS (unit)
 
 **MODEL=Composer 2.5 Standard | DEPTH=PATCH | no cluster or docker access.**
 
@@ -12,9 +12,11 @@
 
 **Algorithm:** implement pure `selectTarget({pods,releaseOwners,seed,excludedUids})` operating on parsed Kubernetes Pod/owner metadata. Eligible iff namespace in exact selected release allowlist, owner kind Deployment with pinned UID/name and image digest, ready and not terminating, explicit `offscreen.rpg/chaos-eligible=true` set on the **owned app release**, no skeleton/fixture/system label and not a data/stateful workload. Stable seed yields deterministic index among **sorted eligible candidates**; return `{status:'selected',podUid,...}` or structured refusal, never fall back to all Pods. Selector must be side-effect-free and must not shell out to kubectl.
 
-**Tests:** synthetic Pod JSON selection deterministic; irrelevant Pods filtered. **Negative:** changed owner UID, missing eligibility marker, target in `lab-postgres`, `lab-objects`, `messaging`, `temporal` or namespace not explicitly allowlisted → refused. **Stop:** real app label conventions not yet ratified; keep pure adapter input contract, don't assume synthetic Pods are eligible. **Receipt:** exact test runner, no cluster touched.
+**Tests:** synthetic Pod JSON selection deterministic; irrelevant Pods filtered. **Negative:** changed owner UID, missing eligibility marker, target in `lab-postgres`, `lab-objects`, `messaging`, `temporal` or namespace not explicitly allowlisted → refused. **Stop:** real app label conventions not yet ratified; keep pure adapter input contract, don't assume synthetic Pods are eligible.
 
-## T02 | Read-only cluster preflight + plan-only CLI | PLANNER-READY, EARLY
+**Receipt (2026-11-20, HEAD `ec73a535`):** `node --test infra/kubernetes/lab/chaos/test/selector.test.mjs infra/kubernetes/lab/chaos/test/preflight.test.mjs` → **27/27 PASS** (combined T01+T02 unit gate). **Negative (selector refuses):** ineligible Pods, changed owner UID, missing eligibility marker, disallowed namespaces. No cluster touched. Full packet receipt: [CHANGE.md](CHANGE.md) (T01–T02 section).
+
+## T02 | Read-only cluster preflight + plan-only CLI | VERIFY PASS (unit), LIVE NOT-RUN
 
 **MODEL=Composer 2.5 Standard | DEPTH=PATCH | read-only commands only.**
 
@@ -22,13 +24,17 @@
 
 **Algorithm:** `plan` mode by default takes exact `--seed`, `--release-ref`, `--max-events` and safe runId, calls mocked kubectl subprocess adapter with **explicit** `--context kind-offscreen-lab`, ensures current context and `kind get clusters` name/cluster UID and caller's selected release provenance, snapshots namespace and Pod/owner UIDs, validates one stable target via T01, prints sanitized plan JSON. No `delete`, `exec`, `apply`, `scale`, `kind delete` or image build in plan mode. Needs a live default `--dry-run` with no side effects. `--execute` is rejected until T04 is implemented. Never auto-switch context or create/delete a cluster. **Positive:** fixture cluster yields plan with one eligible app Pod UID. **Negative:** wrong cluster/context/unknown release/low-memory/conflicting run refuses and fake kubectl spy has **zero mutating invocations**. **Stop:** cannot identify cluster UID or selected real image digest from read-only manifest; do not guess ownership.
 
-## T03 | Zero-provider scripted game oracle and optional fixture latency | PLANNER-READY FOR UNIT, LIVE BLOCKED-BY-POC
+**Receipt (2026-11-20, HEAD `ec73a535`):** same combined command as T01 → **27/27 PASS**. **Negative (preflight refuses):** wrong-cluster/context refusals; mocked kubectl spy has zero mutating invocations. Live kind `plan` against a real cluster **NOT-RUN** (unit/mocked tier only). T04 remains **BLOCKED-BY-POC**. Full packet receipt: [CHANGE.md](CHANGE.md) (T01–T02 section).
 
-**MODEL=Composer Standard | DEPTH=PATCH.** Requires same real scripted source and compatible TURN03 fixture as existing source; live cluster only after TURN03 passed.
+## T03 | Zero-provider scripted game oracle and optional fixture latency | VERIFY PASS (unit), LIVE BLOCKED-BY-POC
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH then VERIFY.** Requires same real scripted source and compatible TURN03 fixture as existing source; live cluster only after TURN03 passed.
 
 **May create:** `infra/kubernetes/lab/chaos/{oracle,scripted-driver}.mjs` and `test/{oracle,scripted-driver}.test.mjs`; one approved test-only fixture adapter if current injection seam requires it, **not** normal API endpoints. **Read:** `packages/storyteller/src/fixtures/index.ts:scriptedStorytellerResult`, `packages/application/src/storyteller/config.ts:readStorytellerExecution`, `tools/api-integration/test/storyteller-imported-start.integration.ts`, `tools/api-integration/test/storyteller-publication-context.integration.ts`, `packages/application/src/stories/scene-checkpoint.ts`.
 
 **Algorithm:** use supported Storyteller-kind opening with `execution.mode=scripted`; generate normal and consequence results by the real fixture/validator; freeze chosen legal player option and operationId, drive actual public route through authenticated **test** owner and re-fetch committed scene. Represent verification as `readOnlyOracle(assertions)`: exact SQL current revision/operation/passages + S3 checkpoint/root + GET view version; check no duplicate, no parent-future fork leakage; inject forbiddenProvider spy that throws before network if invoked; verify `modelDispatchAttempts=0` and no billable usage/Secret. Test adapters allow fake HTTP/DB/Store inputs but **do not certify distributed gameplay**. **Negative:** duplicate passage/invalid root/provider spy invocation makes oracle FAIL. **Stop:** no test identity or real GA start path yet; keep unit-only and mark live NOT-RUN, do not fake signed browser cookie.
+
+**Receipt (2026-11-20, HEAD `ec73a535`):** `node --test infra/kubernetes/lab/chaos/test/oracle.test.mjs infra/kubernetes/lab/chaos/test/scripted-driver.test.mjs` → **10/10 PASS**. **Negative (oracle refuses):** `duplicate_passage_for_operation`, `missing_canon_root_object`, `forbidden_provider_invoked`, `branch_leak_parent_future`. Live game-chaos on cluster **NOT-RUN** / **BLOCKED-BY-POC** (TURN02/TURN03 real app POC). Change **not Done**; no distributed game-chaos PASS claimed. Full packet receipt: [CHANGE.md](CHANGE.md) (T03 section).
 
 ## T04 | One allowlisted Pod deletion and recovery round | BLOCKED-BY-POC
 

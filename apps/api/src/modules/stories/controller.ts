@@ -484,7 +484,7 @@ export class StoriesController {
       if (!parsed.success) {
         throw new StoryError('invalid');
       }
-      return this.stories.startFromCandidate({
+      return this.seam.startFromCandidate({
         ownerId,
         storyId: id,
         candidateId: parsed.data.candidateId,

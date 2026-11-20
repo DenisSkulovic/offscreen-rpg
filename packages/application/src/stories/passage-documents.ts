@@ -88,11 +88,12 @@ const ruleReferenceDocumentSchema = z.strictObject({
   rules: rulePackageReferenceSchema,
 });
 
-const startReferenceDocumentSchema = z.strictObject({
+const startReferenceDocumentSchema = z.object({
   version: z.literal(1),
   startPackageId: z.uuid(),
   rootHash: z.string(),
   revision: z.number().int().positive(),
+  entries: z.array(z.unknown()).optional(),
 });
 
 type CheckpointPinReader = Pick<

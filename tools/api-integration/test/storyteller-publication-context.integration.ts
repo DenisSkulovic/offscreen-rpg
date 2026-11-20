@@ -268,4 +268,11 @@ export async function checkPublicationContext(
   );
 }
 
-registerProfiledStoryteller(import.meta.url, 'publication context and recovery', checkPublicationContext);
+registerProfiledStoryteller(
+  import.meta.url,
+  'publication context and recovery',
+  checkPublicationContext,
+  {
+    distributedLive: process.env['STORYTELLER_DISTRIBUTED_V1'] === 'true',
+  },
+);

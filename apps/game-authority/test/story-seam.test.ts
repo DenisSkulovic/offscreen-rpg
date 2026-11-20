@@ -33,6 +33,9 @@ function receiptSeam() {
       }
       return { storyId: args.storyId, view: 'snapshot' };
     },
+    async startFromCandidate() {
+      throw new StoryError('not_found');
+    },
     async admitResolution(args: {
       ownerId: string;
       storyId: string;
@@ -163,19 +166,6 @@ test('forged credential, wrong owner, and a duplicate operation id', async () =>
       { token, actor: ownerId },
     );
     assert.equal(playerRoute.status, 404);
-    const startRoute = await call(
-      server.origin,
-      `/internal/v1/stories/${storyId}/start`,
-      {
-        method: 'PUT',
-        token,
-        actor: ownerId,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ candidateId: storyId, expectedDraftRevision: 1 }),
-      },
-    );
-    assert.equal(startRoute.status, 404);
-
     const ownerInBody = await call(
       server.origin,
       `/internal/v1/stories/${storyId}/resolutions/${operationId}`,
@@ -201,6 +191,9 @@ test('a slow admission becomes unavailable and does not invent a receipt', async
     timeoutMs: 30,
     seam: {
       async read() {
+        throw new StoryError('not_found');
+      },
+      async startFromCandidate() {
         throw new StoryError('not_found');
       },
       admitResolution() {

@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** verify one already-landed GA read/resolution seam; BOOT03 expands separately. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
 
-**State:** Implemented on `change/dist03-game-authority` (2026-11-19). One story seam. Not archived.  
+**State:** Implemented on `change/dist03-game-authority` (2026-11-19). One story seam (snapshot read + scripted resolution only). Not archived. **T02 scope freeze (2026-11-20):** receipt recorded; **Done eligibility: no** — see [TASKS.md T02](TASKS.md#t02--freeze-explicit-scope-and-reconcile-done-eligibility--doc-complete-change-not-done).  
 **Kind:** implementation  
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  
 **Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1 candidate contract](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
@@ -49,7 +49,7 @@ A user-approved Cursor orchestrator may distribute truly disjoint Ready Changes 
 | --- | --- | --- |
 | Product | unchanged because the playable game stays text-first and world-neutral, with no new economy, inventory, or player rule | No product page edit |
 | Technical | changed: docs/technical/platform/topology.md#distributed-learning-target now records one local Game Authority process for the owned snapshot read and one scripted resolution. Compose remains the writer. The outbox wake stays a direct Temporal call | Provider-free seam tests. PostgreSQL was not opened |
-| Code | changed: apps/game-authority/src/application.ts calls createStoryApplication for that seam, and apps/api/src/modules/stories/controller.ts calls it only when GAME_AUTHORITY_MODE=distributed. Negative: the Nest story writer stays idle for that operation | @offscreen/game-authority 3 passed. API seam tests 2 passed |
+| Code | changed: apps/game-authority/src/application.ts calls createStoryApplication for that seam, and apps/api/src/modules/stories/controller.ts calls it only when GAME_AUTHORITY_MODE=distributed. Negative: the Nest story writer stays idle for that operation. Start, fork, and publication are out of scope | Provider-free at HEAD `ec73a535`: GA in-process 3/3; Nest `game-authority-seam.test.mjs` 6/6 (includes resolution no-fallback when GA down). Combined start-client mocks 8/8 are BOOT03 prep. Two-process disposable-DB tier: NOT-RUN (Change stays open) |
 | Related | changed: the execution, data, HTTP, runbook, and STATUS headings now name that one process | python3 scripts/check_docs.py and the change guard |
 
 ## Reconciliation ledger (affected-claim ledger)
@@ -103,4 +103,6 @@ Declared paths, each present because this seam needs that file:
 - docs/runbooks/local-development.md because the seam stays off Compose unless the flag is set
 - work/changes/README.md because the DIST03 row records this seam
 
-**Closure:** Reconcile the ledger, archive Done/Cancelled per established workflow, repair inbound links, stop. No automatic successor selection.
+**Closure:** Reconcile the ledger, archive Done/Cancelled per established workflow, repair inbound links, stop. No automatic successor selection. **Do not archive while:** (1) optional two-process disposable-DB proof from T01 remains **NOT-RUN**; (2) working-tree start/publication routes would be misread as DIST03 completion — those belong to BOOT03/STORY03. **T01 receipt (2026-11-20, HEAD `ec73a535`):** in-process resolution-path negative “GA unavailable → no Nest local fallback” is **PASS** (`apps/api/test/game-authority-seam.test.mjs` **6/6**; production already fail-closed).
+
+**Successor ownership (frozen, not DIST03):** [BOOT03](../2026-11-19--boot03-game-authority-start-admission/CHANGE.md) for start admission; [DATA06](../2026-11-19--data06-fork-scoped-memory-context-minimum/CHANGE.md) for fork on Game Authority; [STORY03](../2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md) for publication and executor split.

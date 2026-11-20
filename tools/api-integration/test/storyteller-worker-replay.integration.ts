@@ -258,4 +258,11 @@ export async function checkWorkerReplay(
   );
 }
 
-registerProfiledStoryteller(import.meta.url, 'worker restart and activity replay', checkWorkerReplay);
+registerProfiledStoryteller(
+  import.meta.url,
+  'worker restart and activity replay',
+  checkWorkerReplay,
+  {
+    distributedLive: process.env['STORYTELLER_DISTRIBUTED_V1'] === 'true',
+  },
+);

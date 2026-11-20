@@ -1,20 +1,20 @@
 {
   "sdk": "1.24.0",
-  "recordedAt": "2026-11-13T19:19:04.175Z",
+  "recordedAt": "2026-11-19T23:51:55.625Z",
   "workflows": [
     {
       "workflowType": "campaignActionV1",
-      "workflowId": "eng06-action/cbf811be-9027-444b-8610-205beb7b37ea",
+      "workflowId": "eng06-action/9ed1dcb4-b25b-4d53-ac67-fdd1102fee1f",
       "eventCount": 22
     },
     {
       "workflowType": "campaignActivityV1",
-      "workflowId": "eng06-activity/e2361dc0-892b-46f8-92a4-177a9a3e5a5a",
+      "workflowId": "eng06-activity/17732213-145e-404f-a7ae-316e7982c147",
       "eventCount": 11
     },
     {
       "workflowType": "storyIntervalV1",
-      "workflowId": "eng06-interval/c48c41d2-dbe2-4022-beee-424b8f414ccc",
+      "workflowId": "eng06-interval/588d2542-7d45-485b-b9f0-33ef0981673a",
       "eventCount": 21
     }
   ]

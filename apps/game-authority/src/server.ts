@@ -8,13 +8,47 @@ import {
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
 } from '@offscreen/contracts/game-authority';
-import type { GameAuthoritySeam } from './application.js';
+import { startStorySchema } from '@offscreen/contracts/stories';
+import {
+  parseStorytellerTaskCustodyClaimRequest,
+  parseStorytellerTaskCustodySaveResultRequest,
+  routeStorytellerTaskCustody,
+  storytellerTaskCustodyClaimResponseSchema,
+  storytellerTaskCustodyContractVersion,
+  storytellerTaskCustodyFetchResponseSchema,
+  storytellerTaskCustodyHttpErrorSchema,
+  storytellerTaskCustodyReadSavedResponseSchema,
+  storytellerTaskCustodySaveResultResponseSchema,
+  storytellerTaskCustodyVersionHeader,
+} from '@offscreen/contracts/storyteller-task-custody';
+import {
+  storytellerGenerationPublishResponseSchema,
+} from '@offscreen/contracts/storyteller-task-custody';
+import type {
+  GameAuthoritySeam,
+  StorytellerPublicationSeam,
+  StorytellerTaskCustodySeam,
+} from './application.js';
 
 const BODY_LIMIT = 64 * 1024;
 
 export type GameAuthorityServer = {
   origin: string;
   close(): Promise<void>;
+};
+
+type AuthRole = 'story' | 'executor' | 'control' | 'none';
+
+export type GameAuthorityServerOptions = {
+  seam: GameAuthoritySeam;
+  token: string;
+  executorToken?: string;
+  controlToken?: string;
+  custody?: StorytellerTaskCustodySeam;
+  publication?: StorytellerPublicationSeam;
+  timeoutMs: number;
+  host?: string;
+  port?: number;
 };
 
 function tokenMatches(presented: string, expected: string) {
@@ -28,25 +62,44 @@ function header(request: IncomingMessage, name: string) {
   return typeof value === 'string' ? value : undefined;
 }
 
-function authorized(request: IncomingMessage, token: string) {
+function authorizedRole(
+  request: IncomingMessage,
+  tokens: { story: string; executor?: string; control?: string },
+): AuthRole {
   const presented = header(request, 'authorization');
-  if (!presented?.startsWith('Bearer ')) return false;
-  return tokenMatches(presented.slice('Bearer '.length), token);
+  if (!presented?.startsWith('Bearer ')) return 'none';
+  const credential = presented.slice('Bearer '.length);
+  if (tokenMatches(credential, tokens.story)) return 'story';
+  if (tokens.control && tokenMatches(credential, tokens.control)) {
+    return 'control';
+  }
+  if (tokens.executor && tokenMatches(credential, tokens.executor)) {
+    return 'executor';
+  }
+  return 'none';
 }
 
 function send(
   response: ServerResponse,
   status: number,
   body: unknown,
+  extraHeaders?: Record<string, string>,
 ) {
   const payload = JSON.stringify(body);
   response.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
     'x-offscreen-game-authority-version': gameAuthoritySeamVersion,
+    ...extraHeaders,
     'content-length': Buffer.byteLength(payload),
   });
   response.end(payload);
+}
+
+function sendCustody(response: ServerResponse, status: number, body: unknown) {
+  send(response, status, body, {
+    [storytellerTaskCustodyVersionHeader]: storytellerTaskCustodyContractVersion,
+  });
 }
 
 function sendError(
@@ -65,7 +118,23 @@ function sendError(
   );
 }
 
-async function readBody(request: IncomingMessage) {
+function sendCustodyHttpError(
+  response: ServerResponse,
+  status: number,
+  code: 'invalid' | 'not_found' | 'conflict' | 'unavailable' | 'unauthorized',
+  reason?: string,
+) {
+  sendCustody(
+    response,
+    status,
+    storytellerTaskCustodyHttpErrorSchema.parse({
+      code,
+      ...(reason ? { reason } : {}),
+    }),
+  );
+}
+
+async function readRawBody(request: IncomingMessage) {
   const chunks: Buffer[] = [];
   let total = 0;
   for await (const chunk of request) {
@@ -77,8 +146,14 @@ async function readBody(request: IncomingMessage) {
     chunks.push(buffer);
   }
   if (total === 0) return undefined;
+  return Buffer.concat(chunks);
+}
+
+async function readBody(request: IncomingMessage) {
+  const raw = await readRawBody(request);
+  if (raw === undefined) return undefined;
   try {
-    return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown;
+    return JSON.parse(raw.toString('utf8')) as unknown;
   } catch {
     throw new StoryError('invalid');
   }
@@ -87,6 +162,7 @@ async function readBody(request: IncomingMessage) {
 type Route =
   | { kind: 'health' }
   | { kind: 'snapshot'; storyId: string }
+  | { kind: 'start'; storyId: string }
   | { kind: 'resolution'; storyId: string; operationId: string }
   | { kind: 'invalid' }
   | { kind: 'absent' };
@@ -103,6 +179,12 @@ function routeFor(method: string, pathname: string): Route {
     const storyId = gameAuthorityStoryIdSchema.safeParse(parts[3]);
     return storyId.success
       ? { kind: 'snapshot', storyId: storyId.data }
+      : { kind: 'invalid' };
+  }
+  if (parts.length === 5 && parts[4] === 'start' && method === 'PUT') {
+    const storyId = gameAuthorityStoryIdSchema.safeParse(parts[3]);
+    return storyId.success
+      ? { kind: 'start', storyId: storyId.data }
       : { kind: 'invalid' };
   }
   if (
@@ -142,13 +224,9 @@ async function withTimeout<T>(work: Promise<T>, timeoutMs: number) {
   }
 }
 
-export function startGameAuthorityServer(options: {
-  seam: GameAuthoritySeam;
-  token: string;
-  timeoutMs: number;
-  host?: string;
-  port?: number;
-}): Promise<GameAuthorityServer> {
+export function startGameAuthorityServer(
+  options: GameAuthorityServerOptions,
+): Promise<GameAuthorityServer> {
   const host = options.host ?? '127.0.0.1';
   const port = options.port ?? 0;
   const server = createServer((request, response) => {
@@ -180,27 +258,220 @@ export function startGameAuthorityServer(options: {
   });
 }
 
+async function handlePublish(
+  request: IncomingMessage,
+  response: ServerResponse,
+  route: { generationId: string },
+  options: GameAuthorityServerOptions,
+) {
+  const publication = options.publication;
+  if (!publication) {
+    sendCustodyHttpError(response, 503, 'unavailable');
+    return;
+  }
+  try {
+    const raw = await readRawBody(request);
+    if (raw !== undefined && raw.length > 0) {
+      try {
+        const parsed = JSON.parse(raw.toString('utf8')) as unknown;
+        if (
+          parsed !== null &&
+          typeof parsed === 'object' &&
+          !Array.isArray(parsed) &&
+          Object.keys(parsed as Record<string, unknown>).length > 0
+        ) {
+          sendCustodyHttpError(response, 400, 'invalid');
+          return;
+        }
+      } catch {
+        sendCustodyHttpError(response, 400, 'invalid');
+        return;
+      }
+    }
+    const outcome = await withTimeout(
+      publication.publishSavedGeneration(route.generationId),
+      options.timeoutMs,
+    );
+    if (
+      outcome.status === 'refused' &&
+      outcome.reason === 'unknown-generation'
+    ) {
+      sendCustodyHttpError(response, 404, 'not_found');
+      return;
+    }
+    sendCustody(
+      response,
+      200,
+      storytellerGenerationPublishResponseSchema.parse(outcome),
+    );
+  } catch (error) {
+    if (error instanceof StoryError) {
+      sendCustodyHttpError(
+        response,
+        { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+          error.code
+        ],
+        error.code,
+        error.reason,
+      );
+      return;
+    }
+    sendCustodyHttpError(response, 503, 'unavailable');
+  }
+}
+
+async function handleCustody(
+  request: IncomingMessage,
+  response: ServerResponse,
+  route: Exclude<
+    ReturnType<typeof routeStorytellerTaskCustody>,
+    { kind: 'absent' | 'invalid' | 'publish' }
+  >,
+  options: GameAuthorityServerOptions,
+) {
+  const custody = options.custody;
+  if (!custody) {
+    sendCustodyHttpError(response, 503, 'unavailable');
+    return;
+  }
+  try {
+    if (route.kind === 'task') {
+      const outcome = await withTimeout(
+        custody.fetchCommittedGeneration(route.generationId),
+        options.timeoutMs,
+      );
+      sendCustody(
+        response,
+        200,
+        storytellerTaskCustodyFetchResponseSchema.parse(outcome),
+      );
+      return;
+    }
+    if (route.kind === 'read-saved') {
+      const outcome = await withTimeout(
+        custody.readValidatedResult(route.generationId),
+        options.timeoutMs,
+      );
+      sendCustody(
+        response,
+        200,
+        storytellerTaskCustodyReadSavedResponseSchema.parse(outcome),
+      );
+      return;
+    }
+    const raw = await readRawBody(request);
+    if (route.kind === 'claim') {
+      const parsed = parseStorytellerTaskCustodyClaimRequest(raw ?? '');
+      if (!parsed.ok) {
+        sendCustodyHttpError(response, 400, 'invalid', parsed.reason);
+        return;
+      }
+      const outcome = await withTimeout(
+        custody.claimGeneration({
+          generationId: route.generationId,
+          pinnedRoot: parsed.value.pinnedRoot,
+        }),
+        options.timeoutMs,
+      );
+      sendCustody(
+        response,
+        200,
+        storytellerTaskCustodyClaimResponseSchema.parse(outcome),
+      );
+      return;
+    }
+    const parsed = parseStorytellerTaskCustodySaveResultRequest(raw ?? '');
+    if (!parsed.ok) {
+      sendCustodyHttpError(response, 400, 'invalid', parsed.reason);
+      return;
+    }
+    const outcome = await withTimeout(
+      custody.saveValidatedResult({
+        generationId: route.generationId,
+        pinnedRoot: parsed.value.pinnedRoot,
+        resultHash: parsed.value.resultHash,
+        result: parsed.value.result,
+      }),
+      options.timeoutMs,
+    );
+    sendCustody(
+      response,
+      200,
+      storytellerTaskCustodySaveResultResponseSchema.parse(outcome),
+    );
+  } catch (error) {
+    if (error instanceof StoryError) {
+      sendCustodyHttpError(
+        response,
+        { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+          error.code
+        ],
+        error.code,
+        error.reason,
+      );
+      return;
+    }
+    sendCustodyHttpError(response, 503, 'unavailable');
+  }
+}
+
 async function handle(
   request: IncomingMessage,
   response: ServerResponse,
-  options: { seam: GameAuthoritySeam; token: string; timeoutMs: number },
+  options: GameAuthorityServerOptions,
 ) {
   const url = new URL(request.url ?? '/', 'http://127.0.0.1');
   const method = request.method ?? 'GET';
-  const route = routeFor(method, url.pathname);
-  if (route.kind === 'health') {
+  const storyRoute = routeFor(method, url.pathname);
+  if (storyRoute.kind === 'health') {
     send(response, 200, { status: 'ok' });
     return;
   }
-  if (!authorized(request, options.token)) {
+
+  const authTokens = {
+    story: options.token,
+    ...(options.executorToken === undefined
+      ? {}
+      : { executor: options.executorToken }),
+    ...(options.controlToken === undefined
+      ? {}
+      : { control: options.controlToken }),
+  };
+
+  const custodyRoute = routeStorytellerTaskCustody(method, url.pathname);
+  if (custodyRoute.kind === 'publish') {
+    const role = authorizedRole(request, authTokens);
+    if (role !== 'control') {
+      sendCustodyHttpError(response, 401, 'unauthorized');
+      return;
+    }
+    await handlePublish(request, response, custodyRoute, options);
+    return;
+  }
+  if (custodyRoute.kind !== 'absent') {
+    const role = authorizedRole(request, authTokens);
+    if (role !== 'executor') {
+      sendCustodyHttpError(response, 401, 'unauthorized');
+      return;
+    }
+    if (custodyRoute.kind === 'invalid') {
+      sendCustodyHttpError(response, 400, 'invalid');
+      return;
+    }
+    await handleCustody(request, response, custodyRoute, options);
+    return;
+  }
+
+  const role = authorizedRole(request, authTokens);
+  if (role !== 'story') {
     sendError(response, 401, 'unauthorized');
     return;
   }
-  if (route.kind === 'absent') {
+  if (storyRoute.kind === 'absent') {
     sendError(response, 404, 'not_found');
     return;
   }
-  if (route.kind === 'invalid') {
+  if (storyRoute.kind === 'invalid') {
     sendError(response, 400, 'invalid');
     return;
   }
@@ -212,9 +483,30 @@ async function handle(
     return;
   }
   try {
-    if (route.kind === 'snapshot') {
+    if (storyRoute.kind === 'snapshot') {
       const snapshot = await withTimeout(
-        options.seam.read({ ownerId: actor.data, storyId: route.storyId }),
+        options.seam.read({ ownerId: actor.data, storyId: storyRoute.storyId }),
+        options.timeoutMs,
+      );
+      send(response, 200, snapshot);
+      return;
+    }
+    if (storyRoute.kind === 'start') {
+      const body = startStorySchema.safeParse(await readBody(request));
+      if (!body.success) {
+        sendError(response, 400, 'invalid');
+        return;
+      }
+      const snapshot = await withTimeout(
+        options.seam.startFromCandidate({
+          ownerId: actor.data,
+          storyId: storyRoute.storyId,
+          candidateId: body.data.candidateId,
+          expectedDraftRevision: body.data.expectedDraftRevision,
+          ...(body.data.campaign !== undefined
+            ? { campaign: body.data.campaign }
+            : {}),
+        }),
         options.timeoutMs,
       );
       send(response, 200, snapshot);
@@ -230,8 +522,8 @@ async function handle(
     const snapshot = await withTimeout(
       options.seam.admitResolution({
         ownerId: actor.data,
-        storyId: route.storyId,
-        operationId: route.operationId,
+        storyId: storyRoute.storyId,
+        operationId: storyRoute.operationId,
         body: body.data,
       }),
       options.timeoutMs,

@@ -4,7 +4,7 @@
 
 **2026-11-18 executable decision:** [Backlog audit and acceptance](../../../designs/open/backlog-convergence-2026-11-18/README.md); [bounded contract choices](../../../designs/open/backlog-convergence-2026-11-18/CONTRACT-DECISIONS.md); [ordered Cursor handoff](../../../designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md). The older Proposed/Blocked/No-code declarations retained below document the historical decision; they do not prohibit the **safe scoped implementation** now selected. External paid dispatch, nondisposable DB resets, production grants and irreversible accounting changes remain disallowed. A provider-free experiment that proves no new feature is needed must close with a source-backed positive alternative, not be parked again.
 
-**State:** Ready for one bounded E0 source-transaction evidence implementation (2026-11-18), with disposable SQL confirmation before migration/tests.
+**State:** Ready for one bounded E0 source-transaction evidence implementation (2026-11-18). **T01 VERIFY PASS** at `ec73a535` (7/7: 5 pure transition + 2 ENG01 disposable SQL). **T03 doc hold (2026-11-20):** event source identity and SQL tiers recorded; migration and rollback harness **NOT-RUN**; E0 witness **not** implemented. Packet open; not Done.
 
 ## Cursor first screen
 
@@ -56,3 +56,10 @@
 No other game mutation family, not the entire `settleActivity` loop, no whole World/Storyteller publication refactor, no historical checkpoint worker, no player rewind, no new agent, no Kafka, no OTel deployment, no raw prompts, no paid model. If the physical schema pilot is too invasive under measured source conditions, stop and return a smaller alternative instead of implementing a generic event-sourcing framework.
 
 **Ready gate:** explicit owner selection/authorization, source-wide actual writer coverage for this pilot, accepted bounded E0 schema/latency cost, disposable SQL/CAS/Temporal proof environment. The fact that this packet is Markdown does **not** make it Ready or Done.
+
+## Reconciliation ledger (T03 documentation slice)
+
+| Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/technical/engine/chronology-and-activities.md (status list; OBS04 witness outside proof) | chronology-and-activities.md | unchanged: finite-action fixtures remain the listed offline tests; typed transition witness not claimed | T01 @ `ec73a535`; writers `settleActionExecution` / `recordActionExecutionEvent` / `appendPublicStoryEvent` | fixture-exercised + live-observed (disposable SQL) | Post-terminal rollback NOT-RUN; 1:1 public link not SQL-asserted; no `transitionSequence` / typed `changed[]` | N/A — sentence already true |
+| E0 migration / `FiniteActionTransitionEvidenceV1` | this CHANGE.md | unchanged: pilot contract remains proposed | No migration run | NOT-RUN | Docs receipt is not a persisted event | TASKS.md T02/T03 |

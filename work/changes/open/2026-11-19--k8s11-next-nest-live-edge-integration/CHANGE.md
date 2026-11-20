@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** Next production origin/SSR/SSE focused proof then one real Gateway join. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
 
-**State:** Proposed (2026-11-19)  
+**State:** Proposed (2026-11-19); **T01 VERIFY PASS** at `ec73a535` (2026-11-20); T02 unit/client **27/27** (prior); T03 **NOT-RUN**; **not Done**; **no live edge claimed**.  
 **Kind:** implementation  
 **Program:** [Distributed architecture laboratory](../../README.md#distributed-architecture-laboratory-new-2026-11-19)  
 **Execution:** Only when explicitly selected; never inferred from batch adjacency. **No live provider spend.**
@@ -44,10 +44,16 @@ Prove the **actual existing** Next.js web and NestJS API run as independently de
 
 The Docker image/build work, read-only proxy/TLS audit and isolated fixture design can be parallel if files/worktrees are disjoint. One owner performs gateway/cluster wiring and shared-infrastructure operations. Final end-to-end verification runs only after prerequisites and integration join. Coordinate shared `topology.md`, `deployment-and-compatibility.md` and client architecture headings with ARCH04/K8S09.
 
+## Verification receipt (partial; not closure)
+
+**T01 VERIFY (2026-11-20) at `ec73a535`:** `node --test infra/kubernetes/lab/app-release/verify-production-rewrite.test.mjs` **5/5**. **Proven:** release rewrite must not target loopback; lab Nest Service DNS passes release characterization; local dev `.next` routes manifest remains loopback (dev path). **NOT-RUN:** same-origin reverse-proxy E2E, cookie forwarding E2E, cache leak under proxy, SSR wrong-owner at edge, disconnected Nest at edge, production-baked routes manifest with lab DNS in this workspace. **T02:** prior **27/27** unit/client; **Gateway SSE NOT-RUN**. **T03:** gated on [TURN02](../2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md) **T04** + explicit GA selection; standalone Next image overlap on MAIN does not satisfy edge join. This receipt does not promote the packet to Done and does not assert Kubernetes live edge PASS.
+
+**Blocker:** real lab-edge HTTPRoute join and browser/proxy proofs remain T03 after TURN02 T04; OAuth-dependent steps may record NOT-RUN when auth cannot run.
+
 ## Reconciliation ledger (fill before closure)
 
 | Affected owner | Expected delta | Source SHA/diff | Evidence | Negative case | Link |
 | --- | --- | --- | --- | --- | --- |
-| Gateway routes and runbook | Pending | Pending | Pending | no public DB/SSE leak | Pending |
-| Client/API contract | Preserve existing, edit only verified gap | Pending | Pending | lost stream does not resubmit | Pending |
-| Application runtime / STATUS | Deployment evidence, not production guarantee | Pending | Pending | no false full-game migration | Pending |
+| Gateway routes and runbook | Pending until T03 | `ec73a535` (T01 only) | T01 fixture 5/5; **no** Gateway apply | no public DB/SSE leak; synthetic backend ≠ PASS | Pending |
+| Client/API contract | Preserve existing; T01 characterizes rewrite only | `ec73a535` | T01 5/5; T02 27/27 unit (prior); SSE via Gateway NOT-RUN | lost stream does not resubmit (unit only so far) | [TASKS.md](TASKS.md) |
+| Application runtime / STATUS | Deployment evidence, not production guarantee | Pending for T03 | No live edge evidence | no false full-game migration | Pending |

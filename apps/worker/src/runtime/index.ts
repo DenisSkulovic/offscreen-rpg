@@ -21,7 +21,12 @@ import {
 } from '../outbox/dispatch';
 import { relayOne, runRelay } from '../outbox/relay';
 
-/** Explicit lifecycle: importing this module never connects or starts processing. */
+/**
+ * Legacy all-in-one worker: workflow tasks and engine SQL activities on
+ * `offscreen-local` only. Distributed Storyteller execution and GA publish
+ * activities live on dedicated workers (`startExecutionRuntime`,
+ * `startControlRuntime`) so this process never polls `storyteller-execute-v1`.
+ */
 export async function startRuntime(
   database: Database,
   config: WorkerConfig,

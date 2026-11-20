@@ -26,6 +26,21 @@ export const decisionWorkflowId = (id: string) => `story-decision/${id}`;
 export interface StorytellerActivities {
   completeStoryteller(id: string): Promise<void>;
 }
+
+/** Execution-only worker: frozen task claim/save; no publication. */
+export interface StorytellerDistributedExecutionActivities {
+  executeFrozenStoryteller(generationId: string): Promise<void>;
+}
+
+/** Control worker: GA adoption + publication after a saved result exists. */
+export interface StorytellerDistributedControlActivities {
+  publishSavedStoryteller(generationId: string): Promise<void>;
+}
+
+export const storytellerExecuteTaskQueue = 'storyteller-execute-v1' as const;
+export const storytellerControlTaskQueue = 'control' as const;
+export const storytellerDistributedWorkflowType =
+  'storytellerDistributedV1' as const;
 export interface CampaignActivities {
   advanceCampaignActivity(id: string): Promise<number | null>;
   advanceCampaignAction(id: string): Promise<number | null>;

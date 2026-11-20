@@ -16,6 +16,15 @@ import type {
 } from '@offscreen/workflows/contracts';
 
 function mapOpeningActivityError(error: unknown): never {
+  if (
+    error instanceof StoryError &&
+    error.reason === 'pending-consequence-not-settled'
+  ) {
+    throw ApplicationFailure.retryable(
+      error.code,
+      'PendingConsequenceNotSettled',
+    );
+  }
   if (error instanceof GenerationError || error instanceof StoryError) {
     throw ApplicationFailure.nonRetryable(error.code, 'OpeningStateError');
   }

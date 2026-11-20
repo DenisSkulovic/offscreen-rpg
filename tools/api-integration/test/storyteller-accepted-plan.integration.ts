@@ -457,8 +457,15 @@ export async function checkAcceptedPlan(
         ownerId,
         storyId: started.storyId,
       });
-      assert.equal(completed.campaign?.activity?.id, currentActivityId);
-      assert.equal(completed.campaign?.activity?.state, 'complete');
+      assert.equal(completed.campaign?.activity, null);
+      const [finishedActivity] = await database.db
+        .select({ id: gameActivity.id, state: gameActivity.state })
+        .from(gameActivity)
+        .where(eq(gameActivity.id, currentActivityId));
+      assert.deepEqual(finishedActivity, {
+        id: currentActivityId,
+        state: 'complete',
+      });
       assert.equal(
         completed.campaign?.acceptedActivityPlan?.state,
         'cancelled',

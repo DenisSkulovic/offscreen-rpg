@@ -128,6 +128,56 @@ test('selected archived target fails and none stays valid', () => {
   assert.equal(missing.findings.some((item) => item.code === 'invalid-selection'), true);
 });
 
+test('open leaf packet with optional TASKS and SOURCE-MAP stays green when indexed', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/changes/open/leaf/TASKS.md', '# Tasks\n');
+  fx.add('work/changes/open/leaf/SOURCE-MAP.md', '# Source map\n');
+  const report = scan(fx);
+  fx.cleanup();
+  assert.deepEqual(report.findings, []);
+});
+
+test('tracked open folder without CHANGE.md is an orphan-open-folder error', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/changes/open/orphan/PLAN.md', '# Plan\n');
+  const report = scan(fx);
+  fx.cleanup();
+  const orphan = report.findings.filter((item) => item.code === 'orphan-open-folder');
+  assert.deepEqual(orphan.map((item) => item.path), ['work/changes/open/orphan']);
+  assert.equal(orphan.length, 1);
+});
+
+test('nested-only artifact under open leaf still flags orphan-open-folder', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/changes/open/orphan/notes/PLAN.md', '# Plan\n');
+  const report = scan(fx);
+  fx.cleanup();
+  assert.deepEqual(
+    codes(report).filter((item) => item.startsWith('orphan-open-folder:')),
+    ['orphan-open-folder:work/changes/open/orphan'],
+  );
+});
+
+test('adding CHANGE.md clears orphan-open-folder but may still need queue route', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/changes/open/orphan/PLAN.md', '# Plan\n');
+  fx.add(
+    'work/changes/open/orphan/CHANGE.md',
+    '# Orphan\n\n**State: Proposed.**\n',
+  );
+  const report = scan(fx);
+  fx.cleanup();
+  assert.equal(report.findings.some((item) => item.code === 'orphan-open-folder'), false);
+  assert.equal(
+    codes(report).includes('missing-route:work/changes/open/orphan/CHANGE.md'),
+    true,
+  );
+});
+
 test('top-level control doc and unrouted design dossier are strict findings', () => {
   const fx = fixture();
   baseFiles(fx);

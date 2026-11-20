@@ -21,9 +21,18 @@ The existing createStorytellerTaskCustody facade implements fetchCommittedGenera
 
 **Algorithm:** implement fetch(task), claim(root), save(resultHash,result), readSaved() with explicit executor-only token, bounded timeouts and response schemas. No DATABASE_URL or raw S3 mutation in this worker client. No model call or publication in this task. **Negative:** token rejected, mismatched root, malformed JSON or timeout is typed unavailable/refused and is not retried into a second claim with a different ID. **Stop:** broader worker boot/change needed; return exact missing constructor rather than redesign all worker runtime.
 
-## T04 | Two-client persistence and auth proof | PLANNER-READY
-**DEPTH=VERIFY | MODEL=Composer Standard.** Requires T01–T03, authorized disposable PG test DB. **Write:** focused GA integration tests/receipt only as selected. **Read:** packages/application/test/story02-task-claim.test.mjs and new private route tests.
+## T04 | Two-client persistence and auth proof | VERIFY PASS (`ec73a535`, 2026-11-20)
+**DEPTH=VERIFY | MODEL=Composer Standard.** Baseline inspect @ `ec73a535` (working tree dirty, unrelated paths). Requires T01–T03, authorized disposable PG test DB `offscreen_auth_test` via `DATABASE_TEST_URL`.
 
-**Positive:** two separate private clients claim the same generation, get one persisted attempt ID, save same valid fake result twice, read back exact hash. **Negative:** different hash conflicts; wrong actor/root and missing token cannot reveal task; current generation remains pending with null attemptId/output (**STORY03** adopts it later). **Run:** verify current package scripts and approved disposable fixtures; avoid claiming a mock two-client test is a cross-Pod proof. **Docs:** technical/storyteller/generation-and-publication.md#remote-task-custody and architecture chapter 3/7 only after behavior passes.
+**Executed (2026-11-20):** provider-free custody proof suites **10/10 PASS** total:
+- `packages/application/test/story02-task-claim.test.mjs` → **4/4 PASS**
+- `apps/game-authority/test/storyteller-task-custody.test.ts` → **3/3 PASS**
+- `apps/game-authority/test/storyteller-task-custody-persistence.integration.test.ts` → **3/3 PASS** (disposable PG)
+
+**Positive:** two separate private HTTP clients claim the same generation → one persisted attempt ID; same valid fake result hash saved twice → idempotent; read-saved returns exact hash.
+
+**Negative:** conflicting result hash refused; wrong pinned root refused; missing or wrong story token → **401** / no task reveal. Generation row remains pending with null `attemptId`/`output` until **STORY03** adoption.
+
+**Not claimed:** cross-Pod, Kubernetes, or multi-process executor races beyond two HTTP clients in one test process. Change **not Done**. Packet receipt: [CHANGE.md](CHANGE.md) (T04 section). Permanent headings reconciled: `docs/technical/storyteller/generation-and-publication.md#remote-task-custody`, `docs/architecture/03-data-and-transactions.md`, `docs/architecture/07-client-and-trust.md`.
 
 **Order:** T01 → T02 → T03 → T04. The facade itself is not a new provider send lease, an executor Pod or a published scene. **No tests were executed by this planning commit.**

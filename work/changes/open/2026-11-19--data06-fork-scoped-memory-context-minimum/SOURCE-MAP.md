@@ -1,6 +1,6 @@
 # DATA06 | branch-scoped context source investigation
 
-**Profile:** STATE. **Inspected:** lean main at 584b594 (2026-11-19); not a runtime or cluster test. This is a targeted read map, not a request for Cursor to re-audit the codebase.
+**Profile:** STATE. **Inspected:** lean main at 584b594 (2026-11-19); **T01 verified** at `ec73a535` (2026-11-20, local application tests **3/3 PASS**). Not a runtime or cluster test. This is a targeted read map, not a request for Cursor to re-audit the codebase.
 
 ## Already implemented, do not duplicate
 
@@ -33,4 +33,4 @@ DATA04 owns checkpoint compatibility and historical forks, DATA06 owns source se
 
 A reliable actor-visibility-specific ACL inside the frozen generation was not established from this lean inspection; verify it before promising an arbitrary multi-actor memory API. For the first solo POC, stay owner-scoped and record unsupported additional visibility rather than widening reads to all stories. No new Cognee, graph index, paid retrieval rounds, invented gameplay mechanics or schema without a demonstrated missing field.
 
-**Evidence tier:** existing code + local tests; the cross-Pod fork continuation has NOT been run.
+**Evidence tier:** existing code + **T01** local tests (`historical-fork` 2/2, `lexical-story-index-cache` 1/1 @ `ec73a535`); `loadCanonicalKnowledge` campaignId/root mismatch guard is source-read only relative to those two files; branch-pinned remote resolver and cross-Pod fork continuation have **NOT** been run.

@@ -11,6 +11,7 @@
 - **Retry:** existing passage/root and campaign settings are checked against the same requested pins. Idempotence applies to the same story/candidate/settings, not permission to change source roots on retry.
 - **GA:** `apps/game-authority/src/{server,application,bootstrap/main}.ts` currently implements private read and resolution. `server.ts:routeFor` has no start route. The private bearer/actor checks and body-size bound already exist and should be reused/extended, not duplicated.
 - **Storage:** `apps/game-authority/src/bootstrap/main.ts` calls `createDocumentStoreFromEnv` and ensures an S3 bucket when appropriate. Configure the **same real S3** root as importer/reader for Kubernetes. Never mount the source directory into running game Pods.
+- **BOOT02 handoff:** Exact lab store path, manifest list, and pinned world/rule/start roots are [Kubernetes content bootstrap — Integration handoff (BOOT03, TURN02)](../../../../docs/runbooks/kubernetes-content-bootstrap.md#integration-handoff-boot03-turn02). BOOT02 already proved a second Pod can read those roots after the importer Pod is gone (2026-11-19 receipt; not a story start). BOOT03 must still create a succeeded Storyteller-kind opening candidate and call `startFromCandidate`; the importer does neither.
 
 ## Most easily missed discriminator: what 'scripted opening' means
 

@@ -13,10 +13,15 @@
     "test:stories:core": "node --test dist/test/stories-core.integration.js",
     "test:stories:http": "node --test dist/test/stories-http.integration.js",
     "test:stories:start": "node --test dist/test/story-start.integration.js",
+    "test:boot03:imported-start-distributed": "node --test dist/test/boot03-imported-start-distributed.integration.js",
     "test:stories:resolution": "node --test dist/test/story-resolution.integration.js",
     "test:stories:browser": "node --test dist/test/stories-browser.integration.js",
     "test:private-route": "node --test dist/test/private-route-evidence.integration.js",
     "test:storyteller": "node --test dist/test/storyteller.integration.js",
+    "test:story03-t06:worker-replay": "node --test dist/test/storyteller-worker-replay.integration.js",
+    "test:story03-t06:publication-context": "node --test dist/test/storyteller-publication-context.integration.js",
+    "test:story03-t06:activity-settlement": "node --test dist/test/storyteller-activity-settlement.integration.js",
+    "test:turn03-fixture": "node --test dist/test/turn03-distributed-poc-fixture.integration.js",
     "test:start-package": "node --test dist/test/start-package.integration.js",
     "test:admin-session": "node --test dist/test/admin-session.integration.js",
     "test:admin-policy": "node --test dist/test/admin-policy.integration.js",
@@ -25,9 +30,11 @@
     "test:admin-usage": "node --test dist/test/admin-usage.integration.js",
     "test:admin-audit": "node --test dist/test/admin-audit.integration.js",
     "test:admin-cases": "node --test dist/test/admin-cases.integration.js",
-    "test:admin-control-ssr": "node --test dist/test/admin-control-ssr.integration.js"
+    "test:admin-control-ssr": "node --test dist/test/admin-control-ssr.integration.js",
+    "test:turn03-proof": "node --test dist/test/turn03-distributed-poc-proof.test.js"
   },
   "dependencies": {
+    "@temporalio/client": "1.24.0",
     "@offscreen/api": "workspace:*",
     "@offscreen/application": "workspace:*",
     "@offscreen/contracts": "workspace:*",

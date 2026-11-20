@@ -1,6 +1,6 @@
 # OBS04 | source investigation: transition evidence without a second event store
 
-**Inspected:** 584b594, 2026-11-20. **No SQL integration was run.**
+**Inspected:** `ec73a535`, 2026-11-20 (T01 inventory). Baseline map opened at `584b594`.
 
 ## Existing authoritative transaction
 
@@ -15,5 +15,7 @@
 One **typed immutable transition witness** for a finite action on terminal commit, linking: `operationId`, old/new execution revision, accepted source offer and passage, old/new gameSecond and root/version, outcome and the already-executed item/obligation/follow-up references. The exact missing fields must be compared against existing receipt, event, source passage, fixed plan and campaign before adding storage. A **new event table** is unnecessary if the committed event can safely reference exact immutable source rows. But if before-state isn't reconstructable from old receipt or campaign projection, decide one narrow JSONB versioned witness on the existing event table **only after** a migration/compatibility review. No generic event sourcing or replay interpreter.
 
 **Negative transaction test:** induce rollback after event insertion, assert receipt/event/public projection/world state all roll back; execute same terminal operation twice, assert one unique revision and exactly one mechanical effect; change holder before settle and assert an interruption witness, not a successful transfer. A fake pure `decideActionExecutionTransition` test cannot prove same-SQL-transaction capture.
+
+**T01 measured (2026-11-20, disposable chamber SQL for live file):** `item-transfer-transition` (4/4 pure), `world-obligation-transition` (1/1 pure), `eng01-item-transfer.live` (2/2 SQL). Terminal paths write `game_action_execution_event` and call `appendPublicStoryEvent` once per exercised terminal kind; schema uniqueness on `(execution_id, execution_revision)` holds. **Still absent:** SQL proof of execution-event↔public-event 1:1; rollback-after-terminal harness; durable before/after witness (clock/holds, typed `changed[]`, `transitionSequence`). Migration remains **NOT-RUN** until T02 names the smallest missing datum.
 
 **Risk:** “just record before and after entire campaign JSON” duplicates mutable/PII-like state and increases ambiguity. Store minimum necessary identity/digest and provenance; do not produce a second mechanical truth. [TASKS](TASKS.md) keeps schema changes blocked until missing evidence is demonstrated.

@@ -11,10 +11,9 @@ import {
 import { createCacheAdapter } from '@offscreen/cache';
 import {
   createDocumentStoreFromEnv,
-  importRulePackageDirectory,
   S3DocumentStore,
 } from '@offscreen/documents';
-import { resolve } from 'node:path';
+import { resolveStartupDefaultRules } from './default-rules-startup.js';
 
 async function main() {
   const config = readConfig(process.env);
@@ -45,15 +44,10 @@ async function main() {
     if (documentStore instanceof S3DocumentStore) {
       await documentStore.ensureBucket();
     }
-    const defaultRulePackage = documentStore
-      ? await importRulePackageDirectory(
-          documentStore,
-          resolve(
-            process.env['OFFSCREEN_DEFAULT_RULE_SOURCE'] ??
-              'content/rules/srd-5.2.1-subset',
-          ),
-        )
-      : undefined;
+    const defaultRules = await resolveStartupDefaultRules(
+      documentStore,
+      process.env,
+    );
     const app = await createApp(
       database,
       createAuth(database, authConfig),
@@ -61,16 +55,7 @@ async function main() {
       {
         databaseConfig,
         ...(documentStore ? { documentStore } : {}),
-        ...(defaultRulePackage
-          ? {
-              defaultRules: {
-                ruleSetId: defaultRulePackage.manifest.ruleSetId,
-                rootHash: defaultRulePackage.rootHash,
-                revision: defaultRulePackage.manifest.revision,
-                engine: defaultRulePackage.manifest.engine,
-              },
-            }
-          : {}),
+        ...(defaultRules ? { defaultRules } : {}),
         storytellerExecution: readStorytellerExecution(process.env),
         readCache: cache.cache,
         closeCache: cache.close,

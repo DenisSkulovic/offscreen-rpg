@@ -23,6 +23,10 @@
       "types": "./dist/src/game-authority.d.ts",
       "default": "./dist/src/game-authority.js"
     },
+    "./storyteller-task-custody": {
+      "types": "./dist/src/storyteller-task-custody.d.ts",
+      "default": "./dist/src/storyteller-task-custody.js"
+    },
     "./chamber": {
       "types": "./dist/src/chamber.d.ts",
       "default": "./dist/src/chamber.js"

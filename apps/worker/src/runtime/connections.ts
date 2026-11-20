@@ -5,7 +5,7 @@ type Closable = {
 /** Close Temporal connections independently so one failure cannot strand the other. */
 export async function closeWorkerConnections(args: {
   native: Closable | undefined;
-  connection: Closable;
+  connection?: Closable;
 }) {
   const failures: unknown[] = [];
   if (args.native) {
@@ -15,10 +15,12 @@ export async function closeWorkerConnections(args: {
       failures.push(error);
     }
   }
-  try {
-    await args.connection.close();
-  } catch (error) {
-    failures.push(error);
+  if (args.connection) {
+    try {
+      await args.connection.close();
+    } catch (error) {
+      failures.push(error);
+    }
   }
   if (failures.length === 0) {
     return;

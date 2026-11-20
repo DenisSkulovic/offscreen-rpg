@@ -363,7 +363,9 @@ export async function publishStorytellerResult(
         .where(eq(gameActionReceipt.operationId, task.source.executionId));
       // Early preparation is valid but remains private until the exact
       // execution has settled and promoted this generation to its receipt.
-      if (!receipt || execution?.state !== 'settled') return;
+      if (!receipt || execution?.state !== 'settled') {
+        throw new StoryError('unavailable', 'pending-consequence-not-settled');
+      }
       const pending = pendingImmediateActionResolutionSchema.parse(
         execution.pendingResolution,
       );

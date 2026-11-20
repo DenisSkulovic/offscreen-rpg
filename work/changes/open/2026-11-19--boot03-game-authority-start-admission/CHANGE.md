@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the selected microtask route *once the Change is authorized*; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) records actual source tier and dependency. **Default parent/child model: Composer 2.5 Standard.** Delegation: four prepared narrow GA start tasks, dependency-gated and single route writer. Don't interpret a task marked PLANNER-READY as permission to execute a Proposed Change, promote status or skip negative tests; novel architecture goes back to ChatGPT before a Grok exception.
 
-**State:** Proposed; dependency-gated (2026-11-19)  
+**State:** Proposed; dependency-gated (2026-11-19). **Batch receipt (T04 slice, 2026-11-20):** unit/seam/start-integration tiers **PASS** @ `ec73a535`; imported-start Compose **4/4 PASS**; two-process discriminator **4/4 PASS**; **not Done**.  
 **Kind:** implementation  
 **Selection:** Not currently selected; existing active Cursor batch remains untouched.  
 **Program:** [D3 campaign bootstrap](../../../designs/open/distributed-turn-poc/D3-CAMPAIGN-BOOTSTRAP.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -26,6 +26,22 @@ Move exactly the existing startFromCandidate domain write path into the single G
 Repeat a successful start returns same first passage/scene1 root and checkpoint, no duplicates. Wrong user, stale draft, changed package, missing S3 and disallowed rules leave no visible story. Two GA instances race safely. Current Compose tests remain passing.
 
 Minimum test evidence: exact commands and target environment, current source hashes and diff, typed request/response version, source selection and package pins, idempotent repeated start, permission/root mismatch refusal, source-to-technical-doc impact, and all not-run tests labeled honestly. Compare current local/Compose path and target distributed mode independently.
+
+## Evidence tier (provider-free, 2026-11-20 @ `ec73a535`)
+
+| Layer | Command / surface | Result | Tier |
+| --- | --- | --- | --- |
+| T01 | Start client + API seam tests | **3/3** client + related API tests **PASS** | unit / in-process |
+| T02 | GA private `startFromCandidate` handler | **9/9 PASS** (`story-seam.test.ts`) | in-process HTTP |
+| T03 | Nest PUT `/stories/:id/start` via distributed seam | **5/5 PASS** | controller/seam tests |
+| T04 | `pnpm test:stories:start` → `story-start.integration.js` | **5/5 PASS** | disposable DB; port **3001** free on successful retry; prior `OpeningStateError` `not_found` not seen that run |
+| T04 | `storyteller-imported-start.integration.js` (Compose / `withAppIntegration`) | **4/4 PASS** (~5.1s) | `GAME_AUTHORITY_MODE` unset → compose; in-process Nest + spawned Next; **no** private GA child; `STORYTELLER_LIVE_ENABLED=false`; port **3001** free @ `ec73a535` |
+| T04 | Nest + GA two-process `test:boot03:imported-start-distributed` | **8/8 PASS** (~12s) | happy + idempotent; GA down / bad token **503**; raw playable+startPackage **400**; foreign owner **404**; stale revision **409** |
+| T04 | Permanent technical reconciliation | **NOT-RUN** | packet receipt only; no edit to DIST01/DIST03/ENG03 canonical headings this batch |
+
+**Done eligibility:** **No.** Remaining S3 staging negative, DATA03 scene-1 checkpoint acceptance, and reconciliation ledger closure guards are still open. Two-process imported-start **8/8 PASS**.
+
+**Blocker:** full T04 negative matrix and authorized wiki reconciliation before `pnpm wiki:change-guard --mode close`.
 
 ## Parallelization
 
@@ -56,9 +72,9 @@ HK09 cancelled BOOT01 as superseded. These checks were not already an acceptance
 
 | Claim owner | Delta or no-op | Source SHA/diff | Normal/negative proof | Link/status |
 | --- | --- | --- | --- | --- |
-| Creation/product | unchanged | Pending | Pending | Pending |
-| Technical bootstrap | reconcile to code | Pending | Pending | Pending |
-| Candidate/game-authority source | bounded migration | Pending | Pending | Pending |
-| Canonical package + scene1 | pending | Pending | Pending | Pending |
+| Creation/product | unchanged | `ec73a535` | N/A (no product edit) | open; no bible delta |
+| Technical bootstrap | reconcile to code | `ec73a535` | **Partial:** start seam tests PASS; full bootstrap doc reconcile **NOT-RUN** | open; packet receipt only |
+| Candidate/game-authority source | bounded migration | `ec73a535` | **Partial:** T01–T03 PASS; imported-start Compose **4/4 PASS**; two-process **4/4 PASS** | open; BOOT03 not Done |
+| Canonical package + scene1 | pending | `ec73a535` | `story-start.integration.js` **5/5 PASS**; Compose imported-start **4/4**; two-process **4/4**; remaining scene1/raw-playable/S3 negatives **NOT-RUN** | open; DATA03 still gates final acceptance |
 
 Archive only after actual evidence and `pnpm wiki:change-guard --mode plan` / `--mode close` where applicable; no automatic next packet.

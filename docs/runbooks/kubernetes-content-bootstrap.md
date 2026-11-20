@@ -110,6 +110,51 @@ Results from that run on 2026-11-19, branch `change/boot02-cluster-pin`, baselin
 
 Deleting that kind cluster does not preserve the local-path files and is not a backup. The objects survived an importer Pod deletion only. They did not survive the cluster deletion.
 
-## Pending integration
+## Integration handoff (BOOT03, TURN02)
 
-This procedure does not start `apps/api` or `apps/worker`. It does not claim the game uses the lab object store. Wiring those processes to `object-store.lab-objects.svc.cluster.local` remains pending.
+BOOT02 stops after immutable package objects exist in the shared lab store and a **separate** Pod can read the same three root hashes after the importer Pod is gone. That 2026-11-19 proof is recorded in [Observed local run](#observed-local-run) above; this section does not add new cluster evidence and does not claim a campaign, opening candidate, or story start from S3 alone.
+
+### Exact manifests and store path
+
+| Artifact | Path or value |
+| --- | --- |
+| Bootstrap namespace | `lab-content-bootstrap` — `infra/kubernetes/lab/content-bootstrap/namespace.yaml` |
+| Object-store namespace | `lab-objects` — existing SeaweedFS manifests under `infra/kubernetes/lab/object-storage/` (applied by `smoke.sh`, not edited here) |
+| Importer Job | `fixture-importer` — `infra/kubernetes/lab/content-bootstrap/importer-job.yaml` |
+| Reader Job | `fixture-reader` — `infra/kubernetes/lab/content-bootstrap/reader-job.yaml` |
+| Orchestration | `infra/kubernetes/lab/content-bootstrap/smoke.sh` |
+| S3 endpoint | `http://object-store.lab-objects.svc.cluster.local:8333` |
+| Bucket | `lab-objects` |
+| Importer entrypoint | `scripts/repo-tools/import-pinned-fixture.mjs --s3` (writer credentials: Secret `content-importer-s3`) |
+| Reader entrypoint | `scripts/repo-tools/read-pinned-fixture.mjs --s3` (read-only credentials: Secret `content-reader-s3`) |
+| Job image pin | `offscreen-lab-content-bootstrap:boot02` — built from `infra/kubernetes/lab/content-bootstrap/Dockerfile`, digest recorded in [Observed local run](#observed-local-run) |
+
+Pinned content-addressed roots (package manifests), identical on import and read:
+
+| Package | Root hash |
+| --- | --- |
+| World | `5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9` |
+| Rule | `d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab` |
+| Start | `e30eaa27407abe8a015b21cad62f30b81b07ee7af3b89634501fe3787d8d2813` |
+
+Importer and reader Jobs set `OFFSCREEN_DOCUMENT_STORE=s3` and the endpoint, bucket, and path-style flags shown in those manifests. They mount only an `emptyDir` at `/tmp` for client scratch. They do not mount a repository `content/` directory, do not write `fixture-pin.json` on `--s3`, and must report `campaignCreated=false`.
+
+### What downstream Changes own
+
+| Owner | Responsibility | Boundary |
+| --- | --- | --- |
+| [TURN02](../../work/changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md) | Run the importer **once** per release overlay, then wire API, GA, and worker Pods to read the **same** S3 endpoint, bucket, and root hashes at runtime | Release must not bundle arbitrary `content/` trees into runtime images or re-import on every Pod start. TURN02 **T01** in that TASKS file loads the default rule manifest by content hash from the imported store instead of `importRulePackageDirectory` from a local path |
+| [BOOT03](../../work/changes/open/2026-11-19--boot03-game-authority-start-admission/TASKS.md) | After pins are readable in the real store, admit a **succeeded Storyteller-kind** opening candidate and commit start through Game Authority | Import does not create an owned candidate. A start package root is not a successful opening candidate. Story start is not claimed from the importer or reader Jobs |
+
+Do not treat BOOT02's reader Job as a substitute for BOOT03 integration tests or for TURN02's authenticated application release. Do not point Compose at the disposable lab store unless a separately authorized proof says so.
+
+### Accepted Pod proof already on record (2026-11-19)
+
+The following satisfied BOOT02's discriminating positive case without starting the game:
+
+- Importer Pod uid `1d177268-8810-4b3f-aad1-55008659034a`, then that Job was deleted
+- Reader Pod uid `b23c0b53-6741-49ab-ae13-ae3e922da128` while the importer Pod was absent; `match=yes`, same three hashes
+- `pinPath=null` and `campaignCreated=false` on both paths
+- Lock pid `188308` on `/tmp/offscreen-k8s-cluster.lock`; baseline `93d57ca6` on branch `change/boot02-cluster-pin`
+
+A new Pod run is required only when importer image or Job manifests change materially (BOOT02 **T03** in [BOOT02 TASKS](../../work/changes/open/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md)).

@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the selected microtask route *once the Change is authorized*; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) records actual source tier and dependency. **Default parent/child model: Composer 2.5 Standard.** Delegation: prove branch exact-root isolation then remote evidence route after STORY03. Don't interpret a task marked PLANNER-READY as permission to execute a Proposed Change, promote status or skip negative tests; novel architecture goes back to ChatGPT before a Grok exception.
 
-**State:** Proposed · 2026-11-19  
+**State:** Proposed · 2026-11-19; **T01 VERIFY PASS** at `ec73a535` (2026-11-20); **not Done**; no branch-pinned remote memory facade claimed.  
 **Kind:** implementation  
 **Execution:** Not part of currently active Kubernetes batch. Select individually or through explicitly approved safe batch.  
 **Related:** [DISTURN program](../../../designs/open/distributed-turn-poc/README.md) · [D2 data design](../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -32,6 +32,8 @@ In packages/application/src/storyteller/{context-capture,execution} and packages
 **Discriminating negative:** Never leak future parent/sibling fact or private possibility; no silently changing SQL items from canonical prose; no extra paid research rounds unless budget/role recipe permits.
 
 Provide exact source refs and commit SHAs, schema/API examples, commands, test counts, actual provider-free or cluster evidence, and any not-run test. Run source-relevant checks and `pnpm wiki:change-guard --mode plan` / `--mode close` as supported; update actual STATUS only when runtime evidence exists.
+
+**T01 VERIFY receipt (2026-11-20) at `ec73a535`:** `packages/application/test/historical-fork.test.mjs` **2/2**; `packages/application/test/lexical-story-index-cache.test.mjs` **1/1**; **3/3 PASS** provider-free. Positive: child branch keeps scene-1 ancestor state (sword, living king) while parent scene-2 diverges on the parent story. Negative: wrong owner, bad checkpoint, and later live tables refuse; lexical cache isolates fork/stale roots. **NOT-RUN:** dedicated assertion that `loadCanonicalKnowledge` rejects parent `rootHash` with child `storyId` (guard exists in source, not in these tests); T02 branch-scoped resolver (gated STORY02/03); T03/TURN03 cluster continuation. `pnpm wiki:change-guard --mode plan --change` this packet → **ok, no findings**. This receipt does not promote the packet to Done.
 
 ## Parallel execution contract
 

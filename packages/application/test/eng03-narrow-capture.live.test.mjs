@@ -37,6 +37,7 @@ import {
   storytellerContextCaptureKind,
 } from '../dist/storyteller/context-capture.js';
 import { lockOwnedStory } from '../dist/stories/persistence.js';
+import { StoryError } from '../dist/stories/errors.js';
 
 const profile = storytellerCatalogue.resolve({
   id: 'absurd-action-comedy',
@@ -449,7 +450,15 @@ test('ENG03-narrow: promote then settle then scripted publish uses exact G; no p
     const storyteller = createStorytellerRuntime(database, {
       documentStore: storage,
     });
-    await storyteller.complete(accepted.generationId);
+    await assert.rejects(
+      () => storyteller.complete(accepted.generationId),
+      (error) => {
+        assert.ok(error instanceof StoryError);
+        assert.equal(error.code, 'unavailable');
+        assert.equal(error.reason, 'pending-consequence-not-settled');
+        return true;
+      },
+    );
 
     const [publicationBefore] = await database.db
       .select()

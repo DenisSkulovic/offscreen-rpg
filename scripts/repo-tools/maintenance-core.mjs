@@ -327,6 +327,28 @@ export function scanMaintenance(input) {
     }
   }
 
+  const openLeafFolders = new Set();
+  const openChangesPrefix = 'work/changes/open/';
+  for (const rel of files) {
+    if (!rel.startsWith(openChangesPrefix)) continue;
+    const rest = rel.slice(openChangesPrefix.length);
+    const slash = rest.indexOf('/');
+    if (slash === -1) continue;
+    openLeafFolders.add(`${openChangesPrefix}${rest.slice(0, slash)}`);
+  }
+  for (const prefix of [...openLeafFolders].sort()) {
+    if (files.includes(`${prefix}/CHANGE.md`)) continue;
+    findings.push(
+      finding(
+        'error',
+        'orphan-open-folder',
+        prefix,
+        'Tracked files exist under an open Change folder with no CHANGE.md front door.',
+        'Restore the Change front door (CHANGE.md) or move completed artifacts beside their archived Change.',
+      ),
+    );
+  }
+
   for (const rel of markdown) {
     if (!rel.startsWith('work/changes/archive/') || !rel.endsWith('/CHANGE.md')) continue;
     const text = readOrNull(readText, rel);

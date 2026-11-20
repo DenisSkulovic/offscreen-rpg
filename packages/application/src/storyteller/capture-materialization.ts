@@ -802,6 +802,35 @@ async function promoteCapture(
   });
 }
 
+/** Terminal skip on ready+promoted pending G: wake completeStoryteller. */
+async function enqueueStorytellerIfReadyPromoted(
+  database: Database,
+  operationId: string,
+): Promise<void> {
+  await database.db.transaction(async (tx) => {
+    const [capture] = await tx
+      .select({
+        captureId: storytellerContextCapture.captureId,
+        state: storytellerContextCapture.state,
+      })
+      .from(storytellerContextCapture)
+      .where(eq(storytellerContextCapture.operationId, operationId));
+    if (!capture || capture.state !== 'ready') return;
+    const [gen] = await tx
+      .select({ kind: generation.kind, state: generation.state })
+      .from(generation)
+      .where(eq(generation.id, capture.captureId));
+    if (!gen || gen.kind !== storytellerKind || gen.state !== 'pending') {
+      return;
+    }
+    await enqueue(tx, {
+      id: randomUUID(),
+      operationId: capture.captureId,
+      topic: storytellerTopic,
+    });
+  });
+}
+
 /**
  * Capture-first Stage-2 branch for campaign.consequence.v1 wakes.
  * Returns handled:false when no capture row exists for the operation.
@@ -814,6 +843,9 @@ export async function materializePendingActionCapture(
   const claim = await claimCaptureLease(database, operationId);
   if (!claim.claimed) {
     if (claim.reason === 'missing') return { handled: false };
+    if (claim.reason === 'terminal') {
+      await enqueueStorytellerIfReadyPromoted(database, operationId);
+    }
     return { handled: true, outcome: 'skipped' };
   }
   if (!documentStore) {

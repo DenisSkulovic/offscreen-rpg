@@ -12,7 +12,13 @@ import type {
   DecisionActivities,
   ContinuationActivities,
   StorytellerActivities,
+  StorytellerDistributedControlActivities,
+  StorytellerDistributedExecutionActivities,
   CampaignActivities,
+} from './contracts';
+import {
+  storytellerControlTaskQueue,
+  storytellerExecuteTaskQueue,
 } from './contracts';
 
 const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
@@ -89,6 +95,34 @@ const { completeStoryteller } = proxyActivities<
 // Redelivery retries execution bookkeeping/publication, never an uncertain paid dispatch.
 export async function storytellerV1(id: string): Promise<void> {
   await completeStoryteller(id);
+}
+
+const distributedExecuteRetry = {
+  initialInterval: '2 seconds',
+  maximumInterval: '30 seconds',
+  maximumAttempts: 5,
+} as const;
+
+const { executeFrozenStoryteller } =
+  proxyActivities<StorytellerDistributedExecutionActivities>({
+    taskQueue: storytellerExecuteTaskQueue,
+    startToCloseTimeout: '3 minutes',
+    retry: distributedExecuteRetry,
+  });
+
+const { publishSavedStoryteller } =
+  proxyActivities<StorytellerDistributedControlActivities>({
+    taskQueue: storytellerControlTaskQueue,
+    startToCloseTimeout: '3 minutes',
+    retry: distributedExecuteRetry,
+  });
+
+// Two-stage scripted path: executor proposes, control publishes. No provider dispatch here.
+export async function storytellerDistributedV1(
+  generationId: string,
+): Promise<void> {
+  await executeFrozenStoryteller(generationId);
+  await publishSavedStoryteller(generationId);
 }
 
 const { advanceCampaignActivity } = proxyActivities<CampaignActivities>({

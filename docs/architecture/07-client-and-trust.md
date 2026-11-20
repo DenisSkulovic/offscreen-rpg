@@ -67,7 +67,7 @@ flowchart LR
     Browser -.->|forbidden raw object access| S3
 ```
 
-**TARGET with gaps.** Today the private GA server authenticates a shared bearer for its limited read/resolution seam; separate control/executor role credentials **are not implemented** at baseline. A software routing boundary does not imply PostgreSQL privilege enforcement unless actual DB roles and negative writes are tested. No user browser request should go directly to GA, PostgreSQL, S3 internals, Temporal or the model provider.
+**TARGET with gaps.** The private GA server exposes role-scoped Storyteller executor credentials for task GET, claim, save, and read-saved only. **STORY02 (`ec73a535`, 2026-11-20):** provider-free tests prove missing or wrong story token → **401** and task routes stay unreachable from a browser-shaped caller; two executor HTTP clients against one GA process on disposable PostgreSQL share one attempt id (see [Remote task custody](../technical/storyteller/generation-and-publication.md#remote-task-custody)). **Still unproven:** separate Pods, distinct GA replicas, or PostgreSQL writer isolation for the executor identity. Control versus executor negative matrix on a real cluster is not closure. No user browser request should go directly to GA, PostgreSQL, S3 internals, Temporal or the model provider.
 
 ## View isolation between players and story branches
 
@@ -92,4 +92,4 @@ This is a compact view of the selected security/client contract, not a standalon
 - Owner A can open A's scene; owner B receives the same not-found behavior as a nonexistent story. A browser's stale A query must not render in B's session or after logout.
 - A POST that times out and later succeeds must not be replayed by SSE reconnect or hydration. One admitted mechanical outcome and one passage.
 - Out-of-order event versions and late GET results cannot roll back the visible committed scene.
-- Executor credential cannot call GA publish/start or query raw SQL; control credential cannot act as a browser owner. Not yet proven in kind.
+- Executor credential cannot call GA publish/start or query raw SQL; control credential cannot act as a browser owner. Token and task-route negatives are proved in-process (**STORY02**); publish/start/SQL denial and multi-Pod separation are **not** proved in kind.

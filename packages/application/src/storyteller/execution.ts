@@ -232,7 +232,7 @@ function baseAttribution(task: StorytellerTask) {
   };
 }
 
-function readSavedCustody(
+export function readStorytellerSavedCustody(
   attribution: unknown,
 ): { resultHash: string; result: unknown } | null {
   if (!attribution || typeof attribution !== 'object') return null;
@@ -559,7 +559,7 @@ export function createStorytellerTaskCustody(store: StorytellerClaimStore) {
         if (validated.resultHash !== input.resultHash) {
           return { status: 'refused', reason: 'hash-mismatch' };
         }
-        const saved = readSavedCustody(attempt.attribution);
+        const saved = readStorytellerSavedCustody(attempt.attribution);
         if (saved) {
           if (saved.resultHash === input.resultHash) {
             return {
@@ -614,7 +614,7 @@ export function createStorytellerTaskCustody(store: StorytellerClaimStore) {
         if (!attempt) {
           return { status: 'unclaimed', generationId: loaded.generation.id };
         }
-        const saved = readSavedCustody(attempt.attribution);
+        const saved = readStorytellerSavedCustody(attempt.attribution);
         if (!saved) {
           return {
             status: 'claimed',

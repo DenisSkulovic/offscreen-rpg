@@ -4,9 +4,10 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
+import { outbox } from '@offscreen/db/outbox-schema';
 import {
   campaign,
   gameActionExecution,
@@ -26,7 +27,7 @@ import {
   provisionDisposableSandboxDatabase,
 } from '../dist/developer-tools/index.js';
 import { createStorytellerRuntime } from '../dist/storyteller/runtime.js';
-import { storytellerKind } from '../dist/storyteller/records.js';
+import { storytellerKind, storytellerTopic } from '../dist/storyteller/records.js';
 import {
   listExecutionStages,
   recordExecutionStage,
@@ -393,5 +394,107 @@ test('OBS02: duplicate stage insert is idempotent; foreign G stays empty', async
 
     const foreign = await listExecutionStages(database, randomUUID());
     assert.equal(foreign.length, 0);
+  });
+});
+
+async function countStorytellerNotices(database, generationId) {
+  const rows = await database.db
+    .select({ id: outbox.id })
+    .from(outbox)
+    .where(
+      and(eq(outbox.operationId, generationId), eq(outbox.topic, storytellerTopic)),
+    );
+  return rows.length;
+}
+
+test('ENG03: terminal materialize skip enqueues storyteller when ready+pending', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03-term-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedCommittedReceiptStory(database, storage);
+
+    const missing = await materializePendingActionCapture(
+      database,
+      randomUUID(),
+    );
+    assert.deepEqual(missing, { handled: false });
+
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+    const [receipt] = await database.db
+      .select()
+      .from(gameActionReceipt)
+      .where(eq(gameActionReceipt.operationId, seeded.operationId));
+    const generationId = receipt.generationId;
+    assert.ok(generationId);
+
+    const first = await materializePendingActionCapture(
+      database,
+      seeded.operationId,
+      storage,
+    );
+    assert.deepEqual(first, { handled: true, outcome: 'promoted' });
+    const [promoted] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, generationId));
+    assert.equal(promoted.kind, storytellerKind);
+    assert.equal(promoted.state, 'pending');
+
+    const [capture] = await database.db
+      .select()
+      .from(storytellerContextCapture)
+      .where(eq(storytellerContextCapture.captureId, generationId));
+    assert.equal(capture.state, 'ready');
+
+    const noticesAfterPromote = await countStorytellerNotices(
+      database,
+      generationId,
+    );
+    assert.ok(noticesAfterPromote >= 1);
+
+    const second = await materializePendingActionCapture(
+      database,
+      seeded.operationId,
+      storage,
+    );
+    assert.deepEqual(second, { handled: true, outcome: 'skipped' });
+    assert.equal(
+      await countStorytellerNotices(database, generationId),
+      noticesAfterPromote + 1,
+    );
+
+    const heldRoot = await mkdtemp(join(tmpdir(), 'eng03-held-'));
+    const heldStorage = new LocalDocumentStore(heldRoot);
+    const heldSeed = await seedCommittedReceiptStory(database, heldStorage);
+    await heldSeed.stories.prepareCampaignConsequence(heldSeed.operationId);
+    const [heldReceipt] = await database.db
+      .select()
+      .from(gameActionReceipt)
+      .where(eq(gameActionReceipt.operationId, heldSeed.operationId));
+    const heldGenerationId = heldReceipt.generationId;
+    for (let i = 0; i < 3; i++) {
+      await materializePendingActionCapture(
+        database,
+        heldSeed.operationId,
+      );
+    }
+    const [heldCapture] = await database.db
+      .select()
+      .from(storytellerContextCapture)
+      .where(eq(storytellerContextCapture.captureId, heldGenerationId));
+    assert.equal(heldCapture.state, 'held');
+    const beforeHeldRetry = await countStorytellerNotices(
+      database,
+      heldGenerationId,
+    );
+    const heldSkip = await materializePendingActionCapture(
+      database,
+      heldSeed.operationId,
+    );
+    assert.deepEqual(heldSkip, { handled: true, outcome: 'skipped' });
+    assert.equal(
+      await countStorytellerNotices(database, heldGenerationId),
+      beforeHeldRetry,
+    );
   });
 });

@@ -12,6 +12,10 @@ import {
 } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
+import {
+  startStorytellerDistributedLiveWorkers,
+  type StorytellerDistributedLiveWorkers,
+} from './storyteller-distributed-live-workers.js';
 import { createApp } from '@offscreen/api/app';
 import type { ChamberStorytellerControl } from '@offscreen/application/developer-tools';
 import type { StorytellerRuntimeOptions } from '@offscreen/application/storyteller';
@@ -55,6 +59,11 @@ export type AppIntegration = {
   stopWorker: () => Promise<void>;
 };
 
+/** Nest listen port; must match apps/web next.config build-time API_PROXY_ORIGIN default. */
+const INTEGRATION_API_PORT = 3001;
+/** Next --port; must match a web build whose rewrites still target INTEGRATION_API_PORT. */
+const INTEGRATION_WEB_PORT = 3100;
+
 async function release(steps: ReadonlyArray<() => void | Promise<void>>) {
   const failures: unknown[] = [];
   for (const step of steps) {
@@ -79,6 +88,8 @@ export async function withAppIntegration(
   options: {
     chamberStorytellerControl?: ChamberStorytellerControl;
     storytellerRuntime?: StorytellerRuntimeOptions;
+    /** STORY03 T06: relay plus control and executor Temporal workers. */
+    storytellerDistributedLive?: boolean;
   } = {},
 ) {
   const config = readDatabaseConfig({ DATABASE_URL: databaseURL });
@@ -89,7 +100,9 @@ export async function withAppIntegration(
     ),
   );
   const database = createDatabase(config, () => {});
-  const origin = 'http://127.0.0.1:3100';
+  const apiPort = INTEGRATION_API_PORT;
+  const webPort = INTEGRATION_WEB_PORT;
+  const origin = `http://127.0.0.1:${webPort}`;
   const utilities = testUtils();
   const strictUtilities = {
     ...utilities,
@@ -113,6 +126,9 @@ export async function withAppIntegration(
     ...(options.chamberStorytellerControl
       ? { chamberStorytellerControl: options.chamberStorytellerControl }
       : {}),
+    ...(options.storytellerRuntime?.documentStore
+      ? { documentStore: options.storytellerRuntime.documentStore }
+      : {}),
   });
   const helpers = (await auth.$context).test;
   const user = await helpers.saveUser(
@@ -122,12 +138,26 @@ export async function withAppIntegration(
   let web: ReturnType<typeof spawn> | undefined;
   let exited: Promise<unknown> | undefined;
   let runtime: Awaited<ReturnType<typeof startRuntime>> | undefined;
+  let distributedLive: StorytellerDistributedLiveWorkers | undefined;
   const stopWorker = async () => {
+    await distributedLive?.stop();
+    distributedLive = undefined;
     await runtime?.stop();
     runtime = undefined;
   };
   const restartWorker = async () => {
     await stopWorker();
+    if (options.storytellerDistributedLive) {
+      distributedLive = await startStorytellerDistributedLiveWorkers(
+        database,
+        {
+          ...(options.storytellerRuntime
+            ? { storytellerRuntime: options.storytellerRuntime }
+            : {}),
+        },
+      );
+      return;
+    }
     runtime = await startRuntime(
       database,
       {
@@ -140,7 +170,9 @@ export async function withAppIntegration(
     );
   };
   try {
-    await app.listen(3001, '127.0.0.1');
+    // Client /api requests use Next rewrites baked at web build time (default 127.0.0.1:3001);
+    // runtime API_INTERNAL_ORIGIN only affects SSR — do not use ephemeral apiPort without rebuilding web.
+    await app.listen(apiPort, '127.0.0.1');
     web = spawn(
       process.execPath,
       [
@@ -149,11 +181,14 @@ export async function withAppIntegration(
         '--hostname',
         '127.0.0.1',
         '--port',
-        '3100',
+        String(webPort),
       ],
       {
         cwd: fileURLToPath(new URL('../../../../../apps/web', import.meta.url)),
-        env: { ...process.env, API_INTERNAL_ORIGIN: 'http://127.0.0.1:3001' },
+        env: {
+          ...process.env,
+          API_INTERNAL_ORIGIN: 'http://127.0.0.1:3001',
+        },
         stdio: 'ignore',
         windowsHide: true,
       },
@@ -198,7 +233,7 @@ export async function withAppIntegration(
   } finally {
     await release([
       async () => {
-        await runtime?.stop();
+        await stopWorker();
       },
       async () => {
         if (web) {

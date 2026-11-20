@@ -344,4 +344,11 @@ export async function checkActivitySettlement(
   );
 }
 
-registerProfiledStoryteller(import.meta.url, 'fictional time settlement and optional reporting', checkActivitySettlement);
+registerProfiledStoryteller(
+  import.meta.url,
+  'fictional time settlement and optional reporting',
+  checkActivitySettlement,
+  {
+    distributedLive: process.env['STORYTELLER_DISTRIBUTED_V1'] === 'true',
+  },
+);

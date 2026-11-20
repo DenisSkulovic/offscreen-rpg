@@ -2,12 +2,12 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** pure chaos selector/preflight tasks now, app-Pod deletion only after real POC. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
 
-**State:** Implementing (2026-11-19). The first worker-loss runner passed on a disposable cluster. Not Done. The rest of the suite is unbuilt, and this packet is not archived.  
+**State:** Implementing (2026-11-19). The first worker-loss runner passed on a disposable cluster. **T01–T02 unit selector/preflight tests PASS @ `ec73a535` (27/27); T03 unit oracle/driver tests PASS @ `ec73a535` (10/10); live kind plan and live game-chaos NOT-RUN / BLOCKED-BY-POC.** Not Done. T04+ remain unselected on cluster; this packet is not archived.  
 **Kind:** implementation  
 **Execution selection:** This bounded runner only. Do not auto-run the remaining scenarios.  
 **Program:** [Distributed architecture lab queue](../../README.md)
 
-**Next source-inspected planning slice (2026-11-19, source baseline `584b594`):** the selected historical Rabbit consumer-loss case remains implemented and its receipt intact. The user has requested a future **zero-LLM-token real-game chaos monkey**, but **no Pod-kill game runner or real cluster game acceptance is implemented/selected by these docs**. [SOURCE-MAP.md](SOURCE-MAP.md) maps actual scripted fixture and lab guards, [EXECUTION.md](EXECUTION.md) specifies safe run modes, [PROOF.md](PROOF.md) is the fault/recovery catalog, and [TASKS.md](TASKS.md) splits future implementation into Composer-sized steps. [Mermaid explanation](../../../../docs/architecture/09-chaos-and-zero-token-play.md) is human-facing. **T01–T03 pure/dry-run are candidates for early selection; T04+ requires successful TURN02/TURN03 real app POC.** Use the existing K8S10 Change instead of creating a competing CHAOS01 or installing a heavy operator. Do not select the rest of K8S10 automatically.\n\n## Outcome
+**Next source-inspected planning slice (2026-11-19, source baseline `584b594`):** the selected historical Rabbit consumer-loss case remains implemented and its receipt intact. **T01–T02** landed the pure chaos selector and read-only preflight/plan CLI with **27/27** unit tests @ `ec73a535` (mocked kubectl; live kind `plan` **NOT-RUN**). **T03** landed the zero-provider scripted oracle and driver with **10/10** unit tests @ `ec73a535`; that tier does **not** certify distributed gameplay. The user has requested a future **zero-LLM-token real-game chaos monkey**, but **no Pod-kill game runner or real cluster game acceptance has run** — live game-chaos stays **NOT-RUN / BLOCKED-BY-POC**. [SOURCE-MAP.md](SOURCE-MAP.md) maps actual scripted fixture and lab guards, [EXECUTION.md](EXECUTION.md) specifies safe run modes, [PROOF.md](PROOF.md) is the fault/recovery catalog, and [TASKS.md](TASKS.md) splits future implementation into Composer-sized steps. [Mermaid explanation](../../../../docs/architecture/09-chaos-and-zero-token-play.md) is human-facing. **T04+ requires successful TURN02/TURN03 real app POC.** Use the existing K8S10 Change instead of creating a competing CHAOS01 or installing a heavy operator. Do not select the rest of K8S10 automatically.\n\n## Outcome
 
 Provide a safe, repeatable architecture experiment suite that proves or disproves our specific resilience hypotheses without provider spend or destructive data access.
 
@@ -64,6 +64,45 @@ Unchanged on purpose: `infra/kubernetes/lab/kind.yaml`, `infra/kubernetes/lab/up
 - `kind get clusters` then printed `No kind clusters found.` `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were present. No paid provider call was made.
 - The full suite in the planned delta, including broker outage, DB failover, a slow local stand-in, traffic burst, and resource pressure, was not run. No model call was made.
 
+## T01–T02 VERIFY receipt (selector + preflight, 2026-11-20 @ `ec73a535`)
+
+**Command (unit only, no cluster):** `node --test infra/kubernetes/lab/chaos/test/selector.test.mjs infra/kubernetes/lab/chaos/test/preflight.test.mjs` → **27/27 PASS**.
+
+**Positive:** pure `selectTarget` deterministic among sorted eligible candidates; preflight `plan` mode validates release/context snapshot and emits sanitized plan JSON via T01 on mocked cluster fixtures.
+
+**Negative (selector refuses):** ineligible Pods, changed owner UID, missing eligibility marker, disallowed data/system namespaces.
+
+**Negative (preflight refuses):** wrong cluster/context, unknown release, conflicting run; fake kubectl spy has **zero mutating invocations**.
+
+**NOT-RUN:** live kind `plan` against a real cluster; `--execute` and any kubectl mutation — tier remains unit/mocked only. T04 **BLOCKED-BY-POC**.
+
+**Done eligibility:** **No.** T04–T07 and canonical wiki reconciliation remain open. This receipt does not promote the Change to Done.
+
+| Layer | Command / surface | Result | Tier |
+| --- | --- | --- | --- |
+| T01 | `selector.test.mjs` (in combined run) | **PASS** | unit / synthetic Pod JSON |
+| T02 | `preflight.test.mjs` (in combined run) | **PASS** | unit / mocked kubectl |
+| T01–T02 | Live kind `plan` | **NOT-RUN** | no real cluster in this gate |
+| T04 | One allowlisted Pod deletion | **BLOCKED-BY-POC** | unchanged; not selected |
+
+## T03 VERIFY receipt (zero-provider oracle, 2026-11-20 @ `ec73a535`)
+
+**Command (unit only, no cluster):** `node --test infra/kubernetes/lab/chaos/test/oracle.test.mjs infra/kubernetes/lab/chaos/test/scripted-driver.test.mjs` → **10/10 PASS**.
+
+**Positive:** `readOnlyOracle` and scripted driver assert revision/operation/passage alignment, checkpoint/root hashes, view version, `modelDispatchAttempts=0`, and forbidden-provider non-invocation on the approved in-process adapters.
+
+**Negative (oracle FAIL):** `duplicate_passage_for_operation`, `missing_canon_root_object`, `forbidden_provider_invoked`, `branch_leak_parent_future`.
+
+**NOT-RUN:** live game-chaos on kind, Pod deletion, kubectl mutation, authenticated GA start path, or any proof that faults recover across distributed Pods — **BLOCKED-BY-POC** until TURN02/TURN03 real app POC (same gate as [TASKS.md](TASKS.md) T04).
+
+**Done eligibility:** **No.** T04–T07 and canonical wiki reconciliation remain open. This receipt does not promote the Change to Done and does not claim game-chaos PASS.
+
+| Layer | Command / surface | Result | Tier |
+| --- | --- | --- | --- |
+| T03 | `oracle.test.mjs` + `scripted-driver.test.mjs` | **10/10 PASS** | unit / in-process adapters |
+| T03 | Live cluster game-chaos | **NOT-RUN** | BLOCKED-BY-POC |
+| T04 | One allowlisted Pod deletion | **BLOCKED-BY-POC** | unchanged; not selected |
+
 ## Reconciliation ledger (fill before Done)
 
 The first worker-loss case is recorded here. The packet stays open because the remaining scenarios are unbuilt.
@@ -73,6 +112,8 @@ The first worker-loss case is recorded here. The packet stays open because the r
 | docs/technical/platform/deployment-and-compatibility.md#tests-that-demonstrate-the-architecture | technical | changed: the section records run fault-ed09a6e1b8b5c5f5 as one-replica broker redelivery and keeps the database-commit row unproven | infra/kubernetes/lab/fault/run.sh in this worktree on baseline 4a556223 | fixture-tested | The exactly-once assertion exited 1 after two APPLY lines, and the run is not machine-level HA | docs/runbooks/kubernetes-fault.md |
 | docs/technical/platform/topology.md#distributed-learning-target | technical | unchanged because the dated proof stays in the fault runbook and this packet does not edit the laboratory table | no edit; baseline 4a556223 | reviewed | A one-replica replay is not recorded here as machine-level HA | heading not edited |
 | docs/runbooks/kubernetes-fault.md#what-this-procedure-is | related | changed: the runbook records the worker-loss procedure, the dated evidence, and the one-replica limit | infra/kubernetes/lab/fault/run.sh in this worktree on baseline 4a556223 | fixture-tested | Unavailable is not lost, and replayed is not an exactly-once effect | docs/runbooks/README.md |
+| Change packet receipt (T01–T02) | related | no-op on `docs/product` or `docs/technical` this turn; unit selector/preflight receipt only | `infra/kubernetes/lab/chaos/test/{selector,preflight}.test.mjs` @ `ec73a535` | unit-tested | Live kind `plan` **NOT-RUN**; ineligible Pods and wrong-cluster refusals pass | [TASKS.md](TASKS.md) T01–T02 |
+| Change packet receipt (T03) | related | no-op on `docs/product` or `docs/technical` this turn; unit oracle receipt only | `infra/kubernetes/lab/chaos/test/{oracle,scripted-driver}.test.mjs` @ `ec73a535` | unit-tested | Live game-chaos **NOT-RUN**; four named oracle negatives fail as expected | [TASKS.md](TASKS.md) T03 |
 
 ## Closure and lifecycle
 

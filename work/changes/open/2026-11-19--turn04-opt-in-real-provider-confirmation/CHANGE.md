@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: provider-disabled safety preparation only; actual send owner-locked. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Proposed; requires separate explicit owner spending authorization (2026-11-19)  
+**State:** Proposed; requires separate explicit owner spending authorization (2026-11-19). **T01 VERIFY PASS** at `ec73a535` (2026-11-20): zero-spend OBS00/budget overlap **23/23**, zero sends; `storyteller-provider-budget` **3/3**; `storyteller-provider-recovery` **4/4** (`dispatchAuthority` null → refuse, `unsentCalls===0`). **T02 PLANNER-BLOCKED.** **T03 live continuation NOT AUTHORIZED.** Packet open; **not Done**; paid live dispatch **DENIED**.  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; paid call specifically requires new explicit authorization even if a batch is approved.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -53,6 +53,6 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 | Product acceptance | unchanged | Pending | Pending | Pending | Pending |
 | Runtime and service owners | review/reconcile | Pending | Pending | Pending | Pending |
 | Data/Storyteller/fork | review/reconcile | Pending | Pending | Pending | Pending |
-| Test/runbook/status | actual executable run | Pending | Pending | Pending | Pending |
+| Test/runbook/status | T01 zero-spend slices @ `ec73a535`; hidden price / untrusted usage / dedicated TURN04 fixture **NOT-RUN** | `ec73a535` | Overlap 23/23 + budget 3/3 + recovery 4/4, zero sends | Live send, T03, full T01 negative matrix | Open |
 
 Complete ledger, run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, archive only actual results, and repair inbound links. No automatic next Change.

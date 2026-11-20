@@ -56,13 +56,38 @@ HK09 cancelled DIST05 as superseded. These checks were not already stated above.
 - If generation or usage rows must be written, that write stays a narrow attempt-recording boundary and must not become broad game-write authority.
 - This split must not be read as a historical fork from an older scene.
 
+## T06 evidence | PARTIAL VERIFY (`ec73a535`, 2026-11-20)
+
+**Task:** [TASKS.md#t06--saved-result-crash--real-integration-handoff--partial-verify-ec73a535](TASKS.md). **Depth:** VERIFY slice only. **Change state:** Proposed/unselected — **not Done**. **Live gate:** `STORYTELLER_LIVE_ENABLED=false`. No paid provider send claimed.
+
+**Decomposed suites (all PASS at recorded HEAD):**
+
+| Suite scope | Result |
+| --- | --- |
+| `@offscreen/application` story03-focused suites | **7/7** |
+| `@offscreen/worker` distributed + unit | **10/10** |
+| `@offscreen/workflows` contract | **4/4** |
+| GA publish unit | **6/6** |
+| GA custody persistence | **3/3** |
+| `tools/api-integration` `pnpm test:story03-t06:worker-replay` (`DATABASE_TEST_URL=offscreen_auth_test`) | **2/2 PASS** (~19s) |
+
+**Worker-replay integration (leftover T06 VERIFY):** `tools/api-integration` `pnpm test:story03-t06:worker-replay` with `STORYTELLER_LIVE_ENABLED=false` and disposable `DATABASE_TEST_URL=offscreen_auth_test` — **2/2 PASS** (~19s). Nested cases: worker restart and activity replay settle **one finite action exactly once**; orphan outbox **drained=0**. Does **not** establish GET scene once, live executor-kill after saved result, stale-root → held, or publication-context integration.
+
+**New live handoff:** `apps/worker/test/story03-distributed-handoff.live.test.ts` — **1/1 PASS** after GA seam restore (`pnpm --filter @offscreen/game-authority test` **15 pass / 3 skip**; worker rebuild then live test ~7s). Control + executor workers DRAINED/STOPPED; **no** unauthorized; **no** teardown hang on this run. Repeat-stability across many reruns still not a T06 close.
+
+**Packaging unblock:** `packages/application` export subpath `./storyteller/saved-generation-publish` added so GA adoption tests import without deep paths.
+
+**NOT-RUN or partial (truthful):** `tools/api-integration` `test:story03-t06:publication-context`, browser-creation, `test:story03-t06:activity-settlement`; `apps/worker/test/eng06-worker-restart.live.test.ts`; `packages/application/test/scene-checkpoint-publication.test.mjs`; GET scene once after publication; live executor-kill after saved result; stale-root → held end-to-end. Canonical technical headings in `docs/technical/storyteller/generation-and-publication.md`, `docs/technical/platform/execution-and-delivery.md`, and architecture atlas chapters 2–4 were **not** updated in this slice.
+
+**Negative reading (mandatory):** A reader **must not** conclude that the two-process **local** live test or **worker-replay 2/2** closes [TURN03](../../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) Cross-Pod turn proof, full Kubernetes multi-Pod operation, or **T06 closure**. Scripted decomposed suites, one passing local handoff, and worker-replay integration do not establish executor-kill recovery, stale-root held behavior, publication-context integration, or full saved-result → GA adopt → single GET scene chain. DIST01 and BOOT03 canonical technical headings were not edited.
+
 ## Reconciliation ledger (fill before closure)
 
 | Authority | Planned delta / no-op | Source SHA/diff | Positive / negative proof | Link/status |
 | --- | --- | --- | --- | --- |
-| Product | unchanged | Pending | Pending | Pending |
-| Storyteller input + attempt custody | implement | Pending | Pending | Pending |
-| Game Authority publication + canon | review or bounded update | Pending | Pending | Pending |
-| Workflow / runtime / docs | versioned implementation | Pending | Pending | Pending |
+| Product | unchanged | `ec73a535` | No gameplay or Storyteller product rule edit in this slice | unchanged / N/A |
+| Storyteller input + attempt custody | implement (in progress) | `ec73a535`; decomposed application/worker tests; api-integration worker-replay | **Positive:** application story03 **7/7**, worker **10/10**; live handoff **1/1** teardown clean; `test:story03-t06:worker-replay` **2/2** (~19s), one finite action per replay, orphan outbox **drained=0**. **Negative:** executor-kill and stale-root e2e **NOT-RUN** | PARTIAL VERIFY (T06) |
+| Game Authority publication + canon | review or bounded update | `ec73a535`; GA unit **6/6**, custody **3/3** | **Positive:** publish/custody unit suites green. **Negative:** scene-checkpoint-publication, GET scene once, `test:story03-t06:publication-context` **NOT-RUN** | PARTIAL VERIFY (T06) |
+| Workflow / runtime / docs | versioned implementation | `ec73a535`; workflows **4/4**; `./storyteller/saved-generation-publish` export; worker-replay integration | **Positive:** contract tests pass; one local distributed handoff **1/1** once; worker-replay **2/2**. **Negative:** `activity-settlement` integration, workflows docs/atlas/technical owners **not** reconciled; T06 **not** closed | PARTIAL VERIFY (T06); Change **Proposed** |
 
 Run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, repair inbound links and archive actual outcome. No unverified Done.

@@ -1,6 +1,11 @@
-import { storytellerTopic } from '@offscreen/application/storyteller';
+import {
+  storytellerTopic,
+  storytellerDistributedTopic,
+} from '@offscreen/application/storyteller';
 import {
   storytellerWorkflowType,
+  storytellerDistributedWorkflowType,
+  storytellerControlTaskQueue,
   storytellerWorkflowId,
   campaignActivityWorkflowType,
   campaignActivityWorkflowId,
@@ -66,6 +71,11 @@ const noticeDispatch = {
     workflowType: storytellerWorkflowType,
     workflowId: storytellerWorkflowId,
   },
+  [storytellerDistributedTopic]: {
+    kind: 'start',
+    workflowType: storytellerDistributedWorkflowType,
+    workflowId: storytellerWorkflowId,
+  },
   [intervalWakeTopic]: {
     kind: 'wake',
     workflowId: controlledIntervalWorkflowId,
@@ -97,6 +107,7 @@ export const dispatchedNoticeTopics = [
   'campaign.activity.v1',
   campaignConsequenceTopic,
   storytellerTopic,
+  storytellerDistributedTopic,
   scriptedOpeningTopic,
   scriptedContinuationTopic,
   controlledIntervalTopic,
@@ -117,6 +128,50 @@ type DeliverNotice = {
   operationId: string;
 };
 
+/** Stable generation workflow identity; distributed recovery must not fork by notice id. */
+export function storytellerNoticeWorkflowId(notice: DeliverNotice): string {
+  if (notice.topic === storytellerDistributedTopic) {
+    return storytellerWorkflowId(notice.operationId);
+  }
+  if (notice.topic === storytellerTopic) {
+    return storytellerWorkflowId(notice.id ?? notice.operationId);
+  }
+  throw new Error(`Unexpected storyteller notice topic: ${notice.topic}`);
+}
+
+function resolveStartWorkflowId(
+  notice: DeliverNotice,
+  dispatch: StartNotice,
+): string {
+  if (
+    notice.topic === storytellerTopic ||
+    notice.topic === storytellerDistributedTopic
+  ) {
+    return storytellerNoticeWorkflowId(notice);
+  }
+  return dispatch.workflowId(notice.id ?? notice.operationId);
+}
+
+function resolveWorkflowTaskQueue(
+  notice: DeliverNotice,
+  relayTaskQueue: string,
+): string {
+  if (notice.topic === storytellerDistributedTopic) {
+    return storytellerControlTaskQueue;
+  }
+  return relayTaskQueue;
+}
+
+/** Failed storyteller runs must be restartable from a settlement follow-up notice. */
+function resolveWorkflowIdReusePolicy(
+  topic: string,
+): 'ALLOW_DUPLICATE_FAILED_ONLY' | 'REJECT_DUPLICATE' {
+  if (topic === storytellerTopic || topic === storytellerDistributedTopic) {
+    return 'ALLOW_DUPLICATE_FAILED_ONLY';
+  }
+  return 'REJECT_DUPLICATE';
+}
+
 export async function deliverOutboxNotice(
   notice: DeliverNotice,
   deps: {
@@ -124,11 +179,12 @@ export async function deliverOutboxNotice(
     client: Client;
     taskQueue: string;
     intervalNeedsWake: (intervalId: string) => Promise<boolean>;
+    generationExists?: (operationId: string) => Promise<boolean>;
   },
 ) {
   const dispatch = selectNoticeDispatch(notice.topic);
   if (!dispatch) {
-    return;
+    throw new Error(`Outbox topic is not dispatchable: ${notice.topic}`);
   }
   if (dispatch.kind === 'wake') {
     if (await deps.intervalNeedsWake(notice.operationId)) {
@@ -140,12 +196,23 @@ export async function deliverOutboxNotice(
     }
     return;
   }
+  // Optional test-only guard: production relay must not pass generationExists —
+  // a false negative here makes deliverOutboxNotice return cleanly and relayOne
+  // ACKs the notice, permanently dropping Gary's storyteller wake.
+  if (
+    (notice.topic === storytellerTopic ||
+      notice.topic === storytellerDistributedTopic) &&
+    deps.generationExists &&
+    !(await deps.generationExists(notice.operationId))
+  ) {
+    return;
+  }
   try {
     await deps.connection.withDeadline(Date.now() + startDeadlineMs, () =>
       deps.client.workflow.start(dispatch.workflowType, {
-        workflowId: dispatch.workflowId(notice.id ?? notice.operationId),
-        taskQueue: deps.taskQueue,
-        workflowIdReusePolicy: 'REJECT_DUPLICATE',
+        workflowId: resolveStartWorkflowId(notice, dispatch),
+        taskQueue: resolveWorkflowTaskQueue(notice, deps.taskQueue),
+        workflowIdReusePolicy: resolveWorkflowIdReusePolicy(notice.topic),
         args: [notice.operationId],
       }),
     );

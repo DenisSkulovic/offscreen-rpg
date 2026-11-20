@@ -12,7 +12,11 @@ import type * as Drizzle from 'drizzle-orm' with {
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { createDrafts } from '@offscreen/application/drafts';
 import { createScriptedOpenings } from '@offscreen/application/generations';
-import { createStorytellerRuntime } from '@offscreen/application/storyteller';
+import {
+  createStorytellerRuntime,
+  storytellerDistributedTopic,
+  storytellerTopic,
+} from '@offscreen/application/storyteller';
 import {
   createChamber,
   createChamberStorytellerControl,
@@ -23,6 +27,11 @@ import {
   withAppIntegration,
   type AppIntegration,
 } from './helpers/app-integration.js';
+import {
+  Client,
+  Connection,
+  WorkflowNotFoundError,
+} from '@temporalio/client';
 
 export const orm: typeof Drizzle = createRequire(import.meta.url)('drizzle-orm');
 export const { asc, eq } = orm;
@@ -199,9 +208,95 @@ export type ProfiledStoryteller = ProfiledActors & {
   first: Awaited<ReturnType<ProfiledActors['candidate']>>;
 };
 
-/** Same profiled stack as the original single-file suite. The worker stays stopped until a case starts it. */
+type ProfiledStorytellerOptions = {
+  /**
+   * Browser cases own the full draft/opening path and must not enqueue a
+   * profiled fixture candidate while the relay is idle, or a stale notice can
+   * sit ahead of resolution wakes.
+   */
+  skipFixtureCandidate?: boolean;
+  /** STORY03 T06: start relay + control + executor against live Temporal. */
+  distributedLive?: boolean;
+};
+
+/** Remove undelivered profiled notices whose operation_id no longer exists (stale relay litter on disposable DBs). */
+async function drainOrphanStorytellerOutbox(
+  database: AppIntegration['database'],
+): Promise<number> {
+  const storytellerTopics = [storytellerTopic, storytellerDistributedTopic];
+  const result = await database.db.$client.query<{ count: string }>(
+    `WITH deleted AS (
+       DELETE FROM outbox o
+       WHERE o.delivered_at IS NULL
+         AND o.topic = ANY($1::text[])
+         AND NOT EXISTS (
+           SELECT 1 FROM generation g WHERE g.id = o.operation_id
+         )
+       RETURNING 1
+     )
+     SELECT count(*)::text AS count FROM deleted`,
+    [storytellerTopics],
+  );
+  return Number(result.rows[0]?.count ?? 0);
+}
+
+export type TerminateOpenStorytellerWorkflowsResult = {
+  listed: number;
+  terminated: number;
+  ignored: number;
+};
+
+/** Terminate stale open storyteller/{generationId} runs (legacy and distributed types share this id). */
+export async function terminateOpenStorytellerWorkflows(): Promise<TerminateOpenStorytellerWorkflowsResult> {
+  const address = process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233';
+  const namespace = process.env['TEMPORAL_NAMESPACE'] ?? 'default';
+  const connection = await Connection.connect({ address });
+  const client = new Client({ connection, namespace });
+  const counts: TerminateOpenStorytellerWorkflowsResult = {
+    listed: 0,
+    terminated: 0,
+    ignored: 0,
+  };
+  try {
+    const query =
+      'WorkflowId STARTS_WITH "storyteller/" AND (ExecutionStatus = "Running" OR ExecutionStatus = "ContinuedAsNew")';
+    for await (const execution of client.workflow.list({ query })) {
+      if (!execution.workflowId.startsWith('storyteller/')) {
+        continue;
+      }
+      counts.listed += 1;
+      const handle = client.workflow.getHandle(
+        execution.workflowId,
+        execution.runId,
+      );
+      try {
+        await handle.terminate(
+          'offscreen api-integration storyteller suite cleanup',
+        );
+        counts.terminated += 1;
+      } catch (error) {
+        if (error instanceof WorkflowNotFoundError) {
+          counts.ignored += 1;
+          continue;
+        }
+        const code = (error as { code?: string }).code;
+        if (code === 'NOT_FOUND' || code === 'WORKFLOW_NOT_FOUND') {
+          counts.ignored += 1;
+          continue;
+        }
+        throw error;
+      }
+    }
+  } finally {
+    await connection.close().catch(() => undefined);
+  }
+  return counts;
+}
+
+/** Same profiled stack as the original single-file suite. The outbox relay runs before any in-process `candidate()` so profiled notices wake on the integration worker queue. */
 export async function withProfiledStoryteller(
   run: (suite: ProfiledStoryteller) => Promise<void>,
+  options: ProfiledStorytellerOptions = {},
 ): Promise<void> {
   const chamberStorytellerControl = createChamberStorytellerControl();
   // ENG03-narrow: provisional action-narration captures are promoted to a
@@ -222,6 +317,16 @@ export async function withProfiledStoryteller(
       restartWorker,
       stopWorker,
     }) => {
+      const orphanDrained = await drainOrphanStorytellerOutbox(database);
+      const temporalCleanup = await terminateOpenStorytellerWorkflows();
+      console.info(
+        '[withProfiledStoryteller] orphan outbox rows drained=%s temporal listed=%s terminated=%s ignored=%s',
+        orphanDrained,
+        temporalCleanup.listed,
+        temporalCleanup.terminated,
+        temporalCleanup.ignored,
+      );
+      await restartWorker();
       const actors = bindProfiledActors({
         database,
         ownerId,
@@ -232,7 +337,14 @@ export async function withProfiledStoryteller(
         stopWorker,
         captureStore,
       });
-      const first = await actors.candidate();
+      const first = options.skipFixtureCandidate
+        ? ({
+            draftId: '00000000-0000-4000-8000-000000000002',
+            generationId: '00000000-0000-4000-8000-000000000003',
+            storyId: '00000000-0000-4000-8000-000000000004',
+            snapshot: { storyId: '00000000-0000-4000-8000-000000000004' },
+          } as unknown as ProfiledStoryteller['first'])
+        : await actors.candidate();
       await run({ ...actors, first });
     },
     {
@@ -241,6 +353,9 @@ export async function withProfiledStoryteller(
         scriptedGate: chamberStorytellerControl.evaluate,
         documentStore: captureStore,
       },
+      ...(options.distributedLive
+        ? { storytellerDistributedLive: true }
+        : {}),
     },
   );
 }
@@ -250,6 +365,7 @@ export function registerProfiledStoryteller(
   moduleUrl: string,
   name: string,
   check: (t: TestContext, suite: ProfiledStoryteller) => Promise<void>,
+  options: ProfiledStorytellerOptions = {},
 ) {
   const entry = process.argv[1]
     ? pathToFileURL(process.argv[1]).href
@@ -260,6 +376,6 @@ export function registerProfiledStoryteller(
   test(name, { timeout: 240000 }, async (t) => {
     await withProfiledStoryteller(async (suite) => {
       await check(t, suite);
-    });
+    }, options);
   });
 }

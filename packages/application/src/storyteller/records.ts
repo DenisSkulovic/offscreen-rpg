@@ -14,7 +14,19 @@ import type { Database } from '@offscreen/db';
 import { recordExecutionStage } from './execution-stages';
 
 export const storytellerKind = 'storyteller.profiled.v1';
+/** Legacy monolith workflow selector; frozen on each durable notice at admission. */
 export const storytellerTopic = 'storyteller.profiled.v1';
+/** Versioned distributed workflow selector; frozen on each durable notice at admission. */
+export const storytellerDistributedTopic = 'storyteller.distributed.v1';
+
+/** Runtime flag at task admission only. Relay must read the persisted notice topic. */
+export function selectStorytellerNoticeTopicAtAdmission(
+  env: NodeJS.ProcessEnv = process.env,
+): typeof storytellerTopic | typeof storytellerDistributedTopic {
+  return env['STORYTELLER_DISTRIBUTED_V1'] === 'true'
+    ? storytellerDistributedTopic
+    : storytellerTopic;
+}
 
 export function storytellerGenerations(database: Database) {
   return createGenerations(database, {
@@ -42,7 +54,7 @@ export async function insertStorytellerTask(
   await enqueue(tx, {
     id: input.id,
     operationId: input.id,
-    topic: storytellerTopic,
+    topic: selectStorytellerNoticeTopicAtAdmission(),
   });
 }
 export async function setPublication(

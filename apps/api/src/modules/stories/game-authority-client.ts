@@ -1,13 +1,24 @@
 import { StoryError } from '@offscreen/application/stories';
+import type { CampaignStart } from '@offscreen/contracts/campaign';
 import {
   gameAuthorityActorIdSchema,
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
 } from '@offscreen/contracts/game-authority';
+import { startStorySchema } from '@offscreen/contracts/stories';
 import { z } from 'zod';
+
+export type StartFromCandidateInput = {
+  ownerId: string;
+  storyId: string;
+  candidateId: string;
+  expectedDraftRevision: number;
+  campaign?: CampaignStart;
+};
 
 export type StorySeam = {
   read(args: { ownerId: string; storyId: string }): Promise<unknown>;
+  startFromCandidate(args: StartFromCandidateInput): Promise<unknown>;
   admitResolution(args: {
     ownerId: string;
     storyId: string;
@@ -68,9 +79,20 @@ export function readStoryAuthorityConfig(
   };
 }
 
+function startRequestBody(
+  input: Omit<StartFromCandidateInput, 'ownerId' | 'storyId'>,
+) {
+  return startStorySchema.parse({
+    candidateId: input.candidateId,
+    expectedDraftRevision: input.expectedDraftRevision,
+    ...(input.campaign !== undefined ? { campaign: input.campaign } : {}),
+  });
+}
+
 export function createLocalStorySeam(stories: StorySeam): StorySeam {
   return {
     read: (args) => stories.read(args),
+    startFromCandidate: (args) => stories.startFromCandidate(args),
     admitResolution: (args) => stories.admitResolution(args),
   };
 }
@@ -154,6 +176,20 @@ export function createRemoteStorySeam(
         method: 'GET',
         path: `/internal/v1/stories/${id.data}`,
         ownerId,
+      });
+    },
+    startFromCandidate({ ownerId, storyId, candidateId, expectedDraftRevision, campaign }) {
+      const id = gameAuthorityStoryIdSchema.safeParse(storyId);
+      if (!id.success) throw new StoryError('invalid');
+      return callGameAuthority(config, {
+        method: 'PUT',
+        path: `/internal/v1/stories/${id.data}/start`,
+        ownerId,
+        body: startRequestBody({
+          candidateId,
+          expectedDraftRevision,
+          ...(campaign !== undefined ? { campaign } : {}),
+        }),
       });
     },
     admitResolution({ ownerId, storyId, operationId, body }) {

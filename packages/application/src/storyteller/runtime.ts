@@ -10,7 +10,11 @@ import {
 import { publishStorytellerResult } from './publication';
 import { storytellerKind } from './records';
 import { StoryError } from '../stories/errors';
-export { storytellerTopic } from './records';
+export {
+  storytellerTopic,
+  storytellerDistributedTopic,
+  selectStorytellerNoticeTopicAtAdmission,
+} from './records';
 export type { StorytellerRuntimeOptions } from './execution';
 
 /** Compact durable entry point: execute outside transactions, then publish under the story lock. */
@@ -60,6 +64,12 @@ export function createStorytellerRuntime(
           );
         } catch (error) {
           if (!(error instanceof StoryError)) {
+            throw error;
+          }
+          if (
+            error.code === 'unavailable' &&
+            error.reason === 'pending-consequence-not-settled'
+          ) {
             throw error;
           }
           await database.db.transaction(async (tx) => {

@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: pinned S3 bootstrap, real images and one serialized cluster join. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Proposed, dependency gated (2026-11-19)  
+**State:** Proposed, dependency gated (2026-11-19); **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); kind/cluster **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -37,7 +37,7 @@ Shared SQL migration sequences, Kubernetes Gateway, canonical docs and final acc
 
 Image generation, live multiplayer, Stripe/subscription billing, production customer usage reconciliation, Cognee/vector/graph adoption, arbitrary Code Mode, full ruleset implementation, paid provider access except when TURN04 is individually authorized, cloud HA and full chaos/load program. The complete fake POC **includes** historically forkable scenes and source-faithful canonical state; do not relax this to “two passages displayed”.
 
-## planned-impact.v1
+## Planned specification and implementation delta | planned-impact.v1
 
 | Plane | Intended owner and effect | Closure requirement |
 | --- | --- | --- |
@@ -46,13 +46,40 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 | Code | Bounded deployment/test/provider work described above, not a parallel rewrite of existing implementation Changes | Source tests, integration evidence and no silent skipped gates |
 | Related | Queue pointers, operations runbook, evidence/STATUS and reconciled authoritative docs | Wiki/link guards and truthful status |
 
+## T01 VERIFY receipt (pinned default rules startup, 2026-11-20 @ `ec73a535`)
+
+**Proved on MAIN** @ `ec73a535` (documentation-only receipt this turn; no `apps/api` source edit): after `pnpm run build`, `apps/api/test/default-rules-startup.test.mjs` — **5/5 PASS**.
+
+**Positive (unit scope):** pinned S3 manifest path resolves default rules **without** local source-directory import.
+
+**Negative (unit scope):** conflicting hash+source configuration rejected; invalid pinned hash rejected before manifest lookup; missing manifest fails closed; Compose-style directory import when hash unset **PASS**.
+
+**NOT-RUN:** Nest process boot against a real S3 endpoint; full API listen/ready on release port (suite does **not** use port **3001**). Real Pod/S3 bootstrap remains for T04+ cluster proof.
+
+**Done eligibility:** **No.** T03–T06, cluster integrator work, and ledger closure guards remain open. **T04** stays **gated** until **T03**. This receipt does not promote the Change to Done and does not claim a reproducible Kubernetes release.
+
+## T02 PATCH receipt (API/GA images, 2026-11-20 @ `ec73a535`)
+
+**Proved in worktree** `/home/dskul/projects/offscreen-rpg-turn02-t02`, then **copied onto MAIN** (packet docs only in this turn; game paths untracked until owner commit): `infra/kubernetes/lab/app-release/Dockerfile.api`, `Dockerfile.game-authority`, `build.sh`, `prepare-runtime-tree.sh`, supporting shims, and smoke tests under `infra/kubernetes/lab/app-release/test/` — **5/5 PASS** (`dockerfile-guard`, `image-closure`, `pod-bind-smoke` including loopback sibling negative).
+
+**Positive (local smoke only):** frozen workspace-root image build path; compiled runtime closure; Pod-interface bind with `API_HOST` / `GAME_AUTHORITY_HOST=0.0.0.0` in release image env.
+
+**Negative (asserted in smoke):** `content/` tree **not** staged into images (`build.sh` rsync exclude); **loopback bind not reachable from a sibling container** (discriminating pod-bind case).
+
+**NOT-RUN:** kind image load, migration Job, overlay apply, Pod Ready, authenticated edge, or any end-to-end Kubernetes game path. **`Dockerfile.web` (T03) on MAIN was not overwritten** by this slice.
+
+**Done eligibility:** **No.** T03–T06, cluster integrator work, and ledger closure guards remain open (T01 verified separately). This receipt does not promote the Change to Done and does not claim a reproducible Kubernetes release.
+
 ## Reconciliation ledger (complete before Done)
 
-| Claim / document | Delta or no-op | Source SHA and diff | Positive evidence | Negative evidence | Link/status |
+| Authority | Target claim / no-op | Inspected source SHA and diff | Normal proof | Negative proof | Source link |
 | --- | --- | --- | --- | --- | --- |
-| Product acceptance | unchanged | Pending | Pending | Pending | Pending |
-| Runtime and service owners | review/reconcile | Pending | Pending | Pending | Pending |
-| Data/Storyteller/fork | review/reconcile | Pending | Pending | Pending | Pending |
-| Test/runbook/status | actual executable run | Pending | Pending | Pending | Pending |
+| Product | unchanged | `ec73a535`; no product page edit | N/A | N/A | open |
+| `apps/api` default-rules bootstrap (packet evidence only; canonical technical owners unreconciled) | open; pinned-manifest startup behavior recorded, not deployment doc closure | `ec73a535`; `default-rules-startup.test.mjs` exercised post-build | post-`pnpm run build` suite **5/5** | conflicting hash+source, invalid hash, missing manifest; Compose path when hash unset **PASS** | [TASKS.md](TASKS.md) T01 |
+| [deployment-and-compatibility](../../../../docs/technical/platform/deployment-and-compatibility.md) | open; T02 lab image build only (not reconciled this slice) | `ec73a535`; `infra/kubernetes/lab/app-release/Dockerfile.{api,game-authority}`, `build.sh` on MAIN (untracked until commit) | worktree + MAIN smoke **5/5** | `content/` not in image; loopback sibling unreachable; kind **NOT-RUN** | [TASKS.md](TASKS.md) T02 |
+| Data/Storyteller/fork | review/reconcile pending T04+ | Pending | Pending | Pending | open |
+| Change packet receipt | no product/technical behavior impacted in `docs/product` or `docs/technical` this turn | packet docs @ `ec73a535` | T01 VERIFY + T02 PATCH receipts | no Kubernetes release claimed; Nest on real S3 **NOT-RUN** | [CHANGE.md](CHANGE.md) T01/T02 sections |
+
+**Guard (2026-11-20):** `pnpm wiki:change-guard --mode plan --change` this packet — run after ledger edits; close mode still blocked until T06 cluster proof.
 
 Complete ledger, run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, archive only actual results, and repair inbound links. No automatic next Change.
