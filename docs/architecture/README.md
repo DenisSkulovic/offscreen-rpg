@@ -1,5 +1,7 @@
 # Architecture atlas | see the game, the system and its failure boundaries
 
+**Storyteller evolution reading rule:** this atlas explains the target selected in product/technical owners. Where an older diagram still shows preview/Start, flat manifests, quiescent-only forks or a universal character/D&D shape, follow the linked permanent owner instead. The target flow is **Play/Story Prompt → writer mission over rooted Library → Game Authority → coherent published scene → review/fork from that exact boundary**.
+
 **For humans first.** This is the visually navigable front door to the architecture, not an alternative source of truth. Product behavior remains under [product](../product/README.md), technical contracts under [technical](../technical/README.md), concrete capabilities under [STATUS](../../STATUS.md), and future implementation work under [Changes](../../work/changes/README.md). The diagrams describe connections, not authority to add mechanics or deploy services.
 
 **Inspection baseline:** code and documents from Git snapshot 584b594 (2026-11-19), supplemented by that day's planning handoffs. **Diagrams are intentionally labeled:**
