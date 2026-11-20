@@ -118,10 +118,27 @@ A writer mission normally follows this adaptive cycle:
 1. **Orient:** understand the task, captured root, current situation and available Library/skill/tool surface.
 2. **Investigate as needed:** browse paths, search, inspect exact sources, compare revisions or ask a bounded assistant to investigate a separable question.
 3. **Draft:** stage notes, proposed source changes and scene prose in the Workdesk.
-4. **Reread and revise:** inspect the staged diff and the evidence it relies on; repair contradictions or weak prose.
+4. **Reread and revise:** inspect staged material/diff and the evidence it relies on; repair contradictions or weak prose.
 5. **Submit:** provide one structured scene/publication proposal with source handles, choices/intentions and proposed document changes.
 
-These are capabilities, not mandatory five ceremonial model calls. The controller may collapse trivial steps, and it may loop investigation/revision while admitted cost and latency remain. It stops on a valid proposal, explicit hold/refusal, exhausted resource policy or unrecoverable authority conflict.
+These are capabilities, not mandatory five ceremonial model calls. The controller may collapse trivial steps, loop investigation/revision while admitted resources remain, or stop on a typed hold.
+
+### Existing retrieval/publication discipline retained
+
+The loop owner is [operation and controller](./operation-and-controller.md). This section does not select a second agent. Publication and descriptive-change constraints are [Descriptive changes and the revision fence](canonical-documents-and-packages.md#descriptive-changes-and-the-revision-fence). The [bounded-cost contract](./request-context-and-cost.md#bounded-work-not-an-open-ended-agent) governs cost. A document library is not an instruction to explore it on every turn. Use task-specific context and a small tool set; bounded metadata/sections first, no recursive library loading, no model call just to choose tools. Directory/section reads consume the same task-wide read/byte allowance as memory search. Compact role-specific records link to intact original prose instead of duplicating it. Maintenance thresholds do not authorize paid jobs. These controls remain required target discipline; individual runtime paths may still lag until WR02–WR04 land.
+
+Canonical storage is also the narrative read boundary, not an archival side channel. Once a content kind moves to documents, task construction and developer inspection read the committed document version or a derived index that cites it; they do not continue treating an independently editable SQL body as truth. Capture the manifest root used by each task. Load focused orientation/current-scene material automatically, then use bounded listing, exact reads and search for additional evidence. Changes flow back through typed proposals and admission against expected roots/revisions. Mechanical state continues to come from its transactional owner rather than being reverse-engineered from prose.
+
+1. Capture the campaign's state/receipt fence, committed document-root revision, selected Storyteller bundle and viewer knowledge scope. Narrative sequence alone is insufficient while quiet work changes mechanics.
+2. Load bounded orientation, current exact state and the relevant current scene. Returning identities and open commitments supply automatic historical leads, even if the model does not think to search.
+3. Let the Storyteller list a permitted directory, search a topic, read sections and follow backlinks. Expose logical document operations through the bounded exploration protocol specified by the memory feature; no unrestricted shell or bucket credentials are necessary.
+4. Compose narration/options with dependencies on the sources actually read. Where appropriate, propose document changes in the same result: add a new identity description, close a thread, or seal a memory segment. New lore proposals identify their authority and constraints rather than fabricating historical citations.
+5. Validate and publish admitted content. Extraction/summarization can accompany an already-required turn or run as a separately budgeted maintenance task. Failure of optional maintenance does not undo a committed roll or cause mechanics to run again.
+6. Save an updated bounded orientation and coverage markers when appropriate. Subsequent invocations can reconstruct the working set without access to the previous model conversation.
+
+One turn can read a memory segment, follow a linked acquaintance and inspect the original promise before composing. It can also decline a weak connection. Every extra model round consumes the existing shared round/byte/spend allowance. Retrieval must improve what the next turn knows without forcing a dramatic callback every time.
+
+Progressive creation of identity records is [Entity materialization](canonical-documents-and-packages.md#entity-materialization). Event history is an index, not current state: [Descriptive changes and the revision fence](canonical-documents-and-packages.md#descriptive-changes-and-the-revision-fence).
 
 ## Storyteller-facing memory tools
 
