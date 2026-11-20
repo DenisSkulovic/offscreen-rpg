@@ -1,6 +1,6 @@
 # DXK07 | Executable fresh-clone full-system acceptance and user onboarding
 
-**State:** Ready for bounded source implementation when named dependencies hold; not selected, not tested, not Done.
+**State:** Partial (2026-11-20). The read-only acceptance harness and its unit negatives are on `change/dxk07-clean-clone-acceptance`. Fresh-clone timing, browser play, Tilt recovery, and the Headlamp desktop click were not run. Not Done.
 **Kind:** implementation. **Date:** 2026-11-20.
 **Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md) · [planner source map](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/SOURCE-MAP.md) · [parent Cursor waves](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/CURSOR-HANDOFF.md).
 **Inspected source:** attached 13bcd6cf + connected GitHub main through 8796daaa on 2026-11-20; unpushed Cursor changes NOT inspected.
@@ -40,4 +40,4 @@ Executable fresh-clone full-system acceptance and user onboarding. **Own/edit:**
 
 | Affected selected owner | Observed source SHA/files | Positive and negative exact commands/result | Docs/evidence reconciled | Remaining |
 | --- | --- | --- | --- | --- |
-| Not executed / planning packet | 13bcd6cf + GitHub main inspected, local HEAD pending | NOT-RUN; code not changed by this packet | Implementation plan only | All T01-T03 pending |
+| `scripts/repo-tools/stack-acceptance.mjs`, root `stack:acceptance` | branch `change/dxk07-clean-clone-acceptance` from `1e5e4810` | `node --test scripts/repo-tools/stack-acceptance.test.mjs` — 14 pass, 0 fail. Negatives: health-only, foreign context, missing `game-web`, failed `game-migrate`, port conflict, `0.0.0.0`, Compose boot, staff-as-player, warm identity loss, `--reset`, `--execute`, browser `/health` only, wrong actor HTTP 200. The CLI refuses `--execute`. No case sets `dataReset` | [local development](../../../../docs/runbooks/local-development.md), [Kubernetes developer UI](../../../../docs/runbooks/kubernetes-developer-ui.md), [deployment and compatibility](../../../../docs/technical/platform/deployment-and-compatibility.md#local-development), STATUS, README | Live `pnpm stack:acceptance` against kind, fresh-clone durations, browser sign-in/action/fork, Tilt recovery, and Headlamp desktop NOT-RUN. Packet stays open. |

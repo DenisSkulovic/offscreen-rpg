@@ -42,6 +42,8 @@
     "stack:status": "node scripts/repo-tools/stack.mjs status",
     "stack:down": "node scripts/repo-tools/stack.mjs down",
     "stack:reset": "node scripts/repo-tools/stack.mjs reset",
+    "stack:acceptance": "node scripts/repo-tools/stack-acceptance.mjs",
+    "stack:acceptance:test": "node --test scripts/repo-tools/stack-acceptance.test.mjs",
     "infra:repair": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/repo-tools/repair-docker-desktop.ps1",
     "fixture:import": "node scripts/repo-tools/import-pinned-fixture.mjs",
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0",
