@@ -55,6 +55,8 @@ The existing custom agents design-challenger and test-strategist use inherit and
 
 **Model selection is not a proxy for safety.** Do not ask a model to perform a SQL migration against important data just because it is Medium. Precondition gates, resource authority, test DB scopes and stop rules still apply to all models.
 
+**Do not treat token totals as cost savings.** For actual CSV exports and cross-session comparisons use the [measured session protocol](cursor-usage-evaluation.md), not guesses from the model name. Parent/subagent model selection remains Composer 2.5 Standard unless the explicit existing exception process applies. Ordinary child receipts use the compact convention in [bounded parent orchestration](bounded-parent-orchestration.md); the detailed fields below describe evidence to retain **when available**, not an obligation to echo them in every chat notification.
+
 ## Dispatch and receipt format
 
 Parent task card:

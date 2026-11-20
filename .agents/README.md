@@ -37,6 +37,8 @@ Permanent product and technical truth lives under [docs/product](../docs/product
 
 Discover under [`skills/`](skills/) — load bodies on demand when the task matches the skill description. Change workflow: [`change-workflow`](skills/change-workflow/SKILL.md); standalone operational Task workflow: [`task-workflow`](skills/task-workflow/SKILL.md).
 
+**Cursor cost/outcome evaluation:** [small measurement procedure](references/cursor-usage-evaluation.md) and `pnpm repo:cursor-usage` (offline CSV summarizer). Keep raw chat transcripts and exported usage files local, not in the public repository.
+
 ## Repository commands (read-only orientation)
 
 - `pnpm repo:brief` — STATUS + Current work (Change, standalone Task, or none) (optional `--checkpoint`; `--json` prints the local SHA and dirty paths and does not contact a remote)
