@@ -36,13 +36,10 @@ if grep -RniE 'kind:[[:space:]]*Secret|AKIA[0-9A-Z]{16}' "$ACCESS_DIR" >/dev/nul
 fi
 
 require_memory
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-snapshot_volumes "$work/volumes-before"
-snapshot_foreign_contexts "$work/contexts-before"
+volume_guard_begin "$work"
 
 import_image() {
   local image_ref="$1"
@@ -278,12 +275,7 @@ if ! grep -qx "document-access reader sha256=${object_hash} key=${object_key} ma
 fi
 
 assert_loopback_only
-snapshot_volumes "$work/volumes-after"
-snapshot_foreign_contexts "$work/contexts-after"
-assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
-assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
+volume_guard_end "$work"
 
 echo "Smoke passed: one writer job and a different reader job shared one object."
 echo "Nest API and worker integration remains pending. No application manifest was applied."

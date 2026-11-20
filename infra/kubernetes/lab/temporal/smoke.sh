@@ -24,13 +24,10 @@ if ! "${KUBECTL[@]}" -n lab-temporal get deploy temporal-server >/dev/null 2>&1;
 fi
 
 require_memory
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-snapshot_volumes "$work/volumes-before"
-snapshot_foreign_contexts "$work/contexts-before"
+volume_guard_begin "$work"
 
 temporal() {
   "${KUBECTL[@]}" -n lab-temporal exec deploy/temporal-admin -- temporal "$@"
@@ -252,12 +249,7 @@ if [[ "$cmdline" == *start-dev* || "$cmdline" != *temporal-server* ]]; then
 fi
 
 assert_loopback_only
-snapshot_volumes "$work/volumes-after"
-snapshot_foreign_contexts "$work/contexts-after"
-assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
-assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
+volume_guard_end "$work"
 
 echo "Smoke passed: lab-once run ${run_id} finished once after the worker and server were replaced."
 echo "The external insert remained 1. The PVC uid stayed ${pvc_uid_after}."

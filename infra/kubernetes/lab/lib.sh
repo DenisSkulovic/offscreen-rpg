@@ -78,6 +78,23 @@ assert_volumes_outside_cluster_remain() {
   fi
 }
 
+# Snapshot pre-existing Docker volumes and foreign kubectl contexts before lab work.
+# Legacy Compose volume names are not required; a cold clone may have zero volumes.
+volume_guard_begin() {
+  local work="$1"
+  snapshot_volumes "$work/volumes-before"
+  snapshot_foreign_contexts "$work/contexts-before"
+}
+
+# Assert no unrelated Docker volume or foreign kubectl context was lost.
+volume_guard_end() {
+  local work="$1"
+  snapshot_volumes "$work/volumes-after"
+  snapshot_foreign_contexts "$work/contexts-after"
+  assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
+  assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
+}
+
 require_memory() {
   local available_kib
   available_kib="$(awk '/MemAvailable:/ {print $2}' /proc/meminfo)"

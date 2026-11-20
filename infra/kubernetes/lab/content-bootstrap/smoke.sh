@@ -43,13 +43,10 @@ if grep -RniE --exclude-dir=node_modules --exclude='package-lock.json' \
 fi
 
 require_memory
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-snapshot_volumes "$work/volumes-before"
-snapshot_foreign_contexts "$work/contexts-before"
+volume_guard_begin "$work"
 
 import_image() {
   local image_ref="$1"
@@ -226,12 +223,7 @@ if ! grep -qx "content-bootstrap reader world=${WORLD_HASH} rule=${RULE_HASH} st
 fi
 
 assert_loopback_only
-snapshot_volumes "$work/volumes-after"
-snapshot_foreign_contexts "$work/contexts-after"
-assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
-assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
+volume_guard_end "$work"
 
 echo "Smoke passed: importer Job and a different reader Job shared the pinned fixture hashes."
 echo "A local fixture-pin.json is not this proof. Nest API and worker were not applied."

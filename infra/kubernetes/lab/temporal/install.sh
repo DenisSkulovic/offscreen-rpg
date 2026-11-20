@@ -81,13 +81,10 @@ assert_digest "$ADMIN_IMAGE" "$ADMIN_DIGEST"
 assert_digest "$POSTGRES_IMAGE" "$POSTGRES_DIGEST"
 
 require_memory
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-snapshot_volumes "$work/volumes-before"
-snapshot_foreign_contexts "$work/contexts-before"
+volume_guard_begin "$work"
 
 import_image() {
   local image_ref="$1"
@@ -233,14 +230,8 @@ if [[ "$server_svc" != "ClusterIP" || "$postgres_svc" != "ClusterIP" ]]; then
 fi
 
 assert_loopback_only
-snapshot_volumes "$work/volumes-after"
-snapshot_foreign_contexts "$work/contexts-after"
-assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
-assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
+volume_guard_end "$work"
 
 echo "Temporal server ${server_version} is ready."
 echo "Persistence claim temporal-postgres is Bound on local-path."
 echo "This is a disposable lab server, not the Compose development server, and not a production cluster."
-echo "Compose volumes still present: offscreen-rpg_postgres-data offscreen-rpg_temporal-data"

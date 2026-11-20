@@ -52,13 +52,10 @@ if ! grep -q 'instances: 1' "$LAB_ROOT/cnpg/cluster.yaml"; then
 fi
 
 require_memory
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-snapshot_volumes "$work/volumes-before"
-snapshot_foreign_contexts "$work/contexts-before"
+volume_guard_begin "$work"
 
 curl -fsSL --retry 3 --retry-delay 2 -o "$work/cnpg.yaml" "$CNPG_URL"
 echo "${CNPG_SHA256}  $work/cnpg.yaml" | sha256sum -c -
@@ -124,12 +121,7 @@ if [[ "$instances" != "1" ]]; then
 fi
 
 assert_loopback_only
-snapshot_volumes "$work/volumes-after"
-snapshot_foreign_contexts "$work/contexts-after"
-assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
-assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
+volume_guard_end "$work"
 
 echo "CloudNativePG ${CNPG_VERSION} is ready."
 echo "Operator image: ${CNPG_IMAGE}"
@@ -137,4 +129,3 @@ echo "Postgres image: ${POSTGRES_IMAGE}"
 echo "Instances: ${instances}"
 echo "Phase: ${phase}"
 "${KUBECTL[@]}" -n lab-postgres get pvc -o custom-columns=NAME:.metadata.name,CLASS:.spec.storageClassName,STATUS:.status.phase --no-headers
-echo "Compose volumes still present: offscreen-rpg_postgres-data offscreen-rpg_temporal-data"

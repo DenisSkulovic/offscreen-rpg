@@ -22,13 +22,10 @@ if ! "${KUBECTL[@]}" -n lab-postgres get cluster lab-pg >/dev/null 2>&1; then
 fi
 
 require_memory
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-snapshot_volumes "$work/volumes-before"
-snapshot_foreign_contexts "$work/contexts-before"
+volume_guard_begin "$work"
 
 instances="$("${KUBECTL[@]}" -n lab-postgres get cluster lab-pg -o jsonpath='{.spec.instances}')"
 if [[ "$instances" != "1" ]]; then
@@ -137,12 +134,7 @@ if [[ "$instances_after" != "1" ]]; then
 fi
 
 assert_loopback_only
-snapshot_volumes "$work/volumes-after"
-snapshot_foreign_contexts "$work/contexts-after"
-assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
-assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
-docker volume inspect offscreen-rpg_postgres-data >/dev/null
-docker volume inspect offscreen-rpg_temporal-data >/dev/null
+volume_guard_end "$work"
 
 echo "Marker after delete: ${after}"
 echo "Primary after delete: ${primary}"
