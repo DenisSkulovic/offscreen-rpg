@@ -13,7 +13,10 @@ import {
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { story, storyPassage } from '@offscreen/db/story-schema';
-import { storytellerContextCapture } from '@offscreen/db/storyteller-schema';
+import {
+  storytellerContextCapture,
+  storytellerPublication,
+} from '@offscreen/db/storyteller-schema';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
@@ -34,6 +37,7 @@ import {
 } from '../dist/storyteller/context-capture.js';
 import { requestActivityReport } from '../dist/campaign/reports.js';
 import { lockOwnedStory } from '../dist/stories/persistence.js';
+import { createStorytellerRuntime } from '../dist/storyteller/runtime.js';
 
 const profile = storytellerCatalogue.resolve({
   id: 'absurd-action-comedy',
@@ -306,6 +310,71 @@ test('ENG03-T05: activity historical report captures off-lock and promotes after
       .from(generation)
       .where(eq(generation.ownerId, seeded.ownerId));
     assert.equal(afterRetry.length, 1);
+  });
+});
+
+test('ENG03-T05: historical report publication fences frozen source revision', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t05-pub-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedActivityReportStory(database, storage);
+
+    const [reportBefore] = await database.db
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.id, seeded.hookId));
+    const generationId = reportBefore.generationId;
+    assert.ok(generationId);
+
+    await seeded.stories.prepareCampaignConsequence(seeded.hookId);
+    await seeded.stories.prepareCampaignConsequence(seeded.hookId);
+
+    const [promoted] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, generationId));
+    assert.equal(promoted.kind, storytellerKind);
+    assert.equal(promoted.input.task, 'report');
+    assert.equal(promoted.input.source.narrativeRevision, 1);
+
+    await database.db
+      .update(story)
+      .set({ revision: 2, viewVersion: 2 })
+      .where(eq(story.id, seeded.storyId));
+
+    const [liveStory] = await database.db
+      .select({ revision: story.revision })
+      .from(story)
+      .where(eq(story.id, seeded.storyId));
+    assert.equal(liveStory.revision, 2);
+
+    const storyteller = createStorytellerRuntime(database, {
+      documentStore: storage,
+    });
+    await storyteller.complete(generationId);
+
+    const [publication] = await database.db
+      .select()
+      .from(storytellerPublication)
+      .where(eq(storytellerPublication.generationId, generationId));
+    assert.equal(publication.state, 'published');
+
+    const [report] = await database.db
+      .select()
+      .from(campaignReport)
+      .where(eq(campaignReport.id, seeded.hookId));
+    assert.equal(report.state, 'published');
+    assert.equal(report.sourceRevision, 1);
+    assert.ok(report.report);
+    assert.equal(report.generationId, generationId);
+
+    await storyteller.complete(generationId);
+
+    const generations = await database.db
+      .select({ id: generation.id })
+      .from(generation)
+      .where(eq(generation.ownerId, seeded.ownerId));
+    assert.equal(generations.length, 1);
   });
 });
 
