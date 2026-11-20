@@ -17,7 +17,7 @@
 
 **Next-work priority:** [one implementation roadmap](../IMPLEMENTATION-ROADMAP.md) orders the open work; [QUEUE](../QUEUE.md) owns the only selected Change. **[FORK01](archive/2026-11/other/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)** is Done for the local private historical fork. Cold kind stays TURN03. Current work is none. BOOT03 and TURN02 are archived.
 
-**2026-11-20 Kubernetes-first developer experience (DXK01, DXK02, DXK04, DXK05, and DXK06 archived; DXK03 and DXK07 are still open):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Seven distinct DXK01–07 implementation Changes replace default Compose/host watchers with kind + Tilt + Headlamp, safe lifecycle, provider-free playable onboarding, script/CI modernization, complete active-runtime Compose retirement and clean-clone verification. TURN02 and BOOT03 are archived. STORY03 and TURN03 still own their gameplay proofs. No packet is currently selected.
+**2026-11-20 Kubernetes-first developer experience (DXK01, DXK02, DXK04, DXK05, and DXK06 archived; DXK03, DXK07, DXK08, and DXK09 are still open):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). DXK01–07 establish Kubernetes-first operation, auth/playability, command/CI cleanup, Compose retirement and clean-clone verification. **DXK08 now owns the missing fast inner developer loop; DXK09 owns isolated branch/worktree dev stacks for parallel Cursor chats.** The fixed release lab remains authoritative for release proofs. TURN02 and BOOT03 are archived. No packet is currently selected.
 
 - [DXK01: Kubernetes stack lifecycle](archive/2026-11/other/2026-11-20--dxk01-kubernetes-stack-lifecycle/CHANGE.md)
 - [DXK02: Tilt and Headlamp operator experience](archive/2026-11/other/2026-11-20--dxk02-tilt-headlamp-developer-uis/CHANGE.md)
@@ -26,6 +26,8 @@
 - [DXK05: Kubernetes CI and lab safety replacement](archive/2026-11/other/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md)
 - [DXK06: Remove Compose runtime and references](archive/2026-11/other/2026-11-20--dxk06-compose-retirement/CHANGE.md)
 - [DXK07: Clean-clone readiness and regression harness](open/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md)
+- [DXK08: Fast Kubernetes inner development loop](open/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md)
+- [DXK09: Parallel isolated branch/worktree dev stacks](open/2026-11-20--dxk09-parallel-worktree-dev-stacks/CHANGE.md)
 
 **2026-11-20 first-campaign convergence:** [source-audited mechanism ladder and Cursor handoff](../designs/open/first-campaign-readiness-2026-11-20/README.md). Snapshot `3992437` has **19** open Change folders: 9 relevant to the cold full-turn path, 8 important but not first-campaign prerequisites, 2 explicitly provider-gated. The older 24-packet audit remains dated history. Do **not** open 19 broad child assignments; select the first bounded source correction in STORY03 T07/T08 and use the new causal integration T09. No Change was declared Done by this planning pass.
 
