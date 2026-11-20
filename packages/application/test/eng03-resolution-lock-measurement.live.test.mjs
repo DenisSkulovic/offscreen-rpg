@@ -1,5 +1,5 @@
 /**
- * ENG03 T02: measure lock hold during narrative player resolution (Storyteller + scripted).
+ * ENG03 T03: resolution admits without stretching story lock across DocumentStore I/O.
  * Probes readPassageDocument → DocumentStore.readSourcePassage and loadStorytellerContext
  * under lockOwnedStory; not pending consequence narration (T01/C1).
  */
@@ -363,7 +363,7 @@ function summarizeBranch(observations, branch) {
   };
 }
 
-test('ENG03 T02: resolution lock propagates DocumentStore delay (storyteller + scripted)', async () => {
+test('ENG03 T03: resolution lock does not propagate DocumentStore delay (storyteller + scripted)', async () => {
   await withDisposable(async (database) => {
     const root = await mkdtemp(join(tmpdir(), 'eng03t02-docs-'));
     const storage = new LocalDocumentStore(root);
@@ -412,12 +412,8 @@ test('ENG03 T02: resolution lock propagates DocumentStore delay (storyteller + s
         `${summary.branch}: injected delay must appear in DocumentStore read spans`,
       );
       assert.ok(
-        delayed2s.actionHoldMedian > baseline.actionHoldMedian + 1000,
-        `${summary.branch}: resolution transaction retains DocumentStore delay under lock`,
-      );
-      assert.ok(
-        delayed2s.competitorWaitMedian > baseline.competitorWaitMedian + 500,
-        `${summary.branch}: same-story competitor waits on FOR UPDATE during delayed reads`,
+        summary.waitDeltaMs < 500,
+        `${summary.branch}: story FOR UPDATE hold must stay short while CAS reads run off-lock`,
       );
       assert.ok(
         delayed2s.unrelatedLockMedian < 500,

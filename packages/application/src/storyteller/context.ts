@@ -11,6 +11,7 @@ import {
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
+import { passageContentSchema } from '@offscreen/contracts/stories';
 import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
 import {
@@ -99,6 +100,353 @@ function projectActivityProgress(plan: unknown, progress: unknown) {
         resolved.action.process.requiredFictionalSeconds,
     },
   };
+}
+
+function decodePassageResponse(response: unknown) {
+  if (response === null) return null;
+  return interactionSubmissionSchema.parse(response).answer.optionId;
+}
+
+export type ResolutionPassageSource = Readonly<
+  | {
+      storage: 'inline';
+      passageId: string;
+      sequence: number;
+      inlineContent: unknown;
+      response: string | null;
+    }
+  | {
+      storage: 'cas';
+      passageId: string;
+      sequence: number;
+      contentHash: string;
+      response: string | null;
+    }
+>;
+
+/** ENG03-T03: SQL-only passage inventory for resolution; no DocumentStore. */
+export async function captureResolutionPassageSources(
+  tx: Transaction,
+  input: {
+    storyId: string;
+    revision: number;
+    notes: unknown;
+    activeSceneScope: unknown;
+  },
+) {
+  const notes = continuityNotesSchema.parse(input.notes ?? []);
+  const activeScene =
+    input.activeSceneScope === null
+      ? null
+      : activeSceneAnchorSchema.parse(input.activeSceneScope);
+  const recentQuery = tx
+    .select()
+    .from(storyPassage)
+    .where(
+      and(
+        eq(storyPassage.storyId, input.storyId),
+        lte(storyPassage.sequence, input.revision),
+        ...(activeScene
+          ? [gte(storyPassage.sequence, activeScene.fromSequence)]
+          : []),
+      ),
+    )
+    .orderBy(desc(storyPassage.sequence));
+  const recent = activeScene ? await recentQuery : await recentQuery.limit(7);
+  const evidenceIds = [
+    ...new Set([
+      ...notes.flatMap((note) => note.sources),
+      ...(activeScene?.requiredPassageIds ?? []),
+    ]),
+  ];
+  const older = evidenceIds.length
+    ? await tx
+        .select()
+        .from(storyPassage)
+        .where(
+          and(
+            eq(storyPassage.storyId, input.storyId),
+            lte(storyPassage.sequence, input.revision),
+            inArray(storyPassage.id, evidenceIds),
+          ),
+        )
+    : [];
+  return [
+    ...new Map(
+      [...recent, ...older].map((passage) => [passage.id, passage]),
+    ).values(),
+  ].map((passage) => {
+    const response = decodePassageResponse(passage.response);
+    if (passage.contentDocumentHash !== null) {
+      return {
+        storage: 'cas' as const,
+        passageId: passage.id,
+        sequence: passage.sequence,
+        contentHash: passage.contentDocumentHash,
+        response,
+      };
+    }
+    return {
+      storage: 'inline' as const,
+      passageId: passage.id,
+      sequence: passage.sequence,
+      inlineContent: passage.content,
+      response,
+    };
+  });
+}
+
+async function passageEvidenceFromSources(
+  documentStore: DocumentStore | undefined,
+  sources: readonly ResolutionPassageSource[],
+) {
+  return Promise.all(
+    sources.map(async (source) => {
+      const content =
+        source.storage === 'cas'
+          ? await readPassageDocument(
+              documentStore ??
+                (() => {
+                  throw new Error('Canonical passage context requires document storage');
+                })(),
+              source.contentHash,
+            )
+          : passageContentSchema.parse(source.inlineContent);
+      return {
+        id: source.passageId,
+        sequence: source.sequence,
+        content,
+        response: source.response,
+      };
+    }),
+  );
+}
+
+export type StorytellerResolutionContextSqlCapture = Readonly<{
+  passages: ResolutionPassageSource[];
+  items: Array<{
+    key: string;
+    label: string;
+    holderKey: string | null;
+  }>;
+  settingsRevision: number | null;
+  capturedSettings: unknown | null;
+  gameSecond: number | null;
+  worldConditions: unknown | null;
+  situationAuthorization: unknown | null;
+  activeActivityId: string | null;
+  acceptedActivityPlan: unknown | null;
+  commitments: Array<{
+    id: string;
+    revision: number;
+    state: string;
+    plan: unknown;
+    progress: unknown;
+  }>;
+}>;
+
+/** ENG03-T03: freeze SQL facts consumed by loadStorytellerContext without CAS reads. */
+export async function captureStorytellerResolutionContextSql(
+  tx: Transaction,
+  input: { storyId: string; revision: number; notes: unknown; activeSceneScope: unknown },
+): Promise<StorytellerResolutionContextSqlCapture> {
+  const passages = await captureResolutionPassageSources(tx, input);
+  const items = await tx
+    .select({
+      key: storyItem.key,
+      label: storyItem.label,
+      holderKey: storyItem.holderKey,
+    })
+    .from(storyItem)
+    .where(eq(storyItem.storyId, input.storyId));
+  const [settingsRow] = await tx
+    .select()
+    .from(campaign)
+    .where(eq(campaign.storyId, input.storyId));
+  const [captured] = settingsRow
+    ? await tx
+        .select({ settings: campaignSettings.settings })
+        .from(campaignSettings)
+        .where(
+          and(
+            eq(campaignSettings.storyId, input.storyId),
+            eq(campaignSettings.revision, settingsRow.settingsRevision),
+          ),
+        )
+    : [];
+  if (settingsRow && !captured) {
+    throw new Error('Missing captured campaign settings');
+  }
+  const commitments = settingsRow
+    ? await tx
+        .select()
+        .from(gameActivity)
+        .where(
+          storytellerActivityContextFilter({
+            storyId: input.storyId,
+            activeActivityId: settingsRow.activeActivityId,
+          }),
+        )
+    : [];
+  return {
+    passages,
+    items,
+    settingsRevision: settingsRow?.settingsRevision ?? null,
+    capturedSettings: captured?.settings ?? null,
+    gameSecond: settingsRow?.gameSecond ?? null,
+    worldConditions: settingsRow?.worldConditions ?? null,
+    situationAuthorization: settingsRow?.situationAuthorization ?? null,
+    activeActivityId: settingsRow?.activeActivityId ?? null,
+    acceptedActivityPlan: settingsRow?.acceptedActivityPlan ?? null,
+    commitments: commitments.map((record) => ({
+      id: record.id,
+      revision: record.revision,
+      state: record.state,
+      plan: record.plan,
+      progress: record.progress,
+    })),
+  };
+}
+
+/** ENG03-T03: assemble Storyteller context off-lock from frozen SQL capture + pinned hashes. */
+export async function assembleStorytellerContextFromResolutionCapture(
+  documentStore: DocumentStore | undefined,
+  sql: StorytellerResolutionContextSqlCapture,
+  input: {
+    storyId: string;
+    revision: number;
+    premise: unknown;
+    notes: unknown;
+    activeSceneScope: unknown;
+    selected: { id: string; label: string; intention: string };
+    canonical?: {
+      rootHash: string;
+      rootRevision: number;
+      librarySectionSelection?: CanonicalLibrarySectionSelection;
+      campaignDocumentIds?: CanonicalCampaignDocumentSelection;
+      recallCues?: CanonicalRecallCue[];
+    };
+  },
+) {
+  const notes = continuityNotesSchema.parse(input.notes ?? []);
+  const activeScene =
+    input.activeSceneScope === null
+      ? null
+      : activeSceneAnchorSchema.parse(input.activeSceneScope);
+  if (
+    (sql.passages.some((passage) => passage.storage === 'cas') ||
+      input.canonical) &&
+    !documentStore
+  ) {
+    throw new Error('Canonical knowledge requires document storage');
+  }
+  const evidence = await passageEvidenceFromSources(documentStore, sql.passages);
+  const current = evidence.find((passage) => passage.sequence === input.revision);
+  if (!current) {
+    throw new Error('Missing current story context');
+  }
+  const acceptedSettings = sql.capturedSettings
+    ? campaignSettingsSchema.parse(sql.capturedSettings)
+    : null;
+  const compactSettings = acceptedSettings
+    ? (({ time: _time, ...settings }) => settings)(acceptedSettings)
+    : null;
+  const acceptedPlan = sql.acceptedActivityPlan
+    ? readAcceptedActivityPlan(sql.acceptedActivityPlan)
+    : null;
+  const blockedEntry = acceptedPlan?.entries[acceptedPlan.cursor];
+  const acceptedHandoff =
+    acceptedPlan?.state === 'blocked' &&
+    blockedEntry?.state === 'blocked' &&
+    blockedEntry.activityId === null
+      ? {
+          id: acceptedPlan.id,
+          revision: acceptedPlan.revision,
+          horizonGameSecond: acceptedPlan.horizonGameSecond,
+          nextEntry: { id: blockedEntry.id, plan: blockedEntry.plan },
+        }
+      : undefined;
+  const canonicalKnowledge = input.canonical
+    ? await loadCanonicalKnowledge(
+        documentStore ??
+          (() => {
+            throw new Error('Canonical knowledge requires document storage');
+          })(),
+        {
+        storyId: input.storyId,
+        rootHash: input.canonical.rootHash,
+        rootRevision: input.canonical.rootRevision,
+        ...(input.canonical.librarySectionSelection
+          ? {
+              librarySectionSelection: input.canonical.librarySectionSelection,
+            }
+          : {}),
+        ...(input.canonical.campaignDocumentIds
+          ? { campaignDocumentIds: input.canonical.campaignDocumentIds }
+          : {}),
+        recallCues: [
+          ...(activeScene?.recallCues ?? []),
+          ...(input.canonical.recallCues ?? []),
+        ],
+      })
+    : undefined;
+  const activitySituation =
+    sql.situationAuthorization !== null
+      ? {
+          activityAccess: situationAuthorizationSchema.parse(
+            sql.situationAuthorization,
+          ).activityAccess,
+          activeActivityId: sql.activeActivityId,
+          ...(acceptedHandoff ? { acceptedPlan: acceptedHandoff } : {}),
+          commitments: sql.commitments.flatMap((record) => {
+            if (!isStorytellerActivityState(record.state)) {
+              return [];
+            }
+            const projected = projectActivityProgress(record.plan, record.progress);
+            return [
+              {
+                activityId: record.id,
+                actionId: projected.action.id,
+                revision: record.revision,
+                state: record.state,
+                label: projected.action.label,
+                progress: projected.progress,
+              },
+            ];
+          }),
+        }
+      : undefined;
+  return contextInputSchema.parse({
+    ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
+    ...(activeScene
+      ? {
+          activeSceneScope: {
+            version: 'active-scene.v1',
+            fromSequence: activeScene.fromSequence,
+            throughSequence: input.revision,
+            requiredPassageIds: activeScene.requiredPassageIds,
+          },
+        }
+      : {}),
+    ...(activitySituation ? { activitySituation } : {}),
+    ...(compactSettings ? { campaignSettings: compactSettings } : {}),
+    ...(acceptedSettings && sql.gameSecond !== null
+      ? {
+          campaignTime: projectWorldTime(acceptedSettings.time, sql.gameSecond),
+        }
+      : {}),
+    ...(sql.worldConditions !== null
+      ? {
+          worldConditions: worldConditionsSchema.parse(sql.worldConditions),
+        }
+      : {}),
+    premise: input.premise,
+    current,
+    items: sql.items,
+    selected: input.selected,
+    notes,
+    evidence,
+  });
 }
 
 /** Called inside admission while holding the story lock. No uncommitted future is evidence. */
