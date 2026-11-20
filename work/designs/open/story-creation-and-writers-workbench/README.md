@@ -19,6 +19,8 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - [CANONICAL-ENTRYPOINT-RESOLUTION.md](CANONICAL-ENTRYPOINT-RESOLUTION.md) — deterministic standard-file selection, profile compilation, precedence, size budgets and provenance.
 - [VERSIONED-LIBRARY-SOURCE-AUDIT.md](VERSIONED-LIBRARY-SOURCE-AUDIT.md) — measured-by-inspection differences between CAS reuse and full flat metadata manifests; source identity and the 256-revision limit.
 - [PERSISTENT-LIBRARY-DAG-DESIGN.md](PERSISTENT-LIBRARY-DAG-DESIGN.md) — Git-like structural-sharing model for scene commits, forked Library roots, immutable source provenance and Workdesk staging; alternatives explicitly unaccepted.
+- [PERSISTENT-INDEX-COMPARISON.md](PERSISTENT-INDEX-COMPARISON.md) — ranked index alternatives, reproducible synthetic flat-manifest vs toy persistent-tree comparison, and criteria to select production B+/radix.
+- [HISTORICAL-SCENE-AND-PROVENANCE.md](HISTORICAL-SCENE-AND-PROVENANCE.md) — separate Library root, scene history, checkpoint and branch authority; exact citations, fork identity and migration risks.
 - [VERSIONING-ACCEPTANCE-VECTORS.md](VERSIONING-ACCEPTANCE-VECTORS.md) — scalable updates, long histories, divergent revisions, frozen profiles, fork security, checkpoint/GC and failure tests.
 - [fixtures/README.md](fixtures/README.md) — three source-backed launch fixtures (Seyda Neen, BAH and conscious galaxy), expected snapshots, counterexamples, replay and clock-arrival matrix; design-only, no runtime tests.
 
@@ -59,3 +61,5 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - **I5 versioning source audit + DAG proposal drafted 2026-11-20:** current document bodies are CAS-shared, but each canonical passage adds a source document and flat full manifests are O(N) per update/fork; historical source lookup has an explicit 256-manifest bound and documentId+revision citations are ambiguous across divergent forks. Prefer a benchmarked persistent bounded-fanout tree with scene-root references, not physical Git or full-library cloning. See [source audit](VERSIONED-LIBRARY-SOURCE-AUDIT.md), [proposal](PERSISTENT-LIBRARY-DAG-DESIGN.md), [tests](VERSIONING-ACCEPTANCE-VECTORS.md). No execution authorized.
 
 **Do not** auto-select a Change, automatically dispatch a provider, or treat a proposed `STORYTELLER_PROFILE.md` path as an implemented runtime feature.
+
+- **I6 index and scene-history comparison drafted 2026-11-20:** the [synthetic benchmark](PERSISTENT-INDEX-COMPARISON.md) confirms a metadata-write advantage for a toy bounded index, but not production correctness. [Historical-scene/provenance notes](HISTORICAL-SCENE-AND-PROVENANCE.md) separate branch-neutral Library roots, scene selectors, mechanical state, source hashes and owner-scoped access. B+ vs radix and active-work forks remain open.
