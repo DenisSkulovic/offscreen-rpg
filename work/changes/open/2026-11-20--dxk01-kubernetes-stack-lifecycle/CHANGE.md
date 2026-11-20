@@ -1,6 +1,6 @@
 # DXK01 | Safe one-command-capable Kubernetes stack lifecycle
 
-**State:** Ready for bounded source implementation when named dependencies hold; not selected, not tested, not Done.
+**State:** Selected. T01 preflight unit proof PASS at working tree after `64f3de79`; live kind NOT-RUN. T02–T03 not started. Not Done.
 **Kind:** implementation. **Date:** 2026-11-20.
 **Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md) · [planner source map](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/SOURCE-MAP.md) · [parent Cursor waves](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/CURSOR-HANDOFF.md).
 **Inspected source:** attached 13bcd6cf + connected GitHub main through 8796daaa on 2026-11-20; unpushed Cursor changes NOT inspected.
@@ -40,4 +40,4 @@ Safe one-command-capable Kubernetes stack lifecycle. **Own/edit:** scripts/repo-
 
 | Affected selected owner | Observed source SHA/files | Positive and negative exact commands/result | Docs/evidence reconciled | Remaining |
 | --- | --- | --- | --- | --- |
-| Not executed / planning packet | 13bcd6cf + GitHub main inspected, local HEAD pending | NOT-RUN; code not changed by this packet | Implementation plan only | All T01-T03 pending |
+| DXK01 T01 preflight | working tree after 64f3de79; scripts/repo-tools/stack-preflight.mjs | `node --test scripts/repo-tools/stack-preflight.test.mjs` pass 7 fail 0. Negatives: foreign context, occupied 6443, low memory, dead Docker daemon; mutate callback not called. Live kind/context/port NOT-RUN | No canonical doc change; preflight does not claim app readiness | T02–T03 pending. TURN02 T03–T06 still unproved, so no live READY |
