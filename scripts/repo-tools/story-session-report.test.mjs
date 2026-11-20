@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { continuityProvenance } from './story-session-report.mjs';
+import {
+  continuityProvenance,
+  storyDatabaseCommand,
+} from './story-session-report.mjs';
 
 const secret = 'The secret harbor warning must stay out of the report';
 const packedBody = 'The packed current record stays hashed';
@@ -85,6 +88,51 @@ test('a selected handle without a request body is not packed', () => {
   });
   assert.deepEqual(continuity.selected.handles, ['d1']);
   assert.deepEqual(continuity.packed.handles, []);
+});
+
+test('storyDatabaseCommand rejects a missing OFFSCREEN_STORY_DATABASE_URL', () => {
+  assert.throws(
+    () => storyDatabaseCommand({}),
+    (error) =>
+      error instanceof Error &&
+      error.message.includes('OFFSCREEN_STORY_DATABASE_URL') &&
+      !error.message.toLowerCase().includes('compose'),
+  );
+});
+
+test('storyDatabaseCommand rejects a non-postgres OFFSCREEN_STORY_DATABASE_URL', () => {
+  assert.throws(
+    () =>
+      storyDatabaseCommand({
+        OFFSCREEN_STORY_DATABASE_URL: 'mysql://localhost/story',
+      }),
+    (error) =>
+      error instanceof Error &&
+      error.message.includes('OFFSCREEN_STORY_DATABASE_URL') &&
+      !error.message.toLowerCase().includes('compose'),
+  );
+});
+
+test('storyDatabaseCommand plans a read-only psql invocation without compose', () => {
+  const planned = storyDatabaseCommand({
+    OFFSCREEN_STORY_DATABASE_URL: 'postgresql://user:pass@127.0.0.1:5432/story',
+    HOME: '/tmp',
+  });
+  assert.equal(planned.command, 'psql');
+  assert.deepEqual(planned.args.slice(0, 3), [
+    'postgresql://user:pass@127.0.0.1:5432/story',
+    '-At',
+    '-v',
+  ]);
+  assert.equal(planned.args.includes('ON_ERROR_STOP=1'), true);
+  assert.equal(
+    JSON.stringify({ args: planned.args, env: planned.env }).includes('compose'),
+    false,
+  );
+  assert.equal(
+    planned.env.PGOPTIONS,
+    '-c default_transaction_read_only=on',
+  );
 });
 
 test('missing evidence stays unknown', () => {

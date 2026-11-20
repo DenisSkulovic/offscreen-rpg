@@ -1,6 +1,6 @@
 # Kubernetes developer UI
 
-Loopback developer surfaces for the **kubernetes-first** local stack: Tilt for build/deploy/watch, browser for the game, and **Headlamp on Windows** for read-mostly cluster browsing. This path is separate from the [educational kind lab](kubernetes-lab.md). Compose remains available for other workflows; this runbook does not remove it.
+Loopback developer surfaces for the **kubernetes-first** local stack: Tilt for build/deploy/watch, browser for the game, and **Headlamp on Windows** for read-mostly cluster browsing. This path is separate from the [educational kind lab](kubernetes-lab.md). Checked-in Compose files remain until DXK06. They are not a root boot command, and this runbook does not delete them.
 
 The disposable educational cluster in [kubernetes-lab.md](kubernetes-lab.md) is **not** the game application. Do not confuse `kind-offscreen-lab` probe namespaces with the Tilt-managed lab edge stack.
 
@@ -21,8 +21,6 @@ pnpm dev
 | Staff | http://127.0.0.1:3000/control | Staff control loopback |
 
 All of these bind to **loopback** only. Do not publish them on `0.0.0.0` or `[::]`.
-
-**Host package watchers** (`pnpm dev:host`) watch local packages on the host. They are **not** the cluster deploy path. Use `pnpm dev` when you need Tilt and the in-cluster stack.
 
 ## Headlamp (Windows desktop)
 

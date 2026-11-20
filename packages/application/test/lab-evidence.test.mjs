@@ -35,7 +35,7 @@ test('finalize exports redacted capsule + replay command; private stays gated', 
   assert.equal(capsule.semanticDiff, null);
   assert.match(
     capsule.replayCommand,
-    /pnpm chamber:scenario -- activity-shift-eighty --lane=bench-policy --seed=141/,
+    /pnpm --filter @offscreen\/chamber scenario -- activity-shift-eighty --lane=bench-policy --seed=141/,
   );
   assert.match(markdown, /manualPassedIsNotMachineProof: true/);
   const serialized = JSON.stringify(capsule);

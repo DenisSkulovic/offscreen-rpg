@@ -9,8 +9,8 @@ If a task needs local disposable infrastructure that is missing, stopped, unplug
 
 ## Do this
 
-- Start or repair local Compose/Postgres/Temporal when a lab, Sandbox, Connected, or integration proof needs them.
-- Use the repo’s existing scripts (`infra:up`, migrations, disposable DB names, chamber guards). Prefer `offscreen_chamber_run_*` / other disposable targets; never ordinary user or production data.
+- Start or repair the Kubernetes lab stack (`pnpm stack:up`, `pnpm dev`) or disposable Postgres/Temporal targets when a lab, Sandbox, Connected, or integration proof needs them.
+- Use the repo’s existing scripts (`stack:up`, migrations, disposable DB names, chamber guards). Prefer `offscreen_chamber_run_*` / other disposable targets; never ordinary user or production data.
 - Install/build/warm the packages the proof actually needs; re-run the check after infra is up.
 - Treat “kettle not plugged in” as an action item for you, not a status report.
 

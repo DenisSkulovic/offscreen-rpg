@@ -66,4 +66,4 @@ Write-Output 'Docker transient socket directories were moved to recoverable time
 foreach ($move in $moves) {
   Write-Output "  $($move.Destination)"
 }
-Write-Output 'Docker Desktop is restarting. Run pnpm infra:up after its engine is ready.'
+Write-Output 'Docker Desktop is restarting. Run pnpm stack:up after its engine is ready.'

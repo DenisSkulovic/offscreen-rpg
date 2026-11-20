@@ -33,7 +33,7 @@ test('held packet materializes redacted LabRun evidence with zero charge', () =>
   assert.equal(result.capsule.sideEffectCounts.providerAttempts, 0);
   assert.equal(result.capsule.sideEffectCounts.verifiedChargeMicrousd, 0);
   assert.equal(result.safeInspection.providerAttempts, 0);
-  assert.match(result.reproduction, /chamber:packet/);
+  assert.match(result.reproduction, /@offscreen\/chamber packet/);
   const serialized = JSON.stringify(result.capsule);
   assert.equal(serialized.includes('SECRET_WORLD_BIBLE_PROMPT'), false);
   assert.equal(serialized.includes('sk-should-never-leak'), false);

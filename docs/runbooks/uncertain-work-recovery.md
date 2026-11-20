@@ -188,14 +188,14 @@ No command is cited as the identification step. A command is cited here only whe
 | --- | --- | --- |
 | `node scripts/repo-tools/plan-storyteller-saved-repair.mjs --plan` | Read-only preview of the named generation, attempt, review, and saved evidence on an allowed local or disposable database | Refused as this page's identification step. It does not read the outbox or Temporal. It was not run. |
 | `node scripts/repo-tools/plan-storyteller-saved-repair.mjs --apply` | Opens an allowed local/disposable database and calls guarded budget settlement | Refused. Mutation. It was not run. |
-| `pnpm story:play show`, `history`, and `wait` | [story-play.mjs](../../scripts/repo-tools/story-play.mjs) appends a JSONL file under `data/story-agent` | Refused. Local file write. Not run. |
-| `pnpm story:play new`, `retry-opening`, `choose`, `activity`, and `retry` | HTTP mutations. Several refuse to continue without `--confirm-live` because they can dispatch paid work | Refused. Not run. |
-| `pnpm story:play list`, `profiles`, `starts`, and `server` | HTTP GET, or a status-file read plus GET. No JSONL append on these four | Refused as identification. They do not read generation, attempt, outbox, or Temporal. The handlers were not executed. |
-| `pnpm story:local`, `pnpm story:server`, `pnpm chamber`, worker `start`, worker `dev` | Start local processes. Story mode reads provider credentials | Refused. Not run. |
-| `pnpm chamber:reset` | Drops and recreates `offscreen_chamber` | Refused. Destructive. Not run. |
+| `pnpm --filter @offscreen/chamber story-play show`, `history`, and `wait` | [story-play.mjs](../../scripts/repo-tools/story-play.mjs) appends a JSONL file under `data/story-agent` | Refused. Local file write. Not run. |
+| `pnpm --filter @offscreen/chamber story-play new`, `retry-opening`, `choose`, `activity`, and `retry` | HTTP mutations. Several refuse to continue without `--confirm-live` because they can dispatch paid work | Refused. Not run. |
+| `pnpm --filter @offscreen/chamber story-play list`, `profiles`, `starts`, and `server` | HTTP GET, or a status-file read plus GET. No JSONL append on these four | Refused as identification. They do not read generation, attempt, outbox, or Temporal. The handlers were not executed. |
+| `pnpm dev`, `pnpm --filter @offscreen/chamber start`, worker `start`, worker `dev` | Start local processes. Live Story tooling may read provider credentials | Refused. Not run. |
+| `pnpm --filter @offscreen/chamber reset` | Drops and recreates `offscreen_chamber` | Refused. Destructive. Not run. |
 | Provider generation lookup, Temporal signal or start, SQL `UPDATE` or `DELETE` | Outside this guide | Refused. Not run. A lookup is also the wrong settlement for a missing provider generation id, per [Durable breakpoint lifecycle](../technical/storyteller/provider-boundary.md#durable-breakpoint-lifecycle). |
 
-`pnpm story:play` with `help` only prints usage. It does not identify an attempt. It is not an identification command.
+`pnpm --filter @offscreen/chamber story-play` with `help` only prints usage. It does not identify an attempt. It is not an identification command.
 
 ## Negative cases
 

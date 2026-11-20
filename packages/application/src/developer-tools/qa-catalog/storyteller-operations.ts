@@ -318,7 +318,7 @@ export const storytellerOperationCases: readonly QaJourneyCase[] = [
         importance: 'poc-blocker',
         preconditions: ['No provider attempt exists for the generation.'],
         action:
-          'Run pnpm chamber:packet and inspect the generation-scoped artifact.',
+          'Run pnpm --filter @offscreen/chamber packet and inspect the generation-scoped artifact.',
         observableExpectation:
           'The artifact identifies its request purpose, packet hash, messages, schema and structural sizes.',
         authoritativeExpectation:
