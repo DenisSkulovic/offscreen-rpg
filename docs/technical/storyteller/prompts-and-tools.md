@@ -83,3 +83,52 @@ The controller compiles a small mandatory mission pack, then exposes a semantic 
 The facade must not expose arbitrary shell, SQL, host filesystem or unrestricted network access. Search indexes are rebuildable aids; a result outside the captured root or visibility scope is invalid even if its vector similarity is excellent.
 
 No fixed `maxReads=6`, `maxRounds=3`, 2–5 option count or mandatory child agent is part of the target contract. Numeric limits are route/resource policy and can evolve without redefining the Storyteller.
+
+### Detailed pre-refoundation pack and transport baseline retained
+
+The following 2026-11-19 contract remains the implementation/migration baseline for current code. Where it names fixed one-shot/two-or-three-round behavior or no subagents, those are current realization facts explicitly superseded by the target capability model above, not deleted history.
+
+**Selected task pack, 2026-11-19.** This heading records how one Storyteller task is packed, and which tools that pack may use. This page does not implement the packer. Today's code does not assemble P0–P3 this way. `prepareStorytellerTask` still builds a `bounded-scene.v3` request from the caller-supplied snapshot, the task rules, and the profile. Ordinary admission still captures `single-turn.v1` or `repairable-turn.v1` with tools disabled. A funded `memory-exploration.v1` recipe can ask and read inside one operation. That recipe is the landed exploration controller. The runtime description is [Current prototype runtime](operation-and-controller.md#current-prototype-runtime).
+
+That pack is what a future remote worker would receive: injected current state, a short orientation, and one intention-level memory query. The worker proposes. The engine publishes. A possible paid send is not retried from this pack, and custody adds no model round. Today's code does not assemble the remote worker. Who holds the task is [Remote task custody](generation-and-publication.md#remote-task-custody).
+
+The compiler is deterministic about permissions, version selection, packing, and budgets. Creative interpretation stays with the model. A missing mandatory source is an explicit hold.
+
+- **P0.** Stable universal authority plus the one narrow role recipe for this task. Version it. A prefix discount applies only where the provider bill reports one. Every other role's instructions and tools stay out of the request.
+- **P1.** Mandatory exact present, injected before any paid research round: branch, story, and scene; current mechanical constraints; committed receipts; the active intent; relevant actor knowledge; the pinned rule fragments that apply; permitted capabilities; and the selected Storyteller profile.
+- **P2.** Focused orientation: a compact scene, identity, and thread map with stable handles, current status, why the lead is relevant, source revision, and size. A few useful leads are the target. A search lead is not an accepted fact.
+- **P3.** On-demand evidence. Unknown history is one intention-level `ask_memory(question, intent)`. The deterministic backend does the reads: exact ids, source links, structured predicates, and lexical retrieval. It then checks revision, authority, branch and knowledge visibility, provenance, coverage, and byte limits. `read_memory(handle)` opens an exact source when the wording matters. A second overlapping tool is not part of the default facade.
+- **P4.** Optional stronger investigation, only for an unresolved high-value case, inside the same operation's final-output reserve and payer allowance.
+
+The 2026-11-14 compile list numbered world truth, the task contract, creative identity, pinned rules, the frozen present, source-linked past, and investigation feedback as P0 through P6. This pack replaces that list. Known present is injected. Related material is orientation. Unknown history is fetched by the intention-level query. It is not preloaded as its own layer.
+
+A bloated universal system prompt is not justified by cache overlap.
+
+**Fork packing negative.** At scene 10 the king is alive and the hero holds a sword. At parent scene 20 the king is dead and the sword is gone. A fork from scene 10 is packed with the living king and the held sword, from that scene's mechanical checkpoint and canon root. An `ask_memory` lookup on that fork must not return the scene-20 death, including through a stale global index. A rumor that the king died is an attributed rumor, not a committed fact. The same negative is the source rule in [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19). Search indexes are not authority.
+
+Prompt defects to remove from common authority: a blanket “never end the character's life” is the present nonlethal gap, not eternal policy; a compulsory 2–5 options rule contradicts a quiet or single-attempt scene; “cannot execute tools” forbids game mutations, not an explicitly admitted read-only memory phase. The model still cannot reach SQL, the shell, the web, or another player's account.
+
+**Initial approved read vocabulary**, when a recipe admits investigation:
+
+- `ask_memory(question, intent)`: the intention-level facade. The deterministic backend performs the reads and returns leads, current-root source ids, a snippet, relevance, and coverage. The [selected retrieval routes](../../product/storyteller/memory-and-continuity.md#selected-retrieval-routes) still allow one or two ordinary-language questions. The landed `memory-exploration.v1` controller accepts at most two per round. That cap is current code. It is not a second tool, and it is not this packer.
+- `read_memory(handle)`: one exact approved current-root record or published passage from a handle the same operation returned, bounded bytes, proven source identity.
+
+Code mode is unselected. It is not the default. A future sandboxed, read-only query over task-scoped handles would have to beat this deterministic resolver on quality, tokens, and latency before it could be admitted. Model-generated shell, SQL, filesystem, or network writes are prohibited. Cognee, vector search, and embedding models stay unselected. An index remains a rebuildable aid: [Indexes are rebuildable aids](context-selection-and-recall.md#indexes-are-rebuildable-aids).
+
+Optional later reads (a pinned rule section, a known identity, a contradiction between two attributed sources) stay proposed until a measured need. **Current pre-refoundation facade** exposes no subagent spawn and never exposes arbitrary SQL, file read, web search, shell, item transfer, dice or grants. The target adds only the bounded research-assistant capability defined above, under explicit parent allowance and no direct canon authority. A read is not a player action.
+
+Each accepted game event builds a **new** captured task. **Current `memory-exploration.v1` realization** keeps investigation snapshots operation-local for two or three rounds; this numeric limit is not a permanent target ceiling. There is no permanent model transcript and no model session while the story is quiet. Compaction is off by default. A model summary is never canon. **Current runtime:** subagents are absent. **Target:** assistants remain optional and default-off unless the mission policy admits one.
+
+A route manifest records provider, model, endpoint, schema strictness, context and output ceilings, timeout, price categories, and whether a capability is enforced. Current OpenRouter calls keep reasoning disabled, with no web or context-compression plugin and provider fallback denied. A route policy that mentions a reasoning budget does not enable reasoning. The model does not pick the route or the payer.
+
+Three caches stay distinct: canonical source bytes (immutable, still permission-checked), a provider prefix discount (only when the bill reports it), and identical-response replay (only the same accepted work). A shared prefix is not a cache hit.
+
+Model text is data. It cannot raise round, read, money or latency allowance, publish private knowledge, reroll mechanics, or submit a player command. Bounded repair stays inside the same admitted operation. A sent-but-uncertain attempt is not a free rerun. Public narrative does not expose evidence packets, private directions or raw prompts.
+
+**Negative:** injected instructions inside a canonical document cannot mint tools or reveal private policy. Native function-calling and a JSON envelope are transports, not different permissions. Different narrative directions may change the scene and must not change the dice, clock or item outcome.
+
+### Contract dependencies
+
+| This claim | Relation | Governing claim | Why a change triggers review |
+| --- | --- | --- | --- |
+| Selected compilation and tool contract | constrained-by | [What it must not do](../../product/storyteller/behavior-and-quality.md#what-it-must-not-do) | If the product allows the model to roll, transfer items, or mint tools, the approved read vocabulary and the ban on model text changing dice, clock, or item outcome would admit a tool this section forbids |
