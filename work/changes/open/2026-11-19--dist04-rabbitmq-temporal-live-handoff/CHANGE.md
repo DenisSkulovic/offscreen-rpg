@@ -4,10 +4,12 @@
 
 **State:** Proposed. Not Ready and not selected (2026-11-19). AUD01 replaced the old implementation semantics. That replacement is not implementation and is not Done.
 **Kind:** implementation
-**Execution:** Not authorized. Select only if a consumer is wanted after DIST02's contract, and only with the cluster lock held by one owner.
+**Execution:** Not authorized. DIST02 is now **Cancelled / not Done** because no independent consumer exists. Do not treat its absent contract as a missing implementation blocker or recreate it speculatively. Independently reassess whether DIST04 itself should be Cancelled; only a named consumer and a fresh scoped contract could justify execution.
 **Program:** [Program](../../../designs/open/distributed-turn-poc/README.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md) · [D1](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md)
 
 The folder name still says "RabbitMQ Temporal live handoff." That name is historical. Superseded: using RabbitMQ as the transport for an existing outbox wake, and any adapter that consumes a broker message in order to start or signal Temporal.
+
+**2026-11-20 dependency cleanup:** [DIST02 cancelled](../../archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md). No existing source contract is available or required. This Change remains **Proposed and unselected** pending its own disposition, not executable under an imagined prerequisite.
 
 ## Goal
 
@@ -15,7 +17,7 @@ If a consumer is separately selected, relay one committed business fact from the
 
 ## Prerequisites
 
-ARCH02 is merged. Read [Commands, business events, and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows) before any edit. DIST02's fact contract is the schema source if this work is selected. K8S03's broker proof deleted its cluster. K8S06's Temporal 1.32.2 proof deleted its cluster and is not the Compose development server, not the game workflow, and not a reason to wake Temporal from RabbitMQ. No checkpoint Change is Done because of this packet.
+ARCH02 is merged. Read [Commands, business events, and workflows](../../../../docs/technical/platform/execution-and-delivery.md#commands-business-events-and-workflows) before any edit. The former DIST02 fact contract was Cancelled (2026-11-20), not implemented. A future named consumer would need its own accepted schema/design first. K8S03's broker proof deleted its cluster. K8S06's Temporal 1.32.2 proof deleted its cluster and is not the Compose development server, not the game workflow, and not a reason to wake Temporal from RabbitMQ. No checkpoint Change is Done because of this packet.
 
 ## Scope
 

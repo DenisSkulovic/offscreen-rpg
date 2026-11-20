@@ -1,4 +1,6 @@
-# DIST02 | Composer optional fact DTO, not a broker bridge
+# DIST02 | Cancelled tasks (historical, do not execute)
+
+**Disposition (2026-11-20):** [Change cancellation](CHANGE.md#terminal-disposition--source-audit-2026-11-20). T01–T03 were never implemented and are not remaining work. The rejected RabbitMQ→Temporal bridge does not return, and the optional fact DTO has no independent consumer. A new actual consumer would start with a new separately authorized Change. This file is historical evidence, not a task queue.
 
 **Baseline:** 584b594. **State:** Proposed/unselected; optional independent consumer. **Model:** Composer Standard. **Do not execute merely because Storyteller POC needs Temporal.**
 

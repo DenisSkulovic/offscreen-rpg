@@ -93,9 +93,9 @@ Each future executable Change must name **owned files/interfaces/migrations**, e
 ## Mapping the first gap-reduction Changes (2026-11-19)
 
 - [DIST01](../../../changes/archive/2026-11/other/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md): design gates S01/S04/S05/S06 and P01, reconciled with ARCH02. Until its decisions are integrated, executable transport/extraction packets stay Proposed.
-- [DIST02](../../../changes/open/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): narrow adapter/protocol subset of S04/S05, no live broker mutation.
+- [DIST02, Cancelled 2026-11-20: no independently selected consumer](../../../changes/archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): superseded Rabbit→Temporal bridge and unneeded speculative postcommit DTO. Not a POC gap or executable blocker.
 - [DIST03](../../../changes/open/2026-11-19--dist03-game-authority-private-boundary/CHANGE.md): narrow API-to-Game Authority proof for S01/S02, not all controllers or historical snapshots.
-- [DIST04](../../../changes/open/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md): one live topic routing between SQL outbox, Rabbit and Temporal for S04/S06.
+- [DIST04](../../../changes/open/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md): optional postcommit projection only if a named independent consumer is selected; never a Rabbit→Temporal wake.
 - [DIST05](../../../changes/archive/2026-11/other/2026-11-19--dist05-storyteller-execution-worker-split/CHANGE.md) is cancelled into STORY03. The generation/publication split is not implemented.
 - [DIST06](../../../changes/archive/2026-11/other/2026-11-19--dist06-first-distributed-turn-integration/CHANGE.md) is cancelled into TURN03. It does not complete the historical fork or a live provider evaluation.
 
