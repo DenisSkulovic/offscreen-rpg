@@ -1,14 +1,16 @@
 # HK01 | Bounded recovery-replacement execution tasks
 
-**State:** T01 VERIFY PASS (5/5 as previously recorded); **T02–T05 PLANNER-READY for implementation**, **NOT executed**. **Current selected work remains TURN02** under `work/QUEUE.md`. The former T02 planner block is resolved by [HK01 exact decision](DECISION-2026-11-20.md). No approval to run against a real local/hosted Storyteller database, settle money, start provider transport, or change another worker's code. Composer Standard, one T-ID per bounded assignment, use only the exact source anchors listed.
+**State:** T01 VERIFY PASS (5/5); **T02 PATCH PASS** on branch `change/hk01-saved-repair` (pure inspector, provider-free). **T03–T05 PLANNER-READY, not executed.** The old CLI remains the only operator procedure. No approval to run against a real local/hosted Storyteller database, settle money, start provider transport, or change another worker's code. Composer Standard, one T-ID per bounded assignment, use only the exact source anchors listed.
 
 ## T01 | Existing minimal guard | PASS at ec73a535
 
 `node --test packages/application/test/saved-response-settlement.test.mjs` previously 5/5 provider-free. Valid/invalid generation/attempt state and missing input checks only. **Not** evidence validation, DB safety or operator replacement.
 
-## T02 | Pure verified evidence derivation | PLANNER-READY
+## T02 | Pure verified evidence derivation | PASS (worktree `change/hk01-saved-repair`)
 
 **Read:** `packages/application/src/storyteller/saved-response-settlement.ts`; `scripts/repo-tools/reconcile-storyteller-response.mjs`; `packages/storyteller/src/providers/openrouter.ts:recordResponse/prepareOpenRouterWire`; `packages/application/src/storyteller/dispatch-review.ts:prepareReviewedDispatch`. Implement the pure H1 validator in [decision](DECISION-2026-11-20.md). Never accept caller-composed usage/charge as proof; derive it strictly from complete saved bytes with matching reviewed request SHA and captured frozen route. **Tests:** good invalid-output repair; wrong digest/provider/model/body id/purpose; malformed cost, token count, absent response ID, valid output, nonrepairable recipe, oversized input/refused parse. 0 provider calls, 0 DB.
+
+**T02 receipt:** `inspectSavedInvalidRepairResponse` in `packages/application/src/storyteller/saved-response-inspection.ts`. `node --test packages/application/test/saved-response-inspection.test.mjs` 17/17 and `saved-response-settlement.test.mjs` 5/5. No database, no provider, CLI not deleted.
 
 ## T03 | Read-only state/provenance preview | PLANNER-READY after T02
 
