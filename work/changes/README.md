@@ -13,6 +13,8 @@
 
 **OBS00 planning correction (2026-11-20):** [Independent current policy/grant and SQL dispatch decision](open/2026-11-15--obs00-live-provider-custody/DECISION-2026-11-20.md) defines B T02–T06, no paid call needed for code/tests. OBS00-C was already separately Done Nov 15 with transport mock tests. Do not reimplement C or treat a pre-TX `authorityGranted` Boolean as a revocation fence. TURN02 remains selected; no new queued task or production grant.
 
+**STORY02 closeout correction (2026-11-20):** [Current security finding, finite T05/T06 tasks](open/2026-11-19--story02-private-task-and-result-custody/DECISION-2026-11-20.md). Contracts, private GA routes, worker client and T04 10/10 local proof exist. However GA custody parses and claims provider-mode tasks or reuses unrelated provider attempts despite the distributed executor refusing paid mode; enforce the provider-free boundary at the SQL owner before archive. STORY03/TURN03 keep multi-Pod process/publication acceptance. One Change folder, no automatic selection or paid call.
+
 **Next-work priority:** [one implementation roadmap](../IMPLEMENTATION-ROADMAP.md) orders the open work; [QUEUE](../QUEUE.md) owns the only selected Change. **[FORK01](open/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)** is the missing private historical-fork bridge; it follows the current TURN02 slice and BOOT03 closure, not a new self-selected parallel project.
 
 **2026-11-20 Kubernetes-first developer experience (owner-selected outcome, not yet implemented):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Seven distinct DXK01–07 implementation Changes replace default Compose/host watchers with kind + Tilt + Headlamp, safe lifecycle, provider-free playable onboarding, script/CI modernization, complete active-runtime Compose retirement and clean-clone verification. Existing TURN02/BOOT03/STORY03/TURN03 retain their real-release/gameplay ownership; no new packet is currently selected.
@@ -35,7 +37,7 @@
 | Disposition | Packets |
 | --- | --- |
 | **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **WORK01**, **HK01** |
-| **B. Scope inflated — keep original remainder, do not fake Done** | DATA04 (app historical GET/fork 9/9; GA/journal/three negatives remain), STORY02 (in-process 10/10; combined `storytellerV1` remains) |
+| **B. Scope inflated — keep original remainder, do not fake Done** | DATA04 (app historical GET/fork 9/9; GA/journal/three negatives remain), STORY02 (private GA/worker facade already built and T04 10/10; GA scripted-only authority guard + T06 current HEAD verification remain; STORY03 owns distributed workflow) |
 | **C. Unfinished actionable** | none |
 | **D. Planner gap** | GM07 durable SQL consent/expiry; ENG03 remaining lock paths; DATA06 remote branch-pinned facade. **OBS04 planner gap resolved** by exact terminal-event witness decision; code still pending |
 | **E. Explicitly gated** | OBS00/TURN04 paid dispatch; K8S11/TURN02/TURN03/K8S10 live cluster; BOOT03 two-process remainder already proven in-process but packet Goal still distributed start |

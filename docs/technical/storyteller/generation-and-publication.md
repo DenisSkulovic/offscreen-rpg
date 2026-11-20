@@ -39,6 +39,9 @@ Search indexes, Cognee, and vector stores are not part of this fence. This Chang
 
 ## Remote task custody
 
+**STORY02 closure scope correction (2026-11-20):** [Current source-backed closeout decision](../../../work/changes/open/2026-11-19--story02-private-task-and-result-custody/DECISION-2026-11-20.md) confirms the private DTO, GA executor role, bounded worker HTTP client and persisted two-client result-hash claim already exist; T04 10/10 is a past local SQL+HTTP receipt. The distributed executor correctly refuses provider mode, but **GA's underlying custody facade does not yet enforce that same rule**; it can return or claim a provider task / adopt an existing attempt regardless of its provider lane. STORY02 remains OPEN until T05 blocks that under authoritative SQL locks and T06 proves it with provider-free fixtures. Cross-Pod/Temporal publication/paid sends remain STORY03/TURN03/TURN04 and are not proof of or prerequisites for this GA custody guard.
+
+
 **Default chamber.** `storytellerV1` still awaits one `completeStoryteller` activity, and that activity still generates and publishes. Compose does not poll the distributed queues.
 
 The engine admits one generation and holds the frozen capture: branch, narrative revision, and canon root. That generation is the operation. The distributed executor receives the frozen task through Game Authority and returns a validated result. It has no write to `story`, `campaign`, `story_passage`, or the canon-root commit. The fuller pack — injected orientation and one intention-level memory query — is still the [selected compilation and tool contract](prompts-and-tools.md#selected-compilation-and-tool-contract), not this slice. The engine commits the checkpoint and the canon root. The Storyteller proposes. There is no Game Economy service.
