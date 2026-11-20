@@ -492,7 +492,7 @@ export class StoriesController {
     return this.run(request, (ownerId) => {
       const parsed = forkStorySchema.safeParse(body);
       if (!parsed.success) throw new StoryError('invalid');
-      return this.stories.fork({
+      return this.seam.fork({
         ownerId,
         sourceStoryId,
         forkStoryId,

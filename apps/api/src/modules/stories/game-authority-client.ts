@@ -5,7 +5,7 @@ import {
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
 } from '@offscreen/contracts/game-authority';
-import { startStorySchema } from '@offscreen/contracts/stories';
+import { forkStorySchema, startStorySchema } from '@offscreen/contracts/stories';
 import { z } from 'zod';
 
 export type StartFromCandidateInput = {
@@ -16,9 +16,31 @@ export type StartFromCandidateInput = {
   campaign?: CampaignStart;
 };
 
+export type ForkInput = {
+  ownerId: string;
+  sourceStoryId: string;
+  forkStoryId: string;
+  expectedRevision: number;
+  sourcePassageId?: string;
+  sourceCheckpointHash?: string;
+};
+
 export type StorySeam = {
   read(args: { ownerId: string; storyId: string }): Promise<unknown>;
   startFromCandidate(args: StartFromCandidateInput): Promise<unknown>;
+  fork(args: ForkInput): Promise<unknown>;
+  admitResolution(args: {
+    ownerId: string;
+    storyId: string;
+    operationId: string;
+    body: unknown;
+  }): Promise<unknown>;
+};
+
+type LocalStorySeamSource = {
+  read(args: { ownerId: string; storyId: string }): Promise<unknown>;
+  startFromCandidate(args: StartFromCandidateInput): Promise<unknown>;
+  fork(args: ForkInput): Promise<unknown>;
   admitResolution(args: {
     ownerId: string;
     storyId: string;
@@ -89,10 +111,25 @@ function startRequestBody(
   });
 }
 
-export function createLocalStorySeam(stories: StorySeam): StorySeam {
+function forkRequestBody(
+  input: Omit<ForkInput, 'ownerId' | 'sourceStoryId' | 'forkStoryId'>,
+) {
+  return forkStorySchema.parse({
+    expectedRevision: input.expectedRevision,
+    ...(input.sourcePassageId !== undefined
+      ? { sourcePassageId: input.sourcePassageId }
+      : {}),
+    ...(input.sourceCheckpointHash !== undefined
+      ? { sourceCheckpointHash: input.sourceCheckpointHash }
+      : {}),
+  });
+}
+
+export function createLocalStorySeam(stories: LocalStorySeamSource): StorySeam {
   return {
     read: (args) => stories.read(args),
     startFromCandidate: (args) => stories.startFromCandidate(args),
+    fork: (args) => stories.fork(args),
     admitResolution: (args) => stories.admitResolution(args),
   };
 }
@@ -152,12 +189,21 @@ async function callGameAuthority(
       ? payload.code
       : undefined,
   );
-  if (code.success) throw new StoryError(code.data);
+  if (code.success) {
+    const reason =
+      payload &&
+      typeof payload === 'object' &&
+      'reason' in payload &&
+      typeof payload.reason === 'string'
+        ? payload.reason
+        : undefined;
+    throw new StoryError(code.data, reason);
+  }
   throw new StoryError('unavailable');
 }
 
 export function storySeamFor(
-  stories: StorySeam,
+  stories: LocalStorySeamSource,
   authority: StoryAuthorityConfig,
 ): StorySeam {
   return authority.mode === 'distributed'
@@ -189,6 +235,30 @@ export function createRemoteStorySeam(
           candidateId,
           expectedDraftRevision,
           ...(campaign !== undefined ? { campaign } : {}),
+        }),
+      });
+    },
+    fork({
+      ownerId,
+      sourceStoryId,
+      forkStoryId,
+      expectedRevision,
+      sourcePassageId,
+      sourceCheckpointHash,
+    }) {
+      const sourceId = gameAuthorityStoryIdSchema.safeParse(sourceStoryId);
+      const forkId = gameAuthorityStoryIdSchema.safeParse(forkStoryId);
+      if (!sourceId.success || !forkId.success) throw new StoryError('invalid');
+      return callGameAuthority(config, {
+        method: 'PUT',
+        path: `/internal/v1/stories/${sourceId.data}/forks/${forkId.data}`,
+        ownerId,
+        body: forkRequestBody({
+          expectedRevision,
+          ...(sourcePassageId !== undefined ? { sourcePassageId } : {}),
+          ...(sourceCheckpointHash !== undefined
+            ? { sourceCheckpointHash }
+            : {}),
         }),
       });
     },

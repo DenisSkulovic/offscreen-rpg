@@ -1,16 +1,16 @@
 # FORK01 | Make historical fork a private Game Authority write
 
-**State:** In progress on branch `change/fork01-private-ga-fork`. Global queue selection remains TURN02. **Kind:** implementation. **Baseline:** ZIP `64f3de7`, remote main through `09f8d08`, this branch from `a0690c09`. **Roadmap:** [current ordered gates](../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. No code or runtime PASS claimed by this planning packet.
+**State:** Implemented locally on branch `change/fork01-private-ga-fork`; not archived. Global queue selection remains TURN02. **Kind:** implementation. **Baseline:** ZIP `64f3de7`, remote main through `09f8d08`, this branch from `a0690c09`. **Roadmap:** [current ordered gates](../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. Local and two-process results are in the ledger. Cold kind is not claimed.
 
 ## Real uncovered boundary
 
-`apps/api/src/modules/stories/controller.ts` handles public `PUT /api/stories/:id/forks/:forkId` by calling `this.stories.fork` (the Nest writer). Meanwhile `apps/api/src/modules/stories/game-authority-client.ts:StorySeam` only has read/start/resolution, and `apps/game-authority/src/application.ts:createGameAuthoritySeam` and `server.ts:routeFor` lack a private fork. The existing `packages/application/src/stories/forks.ts:createStoryForks.fork` is the correct *domain* checkpoint implementation. It should not be cloned into a second writer.
+`apps/api/src/modules/stories/controller.ts` handles public `PUT /api/stories/:id/forks/:forkId` by calling `this.seam.fork`. Distributed mode forwards that call to private Game Authority. The existing `packages/application/src/stories/forks.ts:createStoryForks.fork` remains the only checkpoint implementation.
 
 **Goal:** public Nest fork in distributed mode forwards validated `forkStorySchema` plus trusted owner, source ID, child ID and exact as-of pair to the versioned, authenticated **private GA** endpoint; GA calls the same application `stories.fork` once. Preserve public route, error mapping, transactional checkpoint reconstruction, retry/owner/role guards, S3 pin and no fallback on GA failure. Retain local process seam solely for host tests until DXK06 renames the old `compose` mode; Kubernetes always uses distributed. Never expose GA through public Gateway.
 
 **Explicit scope limit:** the only initial fork is quiescent Harbor-watch scene1 *after parent reaches scene2*. Must reread independent child source root, lineage, no future parent state. Do not expand checkpoint v1 to `microbe.v3` mechanical/obligation active states; no generic branch-scoped memory feature. DATA04 owns core fork state, DIST03 its original narrow read/resolution scope, TURN03 its full cold-kind/browser proof.
 
-**Source-level concern to check:** `forks.ts:matchingPriorFork` compares prior owner/source/revision and optional passage, but not the supplied `sourceCheckpointHash`. Prove whether retrying the same child with a *different hash* incorrectly succeeds before deciding on a **coordinated narrow domain repair**. Don't invent a parallel snapshot store.
+**Source-level concern, resolved:** `forks.ts:matchingPriorFork` compares prior owner/source/revision and optional passage. A same-child retry with a different `sourceCheckpointHash` now re-reads the scene checkpoint inside the transaction and returns `checkpoint_hash_mismatch` instead of idempotent success. No second snapshot store was added.
 
 ## Acceptance and stops
 
@@ -37,4 +37,8 @@
 | --- | --- | --- | --- | --- |
 | Planner audit | `64f3de7` + `09f8d08` (source only) | NOT RUN, no code changed | proposal only | superseded by the rows below |
 | T01 application fork | `packages/application/src/stories/forks.ts` idempotent hash recheck; Harbor-watch scene1 fork in `turn03-distributed-poc-fixture.integration.ts` | historical-fork 3 pass / 0 fail; turn03 fixture 4 pass / 0 fail. Negative: same child id with a different hash returns `checkpoint_hash_mismatch` | none | not Game Authority or Kubernetes |
-| T02 private GA fork | `apps/game-authority` `PUT /internal/v1/stories/:id/forks/:forkId` calls `stories.fork` once | game-authority build pass; story-seam + story-start 8 pass / 0 fail. Negative: forged bearer returns 401 and does not call the seam | none | Nest still calls `this.stories.fork` directly (T03) |
+| T02 private GA fork | `apps/game-authority` `PUT /internal/v1/stories/:id/forks/:forkId` calls `stories.fork` once | game-authority build pass; story-seam + story-start 8 pass / 0 fail. Negative: forged bearer returns 401 and does not call the seam | none | Nest routing landed in T03 |
+| T03 Nest StorySeam fork | `apps/api` controller + `game-authority-client` StorySeam; `fork01-private-ga-fork.integration.js` | historical-fork 3/0; turn03 fixture 4/0; GA story-seam+story-start 8/0; api GA client+seam 17/17; fork01 integration 7/7. Negatives: GA down → 503 no child; bad service token → 503 no child; wrong hash → 400 `checkpoint_hash_mismatch`; foreign owner → 404; duplicate child → 409 | none | not Kubernetes/browser/cold kind |
+| T04 docs reconciliation | `STATUS.md`, `docs/architecture/05-scenes-and-forks.md`, `docs/technical/platform/data-and-persistence.md`, `docs/technical/platform/deployment-and-compatibility.md`, TURN03 `TASKS.md`, this `TASKS.md` | n/a (T03 sibling suites cited) | owners above | cold kind/browser fork stays with TURN03; packet not archived in T04 |
+
+**Remaining:** Cold kind/browser fork proof stays with TURN03. This packet is not archived in T04. Kubernetes/kind, browser, cold cluster, checkpoint v2, `microbe.v3` active-state fork, and generic branch memory remain unproved.

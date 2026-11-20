@@ -11,8 +11,14 @@ import {
 
 const token = 'nest-service-credential';
 const storyId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const forkStoryId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const candidateId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const operationId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+const forkBody = {
+  expectedRevision: 1,
+  sourcePassageId: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+  sourceCheckpointHash: `${'a'.repeat(64)}`,
+};
 const ownerId = 'owner-a';
 const startBody = {
   candidateId,
@@ -37,10 +43,12 @@ function receiptSeam() {
   const receipts = new Map();
   let inserts = 0;
   let startCalls = 0;
+  let forkCalls = 0;
   const seenActors = [];
   return {
     inserts: () => inserts,
     startCalls: () => startCalls,
+    forkCalls: () => forkCalls,
     seenActors,
     async read(args) {
       seenActors.push(args.ownerId);
@@ -80,11 +88,19 @@ function receiptSeam() {
       startCalls += 1;
       return { storyId: args.storyId, view: 'started' };
     },
+    async fork(args) {
+      seenActors.push(args.ownerId);
+      if (args.ownerId !== ownerId || args.sourceStoryId !== storyId) {
+        throw new StoryError('not_found');
+      }
+      forkCalls += 1;
+      return { storyId: args.forkStoryId, view: 'forked' };
+    },
   };
 }
 
 function localStories() {
-  const calls = { read: 0, admit: 0, start: 0 };
+  const calls = { read: 0, admit: 0, start: 0, fork: 0 };
   return {
     calls,
     async read() {
@@ -94,6 +110,10 @@ function localStories() {
     async startFromCandidate() {
       calls.start += 1;
       return { source: 'compose-start', storyId, view: 'started-local' };
+    },
+    async fork() {
+      calls.fork += 1;
+      return { source: 'compose-fork', storyId: forkStoryId, view: 'forked-local' };
     },
     async admitResolution() {
       calls.admit += 1;
@@ -172,6 +192,10 @@ test('compose mode keeps the in-process writer and does not call Game Authority'
         return { source: 'remote' };
       },
       async startFromCandidate() {
+        remoteCalls += 1;
+        return { source: 'remote' };
+      },
+      async fork() {
         remoteCalls += 1;
         return { source: 'remote' };
       },
@@ -265,6 +289,10 @@ test('compose mode keeps in-process start and does not call Game Authority', asy
         remoteCalls += 1;
         return { source: 'remote' };
       },
+      async fork() {
+        remoteCalls += 1;
+        return { source: 'remote' };
+      },
       async admitResolution() {
         remoteCalls += 1;
         return { source: 'remote' };
@@ -348,4 +376,110 @@ test('distributed admitResolution does not fall back to local stories when Game 
   assert.equal(local.calls.read, 0);
   assert.equal(local.calls.admit, 0);
   assert.equal(local.calls.start, 0);
+  assert.equal(local.calls.fork, 0);
+});
+
+test('distributed mode routes fork to Game Authority and leaves the Nest writer idle', async () => {
+  const seam = receiptSeam();
+  const server = await startGameAuthorityServer({
+    seam,
+    token,
+    timeoutMs: 1000,
+  });
+  const local = localStories();
+  const controller = new StoriesController(
+    identity,
+    local,
+    null,
+    storySeamFor(local, {
+      mode: 'distributed',
+      origin: server.origin,
+      token,
+      timeoutMs: 1000,
+    }),
+  );
+  try {
+    const forked = await controller.fork(
+      request,
+      storyId,
+      forkStoryId,
+      forkBody,
+    );
+    assert.deepEqual(forked, { storyId: forkStoryId, view: 'forked' });
+    assert.equal(seam.forkCalls(), 1);
+    assert.equal(local.calls.fork, 0);
+    assert.deepEqual(seam.seenActors, [ownerId]);
+  } finally {
+    await server.close();
+  }
+});
+
+test('compose mode keeps in-process fork and does not call Game Authority', async () => {
+  let remoteCalls = 0;
+  const server = await startGameAuthorityServer({
+    token,
+    timeoutMs: 1000,
+    seam: {
+      async read() {
+        remoteCalls += 1;
+        return { source: 'remote' };
+      },
+      async startFromCandidate() {
+        remoteCalls += 1;
+        return { source: 'remote' };
+      },
+      async fork() {
+        remoteCalls += 1;
+        return { source: 'remote' };
+      },
+      async admitResolution() {
+        remoteCalls += 1;
+        return { source: 'remote' };
+      },
+    },
+  });
+  const local = localStories();
+  const controller = new StoriesController(
+    identity,
+    local,
+    null,
+    storySeamFor(local, { mode: 'compose' }),
+  );
+  try {
+    const forked = await controller.fork(
+      request,
+      storyId,
+      forkStoryId,
+      forkBody,
+    );
+    assert.deepEqual(forked, {
+      source: 'compose-fork',
+      storyId: forkStoryId,
+      view: 'forked-local',
+    });
+    assert.equal(local.calls.fork, 1);
+    assert.equal(remoteCalls, 0);
+  } finally {
+    await server.close();
+  }
+});
+
+test('distributed fork does not fall back to local stories when Game Authority is down', async () => {
+  const local = localStories();
+  const controller = new StoriesController(
+    identity,
+    local,
+    null,
+    storySeamFor(local, {
+      mode: 'distributed',
+      origin: 'http://127.0.0.1:1',
+      token: '0123456789abcdef',
+      timeoutMs: 100,
+    }),
+  );
+  await assert.rejects(
+    () => controller.fork(request, storyId, forkStoryId, forkBody),
+    (error) => error instanceof HttpException && error.getStatus() === 503,
+  );
+  assert.equal(local.calls.fork, 0);
 });

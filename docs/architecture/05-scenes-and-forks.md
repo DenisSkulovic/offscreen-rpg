@@ -32,7 +32,7 @@ flowchart TD
     Legacy -->|no| Unsupported
 ```
 
-**CURRENT SOURCE:** packages/application/src/stories/forks.ts uses forkFromSceneCheckpoint for the requested historical selector and a restricted forkLiveRevisionOne fallback without selector. readSceneCheckpointReference verifies immutable checkpoint and its canon root; the fork remaps identities and writes a child manifest. **Limit:** selected checkpoints with active holds/work, nontrivial pending offers or unsupported continuity remaps are deliberately rejected. “Fork from any scene, including active work” is a longer-term product ambition, **not yet implemented**. The private GA start/fork command routing and cross-Pod child continuation remain to be proven.
+**CURRENT SOURCE:** packages/application/src/stories/forks.ts uses forkFromSceneCheckpoint for the requested historical selector and a restricted forkLiveRevisionOne fallback without selector. readSceneCheckpointReference verifies immutable checkpoint and its canon root; the fork remaps identities and writes a child manifest. **Limit:** selected checkpoints with active holds/work, nontrivial pending offers or unsupported continuity remaps are deliberately rejected. “Fork from any scene, including active work” is a longer-term product ambition, **not yet implemented**. A quiescent checkpoint fork in distributed mode is now public Nest → private Game Authority `PUT /internal/v1/stories/:sourceId/forks/:forkId` → the same application `stories.fork` once; compose/local mode still calls that function in-process. Cross-Pod child continuation and cold kind remain unproved. Private GA start command routing remains to be proven.
 
 ## Knowledge retrieval must use the branch, not a global newest index
 
