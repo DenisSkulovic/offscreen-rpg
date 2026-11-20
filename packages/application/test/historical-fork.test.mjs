@@ -8,6 +8,8 @@ import test from 'node:test';
 import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
+import { generation } from '@offscreen/db/generation-schema';
+import { outbox } from '@offscreen/db/outbox-schema';
 import {
   story,
   storyItem,
@@ -443,6 +445,10 @@ test('historical GET and fork keep scene-1 sword and living king after scene 2',
   await withDisposable(async (database) => {
     const seeded = await seedTwoScenes(database, store);
     const stories = createStories(database, { documentStore: store });
+    const outboxBeforeRead = await database.db.select({ id: outbox.id }).from(outbox);
+    const generationsBeforeRead = await database.db
+      .select({ id: generation.id })
+      .from(generation);
     const historic = await stories.readHistoricalScene({
       ownerId: seeded.ownerId,
       storyId: seeded.storyId,
@@ -462,6 +468,12 @@ test('historical GET and fork keep scene-1 sword and living king after scene 2',
       seeded.scene1.mechanics.storyFacts[0],
     ]);
     assert.equal(historic.current.interaction.id, seeded.interactionId);
+    const outboxAfterRead = await database.db.select({ id: outbox.id }).from(outbox);
+    const generationsAfterRead = await database.db
+      .select({ id: generation.id })
+      .from(generation);
+    assert.equal(outboxAfterRead.length, outboxBeforeRead.length);
+    assert.equal(generationsAfterRead.length, generationsBeforeRead.length);
 
     const liveItems = await database.db
       .select()

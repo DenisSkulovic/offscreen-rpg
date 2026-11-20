@@ -1,8 +1,8 @@
 # DATA04 | Composer route: reconcile landed historical scene/fork code
 
-**Cross-owner note:** [FORK01](../2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md) now owns the private GA fork transport; DATA04 remains the domain checkpoint reconstruction authority. No duplicated fork algorithm.
+**Cross-owner note:** [FORK01](../../../../open/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md) now owns the private GA fork transport; DATA04 remains the domain checkpoint reconstruction authority. No duplicated fork algorithm.
 
-**Baseline:** 584b594. **Verify SHA:** ef504d69 plus `change/data04-gap-negatives` (provider-free historical-fork **4/4** on 2026-11-20). **State:** In progress; **T01 VERIFY PASS**; gap negatives landed on the branch; **not Done**. **Default model:** Composer Standard. **Do not implement another checkpoint or generic rewind subsystem.**
+**Baseline:** 584b594. **Verify SHA:** 627f6fff on `change/data04-gap-negatives`. **State:** Done 2026-11-20. Historical-fork **4/4** and the journal query-key file **3/3**. Private GA transport remains FORK01. Cold cluster continuation remains TURN03. **Default model:** Composer Standard. **Do not implement another checkpoint or generic rewind subsystem.**
 
 **Verified source:** `packages/application/src/stories/scene-checkpoint.ts:readSceneCheckpointReference` exact immutable hash; `stories/reads.ts:readHistoricalScene` and `stories/forks.ts:createStoryForks.fork/forkFromSceneCheckpoint` use requested historical selector and new branch campaignId with remapped identifiers. `packages/application/test/historical-fork.test.mjs` contains parent scene1 king alive/sword vs scene2 later future. The no-checkpoint fallback `forkLiveRevisionOne` is restricted. Supported checkpoint fork refuses active holds/work/complex continuity, intentionally.
 
