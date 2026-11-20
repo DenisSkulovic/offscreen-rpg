@@ -1,7 +1,6 @@
 # Work selection | single current-work authority
 
-**Morning-first-campaign navigation, 2026-11-20:** [source-backed audit, mechanism ladder, and finite Cursor waves](designs/open/first-campaign-readiness-2026-11-20/README.md). The selector below remains `none` because a planning audit is not an executor selection. When the owner explicitly requests Cursor execution, select existing STORY03 and its new T07 (then T08/T09), provider-free, in a bounded batch. Do not turn this link into automatic authorization for live model calls or cluster deletion.
-
+**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is the sole selected Change**; finish its live release slice before a separate BOOT03 closure and FORK01 handoff. DXK01 T01 preflight progress is recorded, but its packet heading does not override this selector. No implicit model spend or unsafe cluster authorization.
 
 Current work: [TURN02](changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md)
 

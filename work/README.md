@@ -4,6 +4,7 @@
 
 | Path | Question |
 | --- | --- |
+| [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md) | **Current priority order and release gates**, not a second selected work pointer. |
 | [QUEUE.md](QUEUE.md) | **Only selected work item** (Change, standalone Task or none); no duplicate selectors. |
 | [WORK-TAXONOMY.md](WORK-TAXONOMY.md) | Definitions and routing for Initiative, Design, Investigation, Change, Task, Experiment and Evidence. |
 | [changes/](changes/README.md) | Which lasting implementation/documentation Change packets are open or archived? Composer Txx remain subordinate. |

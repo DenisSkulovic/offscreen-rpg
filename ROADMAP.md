@@ -1,6 +1,6 @@
 # Roadmap
 
-Owner strategy. Not an implementation queue. The only code selection is [work/changes](work/changes/README.md). What is demonstrated is [STATUS](STATUS.md).
+Owner strategy. Not an implementation queue. For the finite Cursor schedule use [work/IMPLEMENTATION-ROADMAP.md](work/IMPLEMENTATION-ROADMAP.md), and for the only active selection use [work/QUEUE.md](work/QUEUE.md). The only code selection is [work/changes](work/changes/README.md). What is demonstrated is [STATUS](STATUS.md).
 
 Offscreen RPG is an engineering portfolio and a development laboratory. The near-term bar is architecture, tests and failure modes the owner can defend. It is not a race to acquire players. Gameplay expansion and visual redesign wait for a separate authorization.
 

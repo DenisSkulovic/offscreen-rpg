@@ -1,5 +1,7 @@
 # Changes | catalog and lifecycle
 
+**Next-work priority:** [one implementation roadmap](../IMPLEMENTATION-ROADMAP.md) orders the open work; [QUEUE](../QUEUE.md) owns the only selected Change. **[FORK01](open/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)** is the missing private historical-fork bridge; it follows the current TURN02 slice and BOOT03 closure, not a new self-selected parallel project.
+
 **2026-11-20 Kubernetes-first developer experience (owner-selected outcome, not yet implemented):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Seven distinct DXK01–07 implementation Changes replace default Compose/host watchers with kind + Tilt + Headlamp, safe lifecycle, provider-free playable onboarding, script/CI modernization, complete active-runtime Compose retirement and clean-clone verification. Existing TURN02/BOOT03/STORY03/TURN03 retain their real-release/gameplay ownership; no new packet is currently selected.
 
 - [DXK01: Kubernetes stack lifecycle](open/2026-11-20--dxk01-kubernetes-stack-lifecycle/CHANGE.md)

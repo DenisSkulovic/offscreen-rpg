@@ -1,5 +1,7 @@
 # Cursor parent | Kubernetes-first developer experience execution route
 
+**Priority supersession:** [work/IMPLEMENTATION-ROADMAP.md](../../../IMPLEMENTATION-ROADMAP.md) now decides short-term execution order; this remains DXK design/execution detail, not a competing current sprint. QUEUE alone selects work.
+
 **Owner authorized the end-state, not risky environmental side effects.** Use Composer 2.5 Standard for parent and routine bounded children as existing repo policy specifies. ChatGPT performed initial wide source/architecture investigation in SOURCE-MAP.md. Do not send children on broad repo surveys; supply one Change TASKS.md T-ID and the 2-5 named source anchors. Inspect local HEAD/worktree, because connected GitHub baseline and unpushed Cursor commits can diverge. No paid providers, foreign context or destructive data deletion.
 
 **Predecessor:** finish **TURN02 T03-T06** real application release and the necessary BOOT03/STORY03/TURN03 deterministic turn path. These are existing owners; do not clone them into a DXK change or mark them Done because a Dockerfile builds.

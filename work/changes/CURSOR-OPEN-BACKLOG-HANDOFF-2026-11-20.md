@@ -1,5 +1,7 @@
 # Cursor parent | open Change backlog, Composer-first dispatch
 
+**Priority supersession:** [work/IMPLEMENTATION-ROADMAP.md](../IMPLEMENTATION-ROADMAP.md) is the current now/next/later schedule. This older menu is for task discovery, not autonomous selection. QUEUE remains the sole current selector.
+
 **Priority override for morning 2026-11-20:** [first real campaign source audit](../designs/open/first-campaign-readiness-2026-11-20/README.md) supersedes this older menu for immediate game readiness. At snapshot `3992437` there are **19** open folders, not 24. Start with **STORY03 T07** GA-only control publication, then **T08** original-topic persistence, then **T09** actual HTTP→outbox→Temporal→GA integrated campaign. They are new cards in [STORY03 TASKS.md](open/2026-11-19--story03-separate-temporal-executor-and-publication/TASKS.md). Each is one bounded task with a negative test. No automatic all-folder delegation, provider send or destructive kind work.
 
 

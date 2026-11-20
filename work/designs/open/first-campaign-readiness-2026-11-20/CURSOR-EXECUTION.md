@@ -1,5 +1,7 @@
 # Cursor implementation schedule | vertical ladder and terminal outcomes
 
+**Priority supersession:** [work/IMPLEMENTATION-ROADMAP.md](../../../IMPLEMENTATION-ROADMAP.md) now decides short-term next work. This document remains source-backed historical design; T07/T08/T09 may already be landed. QUEUE alone selects work.
+
 **Read this, not 19 folders.** Source baseline `3992437`. Parent+child Composer Standard. Use existing Change `TASKS.md` T-IDs, 2–5 named source anchors and exactly one write owner. This file is a temporary integration **schedule**, not an independent Change, product specification or approval for money/destructive operations.
 
 ## Morning dispatch
