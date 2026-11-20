@@ -83,6 +83,8 @@ test('workers overlay refuses broad database env and pins rule hash on API', () 
   const workers = readFileSync(join(overlayDir, 'workers.yaml'), 'utf8');
   const authority = readFileSync(join(overlayDir, 'authority.yaml'), 'utf8');
   assert.doesNotMatch(workers, /DATABASE_URL/);
+  assert.doesNotMatch(workers, /containerPort:\s*8080/);
+  assert.doesNotMatch(workers, /tcpSocket/);
   assert.doesNotMatch(authority, /DATABASE_URL/);
   assert.doesNotMatch(workers, /POSTGRES_URL/);
   assert.doesNotMatch(workers, /PGPASSWORD/);

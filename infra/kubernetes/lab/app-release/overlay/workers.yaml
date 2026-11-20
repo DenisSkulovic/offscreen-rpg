@@ -1,4 +1,5 @@
 # Storyteller control and execution workers — Temporal only, no broad database env.
+# These processes do not listen. A TCP probe cannot show that a task queue is being polled.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -41,9 +42,6 @@ spec:
           command:
             - node
             - apps/worker/dist/src/bootstrap/control-main.js
-          ports:
-            - name: worker
-              containerPort: 8080
           env:
             - name: TEMPORAL_ADDRESS
               value: temporal-server.lab-temporal.svc.cluster.local:7233
@@ -58,12 +56,6 @@ spec:
                 secretKeyRef:
                   name: game-runtime
                   key: game-authority-control-token
-          readinessProbe:
-            tcpSocket:
-              port: worker
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 18
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -110,9 +102,6 @@ spec:
           command:
             - node
             - apps/worker/dist/src/bootstrap/executor-main.js
-          ports:
-            - name: worker
-              containerPort: 8080
           env:
             - name: TEMPORAL_ADDRESS
               value: temporal-server.lab-temporal.svc.cluster.local:7233
@@ -127,12 +116,6 @@ spec:
                 secretKeyRef:
                   name: game-runtime
                   key: game-authority-executor-token
-          readinessProbe:
-            tcpSocket:
-              port: worker
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 18
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
