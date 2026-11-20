@@ -1,6 +1,6 @@
 # GM07 | bounded source-backed execution after durable design
 
-**Plan baseline:** current main `c93cbc12`, with attached snapshot `64f3de7`. **Selection:** `work/QUEUE.md` still owns one active Change; **GM07 is not selected**. [GM07 exact decision](DECISION-2026-11-20.md) resolves original storage/actor/pause/scheduler blocker. **T01 PASS**, **T02–T05 LANDED**, and **T06 in-process worker path PASS** on branch `change/gm07-consented-withdrawal`. Disposable SQL settled one harmless withdrawal with no storyteller notice. Live Temporal delivery is **NOT RUN**. The Change stays open and is not archived. Cursor Standard, one T-ID with 2–5 specified source anchors per batch. No paid providers, destructive DB or unowned cluster actions.
+**Plan baseline:** current main `c93cbc12`, with attached snapshot `64f3de7`. **Selection:** `work/QUEUE.md` still owns one active Change; **GM07 is not selected**. [GM07 exact decision](DECISION-2026-11-20.md) resolves original storage/actor/pause/scheduler blocker. **T01 PASS**, **T02–T05 LANDED**, **T06 in-process path PASS**, and **one local Temporal relay PASS** (`apps/worker/test/gm07-temporal-relay.live.test.ts`, 1 pass) on branch `change/gm07-consented-withdrawal`. A hosted relay was not run. The Change stays open and is not archived. Cursor Standard, one T-ID with 2–5 specified source anchors per batch. No paid providers, destructive DB or unowned cluster actions.
 
 ## T01 | Verify pure delegate refusal baseline | VERIFY
 
