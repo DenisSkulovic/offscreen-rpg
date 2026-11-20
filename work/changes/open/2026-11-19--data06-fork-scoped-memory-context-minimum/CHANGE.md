@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the selected microtask route *once the Change is authorized*; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) records actual source tier and dependency. **Default parent/child model: Composer 2.5 Standard.** Delegation: prove branch exact-root isolation then remote evidence route after STORY03. Don't interpret a task marked PLANNER-READY as permission to execute a Proposed Change, promote status or skip negative tests; novel architecture goes back to ChatGPT before a Grok exception.
 
-**State:** Proposed · 2026-11-19; **T01 VERIFY PASS** at `ec73a535` (2026-11-20); **not Done**; no branch-pinned remote memory facade claimed.  
+**State:** Proposed · 2026-11-19; **T01 VERIFY PASS** at `ec73a535` (2026-11-20); **T02 library slice only** on branch `change/data06-branch-memory` (not main); **not Done**; no branch-pinned remote memory facade claimed.  
 **Kind:** implementation  
 **Execution:** Not part of currently active Kubernetes batch. Select individually or through explicitly approved safe batch.  
 **Related:** [DISTURN program](../../../designs/open/distributed-turn-poc/README.md) · [D2 data design](../../../designs/open/distributed-turn-poc/D2-SCENE-DATA-CONTRACT.md) · [Gap register](../../../designs/open/distributed-turn-poc/GAPS.md)
