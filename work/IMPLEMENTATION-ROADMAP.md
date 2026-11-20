@@ -10,7 +10,7 @@
 
 ## FIRST SCREEN | Cursor parent: what to do next
 
-**No Change is selected.** TURN02 is Done. DXK01 T01 preflight work is recorded, but DXK01 is **not selected** until a separate handover; QUEUE is authoritative.
+**No Change is selected.** TURN02 is Done. DXK01 T01–T03 unit planners are recorded: preflight, up/down/reset command plans, and three-layer health. Live `stack:up`, `stack:down`, and `stack:reset` were not run. DXK01 stays open and **not selected**; QUEUE is authoritative.
 
 1. **NOW: TURN02 is Done.** A fresh `kind-offscreen-lab` after teardown installed the application release: one migration, a matching content pin, and Ready Next, Nest, Game Authority, control, executor, and relay. The public gateway hides Game Authority. `POC_OPEN_ACCESS=0` returns 401 and `1` returns the local player. The earlier Seyda Neen story was not replayed. This is not the hosted release.
 2. **FORK01 is Done.** The local Harbor-watch scene1 fork after scene2 goes through private Game Authority. Cold kind and the browser stay TURN03. Do not select another Change from this list.
@@ -24,8 +24,8 @@
 | --- | --- | --- |
 | **R0 Real release skeleton (Done 2026-11-20)** | TURN02 archived | Fresh kind: one migration, pinned import, Ready Next/Nest/GA/control/executor/relay. A list of healthy synthetic Pods is not this result |
 | **R1 Narrow correctness closure** | FORK01 local private-GA fork is Done; STORY03 local split is archived; TURN03 T01/T02 already partly landed; BOOT03, STORY02, TURN02, DATA04, and DATA06 are archived; DIST03 is the remaining local ownership gap | Pinned quiescent Harbor-watch scene1 fork via private GA is proved locally, including retry, wrong owner, and GA-down. The local Storyteller split and the DATA06 evidence read are proved. Cold kind is not this result |
-| **R2 Usable kind/browser vertical** | DXK01 T01/T02 (T01 preflight already underway); DXK03 T01/T02; TURN02 T05/T06; K8S11 T03; TURN03 T03/T04; DXK03 T03 | Real signed-in browser → Nest → GA → outbox → Temporal → executor → GA publication → scene2 SSE/GET → historical fork; staff /control works. Dev-only auth avoids mandatory GitHub OAuth for clean clone; zero provider calls. Stop on missing real actor or broken pin |
-| **R3 One-command GUI experience** | DXK02 T01–T03, DXK01 T03 | `pnpm dev` safely reconciles kind and presents working game/staff/Tilt URLs; Headlamp selects Pod, shows logs/events/terminal where supported, app Pod deletion is replaced and game survives. Real warm run retains SQL/S3 |
+| **R2 Usable kind/browser vertical** | DXK01 unit planners landed; live stack up/down/reset still NOT-RUN; DXK03 T01–T03; K8S11 T03; TURN03 T03/T04 | Real signed-in browser → Nest → GA → outbox → Temporal → executor → GA publication → scene2 SSE/GET → historical fork; staff /control works. Dev-only auth avoids mandatory GitHub OAuth for clean clone; zero provider calls. Stop on missing real actor or broken pin |
+| **R3 One-command GUI experience** | DXK02 T01–T03; DXK01 live reset and cold/warm durations still open | `pnpm dev` safely reconciles kind and presents working game/staff/Tilt URLs; Headlamp selects Pod, shows logs/events/terminal where supported, app Pod deletion is replaced and game survives. Real warm run retains SQL/S3 |
 | **R4 Retire old operating model** | DXK04 T01–T03; DXK05 T01–T03; DXK06 T01–T03 | Root scripts scoped, CI and lab cold-clone guards Kubernetes-first, no active `compose.yaml`, Docker Compose runner, `GAME_AUTHORITY_MODE=compose`, named-volume dependencies or current boot docs. Docker **engine** remains needed for kind. Do not destroy old user data |
 | **R5 Cold-clone final** | DXK07 T01–T03; [DXK-FINAL](tasks/open/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md) | Exact clean Windows/WSL checkout proves one command, browser play, roles, Tilt/Headlamp, Pod recovery, negative failures, first/warm durations/memory/image digests and zero provider spend. Only then mark initiative complete |
 

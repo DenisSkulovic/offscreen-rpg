@@ -1,0 +1,27 @@
+{
+  "clusterName": "offscreen-lab",
+  "contextName": "kind-offscreen-lab",
+  "resetConfirmation": "kind-offscreen-lab",
+  "clusterUp": "infra/kubernetes/lab/up.sh",
+  "clusterReset": "infra/kubernetes/lab/down.sh",
+  "releaseInstall": "infra/kubernetes/lab/app-release/install.sh",
+  "preserveNamespaces": ["lab-postgres", "lab-objects", "lab-temporal", "lab-content-bootstrap"],
+  "expectedImportRoots": {
+    "world": "5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9",
+    "rule": "d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab",
+    "start": "e30eaa27407abe8a015b21cad62f30b81b07ee7af3b89634501fe3787d8d2813"
+  },
+  "downAllowlist": [
+    {"namespace":"lab-edge","kind":"Job","name":"game-migrate"},
+    {"namespace":"lab-edge","kind":"Deployment","name":"game-web"},
+    {"namespace":"lab-edge","kind":"Deployment","name":"game-api"},
+    {"namespace":"lab-edge","kind":"Service","name":"game-web"},
+    {"namespace":"lab-edge","kind":"Service","name":"game-api"},
+    {"namespace":"lab-edge","kind":"HTTPRoute","name":"game-edge-routes"},
+    {"namespace":"lab-authority","kind":"Deployment","name":"game-authority"},
+    {"namespace":"lab-authority","kind":"Service","name":"game-authority"},
+    {"namespace":"lab-workers","kind":"Deployment","name":"game-control"},
+    {"namespace":"lab-workers","kind":"Deployment","name":"game-executor"},
+    {"namespace":"lab-workers","kind":"Deployment","name":"game-relay"}
+  ]
+}
