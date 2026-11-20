@@ -66,34 +66,10 @@ export async function provisionTurn03DistributedPocFixture(
     join(tmpdir(), 'offscreen-turn03-poc-fixture-'),
   );
   const source = join(fixtureRoot, 'harbor-start');
-  await mkdir(join(source, 'obligations'), { recursive: true });
+  await mkdir(source, { recursive: true });
   await writeFile(
     join(source, 'START.md'),
     turn03DistributedPocAuthorship.startPackage.orientationMarkdown,
-  );
-  const packageObligationId = randomUUID();
-  await writeFile(
-    join(source, 'obligations', 'harbor-watch.json'),
-    JSON.stringify({
-      version: 1,
-      obligation: {
-        id: packageObligationId,
-        revision: 1,
-        source: { id: 'harbor-watch', revision: 1 },
-        label: 'The harbor stays still',
-        visibility: { kind: 'hidden' },
-        consequence: {
-          kind: 'condition.set.v1',
-          condition: {
-            id: 'harbor-calm',
-            label: 'Calm harbor',
-            value: true,
-          },
-        },
-        followUp: 'report',
-        due: { kind: 'game-second', gameSecond: 24 },
-      },
-    }),
   );
   const startPackageId = randomUUID();
   await writeFile(
@@ -112,14 +88,6 @@ export async function provisionTurn03DistributedPocFixture(
           activation: 'initial-canon',
           authority: 'canon',
           visibility: 'player-known',
-        },
-        {
-          path: 'obligations/harbor-watch.json',
-          kind: 'world-obligation',
-          activation: 'executable-obligation',
-          authority: 'canon',
-          visibility: 'storyteller-private',
-          schemaId: 'world-obligation.v1',
         },
       ],
     }),

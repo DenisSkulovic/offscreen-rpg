@@ -17,7 +17,7 @@
 
 **Planner answer to BOOT03 question (2026-11-20):** **Do not require fork of `microbe.v3` or its executable obligation in BOOT03 or in the first TURN03 golden.** The current intentional v1 exclusion is correct, and the mechanical/obligation test must continue asserting no selector. [Fixture and future-v2 decision](../../../designs/open/distributed-turn-poc/DECISION-2026-11-20--GOLDEN-FORK-SCOPE.md). **Important separate TURN03 defect:** its Harbor-watch golden start package embeds an executable obligation, despite `worldObligations: []` on the request, which makes its scene1 ineligible; fix its *fixture* under TURN03 T01, not by changing BOOT03's start transaction. **Remaining BOOT03 T04 gates** are real disposable S3-compatible store outage, two actual GA processes racing the same start, and closure reconciliation. Do not wait for checkpoint v2 or archive without these proofs.
 
-**Blocker for Done:** live S3 outage, two Game Authority processes racing one start, and closure-guard reconciliation remain open. Checkpoint v1 now has a proved quiescent imported start. The `microbe.v3` opening is outside v1: it commits one `world_obligation` and an active offer, and it does not get a selector. That is not an item-list bug. A forkable mechanical opening needs checkpoint v2, designed separately.
+**Blocker for Done:** the closure guard has not been run, and a disallowed-rules start is not in this suite. The s3mock outage and the two-process race passed on parent `8796daaa` (`15/15`). `microbe.v3` still commits one obligation and an active offer with no v1 selector. Checkpoint v2 is not part of BOOT03. The first golden campaign does not fork that opening.
 
 ### Source contract (settled, do not investigate again)
 
@@ -64,10 +64,12 @@
 
 **Executed (2026-11-20, parent `13bcd6cf`):** `pnpm test:boot03:imported-start-distributed` **13/13 PASS** (~8.2s). The mechanical fixture asserts its remapped obligation, active offer, source pin, idempotent retry, and zero v1 selector rows. A separate quiescent fixture asserts one scene-1 selector, a readable checkpoint object, the canon root, the same hash after retry, and a 409 when the retry pace changes. An eligible start whose staged checkpoint object is missing or corrupt rolls back with no story row. `data-and-persistence.md` records that distinction.
 
-**NOT-RUN this batch:** live S3 outage, two Game Authority processes racing one start, `pnpm test:focus storyteller` package sweep. DIST01 execution-and-delivery, DIST03 topology, and ENG03 concurrency were not edited.
+**Executed (2026-11-20, parent `8796daaa`):** `pnpm test:boot03:imported-start-distributed` **15/15 PASS** (~75s). Two Game Authority processes raced one quiescent start and left one passage and one scene-1 selector. Closing the TCP proxy in front of adobe/s3mock made the eligible start return 503 with no story. The mechanical fixture still has no v1 selector.
+
+**NOT-RUN this batch:** closure guard, disallowed-rules case, cross-Pod S3, `pnpm test:focus storyteller`. DIST01, DIST03, and ENG03 were not edited.
 
 **Write (still open):** named BOOT03 tests and affected canonical technical headings only; evidence/Change status receipt as authorized. **Read:** tools/api-integration/test/storyteller-imported-start.integration.ts, stories/start.ts, scene-checkpoint.ts and selected private route tests.
 
-**Positive (remaining):** the mechanical opening's gameplay state is covered and is not a v1 checkpoint. The quiescent scene-1 selector is covered. **Negative (remaining):** live S3 staging failure and a two-GA race. Raw playable plus startPackage, wrong actor, stale draft, a deleted local start object, and a missing or corrupt checkpoint object are covered.
+**Positive:** quiescent scene-1 selector, identical retry, and the two-process race are covered. The mechanical opening stays outside v1. **Negative:** s3mock unreachable, missing or corrupt checkpoint object, deleted local start object, wrong actor, stale draft, and raw playable plus startPackage are covered. A disallowed-rules start and the closure guard are not.
 
 **Execution order:** T01 → T02 → T03 → T04. T04 remains **open**.

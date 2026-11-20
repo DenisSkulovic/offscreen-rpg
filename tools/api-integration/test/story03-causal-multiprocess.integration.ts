@@ -16,12 +16,14 @@ import {
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { createChamberStorytellerControl } from '@offscreen/application/developer-tools';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import { worldObligation } from '@offscreen/db/campaign-schema';
+import { story, storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
 import { storytellerDistributedTopic } from '@offscreen/application/storyteller';
+import { LocalDocumentStore } from '@offscreen/documents';
 import { createRequire } from 'node:module';
 import type * as Drizzle from 'drizzle-orm' with { 'resolution-mode': 'require' };
 import {
@@ -187,6 +189,32 @@ async function admitTurn03OpeningAndScene1(
     scene1.current.content.title,
     turn03DistributedPocAuthorship.scene1.title,
   );
+  const obligations = await ctx.database.db
+    .select({ id: worldObligation.id })
+    .from(worldObligation)
+    .where(eq(worldObligation.storyId, storyId));
+  assert.equal(obligations.length, 0);
+  const [checkpoint] = await ctx.database.db
+    .select({
+      sceneSequence: storySceneCheckpoint.sceneSequence,
+      checkpointHash: storySceneCheckpoint.checkpointHash,
+      canonRootHash: storySceneCheckpoint.canonRootHash,
+      passageId: storySceneCheckpoint.passageId,
+    })
+    .from(storySceneCheckpoint)
+    .where(eq(storySceneCheckpoint.storyId, storyId));
+  const [createdStory] = await ctx.database.db
+    .select({ rootHash: story.documentRootHash })
+    .from(story)
+    .where(eq(story.id, storyId));
+  assert.equal(checkpoint?.sceneSequence, 1);
+  assert.equal(checkpoint?.canonRootHash, createdStory?.rootHash);
+  assert.equal(checkpoint?.passageId, scene1.current.id);
+  const stored = await new LocalDocumentStore(ctx.documentRoot).readSceneCheckpoint(
+    checkpoint.checkpointHash,
+  );
+  assert.equal(stored.canon.rootHash, createdStory?.rootHash);
+  assert.equal(stored.passageId, scene1.current.id);
   const interaction = requireDefined(
     scene1.current.interaction,
     'Expected scene1 interaction',

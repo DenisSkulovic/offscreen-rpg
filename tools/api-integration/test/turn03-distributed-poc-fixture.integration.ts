@@ -11,7 +11,8 @@ import { createChamberStorytellerControl } from '@offscreen/application/develope
 import { createStorytellerRuntime } from '@offscreen/application/storyteller';
 import { createStories, StoryError } from '@offscreen/application/stories';
 import { generation } from '@offscreen/db/generation-schema';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import { worldObligation } from '@offscreen/db/campaign-schema';
+import { story, storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
 import { offlineExecution, storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { createRequire } from 'node:module';
@@ -197,6 +198,73 @@ export async function checkTurn03DistributedPocFixture({
         visible.label,
         turn03DistributedPocAuthorship.scene1.visibleChoice.label,
       );
+      const obligations = await database.db
+        .select({ id: worldObligation.id })
+        .from(worldObligation)
+        .where(eq(worldObligation.storyId, prepared.storyId));
+      assert.equal(obligations.length, 0);
+      const [checkpoint] = await database.db
+        .select({
+          sceneSequence: storySceneCheckpoint.sceneSequence,
+          checkpointHash: storySceneCheckpoint.checkpointHash,
+          canonRootHash: storySceneCheckpoint.canonRootHash,
+          passageId: storySceneCheckpoint.passageId,
+        })
+        .from(storySceneCheckpoint)
+        .where(eq(storySceneCheckpoint.storyId, prepared.storyId));
+      const [createdStory] = await database.db
+        .select({ rootHash: story.documentRootHash })
+        .from(story)
+        .where(eq(story.id, prepared.storyId));
+      assert.equal(checkpoint?.sceneSequence, 1);
+      assert.equal(checkpoint?.canonRootHash, createdStory?.rootHash);
+      assert.equal(checkpoint?.passageId, snapshot.current.id);
+      const stored = await documentStore.readSceneCheckpoint(
+        checkpoint.checkpointHash,
+      );
+      assert.equal(stored.canon.rootHash, checkpoint.canonRootHash);
+      assert.equal(stored.sceneSequence, 1);
+      assert.equal(stored.passageId, snapshot.current.id);
+      const replay = await stories.startFromCandidate({
+        ownerId,
+        storyId: prepared.storyId,
+        candidateId: prepared.generationId,
+        expectedDraftRevision: prepared.draftRevision,
+        campaign: campaignForPins(prepared.roots),
+      });
+      assert.equal(replay.revision, snapshot.revision);
+      const [afterReplay] = await database.db
+        .select({
+          checkpointHash: storySceneCheckpoint.checkpointHash,
+        })
+        .from(storySceneCheckpoint)
+        .where(eq(storySceneCheckpoint.storyId, prepared.storyId));
+      assert.equal(afterReplay?.checkpointHash, checkpoint.checkpointHash);
+      await assert.rejects(
+        () =>
+          stories.startFromCandidate({
+            ownerId,
+            storyId: prepared.storyId,
+            candidateId: prepared.generationId,
+            expectedDraftRevision: prepared.draftRevision,
+            campaign: {
+              ...campaignForPins(prepared.roots),
+              pace: { kind: 'rate', fictionalSeconds: 60, realSeconds: 1 },
+            },
+          }),
+        (error: unknown) => {
+          assert.ok(error instanceof StoryError);
+          assert.equal(error.code, 'conflict');
+          return true;
+        },
+      );
+      const [afterConflict] = await database.db
+        .select({
+          checkpointHash: storySceneCheckpoint.checkpointHash,
+        })
+        .from(storySceneCheckpoint)
+        .where(eq(storySceneCheckpoint.storyId, prepared.storyId));
+      assert.equal(afterConflict?.checkpointHash, checkpoint.checkpointHash);
       const operationId = randomUUID();
       await stories.admitResolution({
         ownerId,

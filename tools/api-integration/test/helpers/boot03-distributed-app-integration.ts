@@ -28,7 +28,7 @@ if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
   );
 }
 
-const BOOT03_GA_SERVICE_TOKEN = 'boot03-integration-ga-story-01';
+export const BOOT03_GA_SERVICE_TOKEN = 'boot03-integration-ga-story-01';
 const BOOT03_GA_CONTROL_TOKEN = 'boot03-integration-ga-ctrl-02';
 const BOOT03_GA_EXECUTOR_TOKEN = 'boot03-integration-ga-exec-03';
 
@@ -42,6 +42,8 @@ export type Boot03DistributedAppIntegration = AppIntegration & {
   gameAuthorityProcess: ChildProcess;
   /** Document CAS root shared with Game Authority for imported-start staging. */
   documentRoot: string;
+  /** Second Game Authority process, when the race proof asked for one. */
+  peerGameAuthorityOrigin?: string;
   apiOrigin: string;
 };
 
@@ -108,6 +110,10 @@ export async function withBoot03DistributedAppIntegration(
     nestServiceTokenOverride?: string;
     /** When true, Game Authority is not started (GA-down negative). */
     skipGameAuthority?: boolean;
+    /** Extra environment for every Game Authority child. S3 mode belongs here. */
+    gameAuthorityEnv?: Record<string, string>;
+    /** Start a second Game Authority process on the same database and store. */
+    peerGameAuthority?: boolean;
   },
 ) {
   const previousAuthorityEnv = {
@@ -130,29 +136,37 @@ export async function withBoot03DistributedAppIntegration(
   const gaRepoRoot = fileURLToPath(
     new URL('../../../../../apps/game-authority', import.meta.url),
   );
+  const spawnGameAuthority = (port: number) =>
+    spawn(process.execPath, ['dist/src/bootstrap/main.js'], {
+      cwd: gaRepoRoot,
+      env: {
+        ...process.env,
+        DATABASE_URL: databaseURL,
+        STORYTELLER_LIVE_ENABLED: 'false',
+        GAME_AUTHORITY_HOST: '127.0.0.1',
+        GAME_AUTHORITY_PORT: String(port),
+        GAME_AUTHORITY_SERVICE_TOKEN: BOOT03_GA_SERVICE_TOKEN,
+        GAME_AUTHORITY_CONTROL_TOKEN: BOOT03_GA_CONTROL_TOKEN,
+        GAME_AUTHORITY_EXECUTOR_TOKEN: BOOT03_GA_EXECUTOR_TOKEN,
+        OFFSCREEN_DOCUMENT_ROOT: options.documentRoot,
+        OFFSCREEN_DEFAULT_RULE_SOURCE: defaultRuleSource,
+        ...options.gameAuthorityEnv,
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
   let gameAuthorityProcess: ChildProcess | undefined;
+  let peerGameAuthorityProcess: ChildProcess | undefined;
+  let peerGameAuthorityOrigin: string | undefined;
   if (!options.skipGameAuthority) {
-    gameAuthorityProcess = spawn(
-      process.execPath,
-      ['dist/src/bootstrap/main.js'],
-      {
-        cwd: gaRepoRoot,
-        env: {
-          ...process.env,
-          DATABASE_URL: databaseURL,
-          STORYTELLER_LIVE_ENABLED: 'false',
-          GAME_AUTHORITY_HOST: '127.0.0.1',
-          GAME_AUTHORITY_PORT: String(gaPort),
-          GAME_AUTHORITY_SERVICE_TOKEN: BOOT03_GA_SERVICE_TOKEN,
-          GAME_AUTHORITY_CONTROL_TOKEN: BOOT03_GA_CONTROL_TOKEN,
-          GAME_AUTHORITY_EXECUTOR_TOKEN: BOOT03_GA_EXECUTOR_TOKEN,
-          OFFSCREEN_DOCUMENT_ROOT: options.documentRoot,
-          OFFSCREEN_DEFAULT_RULE_SOURCE: defaultRuleSource,
-        },
-        stdio: ['ignore', 'pipe', 'pipe'],
-        windowsHide: true,
-      });
+    gameAuthorityProcess = spawnGameAuthority(gaPort);
     await waitForGameAuthorityLive(gameAuthorityOrigin);
+    if (options.peerGameAuthority) {
+      const peerPort = await reserveLoopbackPort();
+      peerGameAuthorityOrigin = `http://127.0.0.1:${peerPort}`;
+      peerGameAuthorityProcess = spawnGameAuthority(peerPort);
+      await waitForGameAuthorityLive(peerGameAuthorityOrigin);
+    }
   }
   process.env['GAME_AUTHORITY_MODE'] = 'distributed';
   process.env['GAME_AUTHORITY_ORIGIN'] = gameAuthorityOrigin;
@@ -232,6 +246,7 @@ export async function withBoot03DistributedAppIntegration(
       gameAuthorityOrigin,
       gameAuthorityProcess: gameAuthorityProcess ?? (null as unknown as ChildProcess),
       documentRoot: options.documentRoot,
+      ...(peerGameAuthorityOrigin ? { peerGameAuthorityOrigin } : {}),
     });
   } finally {
     await release([
@@ -242,6 +257,10 @@ export async function withBoot03DistributedAppIntegration(
         if (gameAuthorityProcess) {
           gameAuthorityProcess.kill();
           await once(gameAuthorityProcess, 'exit').catch(() => undefined);
+        }
+        if (peerGameAuthorityProcess) {
+          peerGameAuthorityProcess.kill();
+          await once(peerGameAuthorityProcess, 'exit').catch(() => undefined);
         }
       },
       async () => {

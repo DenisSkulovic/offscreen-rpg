@@ -1,25 +1,27 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdir, mkdtemp, unlink, writeFile } from 'node:fs/promises';
+import { createConnection, createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test } from 'node:test';
 import { campaign, worldObligation } from '@offscreen/db/campaign-schema';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
+import { gameAuthoritySeamVersion } from '@offscreen/contracts/game-authority';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { generation } from '@offscreen/db/generation-schema';
-import { story, storySceneCheckpoint } from '@offscreen/db/story-schema';
+import { story, storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
 import { createScriptedOpenings } from '@offscreen/application/generations';
 import { createChamberStorytellerControl } from '@offscreen/application/developer-tools';
 import { createDrafts } from '@offscreen/application/drafts';
 import { createStoryApplication, StoryError } from '@offscreen/application/stories';
 import { createStorytellerRuntime } from '@offscreen/application/storyteller';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
-import { DocumentStorageError, LocalDocumentStore, importRulePackageDirectory, importStartPackageDirectory } from '@offscreen/documents';
+import { DocumentStorageError, LocalDocumentStore, S3DocumentStore, importRulePackageDirectory, importStartPackageDirectory } from '@offscreen/documents';
 import { createRequire } from 'node:module';
 import type { Database } from '@offscreen/db';
-import { withBoot03DistributedAppIntegration } from './helpers/boot03-distributed-app-integration.js';
+import { BOOT03_GA_SERVICE_TOKEN, withBoot03DistributedAppIntegration } from './helpers/boot03-distributed-app-integration.js';
 
 const rulesPackageSource = resolve(
   process.cwd(),
@@ -49,10 +51,11 @@ async function prepareImportedOpening(args: {
   ownerId: string;
   documentRoot: string;
   opening?: 'mechanical' | 'quiescent';
+  storage?: LocalDocumentStore | S3DocumentStore;
 }) {
   const { database, ownerId, documentRoot } = args;
   const opening = args.opening ?? 'mechanical';
-  const storage = new LocalDocumentStore(documentRoot);
+  const storage = args.storage ?? new LocalDocumentStore(documentRoot);
   const rules = await importRulePackageDirectory(storage, rulesPackageSource);
   const defaultRules = {
     ruleSetId: rules.manifest.ruleSetId,
@@ -729,6 +732,7 @@ if (entry === moduleUrl) {
                 documentRoot: context.documentRoot,
                 opening: 'quiescent',
               });
+              assert.ok(prepared.storage instanceof LocalDocumentStore);
               const stories = createStoryApplication(context.database, {
                 documentStore: checkpointReadFault(
                   prepared.storage,
@@ -771,6 +775,182 @@ if (entry === moduleUrl) {
       );
     },
   );
+
+  test(
+    'BOOT03 two Game Authority processes race one quiescent start',
+    { timeout: 240000 },
+    async () => {
+      const documentRoot = await mkdtemp(join(tmpdir(), 'offscreen-boot03-race-'));
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          assert.ok(context.peerGameAuthorityOrigin);
+          const prepared = await prepareImportedOpening({
+            database: context.database,
+            ownerId: context.ownerId,
+            documentRoot: context.documentRoot,
+            opening: 'quiescent',
+          });
+          const storyId = randomUUID();
+          const body = JSON.stringify({
+            candidateId: prepared.generationId,
+            expectedDraftRevision: 1,
+            campaign: prepared.campaign,
+          });
+          const call = (origin: string) =>
+            fetch(`${origin}/internal/v1/stories/${storyId}/start`, {
+              method: 'PUT',
+              headers: {
+                accept: 'application/json',
+                authorization: `Bearer ${BOOT03_GA_SERVICE_TOKEN}`,
+                'content-type': 'application/json',
+                'x-offscreen-actor-id': context.ownerId,
+                'x-offscreen-game-authority-version': gameAuthoritySeamVersion,
+              },
+              body,
+            });
+          const [first, second] = await Promise.all([
+            call(context.gameAuthorityOrigin),
+            call(context.peerGameAuthorityOrigin),
+          ]);
+          const statuses = [first.status, second.status].sort();
+          await first.text();
+          await second.text();
+          assert.ok(
+            statuses.every((status) => status === 200 || status === 409),
+            statuses.join(','),
+          );
+          assert.ok(statuses.includes(200), statuses.join(','));
+          const stories = await context.database.db
+            .select({ id: story.id })
+            .from(story)
+            .where(eq(story.id, storyId));
+          assert.equal(stories.length, 1);
+          const passages = await context.database.db
+            .select({ sequence: storyPassage.sequence })
+            .from(storyPassage)
+            .where(eq(storyPassage.storyId, storyId));
+          assert.deepEqual(
+            passages.map((row) => row.sequence),
+            [1],
+          );
+          const checkpoints = await context.database.db
+            .select({
+              sceneSequence: storySceneCheckpoint.sceneSequence,
+            })
+            .from(storySceneCheckpoint)
+            .where(eq(storySceneCheckpoint.storyId, storyId));
+          assert.equal(checkpoints.length, 1);
+          assert.equal(checkpoints[0]?.sceneSequence, 1);
+          const obligations = await context.database.db
+            .select({ id: worldObligation.id })
+            .from(worldObligation)
+            .where(eq(worldObligation.storyId, storyId));
+          assert.equal(obligations.length, 0);
+        },
+        { documentRoot, peerGameAuthority: true },
+      );
+    },
+  );
+
+  test(
+    'BOOT03 eligible start leaves no story when S3 becomes unreachable',
+    { timeout: 240000 },
+    async () => {
+      const documentRoot = await mkdtemp(join(tmpdir(), 'offscreen-boot03-s3-'));
+      const proxy = createServer((client) => {
+        const upstream = createConnection({ host: '127.0.0.1', port: 9090 });
+        client.pipe(upstream);
+        upstream.pipe(client);
+        const closeBoth = () => {
+          client.destroy();
+          upstream.destroy();
+        };
+        client.once('error', closeBoth);
+        upstream.once('error', closeBoth);
+      });
+      const proxyPort = await listenOnLoopback(proxy);
+      const prefix = `boot03-s3-${randomUUID()}`;
+      const s3Env = {
+        OFFSCREEN_DOCUMENT_STORE: 's3',
+        OFFSCREEN_DOCUMENT_S3_BUCKET: 'offscreen-cas',
+        OFFSCREEN_DOCUMENT_S3_ENDPOINT: `http://127.0.0.1:${proxyPort}`,
+        OFFSCREEN_DOCUMENT_S3_REGION: 'us-east-1',
+        OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE: '1',
+        OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID: 'offscreen',
+        OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY: 'offscreen',
+        OFFSCREEN_DOCUMENT_S3_PREFIX: prefix,
+      };
+      try {
+        await withBoot03DistributedAppIntegration(
+          async (context) => {
+            const storage = new S3DocumentStore({
+              bucket: 'offscreen-cas',
+              region: 'us-east-1',
+              endpoint: 'http://127.0.0.1:9090',
+              forcePathStyle: true,
+              prefix,
+              credentials: {
+                accessKeyId: 'offscreen',
+                secretAccessKey: 'offscreen',
+              },
+            });
+            const prepared = await prepareImportedOpening({
+              database: context.database,
+              ownerId: context.ownerId,
+              documentRoot: context.documentRoot,
+              opening: 'quiescent',
+              storage,
+            });
+            await new Promise<void>((resolve, reject) => {
+              proxy.close((error) => (error ? reject(error) : resolve()));
+            });
+            const storyId = randomUUID();
+            const response = await fetch(
+              `${context.apiOrigin}/api/stories/${storyId}/start`,
+              {
+                method: 'PUT',
+                headers: {
+                  cookie: context.cookie,
+                  origin: context.origin,
+                  'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                  candidateId: prepared.generationId,
+                  expectedDraftRevision: 1,
+                  campaign: prepared.campaign,
+                }),
+              },
+            );
+            const responseText = await response.text();
+            assert.equal(response.status, 503, responseText);
+            await assertNoStoryRow(context.database, storyId);
+            const checkpoints = await context.database.db
+              .select({ storyId: storySceneCheckpoint.storyId })
+              .from(storySceneCheckpoint)
+              .where(eq(storySceneCheckpoint.storyId, storyId));
+            assert.equal(checkpoints.length, 0);
+          },
+          { documentRoot, gameAuthorityEnv: s3Env },
+        );
+      } finally {
+        proxy.close();
+      }
+    },
+  );
+}
+
+function listenOnLoopback(server: ReturnType<typeof createServer>) {
+  return new Promise<number>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      if (!address || typeof address === 'string') {
+        reject(new Error('S3 proxy did not bind a port'));
+        return;
+      }
+      resolve(address.port);
+    });
+  });
 }
 
 function checkpointReadFault(
