@@ -68,7 +68,9 @@ sequenceDiagram
     API-->>Player: Scene 2 and root version
 ```
 
-**TARGET, not current proof.** The “PG to Temporal” arrow abbreviates a relay polling SQL and starting Temporal directly; PostgreSQL does not speak Temporal. No Rabbit hop is required. The executor must not mutate game truth. The selected TASK/CLAIM/SAVE/PUBLISH protocol is detailed in [STORY03](../../work/changes/open/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md).
+**The player path in this diagram is still a target.** The “PG to Temporal” arrow abbreviates a relay polling SQL and starting Temporal directly; PostgreSQL does not speak Temporal. No Rabbit hop is required. The executor must not mutate game truth.
+
+**Control publication is now source, not only a target.** `publishSavedStoryteller` calls Game Authority over HTTP with the control token and does not open SQL. A disposable `offscreen_auth_test` handoff published one saved scripted generation through that activity (`story03-distributed-handoff.live.test.ts`, **1/1**, `STORYTELLER_LIVE_ENABLED=false`). That test starts the workflow by hand. It does not prove the player HTTP, outbox, or browser GET arrows. Default Compose remains the combined worker above. The selected TASK/CLAIM/SAVE/PUBLISH protocol is detailed in [STORY03](../../work/changes/open/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md).
 
 ## Admission is not completion
 

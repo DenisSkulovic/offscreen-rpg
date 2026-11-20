@@ -4,9 +4,9 @@ import { startRuntime } from './index';
 import { startControlRuntime } from './control';
 import { startExecutionRuntime } from './execution';
 import {
+  readControlWorkerConfig,
   readExecutionWorkerConfig,
   type WorkerConfig,
-  type ControlWorkerConfig,
 } from '../bootstrap/config';
 
 export type StorytellerDistributedLiveStack = {
@@ -21,7 +21,7 @@ export async function startStorytellerDistributedLiveStack(
   database: Database,
   config: {
     relay: WorkerConfig;
-    temporal: ControlWorkerConfig;
+    controlEnv: Record<string, string | undefined>;
     executorEnv: Record<string, string | undefined>;
     storytellerOptions?: StorytellerRuntimeOptions;
   },
@@ -33,11 +33,9 @@ export async function startStorytellerDistributedLiveStack(
     report,
     config.storytellerOptions,
   );
-  const control = await startControlRuntime(database, config.temporal, {
-    ...(config.storytellerOptions?.documentStore
-      ? { documentStore: config.storytellerOptions.documentStore }
-      : {}),
-  });
+  const control = await startControlRuntime(
+    readControlWorkerConfig(config.controlEnv),
+  );
   const executor = await startExecutionRuntime(
     readExecutionWorkerConfig(config.executorEnv),
   );

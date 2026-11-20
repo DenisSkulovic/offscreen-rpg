@@ -87,13 +87,27 @@ HK09 cancelled DIST05 as superseded. These checks were not already stated above.
 
 **Negative reading (mandatory):** A reader **must not** conclude that the two-process **local** live test, **worker-replay 2/2**, or **activity-settlement 4/4** closes [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) Cross-Pod turn proof, full Kubernetes multi-Pod operation, or **T06 closure**. Scripted decomposed suites, one passing local handoff, worker-replay integration, and activity-settlement integration do not establish executor-kill recovery, stale-root held behavior, publication-context integration, or full saved-result → GA adopt → single GET scene chain. DIST01 and BOOT03 canonical technical headings were not edited.
 
+## T07 evidence | control publication is GA HTTP (`44272d9a` parent, 2026-11-20)
+
+**Task:** [TASKS.md T07](TASKS.md). **Depth:** PATCH. **Change state:** still Proposed — **not Done**. **Live gate:** `STORYTELLER_LIVE_ENABLED=false`. No paid provider send.
+
+The distributed control activity no longer imports the database, adoption, or `publishStorytellerResult`. It calls Game Authority `POST /internal/v1/storyteller-generations/:generationId/publish` with the control token. `published` and `already_published` complete the activity. Transport loss is retryable and does not fall back to the combined worker. Control configuration refuses broad SQL environment variables.
+
+| Suite | Result |
+| --- | --- |
+| `apps/worker/dist/test/story03-control-publication.test.js` | **6/6 PASS** |
+| `apps/game-authority/dist/test/storyteller-generation-publish.test.js` | **6/6 PASS** |
+| `apps/worker/dist/test/story03-distributed-handoff.live.test.js` with `DATABASE_TEST_URL` pathname `/offscreen_auth_test` and Compose Temporal `127.0.0.1:7233` | **1/1 PASS** (~2s). One succeeded generation, one attempt, publication `published`. Workers DRAINED/STOPPED |
+
+**Negative reading:** this does not freeze notice topics (T08), does not prove a signed-in Nest admission path (T09), and does not close TURN03. The live handoff still calls `workflow.start` directly.
+
 ## Reconciliation ledger (fill before closure)
 
 | Authority | Planned delta / no-op | Source SHA/diff | Positive / negative proof | Link/status |
 | --- | --- | --- | --- | --- |
 | Product | unchanged | `ec73a535` | No gameplay or Storyteller product rule edit in this slice | unchanged / N/A |
 | Storyteller input + attempt custody | implement (in progress) | `ec73a535`; decomposed application/worker tests; api-integration worker-replay + activity-settlement | **Positive:** application story03 **7/7**, worker **10/10**; live handoff **1/1** teardown clean; `test:story03-t06:worker-replay` **2/2** (~19s), one finite action per replay, orphan outbox **drained=0**; after `pnpm build`, `test:story03-t06:activity-settlement` **4/4**. **Negative:** executor-kill and stale-root e2e **NOT-RUN**; activity-settlement does not claim publication-context or GET scene | PARTIAL VERIFY (T06) |
-| Game Authority publication + canon | review or bounded update | `ec73a535`; GA unit **6/6**, custody **3/3** | **Positive:** publish/custody unit suites green. **Negative:** scene-checkpoint-publication, GET scene once, `test:story03-t06:publication-context` **NOT-RUN** | PARTIAL VERIFY (T06) |
-| Workflow / runtime / docs | versioned implementation | `ec73a535`; workflows **4/4**; `./storyteller/saved-generation-publish` export; worker-replay + activity-settlement integration | **Positive:** contract tests pass; one local distributed handoff **1/1** once; worker-replay **2/2**; activity-settlement **4/4** after build. **Negative:** workflows docs/atlas/technical owners **not** reconciled; publication-context and GET scene once **NOT-RUN**; T06 **not** closed | PARTIAL VERIFY (T06); Change **Proposed** |
+| Game Authority publication + canon | control activity is HTTP-only; GA remains the SQL publisher | parent `44272d9a` plus T07 diff; GA publish unit **6/6**; live handoff **1/1** | **Positive:** one published row after saved scripted result through GA HTTP. **Negative:** executor/story tokens **401**; duplicate publish `already_published`; control `DATABASE_URL` refused; GA-down activity is retryable and has no local publisher import. Scene-checkpoint GET and publication-context integration remain **NOT-RUN** | T07 landed; Change **not Done** |
+| Workflow / runtime / docs | control publication owner reconciled; default `storytellerV1` unchanged | parent `44272d9a` plus T07 diff; `generation-and-publication.md`, `execution-and-delivery.md`, architecture chapter 2 | **Positive:** technical owners now say the control activity is GA HTTP and the live handoff published once. **Negative:** T08 topic freeze and T09 player path **not** claimed; publication-context and GET scene once remain **NOT-RUN**; Change stays **Proposed** | T07 docs reconciled; not Done |
 
 Run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, repair inbound links and archive actual outcome. No unverified Done.

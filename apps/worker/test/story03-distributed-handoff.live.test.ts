@@ -25,7 +25,10 @@ import {
   storytellerDistributedWorkflowType,
   storytellerWorkflowId,
 } from '@offscreen/workflows/contracts';
-import { readExecutionWorkerConfig } from '../src/bootstrap/config.js';
+import {
+  readControlWorkerConfig,
+  readExecutionWorkerConfig,
+} from '../src/bootstrap/config.js';
 import { startControlRuntime } from '../src/runtime/control.js';
 import { startExecutionRuntime } from '../src/runtime/execution.js';
 
@@ -230,7 +233,14 @@ test(
         const executionConfig = readExecutionWorkerConfig(executorEnv);
         connection = await Connection.connect({ address });
         const client = new Client({ connection, namespace });
-        control = await startControlRuntime(database, { address, namespace });
+        control = await startControlRuntime(
+          readControlWorkerConfig({
+            TEMPORAL_ADDRESS: address,
+            TEMPORAL_NAMESPACE: namespace,
+            GAME_AUTHORITY_ORIGIN: ga.origin,
+            GAME_AUTHORITY_CONTROL_TOKEN: controlToken,
+          }),
+        );
         executor = await startExecutionRuntime(executionConfig);
         const handle = await client.workflow.start(
           storytellerDistributedWorkflowType,

@@ -111,7 +111,12 @@ export async function startStorytellerDistributedLiveWorkers(
     database,
     {
       relay: { address, namespace, taskQueue: relayTaskQueue },
-      temporal: { address, namespace },
+      controlEnv: {
+        TEMPORAL_ADDRESS: address,
+        TEMPORAL_NAMESPACE: namespace,
+        GAME_AUTHORITY_ORIGIN: ga.origin,
+        GAME_AUTHORITY_CONTROL_TOKEN: INTEGRATION_GA_CONTROL_TOKEN,
+      },
       executorEnv: {
         TEMPORAL_ADDRESS: address,
         TEMPORAL_NAMESPACE: namespace,

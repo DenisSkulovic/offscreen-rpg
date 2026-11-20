@@ -3,7 +3,7 @@
 **Morning-first-campaign navigation, 2026-11-20:** [source-backed audit, mechanism ladder, and finite Cursor waves](designs/open/first-campaign-readiness-2026-11-20/README.md). The selector below remains `none` because a planning audit is not an executor selection. When the owner explicitly requests Cursor execution, select existing STORY03 and its new T07 (then T08/T09), provider-free, in a bounded batch. Do not turn this link into automatic authorization for live model calls or cluster deletion.
 
 
-Current work: none
+Current work: [STORY03](changes/open/2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md)
 
 This is the **one active selection pointer** for independently tracked work. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 

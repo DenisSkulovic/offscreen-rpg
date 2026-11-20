@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import {
+  readStorytellerPublicationClientConfig,
+  type StorytellerPublicationClientConfig,
+} from '../custody/storyteller-publication-client';
+import {
   readStorytellerTaskCustodyClientConfig,
   type StorytellerTaskCustodyClientConfig,
 } from '../custody/storyteller-task-custody-client';
@@ -22,12 +26,16 @@ export function readWorkerConfig(env: Record<string, string | undefined>) {
 }
 export type WorkerConfig = ReturnType<typeof readWorkerConfig>;
 
-const controlConfigSchema = temporalSchema;
+const controlConfigSchema = temporalSchema.extend({
+  publication: z.custom<StorytellerPublicationClientConfig>(),
+});
 
 export function readControlWorkerConfig(env: Record<string, string | undefined>) {
+  forbidBroadDatabaseOnControl(env);
   return controlConfigSchema.parse({
     address: env['TEMPORAL_ADDRESS'],
     namespace: env['TEMPORAL_NAMESPACE'],
+    publication: readStorytellerPublicationClientConfig(env),
   });
 }
 export type ControlWorkerConfig = ReturnType<typeof readControlWorkerConfig>;
@@ -48,25 +56,46 @@ export function readExecutionWorkerConfig(
 }
 export type ExecutionWorkerConfig = z.infer<typeof executionConfigSchema>;
 
+const broadDatabaseEnvKeys = [
+  'DATABASE_URL',
+  'POSTGRES_URL',
+  'PGDATABASE',
+  'PGUSER',
+  'PGPASSWORD',
+  'PGHOST',
+] as const;
+
+function refuseBroadDatabaseEnv(role: string, present: string[]): never {
+  throw new Error(
+    `Storyteller ${role} refused broad database env: ${present.join(', ')}`,
+  );
+}
+
+function listBroadDatabaseEnvKeys(
+  env: Record<string, string | undefined>,
+): string[] {
+  return broadDatabaseEnvKeys.filter((key) => {
+    const value = env[key];
+    return value != null && String(value).trim().length > 0;
+  });
+}
+
 /** Executor must not boot with a general SQL writer credential in-process. */
 export function forbidBroadDatabaseOnExecutor(
   env: Record<string, string | undefined>,
 ) {
-  const blocked = [
-    'DATABASE_URL',
-    'POSTGRES_URL',
-    'PGDATABASE',
-    'PGUSER',
-    'PGPASSWORD',
-    'PGHOST',
-  ] as const;
-  const present = blocked.filter((key) => {
-    const value = env[key];
-    return value != null && String(value).trim().length > 0;
-  });
+  const present = listBroadDatabaseEnvKeys(env);
   if (present.length > 0) {
-    throw new Error(
-      `Storyteller executor refused broad database env: ${present.join(', ')}`,
-    );
+    refuseBroadDatabaseEnv('executor', present);
+  }
+}
+
+/** Control worker must not boot with a general SQL writer credential in-process. */
+export function forbidBroadDatabaseOnControl(
+  env: Record<string, string | undefined>,
+) {
+  const present = listBroadDatabaseEnvKeys(env);
+  if (present.length > 0) {
+    refuseBroadDatabaseEnv('control', present);
   }
 }

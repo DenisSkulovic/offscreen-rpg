@@ -1,34 +1,19 @@
-import type { Database } from '@offscreen/db';
 import {
   NativeConnection,
   Worker,
 } from '@temporalio/worker';
 import { storytellerControlTaskQueue } from '@offscreen/workflows/contracts';
-import type { DocumentStore } from '@offscreen/documents';
+import { createStorytellerPublicationClient } from '../custody/storyteller-publication-client';
 import { createStorytellerDistributedControlActivities } from '../activities/storyteller-distributed-control';
 import { closeWorkerConnections } from './connections';
 import type { ControlWorkerConfig } from '../bootstrap/config';
 
 /** Registers only the distributed publish activity on the control queue. */
-export async function startControlRuntime(
-  database: Database,
-  config: ControlWorkerConfig,
-  storytellerOptions: {
-    documentStore?: DocumentStore;
-    realDurationMs?: () => number;
-  } = {},
-) {
+export async function startControlRuntime(config: ControlWorkerConfig) {
+  const publication = createStorytellerPublicationClient(config.publication);
   const native = await NativeConnection.connect({ address: config.address });
   try {
-    const activities = createStorytellerDistributedControlActivities({
-      database,
-      ...(storytellerOptions.documentStore
-        ? { documentStore: storytellerOptions.documentStore }
-        : {}),
-      ...(storytellerOptions.realDurationMs
-        ? { realDurationMs: storytellerOptions.realDurationMs }
-        : {}),
-    });
+    const activities = createStorytellerDistributedControlActivities(publication);
     const worker = await Worker.create({
       connection: native,
       namespace: config.namespace,
