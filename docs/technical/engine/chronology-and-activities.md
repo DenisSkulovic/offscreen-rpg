@@ -1,5 +1,7 @@
 # Deliberate execution, action time and Storyteller readiness
 
+**Fork/launch invariant:** provider latency never advances fictional time. A new branch reanchors any inherited unfinished **fictional** work from the selected scene's admitted clock/progress under fresh child execution identity; it never copies a parent's scheduler deadline, lease or wall-clock timestamp as story truth.
+
 Status, inspected at `15a997c7`. The preapproved-withdrawal row was rechecked on `change/gm07-consented-withdrawal` after `e4141c39`, and `gm07-delegated-worker-path.test.mjs` was re-run. The other tests named here were read and not re-run.
 
 - Fictional-second arithmetic, pause, and completion clamp: `packages/game/test/tick-clock.test.mjs`.
