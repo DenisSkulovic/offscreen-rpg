@@ -1,5 +1,7 @@
 # Storyteller memory and continuity
 
+The durable memory substrate is the versioned **Library plus admitted historical state**, not an immortal provider conversation. A fresh Storyteller mission reconstructs what it needs from the exact branch/scene root, source identity and bounded indexes; model context is disposable.
+
 **Owns:** what the Storyteller must remember, retrieve and promote so a life stays coherent.  
 **Accepted product expectation** for current-versus-history and sparse promotion. Retrieval routes and creative exploration below are the **selected Storyteller target** (2026-11-14), not a claim that every route is implemented. Durable files are not continuity quality. Optional creative exploration is not the live default for ordinary tasks. One stored identity does not prove recall across months. The developer-agent Cognee trial is not this game's memory trial, and its findings do not prove game recall impossible. Bounded lexical retrieval described by the technical companion remains a real selected route. The unratified cost notes are [product-reality economics](../../../work/designs/open/product-reality-reconciliation/ECONOMICS.md). They authorize no spend.  
 **Does not own:** mechanical receipts and time ([gameplay continuity](../gameplay/continuity.md), [rules](../gameplay/rules.md)).  
