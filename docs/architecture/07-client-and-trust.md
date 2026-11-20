@@ -1,5 +1,7 @@
 # 7. The browser, session and trust perimeter
 
+**Storyteller evolution client boundary:** the browser submits one durable Play/Story Prompt launch or a scene-specific fork command and renders server truth. It does not own generation authority, fictional time, Library roots or fork completion. Reload/GET must recover the same operation.
+
 **Reader question:** when does a player actually see a committed scene, and which actors can access private data? **Baseline:** 584b594. Canonical [client state/server boundary](../technical/client/state-and-server-boundary.md), [authentication](../technical/platform/identities-and-access.md), [platform trust](../technical/platform/security-and-trust-boundaries.md).
 
 ## Query cache is a projection, never another story authority
