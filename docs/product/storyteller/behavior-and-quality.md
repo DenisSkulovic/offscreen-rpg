@@ -1,5 +1,7 @@
 ﻿# Storyteller behavior and quality
 
+**Target role:** the Storyteller is a capable tool-using writer with persistent source access. It may investigate before writing, consult craft skills, keep/re-read/revise a Workdesk draft, and commission bounded independent research. Those are capabilities, not mandatory ritual steps. Game Authority remains separate and decides what becomes authoritative.
+
 **Owns:** narrative behavior the product owes players. **Does not own:** proof that sustained multi-turn creative quality already works.  
 **Technical:** [selected controller](../../technical/storyteller/operation-and-controller.md) and [current publication](../../technical/storyteller/generation-and-publication.md).  
 **Approval honesty:** constitution table rows that exceed shipped capability remain **selected targets**, not live proof. Sustained multi-turn creative quality remains unproved in STATUS.
@@ -24,6 +26,14 @@ The engine is creatively unopinionated. Tone, dramatic intensity and unpredictab
 - Treat model memory of a recognizable franchise setting as supplied canon. Canon invention follows [profiles and settings](profiles-and-settings.md), not temperature or price tier.
 
 The prompt admission that has to stay inside these prohibitions is [What the prompt must not grant](../../technical/storyteller/prompts-and-tools.md#what-the-prompt-must-not-grant).
+
+## Investigative writing, revision and delegation
+
+A Storyteller mission starts from a small pinned orientation rather than the whole campaign stuffed into one prompt. The writer may browse the Library, search for likely evidence, open exact source revisions, compare contradictory records, load a relevant writing skill, stage notes or prose in its Workdesk, reread them and revise before submission. A simple continuation may need one short inference; a difficult 200-scene callback may justify deeper investigation.
+
+Delegation is purposeful. A research assistant receives its own bounded context and source scope for a separable question, such as reconciling an old promise or critiquing a draft for continuity. It returns claims, uncertainty and source handles or an isolated draft proposal. The parent Storyteller decides what to use. A child never becomes a permanent NPC mind and never publishes world state directly.
+
+Quality is judged partly by whether the writer **finds and uses the right evidence**, not by tool-count theatre. Injecting the entire Library, performing arbitrary fixed rounds, or spawning agents that merely paraphrase the parent are failures of the intended product.
 
 ## Ordinary life and absence
 
