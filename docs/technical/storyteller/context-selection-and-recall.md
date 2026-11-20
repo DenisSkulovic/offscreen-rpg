@@ -18,6 +18,11 @@ Everything else is discoverable. The writer can orient by path/role, find candid
 
 A difficult task may read many small relevant sources over several rounds. A simple task may read none beyond the mandatory pack. Context cost is controlled by bounded mission resources and purposeful retrieval, not by pretending every mission has the same fixed read count.
 
+### Source revision, visibility and tier invariants
+
+An admitted task captures the source revision it may use. A document revised after that snapshot does not become current truth for the already-admitted task. Authorization is checked again on read. A private or secret document does not become public evidence because it was pinned or indexed. The visibility fence is [Recovery, inspection and portability](canonical-documents-and-packages.md#recovery-inspection-and-portability). Private possibilities stay noncanonical until publication admits them.
+
+Canonical retention is independent of a player's context budget. Every tier keeps the same authoritative history and sources. A constrained recipe reads compact orientation, exact required state and the smallest relevant records; a richer recipe may retrieve more source passages, relationships, texture and alternative leads. It does not receive a different truth, stronger mechanics or exclusive favorable outcomes. A very large model context is permission to select more useful evidence when the task benefits, not a command to dump the entire workspace.
 
 ## Task pack | selected target (2026-11-19)
 
