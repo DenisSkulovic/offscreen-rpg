@@ -1,6 +1,6 @@
 # WRITER implementation program | from vision to a real agentic game
 
-**State:** PLANNED, 2026-11-21. **Owner:** product direction supplied in conversation; implementation **belongs to Cursor**, not this planner. This program is **not** the global current-work selector: [QUEUE](../QUEUE.md) remains authoritative and is deliberately unchanged. **Inspected code baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (plus provided implementation ZIP `09d5820bcafe` for broad static inspection); check HEAD and any active worktrees before execution. **No code implemented by this program commit.**
+**State:** PLANNED/UNSELECTED, 2026-11-21. **Owners:** user approves product policy; **ChatGPT performs permanent wiki reconciliation first**, then **Cursor implements code**. No execution selection is implied. This program is **not** the global current-work selector: [QUEUE](../QUEUE.md) remains authoritative and is deliberately unchanged. **Inspected code baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (plus provided implementation ZIP `09d5820bcafe` for broad static inspection); check HEAD and any active worktrees before execution. **No code implemented by this program commit.**
 
 ## Target, not the legacy implementation
 
@@ -14,14 +14,19 @@ These are **product requirements**. Implementation details below are selected pl
 
 | Change | Outcome | Depends on | Principal owner | Can overlap |
 | --- | --- | --- | --- | --- |
-| [WR01](open/2026-11-21--wr01-accept-storyteller-and-fork-contract/CHANGE.md) | Reconcile selected product/technical contracts with target | none | product/technical docs | none until accepted |
-| [WR02](open/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | Branch-neutral, structurally shared Library with exact historical reads/writes | WR01 | `packages/documents` + document application service | WR07 frontend-only research, not its code |
+| [WR01](open/2026-11-21--wr01-accept-storyteller-and-fork-contract/CHANGE.md) | Rewrite **canonical product wiki** | owner approval | **ChatGPT docs wave 1** | documentation only |
+| [WRD02](open/2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) | Rewrite Storyteller/Library technical owners | WR01 | **ChatGPT docs wave 2** | documentation only |
+| [WRD03](open/2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md) | Reconcile engine, publication, active forks, clock and launch contracts | WR01, WRD02 | **ChatGPT docs wave 3** | documentation only |
+| [WRD04](open/2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md) | Wiki navigation, architecture explanations, dependent claims and cold-reader checks | WR01, WRD02, WRD03 | **ChatGPT docs wave 4** | documentation only |
+| [WR02](open/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | Branch-neutral, structurally shared Library with exact historical reads/writes | **WRD04 + owner sign-off** | `packages/documents` + document application service | WR07 frontend-only research, not its code |
 | [WR03](open/2026-11-21--wr03-agentic-writers-workdesk/CHANGE.md) | Real writer agent, Library tools, skills, staged Markdown/draft/re-read and durable capture | WR01, WR02 | `packages/storyteller` + application agent coordinator | WR05 after shared contract is frozen; avoid overlapping files |
 | [WR04](open/2026-11-21--wr04-delegated-writer-research/CHANGE.md) | Independent bounded subagent contexts with budgeted joins | WR03 | agent delegation and spending | WR05/WR06 when controller files are disjoint |
 | [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | Game Authority commits exact post-scene Library, state, intentions and source pins | WR02, WR03 | engine/publication, `stories`, DB | WR04 with file isolation |
 | [WR06](open/2026-11-21--wr06-fork-active-fictional-state/CHANGE.md) | Branches from any new published scene, including accepted active fictional work | WR05 | engine fork/clock/outbox | WR07 backend if separate state owners |
 | [WR07](open/2026-11-21--wr07-one-prompt-launch-backend/CHANGE.md) | Durable one-click Play launch, presets, original-world prompt and first scene | WR03, WR05 | application/API creation | WR06 after explicit ownership split |
 | [WR08](open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | Simple creator UI + historical library/fork review, complete integration proof and retirement of obsolete UX | WR04, WR06, WR07 | web + integrated acceptance | final join, serialize shared release environment |
+
+**Documentation first:** [ChatGPT's four-wave wiki handoff](WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) is the proper first-phase execution plan. Original WR01 is **not Cursor work**; WRD02–WRD04 are also ChatGPT-only. No code Change WR02–WR08 becomes Ready until permanent wiki owners have been reconciled and reviewed by the user.
 
 **This is a dependency graph, not an instruction to select all Changes.** Follow the repository's [bounded batch rules](../../.agents/references/bounded-parent-orchestration.md): one selected Change or a small explicitly approved disjoint batch, then reconcile and stop. Shared `packages/application/src/stories`, agent controller, DB schema, GA, and a single kind cluster require serialized ownership. Existing DXK/TURN/DIST Changes continue as separate work and are not silently superseded. Do not alter [work/IMPLEMENTATION-ROADMAP.md](../IMPLEMENTATION-ROADMAP.md).
 
@@ -51,9 +56,9 @@ Provider-free scripted tests prove correctness first. Actual paid creative-quali
 
 ## Responsibility, selection and exit
 
-- ChatGPT: investigation, product/technical decisions, source maps, Cursor handoff and review. **No further runtime implementation commits.**
-- Cursor: implement, own code/tests/migrations, report exact proofs and reconcile permanent docs as each Change closes.
+- ChatGPT: **write and reconcile permanent product/technical/architecture wiki pages** in WR01/WRD02/WRD03/WRD04; investigate, prepare source maps and review. **No further runtime implementation commits.**
+- Cursor: **code WR02–WR08 only after WRD04 + owner sign-off**; own implementation/tests/migrations, report exact proofs, and make *small evidence-driven documentation follow-ups* to already-ratified owners when implementation changes their realization status. Do not redo ChatGPT's initial wiki rewrite.
 - Human: accepts any material product/technical deviation and authorizes paid/provider, cluster and destructive operations. “Ready” is not spend permission.
-- **Current:** all WR packets are Proposed, unselected, and `work/QUEUE.md` remains `Current work: none`. **WR01 is the deliberate first selection candidate.** No open packet is Done because it exists.
+- **Current:** all WR/WRD packets are Proposed/unselected, and `work/QUEUE.md` remains `Current work: none`. **WR01 is the first documentation selection candidate for ChatGPT after owner approval; WR02 is the first Cursor code candidate only after WRD04 closure.** No open packet is Done because it exists.
 
-**Stop condition for the planning phase:** these eight bounded outcomes are now described. Do not create further architecture files or change packets unless Cursor discovers a concrete missing decision that prevents a named packet's acceptance. Next useful action is select WR01 or request focused review of this program, not another broad research iteration.
+**Stop condition for planning:** four ChatGPT docs waves plus seven Cursor implementation outcomes are described. The canonical docs rewrite must be actually completed before Cursor code begins. Do not create further architecture files or change packets unless Cursor discovers a concrete missing decision that prevents a named packet's acceptance. Next useful action is select WR01 or request focused review of this program, not another broad research iteration.
