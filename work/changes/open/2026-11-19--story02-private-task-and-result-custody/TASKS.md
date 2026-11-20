@@ -1,3 +1,25 @@
+## 2026-11-20 final T05/T06 closure addendum: source verified, not executed
+
+**Current:** T01–T03 implementations **already exist in main**: versioned contracts, role-separated GA task/claim/save/read and bounded executor HTTP client; do not rebuild. **T04 recorded 10/10 PASS** on provider-free two-client/disposable SQL at `ec73a535`, not fresh current-head evidence. STORY03 T09 separately recorded 5/5 causal local multi-process scripted game, not cold-kind or paid calls. [Exact remaining finding and scoped fix](DECISION-2026-11-20.md). **T05/T06 NOT RUN**, QUEUE still TURN02. Historical T01–T03 "PLANNER-READY" labels below describe 2026-11-19 work that has landed, not current tasks.
+
+### T05 | Enforce scripted-only GA custody mode and provenance | PATCH
+
+**Read, then act in one bounded batch:** `packages/application/src/storyteller/execution.ts:readCommittedTask/createStorytellerTaskCustody`, `packages/contracts/src/storyteller-task-custody.ts` refusal unions, `apps/game-authority/src/server.ts:handleCustody`, `packages/application/test/story02-task-claim.test.mjs`, `apps/game-authority/test/storyteller-task-custody-persistence.integration.test.ts`.
+
+**Why:** task mode is checked by distributed executor but not the DB-owning GA custody seam. A provider-mode task can be fetched/claimed and an existing provider attempt's attribution potentially replaced through saved-result custody. Prohibit that on every one of the four endpoints **inside the generation/attempt lock**, with one consistent new typed `unsupported-execution` refusal and no changes to the normal local provider runtime or budget. Require an existing attempt belongs to the intended scripted-custody provenance and has an accepted state before dedup or save. Use existing result hash conflict semantics; no new claim lease or provider billing ledger.
+
+**Tests:** synthetic provider-mode committed task -> `fetch/claim/save/read` all refuse (even with executor token); zero attempts/HTTP to provider, no funding mutation; preseeded provider attempt cannot be returned as scripted claim or receive saved payload; legitimate scripted first/duplicate claim produces one attempt, identical hash replay returns same result, changed hash conflicts; invalid root, wrong story/executor/control token, unsupported oversized result and malformed DTO fail closed. Include two concurrent client requests to actual disposable DB for scripted claim. If a legacy scripted attempt has different provider identity and is *intentionally* supported, inspect that exact path and design explicit typed compatibility instead of silently accepting any attempt.
+
+**STOP:** cannot distinguish scripted from paid attempt under authoritative DB lock, test unexpectedly needs broad provider-mode adoption/rework, or a current shared GA writer collision. Report source and boundary; do not rewrite STORY03 or invent entitlement tokens.
+
+### T06 | Prove current HEAD and archive STORY02 | VERIFY/DOC
+
+**Read:** [decision](DECISION-2026-11-20.md), `docs/technical/storyteller/generation-and-publication.md#remote-task-custody`, `apps/worker/test/storyteller-task-custody-client.test.ts`, `apps/worker/test/storyteller-distributed-execution.test.ts`, `work/changes/open/2026-11-19--story02-private-task-and-result-custody/CHANGE.md`.
+
+Run focused DTO parser, application/GA/worker unit and disposable PostgreSQL custody suite with no provider, then ensure negative/positive T05 cases and current archive links. Include WORKER standalone process proof from STORY03 if available but **do not** fabricate a cross-Pod proof or re-run an entire Kubernetes campaign solely to close the private API facade. Record exact source SHA, commands/test counts, no HTTP billing, local vs multi-process proof tier, linked dependent ownership, current queue and plan/close guard. **If all pass:** mark STORY02 Done, update permanent docs/catalog, archive original folder using repository lifecycle. If not, keep OPEN with the one exact unpassed security invariant, never another "planner-gated" placeholder.
+
+**No shared DB, paid live provider, unowned cluster or user account mutation authorized.** Fix is source-level and disposable-db only; future paid worker remains scripted-mode-refusing until independently approved.
+
 # STORY02 | Composer microtasks: private task custody façade
 
 **Inspected source:** 584b594, 2026-11-19. **Change:** [CHANGE.md](CHANGE.md), Proposed/unselected, custody SQL primitive partially landed; remote service not. **Source map:** [SOURCE-MAP.md](SOURCE-MAP.md). **Executor:** Composer Standard only by default. One Game Authority file-owner coordinator together with BOOT03. Do not treat a TASKS.md as independent authorization.
