@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) is the one-task-at-a-time Cursor route; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) separates observed source, missing code and optional work. **Default parent/child: Composer 2.5 Standard.** pure chaos selector/preflight tasks now, app-Pod deletion only after real POC. Existing Change state and explicit selection/cluster/spending gates remain in force; task authorship alone is neither implementation nor verification. Grok is not the normal executor.
 
-**State:** Implementing (2026-11-19). The first worker-loss runner passed on a disposable cluster. **T01–T02 unit selector/preflight tests PASS @ `ec73a535` (27/27); T03 unit oracle/driver tests PASS @ `ec73a535` (10/10); live kind plan and live game-chaos NOT-RUN / BLOCKED-BY-POC.** Not Done. T04+ remain unselected on cluster; this packet is not archived.  
+**State:** **OPEN / Implementing, with read-only preflight corrected in source on 2026-11-20 (`14e2bf33`)**. Historical Rabbit consumer-loss is real but not a game fault. T01–T03 code exists. New T02b realistic Kubernetes ownership/eligibility/digest guard and all chaos unit/oracle suites **43/43 PASS locally (Node 22.16.0; verified source snapshot; no kind cluster)**. Live kind read-only plan **NOT-RUN**; executable Pod deletion and end-to-end game recovery **NOT-RUN / not selected**. [T02b and T04a/T04b](TASKS.md#2026-11-20-source-backed-status-correction-and-next-gates) split the actual remaining work. **Not Done; do not archive**. TURN02 remains selected in QUEUE.  
 **Kind:** implementation  
 **Execution selection:** This bounded runner only. Do not auto-run the remaining scenarios.  
 **Program:** [Distributed architecture lab queue](../../README.md)

@@ -37,7 +37,7 @@ Prefer small Node scripts (Node 24 pinned by repo), using only preinstalled depe
 
 **One must not hide behind a cluster-name check.** Validate cluster UID and image digest matches selected release receipt; a wrong local kind with same name is not implicitly safe. The runner never calls `kind delete cluster`, `kubectl delete namespace`, `kubectl scale`, `kubectl delete pvc`, `kubectl delete sts`, `docker volume rm`, `docker prune` or any command on other contexts. For early runs, only ordinary `kubectl --context kind-offscreen-lab -n <selected-app-namespace> delete pod <name> --wait=false` with normal grace period is authorized. Distinguish “graceful termination” in report. A later SIGKILL must be implemented/tested separately; force removal can leave a process running and should not be used as a generic crash mechanism.
 
-**Caution on label proof:** the label named above is a **proposed eligibility marker**. The actual release manifests must be updated in one authorized TURN02/K8S10 integration join and tested. Do not select any Pods until this is done.
+**Current release label proof, 2026-11-20:** TURN02's actual Deployment **Pod templates already carry** `offscreen.rpg/chaos-eligible=true`. Source fix `14e2bf33` resolves Pod→ReplicaSet→Deployment controller UIDs, validates **both** live Pod/template opt-in, the exact Deployment image tag, and the Pod's runtime digest. The local release ref alone does not authorize mutation. T04a must run the read-only plan on actual kind and capture an owner-reviewed release ref; T04b later needs a proven scripted game baseline plus explicit authorization and UID recheck before *one* graceful Pod deletion. Do not treat a local 43/43 fixture run as real cluster acceptance.
 
 ### Zero-model-call execution mode
 

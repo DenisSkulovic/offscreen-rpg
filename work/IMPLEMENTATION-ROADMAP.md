@@ -4,6 +4,8 @@
 
 **STORY02 (Done, 2026-11-20):** [Private custody](changes/archive/2026-11/other/2026-11-19--story02-private-task-and-result-custody/CHANGE.md) refuses provider-mode tasks and non-scripted attempts at the Game Authority seam (`unsupported-execution`) and keeps scripted claim/save idempotence. **27/27** provider-free tests. Cross-Pod publication stays STORY03/TURN03. Paid custody stays TURN04. No auto-selection; QUEUE stays TURN02.
 
+**K8S10 parallel-safe progress (2026-11-20):** [Real-release preflight code fix](changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md#2026-11-20-real-release-source-and-test-correction-t02b) was tested locally **43/43** without a cluster: exact ReplicaSet ownership, real template/Pod opt-in and pod image digest. Once TURN02's operator-approved kind release exists, K8S10 T04a can run **read-only plan** and record an exact release ref; this does not require a full TURN03 game. Actual T04b Pod deletion remains separately gated on healthy provider-free TURN03 baseline, sole cluster operator and explicit authorization. K8S10 stays OPEN/unselected and does not block the playable POC.
+
 ## FIRST SCREEN | Cursor parent: what to do next
 
 **The selected Change is TURN02. Do not switch it silently.** DXK01 T01 preflight work is recorded, but DXK01 is **not selected** until a separate handover; QUEUE is authoritative.
