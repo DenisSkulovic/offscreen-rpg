@@ -38,3 +38,21 @@ test('Tiltfile does not use Docker Compose or compose.yaml', () => {
   assert.doesNotMatch(tiltfile, /docker_compose/);
   assert.doesNotMatch(tiltfile, /compose\.yaml/);
 });
+
+test('Tiltfile does not load lab skeleton manifests', () => {
+  assert.doesNotMatch(tiltfile, /infra\/kubernetes\/lab\/skeletons/);
+  assert.doesNotMatch(tiltfile, /skeletons\/workloads/);
+});
+
+test('Tiltfile does not use live_update on app images', () => {
+  assert.doesNotMatch(tiltfile, /live_update\s*\(/);
+});
+
+test('game-web port-forward is loopback-only on local port 3000', () => {
+  assert.match(
+    tiltfile,
+    /k8s_resource\s*\(\s*['"]game-web['"][\s\S]*?port_forwards\s*=\s*\[[\s\S]*?['"]127\.0\.0\.1:3000:3000['"]/,
+  );
+  assert.doesNotMatch(tiltfile, /0\.0\.0\.0/);
+  assert.doesNotMatch(tiltfile, /\[::\]/);
+});
