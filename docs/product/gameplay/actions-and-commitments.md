@@ -1,5 +1,7 @@
 # Actions and commitments | intention to continuation
 
+Accepted fictional commitments belong to story state, not to a particular worker lease. When a published scene is forked, already-earned progress and unresolved admitted plans/offers/obligations at that scene remain meaningful in the child, while new execution identities are created for the child. Parent provider attempts, jobs and external side effects are never copied as fictional state.
+
 **Owns:** how player intentions become accepted work and what may continue without fresh inference.  
 **Companions:** [rules](rules.md), [time and autonomy](time-and-autonomy.md), [concepts](../foundations/concepts.md).  
 **Technical:** [solo gameplay](../../technical/engine/authority-and-transitions.md), [rules and activities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities).
