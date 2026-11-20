@@ -141,9 +141,7 @@ spec:
             - name: API_PORT
               value: "3001"
             - name: APP_ORIGIN
-              value: http://127.0.0.1:18080
-            - name: POC_OPEN_ACCESS
-              value: "1"
+              value: http://127.0.0.1:3000
             - name: GAME_AUTHORITY_MODE
               value: distributed
             - name: GAME_AUTHORITY_ORIGIN

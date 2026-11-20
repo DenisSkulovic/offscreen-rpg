@@ -24,7 +24,7 @@ To inspect just the public story prototype, run `pnpm --filter @offscreen/contra
 
 Use Node **24.19.0** (also recorded in `.node-version`) and pnpm **11.19.0**. The system's default Node must match before running package scripts. Install the pinned pnpm with `npm install --global pnpm@11.19.0` if necessary.
 
-Install Docker for the kind lab and start the stack below. Copy `.env.example` to `.env` in the repository root. Generate `BETTER_AUTH_SECRET` using the command in that file; supply your own GitHub OAuth app client ID and secret. Set its homepage to `http://localhost:3000` and callback to `http://localhost:3000/api/auth/callback/github`. Keep `.env` private; it is ignored by Git. Use `localhost` consistently in the browser so the configured origin and cookies agree.
+Install Docker for the kind lab and start the stack below. Copy `.env.example` to `.env` in the repository root. Generate `BETTER_AUTH_SECRET` using the command in that file. The local GitHub OAuth app is `Offscreen RPG Local`: homepage `http://127.0.0.1:3000`, callback `http://127.0.0.1:3000/api/auth/callback/github`. Put the client ID, client secret, and `BETTER_AUTH_SECRET` only in that ignored `.env`. `infra/kubernetes/lab/app-release/install.sh` copies those three values into Secret `game-runtime` and refuses to start if any is missing. It does not print them. Open the app at `http://127.0.0.1:3000`, not `localhost`.
 
 From the repository root:
 
@@ -35,9 +35,9 @@ pnpm db:migrate
 pnpm dev
 ```
 
-`pnpm stack:acceptance` is the read-only clean-clone gate. It refuses a foreign kubectl context, a non-loopback API bind, a port held by something other than this cluster, a failed `game-migrate` Job, a missing game Pod, an active Compose boot path, and a green health check that never saw a signed-in player. It does not reset the cluster. `--execute` and `reset` are refused. A fresh workstation timing, a browser play-through, and a Headlamp desktop Pod delete were not run when this command was added.
+`pnpm stack:acceptance` is the read-only clean-clone gate. It refuses a foreign kubectl context, a non-loopback API bind, a port held by something other than this cluster, a failed `game-migrate` Job, a missing game Pod, an active Compose boot path, and a green health check that never saw a signed-in player. It does not reset the cluster. `--execute` and `reset` are refused. On the existing `kind-offscreen-lab` the command exited 1 because it had no signed-in player, while anonymous `/api/me` was 401. A browser session on that origin could still read the saved story. That read is not a fresh-clone timing.
 
-Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to sign-in and signed-in users to their saved drafts. By default that sign-in is GitHub OAuth (client ID and secret required; email/password off). With `LOCAL_DEMO_AUTH=1` on a loopback `APP_ORIGIN` (`http://localhost` or `http://127.0.0.1`) and non-production `NODE_ENV`, the sign-in page also offers email/password and the player chooses the password—that flag is not POC open access and is not an anonymous admin path. The web, API and worker watch their own source changes; rebuild shared packages and restart after changing shared package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
+Open http://127.0.0.1:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to sign-in and signed-in users to their saved drafts. Sign-in is Better Auth GitHub OAuth. Anonymous `/api/me` is unauthorized. There is no open-access player and no email/password sign-in. `pnpm dev` starts Tilt against the lab cluster. No model credentials or paid calls are involved.
 
 Status commands from the repository root:
 

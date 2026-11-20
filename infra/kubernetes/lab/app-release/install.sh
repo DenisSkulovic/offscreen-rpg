@@ -70,9 +70,10 @@ for image in "$WEB_IMAGE" "$API_IMAGE" "$GA_IMAGE" "$WORKER_IMAGE"; do
   fi
 done
 
-echo "Preparing release Secrets from the lab database and object store…"
+echo "Preparing release Secrets from the lab database, object store, and root .env…"
+export OFFSCREEN_REPO_ROOT="$(cd "${RELEASE_DIR}/../../../.." && pwd)"
 python3 - "$CONTEXT_NAME" <<'PY'
-import base64, json, secrets, subprocess, sys
+import base64, json, os, secrets, subprocess, sys
 
 context = sys.argv[1]
 kubectl = ["kubectl", "--context", context]
@@ -121,6 +122,35 @@ def apply_secret(namespace, name, values):
 for namespace in ("lab-edge", "lab-authority", "lab-workers"):
     ensure_namespace(namespace)
 
+def read_local_env(path):
+    values = {}
+    if not os.path.isfile(path):
+        return values
+    with open(path, encoding="utf-8") as handle:
+        for raw in handle:
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
+
+local_env = read_local_env(os.environ["OFFSCREEN_REPO_ROOT"] + "/.env")
+required = ("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "BETTER_AUTH_SECRET")
+missing = [key for key in required if not local_env.get(key)]
+if missing:
+    sys.stderr.write(
+        "Refusing install: root .env is missing "
+        + ", ".join(missing)
+        + ". Copy .env.example and set the local GitHub OAuth app values. Do not commit .env.\n"
+    )
+    raise SystemExit(1)
+if len(local_env["BETTER_AUTH_SECRET"]) < 32:
+    sys.stderr.write(
+        "Refusing install: BETTER_AUTH_SECRET in .env must be at least 32 characters.\n"
+    )
+    raise SystemExit(1)
+
 database = read_secret("lab-edge", "game-db")
 if database is None:
     source = read_secret("lab-postgres", "lab-pg-app")
@@ -138,18 +168,21 @@ if runtime is None:
     runtime = {
         "access-key-id": store["access-key-id"],
         "secret-access-key": store["secret-access-key"],
-        "better-auth-secret": secrets.token_hex(32),
+        "better-auth-secret": local_env["BETTER_AUTH_SECRET"],
         "game-authority-service-token": tokens[0],
         "game-authority-control-token": tokens[1],
         "game-authority-executor-token": tokens[2],
-        "github-client-id": "lab-poc",
-        "github-client-secret": "lab-poc-not-a-real-github-secret",
+        "github-client-id": local_env["GITHUB_CLIENT_ID"],
+        "github-client-secret": local_env["GITHUB_CLIENT_SECRET"],
     }
+else:
+    runtime["better-auth-secret"] = local_env["BETTER_AUTH_SECRET"]
+    runtime["github-client-id"] = local_env["GITHUB_CLIENT_ID"]
+    runtime["github-client-secret"] = local_env["GITHUB_CLIENT_SECRET"]
 for namespace in ("lab-edge", "lab-authority", "lab-workers"):
     if read_secret(namespace, "game-db") is None:
         apply_secret(namespace, "game-db", database)
-    if read_secret(namespace, "game-runtime") is None:
-        apply_secret(namespace, "game-runtime", runtime)
+    apply_secret(namespace, "game-runtime", runtime)
 PY
 
 echo "Applying migration Job ${OVERLAY_DIR}/migrate.yaml and waiting for completion…"

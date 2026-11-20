@@ -10,45 +10,23 @@ const database = createDatabase(
   () => {},
 );
 
-test('non-demo auth options keep GitHub and omit email/password', () => {
-  const options = authOptions(database, {
-    origin: 'http://localhost:3000',
-    secret: 'integration-only-not-a-runtime-secret-1234',
-    githubClientId: 'client',
-    githubClientSecret: 'secret',
-    pocOpenAccess: false,
-    localDemoAuth: false,
-  });
-  assert.ok(options.socialProviders?.github);
-  assert.equal(options.emailAndPassword, undefined);
-});
+const config = {
+  origin: 'http://127.0.0.1:3000',
+  secret: 'integration-only-not-a-runtime-secret-1234',
+  githubClientId: 'client',
+  githubClientSecret: 'secret',
+};
 
-test('demo auth options enable email/password without embedded passwords', () => {
-  const options = authOptions(database, {
-    origin: 'http://localhost:3000',
-    secret: 'integration-only-not-a-runtime-secret-1234',
-    githubClientId: '',
-    githubClientSecret: '',
-    pocOpenAccess: false,
-    localDemoAuth: true,
-  });
-  assert.equal(options.emailAndPassword?.enabled, true);
-  assert.equal(options.emailAndPassword?.disableSignUp, false);
-  assert.equal(options.socialProviders, undefined);
+test('auth options use GitHub and omit email/password', () => {
+  const options = authOptions(database, config);
+  assert.equal(options.socialProviders.github.clientId, 'client');
+  assert.deepEqual(options.socialProviders.github.scope, ['user:email']);
+  assert.equal(options.baseURL, 'http://127.0.0.1:3000');
+  assert.equal(
+    'emailAndPassword' in options && options.emailAndPassword !== undefined,
+    false,
+  );
   const serialized = JSON.stringify(options);
-  assert.ok(!serialized.includes('demo-password'));
-  assert.ok(!serialized.match(/"password"\s*:\s*"/));
-});
-
-test('demo auth options keep github when both credentials are present', () => {
-  const options = authOptions(database, {
-    origin: 'http://localhost:3000',
-    secret: 'integration-only-not-a-runtime-secret-1234',
-    githubClientId: 'client',
-    githubClientSecret: 'secret',
-    pocOpenAccess: false,
-    localDemoAuth: true,
-  });
-  assert.equal(options.emailAndPassword?.enabled, true);
-  assert.ok(options.socialProviders?.github);
+  assert.equal(serialized.includes('demo-password'), false);
+  assert.equal(serialized.includes('poc-local-player'), false);
 });

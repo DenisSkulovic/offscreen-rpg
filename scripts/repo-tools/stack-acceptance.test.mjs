@@ -2,7 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CONTEXT_NAME } from './stack-preflight.mjs';
 import { EXPECTED_IMPORT_ROOTS } from './stack-health.mjs';
-import { assessAcceptance, assessBrowserProof, resolveAcceptanceArgs } from './stack-acceptance.mjs';
+import {
+  assessAcceptance,
+  assessBrowserProof,
+  probeAnonymousMe,
+  resolveAcceptanceArgs,
+} from './stack-acceptance.mjs';
 
 function readyDeployments() {
   return [
@@ -167,6 +172,11 @@ test('browser proof records an unrun Headlamp click without treating it as a hea
   });
   assert.equal(result.ok, true);
   assert.ok(result.residual.some((line) => /Headlamp desktop/.test(line)));
+});
+
+test('anonymous loopback probe keeps the 401 and does not invent a player', () => {
+  const result = probeAnonymousMe(() => ({ status: 0, stdout: '401' }));
+  assert.deepEqual(result, { origin: 'http://127.0.0.1:3000', wrongActorStatus: 401 });
 });
 
 test('browser proof fails when the wrong actor is allowed', () => {

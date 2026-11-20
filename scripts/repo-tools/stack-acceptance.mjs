@@ -239,6 +239,21 @@ export function readAcceptanceContext(runner) {
   return context || null;
 }
 
+/**
+ * Read the loopback anonymous session status. A 401 or 403 is the denied actor.
+ * A signed-in player is never invented from this response.
+ * @param {(argv: string[]) => { status: number | null, stdout?: string, stderr?: string }} runner
+ * @param {string} [origin]
+ */
+export function probeAnonymousMe(runner, origin = 'http://127.0.0.1:3000') {
+  const result = runner(['curl', '-sS', '-o', '/dev/null', '-w', '%{http_code}', `${origin}/api/me`]);
+  const code = Number((result.stdout ?? '').trim());
+  if (result.status !== 0 || !Number.isInteger(code)) {
+    return { origin: null, wrongActorStatus: null };
+  }
+  return { origin, wrongActorStatus: code };
+}
+
 function defaultRunner(argv) {
   const result = spawnSync(argv[0], argv.slice(1), {
     encoding: 'utf8',
@@ -276,6 +291,7 @@ if (invokedAsScript) {
     const runner = defaultRunner;
     const context = readAcceptanceContext(runner);
     const live = readLiveStatusObservation(runner);
+    const anonymous = probeAnonymousMe(runner);
     const report = assessAcceptance({
       mode: resolved.mode,
       execute: false,
@@ -286,10 +302,10 @@ if (invokedAsScript) {
       deployments: live.deployments,
       pinnedObjectPresent: live.pinnedObjectPresent,
       importRoots: live.importRoots,
-      origin: null,
+      origin: anonymous.origin,
       actor: null,
       healthOnly: true,
-      wrongActorStatus: null,
+      wrongActorStatus: anonymous.wrongActorStatus,
       storyId: null,
       checkpointId: null,
       durations: {},
