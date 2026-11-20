@@ -1,5 +1,7 @@
 # Canonical documents and packages
 
+**Target contract on the Storyteller evolution branch:** the Storyteller works against an immutable, branch-neutral, versioned **Library root**. Paths are author-facing navigation; immutable object identity, content hash, role, provenance, visibility and historical root membership are the authority. Forking reuses historical objects and roots by structural sharing rather than copying every document.
+
 **Quick route by question:** [who owns a fact](#one-owner-per-kind-of-truth) · [scene, passage, checkpoint, and leaf](#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19) · [pinned worlds](#reusable-world-libraries-and-campaign-overlays) · [pinned rules](#reusable-rule-libraries) · [import and start](#campaign-bootstrap) · [document identity and visibility](#document-envelope) · [publication and content-addressed storage](#publication-across-files-and-the-execution-ledger) · [a summary does not replace a passage](#extract-summarize-and-revise-deliberately) · [recovery and the visibility fence](#recovery-inspection-and-portability) · [what a task reads](context-selection-and-recall.md#what-source-enters-this-task) · [author a content package](../../runbooks/content-package-authoring.md). Provider budget and request packing stay in [Request context and cost](request-context-and-cost.md). This page is package, revision, and publication authority. [The storyteller route](context-and-memory.md) is the short index. [Progress](../../../STATUS.md) owns demonstrated coverage.
 
 Status: mixed implementation and target contract. Immutable local storage, descriptive admission, canonical narrative passages, pinned package import/Start, narrative-choice document hints, active-scene recall cues, exact world/rule sections and bounded multi-round exploration are implemented. Ordinary admissions can select rule topics and narrative dependencies; ordinary gameplay still defaults to one-shot tasks with tools disabled. Mechanical choices lack explicit document dependencies, selected bodies can be omitted during packing, and sustained recall remains unproved. PostgreSQL still owns live mechanical state/receipts; the structured-document ownership in [One owner per kind of truth](#one-owner-per-kind-of-truth) is a migration target. Use [packages/storyteller](../../../packages/storyteller/README.md) for the implemented package and [progress](../../../STATUS.md) for evidence. The [2026-11 engine-model inspection](../../../evidence/inspections/doc01-retained-observations/engineering/engine-model.md) is dated evidence, not the current owner. [Canonical storage](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#canonical-campaign-storage) and [memory/recall](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall) own remaining work. Read [concepts](../../product/foundations/concepts.md): there are no chapters.
@@ -8,11 +10,17 @@ What a task loads is not restated here. Ordinary one-shot selection, recall cues
 
 ## Product commitment
 
-A campaign should have an inspectable, portable library that survives the destruction of every conversational context. A new Storyteller invocation can discover what world it is in, what happened, what remains unresolved, and where to inspect the evidence. Its creative identity also comes from versioned documents. Human maintainers can read and revise these materials through admitted changes without decoding a growing collection of content tables.
+A story owns an inspectable, portable Library that survives every provider conversation and process restart. A new Storyteller mission can orient itself, discover filenames and roles, search for likely evidence, open exact historical source revisions and propose new or changed documents without receiving the whole Library as prompt text.
 
-The first POC demonstrates this with the harbor story and a returning acquaintance. A short sequence of Storyteller turns can already expose lost detail, contradictory summaries and an agent that cannot find its own evidence.
+Three source roles are conventional entry points, not magical filenames:
 
-Markdown is the preferred authoring format for prose. Typed metadata, links and mechanical definitions use validated frontmatter or JSON where that makes their meaning precise. Changing serialization alone does not improve memory: organization, retrieval, extraction, publication and the tools that connect them are the feature.
+- `STORY_PROMPT.md` preserves the player's submitted intent verbatim. It is authoritative **as intent**, not automatically as settled fictional fact.
+- `STORYTELLER_PROFILE.md` records effective creative direction and can point to versioned writing skills. It does not grant mechanical, clock, security or spend permissions.
+- `START.md` provides authored orientation for a prepared experience or campaign root. It is not a required character sheet and does not imply one setup model call.
+
+The Library may also contain world lore, published passages, private possibilities, attributed reports, rules references, skills and campaign-authored additions. Each document's declared role and visibility determine what a Storyteller may infer from it. Search indexes and summaries are derived aids; exact source objects remain authoritative.
+
+The Storyteller writes only to a **staged Workdesk view** during a mission. Adoption into the story's Library root happens with Game Authority publication. A saved draft sentence is therefore not canon merely because it exists.
 
 ## One owner per kind of truth
 
@@ -112,22 +120,11 @@ A Storyteller markdown document, a structured document, and a passage body are n
 
 ## Reusable world libraries and campaign overlays
 
-A campaign workspace is not necessarily the owner of its whole world. A player may create or import a reusable **world library** containing extensive lore, histories, places, cultures, terminology, metaphysics, rules guidance, maps/media references and other authored source material. Story start pins one or more exact world-library roots and mounts them into the campaign's knowledge view. The model's pretrained recollection is never treated as the authoritative substitute for supplied world material, especially with small, cheap or private-setting models.
+A prepared experience may ship a complete immutable authored Library root, not merely an opening seed. Starting a story references that source root and creates a campaign overlay/root that reuses unchanged objects. Later authored-source edits do not rewrite an existing story's historical roots.
 
-World libraries and campaign documents have different lifecycles:
+Campaign additions and revisions are copy-on-write: unchanged documents and index nodes remain shared; changed paths produce new immutable objects and a new Library root. A fork from scene 40 references scene 40's exact Library root, even if the parent now lives at scene 90. It must never read the parent's later private or public documents merely because they share document IDs or search infrastructure.
 
-- A world library has a stable identity, immutable versions, a small orientation/index and canonical source files. Many campaigns can reuse it.
-- A campaign pins exact library root hashes and revisions. Updating the reusable library does not silently rewrite an existing campaign or in-flight task.
-- Campaign-specific characters, passages, relationships, discoveries and state live in the campaign workspace. Developments that alter local reality are campaign overlay documents linked to base-world sources; they do not mutate the shared package.
-- Each world version declares per-domain invention ceilings. A campaign may choose stricter permissions, but neither a start package, Storyteller profile nor model route may silently widen the pinned world's authority.
-- A campaign adopts a newer library revision only through an explicit conflict-checked operation with a readable compatibility/diff review.
-- A campaign may use no external world library, one library or several deliberately mounted packages. Package order cannot resolve contradictory canon by accidental last-write-wins; authority and conflict policy are explicit.
-
-Import accepts bounded user-authorized text, Markdown and supported structured files without requiring inference. Preserve useful authored divisions and provenance, validate encoding/size/path safety and assign stable document identities. A large monolithic upload may be deterministically sectioned for navigation while retaining its intact original as a source. Optional LLM-assisted classification or summarization is separately budgeted derived work and is never required to preserve the lore. Imported external settings remain private user-provided content subject to the user's rights and product policy; this project does not ship third-party fictional corpora or assume permission because a model recognizes a name.
-
-Each package has a compact entry document describing scope, authority, major directories and high-value navigation handles. It is not a summary of every page. Documents distinguish descriptive lore, attributed claims, executable rules and creative guidance: prose about magic does not automatically become a mechanical rule, and a setting's writing style cannot override system instructions. Search spans pinned packages and campaign overlays while retaining package/document/version provenance and visibility.
-
-Which pinned sources a task reads, including overlay-first assembly, is [What source enters this task](context-selection-and-recall.md#what-source-enters-this-task). Reading more of a package does not change its authority.
+The permanent contract requires efficient structural sharing, exact rooted reads, prefix/directory discovery, deterministic path semantics and root-scoped citations. It does **not** require a particular physical tree algorithm; WR02 must benchmark and choose that representation.
 
 ## Reusable rule libraries
 
