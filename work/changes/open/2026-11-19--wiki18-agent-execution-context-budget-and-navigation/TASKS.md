@@ -28,7 +28,7 @@ Use a natural upcoming bounded task (e.g. one BOOT03 Composer T-ID), record plan
 If Composer repeatedly fails a fully specified microtask, show exact missing contract or model limitation. Fix planner material first; only then consider one explicitly approved Low/Medium exception. Collect cost per **correct accepted** result, not cost per first response. Update WIKI18 ledger and canonical agent policy; no blanket “we saved 80%” from token-price arithmetic. **No Grok default.**
 
 
-**WORK01 handoff:** the same scanner also lives under [WORK01](../2026-11-20--work01-first-class-operational-tasks/CHANGE.md). WIKI18 T04 already recorded `node --test scripts/repo-tools/maintenance.test.mjs` **14/14 PASS**; do not dispatch a duplicate implementer for the same scan. Further maintenance-guard work belongs on [WORK01 T01](../2026-11-20--work01-first-class-operational-tasks/TASKS.md) if reproduced.
+**WORK01 handoff:** the same scanner also lives under [WORK01](../../archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/CHANGE.md). WIKI18 T04 already recorded `node --test scripts/repo-tools/maintenance.test.mjs` **14/14 PASS**; do not dispatch a duplicate implementer for the same scan. Further maintenance-guard work belongs on archived [WORK01 T01](../../archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/TASKS.md) if reproduced.
 
 ## T04 | Detect orphaned open folders with no CHANGE.md | VERIFY PASS (`ec73a535`)
 

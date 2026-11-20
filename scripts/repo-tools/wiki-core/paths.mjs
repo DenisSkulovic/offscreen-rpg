@@ -1,7 +1,15 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
-const ROOT_INDEXES = new Set(['README.md', 'ENGINEERING.md', 'AGENTS.md', 'STATUS.md', 'ROADMAP.md', 'CLAUDE.md']);
+const ROOT_INDEXES = new Set([
+  'README.md',
+  'ENGINEERING.md',
+  'AGENTS.md',
+  'CHATGPT.md',
+  'STATUS.md',
+  'ROADMAP.md',
+  'CLAUDE.md',
+]);
 const WORK_INDEXES = new Set([
   'work/README.md',
   'work/changes/README.md',
@@ -40,7 +48,9 @@ export function classifyRepoPath(rel, { isDirectory = false } = {}) {
     return 'canonical-support';
   }
   if (name.startsWith('docs/')) return 'canonical-page';
-  if (WORK_INDEXES.has(name)) return 'work-index';
+  if (WORK_INDEXES.has(name) || /^work\/changes\/[^/]+\.md$/.test(name)) {
+    return 'work-index';
+  }
   if (name.startsWith('work/designs/open/')) return 'open-design';
   if (name.startsWith('work/tasks/open/')) return 'open-task';
   if (name.startsWith('work/changes/open/')) return 'open-change';
@@ -54,7 +64,7 @@ export function classifyRepoPath(rel, { isDirectory = false } = {}) {
     return 'historic';
   }
   if (name.startsWith('evidence/')) return 'evidence';
-  if (/^(apps|packages|tools)\/(?:.+\/)?README\.md$/.test(name)) return 'source-map';
+  if (/^(apps|packages|tools|infra)\//.test(name)) return 'source-map';
   if (name.startsWith('.agents/')) return 'agent-maintenance';
   if (ROOT_INDEXES.has(name)) return 'root-index';
   if (WORK_INDEXES.has(name)) return 'work-index';
@@ -68,11 +78,17 @@ export function isCanonicalKind(kind) {
 export function isLintSource(rel) {
   const name = toPosix(rel);
   if (ROOT_INDEXES.has(name) || WORK_INDEXES.has(name)) return true;
+  if (/^work\/changes\/[^/]+\.md$/.test(name)) return true;
   if (name.startsWith('docs/')) return true;
   if (name.startsWith('work/designs/open/')) return true;
   if (name.startsWith('work/changes/open/')) return true;
   if (name.startsWith('work/tasks/open/')) return true;
-  if (/^(apps|packages|tools)\/(?:.+\/)?README\.md$/.test(name)) return true;
+  if (
+    name.endsWith('.md') &&
+    /^(apps|packages|tools|infra)\//.test(name)
+  ) {
+    return true;
+  }
   return false;
 }
 

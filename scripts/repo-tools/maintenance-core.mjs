@@ -21,6 +21,7 @@ const ROOT_OWNERS = new Set([
   'STATUS.md',
   'ROADMAP.md',
   'CLAUDE.md',
+  'CHATGPT.md',
   'NOTICE.md',
 ]);
 
@@ -533,7 +534,7 @@ function isActivePage(rel) {
   }
   if (rel === 'research/README.md' || rel === 'evidence/README.md' || rel === '.agents/README.md') return true;
   if (/^research\/[^/]+\/README\.md$/.test(rel) || /^evidence\/[^/]+\/README\.md$/.test(rel)) return true;
-  if (/^(apps|packages|tools)\/(?:.+\/)?README\.md$/.test(rel)) return true;
+  if (/^(apps|packages|tools|infra)\//.test(rel)) return true;
   return false;
 }
 

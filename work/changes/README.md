@@ -1,14 +1,14 @@
 # Changes | catalog and lifecycle
 
-**WORK01 taxonomy implementation (2026-11-20):** [first-class Tasks, single work selector and maintenance/brief integration](open/2026-11-20--work01-first-class-operational-tasks/CHANGE.md) has landed source/docs. Unit maintenance tests **26/26**; `pnpm repo:maintenance --strict` still FAIL. **State Implementing; not selected, not Done.** [Current work is selected only here](../QUEUE.md); this Change index is a catalog.
+**WORK01 taxonomy implementation (2026-11-20):** [first-class Tasks, single work selector and maintenance/brief integration](archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/CHANGE.md) is **Done**. `pnpm repo:maintenance --strict` is 0 errors. [Current work is selected only here](../QUEUE.md); this Change index is a catalog.
 
 **Backlog reconciliation (2026-11-20, HEAD `447742f6` plus this closure):** T-IDs landing is not Change Done. Archive only independently verified original outcomes. Do not archive HK03, DIST03, TURN03, or other unfinished POC Goals.
 
 | Disposition | Packets |
 | --- | --- |
-| **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, **GM03 quiet-watch** |
+| **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **WORK01** |
 | **B. Scope inflated — keep original remainder, do not fake Done** | DATA04 (app historical GET/fork 9/9; GA/journal/three negatives remain), STORY02 (in-process 10/10; combined `storytellerV1` remains) |
-| **C. Unfinished actionable** | HK03 (profiled 31/33; isolated imported-start 4/4), WORK01 (`--strict` 8 findings), HK01 (CLI still the operator path) |
+| **C. Unfinished actionable** | HK03 (profiled 31/33; isolated imported-start 4/4), HK01 (CLI still the operator path) |
 | **D. Planner gap** | GM07 durable SQL consent/expiry; ENG03 all-purpose short-lock; OBS04 E0 witness; DATA06 remote branch-pinned facade |
 | **E. Explicitly gated** | OBS00/TURN04 paid dispatch; K8S11/TURN02/TURN03/K8S10 live cluster; BOOT03 two-process remainder already proven in-process but packet Goal still distributed start |
 | **F. Unselected optional** | DIST02, DIST04 Rabbit postcommit projection; WIKI18 live cost benchmark |

@@ -222,6 +222,18 @@ test('adding CHANGE.md clears orphan-open-folder but may still need queue route'
   );
 });
 
+test('planner entry, catalog companions, infra READMEs and app inventories are classified', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('CHATGPT.md', '# Planner\n');
+  fx.add('work/changes/COMPOSER-QUEUE-AUDIT-2026-11-20.md', '# Audit\n');
+  fx.add('infra/kubernetes/lab/chaos/README.md', '# Chaos\n');
+  fx.add('apps/web/src/stories/design-system-inventory.md', '# Inventory\n');
+  const report = scan(fx);
+  fx.cleanup();
+  assert.equal(report.findings.some((item) => item.code === 'unclassified'), false);
+});
+
 test('top-level control doc and unrouted design dossier are strict findings', () => {
   const fx = fixture();
   baseFiles(fx);

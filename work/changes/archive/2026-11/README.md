@@ -95,6 +95,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 
 ## other (8)
 
+- [2026-11-20--work01-first-class-operational-tasks](../../../../work/changes/archive/2026-11/other/2026-11-20--work01-first-class-operational-tasks/CHANGE.md)
 - [2026-11-19--dist01-ratify-game-authority-delivery-boundaries](../../../../work/changes/archive/2026-11/other/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md)
 - [2026-11-19--boot02-published-fixture-package-s3-job](../../../../work/changes/archive/2026-11/other/2026-11-19--boot02-published-fixture-package-s3-job/CHANGE.md)
 - [2026-11-17--dir03-storyteller-art-direction-author](../../../../work/changes/archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md)
