@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Cursor-only execution depth
 
+**PARENT FINITE-BATCH RULE (always):** [bounded orchestration](../../.agents/references/bounded-parent-orchestration.md). Before launching children, name a finite authorized batch (normally 2–5 T-IDs or one integration-heavy join), owners/resources and its exit proof. **Checkpoint at five dispatches or earlier on a boundary:** inspect combined diff, focused/negative tests, reconcile each touched Change, archive only truly achieved Goals, commit coherent owned files, report, then STOP. At most two such checkpoints in one parent turn if the owner explicitly approved multi-batch work. No automatic next-Change sweep; no repeated failure loop. Shared-checkout subagents must not stage/commit; isolated branch commits are optional. The parent alone integrates. Keep this rule more important than producing lengthy reports.
+
 Parent MUST give every delegated task `DEPTH=VERIFY|PATCH|INVESTIGATE` plus a selected microtask T-ID when TASKS.md exists. **Default model is Composer Standard for parent and child.** **Depth is not risk or model effort.** A money-sensitive but fully specified, safely isolated test is `VERIFY` with Composer Standard; risk controls live in approved preconditions, not model price. Allowed model configurations remain in [Cursor cost policy](../../.agents/references/cursor-model-budget-policy.md).
 
 - **VERIFY:** run the given command/procedure and record factual evidence. Read only the handoff, exact safety preconditions and necessary named runbook heading. Check git status; run the specified check once. No broad wiki/code discovery, speculative fixes, or unrelated tests. If blocked, make at most one error-directed diagnostic, record FAIL/NOT-RUN and stop. No silent promotion to PATCH.

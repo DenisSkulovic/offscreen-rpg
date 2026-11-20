@@ -35,6 +35,8 @@
 - If source contradicts approved design, report file/symbol, conflict and a negative case—do not quietly rewrite the bible.
 - **Any** Change is **Done** only after its CHANGE.md **Reconciliation ledger** and dependent-claim review are complete. Documentation-only Changes need before/after semantic preservation and a negative reading test, not fake code edits. **Never mark Done while permanent docs are more stale than landed code or selected meaning is silently rewritten.**
 
+**Bounded Cursor parent (2026-11-20):** [finite integration-batch policy](.agents/references/bounded-parent-orchestration.md) is mandatory for coordinated subagent execution: preselect a small authorized T-ID set; checkpoint, test, reconcile and commit at a meaningful boundary; archive truly Done Changes, otherwise record exact remaining proof; then stop/report. **Shared-checkout children do not commit or archive**. A child receipt never means its parent Change is Done. No parent-level unbounded queue draining or automatic next batch.
+
 **Batch execution:** If the owner authorizes multiple Changes together, first consult [parallel Change orchestration](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). The coordinating chat may dispatch independent Ready Changes to isolated subagents/worktrees concurrently, while serializing shared docs, cluster resources and final integration. Never infer batch approval from nearby Proposed tickets or autonomously start the next Change.
 
 **Return briefly:** changed files/diff; normal + meaningful negative proof; commands actually run/skipped; risk/blocker; next dependency; provider-spend status.

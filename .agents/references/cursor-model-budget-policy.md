@@ -22,12 +22,14 @@ Never use Grok 4.7, Grok High/XHigh, Fast, Auto, Inherit, unlisted models, silen
 
 ## Preferred workflow: one tiny patch at a time
 
+**Parent must be bounded too:** use [finite integration batches](bounded-parent-orchestration.md), normally 2–5 preselected T-IDs or one high-risk join, then an integration/commit/Change-disposition checkpoint and **stop/return**. Up to two checkpoints in one parent turn only when explicitly authorized as a multi-batch campaign. This is not a token cap, and no child should be required to commit or archive its own T-ID.
+
 1. **Select one already authorized Change**, with baseline SHA and canonical technical/product owners. Use the [Composer-ready microtask contract](composer-first-execution.md). A selected large Change is **not** a single child assignment.
 2. **Parent starts lean:** read CHANGE.md plus TASKS.md for the selected Change; open only one task's specified companion section. Do not preload agent skills, all source maps, architecture wiki or past transcripts. Fetch current git status and affected ownership. No automatic subagent swarm.
 3. **One Composer implementer** receives one microtask card: 1 outcome, preferably 1–3 file owners, 2–5 exact source/test anchors, settled code recipe and refusal conditions, one targeted normal+negative proof. It may read more when a specific failing symbol requires it but must explain why.
 4. **Composer evidence-runner only if useful**, not a second mandatory agent for every patch. The implementer can run its own tests and report; parent runs exact integration and required docs guards once at the packet join.
 5. On mismatch, **stop**, return one concrete file/symbol/error and mark the microtask unverified. ChatGPT refreshes design/investigation; then dispatch a newly bounded Composer task. Do not pay Grok to rediscover a stale handoff.
-6. Parent serially integrates shared SQL migrations, Game Authority route files, workflow code and one kind cluster; use multiple workers only for disjoint file/resource ownership. Commit accepted work and keep exact receipt. A built/tested patch is not automatically a working multi-Pod POC.
+6. Parent serially integrates shared SQL migrations, Game Authority route files, workflow code and one kind cluster; use multiple workers only for disjoint file/resource ownership. At the **batch checkpoint**, stage only owned paths, run necessary joined/negative proofs, reconcile each touched Change, archive achieved outcomes, and make one/few coherent commits. An accepted T-ID or commit is not automatically a working multi-Pod POC. **No endless automatic next-batch loop.**
 
 **Do not replace correctness with blind file editing.** The child still verifies current source, asks one focused question when code conflicts with a documented invariant, runs relevant tests, and refuses unsafe production/destructive work. Source reading is permitted; **open-ended design research** is not the default workload.
 

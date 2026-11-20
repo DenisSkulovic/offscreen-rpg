@@ -43,6 +43,8 @@ Use [cursor-handoff](../cursor-handoff/SKILL.md) for an economical executor prom
 
 ### Bundle scheduling and parallel Cursor execution
 
+**Mandatory parent checkpoint:** [bounded integration batches](../../references/bounded-parent-orchestration.md). A user-approved program is not one endless Cursor parent turn. Keep Composer T-IDs cheap; integrate, test, reconcile and commit after a cohesive batch (normally 2–5 small T-IDs or one high-risk join), then report. Only the parent stages shared-checkout changes. Never treat a child receipt as a Done Change or postpone closure until the user asks.
+
 For a batch of planned Changes, **attempt a dependency/ownership graph before defaulting to serial execution**. Use the canonical [batch execution contract](../../references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). Mark independent pairs and shared-resource serialization explicitly in the work queue. When the owner approves an Active batch and the client supports subagents, let one coordinating Cursor chat delegate disjoint Ready Changes in parallel, preferably with isolated worktrees/branches. It waits at dependency gates, not at arbitrary Change-number boundaries. No agent may edit a shared canonical heading, cluster/operator, migration, lockfile or working tree concurrently. The coordinator alone integrates, runs global checks and closes reconciliation ledgers. Subagents return brief actual evidence receipts; proposed changes are not authorized merely by being in the batch.
 
 ## 4. Implement only when authorized
@@ -52,6 +54,8 @@ One owner applies the approved **editorial or executable** delta, inspects diff,
 If code or source inspection reveals that the accepted contract is wrong/incomplete, **return that decision to the owning product/technical decision role**, then resume only after explicit ratification. An editorial Change cannot silently ratify a new shared-play, time, security, privacy or spending policy. A green fixture is not proof of connected gameplay.
 
 ## 5. Converge, record evidence and retire
+
+**Perform this at each accepted batch join, not after an endless run of T-IDs.** If a Change reached its original accepted outcome, reconcile and archive it in that integration window. If not, record which T-IDs landed, the *exact* residual normal/negative/live proof and next owner. If a packet grew beyond its independently useful scope, split honestly without downgrading already-selected acceptance or hiding a genuine safety/production gate. A partial verified patch can be committed while its Change remains open. See [bounded parent workflow](../../references/bounded-parent-orchestration.md).
 
 Record what landed, tests/inspection actually run, affected revision, remaining risk and exact next action.
 

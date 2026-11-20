@@ -9,6 +9,8 @@ description: Translate one approved documentation or implementation Change/PLAN 
 
 **Pre-handoff quality gate:** Follow [planner-first source investigation](../../references/planner-investigation-standard.md) before formatting any medium/large implementation packet. ChatGPT (or the designated architect) researches the *actual* caller/data/transaction/source/test path and resolves meaningful design choices. A short route card is **not** proof of a complete design if the executor would still need to discover identity remapping, stale-root checks, authority or rollback. If such a gap exists, return to planner research and keep the Change Proposed; do not silently outsource architecture to Cursor. For an exact VERIFY command or trivial patch, keep planning light.
 
+**Parent dispatch boundary:** for a campaign of T-IDs, supply a tiny [finite integration-batch charter](../../references/bounded-parent-orchestration.md) naming authorized Change/T-IDs, the shared-resource owner, one integration finish line, normal/negative checks and an explicit stop/commit checkpoint. The parent must not silently consume all subsequent Ready T-IDs. Children never inherit authorization from adjacency and do not do parent-only archive/Git housekeeping.
+
 ## Source of truth
 
 Use the approved product contract, owning technical section, selected CHANGE.md/PLAN checkpoint (if any) and the small relevant source map. If these conflict, **stop and identify the contradiction**. Do not make Cursor choose product policy by improvising.

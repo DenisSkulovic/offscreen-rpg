@@ -46,6 +46,8 @@ Do **not** create a folder for an everyday command within a Change, a trivial co
 
 ## One selection authority, multiple catalogs
 
+**Integration batch is a scheduling envelope, not a new work kind.** It groups an already authorized finite selection of Change-owned T-IDs (or one operational Task) under one Cursor coordinator. The [bounded parent contract](../.agents/references/bounded-parent-orchestration.md) owns its explicit stop, acceptance, coherent commit and archive checkpoint. No per-T-ID ticket, no new batch queue, no assumption that T-ID completion proves parent Goal.
+
 [**work/QUEUE.md**](QUEUE.md) is the single source for the selected work item (`Current work:`), whether Change or Task. Exactly one primary selected item, or `none`, is valid. Concurrent explicitly approved batches use their own scoped handoff but cannot create another global selector. The [Changes index](changes/README.md) and [Tasks index](tasks/README.md) are catalogs, **not competing Current selectors**. Existing 2026-11 Changes, historical evidence, links and `TASKS.md` stay in place; no automatic mass migration or renaming.
 
 Selection does **not** override permissions: a selected Task to apply a migration or kill a Pod still requires explicit environment, destructive-operation and ownership approval. `Ready` means prepared, not authorized. The Cursor coordinator normally uses Composer Standard and delegates a single bounded execution step, whether from a Change's `TASKS.md` or standalone `TASK.md`.

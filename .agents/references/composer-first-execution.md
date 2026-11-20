@@ -71,6 +71,8 @@ This example is a **shape**, not an authorization to run these steps before prer
 
 ## Token and tool guidance (soft targets, not enforceable context-window settings)
 
+**Do not optimize children while leaving the parent unbounded.** The [parent integration-batch contract](bounded-parent-orchestration.md) limits default dispatch to 2–5 T-IDs (or one risky join), requires a checkpoint/commit and explicit Change closure decision, and stops rather than launching the next unrelated batch. Child receipts are short; **the parent**, not each child, owns Git staging, archive routing and canonical docs at integration.
+
 - **Task dispatch:** target under 900 words, often far less. Links to a specific document heading instead of copying entire investigations. More detail may be necessary for correctness, but it should live in the file's targeted section.
 - **Initial reads:** one route card + 2–5 direct anchors. Additional reads must solve a named contradiction. Context size is selected by the model/tool runtime; **the repository cannot actually cap a subagent's context window or billed tokens**.
 - **Searches:** avoid repo-wide discovery unless a path/symbol from the packet is wrong. Parent asks ChatGPT to repair source maps.
