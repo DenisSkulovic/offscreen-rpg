@@ -2,7 +2,7 @@
 
 **State:** Done, 2026-11-21. Documentation-only target contract; runtime implementation follows.
 
-[Program](../../../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT handoff](../../../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) · [WRD02](../../../../open/2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) · [WRD04 next](../../../../open/2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md).
+[Program](../../../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT handoff](../../../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) · [WRD02](../2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) · [WRD04 next](../2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md).
 
 ## Distinguish world semantics from execution machinery
 
