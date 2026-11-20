@@ -16,6 +16,10 @@ Participation is on your terms. Leaving the page does not authorize a new player
 
 ## Optional mechanical foundations
 
+### The D&D foundation
+
+**Legacy anchor preserved for inbound links.** D&D-style mechanics remain a supported authored rules family, not the universal ontology. The governing text is the remainder of this section.
+
 D&D-style mechanics are one supported authored rules family, not the product's universal ontology. A prepared experience may opt into ability scores, checks, dice, hit points, inventory, professions or other typed mechanics. Another experience may use different mechanics or remain largely narrative.
 
 The engine stays world-neutral: it supplies authority, persistence, time, capabilities, evidence and versioned rules without assuming a humanoid body or fantasy-adventurer schema. When a world enables typed rules, those rules are real and authoritative; prose cannot override them. When a world does not enable them, the Storyteller must not quietly manufacture a D&D sheet as hidden scaffolding. See [gameplay rules](../gameplay/rules.md).
