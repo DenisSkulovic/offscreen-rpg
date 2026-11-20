@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build context: workspace root (use build-worker.sh staging; do not bake secrets or content trees).
-# One image, two commands: control-main.js and executor-main.js. Deployments override CMD.
+# One image, three commands: control-main, executor-main, and relay main.js. Deployments override CMD.
 FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS builder
 WORKDIR /app
 ENV PNPM_HOME=/pnpm
@@ -27,6 +27,7 @@ RUN chown -R node:node /app
 COPY --from=builder --chown=node:node /runtime /app
 RUN test -f apps/worker/dist/src/bootstrap/control-main.js \
   && test -f apps/worker/dist/src/bootstrap/executor-main.js \
+  && test -f apps/worker/dist/src/bootstrap/main.js \
   && test ! -e content
 USER node
 CMD ["node", "apps/worker/dist/src/bootstrap/control-main.js"]

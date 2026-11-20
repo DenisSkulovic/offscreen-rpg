@@ -66,6 +66,17 @@ echo "Applying migration Job ${OVERLAY_DIR}/migrate.yaml and waiting for complet
 "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/migrate.yaml"
 "${KUBECTL[@]}" -n lab-edge wait --for=condition=complete "job/game-migrate" --timeout=300s
 
+if ! "${KUBECTL[@]}" -n lab-workers get secret game-db >/dev/null 2>&1; then
+  if ! "${KUBECTL[@]}" -n lab-edge get secret game-db >/dev/null 2>&1; then
+    echo "Refusing install: Secret game-db is missing in lab-edge." >&2
+    exit 1
+  fi
+  echo "Copying Secret game-db into lab-workers for game-relay…"
+  "${KUBECTL[@]}" -n lab-edge get secret game-db -o json \
+    | python3 -c 'import json,sys; s=json.load(sys.stdin); s["metadata"]={"name":"game-db","namespace":"lab-workers","labels":s.get("metadata",{}).get("labels") or {}}; print(json.dumps(s))' \
+    | "${KUBECTL[@]}" apply -f -
+fi
+
 echo "Applying authority, workers, and edge overlays…"
 "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/authority.yaml"
 "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/workers.yaml"
@@ -76,5 +87,6 @@ echo "Applying authority, workers, and edge overlays…"
 "${KUBECTL[@]}" -n lab-authority rollout status deployment/game-authority --timeout=300s
 "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-control --timeout=300s
 "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-executor --timeout=300s
+"${KUBECTL[@]}" -n lab-workers rollout status deployment/game-relay --timeout=300s
 
 echo "App release overlay applied."

@@ -59,3 +59,8 @@ k8s_resource(
     'game-executor',
     resource_deps=['game-authority'],
 )
+
+k8s_resource(
+    'game-relay',
+    resource_deps=['game-authority'],
+)

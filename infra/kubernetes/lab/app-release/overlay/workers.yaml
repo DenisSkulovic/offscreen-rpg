@@ -1,5 +1,6 @@
-# Storyteller control and execution workers — Temporal only, no broad database env.
-# These processes do not listen. A TCP probe cannot show that a task queue is being polled.
+# Storyteller control, execution, and outbox-relay workers.
+# Control and executor poll Temporal only (no broad database env).
+# game-relay runs bootstrap/main.js: SQL outbox relay + legacy task queue; not an HTTP server.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -116,6 +117,64 @@ spec:
                 secretKeyRef:
                   name: game-runtime
                   key: game-authority-executor-token
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 768Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-relay
+  namespace: lab-workers
+  labels:
+    app: game-relay
+    offscreen.rpg/lab: disposable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-relay
+  template:
+    metadata:
+      labels:
+        app: game-relay
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/chaos-eligible: "true"
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: relay
+          image: offscreen-lab-app-release-worker:turn02
+          imagePullPolicy: Never
+          command:
+            - node
+            - apps/worker/dist/src/bootstrap/main.js
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: game-db
+                  key: uri
+            - name: TEMPORAL_ADDRESS
+              value: temporal-server.lab-temporal.svc.cluster.local:7233
+            - name: TEMPORAL_NAMESPACE
+              value: default
+            - name: STORYTELLER_DISTRIBUTED_V1
+              value: "true"
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
