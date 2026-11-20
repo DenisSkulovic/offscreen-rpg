@@ -9,6 +9,8 @@
 
 **Positive:** the named behavior is demonstrated against the correct tier, with real process or Pod evidence where requested. **Negative:** the named failure case discriminates against the old/misleading path and returns nonzero/denial without collateral changes. **Stop:** source drift, unsafe context/secret/volume, unproven predecessor, impossible system assumption or failure after bounded error-directed investigation. **Receipt:** focused test command/count, source SHA, scope, env, redacted IDs, observed failure, NOT-RUN clauses.
 
+**Status (2026-11-20):** Root `Tiltfile` + `infra/kubernetes/lab/tilt/tiltfile.test.mjs` landed (source slice); `tilt up` / cluster apply NOT-RUN in T01.
+
 
 ## T02 | pnpm dev and stable localhost URLs
 
