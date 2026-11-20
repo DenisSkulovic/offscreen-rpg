@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -509,6 +509,23 @@ test('preview on disposable database stays read-only', async () => {
   }
 });
 
+test('databasePathAllowed accepts story_local pathname only', async () => {
+  const script = path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    '../../../scripts/repo-tools/plan-storyteller-saved-repair.mjs',
+  );
+  const { databasePathAllowed } = await import(`file://${script}`);
+  assert.equal(databasePathAllowed('/offscreen_story_local'), true);
+  assert.equal(databasePathAllowed('/offscreen_hk01_repair_test'), true);
+  assert.equal(databasePathAllowed('/offscreen_auth_test'), false);
+});
+
+function spawnPlanCli(script, extraArgv) {
+  return spawnSync(process.execPath, [script, ...extraArgv], {
+    encoding: 'utf8',
+  });
+}
+
 test('plan CLI prints hold on bad database name', async () => {
   const { task, candidate } = buildRepairableProviderTask();
   const evidenceRoot = await mkdtemp(path.join(os.tmpdir(), 'hk01-evidence-'));
@@ -543,4 +560,71 @@ test('plan CLI prints hold on bad database name', async () => {
   await rm(evidenceRoot, { recursive: true, force: true });
   assert.notEqual(result.status, 0);
   assert.match(result.stdout, /database_url_not_allowed/);
+});
+
+test('plan CLI prints hold on evidence symlink', async () => {
+  const { task, candidate } = buildRepairableProviderTask();
+  const evidenceRoot = await mkdtemp(path.join(os.tmpdir(), 'hk01-evidence-'));
+  const realFile = path.join(evidenceRoot, 'real.json');
+  const linkPath = path.join(evidenceRoot, 'repair.json');
+  await writeFile(
+    realFile,
+    buildEvidenceBytes(task, candidate, uniqueRequestSha256()),
+  );
+  await symlink(realFile, linkPath);
+  const script = path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    '../../../scripts/repo-tools/plan-storyteller-saved-repair.mjs',
+  );
+  const result = spawnPlanCli(script, [
+    '--plan',
+    '--local-disposable',
+    '--database-url',
+    DATABASE_URL,
+    '--evidence-root',
+    evidenceRoot,
+    '--evidence',
+    'repair.json',
+    '--generation',
+    randomUUID(),
+    '--attempt',
+    randomUUID(),
+  ]);
+  await rm(evidenceRoot, { recursive: true, force: true });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stdout, /evidence_symlink/);
+});
+
+test('plan CLI prints hold on evidence escape', async () => {
+  const { task, candidate } = buildRepairableProviderTask();
+  const evidenceRoot = await mkdtemp(path.join(os.tmpdir(), 'hk01-evidence-'));
+  const outsideRoot = await mkdtemp(path.join(os.tmpdir(), 'hk01-outside-'));
+  const outsideFile = path.join(outsideRoot, 'escape.json');
+  await writeFile(
+    outsideFile,
+    buildEvidenceBytes(task, candidate, uniqueRequestSha256()),
+  );
+  const script = path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    '../../../scripts/repo-tools/plan-storyteller-saved-repair.mjs',
+  );
+  const escapedName = path.relative(evidenceRoot, outsideFile);
+  const result = spawnPlanCli(script, [
+    '--plan',
+    '--local-disposable',
+    '--database-url',
+    DATABASE_URL,
+    '--evidence-root',
+    evidenceRoot,
+    '--evidence',
+    escapedName,
+    '--generation',
+    randomUUID(),
+    '--attempt',
+    randomUUID(),
+  ]);
+  await rm(evidenceRoot, { recursive: true, force: true });
+  await rm(outsideRoot, { recursive: true, force: true });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stdout, /evidence_escape/);
 });

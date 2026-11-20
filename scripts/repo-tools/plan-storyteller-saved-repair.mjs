@@ -1,5 +1,6 @@
 import { lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createDatabase } from '../../packages/db/dist/src/index.js';
 import {
   applySavedRepair,
@@ -12,7 +13,14 @@ import {
 import { SavedRepairInspectionRefusal } from '../../packages/application/dist/storyteller/saved-response-inspection.js';
 import { fail } from './process.mjs';
 
-const REPAIR_TEST_DB = '/offscreen_hk01_repair_test';
+const ALLOWED_DATABASE_PATHS = new Set([
+  '/offscreen_story_local',
+  '/offscreen_hk01_repair_test',
+]);
+
+export function databasePathAllowed(pathname) {
+  return ALLOWED_DATABASE_PATHS.has(pathname);
+}
 
 function parseArgs(argv) {
   const values = {
@@ -147,7 +155,7 @@ async function main() {
   } catch {
     hold('database_url_invalid');
   }
-  if (databasePath !== REPAIR_TEST_DB) {
+  if (!databasePathAllowed(databasePath)) {
     hold('database_url_not_allowed');
   }
   if (!args.generation || !args.attempt) {
@@ -195,4 +203,9 @@ async function main() {
   }
 }
 
-main().catch((error) => fail(error));
+if (
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
+) {
+  main().catch((error) => fail(error));
+}

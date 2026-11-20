@@ -20,7 +20,7 @@ Local disposable investigation and a hosted environment are different jobs.
 | Local Chamber | The disposable database `offscreen_chamber` in the same local-development guide | Read the rows below. Chamber reset, scenario arming, and worker start are separate launcher actions. They are not this identification. |
 | Production or staging | Any hosted database, hosted Temporal namespace, or shared account | Hold and escalate. This page has no hosted repair. [Outages and recovery](../technical/platform/execution-and-delivery.md#outages-and-recovery) records hosted recovery administration as future work. |
 
-A local database name is not permission to run the same steps against another database. The blocked local settlement file below is hardcoded to `offscreen_story_local`. It is not a staging tool and not a production tool.
+A local database name is not permission to run the same steps against another database. The local maintenance command below allows only `offscreen_story_local` or disposable `offscreen_hk01_repair_test`. It is not a staging tool and not a production tool.
 
 ## Name the records
 
@@ -69,7 +69,7 @@ Walk in this order.
 5. Read `outbox.delivered_at` and whether Temporal history for that workflow id can be named. A gap uses [Pending notice or Temporal gap](#pending-notice-or-temporal-gap).
 6. If the PostgreSQL copy was restored and Temporal history is gone, use [Restored SQL without Temporal history](#restored-sql-without-temporal-history).
 7. A provisional capture or an interrupted action uses [Short-lock publication](#short-lock-publication).
-8. An attempt that is already `uncertain` on `offscreen_story_local` uses [Already-uncertain local attempt](#already-uncertain-local-attempt) only to record the blocked evidence gate. The first response still does not settle it.
+8. An attempt that is already `uncertain` on `offscreen_story_local` uses [Already-uncertain local attempt](#already-uncertain-local-attempt) only to record the operator maintenance command. The first response still does not settle it.
 
 ### Ambiguous provider send
 
@@ -138,19 +138,18 @@ Hold if the next idea is a new roll, a new generation id, or a provider send to 
 
 Use this branch only after the generation and the attempt are both already `uncertain`, and only on local story mode.
 
-[HK01](../../work/changes/open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) is blocked. [The housekeeping audit](../../work/designs/open/repository-housekeeping/AUDIT-2026-11-17.md) records the same fact. `scripts/repo-tools/reconcile-storyteller-response.mjs` remains the only saved-evidence settlement for an already-uncertain local attempt. It stays until a supported replacement exists. This page does not remove it.
+[HK01](../../work/changes/archive/2026-11/other/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) retired the old settlement CLI. [The housekeeping audit](../../work/designs/open/repository-housekeeping/AUDIT-2026-11-17.md) records the replacement. `node scripts/repo-tools/plan-storyteller-saved-repair.mjs` is the supported operator maintenance command for saved-evidence preview and guarded apply. This page does not run it.
 
-The file was read and was not run. Its gate, from that source, is all of the following:
+The command was read and was not run. Its gate, from that source, is all of the following:
 
-- The arguments are a generation id, an attempt id, and a JSON file under `data/story-local-evidence`.
-- The database target is fixed to local `offscreen_story_local`.
-- The generation and the attempt must both already be `uncertain`, and the generation's attempt id must be the named attempt.
-- The captured recipe must be `repairable-turn.v1`.
-- The JSON must be a complete provider response for the captured route.
-- A saved response that validates is refused, because invalid-output repair does not apply.
-- Only then does the file call budget settlement and continue the operation.
+- `--plan` is read-only preview; `--apply` mutates and requires `--plan-fingerprint`, `--operator`, `--reason`, `--local-disposable`, and an explicit `--database-url`.
+- The database pathname must be `offscreen_story_local` or disposable `offscreen_hk01_repair_test`. Production and staging URLs are refused.
+- Evidence is a JSON file under a caller-supplied `--evidence-root`; symlinks and paths that escape the root are refused.
+- Named generation and attempt ids bind to stored rows, dispatch review, and saved provider bytes.
+- A saved response that validates as ordinary model output is refused when invalid-output repair does not apply.
+- `--apply` runs budget settlement inside the guarded recovery fence and appends one immutable operator audit row.
 
-That call is a mutation. Identifying the rows does not authorize it. Production and staging do not gain a copy of it. A replacement has to exist before the file can be removed. Until then, leave the file on disk.
+`--apply` is a mutation. Identifying the rows does not authorize it. This page cites `--plan` only as read-only identification context and does not execute either mode.
 
 ### Disagreeing records
 
@@ -177,7 +176,7 @@ Record every state you actually read, and record `unknown` for every fact you co
 | Temporal history lost after a SQL restore | Hold and escalate. The SQL copy stays a SQL copy. |
 | Receipt present | Hold the receipt. Keep its roll and effects. |
 | Rows disagree | Record each stored state. Record `unknown` for the rest. Escalate. |
-| Local uncertain attempt with saved evidence | Record the HK01 gate. Leave the file in place. This page does not run it. |
+| Local uncertain attempt with saved evidence | Record the HK01 maintenance command. This page does not run `--plan` or `--apply`. |
 
 [Hold and recovery semantics](../technical/platform/spending-and-entitlements.md#hold-and-recovery-semantics) distinguishes `usage_uncertain` from an exhausted window or a revoked route. A usage hold stays a usage hold. This page does not resume the story and does not clear a stopped funding account.
 
@@ -187,7 +186,8 @@ No command is cited as the identification step. A command is cited here only whe
 
 | Candidate | What the source does | Disposition |
 | --- | --- | --- |
-| `scripts/repo-tools/reconcile-storyteller-response.mjs` | Opens `offscreen_story_local` and calls budget settlement | Refused. Mutation. The file stays. It was not run. |
+| `node scripts/repo-tools/plan-storyteller-saved-repair.mjs --plan` | Read-only preview of the named generation, attempt, review, and saved evidence on an allowed local or disposable database | Refused as this page's identification step. It does not read the outbox or Temporal. It was not run. |
+| `node scripts/repo-tools/plan-storyteller-saved-repair.mjs --apply` | Opens an allowed local/disposable database and calls guarded budget settlement | Refused. Mutation. It was not run. |
 | `pnpm story:play show`, `history`, and `wait` | [story-play.mjs](../../scripts/repo-tools/story-play.mjs) appends a JSONL file under `data/story-agent` | Refused. Local file write. Not run. |
 | `pnpm story:play new`, `retry-opening`, `choose`, `activity`, and `retry` | HTTP mutations. Several refuse to continue without `--confirm-live` because they can dispatch paid work | Refused. Not run. |
 | `pnpm story:play list`, `profiles`, `starts`, and `server` | HTTP GET, or a status-file read plus GET. No JSONL append on these four | Refused as identification. They do not read generation, attempt, outbox, or Temporal. The handlers were not executed. |
@@ -207,7 +207,7 @@ These outcomes stay false.
 
 **Restored SQL alone is not a reconstruction of lost Temporal work.** A restored passage, receipt, or outbox notice is not the missing Temporal history. [Outages and recovery](../technical/platform/execution-and-delivery.md#outages-and-recovery) is the delivery contract. This guide does not start a workflow to fill the gap.
 
-**The local settlement file is not deleted from this page.** HK01 stays blocked until a supported replacement exists. Absence of a package script is not a removal.
+**This page does not run the local maintenance command.** HK01 replaced the old settlement CLI with `plan-storyteller-saved-repair.mjs`. Absence of a package script is not permission to run `--apply`.
 
 ## Where the contract lives
 
@@ -219,4 +219,4 @@ These outcomes stay false.
 | Who owns the short-lock capture race? | [Engine concurrency and recovery](../technical/engine/concurrency-and-recovery.md#before-during-and-after-the-lock) |
 | Which process delivers a notice? | [Worker](../../apps/worker/README.md) |
 | Where does local story mode refuse an uncertain attempt? | [Local live Story mode](local-development.md#local-live-story-mode-without-oauth) |
-| Why does the local settlement file remain? | [HK01](../../work/changes/open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) |
+| Which Change recorded the local maintenance command? | [HK01](../../work/changes/archive/2026-11/other/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) |
