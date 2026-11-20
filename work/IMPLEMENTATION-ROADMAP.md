@@ -50,7 +50,7 @@ Current `apps/api/src/modules/stories/controller.ts:fork` invokes `this.stories.
 
 **OBS04 backlog resolution (Nov 20):** [Typed terminal-event witness decision](changes/open/2026-11-15--obs04-finite-action-transition-evidence/DECISION-2026-11-20.md) removes the earlier unspecified-missing-datum blocker: existing receipt/event lacks the exact typed interrupt cause and pre/post clock/holds/affected-item state. One nullable witness on existing terminal event, no new ledger, is planned. OBS04 remains **unselected and unimplemented**; do not make it a prerequisite for TURN02 gameplay unless a concrete forensic test depends on it.
 
-**OBS00 status correction (2026-11-20):** [Independent current authority design](changes/open/2026-11-15--obs00-live-provider-custody/DECISION-2026-11-20.md) resolves the old B planner-gate into provider-free T02–T06. OBS00-C wire equality was independently Done/archived Nov 15; parent T01's omission of the suite is not evidence it was undone. Preserve no-default-grant and no-paid-send constraints; distributed executor stays scripted-only until a separate owner-approved design and TURN04 activation. No auto-selection.
+**OBS00 closeout (2026-11-20):** [OBS00 live-provider custody](changes/archive/2026-11/observability/2026-11-15--obs00-live-provider-custody/CHANGE.md) is **Done** for provider-free A/B/C security. SQL grant store and atomic dispatch recheck are implemented; no production grant, no live paid send, distributed executor still `ProviderModeRefused` until a separate TURN04 design and spending approval. OBS00-C remains in its own archived packet. No auto-selection of TURN04.
 
 ## Prevent self-management drift
 
