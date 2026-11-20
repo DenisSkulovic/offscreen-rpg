@@ -14,7 +14,7 @@ A **batch** is an **ephemeral scheduling and integration envelope**, not a Chang
 
 Parent writes a **tiny charter in its own current chat** (or uses existing [work/sessions](../../work/sessions/README.md) for a handoff genuinely needing persistence). Do not create a new folder or large plan for every batch:
 
-\`\`\`text
+```text
 Batch: <short label> | source HEAD: <sha>
 Authorized Changes/T-IDs: <specific IDs; no Proposed expansion>
 Finish line: <one integrated observable outcome>
@@ -22,7 +22,7 @@ Owners: <disjoint write paths, canonical headings, shared resources>
 Permitted checks: <focused positive, negative, integration only if safe>
 Hard stops: <missing design/authorization, collision, red acceptance, unsafe environment>
 Commit group: <one cohesive milestone or two separable results>
-\`\`\`
+```
 
 **Default budget:** approximately **2–5 small Composer T-IDs**, **at most two independently accepted Change outcomes**, or **one high-risk cross-service join**. **Five child dispatches is the default checkpoint ceiling**, not a license to skip the necessary last test or split an atomic operation. The owner can explicitly approve a larger envelope; still integrate/checkpoint after each manageable slice. **Never keep expanding the batch because unrelated T-IDs happen to be Ready.**
 
@@ -38,8 +38,8 @@ The parent executes no new speculative architecture. On an actual source discrep
 
 ## 3. Integration checkpoint: do this once per batch, not per child
 
-1. **Reconcile the working tree.** Inspect current HEAD, \`git status --short\`, relevant diffs and child receipts. Identify owner/unrelated modifications and clashes. No automatic \`git add -A\`, reset, clean, forced stash, amend or force-push. Stage exact owned paths only; inspect staged diff and check whitespace/obvious secrets.
-2. **Test at the appropriate tier.** Focused normal and discriminating negative checks belong with each changed behavior. At the integration join run the narrow cross-module tests needed to catch boundary errors. Broader typecheck, \`pnpm repo:maintenance --strict\`, \`pnpm wiki:health\` and the Change close guard are **per closure or affected boundary**, not reflexively after every child. A skipped environment-dependent test remains **NOT-RUN**, never zero failures by implication.
+1. **Reconcile the working tree.** Inspect current HEAD, `git status --short`, relevant diffs and child receipts. Identify owner/unrelated modifications and clashes. No automatic `git add -A`, reset, clean, forced stash, amend or force-push. Stage exact owned paths only; inspect staged diff and check whitespace/obvious secrets.
+2. **Test at the appropriate tier.** Focused normal and discriminating negative checks belong with each changed behavior. At the integration join run the narrow cross-module tests needed to catch boundary errors. Broader typecheck, `pnpm repo:maintenance --strict`, `pnpm wiki:health` and the Change close guard are **per closure or affected boundary**, not reflexively after every child. A skipped environment-dependent test remains **NOT-RUN**, never zero failures by implication.
 3. **Resolve each touched Change:** compare its **originally selected, independently useful acceptance outcome** with the actual merged code and proof. Choose:
    - **ACHIEVED:** all required outcome/negative evidence exists → reconcile canonical docs and affected-claim ledger, mark Done, archive and update inbound index/links in the same integration window.
    - **PARTIAL / ACTIONABLE:** meaningful implementation landed but Goal not yet met → keep open, record accepted T-IDs, exact remaining acceptance and one next task/proof.
@@ -57,7 +57,7 @@ The parent executes no new speculative architecture. On an actual source discrep
 
 ## 5. Minimal batch receipt (parent, not children)
 
-\`\`\`text
+```text
 Batch <label> | starting HEAD <sha> | ending HEAD <sha/unchanged>
 T-IDs: accepted <IDs>; failed/NOT-RUN <IDs + exact reason>
 Proof: <commands/cwd/counts, important negative, observed tier>
@@ -66,13 +66,13 @@ Commits: <SHAs and what each contains>; uncommitted: <paths/owner/reason>
 Docs/guards: <actual changed owners; run/pass/fail/not-run>
 Next: <one bounded candidate or explicit owner/planner/permission gate>
 Usage: <actual measured cost when known; otherwise unknown>
-\`\`\`
+```
 
-Keep this in the parent response. Persist a short batch note under \`work/sessions/\` **only** if needed for recovery across sessions; avoid a second authoritative status file. [Work taxonomy](../../work/WORK-TAXONOMY.md) remains unchanged: Change = lasting diff; standalone Task = independently tracked operation; Composer T-ID = subordinate implementation step.
+Keep this in the parent response. Persist a short batch note under `work/sessions/` **only** if needed for recovery across sessions; avoid a second authoritative status file. [Work taxonomy](../../work/WORK-TAXONOMY.md) remains unchanged: Change = lasting diff; standalone Task = independently tracked operation; Composer T-ID = subordinate implementation step.
 
 ## 6. What can and cannot be automated
 
-Existing [maintenance](../../work/changes/README.md) and archive/Change guards can detect malformed routes, terminal packets left under \`open/\`, broken links and some missing reconciliation. They **cannot infer** that Gary's promise appears in the browser, that two processes share real DB authority, or that an unfinished Goal was secretly achieved merely because several T-IDs are marked LANDED. Do **not** build an auto-archiver that guesses from commits or child receipts.
+Existing [maintenance](../../work/changes/README.md) and archive/Change guards can detect malformed routes, terminal packets left under `open/`, broken links and some missing reconciliation. They **cannot infer** that Gary's promise appears in the browser, that two processes share real DB authority, or that an unfinished Goal was secretly achieved merely because several T-IDs are marked LANDED. Do **not** build an auto-archiver that guesses from commits or child receipts.
 
 A parent integration checklist and an actual **acceptance-vs-proof comparison** are the primary control. Automate only a demonstrated mechanical gap with one small tested Change. Do not move the remaining acceptance to a new Change just to improve archive counts; don't keep a genuinely completed, scoped outcome open because some distant product dream could be added later.
 
