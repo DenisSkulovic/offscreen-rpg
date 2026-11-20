@@ -1,16 +1,20 @@
 import assert from 'node:assert/strict';
-import { mkdtemp } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
+import { generation } from '@offscreen/db/generation-schema';
+import { outbox } from '@offscreen/db/outbox-schema';
 import {
   story,
   storyItem,
   storyPassage,
+  storySceneCheckpoint,
 } from '@offscreen/db/story-schema';
 import {
   LocalDocumentStore,
@@ -441,6 +445,10 @@ test('historical GET and fork keep scene-1 sword and living king after scene 2',
   await withDisposable(async (database) => {
     const seeded = await seedTwoScenes(database, store);
     const stories = createStories(database, { documentStore: store });
+    const outboxBeforeRead = await database.db.select({ id: outbox.id }).from(outbox);
+    const generationsBeforeRead = await database.db
+      .select({ id: generation.id })
+      .from(generation);
     const historic = await stories.readHistoricalScene({
       ownerId: seeded.ownerId,
       storyId: seeded.storyId,
@@ -460,6 +468,12 @@ test('historical GET and fork keep scene-1 sword and living king after scene 2',
       seeded.scene1.mechanics.storyFacts[0],
     ]);
     assert.equal(historic.current.interaction.id, seeded.interactionId);
+    const outboxAfterRead = await database.db.select({ id: outbox.id }).from(outbox);
+    const generationsAfterRead = await database.db
+      .select({ id: generation.id })
+      .from(generation);
+    assert.equal(outboxAfterRead.length, outboxBeforeRead.length);
+    assert.equal(generationsAfterRead.length, generationsBeforeRead.length);
 
     const liveItems = await database.db
       .select()
@@ -748,6 +762,186 @@ test('historical GET and fork fail closed for other owners, bad checkpoints, and
         error.code === 'conflict' &&
         error.reason === 'fork_destination_in_use',
     );
+  });
+});
+
+function isCheckpointHashMismatch(error) {
+  return (
+    error instanceof StoryError &&
+    error.code === 'invalid' &&
+    error.reason === 'checkpoint_hash_mismatch'
+  );
+}
+
+test('DATA04 gap negatives: checkpoint story id, corrupt holds, live continuity remap', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-data04-gaps-'));
+  const store = new LocalDocumentStore(root);
+  await withDisposable(async (database) => {
+    const seeded = await seedTwoScenes(database, store);
+    const stories = createStories(database, { documentStore: store });
+    const [scene1Row] = await database.db
+      .select()
+      .from(storySceneCheckpoint)
+      .where(
+        and(
+          eq(storySceneCheckpoint.storyId, seeded.storyId),
+          eq(storySceneCheckpoint.sceneSequence, 1),
+        ),
+      );
+    assert.ok(scene1Row);
+
+    const scene1Checkpoint = await store.readSceneCheckpoint(
+      scene1Row.checkpointHash,
+    );
+    const wrongStoryCheckpoint = {
+      ...structuredClone(scene1Checkpoint),
+      storyId: randomUUID(),
+    };
+    const mismatchedStoryHash = await store.putSceneCheckpoint(
+      wrongStoryCheckpoint,
+    );
+    await database.db
+      .update(storySceneCheckpoint)
+      .set({ checkpointHash: mismatchedStoryHash })
+      .where(
+        and(
+          eq(storySceneCheckpoint.storyId, seeded.storyId),
+          eq(storySceneCheckpoint.sceneSequence, 1),
+        ),
+      );
+
+    const forkStoryIdWrong = randomUUID();
+    await assert.rejects(
+      () =>
+        stories.readHistoricalScene({
+          ownerId: seeded.ownerId,
+          storyId: seeded.storyId,
+          sequence: 1,
+        }),
+      isCheckpointHashMismatch,
+    );
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.ownerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId: forkStoryIdWrong,
+          expectedRevision: 1,
+        }),
+      isCheckpointHashMismatch,
+    );
+    const wrongForkRows = await database.db
+      .select()
+      .from(story)
+      .where(eq(story.id, forkStoryIdWrong));
+    assert.equal(wrongForkRows.length, 0);
+
+    const holdsTamper = structuredClone(scene1Checkpoint);
+    holdsTamper.mechanics.holds = [{ kind: 'decision' }];
+    const holdsTamperBytes = `${JSON.stringify(holdsTamper)}\n`;
+    const holdsTamperHash = createHash('sha256')
+      .update(holdsTamperBytes)
+      .digest('hex');
+    const holdsTamperPath = join(
+      store.root,
+      'objects',
+      'sha256',
+      holdsTamperHash.slice(0, 2),
+      `${holdsTamperHash}.json`,
+    );
+    await mkdir(dirname(holdsTamperPath), { recursive: true });
+    await writeFile(holdsTamperPath, holdsTamperBytes, 'utf8');
+    await database.db
+      .update(storySceneCheckpoint)
+      .set({ checkpointHash: holdsTamperHash })
+      .where(
+        and(
+          eq(storySceneCheckpoint.storyId, seeded.storyId),
+          eq(storySceneCheckpoint.sceneSequence, 1),
+        ),
+      );
+
+    const forkStoryIdHolds = randomUUID();
+    await assert.rejects(
+      () =>
+        stories.readHistoricalScene({
+          ownerId: seeded.ownerId,
+          storyId: seeded.storyId,
+          sequence: 1,
+        }),
+      isCheckpointHashMismatch,
+    );
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.ownerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId: forkStoryIdHolds,
+          expectedRevision: 1,
+        }),
+      isCheckpointHashMismatch,
+    );
+    const holdsForkRows = await database.db
+      .select()
+      .from(story)
+      .where(eq(story.id, forkStoryIdHolds));
+    assert.equal(holdsForkRows.length, 0);
+
+    const liveOwnerId = `data04-live-${randomUUID()}`;
+    const liveStoryId = randomUUID();
+    const livePassageId = randomUUID();
+    await database.db.$client.query(
+      `insert into "user" (id, name, email, email_verified, created_at, updated_at)
+       values ($1, $2, $3, true, now(), now())`,
+      [liveOwnerId, 'DATA04-live', `${liveOwnerId}@example.test`],
+    );
+    await database.db.insert(story).values({
+      id: liveStoryId,
+      ownerId: liveOwnerId,
+      source: 'test.opening.v1',
+      premise: null,
+      storyteller: null,
+      execution: null,
+      usagePolicy: null,
+      continuityNotes: ['kept'],
+      revision: 1,
+    });
+    await database.db.insert(storyPassage).values({
+      id: livePassageId,
+      storyId: liveStoryId,
+      sequence: 1,
+      content: {
+        version: 1,
+        title: 'Solo opening',
+        paragraphs: ['No checkpoint row yet.'],
+      },
+    });
+
+    const forkStoryIdLive = randomUUID();
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: liveOwnerId,
+          sourceStoryId: liveStoryId,
+          forkStoryId: forkStoryIdLive,
+          expectedRevision: 1,
+        }),
+      (error) =>
+        error instanceof StoryError &&
+        error.code === 'conflict' &&
+        error.reason === 'fork_continuity_remap_required',
+    );
+    const liveForkRows = await database.db
+      .select()
+      .from(story)
+      .where(eq(story.id, forkStoryIdLive));
+    assert.equal(liveForkRows.length, 0);
+
+    const checkpointRows = await database.db
+      .select()
+      .from(storySceneCheckpoint)
+      .where(eq(storySceneCheckpoint.storyId, liveStoryId));
+    assert.equal(checkpointRows.length, 0);
   });
 });
 
