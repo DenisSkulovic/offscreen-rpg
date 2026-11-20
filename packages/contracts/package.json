@@ -51,6 +51,10 @@
       "types": "./dist/src/usage-policy.d.ts",
       "default": "./dist/src/usage-policy.js"
     },
+    "./current-authority": {
+      "types": "./dist/src/current-authority.d.ts",
+      "default": "./dist/src/current-authority.js"
+    },
     "./live-evaluation": {
       "types": "./dist/src/live-evaluation.d.ts",
       "default": "./dist/src/live-evaluation.js"

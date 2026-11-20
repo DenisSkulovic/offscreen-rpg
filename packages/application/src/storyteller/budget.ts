@@ -36,6 +36,7 @@ import {
   settleUsageWindows,
   UsageWindowError,
 } from './window-accounting';
+import { loadCurrentDispatchAuthority } from './load-current-dispatch-authority';
 
 export class StorytellerBudgetError extends Error {
   constructor(
@@ -131,6 +132,57 @@ async function lockAllowance(tx: Transaction, execution: ProviderExecution) {
     throw new StorytellerBudgetError('budget_unavailable');
   }
   return { account, allowance };
+}
+
+async function releaseReservedAttempt(
+  tx: Transaction,
+  input: {
+    attemptId: string;
+    record: typeof attempt.$inferSelect;
+    operationRecord: typeof operation.$inferSelect;
+    account: typeof funding.$inferSelect;
+    allowance: typeof run.$inferSelect;
+  },
+) {
+  await tx
+    .update(attempt)
+    .set({
+      state: 'unsent',
+      chargedMicrousd: 0n,
+      reconciliation: 'unavailable',
+      settledAt: sql`clock_timestamp()`,
+    })
+    .where(eq(attempt.id, input.attemptId));
+  await tx
+    .update(funding)
+    .set({
+      reservedMicrousd: input.account.reservedMicrousd - input.record.reservedMicrousd,
+    })
+    .where(eq(funding.id, input.account.id));
+  await tx
+    .update(run)
+    .set({
+      reservedMicrousd: input.allowance.reservedMicrousd - input.record.reservedMicrousd,
+    })
+    .where(eq(run.id, input.allowance.id));
+  await tx
+    .update(operation)
+    .set({
+      reservedRounds: input.operationRecord.reservedRounds - 1,
+      reservedInputTokens:
+        input.operationRecord.reservedInputTokens - input.record.reservedInputTokens,
+      reservedGeneratedTokens:
+        input.operationRecord.reservedGeneratedTokens -
+        input.record.reservedGeneratedTokens,
+      reservedReasoningTokens:
+        input.operationRecord.reservedReasoningTokens -
+        input.record.reservedReasoningTokens,
+      reservedMicrousd:
+        input.operationRecord.reservedMicrousd - input.record.reservedMicrousd,
+      updatedAt: sql`clock_timestamp()`,
+    })
+    .where(eq(operation.generationId, input.record.generationId));
+  await markUsageWindows(tx, input.record.id, 'released');
 }
 
 /** Accounting transactions never acquire story locks. Dispatch is a separate durable boundary. */
@@ -378,59 +430,45 @@ export function createStorytellerBudget(database: Database) {
           .from(attempt)
           .where(eq(attempt.state, 'uncertain'))
           .limit(1);
+        if (!authorityGranted) {
+          await releaseReservedAttempt(tx, {
+            attemptId: id,
+            record,
+            operationRecord,
+            account,
+            allowance,
+          });
+          return false;
+        }
+        const uncertain = Boolean(unknown);
+        const authority = await loadCurrentDispatchAuthority(tx, {
+          attempt: record,
+          operation: operationRecord,
+        });
         if (
-          !authorityGranted ||
           account.stopped ||
           !allowance.enabled ||
-          unknown
+          uncertain ||
+          authority.kind !== 'allowed'
         ) {
-          await tx
-            .update(attempt)
-            .set({
-              state: 'unsent',
-              chargedMicrousd: 0n,
-              reconciliation: 'unavailable',
-              settledAt: sql`clock_timestamp()`,
-            })
-            .where(eq(attempt.id, id));
-          await tx
-            .update(funding)
-            .set({
-              reservedMicrousd:
-                account.reservedMicrousd - record.reservedMicrousd,
-            })
-            .where(eq(funding.id, account.id));
-          await tx
-            .update(run)
-            .set({
-              reservedMicrousd:
-                allowance.reservedMicrousd - record.reservedMicrousd,
-            })
-            .where(eq(run.id, allowance.id));
-          await tx
-            .update(operation)
-            .set({
-              reservedRounds: operationRecord.reservedRounds - 1,
-              reservedInputTokens:
-                operationRecord.reservedInputTokens -
-                record.reservedInputTokens,
-              reservedGeneratedTokens:
-                operationRecord.reservedGeneratedTokens -
-                record.reservedGeneratedTokens,
-              reservedReasoningTokens:
-                operationRecord.reservedReasoningTokens -
-                record.reservedReasoningTokens,
-              reservedMicrousd:
-                operationRecord.reservedMicrousd - record.reservedMicrousd,
-              updatedAt: sql`clock_timestamp()`,
-            })
-            .where(eq(operation.generationId, record.generationId));
-          await markUsageWindows(tx, record.id, 'released');
+          await releaseReservedAttempt(tx, {
+            attemptId: id,
+            record,
+            operationRecord,
+            account,
+            allowance,
+          });
           return false;
         }
         await tx
           .update(attempt)
-          .set({ state: 'dispatched', dispatchedAt: sql`clock_timestamp()` })
+          .set({
+            state: 'dispatched',
+            dispatchedAt: sql`clock_timestamp()`,
+            dispatchAuthorityGrantId: authority.grantId,
+            dispatchPlatformRevision: authority.platformRevision,
+            dispatchGrantRevision: authority.grantRevision,
+          })
           .where(eq(attempt.id, id));
         await tx
           .update(operation)

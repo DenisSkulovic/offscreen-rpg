@@ -1,6 +1,6 @@
 # OBS00 | Finite provider-free B implementation and closeout tasks
 
-**Current status (2026-11-20):** OBS00-A **Done**; OBS00-C **already Done in its independent archived packet**, 15/15 mock transport cases originally, $0. Parent T01 later **12/12** did not re-run C; that is not evidence C was undone. OBS00-B **NOT IMPLEMENTED** except its fail-closed pure comparison (2/2 earlier). **B implementation tasks T02–T06 are planned, not executed.** [Source-backed contract and race ordering](DECISION-2026-11-20.md). `work/QUEUE.md` still selects TURN02. No live provider spend, tokens or credentials authorized.
+**Current status (2026-11-20):** OBS00-A **Done**; OBS00-C **already Done in its independent archived packet**, 15/15 mock transport cases originally, $0. Parent T01 later **12/12** did not re-run C; that is not evidence C was undone. OBS00-B **T02–T04 accepted** on `change/obs00-b-current-authority`. T02: migration `0014`. T03: `loadCurrentDispatchAuthority` disposable SQL **8/0**. T04: `budget.dispatch` rechecks that loader under the existing advisory/funding/run/attempt/operation locks; `true` alone stays unsent; migration `0015` audits grant id and revisions; disposable SQL **7/0**. **T05–T06 not started.** Paid send stays denied. [Source-backed contract and race ordering](DECISION-2026-11-20.md). `work/QUEUE.md` on main still selects TURN02. No live provider spend, tokens or credentials authorized.
 
 ## T01 | Record true already-completed A/C and B baseline | HISTORICAL, no redundant rewrite
 

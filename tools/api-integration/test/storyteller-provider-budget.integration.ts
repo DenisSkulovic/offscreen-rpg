@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerFunding, storytellerOperation, storytellerRun, storytellerUsageAllocation } from '@offscreen/db/storyteller-schema';
 import { createStorytellerBudget, resourcesForEffectiveUsagePolicy } from '@offscreen/application/storyteller';
+import { insertSyntheticCurrentAuthorityForTest } from '../../../packages/application/dist/storyteller/test-synthetic-current-authority.js';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { createTestUsagePolicy } from './helpers/usage-policy.js';
 import type { TestContext } from 'node:test';
@@ -63,19 +64,27 @@ export async function checkProviderBudget(
       const sourceTask = storytellerTaskSchema.parse(
         sourceGeneration.input,
       );
+      const capturedPolicy = createTestUsagePolicy(execution.policy.route, [
+        {
+          id: 'account-cost-burst',
+          version: 1,
+          scope: 'account',
+          metric: 'microusd',
+          limit: '150',
+          window: { kind: 'rolling', durationSeconds: 3600 },
+        },
+      ]);
       const resources = resourcesForEffectiveUsagePolicy(
         execution,
-        createTestUsagePolicy(execution.policy.route, [
-          {
-            id: 'account-cost-burst',
-            version: 1,
-            scope: 'account',
-            metric: 'microusd',
-            limit: '150',
-            window: { kind: 'rolling', durationSeconds: 3600 },
-          },
-        ]),
+        capturedPolicy,
       );
+      await insertSyntheticCurrentAuthorityForTest(database, {
+        capturedPolicy,
+        executionPolicy: execution.policy,
+        ownerId,
+        accountId,
+        runId,
+      });
       const ids = [randomUUID(), randomUUID()];
       const results = await Promise.allSettled(
         ids.map((id) =>
@@ -206,16 +215,27 @@ export async function checkProviderBudget(
       const sourceTask = storytellerTaskSchema.parse(
         sourceGeneration.input,
       );
-      const policy = createTestUsagePolicy(execution.policy.route, [], {
-        maxModelRoundsPerOperation: 2,
-        maxReadsPerOperation: 2,
-        maxRetainedReadBytes: 4096,
-      });
+      const capturedPolicy = createTestUsagePolicy(
+        execution.policy.route,
+        [],
+        {
+          maxModelRoundsPerOperation: 2,
+          maxReadsPerOperation: 2,
+          maxRetainedReadBytes: 4096,
+        },
+      );
       const resources = resourcesForEffectiveUsagePolicy(
         execution,
-        policy,
+        capturedPolicy,
         { posture: 'minimal' },
       );
+      await insertSyntheticCurrentAuthorityForTest(database, {
+        capturedPolicy,
+        executionPolicy: execution.policy,
+        ownerId,
+        accountId,
+        runId,
+      });
       const task = storytellerTaskSchema.parse({
         ...sourceTask,
         execution,
