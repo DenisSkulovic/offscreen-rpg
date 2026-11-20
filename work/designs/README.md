@@ -5,6 +5,7 @@ Unaccepted designs/investigations and owner-retained dormant policy. Not product
 **Design lifecycle:** investigate and compare alternatives here → explicitly review/accept product outcomes → reconcile accepted requirements into the existing `docs/product/` and `docs/technical/` owners → only then prepare and select bounded `work/changes/` packets for implementation. An open design is not a selected Change, and a committed proposal is not an approved spec. The [player experience program](open/player-experience-refoundation/DESIGN-PROCESS.md) records concrete review gates for the ongoing UI/UX overhaul.
 
 | Item | Status |
+| [Kubernetes-first developer experience](open/kubernetes-first-developer-experience-2026-11-20/README.md) | **Owner-selected end state / implementation not yet proven:** DXK01–07, finite Cursor handoff, real TURN02/TURN03 predecessors, no active Compose after completion |
 
 | [first-campaign-readiness-2026-11-20/](open/first-campaign-readiness-2026-11-20/README.md) | **Source audit / execution ladder:** 19 open packets reconciled; actual STORY03 routing+publication defects, distinct local real-process and cold-kind proofs, and Composer-sized repair cards. No integrated test or live model claimed |
 

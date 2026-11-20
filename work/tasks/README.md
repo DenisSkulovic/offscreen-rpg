@@ -8,6 +8,8 @@
 | [archive/](archive/README.md) | Done/Cancelled Task packets with links to durable evidence |
 | [TEMPLATE.md](TEMPLATE.md) | Minimal exact, safe, Composer-friendly run contract |
 
+**One proposed future DXK-FINAL operator acceptance Task** is registered in [open/](open/README.md); it is unselected and not executed.
+
 **No standalone Tasks selected at adoption (2026-11-20).** Do not create or select an empty placeholder Task for every Change-owned test or Composer `Txx`. Existing Change-owned work remains [under Changes](../changes/README.md).
 
 Use a new standalone Task only when separate selection, timing, an operator/environment gate, recurrence or a durable evidence receipt genuinely matters. Running a targeted test as part of a selected code Change does not normally require one. A Task may invoke an existing scripted experiment; **implementing** the script, SQL schema or reusable tool is a Change.
