@@ -37,7 +37,7 @@ flowchart LR
   GRAF --> ADMIN
 ~~~
 
-**A logical topology, not a demand to deploy seven services immediately.** In local development use an opt-in compose profile and finite resource limits; in production choose hosted or self-managed backends only after measured volume, security and support requirements. Prometheus alone does not archive per-campaign context. Grafana is excellent for system-wide time series and spans; **Offscreen Control** remains the right human-readable investigation product.
+**A logical topology, not a demand to deploy seven services immediately.** Local development runs the kind lab (`pnpm dev`, `pnpm stack:*`); this stack is not deployed there and Prometheus is not part of the default lab release. Choose hosted or self-managed observability backends only after measured volume, security and support requirements. Prometheus alone does not archive per-campaign context. Grafana is excellent for system-wide time series and spans; **Offscreen Control** remains the right human-readable investigation product.
 
 **Why not start with LangChain/LangSmith?** The application owns its Storyteller task, tool and publication lifecycle already. Instrument it directly with OTel GenAI conventions and domain evidence. A Langfuse/LangSmith-class tool can add model evaluation/prompt registry capability later, but no framework swap is needed to know which actual task and provider packet executed. A third-party tool must never become the sole long-term holder of a player's game evidence.
 

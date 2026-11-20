@@ -50,13 +50,21 @@ type LocalStorySeamSource = {
 };
 
 export type StoryAuthorityConfig =
-  | { readonly mode: 'compose' }
+  | { readonly mode: 'embedded' }
   | {
       readonly mode: 'distributed';
       readonly origin: string;
       readonly token: string;
       readonly timeoutMs: number;
     };
+
+export type ReadStoryAuthorityConfigOptions = {
+  /**
+   * Lab release images set OFFSCREEN_DOCUMENT_STORE=s3; they must set
+   * GAME_AUTHORITY_MODE explicitly and cannot rely on the host-test default.
+   */
+  readonly requireExplicitMode?: boolean;
+};
 
 const timeoutMs = z.coerce
   .number()
@@ -71,9 +79,17 @@ function failConfig(fields: string): never {
 
 export function readStoryAuthorityConfig(
   env: Record<string, string | undefined>,
+  options: ReadStoryAuthorityConfigOptions = {},
 ): StoryAuthorityConfig {
-  const mode = env['GAME_AUTHORITY_MODE'] ?? 'compose';
-  if (mode === 'compose') return { mode: 'compose' };
+  const raw = env['GAME_AUTHORITY_MODE'];
+  if (raw === 'compose') {
+    failConfig('GAME_AUTHORITY_MODE');
+  }
+  if (options.requireExplicitMode && raw === undefined) {
+    failConfig('GAME_AUTHORITY_MODE');
+  }
+  const mode = raw ?? 'embedded';
+  if (mode === 'embedded') return { mode: 'embedded' };
   if (mode !== 'distributed') failConfig('GAME_AUTHORITY_MODE');
   const origin = env['GAME_AUTHORITY_ORIGIN'];
   const token = env['GAME_AUTHORITY_SERVICE_TOKEN'];

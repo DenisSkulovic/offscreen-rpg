@@ -103,7 +103,7 @@ Focused integration reset connects to the loopback PostgreSQL service directly t
 
 ## Game Authority seam
 
-`apps/game-authority` is a separate process for one operation: the owned story snapshot read and one scripted resolution admission. The lab release can run it as a Pod when configured for distributed mode. Leave `GAME_AUTHORITY_MODE` unset and the API keeps the current in-process writer. Set `GAME_AUTHORITY_MODE=distributed` only together with `GAME_AUTHORITY_ORIGIN` and `GAME_AUTHORITY_SERVICE_TOKEN` on the API, and the same token on the Game Authority process. Nest still checks the browser session, then calls `/internal/v1`. A failed call does not fall back to a second SQL write. The process has no `/api` route, no start route, and no publication route. Do not put it on the public gateway. No model call is part of this seam.
+`apps/game-authority` is a separate process for one operation: the owned story snapshot read and one scripted resolution admission. The lab release can run it as a Pod when configured for distributed mode. Leave `GAME_AUTHORITY_MODE` unset on host API processes and the API keeps the embedded in-process writer for that seam. The lab release requires `GAME_AUTHORITY_MODE=distributed`; `GAME_AUTHORITY_MODE=compose` is rejected. Set `GAME_AUTHORITY_MODE=distributed` only together with `GAME_AUTHORITY_ORIGIN` and `GAME_AUTHORITY_SERVICE_TOKEN` on the API, and the same token on the Game Authority process. Nest still checks the browser session, then calls `/internal/v1`. A failed call does not fall back to a second SQL write. The process has no `/api` route, no start route, and no publication route. Do not put it on the public gateway. No model call is part of this seam.
 
 ## Checks and boundaries
 

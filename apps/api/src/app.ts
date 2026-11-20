@@ -184,7 +184,7 @@ export type CreateAppOptions = Readonly<{
   /** Test override; when set, skips creating a listener from databaseConfig. */
   storyUpdateHub?: StoryUpdateHub | null;
   /**
-   * Compose mode keeps the in-process writer. Distributed mode calls Game
+   * Embedded mode keeps the in-process writer. Distributed mode calls Game
    * Authority for the snapshot read and scripted resolution only.
    */
   storyAuthority?: StoryAuthorityConfig;
@@ -219,8 +219,14 @@ export async function createApp(
       ? { onCacheIncident: options.onCacheIncident }
       : {}),
   });
+  const requireExplicitStoryAuthority =
+    (process.env['OFFSCREEN_DOCUMENT_STORE'] ?? '').trim().toLowerCase() ===
+    's3';
   const storyAuthority =
-    options.storyAuthority ?? readStoryAuthorityConfig(process.env);
+    options.storyAuthority ??
+    readStoryAuthorityConfig(process.env, {
+      requireExplicitMode: requireExplicitStoryAuthority,
+    });
   const storySeam = storySeamFor(stories, storyAuthority);
   const app = await NestFactory.create<NestExpressApplication>(
     {

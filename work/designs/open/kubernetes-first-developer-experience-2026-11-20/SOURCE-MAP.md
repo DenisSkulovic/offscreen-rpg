@@ -14,7 +14,7 @@
 | apps/api/src/main.ts + default-rules-startup.ts | Postgres, cache, S3, pinned-rule boot, Better Auth config before listen | TURN02 release readiness; DXK03 auth only |
 | apps/api/src/modules/auth/{auth.ts,config.ts} | Better Auth GitHub-only; GitHub credentials and secret mandatory, APP_ORIGIN is HTTPS or localhost/127.0.0.1 | DXK03 local-only email/password profile with real sessions |
 | apps/web/next.config.ts + src/server/api-origin.ts | Next /api rewrite target and SSR API_INTERNAL_ORIGIN require distinct build/runtime Pod DNS verification | TURN02 T03/T05; DXK02 published UI links only |
-| apps/api/src/modules/stories/game-authority-client.ts | GAME_AUTHORITY_MODE defaults to literal compose; distributed is explicit; both test families use compose branch | DXK06 renames old embedded/local mode and tests; shipped app always distributed |
+| apps/api/src/modules/stories/game-authority-client.ts | Host default is `embedded`; `distributed` is explicit; retired `compose` is rejected; S3 lab release requires an explicit mode | DXK06 T02 |
 | scripts/repo-tools/story-session-report.mjs | Read-only `psql` via `OFFSCREEN_STORY_DATABASE_URL` | DXK04 landed; no Docker Compose |
 | .github/workflows/code.yml | Compose validation, infrastructure up/down, Temporal auth dependency; database job separately already uses native GitHub Postgres service | DXK05 replaces Compose CI with scoped Kubernetes/test services |
 | scripts/repo-tools/ci-change-scope.mjs + .test.mjs | Compose filenames in CI classifier/fixtures | DXK05 rewrites classification and tests |
