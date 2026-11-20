@@ -39,6 +39,7 @@ import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import { createCampaignDocuments } from './documents';
 import { chamberAllowsResponse } from '../developer-tools/chamber-fixtures';
 import { createStoryDelegationPolicy } from './delegation-policy';
+import { createDelegatedOfferControls } from '../campaign/delegated-offer';
 
 export type StoryApplicationOptions = ReadCacheOptions & {
   documentStore?: DocumentStore;
@@ -83,9 +84,11 @@ export function createStories(
     ? createCampaignDocuments(database, options.documentStore)
     : null;
   const delegationPolicy = createStoryDelegationPolicy(database);
+  const delegatedOfferControl = createDelegatedOfferControls(database);
   return {
     documents,
     delegationPolicy,
+    delegatedOfferControl,
     campaignSettings: createCampaignSettings(database),
     campaignAction: createCampaignActions(database, options.documentStore),
     actionExecutionControl: createActionExecutionControls(database),

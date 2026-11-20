@@ -8,6 +8,7 @@ import {
 } from '@offscreen/db/campaign-schema';
 import { DECLINE_HARMLESS_INVITATION_CLASS } from '@offscreen/game/delegation-eligibility';
 import type { Transaction } from '../outbox/index';
+import { revokeArmedDelegatedOffersOnPolicyDisable } from '../campaign/delegated-offer';
 import { incrementStoryViewVersion, lockOwnedStory } from './persistence';
 import { StoryError, parseStoryIdentifier } from './errors';
 
@@ -140,6 +141,7 @@ export function createStoryDelegationPolicy(database: Database) {
               updatedAt: new Date(),
             })
             .where(eq(storyDelegationPolicy.storyId, current.id));
+          await revokeArmedDelegatedOffersOnPolicyDisable(tx, current.id);
         }
 
         await tx.insert(storyDelegationPolicyCommand).values({

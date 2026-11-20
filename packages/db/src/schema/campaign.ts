@@ -187,6 +187,7 @@ export const storyDelegationPolicyCommand = pgTable(
     ),
   ],
 );
+
 export const gameOffer = pgTable(
   'game_offer',
   {
@@ -202,6 +203,58 @@ export const gameOffer = pgTable(
   },
   (t) => [unique('game_offer_story_identity').on(t.storyId, t.id)],
 );
+
+export const campaignDelegatedOffer = pgTable(
+  'campaign_delegated_offer',
+  {
+    offerId: uuid('offer_id')
+      .primaryKey()
+      .references(() => gameOffer.id, { onDelete: 'restrict' }),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    narrativeRevision: integer('narrative_revision').notNull(),
+    ownerId: text('owner_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'restrict' }),
+    fallbackActionKey: text('fallback_action_key').notNull(),
+    fallbackPath: text('fallback_path').notNull(),
+    sourceFingerprint: text('source_fingerprint').notNull(),
+    capturedPolicyVersion: integer('captured_policy_version').notNull(),
+    publishedAt: timestamp('published_at', {
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    dueAt: timestamp('due_at', { withTimezone: true, precision: 3 }).notNull(),
+    status: text('status').notNull(),
+    controlRevision: integer('control_revision').notNull().default(0),
+    remainingMs: integer('remaining_ms'),
+    wakeEpoch: integer('wake_epoch').notNull(),
+    actionOperationId: uuid('action_operation_id').notNull(),
+    wakeOperationId: uuid('wake_operation_id').notNull(),
+    selectedAt: timestamp('selected_at', { withTimezone: true, precision: 3 }),
+    selectionSource: text('selection_source'),
+  },
+  (t) => [
+    unique('campaign_delegated_offer_action_operation').on(t.actionOperationId),
+    unique('campaign_delegated_offer_wake_operation').on(t.wakeOperationId),
+    check(
+      'campaign_delegated_offer_status',
+      sql`${t.status} in ('armed', 'paused', 'revoked', 'held', 'admitted', 'consumed')`,
+    ),
+    check('campaign_delegated_offer_control_revision', sql`${t.controlRevision} >= 0`),
+    check('campaign_delegated_offer_wake_epoch', sql`${t.wakeEpoch} >= 1`),
+    check(
+      'campaign_delegated_offer_policy_version',
+      sql`${t.capturedPolicyVersion} > 0`,
+    ),
+    check(
+      'campaign_delegated_offer_remaining_ms',
+      sql`(${t.status} = 'paused' AND ${t.remainingMs} IS NOT NULL AND ${t.remainingMs} >= 0) OR (${t.status} <> 'paused' AND ${t.remainingMs} IS NULL)`,
+    ),
+  ],
+);
+
 export const gameActivity = pgTable('game_activity', {
   id: uuid('id').primaryKey(),
   storyId: uuid('story_id')

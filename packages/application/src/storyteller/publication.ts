@@ -70,6 +70,7 @@ import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
 import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
 import { transitionStorytellerHoldToDecision } from '../campaign/holds';
+import { captureDelegatedOfferOnPublication } from '../campaign/delegated-offer';
 import {
   actionProjectedStateDigest,
   pendingImmediateActionResolutionSchema,
@@ -790,13 +791,22 @@ export async function publishStorytellerResult(
           ),
         })
         .where(eq(campaign.storyId, current.id));
+      const publicationClockMs = await readDatabaseClockMs(tx, current.id);
       await transitionStorytellerHoldToDecision(
         tx,
         campaignState,
         id,
         plannedOffer.id,
-        await readDatabaseClockMs(tx, current.id),
+        publicationClockMs,
       );
+      await captureDelegatedOfferOnPublication(tx, {
+        storyId: current.id,
+        ownerId: current.ownerId,
+        narrativeRevision: current.revision + 1,
+        offerId: plannedOffer.id,
+        plans: selectedPlans,
+        clockMs: publicationClockMs,
+      });
       await advanceStoryView(tx, {
         storyId: current.id,
         revision: current.revision + 1,
