@@ -15,7 +15,7 @@
 
 **STORY02 archived (2026-11-20):** [Private custody](archive/2026-11/other/2026-11-19--story02-private-task-and-result-custody/CHANGE.md) is Done. Game Authority refuses provider-mode tasks and non-scripted attempts with `unsupported-execution`. Scripted claim and hash conflict stay. **27/27** provider-free tests. STORY03/TURN03 keep multi-Pod publication. No automatic selection or paid call.
 
-**Next-work priority:** [one implementation roadmap](../IMPLEMENTATION-ROADMAP.md) orders the open work; [QUEUE](../QUEUE.md) owns the only selected Change. **[FORK01](open/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)** is the missing private historical-fork bridge; it follows the archived TURN02 release. BOOT03 is archived. FORK01 is not selected.
+**Next-work priority:** [one implementation roadmap](../IMPLEMENTATION-ROADMAP.md) orders the open work; [QUEUE](../QUEUE.md) owns the only selected Change. **[FORK01](archive/2026-11/other/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)** is Done for the local private historical fork. Cold kind stays TURN03. Current work is none. BOOT03 and TURN02 are archived.
 
 **2026-11-20 Kubernetes-first developer experience (owner-selected outcome, not yet implemented):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Seven distinct DXK01–07 implementation Changes replace default Compose/host watchers with kind + Tilt + Headlamp, safe lifecycle, provider-free playable onboarding, script/CI modernization, complete active-runtime Compose retirement and clean-clone verification. TURN02 and BOOT03 are archived. STORY03 and TURN03 still own their gameplay proofs. No packet is currently selected.
 
@@ -36,7 +36,7 @@
 
 | Disposition | Packets |
 | --- | --- |
-| **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **GM07** one consented harmless withdrawal, **WORK01**, **HK01**, **STORY02** (scripted custody refusal, 27/27 provider-free; cross-Pod remains STORY03) |
+| **A. Achieved and archived** | DIST01, DIR03 (provider-free suggestion), BOOT02, GM03 quiet-watch, **GM07** one consented harmless withdrawal, **WORK01**, **HK01**, **STORY02** (scripted custody refusal, 27/27 provider-free; cross-Pod remains STORY03), **TURN02** fresh kind release, **FORK01** local private-GA historical fork |
 | **B. Scope inflated — keep original remainder, do not fake Done** | DATA04 (app historical GET/fork 9/9; GA/journal/three negatives remain) |
 | **C. Unfinished actionable** | none |
 | **D. Planner gap** | ENG03 remaining lock paths; DATA06 remote branch-pinned facade. **GM07 one consented withdrawal is archived**; a general timed fallback stays Proposed. **OBS04 planner gap resolved** by exact terminal-event witness decision; code still pending |

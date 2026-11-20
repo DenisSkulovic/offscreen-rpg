@@ -1,12 +1,12 @@
 # Work selection | single current-work authority
 
-**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is Done and archived.** Current work is none. BOOT03 is archived. Do not select FORK01 from this sentence. DXK01 T01 preflight progress is recorded, but its packet heading does not override this selector. No implicit model spend or unsafe cluster authorization.
+**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is Done and archived. FORK01 is Done and archived.** Current work is none. BOOT03 is archived. DXK01 T01 preflight progress is recorded, but its packet heading does not override this selector. No implicit model spend or unsafe cluster authorization.
 
 Current work: none
 
 This is the **one active selection pointer** for independently tracked work. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 
-Use exactly one `Current work:` line near the top. Valid values are `none`, a Markdown link to `changes/open/<leaf>/CHANGE.md`, or a Markdown link to `tasks/open/<leaf>/TASK.md`. Examples (illustrative, **not selected**): `[FORK01](changes/open/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)` and `[task](tasks/open/YYYY-MM-DD--slug/TASK.md)`. No `TASKS.md#Txx` or open design is a top-level selection.
+Use exactly one `Current work:` line near the top. Valid values are `none`, a Markdown link to `changes/open/<leaf>/CHANGE.md`, or a Markdown link to `tasks/open/<leaf>/TASK.md`. Examples (illustrative, **not selected**): `[FORK01](changes/archive/2026-11/other/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)` and `[task](tasks/open/YYYY-MM-DD--slug/TASK.md)`. No `TASKS.md#Txx` or open design is a top-level selection.
 
 **Selection is not execution permission.** The selected item must still be Ready for its particular authorized scope and meet environment, cost, destructive-op, data privacy, actor and dependency constraints. One selected Change may have a bounded Composer T-ID, but that T-ID remains inside the Change. One selected standalone Task has one exact operator action/receipt. Explicit approved batch handoffs may coordinate disjoint work without introducing another global selector. `none` is valid, including during planning-only audits.
 

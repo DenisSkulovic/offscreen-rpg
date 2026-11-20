@@ -1,6 +1,6 @@
 # DATA04 | Composer route: reconcile landed historical scene/fork code
 
-**Cross-owner note:** [FORK01](../2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md) now owns the private GA fork transport; DATA04 remains the domain checkpoint reconstruction authority. No duplicated fork algorithm.
+**Cross-owner note:** [FORK01](../../archive/2026-11/other/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md) is Done for the private GA fork transport. DATA04 remains the domain checkpoint reconstruction authority. No duplicated fork algorithm.
 
 **Baseline:** 584b594. **Verify SHA:** batch receipt 2026-11-20 (provider-free **9/9**). **State:** In progress; **T01 VERIFY PASS**; **not Done**. **Default model:** Composer Standard. **Do not implement another checkpoint or generic rewind subsystem.**
 

@@ -1,6 +1,6 @@
 # FORK01 | bounded Cursor tasks
 
-**Status:** Proposed, unselected. **Model:** current Composer Standard. **Read:** this file, one selected T-ID and the 2–5 named source anchors. Verify local HEAD/dirty work first. Use disposable SQL, local documents and zero providers for T01; no live kind until ownership/permission.
+**Status:** Done (2026-11-20). Local private-GA historical fork proved. Cold kind stays TURN03. **Model:** current Composer Standard. **Read:** this file, one selected T-ID and the 2–5 named source anchors. Verify local HEAD/dirty work first. Use disposable SQL, local documents and zero providers for T01; no live kind until ownership/permission.
 
 ## T01 | Establish Harbor-watch historical scene1 fork proof | VERIFY first
 

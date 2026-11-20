@@ -1,6 +1,6 @@
 # FORK01 | Make historical fork a private Game Authority write
 
-**State:** Implemented locally on branch `change/fork01-private-ga-fork`; not archived. Global queue selection remains TURN02. **Kind:** implementation. **Baseline:** ZIP `64f3de7`, remote main through `09f8d08`, this branch from `a0690c09`. **Roadmap:** [current ordered gates](../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. Local and two-process results are in the ledger. Cold kind is not claimed.
+**State:** Done (2026-11-20). The local private Game Authority historical fork is proved on disposable `offscreen_auth_test`. Cold kind and the browser stay with TURN03. Current work stays none. **Kind:** implementation. **Baseline:** ZIP `64f3de7`, remote main through `09f8d08`, implementation branch from `a0690c09`. **Roadmap:** [current ordered gates](../../../../../IMPLEMENTATION-ROADMAP.md). **Prerequisites:** BOOT03 GA route handoff, existing DATA04 checkpoint domain, settled quiescent TURN03 Harbor-watch fixture. Local and two-process results are in the ledger. Cold kind is not claimed.
 
 ## Real uncovered boundary
 
@@ -29,7 +29,7 @@
 
 ## Cursor
 
-[One T-ID at a time](TASKS.md); current active selection remains TURN02. No automatically running FORK01 until QUEUE handoff. Coordinate all Game Authority server modifications with BOOT03/STORY03 and TURN02 app-release integrator.
+[One T-ID at a time](TASKS.md). This packet is Done for the local private-GA fork. Current work stays none. Cold kind remains TURN03.
 
 ## Reconciliation ledger
 
@@ -39,6 +39,6 @@
 | T01 application fork | `packages/application/src/stories/forks.ts` idempotent hash recheck; Harbor-watch scene1 fork in `turn03-distributed-poc-fixture.integration.ts` | historical-fork 3 pass / 0 fail; turn03 fixture 4 pass / 0 fail. Negative: same child id with a different hash returns `checkpoint_hash_mismatch` | none | not Game Authority or Kubernetes |
 | T02 private GA fork | `apps/game-authority` `PUT /internal/v1/stories/:id/forks/:forkId` calls `stories.fork` once | game-authority build pass; story-seam + story-start 8 pass / 0 fail. Negative: forged bearer returns 401 and does not call the seam | none | Nest routing landed in T03 |
 | T03 Nest StorySeam fork | `apps/api` controller + `game-authority-client` StorySeam; `fork01-private-ga-fork.integration.js` | historical-fork 3/0; turn03 fixture 4/0; GA story-seam+story-start 8/0; api GA client+seam 17/17; fork01 integration 7/7. Negatives: GA down → 503 no child; bad service token → 503 no child; wrong hash → 400 `checkpoint_hash_mismatch`; foreign owner → 404; duplicate child → 409 | none | not Kubernetes/browser/cold kind |
-| T04 docs reconciliation | `STATUS.md`, `docs/architecture/05-scenes-and-forks.md`, `docs/technical/platform/data-and-persistence.md`, `docs/technical/platform/deployment-and-compatibility.md`, TURN03 `TASKS.md`, this `TASKS.md` | n/a (T03 sibling suites cited) | owners above | cold kind/browser fork stays with TURN03; packet not archived in T04 |
+| T04 docs reconciliation | `STATUS.md`, architecture scenes/forks, platform data and deployment pages, TURN03 and DATA04 notes, this packet | n/a (T03 sibling suites cited) | owners above | cold kind/browser fork stays with TURN03 |
 
-**Remaining:** Cold kind/browser fork proof stays with TURN03. This packet is not archived in T04. Kubernetes/kind, browser, cold cluster, checkpoint v2, `microbe.v3` active-state fork, and generic branch memory remain unproved.
+**Remaining:** Cold kind/browser fork proof stays with TURN03. Kubernetes/kind, browser, cold cluster, checkpoint v2, `microbe.v3` active-state fork, and generic branch memory remain unproved.
