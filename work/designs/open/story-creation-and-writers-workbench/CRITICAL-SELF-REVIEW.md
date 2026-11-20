@@ -2,6 +2,12 @@
 
 **Status:** independent adversarial review of our own **unaccepted** design dossier, 2026-11-20. This is a correction and triage note, NOT a new ratified architecture, Cursor Change, executed application test, or provider quality evaluation. **Code basis:** supplied repository snapshot `09d5820bcafe`; current GitHub design HEAD before this review `4aea6555`. Source was re-opened, rather than relying on previous chat conclusions.
 
+## Owner correction: keep the agentic heart
+
+**Read [AGENTIC-WRITER-POC.md](AGENTIC-WRITER-POC.md) alongside this review.** The anti-slop conclusion was at risk of overcorrecting toward a one-shot model with a growing input packet. That **does not** satisfy the desired game. The Storyteller must eventually navigate the versioned Library, actively research unknowns, consult narrow writer skills, prepare and reread its own draft notes, and occasionally delegate independent source investigations to read-only model contexts. Those are substantive product capabilities, not decorative subsystem names. The initial POC must demonstrate at least a real tool-using Workdesk loop; a delegated-research experiment belongs on its path. Reuse the existing durable multi-round memory controller, root-fenced reads and publisher rather than inventing generic orchestration for its own sake.
+
+The 256-manifest bound is **not** the Storyteller's model context limit. It is inside `readManifestHistory()` in the **separate document read/edit service**. The current `createCanonicalMemoryExplorer()` checks current-root entries directly and never calls that history walker. Keep the working retrieval surface while fixing the legacy history-read design.
+
 ## Verdict
 
 The product direction remains sensible: **Play directly; accept one freeform Story Prompt; use a versioned, navigable Library; retain exact history and fork isolation; separate literary proposals from Game Authority.** The surrounding architecture discussion is too large and too confident relative to runnable evidence. At this point the dossier contains **24 files, about 243 KB**, while its proposed new storage/launch/choice systems have **no executable end-to-end proof**. Adding more design documents without discriminating tests is now a process failure.

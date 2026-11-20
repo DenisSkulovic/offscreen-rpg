@@ -11,6 +11,7 @@ This dossier is the home for the continuing multi-conversation investigation. It
 ## Documents
 
 - **[CRITICAL-SELF-REVIEW.md](CRITICAL-SELF-REVIEW.md) — READ FIRST: evidence-ranked retractions, source defects, overengineering risks, concrete next tests and unreconciled archive-link debt. Earlier designs remain unaccepted hypotheses.**
+- **[AGENTIC-WRITER-POC.md](AGENTIC-WRITER-POC.md) — OWNER CLARIFICATION: genuine tool-using Storyteller, Library discovery, skills, staged note/re-read and optional bounded read-only subagent. Do not mistake anti-slop review for a one-shot-only product.**
 - [SOURCE-AUDIT.md](SOURCE-AUDIT.md) — observed implementation and source-backed constraints at the inspected SHA.
 - [DESIGN-NOTES.md](DESIGN-NOTES.md) — the player-facing intent, creator's library concept, competing setup architectures, authority and cost rules.
 - [QUESTIONS-AND-EXPERIMENTS.md](QUESTIONS-AND-EXPERIMENTS.md) — decisions not yet taken, risk probes, and bounded evaluation design.
@@ -69,4 +70,5 @@ This dossier is the home for the continuing multi-conversation investigation. It
 **Do not** auto-select a Change, automatically dispatch a provider, or treat a proposed `STORYTELLER_PROFILE.md` path as an implemented runtime feature.
 
 - **I6 index and scene-history comparison drafted 2026-11-20:** the [synthetic benchmark](PERSISTENT-INDEX-COMPARISON.md) confirms a metadata-write advantage for a toy bounded index, but not production correctness. [Historical-scene/provenance notes](HISTORICAL-SCENE-AND-PROVENANCE.md) separate branch-neutral Library roots, scene selectors, mechanical state, source hashes and owner-scoped access. B+ vs radix and active-work forks remain open.
+- **I8 writer-agent capability focus 2026-11-20:** [AGENTIC-WRITER-POC](AGENTIC-WRITER-POC.md) reorients the POC toward genuine Library research, skills, staged notes and optional independent read-only contexts. The 256-history guard is a separate document read/edit service limit, not model context. This design remains unaccepted pending source-constrained provider-free proof and controlled quality/cost trials.
 - **I7 source audit + scene/fork protocol drafted 2026-11-20:** discovered pre-notes checkpoint skew, broad historical-row eligibility blockers, generated fork choice missing its source generation, and future historical profile drift. [Audit](SCENE-COMMIT-AND-ACTIVE-WORK-AUDIT.md), [candidate scene-commit contract](SCENE-COMMIT-AND-ACTIVE-WORK-DESIGN.md), [gated migration/tests](FORK-COMPATIBILITY-AND-MIGRATION-GATES.md). Next: typed ChoiceCapsule and complete post-state contract with one provider-free harness regression before implementation packets.
