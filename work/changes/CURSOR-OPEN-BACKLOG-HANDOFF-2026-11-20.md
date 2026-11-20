@@ -20,7 +20,7 @@
 | Goal owner selects | Next candidate task | Why now / stop gate |
 | --- | --- | --- |
 | Re-establish trusted tests | [HK03](archive/2026-11/other/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | Done. Isolated `test:storyteller` is the acceptance suite |
-| Confirm saved-response safety | [HK01 T01](open/2026-11-17--hk01-retire-local-repair-helper/TASKS.md#t01--existing-guarded-function-and-contract-test--planner-ready-verify) | Pure test first, **no deleting unique CLI** |
+| Confirm saved-response safety | [HK01 T01](archive/2026-11/other/2026-11-17--hk01-retire-local-repair-helper/TASKS.md#t01--existing-minimal-guard--pass-at-ec73a535) | **Done.** Legacy CLI removed; use `plan-storyteller-saved-repair.mjs` |
 | Prove S3 package pins | [BOOT02 T01](archive/2026-11/other/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md#t01--repeat-safe-no-cluster-proof--planner-ready) | Second-Pod proof already recorded; don't respin cluster unless source changed |
 | Reconcile GA single seam | [DIST03 T01](open/2026-11-19--dist03-game-authority-private-boundary/TASKS.md#t01--run-the-exact-one-seam-proof--planner-ready) | Test read/resolution locally before expanding |
 | Confirm checkpoint fork | [DATA04 T01](open/2026-11-19--data04-historical-read-and-fork-from-checkpoint/TASKS.md#t01--current-source-and-negative-proof-reconciliation--planner-ready-verify) | Historical local fork already implemented; don't invent second schema |
