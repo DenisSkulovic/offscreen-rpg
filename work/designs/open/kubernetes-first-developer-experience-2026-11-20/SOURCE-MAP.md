@@ -19,7 +19,7 @@
 | .github/workflows/code.yml | Compose validation, infrastructure up/down, Temporal auth dependency; database job separately already uses native GitHub Postgres service | DXK05 replaces Compose CI with scoped Kubernetes/test services |
 | scripts/repo-tools/ci-change-scope.mjs + .test.mjs | Compose filenames in CI classifier/fixtures | DXK05 rewrites classification and tests |
 | scripts/repo-tools/repair-docker-desktop.ps1 | Repairs Windows Docker Desktop sockets; advises `pnpm stack:up` after restart | Retained for engine recovery only |
-| docs/runbooks/local-development.md + kubernetes-lab.md | Canonical default local boot still Compose/host pnpm dev; lab runbook explicitly not game | DXK07 canonical runbook; DXK06 cleanup compatibility narratives |
+| docs/runbooks/local-development.md + kubernetes-lab.md | Default local boot is `pnpm stack:*` and `pnpm dev` on kind. Compose files are gone. The lab runbook is still not the game. | DXK06 removed the Compose boot narrative. DXK07 still owns the clean-clone acceptance runbook. |
 
 ## Concrete old-volume dependencies to remove
 
