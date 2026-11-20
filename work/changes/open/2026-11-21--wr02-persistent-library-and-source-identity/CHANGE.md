@@ -1,0 +1,26 @@
+# WR02 | persistent branch-neutral Library and exact source identity
+
+**State:** Proposed; implement after WR01. **Kind:** implementation. **Dependencies:** WR01. **Outcome:** a production Library revision changes only the affected immutable objects/index nodes, and a branch can reference an older Library root without copying all document metadata or bodies. This is the **real storage foundation**, not another toy microbenchmark.
+
+**Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad source review of uploaded `09d5820bcafe`; current worktree unknown. Reinspect named symbols before editing. **Execution owner: Cursor, not ChatGPT.** No model-spend, database migration, kind cluster mutation or new work selection is authorized merely by this packet. [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [Current queue](../../../QUEUE.md).
+
+## Cursor first-screen route
+
+**DEPTH=PATCH-L; high-risk persistence owner.** Start with `packages/documents/src/schema.ts` (`documentManifestSchema`, `documentSourceSchema`), `packages/documents/src/local-store.ts`/`s3-store.ts`, `packages/application/src/stories/documents.ts` (`admit`, `readDocument`, `readManifestHistory`), `packages/application/src/stories/forks.ts` (`writeBranchManifest`). Tests: `packages/application/test/historical-fork.test.mjs` and document-storage tests. **Do not copy v1 manifest arrays for new branches or let a hash authorize private reads.**
+
+## Selected implementation direction
+
+- New **v2 shareable Library index**, deterministic content-addressed compressed radix tree keyed by normalized UTF-8 paths, with bounded node bytes/fanout. Children and leaf content are hash-identified; unrelated subtrees remain shared. A v2 root hashes **neither story ID nor branch ID**, and identity/authority remains in the leaf/object metadata. Implement exact path lookup, paged prefix listing, atomic batch create/revise/delete/rename, and hash-pruned diff. Canonicalization and insertion-order independence are part of acceptance, not optional polish.
+- Retain source Markdown/structured documents as immutable CAS objects; an entry pins ID, object hash, role, authority, visibility and optional branch-local revision. **Source citation v2 identifies immutable object hash** plus logical identity and scope/provenance; root membership and read permissions determine reachability. ID + local revision alone must not be treated as a cross-fork content identity.
+- Read-only source package overlays and campaign/Workdesk roots reference stable upstream roots rather than eagerly copying full libraries. Namespace/path collision resolution explicit and deterministic. Preserve `START.md` source versus campaign orientation roles.
+- Old `offscreen.manifest.v1` and historical checkpoints remain readable with versioned adapters. New writes use v2 after an explicit one-time/admitted root transition for a branch; do **not** rewrite historical v1 object hashes or construct a v2 root per historical scene unless explicitly requested and proved.
+- Indexes/embeddings are derived, root-scoped search aides, never authoritative source truth. GC includes live heads, retained historical scenes, source packages, in-progress Workdesks and privacy/retention obligations.
+- Eliminate normal exact-read/edit dependency on a fixed `readManifestHistory` chain depth. Preserve bounded corruption/cycle checks for legacy traversal; no global scan of all ancestors in current rooted lookup.
+
+## State and ownership map
+
+Document objects/index nodes: `packages/documents` local/S3 storage. Branch/head selector: transactional application/SQL (existing `story.documentRootHash` and `storyDocumentCommit` evolve or get versioned). Importers `start-import.ts`/`start-instantiation.ts`, world package and read/write callers require adapter migration. Engine/scene writes must be fenced by **expected base root** and atomically adopt one candidate root; storing CAS bytes alone is not publication.
+
+**Normal:** 10k logical Markdown paths, 1k sequential passage revisions, an old branch fork at scene 37, subsequent disjoint edits/renames, correct old/new reads; no whole-Library physical clone. **Negative:** diverging `documentId@2` maps to two different hashes but no cross-branch citation confusion; wrong owner/private root denied; corrupt node fails closed; stale batch cannot overwrite current root. Capture node/byte/GET/PUT counts and p95 read/update as part of implementation tests, **not a separate prerequisite POC**. `pnpm --filter @offscreen/documents test`; `pnpm --filter @offscreen/application test` or focused Node cases with disposable DB as needed.
+
+**Exclusions:** no new user UX, writer prompt orchestration, active-world fork rehoming, provider calls, auto-migrating every historic scene. **Stop if:** chosen compressed radix node format cannot satisfy bounded stable roots/ordered browsing after actual mixed-write implementation; return measured counterexample to planner for a *replacement decision*, not hidden flat-array fallback. **Reconcile:** `docs/technical/storyteller/canonical-documents-and-packages.md`, technical engine snapshot owners, portability/export and actual STATUS evidence on closure.
