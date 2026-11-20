@@ -1,28 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { campaignReport, gameRoll } from '@offscreen/db/campaign-schema';
-import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
-import { offerSchema } from '@offscreen/game/offers';
 import type { OutcomeEffect } from '@offscreen/game/effects';
-import { contextInputSchema } from '@offscreen/storyteller/context';
-import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
-import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import type { Transaction } from '../outbox/index';
 import type { StoryRecord } from '../stories/persistence';
-import {
-  canonicalContextDependencies,
-  loadStorytellerContext,
-} from '../storyteller/context';
-import { insertStorytellerTask } from '../storyteller/records';
+import { captureHistoricalReport } from '../storyteller/context-capture';
 import type { ActivityRecord, CampaignRecord } from './persistence';
-import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
-import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
 import {
   campaignReportSourceKey,
   campaignReportSourceSchema,
+  campaignReportSourcesMatch,
   type CampaignReportSource,
 } from './report-source';
-import type { DocumentStore } from '@offscreen/documents';
 
 async function requestHistoricalReport(
   tx: Transaction,
@@ -43,72 +32,61 @@ async function requestHistoricalReport(
       effects: unknown;
       declarations: readonly [];
     }>;
-    documentStore?: DocumentStore;
   },
 ) {
   const source = campaignReportSourceSchema.parse(args.source);
+  const sourceKey = campaignReportSourceKey(source);
+  const [existing] = await tx
+    .select({
+      id: campaignReport.id,
+      source: campaignReport.source,
+      generationId: campaignReport.generationId,
+    })
+    .from(campaignReport)
+    .where(
+      and(
+        eq(campaignReport.storyId, args.current.id),
+        eq(campaignReport.sourceKey, sourceKey),
+      ),
+    );
+  if (existing) {
+    const existingSource = campaignReportSourceSchema.parse(existing.source);
+    if (!campaignReportSourcesMatch(existingSource, source)) {
+      throw new Error('report_source_conflict');
+    }
+    return;
+  }
   const hookId = randomUUID();
-  const generationId = randomUUID();
-  const baseContext = await loadStorytellerContext(tx, {
-    storyId: args.current.id,
-    revision: args.current.revision,
-    premise: args.current.premise,
-    notes: args.current.continuityNotes,
-    activeSceneScope: args.current.activeSceneScope,
-    selected: {
-      id: args.selectedId,
+  const generationId = await captureHistoricalReport(
+    tx,
+    args.current,
+    args.state,
+    {
+      hookId,
+      sourceKey,
+      source,
+      passageId: args.passageId,
+      selectedId: args.selectedId,
       label: args.label,
       intention: args.intention,
+      factualSummary: args.factualSummary,
+      sourceGameSecond: args.sourceGameSecond,
+      effects: args.effects,
+      ...(args.receipts
+        ? {
+            receipts: args.receipts.map((receipt) => ({
+              id: receipt.id,
+              roll: receipt.roll,
+              effects: receipt.effects,
+            })),
+          }
+        : {}),
     },
-    ...canonicalContextDependencies(args.current, args.documentStore),
-  });
-  const task = prepareAdmittedStorytellerTask(
-    {
-      task: 'report',
-      source: {
-        storyId: args.current.id,
-        narrativeRevision: args.current.revision,
-        passageId: args.passageId,
-        hookId,
-      },
-      profile: storytellerProfileSchema.parse(args.current.storyteller),
-      execution: executionPolicySchema.parse(args.current.execution),
-      context: contextInputSchema.parse({
-        ...baseContext,
-        resolution: {
-          character: characterSchema.parse(args.state.character),
-          storyFacts: storyFactsSchema.parse(args.state.storyFacts),
-          gameSecond: args.state.gameSecond,
-          offer:
-            args.state.offer === null
-              ? null
-              : offerSchema.parse(args.state.offer),
-          receipts: [
-            {
-              id: hookId,
-              text: args.factualSummary,
-              roll: null,
-              effects: args.effects,
-              declarations: [],
-            },
-            ...(args.receipts ?? []),
-          ],
-        },
-      }),
-    },
-    args.current.usagePolicy === null
-      ? null
-      : effectiveUsagePolicySchema.parse(args.current.usagePolicy),
   );
-  await insertStorytellerTask(tx, {
-    id: generationId,
-    ownerId: args.current.ownerId,
-    task,
-  });
   await tx.insert(campaignReport).values({
     id: hookId,
     storyId: args.current.id,
-    sourceKey: campaignReportSourceKey(source),
+    sourceKey,
     source,
     sourcePassageId: args.passageId,
     sourceRevision: args.current.revision,
@@ -132,7 +110,6 @@ export async function requestActivityReport(
     intention: string;
     factualSummary: string;
     completionEffects: readonly OutcomeEffect[];
-    documentStore?: DocumentStore;
   },
 ) {
   const rolls = await tx
@@ -156,7 +133,6 @@ export async function requestActivityReport(
       effects: roll.effects,
       declarations: [],
     })),
-    ...(args.documentStore ? { documentStore: args.documentStore } : {}),
   });
 }
 
@@ -172,7 +148,6 @@ export async function requestWorldObligationReport(
     dueGameSecond: number;
     label: string;
     factualSummary: string;
-    documentStore?: DocumentStore;
   },
 ) {
   await requestHistoricalReport(tx, {
@@ -186,6 +161,5 @@ export async function requestWorldObligationReport(
     sourceGameSecond: args.dueGameSecond,
     intention: args.factualSummary,
     effects: [],
-    ...(args.documentStore ? { documentStore: args.documentStore } : {}),
   });
 }

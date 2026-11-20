@@ -6,7 +6,7 @@
 
 **OBS04 later source finding:** [decision for exact missing mechanical facts](open/2026-11-15--obs04-finite-action-transition-evidence/DECISION-2026-11-20.md) replaces the former T02 planner block with bounded T02–T06. The existing execution event/receipt already commits identities, outcome and effects; a first-slice nullable versioned witness adds only typed interrupt cause and historical before/after clock/hold/affected-item facts. No new internal sequence or second ledger. Docs-only; not yet implemented, optional and not a TURN02 release gate.
 
-**ENG03 later routing correction:** [Finite remaining path contract](open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) identifies actual remote-read-in-transaction call sites. Parent ENG03 remains open for concrete T02–T07, not a generic lock refactor or forever planner gate. Nov 14 old ~8s measured pending path was corrected; current other paths are only source-classified until their own disposable SQL measurement.
+**ENG03 is Done and archived.** [Packet](archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md). Do not treat the old open path as current work.
 
 **Later terminal update:** [WIKI18 Cancelled/partially delivered](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md), not Done. Parser, model guard and cheap route cards remain in source. The optional live cost comparison was not approved or run; the dated WIKI18 inventory row below is historical, not an executable assignment.
 
@@ -22,7 +22,7 @@
 
 | ID / folder | Baseline state and observed source | Appropriate next step | Delegation |
 | --- | --- | --- | --- |
-| **ENG03** `2026-11-13--eng-short-lock-context` | Narrow capture already landed in `campaign/narration.ts` + `storyteller/capture-materialization.ts`; generic lock refactor excluded | Measure actual slow source boundary, then only a diagnosed writer-lock fix; no all-purpose rewrite | Composer VERIFY now; bigger edit **PLANNER-BLOCKED until measured** |
+| **ENG03** `2026-11-13--eng-short-lock-context` | Done, archived, merged to local main | Do not restart | Closed |
 | **GM07** `2026-11-13--gm-delegated-decision` | One owner-enabled harmless invitation is archived. Disposable SQL and one local Temporal delivery passed. A general timed fallback stays Proposed | Do not treat this row as a second queue selection or a hosted relay | Archived. TURN02 stays the selector |
 | **GM03** `2026-11-13--gm-standing-life` | `accepted-plans.ts` three-quiet-watch helper and plan controls exist; not unrestricted standing routine | Verify same plan iteration/horizon/interruption; select only a concrete delta | Composer narrow PATCH/VERIFY; broad autonomy deferred |
 | **OBS00** `2026-11-15--obs00-live-provider-custody` | Provider override fix landed; no durable live dispatchAuthority; paid send denied | Provider-disabled contract/negative fixture only; **do not enable live** | Composer VERIFY; B **implementation-ready** but unselected, money activation independently gated |

@@ -1,6 +1,6 @@
 # Changes | catalog and lifecycle
 
-**ENG03 parent closure route, Nov 20:** [exact remaining under-lock DocumentStore paths and T02–T07](open/2026-11-13--eng-short-lock-context/DECISION-2026-11-20.md) replace the former ownerless "planner-gated" follow-up. Existing pending-consequence proof remains valid but not universal. ENG03 stays **open**, unselected, with no new extra Change folders; don't call it Done until direct resolution, consequence/report and checkpoint boundaries are tested and reconciled.
+**ENG03 is Done and merged to local main.** [Archived packet](archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md). Choosing an option, activity and world-event narration, and historical reports no longer hold the story lock during a slow document read. TURN02 stays the selected queue item.
 
 **WIKI18 closeout (2026-11-20):** [Cancelled as a partially delivered experiment, not Done](archive/2026-11/other/2026-11-19--wiki18-agent-execution-context-budget-and-navigation/CHANGE.md). Keep the implemented trace parser, context routing, model guard and maintenance checks, but do not claim unmeasured cost savings or retain an implementation Change for an unapproved paid benchmark. Normal task evidence remains in actual Change receipts; standalone W2/W3 research is opt-in.
 
@@ -96,7 +96,7 @@
 | [HK03 storyteller test boundaries](archive/2026-11/other/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Done.** Isolated `test:storyteller` 44/44 twice | Twelve serial family sessions. Shared profiled orchestrator is diagnostic-only |
 | [OBS00 current live-provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Open: A/C Done, B T02–T06 design-resolved but code missing** | Independent current grant and atomic budget-dispatch recheck pending. C already 15/15 Done separately. No live paid release |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | **Open; T02–T06 planned, no migration yet** | Minimal co-committed source-event witness, no new ledger/sequence; disposable SQL required |
-| [ENG03 short-lock context](open/2026-11-13--eng-short-lock-context/CHANGE.md) | **Ready measured narrow slice** | Full short-lock capture |
+| [ENG03 short-lock context](archive/2026-11/eng/2026-11-13--eng-short-lock-context/CHANGE.md) | **Done and merged** | Story lock no longer covers the slow document reads for choices, narration, and historical reports |
 | [GM03 standing life](archive/2026-11/experience/2026-11-13--gm-standing-life/CHANGE.md) | **Done. Quiet watch archived** | Three clock-wait copies stop at the horizon. General standing life stays unselected design |
 | [GM07 delegated decision](archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md) | **Done. One consented withdrawal archived** | Owner opt-in admits one harmless invitation under the story lock. A general timed fallback stays Proposed. A hosted relay was not run |
 | [SA07 evidence tools](archive/2026-11/other/2026-11-14--sa07-evidence-tools/CHANGE.md) | **Done. No new tool** | The blue-ledger question keeps Mira Vale and leaves Mira Pell out. A paraphrase with no shared alias still misses |

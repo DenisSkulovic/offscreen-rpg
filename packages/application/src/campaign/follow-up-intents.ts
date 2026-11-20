@@ -134,7 +134,6 @@ export async function applyCampaignFollowUpIntents(
           intention: intent.intention,
           factualSummary: intent.factualSummary,
           completionEffects: intent.completionEffects,
-          ...(documentStore ? { documentStore } : {}),
         });
         break;
       default:

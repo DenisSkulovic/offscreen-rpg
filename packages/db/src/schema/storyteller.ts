@@ -36,8 +36,11 @@ export const storytellerPublication = pgTable(
 
 /**
  * ENG03-narrow: per-generation pending-consequence materialization record.
- * Capture JSON is ContextCaptureV1; provisional generation.kind is
- * storyteller.context-capture.v1 until Stage-2 promotion.
+ * Capture JSON is ContextCaptureV1 (purpose pending-consequence) or
+ * consequence captures (purpose consequence with sourceKind action-receipt,
+ * action-interrupted, campaign-activity, or campaign-world-obligation).
+ * Provisional generation.kind is storyteller.context-capture.v1 until
+ * Stage-2 promotion.
  */
 export const storytellerContextCapture = pgTable(
   'storyteller_context_capture',

@@ -19,3 +19,14 @@ export function campaignReportSourceKey(source: CampaignReportSource) {
     ? `activity:${source.activityId}:${source.activityRevision}`
     : `world-obligation:${source.obligationId}:${source.obligationRevision}`;
 }
+
+/** Same (storyId, sourceKey) replay must not diverge on frozen identity. */
+export function campaignReportSourcesMatch(
+  left: CampaignReportSource,
+  right: CampaignReportSource,
+) {
+  return (
+    campaignReportSourceKey(left) === campaignReportSourceKey(right) &&
+    JSON.stringify(left) === JSON.stringify(right)
+  );
+}

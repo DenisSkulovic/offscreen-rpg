@@ -22,6 +22,7 @@ import {
   provisionDisposableSandboxDatabase,
 } from '../dist/developer-tools/index.js';
 import { StoryError, createStories } from '../dist/stories/index.js';
+import { lockOwnedStory } from '../dist/stories/persistence.js';
 import { insertSceneCheckpointReference } from '../dist/stories/scene-checkpoint.js';
 
 function character() {
@@ -182,7 +183,12 @@ async function withDisposable(run) {
     applyFullMigrations: true,
   });
   const database = createDatabase(
-    readDatabaseConfig({ DATABASE_URL: provisioned.connectionString }),
+    readDatabaseConfig({
+      DATABASE_URL: provisioned.connectionString,
+      DB_STATEMENT_TIMEOUT_MS: process.env.DB_STATEMENT_TIMEOUT_MS,
+      DB_IDLE_TRANSACTION_TIMEOUT_MS:
+        process.env.DB_IDLE_TRANSACTION_TIMEOUT_MS,
+    }),
     () => {},
   );
   try {
@@ -633,6 +639,74 @@ test('historical GET and fork fail closed for other owners, bad checkpoints, and
         error instanceof StoryError &&
         error.code === 'conflict' &&
         error.reason === 'fork_unsupported_revision',
+    );
+  });
+});
+
+function delayCheckpointStore(inner, delayMs, hooks) {
+  let delayedCheckpoint = false;
+  return new Proxy(inner, {
+    get(target, prop, receiver) {
+      if (prop === 'readSceneCheckpoint' && !delayedCheckpoint) {
+        return async (...args) => {
+          delayedCheckpoint = true;
+          await hooks.onBefore?.(String(prop));
+          if (delayMs > 0) {
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+          }
+          return target[prop].apply(target, args);
+        };
+      }
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
+
+test('ENG03: fork checkpoint read does not hold the source story lock', async () => {
+  process.env.DB_STATEMENT_TIMEOUT_MS = '120000';
+  process.env.DB_IDLE_TRANSACTION_TIMEOUT_MS = '120000';
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03-fork-lock-'));
+    const store = new LocalDocumentStore(root);
+    const waits = [];
+    for (const delayMs of [0, 2000]) {
+      const seeded = await seedTwoScenes(database, store);
+      let readStarted = false;
+      const delayed = delayCheckpointStore(store, delayMs, {
+        onBefore: () => {
+          readStarted = true;
+        },
+      });
+      const stories = createStories(database, { documentStore: delayed });
+      const forkPromise = stories.fork({
+        ownerId: seeded.ownerId,
+        sourceStoryId: seeded.storyId,
+        forkStoryId: randomUUID(),
+        expectedRevision: 1,
+      });
+      const deadline = Date.now() + 20000;
+      while (!readStarted && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      }
+      assert.equal(readStarted, true);
+      const waitStart = performance.now();
+      await database.db.transaction(async (tx) => {
+        await lockOwnedStory(tx, {
+          ownerId: seeded.ownerId,
+          storyId: seeded.storyId,
+        });
+      });
+      const competitorWaitMs = performance.now() - waitStart;
+      await forkPromise;
+      waits.push({ delayMs, competitorWaitMs });
+    }
+    const baseline = waits.find((row) => row.delayMs === 0);
+    const delayed = waits.find((row) => row.delayMs === 2000);
+    console.log(JSON.stringify({ eng03ForkLock: waits }));
+    assert.ok(
+      delayed.competitorWaitMs < baseline.competitorWaitMs + 500,
+      `checkpoint delay must not stretch the source story lock wait: ${JSON.stringify(waits)}`,
     );
   });
 });

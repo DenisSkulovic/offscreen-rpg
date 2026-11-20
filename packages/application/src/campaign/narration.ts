@@ -4,52 +4,30 @@
  * ../storyteller/runtime.ts and ./action-executions.ts for boundary timing.
  */
 import { randomUUID } from 'node:crypto';
-import { and, eq, gt, lte } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
 import {
-  campaign,
   campaignConsequence,
   gameActionExecution,
   gameActionReceipt,
-  gameRoll,
 } from '@offscreen/db/campaign-schema';
-import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
-import { offerSchema } from '@offscreen/game/offers';
-import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
-import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
-import { executionPolicySchema } from '@offscreen/storyteller/tasks';
-import { contextInputSchema } from '@offscreen/storyteller/context';
 import type { Transaction } from '../outbox/index';
 import type { StoryRecord } from '../stories/persistence';
 import {
   incrementStoryViewVersion,
   lockStoryById,
-  readDatabaseClockMs,
 } from '../stories/persistence';
 import {
-  canonicalContextDependencies,
-  canonicalRuleEvidence,
-  loadStorytellerContext,
-} from '../storyteller/context';
-import {
+  captureActivityConsequenceNarration,
   captureCommittedActionNarration,
   captureInterruptedActionNarration,
   capturePendingActionNarration,
+  captureWorldObligationConsequenceNarration,
 } from '../storyteller/context-capture';
 import { materializePendingActionCapture } from '../storyteller/capture-materialization';
-import { insertStorytellerTask } from '../storyteller/records';
 import { enqueue } from '../outbox/index';
-import { outcomeEffectsSchema } from '@offscreen/game/effects';
-import { rollSchema } from '@offscreen/game/checks';
-import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
 import type { PendingImmediateActionResolution } from './action-overlap';
-import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
-import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
-import {
-  transitionStorytellerIntentToGeneration,
-  transitionWorldObligationHoldToGeneration,
-} from './holds';
 
 import { campaignConsequenceTopic } from './topics';
 import type { DocumentStore } from '@offscreen/documents';
@@ -164,204 +142,6 @@ export async function requestActionNarration(
   });
 }
 
-/**
- * Admits narration of receipts, never another attempt at the action.
- * This runs only from a saved consequence intent after mechanical settlement.
- */
-async function admitConsequenceNarration(
-  tx: Transaction,
-  current: StoryRecord,
-  receipt: {
-    kind: 'activity';
-    passageId: string;
-    operationId: string;
-    afterSegment: number;
-    throughSegment: number;
-    label: string;
-    intention: string;
-  },
-  documentStore?: DocumentStore,
-) {
-  const [state] = await tx
-    .select()
-    .from(campaign)
-    .where(eq(campaign.storyId, current.id));
-  if (!state) {
-    throw new Error('Missing consequence state');
-  }
-  const rolls = await tx
-    .select()
-    .from(gameRoll)
-    .where(
-      and(
-        eq(gameRoll.storyId, current.id),
-        eq(gameRoll.operationId, receipt.operationId),
-        gt(gameRoll.segment, receipt.afterSegment),
-        lte(gameRoll.segment, receipt.throughSegment),
-      ),
-    )
-    .orderBy(gameRoll.segment, gameRoll.checkKey);
-  const context = await loadStorytellerContext(tx, {
-    storyId: current.id,
-    revision: current.revision,
-    premise: current.premise,
-    notes: current.continuityNotes,
-    activeSceneScope: current.activeSceneScope,
-    selected: {
-      id: receipt.operationId,
-      label: receipt.label,
-      intention: receipt.intention,
-    },
-    ...canonicalContextDependencies(
-      current,
-      documentStore,
-      canonicalRuleEvidence(
-        rolls.length ? ['time', 'contribution', 'ability-check'] : ['time'],
-      ),
-    ),
-  });
-  const task = prepareAdmittedStorytellerTask(
-    {
-      task: 'consequence',
-      source: {
-        storyId: current.id,
-        narrativeRevision: current.revision,
-        passageId: receipt.passageId,
-      },
-      profile: storytellerProfileSchema.parse(current.storyteller),
-      execution: executionPolicySchema.parse(current.execution),
-      context: contextInputSchema.parse({
-        ...context,
-        resolution: {
-          character: characterSchema.parse(state.character),
-          storyFacts: storyFactsSchema.parse(state.storyFacts),
-          gameSecond: state.gameSecond,
-          offer: state.offer === null ? null : offerSchema.parse(state.offer),
-          receipts: rolls.map((roll) => ({
-            id: roll.id,
-            roll: roll.result,
-            effects: roll.effects,
-            declarations: [],
-          })),
-        },
-      }),
-    },
-    current.usagePolicy === null
-      ? null
-      : effectiveUsagePolicySchema.parse(current.usagePolicy),
-  );
-  const id = randomUUID();
-  await insertStorytellerTask(tx, { id, ownerId: current.ownerId, task });
-  await tx.insert(storyResolution).values({
-    generationId: id,
-    storyId: current.id,
-    basePassageId: receipt.passageId,
-    baseRevision: current.revision,
-    operationId: id,
-    submission: {
-      kind: 'committed-consequence',
-      operationId: receipt.operationId,
-    },
-  });
-  await transitionStorytellerIntentToGeneration(
-    tx,
-    state,
-    receipt.operationId,
-    id,
-    await readDatabaseClockMs(tx, current.id),
-  );
-  return id;
-}
-
-async function admitWorldObligationNarration(
-  tx: Transaction,
-  current: StoryRecord,
-  receipt: Extract<
-    z.infer<typeof consequenceReceiptSchema>,
-    { kind: 'world-obligation' }
-  >,
-  documentStore?: DocumentStore,
-) {
-  const [state] = await tx
-    .select()
-    .from(campaign)
-    .where(eq(campaign.storyId, current.id));
-  if (!state) {
-    throw new Error('Missing world obligation consequence state');
-  }
-  const context = await loadStorytellerContext(tx, {
-    storyId: current.id,
-    revision: current.revision,
-    premise: current.premise,
-    notes: current.continuityNotes,
-    activeSceneScope: current.activeSceneScope,
-    selected: {
-      id: receipt.operationId,
-      label: receipt.label,
-      intention: receipt.intention,
-    },
-    ...canonicalContextDependencies(current, documentStore),
-  });
-  const task = prepareAdmittedStorytellerTask(
-    {
-      task: 'consequence',
-      source: {
-        storyId: current.id,
-        narrativeRevision: current.revision,
-        passageId: receipt.passageId,
-      },
-      profile: storytellerProfileSchema.parse(current.storyteller),
-      execution: executionPolicySchema.parse(current.execution),
-      context: contextInputSchema.parse({
-        ...context,
-        resolution: {
-          character: characterSchema.parse(state.character),
-          storyFacts: storyFactsSchema.parse(state.storyFacts),
-          gameSecond: state.gameSecond,
-          offer: null,
-          receipts: [
-            {
-              id: receipt.operationId,
-              text: receipt.intention,
-              roll: null,
-              effects: [],
-              declarations: [],
-            },
-          ],
-        },
-      }),
-    },
-    current.usagePolicy === null
-      ? null
-      : effectiveUsagePolicySchema.parse(current.usagePolicy),
-  );
-  const generationId = randomUUID();
-  await insertStorytellerTask(tx, {
-    id: generationId,
-    ownerId: current.ownerId,
-    task,
-  });
-  await tx.insert(storyResolution).values({
-    generationId,
-    storyId: current.id,
-    basePassageId: receipt.passageId,
-    baseRevision: current.revision,
-    operationId: generationId,
-    submission: {
-      kind: 'committed-consequence',
-      operationId: receipt.operationId,
-    },
-  });
-  await transitionWorldObligationHoldToGeneration(
-    tx,
-    state,
-    receipt.operationId,
-    generationId,
-    await readDatabaseClockMs(tx, current.id),
-  );
-  return generationId;
-}
-
 /** Idempotently prepares narration after mechanical settlement has committed. */
 export function createConsequenceNarration(
   database: Database,
@@ -448,20 +228,25 @@ export function createConsequenceNarration(
       const receipt = consequenceReceiptSchema.parse(intent.receipt);
       const generationId =
         receipt.kind === 'world-obligation'
-          ? await admitWorldObligationNarration(
-              tx,
-              current,
-              receipt,
-              documentStore,
-            )
+          ? await captureWorldObligationConsequenceNarration(tx, current, {
+              kind: 'world-obligation',
+              passageId: receipt.passageId,
+              operationId: receipt.operationId,
+              obligationIds: receipt.obligationIds,
+              label: receipt.label,
+              intention: receipt.intention,
+            })
           : receipt.kind === 'action-interrupted'
             ? await captureInterruptedActionNarration(tx, current, receipt)
-            : await admitConsequenceNarration(
-                tx,
-                current,
-                receipt,
-                documentStore,
-              );
+            : await captureActivityConsequenceNarration(tx, current, {
+                kind: 'activity',
+                passageId: receipt.passageId,
+                operationId: receipt.operationId,
+                afterSegment: receipt.afterSegment,
+                throughSegment: receipt.throughSegment,
+                label: receipt.label,
+                intention: receipt.intention,
+              });
       await tx
         .update(campaignConsequence)
         .set({ generationId })
