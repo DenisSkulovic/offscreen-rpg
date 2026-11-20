@@ -9,7 +9,10 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { campaign, campaignConsequence } from '@offscreen/db/campaign-schema';
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
-import { storytellerContextCapture } from '@offscreen/db/storyteller-schema';
+import {
+  storytellerContextCapture,
+  storytellerPublication,
+} from '@offscreen/db/storyteller-schema';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
@@ -23,6 +26,7 @@ import {
   provisionDisposableSandboxDatabase,
 } from '../dist/developer-tools/index.js';
 import { storytellerKind } from '../dist/storyteller/records.js';
+import { createStorytellerRuntime } from '../dist/storyteller/runtime.js';
 import {
   activityConsequenceContextCaptureV1Schema,
   parseContextCapture,
@@ -299,6 +303,86 @@ test('ENG03-T04: activity campaign intent captures off-lock and promotes same G'
       .where(eq(storyResolution.storyId, seeded.storyId));
     assert.equal(resolutions.length, 1);
     assert.equal(resolutions[0].generationId, generationId);
+  });
+});
+
+test('ENG03-T04: activity publication passes matching capture fence', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t04-pub-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedActivityConsequenceStory(database, storage);
+
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+
+    const [intent] = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, seeded.operationId));
+    const generationId = intent.generationId;
+    assert.ok(generationId);
+
+    const storyteller = createStorytellerRuntime(database, {
+      documentStore: storage,
+    });
+    await storyteller.complete(generationId);
+
+    const [publication] = await database.db
+      .select()
+      .from(storytellerPublication)
+      .where(eq(storytellerPublication.generationId, generationId));
+    assert.equal(publication.state, 'published');
+
+    const generations = await database.db
+      .select({ id: generation.id })
+      .from(generation)
+      .where(eq(generation.ownerId, seeded.ownerId));
+    assert.equal(generations.length, 1);
+  });
+});
+
+test('ENG03-T04: activity publication stale when receipt drifts after promote', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t04-pub-stale-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedActivityConsequenceStory(database, storage);
+
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+
+    const [intent] = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, seeded.operationId));
+    const generationId = intent.generationId;
+    assert.ok(generationId);
+
+    await database.db
+      .update(campaignConsequence)
+      .set({
+        receipt: {
+          ...intent.receipt,
+          label: 'Drifted after promote',
+        },
+      })
+      .where(eq(campaignConsequence.operationId, seeded.operationId));
+
+    const storyteller = createStorytellerRuntime(database, {
+      documentStore: storage,
+    });
+    await storyteller.complete(generationId);
+
+    const [publication] = await database.db
+      .select()
+      .from(storytellerPublication)
+      .where(eq(storytellerPublication.generationId, generationId));
+    assert.equal(publication.state, 'stale');
+
+    const generations = await database.db
+      .select({ id: generation.id })
+      .from(generation)
+      .where(eq(generation.ownerId, seeded.ownerId));
+    assert.equal(generations.length, 1);
   });
 });
 

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, gt, inArray, lte } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
@@ -10,6 +10,7 @@ import {
   gameActionExecutionEvent,
   gameActionReceipt,
   gameActivity,
+  gameRoll,
 } from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
 import {
@@ -69,7 +70,12 @@ import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
 import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
-import { transitionStorytellerHoldToDecision } from '../campaign/holds';
+import {
+  campaignHoldsSchema,
+  transitionStorytellerHoldToDecision,
+} from '../campaign/holds';
+import { rollSchema } from '@offscreen/game/checks';
+import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import {
   actionProjectedStateDigest,
   pendingImmediateActionResolutionSchema,
@@ -580,6 +586,122 @@ export async function publishStorytellerResult(
               capture.acceptedReceipt.declarations,
             ) &&
             isDeepStrictEqual(receipt.roll, capture.acceptedReceipt.roll) &&
+            actionProjectedStateDigest({
+              character: campaignState!.character,
+              storyFacts: campaignState!.storyFacts,
+              gameSecond: campaignState!.gameSecond,
+            }) === capture.actorAndWorld.postSettlementStateDigest;
+          if (!sourceStillMatches) {
+            await setPublication(tx, id, 'stale');
+            return;
+          }
+        } else if (capture.sourceKind === 'campaign-activity') {
+          const [consequence] = await tx
+            .select()
+            .from(campaignConsequence)
+            .where(eq(campaignConsequence.operationId, capture.operationId));
+          const expected = capture.acceptedReceipt;
+          const stored =
+            consequence?.receipt &&
+            typeof consequence.receipt === 'object' &&
+            'kind' in consequence.receipt &&
+            (consequence.receipt as { kind?: string }).kind === 'activity'
+              ? (consequence.receipt as typeof expected)
+              : null;
+          const rolls = await tx
+            .select()
+            .from(gameRoll)
+            .where(
+              and(
+                eq(gameRoll.storyId, current.id),
+                eq(gameRoll.operationId, capture.operationId),
+                gt(gameRoll.segment, expected.afterSegment),
+                lte(gameRoll.segment, expected.throughSegment),
+              ),
+            )
+            .orderBy(gameRoll.segment, gameRoll.checkKey);
+          const holds = campaignState
+            ? campaignHoldsSchema.parse(campaignState.holds)
+            : [];
+          const sourceStillMatches =
+            commonStillMatches &&
+            !!consequence &&
+            consequence.generationId === id &&
+            consequence.storyId === current.id &&
+            consequence.baseRevision === task.source.narrativeRevision &&
+            !!stored &&
+            stored.passageId === expected.passageId &&
+            stored.operationId === expected.operationId &&
+            stored.afterSegment === expected.afterSegment &&
+            stored.throughSegment === expected.throughSegment &&
+            stored.label === expected.label &&
+            stored.intention === expected.intention &&
+            rolls.length === expected.rolls.length &&
+            !rolls.some((roll, index) => {
+              const frozen = expected.rolls[index];
+              return (
+                !frozen ||
+                roll.id !== frozen.id ||
+                roll.segment !== frozen.segment ||
+                roll.checkKey !== frozen.checkKey ||
+                !isDeepStrictEqual(rollSchema.parse(roll.result), frozen.result) ||
+                !isDeepStrictEqual(
+                  outcomeEffectsSchema.parse(roll.effects),
+                  frozen.effects,
+                )
+              );
+            }) &&
+            holds.some(
+              (hold) =>
+                hold.kind === 'storyteller' && hold.generationId === id,
+            ) &&
+            actionProjectedStateDigest({
+              character: campaignState!.character,
+              storyFacts: campaignState!.storyFacts,
+              gameSecond: campaignState!.gameSecond,
+            }) === capture.actorAndWorld.postSettlementStateDigest;
+          if (!sourceStillMatches) {
+            await setPublication(tx, id, 'stale');
+            return;
+          }
+        } else if (capture.sourceKind === 'campaign-world-obligation') {
+          const [consequence] = await tx
+            .select()
+            .from(campaignConsequence)
+            .where(eq(campaignConsequence.operationId, capture.operationId));
+          const expected = capture.acceptedReceipt;
+          const stored =
+            consequence?.receipt &&
+            typeof consequence.receipt === 'object' &&
+            'kind' in consequence.receipt &&
+            (consequence.receipt as { kind?: string }).kind ===
+              'world-obligation'
+              ? (consequence.receipt as typeof expected)
+              : null;
+          const holds = campaignState
+            ? campaignHoldsSchema.parse(campaignState.holds)
+            : [];
+          const sourceStillMatches =
+            commonStillMatches &&
+            !!consequence &&
+            consequence.generationId === id &&
+            consequence.storyId === current.id &&
+            consequence.baseRevision === task.source.narrativeRevision &&
+            !!stored &&
+            stored.passageId === expected.passageId &&
+            stored.operationId === expected.operationId &&
+            stored.label === expected.label &&
+            stored.intention === expected.intention &&
+            isDeepStrictEqual(stored.obligationIds, expected.obligationIds) &&
+            holds.some(
+              (hold) =>
+                hold.kind === 'storyteller' && hold.generationId === id,
+            ) &&
+            !holds.some(
+              (hold) =>
+                hold.kind === 'world-obligation' &&
+                hold.obligationId === capture.operationId,
+            ) &&
             actionProjectedStateDigest({
               character: campaignState!.character,
               storyFacts: campaignState!.storyFacts,
