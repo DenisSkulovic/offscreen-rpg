@@ -1,5 +1,7 @@
 # Local Storyteller rehearsal
 
+**Current-runtime runbook:** the commands below exercise the existing pre-refoundation Storyteller paths. They are not instructions for the future Workdesk/Library/subagent implementation until Cursor lands WR02–WR08. Do not infer a target round count, preview/Start requirement or tool ceiling from this rehearsal.
+
 Two jobs live here, and they do not have the same side effects.
 
 The first job is a provider-free local Chamber demo and its held-packet checks. Those commands do not read `.env.openrouter`, do not construct the live provider adapter, and do not make a model call. Start there for an authenticated local story demo.
