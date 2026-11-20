@@ -1,6 +1,6 @@
 # DXK03 | bounded Composer tasks
 
-**Status:** Email/password demo mode and POC open access are removed. GitHub OAuth is the only runtime sign-in. Config and email-disabled tests are the current proof. A real GitHub browser login is blocked until the root `.env` has the local OAuth app credentials. The packet stays open. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
+**Status:** Done (2026-11-20). GitHub OAuth is the only runtime sign-in. A real browser login started the scripted Seyda Neen story and published one road question. Staff bootstrap was not run. **Program:** [DXK program](../../../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). The packet is archived. **Baseline:** 13bcd6cf + GitHub main 8796daaa; live proof is on `change/dxk03-local-playable` at `d506a969` before the close commit.
 
 
 ## T01 | Explicitly gated, real Better Auth local identity
