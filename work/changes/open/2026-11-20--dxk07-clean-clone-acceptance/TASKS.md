@@ -1,6 +1,6 @@
 # DXK07 | bounded Composer tasks
 
-**Status:** T01 harness is 15/15. Live `stack-acceptance.mjs check` on `kind-offscreen-lab` exited 1 with no signed-in player. The sign-in page is GitHub-only. A new signed-in play-through, Tilt recovery, Headlamp, and fresh-clone timings are NOT-RUN. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
+**Status:** T01 harness is 15/15. Live check exited 1 without a player cookie. Browser read revision 2. Fork returned 409 `fork_unsupported_revision`. `game-web` Pod `a5170ad3-125b-41d4-9252-2dab6197a0ca` was replaced by Ready `22162dff-5646-4b55-bb58-179f13359096` and the story page still rendered. Headlamp binary NOT-RUN. Tilt recovery and fresh-clone timings NOT-RUN. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
 
 
 ## T01 | Cold/warm command acceptance harness
