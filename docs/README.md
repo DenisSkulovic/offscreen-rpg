@@ -6,7 +6,7 @@ Product truth has two questions. Authority asks what the owner selected as a pre
 
 ## Storyteller evolution | fastest authoritative routes
 
-On `storyteller-evolution-electric-boogaloo`, the permanent wiki describes the **target state that Cursor implementation must realize**. `STATUS.md` still owns implementation evidence until those code Changes land.
+The permanent wiki describes the **selected target state that implementation must realize**. `STATUS.md` still owns implementation evidence until the corresponding code Changes land.
 
 | Question | Permanent owner |
 | --- | --- |
