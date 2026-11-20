@@ -5,6 +5,7 @@ import { getTableName } from 'drizzle-orm';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
+import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';
 import {
   createStorytellerExecution,
   hashStorytellerCustodyResult,
@@ -53,7 +54,7 @@ function canonicalKnowledge(rootHash) {
   };
 }
 
-function openingTask(rootHash) {
+function openingTask(rootHash, execution = { mode: 'scripted', version: 'offline-rehearsal.v1' }) {
   return prepareStorytellerTask({
     task: 'opening',
     source: { draftId: randomUUID(), draftRevision: 1 },
@@ -61,7 +62,7 @@ function openingTask(rootHash) {
       id: 'absurd-action-comedy',
       revision: 1,
     }),
-    execution: { mode: 'scripted', version: 'offline-rehearsal.v1' },
+    execution,
     context: {
       premise: {
         title: '',
@@ -78,6 +79,11 @@ function openingTask(rootHash) {
   });
 }
 
+function providerModeOpeningTask() {
+  return createRequestAuditFixtureCases({ caseIds: ['opening-narrative'] })[0]
+    .task;
+}
+
 function committedGeneration(task) {
   return {
     id: randomUUID(),
@@ -87,9 +93,9 @@ function committedGeneration(task) {
   };
 }
 
-function memoryClaimStore(generations) {
+function memoryClaimStore(generations, options = {}) {
   const byId = new Map(generations.map((row) => [row.id, row]));
-  const attempts = [];
+  const attempts = [...(options.seedAttempts ?? [])];
   const inserts = [];
   let tail = Promise.resolve();
   const tx = {
@@ -214,6 +220,91 @@ test('a caller fetches the pinned root, claims once, and reads the saved result'
     'unclaimed',
   );
   assert.equal(typeof first.execute, 'function');
+});
+
+test('provider-mode custody refuses fetch, claim, save, and read', async () => {
+  const task = providerModeOpeningTask();
+  const generation = committedGeneration(task);
+  const providerRoot =
+    task.context.canonicalKnowledge?.rootHash ?? null;
+  const store = memoryClaimStore([generation]);
+  const execution = custody(store);
+  const scripted = openingTask(root);
+  const result = scriptedStorytellerResult(scripted);
+  const resultHash = validatedHash(scripted, result);
+
+  assert.deepEqual(await execution.fetchCommittedGeneration(generation.id), {
+    status: 'refused',
+    reason: 'unsupported-execution',
+  });
+  assert.deepEqual(
+    await execution.claimGeneration({
+      generationId: generation.id,
+      pinnedRoot: providerRoot,
+    }),
+    { status: 'refused', reason: 'unsupported-execution' },
+  );
+  assert.deepEqual(
+    await execution.saveValidatedResult({
+      generationId: generation.id,
+      pinnedRoot: providerRoot,
+      resultHash,
+      result,
+    }),
+    { status: 'refused', reason: 'unsupported-execution' },
+  );
+  assert.deepEqual(await execution.readValidatedResult(generation.id), {
+    status: 'refused',
+    reason: 'unsupported-execution',
+  });
+  assert.equal(store.attempts.length, 0);
+  assert.equal(store.inserts.length, 0);
+});
+
+test('a preseeded provider attempt cannot be claimed or saved as scripted', async () => {
+  const task = openingTask(root);
+  const generation = committedGeneration(task);
+  const attemptId = randomUUID();
+  const store = memoryClaimStore([generation], {
+    seedAttempts: [
+      {
+        id: attemptId,
+        generationId: generation.id,
+        createdAt: new Date('2020-01-01T00:00:00.000Z'),
+        state: 'reserved',
+        requestedProvider: 'Audit',
+        attribution: { custody: null },
+      },
+    ],
+  });
+  const execution = custody(store);
+  const scriptedTask = openingTask(root);
+  const result = scriptedStorytellerResult(scriptedTask);
+  const resultHash = validatedHash(scriptedTask, result);
+
+  assert.deepEqual(
+    await execution.claimGeneration({
+      generationId: generation.id,
+      pinnedRoot: root,
+    }),
+    { status: 'refused', reason: 'unsupported-execution' },
+  );
+  assert.deepEqual(
+    await execution.saveValidatedResult({
+      generationId: generation.id,
+      pinnedRoot: root,
+      resultHash,
+      result,
+    }),
+    { status: 'refused', reason: 'unsupported-execution' },
+  );
+  assert.deepEqual(await execution.readValidatedResult(generation.id), {
+    status: 'refused',
+    reason: 'unsupported-execution',
+  });
+  assert.equal(store.attempts.length, 1);
+  assert.equal(store.attempts[0].requestedProvider, 'Audit');
+  assert.equal(store.inserts.length, 0);
 });
 
 test('an unknown generation or a mismatched root is refused', async () => {

@@ -64,7 +64,11 @@ export const storytellerTaskCustodyFetchResponseSchema = z.discriminatedUnion(
     }),
     z.strictObject({
       status: z.literal('refused'),
-      reason: z.enum(['unknown-generation', 'unreadable-task']),
+      reason: z.enum([
+        'unknown-generation',
+        'unreadable-task',
+        'unsupported-execution',
+      ]),
     }),
   ],
 );
@@ -80,7 +84,12 @@ export const storytellerTaskCustodyClaimResponseSchema = z.discriminatedUnion(
     }),
     z.strictObject({
       status: z.literal('refused'),
-      reason: z.enum(['unknown-generation', 'root-mismatch', 'unreadable-task']),
+      reason: z.enum([
+        'unknown-generation',
+        'root-mismatch',
+        'unreadable-task',
+        'unsupported-execution',
+      ]),
     }),
   ],
 );
@@ -107,6 +116,7 @@ export const storytellerTaskCustodySaveResultResponseSchema =
         'unknown-generation',
         'root-mismatch',
         'unreadable-task',
+        'unsupported-execution',
         'invalid-result',
         'hash-mismatch',
         'unclaimed',
@@ -134,7 +144,11 @@ export const storytellerTaskCustodyReadSavedResponseSchema =
     }),
     z.strictObject({
       status: z.literal('refused'),
-      reason: z.enum(['unknown-generation', 'unreadable-task']),
+      reason: z.enum([
+        'unknown-generation',
+        'unreadable-task',
+        'unsupported-execution',
+      ]),
     }),
   ]);
 

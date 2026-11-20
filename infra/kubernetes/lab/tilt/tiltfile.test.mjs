@@ -14,6 +14,7 @@ const APP_RESOURCES = [
   'game-authority',
   'game-control',
   'game-executor',
+  'game-relay',
 ];
 
 test('Tiltfile pins kubectl context kind-offscreen-lab', () => {
@@ -23,7 +24,7 @@ test('Tiltfile pins kubectl context kind-offscreen-lab', () => {
   );
 });
 
-test('Tiltfile names the five lab app resources', () => {
+test('Tiltfile names the lab app resources', () => {
   for (const name of APP_RESOURCES) {
     assert.match(
       tiltfile,

@@ -107,7 +107,10 @@ export type FetchedStorytellerGeneration =
       pinnedRoot: PinnedStorytellerRoot;
       task: StorytellerTask;
     }
-  | { status: 'refused'; reason: 'unknown-generation' | 'unreadable-task' };
+  | {
+      status: 'refused';
+      reason: 'unknown-generation' | 'unreadable-task' | 'unsupported-execution';
+    };
 
 export type StorytellerClaimOutcome =
   | {
@@ -118,7 +121,11 @@ export type StorytellerClaimOutcome =
     }
   | {
       status: 'refused';
-      reason: 'unknown-generation' | 'root-mismatch' | 'unreadable-task';
+      reason:
+        | 'unknown-generation'
+        | 'root-mismatch'
+        | 'unreadable-task'
+        | 'unsupported-execution';
     };
 
 export type StorytellerSaveOutcome =
@@ -142,6 +149,7 @@ export type StorytellerSaveOutcome =
         | 'unknown-generation'
         | 'root-mismatch'
         | 'unreadable-task'
+        | 'unsupported-execution'
         | 'invalid-result'
         | 'hash-mismatch'
         | 'unclaimed';
@@ -157,7 +165,10 @@ export type StorytellerReadOutcome =
     }
   | { status: 'claimed'; generationId: string; attemptId: string }
   | { status: 'unclaimed'; generationId: string }
-  | { status: 'refused'; reason: 'unknown-generation' | 'unreadable-task' };
+  | {
+      status: 'refused';
+      reason: 'unknown-generation' | 'unreadable-task' | 'unsupported-execution';
+    };
 
 type LoadedTask =
   | {
@@ -275,6 +286,27 @@ function earliestAttempt(attempts: readonly StorytellerClaimAttempt[]) {
     if (time !== 0) return time;
     return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
   })[0];
+}
+
+function refusesScriptedCustody(task: StorytellerTask) {
+  return task.execution.mode !== 'scripted';
+}
+
+function isScriptedCustodyAttempt(attempt: StorytellerClaimAttempt) {
+  return attempt.requestedProvider === scriptedCustodyProvider;
+}
+
+function isAcceptedScriptedCustodyAttempt(attempt: StorytellerClaimAttempt) {
+  return (
+    isScriptedCustodyAttempt(attempt) &&
+    (attempt.state === 'reserved' || attempt.state === 'settled')
+  );
+}
+
+function refusesForeignCustodyAttempt(
+  attempt: StorytellerClaimAttempt | undefined,
+) {
+  return !!attempt && !isAcceptedScriptedCustodyAttempt(attempt);
 }
 
 function claimInsert(
@@ -491,6 +523,9 @@ export function createStorytellerTaskCustody(store: StorytellerClaimStore) {
       return store.transaction(async (tx) => {
         const loaded = readCommittedTask(await tx.lockGeneration(generationId));
         if (!loaded.ok) return { status: 'refused', reason: loaded.reason };
+        if (refusesScriptedCustody(loaded.task)) {
+          return { status: 'refused', reason: 'unsupported-execution' };
+        }
         return {
           status: 'ready',
           generationId: loaded.generation.id,
@@ -510,12 +545,18 @@ export function createStorytellerTaskCustody(store: StorytellerClaimStore) {
           await tx.lockGeneration(input.generationId),
         );
         if (!loaded.ok) return { status: 'refused', reason: loaded.reason };
+        if (refusesScriptedCustody(loaded.task)) {
+          return { status: 'refused', reason: 'unsupported-execution' };
+        }
         if (!rootsMatch(loaded.pinnedRoot, input.pinnedRoot)) {
           return { status: 'refused', reason: 'root-mismatch' };
         }
         const existing = earliestAttempt(
           await tx.lockAttempts(loaded.generation.id),
         );
+        if (refusesForeignCustodyAttempt(existing)) {
+          return { status: 'refused', reason: 'unsupported-execution' };
+        }
         if (existing) {
           return {
             status: 'claimed',
@@ -546,6 +587,9 @@ export function createStorytellerTaskCustody(store: StorytellerClaimStore) {
           await tx.lockGeneration(input.generationId),
         );
         if (!loaded.ok) return { status: 'refused', reason: loaded.reason };
+        if (refusesScriptedCustody(loaded.task)) {
+          return { status: 'refused', reason: 'unsupported-execution' };
+        }
         if (!rootsMatch(loaded.pinnedRoot, input.pinnedRoot)) {
           return { status: 'refused', reason: 'root-mismatch' };
         }
@@ -553,6 +597,9 @@ export function createStorytellerTaskCustody(store: StorytellerClaimStore) {
           await tx.lockAttempts(loaded.generation.id),
         );
         if (!attempt) return { status: 'refused', reason: 'unclaimed' };
+        if (refusesForeignCustodyAttempt(attempt)) {
+          return { status: 'refused', reason: 'unsupported-execution' };
+        }
         const validated = validatedCustodyResult(loaded.task, input.result);
         if (!validated.ok)
           return { status: 'refused', reason: 'invalid-result' };
@@ -608,11 +655,17 @@ export function createStorytellerTaskCustody(store: StorytellerClaimStore) {
       return store.transaction(async (tx) => {
         const loaded = readCommittedTask(await tx.lockGeneration(generationId));
         if (!loaded.ok) return { status: 'refused', reason: loaded.reason };
+        if (refusesScriptedCustody(loaded.task)) {
+          return { status: 'refused', reason: 'unsupported-execution' };
+        }
         const attempt = earliestAttempt(
           await tx.lockAttempts(loaded.generation.id),
         );
         if (!attempt) {
           return { status: 'unclaimed', generationId: loaded.generation.id };
+        }
+        if (refusesForeignCustodyAttempt(attempt)) {
+          return { status: 'refused', reason: 'unsupported-execution' };
         }
         const saved = readStorytellerSavedCustody(attempt.attribution);
         if (!saved) {

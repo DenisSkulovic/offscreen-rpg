@@ -108,6 +108,8 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 **T05 verify (2026-11-20, `5f76bdf7`, pre-PATCH):** NOT-RUN. Unauthenticated `GET /api/stories` to `game-api` returned 401. Signed-in Next SSR, SSE, and owner isolation were not run.
 
+**T05 next choice (2026-11-20, 16:46Z):** action `d75ff7f6-def8-4def-8da7-6733169c5526` returned 200 and cleared the player-choice hold. Story `939fd053-567e-4639-9531-52ed04e02039` stayed revision 2, title **Ask about the road to Balmora**, because **Work the warehouse shift** is a 1800-fictional-second wait due `2026-11-20T17:14:16.744Z`. Scene publication after that due time is **NOT-RUN**.
+
 **NOT-RUN:** full signed-in browser vertical after open access (SSR/SSE/owner isolation). Gateway overlap of `/` and `/api` between the synthetic route and `game-edge-routes` is unresolved. **No Kubernetes application release is claimed.**
 
 ## Reconciliation ledger (complete before Done)

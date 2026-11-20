@@ -27,10 +27,10 @@ import {
   provisionDisposableSandboxDatabase,
 } from '../dist/developer-tools/index.js';
 import { storytellerKind } from '../dist/storyteller/records.js';
+import { materializePendingActionCapture } from '../dist/storyteller/capture-materialization.js';
 import {
   committedActionContextCaptureV1Schema,
   parseContextCapture,
-  storytellerContextCaptureKind,
 } from '../dist/storyteller/context-capture.js';
 
 const profile = storytellerCatalogue.resolve({
@@ -245,6 +245,49 @@ async function seedCommittedReceiptStory(database, storage) {
   return { ownerId, storyId, operationId, stories };
 }
 
+test('ENG03-C1: one prepare materializes after stage-1 inserts capture row', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03c1-order-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedCommittedReceiptStory(database, storage);
+
+    const beforeRow = await database.db
+      .select()
+      .from(storytellerContextCapture)
+      .where(eq(storytellerContextCapture.operationId, seeded.operationId));
+    assert.equal(beforeRow.length, 0);
+
+    const preMaterialize = await materializePendingActionCapture(
+      database,
+      seeded.operationId,
+      storage,
+    );
+    assert.deepEqual(preMaterialize, { handled: false });
+
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+
+    const [receipt] = await database.db
+      .select()
+      .from(gameActionReceipt)
+      .where(eq(gameActionReceipt.operationId, seeded.operationId));
+    assert.ok(receipt.generationId);
+
+    const [captureRow] = await database.db
+      .select()
+      .from(storytellerContextCapture)
+      .where(eq(storytellerContextCapture.captureId, receipt.generationId));
+    assert.ok(captureRow);
+    assert.equal(captureRow.state, 'ready');
+
+    const [promoted] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, receipt.generationId));
+    assert.equal(promoted.kind, storytellerKind);
+    assert.equal(promoted.input.task, 'consequence');
+  });
+});
+
 test('ENG03-C1: null-generation receipt captures off-lock and promotes same G to consequence', async () => {
   await withDisposable(async (database) => {
     const root = await mkdtemp(join(tmpdir(), 'eng03c1-'));
@@ -273,20 +316,12 @@ test('ENG03-C1: null-generation receipt captures off-lock and promotes same G to
     assert.equal(capture.operationId, seeded.operationId);
     assert.equal(parseContextCapture(captureRow.capture).purpose, 'consequence');
 
-    const [provisional] = await database.db
+    const [afterFirstPrepare] = await database.db
       .select()
       .from(generation)
       .where(eq(generation.id, generationId));
-    assert.equal(provisional.kind, storytellerContextCaptureKind);
-
-    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
-
-    const [promoted] = await database.db
-      .select()
-      .from(generation)
-      .where(eq(generation.id, generationId));
-    assert.equal(promoted.kind, storytellerKind);
-    assert.equal(promoted.input.task, 'consequence');
+    assert.equal(afterFirstPrepare.kind, storytellerKind);
+    assert.equal(afterFirstPrepare.input.task, 'consequence');
 
     const [ready] = await database.db
       .select()
@@ -294,12 +329,48 @@ test('ENG03-C1: null-generation receipt captures off-lock and promotes same G to
       .where(eq(storytellerContextCapture.captureId, generationId));
     assert.equal(ready.state, 'ready');
 
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+
+    const [afterRetry] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, generationId));
+    assert.equal(afterRetry.kind, storytellerKind);
+
     const resolutions = await database.db
       .select()
       .from(storyResolution)
       .where(eq(storyResolution.storyId, seeded.storyId));
     assert.equal(resolutions.length, 1);
     assert.equal(resolutions[0].generationId, generationId);
+  });
+});
+
+test('ENG03-C1: missing capture row does not throw on prepare', async () => {
+  await withDisposable(async (database) => {
+    const missing = await materializePendingActionCapture(
+      database,
+      randomUUID(),
+    );
+    assert.deepEqual(missing, { handled: false });
+  });
+});
+
+test('ENG03-C1: duplicate prepare does not insert a second capture', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03c1-idem-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedCommittedReceiptStory(database, storage);
+
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+
+    const captures = await database.db
+      .select()
+      .from(storytellerContextCapture)
+      .where(eq(storytellerContextCapture.operationId, seeded.operationId));
+    assert.equal(captures.length, 1);
   });
 });
 

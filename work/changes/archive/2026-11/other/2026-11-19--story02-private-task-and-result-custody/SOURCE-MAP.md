@@ -1,6 +1,8 @@
 # STORY02 | private custody transport source investigation and executor route
 
-**Profile:** `CONTRACT`/STATE · **Inspected baseline:** `584b594` (2026-11-19), no runtime call made. Selected provider-free claim seam has landed; **remote facade has not**. Read only the relevant section once; STORY03 has its own [execution design](../2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md) for publication and queue changes.
+**Outcome (2026-11-20, `22512a4c`):** the scripted-only guard landed and this packet is archived. The notes below are the pre-fix investigation.
+
+**Profile:** `CONTRACT`/STATE · **Historical baseline:** `584b594` (2026-11-19) described absent remote facade; the 2026-11-20 review confirmed versioned private GA routes and the worker HTTP client, then found the scripted-only gap that T05 closed. See [decision](DECISION-2026-11-20.md). STORY03 publication and queue changes stay in [its execution design](../../../../open/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md).
 
 ## Exact reusable primitives
 
@@ -33,3 +35,9 @@ Current `claimGeneration` returns an existing `attemptId` with `created:false` i
 `packages/application/src/storyteller/execution.ts` typed outcomes and custody methods; `apps/game-authority/src/server.ts:routeFor/handle`; `apps/game-authority/src/bootstrap/main.ts`; `apps/game-authority/src/application.ts`; `packages/application/test/story02-task-claim.test.mjs`. This list is five anchors rather than a repository-wide exploration request.
 
 **STOP/receipt:** report target HEAD, applied DTO/routes/credentials, two real independent client claims, positive and negative tests actually run and the precise result body cap. A raw claim object or mock green test is not the remote STORY02 acceptance.
+
+## 2026-11-20 current-head source audit | terminal closeout target
+
+The old source map's T01/T02/T03 "missing" claims are superseded: `packages/contracts/src/storyteller-task-custody.ts` defines versioned endpoints; `apps/game-authority/src/server.ts` enforces separate executor/story/control tokens and owns task/claim/save/read; `apps/worker/src/custody/storyteller-task-custody-client.ts` has bounded transport, and `apps/worker/src/activities/storyteller-distributed-execution.ts` refuses provider-mode tasks. `apps/game-authority/test/storyteller-task-custody-persistence.integration.test.ts` ran an actual two-HTTP-client disposable SQL claim fixture (T04 historical 10/10 across suites). STORY03 T09 had a separate local causal multi-process proof (5/5), not two executor Pods.
+
+**Recorded defect, closed by `22512a4c`:** before that commit, `readCommittedTask` parsed but did not reject `execution.mode='provider'`; `claimGeneration` returned the earliest attempt regardless of `requestedProvider`; `saveValidatedResult` could persist a result on an already-existing provider attempt. No paid provider HTTP or exploit was observed. T05 and T06 closed that gap. Do not reopen this packet for it.

@@ -32,7 +32,7 @@ test('overlay yaml forbids NodePort, LoadBalancer, and hostPort', () => {
   }
 });
 
-test('chaos-eligible only on the five app Deployments', () => {
+test('chaos-eligible only on the six app Deployments', () => {
   const migrate = readFileSync(join(overlayDir, 'migrate.yaml'), 'utf8');
   assert.doesNotMatch(
     migrate,
@@ -43,7 +43,7 @@ test('chaos-eligible only on the five app Deployments', () => {
   const deploymentBlocks = allOverlayText.split(/^---$/m).filter((doc) =>
     /kind:\s*Deployment/.test(doc),
   );
-  assert.equal(deploymentBlocks.length, 5);
+  assert.equal(deploymentBlocks.length, 6);
   for (const block of deploymentBlocks) {
     assert.match(
       block,
@@ -82,7 +82,14 @@ test('HTTPRoute game-edge-routes does not backend game-authority', () => {
 test('workers overlay refuses broad database env and pins rule hash on API', () => {
   const workers = readFileSync(join(overlayDir, 'workers.yaml'), 'utf8');
   const authority = readFileSync(join(overlayDir, 'authority.yaml'), 'utf8');
-  assert.doesNotMatch(workers, /DATABASE_URL/);
+  const workersWithoutRelay = workers.replace(
+    /---[\s\S]*name: game-relay[\s\S]*?(?=---|$)/,
+    '',
+  );
+  assert.doesNotMatch(workersWithoutRelay, /DATABASE_URL/);
+  assert.match(workers, /name: game-relay[\s\S]*DATABASE_URL[\s\S]*secretKeyRef:[\s\S]*game-db/);
+  assert.match(workers, /name: game-relay[\s\S]*bootstrap\/main\.js/);
+  assert.match(workers, /name: game-control[\s\S]*bootstrap\/control-main\.js/);
   assert.doesNotMatch(workers, /containerPort:\s*8080/);
   assert.doesNotMatch(workers, /tcpSocket/);
   assert.match(authority, /name: DATABASE_URL/);

@@ -8,9 +8,11 @@ import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   storytellerAttempt as attempt,
+  storytellerDispatchReview as dispatchReview,
   storytellerFunding as funding,
   storytellerOperation as operation,
   storytellerRun as run,
+  storytellerSavedRepairAudit as savedRepairAudit,
 } from '@offscreen/db/storyteller-schema';
 import {
   executionPolicySchema,
@@ -47,6 +49,17 @@ export class StorytellerBudgetError extends Error {
   }
 }
 type ProviderExecution = Extract<ExecutionPolicy, { mode: 'provider' }>;
+
+export type SavedRepairRecoveryFence = Readonly<{
+  generationId: string;
+  expectedStatusRevision: number;
+  reviewState: string;
+  packetSha256: string;
+  evidenceSha256: string;
+  planFingerprint: string;
+  operatorId: string;
+  reason: string;
+}>;
 
 export type StorytellerDispatchReservation = {
   request: StorytellerProviderDispatch['request'];
@@ -578,7 +591,8 @@ export function createStorytellerBudget(database: Database) {
         repairDiagnostic?: unknown;
       };
       operationOutcome?: 'continue' | 'complete';
-    }) {
+      recoveryFence?: SavedRepairRecoveryFence;
+    }): Promise<void | 'already-applied'> {
       if (input.usage.reportedCostMicrousd < 0n) {
         throw new Error('Invalid charge');
       }
@@ -608,6 +622,81 @@ export function createStorytellerBudget(database: Database) {
           .for('update');
         if (!record) {
           throw new Error('Missing budget attempt');
+        }
+        let recoveryAuditPrior:
+          | { priorGenerationState: string; priorStatusRevision: number }
+          | undefined;
+        if (input.recoveryFence) {
+          const fence = input.recoveryFence;
+          const [genRecord] = await tx
+            .select()
+            .from(generation)
+            .where(
+              and(
+                eq(generation.id, fence.generationId),
+                eq(generation.attemptId, input.id),
+              ),
+            )
+            .for('update');
+          if (!genRecord) {
+            throw new Error('Missing generation for recovery fence');
+          }
+          const [reviewRecord] = await tx
+            .select()
+            .from(dispatchReview)
+            .where(eq(dispatchReview.attemptId, input.id))
+            .for('update');
+          if (!reviewRecord || reviewRecord.generationId !== fence.generationId) {
+            throw new Error('Missing dispatch review for recovery fence');
+          }
+          if (record.state === 'settled') {
+            const [auditRow] = await tx
+              .select()
+              .from(savedRepairAudit)
+              .where(eq(savedRepairAudit.attemptId, input.id));
+            if (
+              !auditRow ||
+              auditRow.planFingerprint !== fence.planFingerprint
+            ) {
+              throw new Error('Conflicting settlement');
+            }
+            if (
+              record.chargedMicrousd !== input.usage.reportedCostMicrousd ||
+              record.providerId !== input.telemetry.providerId ||
+              record.promptTokens !== input.usage.promptTokens ||
+              record.completionTokens !== input.usage.completionTokens ||
+              record.reasoningTokens !== input.usage.reasoningTokens ||
+              record.cachedTokens !== input.usage.cachedTokens ||
+              record.cacheWriteTokens !== input.usage.cacheWriteTokens ||
+              record.totalTokens !== input.usage.totalTokens ||
+              record.reportedModel !== input.telemetry.reportedModel ||
+              record.finishReason !== input.telemetry.finishReason ||
+              record.httpStatus !== input.telemetry.httpStatus ||
+              record.durationMs !== input.telemetry.durationMs
+            ) {
+              throw new Error('Conflicting settlement');
+            }
+            return 'already-applied';
+          }
+          if (genRecord.state !== 'uncertain') {
+            throw new Error('Generation recovery fence mismatch');
+          }
+          if (record.state !== 'uncertain') {
+            throw new Error('Attempt recovery fence mismatch');
+          }
+          if (genRecord.statusRevision !== fence.expectedStatusRevision) {
+            throw new Error('Generation recovery fence mismatch');
+          }
+          if (
+            reviewRecord.state !== fence.reviewState ||
+            reviewRecord.packetSha256 !== fence.packetSha256
+          ) {
+            throw new Error('Dispatch review recovery fence mismatch');
+          }
+          recoveryAuditPrior = {
+            priorGenerationState: genRecord.state,
+            priorStatusRevision: genRecord.statusRevision,
+          };
         }
         if (record.state === 'settled') {
           if (
@@ -764,6 +853,19 @@ export function createStorytellerBudget(database: Database) {
             .update(funding)
             .set({ stopped: true })
             .where(eq(funding.id, account.id));
+        }
+        if (input.recoveryFence && recoveryAuditPrior) {
+          await tx.insert(savedRepairAudit).values({
+            attemptId: input.id,
+            operatorId: input.recoveryFence.operatorId,
+            reason: input.recoveryFence.reason,
+            planFingerprint: input.recoveryFence.planFingerprint,
+            reviewPacketSha256: input.recoveryFence.packetSha256,
+            evidenceSha256: input.recoveryFence.evidenceSha256,
+            priorGenerationState: recoveryAuditPrior.priorGenerationState,
+            priorStatusRevision: recoveryAuditPrior.priorStatusRevision,
+            settlementResult: operationOutcome,
+          });
         }
       });
     },

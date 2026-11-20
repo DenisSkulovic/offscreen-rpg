@@ -374,6 +374,7 @@ export function createConsequenceNarration(
       documentStore,
     );
     if (captureResult.handled) return;
+    let committedCaptureInserted = false;
     await database.db.transaction(async (tx) => {
       // ENG03-C1 lock order: unlocked receipt preflight → story lock → receipt FOR UPDATE.
       const [receiptPeek] = await tx
@@ -423,6 +424,7 @@ export function createConsequenceNarration(
           storyId: current.id,
           viewVersion: current.viewVersion + 1,
         });
+        committedCaptureInserted = true;
         return;
       }
       const [intentPeek] = await tx
@@ -469,5 +471,12 @@ export function createConsequenceNarration(
         viewVersion: current.viewVersion + 1,
       });
     });
+    if (committedCaptureInserted) {
+      await materializePendingActionCapture(
+        database,
+        operationId,
+        documentStore,
+      );
+    }
   };
 }

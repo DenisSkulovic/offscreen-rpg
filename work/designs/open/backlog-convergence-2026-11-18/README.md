@@ -40,7 +40,7 @@
 
 - `packages/application/src/stories/persistence.ts::insertContinuationPassage` inserts no `appearance`, and `packages/application/src/storyteller/publication.ts` calls it after its settled/stale and revision checks. `packages/db/src/schema/stories.ts` already declares optional `storyPassage.appearance`.
 - `packages/application/src/storyteller/config.ts` explicitly omits `dispatchAuthority`; `packages/application/src/storyteller/usage-policy-resolution.ts` intersects profiles **passed in**, but does not load independently current entitlements. `story.usagePolicy` is a snapshot, not an entitlement registry.
-- `scripts/repo-tools/reconcile-storyteller-response.mjs` checks uncertain generation+attempt and saved response, then calls `budget.settle`; deleting the file without an equivalent safe recovery owner eliminates that action.
+- (Superseded 2026-11-20 HK01.) The former `reconcile-storyteller-response.mjs` checked uncertain generation+attempt and saved response, then called `budget.settle`; replacement is `scripts/repo-tools/plan-storyteller-saved-repair.mjs`.
 - `packages/application/src/stories/timing.ts` already resolves timed defaults for a different contract. GM07 adds per-decision consent, not another universal clock.
 - `packages/application/src/campaign/accepted-plans.ts` already has horizon/entry constraints. GM03 must justify a new routine against that capability.
 - Source ZIP `SNAPSHOT.json` and `WIKI-INDEX.json` both declare source commit `92ed12ba...`; summary: 292 pages, 2,103 sections, 195 omitted archived links and zero broken links. Local `node --test scripts/repo-tools/chatgpt-snapshot.test.mjs`: 2/2 passing against extracted source, **not** a clean-checkout pnpm command.
