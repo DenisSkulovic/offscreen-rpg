@@ -51,3 +51,14 @@ No application code, package schema, migrations, provider/cluster operations, ne
 ### Post-audit correction pass
 
 A cold review after the first completion claim found that the conceptual migration had over-compacted several existing technical contracts. The correction pass restored fork identity/remap and legacy launch guarantees, provider/accounting custody, cumulative operation budget/tool constraints, and the fine-grained engine state-owner ledger. It also made current two/three-round and no-subagent limits explicitly **legacy/current realization**, restored compatibility anchors, and removed the temporary branch name from the permanent docs index. This receipt supersedes the earlier premature “implementation-ready” claim.
+
+
+### Final post-audit verification
+
+GitHub Actions on the repaired branch reports **369** documentation link/heading problems, exactly the pre-existing count on `main`; none of the seven regressions from the first rewrite remain. In particular, the compatibility anchors for D&D, fork identity remap and the 2026-11-19 Task pack resolve again.
+
+The Repository maintenance workflow still fails before producing its report because the runner cannot import package `unified` from `scripts/repo-tools/wiki-core/markdown.mjs` (`ERR_MODULE_NOT_FOUND`). Its artifact upload then fails because `out/maintenance/report.json` was never created. This is a runner/dependency failure, not evidence that the repaired documentation violates maintenance semantics.
+
+The four documentation Change packets are terminal and archived under `work/changes/archive/2026-11/other/`; no WR01/WRD02/WRD03/WRD04 terminal packet remains under `work/changes/open/`.
+
+**Implementation release judgment after correction:** permanent owners now preserve both the selected Storyteller target and the still-relevant current-runtime/compatibility guarantees. WR02 is eligible for explicit selection; documentation completion itself does not select it.
