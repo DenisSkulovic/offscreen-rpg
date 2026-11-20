@@ -126,6 +126,27 @@ Campaign additions and revisions are copy-on-write: unchanged documents and inde
 
 The permanent contract requires efficient structural sharing, exact rooted reads, prefix/directory discovery, deterministic path semantics and root-scoped citations. It does **not** require a particular physical tree algorithm; WR02 must benchmark and choose that representation.
 
+### Authored library, import and overlay guarantees retained
+
+The following existing rules remain part of the target; structural sharing changes representation, not authority, provenance or import semantics.
+
+A campaign workspace is not necessarily the owner of its whole world. A player may create or import a reusable **world library** containing extensive lore, histories, places, cultures, terminology, metaphysics, rules guidance, maps/media references and other authored source material. Story start pins one or more exact world-library roots and mounts them into the campaign's knowledge view. The model's pretrained recollection is never treated as the authoritative substitute for supplied world material, especially with small, cheap or private-setting models.
+
+World libraries and campaign documents have different lifecycles:
+
+- A world library has a stable identity, immutable versions, a small orientation/index and canonical source files. Many campaigns can reuse it.
+- A campaign pins exact library root hashes and revisions. Updating the reusable library does not silently rewrite an existing campaign or in-flight task.
+- Campaign-specific characters, passages, relationships, discoveries and state live in the campaign workspace. Developments that alter local reality are campaign overlay documents linked to base-world sources; they do not mutate the shared package.
+- Each world version declares per-domain invention ceilings. A campaign may choose stricter permissions, but neither a start package, Storyteller profile nor model route may silently widen the pinned world's authority.
+- A campaign adopts a newer library revision only through an explicit conflict-checked operation with a readable compatibility/diff review.
+- A campaign may use no external world library, one library or several deliberately mounted packages. Package order cannot resolve contradictory canon by accidental last-write-wins; authority and conflict policy are explicit.
+
+Import accepts bounded user-authorized text, Markdown and supported structured files without requiring inference. Preserve useful authored divisions and provenance, validate encoding/size/path safety and assign stable document identities. A large monolithic upload may be deterministically sectioned for navigation while retaining its intact original as a source. Optional LLM-assisted classification or summarization is separately budgeted derived work and is never required to preserve the lore. Imported external settings remain private user-provided content subject to the user's rights and product policy; this project does not ship third-party fictional corpora or assume permission because a model recognizes a name.
+
+Each package has a compact entry document describing scope, authority, major directories and high-value navigation handles. It is not a summary of every page. Documents distinguish descriptive lore, attributed claims, executable rules and creative guidance: prose about magic does not automatically become a mechanical rule, and a setting's writing style cannot override system instructions. Search spans pinned packages and campaign overlays while retaining package/document/version provenance and visibility.
+
+Which pinned sources a task reads, including overlay-first assembly, is [What source enters this task](context-selection-and-recall.md#what-source-enters-this-task). Reading more of a package does not change its authority.
+
 ## Reusable rule libraries
 
 Mechanical references are their own package family rather than ordinary world lore. A rule package has a stable ruleset identity, immutable root/revision history, a compact `RULES.md` orientation, topic-indexed pages and an exact executable-adapter identity/version. Campaign setup pins that complete reference. Existing campaigns and captured tasks do not silently follow later edits.
