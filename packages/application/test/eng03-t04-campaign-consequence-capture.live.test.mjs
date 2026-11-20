@@ -668,3 +668,89 @@ test('ENG03-T04: wrong world-obligation receipt after Stage1 holds promotion', a
     assert.equal(consequenceRow.generationId, intent.generationId);
   });
 });
+
+test('ENG03-T04: world-obligation publication passes matching capture fence', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t04-wo-pub-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedWorldObligationConsequenceStory(database, storage);
+
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+
+    const [intent] = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, seeded.operationId));
+    const generationId = intent.generationId;
+    assert.ok(generationId);
+
+    const storyteller = createStorytellerRuntime(database, {
+      documentStore: storage,
+    });
+    await storyteller.complete(generationId);
+
+    const [publication] = await database.db
+      .select()
+      .from(storytellerPublication)
+      .where(eq(storytellerPublication.generationId, generationId));
+    assert.equal(publication.state, 'published');
+
+    const generations = await database.db
+      .select({ id: generation.id })
+      .from(generation)
+      .where(eq(generation.ownerId, seeded.ownerId));
+    assert.equal(generations.length, 1);
+  });
+});
+
+test('ENG03-T04: world-obligation publication stale when receipt drifts after promote', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t04-wo-pub-stale-'));
+    const storage = new LocalDocumentStore(root);
+    const seeded = await seedWorldObligationConsequenceStory(database, storage);
+
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+    await seeded.stories.prepareCampaignConsequence(seeded.operationId);
+
+    const [intent] = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, seeded.operationId));
+    const generationId = intent.generationId;
+    assert.ok(generationId);
+
+    await database.db
+      .update(campaignConsequence)
+      .set({
+        receipt: {
+          ...intent.receipt,
+          label: 'Drifted world-obligation label',
+        },
+      })
+      .where(eq(campaignConsequence.operationId, seeded.operationId));
+
+    const storyteller = createStorytellerRuntime(database, {
+      documentStore: storage,
+    });
+    await storyteller.complete(generationId);
+
+    const [publication] = await database.db
+      .select()
+      .from(storytellerPublication)
+      .where(eq(storytellerPublication.generationId, generationId));
+    assert.equal(publication.state, 'stale');
+
+    const [consequenceRow] = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, seeded.operationId));
+    assert.equal(consequenceRow.generationId, generationId);
+
+    const generations = await database.db
+      .select({ id: generation.id })
+      .from(generation)
+      .where(eq(generation.ownerId, seeded.ownerId));
+    assert.equal(generations.length, 1);
+  });
+});
