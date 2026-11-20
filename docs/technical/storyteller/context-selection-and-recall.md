@@ -18,6 +18,21 @@ Everything else is discoverable. The writer can orient by path/role, find candid
 
 A difficult task may read many small relevant sources over several rounds. A simple task may read none beyond the mandatory pack. Context cost is controlled by bounded mission resources and purposeful retrieval, not by pretending every mission has the same fixed read count.
 
+
+## Task pack | selected target (2026-11-19)
+
+**Compatibility anchor and current-runtime baseline.** This heading preserves the detailed 2026-11-19 pack contract that existing code, tests and links still refer to. It is now subordinate to the broader Writer-mission target: current one-shot/`memory-exploration.v1` limits describe the pre-refoundation realization, while WR03 may implement adaptive Library/Workdesk/assistant use without inheriting those numeric ceilings as permanent law.
+
+Known current state is injected: branch, captured game-state checkpoint, Library/canon root committed with that checkpoint, mechanical constraints, committed receipts, active intent, relevant actor knowledge and pinned rule fragments. The model never spends a research round to rediscover governing present state.
+
+Related material is a short orientation with stable handles, status, relevance reason and exact source revision. Unknown history is retrieved through bounded application tools and exact rooted reads. A handle is a lead, not accepted fact. Search/index results must be revalidated against the captured root and visibility.
+
+**Fork packing negative.** Scene 10 says the king is alive and the hero holds a sword. Parent scene 20 says the king is dead and the sword is gone. A fork from scene 10 must be packed from scene 10's state/Library pair; no search aid may inject the scene-20 death. Rumor remains attributed rumor, not committed fact.
+
+**Current realization details retained:** ordinary one-shot tasks may capture bounded campaign catalogues/documents and exact pinned world/rule references; active-scene cues fill only remaining slots; exact section handles and rule-topic bindings are frozen into the task; stale/foreign handles are rejected; whole-request bounds may omit optional evidence with an explicit reason. These limits are implementation evidence to migrate, not a constitutional maximum for the target agent.
+
+The provider-independent target capability surface is [Selected compilation and tool contract](prompts-and-tools.md#selected-compilation-and-tool-contract); the adaptive mission loop is [Operation and controller](operation-and-controller.md#two-loops).
+
 ## Fork-scoped retrieval and task input | selected target (2026-11-19)
 
 This heading is the read contract for the scene-knowledge pair. The pair itself is [Scene-rooted canon and fork-safe publication](canonical-documents-and-packages.md#scene-rooted-canon-and-fork-safe-publication--selected-target-2026-11-19). Role recipes and the task pack are [Task roles](prompts-and-tools.md#task-roles) and [Task pack](#task-pack--selected-target-2026-11-19). This heading owns which versions a read may return.
