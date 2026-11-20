@@ -29,6 +29,7 @@
  *   uid: string,
  *   kind: string,
  *   imageDigest: string,
+ *   imageRef?: string,
  *   labels: StringMap,
  * }} ReleaseOwner
  */
@@ -128,7 +129,10 @@ function evaluatePod(pod, ctx) {
     return { eligible: false, reason: 'owner-not-deployment' };
   }
 
-  if (pinned.labels?.[CHAOS_ELIGIBLE_LABEL] !== 'true') {
+  if (
+    pinned.labels?.[CHAOS_ELIGIBLE_LABEL] !== 'true' ||
+    pod.labels?.[CHAOS_ELIGIBLE_LABEL] !== 'true'
+  ) {
     return { eligible: false, reason: 'missing-chaos-eligibility' };
   }
 

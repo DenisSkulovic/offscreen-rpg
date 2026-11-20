@@ -27,7 +27,7 @@ const PINNED_OWNER = {
 function eligiblePod(fields) {
   return {
     ready: true,
-    labels: {},
+    labels: { 'offscreen.rpg/chaos-eligible': 'true' },
     containerImageIds: [`registry.example/app@${DIGEST_A}`],
     owner: {
       kind: 'Deployment',

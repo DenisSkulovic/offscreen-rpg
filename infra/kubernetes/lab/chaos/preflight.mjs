@@ -11,6 +11,7 @@ export const LAB_CLUSTER_NAME = 'offscreen-lab';
 export const LAB_CONTEXT_NAME = 'kind-offscreen-lab';
 export const CLUSTER_LOCK_PATH = '/tmp/offscreen-k8s-cluster.lock';
 export const MIN_MEM_AVAILABLE_KIB = 4 * 1024 * 1024;
+export const APP_NAMESPACES = new Set(['lab-edge', 'lab-workers', 'lab-authority']);
 
 const MUTATING_KUBECTL_VERBS = new Set([
   'delete',
@@ -162,6 +163,9 @@ export function parseReleaseRef(raw) {
     return { ok: false, reason: 'unknown-release', detail: 'not-an-object' };
   }
   const obj = /** @type {{ schema?: string, releaseOwners?: unknown }} */ (raw);
+  if (obj.schema !== 'offscreen.chaos-release-ref.v1') {
+    return { ok: false, reason: 'unknown-release', detail: 'unsupported-schema' };
+  }
   const owners = obj.releaseOwners;
   if (!Array.isArray(owners) || owners.length === 0) {
     return { ok: false, reason: 'unknown-release', detail: 'missing-releaseOwners' };
@@ -179,14 +183,21 @@ export function parseReleaseRef(raw) {
     const kind = typeof o.kind === 'string' ? o.kind : 'Deployment';
     const imageDigest =
       typeof o.imageDigest === 'string' ? o.imageDigest : '';
+    const imageRef = typeof o.imageRef === 'string' ? o.imageRef : '';
     const labels =
       o.labels && typeof o.labels === 'object' && !Array.isArray(o.labels)
         ? /** @type {Record<string, string>} */ (o.labels)
         : {};
-    if (!namespace || !name || !uid || !imageDigest) {
+    if (!namespace || !name || !uid || !imageDigest || !imageRef) {
       return { ok: false, reason: 'unknown-release', detail: 'incomplete-owner' };
     }
-    releaseOwners.push({ namespace, name, uid, kind, imageDigest, labels });
+    if (!APP_NAMESPACES.has(namespace) || kind !== 'Deployment') {
+      return { ok: false, reason: 'unowned-app-namespace', detail: namespace };
+    }
+    if (!/^sha256:[a-f0-9]{64}$/i.test(imageDigest)) {
+      return { ok: false, reason: 'image-digest-unavailable', detail: 'release-ref-digest-invalid' };
+    }
+    releaseOwners.push({ namespace, name, uid, kind, imageDigest, imageRef, labels });
   }
   return { ok: true, releaseOwners, schema: obj.schema ?? null };
 }
@@ -226,7 +237,8 @@ export function podRecordFromK8s(pod) {
     name: ref.name,
     uid: ref.uid,
   }));
-  const deploymentRef = ownerRefs.find((r) => r.kind === 'Deployment');
+  // A Deployment manages Pods via a ReplicaSet. The Pod's immediate
+  // ownerRef is not a Deployment, and must not be trusted as one.
   const containerStatuses = pod?.status?.containerStatuses ?? [];
   const ready =
     containerStatuses.length > 0 &&
@@ -240,7 +252,7 @@ export function podRecordFromK8s(pod) {
     namespace: pod?.metadata?.namespace ?? '',
     labels,
     deletionTimestamp: pod?.metadata?.deletionTimestamp ?? null,
-    owner: deploymentRef ?? undefined,
+    owner: undefined,
     ownerReferences: ownerRefs,
     containerImageIds,
     ready,
@@ -289,24 +301,53 @@ export function verifyReleaseOwnersAgainstCluster({ kubectl, releaseOwners }) {
         detail: `deployment-uid:${owner.namespace}/${owner.name}`,
       };
     }
-    const digests = deploymentImageDigestsFromManifest(deployment);
-    const pinned = normalizeImageDigest(owner.imageDigest);
-    if (!/^sha256:[a-f0-9]{64}$/.test(pinned)) {
+    // The release uses local :turn02 image tags in Deployment templates.
+    // Validate the exact tag/ref here, and the resolved digest on the Pod.
+    // A tag-only Deployment is NOT evidence of a digest, but it is not a reason
+    // to refuse an otherwise pinned Pod imageID either.
+    const template = deployment?.spec?.template ?? {};
+    if (template?.metadata?.labels?.['offscreen.rpg/chaos-eligible'] !== 'true') {
       return {
         ok: false,
-        reason: 'image-digest-unavailable',
-        detail: 'release-ref-digest-invalid',
+        reason: 'missing-chaos-eligibility',
+        detail: `template-not-eligible:${owner.namespace}/${owner.name}`,
       };
     }
-    if (digests.length === 0 || !digests.includes(pinned)) {
+    const containers = template?.spec?.containers ?? [];
+    if (containers.length !== 1 || containers[0]?.image !== owner.imageRef) {
+      return {
+        ok: false,
+        reason: 'release-provenance-drift',
+        detail: `deployment-image-ref:${owner.namespace}/${owner.name}`,
+      };
+    }
+    const digests = deploymentImageDigestsFromManifest(deployment);
+    const pinned = normalizeImageDigest(owner.imageDigest);
+    if (digests.length && !digests.includes(pinned)) {
       return {
         ok: false,
         reason: 'image-digest-unavailable',
-        detail: `deployment-digest-not-in-manifest:${owner.namespace}/${owner.name}`,
+        detail: `deployment-digest-mismatch:${owner.namespace}/${owner.name}`,
       };
     }
   }
   return { ok: true };
+}
+
+/**
+ * Resolve only the controller chain Pod -> ReplicaSet -> Deployment.
+ * Kubernetes Deployment Pods do NOT have Deployment as direct ownerRef.
+ * An unknown/stale ReplicaSet UID must fail closed.
+ * @param {object} pod
+ * @param {Map<string, { deployment: { kind: string, name: string, uid: string }, uid: string }>} replicaSets
+ */
+export function resolvePodDeployment(pod, replicaSets) {
+  const refs = pod?.metadata?.ownerReferences ?? [];
+  const rsRef = refs.find((r) => r.kind === 'ReplicaSet' && r.controller === true);
+  if (!rsRef) return null;
+  const ns = pod?.metadata?.namespace ?? '';
+  const match = replicaSets.get(`${ns}\0${rsRef.name}`);
+  return match && match.uid === rsRef.uid ? match.deployment : null;
 }
 
 /**
@@ -320,6 +361,28 @@ export function snapshotPods({ kubectl, namespaces }) {
   const pods = [];
   const uniqueNamespaces = [...new Set(namespaces)].sort();
   for (const ns of uniqueNamespaces) {
+    const rsResult = kubectl.runKubectl(['get', 'replicasets', '-n', ns, '-o', 'json']);
+    if (rsResult.status !== 0) {
+      return { ok: false, reason: 'snapshot-failed', detail: `replicasets:${ns}` };
+    }
+    const replicaSets = new Map();
+    try {
+      const rsList = JSON.parse(rsResult.stdout);
+      if (!Array.isArray(rsList?.items)) throw new Error('missing ReplicaSet items');
+      for (const rs of rsList.items) {
+        const ref = (rs?.metadata?.ownerReferences ?? []).find(
+          (entry) => entry.kind === 'Deployment' && entry.controller === true,
+        );
+        if (ref && rs?.metadata?.namespace === ns && rs?.metadata?.uid && rs?.metadata?.name) {
+          replicaSets.set(`${ns}\0${rs.metadata.name}`, {
+            uid: rs.metadata.uid,
+            deployment: { kind: 'Deployment', name: ref.name, uid: ref.uid },
+          });
+        }
+      }
+    } catch {
+      return { ok: false, reason: 'snapshot-failed', detail: `replicasets-json:${ns}` };
+    }
     const result = kubectl.runKubectl(['get', 'pods', '-n', ns, '-o', 'json']);
     if (result.status !== 0) {
       return {
@@ -335,8 +398,13 @@ export function snapshotPods({ kubectl, namespaces }) {
     } catch {
       return { ok: false, reason: 'snapshot-failed', detail: `pods-json:${ns}` };
     }
-    for (const item of body?.items ?? []) {
-      pods.push(podRecordFromK8s(item));
+    if (!Array.isArray(body?.items)) {
+      return { ok: false, reason: 'snapshot-failed', detail: `pods-items:${ns}` };
+    }
+    for (const item of body.items) {
+      const pod = podRecordFromK8s(item);
+      pod.owner = resolvePodDeployment(item, replicaSets) ?? undefined;
+      pods.push(pod);
     }
   }
   return { ok: true, pods, namespaces: uniqueNamespaces };

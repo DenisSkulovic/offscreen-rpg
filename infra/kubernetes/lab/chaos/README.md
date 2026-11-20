@@ -8,7 +8,7 @@ Read-only preflight and deterministic target planning for the disposable `offscr
 - Plan mode forbids `delete`, `exec`, `apply`, `scale`, and related mutating verbs.
 - `--execute` is **rejected** until T04 implements controlled fault injection.
 - The runner never auto-switches kubectl context or creates/deletes a kind cluster.
-- Cluster identity requires a read-only `kube-system` namespace UID; image ownership requires a pinned `sha256:` digest present in the release ref **and** on the live Deployment manifest (no tag-only guesses).
+- Cluster identity uses `kube-system` namespace UID. Eligible Pods must resolve **Pod → ReplicaSet → Deployment** by live controller UIDs, match an explicit approved app namespace, and have the exact pinned image digest in Pod `containerStatuses[].imageID`. The Deployment may use a local `:turn02` image tag; its template image string must match the release ref's exact `imageRef`, and its **live Pod-template** label must opt in. A local JSON eligibility label alone grants nothing.
 
 ## Command grammar
 
@@ -42,10 +42,11 @@ Flags:
   "schema": "offscreen.chaos-release-ref.v1",
   "releaseOwners": [
     {
-      "namespace": "lab-app",
-      "name": "storyteller-worker",
+      "namespace": "lab-workers",
+      "name": "game-executor",
       "uid": "<deployment-uid>",
       "kind": "Deployment",
+      "imageRef": "offscreen-lab-app-release-worker:turn02",
       "imageDigest": "sha256:<64-hex>",
       "labels": { "offscreen.rpg/chaos-eligible": "true" }
     }
@@ -61,8 +62,9 @@ Flags:
 4. Current kubectl context is exactly `kind-offscreen-lab`
 5. `kind get clusters` lists `offscreen-lab`
 6. Cluster UID from `kube-system` metadata
-7. Release ref owners match live Deployment UID + digest
-8. Pod snapshot + T01 selector → one stable target
+7. Release ref owners match live Deployment UID, exact image tag and template eligibility label
+8. Pod→ReplicaSet→Deployment ownership resolves against live UIDs, and Pod imageID matches pinned digest
+9. Pod snapshot + T01 selector → one stable target
 
 ## Plan output
 

@@ -21,11 +21,12 @@ const RELEASE_REF = {
   schema: 'offscreen.chaos-release-ref.v1',
   releaseOwners: [
     {
-      namespace: 'lab-app',
+      namespace: 'lab-workers',
       name: 'storyteller-worker',
       uid: 'dep-uid-aaaa',
       kind: 'Deployment',
       imageDigest: DIGEST,
+      imageRef: 'offscreen-lab-app-release-worker:turn02',
       labels: { 'offscreen.rpg/chaos-eligible': 'true' },
     },
   ],
@@ -37,15 +38,12 @@ const KUBE_SYSTEM_UID = 'cluster-uid-1111';
 function labExecFixture(opts = {}) {
   const spy = opts.spy ?? { calls: [] };
   const deployment = {
-    metadata: { uid: 'dep-uid-aaaa', name: 'storyteller-worker', namespace: 'lab-app' },
+    metadata: { uid: 'dep-uid-aaaa', name: 'storyteller-worker', namespace: 'lab-workers' },
     spec: {
       template: {
+        metadata: { labels: { 'offscreen.rpg/chaos-eligible': 'true' } },
         spec: {
-          containers: [
-            {
-              image: `registry.example/app@${DIGEST}`,
-            },
-          ],
+          containers: [{ image: 'offscreen-lab-app-release-worker:turn02' }],
         },
       },
     },
@@ -55,17 +53,28 @@ function labExecFixture(opts = {}) {
       ],
     },
   };
+  const replicaSet = {
+    metadata: {
+      name: 'storyteller-worker-77f',
+      uid: 'rs-uid-77f',
+      namespace: 'lab-workers',
+      ownerReferences: [
+        { kind: 'Deployment', name: 'storyteller-worker', uid: 'dep-uid-aaaa', controller: true },
+      ],
+    },
+  };
   const pod = {
     metadata: {
       uid: 'pod-eligible-1',
       name: 'storyteller-worker-abc',
-      namespace: 'lab-app',
-      labels: {},
+      namespace: 'lab-workers',
+      labels: { 'offscreen.rpg/chaos-eligible': 'true' },
       ownerReferences: [
         {
-          kind: 'Deployment',
-          name: 'storyteller-worker',
-          uid: 'dep-uid-aaaa',
+          kind: 'ReplicaSet',
+          name: 'storyteller-worker-77f',
+          uid: 'rs-uid-77f',
+          controller: true,
         },
       ],
     },
@@ -111,10 +120,13 @@ function labExecFixture(opts = {}) {
         status: 0,
       };
     }
-    if (joined.includes('pods') && joined.includes('lab-app')) {
+    if (joined.includes('replicasets') && joined.includes('lab-workers')) {
+      return { argv: [file, ...args], stdout: JSON.stringify({ items: [opts.replicaSet ?? replicaSet] }), stderr: '', status: 0 };
+    }
+    if (joined.includes('pods') && joined.includes('lab-workers')) {
       return {
         argv: [file, ...args],
-        stdout: JSON.stringify({ items: [pod] }),
+        stdout: JSON.stringify({ items: [opts.pod ?? pod] }),
         stderr: '',
         status: 0,
       };
@@ -275,34 +287,137 @@ describe('runPreflightPlan negative', () => {
     assert.ok(isConflictingClusterRun({ clusterLockExists: () => true }));
   });
 
-  test('image digest unavailable when deployment manifest lacks sha256', () => {
+  test('tag-only Deployment is eligible when Pod imageID matches pinned digest', () => {
     const { execFile } = labExecFixture();
-    const noDigestExec = (file, args) => {
-      const joined = [file, ...args].join('\0');
-      if (joined.includes('deployment\0storyteller-worker')) {
-        return {
-          argv: [file, ...args],
-          stdout: JSON.stringify({
-            metadata: { uid: 'dep-uid-aaaa' },
-            spec: { template: { spec: { containers: [{ image: 'app:latest' }] } } },
-          }),
-          stderr: '',
-          status: 0,
-        };
-      }
-      return execFile(file, args);
-    };
     const plan = runPreflightPlan({
-      runId: 'run-no-digest',
+      runId: 'run-tagged-image',
       seed: '1',
       maxEvents: 1,
       releaseRefPath: 'fixture-release.json',
-      execFile: noDigestExec,
+      execFile,
       readReleaseRef: () => RELEASE_REF,
       readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
       clusterLockExists: () => false,
     });
-    assert.equal(plan.reason, 'image-digest-unavailable');
+    assert.equal(plan.status, 'planned');
+    assert.equal(plan.target.imageDigest, DIGEST);
+  });
+
+  test('live Deployment template must be opted in, local label alone is insufficient', () => {
+    const { execFile } = labExecFixture();
+    const badDeployment = (file, args) => {
+      const result = execFile(file, args);
+      if (file === 'kubectl' && args.includes('deployment')) {
+        const deployment = JSON.parse(result.stdout);
+        delete deployment.spec.template.metadata.labels['offscreen.rpg/chaos-eligible'];
+        return { ...result, stdout: JSON.stringify(deployment) };
+      }
+      return result;
+    };
+    const plan = runPreflightPlan({
+      runId: 'run-fake-local-label', seed: '1', maxEvents: 1,
+      releaseRefPath: 'fixture-release.json', execFile: badDeployment,
+      readReleaseRef: () => RELEASE_REF,
+      readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
+      clusterLockExists: () => false,
+    });
+    assert.equal(plan.reason, 'missing-chaos-eligibility');
+  });
+
+  test('Pod ReplicaSet UID mismatch refuses selection', () => {
+    const { execFile } = labExecFixture();
+    const badRs = (file, args) => {
+      const result = execFile(file, args);
+      if (file === 'kubectl' && args.includes('replicasets')) {
+        const row = JSON.parse(result.stdout);
+        row.items[0].metadata.uid = 'a-different-replicaset-uid';
+        return { ...result, stdout: JSON.stringify(row) };
+      }
+      return result;
+    };
+    const plan = runPreflightPlan({
+      runId: 'run-wrong-rs', seed: '1', maxEvents: 1,
+      releaseRefPath: 'fixture-release.json', execFile: badRs,
+      readReleaseRef: () => RELEASE_REF,
+      readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
+      clusterLockExists: () => false,
+    });
+    assert.equal(plan.reason, 'no-eligible-targets');
+  });
+
+  test('a ReplicaSet owned by a different Deployment UID cannot qualify', () => {
+    const { execFile } = labExecFixture();
+    const badRsParent = (file, args) => {
+      const result = execFile(file, args);
+      if (file === 'kubectl' && args.includes('replicasets')) {
+        const row = JSON.parse(result.stdout);
+        row.items[0].metadata.ownerReferences[0].uid = 'wrong-deployment-uid';
+        return { ...result, stdout: JSON.stringify(row) };
+      }
+      return result;
+    };
+    const plan = runPreflightPlan({
+      runId: 'run-wrong-deployment-owner', seed: '1', maxEvents: 1,
+      releaseRefPath: 'fixture-release.json', execFile: badRsParent,
+      readReleaseRef: () => RELEASE_REF,
+      readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
+      clusterLockExists: () => false,
+    });
+    assert.equal(plan.reason, 'no-eligible-targets');
+  });
+
+  test('live Pod must itself carry chaos eligibility, not just template', () => {
+    const { execFile } = labExecFixture();
+    const podNotOpted = (file, args) => {
+      const result = execFile(file, args);
+      if (file === 'kubectl' && args.includes('pods')) {
+        const row = JSON.parse(result.stdout);
+        delete row.items[0].metadata.labels['offscreen.rpg/chaos-eligible'];
+        return { ...result, stdout: JSON.stringify(row) };
+      }
+      return result;
+    };
+    const plan = runPreflightPlan({
+      runId: 'run-pod-not-opted', seed: '1', maxEvents: 1,
+      releaseRefPath: 'fixture-release.json', execFile: podNotOpted,
+      readReleaseRef: () => RELEASE_REF,
+      readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
+      clusterLockExists: () => false,
+    });
+    assert.equal(plan.reason, 'no-eligible-targets');
+  });
+
+  test('a changed Deployment image tag is refused even with same Pod digest', () => {
+    const { execFile } = labExecFixture();
+    const changedDeployment = (file, args) => {
+      const result = execFile(file, args);
+      if (file === 'kubectl' && args.includes('deployment')) {
+        const row = JSON.parse(result.stdout);
+        row.spec.template.spec.containers[0].image = 'unapproved:latest';
+        return { ...result, stdout: JSON.stringify(row) };
+      }
+      return result;
+    };
+    const plan = runPreflightPlan({
+      runId: 'run-wrong-tag', seed: '1', maxEvents: 1,
+      releaseRefPath: 'fixture-release.json', execFile: changedDeployment,
+      readReleaseRef: () => RELEASE_REF,
+      readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
+      clusterLockExists: () => false,
+    });
+    assert.equal(plan.reason, 'release-provenance-drift');
+  });
+
+  test('unknown or protected app namespace fails closed', () => {
+    const { execFile } = labExecFixture();
+    const plan = runPreflightPlan({
+      runId: 'run-data-pod', seed: '1', maxEvents: 1,
+      releaseRefPath: 'fixture-release.json', execFile,
+      readReleaseRef: () => ({...RELEASE_REF, releaseOwners: [{...RELEASE_REF.releaseOwners[0], namespace: 'lab-postgres'}]}),
+      readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
+      clusterLockExists: () => false,
+    });
+    assert.equal(plan.reason, 'unowned-app-namespace');
   });
 });
 
@@ -317,7 +432,7 @@ describe('createKubectlAdapter', () => {
       }),
     });
     assert.throws(
-      () => adapter.runKubectl(['delete', 'pod', 'x', '-n', 'lab-app']),
+      () => adapter.runKubectl(['delete', 'pod', 'x', '-n', 'lab-workers']),
       /mutating kubectl/,
     );
     assert.equal(adapter.invocations.length, 0);
