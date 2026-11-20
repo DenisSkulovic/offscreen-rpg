@@ -30,7 +30,7 @@ From the repository root:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm infra:up
+pnpm stack:up
 pnpm db:migrate
 pnpm dev
 ```
@@ -42,7 +42,7 @@ Status commands from the repository root:
 ```sh
 pnpm repo:brief
 pnpm repo:brief --json
-pnpm infra -- ps
+pnpm stack:status
 ```
 
 `pnpm db:baseline`, `pnpm db:reset:test`, and `pnpm test:focus` are not startup. They are [disposable database checks](local-integration-tests.md#disposable-database-checks). `pnpm db:baseline` rewrites migration files; it does not reset PostgreSQL.
@@ -53,7 +53,7 @@ The worker uses `TEMPORAL_ADDRESS` (default `127.0.0.1:7233`), `TEMPORAL_NAMESPA
 
 ## Fast frontend workflow
 
-For React/Next portfolio work, use [.agents/skills/frontend-engineering/SKILL.md](../../.agents/skills/frontend-engineering/SKILL.md) and the [client architecture](../technical/client/architecture.md), plus the **one** selected Change. The [2026-11 frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md) is dated evidence, not the current executor. Full `pnpm dev` starts several watchers/services; it is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
+For React/Next portfolio work, use [.agents/skills/frontend-engineering/SKILL.md](../../.agents/skills/frontend-engineering/SKILL.md) and the [client architecture](../technical/client/architecture.md), plus the **one** selected Change. The [2026-11 frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md) is dated evidence, not the current executor. `pnpm dev` starts Tilt against the lab cluster. It is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
 
 Existing direct commands after dependency setup (use only when relevant):
 
@@ -72,8 +72,8 @@ Keep pnpm's store and warm `.turbo`, `.next/dev`, `dist` and TypeScript incremen
 With Docker and Compose v2 installed:
 
 ```sh
-pnpm infra:up
-pnpm infra:down
+pnpm stack:up
+pnpm stack:down
 ```
 
 Docker Desktop with its WSL 2 backend is the verified Windows path. A previous
@@ -94,15 +94,15 @@ installed directly in `Ubuntu-24.04` as a recovery option, but do not run both
 engines' project stacks simultaneously because they publish the same loopback
 ports. Docker Desktop remains the normal development runtime.
 
-Compose defines application PostgreSQL on localhost:5432, Temporal on localhost:7233 with its UI on localhost:8233, and optional Redis on localhost:6379. Named volumes preserve PostgreSQL and Temporal data when stopped; Redis is deliberately disposable and has persistence disabled. `infra:down` retains the named volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API admits requests in PostgreSQL; the application worker relays their outbox notices and executes scripted preview workflows in Temporal. `REDIS_URL` enables version-addressed public snapshot caching; omitting it keeps the same application behavior without a cache.
+Compose defines application PostgreSQL on localhost:5432, Temporal on localhost:7233 with its UI on localhost:8233, and optional Redis on localhost:6379. Named volumes preserve PostgreSQL and Temporal data when stopped; Redis is deliberately disposable and has persistence disabled. `stack:down` retains the named volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API admits requests in PostgreSQL; the application worker relays their outbox notices and executes scripted preview workflows in Temporal. `REDIS_URL` enables version-addressed public snapshot caching; omitting it keeps the same application behavior without a cache.
 
-Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. Local boot, including `pnpm infra:up` and `pnpm dev`, is not a restore rehearsal. The untested checklist is [Release and restore readiness](release-restore-readiness.md). CI starts both containers and waits for their health checks. Local startup is verified on Windows through Docker Desktop's WSL 2 backend. After installing Docker, reopen terminals so the CLI and credential helper are available on PATH. The scripted opening integration suite exercises saved-request processing and duplicate delivery after worker restart.
+Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. Local boot, including `pnpm stack:up` and `pnpm dev`, is not a restore rehearsal. The untested checklist is [Release and restore readiness](release-restore-readiness.md). CI starts both containers and waits for their health checks. Local startup is verified on Windows through Docker Desktop's WSL 2 backend. After installing Docker, reopen terminals so the CLI and credential helper are available on PATH. The scripted opening integration suite exercises saved-request processing and duplicate delivery after worker restart.
 
 Repository launchers also resolve Docker Desktop's standard Windows CLI path directly when their inherited process PATH is stale. CLI discovery uses `docker --version` and does not contact the daemon; a stopped backend, inaccessible named pipe or Docker configuration permission error is therefore reported as that actual runtime failure rather than “Docker CLI was not found.”
 
 Focused integration reset connects to the loopback PostgreSQL service directly through the database package's installed driver. It does not require Docker CLI or named-pipe access once the Compose services are running. Infrastructure lifecycle commands still use Docker Compose.
 
-Use host application processes and Compose dependencies first. Kubernetes comes after a working containerized story slice, when a deployment can demonstrate something useful. The production images and cluster manifests will be built against those actual processes.
+Use the Kubernetes stack commands (`pnpm stack:preflight`, `pnpm stack:up`, `pnpm stack:status`, `pnpm stack:down`, `pnpm stack:reset`) and `pnpm dev` for ordinary local application boot. Checked-in Compose files remain until DXK06; they are not a supported application boot command.
 
 ## Game Authority seam
 

@@ -103,7 +103,7 @@ export function buildReplayCommand(args: {
   lane: ChamberLabLane;
 }): string {
   const scenario = args.scenarioId ?? '<scenario-id>';
-  return `pnpm chamber:scenario -- ${scenario} --lane=${args.lane} --seed=${args.seed}`;
+  return `pnpm --filter @offscreen/chamber scenario -- ${scenario} --lane=${args.lane} --seed=${args.seed}`;
 }
 
 export function evidenceMarkdownSummary(

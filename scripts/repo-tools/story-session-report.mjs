@@ -106,42 +106,50 @@ function packRequestHandles(request) {
   return { handles };
 }
 
-async function reportSession() {
-const uuid =
+const STORY_UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/** @param {NodeJS.ProcessEnv} env */
+export function storyDatabaseCommand(env) {
+  const source = env ?? process.env;
+  const databaseUrl = source['OFFSCREEN_STORY_DATABASE_URL'];
+  if (typeof databaseUrl !== 'string' || databaseUrl.length === 0) {
+    throw new Error(
+      'OFFSCREEN_STORY_DATABASE_URL must be set to a postgres:// or postgresql:// connection URL',
+    );
+  }
+  if (!/^postgres(?:ql)?:\/\//i.test(databaseUrl)) {
+    throw new Error(
+      'OFFSCREEN_STORY_DATABASE_URL must be a postgres:// or postgresql:// connection URL',
+    );
+  }
+  return {
+    command: 'psql',
+    args: [databaseUrl, '-At', '-v', 'ON_ERROR_STOP=1'],
+    env: {
+      ...source,
+      PGOPTIONS: '-c default_transaction_read_only=on',
+    },
+  };
+}
+
+async function reportSession() {
 const requested = process.argv.slice(2).find((value) => !value.startsWith('-'));
-if (requested && !uuid.test(requested)) {
-  throw new Error('Usage: pnpm story:inspect [story-uuid]');
+if (requested && !STORY_UUID.test(requested)) {
+  throw new Error('Usage: pnpm --filter @offscreen/chamber story-inspect [story-uuid]');
 }
 
-function docker(args) {
-  return execFileSync('docker', args, { encoding: 'utf8' }).trim();
-}
-
-const container = docker(['compose', 'ps', '-q', 'postgres']);
-if (!container) throw new Error('The local Postgres service is not running');
-const database =
-  process.env['OFFSCREEN_STORY_DATABASE'] ?? 'offscreen_story_local';
+const database = storyDatabaseCommand(process.env);
 function sql(statement) {
-  return docker([
-    'exec',
-    container,
-    'psql',
-    '-U',
-    'offscreen',
-    '-d',
-    database,
-    '-At',
-    '-v',
-    'ON_ERROR_STOP=1',
-    '-c',
-    statement,
-  ]);
+  return execFileSync(database.command, [...database.args, '-c', statement], {
+    encoding: 'utf8',
+    env: database.env,
+  }).trim();
 }
 
 const storyId =
   requested ?? sql('select id from story order by created_at desc limit 1');
-if (!storyId || !uuid.test(storyId)) throw new Error('No local story found');
+if (!storyId || !STORY_UUID.test(storyId)) throw new Error('No local story found');
 
 const journey = JSON.parse(
   sql(`

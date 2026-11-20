@@ -22,13 +22,13 @@ Compatibility stays on this page. Selected application topology stays on [Runtim
 
 ## Local development
 
-Use Docker Compose for application PostgreSQL and a local Temporal development service, with application processes running locally for fast TypeScript feedback. Persist local Temporal state when demonstrating restart recovery; an ephemeral test service cannot prove persistence across service restarts. Also provide a full container profile for a reproducible demonstration. Add object storage locally only when media is implemented; use static sample artwork before then. Redis is not a required local dependency.
+Supported application boot is `pnpm stack:up` and `pnpm dev` on the local kind cluster. Checked-in Compose files remain until DXK06 and are not a root script. There is no host `turbo run dev` command. Persist local Temporal state when demonstrating restart recovery; an ephemeral test service cannot prove persistence across service restarts. Add object storage locally only when media is implemented; use static sample artwork before then. Redis is not a required local dependency.
 
 Provide a deterministic fake storyteller/provider for tests and a no-paid-key demo. It should follow the same structured proposal contract as the eventual live adapter and clearly identify itself as a scripted demonstration. The current phase keeps paid integrations disconnected while the broader application is built, tested and tuned. Enable them only when the user explicitly elects to do so; credentials and budgets alone do not authorize that step. Never run paid model tests automatically for arbitrary pull requests.
 
 Pin supported runtime/dependency versions, the package manager and container image versions when scaffolding. Keep a single lockfile. Application code is TypeScript; SQL migrations, Compose YAML and a small documentation checker do not violate that preference.
 
-A separate [Kubernetes developer UI](../../runbooks/kubernetes-developer-ui.md) route wires `pnpm dev` to Tilt on `kind-offscreen-lab` and a Windows Headlamp kubeconfig. `tilt ci` has been observed on the existing lab cluster, and kubectl has used the single-context kubeconfig to replace one `game-web` Pod. The Headlamp desktop click remains a later operator check. This section remains the Compose and host-process local path.
+A separate [Kubernetes developer UI](../../runbooks/kubernetes-developer-ui.md) route wires `pnpm dev` to Tilt on `kind-offscreen-lab` and a Windows Headlamp kubeconfig. `tilt ci` has been observed on the existing lab cluster, and kubectl has used the single-context kubeconfig to replace one `game-web` Pod. The Headlamp desktop click remains a later operator check. `pnpm dev` and `pnpm stack:*` are the supported local commands. Compose YAML is not a second boot command.
 
 ## Scripted testing chamber
 

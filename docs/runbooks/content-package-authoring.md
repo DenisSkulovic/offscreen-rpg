@@ -113,7 +113,7 @@ These commands were checked against `package.json` files at the inspected revisi
 
 Refused for authoring validation:
 
-- `pnpm story:local` and `pnpm story:server` exist in the root `package.json`. They start local Story mode. `story:local` reads provider credentials. Chamber imports the checked-in directories only. Neither command validates an arbitrary draft package.
+- Root `package.json` does not expose a local Story-mode startup command. Ordinary local play uses `pnpm dev` on the Kubernetes stack. `pnpm --filter @offscreen/chamber start` imports checked-in directories for Chamber only. Neither path validates an arbitrary draft package.
 - `OFFSCREEN_DEFAULT_RULE_SOURCE` is read by [apps/api/src/main.ts](../../apps/api/src/main.ts). When a document store exists, startup imports that directory, or `content/rules/srd-5.2.1-subset` when the variable is unset, and uses the result as the process default rule pin. [Local development](local-development.md#requirements-and-startup) documents the variable. Setting it does not validate a draft, and it does change which rule root the API process pins.
 - `pnpm wiki:content-health` exists in the root `package.json`. It checks maintained wiki pages. It does not import a game content package.
 

@@ -149,7 +149,7 @@ export function materializeHeldPacketEvidence(args: {
     startedAt: new Date().toISOString(),
   });
 
-  const reproduction = `pnpm chamber:packet  # generation ${args.snapshot.generationId} hash ${args.snapshot.packetHash}`;
+  const reproduction = `pnpm --filter @offscreen/chamber packet  # generation ${args.snapshot.generationId} hash ${args.snapshot.packetHash}`;
 
   const serialized = JSON.stringify(finished.capsule);
   if (
