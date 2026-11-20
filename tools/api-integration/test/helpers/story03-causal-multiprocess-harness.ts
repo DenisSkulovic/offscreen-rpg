@@ -615,8 +615,6 @@ export async function withStory03CausalMultiprocessHarness(
       secret: 'integration-only-not-a-runtime-secret-1234',
       githubClientId: 'test-client',
       githubClientSecret: 'test-secret',
-      pocOpenAccess: false,
-      localDemoAuth: false,
     }),
     plugins: [strictUtilities],
   });

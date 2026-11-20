@@ -2,8 +2,6 @@ import { readStorytellerExecution } from '@offscreen/application/storyteller';
 import { createApp } from './app.js';
 import { readConfig } from './config.js';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { user } from '@offscreen/db/schema';
-import { POC_LOCAL_PLAYER } from './modules/auth/config.js';
 import { createAuth } from './modules/auth/auth.js';
 import { readAuthConfig } from './modules/auth/config.js';
 import {
@@ -42,17 +40,6 @@ async function main() {
   );
   try {
     await database.checkConnection();
-    if (authConfig.pocOpenAccess) {
-      await database.db
-        .insert(user)
-        .values({
-          id: POC_LOCAL_PLAYER.id,
-          name: POC_LOCAL_PLAYER.name,
-          email: POC_LOCAL_PLAYER.email,
-          emailVerified: true,
-        })
-        .onConflictDoNothing();
-    }
     const documentStore = createDocumentStoreFromEnv(process.env);
     if (documentStore instanceof S3DocumentStore) {
       await documentStore.ensureBucket();
@@ -69,7 +56,6 @@ async function main() {
         databaseConfig,
         ...(documentStore ? { documentStore } : {}),
         ...(defaultRules ? { defaultRules } : {}),
-        pocOpenAccess: authConfig.pocOpenAccess,
         storytellerExecution: readStorytellerExecution(process.env),
         readCache: cache.cache,
         closeCache: cache.close,

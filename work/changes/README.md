@@ -17,11 +17,11 @@
 
 **Next-work priority:** [one implementation roadmap](../IMPLEMENTATION-ROADMAP.md) orders the open work; [QUEUE](../QUEUE.md) owns the only selected Change. **[FORK01](archive/2026-11/other/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)** is Done for the local private historical fork. Cold kind stays TURN03. Current work is none. BOOT03 and TURN02 are archived.
 
-**2026-11-20 Kubernetes-first developer experience (DXK01, DXK02, DXK04, DXK05, and DXK06 archived; DXK03, DXK07, DXK08, and DXK09 are still open):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). DXK01–07 establish Kubernetes-first operation, auth/playability, command/CI cleanup, Compose retirement and clean-clone verification. **DXK08 now owns the missing fast inner developer loop; DXK09 owns isolated branch/worktree dev stacks for parallel Cursor chats.** The fixed release lab remains authoritative for release proofs. TURN02 and BOOT03 are archived. No packet is currently selected.
+**2026-11-20 Kubernetes-first developer experience (DXK01 through DXK06 archived; DXK07, DXK08, and DXK09 are still open):** [program, source investigation and finite Cursor handoff](../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). DXK01–07 establish Kubernetes-first operation, auth/playability, command/CI cleanup, Compose retirement and clean-clone verification. **DXK08 now owns the missing fast inner developer loop; DXK09 owns isolated branch/worktree dev stacks for parallel Cursor chats.** The fixed release lab remains authoritative for release proofs. TURN02 and BOOT03 are archived. No packet is currently selected.
 
 - [DXK01: Kubernetes stack lifecycle](archive/2026-11/other/2026-11-20--dxk01-kubernetes-stack-lifecycle/CHANGE.md)
 - [DXK02: Tilt and Headlamp operator experience](archive/2026-11/other/2026-11-20--dxk02-tilt-headlamp-developer-uis/CHANGE.md)
-- [DXK03: Local identity and playable campaign](open/2026-11-20--dxk03-local-playable-identity-and-fixture/CHANGE.md)
+- [DXK03: Local identity and playable campaign](archive/2026-11/other/2026-11-20--dxk03-local-playable-identity-and-fixture/CHANGE.md)
 - [DXK04: Root package command redesign](archive/2026-11/other/2026-11-20--dxk04-package-command-surface/CHANGE.md)
 - [DXK05: Kubernetes CI and lab safety replacement](archive/2026-11/other/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md)
 - [DXK06: Remove Compose runtime and references](archive/2026-11/other/2026-11-20--dxk06-compose-retirement/CHANGE.md)
