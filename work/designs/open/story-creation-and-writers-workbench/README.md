@@ -11,6 +11,9 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - [SOURCE-AUDIT.md](SOURCE-AUDIT.md) — observed implementation and source-backed constraints at the inspected SHA.
 - [DESIGN-NOTES.md](DESIGN-NOTES.md) — the player-facing intent, creator's library concept, competing setup architectures, authority and cost rules.
 - [QUESTIONS-AND-EXPERIMENTS.md](QUESTIONS-AND-EXPERIMENTS.md) — decisions not yet taken, risk probes, and bounded evaluation design.
+- [FILE-FIRST-LIBRARY-REVIEW.md](FILE-FIRST-LIBRARY-REVIEW.md) — Markdown-first Storyteller interface versus physical JSON/CAS and SQL control, filename discovery, authority and API boundaries.
+- [INITIALIZATION-LIFECYCLES.md](INITIALIZATION-LIFECYCLES.md) — competing single-round and preparatory-workbench launch lifecycles, concrete preset/custom traces and failure matrix.
+- [WRITER-SKILLS-EXPERIMENT.md](WRITER-SKILLS-EXPERIMENT.md) — workdesk metaphor, creative skills versus executable tools and cheap-model quality/cost experiments.
 
 ## Owner's product direction (from conversation, not yet reconciled into canonical docs)
 
@@ -43,8 +46,8 @@ This dossier is the home for the continuing multi-conversation investigation. It
 ## Research sequence
 
 - **I1 recorded:** inspect existing creation, profile, start-package, opening and bootstrap implementation; record the user's workbench hypothesis and its architectural costs.
-- **I2 next:** specify candidate lifecycle diagrams for prepared-start, custom `bah`, and abstract-galaxy launches, including failure, safe retry, source roots and clock activation.
-- **I3:** evaluate when the agent genuinely needs separate preparation, how much context it receives automatically, and what it is allowed to write.
+- **I2 drafted 2026-11-20, not accepted:** compare A (single-round composition) vs B (separate Workdesk preparation) and conditional C; trace prepared preset, `bah`, abstract galaxy, pre-play staging, retry and first-scene root. See [INITIALIZATION-LIFECYCLES](INITIALIZATION-LIFECYCLES.md).
+- **I3 in progress:** decide whether standard named Markdown entry documents become reserved hooks, how core profile/prompt content is pinned and auto-injected, what proposed writes mean, and whether narrow writer skills beat matched-token baselines. See [FILE-FIRST-LIBRARY-REVIEW](FILE-FIRST-LIBRARY-REVIEW.md) and [WRITER-SKILLS-EXPERIMENT](WRITER-SKILLS-EXPERIMENT.md).
 - **I4:** design minimal quality/cost probes; only after product/technical reconciliation prepare bounded executable Changes for Cursor.
 
 **Do not** auto-select a Change, automatically dispatch a provider, or treat a proposed `STORYTELLER_PROFILE.md` path as an implemented runtime feature.
