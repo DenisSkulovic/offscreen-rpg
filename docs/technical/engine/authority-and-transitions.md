@@ -36,6 +36,28 @@ The minimum committed state for each newly published scene is the information re
 
 This is a **semantic contract**, not a requirement to copy one giant JSON object per scene. Persistent structures, event/checkpoint combinations or other representations may share unchanged state. Operational jobs, provider attempts, leases, billing and account authorization remain separate custody records.
 
+### Existing state owners and revision hazards
+
+The broader scene boundary above does **not** erase the existing engine's finer state ownership. These current responsibilities and revision hazards remain constraints that WR05/WR06 must preserve or deliberately migrate:
+
+These are semantic responsibilities, not literal DTOs or a table per row. Reuse existing storage where it has the right meaning and split it only where independent lifecycle demands it.
+
+| State | Owner and purpose | Changes when |
+| --- | --- | --- |
+| Campaign clock | Exact real anchor/rate/remainder, projected whole tick and settled-through frontier | Time is projected/settled, pace changes or a domain hold changes |
+| Campaign gameplay revision | Fence for mechanically or interactively relevant state, distinct from narrative passage sequence | Rules/choices/authorization change, not merely a report arrives |
+| Current situation authorization | Explicit scene choices, local opportunity references, scope/validity and handoff permission | Storyteller/authored scene publication replaces it |
+| Definition/package versions | Validated reusable rule content and target bindings | Explicit admitted preparation/revision, never reward settlement |
+| Work instance | Accepted terms, exact identity/revision, earned effort/progress, lifecycle and boundary receipts | Participation or rules settle; definition reuse does not replace it |
+| Holds | Independently owned manual, decision and system reasons | The owner of each reason sets/clears it |
+| Follow-up intent | Boundary+hook identity, frozen snapshot, report/scene semantics and recovery status | Mechanical transaction creates it; separate task/publication consumes it |
+| Accepted plan | Player permission, ordered entries, horizon, revision and cursor | Player accepts/edits or an admitted transition consumes an entry |
+| View version | Monotonic browser snapshot ordering | Any visible change, including a historical report |
+
+The current `campaignConsequence` uniqueness on narrative revision assumes one controlling consequence. It is not a safe identity scheme for multiple historical reports alongside a scene. Follow-up intents must deduplicate by source receipt and hook, with at most one controlling interaction in the initial solo scope. Do not simply remove the database constraint and hope workers coordinate.
+
+Current `story.revision` selects a committed passage sequence; `game_offer.narrativeRevision` and publication depend on that relationship. Do not increment it as a generic world-state counter without appending a passage. Add an explicit campaign state fence where needed and capture both current passage and gameplay revision for interactive generation. Mechanical history can still append factual passages through its existing owner. Historical reports attach separately and cannot become the current passage by accident.
+
 ## Clock correction: the nearest implementation boundary
 
 The campaign now owns pace/anchor/fraction and world chronology. Each activity retains only its eligible effort and progress; receipts use actual world boundaries after other commitments advance. The next correction makes accepted execution an explicit input to clock projection, including finite scene actions. Never reconstruct world time from an activity's original start plus its local effort or use `max(oldTick, calculatedTick)` to conceal a rewind.
