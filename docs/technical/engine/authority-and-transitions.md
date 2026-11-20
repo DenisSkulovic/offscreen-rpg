@@ -1,5 +1,7 @@
 # Connected solo gameplay: implementation contract
 
+**Target authority:** a writer may propose prose, descriptive facts, choices and source changes; Game Authority commits one coherent **post-publication** outcome. The scene boundary must contain enough semantic state to review and fork that scene without consulting the parent's later mutable state.
+
 Status: maintained implementation contract. Campaign clock arithmetic, authored quiet reuse, historical reports, bounded accepted chains and explicit post-scene re-entry are implemented. The deliberate-time correction is the [execution-permission and short-action contract](./chronology-and-activities.md). Solo accepted-activity and finite-action projection are source-observed there. Arithmetic, overlap, and finite-action settle or interrupt have named offline tests. The gate function has no dedicated unit test. Broader chain editing, world preparation, group progression, and delegated decisions remain separate. No live inference, deployment or multiplayer behavior is authorized here.
 
 Read the [gold session](../../../research/authored-scenarios/harbor-session.md) alongside this contract. [Rules and activities](./mechanics-and-capabilities.md) owns action/choice authority; [ticks](./ticks-and-tags.md) owns units/exact arithmetic; [bounded autonomy](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) owns follow-ups/queues. This document owns the **integration decisions between those responsibilities**. Do not create a second progression engine to implement it.
@@ -22,23 +24,17 @@ These defaults avoid waiting for broad autonomy or world simulation before provi
 
 ## A minimum state ledger
 
-These are semantic responsibilities, not literal DTOs or a table per row. Reuse existing storage where it has the right meaning and split it only where independent lifecycle demands it.
+The minimum committed state for each newly published scene is the information required to continue that exact fiction faithfully:
 
-| State | Owner and purpose | Changes when |
-| --- | --- | --- |
-| Campaign clock | Exact real anchor/rate/remainder, projected whole tick and settled-through frontier | Time is projected/settled, pace changes or a domain hold changes |
-| Campaign gameplay revision | Fence for mechanically or interactively relevant state, distinct from narrative passage sequence | Rules/choices/authorization change, not merely a report arrives |
-| Current situation authorization | Explicit scene choices, local opportunity references, scope/validity and handoff permission | Storyteller/authored scene publication replaces it |
-| Definition/package versions | Validated reusable rule content and target bindings | Explicit admitted preparation/revision, never reward settlement |
-| Work instance | Accepted terms, exact identity/revision, earned effort/progress, lifecycle and boundary receipts | Participation or rules settle; definition reuse does not replace it |
-| Holds | Independently owned manual, decision and system reasons | The owner of each reason sets/clears it |
-| Follow-up intent | Boundary+hook identity, frozen snapshot, report/scene semantics and recovery status | Mechanical transaction creates it; separate task/publication consumes it |
-| Accepted plan | Player permission, ordered entries, horizon, revision and cursor | Player accepts/edits or an admitted transition consumes an entry |
-| View version | Monotonic browser snapshot ordering | Any visible change, including a historical report |
+- exact Library root and source/package lineage;
+- admitted world-state frontier, including truth/uncertainty that later correctness depends on;
+- fictional clock and achieved progress;
+- active fictional plans, offers, obligations, holds and choice meanings;
+- applicable capabilities/resources/relationships where the world uses them;
+- effective creative profile, writing-skill and typed rule pins;
+- immutable passage/choice publication identity and causal parent.
 
-The current `campaignConsequence` uniqueness on narrative revision assumes one controlling consequence. It is not a safe identity scheme for multiple historical reports alongside a scene. Follow-up intents must deduplicate by source receipt and hook, with at most one controlling interaction in the initial solo scope. Do not simply remove the database constraint and hope workers coordinate.
-
-Current `story.revision` selects a committed passage sequence; `game_offer.narrativeRevision` and publication depend on that relationship. Do not increment it as a generic world-state counter without appending a passage. Add an explicit campaign state fence where needed and capture both current passage and gameplay revision for interactive generation. Mechanical history can still append factual passages through its existing owner. Historical reports attach separately and cannot become the current passage by accident.
+This is a **semantic contract**, not a requirement to copy one giant JSON object per scene. Persistent structures, event/checkpoint combinations or other representations may share unchanged state. Operational jobs, provider attempts, leases, billing and account authorization remain separate custody records.
 
 ## Clock correction: the nearest implementation boundary
 
