@@ -94,4 +94,4 @@ This inspection does not add an effect, a field, or a schema. Source was read at
 
 This proposal does not publish `docs/product/gameplay/character-life-and-progression.md`. It does not select injury, death, disease, leveling, or aging as product rules. It does not claim D&D 5e combat is selected or implemented. It does not add a hit-point track, a fatigue counter, an age field, a skill tree, or a disease table. A later owner may ratify a distinct player promise and then choose an owner. Until that acceptance, the selected headings above remain the rules.
 
-Packet: [DOC33](../../../changes/archive/2026-11/other/2026-11-18--doc33-character-lifecourse-policy/CHANGE.md).
+Packet: [DOC33](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc33-character-lifecourse-policy/CHANGE.md).

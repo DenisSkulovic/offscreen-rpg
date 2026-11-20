@@ -10,12 +10,12 @@
 5. [EDITORIAL POLICY](EDITORIAL-POLICY.md): how to prevent dream ideas hardening into canonical requirements.
 
 ## Proposed sequence
-- [PVAL01](../../../changes/archive/2026-11/other/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md): Done. The two documentation entrypoints separate selection from demonstrated viability.
-- [PVAL02](../../../changes/archive/2026-11/other/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md): Done. The owner ratified solo as the first tested playability milestone. The small party stays a distant later aspiration.
-- [PVAL03](../../../changes/archive/2026-11/other/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md): Done. Map, generalized forms, and the absence queue stay proposed beside the binding location and time rules.
-- [PVAL04](../../../changes/archive/2026-11/other/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md): Done. Quality and cost notes were added. No live paid experiment was run.
-- [PVAL05](../../../changes/archive/2026-11/other/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md): Done. Scenes now say whether they are solo texture or a later stress test.
-- [PVAL06](../../../changes/archive/2026-11/other/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md): Done. A promoted claim without an evidence route is flagged. Ordinary prose is not scanned.
+- [PVAL01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md): Done. The two documentation entrypoints separate selection from demonstrated viability.
+- [PVAL02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md): Done. The owner ratified solo as the first tested playability milestone. The small party stays a distant later aspiration.
+- [PVAL03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md): Done. Map, generalized forms, and the absence queue stay proposed beside the binding location and time rules.
+- [PVAL04](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md): Done. Quality and cost notes were added. No live paid experiment was run.
+- [PVAL05](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md): Done. Scenes now say whether they are solo texture or a later stress test.
+- [PVAL06](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md): Done. A promoted claim without an evidence route is flagged. Ordinary prose is not scanned.
 
 ## Rules
 - These files are **unselected** and must not be interpreted as canonical product requirements or as blanket permission to implement.

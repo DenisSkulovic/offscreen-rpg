@@ -1,6 +1,6 @@
 # Target | reliable repo understanding across GitHub API and local coding agents
 
-**Type:** proposed developer-harness design. **Does not amend:** product/technical game contracts. **Existing owners:** root [AGENTS.md](../../../../AGENTS.md), [.agents/HARNESS.md](../../../../.agents/HARNESS.md), [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md).
+**Type:** proposed developer-harness design. **Does not amend:** product/technical game contracts. **Existing owners:** root [AGENTS.md](../../../../AGENTS.md), [.agents/HARNESS.md](../../../../.agents/HARNESS.md), [WIKI07](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md).
 
 ## Observed starting point at 8aa952a
 

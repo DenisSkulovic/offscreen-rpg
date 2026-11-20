@@ -1,6 +1,6 @@
 # D2 | Scene checkpoint and canonical-state contract for the distributed POC
 
-**Status:** candidate design, 2026-11-19. Not a selected implementation or proof of running historical forks. Reconcile normative sections via [DATA01](../../../changes/archive/2026-11/other/2026-11-19--data01-ratify-scene-checkpoint-and-fork-schema/CHANGE.md). This narrows [ARCH03](../../../changes/archive/2026-11/other/2026-11-19--arch03-branch-scoped-storyteller-knowledge/CHANGE.md), not replaces it. The eventual product requirement is still **review and independently fork from any committed scene**; this POC must prove an actual *non-current* fork without promising unsupported current histories.
+**Status:** candidate design, 2026-11-19. Not a selected implementation or proof of running historical forks. Reconcile normative sections via [DATA01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/data/2026-11-19--data01-ratify-scene-checkpoint-and-fork-schema/CHANGE.md). This narrows [ARCH03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/architecture/2026-11-19--arch03-branch-scoped-storyteller-knowledge/CHANGE.md), not replaces it. The eventual product requirement is still **review and independently fork from any committed scene**; this POC must prove an actual *non-current* fork without promising unsupported current histories.
 
 ## What source actually stores (inspected HEAD 2026-11-19)
 

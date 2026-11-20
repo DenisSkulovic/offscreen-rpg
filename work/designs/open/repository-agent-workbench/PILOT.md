@@ -1,6 +1,6 @@
 # Semantic retrieval pilot | executable experiment design
 
-**Status:** Stage A ran on 2026-11-17 and was not adopted. Stage B was not run. **Source:** [candidate assessment](CANDIDATES.md) and [evaluation contract](EVALUATION.md). **Code-bearing packet:** [HAR03](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md).
+**Status:** Stage A ran on 2026-11-17 and was not adopted. Stage B was not run. **Source:** [candidate assessment](CANDIDATES.md) and [evaluation contract](EVALUATION.md). **Code-bearing packet:** [HAR03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md).
 
 ## The experiment we actually want
 

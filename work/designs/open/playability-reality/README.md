@@ -17,10 +17,10 @@ The game is not a universal Storyteller, agent framework, world simulator or lor
 
 ## Work sequence
 
-1. [REAL01](../../../changes/archive/2026-11/other/2026-11-18--real01-solo-golden-path/CHANGE.md): **Done**. The harbor and return walkthrough is the first solo acceptance oracle. It is an authored target, not a logged run. The wizard and goblin scenes remain a later stress vignette.
-2. [REAL02](../../../changes/archive/2026-11/other/2026-11-18--real02-canon-chain-fixtures/CHANGE.md): **Done** as a local staging and loader classification. A failed transfer can still be stored as a favor if the caller passes that change. Database publication and a played recall were not run.
+1. [REAL01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--real01-solo-golden-path/CHANGE.md): **Done**. The harbor and return walkthrough is the first solo acceptance oracle. It is an authored target, not a logged run. The wizard and goblin scenes remain a later stress vignette.
+2. [REAL02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--real02-canon-chain-fixtures/CHANGE.md): **Done** as a local staging and loader classification. A failed transfer can still be stored as a favor if the caller passes that change. Database publication and a played recall were not run.
 3. [REAL03 experiments](EXPERIMENTS.md): one active-play and one closed-browser-return experiment. Evaluation protocol only; **no automatic provider or hosted calls**, no Change ticket for pure evaluation.
-4. [REAL04](../../../changes/archive/2026-11/other/2026-11-18--real04-v0-scope-provenance/CHANGE.md): **Done**. Both creation routes stay. The freeform route is not a playability pledge, and the harbor oracle is not a license or the only later world.
+4. [REAL04](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--real04-v0-scope-provenance/CHANGE.md): **Done**. Both creation routes stay. The freeform route is not a playability pledge, and the harbor oracle is not a license or the only later world.
 
 REAL01 can proceed independently from REAL02. REAL02's integration-test claim must not outrun the actual safe DB harness. REAL04 needs an exact product-owner review if any normative creation promise changes. REAL05 automated claim guarding is **conditional**, not queued.
 

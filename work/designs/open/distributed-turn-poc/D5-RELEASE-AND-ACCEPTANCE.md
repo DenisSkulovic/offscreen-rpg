@@ -81,8 +81,8 @@ After A–D pass, a separate approved optional run may select a real provider an
 
 ## Execution packets and ownership of evidence
 
-- [TURN01](../../../changes/archive/2026-11/other/2026-11-19--turn01-ratify-unified-poc-acceptance/CHANGE.md) is cancelled into TURN03, along with the DIST06, BOOT04, and STORY04 cases. The cold-cluster proof is not implemented.
-- [TURN02](../../../changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md): one consolidated local Kubernetes application release. Reconcile K8S08, K8S11, DATA05, and BOOT02 before adding manifests. Do not treat merged laboratory smokes as this release.
+- [TURN01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--turn01-ratify-unified-poc-acceptance/CHANGE.md) is cancelled into TURN03, along with the DIST06, BOOT04, and STORY04 cases. The cold-cluster proof is not implemented.
+- [TURN02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md): one consolidated local Kubernetes application release. Reconcile K8S08, K8S11, DATA05, and BOOT02 before adding manifests. Do not treat merged laboratory smokes as this release.
 - [TURN03](../../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md): the provider-free, same-commit acceptance, including the historical fork, after the underlying work lands. This is the final POC completion gate. It is not Done.
 - [TURN04](../../../changes/open/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md): an optional live-provider test with a hard cap. It is not part of fake POC Done.
 

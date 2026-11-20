@@ -1,6 +1,6 @@
 # Decision | Agent-native harness evaluation
 
-**Accepted direction, 2026-11-17.** Developer-harness investigation, not in-game Storyteller work. **Implementation gate:** [HAR08](../../../changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md) is Done as preparation. The live trial is not authorized.
+**Accepted direction, 2026-11-17.** Developer-harness investigation, not in-game Storyteller work. **Implementation gate:** [HAR08](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md) is Done as preparation. The live trial is not authorized.
 
 ## Decision
 
@@ -51,6 +51,6 @@ Source-code symbols, stack traces, imports and callers favor exact language-awar
 
 - The WIKI03 fake harness and HAR08 preflight runner are removed from HEAD. The method remains in the [historical protocol](../../../../docs/runbooks/agent-native-harness-evaluation.md) and the [experiment register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md).
 - [Agent rules](../../../../AGENTS.md), [context economics](../../../../.agents/references/context-economics.md), [wiki router](../../../../docs/README.md), [documentation navigation](../../../../.agents/references/documentation-navigation-standard.md).
-- [HAR07 history](../../../changes/archive/2026-11/other/2026-11-17--har07-evidence-verified-source-navigation/CHANGE.md). No previous HAR score is regraded as a real-agent result.
+- [HAR07 history](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har07-evidence-verified-source-navigation/CHANGE.md). No previous HAR score is regraded as a real-agent result.
 
 HAR08 prepares the evaluation and its refusal/sandbox gate. **Completing HAR08 means preparation is verified, not that a model trial passed.**

@@ -1,6 +1,6 @@
 # Real coding-agent harness evaluation | controlled read-only protocol
 
-**Status:** historical protocol. HAR10 removed the fake runner from HEAD, so this page does not start a comparison and does not authorize a model. **Design:** [agent-native decision](../../work/designs/open/repository-agent-workbench/AGENT-NATIVE-EVALUATION.md); [HAR08 preparation](../../work/changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md); [experiment register](../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md). Scope: development agents reading this repository, not its Storyteller or game runtime.
+**Status:** historical protocol. HAR10 removed the fake runner from HEAD, so this page does not start a comparison and does not authorize a model. **Design:** [agent-native decision](../../work/designs/open/repository-agent-workbench/AGENT-NATIVE-EVALUATION.md); [HAR08 preparation](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md); [experiment register](../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md). Scope: development agents reading this repository, not its Storyteller or game runtime.
 
 ## The specific claim we intend to test
 

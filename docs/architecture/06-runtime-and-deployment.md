@@ -1,6 +1,6 @@
 # 6. Kubernetes: the laboratory versus an actual game release
 
-**Reader question:** what's really running in kind, and how do we prove it serves a player? **Baseline:** 584b594, 2026-11-19. Canonical [topology](../technical/platform/topology.md#distributed-learning-target), [release](../technical/platform/deployment-and-compatibility.md), [Kubernetes runbooks](../runbooks/README.md), [TURN02 plan](../../work/changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/EXECUTION.md).
+**Reader question:** what's really running in kind, and how do we prove it serves a player? **Baseline:** 584b594, 2026-11-19. Canonical [topology](../technical/platform/topology.md#distributed-learning-target), [release](../technical/platform/deployment-and-compatibility.md), [Kubernetes runbooks](../runbooks/README.md), [TURN02 plan](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--turn02-compose-real-kubernetes-application-release/EXECUTION.md).
 
 ## CURRENT SOURCE: component labs and synthetic applications
 

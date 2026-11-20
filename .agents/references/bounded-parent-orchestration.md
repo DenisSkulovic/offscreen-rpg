@@ -2,7 +2,7 @@
 
 **Selected operating rule (2026-11-20).** Applies to Cursor **parent/coordinator**, whether children run in the same checkout or isolated branches. Child implementation depth and model selection remain governed by [Composer microtasks](composer-first-execution.md), [Cursor budget](cursor-model-budget-policy.md), and [Change work units](change-work-unit-standard.md). [Current selection](../../work/QUEUE.md) stays the **only** global selector. This is a procedure, **not** a new Change kind, queue, automated approval or product rule.
 
-## 0. Dedicated Change commission | owner shorthand
+## 0. Dedicated Change commission owner shorthand
 
 When the owner gives one Cursor parent chat a direct instruction such as **“do DXK01”**, **“work on DATA06”**, **“finish STORY03”**, or another unambiguous single-Change assignment, that instruction is a **dedicated Change commission**.
 

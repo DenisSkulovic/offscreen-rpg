@@ -69,4 +69,4 @@ The same mechanical path can omit quantities, currency, and a human calendar. [O
 
 This proposal does not publish `docs/product/gameplay/livelihood-and-exchange.md`. It does not add a universal currency, a wage table, a profession, a tax, or a new effect kind. A later owner may ratify a distinct player promise and then choose an owner. Until that acceptance, the selected headings above remain the rules.
 
-Packet: [DOC32](../../../changes/archive/2026-11/other/2026-11-18--doc32-livelihood-and-economy-scope/CHANGE.md).
+Packet: [DOC32](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc32-livelihood-and-economy-scope/CHANGE.md).

@@ -1,10 +1,10 @@
 # HAR06 design decision | source-grounded retrieval funnel
 
-**Decision:** Accepted, 2026-11-17. **Implementation:** [HAR06](../../../changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md). **Scope:** developer/coding-agent repository navigation and evidence, **not** the in-game Storyteller, gameplay, or an AI agent deployment.
+**Decision:** Accepted, 2026-11-17. **Implementation:** [HAR06](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har06-retrieval-funnel/CHANGE.md). **Scope:** developer/coding-agent repository navigation and evidence, **not** the in-game Storyteller, gameplay, or an AI agent deployment.
 
 ## Diagnosis: what HAR03 actually established
 
-[HAR03](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) was useful as a diagnostic. It did **not** falsify hybrid retrieval or show how a coding agent would use such tools.
+[HAR03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) was useful as a diagnostic. It did **not** falsify hybrid retrieval or show how a coding agent would use such tools.
 
 1. `semantic-pilot.mjs` passed an entire natural-language sentence as one `rg` regex. A real coding agent would investigate short terms, symbols, source maps and several queries. The reported baseline is therefore *one-shot literal grep*, not a realistic agent-navigation control.
 2. `judgeHits()` truncated to **top five**, losing the ability to distinguish candidate-generation failure from relevant evidence ranked sixth, twentieth or thirtieth.
@@ -66,4 +66,4 @@ A fixed 20/30 candidate cap is an evaluation budget, not an excuse to eagerly du
 
 No new packages, Docker, cloud embedding calls, downloading local models, MCP servers, paid models, subagents, code-generation agents or automatic vendor startup. No game/source feature modifications. Native and no-vendor controls work when all optional tools are absent. A later agent/reranker trial requires **separate owner approval**.
 
-**Related:** [HAR06 Change](../../../changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md), [HAR02 comparer](../../../changes/archive/2026-11/other/2026-11-17--har02-retrieval-comparison/CHANGE.md), [HAR03 receipt](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md), and [evaluation gates](EVALUATION.md).
+**Related:** [HAR06 Change](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har06-retrieval-funnel/CHANGE.md), [HAR02 comparer](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har02-retrieval-comparison/CHANGE.md), [HAR03 receipt](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md), and [evaluation gates](EVALUATION.md).

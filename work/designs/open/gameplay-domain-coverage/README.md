@@ -66,7 +66,7 @@ Each row names one existing heading and one nonhuman or world-neutral counterexa
 
 **Normal:** A campaign whose rules admit a counted resource spends three and keeps two. **Negative:** The vision's wage picture becomes a universal currency table, or a microorganism is assigned an employer so the table has a row.
 
-**Open question, unanswered:** Whether any resource name should be shared across worlds beyond an admitted ruleset quantity. [DOC32](../../../changes/archive/2026-11/other/2026-11-18--doc32-livelihood-and-economy-scope/CHANGE.md) is a conditional later packet. It is not selected by this page.
+**Open question, unanswered:** Whether any resource name should be shared across worlds beyond an admitted ruleset quantity. [DOC32](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc32-livelihood-and-economy-scope/CHANGE.md) is a conditional later packet. It is not selected by this page.
 
 ## Progression and fate
 
@@ -80,7 +80,7 @@ Each row names one existing heading and one nonhuman or world-neutral counterexa
 
 Inspected source at `b3113814`, read-only: `packages/game/src/checks.ts` rejects a check whose ability is outside `applicableAbilities`. `packages/game/src/state.ts` records that absent health is not HP 0. That source agrees with the selected ability rule. It does not add a level ladder or a disease table.
 
-**Open question, unanswered:** Whether a lasting bodily change should become a typed condition beyond the continuity constraint. [DOC33](../../../changes/archive/2026-11/other/2026-11-18--doc33-character-lifecourse-policy/CHANGE.md) is conditional and unselected.
+**Open question, unanswered:** Whether a lasting bodily change should become a typed condition beyond the continuity constraint. [DOC33](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc33-character-lifecourse-policy/CHANGE.md) is conditional and unselected.
 
 ## Spatiality
 
@@ -92,7 +92,7 @@ Inspected source at `b3113814`, read-only: `packages/game/src/checks.ts` rejects
 
 **Normal:** An interrupted journey remains between departure and arrival. **Negative:** Every actor receives map coordinates, or a diagram's cell size becomes a distance.
 
-**Open question, unanswered:** What smallest representation can show an interrupted journey without a universal map. [DOC34](../../../changes/archive/2026-11/other/2026-11-18--doc34-space-travel-and-location/CHANGE.md) is conditional and unselected. This catalogue does not create `work/designs/open/spatial-play/`.
+**Open question, unanswered:** What smallest representation can show an interrupted journey without a universal map. [DOC34](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc34-space-travel-and-location/CHANGE.md) is conditional and unselected. This catalogue does not create `work/designs/open/spatial-play/`.
 
 ## Social relations
 
@@ -116,7 +116,7 @@ Inspected source at `b3113814`, read-only: `packages/game/src/checks.ts` rejects
 
 **Normal:** A solo player can pause that solo story. **Negative:** A player-count setting is treated as a consent, pause, or funding rule.
 
-**Open question, unanswered:** Those questions stay in the shared-play design. [DOC35](../../../changes/archive/2026-11/other/2026-11-18--doc35-shared-play-consent-matrix/CHANGE.md) is conditional and unselected.
+**Open question, unanswered:** Those questions stay in the shared-play design. [DOC35](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc35-shared-play-consent-matrix/CHANGE.md) is conditional and unselected.
 
 ## Content policy
 
@@ -128,7 +128,7 @@ Inspected source at `b3113814`, read-only: `packages/game/src/checks.ts` rejects
 
 **Normal:** An abstract or tragic nonhuman story is playable under the selected world-neutral rules. **Negative:** This catalogue is read as a content code, or the proposed staff page is quoted as an accepted gameplay ban.
 
-**Open question, unanswered:** Who would ratify a player-facing fiction limit, and which existing owner would receive it after ratification. [DOC36](../../../changes/archive/2026-11/other/2026-11-18--doc36-player-data-lifecycle/CHANGE.md) is a conditional privacy packet. It is not a content code, and it is not selected here.
+**Open question, unanswered:** Who would ratify a player-facing fiction limit, and which existing owner would receive it after ratification. [DOC36](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc36-player-data-lifecycle/CHANGE.md) is a conditional privacy packet. It is not a content code, and it is not selected here.
 
 ## No product page created
 

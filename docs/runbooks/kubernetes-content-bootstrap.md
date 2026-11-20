@@ -143,8 +143,8 @@ Importer and reader Jobs set `OFFSCREEN_DOCUMENT_STORE=s3` and the endpoint, buc
 
 | Owner | Responsibility | Boundary |
 | --- | --- | --- |
-| [TURN02](../../work/changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md) | Run the importer **once** per release overlay, then wire API, GA, and worker Pods to read the **same** S3 endpoint, bucket, and root hashes at runtime | Release must not bundle arbitrary `content/` trees into runtime images or re-import on every Pod start. TURN02 **T01** in that TASKS file loads the default rule manifest by content hash from the imported store instead of `importRulePackageDirectory` from a local path |
-| [BOOT03](../../work/changes/archive/2026-11/other/2026-11-19--boot03-game-authority-start-admission/TASKS.md) | After pins are readable in the real store, admit a **succeeded Storyteller-kind** opening candidate and commit start through Game Authority | Import does not create an owned candidate. A start package root is not a successful opening candidate. Story start is not claimed from the importer or reader Jobs |
+| [TURN02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md) | Run the importer **once** per release overlay, then wire API, GA, and worker Pods to read the **same** S3 endpoint, bucket, and root hashes at runtime | Release must not bundle arbitrary `content/` trees into runtime images or re-import on every Pod start. TURN02 **T01** in that TASKS file loads the default rule manifest by content hash from the imported store instead of `importRulePackageDirectory` from a local path |
+| [BOOT03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--boot03-game-authority-start-admission/TASKS.md) | After pins are readable in the real store, admit a **succeeded Storyteller-kind** opening candidate and commit start through Game Authority | Import does not create an owned candidate. A start package root is not a successful opening candidate. Story start is not claimed from the importer or reader Jobs |
 
 Do not treat BOOT02's reader Job as a substitute for BOOT03 integration tests or for TURN02's authenticated application release. Do not point Compose at the disposable lab store unless a separately authorized proof says so.
 
@@ -157,4 +157,4 @@ The following satisfied BOOT02's discriminating positive case without starting t
 - `pinPath=null` and `campaignCreated=false` on both paths
 - Lock pid `188308` on `/tmp/offscreen-k8s-cluster.lock`; baseline `93d57ca6` on branch `change/boot02-cluster-pin`
 
-A new Pod run is required only when importer image or Job manifests change materially (BOOT02 **T03** in [BOOT02 TASKS](../../work/changes/archive/2026-11/other/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md)).
+A new Pod run is required only when importer image or Job manifests change materially (BOOT02 **T03** in [BOOT02 TASKS](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--boot02-published-fixture-package-s3-job/TASKS.md)).

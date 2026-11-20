@@ -42,18 +42,18 @@ Existing TURN02 T03→T04→T05→T06 enables real release; related BOOT03/STORY
 
 ## Read in this order, not all at once
 
-[Planner source investigation](SOURCE-MAP.md) is planner-owned reference, not a mandatory child preload. [Finite Cursor wave handoff](CURSOR-HANDOFF.md) is the parent entry. Pick the selected Change's CHANGE.md then one T-ID in TASKS.md. [TURN02](../../../changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md) is the real release integrator. The [task catalog](../../../tasks/README.md) owns independent operational proofs.
+[Planner source investigation](SOURCE-MAP.md) is planner-owned reference, not a mandatory child preload. [Finite Cursor wave handoff](CURSOR-HANDOFF.md) is the parent entry. Pick the selected Change's CHANGE.md then one T-ID in TASKS.md. [TURN02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md) is the real release integrator. The [task catalog](../../../tasks/README.md) owns independent operational proofs.
 
 ## Change catalog
 
 | Change | Non-overlapping ownership |
 | --- | --- |
-| [DXK01](../../../changes/archive/2026-11/other/2026-11-20--dxk01-kubernetes-stack-lifecycle/CHANGE.md) | Kubernetes stack lifecycle |
-| [DXK02](../../../changes/archive/2026-11/other/2026-11-20--dxk02-tilt-headlamp-developer-uis/CHANGE.md) | Tilt and Headlamp operator experience |
-| [DXK03](../../../changes/archive/2026-11/other/2026-11-20--dxk03-local-playable-identity-and-fixture/CHANGE.md) | Done. Local GitHub sign-in and one scripted Seyda Neen action |
-| [DXK04](../../../changes/archive/2026-11/other/2026-11-20--dxk04-package-command-surface/CHANGE.md) | Root package command redesign |
-| [DXK05](../../../changes/archive/2026-11/other/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md) | Kubernetes CI and lab safety replacement |
-| [DXK06](../../../changes/archive/2026-11/other/2026-11-20--dxk06-compose-retirement/CHANGE.md) | Done: Compose runtime and the retired compose mode are removed. Clean-clone proof stays DXK07 |
+| [DXK01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk01-kubernetes-stack-lifecycle/CHANGE.md) | Kubernetes stack lifecycle |
+| [DXK02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk02-tilt-headlamp-developer-uis/CHANGE.md) | Tilt and Headlamp operator experience |
+| [DXK03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk03-local-playable-identity-and-fixture/CHANGE.md) | Done. Local GitHub sign-in and one scripted Seyda Neen action |
+| [DXK04](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk04-package-command-surface/CHANGE.md) | Root package command redesign |
+| [DXK05](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md) | Kubernetes CI and lab safety replacement |
+| [DXK06](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk06-compose-retirement/CHANGE.md) | Done: Compose runtime and the retired compose mode are removed. Clean-clone proof stays DXK07 |
 | [DXK07](../../../changes/open/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) | Clean-clone readiness and regression harness |
 | [DXK08](../../../changes/open/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast dev/watch loop distinct from immutable release verification |
 | [DXK09](../../../changes/open/2026-11-20--dxk09-parallel-worktree-dev-stacks/CHANGE.md) | Isolated branch/worktree dev stacks for parallel Cursor chats |

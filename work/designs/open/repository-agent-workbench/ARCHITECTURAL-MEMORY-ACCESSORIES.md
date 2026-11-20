@@ -1,6 +1,6 @@
 # Architecture-memory accessories | Cognee-first, reversible research
 
-**Historical design hypothesis (2026-11-17), superseded by the measured negative adoption decision.** The investigation was [closed without Cognee adoption](../../../changes/archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md). The [first-class research result](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md) and [experiment register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) own the actual conclusion. The design below records *what we intended to test*, not a pending authorization, current tool recommendation or complete benchmark result.
+**Historical design hypothesis (2026-11-17), superseded by the measured negative adoption decision.** The investigation was [closed without Cognee adoption](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/retrieval/2026-11-17--har09-architectural-memory-pilot/CHANGE.md). The [first-class research result](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md) and [experiment register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) own the actual conclusion. The design below records *what we intended to test*, not a pending authorization, current tool recommendation or complete benchmark result.
 
 ## Why this is a different experiment
 

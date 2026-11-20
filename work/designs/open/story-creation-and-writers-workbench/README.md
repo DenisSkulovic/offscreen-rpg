@@ -65,7 +65,7 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - [Canonical documents and packages](../../../../docs/technical/storyteller/canonical-documents-and-packages.md) owns start-package metadata, file authority, revision and publication.
 - [Context selection and recall](../../../../docs/technical/storyteller/context-selection-and-recall.md) owns bounded injected material and optional discovery.
 - [Operation and controller](../../../../docs/technical/storyteller/operation-and-controller.md) owns durable rounds, provider accounting and tool admission.
-- [Player experience refoundation](../player-experience-refoundation/README.md), [first campaign readiness](../first-campaign-readiness-2026-11-20/README.md) and [canon invention policy](../canon-invention-policy/README.md) are related but **not replaced** by this dossier.
+- [Player experience refoundation](../player-experience-refoundation/README.md), [first campaign readiness](../first-campaign-readiness-2026-11-20/README.md) and [canon invention policy](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/canon-invention-policy/README.md) are related but **not replaced** by this dossier.
 
 ## Research sequence
 

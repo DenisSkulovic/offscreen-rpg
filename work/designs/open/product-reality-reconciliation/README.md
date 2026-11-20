@@ -45,12 +45,12 @@ A heading can be authoritative as a *design preference* and still lack evidence 
 
 | Packet | Scope | Result |
 | --- | --- | --- |
-| [PVAL01](../../../changes/archive/2026-11/other/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md) | Documentation truth / feasibility warning in two front doors | Done. Selection is not feasibility |
-| [PVAL02](../../../changes/archive/2026-11/other/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md) | Distinct solo vs cooperative playability milestones | Done. Owner ratified solo first. The small party stays distant |
-| [PVAL03](../../../changes/archive/2026-11/other/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md) | World/map/autonomy risk classification | Done. Invariants kept; cube, universal forms, and the absence queue stay proposed |
-| [PVAL04](../../../changes/archive/2026-11/other/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md) | Memory and narrative quality / cost evidence gates | Done. No paid run |
-| [PVAL05](../../../changes/archive/2026-11/other/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md) | Benchmark-vs-acceptance clarity | Done. Scenes carry stage markers |
-| [PVAL06](../../../changes/archive/2026-11/other/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md) | Narrow claim-impact check | Done. A promoted row needs an evidence route |
+| [PVAL01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval01-product-source-of-truth-warning/CHANGE.md) | Documentation truth / feasibility warning in two front doors | Done. Selection is not feasibility |
+| [PVAL02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval02-first-playable-scope-separation/CHANGE.md) | Distinct solo vs cooperative playability milestones | Done. Owner ratified solo first. The small party stays distant |
+| [PVAL03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval03-grand-mechanics-maturity/CHANGE.md) | World/map/autonomy risk classification | Done. Invariants kept; cube, universal forms, and the absence queue stay proposed |
+| [PVAL04](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval04-storyteller-viability-gates/CHANGE.md) | Memory and narrative quality / cost evidence gates | Done. No paid run |
+| [PVAL05](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval05-scenario-proof-vs-fiction/CHANGE.md) | Benchmark-vs-acceptance clarity | Done. Scenes carry stage markers |
+| [PVAL06](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/product-validation/2026-11-18--pval06-product-claim-regression-guard/CHANGE.md) | Narrow claim-impact check | Done. A promoted row needs an evidence route |
 
 ## Core source grounding
 

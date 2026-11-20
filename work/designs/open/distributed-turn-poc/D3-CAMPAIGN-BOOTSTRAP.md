@@ -1,6 +1,6 @@
 # D3 | Campaign bootstrap across Next, Nest, Game Authority and canonical storage
 
-**Status:** proposed architecture 2026-11-19; not yet ratified/implemented on Kubernetes. [BOOT01](../../../changes/archive/2026-11/other/2026-11-19--boot01-ratify-candidate-and-start-ownership/CHANGE.md) is cancelled into [BOOT03](../../../changes/archive/2026-11/other/2026-11-19--boot03-game-authority-start-admission/CHANGE.md). Start admission is not implemented. Source-checked against GitHub `main` during this pass. Preserve the existing two creation routes; choose *one deterministic fixture route* for the initial distributed acceptance only.
+**Status:** proposed architecture 2026-11-19; not yet ratified/implemented on Kubernetes. [BOOT01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--boot01-ratify-candidate-and-start-ownership/CHANGE.md) is cancelled into [BOOT03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--boot03-game-authority-start-admission/CHANGE.md). Start admission is not implemented. Source-checked against GitHub `main` during this pass. Preserve the existing two creation routes; choose *one deterministic fixture route* for the initial distributed acceptance only.
 
 ## The source matters: a start package is NOT an opening candidate
 

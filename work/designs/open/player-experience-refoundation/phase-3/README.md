@@ -15,17 +15,17 @@
 
 | Order | Change | Status | Dependency | Bounded code outcome |
 | --- | --- | --- | --- | --- |
-| 1 | [UI01](../../../../changes/archive/2026-11/other/2026-11-17--ui01-semantic-tokens/CHANGE.md) | Done | none | Semantic design tokens and baseline migration |
-| 2 | [UI02](../../../../changes/archive/2026-11/other/2026-11-17--ui02-accessible-primitives/CHANGE.md) | Done | UI01 | Small tested Action/Notice primitives |
-| 3 | [UI03](../../../../changes/archive/2026-11/other/2026-11-17--ui03-book-composition/CHANGE.md) | Done | UI02 | Book-specific composition boundaries |
-| 4 | [UI04](../../../../changes/archive/2026-11/other/2026-11-17--ui04-book-contents-navigation/CHANGE.md) | Done | UI03 | Low-chrome accessible book contents |
-| 5 | [UI05](../../../../changes/archive/2026-11/other/2026-11-17--ui05-stories-library-unification/CHANGE.md) | Done | UI02 | Stories style/use shared controls |
-| 6 | [UI06](../../../../changes/archive/2026-11/other/2026-11-17--ui06-entry-create-unification/CHANGE.md) | Done | UI05 | Entry/Create shared visual foundation |
-| 7 | [UI07](../../../../changes/archive/2026-11/other/2026-11-17--ui07-design-system-evidence/CHANGE.md) | Done | UI03+UI05+UI06 | Storybook and visual/a11y evidence |
-| 8 | [UI08](../../../../changes/archive/2026-11/other/2026-11-17--ui08-motion-language/CHANGE.md) | Done | UI07 review | Meaningful restrained motion; no gratuitous package |
-| 9 | [DIR01](../../../../changes/archive/2026-11/other/2026-11-17--dir01-appearance-roundtrip-proof/CHANGE.md) | Done | UI03 | Test the existing saved appearance read path end to end |
-| 10 | [DIR02](../../../../changes/archive/2026-11/other/2026-11-17--dir02-validated-publication-attachment/CHANGE.md) | Done | DIR01 | Optional validated scene on the publication insert. The worker supplies no candidate |
-| 11 | [DIR03](../../../../changes/archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | Ready offline; live gated | DIR02 writer | Optional V1 provider-free author sidecar; paid creative adoption requires later authorization |
+| 1 | [UI01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui01-semantic-tokens/CHANGE.md) | Done | none | Semantic design tokens and baseline migration |
+| 2 | [UI02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui02-accessible-primitives/CHANGE.md) | Done | UI01 | Small tested Action/Notice primitives |
+| 3 | [UI03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui03-book-composition/CHANGE.md) | Done | UI02 | Book-specific composition boundaries |
+| 4 | [UI04](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui04-book-contents-navigation/CHANGE.md) | Done | UI03 | Low-chrome accessible book contents |
+| 5 | [UI05](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui05-stories-library-unification/CHANGE.md) | Done | UI02 | Stories style/use shared controls |
+| 6 | [UI06](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui06-entry-create-unification/CHANGE.md) | Done | UI05 | Entry/Create shared visual foundation |
+| 7 | [UI07](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui07-design-system-evidence/CHANGE.md) | Done | UI03+UI05+UI06 | Storybook and visual/a11y evidence |
+| 8 | [UI08](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--ui08-motion-language/CHANGE.md) | Done | UI07 review | Meaningful restrained motion; no gratuitous package |
+| 9 | [DIR01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--dir01-appearance-roundtrip-proof/CHANGE.md) | Done | UI03 | Test the existing saved appearance read path end to end |
+| 10 | [DIR02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--dir02-validated-publication-attachment/CHANGE.md) | Done | DIR01 | Optional validated scene on the publication insert. The worker supplies no candidate |
+| 11 | [DIR03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | Ready offline; live gated | DIR02 writer | Optional V1 provider-free author sidecar; paid creative adoption requires later authorization |
 
 **Cursor execution policy:** one packet at a time, refreshed HEAD/dirty state and `pnpm repo:brief --json`; all follow the Change standard and each has a negative test. A “Ready after...” packet is still **not current**. UI01 through UI08, DIR01, and DIR02 are archived. DIR03 can add its optional provider-free protocol as a later packet; a live paid creative run is not authorized. No packet in this phase is selected as the single Change.
 
