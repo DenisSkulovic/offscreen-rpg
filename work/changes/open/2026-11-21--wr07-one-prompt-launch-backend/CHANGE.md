@@ -1,0 +1,26 @@
+# WR07 | direct Play: durable preset or freeform Story Prompt launch
+
+**State:** Proposed. **Kind:** implementation. **Dependencies:** WR03 + WR05 (and WR02 via them). **Outcome:** a single authenticated **Play** starts from either a version-pinned prepared experience or one captured freeform Story Prompt, orchestrates the genuine Writer, and **publishes the first playable scene** under Game Authority without a mandatory wizard, human character, separate preview or duplicate generation.
+
+**Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad code source from `09d5820bcafe`; recheck current HEAD/worktrees before editing. **Implementation owner: Cursor.** This packet is Proposed/unselected and conveys no authorization for paid provider, destructive DB, live cluster or external effects. [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [Current queue](../../../QUEUE.md).
+
+## Cursor first-screen route
+
+**DEPTH=PATCH-L, creation/API ownership.** Start `apps/api/src/modules/{stories/controller,drafts/openings-controller,drafts/controller}.ts`, `packages/application/src/{storyteller/openings,stories/start,stories/initialization,storyteller/start}.ts`, `packages/contracts/src/{drafts,campaign}.ts`, `packages/documents/src/{start-import,start-instantiation}.ts` and actual `content/starts/*`. Follow WR01 accepted product contract. Don't solve UX by reusing five draft screens invisibly on the server.
+
+## End-to-end accepted behavior
+
+- Define a **Launch** command (API URI/name selected against current Nest routing), idempotency ID, authenticated owner, verbatim potentially multi-page prompt **or** immutable prepared-start reference, optional customized prompt, permitted creative hints, admitted model spending, world invention policy, initial time policy and exact desired source pins. The data contract requires **no title, human name, body, profile dropdown, mandatory rules adapter or prepared role**.
+- Source roles: `STORY_PROMPT.md` is exact user intent (not all fiction-world facts); `STORYTELLER_PROFILE.md` creative-only pinned source; `START.md` orientation; creator-authored additional source files survive as **references/overlays**, not copied giant package. A complete prepared preset should not trigger an unnecessary paid preparatory LLM call; the Writer is still free to inspect Library evidence before opening.
+- A standalone `BAH` is admissible under captured original-world invention policy. A conscious galaxy is a legitimate narrative viewpoint with attention/observation choices; no default 5e rules or fabricated humanoid stats. Typed mechanics exist **only** where the selected world actually supports them.
+- Capture one immutable Launch request **before any paid dispatch**. If preparation writes are useful, stage in a launch-owned Workdesk revision; then compose opening from that exact root. Final first scene is published by WR05's complete world-state/Library commit. Source package updates or user edits after Play do not contaminate the captured mission.
+- Publish a **durable status/read** path: pending/preparing/composing/ready/held/failed/uncertain, stable story/scene ID on success; idempotent retries and delivery settlement. Unknown paid delivery does not authorize a second call. Player never sees an unfinished fiction as playable. Lost first-scene HTTP reply returns the already-published scene; no accidental fictional time passing merely because composition finished.
+- Keep a **draft save** only as an optional convenience for partially written prompts, not a mandatory creation stage. A preset may expose optional Customize without needing a separate workflow.
+
+## Source and test route
+
+Primary owners `packages/application/src` launch coordinator + private Game Authority first-commit, `packages/contracts/src` launch DTOs, `apps/api/src/modules/stories/controller.ts` and any exact current provider execution route. Reuse shared provider custody from WR03, CAS/root and post-state publication from WR02/05. Preserve existing authenticated `StoriesController.run` error mapping and security. Add DB migration only for durable Launch/capture status and source pins, not per-document content bodies.
+
+**Normal:** Play complete authored bundle; first scene and its source library playable. Play `BAH`; Play conscious galaxy; custom prompt with source override; no wizard or compulsory prep model call. **Negative:** concurrent owner/user edits, changed preset root, anonymous access, oversized unadmitted context, provider uncertain, crash before/after staged Workdesk, duplicate Play ID, corrupt source and lost delivery. Correct hold/resume/409 without double charge or duplicate scene.
+
+Use provider-free scripted end-to-end tests in application + Nest e2e route tests; safe separately authorized real provider run later, never implicit. **Excludes:** visual implementation/route removal (WR08), retroactive v1 draft migration until actual retained-data need established. **Stop if:** opening is only a preview not a full WR05 committed scene, or user must provide a human character/rule adapter to proceed. Reconcile onboarding, source/rights notices, creation settings, technical launch and status docs.

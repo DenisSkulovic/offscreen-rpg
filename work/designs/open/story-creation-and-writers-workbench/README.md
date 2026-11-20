@@ -8,6 +8,8 @@
 
 **Anti-slop instruction (2026-11-20):** Read [the critical self-review](CRITICAL-SELF-REVIEW.md) before treating any candidate named subsystem as necessary. Prefer the few source-backed failures and provider-free red/green checks over adding further architecture prose.
 
+**Implementation handoff exists (2026-11-21):** [eight Change packets and one execution map](../../../changes/WRITER-IMPLEMENTATION-2026-11-21.md). Cursor owns implementation. Future ChatGPT sessions should address a **specific packet's blocker or source-map discrepancy**, not add more speculative design files. Packets are Proposed/unselected until reviewed; `work/QUEUE.md` stays the sole selection pointer.
+
 This dossier is the home for the continuing multi-conversation investigation. It is **not** a competing source of accepted product or technical law. A future chat should start with this page, check the source HEAD against the dated audit, then continue the unresolved design rather than restarting the discussion.
 
 ## Documents

@@ -1,0 +1,27 @@
+# WR05 | atomic scene publication with exact post-world state
+
+**State:** Proposed. **Kind:** implementation. **Dependencies:** WR02 + WR03. **Outcome:** *every newly published scene* commits one coherent, historically addressable boundary: immutable Library root (including new passage), exact accepted world-state frontier and active fictional commitments, admitted visible+private intentions, effective creative/source/rule pins and causal event identity. A staged provider result alone is **not** a published scene.
+
+**Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad code source from `09d5820bcafe`; recheck current HEAD/worktrees before editing. **Implementation owner: Cursor.** This packet is Proposed/unselected and conveys no authorization for paid provider, destructive DB, live cluster or external effects. [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [Current queue](../../../QUEUE.md).
+
+## Cursor source route
+
+**DEPTH=PATCH-L; private Game Authority / DB publication exclusive owner.** Start `packages/application/src/stories/{continuation,scene-checkpoint,passage-documents,initialization}.ts`, `packages/application/src/storyteller/{publication,start}.ts`, `packages/documents/src/schema.ts` (`sceneCheckpointSchema`), and `packages/db/src/schema/{stories,campaign}.ts`. Existing tests `packages/application/test/{scene-checkpoint-publication,story-publication-documents,scene-checkpoint}.test.mjs`. Consult actual GA private seam and outbox before edits; **do not move authoritative state changes into the model controller**.
+
+## Target authority and algorithm
+
+- Treat a **scene boundary** as a *post-publication committed state*, not pre-model snapshot nor current live row. Distinguish scene history from independent state events (time/activity changes can occur between passages). Every published scene pins an explicit as-of **state frontier**.
+- Represent deterministic **semantic world state** as versioned typed data with an immutable state root (persistent typed map/index or bounded verified snapshot strategy chosen to avoid cloning all DB rows). Track facts, resources/capabilities, fictional time/clock, settled effects, and **active fictional intent**: offers, pending world obligations, accepted activity plan/progress/holds/deadlines. Operational provider attempts, worker lease, money authorization, outbox receipt are separate custody.
+- Game Authority: capture base scene/root/state frontier; deterministically project proposed world effects, Storyteller continuity changes and a *new scene's admitted choices* to one candidate **complete post-state**. Stage immutable document/intent/state objects; under the existing story transaction lock recheck expected base root, exact state frontier, owner, spending and permissions; select **all** references and SQL projections atomically. No SQL transaction is made atomic with S3 magically: staged-but-unselected objects are inert.
+- Do **not** let `publishStorytellerNotes` mutate notes *after* preparing a checkpoint that claims the end-of-scene state. The accepted post-notes value must match the checkpoint/root. A private narrative possibility stays a possible thought, not settled fictional truth.
+- Persist **admitted playable choice meaning** as branch-independent immutable source/intent data or an existing equivalent, distinct from paid generation ownership. Avoid new infrastructure unless an existing result record cannot provide immutable authorized intent; fork must not borrow parent's chargeable operation.
+- A one-click first scene must not set an invisible running interval just because the writer completed a provider call. Only a separately admitted fictional activity/plan advances its clock. An active activity already admitted may continue while the client is offline.
+- If any state component is not yet semantically representable and forkable, **hold the scene boundary** rather than publish a new scene that violates the target. Pending *operational* work is not a fictional commitment that must be serialized.
+
+## Proof, risk and ownership
+
+**Normal:** publication stages a new source passage, current notes, optional document patch and a waiting activity; the committed scene reader returns exact resulting notes, Library root, story-time, offer/activity and choice meaning; a later mechanical event does not rewrite that boundary. **Negative:** corrupted/missing state object, stale root/fork parent, crash between CAS and SQL, concurrent action, lost HTTP response, missing/ambiguous source: fail/hold or idempotently return original, never half-publish, double-apply effects or spend again.
+
+Preserve existing `storySceneCheckpoint` v1 historical readers and hashes through explicit v2 reader/adoption, not ungrounded backfill. Reconcile the technical engine `authority-and-transitions.md`, `lifecycle-and-compatibility.md`, and Storyteller canonical-document ownership. Tests `pnpm --filter @offscreen/application test` plus focused disposable-DB publication and private GA tests. **No paid model call.**
+
+**Exclusions:** source tree implementation (WR02), authoring model tool loop (WR03), actual fork rehoming (WR06), public creation UX (WR07–08). **Collision:** serialize with existing TURN03/DIST03/Storyteller private GA/outbox ownership; one writer to `stories/`, DB migrations and GA at a time. **Stop:** if a scene can be selected without full post-state or source meaning; return exact counterexample instead of weakening invariant.
