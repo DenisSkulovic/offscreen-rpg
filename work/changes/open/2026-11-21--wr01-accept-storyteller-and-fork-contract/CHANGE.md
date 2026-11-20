@@ -1,6 +1,6 @@
 # WR01 | ChatGPT documentation wave 1: permanent product wiki
 
-**State:** Proposed, not selected. **Kind:** documentation-only. **Owner:** ChatGPT (a dedicated GPT-5.6 chat is appropriate); **NOT Cursor**. **Dependencies:** owner review of the 2026-11-21 whitepaper, especially its open decisions. **Outcome:** rewrite the canonical *product* contract for the Storyteller refoundation, preserving the repository's existing product truths and marking unresolved policies honestly. This is not another design dossier.
+**State:** Done on `storyteller-evolution-electric-boogaloo` (documentation-only target contract; runtime implementation follows). **Kind:** documentation-only. **Owner:** ChatGPT (a dedicated GPT-5.6 chat is appropriate); **NOT Cursor**. **Dependencies:** owner review of the 2026-11-21 whitepaper, especially its open decisions. **Outcome:** rewrite the canonical *product* contract for the Storyteller refoundation, preserving the repository's existing product truths and marking unresolved policies honestly. This is not another design dossier.
 
 **Program:** [Writer implementation roadmap](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT docs handoff](../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) · [current work selector](../../../QUEUE.md). **Next docs Changes:** [WRD02 Storyteller and Library technical](../2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) → [WRD03 engine and fork technical](../2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md) → [WRD04 wiki reconciliation](../2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md). No implementation, provider calls, migrations or cluster actions.
 
@@ -39,3 +39,14 @@ Read the [documentation-reconciliation skill](../../../../.agents/skills/documen
 **Done means:** an uninformed reader can open the product docs and understand *what new experience is expected*, what remains old POC reality, what is proposed versus accepted, and what fiction/agency/forkability actually promise, without opening \`work/designs/\`.
 
 **Do not** mark this Done based solely on a plan or a few see-also links. **Do not** create or alter application source, selected execution queue, compiled wiki index by hand, product permissions, paid models or deployment configuration. **Next:** WRD02 by ChatGPT, after this wave's commit and ledger.
+
+
+## Reconciliation receipt | 2026-11-21
+
+**Baseline:** `main` at `34e2b4fd8d9d9967e13311da3a938460b1a02244`. On this integration branch, the Storyteller refoundation is the target contract that subsequent Cursor code Changes must realize. `STATUS.md` remains the implementation-evidence owner.
+
+**Rewritten owners:** vision; concepts; entry/onboarding; Storyteller behavior, profiles and memory; worlds/characters; rules; continuity; time/autonomy; actions/commitments; acceptance scenarios. Existing navigation/play/return pages were preserved for WRD04 co-review rather than flattened.
+
+**Intentionally non-normative here:** physical Library tree algorithm; numeric model/token/tool/subagent ceilings; provider default; low-level assistant staging mechanism. Product law selects structural sharing, exact rooted history, a genuine tool-using writer, explicit authority, direct Play/Story Prompt entry and forkable published scenes.
+
+**Verification:** `python scripts/check_docs.py` was run on the 34e2b4f snapshot. The repository already contains broad archive/reference link debt. The WR01-created route break was avoided by preserving the existing `#current-poc-honesty` anchor. No application source, schema, queue selection, provider call or deployment changed.
