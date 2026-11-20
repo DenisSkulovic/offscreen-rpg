@@ -4,6 +4,7 @@ import { readInfraPinFiles, CONTEXT_NAME, MIN_MEM_AVAILABLE_KIB } from './stack-
 import { EXPECTED_IMPORT_ROOTS } from './stack-health.mjs';
 import {
   deploymentsFromListJson,
+  importRootsFromBootstrapLog,
   migrationFromJobJson,
   nodesReadyFromListJson,
   readLiveStatusObservation,
@@ -151,7 +152,18 @@ test('live status reader issues only get commands', () => {
   assert.equal(observation.nodesReady, true);
   assert.equal(observation.migration, 'complete');
   assert.equal(
-    argvLog.every((argv) => argv[0] === 'kubectl' && argv.includes('get') && !argv.includes('delete')),
+    argvLog.every(
+      (argv) => argv[0] === 'kubectl' && (argv.includes('get') || argv.includes('logs')) && !argv.includes('delete'),
+    ),
     true,
   );
+  assert.equal(observation.fixtureChecked, true);
+});
+
+test('bootstrap log line yields the pinned import roots', () => {
+  const roots = importRootsFromBootstrapLog(
+    'content-bootstrap reader world=5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9 rule=d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab start=e30eaa27407abe8a015b21cad62f30b81b07ee7af3b89634501fe3787d8d2813 match=yes campaignCreated=false\n',
+  );
+  assert.deepEqual(roots, EXPECTED_IMPORT_ROOTS);
+  assert.equal(importRootsFromBootstrapLog('not a fixture log'), null);
 });

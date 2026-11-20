@@ -1,6 +1,6 @@
 # DXK01 | bounded Composer tasks
 
-**Status:** T01 unit preflight PASS (7/7). T02 lifecycle planner PASS (9/9). T03 health PASS. Live `stack:up`, `stack:down`, and `stack:reset` NOT-RUN. Not Done. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
+**Status:** Done (2026-11-20). Unit suite 31/31. Live warm `stack:up` exit 0 and `stack:status` playable ready on `kind-offscreen-lab`. Live `stack:down` and `stack:reset` were not executed. **Program:** [DXK program](../../../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
 
 
 ## T01 | Guarded preflight and ownership

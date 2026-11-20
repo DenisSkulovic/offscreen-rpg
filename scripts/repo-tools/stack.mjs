@@ -100,6 +100,18 @@ export function deploymentsFromListJson(namespace, stdout) {
 /**
  * @param {string} stdout
  */
+/**
+ * @param {string} text
+ * @returns {{ world: string, rule: string, start: string } | null}
+ */
+export function importRootsFromBootstrapLog(text) {
+  const match = text.match(
+    /content-bootstrap (?:importer|reader) world=([0-9a-f]{64}) rule=([0-9a-f]{64}) start=([0-9a-f]{64})/,
+  );
+  if (!match) return null;
+  return { world: match[1], rule: match[2], start: match[3] };
+}
+
 export function nodesReadyFromListJson(stdout) {
   const body = JSON.parse(stdout);
   const items = body.items ?? [];
@@ -124,6 +136,16 @@ export function readLiveStatusObservation(runner) {
       deployments.push(...deploymentsFromListJson(namespace, listed.stdout));
     }
   }
+  const fixtureLog = runner([
+    ...contextArgs,
+    '-n',
+    'lab-content-bootstrap',
+    'logs',
+    'job/fixture-reader',
+    '--tail=40',
+  ]);
+  const importRoots =
+    fixtureLog.status === 0 && fixtureLog.stdout ? importRootsFromBootstrapLog(fixtureLog.stdout) : null;
   return {
     context: CONTEXT_NAME,
     apiServerAddress: '127.0.0.1',
@@ -132,9 +154,10 @@ export function readLiveStatusObservation(runner) {
     durations: {},
     migration: job.status === 0 && job.stdout ? migrationFromJobJson(job.stdout) : 'absent',
     deployments,
-    pinnedObjectPresent: false,
-    importRoots: null,
+    pinnedObjectPresent: importRoots !== null,
+    importRoots,
     repeatStart: false,
+    fixtureChecked: true,
   };
 }
 
@@ -155,7 +178,7 @@ if (invokedAsScript) {
   const command = process.argv[2];
   if (command === 'status') {
     const observation = readLiveStatusObservation(defaultRunner);
-    const report = reportStackStatus(observation, { fixtureChecked: false });
+    const report = reportStackStatus(observation, { fixtureChecked: observation.fixtureChecked === true });
     console.log(JSON.stringify(report, null, 2));
     process.exitCode = 0;
   } else if (command === 'up' || command === 'down' || command === 'reset') {
