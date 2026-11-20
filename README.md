@@ -30,7 +30,7 @@ Five deliberate practices hold this together:
 
 ### Explore it yourself
 
-After installing the [pinned local toolchain](docs/runbooks/local-development.md), run these from the repository root:
+After installing the [pinned local toolchain](docs/runbooks/local-development.md), run these from the repository root. `pnpm stack:acceptance` is the read-only clean-clone gate; a fresh workstation run has not been timed.
 
 ```bash
 pnpm repo:brief

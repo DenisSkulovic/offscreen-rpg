@@ -1,6 +1,6 @@
 # Kubernetes developer UI
 
-Loopback developer surfaces for the **kubernetes-first** local stack: Tilt for build/deploy/watch, browser for the game, and **Headlamp on Windows** for read-mostly cluster browsing. This path is separate from the [educational kind lab](kubernetes-lab.md). Checked-in Compose files remain until DXK06. They are not a root boot command, and this runbook does not delete them.
+Loopback developer surfaces for the **kubernetes-first** local stack: Tilt for build/deploy/watch, browser for the game, and **Headlamp on Windows** for read-mostly cluster browsing. This path is separate from the [educational kind lab](kubernetes-lab.md). Compose is not a boot path. `pnpm stack:acceptance` is the read-only gate for that claim; it was unit-tested and was not run as a fresh-clone browser session.
 
 The disposable educational cluster in [kubernetes-lab.md](kubernetes-lab.md) is **not** the game application. Do not confuse `kind-offscreen-lab` probe namespaces with the Tilt-managed lab edge stack.
 
@@ -51,7 +51,7 @@ On 2026-11-20 the helper wrote `/home/dskul/.kube/offscreen-lab-headlamp.config`
 
 ## Headlamp desktop session
 
-Opening Headlamp, reading a log, using its terminal, and deleting a Pod from the desktop UI are the final operator check in [DXK07 T02](../../work/changes/open/2026-11-20--dxk07-clean-clone-acceptance/TASKS.md). That click was **not** run for the Tilt and kubeconfig integration. A developer can point Headlamp at the file above when that session happens.
+Opening Headlamp, reading a log, using its terminal, and deleting a Pod from the desktop UI remain a manual operator check. The acceptance harness records that click as not run unless a replacement Pod UID and story continuity are supplied. That desktop session was **not** run when the harness was added. A developer can point Headlamp at the file above when that session happens.
 
 Do not target another user’s kubeconfig, a foreign context, or a non-lab cluster.
 
