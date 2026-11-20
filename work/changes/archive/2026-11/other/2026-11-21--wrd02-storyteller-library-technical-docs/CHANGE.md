@@ -2,7 +2,7 @@
 
 **State:** Done, 2026-11-21. Documentation-only target contract; runtime implementation follows.
 
-[Program](../../../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT handoff](../../../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) · [WR01](../../../../open/2026-11-21--wr01-accept-storyteller-and-fork-contract/CHANGE.md) · [WRD03 next](../../../../open/2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md).
+[Program](../../../../WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT handoff](../../../../WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md) · [WR01](../2026-11-21--wr01-accept-storyteller-and-fork-contract/CHANGE.md) · [WRD03 next](../2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md).
 
 ## Source-of-truth boundary
 
