@@ -2,7 +2,7 @@
 
 ## 2026-11-20 current-HEAD convergence addendum | source-backed, not yet executed
 
-**Audit HEAD:** `3992437187c0`. [First campaign source trace](../../../designs/open/first-campaign-readiness-2026-11-20/MECHANISM-MATRIX.md) · [Cursor order](../../../designs/open/first-campaign-readiness-2026-11-20/CURSOR-EXECUTION.md). These bounded **new** T-IDs respond to actual code paths that have already moved beyond original 2026-11-19 source notes. T01–T06 contain useful historical receipt/proof; do **not** restart T01–T05 or mistake manually-started workflow proof for whole gameplay. **No paid provider, external URL or unowned database/cluster work.** One exact T-ID per change checkpoint; remaining Proposed status still requires owner selection.
+**Audit HEAD:** `3992437187c0`. [First campaign source trace](../../../../../designs/open/first-campaign-readiness-2026-11-20/MECHANISM-MATRIX.md) · [Cursor order](../../../../../designs/open/first-campaign-readiness-2026-11-20/CURSOR-EXECUTION.md). These bounded **new** T-IDs respond to actual code paths that have already moved beyond original 2026-11-19 source notes. T01–T06 contain useful historical receipt/proof; do **not** restart T01–T05 or mistake manually-started workflow proof for whole gameplay. **No paid provider, external URL or unowned database/cluster work.** One exact T-ID per change checkpoint; remaining Proposed status still requires owner selection.
 
 ### T07 | Replace control worker SQL publication with existing GA control HTTP boundary | LANDED (2026-11-20)
 

@@ -2,7 +2,7 @@
 
 **Outcome (2026-11-20, `22512a4c`):** the scripted-only guard landed and this packet is archived. The notes below are the pre-fix investigation.
 
-**Profile:** `CONTRACT`/STATE · **Historical baseline:** `584b594` (2026-11-19) described absent remote facade; the 2026-11-20 review confirmed versioned private GA routes and the worker HTTP client, then found the scripted-only gap that T05 closed. See [decision](DECISION-2026-11-20.md). STORY03 publication and queue changes stay in [its execution design](../../../../open/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md).
+**Profile:** `CONTRACT`/STATE · **Historical baseline:** `584b594` (2026-11-19) described absent remote facade; the 2026-11-20 review confirmed versioned private GA routes and the worker HTTP client, then found the scripted-only gap that T05 closed. See [decision](DECISION-2026-11-20.md). STORY03 publication and queue changes stay in [its execution design](../../../../archive/2026-11/other/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md).
 
 ## Exact reusable primitives
 

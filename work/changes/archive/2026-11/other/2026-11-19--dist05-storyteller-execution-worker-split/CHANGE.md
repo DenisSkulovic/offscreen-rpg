@@ -1,7 +1,7 @@
 # DIST05 | Split model execution and scene publication into separately deployed owners
 
 **State:** Cancelled/superseded (2026-11-19). Not Done. Acceptance cases moved to STORY03. The split is not implemented.  
-**Supersession:** HK09 archived this packet as Cancelled/superseded, not Done. The unique acceptance cases and negative tests now live in [STORY03](../../../../open/2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md#absorbed-dist05-cases-2026-11-19). No provider was called.
+**Supersession:** HK09 archived this packet as Cancelled/superseded, not Done. The unique acceptance cases and negative tests now live in [STORY03](../../../../archive/2026-11/other/2026-11-19--story03-separate-temporal-executor-and-publication/CHANGE.md#absorbed-dist05-cases-2026-11-19). No provider was called.
   
 **Kind:** implementation  
 **Execution:** Not automatically authorized; owner/coordinator selects after prerequisites are verified.  

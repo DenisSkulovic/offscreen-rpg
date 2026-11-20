@@ -25,7 +25,7 @@ flowchart TD
 
 | Priority | Inspected signal | Missing proof or contract | Owner |
 | --- | --- | --- | --- |
-| **P0** | STORY02 stores attempt custody but generation_state_shape requires succeeded generation to have attemptId **and** output | GA atomic saved-attempt adoption, durable idempotence and crash/retry proof | [STORY03](../../work/changes/open/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md) |
+| **P0** | STORY02 stores attempt custody but generation_state_shape requires succeeded generation to have attemptId **and** output | GA atomic saved-attempt adoption, durable idempotence and crash/retry proof | [STORY03](../../work/changes/archive/2026-11/other/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md) |
 | **P0** | Nest still starts/forks locally while GA only read/admit-resolution transport is present | All selected POC writes route through GA and fail closed if unavailable; DB privilege enforcement separately characterized | [BOOT03](../../work/changes/archive/2026-11/other/2026-11-19--boot03-game-authority-start-admission/SOURCE-MAP.md), DIST03 |
 | **P0** | storytellerV1 is one combined Activity and worker; task custody not remote | New named versioned Workflow, separate queue/credential, legacy history replay preserved | STORY02/STORY03 |
 | **P0** | A fresh 2026-11-20 kind cluster runs Next, Nest, Game Authority, control, executor, and relay beside the synthetic fixtures | Hosted release, replica proof, and the TURN03 scene and fork | [TURN02](../../work/changes/archive/2026-11/other/2026-11-19--turn02-compose-real-kubernetes-application-release/SOURCE-MAP.md), K8S11, TURN03 |

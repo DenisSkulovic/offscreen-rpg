@@ -1,14 +1,14 @@
 # STORY03 | Deploy a distinct Storyteller Temporal executor and GA publication activity
 
-**2026-11-20 source audit correction (HEAD `3992437`):** The two-stage workflow, control/executor queues, GA control-only publication endpoint and custody client now **exist in source**; the older `State: Proposed after STORY02` paragraph is a historical planning label, not proof that no code landed. However, `storyteller-distributed-control.ts` still performs direct DB adoption/publication, and multiple Storyteller notice creators still hardcode legacy topics. The in-process/manual-start tests do not establish a complete first campaign. [T07 control publication ownership, T08 selector consistency, T09 real-process trace](TASKS.md#2026-11-20-current-head-convergence-addendum--source-backed-not-yet-executed) are finite next tasks; [campaign integration program](../../../designs/open/first-campaign-readiness-2026-11-20/README.md). **No tests run by ChatGPT in this planning commit; Change not Done; provider remains disabled.**
+**2026-11-20 source audit correction (HEAD `3992437`):** The two-stage workflow, control/executor queues, GA control-only publication endpoint and custody client now **exist in source**; the older `State: Proposed after STORY02` paragraph is a historical planning label, not proof that no code landed. However, `storyteller-distributed-control.ts` still performs direct DB adoption/publication, and multiple Storyteller notice creators still hardcode legacy topics. The in-process/manual-start tests do not establish a complete first campaign. [T07 control publication ownership, T08 selector consistency, T09 real-process trace](TASKS.md#2026-11-20-current-head-convergence-addendum--source-backed-not-yet-executed) are finite next tasks; [campaign integration program](../../../../../designs/open/first-campaign-readiness-2026-11-20/README.md). **No tests run by ChatGPT in this planning commit; Change not Done; provider remains disabled.**
 
 
-**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: versioned workflow + saved-attempt CAS and GA publication, scripted only. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
+**Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: versioned workflow + saved-attempt CAS and GA publication, scripted only. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Proposed after STORY02 (2026-11-19)  
+**State:** Done (2026-11-20). A separate Storyteller executor and Game Authority publication are proved on local processes. A lost publish reply, an executor killed after the save, and a late result each leave one scene. Browser, SSE, and a cold kind deploy remain TURN03.  
 **Kind:** implementation  
 **Selection:** Not included in active Kubernetes batch; explicit approval required.  
-**Design:** [D4 Storyteller handoff](../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [D1 service choreography](../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md)
+**Design:** [D4 Storyteller handoff](../../../../../designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md) · [D1 service choreography](../../../../../designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md) · [DISTURN](../../../../../designs/open/distributed-turn-poc/README.md)
 
 **Packet profile:** `STATE` (planner-inspected `584b594`). Start with this route card. [SOURCE-MAP.md](SOURCE-MAP.md) traces the existing executable call chain, [EXECUTION.md](EXECUTION.md) settles the versioned queue/authority/transaction design, and [PROOF.md](PROOF.md) lists failure checks. Cursor reads only relevant deep sections. These are **plans, not proof**; the packet stays Proposed and unselected.\n\n**Critical bridge:** `saveValidatedResult` currently writes `storyteller_attempt.attribution.custody`, not succeeded `generation.output`; `publishStorytellerResult` needs the latter. The GA-owned idempotent promote-and-publish step is mandatory.\n\n## Outcome / prerequisites
 
@@ -19,7 +19,7 @@
 
 ## Concrete scope / contract
 
-Split current completeStoryteller activity by creating a separate storyteller-execute Task Queue worker with only task/read/result capabilities and a GA control-side publish activity. Introduce replay-safe named distributed workflow with stable workflow ID, generationId-only Temporal history and bounded explicit succeeded|held|failed|uncertain transition rules; no retry on uncertain provider dispatch. Keep existing storytellerV1 and its recorded histories compatible until cutover. Do not deploy two consumers of the same Task Queue with incompatible activity sets. Make model execution scaled independently from game admission/publication, with separate credentials and readiness. Exact resource/namespace env reviewed before writing Helm/kind manifests.
+Split current completeStoryteller activity by creating a separate storyteller-execute Task Queue worker with only task/read/result capabilities and a GA control-side publish activity. Introduce replay-safe named distributed workflow with stable workflow ID, generationId-only Temporal history and bounded explicit succeeded|held|failed|uncertain transition rules; no retry on uncertain provider dispatch and no provider send. Keep existing storytellerV1 and its recorded histories compatible until cutover. Do not deploy two consumers of the same Task Queue with incompatible activity sets. Make model execution scaled independently from game admission/publication, with separate credentials and readiness. Exact resource/namespace env reviewed before writing Helm/kind manifests.
 
 **Intended source and documentation owners:** apps/worker/src/{activities/index,runtime/index,bootstrap} or new apps/storyteller-worker; packages/workflows/src/{index,contracts}.ts; packages/application/src/storyteller/runtime.ts and GA publication entrypoint, infra/kubernetes lab overlays, tests and technical runbooks.
 
@@ -37,18 +37,18 @@ Isolated standalone worker image/config can be prepared parallel with DIST04 bro
 
 Only disjoint Ready Changes may run concurrently in isolated worktrees under an owner-approved batch. Shared workflow files, ledger migrations, authentication, canonical doc headings and the kind cluster have one integration owner. No automatic successor selection.
 
-## planned-impact.v1
+## Planned specification and implementation delta | planned-impact.v1
 
 | Plane | Expected result | Required evidence |
 | --- | --- | --- |
-| Product | unchanged; text-first D&D-like game, Storyteller DM plus mechanically authoritative engine | No new gameplay or unapproved agent role |
-| Technical | Update exactly affected Storyteller/Temporal/game authority owners with proven process boundary | Disposition matrix, false-success/duplicate-send negatives |
-| Code | Bounded API, activity and test implementation in named owners | Source tests; actual runtime evidence where requested |
-| Related | Index, runbook, causal logging and STATUS only as evidenced | Link guards, Change reconciliation |
+| Product | unchanged: the text-first game and the Storyteller role stay as they were | No new gameplay or unapproved agent role |
+| Technical | changed: the local executor and Game Authority publication boundary is now the recorded proof | docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity |
+| Code | changed: the causal harness proves one scene after a lost reply and after the executor dies; the negative is a second passage | tools/api-integration/test/story03-causal-multiprocess.integration.ts |
+| Related | changed: the catalog, status, and technical pages now point at the archived local proof | docs/architecture/02-one-turn.md#selected-distributed-turn-execution-and-publication-separated |
 
 ## Absorbed DIST05 cases (2026-11-19)
 
-HK09 cancelled DIST05 as superseded. These checks were not already stated above. They are not implemented, and this packet stays Proposed. The superseded RabbitMQ-to-Temporal hop is not copied: a story wake stays a direct SQL outbox to Temporal.
+HK09 cancelled DIST05 as superseded. These checks were not already stated above. The local proof is in the later evidence. This packet is Done for that local proof. A cold kind run remains TURN03. The superseded RabbitMQ-to-Temporal hop is not copied: a story wake stays a direct SQL outbox to Temporal.
 
 - A fake-provider harness keeps the saved attempt and the saved proposal, isolates the Storyteller task queue, survives worker interruption, and refuses a stale canon root.
 - The Storyteller process has no SQL permission to mutate mechanical state or the published root.
@@ -85,7 +85,7 @@ HK09 cancelled DIST05 as superseded. These checks were not already stated above.
 
 **NOT-RUN or partial (truthful):** `tools/api-integration` `test:story03-t06:publication-context`, browser-creation; `apps/worker/test/eng06-worker-restart.live.test.ts`; `packages/application/test/scene-checkpoint-publication.test.mjs`; GET scene once after publication; live executor-kill after saved result; stale-root → held end-to-end. Canonical technical headings in `docs/technical/storyteller/generation-and-publication.md`, `docs/technical/platform/execution-and-delivery.md`, and architecture atlas chapters 2–4 were **not** updated in this slice.
 
-**Negative reading (mandatory):** A reader **must not** conclude that the two-process **local** live test, **worker-replay 2/2**, or **activity-settlement 4/4** closes [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) Cross-Pod turn proof, full Kubernetes multi-Pod operation, or **T06 closure**. Scripted decomposed suites, one passing local handoff, worker-replay integration, and activity-settlement integration do not establish executor-kill recovery, stale-root held behavior, publication-context integration, or full saved-result → GA adopt → single GET scene chain. DIST01 and BOOT03 canonical technical headings were not edited.
+**Negative reading (mandatory):** A reader **must not** conclude that the two-process **local** live test, **worker-replay 2/2**, or **activity-settlement 4/4** closes [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) Cross-Pod turn proof, full Kubernetes multi-Pod operation, or **T06 closure**. Scripted decomposed suites, one passing local handoff, worker-replay integration, and activity-settlement integration do not establish executor-kill recovery, stale-root held behavior, publication-context integration, or full saved-result → GA adopt → single GET scene chain. DIST01 and BOOT03 canonical technical headings were not edited.
 
 ## T07 evidence | control publication is GA HTTP (`44272d9a` parent, 2026-11-20)
 
@@ -130,7 +130,7 @@ Replay, recovery, opening retry, dispatch release, follow-up, and chamber releas
 | Game Authority stopped before resolution | **PASS**. Revision stays 1 |
 | Activity ACK loss | **NOT-RUN in T09**. Proved later by T10 on the same suite |
 
-**Negative reading:** this does not close [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md). It is not a browser session, not SSE proof, not a cold kind deploy, and not two executor Pods.
+**Negative reading:** this does not close [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md). It is not a browser session, not SSE proof, not a cold kind deploy, and not two executor Pods.
 
 ## T10 evidence | continuation publish ACK loss (`change/story03-local-negatives`, 2026-11-20)
 
@@ -172,13 +172,39 @@ The new case reaches scene 2 “Gary’s promise”, sequences `[1, 2]`, one con
 
 **Negative reading:** this is local OS processes, not two executor Pods, not a browser session, and not a cold kind deploy. The hold lives in the test proxy.
 
-## Reconciliation ledger (fill before closure)
+## Reconciliation ledger
 
-| Authority | Planned delta / no-op | Source SHA/diff | Positive / negative proof | Link/status |
-| --- | --- | --- | --- | --- |
-| Product | unchanged | `ec73a535` | No gameplay or Storyteller product rule edit in this slice | unchanged / N/A |
-| Storyteller input + attempt custody | wake topic copied from the first Storyteller notice | parent `1a0afb80` plus T08 diff; T12 causal kill-after-save | **Positive:** distributed admission stays distributed after the flag is cleared; a second notice uses that topic. T12 kills the executor after the saved result and the retry keeps one attempt. **Negative:** legacy admission stays legacy after the flag is set; missing notice throws; inconsistent topics throw and are not rewritten. Two executor Pods remain **NOT-RUN** | T08 and T12 landed; Change **not Done** |
-| Game Authority publication + canon | control activity is HTTP-only; GA remains the SQL publisher | T07 parent `44272d9a`; T11 sandbox test, no publication SQL edit | **Positive:** one published row after saved scripted result through GA HTTP. **Negative:** executor/story tokens **401**; duplicate publish `already_published`; control `DATABASE_URL` refused; GA-down activity is retryable and has no local publisher import. T11 **2/2**: lagging revision returns `stale` and adds no passage. Scene-checkpoint GET and the old publication-context suite remain **NOT-RUN** | T07 and T11 landed; Change **not Done** |
-| Workflow / runtime / docs | local causal HTTP turn recorded; default `storytellerV1` unchanged | T09 parent `0834db2e`; T10 harness proxy on `change/story03-local-negatives`; generation doc, architecture chapter 2, STATUS | **Positive:** causal suite **7/7**, including one dropped continuation publish acknowledgement and one kill after the saved result, each ending in one published scene. **Negative:** browser, SSE, and cold kind **NOT-RUN**; Change stays **Proposed** | T09, T10, and T12 landed; not Done |
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | product | unchanged: no gameplay or Storyteller product rule was edited | no source behavior changed | reviewed | a lost reply, a dead executor, and a late result do not add a second scene | product pages were not edited |
+| docs/technical/storyteller/generation-and-publication.md#remote-task-custody | technical | changed: control publication is Game Authority HTTP, and a lost acknowledgement, a killed executor, and a lagging revision each leave one scene | tools/api-integration/test/story03-causal-multiprocess.integration.ts @ ec7b0a39 | live-observed | the dropped publish reply and the executor killed after save do not add a passage; the stale sandbox case adds no passage | docs/architecture/02-one-turn.md#selected-distributed-turn-execution-and-publication-separated |
+| docs/architecture/02-one-turn.md#selected-distributed-turn-execution-and-publication-separated | technical | changed: the observed turn is seven local processes, not a kind deploy | tools/api-integration/test/story03-causal-multiprocess.integration.ts @ ec7b0a39 | live-observed | browser, SSE, and a cold kind deploy are not claimed as this result | STATUS.md#status |
+| STATUS.md#status--demonstrated-boundary | technical | changed: the demonstrated boundary now includes the seven-case local turn and the stale saved continuation | packages/application/test/story03-stale-saved-publish.test.mjs @ ec7b0a39 | live-observed | a matching revision is not marked stale | docs/technical/storyteller/generation-and-publication.md#remote-task-custody |
+| docs/technical/platform/data-and-persistence.md#proposed-service-schemas-and-delivery-records | technical | unchanged: this close did not edit delivery-record schemas | no source behavior changed | reviewed | a lost publish reply does not invent a second delivery record | docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity |
+| docs/technical/platform/http-api-and-client-contracts.md#service-calls-are-not-player-routes | technical | unchanged: the control publish route stayed a private service call | no source behavior changed | reviewed | a player route was not added for publication | docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity |
+| docs/technical/platform/topology.md#proposed-service-ownership | technical | unchanged: this close did not move service ownership | no source behavior changed | reviewed | the executor still has no broad game-write credential | docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity |
+| docs/technical/platform/execution-and-delivery.md#storyteller-workflow-identity | technical | changed: the distributed workflow is the archived local split, and the causal suite is 7/7 | tools/api-integration/test/story03-causal-multiprocess.integration.ts @ ec7b0a39 | live-observed | default Compose still does not poll the split queues, and a cold kind run is not claimed | docs/architecture/02-one-turn.md#selected-distributed-turn-execution-and-publication-separated |
 
 Run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, repair inbound links and archive actual outcome. No unverified Done.
+
+## Close exceptions
+
+exception: .agents/references/change-packet-profiles.md because this edit only records that STORY03 is archived or retargets its link.
+exception: docs/architecture/03-data-and-transactions.md because this edit only records that STORY03 is archived or retargets its link.
+exception: docs/architecture/08-gaps-and-decisions.md because this edit only records that STORY03 is archived or retargets its link.
+exception: tools/api-integration/test/helpers/story03-causal-multiprocess-harness.ts because this harness holds the save and drops the publish reply in the local proof.
+exception: work/IMPLEMENTATION-ROADMAP.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/README.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/archive/2026-11/other/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/archive/2026-11/other/2026-11-19--dist05-storyteller-execution-worker-split/CHANGE.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/archive/2026-11/other/2026-11-19--hk09-reconcile-open-change-inventory/CHANGE.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/archive/2026-11/other/2026-11-19--story02-private-task-and-result-custody/SOURCE-MAP.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/ledger/2026-11.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/open/2026-11-19--dist03-game-authority-private-boundary/CHANGE.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/changes/open/2026-11-19--dist03-game-authority-private-boundary/TASKS.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/designs/open/distributed-turn-poc/CURSOR-HANDOFF-2026-11-19.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/designs/open/distributed-turn-poc/D1-EXECUTION-CONTRACT.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/designs/open/distributed-turn-poc/D4-STORYTELLER-HANDOFF.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/designs/open/distributed-turn-poc/GAPS.md because this edit only records that STORY03 is archived or retargets its link.
+exception: work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md because this edit only records that STORY03 is archived or retargets its link.
