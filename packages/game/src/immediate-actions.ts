@@ -86,6 +86,8 @@ export const immediateActionPlanSchema = z.strictObject({
   // Current generated finite plans are required to supply it by their task
   // schema and semantic admission policy.
   factTransitions: immediateFactTransitionsSchema.optional(),
+  /** Typed GM07 withdrawal eligibility; must not be inferred from label or risk. */
+  delegationMarker: z.literal('decline-harmless-invitation.v1').optional(),
   resolution: z.discriminatedUnion('kind', [
     z.strictObject({
       kind: z.literal('automatic'),

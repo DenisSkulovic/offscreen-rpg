@@ -1,6 +1,6 @@
 # GM07 | bounded source-backed execution after durable design
 
-**Plan baseline:** current main `c93cbc12`, with attached snapshot `64f3de7`. **Selection:** `work/QUEUE.md` still owns one active Change; **GM07 is not selected**. [GM07 exact decision](DECISION-2026-11-20.md) resolves original storage/actor/pause/scheduler blocker. **T01** existing pure module only; **T02–T06 implementation NOT RUN**. Cursor Standard, one T-ID with 2–5 specified source anchors per batch. No paid providers, destructive DB or unowned cluster actions.
+**Plan baseline:** current main `c93cbc12`, with attached snapshot `64f3de7`. **Selection:** `work/QUEUE.md` still owns one active Change; **GM07 is not selected**. [GM07 exact decision](DECISION-2026-11-20.md) resolves original storage/actor/pause/scheduler blocker. **T01 PASS** (pure reducer, 6 tests, no file change) and **T02 LANDED** on branch `change/gm07-consented-withdrawal` (owner policy table, typed fixture, no timer). **T03–T06 NOT RUN**. Cursor Standard, one T-ID with 2–5 specified source anchors per batch. No paid providers, destructive DB or unowned cluster actions.
 
 ## T01 | Verify pure delegate refusal baseline | VERIFY
 

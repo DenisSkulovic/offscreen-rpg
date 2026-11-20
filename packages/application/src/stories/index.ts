@@ -38,6 +38,7 @@ import { and, eq } from 'drizzle-orm';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import { createCampaignDocuments } from './documents';
 import { chamberAllowsResponse } from '../developer-tools/chamber-fixtures';
+import { createStoryDelegationPolicy } from './delegation-policy';
 
 export type StoryApplicationOptions = ReadCacheOptions & {
   documentStore?: DocumentStore;
@@ -81,8 +82,10 @@ export function createStories(
   const documents = options.documentStore
     ? createCampaignDocuments(database, options.documentStore)
     : null;
+  const delegationPolicy = createStoryDelegationPolicy(database);
   return {
     documents,
+    delegationPolicy,
     campaignSettings: createCampaignSettings(database),
     campaignAction: createCampaignActions(database, options.documentStore),
     actionExecutionControl: createActionExecutionControls(database),

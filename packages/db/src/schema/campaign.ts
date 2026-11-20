@@ -7,6 +7,7 @@ import {
   bigint,
   bigserial,
   timestamp,
+  boolean,
   primaryKey,
   unique,
   check,
@@ -138,6 +139,53 @@ export const campaignCommand = pgTable(
     request: jsonb('request').notNull().$type<unknown>(),
   },
   (t) => [primaryKey({ columns: [t.storyId, t.operationId] })],
+);
+
+export const storyDelegationPolicy = pgTable(
+  'story_delegation_policy',
+  {
+    storyId: uuid('story_id')
+      .primaryKey()
+      .references(() => story.id, { onDelete: 'restrict' }),
+    ownerId: text('owner_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'restrict' }),
+    version: integer('version').notNull(),
+    allowedClass: text('allowed_class').notNull(),
+    enabled: boolean('enabled').notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check('story_delegation_policy_version', sql`${t.version} > 0`),
+    check(
+      'story_delegation_policy_class',
+      sql`${t.allowedClass} = 'decline-harmless-invitation.v1'`,
+    ),
+  ],
+);
+
+export const storyDelegationPolicyCommand = pgTable(
+  'story_delegation_policy_command',
+  {
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    operationId: uuid('operation_id').notNull(),
+    request: jsonb('request').notNull().$type<unknown>(),
+    resultVersion: integer('result_version').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.storyId, t.operationId] }),
+    check(
+      'story_delegation_policy_command_version',
+      sql`${t.resultVersion} > 0`,
+    ),
+  ],
 );
 export const gameOffer = pgTable(
   'game_offer',
