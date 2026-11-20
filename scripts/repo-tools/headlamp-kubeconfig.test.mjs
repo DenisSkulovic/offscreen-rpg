@@ -50,6 +50,35 @@ test('selectContext keeps only the lab context, cluster, and user', () => {
   assert.doesNotMatch(result, /kind-foreign-user/);
   assert.doesNotMatch(result, /foreign-secret-token/);
   assert.doesNotMatch(result, /foreign\.example/);
+  assert.doesNotMatch(result, /\[object Object\]/);
+  assert.match(result, /token: fake-lab-token-do-not-log/);
+});
+
+test('selectContext keeps nested user credentials under user', () => {
+  const fixture = `apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: https://127.0.0.1:6443
+  name: kind-offscreen-lab
+contexts:
+- context:
+    cluster: kind-offscreen-lab
+    user: kind-offscreen-lab
+  name: kind-offscreen-lab
+current-context: kind-offscreen-lab
+users:
+- name: kind-offscreen-lab
+  user:
+    client-certificate-data: Y2VydA==
+    client-key-data: a2V5
+`;
+  const result = selectContext(fixture, 'kind-offscreen-lab');
+  assert.match(result, /client-certificate-data: Y2VydA==/);
+  assert.match(result, /client-key-data: a2V5/);
+  assert.match(result, /- cluster:\n {4}server: /);
+  assert.match(result, /- context:\n {4}cluster: kind-offscreen-lab/);
+  assert.doesNotMatch(result, /\[object Object\]/);
 });
 
 test('selectContext throws when context is missing', () => {

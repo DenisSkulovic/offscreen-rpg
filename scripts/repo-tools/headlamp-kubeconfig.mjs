@@ -178,7 +178,7 @@ function stringifyValue(value, indent) {
       const [firstKey, firstVal] = entries[0];
       if (typeof firstVal === 'object' && firstVal !== null && !Array.isArray(firstVal)) {
         lines.push(`${pad}- ${firstKey}:`);
-        lines.push(...stringifyValue(firstVal, indent + 2));
+        lines.push(...stringifyValue(firstVal, indent + 4));
         for (let i = 1; i < entries.length; i += 1) {
           const [k, v] = entries[i];
           if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
@@ -192,7 +192,12 @@ function stringifyValue(value, indent) {
         lines.push(`${pad}- ${firstKey}: ${formatScalar(firstVal)}`);
         for (let i = 1; i < entries.length; i += 1) {
           const [k, v] = entries[i];
-          lines.push(`${pad}  ${k}: ${formatScalar(v)}`);
+          if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+            lines.push(`${pad}  ${k}:`);
+            lines.push(...stringifyValue(v, indent + 4));
+          } else {
+            lines.push(`${pad}  ${k}: ${formatScalar(v)}`);
+          }
         }
       }
     }

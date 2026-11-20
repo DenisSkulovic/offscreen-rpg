@@ -28,7 +28,7 @@ Provide a deterministic fake storyteller/provider for tests and a no-paid-key de
 
 Pin supported runtime/dependency versions, the package manager and container image versions when scaffolding. Keep a single lockfile. Application code is TypeScript; SQL migrations, Compose YAML and a small documentation checker do not violate that preference.
 
-A separate [Kubernetes developer UI](../../runbooks/kubernetes-developer-ui.md) route wires `pnpm dev` to Tilt on `kind-offscreen-lab` and a Windows Headlamp kubeconfig. That route is source-tested only. This section remains the Compose and host-process local path until a live cluster boot is observed.
+A separate [Kubernetes developer UI](../../runbooks/kubernetes-developer-ui.md) route wires `pnpm dev` to Tilt on `kind-offscreen-lab` and a Windows Headlamp kubeconfig. `tilt ci` has been observed on the existing lab cluster, and kubectl has used the single-context kubeconfig to replace one `game-web` Pod. The Headlamp desktop click remains a later operator check. This section remains the Compose and host-process local path.
 
 ## Scripted testing chamber
 

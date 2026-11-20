@@ -1,6 +1,6 @@
 # Work selection | single current-work authority
 
-**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is Done and archived. FORK01 is Done and archived. DXK01 is Done and archived** for the warm `kind-offscreen-lab` reconcile. Current work is none. BOOT03 is archived. No implicit model spend or unsafe cluster authorization.
+**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is Done and archived. FORK01 is Done and archived. DXK01 is Done and archived** for the warm `kind-offscreen-lab` reconcile. **DXK02 is Done and archived** for Tilt CI and the single-context kubeconfig. Current work is none. BOOT03 is archived. No implicit model spend or unsafe cluster authorization.
 
 Current work: none
 

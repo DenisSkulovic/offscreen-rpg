@@ -1,6 +1,6 @@
 # DXK02 | bounded Composer tasks
 
-**Status:** T01–T03 source landed; `tilt ci` exit 0; Headlamp desktop NOT-RUN. **Program:** [DXK program](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
+**Status:** Done (2026-11-20). `tilt ci` exit 0. Headlamp kubeconfig proved with kubectl. Desktop GUI remains DXK07 T02. **Program:** [DXK program](../../../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). Select the Change via work/QUEUE.md and only one named T-ID at a time. **Baseline:** 13bcd6cf + GitHub main 8796daaa; verify exact local HEAD and existing TURN02/BOOT03 work before any code. One live-cluster operator; do not escalate into paid broad source analysis.
 
 
 ## T01 | Tilt as canonical live developer orchestrator
@@ -22,7 +22,7 @@
 
 **DEPTH=PATCH-M.** **Initial source route (2-4 anchors):** infra/kubernetes/lab/kind.yaml; docs/runbooks/kubernetes-lab.md; infra/kubernetes/lab/lib.sh. Inspect only direct caller/consumer and focused test; use planner SOURCE-MAP.md only when source disagrees. **Implementation/verification contract:** Document and, if useful, provide read-only setup helper to expose only kind-offscreen-lab kubeconfig to Windows Headlamp desktop; never copy ServiceAccount tokens into repo or host a publicly reachable Headlamp. Test selecting namespaces/Pod, viewing logs/events, Exec if image shell exists, deleting one labeled app Pod and seeing Deployment replacement; verify another user/foreign cluster is not accidentally targeted. Desktop app install is explicit prerequisite; optional automated launch only if reliably portable.
 
-**Status (2026-11-20):** `scripts/repo-tools/headlamp-kubeconfig.mjs` writes only `kind-offscreen-lab` outside the repo. `node --test scripts/repo-tools/headlamp-kubeconfig.test.mjs` 4 pass / 0 fail. In-repo `--out` and any other context are refused. Live Headlamp desktop NOT-RUN.
+**Status (2026-11-20):** Helper tests 5 pass / 0 fail, including nested user credentials. `~/.kube/offscreen-lab-headlamp.config` has only `kind-offscreen-lab` and server `https://127.0.0.1:6443`. kubectl using that file listed namespaces and replaced one `game-web` Pod (`49db9567-175e-4c29-96de-1ec4852733ee` → `a7f5eb92-0de3-4c56-aab4-a0286e8d0844`, Ready, same ReplicaSet). The kind identity can see every namespace in that one cluster. Headlamp desktop GUI NOT-RUN; DXK07 T02 owns that click.
 
 ## Close conditions
 

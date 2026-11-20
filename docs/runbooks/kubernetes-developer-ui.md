@@ -12,7 +12,7 @@ From the repository root:
 pnpm dev
 ```
 
-`pnpm dev` is the Tilt front door. It runs the stack preflight, then `tilt up` against the existing `kind-offscreen-lab` context. It does not create the cluster, and it does not print the URLs below until `game-web`, `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay` are Available. Image updates are full rebuilds through the app-release scripts; there is no `live_update` hot swap. On 2026-11-20, `tilt ci` (same Tiltfile, Tilt v0.35.2) exited 0 against the existing `offscreen-lab` cluster and reported all workloads healthy. `pnpm dev` itself was not the process observed, and the Headlamp desktop session remains not run.
+`pnpm dev` is the Tilt front door. It runs the stack preflight, then `tilt up` against the existing `kind-offscreen-lab` context. It does not create the cluster, and it does not print the URLs below until `game-web`, `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay` are Available. Image updates are full rebuilds through the app-release scripts; there is no `live_update` hot swap. On 2026-11-20, `tilt ci` (same Tiltfile, Tilt v0.35.2) exited 0 against the existing `offscreen-lab` cluster and reported all workloads healthy. `pnpm dev` itself was not the process observed.
 
 | Surface | URL | Notes |
 | --- | --- | --- |
@@ -45,18 +45,15 @@ Defaults:
 
 The helper runs `kubectl config view --context kind-offscreen-lab --minify --flatten`, then keeps only that context, its cluster, and its user. It **refuses** to write under the repository root.
 
-**WSL path from Windows:** `\\wsl$\<distro>\home\<user>\.kube\offscreen-lab-headlamp.config` (adjust distro and user). Select that file in Headlamp settings.
+The file is the existing kind admin identity for that one cluster. It does not add a second context, and it is not a separate least-privilege account, so kubectl can list every namespace in `offscreen-lab`.
 
-## Manual operator checks (live cluster)
+**WSL path from Windows:** `\\wsl$\<distro>\home\<user>\.kube\offscreen-lab-headlamp.config` (adjust distro and user). Select that file in Headlamp settings. Headlamp stays a desktop app. This repository does not launch it.
 
-When `kind-offscreen-lab` is up and Tilt has deployed workloads, perform these checks **yourself** in Headlamp or with `kubectl`. Automated proof for this packet does **not** include a live Headlamp desktop session; install and UI use stay explicit **NOT-RUN** prerequisites.
+On 2026-11-20 the helper wrote `/home/dskul/.kube/offscreen-lab-headlamp.config`. `kubectl --kubeconfig` with that file showed one context, `kind-offscreen-lab`, and server `https://127.0.0.1:6443`. It listed the lab namespaces. It deleted `game-web` Pod UID `49db9567-175e-4c29-96de-1ec4852733ee`. The Deployment replaced it with UID `a7f5eb92-0de3-4c56-aab4-a0286e8d0844`, Ready, owned by ReplicaSet `game-web-664bc85fc6`.
 
-1. Confirm the active context is `kind-offscreen-lab` (same as `kubectl --context kind-offscreen-lab config current-context`).
-2. Select namespace **`lab-edge`**.
-3. Open logs for a running Pod.
-4. **Exec** into a Pod only if its image includes a shell.
-5. Delete one Pod labeled `app=game-web`.
-6. Watch the Deployment replace that Pod.
+## Headlamp desktop session
+
+Opening Headlamp, reading a log, using its terminal, and deleting a Pod from the desktop UI are the final operator check in [DXK07 T02](../../work/changes/open/2026-11-20--dxk07-clean-clone-acceptance/TASKS.md). That click was **not** run for the Tilt and kubeconfig integration. A developer can point Headlamp at the file above when that session happens.
 
 Do not target another user’s kubeconfig, a foreign context, or a non-lab cluster.
 
