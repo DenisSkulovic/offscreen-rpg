@@ -6,7 +6,7 @@ import { campaign as campaignTable, gameActionExecution, gameActionReceipt } fro
 import { story } from '@offscreen/db/story-schema';
 import { requireDefined } from './helpers/require.js';
 import type { TestContext } from 'node:test';
-import { type ProfiledStoryteller, eq } from './storyteller-suite.js';
+import { type ProfiledStoryteller, eq, inspectStorytellerProgress } from './storyteller-suite.js';
 import { registerProfiledStoryteller } from './storyteller-suite.js';
 
 // Moved unchanged from the profiled Storyteller suite.
@@ -163,6 +163,28 @@ export async function checkPreparationHold(
           ownerId,
           storyId: started.storyId,
         });
+      }
+      if (failed.resolution?.blocker?.recovery !== 'retry') {
+        const controlResponse = await fetch(controlUrl, {
+          headers: { cookie },
+        });
+        const controlBody = (await controlResponse.json()) as {
+          control: { state: string; revision: number; generationId: string | null };
+        };
+        const progress = await inspectStorytellerProgress(database, {
+          storyId: started.storyId,
+          operationId,
+        });
+        assert.equal(
+          failed.resolution?.blocker?.recovery,
+          'retry',
+          `Chamber retry prerequisite never became true. control=${JSON.stringify(controlBody.control)} publicResolution=${JSON.stringify({
+            state: failed.resolution?.state,
+            evidence: failed.resolution?.evidence,
+            blocker: failed.resolution?.blocker,
+            holds: failed.campaign?.holds,
+          })} progress=${JSON.stringify(progress)}`,
+        );
       }
       const [receipt] = await database.db
         .select({ generationId: gameActionReceipt.generationId })

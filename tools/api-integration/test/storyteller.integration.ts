@@ -1,5 +1,8 @@
 import { test } from 'node:test';
-import { withProfiledStoryteller } from './storyteller-suite.js';
+import {
+  waitForProfiledOutboxQuiet,
+  withProfiledStoryteller,
+} from './storyteller-suite.js';
 import { checkImportedStart } from './storyteller-imported-start.integration.js';
 import { checkJourneySchedule } from './storyteller-journey-schedule.integration.js';
 import { checkPreparationHold } from './storyteller-preparation-hold.integration.js';
@@ -23,6 +26,9 @@ test(
     await withProfiledStoryteller(async (suite) => {
       await checkImportedStart(t, suite);
       await checkJourneySchedule(t, suite);
+      await waitForProfiledOutboxQuiet(suite.database, {
+        restartWorker: suite.restartWorker,
+      });
       await checkPreparationHold(t, suite);
       await checkActivityAdmission(t, suite);
       await checkAcceptedPlan(t, suite);
@@ -31,6 +37,9 @@ test(
       await checkProviderBudget(t, suite);
       await checkMemoryExploration(t, suite);
       await checkProviderRecovery(t, suite);
+      await waitForProfiledOutboxQuiet(suite.database, {
+        restartWorker: suite.restartWorker,
+      });
       await checkWorkerReplay(t, suite);
       await checkBrowserCreation(t, suite);
     });

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { mkdtemp } from 'node:fs/promises';
+import { setTimeout as delay } from 'node:timers/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -21,7 +22,11 @@ import {
   createChamber,
   createChamberStorytellerControl,
 } from '@offscreen/application/developer-tools';
-import { createStories } from '@offscreen/application/stories';
+import {
+  campaignActionTopic,
+  campaignConsequenceTopic,
+  createStories,
+} from '@offscreen/application/stories';
 import { LocalDocumentStore } from '@offscreen/documents';
 import {
   withAppIntegration,
@@ -246,7 +251,7 @@ export type TerminateOpenStorytellerWorkflowsResult = {
   ignored: number;
 };
 
-/** Terminate stale open storyteller/{generationId} runs (legacy and distributed types share this id). */
+/** Terminate leftover profiled suite workflows. Worker restarts otherwise leave campaign-action tasks scheduled on a dead worker. */
 export async function terminateOpenStorytellerWorkflows(): Promise<TerminateOpenStorytellerWorkflowsResult> {
   const address = process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233';
   const namespace = process.env['TEMPORAL_NAMESPACE'] ?? 'default';
@@ -259,9 +264,14 @@ export async function terminateOpenStorytellerWorkflows(): Promise<TerminateOpen
   };
   try {
     const query =
-      'WorkflowId STARTS_WITH "storyteller/" AND (ExecutionStatus = "Running" OR ExecutionStatus = "ContinuedAsNew")';
+      '(WorkflowId STARTS_WITH "storyteller/" OR WorkflowId STARTS_WITH "campaign-action/" OR WorkflowId STARTS_WITH "campaign-consequence/" OR WorkflowId STARTS_WITH "campaign-activity/") AND (ExecutionStatus = "Running" OR ExecutionStatus = "ContinuedAsNew")';
     for await (const execution of client.workflow.list({ query })) {
-      if (!execution.workflowId.startsWith('storyteller/')) {
+      if (
+        !execution.workflowId.startsWith('storyteller/') &&
+        !execution.workflowId.startsWith('campaign-action/') &&
+        !execution.workflowId.startsWith('campaign-consequence/') &&
+        !execution.workflowId.startsWith('campaign-activity/')
+      ) {
         continue;
       }
       counts.listed += 1;
@@ -291,6 +301,162 @@ export async function terminateOpenStorytellerWorkflows(): Promise<TerminateOpen
     await connection.close().catch(() => undefined);
   }
   return counts;
+}
+
+/** HK03 diagnostic: name which durable prerequisite is still false at poll expiry. */
+export async function inspectStorytellerProgress(
+  database: AppIntegration['database'],
+  args: { storyId: string; operationId: string },
+) {
+  const client = database.db.$client;
+  const execution = await client.query<{
+    state: string;
+    revision: number;
+    preparation_generation_id: string | null;
+  }>(
+    `SELECT state, revision, preparation_generation_id
+     FROM game_action_execution
+     WHERE operation_id = $1`,
+    [args.operationId],
+  );
+  const receipt = await client.query<{
+    generation_id: string | null;
+    outcome: string;
+  }>(
+    `SELECT generation_id, outcome
+     FROM game_action_receipt
+     WHERE operation_id = $1`,
+    [args.operationId],
+  );
+  const generationId =
+    receipt.rows[0]?.generation_id ??
+    execution.rows[0]?.preparation_generation_id ??
+    null;
+  const generations = generationId
+    ? await client.query<{
+        id: string;
+        kind: string;
+        state: string;
+        failure_code: string | null;
+        attempt_id: string | null;
+      }>(
+        `SELECT id, kind, state, failure_code, attempt_id
+         FROM generation
+         WHERE id = $1`,
+        [generationId],
+      )
+    : { rows: [] };
+  const resolution = await client.query<{
+    generation_id: string;
+    base_revision: number;
+    operation_id: string;
+  }>(
+    `SELECT generation_id, base_revision, operation_id
+     FROM story_resolution
+     WHERE story_id = $1`,
+    [args.storyId],
+  );
+  const campaign = await client.query<{
+    game_second: string;
+    holds: unknown;
+  }>(
+    `SELECT game_second::text AS game_second, holds
+     FROM campaign
+     WHERE story_id = $1`,
+    [args.storyId],
+  );
+  const pendingOutbox = await client.query<{
+    topic: string;
+    count: number;
+    leased: number;
+    not_yet_available: number;
+  }>(
+    `SELECT topic,
+            count(*)::int AS count,
+            count(*) FILTER (WHERE lease_id IS NOT NULL)::int AS leased,
+            count(*) FILTER (WHERE available_at > clock_timestamp())::int AS not_yet_available
+     FROM outbox
+     WHERE delivered_at IS NULL
+     GROUP BY topic`,
+  );
+  const operationOutbox = await client.query<{
+    id: string;
+    topic: string;
+    leased: boolean;
+    available_at: Date;
+    delivered_at: Date | null;
+  }>(
+    `SELECT id, topic, lease_id IS NOT NULL AS leased, available_at, delivered_at
+     FROM outbox
+     WHERE operation_id = $1 OR ($2::uuid IS NOT NULL AND operation_id = $2)
+     ORDER BY available_at`,
+    [args.operationId, generationId],
+  );
+  return {
+    generationId,
+    execution: execution.rows,
+    receipt: receipt.rows,
+    generation: generations.rows,
+    resolution: resolution.rows,
+    campaign: campaign.rows,
+    pendingOutbox: pendingOutbox.rows,
+    operationOutbox: operationOutbox.rows,
+  };
+}
+
+const profiledRelayTopics = [
+  storytellerTopic,
+  storytellerDistributedTopic,
+  campaignActionTopic,
+  campaignConsequenceTopic,
+];
+
+/** Wait until available profiled notices are delivered. Restarted workers otherwise inherit a FIFO backlog. */
+export async function waitForProfiledOutboxQuiet(
+  database: AppIntegration['database'],
+  options: {
+    restartWorker?: () => Promise<void>;
+    deadlineMs?: number;
+  } = {},
+) {
+  const deadlineMs = options.deadlineMs ?? 45000;
+  await options.restartWorker?.();
+  const started = Date.now();
+  while (Date.now() - started < deadlineMs) {
+    const pending = await database.db.$client.query<{ count: number }>(
+      `SELECT count(*)::int AS count
+       FROM outbox
+       WHERE delivered_at IS NULL
+         AND topic = ANY($1::text[])
+         AND available_at <= clock_timestamp()`,
+      [profiledRelayTopics],
+    );
+    if ((pending.rows[0]?.count ?? 0) === 0) {
+      return;
+    }
+    await delay(100);
+  }
+  const leftover = await database.db.$client.query<{
+    topic: string;
+    count: number;
+    available: number;
+    leased: number;
+  }>(
+    `SELECT topic,
+            count(*)::int AS count,
+            count(*) FILTER (WHERE available_at <= clock_timestamp())::int AS available,
+            count(*) FILTER (WHERE lease_id IS NOT NULL)::int AS leased
+     FROM outbox
+     WHERE delivered_at IS NULL
+       AND topic = ANY($1::text[])
+     GROUP BY topic`,
+    [profiledRelayTopics],
+  );
+  assert.equal(
+    leftover.rows.reduce((sum, row) => sum + row.available, 0),
+    0,
+    `profiled outbox did not drain within ${deadlineMs}ms: ${JSON.stringify(leftover.rows)}`,
+  );
 }
 
 /** Same profiled stack as the original single-file suite. The outbox relay runs before any in-process `candidate()` so profiled notices wake on the integration worker queue. */
@@ -327,6 +493,7 @@ export async function withProfiledStoryteller(
         temporalCleanup.ignored,
       );
       await restartWorker();
+      await waitForProfiledOutboxQuiet(database);
       const actors = bindProfiledActors({
         database,
         ownerId,

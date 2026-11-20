@@ -88,10 +88,32 @@ Earlier isolated FAIL on the same file (same day) stored `storyteller_publicatio
 | isolated browser-creation family | API integration tests | changed: isolated `storyteller-browser-creation.integration.js` passed 2/2 exit 0 on 2026-11-20 after notes-after-checkpoint commit order and checkpoint-before-passage teardown. Profiled `test:storyteller` was not re-run. Packet stays Implementing | tools/api-integration/test/storyteller-browser-creation.integration.ts; packages/application/src/stories/continuation.ts; tools/api-integration/test/helpers/app-integration.ts; uncommitted on 42b994dc | executed | A `stale_story_revision` publication_blocked row with generation succeeded and Temporal COMPLETED is a rolled-back seq-2, not a UI-only miss. Teardown that deletes `story_passage` while `story_scene_checkpoint` remains fails with FK AggregateError after a green inner case | N/A |
 | mechanical opening three-turn fixture | API integration tests | changed (documented exception to byte-identical relocation): the loop no longer takes `nodes[0]`, which could legally reach `parcel-secured` and an empty plan array. Sequence is `take-cover`, `leave-cover`, `calm-gary`. Round-2 offer asserts both real D20 outcomes. Gameplay rules and the nonempty-offer assertion were not weakened | tools/api-integration/test/storyteller-imported-start.integration.ts; pineappleConsequence in packages/storyteller/src/fixtures/mechanical/pineapple.ts | executed | Isolated imported-start 4/4 PASS. Profiled mechanical opening PASS. Empty nodes after `draw-parcel-closer` is no longer reachable in this case. Other outcomes of `calm-gary` fail the test | N/A |
 | profiled suite after fixture correction | API integration tests | unchanged Goal: 33/33 not met. `pnpm --filter @offscreen/api-integration test:storyteller` on offscreen_auth_test: 33 tests, 30 passed, 3 failed, 0 skipped | storyteller-preparation-hold.integration.ts:178 (`resolution.blocker` expected `{kind:generation, recovery:retry}`, actual null); storyteller-worker-replay.integration.ts:142 (`gameSecond` expected +5, actual 0) | executed | Mechanical opening is not among the failures. Isolated worker-replay nested case PASS when run alone. No provider call. wiki:health remaining errors are unrelated | N/A |
+| shared-session worker stalls (2026-11-20, unclosed) | API integration tests | unchanged Goal: 33/33 not stably met. Diagnostic dumps + lifecycle edits landed; one later profiled run was 33/33, a following run was 30/33, then a quiet-wait run was 31/33 parent-fail. Packet stays Implementing | see CHANGE.md "Shared-session stall diagnosis" | executed | Isolated families usually PASS. Profiled Chamber/worker-replay still flake. Assertions were not weakened. No archive | N/A |
 
 ## Fixture-stabilization exception (2026-11-20)
 
 The original HK03 move was byte-identical case relocation. ChatGPT later showed that `offer.nodes[0]` can legally play `take-cover` → `inspect-from-cover` → `draw-parcel-closer`, after which `pineappleConsequence` returns `[]`. This test file now names those three actions. That is a fixture correction, not a gameplay rewrite.
+
+## Shared-session stall diagnosis (2026-11-20, not Done)
+
+Stopped while still flaking. Planner should treat the following as evidence, not a closed repair.
+
+**Dumps at poll expiry (profiled log `/tmp/hk03-storyteller-2.log`):**
+
+1. Chamber retry: control stayed `armed-failure` (revision 1, `generationId` null). Execution was `settled`, receipt `automatic`, generation `storyteller.profiled.v1` **running**, holds had the required-turn generation. Public `resolution.blocker` stayed null. Operation outbox rows were delivered. Discriminator: **scripted gate never ran**, not a missing snapshot join.
+2. Worker-replay: control stayed `armed-hold`. Execution still `running`, `gameSecond` 0, no receipt. Generation was still `storyteller.context-capture.v1` **pending**. Pending outbox at expiry included **26 undelivered `storyteller.profiled.v1` notices**, plus this operation's `campaign.action.v1` and `campaign.consequence.v1` undelivered. Discriminator: **capture never promoted because relay never reached this operation's notices**.
+
+**Also observed:** after an isolated worker-replay fail, Temporal still had `campaign-action/<noticeId>` RUNNING with history length 5: `advanceCampaignAction` **scheduled, never started**. `useWorkflowBuildId: true` on that scheduled activity. Isolated worker-replay later passed 3/3 after leftover workflows were gone, then failed again in the profiled suite.
+
+**Edits in tree, unproven as the fix:**
+
+- Poll-expiry dumps in the two failing cases (`inspectStorytellerProgress`).
+- `scheduleToStartTimeout: '5 seconds'` on workflow `proxyActivities`.
+- `maxEagerActivityReservationsPerWorkflowTask: 0` on `startRuntime`.
+- Suite start now also terminates `campaign-action/`, `campaign-consequence/`, `campaign-activity/` leftovers.
+- `waitForProfiledOutboxQuiet` before Chamber and before worker-replay; the wait after provider-recovery once failed with 22 still-undelivered storyteller notices while the worker had just STOPPED and no new webpack/RUNNING log followed.
+
+**Profiled counts actually seen this session:** 30/33 (pineapple-fixed baseline), 33/33 once, 30/33 (both nested again), 31/33 (parent failed on outbox quiet-wait, worker-replay/browser never ran), 33/33 once after forcing `restartWorker` inside the quiet-wait. Not a stable green. HK03 is not archived.
 
 ## Separate candidate (not this Change)
 

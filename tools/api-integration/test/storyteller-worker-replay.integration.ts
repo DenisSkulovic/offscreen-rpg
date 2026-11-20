@@ -6,7 +6,7 @@ import { campaignConsequence, gameActionExecution, gameActionExecutionEvent, gam
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { requireDefined } from './helpers/require.js';
 import type { TestContext } from 'node:test';
-import { type ProfiledStoryteller, eq, asc } from './storyteller-suite.js';
+import { type ProfiledStoryteller, eq, asc, inspectStorytellerProgress } from './storyteller-suite.js';
 import { registerProfiledStoryteller } from './storyteller-suite.js';
 
 // Moved unchanged from the profiled Storyteller suite.
@@ -95,6 +95,12 @@ export async function checkWorkerReplay(
         ownerId,
         storyId: started.storyId,
       });
+      let lastControl: {
+        revision: number;
+        state: string;
+        generationId: string | null;
+      } | null = null;
+      let released = false;
       for (let attempt = 0; attempt < 30; attempt++) {
         const controlResponse = await fetch(controlUrl, {
           headers: { cookie },
@@ -107,6 +113,7 @@ export async function checkWorkerReplay(
             generationId: string | null;
           };
         };
+        lastControl = controlBody.control;
         if (
           controlBody.control.state === 'held' &&
           held.campaign?.actionReceipts[0]?.state === 'generating'
@@ -131,6 +138,7 @@ export async function checkWorkerReplay(
             }),
           });
           assert.equal(release.status, 200);
+          released = true;
           break;
         }
         await delay(500);
@@ -138,6 +146,24 @@ export async function checkWorkerReplay(
           ownerId,
           storyId: started.storyId,
         });
+      }
+      if (!released) {
+        const progress = await inspectStorytellerProgress(database, {
+          storyId: started.storyId,
+          operationId,
+        });
+        assert.ok(
+          released,
+          `Worker-replay never reached chamber held + generating receipt. control=${JSON.stringify(lastControl)} public=${JSON.stringify({
+            gameSecond: held.campaign?.gameSecond,
+            receiptState: held.campaign?.actionReceipts[0]?.state,
+            receiptCount: held.campaign?.actionReceipts.length,
+            evidence: held.resolution?.evidence,
+            blocker: held.resolution?.blocker,
+            holds: held.campaign?.holds,
+            execution: held.campaign?.actionExecution,
+          })} progress=${JSON.stringify(progress)}`,
+        );
       }
       assert.equal(held.campaign?.gameSecond, campaign.gameSecond + 5);
       assert.equal(held.campaign?.actionReceipts[0]?.state, 'generating');

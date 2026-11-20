@@ -61,7 +61,7 @@
 | Packet | State | Outcome |
 | --- | --- | --- |
 | [DIR03 Storyteller direction](archive/2026-11/other/2026-11-17--dir03-storyteller-art-direction-author/CHANGE.md) | **Done. Provider-free suggestion landed** | One optional suggestion can be admitted. A rejected suggestion still publishes the passage. The live creative trial is still unauthorized |
-| [HK03 storyteller test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Implementing. Mechanical opening fixture corrected; profiled 30/33** | Named `take-cover` → `leave-cover` → `calm-gary`. Mechanical opening PASS. Chamber retry and worker-replay still fail in the shared session |
+| [HK03 storyteller test boundaries](open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md) | **Implementing. Not stably 33/33** | Pineapple fixture PASS. Chamber/worker-replay dumps show gate-not-reached and a 26-notice outbox backlog. Diagnostic/lifecycle edits landed; packet stays open |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Fail-closed comparison merged. Packet stays open** | A revoked, missing, or changed entitlement is denied. Live dispatch stays denied because there is no entitlement store |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | **Ready E0, disposable SQL required** | First E0 game transition witness |
 | [ENG03 short-lock context](open/2026-11-13--eng-short-lock-context/CHANGE.md) | **Ready measured narrow slice** | Full short-lock capture |
