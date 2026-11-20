@@ -1,3 +1,5 @@
+# STORY02 | Remaining custody guard and closure
+
 ## 2026-11-20 final T05/T06 closure addendum: source verified, not executed
 
 **Current:** T01–T03 implementations **already exist in main**: versioned contracts, role-separated GA task/claim/save/read and bounded executor HTTP client; do not rebuild. **T04 recorded 10/10 PASS** on provider-free two-client/disposable SQL at `ec73a535`, not fresh current-head evidence. STORY03 T09 separately recorded 5/5 causal local multi-process scripted game, not cold-kind or paid calls. [Exact remaining finding and scoped fix](DECISION-2026-11-20.md). **T05/T06 NOT RUN**, QUEUE still TURN02. Historical T01–T03 "PLANNER-READY" labels below describe 2026-11-19 work that has landed, not current tasks.
@@ -20,7 +22,7 @@ Run focused DTO parser, application/GA/worker unit and disposable PostgreSQL cus
 
 **No shared DB, paid live provider, unowned cluster or user account mutation authorized.** Fix is source-level and disposable-db only; future paid worker remains scripted-mode-refusing until independently approved.
 
-# STORY02 | Composer microtasks: private task custody façade
+## Historical T01–T04 route and recorded receipts (2026-11-19/20)
 
 **Inspected source:** 584b594, 2026-11-19. **Change:** [CHANGE.md](CHANGE.md), Proposed/unselected, custody SQL primitive partially landed; remote service not. **Source map:** [SOURCE-MAP.md](SOURCE-MAP.md). **Executor:** Composer Standard only by default. One Game Authority file-owner coordinator together with BOOT03. Do not treat a TASKS.md as independent authorization.
 
