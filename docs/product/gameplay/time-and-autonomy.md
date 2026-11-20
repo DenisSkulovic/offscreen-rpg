@@ -1,5 +1,7 @@
 # Time and autonomy
 
+Generation time is not fictional time. Creating or restoring the first scene does not invent elapsed world time simply because a provider, queue or browser took seconds to respond. Forking a historical scene similarly resumes from that scene's admitted fictional clock and commitments under the new branch, not from the parent branch's wall-clock scheduler identities.
+
 **Owns:** when fictional time advances and what absence means.  
 **Technical:** [committed time](../../technical/engine/chronology-and-activities.md), [ticks and tags](../../technical/engine/ticks-and-tags.md), [calendars](../../technical/engine/calendars-and-world-time.md).  
 **Explore by question:** [pace and clock](#pace) · [calendars and deadlines](#calendars-seasons-and-story-deadlines) · [travel duration](#travel-duration-and-progress) · [absence and routine work](#response-windows-and-absence) · [pause/resume](#pause-and-resume) · [reliability/notifications](#notifications-and-reliability).
