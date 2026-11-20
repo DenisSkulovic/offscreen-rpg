@@ -10,6 +10,8 @@ API_IMAGE = 'offscreen-lab-app-release-api:turn02'
 GA_IMAGE = 'offscreen-lab-app-release-ga:turn02'
 WORKER_IMAGE = 'offscreen-lab-app-release-worker:turn02'
 
+# Full image rebuild only: no live_update. Dockerfiles, pnpm-lock, generated code,
+# and DB schema must not hot-swap in the dev loop.
 docker_build(
     WEB_IMAGE,
     '.',
@@ -48,6 +50,7 @@ k8s_resource(
 k8s_resource(
     'game-web',
     resource_deps=['game-api'],
+    port_forwards=['127.0.0.1:3000:3000'],
 )
 
 k8s_resource(

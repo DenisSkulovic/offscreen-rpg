@@ -104,8 +104,10 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check pyyaml
           node scripts/repo-tools/check-lab-manifests.mjs
+      - name: DXK05 static lab/CI guards
+        run: node scripts/repo-tools/check-dxk05-ci-guards.mjs
       - if: failure()
-        run: echo "Lab Kubernetes manifest parse failed; see step log above."
+        run: echo "Lab Kubernetes manifest parse or DXK05 static guard failed; see step log above."
   database:
     needs: scope
     if: needs.scope.outputs.run_integration == 'true'

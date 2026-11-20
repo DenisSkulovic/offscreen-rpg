@@ -24,7 +24,7 @@ A miss after expiry, flush, or restart is the expected cache result. It is not l
 - Do not use a NodePort or LoadBalancer Service.
 - Do not mount a PersistentVolume. A volume that survived a pod restart would look like durable cache authority.
 - Do not point the game, the API, or Compose at this Service. Compose remains the local development route.
-- Do not delete Docker volumes. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, must still be present after `down.sh`.
+- Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Requirements
 

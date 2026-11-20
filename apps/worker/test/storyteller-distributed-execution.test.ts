@@ -112,6 +112,9 @@ test('executeFrozenStoryteller refuses provider mode without sending', async () 
     async readSaved() {
       return { status: 'unclaimed' as const, generationId };
     },
+    async readEvidence() {
+      throw new Error('readEvidence must not run for provider mode');
+    },
   });
 
   await assert.rejects(() => activities.executeFrozenStoryteller(generationId), {
@@ -166,6 +169,9 @@ test('executeFrozenStoryteller claims and saves one scripted result', async () =
         result,
       };
     },
+    async readEvidence() {
+      throw new Error('readEvidence must not run for scripted execution');
+    },
   });
 
   await activities.executeFrozenStoryteller(generationId);
@@ -201,6 +207,9 @@ test('executeFrozenStoryteller returns when GA already saved the result', async 
     },
     async save() {
       throw new Error('save must not run when saved result exists');
+    },
+    async readEvidence() {
+      throw new Error('readEvidence must not run when saved result exists');
     },
   });
   await activities.executeFrozenStoryteller(generationId);

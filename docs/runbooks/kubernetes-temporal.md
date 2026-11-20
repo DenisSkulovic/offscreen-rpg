@@ -23,7 +23,7 @@ Scripts and manifests live in `infra/kubernetes/lab/temporal/`. Run them from th
 - Do not point Compose, the game worker, or the game database at `lab-temporal`.
 - Do not put a password or a rendered server config in Git.
 - Do not publish a workload on `0.0.0.0` or `[::]`. `bindOnIP` is inside the pod network. A NodePort or LoadBalancer Service fails the check. The API server stays on `127.0.0.1`.
-- Do not delete Docker volumes. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` must still be present afterward.
+- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not treat deletion of the kind cluster as a backup of workflow history.
 
 ## Recovery limit

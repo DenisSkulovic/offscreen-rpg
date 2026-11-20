@@ -28,4 +28,5 @@ export * from './capture-rearm';
 export * from './execution-stages';
 export * from './prompt-provenance';
 export * from './read-generation-dispatch-authority';
+export * from './branch-pinned-memory';
 export { insertSyntheticCurrentAuthorityForTest } from './test-synthetic-current-authority';

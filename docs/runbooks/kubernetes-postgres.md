@@ -15,7 +15,7 @@ Scripts and the cluster manifest live in `infra/kubernetes/lab/cnpg/`. Run them 
 - Do not put a password, a client certificate, or a generated Secret in Git. The operator creates credentials when the primary starts. The smoke uses local peer authentication inside the Pod and does not print Secret values.
 - Do not set `instances` above 1. One replacement Pod is not a replica, and it is not a highly available cluster.
 - Do not point Compose, the game, or Temporal at `lab-pg`.
-- Do not delete Docker volumes. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` must still be present afterward.
+- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not publish a workload on `0.0.0.0` or `[::]`. A NodePort or LoadBalancer Service fails the check.
 - Do not treat this primary as a backup or a restore of the game database.
 

@@ -10,7 +10,7 @@ Scripts and manifests live in `infra/kubernetes/lab/`. Run them from the reposit
 
 ## What it must not do
 
-- Do not delete Docker volumes. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, must still be present afterward.
+- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not delete or switch away from a kubectl context other than `kind-offscreen-lab`. The scripts pass `--context kind-offscreen-lab` and restore a previous current context when one existed.
 - Do not publish a workload on `0.0.0.0` or `[::]`. The only published port is the API server on `127.0.0.1`. A NodePort or LoadBalancer Service fails the check.
 - Do not raise the WSL memory cap. `up.sh` refuses to start when MemAvailable is below 4 GiB. This machine's cap stayed near 12 GiB; do not edit `.wslconfig` to make the lab fit.
@@ -60,3 +60,7 @@ On 2026-11-19 the scripts created the cluster, saw both nodes Ready, and saw eve
 The cluster was deleted, created again, and smoked again. The second smoke passed. `down.sh` then removed `offscreen-lab`. Afterward `kubectl config get-contexts` listed no contexts. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, and the anonymous volume `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`. MemTotal stayed 12249872 kB. MemAvailable was 9915544 kB before the first create, about 9 GiB while the cluster was up, and 10067660 kB after the final delete.
 
 The first smoke on the recreated cluster failed before the writer retried a late volume mount. The writer command now retries that write for 30 seconds. The smoke that followed that change passed. No model call was made.
+
+## Developer UI
+
+The educational lab cluster is not the game application stack. For Tilt, loopback browser origins, and Headlamp on Windows against `kind-offscreen-lab`, see [Kubernetes developer UI](kubernetes-developer-ui.md). Compose is unchanged.

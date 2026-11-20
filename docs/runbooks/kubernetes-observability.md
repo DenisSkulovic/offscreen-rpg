@@ -17,7 +17,7 @@ The shared kind configuration does not publish a workload port. This procedure d
 - Do not install the game, PostgreSQL, Redis, RabbitMQ, or Temporal on this collector.
 - Do not publish a workload on `0.0.0.0` or `[::]`. Do not create a NodePort or LoadBalancer Service.
 - Do not put a token or password in the manifest. The collector config has no exporter credentials.
-- Do not delete Docker volumes. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, must still be present after `down.sh`.
+- Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Pins
 

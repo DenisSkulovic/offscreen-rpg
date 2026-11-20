@@ -10,11 +10,11 @@
 
 ## FIRST SCREEN | Cursor parent: what to do next
 
-**No Change is selected.** TURN02 is Done. DXK01 T01 preflight work is recorded, but DXK01 is **not selected** until a separate handover; QUEUE is authoritative.
+**No Change is selected.** TURN02 is Done. DXK01 T01–T03 unit planners are recorded: preflight, up/down/reset command plans, and three-layer health. Live `stack:up`, `stack:down`, and `stack:reset` were not run. DXK01 stays open and **not selected**; QUEUE is authoritative.
 
 1. **NOW: TURN02 is Done.** A fresh `kind-offscreen-lab` after teardown installed the application release: one migration, a matching content pin, and Ready Next, Nest, Game Authority, control, executor, and relay. The public gateway hides Game Authority. `POC_OPEN_ACCESS=0` returns 401 and `1` returns the local player. The earlier Seyda Neen story was not replayed. This is not the hosted release.
 2. **FORK01 is Done.** The local Harbor-watch scene1 fork after scene2 goes through private Game Authority. Cold kind and the browser stay TURN03. Do not select another Change from this list.
-3. **THEN: finish only the critical local ownership gaps** (DATA04/DATA06/DIST03) before calling cold-kind TURN03 PASS. STORY02 and STORY03 are archived. STORY03's local causal suite is **7/7**. No RabbitMQ hop in the Storyteller wake.
+3. **THEN: finish only the critical local ownership gaps** (DIST03) before calling cold-kind TURN03 PASS. STORY02, STORY03, DATA04, and DATA06 are archived. STORY03's local causal suite is **7/7**. No RabbitMQ hop in the Storyteller wake.
 
 **Batch discipline:** normally one selected Change, 2–5 T-IDs or one risky cluster/auth integration, then positive + diagnostic negative, commit, exact receipt and stop/report. If task changes collide, serialize owners. Do not jump to optional Changes merely because they are marked Ready. Use the existing Composer Standard cost policy, task-specific file routes and no broad paid rediscovery.
 
@@ -23,10 +23,10 @@
 | Gate | Change(s) and next tasks | Plain-language exit condition |
 | --- | --- | --- |
 | **R0 Real release skeleton (Done 2026-11-20)** | TURN02 archived | Fresh kind: one migration, pinned import, Ready Next/Nest/GA/control/executor/relay. A list of healthy synthetic Pods is not this result |
-| **R1 Narrow correctness closure** | FORK01 local private-GA fork is Done; STORY03 local split is archived; TURN03 T01/T02 already partly landed; BOOT03, STORY02, and TURN02 are archived; DIST03/DATA04/DATA06 only targeted unfinished checks | Pinned quiescent Harbor-watch scene1 fork via private GA is proved locally, including retry, wrong owner, and GA-down. The local Storyteller split is proved. Cold kind is not this result |
-| **R2 Usable kind/browser vertical** | DXK01 T01/T02 (T01 preflight already underway); DXK03 T01/T02; TURN02 T05/T06; K8S11 T03; TURN03 T03/T04; DXK03 T03 | Real signed-in browser → Nest → GA → outbox → Temporal → executor → GA publication → scene2 SSE/GET → historical fork; staff /control works. Dev-only auth avoids mandatory GitHub OAuth for clean clone; zero provider calls. Stop on missing real actor or broken pin |
-| **R3 One-command GUI experience** | DXK02 T01–T03, DXK01 T03 | `pnpm dev` safely reconciles kind and presents working game/staff/Tilt URLs; Headlamp selects Pod, shows logs/events/terminal where supported, app Pod deletion is replaced and game survives. Real warm run retains SQL/S3 |
-| **R4 Retire old operating model** | DXK04 T01–T03; DXK05 T01–T03; DXK06 T01–T03 | Root scripts scoped, CI and lab cold-clone guards Kubernetes-first, no active `compose.yaml`, Docker Compose runner, `GAME_AUTHORITY_MODE=compose`, named-volume dependencies or current boot docs. Docker **engine** remains needed for kind. Do not destroy old user data |
+| **R1 Narrow correctness closure** | FORK01 local private-GA fork is Done; STORY03 local split is archived; TURN03 T01/T02 already partly landed; BOOT03, STORY02, TURN02, DATA04, and DATA06 are archived; DIST03 is the remaining local ownership gap | Pinned quiescent Harbor-watch scene1 fork via private GA is proved locally, including retry, wrong owner, and GA-down. The local Storyteller split and the DATA06 evidence read are proved. Cold kind is not this result |
+| **R2 Usable kind/browser vertical** | DXK01 unit planners landed; live stack up/down/reset still NOT-RUN; DXK03 T01–T03; K8S11 T03; TURN03 T03/T04 | Real signed-in browser → Nest → GA → outbox → Temporal → executor → GA publication → scene2 SSE/GET → historical fork; staff /control works. Dev-only auth avoids mandatory GitHub OAuth for clean clone; zero provider calls. Stop on missing real actor or broken pin |
+| **R3 One-command GUI experience** | DXK02 T01–T03; DXK01 live reset and cold/warm durations still open | `pnpm dev` safely reconciles kind and presents working game/staff/Tilt URLs; Headlamp selects Pod, shows logs/events/terminal where supported, app Pod deletion is replaced and game survives. Real warm run retains SQL/S3 |
+| **R4 Retire old operating model** | DXK04 T01–T03; DXK06 T01–T03. DXK05 is archived | Root scripts scoped, no active `compose.yaml`, Docker Compose runner, or `GAME_AUTHORITY_MODE=compose`. DXK05 already removed Compose from the code workflow and stopped requiring the historical Compose volume names. Docker **engine** remains needed for kind. Do not destroy old user data |
 | **R5 Cold-clone final** | DXK07 T01–T03; [DXK-FINAL](tasks/open/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md) | Exact clean Windows/WSL checkout proves one command, browser play, roles, Tilt/Headlamp, Pod recovery, negative failures, first/warm durations/memory/image digests and zero provider spend. Only then mark initiative complete |
 
 **R0/R2 dependency nuance:** TURN02 T05 needs a valid authenticated browser. If no authorized public OAuth credentials exist, complete local-only DXK03 real Better Auth profile first. This is not permission to fake cookies or allow anonymous admin. TURN03 T03 is a *single cold kind continuous proof*, not an aggregation of unrelated local fixture suites.
@@ -39,8 +39,8 @@
 
 | Lane | Changes | Scheduling policy |
 | --- | --- | --- |
-| Critical engine / fork | DATA04, DATA06, DIST03, TURN03. BOOT03, STORY02, STORY03, TURN02, and FORK01 are archived | Complete exact needed contracts, archive genuinely achieved Goals, retain honest negative gaps |
-| Real deployment and usable UX | K8S11, DXK01, DXK02, DXK03, DXK04, DXK05, DXK06, DXK07. TURN02 is archived | Follow R2–R5; one kind operator, no duplicate release owner |
+| Critical engine / fork | DIST03, TURN03. BOOT03, STORY02, STORY03, TURN02, FORK01, DATA04, and DATA06 are archived | Complete exact needed contracts, archive genuinely achieved Goals, retain honest negative gaps |
+| Real deployment and usable UX | K8S11, DXK01, DXK02, DXK03, DXK04, DXK06, DXK07. DXK05 and TURN02 are archived | Follow R2–R5; one kind operator, no duplicate release owner |
 | Present but not critical now | ENG03 (real under-lock I/O, prepared finite T02–T07, unselected), OBS04 (source-event witness T02–T06 planned), HK01, K8S10 | Remain discoverable in Changes. Select later for a real measured defect/owner request, not queue anxiety. Optional Rabbit fact projection and chaos do not gate playable script. GM07's one consented withdrawal is archived; a general timed fallback stays Proposed |
 | Paid/explicit separate approval | OBS00 (provider-free B grant/dispatch code is plan-ready; activation separately gated), TURN04 | No live provider send, grant seeding, billing or paid distributed execution in zero-provider sprint |
 
