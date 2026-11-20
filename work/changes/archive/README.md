@@ -1,6 +1,10 @@
 # Change packet archive
 
-Terminal Change packets (Done, Cancelled, superseded) after the Reconciliation ledger.
+Terminal Change packets (Done, Cancelled, superseded) after reconciliation. **This is a short-lived review cache**, not a permanent graveyard. The lasting record is the [monthly Change ledger](../ledger/2026-11.md), the canonical docs/code/evidence and exact Git history.
+
+**Retention rule:** after a default **seven days since the last archive edit**, `pnpm repo:retirement` flags candidates for human review. A packet may be deleted from current HEAD only if its outcome is reconciled, the ledger includes an immutable full-SHA Git recovery locator, any unique proof has an evidence owner, and every inbound file/heading link is replaced or deliberately resolved. Do not prune by age alone, silently orphan links, or fabricate a Done state. After `git rm`, verify Markdown link deltas. No recurring background deletion runs.
+
+**Open-folder hygiene:** terminal Done/Cancelled packets should leave `work/changes/open/` immediately after their real closure; an unresolved or blocked packet stays visible and is not hidden in archive.
 
 ## Layout
 

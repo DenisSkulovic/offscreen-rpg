@@ -51,7 +51,9 @@
     "repo:hooks:install": "node scripts/repo-tools/install-git-hooks.mjs",
     "repo:commit:check": "node scripts/repo-tools/check-commit-message.mjs",
     "repo:cursor-usage": "node scripts/repo-tools/cursor-usage-window.mjs",
-    "repo:cursor-usage:test": "node --test scripts/repo-tools/cursor-usage-window.test.mjs"
+    "repo:cursor-usage:test": "node --test scripts/repo-tools/cursor-usage-window.test.mjs",
+    "repo:retirement": "node scripts/repo-tools/retirement-health.mjs",
+    "repo:retirement:test": "node --test scripts/repo-tools/retirement-health.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

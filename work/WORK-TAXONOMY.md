@@ -7,15 +7,23 @@
 | Noun | Question it answers | Durable owner | Terminal disposition |
 | --- | --- | --- | --- |
 | **Initiative** | Which broader outcome are we pursuing? | Existing product/technical initiative overview or program design; do not manufacture a folder per noun | Explicitly reconcile into [ROADMAP](../ROADMAP.md) and [STATUS](../STATUS.md) |
-| **Design** | Which behavior, boundary or contract should we select? | [work/designs/](designs/README.md) while unresolved; ratified contract lives in docs/product or docs/technical | Accepted design moves into canonical docs; retain unusual rationale and rejected alternatives in research as warranted |
+| **Design** | Which behavior, boundary or contract should we select? | [work/designs/](designs/README.md) only while actively unresolved; approved behavior lives in docs/product or docs/technical | Record completion, rejection, supersession or deferral in the [design ledger](designs/ledger/2026-11.md), then remove from HEAD after link review; exact source is recoverable from Git |
 | **Investigation** | What is true, why, or still unknown? | Open design dossier for unresolved inquiry; source-based research note if independent | Findings in [research](../research/README.md), dated observations in [evidence](../evidence/README.md), new decisions back to canonical owners |
-| **Change** | Which lasting **diff** should be produced? | [work/changes/open/<leaf>/CHANGE.md](changes/README.md) | Verified + reconciled, then archived with its packet |
+| **Change** | Which lasting **diff** should be produced? | [work/changes/open/<leaf>/CHANGE.md](changes/README.md) | Reconcile to canonical owners; archive briefly, then prune the full packet after a cool-off/link audit, durable [Change ledger](changes/ledger/2026-11.md) and immutable Git source pointer |
 | **Task** | Which bounded **action** should be executed, with no standalone product/code diff as the objective? | [work/tasks/open/<leaf>/TASK.md](tasks/README.md) **only if independent tracking is useful** | Actual run receipt in evidence, then Task archived |
 | **Experiment** | Which hypothesis and failure condition should we test? | Protocol/scenario under existing Chamber/lab/technical owners; a standalone Task can schedule one run | Observation, negative result and reproducible recipe under evidence/research |
 | **Evidence** | What actually happened, under which source SHA and conditions? | [evidence/](../evidence/README.md), not work ticket prose | Immutable dated result; may support a Change or Task closure |
 | **Composer microtask** | Which tiny edit/test step belongs **inside one Change**? | That Change's `TASKS.md#Txx` | Receipt and reconciliation back to parent Change, **not** a standalone Task |
 
 **The classifier is the desired outcome, not the verb.** A test-run command under a code Change is usually an embedded microtask. A separately scheduled repeatable verification run with its own authorization and evidence is a standalone Task. Writing a new migration is a Change; applying an existing migration to a specified approved database is a Task. Creating a chaos runner is a Change; executing one bounded chaos scenario is a Task/Experiment. An audit may be an Investigation and eventually produce Evidence, a Design, or a Change. The categories can relate without being identical.
+
+## Work retirement is part of completion
+
+Git history is the permanent archive, **not** the current working tree. An accepted design becomes actual product/technical documentation. A deferred, rejected, abandoned or completed design receives a short [retirement ledger](designs/ledger/2026-11.md) entry with full Git SHA, disposition and unique-source note, then leaves `work/designs/open/`. There is intentionally no permanent designs archive.
+
+A terminal Change spends a short review period in [the Change archive](changes/archive/README.md). A week after its last archive edit is a **review signal**, not automatic deletion permission. Its unique receipts must survive in evidence/canonical owners, the compact Change ledger must retain the decision and an exact Git source locator, and inbound links must be repaired before `git rm`.
+
+Run `pnpm repo:retirement` during maintenance for an advisory inventory of aging designs and archived Changes. **Never infer approval, implementation, or permission to destroy from file age.**
 
 ## Routing decision
 
