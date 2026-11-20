@@ -24,11 +24,61 @@ Already-settled fictional outcomes remain settled. Unresolved admitted plans/off
 
 Legacy scenes that lack sufficient historical semantic state remain viewable but are not retroactively fabricated into fully forkable checkpoints. New publication must satisfy the stronger invariant by construction.
 
+### Fork identity remap
+
+**Current compatibility realization.** The v1/checkpoint implementation below remains binding for retained history until WR05/WR06 replace its quiescent-only limits. The new target broadens what can be represented; it does not relax identity isolation, historical-root selection, or clock remapping.
+
+Source-observed compatibility baseline at `af512d1f`. The field classes live on [Mutable field inventory](../platform/data-and-persistence.md#mutable-field-inventory). This heading owns how a fork mints ids. The SQL selector is `story_scene_checkpoint`. Historical GET and checkpoint fork are `readHistoricalScene` and `createStoryForks`. `forkCurrent` does not mint a branch manifest.
+
+A fork from any committed scene, including scene 10 after the parent has published scene 20, loads **that scene's checkpoint and that scene's canon root**. Parent scene 20 may record the king dead, a new sword holder, and a later clock. The fork still has the king alive, the scene-10 holder, the scene-10 `gameSecond`, and the scene-10 root. It does not read the live `story_item` table, the live `campaign` row, or a search index.
+
+The fork is a new story. `story.id` is new. The boundary passage is copied as fork sequence 1 with a new passage UUID, `transitionId` null, and `sourceGenerationId` null. `forkedFromSequence` stores the parent scene number, so a fork of scene 10 records 10 even though the fork's own revision starts at 1. Ancestor passage objects stay shared bytes in the branch manifest. They are not a second set of parent row ids.
+
+Stable business keys stay: item key, holder key, fact id, skill id, quantity id, occurrence scope key, and condition id. `storyId` changes, so the same item key is a new row. Story-scoped UUIDs are minted again: interaction, activity, obligation, offer, execution, and operation. `declaredBy` and other non-key provenance UUIDs stay as provenance and do not alias a parent row. `active_scene_scope` passage ids are remapped when the scope is `active-scene-anchor.v1` for passages inside the ancestor prefix. Any other scope is rejected.
+
+`campaign.clock_anchor_at` is not copied. The fork stores the checkpoint's `gameSecond` and `clock`, then writes a new anchor at fork-commit time. The parent's elapsed wall time is not added. `campaign_settings` rows are copied only through the captured `settingsRevision`.
+
+Unsupported active work is not silently cloned. The POC refuses a non-empty hold, a non-null offer, a non-null accepted activity plan, a non-null active activity or action, a decision deadline, a wait, a pending resolution, a world-obligation row, and continuity notes other than null or `[]`. Refusal does not fall back to the latest parent rows and does not mark the work complete. The target any-scene contract supersedes that old open choice: new-format published scenes must represent admitted pending fictional work so a child can rehome it with new operational ids and without the parent's timer. Legacy v1 checkpoints may still refuse unsupported active work rather than fabricate it. This page does not implement either choice.
+
+The branch manifest's `campaignId` is the fork's story id. The ancestor manifest's `campaignId` is not copied. See [Inherited manifest campaign id](../storyteller/canonical-documents-and-packages.md#inherited-manifest-campaign-id).
+
+Future branch navigation may present ancestry and descendants as a tree of alternate continuities. That visualization does not create chapters or change passage semantics.
+
+This document connects account entry, collaborative setup, the first live scene and the end of a story. [Execution](../platform/execution-and-delivery.md) defines how accepted commands run; it must not leave creation and recovery to unrelated ad hoc endpoints.
+
 ## Drafts and generated previews
 
 A private prompt/customization draft is optional convenience. It may be saved without spending or creating a playable story. It is not a required intermediate lifecycle.
 
-Target launch does not require a human-reviewed generated preview. The operation captures the exact Story Prompt or prepared-experience root, effective customization and authorization, then publishes the first admitted scene. Legacy preview records remain readable only where retained data or migration requires them.
+Target launch does not require a human-reviewed generated preview. The operation captures the exact Story Prompt or prepared-experience root, effective customization and authorization, then publishes the first admitted scene. Legacy preview records remain readable where retained data or migration requires them.
+
+### Current legacy draft/preview realization
+
+The following contract describes the **implemented pre-refoundation lifecycle** that WR07/WR08 must migrate or retire safely. It is not the target creation UX, but its revision, idempotency, provider-custody, stale-result and ownership guarantees remain real compatibility constraints.
+
+The implemented private draft uses `PUT /api/drafts/:id` with three text fields and `expectedRevision`. The browser assigns a UUID retained in the new-draft URL before the first save; revision zero creates it. Ownership comes from the verified session. Updates lock the owned row and compare its revision. An identical retry at the same or immediately following revision returns the existing result; older or conflicting writes return 409. This protects draft text without introducing a gameplay command journal. `GET /api/drafts/:id` reopens an owned draft; `GET /api/drafts` pages through up to 20 drafts in creation order using an owned draft ID as cursor. Inaccessible drafts return 404.
+
+Ordinary editing is a database write, not a model call. Incomplete content is saveable; generation readiness is a separate validation boundary. Shared setup will introduce participant character inputs and creator-controlled preferences when invitation and authority policies are implemented. It must preserve revision checks rather than silently overwrite another participant's work.
+
+The planned integrated generate flow freezes the draft revision, roster/character revisions, settings and funding policy into an immutable input artifact. It must create a generation operation and outbox start notice in one transaction when dispatch is connected. Use a distinct workflow ID for each deliberate preview-generation operation; retries reuse that ID. Limit outstanding preview generation per draft and account. An intentional regenerate request is new work, not a retry disguised as a fresh idempotency key. Exercise this with scripted generation and simulated allowance before paid services are enabled.
+
+Generation produces a candidate preview with its source revision. It does not yet insert the opening into the live chronology, transfer possessions or start a response window. The preview operation can be pending, successful, failed or no longer current while the draft remains editable. Returning after closing the tab retrieves the same operation and candidate rather than generating again.
+
+The implemented opening application module persists a playable-opening request artifact (`promptVersion: playable.v1`, `task: opening`) before processing, and saves a validated `PlayableProposal`. An idempotency ID identifies the request: reuse with another draft/revision conflicts, while a genuine retry still returns its original request after editing the draft. Admission locks the draft and updates its latest-operation link in the same transaction. A second unresolved operation for that draft is rejected as busy.
+
+The browser's scripted preview uses `PUT /api/drafts/:draftId/openings/:id` with `expectedRevision`, and `GET /api/drafts/:draftId/openings/latest` to reopen it. Both require the draft owner's session; writes also require the configured origin. Public DTOs expose source revision, currentness, state and a player-facing candidate (scene content and choice labels) when the generation succeeded. They never expose option intentions, internal prompts, stored request data or attempt IDs. Unsaved edits must be saved before navigating from the editor; concurrent edits can still make the preview stale. A successful current candidate offers an explicit Start action.
+
+`opening.playable.scripted.v1` is a separate, fixed fixture kind. Admission inserts an outbox notice with the captured request and latest-preview link in one transaction. The API returns 202; it does not complete the sample itself. A Temporal workflow calls an idempotent Activity that atomically saves the known playable proposal for a pending request. A repeated Activity returns the saved success. There is no external side effect, running claim or model call in this fixture; preserve its versioned output during recovery. Its retry policy must not be copied to paid calls, which require the generic claim/uncertainty rules below. The UI labels the sample as not adapted to the premise, checks pending status for a bounded period and can reopen it after leaving the page. Older `opening.scripted.v1` prose records are not reinterpreted.
+
+The common lifecycle is `pending` -> `running` -> `succeeded`, `failed` or `uncertain`. A claim atomically records a caller-supplied attempt UUID; only one concurrent claim succeeds. Replaying a claim, even with the same attempt UUID, does not authorize another call. Replaying an identical saved outcome is safe; a conflicting result or a different attempt cannot overwrite it. Output validation occurs before a success is saved. Failure stores a bounded machine code, not raw provider exceptions or private content.
+
+An unstarted pending request can be claimed after restart. A running request whose process vanished remains unresolved: there is no expiring lease that silently authorizes another paid call. A supervisor can mark its known attempt uncertain, and later establish success or failure for that same attempt. No automatic reconciliation is implemented. A late timeout report cannot replace a saved success. This conservative behavior trades availability for avoiding blind repeats; it is not a claim of exactly-once provider billing. Future orchestration must handle the crash between recording a claim and sending a request as potentially uncertain too.
+
+A current successful candidate is sufficient for Start: the owner submits the candidate generation ID and expected draft revision with a client-stable story UUID. Start does not perform inference, regenerate the scene or copy hidden intentions into the live passage. The same transaction freezes the locked draft's title, premise and storytelling direction onto the live story as structured `premise` JSON. Chamber fixtures keep a null premise. Spending limits and account-wide concurrency admission must still precede public or paid generation. A worker must check whether the input is still relevant before spending; storing stale results does not make them current.
+
+Changes to participating characters, premise or shared play settings make an incompatible candidate unstartable. Keep the old candidate available for comparison only if useful during editing; do not present it as the current opening. A late provider result cannot replace a newer candidate. A stale or cancelled result can still have incurred usage, which stays attached to its operation.
+
+Readiness refers to the exact draft/preview and roster being accepted. A friend changing their character invalidates relevant readiness. The final UI for readiness is a product choice, but a boolean left true across arbitrary edits is not sufficient.
 
 ## Scripted chamber initialization
 
@@ -51,6 +101,20 @@ The first playable branch approaches a gate, offers a reply and ends with a joke
 Target **Play** starts exactly the captured launch inputs and publishes exactly one admitted opening. There is no separate reviewed-preview object whose later Start may silently regenerate.
 
 Idempotent retry uses the same durable launch identity. Provider uncertainty, HTTP loss or process restart recovers that operation; it must not create a second story or second paid attempt. The first scene's fictional clock is established by admitted fiction, not by elapsed provider or queue time.
+
+### Current legacy Start realization
+
+Until WR07/WR08 replace the preview/Start seam, the existing endpoint and its validation/idempotency rules remain the compatibility contract:
+
+`PUT /api/stories/:storyId/start` accepts `{ candidateId, expectedDraftRevision }`. It requires the owner's session and configured write origin. The client supplies a stable story UUID in the path; it does not supply prose, interaction structure, owner identity or hidden intentions.
+
+Under one database transaction the operation locks the source draft, then verifies that the caller owns the generation, that its kind is a supported playable opening, that it succeeded, that its stored output is a valid playable opening proposal, that the expected draft revision still matches the locked draft, and that `draft_opening` still names this generation as the current candidate. It then publishes passage 1 from `playablePresentation(...)` of that saved proposal, with `story.source = playable.opening.v1` and `story_passage.source_generation_id` set to the candidate. Opening passages keep `source_generation_part` null. Hidden option intentions remain only on the generation output. Start performs no inference.
+
+The response is the ordinary story snapshot. `canRespond` is true when the current generated interaction has no active resolution. Reopening uses `GET /api/stories/:id`. The live player route is `/play/:id`; while a generated story is waiting it shows fictional duration, the persisted due time, Pause/Resume when controllable, and polls saved state. Reloading does not restart the wait.
+
+A retry with the same story ID and same candidate returns the existing story. Reusing that story ID with a different candidate, incompatible initialization or a different frozen premise returns 409. A stale, superseded, failed or malformed candidate cannot start. A candidate owned by someone else returns 404. Chamber initialization remains a separate `PUT /api/stories/:id/chamber` path and does not require generation provenance.
+
+Asynchronous start receipts, live generation, group readiness and funding checks remain unimplemented. Generated option resolution is connected through `/resolutions/...` and a scripted continuation worker, including timed results that reuse the ordinary interval executor.
 
 ## Distinguish lifecycle from interruption
 
