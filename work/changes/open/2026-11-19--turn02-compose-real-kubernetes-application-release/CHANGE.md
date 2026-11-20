@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: pinned S3 bootstrap, real images and one serialized cluster join. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image built locally** on `9fa937cf` (2026-11-20); **T04 overlay static PASS** (2026-11-20), live apply **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
+**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image built locally** on `9fa937cf` (2026-11-20); **T04 overlay static PASS** and lab substrate up (2026-11-20), app apply **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -90,9 +90,11 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 **Positive (local worker image, 2026-11-20):** `bash infra/kubernetes/lab/app-release/build-worker.sh` exit 0. Image `offscreen-lab-app-release-worker:turn02` id `sha256:84227fe0974ee3b415bb6a71bfbeaeb3b467e0d320121d234518be07fd0c67d6`. Both `control-main.js` and `executor-main.js` are in the image. `content/` is absent. Image env has no `DATABASE_URL`. Dockerfile guard **4/4 PASS**.
 
-**Negative:** `install.sh` now gets past the worker-image check and exits 1 because kubectl context `kind-offscreen-lab` is absent. It does not switch contexts and does not apply. The worker Deployments still probe TCP port 8080, and these processes do not listen there, so that probe cannot mean a Temporal poller is alive.
+**Negative:** Worker Deployments no longer probe TCP 8080. A running Node process is not evidence that a Temporal queue is being polled.
 
-**NOT-RUN:** kind cluster, image load, migration completion, Pod reachability, and imported-manifest proof. No Kubernetes application release is claimed.
+**Lab substrate (2026-11-20, source `3c4696f8`):** `up.sh` exit 0. Context `kind-offscreen-lab` is the only context; no foreign context was switched. `cnpg/install.sh` exit 0, `lab-pg` phase `Cluster in healthy state`, secret `lab-pg-app` present, 1 instance. `object-storage/smoke.sh` exit 0: put, get, delete, and the object survived Pod replacement; Service `object-store` is ClusterIP. `temporal/install.sh` exit 0: Temporal 1.32.2 SERVING, Service `temporal-server` ClusterIP port 7233. `gateway/install.sh` exit 0: Gateway `lab-edge` Programmed=True. Synthetic `lab-edge-routes` is still installed. Compose volumes `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` remained. MemAvailable after the substrate was 5072372 KiB.
+
+**NOT-RUN:** `install.sh` apply, kind image load, `game-db` / `game-runtime` secrets, migration completion, real app Pods, and imported-manifest proof. No Kubernetes application release is claimed.
 
 ## Reconciliation ledger (complete before Done)
 
