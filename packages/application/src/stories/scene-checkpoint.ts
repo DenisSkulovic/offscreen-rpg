@@ -335,9 +335,38 @@ export async function readSceneCheckpointReference(
       ),
     );
   if (!row) throw new StoryError('not_found');
+  return readSceneCheckpointForRow(args.documentStore, row);
+}
+
+export function sceneCheckpointIdentityMatches(
+  current: CheckpointRow,
+  expected: CheckpointRow,
+) {
+  return (
+    current.checkpointHash === expected.checkpointHash &&
+    current.storyId === expected.storyId &&
+    current.sceneSequence === expected.sceneSequence &&
+    current.passageId === expected.passageId &&
+    current.transitionId === expected.transitionId &&
+    current.stateSchemaVersion === expected.stateSchemaVersion &&
+    current.canonRootHash === expected.canonRootHash &&
+    current.canonRootRevision === expected.canonRootRevision &&
+    isDeepStrictEqual(current.pins, expected.pins)
+  );
+}
+
+/** Read and verify a checkpoint object for a row already loaded from SQL. */
+export async function readSceneCheckpointForRow(
+  documentStore: SceneCheckpointStore,
+  row: CheckpointRow,
+): Promise<{
+  idempotent: false;
+  checkpointHash: string;
+  checkpoint: SceneCheckpoint;
+}> {
   let checkpoint: SceneCheckpoint;
   try {
-    checkpoint = await args.documentStore.readSceneCheckpoint(row.checkpointHash);
+    checkpoint = await documentStore.readSceneCheckpoint(row.checkpointHash);
   } catch (error) {
     storageFailure(error, 'checkpoint');
   }
@@ -357,7 +386,7 @@ export async function readSceneCheckpointReference(
   if (checkpoint.canon.rootHash !== null) {
     let manifest;
     try {
-      manifest = await args.documentStore.readManifest(checkpoint.canon.rootHash);
+      manifest = await documentStore.readManifest(checkpoint.canon.rootHash);
     } catch (error) {
       storageFailure(error, 'canon');
     }

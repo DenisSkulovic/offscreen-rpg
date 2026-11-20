@@ -663,8 +663,7 @@ function delayCheckpointStore(inner, delayMs, hooks) {
   });
 }
 
-test('ENG03: fork-from-checkpoint holds the source story lock across the checkpoint read', async () => {
-  // Measurement of the current defect: a delayed checkpoint read stretches the source story lock. A later fix must invert this assertion.
+test('ENG03: fork checkpoint read does not hold the source story lock', async () => {
   process.env.DB_STATEMENT_TIMEOUT_MS = '120000';
   process.env.DB_IDLE_TRANSACTION_TIMEOUT_MS = '120000';
   await withDisposable(async (database) => {
@@ -706,8 +705,8 @@ test('ENG03: fork-from-checkpoint holds the source story lock across the checkpo
     const delayed = waits.find((row) => row.delayMs === 2000);
     console.log(JSON.stringify({ eng03ForkLock: waits }));
     assert.ok(
-      delayed.competitorWaitMs > baseline.competitorWaitMs + 1000,
-      `checkpoint delay must stretch the source story lock wait: ${JSON.stringify(waits)}`,
+      delayed.competitorWaitMs < baseline.competitorWaitMs + 500,
+      `checkpoint delay must not stretch the source story lock wait: ${JSON.stringify(waits)}`,
     );
   });
 });

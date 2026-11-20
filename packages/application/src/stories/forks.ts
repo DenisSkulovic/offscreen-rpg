@@ -34,7 +34,8 @@ import { readDatabaseClockMs } from './persistence';
 import {
   checkpointWriterStore,
   insertStagedSceneCheckpointSelector,
-  readSceneCheckpointReference,
+  readSceneCheckpointForRow,
+  sceneCheckpointIdentityMatches,
   stageSceneCheckpointObject,
   type SceneCheckpointWriterStore,
 } from './scene-checkpoint';
@@ -323,14 +324,11 @@ async function forkFromSceneCheckpoint(
   tx: Transaction,
   input: ForkInput,
   source: typeof story.$inferSelect,
+  sourcePassage: typeof storyPassage.$inferSelect,
   store: ForkStore,
+  referenced: Awaited<ReturnType<typeof readSceneCheckpointForRow>>,
 ) {
   const forkStoryId = parseStoryIdentifier(input.forkStoryId);
-  const referenced = await readSceneCheckpointReference(tx, {
-    storyId: source.id,
-    sceneSequence: input.expectedRevision,
-    documentStore: store,
-  });
   const checkpoint = referenced.checkpoint;
   if (
     input.sourcePassageId &&
@@ -344,11 +342,6 @@ async function forkFromSceneCheckpoint(
   ) {
     throw new StoryError('invalid', 'checkpoint_hash_mismatch');
   }
-  const [sourcePassage] = await tx
-    .select()
-    .from(storyPassage)
-    .where(eq(storyPassage.id, checkpoint.passageId));
-  if (!sourcePassage) forkConflict('missing_checkpoint');
   const mechanics = checkpoint.mechanics;
   if (!mechanics.mechanicsAbsent) {
     if (
@@ -620,6 +613,31 @@ export function createStoryForks(
     const forkStoryId = parseStoryIdentifier(input.forkStoryId);
     if (sourceStoryId === forkStoryId) throw new StoryError('invalid');
     const store = forkDocumentStore(documentStore);
+    const [preview] = await database.db
+      .select()
+      .from(storySceneCheckpoint)
+      .where(
+        and(
+          eq(storySceneCheckpoint.storyId, sourceStoryId),
+          eq(storySceneCheckpoint.sceneSequence, input.expectedRevision),
+        ),
+      );
+    if (preview && !store) {
+      throw new StoryError('unavailable', 'document_store');
+    }
+    const referenced =
+      preview && store
+        ? await readSceneCheckpointForRow(store, preview)
+        : null;
+    const checkpointPassage = referenced
+      ? (
+          await database.db
+            .select()
+            .from(storyPassage)
+            .where(eq(storyPassage.id, referenced.checkpoint.passageId))
+        )[0]
+      : null;
+    if (referenced && !checkpointPassage) forkConflict('missing_checkpoint');
 
     await database.db.transaction(async (tx) => {
       const [source] = await tx
@@ -643,7 +661,7 @@ export function createStoryForks(
       }
 
       const [selector] = await tx
-        .select({ sceneSequence: storySceneCheckpoint.sceneSequence })
+        .select()
         .from(storySceneCheckpoint)
         .where(
           and(
@@ -651,11 +669,32 @@ export function createStoryForks(
             eq(storySceneCheckpoint.sceneSequence, input.expectedRevision),
           ),
         );
-      if (selector) {
+      if (referenced && preview && checkpointPassage) {
+        if (!selector || !sceneCheckpointIdentityMatches(selector, preview)) {
+          forkConflict('checkpoint_changed');
+        }
+        const [passageNow] = await tx
+          .select()
+          .from(storyPassage)
+          .where(eq(storyPassage.id, checkpointPassage.id));
+        if (
+          !passageNow ||
+          !isDeepStrictEqual(passageNow.appearance, checkpointPassage.appearance)
+        ) {
+          forkConflict('checkpoint_changed');
+        }
         if (!store) throw new StoryError('unavailable', 'document_store');
-        await forkFromSceneCheckpoint(tx, input, source, store);
+        await forkFromSceneCheckpoint(
+          tx,
+          input,
+          source,
+          passageNow,
+          store,
+          referenced,
+        );
         return;
       }
+      if (selector) forkConflict('checkpoint_changed');
       await forkLiveRevisionOne(tx, input, source);
     });
   }
