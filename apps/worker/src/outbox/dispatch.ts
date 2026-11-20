@@ -13,6 +13,8 @@ import {
   campaignActionWorkflowId,
   campaignConsequenceWorkflowType,
   campaignConsequenceWorkflowId,
+  campaignDelegatedDecisionWorkflowType,
+  campaignDelegatedDecisionWorkflowId,
 } from '@offscreen/workflows/contracts';
 import type { Client, Connection } from '@temporalio/client';
 import { WorkflowExecutionAlreadyStartedError } from '@temporalio/client';
@@ -21,6 +23,7 @@ import {
   campaignConsequenceTopic,
   controlledIntervalTopic,
   decisionDeadlineTopic,
+  DELEGATED_DECISION_NOTICE_TOPIC,
   intervalWakeTopic,
 } from '@offscreen/application/stories';
 import { scriptedOpeningTopic } from '@offscreen/application/generations';
@@ -66,6 +69,11 @@ const noticeDispatch = {
     workflowType: campaignConsequenceWorkflowType,
     workflowId: campaignConsequenceWorkflowId,
   },
+  [DELEGATED_DECISION_NOTICE_TOPIC]: {
+    kind: 'start',
+    workflowType: campaignDelegatedDecisionWorkflowType,
+    workflowId: campaignDelegatedDecisionWorkflowId,
+  },
   [storytellerTopic]: {
     kind: 'start',
     workflowType: storytellerWorkflowType,
@@ -106,6 +114,7 @@ export const dispatchedNoticeTopics = [
   campaignActionTopic,
   'campaign.activity.v1',
   campaignConsequenceTopic,
+  DELEGATED_DECISION_NOTICE_TOPIC,
   storytellerTopic,
   storytellerDistributedTopic,
   scriptedOpeningTopic,
