@@ -2,6 +2,64 @@
 
 **Selected operating rule (2026-11-20).** Applies to Cursor **parent/coordinator**, whether children run in the same checkout or isolated branches. Child implementation depth and model selection remain governed by [Composer microtasks](composer-first-execution.md), [Cursor budget](cursor-model-budget-policy.md), and [Change work units](change-work-unit-standard.md). [Current selection](../../work/QUEUE.md) stays the **only** global selector. This is a procedure, **not** a new Change kind, queue, automated approval or product rule.
 
+## 0. Dedicated Change commission | owner shorthand
+
+When the owner gives one Cursor parent chat a direct instruction such as **“do DXK01”**, **“work on DATA06”**, **“finish STORY03”**, or another unambiguous single-Change assignment, that instruction is a **dedicated Change commission**.
+
+It means:
+
+- the named Change is authorized for that parent chat even if `work/QUEUE.md` currently points to another globally selected item; this is the same owner-authorized parallel-work exception described by the Change work-unit standard, not a second global selector;
+- the parent owns the **whole Change lifecycle**, not merely its first T-ID;
+- when concurrent chats may exist, the parent creates/uses a dedicated branch and isolated worktree from current `main`, records its base SHA, and does not edit another chat's checkout;
+- the parent may orchestrate bounded subagents in parallel when paths/resources are genuinely disjoint, using Auto utility children for context-isolation chores and Composer children for substantive implementation;
+- internal T-ID/batch checkpoints remain mandatory for clean integration and context control, but they are **continuation checkpoints, not owner-prompt checkpoints**;
+- after a checkpoint, the parent re-reads the Change's acceptance and proceeds to the next necessary T-ID in the **same Change** automatically;
+- the job is not finished until the Change is either truthfully Done and retired, or genuinely blocked by something the parent cannot resolve within existing authority.
+
+### Finish-to-main responsibility
+
+For a successfully completed dedicated commission, the parent is responsible for the entire landing sequence:
+
+1. implement the accepted scope and necessary discriminating negative cases;
+2. run proportionate source/integration/live proof at the tier the Change itself requires;
+3. update affected canonical product/technical docs, run documentation reconciliation, and complete the Change's four-plane/Reconciliation ledger;
+4. run required plan/close guards and relevant link/maintenance checks;
+5. mark the Change Done and move its folder from `work/changes/open/` to the correct archive path in the **same ownership window**;
+6. repair inbound links, Change catalog, roadmap/queue references and stale status claims caused by that retirement;
+7. commit coherent milestones on the dedicated branch;
+8. refresh current `main`, reconcile concurrent changes, merge/rebase/cherry-pick as appropriate **without force, history loss, or silently overwriting another chat's work**;
+9. rerun the smallest integration/guard checks needed after the join;
+10. ensure the completed Change and archive move are on `main`, then report the **final main SHA**, proof, and any explicitly out-of-scope successor.
+
+A parent may use subagents to perform parts of this sequence, but **closure, archive and merge remain parent responsibilities**.
+
+### What is *not* a legitimate reason to linger or stop
+
+Do not stop merely because:
+
+- one T-ID or one child finished;
+- an intermediate commit is clean;
+- the Change is not the global QUEUE pointer after explicit owner commission;
+- the packet says a downstream Change owns broader system acceptance, when the current Change can still prove its own bounded Goal at a lower tier;
+- a useful optional enhancement exists;
+- the parent would prefer another planner opinion despite the existing contract being sufficient;
+- the next step is ordinary docs reconciliation, archive housekeeping, Git integration, or a safe local test.
+
+If the original acceptance outcome is achieved, do not keep the Change open by appending unrelated ambitions. If a downstream Change owns broader proof, record that boundary and close the current Change once its own capability/proof is complete.
+
+### Genuine early-stop conditions
+
+Stop and return one precise blocker only when continuation requires something outside the existing commission, such as:
+
+- a new product/architecture/security authority decision not settled by current docs/packet;
+- explicit owner permission for paid provider use, secrets, deployment, destructive/unowned data or cluster mutation;
+- a prerequisite that genuinely has not landed and cannot be safely implemented within the named Change;
+- an active branch/path/shared-resource collision that cannot be serialized locally;
+- an unavailable required environment;
+- one focused diagnosis plus one materially changed retry still fail on the same unresolved invariant.
+
+The blocker must name the exact missing decision/resource/symbol and the smallest route to resolve it. “Planner decision needed” without a concrete unresolved choice is not sufficient.
+
 ## Diagnosis and end-state
 
 Composer-first T-IDs have produced substantial useful implementation with low reported usage, but the parent's work was not bounded: it could keep dispatching tasks, defer all housekeeping, accumulate a very large dirty diff, and confuse a successful child with acceptance of its parent Change. Some earlier rules also told *every isolated child* to commit while newer rules assigned commits to the parent. Correct the conflicting ownership without replacing a fast execution workflow with administrative ceremony.
@@ -84,7 +142,7 @@ The parent executes no new speculative architecture. On an actual source discrep
 
 **Repeated failure escalation:** after one focused diagnosis and one materially changed-hypothesis retry, stop that line of work. Infrastructure prerequisites and stale builds may be repaired once with evidence; repeated timeout/quiet-wait/worker-flag perturbations without changed explanation are not independent progress. Return the exact failing invariant and owning source to ChatGPT. The existing two-failure stop rule still controls. Never downgrade correctness to meet this budget.
 
-**One parent turn normally handles one bounded batch.** If the owner specifically authorizes a multi-batch campaign, the parent can perform up to **two clearly separate, committed/reconciled checkpoints** in that turn, then return a succinct status and ask for fresh selection/continuation. This is a **default stop discipline**, not a claim the repo can technically cap a Cursor model's tokens or stop its internal UI. No hidden auto-next task loops, no automatic Grok escalation.
+**One parent turn normally handles one bounded batch** when the parent was commissioned for only that batch. **A dedicated Change commission is different:** it is an explicitly authorized multi-batch campaign over one named Change. The parent may continue through as many bounded, committed/reconciled checkpoints as needed to finish that Change, while keeping each checkpoint small enough to preserve context and Git clarity. It should summarize progress internally/briefly rather than ask the owner to reauthorize the next T-ID. It still may not auto-start a successor Change. This is a **default stop discipline**, not a claim the repo can technically cap a Cursor model's tokens or stop its internal UI. No hidden cross-Change auto-next loops and no automatic Grok escalation.
 
 ## 5. Minimal batch receipt (parent, not children)
 
