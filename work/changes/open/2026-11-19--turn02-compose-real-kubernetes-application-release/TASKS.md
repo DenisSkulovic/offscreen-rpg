@@ -29,7 +29,7 @@ Apps run Node >=24.19 <25 and pnpm@11.19.0; the real game currently lacks releas
 
 **DEPTH=VERIFY / Composer Standard (remaining).** After open-access deploy, test loopback-forwarded real Gateway: Next SSR story, browser `/api` to Nest, private GA route, SSE invalidation followed by GET and owner isolation. Negative: wrong actor denied, no client mutation replay on SSE loss, private GA route public 404; flag off still **401** without session.
 
-**Receipt (pre-PATCH, `5f76bdf7`):** unauthenticated `GET /api/stories` returned **401**. Signed-in SSR, SSE, and owner isolation were not run. Change **not Done**; **no Kubernetes application release claimed**.
+**Receipt (`f5ffc960`, gateway `127.0.0.1:18080`):** `GET /api/me` and `GET /api/stories` returned **200** for `poc-local-player` with no cookie. `GET /stories` SSR showed Local Player. One mechanical opening `PUT /api/drafts/{id}/openings/{attempt}` with `contentId` `microbe.v3` and `seyda-neen-arrival.v1` returned **400** `invalid`. No story id. Synthetic `GET /api/no-such` stayed **404** `api-not-found`. SSE and owner isolation were not run. Change **not Done**.
 
 ## T06 | Release verification and doc join | PLANNER-READY AFTER T04/T05
 **DEPTH=VERIFY then DOC PATCH / Composer Standard.** Single cluster operator; one immutable receipt with SHA, image digests, resource observations, authenticated real edge, S3 source root and Temporal worker queue. Update docs/technical/platform/deployment-and-compatibility.md, topology, atlas chapter 6 and Change ledger **only after actual checks**. Negative: synthetic worker/placeholder Ready or local in-process fixtures do not close real Kubernetes game. TURN03 owns first complete scene+fork proof. Do not delete an unowned cluster.
