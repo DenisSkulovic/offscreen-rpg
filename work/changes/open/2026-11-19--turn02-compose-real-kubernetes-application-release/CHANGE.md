@@ -2,7 +2,7 @@
 
 **Composer microtask entry (2026-11-20):** [TASKS.md](TASKS.md) contains bounded subagent assignments and exact failure/stop tests; [all-open audit](../../COMPOSER-QUEUE-AUDIT-2026-11-20.md) reconciles dependencies and program order. **Default Cursor parent and child: Composer 2.5 Standard.** This packet's delegation: pinned S3 bootstrap, real images and one serialized cluster join. Existing state, owner selection and spend/cluster gates remain authoritative; no automatic Grok escalation or broad child research. A prepared task is not a passing proof.
 
-**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image built locally** on `9fa937cf` (2026-11-20); **T04 overlay static PASS** and lab substrate up (2026-11-20), app apply **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
+**State:** Selected. **T01 pinned-manifest startup suite VERIFY PASS** @ `ec73a535` (2026-11-20); **T02 API/GA image slice copied onto MAIN** @ `ec73a535` (2026-11-20); **T03 Next image built locally** on `9fa937cf` (2026-11-20); **T04 overlay applied** on `kind-offscreen-lab` (2026-11-20): migration Job succeeded, Next, Nest, and Game Authority Ready, pinned fixture imported; executor Running without workflow polling; signed-in browser **NOT-RUN**; **not Done**; **no Kubernetes application release claimed**.  
 **Kind:** implementation  
 **Execution:** Not in the active Cursor batch; owner or authorized orchestrator must select this Change separately.  
 **Program:** [D5 full release and acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) · [DISTURN](../../../designs/open/distributed-turn-poc/README.md) · [GAPS](../../../designs/open/distributed-turn-poc/GAPS.md)
@@ -41,10 +41,10 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 | Plane | Intended owner and effect | Closure requirement |
 | --- | --- | --- |
-| Product | Existing text-first D&D DM, scene history and branchable fork acceptance; no new gameplay | Source-faithful criteria, no economy or image requirement |
-| Technical | Validated cross-runtime ownership, release and explicit POC evidence under existing technical owners | Exact normal/negative contract and runtime facts |
-| Code | Bounded deployment/test/provider work described above, not a parallel rewrite of existing implementation Changes | Source tests, integration evidence and no silent skipped gates |
-| Related | Queue pointers, operations runbook, evidence/STATUS and reconciled authoritative docs | Wiki/link guards and truthful status |
+| Product | unchanged because this slice edits no product page and adds no gameplay | Source-faithful criteria, no economy or image requirement |
+| Technical | unchanged because this slice edits no technical page; the live pods are a lab proof, not a rewritten deployment contract | Exact normal/negative contract and runtime facts |
+| Code | changed: `packages/cache/src/index.ts`, `infra/kubernetes/lab/app-release/overlay/authority.yaml`, and `infra/kubernetes/lab/app-release/prepare-runtime-tree.sh` let this lab release boot. Negative: worker manifests still reject `DATABASE_URL`, and an API image without `packages/db/migrations/meta/_journal.json` fails image closure | Source tests, integration evidence and no silent skipped gates |
+| Related | changed: `work/changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md` records the live apply, the executor poll gap, and the browser proof that is still not run | Wiki/link guards and truthful status |
 
 ## T01 VERIFY receipt (pinned default rules startup, 2026-11-20 @ `ec73a535`)
 
@@ -84,7 +84,7 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 ## T04 PATCH receipt (app release overlay, 2026-11-20)
 
-**Landed:** `infra/kubernetes/lab/app-release/overlay/{edge,authority,workers,migrate}.yaml` and `install.sh`. Next and Nest are ClusterIP Services in `lab-edge`. HTTPRoute `game-edge-routes` sends `/api` to `game-api` and `/` to `game-web`. Game Authority is ClusterIP in `lab-authority` and is not a Gateway backend. It has no `DATABASE_URL`. Control and executor are separate Deployments and also have no database env. Migration is Job `game-migrate`, not an API startup command. `offscreen.rpg/chaos-eligible=true` is only on the five app Deployments. `gateway/routes.yaml` still contains `synthetic-api`.
+**Landed:** `infra/kubernetes/lab/app-release/overlay/{edge,authority,workers,migrate}.yaml` and `install.sh`. Next and Nest are ClusterIP Services in `lab-edge`. HTTPRoute `game-edge-routes` sends `/api` to `game-api` and `/` to `game-web`. Game Authority is ClusterIP in `lab-authority` and is not a Gateway backend. It reads `DATABASE_URL` from secret `game-db` because its bootstrap calls `readDatabaseConfig`. Control and executor are separate Deployments and have no database env. Migration is Job `game-migrate`, not an API startup command. `offscreen.rpg/chaos-eligible=true` is only on the five app Deployments. `gateway/routes.yaml` still contains `synthetic-api`. The API image also copies `packages/db/migrations`, and `@offscreen/cache` parses only `REDIS_*` keys.
 
 **Positive (static):** `node --test infra/kubernetes/lab/app-release/test/overlay-guard.test.mjs` **8/8 PASS**.
 
@@ -94,7 +94,11 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 
 **Lab substrate (2026-11-20, source `3c4696f8`):** `up.sh` exit 0. Context `kind-offscreen-lab` is the only context; no foreign context was switched. `cnpg/install.sh` exit 0, `lab-pg` phase `Cluster in healthy state`, secret `lab-pg-app` present, 1 instance. `object-storage/smoke.sh` exit 0: put, get, delete, and the object survived Pod replacement; Service `object-store` is ClusterIP. `temporal/install.sh` exit 0: Temporal 1.32.2 SERVING, Service `temporal-server` ClusterIP port 7233. `gateway/install.sh` exit 0: Gateway `lab-edge` Programmed=True. Synthetic `lab-edge-routes` is still installed. Compose volumes `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` remained. MemAvailable after the substrate was 5072372 KiB.
 
-**NOT-RUN:** `install.sh` apply, kind image load, `game-db` / `game-runtime` secrets, migration completion, real app Pods, and imported-manifest proof. No Kubernetes application release is claimed.
+**Live apply (2026-11-20):** `bash infra/kubernetes/lab/app-release/install.sh` exit 0. Job `game-migrate` succeeded and logged `Database migrations applied.` Pods Ready with 0 restarts: `game-web-854ff6c9d4-sm4jk`, `game-api-54479686b8-jbbts` (`Nest application successfully started`), `game-authority-5dcb6679d9-7bfn6` (`game-authority.listening`), `game-control-7865855c67-qjk4c`, `game-executor-666cc97597-x5ccj`. Control worker state `RUNNING` on queue `control`. Executor state `RUNNING` on `storyteller-execute-v1` and logged `No workflows registered, not polling for workflow tasks`. API image `offscreen-lab-app-release-api:turn02` id `sha256:f53f20b53cdc71d80c18c25722584126ab5973e12543674607ec16741d4f6ffc`; kind import id `sha256:74f8efbd92a06976bdcdb3b09447e42bec22b1668a30b8601eda6516cc2e87c5`. Fixture importer logged the pinned world, rule, and start hashes, including rule `d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab`. HTTPRoutes `game-edge-routes` and `lab-edge-routes` are both `Accepted=True`. `gateway/routes.yaml` has an empty diff. Secrets `game-db` and `game-runtime` exist in the cluster and were not printed.
+
+**Earlier failures on this apply, now fixed in the running image:** the first migration Job exited 1 because the API image lacked `packages/db/migrations`; the next API crash was a Zod parse of the full process env in `createCacheAdapter`; after that image loaded, startup threw `DocumentStorageError('missing')` until the pinned fixture was imported into the existing `lab-objects` bucket. `content-bootstrap/smoke.sh` was not the proof: it stops when secret `object-store-s3` already exists. The importer Job used a copy of that existing secret.
+
+**NOT-RUN:** signed-in browser play. GitHub client values in `game-runtime` are local placeholders, not an OAuth app. Gateway overlap of `/` and `/api` between the synthetic route and `game-edge-routes` is unresolved. No Kubernetes application release is claimed.
 
 ## Reconciliation ledger (complete before Done)
 
@@ -104,7 +108,7 @@ Image generation, live multiplayer, Stripe/subscription billing, production cust
 | `apps/api` default-rules bootstrap (packet evidence only; canonical technical owners unreconciled) | open; pinned-manifest startup behavior recorded, not deployment doc closure | `ec73a535`; `default-rules-startup.test.mjs` exercised post-build | post-`pnpm run build` suite **5/5** | conflicting hash+source, invalid hash, missing manifest; Compose path when hash unset **PASS** | [TASKS.md](TASKS.md) T01 |
 | [deployment-and-compatibility](../../../../docs/technical/platform/deployment-and-compatibility.md) | open; T02 lab image build only (not reconciled this slice) | `ec73a535`; `infra/kubernetes/lab/app-release/Dockerfile.{api,game-authority}`, `build.sh` on MAIN (untracked until commit) | worktree + MAIN smoke **5/5** | `content/` not in image; loopback sibling unreachable; kind **NOT-RUN** | [TASKS.md](TASKS.md) T02 |
 | Data/Storyteller/fork | review/reconcile pending T04+ | Pending | Pending | Pending | open |
-| Change packet receipt | no product/technical behavior impacted in `docs/product` or `docs/technical` this turn | packet docs @ `ec73a535` | T01 VERIFY + T02 PATCH receipts | no Kubernetes release claimed; Nest on real S3 **NOT-RUN** | [CHANGE.md](CHANGE.md) T01/T02 sections |
+| Change packet receipt | no product or technical page rewritten this turn | packet docs after the live apply | `install.sh` exit 0; five app Pods Ready; importer hash line | executor not polling workflows; browser login **NOT-RUN**; synthetic and real HTTPRoutes both Accepted | [CHANGE.md](CHANGE.md) T04 section |
 
 **Guard (2026-11-20):** `pnpm wiki:change-guard --mode plan --change` this packet — run after ledger edits; close mode still blocked until T06 cluster proof.
 

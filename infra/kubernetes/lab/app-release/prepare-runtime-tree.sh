@@ -37,6 +37,9 @@ for pkg in "$ROOT/packages"/*; do
   mkdir -p "$OUTPUT/packages/$name"
   cp "$pkg/package.json" "$OUTPUT/packages/$name/"
   cp -a "$pkg/dist" "$OUTPUT/packages/$name/dist"
+  if [[ -d "$pkg/migrations" ]]; then
+    cp -a "$pkg/migrations" "$OUTPUT/packages/$name/migrations"
+  fi
   if [[ -d "$pkg/node_modules" ]]; then
     cp -a "$pkg/node_modules" "$OUTPUT/packages/$name/node_modules"
   fi

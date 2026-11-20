@@ -55,7 +55,10 @@ export async function createCacheAdapter(
   env: Record<string, string | undefined>,
   onIncident?: (incident: CacheAdapterIncident) => void,
 ): Promise<CacheAdapter> {
-  const config = configSchema.parse(env);
+  const redisEnv = Object.fromEntries(
+    Object.entries(env).filter(([key]) => key.startsWith('REDIS_')),
+  );
+  const config = configSchema.parse(redisEnv);
   if (!config.REDIS_URL) {
     return {
       enabled: false,

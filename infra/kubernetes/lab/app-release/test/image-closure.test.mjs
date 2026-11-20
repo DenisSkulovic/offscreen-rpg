@@ -65,6 +65,7 @@ test('built images resolve workspace exports and exclude checkout content/', asy
 import { existsSync } from 'node:fs';
 if (existsSync('content')) throw new Error('content tree must not ship in the API image');
 if (existsSync('/app/content')) throw new Error('content tree must not ship in the API image');
+if (!existsSync('packages/db/migrations/meta/_journal.json')) throw new Error('db migrations must ship in the API image');
 readConfig({ API_HOST: '127.0.0.1', API_PORT: '3001' });
 console.log('api-closure-ok');`,
   );

@@ -85,7 +85,7 @@ test('workers overlay refuses broad database env and pins rule hash on API', () 
   assert.doesNotMatch(workers, /DATABASE_URL/);
   assert.doesNotMatch(workers, /containerPort:\s*8080/);
   assert.doesNotMatch(workers, /tcpSocket/);
-  assert.doesNotMatch(authority, /DATABASE_URL/);
+  assert.match(authority, /name: DATABASE_URL/);
   assert.doesNotMatch(workers, /POSTGRES_URL/);
   assert.doesNotMatch(workers, /PGPASSWORD/);
   assert.match(workers, /TEMPORAL_TASK_QUEUE[\s\S]*value:\s*control/);
