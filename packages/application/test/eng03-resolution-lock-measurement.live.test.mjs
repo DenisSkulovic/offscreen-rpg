@@ -9,8 +9,10 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
+import { storyResolution } from '@offscreen/db/story-schema';
 import { LocalDocumentStore } from '@offscreen/documents';
 import {
   playablePresentation,
@@ -22,6 +24,7 @@ import { createDrafts } from '../dist/drafts/index.js';
 import { createScriptedOpenings } from '../dist/generations/scripted-openings.js';
 import { scriptedPlayableOpening } from '../dist/generations/scripted-openings.js';
 import { createStories, playableOpeningStorySource } from '../dist/stories/index.js';
+import { StoryError } from '../dist/stories/errors.js';
 import { createStoryResolution } from '../dist/stories/resolution.js';
 import { initializeStoryInTransaction } from '../dist/stories/initialization.js';
 import { lockOwnedStory } from '../dist/stories/persistence.js';
@@ -292,7 +295,7 @@ async function measureResolutionTrial(database, storage, delayMs, seed) {
   assert.equal(
     readStarted,
     true,
-  `${branch} resolution should await DocumentStore while holding story lock`,
+    `${branch} resolution should reach off-lock DocumentStore read during admit`,
   );
 
   const waitStart = performance.now();
@@ -396,7 +399,7 @@ test('ENG03 T03: resolution lock does not propagate DocumentStore delay (storyte
             historicalReport:
               'campaign/reports.ts requestHistoricalReport in mechanical TX (ENG03 T05)',
           },
-          underLockAwaits:
+          offLockDocumentReads:
             'readPassageDocument → DocumentStore.readSourcePassage; storyteller branch also loadStorytellerContext → further readSourcePassage/readManifest reads when canonical pins exist',
         },
         null,
@@ -424,5 +427,103 @@ test('ENG03 T03: resolution lock does not propagate DocumentStore delay (storyte
         `${summary.branch}: lock-held external await is readSourcePassage`,
       );
     }
+  });
+});
+
+function eng03FenceProbeNote() {
+  return [
+    {
+      key: 'eng03-fence',
+      text: 'Mutated while resolution read is off-lock',
+      sources: [randomUUID()],
+      revision: 1,
+    },
+  ];
+}
+
+test('ENG03 T03: final fence refuses continuity notes changed during off-lock read', async () => {
+  await withDisposable(async (database) => {
+    const root = await mkdtemp(join(tmpdir(), 'eng03t03-fence-'));
+    const storage = new LocalDocumentStore(root);
+    const { ownerId, storyId, before } = await seedStorytellerChoiceStory(
+      database,
+      storage,
+    );
+    const optionId = before.current.interaction.specification.options[0].id;
+    const submission = {
+      interactionId: before.current.interaction.id,
+      answer: { kind: 'choice.v1', optionId },
+    };
+
+    const operationIdConflict = randomUUID();
+    let offLockReadStarted = false;
+    const delayed = createEng03DelayedDocumentStore(storage, {
+      delayMs: 2000,
+      onBeforeRead: async () => {
+        offLockReadStarted = true;
+        await database.db.$client.query(
+          `UPDATE story SET continuity_notes = $1::jsonb WHERE id = $2`,
+          [JSON.stringify(eng03FenceProbeNote()), storyId],
+        );
+      },
+    });
+    const conflictResolution = createStoryResolution(database, delayed);
+
+    await assert.rejects(
+      () =>
+        conflictResolution.admit({
+          ownerId,
+          storyId,
+          operationId: operationIdConflict,
+          expectedRevision: before.revision,
+          submission,
+        }),
+      (error) => error instanceof StoryError && error.code === 'conflict',
+    );
+    assert.equal(
+      offLockReadStarted,
+      true,
+      'continuity mutation must occur during off-lock DocumentStore read',
+    );
+
+    const [conflictResolutionRow] = await database.db
+      .select()
+      .from(storyResolution)
+      .where(eq(storyResolution.operationId, operationIdConflict));
+    assert.equal(conflictResolutionRow, undefined);
+
+    const [conflictGenerationRow] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, operationIdConflict));
+    assert.equal(conflictGenerationRow, undefined);
+
+    await database.db.$client.query(
+      `UPDATE story SET continuity_notes = '[]'::jsonb WHERE id = $1`,
+      [storyId],
+    );
+
+    const operationIdControl = randomUUID();
+    const controlResolution = createStoryResolution(database, storage);
+    await controlResolution.admit({
+      ownerId,
+      storyId,
+      operationId: operationIdControl,
+      expectedRevision: before.revision,
+      submission,
+    });
+
+    const [controlResolutionRow] = await database.db
+      .select()
+      .from(storyResolution)
+      .where(eq(storyResolution.operationId, operationIdControl));
+    assert.ok(controlResolutionRow);
+    assert.equal(controlResolutionRow.generationId, operationIdControl);
+
+    const [controlGenerationRow] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, operationIdControl));
+    assert.ok(controlGenerationRow);
   });
 });
