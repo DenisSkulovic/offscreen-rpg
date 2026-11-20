@@ -2,6 +2,8 @@
 
 **Classification date:** 2026-11-19. This is a **planning inventory, not a claim of implemented status**. Reinspect current GitHub HEAD and the active Cursor branch before promoting a gap to an executable Change. Each gap names the next design decision and the test an actual implementation will have to pass. Existing ARCH/K8S Changes are **references**, not assumed sufficient implementations. Do not infer approval to build a gap because it is listed here.
 
+**Current correction (2026-11-20):** DIST04 was [Cancelled, not Done](../../../changes/archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md) along with DIST02. There is no app Rabbit publisher/consumer and no named independent read model; the direct SQL-outbox→Temporal route is the only game wake path. The older S04/I01/P03 RabbitMQ requirements below are **superseded historical design targets**, not prerequisites for TURN02/TURN03 or one-command Kubernetes. Keep K8S03 Rabbit learning lab optional.
+
 ## Gate definitions
 
 - **Existing** = source code or a dated test demonstrates a component, not its new distributed deployment.
@@ -95,7 +97,7 @@ Each future executable Change must name **owned files/interfaces/migrations**, e
 - [DIST01](../../../changes/archive/2026-11/other/2026-11-19--dist01-ratify-game-authority-delivery-boundaries/CHANGE.md): design gates S01/S04/S05/S06 and P01, reconciled with ARCH02. Until its decisions are integrated, executable transport/extraction packets stay Proposed.
 - [DIST02, Cancelled 2026-11-20: no independently selected consumer](../../../changes/archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): superseded Rabbit→Temporal bridge and unneeded speculative postcommit DTO. Not a POC gap or executable blocker.
 - [DIST03](../../../changes/open/2026-11-19--dist03-game-authority-private-boundary/CHANGE.md): narrow API-to-Game Authority proof for S01/S02, not all controllers or historical snapshots.
-- [DIST04](../../../changes/open/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md): optional postcommit projection only if a named independent consumer is selected; never a Rabbit→Temporal wake.
+- [DIST04, Cancelled 2026-11-20: no named independent consumer](../../../changes/archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md): source proposal rejected for current game. No publisher/consumer implemented; future real projection starts a new Change.
 - [DIST05](../../../changes/archive/2026-11/other/2026-11-19--dist05-storyteller-execution-worker-split/CHANGE.md) is cancelled into STORY03. The generation/publication split is not implemented.
 - [DIST06](../../../changes/archive/2026-11/other/2026-11-19--dist06-first-distributed-turn-integration/CHANGE.md) is cancelled into TURN03. It does not complete the historical fork or a live provider evaluation.
 

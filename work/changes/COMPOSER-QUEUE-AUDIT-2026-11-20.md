@@ -1,6 +1,6 @@
 # Open Change backlog | Composer-first source audit (2026-11-20)
 
-**Current closure override (2026-11-20):** DIST02 was [Cancelled, not Done](archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): it has no independent consumer, and the original broker→Temporal bridge is rejected. The dated inventory below is historical, not permission to reopen this ticket. DIST04 has no concrete upstream client and remains unselected until separately reviewed.
+**Current closure override (2026-11-20):** DIST02 was [Cancelled, not Done](archive/2026-11/other/2026-11-19--dist02-versioned-dispatch-bridge-contracts/CHANGE.md): it has no independent consumer, and the original broker→Temporal bridge is rejected. The dated inventory below is historical, not permission to reopen this ticket. DIST04 was also [Cancelled, not Done](archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md) after separate review; no implementation obligation remains.
 
 **Scope:** all **25** directories under `work/changes/open/` in the owner-provided lean snapshot `584b594`. **24** have an actual `CHANGE.md`; the extra BOOK01 directory held only a completed `PLAN.md`, now preserved with archived BOOK01 and removed from `open/`. Current GitHub code was not rebuilt; subsequent HEAD changes before execution must be compared to inspected symbols. The preceding planning pass had already created TASKS for BOOT03, STORY02, STORY03, TURN02 and K8S10; this audit covers those plus the other 19 packets. **No paid provider, shared-cluster or destructive test was run.**
 
@@ -27,7 +27,7 @@
 | **DIST01** `2026-11-19--dist01-ratify-game-authority-delivery-boundaries` | Docs-only; earlier ARCH02 merge assumptions stale | Review current normative owner vs source and reconcile wording | Composer DOC PATCH |
 | **DIST02** `2026-11-19--dist02-versioned-dispatch-bridge-contracts` | Old Rabbit→Temporal bridge cancelled; optional business fact schema only | **No action** until a derived consumer is selected; strict pure DTO then | Composer docs/contract optional, no live broker task |
 | **DIST03** `2026-11-19--dist03-game-authority-private-boundary` | One GA read/resolution seam already implemented | Verify local vs remote and credential/owner behavior; coordinate expansion with BOOT03 | Composer VERIFY; don't redo existing service |
-| **DIST04** `2026-11-19--dist04-rabbitmq-temporal-live-handoff` | Historical name; selected semantics optional postcommit projection | Refuse broker→Temporal wake; optional publisher/inbox only after DIST02 | Composer pure/optional, outside POC critical path |
+| **DIST04** `2026-11-19--dist04-rabbitmq-temporal-live-handoff` | **Cancelled 2026-11-20**, not Done; no named independent consumer | No Rabbit app producer or inbox should be implemented under this packet; K8S03 lab survives | Terminal; no Composer task authorized |
 | **K8S10** `2026-11-19--k8s10-distributed-fault-and-load-harness` | Toy Rabbit consumer-loss proof; game chaos is future | Pure selector/preflight/scripts T01–03 now; app-Pod fault only after real POC | Composer TASKS exists; cluster destructive gated |
 | **K8S11** `2026-11-19--k8s11-next-nest-live-edge-integration` | Gateway synthetic, real Next/Nest origin/listener issues | Test image real production rewrite and signed-in same-origin SSE | Composer in phases after TURN02 image prep |
 | **STORY02** `2026-11-19--story02-private-task-and-result-custody` | attempt claim/save exists, remote facade missing | Four prepared private API/client tasks | Composer TASKS exists |
@@ -43,7 +43,7 @@
 
 1. **Verification/cleanup first:** HK03's three known test failures; HK01 guarded saved-response function; BOOT02 source pin receipt; DATA04 source/replay and DIST03 service seam. These are bounded Composer checks, not autonomous architecture work. Run only selected safe local tests and record unrun gates.
 2. **Game-critical construction:** BOOT03 and STORY02 private boundaries, STORY03 SQL fence and two queues, TURN02 image/S3 bootstrap, K8S11 authenticated edge, DATA06 branch-pinned context, TURN03 one offline fake-provider full campaign. **Single GA route owner; single workflow owner; single SQL migration and kind operator**.
-3. **Optional learning systems, not blockers:** K8S10 pure preflight now, live app chaos after TURN03, DIST02/04 Rabbit postcommit consumer if chosen, WIKI18 cost experiment with measured real tasks.
+3. **Optional learning systems, not blockers:** K8S10 pure preflight now, live app chaos after TURN03, DIST02/04 Cancelled (no selected consumer); future distinct consumer requires a new justified Change, WIKI18 cost experiment with measured real tasks.
 4. **Product research not a fake POC prerequisite:** GM03/GM07 standing behavior, OBS04 richer evidence, ENG03 all-purpose lock refactor, DIR03 live creative trial; do not let their names inflate the critical path. These stay visible but not automatically selected.
 5. **Paid work:** OBS00/TURN04 remains denied until separate spend and dispatch-authority review. No Grok exception is needed to *avoid* a paid provider.
 

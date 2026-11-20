@@ -1,4 +1,6 @@
-# DIST04 | Composer optional postcommit projection, never Rabbit-to-Temporal
+# DIST04 | Cancelled optional broker tasks, historical only
+
+**Terminal disposition (2026-11-20):** [DIST04 cancellation](CHANGE.md#terminal-decision-and-evidence--2026-11-20). T01–T03 were never implemented; do not execute, claim Done, or create a new broker service for these cards. The needed independent consumer does not exist. RabbitMQ-to-Temporal remains explicitly rejected by ARCH02, and the K8S03 Rabbit lab remains valid as an independent lab.
 
 **Baseline:** 584b594. **State:** Proposed/unselected. **2026-11-20:** DIST02 Cancelled (not Done), so this packet has no fact DTO or named consumer; T01–T03 are non-executable without an independently approved new requirement. Historical folder name is misleading; actual Change body explicitly supersedes Rabbit as a Storyteller wake path. **Model:** Composer Standard; no active critical-path task. **Source:** `apps/worker/src/outbox/{relay,dispatch}.ts`, `packages/workflows/src/contracts.ts`, `docs/technical/platform/execution-and-delivery.md`.
 

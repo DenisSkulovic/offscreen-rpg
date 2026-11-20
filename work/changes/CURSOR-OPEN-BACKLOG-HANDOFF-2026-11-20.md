@@ -1,5 +1,7 @@
 # Cursor parent | open Change backlog, Composer-first dispatch
 
+**2026-11-20 terminal correction:** DIST02 and DIST04 were both Cancelled, not Done. No speculative RabbitMQ publisher/consumer work remains in the executable backlog; only the educational K8S03 lab exists. [DIST04 disposition](archive/2026-11/other/2026-11-19--dist04-rabbitmq-temporal-live-handoff/CHANGE.md).
+
 **Priority supersession:** [work/IMPLEMENTATION-ROADMAP.md](../IMPLEMENTATION-ROADMAP.md) is the current now/next/later schedule. This older menu is for task discovery, not autonomous selection. QUEUE remains the sole current selector.
 
 **Priority override for morning 2026-11-20:** [first real campaign source audit](../designs/open/first-campaign-readiness-2026-11-20/README.md) supersedes this older menu for immediate game readiness. At snapshot `3992437` there are **19** open folders, not 24. Start with **STORY03 T07** GA-only control publication, then **T08** original-topic persistence, then **T09** actual HTTP→outbox→Temporal→GA integrated campaign. They are new cards in [STORY03 TASKS.md](open/2026-11-19--story03-separate-temporal-executor-and-publication/TASKS.md). Each is one bounded task with a negative test. No automatic all-folder delegation, provider send or destructive kind work.
@@ -32,7 +34,7 @@
 
 ## Deliberately not in the first execution batch
 
-- **Optional/noncritical**: DIST04 conditional business-fact projection (DIST02 cancelled, no consumer), DIR03 live aesthetics, GM03 standing-life expansion, GM07 persisted fallback, OBS04 richer evidence, ENG03 broad lock refactor. They are still visible in [audit](COMPOSER-QUEUE-AUDIT-2026-11-20.md), not moved to a hidden postponed bin. Their source/negative tasks can be selected when they answer a real current problem.
+- **Optional/noncritical**: DIST04 Cancelled alongside DIST02 (no consumer); no Rabbit business-fact work selected, DIR03 live aesthetics, GM03 standing-life expansion, GM07 persisted fallback, OBS04 richer evidence, ENG03 broad lock refactor. They are still visible in [audit](COMPOSER-QUEUE-AUDIT-2026-11-20.md), not moved to a hidden postponed bin. Their source/negative tasks can be selected when they answer a real current problem.
 - **Paid permission boundary**: OBS00/TURN04 live dispatch remains denied until explicit authorization and a source-backed uncertain-provider accounting policy.
 - **Real-cluster join**: TURN02/K8S11/TURN03 and K8S10 Pod injection require single cluster operator, real image/source pins, authenticated source and disposable environment. No child may reset/create/delete shared resources by inference.
 - **Shared files**: BOOT03/STORY02/STORY03 all touch GA server/app/auth contracts. Serialize route and credential merges. STORY03 and TURN02 share worker queues and images. DATA04/DATA06 share fork/canon source. One coordinator owns migration, canonical tech headings and cluster.
