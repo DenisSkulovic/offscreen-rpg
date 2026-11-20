@@ -59,4 +59,13 @@ Stop/rollback signals: preparation regularly adds low-value or contradictory fil
 4. Human-reviewed optional paid quality/cost experiment under separately approved funding.
 5. Only then create **bounded, dependency-ordered Change packets**, avoiding UI edits that assume unresolved backend contracts.
 
-**Next conversational starting point:** design the two complete lifecycle diagrams (prepared preset vs arbitrary prompt), identify the earliest legally committed root, and compare A/B preparation at the protocol level.
+## Specific protocol findings (2026-11-20; **unaccepted**)
+
+- **Proposed staging choice:** Workdesk documents live under an owner-authorized Launch and a pinned **operation-local staging root**, not the published story root. Only a later Game Authority transaction commits the first scene, passage, admitted knowledge and supported checkpoint. See [PREPLAY-WORKDESK-PROTOCOL](PREPLAY-WORKDESK-PROTOCOL.md).
+- **Opening output gap:** `openingProviderResultSchema` currently preserves only scene data; provider openings cannot simply publish their own proposed document edits. The output/adoption boundary needs explicit changes if preparation documents are to survive.
+- **Profile resolution gap:** current `loadStartPackageKnowledge` relevance selection puts `creative-guidance` after other kinds under an 8-document/12 KiB context cap, so `STORYTELLER_PROFILE.md` has no guaranteed automatic injection. Need a role-based resolver with separate reserved budget. See [CANONICAL-ENTRYPOINT-RESOLUTION](CANONICAL-ENTRYPOINT-RESOLUTION.md).
+- **Arbitrary bundle gap:** start-package schema currently requires a rule-package reference. Decide whether world-neutral bundles may omit it or need a distinct explicit no-mechanics rule contract; don't counterfeit fantasy mechanics.
+- **Prompt limit gap:** draft premise SQL length is 6,000 characters. A longer Story Prompt needs an explicit size-admitted capture without silent truncation.
+- **Checkpoint honesty:** opening checkpoints do not cover all mechanical starts today. The new launch protocol must not pretend a nonexistent first-scene checkpoint makes a fork possible.
+
+**Next conversational starting point:** resolve the few remaining protocol choices using three provider-free fixture traces (ready preset, `bah`, cosmic observer), including an interruption between preparation and composition. Then decide the minimal accepted owner contract before any Cursor Change packet. No model-spending experiment or implementation is authorized here.

@@ -14,6 +14,9 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - [FILE-FIRST-LIBRARY-REVIEW.md](FILE-FIRST-LIBRARY-REVIEW.md) — Markdown-first Storyteller interface versus physical JSON/CAS and SQL control, filename discovery, authority and API boundaries.
 - [INITIALIZATION-LIFECYCLES.md](INITIALIZATION-LIFECYCLES.md) — competing single-round and preparatory-workbench launch lifecycles, concrete preset/custom traces and failure matrix.
 - [WRITER-SKILLS-EXPERIMENT.md](WRITER-SKILLS-EXPERIMENT.md) — workdesk metaphor, creative skills versus executable tools and cheap-model quality/cost experiments.
+- [LAUNCH-BOUNDARIES-AUDIT.md](LAUNCH-BOUNDARIES-AUDIT.md) — source trace of draft, opening, start-package import, initial-root selection, first checkpoint and cost boundaries.
+- [PREPLAY-WORKDESK-PROTOCOL.md](PREPLAY-WORKDESK-PROTOCOL.md) — candidate operation-local staging root, complete launch state model, A/B recipes, replay, visibility and failure invariants.
+- [CANONICAL-ENTRYPOINT-RESOLUTION.md](CANONICAL-ENTRYPOINT-RESOLUTION.md) — deterministic standard-file selection, profile compilation, precedence, size budgets and provenance.
 
 ## Owner's product direction (from conversation, not yet reconciled into canonical docs)
 
@@ -47,7 +50,7 @@ This dossier is the home for the continuing multi-conversation investigation. It
 
 - **I1 recorded:** inspect existing creation, profile, start-package, opening and bootstrap implementation; record the user's workbench hypothesis and its architectural costs.
 - **I2 drafted 2026-11-20, not accepted:** compare A (single-round composition) vs B (separate Workdesk preparation) and conditional C; trace prepared preset, `bah`, abstract galaxy, pre-play staging, retry and first-scene root. See [INITIALIZATION-LIFECYCLES](INITIALIZATION-LIFECYCLES.md).
-- **I3 in progress:** decide whether standard named Markdown entry documents become reserved hooks, how core profile/prompt content is pinned and auto-injected, what proposed writes mean, and whether narrow writer skills beat matched-token baselines. See [FILE-FIRST-LIBRARY-REVIEW](FILE-FIRST-LIBRARY-REVIEW.md) and [WRITER-SKILLS-EXPERIMENT](WRITER-SKILLS-EXPERIMENT.md).
+- **I3 protocol drafted, awaiting owner review:** prefer operation-local pre-play staging, distinguish persisted/staged/admitted/published roots, propose deterministic resolution of conventional entry documents, and identify source-only gaps (opening cannot publish documentChanges, profile guidance can be omitted, start bundles require rules). Read [LAUNCH-BOUNDARIES-AUDIT](LAUNCH-BOUNDARIES-AUDIT.md), [PREPLAY-WORKDESK-PROTOCOL](PREPLAY-WORKDESK-PROTOCOL.md) and [CANONICAL-ENTRYPOINT-RESOLUTION](CANONICAL-ENTRYPOINT-RESOLUTION.md).
 - **I4:** design minimal quality/cost probes; only after product/technical reconciliation prepare bounded executable Changes for Cursor.
 
 **Do not** auto-select a Change, automatically dispatch a provider, or treat a proposed `STORYTELLER_PROFILE.md` path as an implemented runtime feature.
