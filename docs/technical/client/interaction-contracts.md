@@ -1,5 +1,7 @@
 # Client interaction contracts
 
+**Target interaction contract:** creation is prepared **Play / optional Customize** or one Story Prompt. The client may display queued/running/uncertain launch state, but does not require a generated preview/Start ceremony. History controls operate on immutable published scene identities; forking names the selected scene and never pretends that reading history itself mutates the live branch.
+
 **Owns:** how a player intention, a wait and a draft edit behave on the wire and in client state.  
 **Product honesty** of what the player should understand is [play and decisions](../../product/experience/play-and-decisions.md) and [entry](../../product/experience/entry-and-onboarding.md). This page owns the client mechanism.  
 **Status:** selected with the [React/Next architecture](architecture.md). Free-text gameplay actions are not a selected interaction.
