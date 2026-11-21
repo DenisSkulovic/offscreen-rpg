@@ -24,7 +24,7 @@
 
 [Implementation roadmap](../IMPLEMENTATION-ROADMAP.md) · [Current distributed source review](../designs/open/distributed-turn-poc/README.md) · [First-campaign readiness study](../designs/open/first-campaign-readiness-2026-11-20/README.md) · [Cursor backlog handoff](CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md). These source maps are dated; they do not supersede HEAD code or current Change states.
 
-### Writer refoundation | documentation completed, code unselected
+### Writer refoundation | documentation completed, WR02 selected
 
 | Change | Work item |
 | --- | --- |
@@ -40,7 +40,7 @@
 | [WR07](open/2026-11-21--wr07-one-prompt-launch-backend/CHANGE.md) | One-prompt launch backend |
 | [WR08](open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | Creation UI and integrated acceptance |
 
-[Writer implementation program](WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT permanent-wiki handoff](WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02–WR08 remain Proposed/unselected.** Cursor should implement on this branch only after explicit owner review. No permission to dispatch paid models or mutate deployment follows from these statuses.
+[Writer implementation program](WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT permanent-wiki handoff](WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02 is selected for Cursor implementation. WR03–WR08 remain Proposed/unselected and dependency-gated.** Cursor should implement WR02 from the current `undertaking/storyteller-workshop` head and merge/reconcile back into that branch. No permission to dispatch paid models or mutate deployment follows from these statuses.
 
 ## Layout
 
