@@ -2,7 +2,7 @@
 
 ## Human-owner readability wave, planned 2026-11-22
 
-**A separate structural refactor wave, not a replacement for CL01/WR11/K8S10.** The [canonical code-quality rule](../.agents/rules/code-quality.md#human-ownership-refactors-controlled-mechanical-freedom) now explicitly supports **planner-fixed package layouts + Composer mechanical discretion**. No new feature, scheme, SQL transaction, external provider or migration.
+**A separate structural refactor wave, not a replacement for CL01/WR11/K8S10.** The [canonical code-quality rule](../../.agents/rules/code-quality.md#human-ownership-refactors-controlled-mechanical-freedom) now explicitly supports **planner-fixed package layouts + Composer mechanical discretion**. No new feature, scheme, SQL transaction, external provider or migration.
 
 | Change | Package ownership and purpose | Gate |
 | --- | --- | --- |
