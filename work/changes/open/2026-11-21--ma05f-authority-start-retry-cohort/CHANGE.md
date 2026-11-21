@@ -1,0 +1,67 @@
+# MA05F | Move transactional start and retry into Story Authority
+
+**State:** PLANNER-READY FOR OWNER COMMISSION, not commissioned by this planning commit. **Integration target:** `undertaking/storyteller-workshop`; inspected source HEAD `2bcebcdd79ef898ace2ead59cdb56a8013f7a511` (2026-11-21). **One substantial Change, three implementation tasks, one complete integration/archival close.** No direct `main` landing, live provider spend, migrations or destructive DB operations.
+
+## Architectural decision and why this is one Change
+
+The existing `stories/index.ts → storyteller/recovery.ts` and `stories/start.ts → storyteller/start.ts` imports are not legitimate runtime dependencies. Both target functions execute SQL-authoritative story mutations. `retryStoryteller` owns a transaction, story lock, replay identity, generation/attempt/operation/publication state, frozen wake topic, outbox and view-version. `startStorytellerCandidate` is called *inside* the existing `stories/start.ts` transaction, validates draft and generated opening identity, initializes story and campaign, and writes continuity notes. These two related authority-entry operations should move together. The pure retry decision belongs next to its SQL admission owner; memory-provider runtime behavior stays in its own existing runtime lifecycle module.
+
+**Do not introduce a callback/port for either operation.** The old Storyteller module paths become compatibility-only identity-preserving re-exports. Pure `@offscreen/storyteller/tasks` and profiles remain permissible dependencies of Authority; imports from `application/src/storyteller` implementation are not.
+
+### Exact source → destination ownership
+
+| Existing source / symbol | New canonical owner | Callers and compatibility |
+| --- | --- | --- |
+| `src/storyteller/recovery.ts:retryStoryteller` (~186 lines) | `src/stories/storyteller-retry.ts` | `stories/index.ts` imports the new path. `storyteller/recovery.ts` only re-exports the *same function*. Preserve old path for compatibility. |
+| `src/storyteller/start.ts:startStorytellerCandidate` (~210 lines) | `src/stories/storyteller-start-candidate.ts` | `stories/start.ts` imports new path. `storyteller/start.ts` only re-exports same function. |
+| `src/storyteller/loop-lifecycle.ts:evaluateStorytellerRetryGate` and its three `Storyteller*LifecycleState/Decision` types | `src/stories/storyteller-retry-policy.ts` | Canonical retry operation imports from new authority path. `storyteller/loop-lifecycle.ts` re-exports these names without redeclaring them; all memory-specific helpers, `MemoryProviderRoundError`, `classifyMemoryProviderRoundError`, `memoryExplorationRoundCapability`, `attemptChargeTruth` stay in loop-lifecycle. Preserve existing `storyteller/index.ts` re-export and Developer Tools imports. |
+
+### Resolved imports in moved sources
+
+- New `stories/storyteller-retry.ts`: existing `../stories/persistence` → `./persistence`; `../stories/errors` → `./errors`; existing `./loop-lifecycle` → `./storyteller-retry-policy`; `./records` must be **split by actual ownership**: take the kind from `@offscreen/contracts/storyteller-kinds` and frozen-topic reader from `../campaign/storyteller-wake` (`storytellerNoticeTopicForWake`). Keep the same SQL queries/lock/outbox ordering.
+- New `stories/storyteller-start-candidate.ts`: `../stories/initialization` → `./initialization`, `../stories/errors` → `./errors`, `../stories/passage-documents` → `./passage-documents`, `./memory` → `./continuity-notes`. Preserve `Transaction` from `@offscreen/db/outbox`, the identical task validator, `initializeCampaign` call and existing draft lock.
+- The new retry-policy module has **no** runtime import and carries only the two lifecycle state unions, retry decision union and the pure `evaluateStorytellerRetryGate`. Inspect `loop-lifecycle.ts` before moving types: its remaining `attemptChargeTruth` needs the moved attempt type imported locally and re-exported publicly. Do not move memory-round provider policy or accidentally introduce an authority → memory type import.
+
+### Transaction, failure and spend constraints
+
+1. `stories/index.ts:retryResolution` still awaits retry before `reads.readSnapshot`; `retryStoryteller` retains its own `database.db.transaction`, `lockOwnedStory`, prior `storytellerRetry` lookup, operation/generation/attempt gate and `enqueue` inside the transaction. No provider dispatch, second reservation or fresh generation as a consequence of retry itself.
+2. `stories/start.ts` still invokes `startStorytellerCandidate(tx,...)` inside **the very same** SQL transaction as candidate read and staged checkpoint selector. Never add a nested transaction or post-commit callback; retain the foreign-owner, revision, start-package, mechanics and retry-conflict checks.
+3. Continuity mutation is `stories/continuity-notes.ts:publishStorytellerNotes` (MA05E canonical owner). Call it directly from the moved start operation, not via runtime `memory.ts`.
+4. Frozen notice wake stays `campaign/storyteller-wake.ts:storytellerNoticeTopicForWake` (MA05D canonical owner). Do not replace with admission-time environment topic selection.
+5. Keep public `createStories`, `createStoryApplication`, `retryResolution`, old path re-export function identity and runtime `storyteller/index.ts` behavior. No database schema or public payload change.
+
+## Composer tasks (one commissioned Change; serial because output paths and source imports overlap)
+
+**T01 | Authority retry policy and retry admission | PATCH**
+
+- **Read:** `src/storyteller/loop-lifecycle.ts` (`evaluateStorytellerRetryGate`, types, `attemptChargeTruth`); `src/storyteller/recovery.ts`; `src/campaign/storyteller-wake.ts`; `src/stories/index.ts`; `test/storyteller-loop-lifecycle.test.mjs`.
+- **Write:** `src/stories/storyteller-retry-policy.ts`, `src/stories/storyteller-retry.ts`, `src/storyteller/loop-lifecycle.ts`, `src/storyteller/recovery.ts`, `src/stories/index.ts`, `test/ma05f-authority-entry-identity.test.mjs` (new).
+- **Algorithm:** move exact four policy exports and gate body; import/re-export them in old module; move full recovery operation without rewriting SQL; substitute known neutral kind and frozen topic paths; direct `stories/index.ts` import to new owner; retain old runtime path via `export { retryStoryteller } from '../stories/storyteller-retry';`. No extra wrapper closure.
+- **Prove:** `pnpm --filter @offscreen/application build`; `node --test packages/application/test/storyteller-loop-lifecycle.test.mjs packages/application/test/ma05f-authority-entry-identity.test.mjs` from repo root after build. Identity tests import both dist paths and assert strict equality for retry operation and retry policy. Run existing disposable SQL `storyteller-provider-recovery.integration.ts` / `storyteller-publication-context.integration.ts` scoped via the project's existing integration harness; do **not** invent an alternate DB harness. Key negatives: duplicate retry ID records no second outbox; uncertain/dispatched attempts cannot retry; settled without permitted repair conflicts; wrong owner denied.
+- **Stop:** an unexpected runtime-only import remains in the new authority file, observed change to retry fence/round-budget semantics, or no authorized disposable SQL environment for critical integration acceptance. Do not redesign on Cursor.
+
+**T02 | Transactional story start ownership | PATCH, after T01**
+
+- **Read:** `src/storyteller/start.ts` full; `src/stories/start.ts` around `database.db.transaction` and checkpoint selector; `src/stories/continuity-notes.ts`; `src/stories/initialization.ts`; `tools/api-integration/test/boot03-imported-start-distributed.integration.ts` (start and wrong-owner fixtures).
+- **Write:** `src/stories/storyteller-start-candidate.ts` (new), `src/storyteller/start.ts`, `src/stories/start.ts`, `test/ma05f-authority-entry-identity.test.mjs` (extend).
+- **Algorithm:** move the complete existing start function into new file; fix the exact relative imports above; use MA05E canonical notes writer; retain old import identity with direct named re-export; change the `stories/start.ts` import only. No SQL or checkpoint logic edits.
+- **Prove:** build + identity test; existing `boot03-imported-start-distributed.integration.ts`, `story-start.integration.ts` through existing disposable integration harness. Negatives: foreign-owner candidate cannot start; changed draft revision/start package rejected; reattempt with altered campaign settings conflicts; failure does not partially commit story/campaign/checkpoint selector.
+- **Stop:** any proposed extra transaction, post-commit notes, new checkpoint owner or changed opening input contract.
+
+**T03 | Consolidated graph, regressions and normal closure | VERIFY/PATCH after T02**
+
+- **Read:** changed paths, `test/story03-notice-topic-freeze.test.mjs` (`wakeSources` guard), `work/changes/open/2026-11-21--ma05-authority-runtime-port-inversion/SOURCE-MAP.md`, modular-monolith undertaking schedule.
+- **Write:** only focused test adjustment if the wake guard now needs to inspect `stories/storyteller-retry.ts` in addition to legacy `storyteller/recovery.ts` (it must continue rejecting `selectStorytellerNoticeTopicAtAdmission`); packet receipt, affected canonical technical docs and undertaking schedule at closure.
+- **Prove:** `pnpm repo:module-graph`, application build and focused tests, changed-file formatting/quality lint. Verify by source/AST that `stories/index.ts` and `stories/start.ts` no longer import runtime; verify old/new named functions strict-identical; no new `stories` → `storyteller/` relative imports due to these relocations. Run the named existing SQL integration regressions when a disposable DB is authorized and configured. Record counts and PASS/NOT RUN without fabrication.
+- **Close:** integration parent owns one dedicated linked worktree `change/ma05f-authority-entries` branched from current `undertaking/storyteller-workshop`, guard `node scripts/repo-tools/change-branch-guard.mjs --change MA05F --target undertaking/storyteller-workshop`, all tasks, required negative checks, ledger/links/archival, squash integration back into undertaking and clean branch/worktree retirement. Do not ask owner for a separate finishing approval. Do not select MA05G/MA06 automatically.
+
+## Source/consumer coverage and execution limits
+
+- Inspected direct production consumers of these *relative* imports: `stories/index.ts` (retry), `stories/start.ts` (start), `storyteller/recovery.ts` (retry gate), `storyteller/memory-provider-runtime.ts` (other lifecycle symbols), `developer-tools/playability-harness.ts` (retry gate), `storyteller/index.ts` (public loop-lifecycle re-export). No new package manifest or lockfile edit.
+- Existing test anchors: `packages/application/test/storyteller-loop-lifecycle.test.mjs`, `packages/application/test/story03-notice-topic-freeze.test.mjs`, `tools/api-integration/test/storyteller-provider-recovery.integration.ts`, `storyteller-publication-context.integration.ts`, `story-start.integration.ts`, `boot03-imported-start-distributed.integration.ts`.
+- **Readiness limitations:** this is a source-grounded execution design, not a claim that SQL integration tests have run or that their existing runner selects each file by filename. Executor must use the repository's existing integration invocation and its authorized disposable DB. Missing DB is a **proof limitation** rather than permission to claim fully verified SQL preservation. Any actual failing transaction/fence negative blocks Done.
+- **Concurrency:** T01 → T02 → T03, serial to avoid shared identity test, build artifacts and Git index collisions; this is one larger Change rather than separate ceremonial changes for each function.
+
+## Independent planner check against inspected HEAD (G0–G7)
+
+G0 PASS snapshot equals live remote target HEAD, queue is none and commission not implied. G1 PASS named source/callers/SQL transaction boundaries and tests inspected. G2 PASS no callback design, migration, transaction or behavior choices left to implementer. G3 PASS T01/T02 precise symbols, imports, write paths and negative outcomes; tests use existing fixtures. G4 PASS immediate first dispatch T01 after named owner commission and dedicated worktree. G5 PASS serial path/resource DAG. G6 READY WITH LIMITS: named focused and SQL negatives; no ChatGPT runtime test execution, exact API-integration file-selection command must follow existing project runner. G7 PASS one coherent Change, one close, no per-function Change status. **Verdict: READY WITH EXPLICIT LIMITS** (SQL execution prerequisite, fresh source check); does not authorize paid work without owner commission.
