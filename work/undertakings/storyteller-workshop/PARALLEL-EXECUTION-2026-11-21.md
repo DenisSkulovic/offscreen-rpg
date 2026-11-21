@@ -1,0 +1,15 @@
+# Parallel execution window | Story Engine + Writer foundations (2026-11-21)
+
+**This file is a compact handoff matrix, not a second work queue.** Integration target `undertaking/storyteller-workshop`, not `main`. User has authorized independent Cursor chats to execute the individually named ready Changes. `work/QUEUE.md` remains unchanged. AGENTS/CHATGPT and per-Change instructions take precedence. One **integration custodian** (human owner or designated Cursor parent) serializes final joins; individual parents must not independently race commits into the shared undertaking.
+
+| Lane | Ready Change | Code write ownership | Can begin immediately? | Main no-overlap fact |
+| --- | --- | --- | --- | --- |
+| A | [MA06A](../../changes/open/2026-11-21--ma06a-story-engine-package-cohort/CHANGE.md) | `packages/application/src/{stories,campaign,storyteller,generations}/`, `packages/story-engine/`, application/package manifests + forwarding tests | YES | No writes to Documents schema/DB schema/migrations or Contracts Launch subpath |
+| B | [WR05S](../../changes/open/2026-11-21--wr05s-scene-v2-storage-contract/CHANGE.md) | `packages/documents/src/schema.ts`, checkpoint test, `packages/db/src/schema/stories.ts`, DB migration | YES | No engine or frontend code moves; DB-test environment must not be shared concurrently |
+| C | [WR07C](../../changes/open/2026-11-21--wr07c-launch-wire-contract/CHANGE.md) | `packages/contracts/src/story-launch.ts`, Contracts export and test | YES | No engine or document/migration file changes |
+
+**Launch order:** all three parents branch from current actual undertaking HEAD into distinct linked `change/*` worktrees. Each completes its assigned T-IDs and focused tests. To avoid clobbering peers, each prepares its code/receipt/Change closure on its Change branch **but coordinates the final squash integration with the custodian**. The custodian serializes joins A/B/C, refreshing/reconciling refs, lockfile and shared `work/changes/README.md`, undertaking schedule, ledgers, and canonical technical paragraphs. Do not create three independent agents all editing the same integration checkout. Once each accepted Change integrates, retire only its clean worktree/branch. A failed integrity negative stops that Change, **not unrelated lanes**. No paid LLM/provider spending without separate approval.
+
+**Next game implementation (not part of the three parallel edits):** WRA publisher after B+engine package A; WRB direct Play backend/real UI after C+WRA; WRC active historical forks after WRA. WR04 optional child research can be re-planned against evolved engine source without blocking Play. Do not execute old pre-refactor WR04–08 source/T-ID instructions.
+
+**Fast-practical review:** no extra approval between implementation tasks, no one-function Changes, no repeated full-suite per micro-step. One focused verification per task and appropriate closing negative tests. Do not move SQL mutations outside their original transactions, weaken actor checks, duplicate provider dispatch, or mislabel unrun tests PASS.
