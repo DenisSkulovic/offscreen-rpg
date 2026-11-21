@@ -2,9 +2,18 @@ import type { DocumentStore } from './local-store.js';
 import { stableNamespacedDocumentId } from './markdown-metadata.js';
 import { isDeepStrictEqual } from 'node:util';
 import {
+  applyLibraryBatch,
+  collectLibraryManifestEntries,
+  loadLibraryIndex,
+  type LibraryBatchOperation,
+  type LibraryIndex,
+} from './library-index.js';
+import { DocumentStorageError } from './local-store.js';
+import {
   canonicalDocumentSchema,
   canonicalStructuredDocumentSchema,
   documentManifestSchema,
+  type DocumentManifest,
   type DocumentManifestEntry,
   type StartPackageManifest,
 } from './schema.js';
@@ -30,6 +39,25 @@ function assertPackageEntry(
   }
 }
 
+function pathEntryMap(
+  entries: readonly DocumentManifestEntry[],
+): Map<string, DocumentManifestEntry> {
+  return new Map(entries.map((entry) => [entry.path, entry]));
+}
+
+async function persistLibraryDelta(
+  storage: DocumentStore,
+  prior: LibraryIndex,
+  next: LibraryIndex,
+): Promise<string> {
+  for (const [hash, node] of next.store) {
+    if (!prior.store.has(hash)) {
+      await storage.putLibraryNode(node);
+    }
+  }
+  return storage.putLibraryRoot(next.root);
+}
+
 export async function instantiateStartPackage(
   storage: DocumentStore,
   args: {
@@ -43,22 +71,58 @@ export async function instantiateStartPackage(
   const start = await storage.readStartPackageManifest(args.startRootHash);
   const baseRootHash = args.baseRootHash ?? null;
   const baseRootRevision = args.baseRootRevision ?? 0;
-  const base = baseRootHash
-    ? await storage.readManifest(baseRootHash)
-    : documentManifestSchema.parse({
-        format: 'offscreen.manifest.v1',
-        campaignId: args.campaignId,
-        revision: 0,
-        previousRootHash: null,
-        authorOperationId: null,
-        entries: [],
-      });
-  if (
-    base.campaignId !== args.campaignId ||
-    base.revision !== baseRootRevision
-  ) {
-    throw new Error('Start instantiation base root mismatch');
+
+  let v2Library: LibraryIndex | null = null;
+  let base: DocumentManifest;
+  if (baseRootHash) {
+    try {
+      const libraryRoot = await storage.readLibraryRoot(baseRootHash);
+      if (libraryRoot.format === 'offscreen.library-root.v2') {
+        v2Library = await loadLibraryIndex(
+          (hash) => storage.readLibraryNode(hash),
+          libraryRoot,
+        );
+        base = documentManifestSchema.parse({
+          format: 'offscreen.manifest.v1',
+          campaignId: args.campaignId,
+          revision: baseRootRevision,
+          previousRootHash: baseRootHash,
+          authorOperationId: args.operationId,
+          entries: collectLibraryManifestEntries(v2Library),
+        });
+      } else {
+        base = await storage.readManifest(baseRootHash);
+      }
+    } catch (error) {
+      if (
+        error instanceof DocumentStorageError &&
+        error.code === 'corrupt'
+      ) {
+        base = await storage.readManifest(baseRootHash);
+      } else {
+        throw error;
+      }
+    }
+  } else {
+    base = documentManifestSchema.parse({
+      format: 'offscreen.manifest.v1',
+      campaignId: args.campaignId,
+      revision: 0,
+      previousRootHash: null,
+      authorOperationId: null,
+      entries: [],
+    });
   }
+
+  if (!v2Library) {
+    if (
+      base.campaignId !== args.campaignId ||
+      base.revision !== baseRootRevision
+    ) {
+      throw new Error('Start instantiation base root mismatch');
+    }
+  }
+
   for (const reference of start.worlds) {
     const world = await storage.readWorldPackageManifest(reference.rootHash);
     if (
@@ -256,6 +320,34 @@ export async function instantiateStartPackage(
     schemaId: 'rule-reference.v1',
     data: { version: 1, rules: start.rules },
   });
+
+  if (v2Library) {
+    const priorPaths = pathEntryMap(collectLibraryManifestEntries(v2Library));
+    const batch: LibraryBatchOperation[] = [];
+    for (const entry of entries) {
+      const prior = priorPaths.get(entry.path);
+      if (prior) {
+        if (isDeepStrictEqual(prior, entry)) continue;
+        throw new Error(
+          `Start package path collides with campaign: ${entry.path}`,
+        );
+      }
+      batch.push({ op: 'create', entry });
+    }
+    const nextLibrary = applyLibraryBatch(v2Library, batch);
+    const rootHash = await persistLibraryDelta(storage, v2Library, nextLibrary);
+    const manifest = documentManifestSchema.parse({
+      format: 'offscreen.manifest.v1',
+      campaignId: args.campaignId,
+      revision: baseRootRevision + 1,
+      previousRootHash: baseRootHash,
+      authorOperationId: args.operationId,
+      entries: collectLibraryManifestEntries(nextLibrary).sort((left, right) =>
+        left.path.localeCompare(right.path),
+      ),
+    });
+    return { rootHash, manifest, start };
+  }
 
   const manifest = documentManifestSchema.parse({
     format: 'offscreen.manifest.v1',

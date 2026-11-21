@@ -15,7 +15,7 @@ import { lockOwnedStory } from './persistence';
 
 export type SceneCheckpointStore = Pick<
   DocumentStore,
-  'readManifest' | 'readStructuredDocument'
+  'readManifest' | 'readStructuredDocument' | 'readLibraryRoot'
 > & {
   readSceneCheckpoint(hash: string): Promise<SceneCheckpoint>;
 };
@@ -89,16 +89,36 @@ async function verifyStagedCheckpoint(
   ) {
     throw new StoryError('invalid', 'checkpoint_hash_mismatch');
   }
-  if (checkpoint.canon.rootHash === null) return;
+  await verifyCheckpointCanonRoot(
+    documentStore,
+    checkpoint.storyId,
+    checkpoint.canon,
+  );
+}
+
+async function verifyCheckpointCanonRoot(
+  documentStore: SceneCheckpointStore,
+  storyId: string,
+  canon: { rootHash: string | null; rootRevision: number },
+) {
+  if (canon.rootHash === null) return;
+  try {
+    const libraryRoot = await documentStore.readLibraryRoot(canon.rootHash);
+    if (libraryRoot.format === 'offscreen.library-root.v2') return;
+  } catch (error) {
+    if (!(error instanceof DocumentStorageError && error.code === 'corrupt')) {
+      storageFailure(error, 'canon');
+    }
+  }
   let manifest;
   try {
-    manifest = await documentStore.readManifest(checkpoint.canon.rootHash);
+    manifest = await documentStore.readManifest(canon.rootHash);
   } catch (error) {
     storageFailure(error, 'canon');
   }
   if (
-    manifest.campaignId !== checkpoint.storyId ||
-    manifest.revision !== checkpoint.canon.rootRevision
+    manifest.campaignId !== storyId ||
+    manifest.revision !== canon.rootRevision
   ) {
     throw new StoryError('invalid', 'canon_root_mismatch');
   }
@@ -384,18 +404,11 @@ export async function readSceneCheckpointForRow(
     throw new StoryError('invalid', 'checkpoint_hash_mismatch');
   }
   if (checkpoint.canon.rootHash !== null) {
-    let manifest;
-    try {
-      manifest = await documentStore.readManifest(checkpoint.canon.rootHash);
-    } catch (error) {
-      storageFailure(error, 'canon');
-    }
-    if (
-      manifest.campaignId !== checkpoint.storyId ||
-      manifest.revision !== checkpoint.canon.rootRevision
-    ) {
-      throw new StoryError('invalid', 'canon_root_mismatch');
-    }
+    await verifyCheckpointCanonRoot(
+      documentStore,
+      checkpoint.storyId,
+      checkpoint.canon,
+    );
   }
   return {
     idempotent: false,

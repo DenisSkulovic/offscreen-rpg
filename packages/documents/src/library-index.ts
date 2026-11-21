@@ -103,6 +103,10 @@ export async function loadLibraryIndex(
   };
   await visit(root.pathsRootHash);
   await visit(root.idsRootHash);
+  if (!store.has(emptyLibraryRootHash)) {
+    const empty = createEmptyLibraryTrie();
+    store.set(emptyLibraryRootHash, empty.store.get(emptyLibraryRootHash)!);
+  }
   const library: LibraryIndex = {
     store,
     root,

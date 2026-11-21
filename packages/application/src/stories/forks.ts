@@ -50,7 +50,7 @@ type ForkInput = Readonly<{
 }>;
 
 type ForkStore = SceneCheckpointWriterStore &
-  Pick<DocumentStore, 'putManifest' | 'readManifest'>;
+  Pick<DocumentStore, 'putManifest' | 'readManifest' | 'readLibraryRoot'>;
 
 function forkConflict(reason: string): never {
   throw new StoryError('conflict', `fork_${reason}`);
@@ -78,7 +78,8 @@ function forkDocumentStore(store: object | undefined): ForkStore | undefined {
   if (
     !checkpoint ||
     typeof (store as ForkStore).putManifest !== 'function' ||
-    typeof (store as ForkStore).readManifest !== 'function'
+    typeof (store as ForkStore).readManifest !== 'function' ||
+    typeof (store as ForkStore).readLibraryRoot !== 'function'
   ) {
     return undefined;
   }
@@ -134,6 +135,27 @@ async function writeBranchManifest(
 ): Promise<{ rootHash: string | null; rootRevision: number }> {
   if (args.sourceRootHash === null) {
     return { rootHash: null, rootRevision: 0 };
+  }
+  try {
+    const libraryRoot = await store.readLibraryRoot(args.sourceRootHash);
+    if (libraryRoot.format === 'offscreen.library-root.v2') {
+      return { rootHash: args.sourceRootHash, rootRevision: 1 };
+    }
+  } catch (error) {
+    if (error instanceof DocumentStorageError) {
+      if (error.code === 'corrupt') {
+        // v1 manifest root — copy entries below.
+      } else {
+        throw new StoryError(
+          error.code === 'unavailable' ? 'unavailable' : 'invalid',
+          error.code === 'unavailable'
+            ? 'checkpoint_store_unavailable'
+            : 'missing_canon_root',
+        );
+      }
+    } else {
+      throw error;
+    }
   }
   let ancestor: DocumentManifest;
   try {
