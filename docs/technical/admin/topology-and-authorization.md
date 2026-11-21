@@ -8,7 +8,7 @@
 
 - **Frontend:** a distinct staff shell at `/control` within `apps/web` (Next 16 App Router), with an independent server-only staff resolver and its own browser Query namespace. A future deployment may isolate its hostname if exposure/risk warrants it; route topology alone is **not** the security boundary.
 - **API:** `/api/admin/*` Nest controllers inside `apps/api`, resolved through a mandatory staff actor/assurance/policy guard. No existing `/api/stories/*` or `/api/drafts/*` player controller may accept an Admin override header or `ownerId` from staff.
-- **Application:** dedicated `@offscreen/application/admin` use-case modules for staff access, minimized projections, case context and audited administrative actions. Where an operation belongs to an existing domain, it calls a **narrowly defined authorized application service** rather than mutating game tables through a web controller.
+- **Application:** selected MA03 package boundary is `@offscreen/admin` for the existing staff access, sessions, minimized projections and case-use-case modules, with a temporary `@offscreen/application/admin` compatibility re-export. Future internal module splits remain proposals, not a claim of implementation. Where an operation belongs to an existing domain, it calls a **narrowly defined authorized application service** rather than mutating game tables through a web controller.
 - **Contracts:** `@offscreen/contracts/admin` typed, strict Zod request/response schemas, per-entity stable IDs, source/coverage and safe error states. No raw database row exposure.
 - **Persistence:** versioned `admin_*` tables in existing PostgreSQL for staff, assignments, session/approval/action/audit and minimal case anchors. Business/game data keep existing authoritative tables and histories; new Admin structures should not duplicate them.
 - **Integrations:** adapters that preserve the provider/source of truth (future payment, helpdesk, notifications, telemetry). The Admin never pretends a copied provider value is a final settlement.
@@ -75,18 +75,18 @@ Each request, SSR render, search, export, mutation, SSE subscription and backgro
 | Module | Primary responsibility | Depends on |
 | --- | --- | --- |
 | `apps/api/src/modules/admin/` | Staff HTTP controllers/guards/error mapping, case/action composition, request context | Staff authorization and Admin application |
-| `packages/application/src/admin/identity/` | Resolve verified staff principal, active operator session/assurance, revocation | Auth adapter, staff DB |
-| `packages/application/src/admin/access/` | Typed bounded-grant evaluation, staff package lifecycle, reasons/approval signals | Authorized resource facts, staff DB |
-| `packages/application/src/admin/projections/` | Small safe search/Player 360/campaign/usage/operation summaries | Existing domain readers or scoped SQL; contracts |
-| `packages/application/src/admin/cases/` | Case anchors, assignments, cross-domain evidence links and handoffs | Authority, audit, case policy |
-| `packages/application/src/admin/actions/` | Preflight, approval, idempotent execution, reconciliation, audit/outbox | Existing domain command owners |
-| `packages/application/src/admin/audit/` | Protected typed event history and sensitive-access capture | Staff identity; storage |
+| `packages/admin/src/identity/` | Resolve verified staff principal, active operator session/assurance, revocation | Auth adapter, staff DB |
+| `packages/admin/src/access/` | Typed bounded-grant evaluation, staff package lifecycle, reasons/approval signals | Authorized resource facts, staff DB |
+| `packages/admin/src/projections/` | Small safe search/Player 360/campaign/usage/operation summaries | Existing domain readers or scoped SQL; contracts |
+| `packages/admin/src/cases/` | Case anchors, assignments, cross-domain evidence links and handoffs | Authority, audit, case policy |
+| `packages/admin/src/actions/` | Preflight, approval, idempotent execution, reconciliation, audit/outbox | Existing domain command owners |
+| `packages/admin/src/audit/` | Protected typed event history and sensitive-access capture | Staff identity; storage |
 | `packages/contracts/src/admin/` | Strict wire projections, error/status/action/capability shapes | Zod, stable domain identifiers |
 | `packages/db/src/schema/admin*.ts` | Versioned staff/policy/action/audit/case persistence | PostgreSQL/Drizzle; migrations |
 | `apps/web/app/(control)/control/` | Staff-only App Router routes and server gate | Dedicated staff reader |
 | `apps/web/src/features/admin/` | Admin workspaces, Query/form/command state and accessible UI | Admin API adapters and shared UI primitives |
 
-These are **suggested ownership boundaries**; specific code file names may be adjusted during the Change that installs them. Core responsibilities and security checks may not be silently collapsed into an existing player controller.
+These are **suggested future internal ownership boundaries** (the identity/access/projections/cases/actions/audit subdirectories are **not** selected for immediate creation). MA03 selects a single `packages/admin/src/` workspace and a one-to-one move of current 13 modules; do not invent these nested directories during MA03. Core responsibilities and security checks may not be silently collapsed into an existing player controller.
 
 ## 4. Separation of command and observation
 
