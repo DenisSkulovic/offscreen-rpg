@@ -40,7 +40,7 @@ Each is a small bounded Change with its own source-proof instructions. MA05 as a
 
 ## Selected follow-on MA05E after MA05D: continuity note authority
 
-[MA05E](../2026-11-21--ma05e-continuity-note-authority/CHANGE.md) is source-audited conditionally against the present post-MA05B source. The 2.5 KB Storyteller memory SQL module exports only publishStorytellerNotes, a caller-transaction-owned validation/write function; Stories continuation imports it in the authoritative commit. Move unchanged body into stories/continuity-notes.ts using neutral Storyteller kind and DB Transaction; direct-reexport from old runtime memory path, switch one Stories import, prove strict export identity and the existing disposable scene publication continuity SQL tests. No new callback or transaction split. Do not execute before C/D joins and source freshness.
+[MA05E](../../archive/2026-11/other/2026-11-21--ma05e-continuity-note-authority/CHANGE.md) has landed. `publishStorytellerNotes` now lives in `stories/continuity-notes.ts`, imports the neutral Storyteller kind and the DB transaction type, and is re-exported from `storyteller/memory.ts`. `stories/continuation.ts` imports the Story Authority module. Strict export identity passed, and the disposable scene-checkpoint publication suite passed 5/5. No new callback or transaction split.
 
 ## Pre-commission hard requirements owned by ChatGPT
 - Actual graph + full direct source import inventory on **post-MA04 and relevant WR HEAD**, including tests and all host consumers.

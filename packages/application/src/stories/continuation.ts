@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import { publishStorytellerNotes } from '../storyteller/memory';
+import { publishStorytellerNotes } from './continuity-notes';
 import {
   InteractionInputError,
   validateInteractionSubmission,

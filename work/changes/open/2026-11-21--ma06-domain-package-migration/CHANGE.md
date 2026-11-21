@@ -6,7 +6,7 @@
 
 **2026-11-21 subsequent prerequisite:** [MA05C](../../archive/2026-11/other/2026-11-21--ma05c-direct-db-outbox-imports/CHANGE.md) has migrated the 46 verified internal import sites onto the DB-owned outbox port. New Authority or Runtime package moves must not reach back into Application solely for generic SQL enqueue, and they must not repeat this import migration.
 
-**Authority continuity SQL cohort:** [MA05E](../2026-11-21--ma05e-continuity-note-authority/CHANGE.md), after D, moves a full transactional continuity note validator/updater from Storyteller runtime into Stories, keeping exact legacy export. If later extracting Authority, move its single canonical source, not the old re-export wrapper.
+**Authority continuity SQL cohort:** [MA05E](../../archive/2026-11/other/2026-11-21--ma05e-continuity-note-authority/CHANGE.md) has moved the transactional continuity note validator/updater from Storyteller runtime into Stories, keeping the exact legacy export. If later extracting Authority, move its single canonical source, not the old re-export wrapper.
 
 **Next authority fact cohort:** [MA05D](../../archive/2026-11/other/2026-11-21--ma05d-frozen-wake-sql-seam/CHANGE.md) landed the immutable frozen notice-topic contract and Campaign-owned read-only wake helper. This helper may move with Story Authority; do not rewrite it into a runtime callback or duplicate its SQL query during MA06.
 
