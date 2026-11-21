@@ -1,19 +1,7 @@
-# MA10 | adversarial cold-read and acceptance proof plan
+# MA10 independent readiness and acceptance
 
-**Static source audit `e122d080`**, plus MA07 `4168db58`. MA08/MA09/WR09 outputs do not yet exist for this review. **Verdict: PLANNER-BLOCKED on dependent implementation/source rebase; not Cursor-ready yet.** This is a real 5-document packet with chosen migration and proof algorithm, not merely a roadmap.
+**G0** current undertaking HEAD `6dd12761` and MA08 Done, path and Change guard inspected. **G1** 152 legacy forwarding TS files (10 KiB), 112 legacy MJS, all main owner destinations and build layout inspected. **G2** selected existing `tools/api-integration` test owner avoids new package and Story Engine→Lab dependency; no runtime change. **G3** old/new path classes and direct tests identified, T01–T04 bounded. **G4** first task test migration is immediately source-legal. **G5** no WR09A DB/custody path and no MA11 graph checker path overlap. **G6** 112 exact files, preserved assertions, runtime test resolution, denied owner/charge and no dead imports. **G7** cohesive facade retirement rather than piecemeal shims. **Planner readiness: READY for isolated branch, under triple-lane custodian agreement.** Static read only, not a claim tests ran.
 
-**G0 PASS** integration branch/source baseline and gated schedule; **G1 PASS for original source** 112 old tests, package wildcard exports, scripts, source SCCs and current AST scanner; **G2 CONDITIONAL** exact final public import allowlist can only be frozen after MA08/MA09/WR09, but selected algorithm is deterministic from resulting imports, not an invitation to redesign; **G3 CONDITIONAL** T01–T05 concrete write ownership, but late exported surface varies with WR09; **G4 BLOCKED** legal first dispatch awaits predecessors and new source audit; **G5 PASS** serial tasks and explicit shared lockfile/CI resource; **G6 PASS in design** positive, negative and semantic regression matrix; **G7 PASS** one cohesive compatibility-retirement and source boundary enforcement Change, not cosmetic file split.
+**Mandatory positive:** all 112 originals relocated and corresponding eligible unit tests execute; any skip remains explicit, dynamic imports load correct owner artifacts; Story Engine+Lab+Admin+API Integration builds, representative Storyteller and report tests and Worker test import checks; lock importer gone after custodian join. **Mandatory negative:** no test case dropped, no Story Engine runtime dep on lab, no unguarded live provider/SQL, no source import of Application, story owner/stale revision/charged attempt rejection still present. **Metrics:** source and destination filenames, test-case counts before/after, changed-file list, exact commands and outcomes. **No broad live SQL test without known disposable DB.**
 
-| Proof | Required expected result |
-| --- | --- |
-| 112 old test files migrated 1:1 | no dropped cases/negative assertions; compatibility-only test replaced by direct-owner verification |
-| App package removal | no workspace, no lockfile importer, no runtime specifier, no build script invoking it |
-| Lab boundary | engine/authority never imports lab, normal user route cannot use Chamber fixture override |
-| Story Engine public exports | each real external specifier resolves; one fake internal path fails |
-| Module graph | forbidden authority→Writer runtime import fails, type-only separately classified, no material cross-domain runtime SCC |
-| Narrative intent/clock | unchanged Game Authority revision, operation ID, durable wake, restart idempotency |
-| Writer custody | unchanged pinned wire, uncertain liability, CAS response replay, no charge duplication |
-| User permission and fork | bad owner/stale root denied, no unauthorized events or document leaks |
-| Build and tests | truthful PASS/FAIL/SKIP/NOT RUN, exact command/cwd, disposable SQL only |
-
-**Zero tests run by planner; no paid provider operations.** Mandatory post-dependency independent G0–G7 review before promoting readiness. Do not hide blockers in an optimistic catalog label.
+**Post-join:** MA10 closes compatibility retirement only. It does **not** assert clean Story Engine internal cycles, live Writer or final `main` landing; MA11 graph and MA09 inversion own those.
