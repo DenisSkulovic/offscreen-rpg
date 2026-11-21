@@ -4,6 +4,10 @@
 
 **One-sentence verdict:** We have a substantial, carefully constrained **foundation** for a durable game/Writer, not yet a functioning, AI-driven Storyteller product on a demonstrated resilient Kubernetes system. Treat “implemented”, “focused-test passed”, “local connected proof”, “cold Kubernetes proof” and “user-experienced quality” as **five different claims**. The first is far ahead of the last two.
 
+## Next three implementation Changes prepared (2026-11-22; NO COMPLETION CREDIT YET)
+
+Following the source audit, three independent impactful Changes have been source-mapped and planned on this undertaking branch: [WR10 private GA/Worker Writer round protocol](../../changes/open/2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) (real missing execution boundary, fake provider only), [MA12 API Lab runtime isolation](../../changes/open/2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) (one-way outer developer tools, no Lab in production API), and the **existing** [TURN03 full cold-kind gameplay proof](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) (scripted authenticated turn and fork, not a model-quality test). [Exact ownership, integration and cluster gates](PROGRAM.md#selected-next-engineering-wave-2026-11-22-source-grounded-not-yet-implemented). **All three are planned, none implemented or tested by these planning commits.** Prior estimates **65% monorepo / 40% Storyteller / 25% operations / 40% overall** remain the source-audit judgment, at least ±20 points. WR10 still leaves ordinary Launch/provider enablement to a later deliberately designed phase; TURN03 live execution cannot be claimed until correct local kind/OAuth/S3/Pod resources exist and all eight gates PASS.
+
 ## Progress, recalibrated to the real end state
 
 | Track | Rough complete | Rough remaining | Confidence / explanation |
