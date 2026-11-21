@@ -1,95 +1,64 @@
-## Planning update: modular-monolith finish line expanded (2026-11-21)
+# Storyteller Workshop | reality check and finish line
 
-**Latest inspected integrated code:** MA10, WR09A, and MA11 on `undertaking/storyteller-workshop`. The Application compatibility package is gone and the 112 tests run from API Integration. Writer response custody is crash-safe under a fake provider. **Revised rough estimate:** modular monolith **~85% complete / ~15% remaining**, Storyteller **~60% / ~40% remaining**, blended undertaking **~70% / ~30% remaining**, **±10–15 percentage points**. Worker generation-evidence typecheck is still not green. Live provider play is not proved.
+**Reviewed:** 2026-11-22 · **Integration branch:** `undertaking/storyteller-workshop` · **Inspected HEAD:** `d3ba291763de26a0135c1ad84b077bf4f1c153a8` · [Technical ledger](UNDERTAKING.md) · [Historical program](PROGRAM.md) · [Demonstrated status](../../../STATUS.md)
 
-## Post-MA08 execution choice, November 21
+**One-sentence verdict:** We have a substantial, carefully constrained **foundation** for a durable game/Writer, not yet a functioning, AI-driven Storyteller product on a demonstrated resilient Kubernetes system. Treat “implemented”, “focused-test passed”, “local connected proof”, “cold Kubernetes proof” and “user-experienced quality” as **five different claims**. The first is far ahead of the last two.
 
-**MA10, WR09A, and MA11 are joined.** [MA10](../../changes/archive/2026-11/other/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) removed the Application facade and kept all 112 tests. [WR09A](../../changes/archive/2026-11/other/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) stores the private provider response and settles the charge in one transaction, using a fake network. [MA11](../../changes/archive/2026-11/other/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) records Story Engine domain edges and the two host runtime dependencies. The [integration contract](PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21) is the historical execution record.
+## Progress, recalibrated to the real end state
 
-**Progress is now modular monolith ~85% (~15% remaining), Storyteller ~60% (~40% remaining), combined ~70% (~30% remaining), ±10–15 percentage points.** Real Writer worker wiring, authority→Writer inversion, public API/SCC cleanup, longform quality proof and final main landing remain. None of this authorizes a paid provider call.
-
-## Architecture/operability wave joined (2026-11-22)
-
-**MA10, WR09A, and MA11 are Done and archived.** [WR09B](../../changes/archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md), [OPS12](../../changes/archive/2026-11/other/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md), and [DX12](../../changes/archive/2026-11/other/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) are joined and archived on this branch. WR09B is offline replay with a fake provider. OPS12 is injected worker cleanup, not a process-kill trial. DX12 is the local `pnpm repo:affected` plan. **These joins do not raise completion estimates.** Long-form playable Writer, funded real provider run, remote crash/scale observation, MA09 Authority boundary inversion and possible later Writer package extraction remain distinct finish gates.
-
-## 🎯 What are we building?
-
-You give a one-sentence premise and enter a persistent fictional life. You can choose, work, wait, leave and come back. The Writer remembers what *actually* happened and narrates the next consequential scene. Old scenes are available to read or fork into a different future. The monorepo beneath it has clear owners and no accumulating `application` junk drawer.
-
-## 📊 Rough completion estimates
-
-| Track | Our current estimate | Remaining | What the number means |
+| Track | Rough complete | Rough remaining | Confidence / explanation |
 | --- | ---: | ---: | --- |
-| 🏗️ **Modular Monolith shaping** | **~85%** | ~15% | The Application package is gone. Authority→Writer inversion and final validation remain |
-| 🎭 **Storyteller evolution** | **~60%** | ~40% | Library, scene truth, launch, forks and a scripted scene-1→2→3 gameplay kernel exist; real integrated provider, research, user-facing journey and convincing quality proof are incomplete |
-| 🧭 **Combined undertaking** | **~70%** | ~30% | A subjective effort-and-risk blend: roughly **70% Storyteller / 30% architecture**, rounded to the nearest 5 percentage points |
+| **Monorepo architecture and developer workflow** | **~65%** | **~35%** | Application retired; 18 workspace manifests, dependency tools and local affected planner exist. Authority/Writer separation, oversized module ownership, full builds, tooling health and measured cache correctness remain |
+| **Real Storyteller and playable product** | **~40%** | **~60%** | Durable Library, missions, Workdesk, checkpoint/forks and scripted game path exist. No ordinary player path executes the provider-backed Writer; no convincing live-agent/longform acceptance |
+| **Distributed reliability and Kubernetes operations** | **~25%** | **~75%** | Separate roles, outbox/Temporal, lab manifests and local process-kill tests exist. Cold-kind whole-game POC, sustained scale, end-to-end tracing and real restore are not proven |
+| **Combined undertaking** | **~40%** | **~60%** | Judgment weighted toward completing the usable Storyteller and proving the running platform, not counting finished packets |
 
-```text
-Modular Monolith  85%  █████████████████░░░   ~15% left
-Storyteller       60%  ████████████░░░░░░░░   ~40% left
-Combined          70%  ██████████████░░░░░░   ~30% left
-```
+**Uncertainty: at least ±20 percentage points**, especially on Writer quality, provider behavior and operational readiness. These are estimates of *scope-adjusted remaining effort and risk*, not measured feature coverage. Earlier **85% monorepo / 60% Storyteller / 70% combined** was too optimistic for the full product + distributed Kubernetes + maintainability vision. The numbers fell because the audit **expanded the recognized finish line**, not because completed code vanished. They must be revised downward again if actual trials uncover deeper faults. There is **no defensible shipping percentage** yet.
 
-**Confidence:** low-to-moderate, **roughly ±10–15 percentage points**. These are **subjective estimates of remaining engineering effort and integration risk**, not completed-Change ratios, tested-feature coverage, a deadline or a promise that exactly 35% effort remains. Storyteller's *proven end-user experience* lags behind the foundational code. Percentages can go **down** if real provider or long-form acceptance reveals major defects; do not mechanically increase them whenever a packet closes.
+## What definitely landed on the undertaking branch
 
-**Why these numbers?** Monorepo package extraction is done, production hosts call Story Engine directly, and the Application package is gone. Authority inversion and final integration work remain. Storyteller's core pieces, scripted continued-scene tests, and provider-free research children are present. The live provider journey, narrative quality, and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
+- **Architecture:** `@offscreen/application` is gone. We have 18 workspace manifests and concrete Game, Contracts, DB, Documents, Storyteller task/provider, Story Engine, Admin, Lab Support and host owners. MA10 migrated all **112** legacy test files into API Integration. MA11 added a Story Engine AST dependency graph and repaired two host dependency declarations.
+- **Writer foundations:** WR02/WR03 Library v2, private Workdesk, pinned source identity and Writer mission ledger; WR04 bounded research-child contracts; WR09A exact private provider-response CAS plus settled-attempt custody; WR09B provider-shaped **offline two-round** replay/tool/proposal handling, with persisted-policy replay fences. Its recorded focused suite was **4/4**; WR09A custody **9/9**. These are not real-provider runs.
+- **Canonical gameplay:** deterministic Game Authority and clock, actor/operation/root checks, checkpointed scene-v2 content, committed source identity, restricted historic fork, durable Launch ledger, and a scripted opening → scene 2 → scene 3 route. The existing local STORY03 multiprocess test previously exercised a separate Nest, Game Authority, relay, control and executor, including some kill/replay fault cases.
+- **Worker and DX:** OPS12 made injected startup rollback/stop/connection cleanup idempotent (**16/16** focused lifecycle tests). DX12 added `pnpm repo:affected` and **15/15** selector tests, with a conservative full-check fallback. Neither change alone proves successful production rollouts, actual cache speedups or distributed process recovery.
 
-## At a glance
+**Evidence convention:** these test counts are from integrated Change receipts and STATUS, not tests rerun during this review. The lean ZIP omits archived packet files and runtime evidence directories; archived receipts were rechecked through GitHub. No build, SQL, kind, browser, provider or load test was executed by this audit.
 
-| Major capability | Verified state on undertaking | Human interpretation |
+## The main flows: present versus still missing
+
+| User/system journey | Actually demonstrated | What we have **not** demonstrated |
 | --- | --- | --- |
-| 🧱 Package separation and domain owners | **Mostly achieved** | API, Game Authority, and worker import Story Engine directly. The Application package is removed |
-| 📚 Library, Writer Workdesk and immutable scene history | **Implemented** | Source-aware memory foundation and v2 publication are in place |
-| 🌿 Historical forks with active commitments | **Implemented** | WR06 is archived; broader player journey still needs acceptance |
-| 🚪 One-prompt opening | **Scripted implementation** | WR07B archived; public Launch feature remains gated |
-| 🎭 Actual choices and subsequent Writer scenes | **Scripted kernel implemented** | P3-A plus WR08: characterless `observe` on the first scene and a scripted `writer.scene.v1` wake; not a live-model UI |
-| 💳 Real provider transport / spending custody | **Code integrated, live proof missing** | P3-B archived, transport and usage-settlement tests exist; end-to-end Writer-loop injection/real spend must still be verified |
-| 🧪 Long-form acceptance harness | **Harness integrated** | P3-C archived; does not prove all long-story or live-narrative quality criteria |
-| 🔍 Independent research children | **Scripted implementation** | WR04: explicit grant, read-only children, shared operation cap, verified join. Not a live provider proof |
-| 🎮 Complete Play/reentry UI | **Gated scripted path implemented** | WR08 archived: Play uses the real action API when the Launch flag is on. History and fork UI were already present. Live provider play is not accepted |
-| 🧹 Final monorepo cleanup / main merge | **Outstanding** | Application retirement is joined. Authority inversion, final validation, and undertaking retirement remain |
+| **Prompt → playable opening** | Gated UI and authenticated scripted Launch, persisted operation/story, scene-1 v2 checkpoint | Ordinary generated opening chosen and authored by a real model; true source-aware open scene and meaningful player choice; flag default is **off** |
+| **Player choice → consequences → next scene** | Deterministic authority; local scripted scene1→2→3, outbox/Temporal replay tests, two-process/relay/executor local trials | Writer-generated narrative/choices flowing through the production Worker/activity routing, real provider usage, diverse situations, sustained progression |
+| **Writer decision → tools → continuation** | Library/Workdesk APIs; WR09A durable response; WR09B fake-provider rounds, result and tool-call replay | Production dispatch into `runDurableWriterMissionModelRound`; Worker credential and spend-policy composition; genuine delegated research under provider; behavioral quality |
+| **History and fork** | Scene-v2 selector, quiescent/restorable checkpoint and historical fork source isolation in selected fixtures | Arbitrary active-scene fork across all mechanics and later-world commitments; full browser/kind multi-turn fork after process failures |
+| **Distributed deployment** | Docker/kind manifests for Next, Nest, GA, three worker roles, backing services; standalone lab component exercises | **TURN03** complete cold-kind authenticated browser→SSE/GET→commit→fork proof, realistic failure/load experiments, HA topology and release rollback |
+| **Operations, repair, scaling** | Local SQL/outbox and Temporal identities; injected Worker cleanup; synthetic OpenTelemetry experiment | Real game-wide trace/metrics, p95/p99/queue-age and cost SLOs, concurrency/load proof, backup+restore across DB/Temporal/documents, rolling deploy/version skew |
 
-## 🗺️ The journey
+**Highest-signal code fact:** `apps/game-authority/src/launch-put.ts` still constructs a `scripted-offline` Writer capture. Worker activities in `apps/worker/src/activities/index.ts` still route `runScriptedLaunchWriter`, `runScriptedWriterScene`, and `runScriptedWriterResearchChild`. The durable Writer implementation `packages/story-engine/src/storyteller/writer-round-replay.ts` is currently referenced by integration tests and exported from the Writer loop, **not used by those player-facing Worker activities**. This is the critical missing seam. Avoid describing WR09B as a live Writer integration.
 
-```mermaid
-flowchart LR
-  A["✅ Foundations / scene truth"] --> B["✅ Scripted Launch + forks"]
-  B --> C["✅ Scripted choice → scene 2 → 3"]
-  C --> D["🔧 Research + real-provider integration + Play UX"]
-  D --> E["🧹 Bulk monorepo cleanup + final tests"]
-  E --> F["🏁 Merge main / Done"]
-```
+## Critical known gaps, ranked by impact
 
-**Interpretation:** we've moved beyond building the engine room. The next stretch is turning these pieces into a *complete, observable, trustworthy experience*, then finishing the package structure. It is not 65% of end-user acceptance tests passing.
+1. **P0, usable Storyteller vertical:** choose and ratify the *actual* provider-enabled launch/continuation mode, policy/credential and authorized spend boundary. Wire existing strict custody + durable Writer loop into a Worker action without bypassing Game Authority. Verify exactly one prompt → created scene → consequential choice → next generated scene through the current private authority path. Start with injected fake transport; a genuine paid call is a **separate explicit consent gate**. Also test recovery between provider result, tools, publication and SSE/GET.
+2. **P0, code must build:** the joined Worker package's full TypeScript build/typecheck has been reported blocked by the pre-existing `storyteller-generation-evidence` / `GameAuthoritySeam` mismatch. A set of focused tests cannot substitute for a clean affected-workspace build. Prove the complete on-branch compile/boot matrix before claiming architectural readiness.
+3. **P0, connected Kubernetes truth:** finish the already-open [TURN03](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) cold-kind end-to-end gate, with K8S11/other actual prerequisites reconciled. Keep a machine-readable correlation ledger through browser, Nest, GA, SQL, outbox, Temporal, executor, document object, checkpoint, fork, and viewer GET. A Pod Ready or a synthetic two-hop trace does not satisfy this.
+4. **P1, true domain dependency direction:** [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) remains open. `story-engine` contains **164 TS files (~1.63 MB of source bytes)**, with conspicuous concentration in Writer context capture (~98 KB), materialization (~53 KB) and custody (~50 KB). Source import sampling shows Stories↔Campaign (30/34 direct relative edges) and five known Authority→Writer implementation backedges. Treat Stories+Campaign as one authoritative consistency boundary; eliminate Writer reverse imports before contemplating a separate Writer-runtime package. Never split by file size alone.
+5. **P1, recoverability and operations:** finish the existing [K8S10](../../changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md) *real game* Pod-kill/load gate after TURN03. Verify at-least-once event delivery produces **one logical effect**, uncertain provider attempts never resend, and a lost acknowledgement does not duplicate scene publication. Add product telemetry, queue/backlog/lease ages, recovery latency and operator runbooks. The synthetic RabbitMQ fault exercise actually observed **two applied effects** after redelivery: this was a deliberately revealing **failure**, not a game exactly-once pass.
+6. **P1, deploy/release/restore:** Kubernetes lab overlay uses **single replicas**; no horizontal scale, safe rolling schema/Temporal compatibility, real load, DB HA or cross-store restore has been proven. [Release/restore readiness](../../../docs/runbooks/release-restore-readiness.md) explicitly says NOT TESTED. Commit/version and migration fences, resource limits, capacity, probes, secrets and backup restore require an acceptance scorecard.
+7. **P1, monorepo hygiene and cache evidence:** MA11 reports internal domain edges, but does not make all of Story Engine modular. The API still imports `@offscreen/lab-support` in its runtime source (guarded developer/lab routes); decide whether this developer-only dependency belongs in a separately composed host/dev entry instead of shipping it with production. DX12 provides a safe *affected plan*, but live `--run` and two-run warm-cache savings were **not measured**. Production builds, lint/typecheck/tests, output caching and impacted-only selection need a measured baseline.
+8. **P1, documents/wiki correctness:** this snapshot's own full-checkout documentation health reports **7 regressions**; `wiki-health` reports **66 hard errors**, and the portable index contains **67 unresolved included links** plus **116 exclusions intentionally caused by the lean ZIP profile**. Many point at deleted Application paths or historical packet locations. The 116 exclusions are **not** repository defects. Repair current source navigation and stale normative/status prose rather than proliferating new documentation.
+9. **P2, quality/game design proof:** narrative coherence, character agency, world physics, allowed custom intentions, active obligations, playable choice affordances, library source-faithfulness, fork-safe retrieval, cost/latency budgets and sustained multi-scene storytelling need *human-observed and measured* acceptance, not only parse/schema tests or fixture scores.
 
-## ✅ What is already achieved
+## The intended end state (what “Done” must mean)
 
-- Major Story Engine/Admin ownership extraction and core package restructuring.
-- Persistent Library and Workdesk, verified sources, Writer missions and historical v2 scene truth.
-- WR07B scripted one-prompt opening and WR06 active historical fork reconstruction.
-- **P3-A** integrated world-neutral narrative-intent admission, existing fictional-time authority and Writer scene 2→3 publication, with focused scripted tests.
-- **P3-B** integrated real Writer transport and usage-settlement custody with provider-free tests. **No funded live call has been proved.**
-- **P3-C** integrated a provider-free long-form acceptance runner. Its presence does not by itself certify narrative quality.
+An authenticated person submits a premise; an actually authorized Writer reads the appropriate persistent Library context, possibly researches through bounded children, proposes a fresh first scene and choices; Game Authority commits only valid canonical state. The person plays, leaves, returns, searches history and forks a past scene without future-information leakage. The system preserves those facts during retries, Worker/Pod crashes, stale roots, network loss, provider uncertainty and releases. Every cross-service transaction has a replay/idempotence trace, and the running cluster can be observed, recovered and measured under load. A maintained monorepo makes boundaries and affected builds obvious.
 
-## 🔨 What remains, as concrete outcomes
+**Release gates, not optional polish:** (a) green clean build/typecheck/source graph and safe tests, (b) fake-provider full player vertical, (c) explicitly approved bounded real-provider run, (d) cold-kind gameplay+fork with fault matrix, (e) operational telemetry, capacity/load and restore proof, (f) permission/privacy/spend/rollback negatives, (g) selected product-quality review and documented remaining limitations, and (h) only then deliberate undertaking→`main` landing. The open Change folders above are **candidates with their own readiness gates**, not commissions or proof.
 
-1. **Joined architectural and custody wave:** [MA10](../../changes/archive/2026-11/other/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md), [WR09A](../../changes/archive/2026-11/other/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md), and [MA11](../../changes/archive/2026-11/other/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) are on the undertaking branch. Pure legacy tests 215/215, WR09A disposable custody 9/9, module-graph tests 26/26.
-2. **Actually run the creative Writer.** WR09B now replays provider-shaped decisions through a fake transport, including tools and a final proposal. Worker credential composition, launch/continuation, and delegated research are still not wired. Provider funding requires separate explicit approval.
-3. **Close the authoritative architecture.** MA09 inverts the existing Authority→Writer implementation edges while preserving current SQL locks/receipts; final module SCC/public export ratchet after it, not premature splitting of packages.
-4. **Product and release acceptance.** Demonstrate actual prompt → meaningful playable choices → source-faithful long-form scenes → reentry/history/fork, recover after faults, prove owner/permissions/charge/idempotency negatives; reconcile ledgers/STATUS and merge the undertaking to `main` only after end gates.
+## Where to resume next session
 
-## 🧭 Current decision and evidence
+**Start with this page, [the refreshed evidence ledger](UNDERTAKING.md#2026-11-22--source-audit-checkpoint-at-d3ba2917), [current work selector](../../QUEUE.md) and actual branch HEAD.** The selector currently says `none`. The next strategic decision should be the **real Writer→Worker admission/credentials/spend composition**, paired with a compile blocker and a cold-cluster vertical proof plan. Review and update existing WR09/MA09/TURN03/K8S10 packets **rather than creating duplicate Changes**. For parallel Cursor work, map source, Git worktree, database and kind cluster ownership before commissioning. Do not start a paid provider, destructive operation, or production deployment merely because documentation declares the architecture selected.
 
-**MA10, WR09A, and MA11 are joined.** The Application package is gone, writer response settlement is crash-safe with a fake provider, and the two previously undeclared host imports are runtime dependencies. The rough figures above are **85% architecture, 60% Storyteller, 70% combined**, ±10–15 percentage points. No external provider spend has been authorized.
+**Status honesty rule:** a future status update must list evidence at *unit, SQL fixture, local multiprocess, cold-kind, real-provider, load/chaos and real-user* tiers. A higher number of passing unit tests cannot silently stand in for missing tiers. At each significant integration reassess the four estimates above, including uncertainty. Tomorrow's first objective is to make **one complete real Writer-powered player turn** a designed and testable vertical, not add another arbitrary package.
 
-**Integration rule:** Three worktrees can implement in parallel; only one custodian joins `undertaking/storyteller-workshop`, regenerates the lockfile, runs combined proofs, archives and updates the overview. See [exact collision matrix](PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21). Future Cursor parents must not independently self-merge these three Changes while siblings remain active.
-
-## ⚑ Required maintenance
-
-- **ChatGPT reads this page first** at Undertaking cold start, rechecks its claims against integrated HEAD/Change receipts and updates **the three numeric estimates** after material integrations, scope or risk changes and before commissioning another wave. Do not leave estimates frozen while underlying capabilities change.
-- Preserve **three numbers (Storyteller %, monorepo %, combined %)**, remaining percentages, an uncertainty statement and the reasoning behind movements. Round to 5% increments; prefer a defensible judgment to fake precision. If cannot estimate one axis, explicitly mark it uncertain and explain instead of silently deleting the metric.
-- **Proactively show the supervisor the numbers and a plain-language interpretation** at significant milestones and handoffs, with a link here. No need to repeat an unchanged chart after every T-ID; do not promise autonomous background monitoring.
-- The **integration custodian** serializes substantive overview edits from accepted receipts. The technical ledger, `STATUS.md` and branch state stay factual authorities; this page is a human communication layer, not a second queue.
-- On closure present a final before/after and any limitations, then retire the temporary page with the undertaking.
-
-**Technical evidence:** [Undertaking ledger](UNDERTAKING.md#whole-undertaking-completion-control--living-ledger) · [Execution program](PROGRAM.md) · [Monorepo dossier](../modular-monolith/UNDERTAKING.md) · [Demonstrated status](../../../STATUS.md).
+**References:** [technical Owner architecture](../../../docs/technical/engine/selected-architecture.md) · [monorepo dossier](../modular-monolith/UNDERTAKING.md) · [technical overview](../../../docs/technical/README.md) · [status evidence](../../../STATUS.md).
