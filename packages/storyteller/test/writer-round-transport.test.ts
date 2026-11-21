@@ -7,8 +7,11 @@ import {
 } from '../src/providers/openrouter.js';
 import {
   createWriterRoundTransport,
+  prepareWriterRoundTransport,
   type WriterRoundModelPolicy,
 } from '../src/providers/writer-round-transport.js';
+
+const FAKE_API_KEY = 'wr09a-unit-fake-key-not-live';
 
 const OUTPUT_SCHEMA = {
   type: 'object',
@@ -84,6 +87,7 @@ test('delivered: nonzero usage, one fetch with exact wire body', async () => {
     capturedWire: wire,
     pinnedModelPolicy: basePolicy,
     outputSchema: OUTPUT_SCHEMA,
+    apiKey: FAKE_API_KEY,
     fetchImpl: async (url, init) => {
       calls.push({ url: String(url), init });
       return new Response(
@@ -100,6 +104,13 @@ test('delivered: nonzero usage, one fetch with exact wire body', async () => {
   assert.equal(calls[0]?.url, 'https://openrouter.ai/api/v1/chat/completions');
   assert.equal(calls[0]?.init?.method, 'POST');
   assert.equal(calls[0]?.init?.body, wire.serialized);
+  const headers = calls[0]?.init?.headers;
+  const authorization =
+    headers instanceof Headers
+      ? headers.get('authorization')
+      : (headers as Record<string, string> | undefined)?.['authorization'];
+  assert.equal(authorization, `Bearer ${FAKE_API_KEY}`);
+  assert.doesNotMatch(wire.serialized, /wr09a-unit-fake-key-not-live/);
   assert.equal(result.kind, 'delivered');
   if (result.kind !== 'delivered') return;
   assert.equal(result.serializedResponse, content);
@@ -117,6 +128,7 @@ test('wire mismatch does not call fetch', async () => {
     capturedWire: wire,
     pinnedModelPolicy: basePolicy,
     outputSchema: OUTPUT_SCHEMA,
+    apiKey: FAKE_API_KEY,
     fetchImpl: async () => {
       called = true;
       return new Response('{}', { status: 200 });
@@ -137,6 +149,7 @@ test('malformed output still returns usage', async () => {
     capturedWire: wire,
     pinnedModelPolicy: basePolicy,
     outputSchema: OUTPUT_SCHEMA,
+    apiKey: FAKE_API_KEY,
     fetchImpl: async () =>
       new Response(JSON.stringify(successEnvelope('plain text', '0.0005')), {
         status: 200,
@@ -161,6 +174,7 @@ test('lost response => unknown; one fetch per invocation', async () => {
     capturedWire: wire,
     pinnedModelPolicy: basePolicy,
     outputSchema: OUTPUT_SCHEMA,
+    apiKey: FAKE_API_KEY,
     fetchImpl,
   });
   const first = await transport();
@@ -181,6 +195,7 @@ test('over_budget when cost above maxMicrousd', async () => {
     capturedWire: wire,
     pinnedModelPolicy: { ...basePolicy, maxMicrousd: 100n },
     outputSchema: OUTPUT_SCHEMA,
+    apiKey: FAKE_API_KEY,
     fetchImpl: async () =>
       new Response(
         JSON.stringify(
@@ -206,6 +221,7 @@ test('allow_fallbacks true => wire_rejected, fetch not called', async () => {
     capturedWire: wire,
     pinnedModelPolicy: basePolicy,
     outputSchema: OUTPUT_SCHEMA,
+    apiKey: FAKE_API_KEY,
     fetchImpl: async () => {
       called = true;
       return new Response('{}', { status: 200 });
@@ -216,4 +232,53 @@ test('allow_fallbacks true => wire_rejected, fetch not called', async () => {
   assert.equal(result.kind, 'failed');
   if (result.kind !== 'failed') return;
   assert.equal(result.failureCode, 'wire_rejected');
+});
+
+test('missing apiKey: preflight credential_missing, zero fetch', async () => {
+  const wire = buildWire();
+  let called = false;
+  const prepared = prepareWriterRoundTransport({
+    capturedWire: wire,
+    pinnedModelPolicy: basePolicy,
+    outputSchema: OUTPUT_SCHEMA,
+    apiKey: undefined,
+    fetchImpl: async () => {
+      called = true;
+      return new Response('{}', { status: 200 });
+    },
+  });
+  assert.deepEqual(prepared.preflight(), {
+    kind: 'rejected',
+    reason: 'credential_missing',
+  });
+  const result = await prepared.invoke();
+  assert.equal(called, false);
+  assert.equal(result.kind, 'failed');
+  if (result.kind !== 'failed') return;
+  assert.equal(result.failureCode, 'wire_rejected');
+  assert.equal(result.sent, false);
+  assert.equal(result.telemetry.providerId, null);
+  assert.doesNotMatch(wire.serialized, new RegExp(FAKE_API_KEY));
+});
+
+test('blank apiKey: preflight credential_missing, zero fetch', async () => {
+  const wire = buildWire();
+  let called = false;
+  const prepared = prepareWriterRoundTransport({
+    capturedWire: wire,
+    pinnedModelPolicy: basePolicy,
+    outputSchema: OUTPUT_SCHEMA,
+    apiKey: '   ',
+    fetchImpl: async () => {
+      called = true;
+      return new Response('{}', { status: 200 });
+    },
+  });
+  assert.deepEqual(prepared.preflight(), {
+    kind: 'rejected',
+    reason: 'credential_missing',
+  });
+  const result = await prepared.invoke();
+  assert.equal(called, false);
+  assert.equal(result.kind, 'failed');
 });

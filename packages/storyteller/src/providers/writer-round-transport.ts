@@ -19,6 +19,15 @@ export type WriterRoundModelPolicy = Readonly<{
   timeoutMs: number;
 }>;
 
+export type WriterRoundPreflight =
+  | { kind: 'ready'; wireSha256: string }
+  | { kind: 'rejected'; reason: 'credential_missing' | 'wire_rejected' };
+
+export type PreparedWriterRoundTransport = Readonly<{
+  preflight: () => WriterRoundPreflight;
+  invoke: () => Promise<WriterRoundTransportResult>;
+}>;
+
 export type WriterRoundTransportResult =
   | {
       kind: 'delivered';
@@ -257,41 +266,56 @@ function contentIsJsonObject(content: string): boolean {
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-export function createWriterRoundTransport(input: {
+function writerRoundPreflight(
+  apiKey: string | undefined,
+  capturedWire: PreparedProviderWire,
+  pinnedModelPolicy: WriterRoundModelPolicy,
+): WriterRoundPreflight {
+  if (typeof apiKey !== 'string' || apiKey.trim() === '') {
+    return { kind: 'rejected', reason: 'credential_missing' };
+  }
+  const wireReject = validateWireAgainstPolicy(capturedWire, pinnedModelPolicy);
+  if (wireReject) {
+    return { kind: 'rejected', reason: 'wire_rejected' };
+  }
+  return { kind: 'ready', wireSha256: capturedWire.sha256 };
+}
+
+function invokePreflightFailure(): WriterRoundTransportResult {
+  return wireRejected({
+    durationMs: null,
+    httpStatus: null,
+    providerId: null,
+    reportedModel: null,
+    finishReason: 'wire-rejected',
+  });
+}
+
+async function invokeWriterRoundTransportAfterPreflight(input: {
   capturedWire: PreparedProviderWire;
   pinnedModelPolicy: WriterRoundModelPolicy;
-  outputSchema: unknown;
+  apiKey: string;
   fetchImpl: typeof fetch;
-}): () => Promise<WriterRoundTransportResult> {
-  const { capturedWire, pinnedModelPolicy, fetchImpl } = input;
-  void input.outputSchema;
+}): Promise<WriterRoundTransportResult> {
+  const { capturedWire, pinnedModelPolicy, apiKey, fetchImpl } = input;
 
-  return async function invokeWriterRoundTransport(): Promise<WriterRoundTransportResult> {
-    const wireReject = validateWireAgainstPolicy(
-      capturedWire,
-      pinnedModelPolicy,
-    );
-    if (wireReject) {
-      return wireReject;
-    }
+  const wireSha = capturedWire.sha256;
+  const startedAt = Date.now();
 
-    const wireSha = capturedWire.sha256;
-    const startedAt = Date.now();
+  let httpStatus: number | null = null;
+  let providerId: string | null = null;
 
-    let httpStatus: number | null = null;
-    let providerId: string | null = null;
-
-    try {
-      const response = await fetchImpl(OPENROUTER_URL, {
-        method: 'POST',
-        redirect: 'error',
-        signal: AbortSignal.timeout(pinnedModelPolicy.timeoutMs),
-        headers: {
-          authorization: 'Bearer test-not-live',
-          'content-type': 'application/json',
-        },
-        body: capturedWire.serialized,
-      });
+  try {
+    const response = await fetchImpl(OPENROUTER_URL, {
+      method: 'POST',
+      redirect: 'error',
+      signal: AbortSignal.timeout(pinnedModelPolicy.timeoutMs),
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        'content-type': 'application/json',
+      },
+      body: capturedWire.serialized,
+    });
       httpStatus = response.status;
       const raw = await response.text();
       let envelope: unknown;
@@ -418,5 +442,42 @@ export function createWriterRoundTransport(input: {
         exactWireSha256: wireSha,
       };
     }
+}
+
+export function prepareWriterRoundTransport(input: {
+  capturedWire: PreparedProviderWire;
+  pinnedModelPolicy: WriterRoundModelPolicy;
+  outputSchema: unknown;
+  apiKey: string | undefined;
+  fetchImpl: typeof fetch;
+}): PreparedWriterRoundTransport {
+  const { capturedWire, pinnedModelPolicy, apiKey, fetchImpl } = input;
+  void input.outputSchema;
+
+  return {
+    preflight: () =>
+      writerRoundPreflight(apiKey, capturedWire, pinnedModelPolicy),
+    invoke: async () => {
+      const check = writerRoundPreflight(apiKey, capturedWire, pinnedModelPolicy);
+      if (check.kind !== 'ready') {
+        return invokePreflightFailure();
+      }
+      return invokeWriterRoundTransportAfterPreflight({
+        capturedWire,
+        pinnedModelPolicy,
+        apiKey: apiKey as string,
+        fetchImpl,
+      });
+    },
   };
+}
+
+export function createWriterRoundTransport(input: {
+  capturedWire: PreparedProviderWire;
+  pinnedModelPolicy: WriterRoundModelPolicy;
+  outputSchema: unknown;
+  apiKey: string | undefined;
+  fetchImpl: typeof fetch;
+}): () => Promise<WriterRoundTransportResult> {
+  return prepareWriterRoundTransport(input).invoke;
 }

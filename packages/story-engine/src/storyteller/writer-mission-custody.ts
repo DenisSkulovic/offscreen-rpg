@@ -19,9 +19,21 @@ import type {
   ProviderTelemetry,
   ProviderUsage,
 } from '@offscreen/storyteller/providers/openrouter';
-import type { WriterRoundModelPolicy } from '@offscreen/storyteller/providers/writer-round-transport';
+import type {
+  PreparedWriterRoundTransport,
+  WriterRoundModelPolicy,
+} from '@offscreen/storyteller/providers/writer-round-transport';
+import type { DocumentStore } from '@offscreen/documents';
 import type { Transaction } from '@offscreen/db/outbox';
-import { createStorytellerBudget, StorytellerBudgetError } from './budget';
+import {
+  createStorytellerBudget,
+  settleStorytellerAttemptInTransaction,
+  StorytellerBudgetError,
+} from './budget';
+import {
+  putDurableWriterProviderResponse,
+  readDurableWriterProviderResponse,
+} from './writer-provider-response';
 import type { WriterMissionParentStepInsert } from './writer-mission-store';
 import {
   assertWriterSharedMicrousdBudget,
@@ -126,6 +138,12 @@ export type AdvanceWriterMissionProviderStepInput = {
   providerPolicy?: WriterRoundModelPolicy;
   expectedWireSha256?: string;
 };
+
+export type AdvanceDurableWriterMissionProviderStepInput =
+  AdvanceWriterMissionProviderStepInput & {
+    providerPolicy: WriterRoundModelPolicy;
+    expectedWireSha256: string;
+  };
 
 export type AdvanceWriterMissionProviderStepResult =
   | {
@@ -644,6 +662,373 @@ async function markWriterContextActive(
     .where(eq(storytellerWriterMission.id, missionId));
 }
 
+const strictReplayStepStates = new Set([
+  'result-settled',
+  'tools-applied',
+  'proposal-ready',
+]);
+
+async function acquireGlobalBudgetAdvisoryLock(tx: Transaction) {
+  await tx.execute(sql`SELECT pg_advisory_xact_lock(714092631)`);
+}
+
+type PlanWriterProviderStepInput = {
+  missionId: string;
+  contextId: string;
+  childId: string | null;
+  ordinal: number;
+  attemptId: string;
+  expectedRevision: number;
+  reservedMicrousd: bigint;
+  reservedInputTokens: number;
+  reservedGeneratedTokens: number;
+  reservedReasoningTokens: number;
+  requestBytes: number;
+  providerPolicy?: WriterRoundModelPolicy;
+  /** When true, reserveWriterMissionProviderAttempt always receives providerPolicy. */
+  requireProviderPolicy: boolean;
+};
+
+type PlanWriterProviderStepResult =
+  | {
+      status: 'replayed';
+      resultCasHash: string | null;
+      stepState: string;
+    }
+  | { status: 'held'; reason: string; transportInvoked: false }
+  | {
+      status: 'already_dispatched';
+      attemptId: string;
+      requestCasHash: string;
+    }
+  | {
+      status: 'transport';
+      attemptId: string;
+      revision: number;
+      requestCasHash: string;
+    };
+
+async function readWriterMissionStepRow(
+  database: Database,
+  missionId: string,
+  contextId: string,
+  ordinal: number,
+) {
+  const [step] = await database.db
+    .select()
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, contextId),
+        eq(storytellerWriterStep.ordinal, ordinal),
+      ),
+    )
+    .limit(1);
+  if (!step) {
+    throw new WriterMissionCustodyError('step_not_found');
+  }
+  return step;
+}
+
+function writerProviderPreflightReason(
+  transport: PreparedWriterRoundTransport,
+  expectedWireSha256: string,
+  requestCasHash: string,
+): string | null {
+  const preflight = transport.preflight();
+  if (preflight.kind === 'rejected') {
+    return preflight.reason === 'credential_missing'
+      ? 'credential_missing'
+      : 'wire_rejected';
+  }
+  if (preflight.wireSha256 !== expectedWireSha256) {
+    return 'wire_mismatch';
+  }
+  if (preflight.wireSha256 !== requestCasHash) {
+    return 'request_pin_mismatch';
+  }
+  return null;
+}
+
+/**
+ * Shared reserve/dispatch SQL used by scripted and strict provider custody.
+ * Does not acquire the global budget advisory lock; strict callers must do that first.
+ */
+async function planWriterProviderStepInTransaction(
+  tx: Transaction,
+  input: PlanWriterProviderStepInput,
+): Promise<PlanWriterProviderStepResult> {
+  const { step, context } = await lockWriterContextStep(
+    tx,
+    input.missionId,
+    input.contextId,
+    input.ordinal,
+  );
+  const mission = context.mission;
+
+  if (step.revision !== input.expectedRevision) {
+    throw new WriterMissionCustodyError('revision_conflict');
+  }
+
+  if (step.attemptId && step.attemptId !== input.attemptId) {
+    return holdWriterStep(tx, {
+      missionId: input.missionId,
+      contextId: input.contextId,
+      ordinal: input.ordinal,
+      expectedRevision: input.expectedRevision,
+      reason: 'attempt_mismatch',
+      childId: input.childId,
+    });
+  }
+
+  if (step.state === 'result-settled' || step.state === 'uncertain') {
+    return {
+      status: 'replayed',
+      resultCasHash: step.resultCasHash,
+      stepState: step.state,
+    };
+  }
+
+  if (step.state === 'held' || step.state === 'failed') {
+    return {
+      status: 'held',
+      reason: step.state,
+      transportInvoked: false,
+    };
+  }
+
+  if (step.state === 'dispatched') {
+    const boundAttemptId = step.attemptId ?? input.attemptId;
+    await casWriterStep(tx, {
+      missionId: input.missionId,
+      contextId: input.contextId,
+      ordinal: input.ordinal,
+      expectedRevision: step.revision,
+      patch: { state: 'uncertain', attemptId: boundAttemptId },
+    });
+    await markWriterContextUncertain(tx, input.missionId, input.childId);
+    return {
+      status: 'already_dispatched',
+      attemptId: boundAttemptId,
+      requestCasHash: step.requestCasHash,
+    };
+  }
+
+  let revision = step.revision;
+  let state: WriterMissionParentStepInsert['state'] = step.state;
+  let attemptId = step.attemptId ?? input.attemptId;
+
+  if (state === 'model-request-prepared') {
+    try {
+      const reserveState = await reserveWriterMissionProviderAttempt(tx, {
+        attemptId: input.attemptId,
+        missionId: input.missionId,
+        contextId: input.contextId,
+        context,
+        generationId: mission.generationId,
+        operationId: mission.operationId,
+        ownerId: String(mission.ownerId),
+        storyId: mission.storyId,
+        requestCasHash: step.requestCasHash,
+        requestBytes: input.requestBytes,
+        reservedMicrousd: input.reservedMicrousd,
+        reservedInputTokens: input.reservedInputTokens,
+        reservedGeneratedTokens: input.reservedGeneratedTokens,
+        reservedReasoningTokens: input.reservedReasoningTokens,
+        budgetSnapshot: mission.budgetSnapshot as WriterMissionBudgetSnapshot,
+        ...(input.requireProviderPolicy || input.providerPolicy
+          ? { providerPolicy: input.providerPolicy! }
+          : {}),
+      });
+      if (reserveState !== 'reserved') {
+        return {
+          status: 'held',
+          reason: `attempt_${reserveState}`,
+          transportInvoked: false,
+        };
+      }
+      const reservedStep = await casWriterStep(tx, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        ordinal: input.ordinal,
+        expectedRevision: revision,
+        patch: {
+          state: 'attempt-reserved',
+          attemptId: input.attemptId,
+        },
+      });
+      revision = reservedStep.revision;
+      state = reservedStep.state;
+      attemptId = input.attemptId;
+      if (input.childId) {
+        await markWriterChildState(tx, input.childId, 'running');
+      }
+    } catch (error) {
+      if (error instanceof StorytellerBudgetError) {
+        return holdWriterStep(tx, {
+          missionId: input.missionId,
+          contextId: input.contextId,
+          ordinal: input.ordinal,
+          expectedRevision: revision,
+          reason: error.code,
+          childId: input.childId,
+        });
+      }
+      throw error;
+    }
+  }
+
+  if (state === 'attempt-reserved') {
+    const dispatched = await markWriterMissionDispatched(tx, attemptId);
+    if (!dispatched) {
+      return holdWriterStep(tx, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        ordinal: input.ordinal,
+        expectedRevision: revision,
+        reason: 'dispatch_failed',
+        childId: input.childId,
+      });
+    }
+    const dispatchedStep = await casWriterStep(tx, {
+      missionId: input.missionId,
+      contextId: input.contextId,
+      ordinal: input.ordinal,
+      expectedRevision: revision,
+      patch: { state: 'dispatched', attemptId },
+    });
+    revision = dispatchedStep.revision;
+    state = dispatchedStep.state;
+  }
+
+  if (state !== 'dispatched') {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+
+  return {
+    status: 'transport',
+    attemptId,
+    revision,
+    requestCasHash: step.requestCasHash,
+  };
+}
+
+type FinalizeDurableDeliveryInput = {
+  missionId: string;
+  contextId: string;
+  childId: string | null;
+  ordinal: number;
+  expectedRevision: number;
+  attemptId: string;
+  requestCasHash: string;
+  resultCasHash: string;
+  responseObjectHash: string;
+  execution: Extract<ExecutionPolicy, { mode: 'provider' }>;
+  usage: ProviderUsage;
+  telemetry: ProviderTelemetry;
+};
+
+async function finalizeDurableWriterDeliveryInTransaction(
+  tx: Transaction,
+  input: FinalizeDurableDeliveryInput,
+) {
+  await acquireGlobalBudgetAdvisoryLock(tx);
+  await settleStorytellerAttemptInTransaction(tx, {
+    id: input.attemptId,
+    execution: input.execution,
+    usage: input.usage,
+    telemetry: input.telemetry,
+    operationOutcome: 'continue',
+  });
+  const { step } = await lockWriterContextStep(
+    tx,
+    input.missionId,
+    input.contextId,
+    input.ordinal,
+  );
+  if (step.revision !== input.expectedRevision) {
+    throw new WriterMissionCustodyError('revision_conflict');
+  }
+  if (step.attemptId !== input.attemptId) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.requestCasHash !== input.requestCasHash) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.state !== 'dispatched') {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.responseObjectHash) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.toolCallId !== null) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  await casWriterStep(tx, {
+    missionId: input.missionId,
+    contextId: input.contextId,
+    ordinal: input.ordinal,
+    expectedRevision: input.expectedRevision,
+    patch: {
+      state: 'result-settled',
+      resultCasHash: input.resultCasHash,
+      responseObjectHash: input.responseObjectHash,
+      attemptId: input.attemptId,
+    },
+  });
+  await markWriterContextActive(tx, input.missionId, input.childId);
+}
+
+type FinalizeDurableSentFailureInput = {
+  missionId: string;
+  contextId: string;
+  childId: string | null;
+  ordinal: number;
+  expectedRevision: number;
+  attemptId: string;
+  execution: Extract<ExecutionPolicy, { mode: 'provider' }>;
+  usage: ProviderUsage;
+  telemetry: ProviderTelemetry;
+};
+
+async function finalizeDurableWriterSentFailureInTransaction(
+  tx: Transaction,
+  input: FinalizeDurableSentFailureInput,
+) {
+  await acquireGlobalBudgetAdvisoryLock(tx);
+  await settleStorytellerAttemptInTransaction(tx, {
+    id: input.attemptId,
+    execution: input.execution,
+    usage: input.usage,
+    telemetry: input.telemetry,
+    operationOutcome: 'continue',
+  });
+  const { step } = await lockWriterContextStep(
+    tx,
+    input.missionId,
+    input.contextId,
+    input.ordinal,
+  );
+  if (step.revision !== input.expectedRevision) {
+    throw new WriterMissionCustodyError('revision_conflict');
+  }
+  if (step.attemptId !== input.attemptId) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.state !== 'dispatched') {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  await casWriterStep(tx, {
+    missionId: input.missionId,
+    contextId: input.contextId,
+    ordinal: input.ordinal,
+    expectedRevision: input.expectedRevision,
+    patch: { state: 'failed', attemptId: input.attemptId },
+  });
+  await markWriterContextHeld(tx, input.missionId, input.childId);
+}
+
 /**
  * Advances one writer-mission provider step: reserve, optional transport, settle/replay.
  */
@@ -661,161 +1046,23 @@ export async function advanceWriterMissionProviderStep(
   const requestBytes = input.requestBytes ?? 128;
   const isRealMode = Boolean(input.providerPolicy && input.expectedWireSha256);
 
-  const plan = await database.db.transaction(async (tx) => {
-    const { step, context } = await lockWriterContextStep(
-      tx,
-      input.missionId,
-      scope.contextId,
-      input.ordinal,
-    );
-    const mission = context.mission;
-
-    if (step.revision !== input.expectedRevision) {
-      throw new WriterMissionCustodyError('revision_conflict');
-    }
-
-    if (step.attemptId && step.attemptId !== input.attemptId) {
-      return holdWriterStep(tx, {
-        missionId: input.missionId,
-        contextId: scope.contextId,
-        ordinal: input.ordinal,
-        expectedRevision: input.expectedRevision,
-        reason: 'attempt_mismatch',
-        childId: scope.childId,
-      });
-    }
-
-    if (step.state === 'result-settled' || step.state === 'uncertain') {
-      return {
-        status: 'replayed' as const,
-        resultCasHash: step.resultCasHash,
-        stepState: step.state,
-      };
-    }
-
-    if (step.state === 'held' || step.state === 'failed') {
-      return {
-        status: 'held' as const,
-        reason: step.state,
-        transportInvoked: false as const,
-      };
-    }
-
-    if (step.state === 'dispatched') {
-      const boundAttemptId = step.attemptId ?? input.attemptId;
-      await casWriterStep(tx, {
-        missionId: input.missionId,
-        contextId: scope.contextId,
-        ordinal: input.ordinal,
-        expectedRevision: step.revision,
-        patch: { state: 'uncertain', attemptId: boundAttemptId },
-      });
-      await markWriterContextUncertain(tx, input.missionId, scope.childId);
-      return {
-        status: 'already_dispatched' as const,
-        attemptId: boundAttemptId,
-        requestCasHash: step.requestCasHash,
-      };
-    }
-
-    let revision = step.revision;
-    let state: WriterMissionParentStepInsert['state'] = step.state;
-    let attemptId = step.attemptId ?? input.attemptId;
-
-    if (state === 'model-request-prepared') {
-      try {
-        const reserveState = await reserveWriterMissionProviderAttempt(tx, {
-          attemptId: input.attemptId,
-          missionId: input.missionId,
-          contextId: scope.contextId,
-          context,
-          generationId: mission.generationId,
-          operationId: mission.operationId,
-          ownerId: String(mission.ownerId),
-          storyId: mission.storyId,
-          requestCasHash: step.requestCasHash,
-          requestBytes,
-          reservedMicrousd,
-          reservedInputTokens,
-          reservedGeneratedTokens,
-          reservedReasoningTokens,
-          budgetSnapshot: mission.budgetSnapshot as WriterMissionBudgetSnapshot,
-          ...(isRealMode && input.providerPolicy
-            ? { providerPolicy: input.providerPolicy }
-            : {}),
-        });
-        if (reserveState !== 'reserved') {
-          return {
-            status: 'held' as const,
-            reason: `attempt_${reserveState}`,
-            transportInvoked: false as const,
-          };
-        }
-        const reservedStep = await casWriterStep(tx, {
-          missionId: input.missionId,
-          contextId: scope.contextId,
-          ordinal: input.ordinal,
-          expectedRevision: revision,
-          patch: {
-            state: 'attempt-reserved',
-            attemptId: input.attemptId,
-          },
-        });
-        revision = reservedStep.revision;
-        state = reservedStep.state;
-        attemptId = input.attemptId;
-        if (scope.childId) {
-          await markWriterChildState(tx, scope.childId, 'running');
-        }
-      } catch (error) {
-        if (error instanceof StorytellerBudgetError) {
-          return holdWriterStep(tx, {
-            missionId: input.missionId,
-            contextId: scope.contextId,
-            ordinal: input.ordinal,
-            expectedRevision: revision,
-            reason: error.code,
-            childId: scope.childId,
-          });
-        }
-        throw error;
-      }
-    }
-
-    if (state === 'attempt-reserved') {
-      const dispatched = await markWriterMissionDispatched(tx, attemptId);
-      if (!dispatched) {
-        return holdWriterStep(tx, {
-          missionId: input.missionId,
-          contextId: scope.contextId,
-          ordinal: input.ordinal,
-          expectedRevision: revision,
-          reason: 'dispatch_failed',
-          childId: scope.childId,
-        });
-      }
-      const dispatchedStep = await casWriterStep(tx, {
-        missionId: input.missionId,
-        contextId: scope.contextId,
-        ordinal: input.ordinal,
-        expectedRevision: revision,
-        patch: { state: 'dispatched', attemptId },
-      });
-      revision = dispatchedStep.revision;
-      state = dispatchedStep.state;
-    }
-
-    if (state !== 'dispatched') {
-      throw new WriterMissionCustodyError('invalid_step_state');
-    }
-
-    return {
-      status: 'transport' as const,
-      attemptId,
-      revision,
-      requestCasHash: step.requestCasHash,
-    };
-  });
+  const plan = await database.db.transaction(async (tx) =>
+    planWriterProviderStepInTransaction(tx, {
+      missionId: input.missionId,
+      contextId: scope.contextId,
+      childId: scope.childId,
+      ordinal: input.ordinal,
+      attemptId: input.attemptId,
+      expectedRevision: input.expectedRevision,
+      reservedMicrousd,
+      reservedInputTokens,
+      reservedGeneratedTokens,
+      reservedReasoningTokens,
+      requestBytes,
+      ...(input.providerPolicy ? { providerPolicy: input.providerPolicy } : {}),
+      requireProviderPolicy: isRealMode,
+    }),
+  );
 
   if (plan.status === 'replayed') {
     return plan;
@@ -1003,4 +1250,361 @@ async function loadAttempt(database: Database, attemptId: string) {
     throw new Error('writer_mission_attempt_missing');
   }
   return row;
+}
+
+/** Strict paid-provider custody: preflight, advisory-first SQL, durable response pointer. */
+export async function advanceDurableWriterMissionProviderStep(
+  database: Database,
+  storage: Pick<DocumentStore, 'putStructuredDocument' | 'readStructuredDocument'>,
+  input: AdvanceDurableWriterMissionProviderStepInput,
+  transport: PreparedWriterRoundTransport,
+): Promise<AdvanceWriterMissionProviderStepResult> {
+  const budget = createStorytellerBudget(database);
+  const scope = writerCustodyScope(input);
+  const reservedMicrousd = input.reservedMicrousd ?? 1_000n;
+  const reservedInputTokens = input.reservedInputTokens ?? 256;
+  const reservedGeneratedTokens = input.reservedGeneratedTokens ?? 256;
+  const reservedReasoningTokens = input.reservedReasoningTokens ?? 0;
+  const requestBytes = input.requestBytes ?? 128;
+
+  const peek = await readWriterMissionStepRow(
+    database,
+    input.missionId,
+    scope.contextId,
+    input.ordinal,
+  );
+
+  if (peek.revision !== input.expectedRevision) {
+    throw new WriterMissionCustodyError('revision_conflict');
+  }
+
+  if (peek.attemptId && peek.attemptId !== input.attemptId) {
+    return {
+      status: 'held',
+      reason: 'attempt_mismatch',
+      transportInvoked: false,
+    };
+  }
+
+  if (
+    strictReplayStepStates.has(peek.state) &&
+    peek.responseObjectHash &&
+    peek.resultCasHash
+  ) {
+    await readDurableWriterMissionResponse(database, storage, {
+      missionId: input.missionId,
+      contextId: scope.contextId,
+      ordinal: input.ordinal,
+      attemptId: peek.attemptId ?? input.attemptId,
+      requestSha256: peek.requestCasHash,
+    });
+    return {
+      status: 'replayed',
+      resultCasHash: peek.resultCasHash,
+      stepState: peek.state,
+    };
+  }
+
+  if (peek.state === 'dispatched' || peek.state === 'uncertain') {
+    return { status: 'uncertain', transportInvoked: false };
+  }
+
+  if (peek.state === 'held' || peek.state === 'failed') {
+    return {
+      status: 'held',
+      reason: peek.state,
+      transportInvoked: false,
+    };
+  }
+
+  if (
+    peek.state === 'result-settled' ||
+    peek.state === 'tools-applied' ||
+    peek.state === 'proposal-ready'
+  ) {
+    return {
+      status: 'held',
+      reason: 'strict_response_pointer_missing',
+      transportInvoked: false,
+    };
+  }
+
+  const needsPreflight =
+    peek.state === 'model-request-prepared' || peek.state === 'attempt-reserved';
+  if (needsPreflight) {
+    const preflightReason = writerProviderPreflightReason(
+      transport,
+      input.expectedWireSha256,
+      peek.requestCasHash,
+    );
+    if (preflightReason) {
+      return {
+        status: 'held',
+        reason: preflightReason,
+        transportInvoked: false,
+      };
+    }
+  }
+
+  const shouldPlan =
+    peek.state === 'model-request-prepared' || peek.state === 'attempt-reserved';
+  if (!shouldPlan) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+
+  const plan = await database.db.transaction(async (tx) => {
+    await acquireGlobalBudgetAdvisoryLock(tx);
+    return planWriterProviderStepInTransaction(tx, {
+      missionId: input.missionId,
+      contextId: scope.contextId,
+      childId: scope.childId,
+      ordinal: input.ordinal,
+      attemptId: input.attemptId,
+      expectedRevision: input.expectedRevision,
+      reservedMicrousd,
+      reservedInputTokens,
+      reservedGeneratedTokens,
+      reservedReasoningTokens,
+      requestBytes,
+      providerPolicy: input.providerPolicy,
+      requireProviderPolicy: true,
+    });
+  });
+
+  if (plan.status === 'replayed') {
+    return plan;
+  }
+  if (plan.status === 'held') {
+    return plan;
+  }
+  if (plan.status === 'already_dispatched') {
+    const uncertainAttempt = await loadAttempt(database, plan.attemptId);
+    await budget.uncertain(
+      plan.attemptId,
+      providerExecutionFromAttempt(uncertainAttempt),
+    );
+    return { status: 'uncertain', transportInvoked: false };
+  }
+  if (plan.status !== 'transport') {
+    return plan;
+  }
+
+  const transportOutcome = await transport.invoke();
+
+  if (transportOutcome.kind === 'unknown') {
+    const uncertainAttempt = await loadAttempt(database, plan.attemptId);
+    await budget.uncertain(
+      plan.attemptId,
+      providerExecutionFromAttempt(uncertainAttempt),
+      transportOutcome.telemetry,
+    );
+    await database.db.transaction(async (tx) => {
+      const { step } = await lockWriterContextStep(
+        tx,
+        input.missionId,
+        scope.contextId,
+        input.ordinal,
+      );
+      await casWriterStep(tx, {
+        missionId: input.missionId,
+        contextId: scope.contextId,
+        ordinal: input.ordinal,
+        expectedRevision: step.revision,
+        patch: { state: 'uncertain' },
+      });
+      await markWriterContextUncertain(tx, input.missionId, scope.childId);
+    });
+    return { status: 'uncertain', transportInvoked: true };
+  }
+
+  if (transportOutcome.kind === 'failed') {
+    const attemptRow = await loadAttempt(database, plan.attemptId);
+    const execution = providerExecutionFromAttempt(attemptRow);
+
+    if (!transportOutcome.sent) {
+      await budget.confirmUnsent(
+        plan.attemptId,
+        execution,
+        transportOutcome.telemetry,
+      );
+      await database.db.transaction(async (tx) => {
+        await holdWriterStep(tx, {
+          missionId: input.missionId,
+          contextId: scope.contextId,
+          ordinal: input.ordinal,
+          expectedRevision: plan.revision,
+          reason: transportOutcome.failureCode,
+          childId: scope.childId,
+        });
+      });
+      return {
+        status: 'held',
+        reason: transportOutcome.failureCode,
+        transportInvoked: true,
+      };
+    }
+
+    await database.db.transaction(async (tx) =>
+      finalizeDurableWriterSentFailureInTransaction(tx, {
+        missionId: input.missionId,
+        contextId: scope.contextId,
+        childId: scope.childId,
+        ordinal: input.ordinal,
+        expectedRevision: plan.revision,
+        attemptId: plan.attemptId,
+        execution,
+        usage: transportOutcome.usage,
+        telemetry: transportOutcome.telemetry,
+      }),
+    );
+    return {
+      status: 'failed',
+      reason: transportOutcome.failureCode,
+      transportInvoked: true,
+    };
+  }
+
+  const wireOk =
+    transportOutcome.exactWireSha256 === input.expectedWireSha256 &&
+    transportOutcome.exactWireSha256 === plan.requestCasHash;
+  if (!wireOk) {
+    const attemptRow = await loadAttempt(database, plan.attemptId);
+    const execution = providerExecutionFromAttempt(attemptRow);
+    await budget.uncertain(plan.attemptId, execution);
+    await database.db.transaction(async (tx) => {
+      const { step } = await lockWriterContextStep(
+        tx,
+        input.missionId,
+        scope.contextId,
+        input.ordinal,
+      );
+      await casWriterStep(tx, {
+        missionId: input.missionId,
+        contextId: scope.contextId,
+        ordinal: input.ordinal,
+        expectedRevision: step.revision,
+        patch: { state: 'uncertain' },
+      });
+      await markWriterContextUncertain(tx, input.missionId, scope.childId);
+    });
+    return { status: 'uncertain', transportInvoked: true };
+  }
+
+  const attemptRow = await loadAttempt(database, plan.attemptId);
+  const execution = providerExecutionFromAttempt(attemptRow);
+  const resultCasHash = hashWriterMissionSerializedResponse(
+    transportOutcome.serializedResponse,
+  );
+
+  let responseObjectHash: string;
+  try {
+    responseObjectHash = await putDurableWriterProviderResponse(
+      storage,
+      {
+        missionId: input.missionId,
+        contextId: scope.contextId,
+        ordinal: input.ordinal,
+        attemptId: plan.attemptId,
+        requestSha256: plan.requestCasHash,
+      },
+      transportOutcome.serializedResponse,
+    );
+  } catch {
+    await budget.uncertain(plan.attemptId, execution);
+    await database.db.transaction(async (tx) => {
+      const { step } = await lockWriterContextStep(
+        tx,
+        input.missionId,
+        scope.contextId,
+        input.ordinal,
+      );
+      await casWriterStep(tx, {
+        missionId: input.missionId,
+        contextId: scope.contextId,
+        ordinal: input.ordinal,
+        expectedRevision: step.revision,
+        patch: { state: 'uncertain' },
+      });
+      await markWriterContextUncertain(tx, input.missionId, scope.childId);
+    });
+    return { status: 'uncertain', transportInvoked: true };
+  }
+
+  await database.db.transaction(async (tx) =>
+    finalizeDurableWriterDeliveryInTransaction(tx, {
+      missionId: input.missionId,
+      contextId: scope.contextId,
+      childId: scope.childId,
+      ordinal: input.ordinal,
+      expectedRevision: plan.revision,
+      attemptId: plan.attemptId,
+      requestCasHash: plan.requestCasHash,
+      resultCasHash,
+      responseObjectHash,
+      execution,
+      usage: transportOutcome.usage,
+      telemetry: transportOutcome.telemetry,
+    }),
+  );
+
+  return {
+    status: 'delivered',
+    resultCasHash,
+    transportInvoked: true,
+  };
+}
+
+/** Rehydrates a strict provider response body from SQL step pointer and private CAS. */
+export async function readDurableWriterMissionResponse(
+  database: Database,
+  storage: Pick<DocumentStore, 'readStructuredDocument'>,
+  input: {
+    missionId: string;
+    contextId?: string;
+    ordinal: number;
+    attemptId: string;
+    requestSha256: string;
+  },
+): Promise<string> {
+  const contextId = defaultWriterContextId(input.missionId, input.contextId);
+  const step = await readWriterMissionStepRow(
+    database,
+    input.missionId,
+    contextId,
+    input.ordinal,
+  );
+
+  if (!strictReplayStepStates.has(step.state)) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.attemptId !== input.attemptId) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.requestCasHash !== input.requestSha256) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (!step.responseObjectHash || !step.resultCasHash) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+  if (step.toolCallId !== null) {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+
+  const attemptRow = await loadAttempt(database, input.attemptId);
+  if (attemptRow.state !== 'settled') {
+    throw new WriterMissionCustodyError('invalid_step_state');
+  }
+
+  return readDurableWriterProviderResponse(
+    storage,
+    step.responseObjectHash,
+    {
+      missionId: input.missionId,
+      contextId,
+      ordinal: input.ordinal,
+      attemptId: input.attemptId,
+      requestSha256: input.requestSha256,
+    },
+    step.resultCasHash,
+  );
 }

@@ -1,0 +1,2 @@
+ALTER TABLE "storyteller_writer_step" ADD COLUMN "response_object_hash" text;--> statement-breakpoint
+ALTER TABLE "storyteller_writer_step" ADD CONSTRAINT "storyteller_writer_step_response_object_hash" CHECK ("storyteller_writer_step"."response_object_hash" IS NULL OR "storyteller_writer_step"."response_object_hash" ~ '^[0-9a-f]{64}$');

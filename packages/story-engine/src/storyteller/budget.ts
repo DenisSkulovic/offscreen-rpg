@@ -49,7 +49,23 @@ export class StorytellerBudgetError extends Error {
     super(code);
   }
 }
-type ProviderExecution = Extract<ExecutionPolicy, { mode: 'provider' }>;
+export type ProviderExecution = Extract<ExecutionPolicy, { mode: 'provider' }>;
+
+export type SettleStorytellerAttemptInput = {
+  id: string;
+  execution: ProviderExecution;
+  usage: ProviderUsage;
+  telemetry: ProviderTelemetry;
+  generationOutcome?: {
+    state: 'succeeded' | 'failed';
+    output: unknown;
+    failureCode: string | null;
+    repairCandidate?: unknown;
+    repairDiagnostic?: unknown;
+  };
+  operationOutcome?: 'continue' | 'complete';
+  recoveryFence?: SavedRepairRecoveryFence;
+};
 
 export type SavedRepairRecoveryFence = Readonly<{
   generationId: string;
@@ -183,6 +199,261 @@ async function releaseReservedAttempt(
     })
     .where(eq(operation.generationId, input.record.generationId));
   await markUsageWindows(tx, input.record.id, 'released');
+}
+
+export async function settleStorytellerAttemptInTransaction(
+  tx: Transaction,
+  input: SettleStorytellerAttemptInput,
+): Promise<void | 'already-applied'> {
+  const { account, allowance } = await lockAllowance(tx, input.execution);
+  const [record] = await tx
+    .select()
+    .from(attempt)
+    .where(and(eq(attempt.id, input.id), eq(attempt.runId, allowance.id)))
+    .for('update');
+  if (!record) {
+    throw new Error('Missing budget attempt');
+  }
+  let recoveryAuditPrior:
+    | { priorGenerationState: string; priorStatusRevision: number }
+    | undefined;
+  if (input.recoveryFence) {
+    const fence = input.recoveryFence;
+    const [genRecord] = await tx
+      .select()
+      .from(generation)
+      .where(
+        and(
+          eq(generation.id, fence.generationId),
+          eq(generation.attemptId, input.id),
+        ),
+      )
+      .for('update');
+    if (!genRecord) {
+      throw new Error('Missing generation for recovery fence');
+    }
+    const [reviewRecord] = await tx
+      .select()
+      .from(dispatchReview)
+      .where(eq(dispatchReview.attemptId, input.id))
+      .for('update');
+    if (!reviewRecord || reviewRecord.generationId !== fence.generationId) {
+      throw new Error('Missing dispatch review for recovery fence');
+    }
+    if (record.state === 'settled') {
+      const [auditRow] = await tx
+        .select()
+        .from(savedRepairAudit)
+        .where(eq(savedRepairAudit.attemptId, input.id));
+      if (
+        !auditRow ||
+        auditRow.planFingerprint !== fence.planFingerprint
+      ) {
+        throw new Error('Conflicting settlement');
+      }
+      if (
+        record.chargedMicrousd !== input.usage.reportedCostMicrousd ||
+        record.providerId !== input.telemetry.providerId ||
+        record.promptTokens !== input.usage.promptTokens ||
+        record.completionTokens !== input.usage.completionTokens ||
+        record.reasoningTokens !== input.usage.reasoningTokens ||
+        record.cachedTokens !== input.usage.cachedTokens ||
+        record.cacheWriteTokens !== input.usage.cacheWriteTokens ||
+        record.totalTokens !== input.usage.totalTokens ||
+        record.reportedModel !== input.telemetry.reportedModel ||
+        record.finishReason !== input.telemetry.finishReason ||
+        record.httpStatus !== input.telemetry.httpStatus ||
+        record.durationMs !== input.telemetry.durationMs
+      ) {
+        throw new Error('Conflicting settlement');
+      }
+      return 'already-applied';
+    }
+    if (genRecord.state !== 'uncertain') {
+      throw new Error('Generation recovery fence mismatch');
+    }
+    if (record.state !== 'uncertain') {
+      throw new Error('Attempt recovery fence mismatch');
+    }
+    if (genRecord.statusRevision !== fence.expectedStatusRevision) {
+      throw new Error('Generation recovery fence mismatch');
+    }
+    if (
+      reviewRecord.state !== fence.reviewState ||
+      reviewRecord.packetSha256 !== fence.packetSha256
+    ) {
+      throw new Error('Dispatch review recovery fence mismatch');
+    }
+    recoveryAuditPrior = {
+      priorGenerationState: genRecord.state,
+      priorStatusRevision: genRecord.statusRevision,
+    };
+  }
+  if (record.state === 'settled') {
+    if (
+      record.chargedMicrousd !== input.usage.reportedCostMicrousd ||
+      record.providerId !== input.telemetry.providerId ||
+      record.promptTokens !== input.usage.promptTokens ||
+      record.completionTokens !== input.usage.completionTokens ||
+      record.reasoningTokens !== input.usage.reasoningTokens ||
+      record.cachedTokens !== input.usage.cachedTokens ||
+      record.cacheWriteTokens !== input.usage.cacheWriteTokens ||
+      record.totalTokens !== input.usage.totalTokens ||
+      record.reportedModel !== input.telemetry.reportedModel ||
+      record.finishReason !== input.telemetry.finishReason ||
+      record.httpStatus !== input.telemetry.httpStatus ||
+      record.durationMs !== input.telemetry.durationMs
+    ) {
+      throw new Error('Conflicting settlement');
+    }
+    return;
+  }
+  if (!['dispatched', 'uncertain'].includes(record.state)) {
+    throw new Error('Attempt was not dispatched');
+  }
+  const [operationRecord] = await tx
+    .select()
+    .from(operation)
+    .where(eq(operation.generationId, record.generationId))
+    .for('update');
+  if (!operationRecord) {
+    throw new Error('Missing Storyteller operation');
+  }
+  if (input.generationOutcome) {
+    await tx
+      .update(generation)
+      .set({
+        ...input.generationOutcome,
+        updatedAt: sql`clock_timestamp()`,
+        statusRevision: sql`${generation.statusRevision} + 1`,
+      })
+      .where(
+        and(
+          eq(generation.id, record.generationId),
+          eq(generation.attemptId, record.id),
+        ),
+      );
+  }
+  const calculatedMicrousd = calculatedCharge(
+    input.execution,
+    input.usage,
+  );
+  const reconciliation =
+    calculatedMicrousd === null
+      ? 'unavailable'
+      : calculatedMicrousd === input.usage.reportedCostMicrousd
+        ? 'matched'
+        : 'different';
+  await tx
+    .update(attempt)
+    .set({
+      state: 'settled',
+      chargedMicrousd: input.usage.reportedCostMicrousd,
+      calculatedMicrousd,
+      reconciliation,
+      promptTokens: input.usage.promptTokens,
+      completionTokens: input.usage.completionTokens,
+      reasoningTokens: input.usage.reasoningTokens,
+      cachedTokens: input.usage.cachedTokens,
+      cacheWriteTokens: input.usage.cacheWriteTokens,
+      totalTokens: input.usage.totalTokens,
+      providerId: input.telemetry.providerId,
+      reportedModel: input.telemetry.reportedModel,
+      finishReason: input.telemetry.finishReason,
+      httpStatus: input.telemetry.httpStatus,
+      durationMs: input.telemetry.durationMs,
+      settledAt: sql`clock_timestamp()`,
+    })
+    .where(eq(attempt.id, record.id));
+  await tx
+    .update(funding)
+    .set({
+      reservedMicrousd:
+        account.reservedMicrousd - record.reservedMicrousd,
+      settledMicrousd:
+        account.settledMicrousd + input.usage.reportedCostMicrousd,
+      stopped:
+        account.stopped ||
+        input.usage.reportedCostMicrousd > record.reservedMicrousd,
+    })
+    .where(eq(funding.id, account.id));
+  await tx
+    .update(run)
+    .set({
+      reservedMicrousd:
+        allowance.reservedMicrousd - record.reservedMicrousd,
+      settledMicrousd:
+        allowance.settledMicrousd + input.usage.reportedCostMicrousd,
+    })
+    .where(eq(run.id, allowance.id));
+  const consumedInputTokens =
+    operationRecord.consumedInputTokens + input.usage.promptTokens;
+  const consumedGeneratedTokens =
+    operationRecord.consumedGeneratedTokens +
+    input.usage.completionTokens;
+  const consumedReasoningTokens =
+    operationRecord.consumedReasoningTokens +
+    (input.usage.reasoningTokens ?? 0);
+  const consumedMicrousd =
+    operationRecord.consumedMicrousd + input.usage.reportedCostMicrousd;
+  const operationOutcome = input.operationOutcome ?? 'complete';
+  const operationExceeded =
+    consumedInputTokens > operationRecord.maxInputTokens ||
+    consumedGeneratedTokens > operationRecord.maxGeneratedTokens ||
+    consumedReasoningTokens > operationRecord.maxReasoningTokens ||
+    consumedMicrousd > operationRecord.maxMicrousd;
+  await tx
+    .update(operation)
+    .set({
+      state: operationExceeded
+        ? 'exhausted'
+        : operationOutcome === 'complete'
+          ? 'complete'
+          : 'open',
+      reservedInputTokens:
+        operationRecord.reservedInputTokens - record.reservedInputTokens,
+      consumedInputTokens,
+      reservedGeneratedTokens:
+        operationRecord.reservedGeneratedTokens -
+        record.reservedGeneratedTokens,
+      consumedGeneratedTokens,
+      reservedReasoningTokens:
+        operationRecord.reservedReasoningTokens -
+        record.reservedReasoningTokens,
+      consumedReasoningTokens,
+      reservedMicrousd:
+        operationRecord.reservedMicrousd - record.reservedMicrousd,
+      consumedMicrousd,
+      updatedAt: sql`clock_timestamp()`,
+    })
+    .where(eq(operation.generationId, record.generationId));
+  const exceededUsageWindow = await settleUsageWindows(
+    tx,
+    record.id,
+    input.usage,
+  );
+  if (
+    input.usage.reportedCostMicrousd > record.reservedMicrousd ||
+    exceededUsageWindow
+  ) {
+    await tx
+      .update(funding)
+      .set({ stopped: true })
+      .where(eq(funding.id, account.id));
+  }
+  if (input.recoveryFence && recoveryAuditPrior) {
+    await tx.insert(savedRepairAudit).values({
+      attemptId: input.id,
+      operatorId: input.recoveryFence.operatorId,
+      reason: input.recoveryFence.reason,
+      planFingerprint: input.recoveryFence.planFingerprint,
+      reviewPacketSha256: input.recoveryFence.packetSha256,
+      evidenceSha256: input.recoveryFence.evidenceSha256,
+      priorGenerationState: recoveryAuditPrior.priorGenerationState,
+      priorStatusRevision: recoveryAuditPrior.priorStatusRevision,
+      settlementResult: operationOutcome,
+    });
+  }
 }
 
 /** Accounting transactions never acquire story locks. Dispatch is a separate durable boundary. */
@@ -577,6 +848,9 @@ export function createStorytellerBudget(database: Database) {
             reportedModel: null,
             finishReason: telemetry.finishReason,
             durationMs: telemetry.durationMs,
+            // Unsent means the provider did not accept the request.
+            // storyteller_attempt_reconciliation requires dispatched_at IS NULL.
+            dispatchedAt: null,
             settledAt: sql`clock_timestamp()`,
           })
           .where(eq(attempt.id, id));
@@ -616,21 +890,9 @@ export function createStorytellerBudget(database: Database) {
         await markUsageWindows(tx, record.id, 'released');
       });
     },
-    async settle(input: {
-      id: string;
-      execution: ProviderExecution;
-      usage: ProviderUsage;
-      telemetry: ProviderTelemetry;
-      generationOutcome?: {
-        state: 'succeeded' | 'failed';
-        output: unknown;
-        failureCode: string | null;
-        repairCandidate?: unknown;
-        repairDiagnostic?: unknown;
-      };
-      operationOutcome?: 'continue' | 'complete';
-      recoveryFence?: SavedRepairRecoveryFence;
-    }): Promise<void | 'already-applied'> {
+    async settle(
+      input: SettleStorytellerAttemptInput,
+    ): Promise<void | 'already-applied'> {
       if (input.usage.reportedCostMicrousd < 0n) {
         throw new Error('Invalid charge');
       }
@@ -651,261 +913,9 @@ export function createStorytellerBudget(database: Database) {
           'Only a retained invalid candidate may keep an operation open',
         );
       }
-      return database.db.transaction(async (tx) => {
-        const { account, allowance } = await lockAllowance(tx, input.execution);
-        const [record] = await tx
-          .select()
-          .from(attempt)
-          .where(and(eq(attempt.id, input.id), eq(attempt.runId, allowance.id)))
-          .for('update');
-        if (!record) {
-          throw new Error('Missing budget attempt');
-        }
-        let recoveryAuditPrior:
-          | { priorGenerationState: string; priorStatusRevision: number }
-          | undefined;
-        if (input.recoveryFence) {
-          const fence = input.recoveryFence;
-          const [genRecord] = await tx
-            .select()
-            .from(generation)
-            .where(
-              and(
-                eq(generation.id, fence.generationId),
-                eq(generation.attemptId, input.id),
-              ),
-            )
-            .for('update');
-          if (!genRecord) {
-            throw new Error('Missing generation for recovery fence');
-          }
-          const [reviewRecord] = await tx
-            .select()
-            .from(dispatchReview)
-            .where(eq(dispatchReview.attemptId, input.id))
-            .for('update');
-          if (!reviewRecord || reviewRecord.generationId !== fence.generationId) {
-            throw new Error('Missing dispatch review for recovery fence');
-          }
-          if (record.state === 'settled') {
-            const [auditRow] = await tx
-              .select()
-              .from(savedRepairAudit)
-              .where(eq(savedRepairAudit.attemptId, input.id));
-            if (
-              !auditRow ||
-              auditRow.planFingerprint !== fence.planFingerprint
-            ) {
-              throw new Error('Conflicting settlement');
-            }
-            if (
-              record.chargedMicrousd !== input.usage.reportedCostMicrousd ||
-              record.providerId !== input.telemetry.providerId ||
-              record.promptTokens !== input.usage.promptTokens ||
-              record.completionTokens !== input.usage.completionTokens ||
-              record.reasoningTokens !== input.usage.reasoningTokens ||
-              record.cachedTokens !== input.usage.cachedTokens ||
-              record.cacheWriteTokens !== input.usage.cacheWriteTokens ||
-              record.totalTokens !== input.usage.totalTokens ||
-              record.reportedModel !== input.telemetry.reportedModel ||
-              record.finishReason !== input.telemetry.finishReason ||
-              record.httpStatus !== input.telemetry.httpStatus ||
-              record.durationMs !== input.telemetry.durationMs
-            ) {
-              throw new Error('Conflicting settlement');
-            }
-            return 'already-applied';
-          }
-          if (genRecord.state !== 'uncertain') {
-            throw new Error('Generation recovery fence mismatch');
-          }
-          if (record.state !== 'uncertain') {
-            throw new Error('Attempt recovery fence mismatch');
-          }
-          if (genRecord.statusRevision !== fence.expectedStatusRevision) {
-            throw new Error('Generation recovery fence mismatch');
-          }
-          if (
-            reviewRecord.state !== fence.reviewState ||
-            reviewRecord.packetSha256 !== fence.packetSha256
-          ) {
-            throw new Error('Dispatch review recovery fence mismatch');
-          }
-          recoveryAuditPrior = {
-            priorGenerationState: genRecord.state,
-            priorStatusRevision: genRecord.statusRevision,
-          };
-        }
-        if (record.state === 'settled') {
-          if (
-            record.chargedMicrousd !== input.usage.reportedCostMicrousd ||
-            record.providerId !== input.telemetry.providerId ||
-            record.promptTokens !== input.usage.promptTokens ||
-            record.completionTokens !== input.usage.completionTokens ||
-            record.reasoningTokens !== input.usage.reasoningTokens ||
-            record.cachedTokens !== input.usage.cachedTokens ||
-            record.cacheWriteTokens !== input.usage.cacheWriteTokens ||
-            record.totalTokens !== input.usage.totalTokens ||
-            record.reportedModel !== input.telemetry.reportedModel ||
-            record.finishReason !== input.telemetry.finishReason ||
-            record.httpStatus !== input.telemetry.httpStatus ||
-            record.durationMs !== input.telemetry.durationMs
-          ) {
-            throw new Error('Conflicting settlement');
-          }
-          return;
-        }
-        if (!['dispatched', 'uncertain'].includes(record.state)) {
-          throw new Error('Attempt was not dispatched');
-        }
-        const [operationRecord] = await tx
-          .select()
-          .from(operation)
-          .where(eq(operation.generationId, record.generationId))
-          .for('update');
-        if (!operationRecord) {
-          throw new Error('Missing Storyteller operation');
-        }
-        if (input.generationOutcome) {
-          await tx
-            .update(generation)
-            .set({
-              ...input.generationOutcome,
-              updatedAt: sql`clock_timestamp()`,
-              statusRevision: sql`${generation.statusRevision} + 1`,
-            })
-            .where(
-              and(
-                eq(generation.id, record.generationId),
-                eq(generation.attemptId, record.id),
-              ),
-            );
-        }
-        const calculatedMicrousd = calculatedCharge(
-          input.execution,
-          input.usage,
-        );
-        const reconciliation =
-          calculatedMicrousd === null
-            ? 'unavailable'
-            : calculatedMicrousd === input.usage.reportedCostMicrousd
-              ? 'matched'
-              : 'different';
-        await tx
-          .update(attempt)
-          .set({
-            state: 'settled',
-            chargedMicrousd: input.usage.reportedCostMicrousd,
-            calculatedMicrousd,
-            reconciliation,
-            promptTokens: input.usage.promptTokens,
-            completionTokens: input.usage.completionTokens,
-            reasoningTokens: input.usage.reasoningTokens,
-            cachedTokens: input.usage.cachedTokens,
-            cacheWriteTokens: input.usage.cacheWriteTokens,
-            totalTokens: input.usage.totalTokens,
-            providerId: input.telemetry.providerId,
-            reportedModel: input.telemetry.reportedModel,
-            finishReason: input.telemetry.finishReason,
-            httpStatus: input.telemetry.httpStatus,
-            durationMs: input.telemetry.durationMs,
-            settledAt: sql`clock_timestamp()`,
-          })
-          .where(eq(attempt.id, record.id));
-        await tx
-          .update(funding)
-          .set({
-            reservedMicrousd:
-              account.reservedMicrousd - record.reservedMicrousd,
-            settledMicrousd:
-              account.settledMicrousd + input.usage.reportedCostMicrousd,
-            stopped:
-              account.stopped ||
-              input.usage.reportedCostMicrousd > record.reservedMicrousd,
-          })
-          .where(eq(funding.id, account.id));
-        await tx
-          .update(run)
-          .set({
-            reservedMicrousd:
-              allowance.reservedMicrousd - record.reservedMicrousd,
-            settledMicrousd:
-              allowance.settledMicrousd + input.usage.reportedCostMicrousd,
-          })
-          .where(eq(run.id, allowance.id));
-        const consumedInputTokens =
-          operationRecord.consumedInputTokens + input.usage.promptTokens;
-        const consumedGeneratedTokens =
-          operationRecord.consumedGeneratedTokens +
-          input.usage.completionTokens;
-        const consumedReasoningTokens =
-          operationRecord.consumedReasoningTokens +
-          (input.usage.reasoningTokens ?? 0);
-        const consumedMicrousd =
-          operationRecord.consumedMicrousd + input.usage.reportedCostMicrousd;
-        const operationExceeded =
-          consumedInputTokens > operationRecord.maxInputTokens ||
-          consumedGeneratedTokens > operationRecord.maxGeneratedTokens ||
-          consumedReasoningTokens > operationRecord.maxReasoningTokens ||
-          consumedMicrousd > operationRecord.maxMicrousd;
-        await tx
-          .update(operation)
-          .set({
-            state: operationExceeded
-              ? 'exhausted'
-              : operationOutcome === 'complete'
-                ? 'complete'
-                : 'open',
-            reservedInputTokens:
-              operationRecord.reservedInputTokens - record.reservedInputTokens,
-            consumedInputTokens,
-            reservedGeneratedTokens:
-              operationRecord.reservedGeneratedTokens -
-              record.reservedGeneratedTokens,
-            consumedGeneratedTokens,
-            reservedReasoningTokens:
-              operationRecord.reservedReasoningTokens -
-              record.reservedReasoningTokens,
-            consumedReasoningTokens,
-            reservedMicrousd:
-              operationRecord.reservedMicrousd - record.reservedMicrousd,
-            consumedMicrousd,
-            updatedAt: sql`clock_timestamp()`,
-          })
-          .where(eq(operation.generationId, record.generationId));
-        const exceededUsageWindow = await settleUsageWindows(
-          tx,
-          record.id,
-          input.usage,
-        );
-        // Operation-only excess exhausts the operation, not the account.
-        // A provider charge or window debit above its reserved allowance
-        // stops the paying account only. Platform/story windows separately
-        // enforce their own aggregate limits through durable allocations.
-        // Never disable unrelated funding accounts from one settlement.
-        if (
-          input.usage.reportedCostMicrousd > record.reservedMicrousd ||
-          exceededUsageWindow
-        ) {
-          await tx
-            .update(funding)
-            .set({ stopped: true })
-            .where(eq(funding.id, account.id));
-        }
-        if (input.recoveryFence && recoveryAuditPrior) {
-          await tx.insert(savedRepairAudit).values({
-            attemptId: input.id,
-            operatorId: input.recoveryFence.operatorId,
-            reason: input.recoveryFence.reason,
-            planFingerprint: input.recoveryFence.planFingerprint,
-            reviewPacketSha256: input.recoveryFence.packetSha256,
-            evidenceSha256: input.recoveryFence.evidenceSha256,
-            priorGenerationState: recoveryAuditPrior.priorGenerationState,
-            priorStatusRevision: recoveryAuditPrior.priorStatusRevision,
-            settlementResult: operationOutcome,
-          });
-        }
-      });
+      return database.db.transaction(async (tx) =>
+        settleStorytellerAttemptInTransaction(tx, input),
+      );
     },
     /**
      * Close a multi-round operation after deterministic work fails between

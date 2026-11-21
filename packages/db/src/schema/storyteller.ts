@@ -1064,6 +1064,7 @@ export const storytellerWriterStep = pgTable(
     toolCallId: text('tool_call_id'),
     requestCasHash: text('request_cas_hash').notNull(),
     resultCasHash: text('result_cas_hash'),
+    responseObjectHash: text('response_object_hash'),
     revision: integer('revision').notNull(),
     state: text('state')
       .notNull()
@@ -1109,6 +1110,10 @@ export const storytellerWriterStep = pgTable(
     check(
       'storyteller_writer_step_result_hash',
       sql`${t.resultCasHash} IS NULL OR ${t.resultCasHash} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_writer_step_response_object_hash',
+      sql`${t.responseObjectHash} IS NULL OR ${t.responseObjectHash} ~ '^[0-9a-f]{64}$'`,
     ),
     check(
       'storyteller_writer_step_tool_call_id',
