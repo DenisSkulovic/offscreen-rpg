@@ -2,6 +2,8 @@
 
 **Owner:** [Storyteller Workshop](UNDERTAKING.md). **Integration target:** `undertaking/storyteller-workshop` (never individual WR → `main`). **Purpose:** dependency map and planner gate, not a second work queue or permission to spend. [Global selection](../../QUEUE.md) controls default work; owner may commission a named independently ready Change. **Re-audited 2026-11-21** against source snapshot `dac6b698`, selected remote key anchors at undertaking HEAD `7fccbc6417b4959985c633a9c073571a032030ba`. These are **source-inspection observations, not runtime test passes**. Later packet-audit documentation commits advance branch HEAD without changing the inspected code.
 
+> **Next-wave design overlay (planning branch only, not an execution commission):** [rolling implementation schedule](NEXT-WAVE-POST-MA06A.md) and source-grounded [WR05 publication algorithm](../../changes/open/2026-11-21--wr05-coherent-scene-publication/POST-MA06A-EXECUTION.md), [WR07 Launch backend](../../changes/open/2026-11-21--wr07-one-prompt-launch-backend/POST-MA06A-BACKEND-DESIGN.md), and [WR08A independently buildable UI packet](../../changes/open/2026-11-21--wr08a-play-launch-surface/CHANGE.md). The integrated MA06A code lives under `packages/story-engine`; original WR04–WR08 pre-refactor T-IDs remain unready. **Currently active Cursor chats:** WR05S (Documents/DB) and WR07C (Contracts). **Next executable pair after those dependencies land:** WR05 publication in Story Engine and WR08A frontend, separate worktrees and serialized integration. Do not launch replacement Changes from this planning branch.
+
 | Change | Outcome | Reality and current execution disposition |
 | --- | --- | --- |
 | WR02 | Persistent Library/source identity | Done, archived |
