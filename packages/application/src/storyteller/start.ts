@@ -1,1 +1,1 @@
-export { startStorytellerCandidate } from '../stories/storyteller-start-candidate';
+export * from '@offscreen/story-engine/storyteller/start';

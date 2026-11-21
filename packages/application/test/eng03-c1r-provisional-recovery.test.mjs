@@ -4,7 +4,7 @@ import { storytellerContextCaptureKind } from '../dist/storyteller/context-captu
 
 /**
  * Provider-free projection of the ENG03-C1-R read policy.
- * Mirrors packages/application/src/stories/reads.ts provisional branch.
+ * Mirrors packages/story-engine/src/stories/reads.ts provisional branch.
  */
 function projectProvisionalResolution({ generationKind, captureState }) {
   const provisional = generationKind === storytellerContextCaptureKind;

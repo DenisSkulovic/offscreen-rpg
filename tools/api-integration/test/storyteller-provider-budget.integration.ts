@@ -1,23 +1,32 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { generation } from '@offscreen/db/generation-schema';
-import { storytellerFunding, storytellerOperation, storytellerRun, storytellerUsageAllocation } from '@offscreen/db/storyteller-schema';
-import { createStorytellerBudget, resourcesForEffectiveUsagePolicy } from '@offscreen/application/storyteller';
-import { insertSyntheticCurrentAuthorityForTest } from '../../../packages/application/dist/storyteller/test-synthetic-current-authority.js';
+import {
+  storytellerFunding,
+  storytellerOperation,
+  storytellerRun,
+  storytellerUsageAllocation,
+} from '@offscreen/db/storyteller-schema';
+import {
+  createStorytellerBudget,
+  resourcesForEffectiveUsagePolicy,
+} from '@offscreen/application/storyteller';
+import { insertSyntheticCurrentAuthorityForTest } from '@offscreen/application/storyteller/test-synthetic-current-authority';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { createTestUsagePolicy } from './helpers/usage-policy.js';
 import type { TestContext } from 'node:test';
-import { type ProfiledStoryteller, eq, fakeUsage, fakeTelemetry } from './storyteller-suite.js';
+import {
+  type ProfiledStoryteller,
+  eq,
+  fakeUsage,
+  fakeTelemetry,
+} from './storyteller-suite.js';
 import { registerProfiledStoryteller } from './storyteller-suite.js';
 
 // Moved unchanged from the profiled Storyteller suite.
 export async function checkProviderBudget(
   t: TestContext,
-  {
-    database,
-    ownerId,
-    first,
-  }: ProfiledStoryteller,
+  { database, ownerId, first }: ProfiledStoryteller,
 ): Promise<void> {
   await t.test(
     'concurrent reservations obey a shared cap and duplicate settlement is harmless',
@@ -61,9 +70,7 @@ export async function checkProviderBudget(
         .from(generation)
         .where(eq(generation.id, first.generationId));
       assert.ok(sourceGeneration);
-      const sourceTask = storytellerTaskSchema.parse(
-        sourceGeneration.input,
-      );
+      const sourceTask = storytellerTaskSchema.parse(sourceGeneration.input);
       const capturedPolicy = createTestUsagePolicy(execution.policy.route, [
         {
           id: 'account-cost-burst',
@@ -119,10 +126,7 @@ export async function checkProviderBudget(
       const winner =
         ids[results.findIndex((result) => result.status === 'fulfilled')];
       assert.ok(winner);
-      assert.equal(
-        (await budget.inspect(accountId)).reservedMicrousd,
-        102n,
-      );
+      assert.equal((await budget.inspect(accountId)).reservedMicrousd, 102n);
       assert.equal(await budget.dispatch(winner, execution, true), true);
       assert.equal(await budget.dispatch(winner, execution, true), false);
       const settlement = {
@@ -138,14 +142,8 @@ export async function checkProviderBudget(
         .from(storytellerUsageAllocation);
       assert.equal(settledAllocation?.state, 'settled');
       assert.equal(settledAllocation?.consumed, 80n);
-      assert.equal(
-        (await budget.inspect(accountId)).settledMicrousd,
-        80n,
-      );
-      assert.equal(
-        (await budget.inspect(accountId)).reservedMicrousd,
-        0n,
-      );
+      assert.equal((await budget.inspect(accountId)).settledMicrousd, 80n);
+      assert.equal((await budget.inspect(accountId)).reservedMicrousd, 0n);
       const [completedOperation] = await database.db
         .select()
         .from(storytellerOperation)
@@ -212,18 +210,12 @@ export async function checkProviderBudget(
         .from(generation)
         .where(eq(generation.id, first.generationId));
       assert.ok(sourceGeneration);
-      const sourceTask = storytellerTaskSchema.parse(
-        sourceGeneration.input,
-      );
-      const capturedPolicy = createTestUsagePolicy(
-        execution.policy.route,
-        [],
-        {
-          maxModelRoundsPerOperation: 2,
-          maxReadsPerOperation: 2,
-          maxRetainedReadBytes: 4096,
-        },
-      );
+      const sourceTask = storytellerTaskSchema.parse(sourceGeneration.input);
+      const capturedPolicy = createTestUsagePolicy(execution.policy.route, [], {
+        maxModelRoundsPerOperation: 2,
+        maxReadsPerOperation: 2,
+        maxRetainedReadBytes: 4096,
+      });
       const resources = resourcesForEffectiveUsagePolicy(
         execution,
         capturedPolicy,
@@ -250,8 +242,7 @@ export async function checkProviderBudget(
       const budget = createStorytellerBudget(database);
       const slice = {
         request: task.request,
-        maxSerializedRequestBytes:
-          resources.envelope.maxSerializedRequestBytes,
+        maxSerializedRequestBytes: resources.envelope.maxSerializedRequestBytes,
         maxInputTokens: 50000,
         maxGeneratedTokens: 500,
         maxReasoningTokens: 0,
@@ -264,10 +255,7 @@ export async function checkProviderBudget(
         task,
         dispatch: slice,
       });
-      assert.equal(
-        await budget.dispatch(firstAttempt, execution, true),
-        true,
-      );
+      assert.equal(await budget.dispatch(firstAttempt, execution, true), true);
       await budget.settle({
         id: firstAttempt,
         execution,
@@ -283,10 +271,7 @@ export async function checkProviderBudget(
         task,
         dispatch: slice,
       });
-      assert.equal(
-        await budget.dispatch(secondAttempt, execution, true),
-        true,
-      );
+      assert.equal(await budget.dispatch(secondAttempt, execution, true), true);
       await budget.settle({
         id: secondAttempt,
         execution,

@@ -1,0 +1,141 @@
+import { eq } from 'drizzle-orm';
+import type { Database } from '@offscreen/db';
+import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
+import { activityControlSchema } from '@offscreen/contracts/campaign';
+import {
+  lockOwnedStory,
+  readDatabaseClockMs,
+  incrementStoryViewVersion,
+} from '../stories/persistence';
+import { recordActivityEvent, requireCampaign } from './persistence';
+import {
+  commandReceipt,
+  saveCommand,
+  recordCampaignPaceChange,
+} from './settings';
+import { settleActivity, scheduleActivity } from './activities';
+import {
+  activityProgressSchema,
+  nextBoundaryGameSecond,
+  resolvedActivityPlanSchema,
+  worldGameSecondForEffortBoundary,
+} from '@offscreen/game/activities';
+import { paceSchema, gameTimeProgressSchema } from '@offscreen/game/time';
+import { StoryError } from '../stories/errors';
+
+export function createCampaignControls(database: Database) {
+  return async function control(args: {
+    ownerId: string;
+    storyId: string;
+    operationId: string;
+    body: unknown;
+  }) {
+    const parsed = activityControlSchema.safeParse(args.body);
+    if (!parsed.success) throw new StoryError('invalid');
+    const result = await database.db.transaction(async (tx) => {
+      const current = await lockOwnedStory(tx, args);
+      const request = { kind: 'activity-control', ...parsed.data };
+      if (await commandReceipt(tx, current.id, args.operationId, request))
+        return;
+      const state = await requireCampaign(tx, current.id);
+      const [activity] = await tx
+        .select()
+        .from(gameActivity)
+        .where(eq(gameActivity.id, parsed.data.activityId));
+      if (
+        !activity ||
+        state.activeActivityId !== activity.id ||
+        activity.storyId !== current.id ||
+        activity.revision !== parsed.data.expectedRevision
+      )
+        throw new StoryError('conflict');
+      if (!['running', 'paused'].includes(activity.state))
+        throw new StoryError('conflict');
+      if (
+        (parsed.data.action === 'pause' && activity.state !== 'running') ||
+        (parsed.data.action === 'resume' && activity.state !== 'paused')
+      )
+        throw new StoryError('conflict');
+      if (state.locked && parsed.data.action === 'pace')
+        throw new StoryError('conflict');
+      const now = await readDatabaseClockMs(tx, current.id);
+      const settled = await settleActivity(tx, current, state, activity, now);
+      if (!['running', 'paused'].includes(settled.activity.state)) {
+        // Completion/encounter won the race. Keep its effects and acknowledge the
+        // requested control as superseded instead of rolling the transaction back.
+        await saveCommand(tx, current.id, args.operationId, request);
+        return;
+      }
+      const oldPace = paceSchema.parse(settled.state.clockPace);
+      const plan = resolvedActivityPlanSchema.parse(settled.activity.plan);
+      const storedProgress = activityProgressSchema.parse(
+        settled.activity.progress,
+      );
+      const nextWorldBoundary = worldGameSecondForEffortBoundary({
+        campaignGameSecond: settled.state.gameSecond,
+        retainedEffortGameSeconds: storedProgress.effortGameSeconds,
+        boundaryEffortGameSecond: nextBoundaryGameSecond(
+          plan,
+          plan.resolvedThroughGameSecond,
+        ),
+      });
+      if (
+        settled.activity.state === 'running' &&
+        nextWorldBoundary <=
+          gameTimeProgressSchema.parse(settled.state.clock).elapsedGameSeconds
+      ) {
+        // Commit the batch and continue catch-up before accepting a control.
+        // Throwing inside this transaction would undo the progress just made.
+        await scheduleActivity(tx, activity.id);
+        return 'catching-up' as const;
+      }
+      let nextState = settled.activity.state;
+      if (parsed.data.action === 'pause') {
+        nextState = 'paused';
+      } else if (parsed.data.action === 'resume') {
+        nextState = 'running';
+      }
+      await tx
+        .update(gameActivity)
+        .set({
+          state: nextState,
+          revision: settled.activity.revision + 1,
+        })
+        .where(eq(gameActivity.id, activity.id));
+      if (parsed.data.action === 'pause' || parsed.data.action === 'resume') {
+        await recordActivityEvent(tx, {
+          storyId: current.id,
+          activityId: activity.id,
+          activityRevision: settled.activity.revision + 1,
+          gameSecond: settled.state.gameSecond,
+          kind: parsed.data.action === 'pause' ? 'paused' : 'resumed',
+          causeKey: `command:${args.operationId}`,
+          label: plan.action.label,
+          summary:
+            parsed.data.action === 'pause'
+              ? `${plan.action.label} paused.`
+              : `${plan.action.label} resumed.`,
+        });
+      }
+      await tx
+        .update(campaign)
+        .set({
+          clockAnchorAt: new Date(now),
+          clockPace: parsed.data.pace ?? oldPace,
+        })
+        .where(eq(campaign.storyId, current.id));
+      if (parsed.data.pace) {
+        await recordCampaignPaceChange(tx, state, parsed.data.pace);
+      }
+      await incrementStoryViewVersion(tx, {
+        storyId: current.id,
+        viewVersion: settled.current.viewVersion + 1,
+      });
+      await saveCommand(tx, current.id, args.operationId, request);
+      if (nextState === 'running') await scheduleActivity(tx, activity.id);
+    });
+    if (result === 'catching-up') {
+      throw new StoryError('conflict');
+    }
+  };
+}

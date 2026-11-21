@@ -39,6 +39,10 @@
       "types": "./dist/storyteller/saved-generation-publish.d.ts",
       "default": "./dist/storyteller/saved-generation-publish.js"
     },
+    "./storyteller/test-synthetic-current-authority": {
+      "types": "./dist/storyteller/test-synthetic-current-authority.d.ts",
+      "default": "./dist/storyteller/test-synthetic-current-authority.js"
+    },
     "./runtime-logging": {
       "types": "./dist/runtime-logging/index.d.ts",
       "default": "./dist/runtime-logging/index.js"
@@ -65,6 +69,7 @@
     "@offscreen/contracts": "workspace:*",
     "@offscreen/game": "workspace:*",
     "@offscreen/documents": "workspace:*",
+    "@offscreen/story-engine": "workspace:*",
     "drizzle-orm": "0.45.2"
   },
   "devDependencies": {

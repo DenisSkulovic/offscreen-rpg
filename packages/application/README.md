@@ -1,8 +1,8 @@
 # Application operations
 
-This package owns use cases, transactions and coordination. API controllers and Temporal Activities call its public [exports](package.json). Pure mechanics belong in `@offscreen/game`; task/schema/provider work in `@offscreen/storyteller`; immutable files in `@offscreen/documents`. Read the relevant route below, then its source, rather than the entire package.
+This package owns composition, drafts, outbox delivery, logging, the admin adapter, and developer tools. API controllers and Temporal Activities still call its public [exports](package.json). The story, campaign, storyteller, and generations implementations live in `@offscreen/story-engine`; the TypeScript files under those four directories here are identity re-exports. Pure mechanics belong in `@offscreen/game`; task/schema/provider work in `@offscreen/storyteller`; immutable files in `@offscreen/documents`. Read the relevant route below, then its source, rather than the entire package.
 
-**For frontend-supported backend work (W16/W19):** first read the [story operation/transaction map](src/stories/README.md). It names `createStoryApplication`, `createStoryResolution.admit`, public snapshot `viewVersion` writers and retry/commit seams without loading the whole package.
+**For frontend-supported backend work (W16/W19):** first read the [story operation/transaction map](../story-engine/src/stories/README.md). It names `createStoryApplication`, `createStoryResolution.admit`, public snapshot `viewVersion` writers and retry/commit seams without loading the whole package. The table below still names the application paths; those files re-export the engine module of the same relative path.
 
 ## Directory index
 
