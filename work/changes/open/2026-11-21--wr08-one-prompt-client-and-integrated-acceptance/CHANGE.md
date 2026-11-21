@@ -2,6 +2,8 @@
 
 **State:** Proposed. **Kind:** implementation. **Dependencies:** WR04 + WR06 + WR07. **Outcome:** the user experiences the proper product: choose prepared **Play** or enter one Story Prompt, see real generation status, arrive at a playable scene, and inspect/fork past scene snapshots. Retire the obsolete creator wizard only after the new backend path works. Prove the integrated Writer can actually use skills, Library and research children.
 
+**Undertaking branch rule:** this Change belongs to **Storyteller Workshop**. Create its isolated worktree/temporary branch from the current head of `undertaking/storyteller-workshop`; after acceptance, merge/reconcile the complete Change back into `undertaking/storyteller-workshop`, then remove the temporary branch/worktree. Do **not** merge this Change directly into `main`. Rebase/refresh from the undertaking branch before beginning if earlier WR work has landed.
+
 **Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad code source from `09d5820bcafe`; recheck current HEAD/worktrees before editing. **Implementation owner: Cursor.** This packet is Proposed/unselected and conveys no authorization for paid provider, destructive DB, live cluster or external effects. [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [Current queue](../../../QUEUE.md).
 
 ## Cursor first-screen route
