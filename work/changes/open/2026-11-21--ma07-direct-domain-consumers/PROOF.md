@@ -1,0 +1,7 @@
+# MA07 | independent readiness review and verification
+
+**G0–G7 planner cold-read, source-inspected only:** G0 PASS named branch/base; G1 PASS no changed selected product contract; G2 PASS explicit literal replacement table and destination exports; G3 PASS no schema, money or transaction edits; G4 PASS T01 opens exact hosts and specs; G5 PASS serial T01–T03 and one owner; G6 PASS build/typecheck, negative import injection and module graph; G7 PASS whole bulk migration accepted with compatibility retirement deferred deliberately. **READY subject to HEAD drift check.** Static readiness is not a runtime PASS.
+
+**Run from root:** `pnpm --filter @offscreen/story-engine build`, separate `pnpm --filter @offscreen/api build`, `pnpm --filter @offscreen/game-authority build`, `pnpm --filter @offscreen/worker build`, separate corresponding typechecks, `pnpm repo:module-graph`, `pnpm repo:module-graph:test`. Select existing focused worker scripted-writer-scene and research-dispatch tests and story-launch API tests by their real test harness. Synthetic forbidden import must fail guard; comment-only string must not. Report pre-existing `storyteller-generation-evidence.test.ts` worker compilation failure if reproducible; do not call a failing build green. No production or provider effects required.
+
+**Remaining gap:** 134 Application forwarders retained for other consumers. This Change fixes public production host imports, not all residual architecture.
