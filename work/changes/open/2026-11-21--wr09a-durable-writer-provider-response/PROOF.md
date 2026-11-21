@@ -1,27 +1,31 @@
-# WR09A independent readiness and tests
+# WR09A | adversarial source-based readiness and proof matrix
 
-**G0** source/head `6dd12761`, target `undertaking/storyteller-workshop`, branch guard and independent scope known. **G1** exact P3B hash behavior, Writer custody reserve/dispatched/settle, Drizzle step and Documents private CAS inspected. **G2** chosen separate response-object hash and shared custody state machine, no model-worker wiring, no live spend. **G3** SQL column/migration, private response envelope and strict API selected. **G4** T01 legal first edit, 2–5 anchors, schema first. **G5** no MA10 test mover or MA11 graph source overlap. **G6** fake-delivery, crash, charge, corruption, secret and replay negatives. **G7** material no-double-send safety stage, not facade polish. **Planner verdict: READY WITH HARD MONEY-TRANSACTION STOP**, not a claim of runtime proof.
+**Baseline:** MA08-integrated `6dd1276131a813f694ec3bccf4f9062ad3708208`. **No implementation, SQL or network tests executed by ChatGPT.** Existing P3B tests prove raw SHA and usage, **not** durable private replay.
 
-Required deterministic evidence, default no external network:
-- Attempt reserved → dispatched → delivered: one injected fake fetch, exact bound wire SHA, response CAS returned, nullable new SQL pointer populated, original result SHA unchanged, exactly one provider charge.
-- Atomic fault injection inside SQL transaction *after* accounting settlement calculation but *before* Writer step update rolls back attempt charge, funding/run counters and step pointer together; a later restart marks possibly-dispatched uncertain and refuses resend. No separate settled attempt without a response pointer.
-- Replay after simulated process death/reader reconstruction: identical exact bytes from CAS, zero additional transport calls/charges.
-- Wrong mission/context/ordinal/attempt/response hash, invalid CAS envelope, missing document, unauthorized identity: fail closed and do not leak contents.
-- CAS fail before SQL pointer and crash after possible send: held/uncertain, no resend, reserved liability not marked free; same attempt can't be recharged.
-- Secret blank: no fetch; test key appears in fake fetch Authorization only, never in logs, persisted wire/body, SQL or telemetry.
-- Scripted P3B old raw SHA and WR04 child caps remain unchanged, run joined regression only after MA10 migrates old test.
-- Migration on disposable SQL, verify nullable schema compatibility; do not mutate protected DB; no actual provider transport calls; PASS/FAIL/SKIP/NOT RUN recorded.
+| G | Cold-read result |
+| --- | --- |
+| G0 | PASS: correct integration branch/HEAD, strict no-funded-call authority, one custodian |
+| G1 | PASS: inspected budget.ts settle body and locks, Writer step/attempt/dispatch, provider transport, Docs structured object, SQL table, P3B and transport tests |
+| G2 | PASS: precise prepared transport/preflight API, private CAS document, nullable pointer and shared existing budget TX selected |
+| G3 | PASS: T01 schema/CAS; T02 transport; T03 settlement/strict runtime; T04 fake SQL proof; exact edit files and stop on lock contradiction |
+| G4 | PASS: T01 first edit legal on MA08 branch, no need to discover a new schema or wallet |
+| G5 | PASS: disjoint source/files from MA10 test relocation and MA11 AST graph; provider and SQL resources fake/disposable only |
+| G6 | PASS in *design only*: negative tests below distinguish atomicity/security from simply passing TypeScript |
+| G7 | PASS: one correctness slice enabling later WR09B, no live provider/auth/Worker scope creep |
 
-**Not accepted by WR09A:** full Writer loop real mode, credential production wiring, scene quality, 200-scene longform, opening/continuation admission. WR09B later owns those after custody is safely integrated.
+**Readiness: READY WITH STRICT FINANCIAL SAFETY STOP.** An executor contradiction in lock hierarchy returns to planner; it is never license to redesign cost policy or mark a failing test Done.
 
-## Targeted independent negative tests added by source-repair review
+**Mandatory normal/fault tests (fake provider, disposable SQL only):**
+1. Without credential/with whitespace key or corrupted wire, `preflight` rejects; no fetch, **no new attempt**, zero reserved amount; when an already-dispatched prior attempt exists, preserve uncertain liability rather than releasing it.
+2. Exact prepared wire hash equals `requestCasHash` and expected sha under locked step; altered model/provider/price/attempt/revision/child identity denied pre-send.
+3. Strict reserve-to-dispatch SQL acquires advisory `714092631` as **first lock**; concurrent strict requests on same allowance cannot deadlock or dispatch the same step twice.
+4. Delivered fake content: private CAS stored/read, linked `responseObjectHash`, legacy raw `resultCasHash=SHA256(serializedResponse)`, attempt charged exactly once, mission state valid. Fresh database/storage reader yields identical original response **without credential** and zero extra fetch/charge.
+5. Inject SQL error **after budget settled rows/window writes but before step-pointer CAS**: entire SQL transaction rolls back step pointer, attempt settled state, funding/run counters, operation counters and usage windows. Orphan CAS inert; restarted step dispatched→uncertain, **no retry send**.
+6. Known `failed,sent:true` returns failed, preserves usage charge, and commits failure state **atomically**; injected failure rolls both back. `failed,sent:false` confirms unsent, releases reserved allowance and holds; later ambiguous restart never sends on the old attempt.
+7. `unknown`, thrown fetch, timeout, missing CAS, corrupt schema/hash, oversized output, wrong mission/context/ordinal/attempt/request SHA all fail closed, no raw body in logs/outbox/player and no new provider send.
+8. Legacy `packages/application/test/p3b-writer-provider-custody.integration.test.mjs` (moved by MA10) keeps its exact raw SHA equality, original P3B accounting and WR04 bounded-child research tests. Test this only after joined branch acceptance; WR09A alone does **not** edit/move that file.
+9. Old `createStorytellerBudget(...).settle(input)` tests retain unchanged calculated charge, window limits, recoveryFence, idempotent settlement comparisons, settled vs reserved counters.
 
-1. **Credential-preflight boundary:** for missing/whitespace key, `preflight()={kind:'rejected',reason:'credential_missing'}`, strict custody must return held **before reservation**, no `storyteller_attempt` inserted, zero invocation/fetch, zero funding reserved; malformed wire likewise no attempt.
-2. **Strict dispatch SQL lock order:** instrument/stub transaction `tx.execute` to show `pg_advisory_xact_lock(714092631)` first *before* Writer mission/step `FOR UPDATE`; test two competing strict attempts on shared allowance complete without deadlock, with only allowed one step/round dispatched.
-3. **Atomic delivered:** inject throw after `settleStorytellerAttemptInTransaction` updates attempt and windows but before `casWriterStep`; whole SQL TX rolls back charge, reserved/settled counters, response pointer, mission revision and windows; on restart **dispatched→uncertain**, no second fetch; CAS orphan does not grant replay.
-4. **Atomic sent failure:** delivered error with `sent:true` and nonzero reported usage settles once and marks Writer step failed *in same SQL transaction*, not charged-then-dispatched partial. Crash/fault between writes rolls back both, no resend.
-5. **Happy/replay:** exactly one transport, persisted `responseObjectHash` nonnull and private CAS returned, legacy raw `resultCasHash=SHA256(serializedResponse)` unchanged, same key/capture/attempt rehydrated after fresh store construction with 0 extra transport/charge; replay may succeed without current API key because it does not dispatch.
-6. **Corrupt/tampered/oversized:** missing/private CAS, mismatched request/attempt/context, broken SHA, >1MiB, invalid schema all refuse without new dispatch, no raw body in error/log/outbox.
-7. **Old behavior:** P3B `hashWriterMissionSerializedResponse(RESPONSE_BODY)` equality and WR04 child shared-budget tests unchanged and present; MA10 physically moves that P3B test, so this lane does not edit it.
+**Proof commands from repo root:** `pnpm --filter @offscreen/db build`, `pnpm --filter @offscreen/story-engine build`, `pnpm --filter @offscreen/storyteller build`, `pnpm --filter @offscreen/storyteller test`, scoped disposable `pnpm --filter @offscreen/api-integration ...` as actual script/test harness supports, `git diff --check`, changed-file formatting; report exact PASS/FAIL/SKIP/NOT RUN. **No actual OpenRouter request or protected SQL.**
 
-**No SQL/provider proofs have run in planning.** A failing critical financial fault test is NOT permission to mark WR09A done. No actual OpenRouter request is authorized.
+**Not accomplished by WR09A:** real-model Worker mode, credential host wiring, scene creativity, Launch/continuation admission, live paid proof, long-form campaign, authority/Writer inversion. All remain explicit later goals.
