@@ -233,6 +233,37 @@ export function scanMaintenance(input) {
     return links.targets;
   }
 
+  // Top-level work lanes are indexes, not parking areas for date-stamped
+  // handoffs, audit plans or alternative queues. Packet files belong under
+  // an actual owning work-item directory.
+  const allowedLaneRootFiles = new Set([
+    'work/changes/README.md',
+    'work/designs/README.md',
+    'work/tasks/README.md',
+    'work/tasks/TEMPLATE.md',
+    'work/undertakings/README.md',
+  ]);
+  const allowedWorkRootFiles = new Set([
+    'work/README.md',
+    'work/QUEUE.md',
+    'work/WORK-TAXONOMY.md',
+    'work/IMPLEMENTATION-ROADMAP.md',
+  ]);
+  for (const rel of markdown) {
+    const laneRoot = /^work\/(?:changes|designs|tasks|undertakings)\/[^/]+\.md$/.test(rel);
+    const workRoot = /^work\/[^/]+\.md$/.test(rel);
+    if ((laneRoot && !allowedLaneRootFiles.has(rel)) ||
+        (workRoot && !allowedWorkRootFiles.has(rel))) {
+      findings.push(finding(
+        'error',
+        'unowned-work-document',
+        rel,
+        'Loose audit, plan or handoff file outside an owned work-item lifecycle.',
+        'Reconcile the current work with an Undertaking, Design, Change or Task. Preserve unique evidence and Git provenance before retiring old handoffs.',
+      ));
+    }
+  }
+
   const queueRel = 'work/changes/README.md'; // catalog, not selection
   const taskIndexRel = 'work/tasks/open/README.md';
   const taskArchiveRel = 'work/tasks/archive/README.md';

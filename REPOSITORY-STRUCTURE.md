@@ -141,6 +141,12 @@ Before retiring a temporary Design, Change, Task or Undertaking:
 5. Check privacy/rights/retention/operational requirements and get appropriate owner permission for destructive cleanup.
 6. Perform small reversible moves or deletion only after these gates, then run proportionate documentation/maintenance checks. Never infer deletion authority from seven days elapsed.
 
+### Smell: loose planning documents outside an owner
+
+Do **not** place `AUDIT-*.md`, `HANDOFF-*.md`, `ROADMAP-*.md`, `PROGRAM-*.md`, `REVIEW-*.md` or `REMEDIATION-*.md` directly in the roots of `work/changes/`, `work/designs/`, `work/undertakings/` or `work/tasks/`. They have **no individual lifecycle there**. An active cross-Change sequence belongs to its Undertaking; unratified architectural questions belong in a Design; real accepted implementation lives in specific Changes; concluded unique evidence belongs in `evidence/` or `research/`. Otherwise keep exact Git provenance and retire the dated handoff after reviewing backlinks.
+
+**Review clues:** a document claims to be “current” but cites an older branch/SHA; several dated override notes; copied dispatch tables after Changes are Done; a free-floating Markdown in a catalog root; duplicate program documents that conflict with packet status. Inspect owner, current successor, inbound links, unique proof and deletion authorization. The strict maintenance checker now rejects unowned top-level work docs, but cannot prove semantic freshness.
+
 ## 7. Anti-drift rules for an unfamiliar agent
 
 1. **Find the owner first.** Start with `AGENTS.md` → [WORKFLOW](WORKFLOW.md) and this map → nearest README/topic. Do not search the entire tree unless the actual owner is unknown.

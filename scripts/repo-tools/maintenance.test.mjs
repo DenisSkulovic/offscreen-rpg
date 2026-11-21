@@ -419,3 +419,24 @@ test('missing Git is unavailable rather than green', () => {
   assert.match(report.unavailable, /unavailable/i);
   assert.equal(report.complete, false);
 });
+
+test('strict maintenance detects free-floating planning files but accepts owned packets/templates', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/changes/NEW-AUDIT.md', '# Unowned audit\n');
+  fx.add('work/undertakings/UNOWNED-HANDOFF.md', '# Unowned handoff\n');
+  fx.add('work/tasks/TEMPLATE.md', '# Task template\n');
+  const report = scan(fx);
+  assert.ok(codes(report).includes('unowned-work-document:work/changes/NEW-AUDIT.md'));
+  assert.ok(codes(report).includes('unowned-work-document:work/undertakings/UNOWNED-HANDOFF.md'));
+  assert.ok(!codes(report).some(x => x.includes('work/tasks/TEMPLATE.md')));
+  fx.cleanup();
+});
+
+test('unexpected root work roadmap is a placement error, not a second selector', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/SECOND-ROADMAP.md', '# Some competing priorities\n');
+  assert.ok(codes(scan(fx)).includes('unowned-work-document:work/SECOND-ROADMAP.md'));
+  fx.cleanup();
+});

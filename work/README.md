@@ -1,5 +1,7 @@
 # Temporary work
 
+**No loose handoff/roadmap dumping:** `changes/`, `designs/`, `tasks/` and `undertakings/` roots are catalogs, not storage for dated audit or execution-plan files. Put a live multi-Change schedule in its Undertaking, unresolved architecture in a Design, unique historical facts in curated evidence, and retired transient plans in Git history with repaired links.
+
 **Temporary by design:** [Repository structure](../REPOSITORY-STRUCTURE.md#4-work-is-temporary-coordination-not-product-truth) states each work folder's admission, expected lifetime, promotion and retirement. Every open dossier needs an owner, unresolved outcome and exit; catalogs must not become perpetual archives.
 
 **First:** [How we work](../WORKFLOW.md) explains this folder's work-unit taxonomy, lifecycles, decisions, dependency/parallel execution and retirement in one diagram-led guide. This index remains the directory router, not a second workflow policy.
