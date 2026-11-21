@@ -1,22 +1,42 @@
-# MA05C | fixed Composer dispatch queue
+# MA05C | deterministic utility edit + single parent proof
 
-**Source read:** `undertaking/storyteller-workshop` at `22e8af7e38ade6cf6797e6446702d2203074a439`. Parent performs normal branch/worktree guard, confirms `@offscreen/db/outbox` exports and named paths still match; no architecture review. **Patch rule identical for T01–T04:** in each whitelisted file replace **every exact** `from '../outbox/index'` with `from '@offscreen/db/outbox'`. Preserve every other byte except changed import formatting required by existing formatter. **Do not modify SQL, imported names, manifest, tests, Git index or runtime.** Composer Standard for substantive batched mechanical edits; an Auto utility subagent is permissible if policy allows exact deterministic replacement without code/design choices. Parent owns all staging and commits.
+**Reference:** `undertaking/storyteller-workshop` source HEAD `22e8af7e38ade6cf6797e6446702d2203074a439`; update only on isolated `change/ma05c-direct-db-outbox-imports` worktree after actual branch guard. **Goal:** replace only exact old outbox module specifiers in exactly 46 source files. [Source Map](SOURCE-MAP.md) supplies the audited 46-path ownership list. **DAG:** T01 → T02, serial. **Model:** T01 can use the budget policy's *Auto utility* context-isolation route, or parent may execute the deterministic script directly if spawning a child costs more. Do not assign four Composer workers to four trivial text-edit cohorts. T02 is parent VERIFY.
 
-**DAG:** `[T01 || T02] → [T03 || T04] → T05`. Pairs marked optional parallel only if worktree guarantees disjoint file writes and no child runs Git index, build, test database, generated output or shared formatter. If not guaranteed, serialize each wave. T03/T04 have no semantic dependency on T01/T02 but two waves limit fanout; no research swarm.
+## T01 | Exact guarded import substitution | PLANNER-READY
+DEPTH=PATCH, bounded mechanical utility; **no code/design choices**. **Allowed writes:** exactly the 46 paths enumerated in SOURCE-MAP.md, no manifest/lockfile/test/SQL runtime edits. **Read anchors:** `packages/db/src/outbox.ts:enqueue,Transaction,Notice`, `packages/application/src/outbox/index.ts` compatibility reexport, `packages/application/src/campaign/follow-up-intents.ts`, `packages/application/src/stories/continuation.ts`, `packages/application/src/storyteller/records.ts`.
+**Algorithm:** run the following from the Change worktree's *repository root*. It validates **all** target files before writing any, so missing/stale imports stop safely. Do not change types/aliases, SQL logic or namespace conventions.
 
-## T01 | Campaign import wave | PLANNER-READY
-DEPTH=PATCH. **Writes:** exactly 12 `campaign/` paths from [Source Map Wave 1A](SOURCE-MAP.md#wave-1a-campaign-12). **Initial reads:** `packages/application/src/campaign/action-executions.ts`, `follow-up-intents.ts`, `reports.ts`, `packages/db/src/outbox.ts` (type/symbol compatibility). **Algorithm:** apply literal replacement to exact 12 paths, including files with two import occurrences. **Local proof:** diff of those 12 files contains only module-specifier replacements; grep old string on those exact 12 paths returns no matches. **Negative:** no `@offscreen/db/outbox` imported symbol removed or renamed, no SQL line changed. **Stop:** any listed path lacks the exact old import or DB export changed; report file:line.
+```bash
+node <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const cohorts = {
+  campaign: 'action-executions actions activities activity-lifecycle-events delegated-offer follow-up-intents holds narration persistence reports settings world-obligations',
+  stories: 'continuation delegation-policy documents forks initialization persistence public-events resolution scene-checkpoint timing',
+  storyteller: 'admission budget capture-materialization capture-rearm context-capture context dispatch-review execution-stages execution load-current-dispatch-authority memory openings prompt-provenance records recovery start test-revoke-current-owner-grant window-accounting writer-loop writer-mission-custody writer-workdesk',
+  generations: 'openings scripted-openings',
+  'developer-tools': 'chamber',
+};
+const before = "from '../outbox/index'";
+const after = "from '@offscreen/db/outbox'";
+const changes = [];
+for (const [dir, filenames] of Object.entries(cohorts)) {
+  for (const stem of filenames.split(' ')) {
+    const file = path.join('packages/application/src', dir, stem + '.ts');
+    const content = fs.readFileSync(file, 'utf8');
+    if (!content.includes(before)) throw Error('MA05C source drift: ' + file);
+    changes.push([file, content.split(before).join(after)]);
+  }
+}
+if (changes.length !== 46) throw Error('MA05C inventory count changed: ' + changes.length);
+for (const [file, body] of changes) fs.writeFileSync(file, body);
+console.log('MA05C import-only source paths updated: ' + changes.length);
+NODE
+```
 
-## T02 | Stories import wave | PLANNER-READY
-DEPTH=PATCH. **Writes:** exactly 10 `stories/` paths from [Source Map Wave 1B](SOURCE-MAP.md#wave-1b-stories-10). **Initial reads:** `packages/application/src/stories/continuation.ts`, `resolution.ts`, `persistence.ts`, `packages/db/src/outbox.ts`. **Algorithm/proof/negative/stop:** identical exact replacement and diff/grep checks restricted to the 10 paths. Do not change continuation note-admission or SQL transaction order.
+**Proof:** output must say 46; `git diff --check`; inspect the changed-file diff mechanically to confirm exclusively the target import-literal replacement. **Negative:** a missing original import must abort **before** any source file writes; report exact stale file, do not search/replace a substitute path. No child Git staging/commits/build/provider/SQL operations.
 
-## T03 | Storyteller A import wave | PLANNER-READY
-DEPTH=PATCH. **Writes:** exactly 12 `storyteller/` paths from [Source Map Wave 2A](SOURCE-MAP.md#wave-2a-storyteller-a-12). **Initial reads:** `packages/application/src/storyteller/admission.ts`, `context-capture.ts`, `memory.ts`, `packages/db/src/outbox.ts`. **Algorithm/proof/negative/stop:** identical exact replacement/patch-only diff checks, no source behavior or type refactor. Do not alter publication and writer capture logic.
+## T02 | Whole-Change verification + integration | PLANNER-READY
+DEPTH=VERIFY, parent, after T01. **Commands from root:** `pnpm --filter @offscreen/db build`, `pnpm --filter @offscreen/application build`, `pnpm --filter @offscreen/api build`, `pnpm --filter @offscreen/game-authority build`, `pnpm --filter @offscreen/worker build`, `pnpm repo:module-graph --json`. Check changed-file Prettier and quality ESLint without source-wide formatting; run `git diff --check`. **Negative:** run `rg -n -F "from '../outbox/index'" packages/application/src`; expected exit **1** / no output, and `git diff` has no behavior, test or manifest changes. MA05B's disposable SQL rollback evidence is predecessor proof; no duplicate SQL fixture for import-only edits. If a compiler failure reveals an actual signature mismatch, stop and report concrete symbol. Parent runs ordinary code-health/Change close guards, archive, squash-integrate/push into undertaking, retire clean temporary worktree/branch. No other Change automatically starts.
 
-## T04 | Storyteller B + generation/Chamber imports | PLANNER-READY
-DEPTH=PATCH. **Writes:** exact 12 paths from [Source Map Wave 2B](SOURCE-MAP.md#wave-2b-storyteller-b-plus-other-owners-12). **Initial reads:** `storyteller/records.ts`, `storyteller/writer-loop.ts`, `generations/openings.ts`, `developer-tools/chamber.ts` (all under Application source), plus `packages/db/src/outbox.ts`. **Algorithm/proof/negative/stop:** identical exact replacement/patch-only diff checks, no rewrite of frozen workflow topics, attempt/lease SQL or synthetic Chamber rights.
-
-## T05 | Joined build, graph, diff proof, closure | PLANNER-READY
-DEPTH=VERIFY, parent executes once after all four source receipts. **Read:** `packages/application/package.json`, `packages/db/package.json`, `scripts/repo-tools/module-graph.mjs`, plus parent-owned git diff. **Commands from root:** `pnpm --filter @offscreen/db build`, `pnpm --filter @offscreen/application build`, `pnpm --filter @offscreen/api build`, `pnpm --filter @offscreen/game-authority build`, `pnpm --filter @offscreen/worker build`, `pnpm repo:module-graph --json`. Run changed-file Prettier check and ESLint quality as configured (do not reformat unrelated source). **Negative:** `rg -n "from ['\\\"]\\.\\./outbox/index['\\\"]" packages/application/src` returns **exit 1** (no hits), and `git diff` has no changes to SQL AST, test fixtures, package manifests or lockfile. Because MA05B already ran the SQL mismatch/rollback negative, do not rerun disposable integration merely for an import-only migration; if code differs in unexpected ways, stop and require a focused proof. Run changed-code health guard and wiki close guard only at closure, record exact command results. Archive/squash/push to undertaking and retire clean Change worktree/branch; no automatic successor.
-
-**Receipt:** T-ID | exactly owned paths + count | import-only diff proof | exact check/exit | blocker or none. No duplicate parent research, build per child or model-upgrade. `main` untouched.
+**Receipt:** source file count and exact edit nature; joined commands/exit; no-old-import negative; branch SHA after safe closure. A full Change commission includes the entire T01→T02 lifecycle.
