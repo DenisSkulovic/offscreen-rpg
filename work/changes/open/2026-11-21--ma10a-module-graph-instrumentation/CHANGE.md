@@ -1,0 +1,9 @@
+# MA10A | Instrument actual Story Engine runtime/type-only boundary graph
+
+**State: PLANNER-READY, independent lane C** of the [parallel structural wave](../../../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Baseline:** source `e122d080`, MA07 `4168db58`; **target:** `undertaking/storyteller-workshop`. This is a **functional architecture tool Change**, not a cosmetic report: measure meaningful module ownership and reject independently checkable forbidden edges without moving product code. Final Application removal and export allowlisting remain MA10 proper.
+
+**Exclusive writes:** `scripts/repo-tools/module-graph.mjs`, `module-graph-core.mjs`, `module-graph.test.mjs` and (if needed) a dedicated fixture under `scripts/repo-tools/test-fixtures/**`. NO packages/apps/tools/manifests/lockfile, no catalogs/undertaking documents, no root scripts changed. No dependency or schema changes, no live operations.
+
+**Outcome:** the current AST graph reporter models Story Engine's internal `stories`, `campaign`, `storyteller`, `generations` domains in addition to old Application categories. Report runtime and type-only SCCs separately, include actual internal edges between these domains (not just package graph). Enforce existing established no-engine-to-developer-lab and pure-domain→app/worker direction where syntactically determinable, and test synthetic forbidden edges. **Do not fail baseline for pre-existing Story Authority→Writer edges that MA09 will remove**, or for domain SCCs before MA10; instead report them as debt, with precise file and import classification. After MA09, MA10 upgrades those debt categories to hard failure in its own packet. Keep JSON/mermaid/human renderers backwards compatible.
+
+[Anchors](SOURCE-MAP.md) · [algorithm](EXECUTION.md) · [tasks](TASKS.md) · [proof](PROOF.md).
