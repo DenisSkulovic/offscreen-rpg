@@ -13,6 +13,8 @@ Prioritize fast delivery of the **evolved Storyteller experience**, not purity o
 - **Discard/recreate:** references to `packages/application/src/{stories,campaign,storyteller,generations}` as canonical owners after MA06A; stale line numbers, `dist` paths, old DI/composition, old migration/read-write maps, T-ID write sets, frozen dependency/collision assumptions and unrun proof claims.
 - **Do NOT discard:** schema/version contracts, durable operation identity, owner-scoped authorization, foreign-branch privacy, stable historical roots and coherent SQL/CAS commit, uncertain provider handling and spend ceilings.
 
+> **WRA design route:** [Bounded v2 post-state checkpoint and transaction algorithm](WRA-SCENE-V2-DESIGN.md). This is a proposed mechanism with a source writer census, **not** yet a Cursor-ready code packet. The remaining planner job is to close the story-lock and scene-specific projector coverage after MA06A, rather than repeatedly redesigning the schema.
+
 ## Accelerated implementation sequence (after MA05G/MA06A)
 
 | Cohort | Existing goal(s) | End-to-end deliverable and owned surface | Prerequisite |
