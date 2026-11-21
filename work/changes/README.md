@@ -44,7 +44,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 
 [DXK07](archive/2026-11/infrastructure/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) is **Done for implementation**; full fresh-clone/Headlamp operator proof remains [DXK-FINAL](../tasks/open/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md). · [Implementation roadmap](../IMPLEMENTATION-ROADMAP.md) · [Current distributed source review](../designs/open/distributed-turn-poc/README.md) · [First-campaign readiness study](../designs/open/first-campaign-readiness-2026-11-20/README.md) · [current selection](../QUEUE.md). These source maps are dated; they do not supersede HEAD code or current Change states.
 
-### Writer refoundation | WR02 and WR03 archived
+### Writer refoundation | WR02 and WR03 archived; WR04–WR08 require planner repair
 
 | Change | Work item |
 | --- | --- |
@@ -54,13 +54,13 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [WRD04](archive/2026-11/other/2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md) | Wiki reconciliation (Done) |
 | [WR02](archive/2026-11/storyteller/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | Persistent Library / source identity (Done) |
 | [WR03](archive/2026-11/storyteller/2026-11-21--wr03-agentic-writers-workdesk/CHANGE.md) | Writer's Workdesk (Done) |
-| [WR04](open/2026-11-21--wr04-delegated-writer-research/CHANGE.md) | Bounded research assistants |
-| [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | Coherent scene publication |
-| [WR06](open/2026-11-21--wr06-fork-active-fictional-state/CHANGE.md) | Active-fiction fork semantics |
-| [WR07](open/2026-11-21--wr07-one-prompt-launch-backend/CHANGE.md) | One-prompt launch backend |
-| [WR08](open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | Creation UI and integrated acceptance |
+| [WR04](open/2026-11-21--wr04-delegated-writer-research/CHANGE.md) | **PLANNER-BLOCKED:** context-specific Writer step/custody and child read-only spend gates not settled |
+| [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | **PLANNER-BLOCKED:** v2 after-world-state schema, transaction projection and migration not fully settled |
+| [WR06](open/2026-11-21--wr06-fork-active-fictional-state/CHANGE.md) | **PLANNER-BLOCKED:** depends on WR05 and exact ID/FK/active-work remap |
+| [WR07](open/2026-11-21--wr07-one-prompt-launch-backend/CHANGE.md) | **PLANNER-BLOCKED:** request/route, SQL custody, GA scene-one and uncertain-replay contracts |
+| [WR08](open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | **PLANNER-BLOCKED:** typed WR04/06/07 contracts and exact UI/E2E fixture not landed |
 
-[Writer Undertaking program](../undertakings/storyteller-workshop/PROGRAM.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02 and WR03 are Done and archived on the undertaking branch; WR04–WR08 remain Proposed/unselected and dependency-gated.** Before any successor commission, refresh its source anchors against the landed writer mission. WR03 does not publish scenes and does not select WR04. No permission to dispatch paid models or mutate deployment follows from these statuses.
+[Writer Undertaking program](../undertakings/storyteller-workshop/PROGRAM.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02 and WR03 are Done and archived on the undertaking branch; WR04–WR08 have each failed the independent G0–G7 execution-readiness audit and are explicitly PLANNER-BLOCKED.** Their existing T-IDs are non-dispatchable until ChatGPT freezes missing designs and verifies successor source contracts. See the [program's corrected collision/dependency map](../undertakings/storyteller-workshop/PROGRAM.md). No Cursor investigation swarm or provider calls are authorized by a proposed Change. WR03 does not publish scenes and does not select WR04. No permission to dispatch paid models or mutate deployment follows from these statuses.
 
 ## Layout
 
