@@ -6,7 +6,7 @@
 
 | Change | Packet contents | Handoff/selection | Specific verified seam & dependency guard |
 |---|---|---|---|
-| [WR02](open/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | 8 Composer tasks + source/algorithm/proof | **Selected.** T01 is first task after dirty-worktree/source check | v1 `documentManifestSchema` whole arrays, `documents.ts:admit` SQL root fence, `forks.ts:writeBranchManifest` copy; selected paired trie in EXECUTION |
+| [WR02](open/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | 8 Composer tasks + source/algorithm/proof | **Selected.** Start at first actually-unimplemented T-ID after reconciling dirty worktree | v1 `documentManifestSchema` whole arrays, `documents.ts:admit` SQL root fence, `forks.ts:writeBranchManifest` copy; selected paired trie in EXECUTION |
 | [WR03](open/2026-11-21--wr03-agentic-writers-workdesk/CHANGE.md) | 7 tasks + companions | Proposed, AFTER WR02 | `execution.ts:createStorytellerExecution` custody; `memory-exploration-controller.ts`; OpenRouter `prepareOpenRouterWire` strict JSON decision transport; WR03 creates named mission/step tables |
 | [WR04](open/2026-11-21--wr04-delegated-writer-research/CHANGE.md) | 5 tasks + companions | Proposed, AFTER WR03 | Child context uses same WR03 step ledger with distinct context ID; finite reservation under parent's `storytellerOperation`, not new money pool |
 | [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | 6 tasks + companions | Proposed, AFTER WR02+WR03; serialize GA owners | v1 quiescent schema; `continuation.ts` stages before `publishStorytellerNotes` mutation; v2 post-state complete projection and SQL selector |
@@ -19,7 +19,7 @@
 ## Parent's only first dispatch
 
 1. Check local `git status --short`, branch ancestry and in-flight Cursor implementation. Fetch latest `undertaking/storyteller-workshop`; incorporate planning additions into the existing WR02 worktree **without discarding edits**. No forced reset.
-2. Read [WR02/TASKS.md](open/2026-11-21--wr02-persistent-library-and-source-identity/TASKS.md#t01--define-canonical-v2-rootnode-schemas--planner-ready) and [WR02/EXECUTION.md](open/2026-11-21--wr02-persistent-library-and-source-identity/EXECUTION.md). Dispatch **only WR02 T01** with Composer 2.5 Standard. T02 only after T01 proof and parent checkpoint.
+2. Read [WR02/TASKS.md](open/2026-11-21--wr02-persistent-library-and-source-identity/TASKS.md#t01--define-canonical-v2-rootnode-schemas--planner-ready) and [WR02/EXECUTION.md](open/2026-11-21--wr02-persistent-library-and-source-identity/EXECUTION.md). Compare existing in-flight WR02 implementation against T01–T08, mark an already satisfied T-ID only after its positive and negative evidence, then dispatch **only the first unimplemented PLANNER-READY task** with Composer 2.5 Standard. Never redo a completed schema/storage edit merely because its new packet was committed later.
 3. Treat any **unplanned architecture question** as `STOP -> file:symbol, assumption, reproduction, missing decision -> ChatGPT`. No broad repo scan, model upgrade, arbitrary design or hidden regression waiver.
 4. On bounded batch proof, integrate/reconcile into undertaking branch (not main), update actual STATUS/docs, archive only on accepted full Change, and stop before next independently selected Change.
 
