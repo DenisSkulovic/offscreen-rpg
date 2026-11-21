@@ -1,11 +1,35 @@
-## Current structural execution (2026-11-21)
+# Storyteller Workshop | current execution program
 
-**MA08, MA10, WR09A, and MA11 are Done** on `undertaking/storyteller-workshop`. The Application package is gone and its 112 tests live in API Integration. [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) and [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) remain the next dependency-gated work. The three-lane contract below is the completed execution record.
+**Source-inspected checkpoint:** 2026-11-22 at `d3ba291763de26a0135c1ad84b077bf4f1c153a8`. **State:** active undertaking; **Current work:** [none](../../QUEUE.md). [Human overview](OVERVIEW.md) is the supervisor's first read; [full evidence ledger](UNDERTAKING.md#2026-11-22--source-audit-checkpoint-at-d3ba2917) owns nuanced Done/NOT RUN distinctions. These headings supersede the historical 2026-11-21 batch contracts below.
 
+## Current conclusion, not another preauthorized Cursor queue
 
-## Successor wave joined (2026-11-22)
+**Completed:** MA10, WR09A and MA11; then WR09B, OPS12, DX12 all archived on this undertaking branch. Their test receipts cover migrated files, strict **offline** provider custody, fake multi-round Writer, injected Worker cleanup, and a local affected-build *planner*. No normal Worker activity invokes the durable Writer round. Full worker TypeScript compile is reported blocked by a generation-evidence GameAuthoritySeam type mismatch. The complete application has not been shown running in a cold Kubernetes cluster with a player/Writer/fork path, and no paid model or restore/load proof has occurred.
 
-**MA10, WR09A, and MA11 are integrated and archived.** [WR09B](../../changes/archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md), [OPS12](../../changes/archive/2026-11/other/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md), and [DX12](../../changes/archive/2026-11/other/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) are joined and archived. Their change branches are retired. WR09B landed first; the custodian then squashed OPS12, then DX12. Neither package splitting nor a production-paid Writer call is authorized by these three Changes.
+**Next product critical path:**
+1. **Restore trustworthy green source/boot evidence.** Reproduce/fix the Worker typecheck blocker before assuming any full build works; run scoped builds, graph, unit and disposable integration checks. Keep negative authentication, amount, revision and privacy tests.
+2. **Real Writer task adapter and admission composition.** Reinspect open [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md). Its WR09A/B custody/replay phases have landed; its still-missing portion is Worker activity routing, model/price/spend/credential policy at an authorized host, initial opening vs v3 continuation compatibility, delegated research wake/join and Game Authority scene publication. Define exact provider-free failure/replay algorithm before sending Cursor code work. Ordinary Launch is still scripted-offline. A real paid call needs separate explicit approval.
+3. **Connected cold-kind product proof.** Reconcile [TURN03](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) with K8S11/DIST03 and the already-present app-release manifests; run authenticated browser→Nest→GA→outbox→Temporal→Worker→GA scene→SSE/GET→fork on a cold disposable cluster, including failure/owner/revision negatives. A local multiprocess STORY03 result is not a substitute.
+4. **Distributed fault/load/operations.** Continue existing [K8S10](../../changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md) *after* the connected POC: controlled Pod kills/restarts, duplicate/lost delivery, persistent-state continuity, queue saturation, traces, real load and recovery, no model spend. Align with the currently **NOT TESTED** restore-runbook gate.
+5. **Authority/Writer packaging and quality.** Re-audit [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) on current source, resolve five reverse imports without moving SQL transaction boundaries, then evaluate whether a true Writer-runtime package improves ownership and affected-build scope. Fix stale Application documentation links and failing wiki health. Measure DX12's actual cached execution; do not claim an automatic Jenkins optimization.
+
+## Evidence tiers that must accompany every future packet/receipt
+
+| Tier | Current | Required next proof |
+| --- | --- | --- |
+| Source / focused unit | Strong in many components; WR09B 4/4, OPS12 16/16, DX12 15/15 recorded | Clean all-workspace builds, quality and graph; no masked errors |
+| Disposable SQL and local multiprocess | Writer custody/replay and STORY03 local causal + kill/replay tests | Full provider-free Writer→Player path in current host composition, source/fork/idempotence negatives |
+| Cold connected Kubernetes | App-release manifests and independent infrastructure lab exercises | Actual browser-to-fork TURN03; K8S10 real Pod-fault game run |
+| Real model + quality | Historical 2026 generations, **not the current architecture** | One explicitly authorized bounded provider spend, quality/continuity rubric over long session |
+| Operability and release | Synthetic traces, no hosted restore | Real application trace/alerts, load/capacity, backup+restore and rolling compatibility, documented operator outcome |
+
+**Planning hygiene:** do not assume completion just because a packet is archived, don't auto-commission a successor, and don't create duplicates of open WR09/MA09/TURN03/K8S10. Parallel Cursor work requires complete source/dependency/write-path maps and shared cluster/database ownership. Do not merge the undertaking into main until end-to-end gates are passed. User aims to resume planning tomorrow; this is an orientation, not scheduled background activity.
+
+---
+
+## Historical implementation plans and previous commissions (provenance only)
+
+The remainder of this file describes earlier parallel waves and predecessor gates. Those words **are not today's work selection or execution permission**. The current `work/QUEUE.md` selector is `none`; only the checkpoint above and actual current Change documents govern tomorrow's planning.
 
 ## Post-MA08 three-lane execution contract (2026-11-21)
 
