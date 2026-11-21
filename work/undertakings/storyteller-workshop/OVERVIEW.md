@@ -1,3 +1,7 @@
+## Three-chat engineering wave (2026-11-21 update)
+
+The next architectural execution batch is now **three concurrently implementable Changes**, not the old broad MA08 packet: [MA08A Lab support](../../changes/open/2026-11-21--ma08a-lab-support-extraction/CHANGE.md), [MA08B DB relay and logging](../../changes/open/2026-11-21--ma08b-infrastructure-owner-extraction/CHANGE.md), and [MA10A module graph](../../changes/open/2026-11-21--ma10a-module-graph-instrumentation/CHANGE.md). [Common ownership, branches, proof and join order](PARALLEL-STRUCTURAL-WAVE.md). MA08 umbrella is no longer executable. **All three have code tasks planned, none implemented or tested by the planner.** Same existing rough progress estimates: modular monolith ~60–65%, Storyteller ~60%, combined ~60%, uncertainty ±10–15 pp. These are unchanged by planning commits.
+
 # Storyteller Workshop | The big picture
 
 **The supervisor's first page.** This is the accessible, numeric progress view for **both** Storyteller evolution and Modular Monolith reshaping. The [technical undertaking ledger](UNDERTAKING.md#whole-undertaking-completion-control--living-ledger) owns factual evidence and [Program](PROGRAM.md) owns execution planning.
