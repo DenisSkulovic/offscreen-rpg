@@ -7,7 +7,7 @@
 
 **Undertaking branch rule:** this Change belongs to **Storyteller Workshop**. Create `change/wr04-research` from the then-current `undertaking/storyteller-workshop` HEAD **before code edits**. Work through all T-IDs on this Change branch, then squash-integrate into the undertaking branch and delete the temporary branch; dedicated linked worktree mandatory even when alone; preserve the primary checkout's active branch. Do **not** merge this Change directly into `main`. Rebase/refresh from the undertaking branch before beginning if earlier WR work has landed.
 
-**Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad source review of uploaded `09d5820bcafe`; current worktree unknown. Reinspect named symbols before editing. **Execution owner: Cursor, not ChatGPT.** No model-spend, database migration, kind cluster mutation or new work selection is authorized merely by this packet. [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [Current queue](../../../QUEUE.md).
+**Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad source review of uploaded `09d5820bcafe`; current worktree unknown. Reinspect named symbols before editing. **Execution owner: Cursor, not ChatGPT.** No model-spend, database migration, kind cluster mutation or new work selection is authorized merely by this packet. [Program](../../../undertakings/storyteller-workshop/PROGRAM.md) · [Current queue](../../../QUEUE.md).
 
 ## Cursor first-screen route
 
