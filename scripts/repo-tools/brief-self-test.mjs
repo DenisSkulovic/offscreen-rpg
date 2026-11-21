@@ -120,7 +120,7 @@ export function runBriefSelfTest() {
     assert.match(concise, /Current work \(global queue\): none/);
     assert.equal(concise.includes('VERY-LONG-HISTORICAL-ORIENTATION'), false);
     assert.equal(concise.includes('unrelated historical log'), false);
-    assert.ok(concise.split('\\n').length < 20);
+    assert.ok(concise.split('\n').length < 20);
 
     const full = renderHuman({
       branch: 'change/wr03-workdesk',
