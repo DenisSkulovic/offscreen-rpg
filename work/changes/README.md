@@ -1,5 +1,20 @@
 # Changes | active catalog
 
+## Three parallel implementation commissions designed 2026-11-22
+
+**Source baseline:** `d3ba291763de` (recheck latest undertaking HEAD before worktree); **no implementation or verification has happened from these planning commits**. These are three substantial, independently owned Changes, not three slices of a running Change. One custodian coordinates source joins and resource-gated cold-kind verification.
+
+| Lane | Change | Implemented outcome to prove | Readiness |
+| --- | --- | --- | --- |
+| **A** | [WR10 private Writer round protocol](open/2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) | GA-only Writer SQL/CAS/spend, execution-only provider transport over versioned private HTTP, no repeat sends | **READY with critical financial safety stops**, fake provider only |
+| **B** | [TURN03 real cold-kind turn and fork](open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Existing golden fixture + scorecard made into a real authenticated Next/Nest/GA/outbox/Temporal/scene/fork runner | **Harness READY; live cluster/auth prerequisites gated** |
+| **C** | [MA12 production API Lab isolation](open/2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | One-way @offscreen/api-lab outer tooling package; production API no Lab imports/dependency | **READY**, affected API/Chamber/test callers mapped |
+
+**Source ownership:** WR10 = Story Engine Writer custody + private GA/Worker HTTP + Contracts and uniquely named WR10 tests; TURN03 = `infra/kubernetes/lab/app-release/turn03/**` plus uniquely named evidence-only tests; MA12 = `apps/api` and `tools/api-lab`, Chamber/API Integration developer app helpers. **No common implementation paths.** Affects shared package lockfile only at custodial join. TURN03 has exactly one cluster operator and executes cold-kind **after** A/C source joins; no Cursor runs a stale image or changes another lane's app sources to make POC pass.
+
+**Integration custodian:** **Cursor C (MA12 parent)** checks all three tested branch receipts and current integration HEAD; safely serializes **WR10 → MA12 → TURN03 harness**, regenerates one lockfile and runs joined code proofs, archives the two completed code Changes and pushes the undertaking. TURN03 parent then runs cold-kind on integrated sources with authorized disposable context; archive TURN03 **only after all mandatory cross-Pod gates pass**. Otherwise preserve its open status and exact BLOCKED/NOT-RUN receipt. No parent self-merges during sibling work, no force/reset, no main merge and no paid provider request.
+
+
 ## Next three source-disjoint Changes, after MA10 / WR09A / MA11 integrated (2026-11-21)
 
 **MA10, WR09A and MA11 are archived Done.** OPS12, WR09B, and DX12 are also archived Done on this branch. No package explosion or paid provider call.
