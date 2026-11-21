@@ -23,8 +23,8 @@
 | `packages/db/src/schema/storyteller.ts:storytellerWriterMission.ownerId` | SQL UUID while `story.ownerId`, `generation.ownerId`, `storytellerOperation.ownerId` and `user.id` are TEXT | Post-WR07L migration to TEXT (`USING owner_id::text`); every mission owner must match trusted generation/operation/launch actor. No fake UUID mapping |
 | `packages/db/src/schema/storyteller.ts:storytellerOperation` | Keyed by `generationId`, account/run FK and cumulative finite spend | Launch UUID != generation UUID. WR07L row captures relation, one existing funding/round envelope |
 | `packages/story-engine/src/storyteller/writer-mission-custody.ts:reserveWriterMissionProviderAttempt` | Existing attempt state/reservations, includes a global uncertain-attempt guard | Do not weaken safeguards. Known concurrency failure needs separate source-grounded negative proof before live-provider enablement |
-| `apps/worker/src/outbox/dispatch.ts:noticeDispatch,dispatchedNoticeTopics` | Stable topic→workflow deterministic mapping; no Writer Launch wake | Add topic `story.launch.v1` with workflow identity `story-launch/<operationId>`; outbox row carries ID only |
-| `packages/workflows/src/{contracts,index}.ts` | Legacy storytellerV1 and distributed old `StorytellerTask` path; no Writer mission workflow | New `storyLaunchV1(operationId)`, activities idempotent and bounded, reload SQL/capture every wake |
+| `apps/worker/src/outbox/dispatch.ts:noticeDispatch,dispatchedNoticeTopics` | Stable topic→workflow deterministic mapping; no Writer Launch wake | Add topic `story.launch.v1` with workflow identity `story-launch/<reservedStoryId>`; **outbox.operationId = reservedStoryId**, because user operationId is unique only within owner and could collide across two users. Worker reloads by the globally UNIQUE reservedStoryId; no user text or prompt in the notice |
+| `packages/workflows/src/{contracts,index}.ts` | Legacy storytellerV1 and distributed old `StorytellerTask` path; no Writer mission workflow | New `storyLaunchV1(reservedStoryId)`, activities idempotent and bounded, reload SQL/capture every wake |
 | `apps/worker/src/runtime/index.ts` and `activities/index.ts` | Local `offscreen-local` worker with DB and application services | First no-spend vertical uses this local path, not the current distributed executor |
 | `apps/worker/src/activities/storyteller-distributed-execution.ts` | **Rejects** provider mode for old StorytellerTask | Never pretend new Writer mission already runs here |
 
@@ -39,14 +39,14 @@ session ownerId (string) + client operationId (UUID)
            -> storyteller_operation(generationId, ownerId TEXT, funding/run/budget)
            -> storyteller_writer_mission(ownerId TEXT after migration, generationId)
            -> storyteller_writer_step(contextId=missionId, ordinal=1)
-           -> outbox(story.launch.v1, operationId)
-               -> Temporal storyLaunchV1(operationId)
+           -> outbox(story.launch.v1, reservedStoryId)
+               -> Temporal storyLaunchV1(reservedStoryId)
                -> bounded Writer rounds/proposal/citation proof
                -> GA single scene-one SQL commit:
                   story + story_passage + v2 selector + story_launch.ready
 ```
 
-No CAS or provider call under SQL story lock. On crash before SQL ready, an unselected CAS object is inert. Duplicate outbox/workflow wake reloads the same row. Foreign-owner GET must return same 404 as missing. Immutable request-hash conflict returns 409, never another generation/charge.
+**Critical identity split:** the client operation UUID is only unique within owner; the reservedStoryId is globally UNIQUE and is the sole safe worker/outbox locator. Never read an owner-scoped row by client operationId alone in a worker. No CAS or provider call under SQL story lock. On crash before SQL ready, an unselected CAS object is inert. Duplicate outbox/workflow wake reloads the same row. Foreign-owner GET must return same 404 as missing. Immutable request-hash conflict returns 409, never another generation/charge.
 
 ## Release-time factual checks, not architecture design requests
 
