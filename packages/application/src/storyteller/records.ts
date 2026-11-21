@@ -1,13 +1,9 @@
-import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { generation } from '@offscreen/db/generation-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import type { Transaction } from '@offscreen/db/outbox';
-import { enqueue } from '@offscreen/db/outbox';
 import {
   storytellerTaskSchema,
   storytellerOutputSchema,
-  type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
 import { createGenerations } from '../generations/index';
 import type { Database } from '@offscreen/db';
@@ -18,6 +14,11 @@ import {
   storytellerDistributedTopic,
 } from '@offscreen/contracts/storyteller-notices';
 
+export {
+  selectStorytellerNoticeTopicAtAdmission,
+  insertStorytellerTask,
+} from '../stories/storyteller-task-record';
+
 export { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
 export { storytellerTopic, storytellerDistributedTopic };
 export {
@@ -25,42 +26,11 @@ export {
   storytellerNoticeTopicForWake,
 } from '../campaign/storyteller-wake';
 
-/** Runtime flag at task admission only. Relay must read the persisted notice topic. */
-export function selectStorytellerNoticeTopicAtAdmission(
-  env: NodeJS.ProcessEnv = process.env,
-): typeof storytellerTopic | typeof storytellerDistributedTopic {
-  return env['STORYTELLER_DISTRIBUTED_V1'] === 'true'
-    ? storytellerDistributedTopic
-    : storytellerTopic;
-}
-
 export function storytellerGenerations(database: Database) {
   return createGenerations(database, {
     kind: storytellerKind,
     input: storytellerTaskSchema,
     output: storytellerOutputSchema,
-  });
-}
-export async function insertStorytellerTask(
-  tx: Transaction,
-  input: {
-    id: string;
-    ownerId: string;
-    task: StorytellerTask;
-  },
-) {
-  const task = storytellerTaskSchema.parse(input.task);
-  await tx.insert(generation).values({
-    id: z.uuid().parse(input.id),
-    ownerId: input.ownerId,
-    kind: storytellerKind,
-    input: task,
-  });
-  await tx.insert(storytellerPublication).values({ generationId: input.id });
-  await enqueue(tx, {
-    id: input.id,
-    operationId: input.id,
-    topic: selectStorytellerNoticeTopicAtAdmission(),
   });
 }
 export async function setPublication(

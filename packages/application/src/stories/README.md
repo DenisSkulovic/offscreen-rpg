@@ -9,7 +9,7 @@
 | Question | Owner / symbol | Need next? |
 | --- | --- | --- |
 | Public façade and response | `index.ts: createStories/createStoryApplication` | `read` returns public view; `admitResolution` calls admission then reads current snapshot; `readResolutionReceipt` is read-only |
-| Resolution command/idempotency | `resolution.ts: createStoryResolution.admit` | Locks owner story in DB transaction; checks operation UUID, prior expected revision and exact submission equality for scripted route |
+| Resolution command/idempotency | `resolution.ts: createStoryResolution` composes `resolution-core.ts: createStoryResolutionCore.admit` | Public positional factory is unchanged. Core locks the owner story in one DB transaction. Storyteller replay and commit live in `storyteller-resolution-authority.ts`; off-lock preparation stays in `storyteller/admission.ts` and is injected by the façade. Scripted route still checks operation UUID, prior expected revision, and exact submission equality |
 | Resolution operation receipt | `resolution-receipt.ts: createResolutionReceiptReader.read` | Owner+story+operation join; maps generation state → admitted/processing/settled/failed/uncertain; SHA-256 `requestDigest` of canonical `{expectedRevision,submission}`; never enqueues |
 | Current projection/version | `reads.ts: createStoryReads/readSnapshot` | Builds owned snapshot in repeatable-read read-only transaction; includes story `viewVersion` and `resolution.version` |
 | Owner/resource lock | `persistence.ts: lockOwnedStory` | WHERE `ownerId` and `storyId`; only application action may admit |

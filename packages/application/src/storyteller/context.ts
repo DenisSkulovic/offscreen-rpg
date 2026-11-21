@@ -28,14 +28,24 @@ import {
 } from '@offscreen/game/activities';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
 import { readAcceptedActivityPlan } from '../campaign/accepted-plans';
-import { z } from 'zod';
 import type { DocumentStore } from '@offscreen/documents';
 import { readPassageDocument } from '../stories/passage-documents';
+import { activeSceneAnchorSchema } from '../stories/active-scene-anchor';
+import type {
+  ResolutionPassageSource,
+  StorytellerResolutionContextSqlCapture,
+} from '../stories/storyteller-resolution-contract';
 import type { CanonicalRecallCue } from './canonical-search';
 import {
   isStorytellerActivityState,
   storytellerActivityContextFilter,
 } from './activity-context';
+
+export { activeSceneAnchorSchema } from '../stories/active-scene-anchor';
+export type {
+  ResolutionPassageSource,
+  StorytellerResolutionContextSqlCapture,
+} from '../stories/storyteller-resolution-contract';
 import {
   loadCanonicalKnowledge,
   type CanonicalLibrarySectionSelection,
@@ -53,22 +63,6 @@ export {
   type CanonicalLibrarySectionSelection,
   type CanonicalCampaignDocumentSelection,
 } from './canonical-knowledge';
-
-/** Exported for ENG03-narrow ContextCaptureV1; semantics unchanged. */
-export const activeSceneAnchorSchema = z.strictObject({
-  version: z.literal('active-scene-anchor.v1'),
-  fromSequence: z.number().int().positive(),
-  requiredPassageIds: z.array(z.uuid()).max(40),
-  recallCues: z
-    .array(
-      z.strictObject({
-        documentId: z.uuid(),
-        reason: z.enum(['identity', 'place', 'thread']),
-      }),
-    )
-    .max(8)
-    .default([]),
-});
 
 function projectActivityProgress(plan: unknown, progress: unknown) {
   const resolved = resolvedActivityPlanSchema.parse(plan);
@@ -106,23 +100,6 @@ function decodePassageResponse(response: unknown) {
   if (response === null) return null;
   return interactionSubmissionSchema.parse(response).answer.optionId;
 }
-
-export type ResolutionPassageSource = Readonly<
-  | {
-      storage: 'inline';
-      passageId: string;
-      sequence: number;
-      inlineContent: unknown;
-      response: string | null;
-    }
-  | {
-      storage: 'cas';
-      passageId: string;
-      sequence: number;
-      contentHash: string;
-      response: string | null;
-    }
->;
 
 /** ENG03-T03: SQL-only passage inventory for resolution; no DocumentStore. */
 export async function captureResolutionPassageSources(
@@ -207,7 +184,9 @@ async function passageEvidenceFromSources(
           ? await readPassageDocument(
               documentStore ??
                 (() => {
-                  throw new Error('Canonical passage context requires document storage');
+                  throw new Error(
+                    'Canonical passage context requires document storage',
+                  );
                 })(),
               source.contentHash,
             )
@@ -222,33 +201,15 @@ async function passageEvidenceFromSources(
   );
 }
 
-export type StorytellerResolutionContextSqlCapture = Readonly<{
-  passages: ResolutionPassageSource[];
-  items: Array<{
-    key: string;
-    label: string;
-    holderKey: string | null;
-  }>;
-  settingsRevision: number | null;
-  capturedSettings: unknown | null;
-  gameSecond: number | null;
-  worldConditions: unknown | null;
-  situationAuthorization: unknown | null;
-  activeActivityId: string | null;
-  acceptedActivityPlan: unknown | null;
-  commitments: Array<{
-    id: string;
-    revision: number;
-    state: string;
-    plan: unknown;
-    progress: unknown;
-  }>;
-}>;
-
 /** ENG03-T03: freeze SQL facts consumed by loadStorytellerContext without CAS reads. */
 export async function captureStorytellerResolutionContextSql(
   tx: Transaction,
-  input: { storyId: string; revision: number; notes: unknown; activeSceneScope: unknown },
+  input: {
+    storyId: string;
+    revision: number;
+    notes: unknown;
+    activeSceneScope: unknown;
+  },
 ): Promise<StorytellerResolutionContextSqlCapture> {
   const passages = await captureResolutionPassageSources(tx, input);
   const items = await tx
@@ -340,8 +301,13 @@ export async function assembleStorytellerContextFromResolutionCapture(
   ) {
     throw new Error('Canonical knowledge requires document storage');
   }
-  const evidence = await passageEvidenceFromSources(documentStore, sql.passages);
-  const current = evidence.find((passage) => passage.sequence === input.revision);
+  const evidence = await passageEvidenceFromSources(
+    documentStore,
+    sql.passages,
+  );
+  const current = evidence.find(
+    (passage) => passage.sequence === input.revision,
+  );
   if (!current) {
     throw new Error('Missing current story context');
   }
@@ -373,22 +339,24 @@ export async function assembleStorytellerContextFromResolutionCapture(
             throw new Error('Canonical knowledge requires document storage');
           })(),
         {
-        storyId: input.storyId,
-        rootHash: input.canonical.rootHash,
-        rootRevision: input.canonical.rootRevision,
-        ...(input.canonical.librarySectionSelection
-          ? {
-              librarySectionSelection: input.canonical.librarySectionSelection,
-            }
-          : {}),
-        ...(input.canonical.campaignDocumentIds
-          ? { campaignDocumentIds: input.canonical.campaignDocumentIds }
-          : {}),
-        recallCues: [
-          ...(activeScene?.recallCues ?? []),
-          ...(input.canonical.recallCues ?? []),
-        ],
-      })
+          storyId: input.storyId,
+          rootHash: input.canonical.rootHash,
+          rootRevision: input.canonical.rootRevision,
+          ...(input.canonical.librarySectionSelection
+            ? {
+                librarySectionSelection:
+                  input.canonical.librarySectionSelection,
+              }
+            : {}),
+          ...(input.canonical.campaignDocumentIds
+            ? { campaignDocumentIds: input.canonical.campaignDocumentIds }
+            : {}),
+          recallCues: [
+            ...(activeScene?.recallCues ?? []),
+            ...(input.canonical.recallCues ?? []),
+          ],
+        },
+      )
     : undefined;
   const activitySituation =
     sql.situationAuthorization !== null
@@ -402,7 +370,10 @@ export async function assembleStorytellerContextFromResolutionCapture(
             if (!isStorytellerActivityState(record.state)) {
               return [];
             }
-            const projected = projectActivityProgress(record.plan, record.progress);
+            const projected = projectActivityProgress(
+              record.plan,
+              record.progress,
+            );
             return [
               {
                 activityId: record.id,
