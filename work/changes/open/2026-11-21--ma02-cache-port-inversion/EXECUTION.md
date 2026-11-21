@@ -1,0 +1,5 @@
+# MA02 | exact migration
+1. Create `packages/contracts/src/read-cache.ts` containing the existing neutral read cache types and `disabledReadCache` (move definitions, no logic change). Add `./read-cache` export mapping to compiled `dist/src/read-cache` in contracts manifest. Do not create a contracts barrel.
+2. Replace `packages/application/src/cache/read-cache.ts` bodies with explicit re-exports from `@offscreen/contracts/read-cache` (types + value) so old application consumers compile unchanged. Keep `./cache` application export unchanged.
+3. Update `packages/cache/src/index.ts` to import `ReadCache` type from `@offscreen/contracts/read-cache`; update cache manifest dependencies, removing application and adding contracts. Update `pnpm-lock.yaml` with offline/frozen-compatible pnpm install process (no dependency version bumps). No change to set/get/catch logic.
+4. If MA01 checker exists, verify `cache → contracts` and absence of `cache → application`; otherwise inspect manifests and import graph directly. Preserve precise TS types including `unknown` payload and optional write settings.
