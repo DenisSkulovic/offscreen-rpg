@@ -1,5 +1,18 @@
 # Changes | active catalog
 
+## Extended Admin historical inspection and safe-resume proposals (4 more, 2026-11-22)
+
+The owner extended the 20-Change brainstorming record with a **scene-by-scene historical Admin workspace** and an independent future re-admission safety contract. These four additions bring **this conversation's named brainstorm Change coverage to 24**. They are deliberately lightweight **PROPOSED / NOT DISPATCHABLE** records. [Source intent and role/privacy caveats](../sessions/2026-11-22.md#11-admin-must-be-an-inspectable-historical-story-workspace-not-just-a-dashboard).
+
+| Change | Independent outcome | Prerequisite / ownership |
+| --- | --- | --- |
+| [ADI01 scene/game-state explorer](open/2026-11-22--adi01-scene-history-game-state-explorer/CHANGE.md) | Read-only story→scene chronology, before/after state, choices, checkpoints and fork lineage | Existing /control + HR01; preserve explicit per-scene content/metadata access |
+| [ADI02 historical Library explorer](open/2026-11-22--adi02-historical-library-explorer/CHANGE.md) | Browse pinned Markdown/document versions, logical paths, diffs at different scene roots | ADI01 navigation and source-grounded Library reader; not an automatic nested filesystem redesign |
+| [ADI03 effective-policy history](open/2026-11-22--adi03-effective-policy-history-explorer/CHANGE.md) | Per-scene/attempt actual recipe, entitlement, model, price and cap decisions versus current policy | CFG01 snapshot, WR11 execution; separate from AI03 raw prompt read and CFG02 policy editor |
+| [CFG03 safe re-admission](open/2026-11-22--cfg03-resume-policy-eligibility-and-portability/CHANGE.md) | Six-month resumption, model retirement/tier changes, immutable old attempts and no inherited rights in hypothetical transfer | CFG01 + actual Writer admission; transfer is a *stress test*, not a selected feature |
+
+**Role/access boundary:** one Admin control plane with Support, Engineering, Product/Business and Finance views, but grants differ. Raw story/Library/prompt contents are not implicitly available to general Support. View exactly captured historical policy when present; avoid misrepresenting current subscription or available Library files as what the old model actually saw. **No Admin writes, general raw-data grants, model payment or automatic Cursor implementation are commissioned.**
+
 ## Complete 2026-11-22 brainstorm-to-Change coverage map (20 bounded outcomes)
 
 **Scope:** every substantial engineering direction raised in the owner's [2026-11-22 session minutes](../sessions/2026-11-22.md) has a named Change. Existing Change packets remain the owner where one exists; new shallow packets contain **high-level outcomes, boundaries, evidence and dependencies**, without pretending to be cheap Cursor implementations. This map is **not** a new `Current work:` selector, execution instruction, completion claim or monetary authorization.
