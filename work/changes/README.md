@@ -64,6 +64,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [WR03](archive/2026-11/storyteller/2026-11-21--wr03-agentic-writers-workdesk/CHANGE.md) | Writer's Workdesk (Done) |
 | [WR05S](archive/2026-11/other/2026-11-21--wr05s-scene-v2-storage-contract/CHANGE.md) | Scene-checkpoint v2 storage grammar and SQL versions 1–2 (Done). Publication still writes v1 |
 | [WR04](open/2026-11-21--wr04-delegated-writer-research/CHANGE.md) | **PLANNER-BLOCKED:** context-specific Writer step/custody and child read-only spend gates not settled |
+| [WR05P1](open/2026-11-21--wr05p1-scene-after-state-kernel/CHANGE.md) | Pure after-state normalization, semantic SQL capture and notes projection in Story Engine | **READY / OWNER-COMMISSIONED** for Cursor B; parallel to WR08A Web-only |
 | [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | **PLANNER-BLOCKED:** v2 after-world-state schema, transaction projection and migration not fully settled |
 | [WR06](open/2026-11-21--wr06-fork-active-fictional-state/CHANGE.md) | **PLANNER-BLOCKED:** depends on WR05 and exact ID/FK/active-work remap |
 | [WR07C](archive/2026-11/storyteller/2026-11-21--wr07c-launch-wire-contract/CHANGE.md) | Launch request and status parsers in `@offscreen/contracts/story-launch` (Done). This does not unblock WR07 |
