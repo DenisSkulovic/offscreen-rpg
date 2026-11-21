@@ -53,7 +53,9 @@
     "repo:cursor-usage": "node scripts/repo-tools/cursor-usage-window.mjs",
     "repo:cursor-usage:test": "node --test scripts/repo-tools/cursor-usage-window.test.mjs",
     "repo:retirement": "node scripts/repo-tools/retirement-health.mjs",
-    "repo:retirement:test": "node --test scripts/repo-tools/retirement-health.test.mjs"
+    "repo:retirement:test": "node --test scripts/repo-tools/retirement-health.test.mjs",
+    "repo:change-branch": "node scripts/repo-tools/change-branch-guard.mjs",
+    "repo:change-branch:test": "node --test scripts/repo-tools/change-branch-guard.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

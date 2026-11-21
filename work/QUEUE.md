@@ -1,12 +1,12 @@
 # Work selection | single current-work authority
 
-**Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is Done and archived. FORK01 is Done and archived. DXK01 is Done and archived** for the warm `kind-offscreen-lab` reconcile. **DXK02 is Done and archived** for Tilt CI and the single-context kubeconfig. **DXK03 is Done and archived** for GitHub sign-in and one scripted Seyda Neen action on the warm lab. **DXK04 is Done and archived** for the root command surface. Current work is none. BOOT03 is archived. No implicit model spend or unsafe cluster authorization.
+**Direction:** [implementation roadmap](IMPLEMENTATION-ROADMAP.md) owns priorities; the single `Current work:` line below owns default selection. Historical Change statuses belong in the catalogs/ledgers. Explicit owner-commissioned Change chats may run independently of this selector, but must preserve resource and integration ownership. No implicit paid model spend or unsafe cluster authorization.
 
 Current work: none
 
 This is the **one active selection pointer** for independently tracked work. The current themed integration envelope, when one exists, is recorded separately under [Undertakings](undertakings/README.md) and never selects execution by itself. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 
-Use exactly one `Current work:` line near the top. Valid values are `none`, a Markdown link to `changes/open/<leaf>/CHANGE.md`, or a Markdown link to `tasks/open/<leaf>/TASK.md`. Examples (illustrative, **not selected**): `[FORK01](changes/archive/2026-11/other/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)` and `[task](tasks/open/YYYY-MM-DD--slug/TASK.md)`. No `TASKS.md#Txx` or open design is a top-level selection.
+Use exactly one `Current work:` line near the top. Valid values are `none`, a Markdown link to `changes/open/<leaf>/CHANGE.md`, or a Markdown link to `tasks/open/<leaf>/TASK.md`. Examples (illustrative, **not selected**): a Markdown link to an existing open `changes/open/<leaf>/CHANGE.md` or `tasks/open/<leaf>/TASK.md`. Do not copy placeholder paths into the selector. No `TASKS.md#Txx` or open design is a top-level selection.
 
 **Selection is not execution permission.** The selected item must still be Ready for its particular authorized scope and meet environment, cost, destructive-op, data privacy, actor and dependency constraints. One selected Change may have a bounded Composer T-ID, but that T-ID remains inside the Change. One selected standalone Task has one exact operator action/receipt. Explicit approved batch handoffs may coordinate disjoint work without introducing another global selector. `none` is valid, including during planning-only audits.
 
@@ -24,7 +24,7 @@ Use exactly one `Current work:` line near the top. Valid values are `none`, a Ma
 
 ## Cursor dispatch
 
-**Finite parent control:** a named user-authorized batch is a temporary schedule, **not** another selector or an unlimited license to run all Ready tasks. Follow [bounded parent orchestration](../.agents/references/bounded-parent-orchestration.md): normally 2–5 T-IDs or one risky join, then an integrated test/reconciliation/commit checkpoint and a parent report/stop. A Done T-ID leaves its parent Change open until the Change's actual acceptance is proved; completed Changes should be archived in the same batch window, not forgotten.
+**Finite parent control:** a named user-authorized batch is a temporary schedule, not another selector or permission to drain all Ready Changes. Checkpoint after 2–5 T-IDs; a **full dedicated Change commission continues within the same Change**, while a batch-only commission stops at its agreed boundary. Follow [parent policy](../.agents/references/bounded-parent-orchestration.md). A Done T-ID leaves its parent Change open until the Change's actual acceptance is proved; completed Changes should be archived in the same batch window, not forgotten.
 
 Start with this pointer, then the selected packet, then **one** T-ID when the selection is a Change. Composer Standard remains the normal parent/child model. An unresolved technical decision goes back to ChatGPT for source-backed investigation; do not turn it into a paid Grok investigation by default. [Economical work rule](../.agents/references/composer-first-execution.md) · [current backlog handoff](changes/CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md).
 

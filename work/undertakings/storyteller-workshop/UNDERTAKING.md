@@ -21,7 +21,7 @@ The current Writer program is the core constituent set:
 | WRD02 | Persistent Library technical contract | Done / archived |
 | WRD03 | Engine fork technical contract | Done / archived |
 | WRD04 | Wiki navigation and validation reconciliation | Done / archived |
-| WR02 | Persistent Library and source identity implementation | **Selected / Ready** |
+| WR02 | Persistent Library and source identity implementation | **Done / archived** |
 | WR03 | Agentic writer's workdesk | Proposed |
 | WR04 | Delegated bounded writer research | Proposed |
 | WR05 | Coherent scene publication | Proposed |
@@ -67,4 +67,4 @@ Target **long-lived** topology after Change integration: **two branches only**:
 - `main`
 - `undertaking/storyteller-workshop`
 
-**Every commissioned WR Change MUST use one short-lived Change branch** created from the then-current `undertaking/storyteller-workshop` HEAD before implementation. Branch names: `change/wr02-library`, `change/wr03-workdesk`, `change/wr04-research`, `change/wr05-publication`, `change/wr06-fork`, `change/wr07-launch`, `change/wr08-client`. Parent and its children work within that branch without per-T-ID branches. A distinct worktree is optional when no other checkout is active. When accepted, squash-integrate into `undertaking/storyteller-workshop`, verify, and delete the temporary branch/worktree. `main` is reserved for the later Undertaking landing. These transient Change branches do not contradict the two-long-lived-branches policy.
+**Every commissioned WR Change MUST use one short-lived Change branch** created from the then-current `undertaking/storyteller-workshop` HEAD before implementation. Branch names: `change/wr02-library`, `change/wr03-workdesk`, `change/wr04-research`, `change/wr05-publication`, `change/wr06-fork`, `change/wr07-launch`, `change/wr08-client`. Parent and its children work within that branch without per-T-ID branches. Each commissioned WR Change uses a separate linked Git worktree even if no other chat is active. Preserve the user's primary checkout on its existing branch. When accepted, squash-integrate into `undertaking/storyteller-workshop`, verify, and delete the temporary branch/worktree. `main` is reserved for the later Undertaking landing. These transient Change branches do not contradict the two-long-lived-branches policy.
