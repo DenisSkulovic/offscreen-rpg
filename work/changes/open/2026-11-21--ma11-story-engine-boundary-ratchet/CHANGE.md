@@ -11,3 +11,7 @@
 **Pass:** new and old graph tests, deterministic member/edge reports, negative injection test, no change in previously raised hard errors. No unverified claim all existing graph errors vanished.
 
 See SOURCE-MAP.md, EXECUTION.md, TASKS.md, PROOF.md.
+
+### Executable report contract (revision 2)
+
+The selected graph change is **additive**, not a schema-breaking redesign. Preserve `SCHEMA='offscreen.module-graph.v1'`, existing package/module fields, `domainEdges` and legacy synthetic tests. Add `storyEngineFileEdges` (including **same-domain** relative imports), `storyEngineDomainEdges` (only between distinct logical domains), and their **file-level** and domain-level runtime/type-only SCC arrays. Existing `classifyRelative` drops same-domain relative imports; merely reusing `domainEdges` is incorrect. Detailed field names, integration points and test input shapes are frozen in EXECUTION. All new edges use resolved TypeScript target filenames and AST kinds. Known five Authority→Writer paths are a *closed allowlist of existing debt only*, not a general exception. MA09 must remove them later.
