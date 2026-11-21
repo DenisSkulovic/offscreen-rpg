@@ -162,6 +162,13 @@
       "when": 1794817600000,
       "tag": "0022_wr04_writer_research_child",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794821200000,
+      "tag": "0023_wr09a_writer_response_object",
+      "breakpoints": true
     }
   ]
 }

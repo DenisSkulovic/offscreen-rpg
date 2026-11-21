@@ -38,6 +38,7 @@ export type WriterMissionParentStepInsert = {
   ordinal: number;
   requestCasHash: string;
   resultCasHash?: string | null;
+  responseObjectHash?: string | null;
   attemptId?: string | null;
   toolCallId?: string | null;
   revision: number;
@@ -83,6 +84,7 @@ export async function insertWriterMissionParentStepInTransaction(
     toolCallId: step.toolCallId ?? null,
     requestCasHash: step.requestCasHash,
     resultCasHash: step.resultCasHash ?? null,
+    responseObjectHash: step.responseObjectHash ?? null,
     revision: step.revision,
     state: step.state,
   });
@@ -176,6 +178,7 @@ export async function insertWriterResearchChildStepInTransaction(
     toolCallId: step.toolCallId ?? null,
     requestCasHash: step.requestCasHash,
     resultCasHash: step.resultCasHash ?? null,
+    responseObjectHash: step.responseObjectHash ?? null,
     revision: step.revision,
     state: step.state,
   });
