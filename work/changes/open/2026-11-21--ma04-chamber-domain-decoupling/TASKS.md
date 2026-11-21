@@ -1,6 +1,6 @@
 # MA04 | Composer task queue
 
-**Status:** source-planned, pending independent post-edit readiness review. **Branch:** `undertaking/storyteller-workshop` → isolated `change/ma04-chamber-domain-decoupling`. **Inspected:** `dac6b69813b52ecb1f202158791deaa3b7ea89d7`, critical remote symbols at `0a52a9a3991732bb1003eb7bdf83899e7a798c83`. **Execution DAG:** T01 → T02 → T03. No parallel source tasks: T02 consumes T01's option contract, T03 relies on both compositions. Parent runs final proof and closes.
+**Status:** READY WITH EXPLICIT LIMITS after G0–G7 review (see PROOF). Start only after MA03 joins; disposable SQL/Temporal/Next evidence still required at closure. **Branch:** `undertaking/storyteller-workshop` → isolated `change/ma04-chamber-domain-decoupling`. **Inspected:** `dac6b69813b52ecb1f202158791deaa3b7ea89d7`, critical remote symbols at `0a52a9a3991732bb1003eb7bdf83899e7a798c83`. **Execution DAG:** T01 → T02 → T03. No parallel source tasks: T02 consumes T01's option contract, T03 relies on both compositions. Parent runs final proof and closes.
 
 ## T01 | Remove reverse import, define default-deny predicate | PLANNER-READY
 DEPTH=PATCH. **Writes only:** `packages/application/src/stories/index.ts`. **Reads:** `stories/index.ts:StoryApplicationOptions,createStoryApplication.read`, `stories/start.ts:playableOpeningStorySource`, `developer-tools/chamber-fixtures.ts:chamberAllowsResponse`.
