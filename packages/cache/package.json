@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@offscreen/application": "workspace:*",
+    "@offscreen/contracts": "workspace:*",
     "redis": "5.8.2",
     "zod": "4.6.5"
   },

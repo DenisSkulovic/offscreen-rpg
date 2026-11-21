@@ -343,9 +343,9 @@ importers:
 
   packages/cache:
     dependencies:
-      '@offscreen/application':
+      '@offscreen/contracts':
         specifier: workspace:*
-        version: link:../application
+        version: link:../contracts
       redis:
         specifier: 5.8.2
         version: 5.8.2

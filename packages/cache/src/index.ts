@@ -1,4 +1,4 @@
-import type { ReadCache } from '@offscreen/application/cache';
+import type { ReadCache } from '@offscreen/contracts/read-cache';
 import { z } from 'zod';
 
 const configSchema = z.strictObject({

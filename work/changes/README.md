@@ -21,7 +21,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | Change | Architectural result | Readiness |
 | --- | --- | --- |
 | [MA01](archive/2026-11/other/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Manifest + source AST graph, runtime/type-only cycles and import rules | Done on `undertaking/storyteller-workshop` |
-| [MA02](open/2026-11-21--ma02-cache-port-inversion/CHANGE.md) | Invert Redis adapter → application type dependency | Bounded algorithm; integrates on `undertaking/storyteller-workshop` |
+| [MA02](archive/2026-11/other/2026-11-21--ma02-cache-port-inversion/CHANGE.md) | Invert Redis adapter → application type dependency | Done on `undertaking/storyteller-workshop` |
 | [MA03](open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | New Admin workspace with extracted campaign-holds schema, compatibility | READY WITH LIMITS after MA02: 13-module/7-test migration, focused SQL denial proofs; target `undertaking/storyteller-workshop` |
 | [MA04](open/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary story authority's developer-fixture import | READY WITH LIMITS after MA03: API/Chamber/GA composition fixed; disposable SQL/Temporal proof required |
 | [MA05](open/2026-11-21--ma05-authority-runtime-port-inversion/CHANGE.md) | Invert story authority → Storyteller-runtime callback dependencies | **PLANNER-BLOCKED:** 11 authority→runtime imports plus generation/outbox and SQL transaction ports remain unsettled |
