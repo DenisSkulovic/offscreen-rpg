@@ -1,0 +1,11 @@
+# MA08B | Move durable outbox lease and safe host logger to actual infrastructure owners
+
+**State: PLANNER-READY, independent lane B** of the [parallel structural wave](../../../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Baseline:** MA07 `4168db58`; integration `undertaking/storyteller-workshop`. Preserve all Application compatibility source/tests until final retirement. No SQL migration or paid model call.
+
+**Outcome:** durable lease/ack service moves from `@offscreen/application/outbox` to `@offscreen/db/outbox-relay`; host-only allowlisted logger moves from `@offscreen/application/runtime-logging` to `@offscreen/runtime-logging`. Worker relay/runtime and API/GA/Worker bootstraps import direct owners, while Application keeps thin compatibility implementations/reexports for existing tests (unchanged). This Change is *not* the draft service migration, lab extraction or final facade deletion.
+
+**Exclusive writes:** `packages/db/src/outbox-relay.ts`, `packages/db/package.json`, `packages/runtime-logging/**`, `apps/worker/src/{runtime/index.ts,outbox/relay.ts,bootstrap/main.ts,bootstrap/control-main.ts,bootstrap/executor-main.ts}`, `apps/api/src/main.ts`, `apps/game-authority/src/bootstrap/main.ts`, and matching three app manifests; **no** Story Engine/lab/tool/graph files, no `pnpm-lock.yaml`, no shared catalogs/ledgers. No changes inside legacy Application source until final cutover: it must still work as an independent old code copy for tests. One integration custodian handles shared lockfile and docs.
+
+**Invariant:** `createOutbox.claim(topics)` uses one SQL transaction, ordered available rows, `FOR UPDATE SKIP LOCKED`, 30 second SQL-clock lease and random leaseId; `acknowledge` matches notice id AND lease token AND null deliveredAt; duplicate/old lease cannot confirm. Logger still prints only explicitly permitted fields and classifies error by name, not Error message.
+
+[Map](SOURCE-MAP.md) · [algorithm](EXECUTION.md) · [tasks](TASKS.md) · [proof](PROOF.md).
