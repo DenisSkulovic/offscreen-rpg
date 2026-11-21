@@ -18,3 +18,5 @@ Existing Web contracts:
 Existing tools/chamber is a DB-enabled developer Lab, unsuitable for normal user terminal. MA12 is extracting Lab from production API. New tools/terminal is a public API consumer only. WR11 owns GA/Worker/workflow, K8S10 chaos; no overlapping owner files.
 
 Browser approval must display pair code and origin, require explicit button, owner from authenticated session, and deny mixed bearer+cookie. Prefer the existing authenticated Next route group for consent; no new OAuth provider.
+
+**DB export correction:** packages/db/package.json exposes ./schema for auth.ts only, not a wildcard. The new schema/terminal-auth.ts must be exported as ./terminal-auth-schema (dist/src/schema/terminal-auth.js/.d.ts); Drizzle config includes ./src/schema/*.ts already. Apps/api must import the declared subpath, not a deep src relative file.
