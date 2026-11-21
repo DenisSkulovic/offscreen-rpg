@@ -1,5 +1,8 @@
 # Planner-first investigation | move discovery upstream of Cursor execution
 
+> **Cold-start and readiness enforcement (2026-11-21):** ChatGPT must read current-branch `AGENTS.md` and `CHATGPT.md` **before** writing plans. Follow [ChatGPT cold-start contract](../../CHATGPT.md#mandatory-cold-start-contract-for-chatgpt-planning). This document is a planning **gate**, not optional inspiration. Inspect branch/HEAD/queue and affected source/tests first. A complex `STATE` Change with only a broad `CHANGE.md` and bare `TASKS.md` but no verified ownership/state map, chosen transaction algorithm, and discriminating proof is **not yet low-investigation Ready**. Either supply substantive source-grounded mapping in `SOURCE-MAP.md`/`EXECUTION.md`/`PROOF.md` or equivalent precise canonical owners, or hold it as Proposed with a named planner blocker. Audit **each** packet before handoff and never infer readiness from the existence of documents alone.
+
+
 **Selected owner direction, 2026-11-19.** This is an **authoring standard for ChatGPT and other architecture/design planners** preparing Offscreen RPG Changes for lower-cost Cursor executors. It is NOT an instruction for every executor to reread the wiki. See [the bounded Change standard](change-work-unit-standard.md), [template](../skills/change-workflow/assets/CHANGE.md) and [Cursor handoff skill](../skills/cursor-handoff/SKILL.md).
 
 ## Responsibility split
