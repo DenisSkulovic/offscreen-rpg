@@ -4,7 +4,7 @@
 
 The portfolio should demonstrate a coherent system operating under failure, not merely a list of technologies. A visitor should be able to run a local demo, experience a short story and inspect evidence of correct scheduling, state handling and measured AI use.
 
-## Correct local incremental-check policy (DX12; design selected, not implemented)
+## Correct local incremental-check policy (DX12; local command joined)
 
 A fast build is allowed only when its affected graph is complete. Turborepo's actual package dependency graph, not a second manually maintained map, selects changed packages and transitive dependent workspaces for local build, typecheck and pure unit tests. The explicit developer command `pnpm repo:affected` is a **read-only affected plan by default**, with execution only on a deliberate --run flag. Missing Git history, non-ancestor base, dirty/untracked files, root toolchain/lockfile/config changes and unknown source paths choose the **full safe** check set rather than skipping work; docs-only changes retain their separate docs/maintenance gates. CI workflow changes and remote caching are not authorized by this local optimization. Cache hits and saved time must be observed on repeatable executions, not inferred from Turbo configuration alone. See [DX12](../../../work/changes/archive/2026-11/other/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md).
 

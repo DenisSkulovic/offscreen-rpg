@@ -8,9 +8,9 @@
 
 **Progress is now modular monolith ~85% (~15% remaining), Storyteller ~60% (~40% remaining), combined ~70% (~30% remaining), ±10–15 percentage points.** Real Writer worker wiring, authority→Writer inversion, public API/SCC cleanup, longform quality proof and final main landing remain. None of this authorizes a paid provider call.
 
-## Upcoming architecture/operability wave, designed while current Cursors execute (2026-11-21)
+## Architecture/operability wave joined (2026-11-22)
 
-**MA10, WR09A and MA11 are Done and archived, not currently active Cursors.** [WR09B](../../changes/archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md) is joined: private-CAS replay, one tool receipt, and the stored-policy fence, still with a fake provider. The remaining independent candidates are [OPS12](../../changes/open/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md) (real partial-start and failed-stop cleanup gaps, READY post-wave), and [DX12](../../changes/open/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) (safe affected-package local build/typecheck/test and cache evidence, READY post-wave). Their expected source write sets do not overlap; SQL and integration commits have one custodian. **These planning commits do not raise completion estimates.** Long-form playable Writer, funded real provider run, remote crash/scale observation, MA09 Authority boundary inversion and possible later Writer package extraction remain distinct finish gates.
+**MA10, WR09A, and MA11 are Done and archived.** [WR09B](../../changes/archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md), [OPS12](../../changes/archive/2026-11/other/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md), and [DX12](../../changes/archive/2026-11/other/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) are joined and archived on this branch. WR09B is offline replay with a fake provider. OPS12 is injected worker cleanup, not a process-kill trial. DX12 is the local `pnpm repo:affected` plan. **These joins do not raise completion estimates.** Long-form playable Writer, funded real provider run, remote crash/scale observation, MA09 Authority boundary inversion and possible later Writer package extraction remain distinct finish gates.
 
 ## 🎯 What are we building?
 

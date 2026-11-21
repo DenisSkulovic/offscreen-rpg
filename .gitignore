@@ -32,6 +32,8 @@ work/*
 !work/README.md
 !work/changes/
 !work/changes/**
+!work/undertakings/
+!work/undertakings/**
 !work/designs/
 !work/designs/**
 !work/sessions/
