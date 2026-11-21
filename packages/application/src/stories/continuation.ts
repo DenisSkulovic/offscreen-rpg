@@ -12,7 +12,7 @@ import {
   gameOffer,
   worldObligation,
 } from '@offscreen/db/campaign-schema';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import {
   DocumentStorageError,
   sceneCheckpointSchema,
@@ -58,7 +58,7 @@ import {
 import { story, storyDocumentCommit, storyItem, storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 
 type CommitContinuation = Readonly<{
   ownerId: string;

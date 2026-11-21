@@ -1,7 +1,7 @@
 import { controlIntervalSchema } from '@offscreen/contracts/stories';
 import { interactionSchema } from '@offscreen/contracts/interactions';
 import type { Database } from '@offscreen/db';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import { commitStoryContinuation } from './continuation';
 import {
   continuationSchema,

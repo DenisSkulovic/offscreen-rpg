@@ -15,7 +15,7 @@ import {
 } from '@offscreen/db/storyteller-schema';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import type { ProviderTelemetry, ProviderUsage } from '@offscreen/storyteller/providers/openrouter';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import type { WriterMissionParentStepInsert } from './writer-mission-store';
 

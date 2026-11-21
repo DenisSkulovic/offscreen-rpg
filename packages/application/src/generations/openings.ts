@@ -8,7 +8,7 @@ import {
   preparePlayableOpening,
 } from '@offscreen/storyteller/tasks';
 import { createGenerations, GenerationError, validId } from './service';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 
 export function createOpenings(
   database: Database,

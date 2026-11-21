@@ -4,7 +4,7 @@
 
 **Desired end state:** New `@offscreen/story-authority` owns coherent story/campaign SQL authority, while `@offscreen/storyteller-runtime` owns durable Writer/capture/usage/dispatch/publication. Pure provider/task `@offscreen/storyteller` remains separate. Hosts compose them explicitly. `@offscreen/application` is a temporary compatibility/composition layer with a specific deletion gate. No new network service, DB schema or provider spend.
 
-**2026-11-21 subsequent prerequisite:** [MA05C](../2026-11-21--ma05c-direct-db-outbox-imports/CHANGE.md) migrates the 46 verified internal import sites of the DB-owned outbox port. This is needed before new Authority/Runtime package moves so neither new package reaches back into Application solely for generic SQL enqueue; do not repeat this import migration in MA06.
+**2026-11-21 subsequent prerequisite:** [MA05C](../../archive/2026-11/other/2026-11-21--ma05c-direct-db-outbox-imports/CHANGE.md) has migrated the 46 verified internal import sites onto the DB-owned outbox port. New Authority or Runtime package moves must not reach back into Application solely for generic SQL enqueue, and they must not repeat this import migration.
 
 **Authority continuity SQL cohort:** [MA05E](../2026-11-21--ma05e-continuity-note-authority/CHANGE.md), after D, moves a full transactional continuity note validator/updater from Storyteller runtime into Stories, keeping exact legacy export. If later extracting Authority, move its single canonical source, not the old re-export wrapper.
 

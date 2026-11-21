@@ -27,7 +27,7 @@ import {
   makeValidatedAppearanceForPublication,
   readOptionalSceneAppearance,
 } from '@offscreen/contracts/stories';
-import { enqueue, type Transaction } from '../outbox/index';
+import { enqueue, type Transaction } from '@offscreen/db/outbox';
 import { knowledgeIndexTopic } from './documents';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { readDatabaseClockMs } from './persistence';

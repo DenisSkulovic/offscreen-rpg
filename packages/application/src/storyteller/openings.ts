@@ -31,7 +31,7 @@ import {
 import { GenerationError, validId } from '../generations/index';
 import { insertStorytellerTask, storytellerKind } from './records';
 import { storytellerNoticeTopicForWake } from './records';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import { authorizedMechanicalOpeningPlans } from '@offscreen/storyteller/fixtures';
 import {
   mechanicalContentCatalogue,

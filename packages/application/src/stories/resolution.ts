@@ -23,7 +23,7 @@ import { generation } from '@offscreen/db/generation-schema';
 import { story, storyItem, storyResolution } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
 import { createGenerations, GenerationError } from '../generations/index';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import {
   scriptedContinuationKind,
   scriptedContinuationTopic,

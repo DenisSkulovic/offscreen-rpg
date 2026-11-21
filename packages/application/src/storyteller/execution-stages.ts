@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { and, asc, eq } from 'drizzle-orm';
 import { storytellerExecutionStage } from '@offscreen/db/storyteller-schema';
 import type { Database } from '@offscreen/db';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 
 export const STORYTELLER_EXECUTION_STAGE_PRODUCER =
   process.env['OFFSCREEN_BUILD_ID'] ?? 'local-dev';

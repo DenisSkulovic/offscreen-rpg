@@ -13,7 +13,7 @@ import {
 } from '@offscreen/db/story-schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
-import { enqueue, type Transaction } from '../outbox/index';
+import { enqueue, type Transaction } from '@offscreen/db/outbox';
 import type { IntervalControl, StoryContinuation } from './command-policy';
 import { StoryError } from './errors';
 import {

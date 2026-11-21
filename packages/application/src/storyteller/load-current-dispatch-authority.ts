@@ -22,7 +22,7 @@ import {
   type ExecutionPolicy,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import { retainsIndependentCurrentAuthority } from './dispatch-authority';
 import { resolveIndependentAuthorityFromStore } from './current-authority';
 

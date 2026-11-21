@@ -17,7 +17,7 @@ import {
   type StorytellerProviderDispatch,
 } from '@offscreen/storyteller/providers/openrouter';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import { storytellerNoticeTopicForWake } from './records';
 
 export type DispatchReviewDisposition = 'proceed' | 'held' | 'stopped';

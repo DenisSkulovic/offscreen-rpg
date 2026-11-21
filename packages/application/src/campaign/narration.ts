@@ -12,7 +12,7 @@ import {
   gameActionExecution,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import type { StoryRecord } from '../stories/persistence';
 import {
   incrementStoryViewVersion,
@@ -26,7 +26,7 @@ import {
   captureWorldObligationConsequenceNarration,
 } from '../storyteller/context-capture';
 import { materializePendingActionCapture } from '../storyteller/capture-materialization';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import type { PendingImmediateActionResolution } from './action-overlap';
 
 import { campaignConsequenceTopic } from './topics';

@@ -8,7 +8,7 @@ import {
   taskEvidence,
   validateStorytellerResult,
 } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import { storytellerKind } from './records';
 
 /** Participates in the caller's story-lock transaction; never publishes future notes early. */

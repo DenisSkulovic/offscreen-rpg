@@ -14,8 +14,8 @@ import {
   DECLINE_HARMLESS_INVITATION_CLASS,
   isDeclineHarmlessInvitation,
 } from '@offscreen/game/delegation-eligibility';
-import type { Transaction } from '../outbox/index';
-import { enqueue } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/db/outbox';
 import {
   incrementStoryViewVersion,
   lockOwnedStory,

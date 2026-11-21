@@ -18,7 +18,7 @@ import {
   incrementStoryViewVersion,
 } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import {
   evaluateStorytellerRetryGate,
   type StorytellerAttemptLifecycleState,

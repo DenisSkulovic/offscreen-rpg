@@ -13,7 +13,7 @@ import {
   playablePresentation,
   validatePlayableResult,
 } from '@offscreen/storyteller/tasks';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import { validId, GenerationError } from './service';
 import { createDispatchReviewControls } from '../storyteller/dispatch-review';
 import type {

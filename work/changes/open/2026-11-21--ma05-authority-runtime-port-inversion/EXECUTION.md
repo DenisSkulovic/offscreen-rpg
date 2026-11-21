@@ -12,7 +12,7 @@ This file records a **selected direction**, a complete known edge matrix and the
 
 - **MA05A:** two persisted generation-kind literals live in `@offscreen/contracts/storyteller-kinds` with old runtime export compatibility; `stories/start` and `stories/reads` no longer depend on those Storyteller implementation files. This is **not** a transport-topic move.
 - **MA05B (Done):** generic Transaction/Notice/idempotent enqueue now live in DB, direct-reexported from Application.
-- **MA05C (next):** 46 verified internal source files switch their exact `../outbox/index` module specifiers to `@offscreen/db/outbox`, in two disjoint edit waves with one joined proof. No runtime or SQL edits; never repeat this during MA06.
+- **MA05C (Done):** 46 internal source files import `@offscreen/db/outbox` instead of `../outbox/index`. The edit is import text only. [Packet](../../archive/2026-11/other/2026-11-21--ma05c-direct-db-outbox-imports/CHANGE.md). Do not repeat it during MA06.
 
 Each is a small bounded Change with its own source-proof instructions. MA05 as a whole stays blocked until subsequent semantic inversion is chosen and proved.
 

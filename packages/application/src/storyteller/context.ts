@@ -21,7 +21,7 @@ import {
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
 import { projectWorldTime } from '@offscreen/game/calendar';
 import { worldConditionsSchema } from '@offscreen/game/world-obligations';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import {
   activityProgressSchema,
   resolvedActivityPlanSchema,

@@ -3,8 +3,8 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { outbox } from '@offscreen/db/outbox-schema';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
-import type { Transaction } from '../outbox/index';
-import { enqueue } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/db/outbox';
 import {
   storytellerTaskSchema,
   storytellerOutputSchema,

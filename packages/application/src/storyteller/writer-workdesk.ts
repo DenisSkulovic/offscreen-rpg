@@ -16,7 +16,7 @@ import {
   type LibraryIndex,
 } from '@offscreen/documents';
 import type { WriterMissionCapture, WriterToolName } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import {
   createPinnedLibraryNavigation,
   LibraryNavigationError,

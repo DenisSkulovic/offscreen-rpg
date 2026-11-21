@@ -36,7 +36,7 @@ import { createMemoryProviderRoundRuntime } from './memory-provider-runtime';
 import { resolveStoryRetrievalRecipe } from './retrieval-recipes';
 import { recordExecutionStage } from './execution-stages';
 import { storytellerKind } from './records';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import {
   acceptWriterSceneProposal,
   type WriterSceneProposalAccepted,

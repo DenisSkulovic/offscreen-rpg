@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { campaignReport, gameRoll } from '@offscreen/db/campaign-schema';
 import type { OutcomeEffect } from '@offscreen/game/effects';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import type { StoryRecord } from '../stories/persistence';
 import { captureHistoricalReport } from '../storyteller/context-capture';
 import type { ActivityRecord, CampaignRecord } from './persistence';

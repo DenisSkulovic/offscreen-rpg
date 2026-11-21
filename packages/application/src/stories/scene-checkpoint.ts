@@ -9,7 +9,7 @@ import {
 } from '@offscreen/documents';
 import { storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { lockOwnedStory } from './persistence';
 

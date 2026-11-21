@@ -4,7 +4,7 @@ import {
   campaignHoldSchema,
   campaignHoldsSchema,
 } from '@offscreen/contracts/campaign-holds';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import { projectCampaignClock } from './clock';
 import type { CampaignRecord } from './persistence';
 

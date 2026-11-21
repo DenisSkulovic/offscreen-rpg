@@ -25,7 +25,7 @@ import {
   type StorytellerProfile,
 } from '@offscreen/storyteller/profiles';
 import { z } from 'zod';
-import { type Transaction } from '../outbox/index';
+import { type Transaction } from '@offscreen/db/outbox';
 import {
   lockOwnedStory,
   incrementStoryViewVersion,

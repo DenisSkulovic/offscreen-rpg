@@ -22,7 +22,7 @@ import {
   storytellerContextCaptureRearm,
   storytellerOperation,
 } from '@offscreen/db/storyteller-schema';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import { campaignConsequenceTopic } from '../campaign/topics';
 import { campaignHoldsSchema } from '../campaign/holds';
 import { actionProjectedStateDigest } from '../campaign/action-overlap';

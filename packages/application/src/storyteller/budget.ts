@@ -29,7 +29,7 @@ import type {
   StorytellerProviderDispatch,
 } from '@offscreen/storyteller/providers/openrouter';
 import { isDeepStrictEqual } from 'node:util';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import {
   markUsageWindows,
   reserveUsageWindows,

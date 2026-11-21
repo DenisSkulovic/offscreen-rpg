@@ -28,7 +28,7 @@ import { storyPassage } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { enqueue } from '../outbox/index';
+import { enqueue } from '@offscreen/db/outbox';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { lockOwnedStory } from './persistence';
 import { passageContentSchema } from '@offscreen/contracts/stories';

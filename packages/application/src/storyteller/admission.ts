@@ -17,8 +17,8 @@ import {
 import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
 import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import type { Database } from '@offscreen/db';
-import type { Transaction } from '../outbox/index';
-import { enqueue } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/db/outbox';
 import {
   insertStorytellerTask,
   storytellerKind,

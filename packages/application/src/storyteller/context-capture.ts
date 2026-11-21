@@ -56,8 +56,8 @@ import {
   storytellerContextCapture,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
-import type { Transaction } from '../outbox/index';
-import { enqueue } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/db/outbox';
 import type { StoryRecord } from '../stories/persistence';
 import { readDatabaseClockMs } from '../stories/persistence';
 import { readAcceptedActivityPlan } from '../campaign/accepted-plans';

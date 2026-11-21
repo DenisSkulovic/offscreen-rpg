@@ -20,7 +20,7 @@ import {
   type WriterToolInvocationResult,
   type WriterToolName,
 } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '../outbox/index';
+import type { Transaction } from '@offscreen/db/outbox';
 import {
   advanceWriterMissionProviderStep,
   hashWriterMissionSerializedResponse,
