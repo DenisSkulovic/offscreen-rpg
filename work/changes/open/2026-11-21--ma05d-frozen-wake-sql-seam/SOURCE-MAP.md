@@ -1,0 +1,20 @@
+# MA05D | verified SQL/helper/source identity
+
+**Source inspected:** current `undertaking/storyteller-workshop` post-MA05B `22e8af7e38ade6cf6797e6446702d2203074a439` plus earlier complete frozen-topic test source. Source refs can change *only* by MA05C's known outbox import literal substitutions before MA05D commission. All imported public APIs below were checked; compiler/DB proof NOT RUN by planner.
+
+| Existing source/symbol | Current behavior and callers | Selected destination / compatibility |
+| --- | --- | --- |
+| `storyteller/records.ts:storytellerTopic,storytellerDistributedTopic` | two persisted transport topic literals; admission env flag selects only at initial enqueue; `story03-notice-selector.test.mjs`, runtime/worker and wake SQL refer to literals | `contracts/src/storyteller-notices.ts` exact literal constants, import/re-export from `storyteller/records.ts` so old exports preserved |
+| `storyteller/records.ts:readFrozenStorytellerNoticeTopic` | SELECT `outbox.topic` where operationId and IN fixed two topics; distinct set; missing→null; mixed/invalid→`Storyteller notice topic history is inconsistent for operation <id>` | `campaign/storyteller-wake.ts` with identical Drizzle query/return/error; runtime records reexports same function binding |
+| `storyteller/records.ts:storytellerNoticeTopicForWake` | calls frozen reader, missing→`Missing frozen Storyteller notice topic for operation <id>` | same Campaign helper, same transaction and error; legacy reexport |
+| `storyteller/capture-materialization.ts:isProvisionalContextCapture` | SELECT `generation.kind` by ID; true only when `row?.kind === storytellerContextCaptureKind`; no owner predicate in current trusted worker tx helper | same Campaign helper with neutral `@offscreen/contracts/storyteller-kinds` constant; capture-materialization module explicitly reexports same function |
+| `campaign/follow-up-intents.ts:applyCampaignFollowUpIntents` | on promote: campaignConsequenceTopic if provisional; else frozen storyteller topic; `enqueue(tx,...)` within current locked campaign transaction | change **only the two imported helpers** to `./storyteller-wake`; retain selection branches and notice IDs/operation IDs unchanged |
+| `application/test/story03-notice-topic-freeze.test.mjs` | `withDisposable` provisions isolated sandbox, seven tests including flag flip, no topic, mixed topic, non-storyteller filter and same-ID conflict rollback after MA05B | preserve all existing cases and add one provisional classifier test; no new test harness |
+| `application/test/story03-notice-selector.test.mjs` | tests admission-time env selection and distinct topic strings | keep behavior unchanged and run directly |
+| `contracts/package.json` | explicit `dist/src/*.d.ts` and `.js` subpaths | add `./storyteller-notices`; Application already has Contracts dependency |
+
+**Exact new source path:** `packages/application/src/campaign/storyteller-wake.ts`; use `@offscreen/db/outbox` `Transaction` type, `@offscreen/db/outbox-schema` `outbox`, `@offscreen/db/generation-schema` `generation`, `drizzle-orm` `and,eq,inArray`, the neutral Contracts topic constants and `storytellerContextCaptureKind`.
+
+**Import graph:** `campaign/follow-up-intents` currently imports `storyteller/records` and `storyteller/capture-materialization`. After move both are local Campaign imports; Storyteller records and capture-materialization may import Campaign helper (runtime → authority direction, already an existing permitted direction). All previous runtime direct users (e.g. `storyteller/recovery`, `admission`, `openings`, `capture-materialization`, Chamber) retain their `storyteller/records` import path/strict function identity. Do not change unrelated SQL or `@offscreen/db/outbox` implementation.
+
+**Negative boundaries:** no current-env topic substitution at wake, no empty history fallback to a guessed topic, mixed topic still throws, no provisional status inferred from task output, no extra SELECT after enqueue, no real provider/spend/migrations.
