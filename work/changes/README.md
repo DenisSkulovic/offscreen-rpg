@@ -1,3 +1,5 @@
+# Changes | active catalog
+
 ## Selected three-lane source-disjoint post-MA08 wave (2026-11-21)
 
 **MA08 Done at `6dd12761`.** Three independent commissioned **candidates** exist below; owner commissions each named Change explicitly. They can be implemented concurrently in separate linked worktrees, but a **single integration custodian** serializes merge/lockfile/catalog/archive/OVERVIEW. Branches are **not** to auto-merge or delete themselves while the other lanes remain unjoined. [Exact source contracts](../undertakings/storyteller-workshop/PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21).
