@@ -1,64 +1,57 @@
-# MA10 source map | inspected 6dd12761
+# MA10 | actual source-to-owner map and test migration exceptions
 
-**Actual source evidence:** `packages/application/src` is 152 small TS forwarding files (~10 KiB), `packages/application/test` contains **112** `.mjs` files. MA08 moved 39 lab modules into `@offscreen/lab-support`, drafts into Story Engine, DB outbox relay into DB, logging into runtime-logging. No production host/tool package imports Application. Tests are the blocker, not legitimate remaining runtime ownership.
+**Source basis:** MA08-integrated snapshot `6dd1276131a813f694ec3bccf4f9062ad3708208`. All 112 exact test names are frozen in [TEST-INVENTORY](TEST-INVENTORY.md), not re-listed here. The old Application has ~152 forwarding TypeScript files, no legitimate remaining production host consumer, and 112 `.test.mjs` tests. `tools/api-integration/package.json` already declares Story Engine, Lab Support, Admin, DB and Documents. **Do not add an Engine→Lab dependency.**
 
-**Test mapping:** original 112 have 68 files with at least one `../dist/developer-tools` reference, 2 remaining files primarily referencing legacy outbox/admin, and 42 without those lab/owner references. The sets are a diagnostic classification, **not** permission to drop combined engine+lab tests. `../dist/developer-tools/index.js` appears 59 times; `../dist/stories/index.js` 30; `../dist/stories/initialization.js` 27; `../dist/campaign/settings.js` 23; `../dist/stories/passage-documents.js` 16; `../dist/storyteller/records.js` 15. Cross-owner tests include `p3b-writer-provider-custody.integration.test.mjs`, `wr03-writer-loop.integration.test.mjs`, `wr04-writer-research.test.mjs`, `eng03-t05-historical-report-capture.live.test.mjs`, `eng03-resolution-lock-measurement.live.test.mjs` and `ma06a-story-engine-compatibility.test.mjs`. Do not let 'live' file names hide the negative tests from the migration ledger.
+## Test classification and safe execution
 
-**Destination:** `tools/api-integration/legacy-engine-tests` is still three directory levels under repo root, preserving `resolve(here,'../../..')` used by fixtures. Test local `../dist` must be replaced by `../../../packages/<owner>/dist`; do not blindly replace unrelated `../` fixtures. `tools/api-integration/package.json` already lists `@offscreen/story-engine`, `@offscreen/lab-support`, `@offscreen/admin`, `@offscreen/db`, and others, with Node test scripts on compiled `dist/test/*.test.js`. Add a separate `test:legacy-engine` runner for moved raw MJS; **do not add MJS to existing TypeScript compiler test glob**.
+| Class | Count | Selected runner mode |
+| --- | ---: | --- |
+| Pure filename-unit cases, no SQL provisioning | **60** | `pure`, only default runnable subset |
+| Filename-unit cases that actually provision disposable Postgres | **16** | `disposable`, explicit local disposable permission |
+| `*.integration.test.mjs` | **14** | `integration`, explicit disposable/test fixture |
+| `*.live.test.mjs` | **22** | `live`, explicit local capability and guard |
+| **Total** | **112** | No broad automatic glob |
 
-**Non-App code still using a removed build:** `apps/worker/test/eng06-worker-restart.live.test.ts` imports legacy stories/campaign/fixtures dist, `apps/worker/test/gm07-temporal-relay.live.test.ts` points to old dist. Scripts `scripts/repo-tools/{focused-integration,storyteller-playability,storyteller-live-comparison,plan-storyteller-saved-repair}.mjs` have legacy run/build paths; `scripts/repo-tools/knowledge-health.mjs` has obsolete literal `packages/application/src/developer-tools/README.md` expected path. Source comments in `packages/game/src/immediate-actions.ts` and Storyteller fixture are NOT runtime imports. Checker unit tests containing deliberately synthetic old Application package paths are NOT real consumers and belong to MA11.
+**The sixteen deceptive `*.test.mjs` SQL fixtures** (source code uses `createDatabase`, `provisionDisposableSandboxDatabase`): `gm07-delegated-admission`, `gm07-delegated-expiry`, `gm07-delegated-offer-capture`, `gm07-delegated-worker-path`, `gm07-delegation-policy`, `historical-fork-v2`, `historical-fork`, `library-v2-admit`, `library-v2-fork`, `scene-checkpoint-publication`, `scene-checkpoint`, `story03-generation-adoption`, `story03-notice-topic-freeze`, `story03-stale-saved-publish`, `v2-active-fork`, `wr04-writer-research`, each with suffix `.test.mjs`. Put these exact basenames in a frozen denylist for the default pure selector; no dynamic "filename ends .test.mjs means safe" logic.
 
-**Critical compatibility-only test:** `ma06a-story-engine-compatibility.test.mjs` uses `createRequire` on `packages/application/package.json`, walks old Application forwarding source and tests 81+ legacy import specifiers. On retirement, replace its *obsolete* identity/forwarder claims with equivalent tests asserting (a) Application workspace/manifest absent, (b) real Story Engine + Lab direct imports resolve correctly, (c) new AST source graph refuses application runtime imports and (d) mapped test source paths are resolvable. `ma05b-outbox-compat.test.mjs` should check DB-owned `enqueue` identity via DB public export rather than asserting a deleted Application function; `admin-compat.test.mjs` should verify Admin direct exports and contracts-owned holds identity without Application aliases. Preserve other positive/negative assertions.
+**Test runner owner:** new `tools/api-integration/scripts/run-legacy-engine-tests.mjs`, package scripts `test:legacy-engine:pure|disposable|integration|live`. Check all 112 basenames exist; pure selection 60; gate other 52 *before* importing or spawning any file, use a single spawned `node --test --test-concurrency=1` process, cwd repo root. Runner must not independently authorize destructive SQL or invent `DATABASE_TEST_URL` values. Existing tests retain disposable-sandbox checks.
 
-**Own existing tests untouched by MA10:** `scripts/repo-tools/module-graph.test.mjs` (MA11), provider/SQL in `story-engine/src` (WR09A), Story Authority capture (MA09). If a moved test exercises WR09A new pointer schema, do not update that assertion in this lane. MA10 moves its original fixture unchanged except import paths; WR09A owns additional tests in a noncolliding new basename.
+## Direct legacy import-path table
 
-**Deletion preflight:** scan literal import/export/require, TypeScript test type imports and script spawn strings, manifests and lockfile, root/turbo scripts, knowledge path references. Verify full 112-mapping receipt BEFORE deleting Application and its tsconfig/manifest. No new package or broad Story Engine public wildcard added to support test-only deep reads.
+| Old file/specifier | New file/specifier |
+| --- | --- |
+| `../dist/stories/**`, `../dist/campaign/**`, `../dist/storyteller/**`, `../dist/generations/**`, `../dist/drafts/**` | `../../../packages/story-engine/dist/<same-subpath>` |
+| `../dist/developer-tools/**` | `../../../packages/lab-support/dist/<same-subpath>` |
+| `../dist/admin/**` | `../../../packages/admin/dist/<same-subpath>` |
+| `../dist/outbox/index.js` named `enqueue` | `@offscreen/db/outbox` |
+| `../dist/outbox/index.js` named `createOutbox` | `@offscreen/db/outbox-relay` |
+| `../dist/runtime-logging/index.js` | `@offscreen/runtime-logging` |
+| old Application cache exports | `@offscreen/contracts/read-cache` |
+| `@offscreen/application/{stories,storyteller,generations,drafts,...}` | exact real owner per mapping above, including direct package, require and literal dynamic import |
 
-## Source-verified exhaustive migration exceptions (6dd12761)
+**Build outputs verified:** `packages/story-engine` emits `dist/<domain>/...`; `packages/lab-support` and `packages/admin` use `rootDir:src`, `outDir:dist`; DB's outbox comes from `dist/src/outbox.js` via exported `@offscreen/db/outbox`. Do not use a generic `../../../packages/db/dist/outbox` replacement.
 
-**Actual test inventory: 112 `*.test.mjs`, partitioned by filename and execution capability: 76 ordinary tests, 22 `*.live.test.mjs` tests, 14 `*.integration.test.mjs` tests.** All 112 must migrate, but **never** run the combined 112-file glob as the default proof: that includes disposable database, process-spawn and sandbox tests.
+## Non-`../dist` relative path exceptions (must not be overlooked)
 
-### Non-`../dist` relative imports that need exact source rewriting
+- `obs00-b-current-authority-loader.integration.test.mjs`, `obs00-b-dispatch-authority.integration.test.mjs`, `saved-repair-plan.integration.test.mjs`, `saved-repair-apply.integration.test.mjs`: all use `createRequire(new URL('../../db/package.json', import.meta.url))`. After move replace `../../db/package.json` with `../../../packages/db/package.json`.
+- Both `obs00-b-*.integration.test.mjs` tests use `new URL('../../db/migrations', import.meta.url)`: replace with `../../../packages/db/migrations`.
+- `eng03-lock-measurement.live.test.mjs`: `../../docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md` → `../../../docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md`, checking actual document existence.
+- `delegated-decision.test.mjs`: `../src/campaign/delegated-decision.ts` → `../../../packages/story-engine/src/campaign/delegated-decision.ts`.
+- `saved-repair-apply.integration.test.mjs`: `../src/storyteller/saved-repair-apply.ts` → `../../../packages/story-engine/src/storyteller/saved-repair-apply.ts`.
+- `saved-response-inspection.test.mjs`: `../src/storyteller/saved-response-inspection.ts` → `../../../packages/story-engine/src/storyteller/saved-response-inspection.ts`.
+- `story03-notice-topic-freeze.test.mjs`: `srcRoot = join(here, '..', 'src')` → `srcRoot = resolve(here,'../../../packages/story-engine/src')`; do not scan the API Integration source as though it were Story Engine.
+- `library-navigation.test.mjs` references logical fixture `../people/mira.md`: leave its logical document path untouched. Existing `resolve(here,'../../..')` and `../../../apps/**` remain correct because new test directory is also three levels below repo root.
 
-The destination `tools/api-integration/legacy-engine-tests` is still exactly three directories beneath repo root, so `resolve(here,'../../..')` and existing `../../../apps/**` or `../../../scripts/**` references remain valid.
+## Tests whose sole compatibility claims must change
 
-**BUT** references that were siblings of `packages/application` now point to a *different* directory and must change:
-- Four files use `new URL('../../db/package.json', import.meta.url)`: `obs00-b-current-authority-loader.integration.test.mjs`, `obs00-b-dispatch-authority.integration.test.mjs`, `saved-repair-plan.integration.test.mjs`, `saved-repair-apply.integration.test.mjs`. Change URL to `../../../packages/db/package.json` so `createRequire` resolves `pg` from the real DB package.
-- Both OBS00-B integration tests also refer to `new URL('../../db/migrations', import.meta.url)`; change to `../../../packages/db/migrations`.
-- `eng03-lock-measurement.live.test.mjs` refers to `../../docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md`; change to `../../../docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md` *if that file is actually retained*, otherwise preserve its existing explicit NOT RUN condition.
-- `delegated-decision.test.mjs` references `../src/campaign/delegated-decision.ts`; remap to `../../../packages/story-engine/src/campaign/delegated-decision.ts`.
-- `saved-repair-apply.integration.test.mjs` references `../src/storyteller/saved-repair-apply.ts`; remap to Story Engine `src/storyteller`.
-- `saved-response-inspection.test.mjs` references `../src/storyteller/saved-response-inspection.ts`; remap likewise.
-- `library-navigation.test.mjs` has a literal `../people/mira.md` document path; **retain it unchanged** (it is a logical fixture path, not a Node module import).
-- `wr07b-joined-play.integration.test.mjs` uses `@offscreen/application/stories` directly, replace with `@offscreen/story-engine/stories` (not just `../dist` mapping). Search and replace all other `@offscreen/application` specifiers including `require` and `import()`.
+- `ma06a-story-engine-compatibility.test.mjs` currently uses `createRequire` from deleted `packages/application/package.json`, traverses old `application/src` forwarders and tests 81+ historic imports. Replace those obsolete assertions with **Application workspace absent**, Story Engine has no App import/dependency, direct owned exports resolve and an injected old App import is detected. Keep useful source import negatives.
+- `ma05b-outbox-compat.test.mjs`: stop comparing to deleted Application outbox function, check DB-owned `enqueue` and relay direct export/identity as applicable.
+- `admin-compat.test.mjs`: check Admin direct exports and Contracts campaign-holds schema identity, without App aliases. No other tests may drop negative cases to make migration pass.
 
-Other root-relative tests using `createRequire` include `ma06a-story-engine-compatibility.test.mjs` and the five SQL tests above. The MA06A test's `createRequire` intentionally points at the Application manifest, which **must be replaced** by `packages/story-engine/package.json`; delete only its obsolete forwarder identity assertions and keep/rewrite its graph/source negative coverage. Two other identity-only files are `ma05b-outbox-compat.test.mjs` and `admin-compat.test.mjs`.
+## Remaining executable consumers beyond the 112 tests
 
-### Test runner contract (no hidden SQL)
+`apps/worker/test/eng06-worker-restart.live.test.ts` and `gm07-temporal-relay.live.test.ts` use old Application dist paths; `scripts/repo-tools/{focused-integration,storyteller-playability,storyteller-live-comparison,plan-storyteller-saved-repair}.mjs` spawn/use old Application paths; `knowledge-health.mjs` has stale Application developer-tools README. `tools/chamber/package.json` may still name Application in benchmark build scripts. MA10 owns those exact scripts/Worker test import edits. **Do not edit** `scripts/repo-tools/module-graph*.mjs`: MA11 owns the checker, including deliberate synthetic Application fixture strings. `agent-trace.test.mjs` and other synthetic trace strings are not runtime imports.
 
-Add `tools/api-integration/scripts/run-legacy-engine-tests.mjs` with a CLI mode `unit|integration|live`, enumerate the moved directory using `readdirSync`, lexically sorted:
-- unit: names ending `.test.mjs` EXCLUDING `.live.test.mjs` and `.integration.test.mjs` = **76**; invoked by `pnpm --filter @offscreen/api-integration test:legacy-engine:unit`, no database precondition claimed;
-- integration: `*.integration.test.mjs` = **14**, explicitly require known disposable DB/fixture setup or execute only named scripts with their existing setup semantics;
-- live: `*.live.test.mjs` = **22**, require named disposable environment or are recorded NOT RUN.
-Use `spawnSync(process.execPath,['--test','--test-concurrency=1',...chosenAbsolutePaths],{stdio:'inherit',cwd:repoRoot,env:process.env})`. Exit with child's status. Never import a test module into the runner (it can mutate SQL at module evaluation). Modes integration/live must default-deny if the *exact* known disposable context isn't present; individual tests with their own provisioning have separate explicit invocation routes and retain their existing consent gates. Avoid a single auto-running 112-test script attached to `pnpm -r test`.
+## Falsifiable closure
 
-For source truth verify `packages/admin/tsconfig.json` emits `dist/<file>.js`, `packages/lab-support/tsconfig.json` emits `dist/<file>.js`, `packages/story-engine` uses `dist/<domain>/...`, and `@offscreen/db/outbox` maps to `dist/src/outbox.js`; do not guess paths by string substitution for DB/Logging.
-
-### Deletion proof
-
-After importing/rebuilding moved tests, enumerate **exactly 112 unique old basenames and 112 unique relocated basenames**, compare sorted strings and check all 76 unit tests can be discovered; compare TAP test assertions and skip counts before/after on equivalent build artifacts where runnable. Existing source test failures due to a missing local DB remain NOT RUN/FAIL as appropriate, not PASS. Scan executables *and* manifest references before deleting `packages/application`. Script and data *literals* from synthetic graph/trace fixtures should not be rewritten as runtime imports.
-
-## Final execution-mode correction: 76 filenames are NOT 76 safe unit tests
-
-Static source examination found **16 filename-unit tests that actually call `createDatabase` and `provisionDisposableSandboxDatabase`**, with destructive sandbox provisioning guarded inside the test. They must **not** run on the default test command. Their exact names: `gm07-delegated-admission.test.mjs`, `gm07-delegated-expiry.test.mjs`, `gm07-delegated-offer-capture.test.mjs`, `gm07-delegated-worker-path.test.mjs`, `gm07-delegation-policy.test.mjs`, `historical-fork-v2.test.mjs`, `historical-fork.test.mjs`, `library-v2-admit.test.mjs`, `library-v2-fork.test.mjs`, `scene-checkpoint-publication.test.mjs`, `scene-checkpoint.test.mjs`, `story03-generation-adoption.test.mjs`, `story03-notice-topic-freeze.test.mjs`, `story03-stale-saved-publish.test.mjs`, `v2-active-fork.test.mjs`, `wr04-writer-research.test.mjs`.
-
-**Final selection rule** for the runner `run-legacy-engine-tests.mjs`:
-- `--mode=pure` (**default**, and `test:legacy-engine:pure`): **60 files**. Filename ends `.test.mjs`, excludes the 16 static SQL test names, and excludes `.integration.test.mjs` and `.live.test.mjs`. Safe local tests only.
-- `--mode=disposable`: **16** named SQL-provisioning `.test.mjs` cases, requires an explicit operator-controlled disposable/local environment; preserve the existing `confirmDisposableProvision:true` guards inside tests; do **not** run as routine default.
-- `--mode=integration`: **14** `.integration.test.mjs`; explicit local disposable credentials/capabilities or existing test-level guarded provisioning.
-- `--mode=live`: **22** `.live.test.mjs`; explicit named sandbox/DB, not automatic.
-Therefore **60 + 16 + 14 + 22 = 112**. Package scripts should be `test:legacy-engine:pure`, `test:legacy-engine:disposable`, `test:legacy-engine:integration`, `test:legacy-engine:live`; `test:legacy-engine:unit` if retained must alias **pure 60 only** (never 76).
-- The runner uses a **frozen explicit set** of these sixteen SQL basenames. It must verify every supplied file exists, calculate all four disjoint sets, and reject a total other than 112. Do not infer "pure" solely from suffix or use a broad wildcard shell invocation. For other three modes require a separate explicit allow-run option/environment validated as local disposable **before spawning**; individual tests retain their own authorizations. Do not give the runner default `DATABASE_TEST_URL`.
-- `story03-notice-topic-freeze.test.mjs` builds `srcRoot=join(here,'..','src')` from old package location. After relocation it would point to `tools/api-integration/src`, not Story Engine. Replace **only that source-root assignment** with `resolve(here,'../../../packages/story-engine/src')` and preserve its frozen-topic negative assertions.
-
-**Falsifiable default negative:** with no SQL env present, `pnpm --filter @offscreen/api-integration test:legacy-engine:pure` selects exactly **60** basenames and never imports a test that provisions Postgres. Attempt `--mode=disposable` without explicit safe environment must refuse before loading a test. This mode correction supersedes any earlier packet section implying all 76 filename-unit tests are automatic.
+Sorted 112 old/new filenames equal; 60 pure selected without importing any SQL fixture, 52 gated retained; three compatibility-only tests replaced with meaningful direct-owner assertions; old executable imports zero; root pnpm workspace/lockfile importer absent after join; no Story Engine→Lab dependency; confirmed pure tests, database-denial/replay and source-root negatives retained. Every `NOT RUN` explicitly reported rather than called PASS.
