@@ -1,5 +1,7 @@
 # Work taxonomy | what we decide, modify, execute and learn
 
+**Lifecycle walkthrough:** [How we work](../WORKFLOW.md) connects these types to the practical docs-first / ChatGPT-plans / Cursor-implements / verification and branch workflow. This file remains the precise classification reference.
+
 **Status:** selected repository operating convention, 2026-11-20. **Owner:** engineering work management, not game product behavior. [One selection queue](QUEUE.md) · [Change standard](../.agents/references/change-work-unit-standard.md) · [Composer microtasks](../.agents/references/composer-first-execution.md) · [Tasks](tasks/README.md).
 
 ## Words that mean different things
@@ -24,7 +26,7 @@ An **Undertaking** is a temporary integration envelope for a coherent, memorable
 
 An Undertaking **does not create another truth or execution authority**. It cannot mark a child Change Done, select work instead of [QUEUE](QUEUE.md), ratify a Design, or turn a proposal into shipped capability. Child artifacts retain their own lifecycle and evidence requirements. The undertaking dossier owns only scope, integration intent, constituent map, entry/exit conditions and branch identity.
 
-Repository branch hygiene defaults to **two long-lived visible branches during an Undertaking**: `main` and one `undertaking/<slug>` branch. Extra branches are exceptional, temporary implementation tools and should be deleted immediately after their work is reconciled. Do not create a branch per Design or Change by habit. An undertaking branch should be named for the actual transformation, not a generic sequence such as `evolution-2` or `consolidated`.
+Repository branch hygiene defaults to **two long-lived visible branches during an Undertaking**: `main` and one `undertaking/<slug>` branch. A **dedicated short-lived branch is mandatory for each commissioned implementation Change**, created from that Change's actual integration branch and squash-joined back at acceptance; temporary branches are removed after reconciliation. Do not create branches for every Design, Composer T-ID or standalone Task by habit. Worktrees are separate only when concurrent checkouts require isolation. An undertaking branch should be named for the actual transformation, not a generic sequence such as `evolution-2` or `consolidated`.
 
 Lifecycle: **Active → Landing → Closed**. Active means the themed scope is still being shaped or implemented. Landing means constituent work has been reconciled and the branch is being validated as one coherent candidate for `main`. Closed means it has landed or been explicitly abandoned; the active dossier and branch should then disappear from HEAD after a compact disposition is retained. See [Undertakings](undertakings/README.md).
 

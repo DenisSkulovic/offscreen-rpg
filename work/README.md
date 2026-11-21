@@ -1,9 +1,12 @@
 # Temporary work
 
+**First:** [How we work](../WORKFLOW.md) explains this folder's work-unit taxonomy, lifecycles, decisions, dependency/parallel execution and retirement in one diagram-led guide. This index remains the directory router, not a second workflow policy.
+
 **Owns:** one [Current work selector](QUEUE.md), open Changes, standalone operational Tasks, unaccepted design investigations and short-lived session notes. This is **not** the product/technical bible, source evidence store, or agent rule owner.
 
 | Path | Question |
 | --- | --- |
+| [undertakings/](undertakings/README.md) | Which named transformation owns the integration branch and final landing? |
 | [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md) | **Current priority order and release gates**, not a second selected work pointer. |
 | [QUEUE.md](QUEUE.md) | **Only selected work item** (Change, standalone Task or none); no duplicate selectors. |
 | [WORK-TAXONOMY.md](WORK-TAXONOMY.md) | Definitions and routing for Initiative, Design, Investigation, Change, Task, Experiment and Evidence. |

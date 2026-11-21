@@ -1,5 +1,7 @@
 # Coding-agent harness | Layer zero
 
+**Workflow navigation:** [WORKFLOW.md](../WORKFLOW.md) is the single engineering lifecycle walkthrough. This harness defines agent-loading and responsibility rules; it does not duplicate Undertaking/Change/Task lifecycles.
+
 **Owner:** `.agents/`, `AGENTS.md`, `CLAUDE.md`, `.cursor/` and the Claude adapters. **Public engineering-system tour:** [ENGINEERING.md](../ENGINEERING.md) explains the methodology to a reviewer without becoming another normative instruction file. **Audience:** tools that help developers design, investigate, implement and review Offscreen RPG. **Not:** the game's Storyteller agent, its prompts, inference budget or model behavior.
 
 This harness governs **how** coding agents navigate the three authority layers: product documentation (what and why), technical documentation (architecture, authority and invariants), generated code (implementation). It never turns code into the product specification. External practice notes are in [industry practices](references/industry-practices.md); practical token hygiene is in [context economics](references/context-economics.md).

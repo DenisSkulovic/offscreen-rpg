@@ -1,5 +1,7 @@
 # Undertakings | themed integration envelopes
 
+**Lifecycle/branch map:** [How we work](../../WORKFLOW.md) covers Undertaking creation, documentation-first work, dedicated Change subbranches, integration and retirement. This page owns the Undertaking-specific rules.
+
 An **Undertaking** is a temporary, named engineering transformation that groups multiple existing work units under one coherent focus and integration branch. It is larger than a Change and narrower than the product roadmap.
 
 Undertakings exist to prevent a familiar failure mode: a week of related Designs, Changes, audits and documentation edits accumulates as disconnected packets and branches even though everyone is mentally working on one thing. The undertaking gives that thing a durable name, scope and landing boundary without inventing another execution queue.
@@ -16,7 +18,7 @@ Only one active Undertaking is preferred unless there is a strong reason to run 
 
 - **Coordination, not authority.** An Undertaking cannot select work, approve a Design, close a Change, authorize model spend or prove implementation. [QUEUE](../QUEUE.md), child packets, canonical docs and evidence retain those responsibilities.
 - **Memorable names.** Name the actual transformation. Prefer `Storyteller Workshop` over `Storyteller Evolution`, `Phase 2`, `Consolidated` or chat-specific jokes that will become archaeological riddles.
-- **One integration branch.** Default branch topology during an active Undertaking is `main` plus `undertaking/<slug>`. Extra branches are temporary exceptions and should disappear as soon as their content is reconciled.
+- **One integration branch.** Default branch topology during an active Undertaking is `main` plus `undertaking/<slug>`. Each commissioned implementation Change **must** use its own short-lived branch from the Undertaking branch; these are normal temporary implementation branches, not additional long-lived integration branches. Delete them once accepted and joined.
 - **Finite scope.** The dossier lists included work, explicit exclusions, entry state and exit conditions. New work can join only when it genuinely serves the same transformation.
 - **Child lifecycles stay real.** A Done child can coexist with an Active undertaking; a Proposed child does not become Ready merely because it is listed here.
 - **Land coherently.** Before merge, reconcile permanent docs, queue/status claims, tests/evidence and stale links as one integration candidate.

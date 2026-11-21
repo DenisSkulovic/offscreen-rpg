@@ -1,5 +1,7 @@
 # ChatGPT | architecture planning and Cursor handoffs
 
+**Method entry:** [WORKFLOW.md](WORKFLOW.md) is the shared human/agent lifecycle map, including decision diagrams, documentation-first rule, design/Change/Task taxonomy, Undertaking and per-Change branching, parallel planning and cheap Cursor execution. Read its relevant route after AGENTS; this file adds ChatGPT-specific planner obligations rather than duplicating the whole methodology.
+
 ## Mandatory cold-start contract for ChatGPT planning
 
 **This is an instruction to the ChatGPT assistant operating on the repository, not a claim of automatic loading.** A new chat does not see this document unless it deliberately retrieves it. **At the beginning of EACH Offscreen RPG planning/design/audit/handoff session, before drafting or editing any Change**, do the following. A remembered prior workflow, user summary, old ZIP, or previous ChatGPT response is not a substitute for the current branch's rules.

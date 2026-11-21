@@ -1,5 +1,7 @@
 # Engineering System Tour
 
+**Practical lifecycle and agent onboarding:** [WORKFLOW.md](WORKFLOW.md). This page is a public tour of *why* the method exists, not an alternate set of operating instructions.
+
 **A practical, inspectable approach to AI-assisted software engineering.**
 
 Offscreen RPG is the domain. The main engineering experiment is whether assistants with different tools and economics can work on the same long-lived system **without mistaking generated code for specification, losing decisions in chats, or claiming a fixture passed when nobody ran it**.
@@ -31,11 +33,11 @@ A technical target may describe a system that doesn't exist yet. That's not auto
 
 ## 2. Make a “Change” a bounded, falsifiable implementation unit
 
-A **Change** is a planned, code-changing outcome, not synonymous with a game feature or a broad initiative. Its smallest useful dossier identifies the desired behavior, source/technical authority, baseline, intended files, exclusions, a normal case, a meaningful negative case and cheap verification. Significant work can add a short PLAN/checkpoint.
+A **Change** is a planned lasting implementation **or substantive authoritative-document** diff, not synonymous with a game feature or a broad initiative. Its smallest useful dossier identifies the desired behavior, source/technical authority, baseline, intended files, exclusions, a normal case, a meaningful negative case and cheap verification. Significant work can add a short PLAN/checkpoint.
 
 **Only [work/QUEUE.md](work/QUEUE.md) selects independently tracked executable work.** `Current work: none` is a legitimate state, not a reason to pick a random old ticket. Upon landing code, reconcile the affected permanent docs, implementation evidence and a closeout ledger. Retire completed packets to archive so the live queue stays narrow.
 
-See the [Change work-unit standard](.agents/references/change-work-unit-standard.md), [workflow skill](.agents/skills/change-workflow/SKILL.md) and [change reconciliation guard](.agents/rules/documentation.md). Avoid inventing a code-bearing Change for a pure research note or Markdown improvement.
+See the [Change work-unit standard](.agents/references/change-work-unit-standard.md), [workflow skill](.agents/skills/change-workflow/SKILL.md) and [change reconciliation guard](.agents/rules/documentation.md). Avoid inventing implementation Changes for research-only work or trivial text fixes; a substantive canonical documentation revision may legitimately be a documentation Change.
 
 ## 3. Make documentation a navigable, testable wiki
 

@@ -1,5 +1,7 @@
 # Agent knowledge and operating model
 
+**Whole lifecycle in one place:** [How we work](../WORKFLOW.md) gives role-oriented decision diagrams and routes for Undertakings, Designs, docs-first Changes, Cursor microtasks, branches, review and cleanup. This is the recommended reading bridge between root AGENTS and the specific reference/skill needed for a task.
+
 **New engineer / portfolio evaluator?** Start with the [Engineering System Tour](../ENGINEERING.md) for the *why*, then this index for the *where*, and [HARNESS.md](HARNESS.md) for the binding operating model. For an ordinary scoped task, skip the public tour and load only what the task needs.
 
 Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the single selected item in [work/QUEUE.md](../work/QUEUE.md): a Change, a standalone Task or none. See [work taxonomy](../work/WORK-TAXONOMY.md). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
