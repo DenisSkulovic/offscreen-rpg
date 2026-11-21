@@ -1,7 +1,0 @@
-# MA10A | existing graph implementation and no-collision map
-
-Read `scripts/repo-tools/module-graph.mjs`, `module-graph-core.mjs`, `module-graph.test.mjs`. Core already exports `applicationDomain(filePath)`, `stronglyConnectedComponents`, `runtimeCycles`, `typeOnlyCycles`. Scanner parses TS imports and distinguishes type-only; `module-graph.mjs` computes package and domain SCCs near lines 210–233 and resolves file-local edges near lines 548–549 using `applicationDomain`, currently scoped to the legacy Application directory. It also validates workspace dependencies and exported subpaths; retain all these existing hard failures.
-
-**Original source inventory:** `packages/story-engine/src/{stories,campaign,storyteller,generations}`. Relative-file import graph yields three nontrivial SCCs (runtime-vs-type not yet proven): `generations/{index,scripted-openings}` + `storyteller/{dispatch-review,openings,records}`; `storyteller/{writer-child-custody,writer-mission-custody,writer-mission-store}`; `campaign/{action-executions,narrative-intent-settlement}`. The existing internal SCC metric must not claim these are runtime cycles without AST typing. `stories/resolution.ts` direct import of `storyteller/admission.ts` is a pre-MA09 debt edge, not yet an enforced failure.
-
-**Unchanged code:** `packages/story-engine/**`, `packages/application/**`, `apps/**`, `tools/**`. MA08A creates lab-support in its own workspace and may not be integrated yet; graph tool must tolerate absent future workspace, and automatically detect it when present.
