@@ -2,7 +2,7 @@
 
 ## Execution prerequisites and honest evidence
 
-No application test has been run by this planning session. The source ZIP is an inspected snapshot; MA05F's in-flight code is not yet available for comparison. `tools/api-integration/README.md` explicitly warns that `pnpm test:focus -- <suite>` **recreates** the named disposable test DB; run only after checking its target and authorization. The application ENG03 direct-factory test uses `provisionDisposableSandboxDatabase({confirmDisposableProvision:true,applyFullMigrations:true})` and destroys its generated sandbox afterward; verify sandbox config before running. NEVER point these proofs at production, a personal dev DB, or an uncertain target. They do not require real provider spend.
+No application test has been run by this planning session. The source ZIP is an inspected snapshot; MA05F is now integrated and archived; post-MA05F source signatures have been checked against the current undertaking. MA05F expanded the wake-topic source guard, which T02 must preserve. `tools/api-integration/README.md` explicitly warns that `pnpm test:focus -- <suite>` **recreates** the named disposable test DB; run only after checking its target and authorization. The application ENG03 direct-factory test uses `provisionDisposableSandboxDatabase({confirmDisposableProvision:true,applyFullMigrations:true})` and destroys its generated sandbox afterward; verify sandbox config before running. NEVER point these proofs at production, a personal dev DB, or an uncertain target. They do not require real provider spend.
 
 Run from repository root (after builds, and only with verified authorized test environment):
 - `pnpm --filter @offscreen/application build`
@@ -34,13 +34,13 @@ Tests must exercise Storyteller and scripted paths: moving the whole `resolution
 
 ## Separate cold-read readiness audit (G0–G7)
 
-- **G0 PASS with concurrency caveat:** exact target `undertaking/storyteller-workshop` and snapshot source baseline inspected. MA05F is in progress; MA05G is on a separate planning branch, not commissioned. Refresh and audit again after MA05F integration.
+- **G0 PASS after MA05F:** exact target `undertaking/storyteller-workshop`; owner merged this packet, MA05F is Done and archived; the MA05G source symbols and direct factory were rechecked live. MA05F's wake-topic test changes are preserved by additive coverage.
 - **G1 PASS:** admission replay/prepare/commit, direct factory use, SQL context types, task record, activity filter, story factory, test runner and DB warning inspected. No need to move giant canonical knowledge corpus to make the SQL boundary honest.
 - **G2 PASS at design level:** selected authority composition and typed prepare interface; no uncertain callback-transaction ownership, no post-commit materialization, no changed cost or payload semantics. Existing scripted generations coupling is explicitly deferred, not hidden.
 - **G3 PASS at design level, implementation still unverified:** T01–T04 each has specific initial anchors, write paths, algorithm, stop and focused negative/normal. T02 is one substantial SQL migration with several symbols, not one function per Change.
-- **G4 PASS at design level after predecessor joins:** T01 is the first legal edit from a refreshed dedicated MA05G worktree, not the current MA05F worktree.
+- **G4 PASS:** T01 is the first authorized edit from a dedicated MA05G worktree created from the currently integrated undertaking.
 - **G5 PASS:** T01 → T02 → T03 → T04 serial, because shared runtime aliases, fence types, tests and build outputs overlap. One integration owner joins only after MA05F.
 - **G6 NOT YET VERIFIED at runtime:** exact real test entrypoints and disposable DB requirements were inspected. No tests run here; availability/authorization of disposable DB must be checked before commission. Core SQL negative failures block Done, not silently waived.
 - **G7 PASS at design level:** one meaningful behavior-preserving authority extraction, old public factory maintained; docs reconciled at close; archive and squash integrate without extra owner checkpoint; no automatic successor.
 
-**Verdict:** **PLANNER-READY FOR FINAL HEAD REFRESH; NOT COMMISSIONED**. This is an intentionally conservative status label for *branch/concurrency drift*, not uncertainty about who should own SQL or a request for Cursor to investigate architecture. After MA05F lands, planner/integration owner must compare the actual changed files, update exact symbols if needed, perform one final G0–G7 pass and then commission the completed packet. No substantive architectural question is being delegated.
+**Verdict:** **READY / OWNER-COMMISSIONED after post-MA05F source refresh**. This is an intentionally conservative status label for *branch/concurrency drift*, not uncertainty about who should own SQL or a request for Cursor to investigate architecture. The post-MA05F diff and named source symbols were checked on GitHub. Cursor verifies local branch status before editing, executes the fixed T01–T04 plan and integrates without a second approval. No substantive architectural decision is delegated.
