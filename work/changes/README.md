@@ -16,7 +16,7 @@
 | --- | --- |
 | [MA08: Application owner extraction](archive/2026-11/other/2026-11-21--ma08-application-owner-extraction/CHANGE.md) | **Done (2026-11-21).** Lab, drafts, outbox relay, and runtime logging have real owners. Host and tool manifests no longer depend on Application. 112 legacy tests remain until MA10. |
 | [MA09: Authority/Writer dependency inversion](open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) | **PLANNER-BLOCKED until WR09 and MA08 integration**; exact typed collaborator, existing transaction boundaries and failure paths planned; fresh source re-audit required before Cursor commission. |
-| [MA10: Module boundary enforcement](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | **PLANNER-BLOCKED until MA08/MA09/WR09 integration**; migrate all 112 legacy tests, remove Application workspace, narrow exports, resolve real SCCs, enforce AST graph, preserve product semantics. |
+| [MA10: Application compatibility retirement](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | **READY, independent parallel lane A** after MA08; preserve/migrate all 112 tests into existing API Integration workspace, delete Application and executable legacy paths. Graph instrumentation is MA11; deep SCC/authority inversion later. |
 
 **Safe sequence:** MA07 integrated at `4168db58` → MA08 Done on the undertaking → WR09 runtime stabilization → MA09 → MA10 → separate final undertaking acceptance. These packets are not a blanket authorization for Cursor to select their own successors.
 
