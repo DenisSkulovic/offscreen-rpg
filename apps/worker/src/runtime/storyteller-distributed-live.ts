@@ -16,6 +16,40 @@ export type StorytellerDistributedLiveStack = {
   stop(): Promise<void>;
 };
 
+type StoppableRuntime = {
+  stop(): Promise<void>;
+};
+
+/** Test-only start adapters; production callers omit this argument. */
+export type StorytellerDistributedLiveStartAdapters = {
+  startRelay: typeof startRuntime;
+  startControl: typeof startControlRuntime;
+  startExecutor: typeof startExecutionRuntime;
+};
+
+const stackStopFailureMessage = 'Distributed live stack stop failed';
+const stackStartupFailureMessage = 'Distributed live stack startup failed';
+
+async function stopRolesReverseSequential(
+  roles: StoppableRuntime[],
+): Promise<void> {
+  const failures: unknown[] = [];
+  for (const role of [...roles].reverse()) {
+    try {
+      await role.stop();
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  if (failures.length === 0) {
+    return;
+  }
+  if (failures.length === 1) {
+    throw failures[0];
+  }
+  throw new AggregateError(failures, stackStopFailureMessage);
+}
+
 /** STORY03 live harness: relay + control workflows/publish + executor activities only. */
 export async function startStorytellerDistributedLiveStack(
   database: Database,
@@ -26,27 +60,60 @@ export async function startStorytellerDistributedLiveStack(
     storytellerOptions?: StorytellerRuntimeOptions;
   },
   report: (error: unknown) => void,
+  startAdapters?: Partial<StorytellerDistributedLiveStartAdapters>,
 ): Promise<StorytellerDistributedLiveStack> {
-  const relay = await startRuntime(
-    database,
-    config.relay,
-    report,
-    config.storytellerOptions,
-  );
-  const control = await startControlRuntime(
-    readControlWorkerConfig(config.controlEnv),
-  );
-  const executor = await startExecutionRuntime(
-    readExecutionWorkerConfig(config.executorEnv),
-  );
-  return {
-    relay,
-    control,
-    executor,
-    async stop() {
-      await relay.stop();
-      await executor.stop();
-      await control.stop();
-    },
+  const adapters: StorytellerDistributedLiveStartAdapters = {
+    startRelay: startAdapters?.startRelay ?? startRuntime,
+    startControl: startAdapters?.startControl ?? startControlRuntime,
+    startExecutor: startAdapters?.startExecutor ?? startExecutionRuntime,
   };
+
+  const started: StoppableRuntime[] = [];
+
+  try {
+    const relay = await adapters.startRelay(
+      database,
+      config.relay,
+      report,
+      config.storytellerOptions,
+    );
+    started.push(relay);
+
+    const control = await adapters.startControl(
+      readControlWorkerConfig(config.controlEnv),
+    );
+    started.push(control);
+
+    const executor = await adapters.startExecutor(
+      readExecutionWorkerConfig(config.executorEnv),
+    );
+    started.push(executor);
+
+    let stopping: Promise<void> | undefined;
+    return {
+      relay,
+      control,
+      executor,
+      stop() {
+        return (stopping ??= stopRolesReverseSequential(started));
+      },
+    };
+  } catch (startupError) {
+    const cleanupFailures: unknown[] = [];
+    for (const role of [...started].reverse()) {
+      try {
+        await role.stop();
+      } catch (error) {
+        cleanupFailures.push(error);
+      }
+    }
+    if (cleanupFailures.length === 0) {
+      throw startupError;
+    }
+    throw new AggregateError(
+      [startupError, ...cleanupFailures],
+      stackStartupFailureMessage,
+      { cause: startupError },
+    );
+  }
 }

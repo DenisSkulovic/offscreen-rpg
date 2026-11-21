@@ -2,6 +2,17 @@ type Closable = {
   close(): Promise<void>;
 };
 
+/** Invoke cleanup at most once; later calls share the same settled promise. */
+export function createCloseOnce(
+  cleanup: () => Promise<void>,
+): () => Promise<void> {
+  let settled: Promise<void> | undefined;
+  return () => {
+    settled ??= cleanup();
+    return settled;
+  };
+}
+
 /** Close Temporal connections independently so one failure cannot strand the other. */
 export async function closeWorkerConnections(args: {
   native: Closable | undefined;
