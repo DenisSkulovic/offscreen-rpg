@@ -24,6 +24,16 @@
 
 **Owner-commissioned pair (WR05P2 Done/archived):** WR06 and WR07B are Done on the undertaking. The successor routes superseded older pre-MA06A T-IDs. WR07 owns Launch/Writer/GA/API/Worker/DB migration/Web stories. WR06 owns fork engine, fork lineage in Storyteller context and Web play/history, and that work has landed. Both treated v2 snapshot/schema/reader as read-only. Distinct linked worktrees, distinct disposable SQL databases, serial final squash integrations. Full Undertaking continues to Writer research/provider, bulk monorepo cleanup, acceptance and main landing. If WR05P2's output cannot represent required active state or scene-one publication, pause the affected Change at the exact incompatibility; do not silently weaken acceptance or spawn micro-Changes.
 
+## Post-P3 delivery wave: prepared, but not yet released
+
+**Published-branch check 2026-11-21:** P3-A (Living Writer continuation/choice), P3-B (real provider + usage settlement) and P3-C (long-story acceptance) have **no verified archived integrated Change receipts on the current undertaking branch**. Some P3-related test files exist, but are not proof that these three commissioned outcomes are Done. Unpushed/local Cursor results are not visible to GitHub; before any new commission obtain the actual integrated Change SHAs/receipts and inspect their changed Writer/HTTP/Worker/custody contracts.
+
+**Conditional next parallel pair:**
+- [WR04 full independent Writer research](../../changes/open/2026-11-21--wr04-delegated-writer-research/POST-P3-EXECUTION.md): one child-context, read-only grants, finite shared money and verified parent-join Change; starts only after P3-A **and** P3-B are Done and source interface is rechecked.
+- [WR08 real Play/reentry UX](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/POST-P3-EXECUTION.md): one Web-only scene-choice/status/history/fork Change; starts after P3-A's command contract is integrated and source-verified. WR08 can run in parallel with WR04 under exclusive Web vs Writer+DB ownership, separate worktrees and serialized shared ledger integration.
+
+**Not a third immediate Cursor:** MA-final bulk monorepo imports/exports cleanup must follow WR04's last Writer/DB/export changes. Final product/evidence/main landing follows WR08+WR04. Do not dispatch the obsolete WR04/WR08 original TASKS or mark these new successor plans Ready before the predecessor reconciliation; ChatGPT must finish that exact source check, not shift it to paid Cursor.
+
 ## Dependency and concurrency plan
 
 ```mermaid
