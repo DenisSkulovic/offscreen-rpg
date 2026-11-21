@@ -1,5 +1,7 @@
 # Parallel execution window | Story Engine + Writer foundations (2026-11-21)
 
+> **LATEST DISPATCH (after WR07C integration, 2026-11-21):** WR07C is Done/archived. **WR08A is now READY and owner-commissioned**, independently of the still-running WR05S. Run WR08A in a separate `change/wr08a-play-surface` worktree from the current undertaking HEAD. It owns `apps/web` only and cannot edit Engine, Documents, DB or Contracts. Its Launch navigation stays capability-gated OFF until WR07B backend is implemented, so it never pretends Play works. The historical A/B/C table below captures the original dispatch window and is **not** a current instruction to rerun MA06A or WR07C. Integration custodian serializes WR05S and WR08A joins; no `main` merges. The next Engine packet is WR05P, planned off-branch while WR05S finishes.
+
 **This file is a compact handoff matrix, not a second work queue.** Integration target `undertaking/storyteller-workshop`, not `main`. User has authorized independent Cursor chats to execute the individually named ready Changes. `work/QUEUE.md` remains unchanged. AGENTS/CHATGPT and per-Change instructions take precedence. One **integration custodian** (human owner or designated Cursor parent) serializes final joins; individual parents must not independently race commits into the shared undertaking.
 
 | Lane | Ready Change | Code write ownership | Can begin immediately? | Main no-overlap fact |
