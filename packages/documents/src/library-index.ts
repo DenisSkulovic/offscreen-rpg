@@ -86,6 +86,42 @@ function manifestRecord(entry: DocumentManifestEntry): Record<string, unknown> {
   return documentManifestEntrySchema.parse(entry) as Record<string, unknown>;
 }
 
+export async function loadLibraryIndex(
+  readNode: (hash: string) => Promise<LibraryNodeV2>,
+  root: LibraryRootV2,
+): Promise<LibraryIndex> {
+  const store = new Map<string, LibraryNodeV2>();
+  const visited = new Set<string>();
+  const visit = async (nodeHash: string): Promise<void> => {
+    if (visited.has(nodeHash)) return;
+    visited.add(nodeHash);
+    const node = await readNode(nodeHash);
+    store.set(nodeHash, node);
+    for (const child of node.children) {
+      await visit(child.hash);
+    }
+  };
+  await visit(root.pathsRootHash);
+  await visit(root.idsRootHash);
+  const library: LibraryIndex = {
+    store,
+    root,
+    rootHash: hashCanonicalJson(root),
+  };
+  assertLibraryIndexConsistent(library);
+  return library;
+}
+
+export function collectLibraryManifestEntries(
+  library: LibraryIndex,
+): DocumentManifestEntry[] {
+  const paths = new Map<string, Record<string, unknown>>();
+  collectTrieLeaves(library.store, library.root.pathsRootHash, [], paths);
+  return [...paths.values()]
+    .map((value) => documentManifestEntrySchema.parse(value))
+    .sort((left, right) => left.path.localeCompare(right.path));
+}
+
 export function createEmptyLibraryIndex(): LibraryIndex {
   const trie = createEmptyLibraryTrie();
   const root = libraryRootV2Schema.parse({
