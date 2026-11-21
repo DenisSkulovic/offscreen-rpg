@@ -1,6 +1,6 @@
 # Modular Monolith | domain ownership and package boundaries
 
-**State:** Program dossier riding the active Storyteller Workshop integration branch. **Current planning baseline:** `undertaking/storyteller-workshop` at `fa8e4865` on 2026-11-21, subject to change. A separate `undertaking/modular-monolith` branch would be the cleaner long-term home. Owner decision 2026-11-21: MA01–MA06 integrate on `undertaking/storyteller-workshop`. Leave `main` alone. Do not create a nested undertaking branch.
+**State:** Program dossier riding the active Storyteller Workshop integration branch. **Planning evidence baseline:** inspected source at `dac6b698` with critical remote anchors rechecked at `0a52a9a3` on 2026-11-21; live integration HEAD advances with documentation changes. Recheck named symbols after each implemented predecessor, not just the SHA. A separate `undertaking/modular-monolith` branch would be the cleaner long-term home. Owner decision 2026-11-21: MA01–MA06 integrate on `undertaking/storyteller-workshop`. Leave `main` alone. Do not create a nested undertaking branch.
 
 ## Goal and architecture
 
@@ -18,7 +18,7 @@ Make the modular-monolith boundaries visible and enforceable: packages and domai
 | 4 | MA06 | Extract cohesive story-authority/Storyteller-runtime workspaces, migrate consumers, retire obsolete application exports | PLANNER-BLOCKED: reserved A–D staged design, not one Cursor Change; requires post-MA05 extracted ownership and source map |
 | Separate decision | Document schema/adapter split | Possible further extraction if dependency/bundle evidence justifies | Not selected; no speculative package proliferation |
 
-**Execution selection (G0–G7 audited 2026-11-21):** MA02 first; after it integrates and named anchors are refreshed, MA03; then MA04. These Changes should not run concurrently: MA02/MA03 share Contracts/lockfile owners; MA03/MA04 both edit `apps/api/src/app.ts`. Within MA03, T02/T03 may execute in parallel only with genuinely disjoint filesystem work and no shared Git/build activity. MA05/MA06 remain PLANNER-BLOCKED and are not automatically commissioned. MA05/MA06 are deliberately staged, not vague paid Cursor investigations.
+**Execution selection (G0–G7 audited 2026-11-21):** MA02 first; after it integrates and named anchors are refreshed, MA03; then MA04. These Changes should not run concurrently: MA02/MA03 share Contracts/lockfile owners; MA03/MA04 both edit `apps/api/src/app.ts`. Within MA03, T02/T03 may execute in parallel only with genuinely disjoint filesystem work and no shared Git/build activity. MA05/MA06 remain PLANNER-BLOCKED and are not automatically commissioned; their staged design is ChatGPT's responsibility, never a vague paid Cursor investigation.
 
 ## Admission / branch policy
 
