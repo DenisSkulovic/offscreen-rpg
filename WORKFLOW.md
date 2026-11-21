@@ -72,7 +72,7 @@ flowchart TD
 | **Change** | [`work/changes/open/YYYY-MM-DD--slug/CHANGE.md`](work/changes/README.md) | Produce independently verifiable **lasting source/config/test or authoritative-doc diff** | Prove + reconcile; archive briefly and ledger/Git retire |
 | **Standalone Task** | [`work/tasks/open/YYYY-MM-DD--slug/TASK.md`](work/tasks/README.md) | An independent run, cleanup action, scheduled verification or explicit resource gate merits its own receipt | Record actual action/evidence; archive |
 | **Composer T-ID** | `<Change>/TASKS.md#Txx` | Tiny implementation step **inside** one Change | Child receipt; parent Change owns acceptance |
-| **Experiment / evidence / research** | [lab protocols](docs/technical/lab/README.md), [evidence](evidence/README.md), [research](research/README.md) | Test a hypothesis, preserve what happened, or explain a finding | Dated facts and reproducibility, not automatic product authority |
+| **Experiment / evidence / research** | [lab protocols](docs/technical/lab/chamber-and-fixtures.md), [evidence](evidence/README.md), [research](research/README.md) | Test a hypothesis, preserve what happened, or explain a finding | Dated facts and reproducibility, not automatic product authority |
 
 **The classifier is the *desired output*, not the wording.** “Test the Storyteller” can mean a Change adding a new assertion, a standalone Task running a previously defined test, or an Investigation discovering why a test fails. “Audit the wiki” is normally an Investigation; a verified structural/semantic repair is a documentation Change, while running `pnpm wiki:health` may simply be part of an existing Change. Avoid folder creation as a substitute for decisions.
 

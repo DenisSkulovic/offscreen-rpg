@@ -2,4 +2,4 @@
 description: Apply when auditing or redesigning the software coding-agent harness, skill discovery, instructions, process or development token economics
 alwaysApply: false
 ---
-For coding-agent setup tasks, use `.agents/HARNESS.md` and the relevant primary-source reference under `.agents/references/`. Root `AGENTS.md` is already loaded by Cursor, so this rule is not a duplicate always-on project policy. Do not edit the game runtime when the task is agent-harness design.
+Whole lifecycle and decision map: [WORKFLOW.md](../../WORKFLOW.md). For coding-agent setup tasks, use `.agents/HARNESS.md` and the relevant primary-source reference under `.agents/references/`. Root `AGENTS.md` is already loaded by Cursor, so this rule is not a duplicate always-on project policy. Do not edit the game runtime when the task is agent-harness design.
