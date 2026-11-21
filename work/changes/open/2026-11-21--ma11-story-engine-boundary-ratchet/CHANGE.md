@@ -16,7 +16,7 @@ Enforce:
 - All existing undeclared workspace import, unknown subpath, package-cycle hard failures remain hard. MA08 had two pre-existing undeclared imports; this Change must report their failure rather than make the checker green.
 - Graph cycles within a single authority domain are diagnostics, not automatic errors. A local SCC count does not justify extra npm packages or changing transactional code.
 
-**Exclusive writes:** `scripts/repo-tools/module-graph-core.mjs`, `module-graph.mjs`, `module-graph.test.mjs`, and optional focused `scripts/repo-tools/test-fixtures/**` only. **No** `packages/**`, `apps/**`, `tools/**`, `pnpm-lock.yaml`, `work/**`, `docs/**`, root scripts or dependency upgrades. MA10 deletes Application/moves tests; WR09A changes DB/custody/provider. Worktrees are source-disjoint.
+**Exclusive writes:** `scripts/repo-tools/module-graph-core.mjs`, `module-graph.mjs`, `module-graph.test.mjs`, optional focused `scripts/repo-tools/test-fixtures/**`, **plus exactly two host manifests** `apps/api/package.json` and `apps/game-authority/package.json` to correct known runtime imports mistakenly listed under devDependencies. No production TS changes, no `packages/**`, other app/tool manifests, `pnpm-lock.yaml`, `work/**`, `docs/**`, root scripts or dependency upgrades. MA10 deletes Application/moves tests; WR09A changes DB/custody/provider. Worktrees are source-disjoint.
 
 **Acceptance:** old graph tests still pass, new file-level runtime/type SCCs and allowed debt are truthfully measured, new forbidden edge fails, legitimate Writer→Authority/type imports do not fail, and existing baseline errors are not muted. Only fake AST fixtures and read-only current source graph. No protected DB/provider calls.
 
