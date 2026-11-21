@@ -1,5 +1,5 @@
 # MA02 | Cursor microtasks
-Precondition: owner commissions MA02 on `undertaking/modular-monolith`; independent worktree `change/ma02-cache-port-inversion`, no switching primary. Parent handles all tasks then integrates; manifests/lockfile serialized.
+Precondition: owner commissions MA02 on live `undertaking/storyteller-workshop`; independent worktree `change/ma02-cache-port-inversion`. Leave the primary checkout on its current branch. Parent handles all tasks then integrates; manifests/lockfile serialized. A separate modular-monolith branch would be the cleaner long-term home; this program stays on Storyteller Workshop.
 
 ## T01 | Define lower-layer port
 Read `packages/application/src/cache/read-cache.ts`, `packages/contracts/package.json`. Write `packages/contracts/src/read-cache.ts`, manifest and minimal contract test. Copy exact type/neutral value contract. Positive: explicit subpath builds. Negative: public `unknown` and options not widened.

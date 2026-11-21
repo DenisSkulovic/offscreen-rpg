@@ -6,7 +6,7 @@
 
 **Checker:** `pnpm repo:code-health` is the read-only report. On `66a37abe` it still measured **63 direct production files, 0 child source directories, and 741,865 bytes** in `packages/application/src/storyteller`. Newline-aware line counts were `context-capture.ts` 3,077, `capture-materialization.ts` 1,611, and `writer-loop.ts` 779, matching `wc -l`. That folder stays a review candidate. Do not move its files to shrink the count.
 
-**Monorepo package/domain ownership:** [inspected architectural diagnosis and proposed modular-monolith target](MONOREPO-MODULE-OWNERSHIP.md). This is a **Design**, not current technical authority. [Separate proposed Undertaking](../../../undertakings/modular-monolith/UNDERTAKING.md) tracks MA01–MA06 and the future integration branch; no automatic implementation or source movement.
+**Monorepo package/domain ownership:** [inspected architectural diagnosis and proposed modular-monolith target](MONOREPO-MODULE-OWNERSHIP.md). This is a **Design**, not current technical authority. [Modular Monolith program](../../../undertakings/modular-monolith/UNDERTAKING.md) tracks MA01–MA06. A separate undertaking branch would be the cleaner long-term home; owner decision 2026-11-21 integrates those Changes on `undertaking/storyteller-workshop`. Listing them does not start implementation or move source.
 
 **Already scoped implementation:** [CQ01–CQ05 Change packets](../../../changes/README.md) own their own source maps, algorithms and acceptance. Do not duplicate their schedules here.
 

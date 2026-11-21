@@ -1,6 +1,6 @@
 # MA01 | bounded Cursor tasks
 
-**Commission gate:** correct `undertaking/modular-monolith` exists and current branch docs were ratified; linked worktree `change/ma01-workspace-import-graph`. Parent finishes all tasks and merges to `undertaking/modular-monolith` on passing required proof. Never switch primary.
+**Commission gate:** owner commissions MA01 on live `undertaking/storyteller-workshop`; linked worktree `change/ma01-workspace-import-graph`. Parent finishes all tasks and merges to `undertaking/storyteller-workshop` on passing required proof. Leave the primary checkout on its current branch. A separate modular-monolith branch would be the cleaner long-term home; this program stays on Storyteller Workshop.
 
 ## T01 | Graph primitives and fixtures
 Read `package.json`, `pnpm-workspace.yaml`, `eslint.config.mjs`. Write pure `scripts/repo-tools/module-graph-core.mjs` and `module-graph.test.mjs`. Tarjan SCC, deterministic sorted edges, explicit runtime/type distinction. Positive: acyclic 4-node graph. Negative: 3-node cycle, type-only edges not misreported as runtime cycle. Stop on disagreement about output contract, not on ordinary TS syntax errors.

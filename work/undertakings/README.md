@@ -18,7 +18,7 @@ Undertakings exist to prevent a familiar failure mode: a week of related Designs
 
 | Undertaking | Intended integration branch | Gate |
 | --- | --- | --- |
-| [Modular Monolith](modular-monolith/UNDERTAKING.md) | `undertaking/modular-monolith` **not created** | After Storyteller Workshop lands into the selected upstream and the package/module target is ratified; MA01–MA06 are plans, not automatically authorized work |
+| [Modular Monolith](modular-monolith/UNDERTAKING.md) | `undertaking/storyteller-workshop` | A separate branch would be the cleaner long-term home. Owner decision 2026-11-21: MA01–MA06 integrate here. Each Change still needs its own commission and linked worktree |
 
 Only one active Undertaking is preferred unless there is a strong reason to run truly independent integration programs concurrently.
 

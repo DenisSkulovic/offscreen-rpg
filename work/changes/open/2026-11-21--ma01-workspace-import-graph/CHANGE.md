@@ -1,10 +1,10 @@
 # MA01 | workspace and source import ownership graph
 
-**State:** Planner-ready algorithm; execution gated on creation of `undertaking/modular-monolith` from a stable selected base. **Type:** developer tooling / architecture proof, no game behavior. **Current user selection:** none. **Target:** `undertaking/modular-monolith`. Branch: `change/ma01-workspace-import-graph`.
+**State:** Planner-ready algorithm. **Type:** developer tooling / architecture proof, no game behavior. **Integration target:** `undertaking/storyteller-workshop`. Branch: `change/ma01-workspace-import-graph`.
 
-**Planning source baseline:** `undertaking/storyteller-workshop` HEAD `fa8e486533943e952c908c21af8d7a73aae84efa`, 2026-11-21. Remote source inspected; no compiler/test execution. This packet is **not execution authorization** until the owner commissions it on the correct integration branch.
+**Planning source baseline:** `undertaking/storyteller-workshop` HEAD `fa8e486533943e952c908c21af8d7a73aae84efa`, 2026-11-21. Remote source inspected; no compiler/test execution. Execution starts when the owner commissions this Change.
 
-**Branch rule:** The planned integration branch is `undertaking/modular-monolith`, **not currently created by this plan**. Create it only from the actual post-Storyteller integrated upstream (normally updated `main`) when the Undertaking is activated. Each Change gets its own linked worktree and `change/<id>-<slug>` branch from `undertaking/modular-monolith`, with no branch switching in the user's primary checkout. Revalidate named source anchors against the target HEAD, preserve active WR work, integrate into `undertaking/modular-monolith` only, and do not infer permission to start sibling packets.
+**Branch rule:** A separate `undertaking/modular-monolith` branch would be the cleaner long-term home. Owner decision 2026-11-21: this Change integrates on the active `undertaking/storyteller-workshop` branch. Use a linked worktree and `change/ma01-workspace-import-graph` from that HEAD. Leave the primary checkout on its current branch. Revalidate named source anchors against that HEAD, preserve in-flight Writer work, and integrate only into `undertaking/storyteller-workshop`. Commissioning this Change does not start its siblings.
 
 **Observed hole:** `pnpm-workspace.yaml` selects `apps/*`, `packages/*`, `tools/*`; Turbo checks build dependencies, and `eslint.config.mjs` guards only certain packages. No source-level graph/strongly connected component scanner exists to reveal `application/stories ↔ application/storyteller` or `stories ↔ developer-tools` while one package.json masks them. Source statistics: 180 application source files across 10 top-level areas, with 63 Storyteller and 39 developer-tools files.
 

@@ -1,5 +1,5 @@
 # MA03 | bounded Cursor execution
-**Commission only on live `undertaking/modular-monolith` after CQ02.** Use `change/ma03-admin-package-extraction` linked worktree; no primary checkout branch switch. T01 → T02 → T03 → T04. Parent owns integration and test receipts.
+**Commission on live `undertaking/storyteller-workshop` after CQ02.** Use `change/ma03-admin-package-extraction` linked worktree. Leave the primary checkout on its current branch. T01 → T02 → T03 → T04. Parent owns integration and test receipts. A separate modular-monolith branch would be the cleaner long-term home; this program stays on Storyteller Workshop.
 
 ## T01 | Separate campaign hold schema
 Read `application/src/campaign/holds.ts`, `application/src/admin/situation-reads.ts`, `contracts/package.json`. Write `contracts/src/campaign-holds.ts`, manifests, import/export compatibility and focused schema test. Positive unchanged valid holds. Negative duplicate/invalid holds rejected identically. Stop for actual schema mismatch, not routine import fix.

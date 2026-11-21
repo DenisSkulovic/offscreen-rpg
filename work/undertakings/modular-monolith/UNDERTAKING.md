@@ -1,6 +1,6 @@
 # Modular Monolith | domain ownership and package boundaries
 
-**State:** Proposed, **not yet an active integration branch**. This Undertaking is separate from Storyteller Workshop and must not consume its source/integration checkout. **Current planning baseline:** `undertaking/storyteller-workshop` at `fa8e4865` on 2026-11-21, subject to change. **Proposed integration branch:** `undertaking/modular-monolith`, to be created from **updated `main` after Storyteller Workshop lands** (or another explicit owner-approved base). Do not create a nested Undertaking branch or execute MA Changes on `main` merely because the branch is not ready.
+**State:** Program dossier riding the active Storyteller Workshop integration branch. **Current planning baseline:** `undertaking/storyteller-workshop` at `fa8e4865` on 2026-11-21, subject to change. A separate `undertaking/modular-monolith` branch would be the cleaner long-term home. Owner decision 2026-11-21: MA01–MA06 integrate on `undertaking/storyteller-workshop`. Leave `main` alone. Do not create a nested undertaking branch.
 
 ## Goal and architecture
 
@@ -10,9 +10,9 @@ Make the modular-monolith boundaries visible and enforceable: packages and domai
 
 | Stage | Change | Selected bounded outcome | Dependency / readiness |
 | --- | --- | --- | --- |
-| 0 | [MA01](../../changes/open/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Mechanically measure manifest, exports, actual source edges and intra-application cycles | Ready algorithm; **commission only after target branch created** |
+| 0 | [MA01](../../changes/open/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Mechanically measure manifest, exports, actual source edges and intra-application cycles | Ready algorithm; commission on `undertaking/storyteller-workshop` |
 | 1 | [MA02](../../changes/open/2026-11-21--ma02-cache-port-inversion/CHANGE.md) | Remove Cache → Application inverse dependency | Ready algorithm; independent of MA03 |
-| 1 | [MA03](../../changes/open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | Move Admin domain code into cohesive workspace with temporary compatibility export | After CQ02; ready algorithm after target refresh |
+| 1 | [MA03](../../changes/open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | Move Admin domain code into cohesive workspace with temporary compatibility export | After CQ02; revalidate anchors on the current undertaking HEAD |
 | 2 | [MA04](../../changes/open/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary Stories → developer Chamber fixture policy | After MA01; exact caller/projection tests |
 | 3 | MA05 | Establish story-authority ↔ Storyteller-runtime typed injection boundary and preserve SQL/fence | **Not Cursor-Ready** until graph, WR completion and resolved interface map |
 | 4 | MA06 | Extract cohesive story-authority/Storyteller-runtime workspaces, migrate consumers, retire obsolete application exports | **Not Cursor-Ready**; depends MA05, ratified source graph and root/fence proof |
@@ -22,9 +22,9 @@ Make the modular-monolith boundaries visible and enforceable: packages and domai
 
 ## Admission / branch policy
 
-1. Complete/land Storyteller Workshop or explicitly approve a safe alternative target. The new Undertaking's branch must have the required WR source version and stable imports. Re-run ChatGPT source maps against its actual HEAD and ratify the high-level module architecture in technical docs **before commissioning broad extracts**.
-2. Activate `undertaking/modular-monolith` once. Each commissioned MA Change creates a temporary `change/maXX-<slug>` branch in its own linked worktree. No checkout switching of user's primary repo; no merging an individual MA Change into main or Storyteller Workshop.
-3. Each Change parent executes all tasks and tests, reconciles and integrates into the undertaking without a ceremonial independent approval checkpoint. An actual failing security/data/fence test or unsafe Git collision remains a real blocker. An integration custodian serializes shared manifests, lockfile, exports, docs and joins.
+1. Re-run source maps against the current `undertaking/storyteller-workshop` HEAD and ratify the high-level module architecture in technical docs **before commissioning broad extracts** (MA05/MA06).
+2. Each commissioned MA Change creates a temporary `change/maXX-<slug>` branch in its own linked worktree from `undertaking/storyteller-workshop`. Leave the primary checkout on its current branch. An individual MA Change lands on Storyteller Workshop, and stays off `main`.
+3. Each Change parent executes all tasks and tests, reconciles and integrates into `undertaking/storyteller-workshop` without a ceremonial independent approval checkpoint. An actual failing security/data/fence test or unsafe Git collision remains a real blocker. An integration custodian serializes shared manifests, lockfile, exports, docs and joins. Preserve in-flight Writer work.
 4. Package movement follows **strangler compatibility**: add new package/build/exports → switch consumers → keep *one* short-lived compatibility re-export where required → verify all consumers/negative cases → remove compat in a later bounded step. No mass path churn without compile/test budget and proof.
 5. The complete program lands back to its recorded upstream after acceptance and documentation reconciliation. Active dossier/temporary branches retire under the existing Undertaking lifecycle; no permanent extra roadmap file.
 
