@@ -64,6 +64,21 @@ Bounds: inherit 1 MiB canonical JSON total. Reuse existing bounded v1 arrays and
 - v1 compatibility: historical reads remain bit-for-bit and v1 unsupported active-state fork stays denied; never fabricate v2 for old scene.
 - No provider-spend under tests. SQL suites only against verified disposable test database.
 
+## State mutation inventory and projector constraint (source scan)
+
+Source scan on the 2bcebcdd snapshot of Drizzle `.insert/.update/.delete` for `campaign`, `gameActivity`, `worldObligation`, `storyItem`, `story` within the four engine directories found **many distinct mutator families**, not one Scene Commit writer. This is a discovery census, **not yet an exhaustive proof**: SQL wrappers, aliases, raw SQL and MA05G changes require follow-up.
+
+| Current file family | Relevant writes found | Consequence for WRA |
+| --- | --- | --- |
+| `stories/{initialization,forks,persistence,continuation,continuity-notes,documents}` | story lifecycle/passage/root/items/notes and branch bootstrap | Stage/commit must compare the exact after-state including the notes patch and item effects; document edit commands may advance roots independently |
+| `campaign/{settings,activities,actions,action-executions,custom-intent}` | campaign clock/offer/plan/settings and active progress; activity rows | Pure projector cannot simply copy pre-scene campaign; active actions may be settled or newly admitted in the same story epoch |
+| `campaign/{holds,controls,accepted-plan-controls,action-execution-controls,world-obligations,world-obligation-controls,persistence}` | locks/holds/plan transitions, obligation revisions and campaign projections | A scene checkpoint must either capture these during a serialized story transaction or fence them individually |
+| `storyteller/publication.ts` | campaign mutation during creative publication | Existing publication flow must use the same committed-after-state contract, not a separate Storyteller-owned checkpoint builder |
+
+**Engineering consequence:** do not attempt an unbounded pure projection of *every* campaign command just for WRA. Project only the **scene-publication transition** from an existing typed base and a finite admitted effect plan. Other commands remain the owners of their own state changes; their updates must serialize against or be detected by the publication fence. An expanded world-state snapshot captures their **current accepted result** at scene-boundary time. Full replay of arbitrary past actions is not required.
+
+**Pre-release source questions (specific, not for Cursor investigation):** which writers already call `lockOwnedStory` or `lockStoryById` before updating campaign state; which writes change `story.viewVersion`; which mutate `gameActivity`/`worldObligation` without either; and which existing typed effect helpers can project the finite scene transition from a captured base. These are the only remaining implementation-critical design holes. If the current engine cannot enforce a consistent snapshot at publication, the WRA packet stays unready until this is closed.
+
 ## Release gate
 
 **Not ready for Cursor.** Before post-MA06A packet release, ChatGPT must map **all mutations** of `campaign`, `gameActivity`, `worldObligation`, `storyItem`, `story.continuityNotes`, and active scene/offer paths, including writers outside narrative continuation. One must choose actual projector implementation and row-version/fence algorithm from those writers. The candidate fields/caps must be verified against existing schema contracts and realistic fixtures, not guessed by paid Composer. After MA06A, replace WR05's obsolete task route in place, avoid two parallel current publication packets, then independently audit G0–G7.
