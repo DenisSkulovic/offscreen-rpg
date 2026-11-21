@@ -1,6 +1,6 @@
 # MA12 | bounded Cursor tasks
 
-Branch linked `change/ma12-production-api-lab-isolation` from current undertaking HEAD; run change-branch guard. Parent implements T01→T04 and sends tested branch SHA to batch custodian without independently merging.
+Branch linked `change/ma12-production-api-lab-isolation` from current undertaking HEAD; run change-branch guard. Parent implements T01→T05 and sends tested branch SHA to batch custodian without independently merging.
 
 **T01 Core API seam.** Read `apps/api/src/{app,main}.ts`, `apps/api/src/modules/auth/identity.ts`, `apps/api/src/modules/drafts/openings-controller.ts`, `apps/api/package.json`. Write app, new lab-host-contract, manifest. Positive production API compiles sans Lab dependency; negative dev routes not implicitly available, auth/origin unchanged.
 **T02 Outer Lab package.** Read the 3 Lab controllers and `tools/chamber/tsconfig.json`; move files into new tools/api-lab/src; create package, tsconfig, create-lab-app factory. Positive all four controllers/DI tokens/paths preserved; negative no API→Lab import, no second Nest app.
