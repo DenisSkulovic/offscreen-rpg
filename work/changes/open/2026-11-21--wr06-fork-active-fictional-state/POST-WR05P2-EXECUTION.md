@@ -1,0 +1,23 @@
+# WR06 | Complete active historical forks plus UI (post-WR05P2)
+
+**Conditional owner commission: START ONLY AFTER WR05P2 IS INTEGRATED AND ARCHIVED on undertaking/storyteller-workshop.** The existing pre-MA06A TASKS are obsolete. One substantial Change covering fork engine, source lineage and the playable history/fork user journey; do not divide per mapper/helper. No paid provider/model calls.
+
+**Exit:** parent progresses from scene 37 to 80; owner forks immutable scene 37; child begins at its own scene 1 with scene-37 source root, items, choices, continuity notes, clock, active offers, activities and obligations. It can be played, has no parent future state, does not inherit paid jobs/attempts, and preserves legacy v1 fork behavior.
+
+**Verified anchors (2026-11-21):** packages/story-engine/src/stories/forks.ts:createStoryForks,forkFromSceneCheckpoint,writeBranchManifest,matchingPriorFork,assertIdempotentCheckpointHash; scene-checkpoint.ts existing stage/selector functions; DB campaign.ts gameOffer/gameActivity/worldObligation/gameActionExecution; packages/storyteller/src/context/index.ts for evidence; apps/web/src/features/play/history.tsx; existing server PUT /api/stories/:id/forks/:forkId already works for narrow v1 path. Design reference: planning/wr07b-real-play-backend/work/changes/open/2026-11-21--wr06-fork-active-fictional-state/POST-MA06A-FORK-DESIGN.md.
+
+## Five bounded Composer tasks within ONE Change
+
+T01 | Pure typed fork-state mapper. New Story Engine stories/fork-state.ts converts ACTUAL WR05P2 v2 immutable semantic state to new child identity. Deterministic UUID via stableNamespacedDocumentId('fork', forkStoryId, kind + ':' + originalId) for passage/interaction/offer/activity/obligation/action. Rewrite campaign active references, offer/plans/authorization, obligation provenance and action/resume references with typed schemas, not blindly replacing matching strings. Keep immutable Library IDs/hash and parent evidence citations. Reject broken source/unknown FK, no silent omissions.
+
+T02 | Lineage evidence. packages/storyteller/src/context/index.ts and fork-specific Story Engine memory adapter support bounded ancestor evidence handles a18 versus child p1. Verify parent passage <= selected fork cutoff and same authorized ancestor, pinned passage/root hashes. Keep original note source identities; never import parent scene 70 into scene-37 fork or pretend a parent passage is a new child passage. Existing v1 context tests remain.
+
+T03 | V2 child reconstruct. Update stories/forks.ts v2-only path; read exact owner-scoped checkpoint CAS, share existing v2 Library root, stage child v2 checkpoint CAS BEFORE SQL transaction, reconstruct child story/passage/settings/items/campaign/offer/activity/obligation/action rows with the actual as-of fictional time/progress. Do not clone generation, funding, attempts, worker leases/outbox. Pending provider work may remain safely held pending new authorization rather than duplicating an old dispatch.
+
+T04 | Atomic adoption and replay. Lock source story, revalidate immutable selector/root/owner; insert all child rows+child selector and authorized child notices, check child SQL post-state against staged semantic v2. Same fork target+source hash replays; conflicts, corrupt CAS, cross-owner, parent later changes and incomplete lineage fail with NO partial child write. Preserve v1 quiescent fork path.
+
+T05 | Playable Web UI + evidence. apps/web/src/features/play/history.tsx and fork-specific hook/component show historical scene's authentic choices/commitments, use existing PUT fork API with stable fork ID, navigate actual child. One scripted scene-37->80->fork-37->child interaction test, negative future leak, no double provider spend, old v1 regression. Focused engine/context/web builds and disposable SQL proof, archive/ledger, squash integrate undertaking, clean branch.
+
+**EXCLUSIVE WR06 WRITE OWNERSHIP:** Story Engine stories/{forks,fork-state,other fork-specific files}.ts, pure Storyteller context/index.ts lineage, fork-specific memory adapter, Web play/history.tsx and new fork UI. **DO NOT edit:** Story Engine stories/initialization.ts or Writer runtime, DB schema/migrations, Nest controller/GA seam, Worker/outbox/Temporal, Contracts story-launch, Web stories/launch. WR07B owns those. WR05P2 scene-checkpoint.ts / stories/reads.ts / Documents v2 schema are SHARED READ ONLY.
+
+**Real post-WR05P2 check:** the selected v2 must represent every inherited active semantic field and expose a reader. If the landed schema is insufficient, escalate the precise missing field to ChatGPT before committing misleading fork state; do not reconstruct from current parent SQL or silently drop notes.
