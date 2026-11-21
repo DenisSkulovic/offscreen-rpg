@@ -39,7 +39,7 @@
 - `delegated-decision.test.mjs`: `../src/campaign/delegated-decision.ts` → `../../../packages/story-engine/src/campaign/delegated-decision.ts`.
 - `saved-repair-apply.integration.test.mjs`: `../src/storyteller/saved-repair-apply.ts` → `../../../packages/story-engine/src/storyteller/saved-repair-apply.ts`.
 - `saved-response-inspection.test.mjs`: `../src/storyteller/saved-response-inspection.ts` → `../../../packages/story-engine/src/storyteller/saved-response-inspection.ts`.
-- `story03-notice-topic-freeze.test.mjs`: `srcRoot = join(here, '..', 'src')` → `srcRoot = resolve(here,'../../../packages/story-engine/src')`; do not scan the API Integration source as though it were Story Engine.
+- `story03-notice-topic-freeze.test.mjs`: `srcRoot = join(here, '..', 'src')` → `srcRoot = resolve(here,'../../../packages/story-engine/src')`; **add `resolve` to its existing `node:path` import**. Do not scan the API Integration source as though it were Story Engine.
 - `library-navigation.test.mjs` references logical fixture `../people/mira.md`: leave its logical document path untouched. Existing `resolve(here,'../../..')` and `../../../apps/**` remain correct because new test directory is also three levels below repo root.
 
 ## Tests whose sole compatibility claims must change
