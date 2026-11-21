@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | A | [MA10](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | Delete legacy Application; migrate **all 112 tests** to existing API Integration; scripts and old Worker test references | READY for parallel worktree |
 | B | [WR09A](open/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) | DB response-object pointer + migration; private CAS; atomic Writer budget/step settlement; credential-injected provider transport | READY for **fake-provider-only** parallel worktree |
-| C | [MA11](open/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) | Only `scripts/repo-tools/module-graph*.mjs` AST reporter, domain import ratchet/tests | READY for parallel worktree |
+| C | [MA11](open/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) | `scripts/repo-tools/module-graph*.mjs` AST reporter/tests plus exact API/GA manifest runtime-dependency fixes | READY for parallel worktree |
 
 **Remaining:** [WR09](open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) real worker/provider vertical, [MA09](open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) authority→Writer transaction seam after Writer interfaces stable, followed by internal SCC/public export closure and final undertaking acceptance. These are **not** simultaneous commissions of this wave.
 
