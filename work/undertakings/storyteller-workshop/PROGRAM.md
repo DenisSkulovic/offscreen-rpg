@@ -2,6 +2,8 @@
 
 **Owner:** [Storyteller Workshop](UNDERTAKING.md). **Integration target:** `undertaking/storyteller-workshop` (never individual WR → `main`). **Purpose:** dependency map and planner gate, not a second work queue or permission to spend. [Global selection](../../QUEUE.md) controls default work; owner may commission a named independently ready Change. **Re-audited 2026-11-21** against source snapshot `dac6b698`, selected remote key anchors at undertaking HEAD `7fccbc6417b4959985c633a9c073571a032030ba`. These are **source-inspection observations, not runtime test passes**. Later packet-audit documentation commits advance branch HEAD without changing the inspected code.
 
+> **Active next-wave dispatch (2026-11-21):** WR08A (Play Web), WR05P1 (after-state kernel), and WR07M (opening mission scope) have **all integrated and archived**. The **three owner-commissioned parallel Changes** are [WR05P2](../../changes/open/2026-11-21--wr05p2-v2-scene-publication/CHANGE.md) (Documents v2-only grammar + Story Engine publication), [WR07N](../../changes/open/2026-11-21--wr07n-writer-opening-scene-proposal/CHANGE.md) (pure Writer final output contract), and [WR07L](../../changes/open/2026-11-21--wr07l-durable-launch-ledger/CHANGE.md) (DB + Game Authority launch operation ledger). Use separate linked worktrees from `undertaking/storyteller-workshop`; serialize integration/archive/catalog edits. These three write sets are disjoint. Once they land, **WR07B** connects Writer + ledger to a durable Launch worker and first-scene authority; no old pre-MA06A WR05/WR07/WR08 packet is dispatchable.
+
 | Change | Outcome | Reality and current execution disposition |
 | --- | --- | --- |
 | WR02 | Persistent Library/source identity | Done, archived |
