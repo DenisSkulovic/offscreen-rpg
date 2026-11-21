@@ -11,4 +11,6 @@
 - **G6:** one branch/worktree and final serialized undertaking integration; no main.
 - **G7:** explicit exclusions: publication control flow, checkpoint selector, data migrations, fork and API. No model calls or billing changes.
 
-**Verdict:** READY for the bounded capture/projection substrate. This is a useful implementable precursor; it does not mislabel the full WR05 parent as ready.
+**Verdict:** Implemented 2026-11-21. Focused Story Engine tests 18/18. Disposable scene publication 5/5 and notes re-export identity 1/1. This does not publish a v2 selector and does not make the blocked WR05 parent ready.
+
+**Observed commands:** `node --test packages/story-engine/dist/stories/scene-after-state.test.js packages/story-engine/dist/stories/continuity-notes.test.js` pass 18. `DATABASE_TEST_URL` pathname `/offscreen_db_test` on 127.0.0.1 for the reader and `node --test packages/application/test/scene-checkpoint-publication.test.mjs packages/application/test/ma05e-continuity-compat.test.mjs` pass 6. Code-health `--strict-new` exit 0. Full `@offscreen/story-engine` `tsc` NOT a new failure: pre-existing `mechanics` errors on the v2 checkpoint union. `@offscreen/application` `tsc` NOT a new failure: missing `@offscreen/admin` types. Provider spend zero.
