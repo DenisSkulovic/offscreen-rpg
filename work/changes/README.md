@@ -2,15 +2,15 @@
 
 ## Next three source-disjoint Changes, after MA10 / WR09A / MA11 integrated (2026-11-21)
 
-**MA10, WR09A and MA11 are archived Done.** These three next Changes are now source-reconciled against the integrated custody code; the owner may commission them as the next separate parallel batch. Their implementation/test evidence is NOT yet present. No package explosion or paid provider call.
+**MA10, WR09A and MA11 are archived Done.** OPS12, WR09B, and DX12 are also archived Done on this branch. No package explosion or paid provider call.
 
 | Next lane | Change | Dependency / state | Exclusive implementation owner |
 | --- | --- | --- | --- |
 | A | [WR09B durable multi-round Writer replay](archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md) | **Done on the undertaking branch** (offline replay and policy fence; no paid call) | Story Engine writer-loop + narrow writer-mission-custody policy fence + new WR09B integration test |
-| B | [OPS12 distributed Worker lifecycle](open/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md) | **READY, predecessor integrated** | Worker runtime control/execution/live-stack lifecycle and focused Worker tests |
-| C | [DX12 affected builds and checks](open/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) | **READY after current-wave integration** | Root affected-check tooling/script, conditional Turbo config and local engineering notes |
+| B | [OPS12 distributed Worker lifecycle](archive/2026-11/other/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md) | **Done on the undertaking branch** (injected lifecycle 16/16; no process-kill trial) | Worker runtime control/execution/live-stack lifecycle and focused Worker tests |
+| C | [DX12 affected builds and checks](archive/2026-11/other/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) | **Done on the undertaking branch** (affected-check unit tests 15/15; `--run` not executed) | Root affected-check tooling/script and local engineering notes |
 
-**Next-wave join:** Cursor C (DX12) coordinates OPS12 → WR09B → DX12 serial integration after all three tested receipts; no independent parent edits global undertaking, lockfile or integration HEAD. WR09B cannot run before the previous custody code exists. These are *not* MA09, WR09C production provider wiring, a new npm package or a claim that end-to-end gameplay survived deployment/kill tests.
+**Joined on `undertaking/storyteller-workshop`.** WR09B was already squashed. This custodian then squashed OPS12, then DX12. These are *not* MA09, WR09C production provider wiring, a new npm package, or a claim that end-to-end gameplay survived deployment/kill tests.
 
 ## Selected three-lane source-disjoint post-MA08 wave (2026-11-21)
 
