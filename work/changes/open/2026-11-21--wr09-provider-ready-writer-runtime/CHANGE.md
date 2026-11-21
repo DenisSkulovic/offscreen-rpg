@@ -1,0 +1,26 @@
+# WR09 | Real-provider-capable crash-recoverable Writer execution
+
+**State: PLANNER-DESIGNED, NOT CURSOR-READY.** Current-HEAD source mapping done; durable response-object replay contract and exact Worker credential/mode policy remain unresolved. Do not commission Cursor to invent them. **Baseline:** `e122d080677263aa6f38961f8734713664827c55`; **target:** `undertaking/storyteller-workshop`; **authorization:** offline fake transport only. No paid key, external provider call, production flag or nondisposable DB mutation.
+
+## Outcome
+
+One pinned, bounded, recoverable Writer mission that can use genuine provider-shaped response/usage and tool results, initially proven through deterministic network-free transport. Existing scripted mode/hashes and WR04 child isolation must not change. Actual funded live Writer requires separate explicit owner approval and one-run spend envelope.
+
+## Verified defects
+
+1. `buildLaunchWriterMissionCapture` (`packages/story-engine/src/storyteller/launch-admission.ts`) and `buildWriterContinuationCapture` (`writer-continuation.ts`) freeze `scripted-offline` model.
+2. `runWriterMissionModelRound` (`writer-loop.ts`) requires scriptedDecisionBody, uses memory fake transport rather than `createWriterRoundTransport`.
+3. `createWriterRoundTransport` (`packages/storyteller/src/providers/writer-round-transport.ts`) currently sends literal `Bearer test-not-live`; secret must be supplied at Worker composition and never included in captured request/DB/workflow history/logs.
+4. `advanceWriterMissionProviderStep` (`writer-mission-custody.ts`) records result SHA and usage, not independently retrievable response bytes; a crash after response settlement but before parsing/publication cannot replay deterministic final/tool decision from hash alone.
+5. `apps/worker/src/activities/{scripted-writer-scene,writer-research}.ts` and `packages/story-engine/src/storyteller/scripted-launch-writer.ts` return scripted responses/markers. No real opening model loop.
+6. WR04 children have explicit restricted contexts/budgets; generic parent provider integration must not bypass isolation or grant publish privileges to research.
+
+## Chosen direction, not yet executable algorithm
+
+Keep Story Engine authority, Storyteller task schema/provider transport, and Worker credential composition. Do not create new Writer package, clock or budget. One explicit mode-discriminated `scripted | provider` round input, both through existing operation/attempt custody. Provider path pins policy/model/price/allowlist at admission, exact prepared wire SHA and possibly-sent boundary. Persist exact delivered response privately in CAS with an explicit pointer distinct from existing response-content hash, committed before a reproducibly settled step. A missing/corrupt response after possible send stays held/uncertain, never automatically re-sent. Provider URL request is exact frozen bytes, no fallback, bounded time and output, redacted errors, injected secret with default-deny. Replay must rehydrate previous decision, then continue idempotent tool/final state without duplicate charge or mutation. Delegate via existing child wake/join, not recursive tools; publish scenes only through established Game Authority/Scene v2 checks. Launch opening also needs captured mission identity available at Worker replay. Keep public flag off; zero external sends.
+
+## Planner blockers (retain as blockers, not Cursor research tasks)
+
+Freeze exact private response document/schema and CAS pointer SQL design, transaction ordering for response-body durability versus dispatched/settled state, recovery after crash between CAS write and SQL commit, Worker credentials/config and dual-mode selection, exact parent join/resume flow, updated capture versions compatible with historical hashes. Then write executor TASKS with exact edits and new negative tests, perform fresh G0–G7. MA07 can execute independently before WR09; WR09 worker edits should follow MA07 integration.
+
+[Source map](SOURCE-MAP.md) · [Proof](PROOF.md). TURN04 is a different opt-in provider gate and not authorization for this Change.
