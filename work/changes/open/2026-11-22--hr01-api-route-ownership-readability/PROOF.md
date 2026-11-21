@@ -1,6 +1,6 @@
 # HR01 | readability, contract equality and readiness
 
-**Observed:** d3ba2917 current source, Stories 644 lines (~30 HTTP decorators), Admin 849 (~18 decorators), app.ts 415, shared StoryError run/runLaunch, existing AdminActorService/adminError mapper, Nest DI and SSE. No refactoring tests run by planner.
+**Observed:** d3ba2917 current source, Stories 644 lines (30+ HTTP decorators), Admin 849 (~18 decorators), app.ts 415, shared StoryError run/runLaunch, existing AdminActorService/adminError mapper, Nest DI and SSE. No refactoring tests run by planner.
 
 G0 **PLANNER-GATED** on MA12/CL01 integration and branch HEAD reconciliation; G1 PASS source route/source owners inventoried; G2 PASS target semantic controllers, existing owner/guard behavior frozen; G3 CONDITIONAL post-CL01 DI symbols, T01–T03 bounded; G4 CONDITIONAL on live source; G5 PASS disjoint from Web HR02 and DB HR03, but deliberately not parallel with MA12 or CL01; G6 PASS HTTP route, auth, 409, SSE replay and explicit existing test proof; G7 PASS human route ownership, no arbitrary per-handler modules. **Not dispatchable today.**
 
