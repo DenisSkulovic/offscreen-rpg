@@ -1,3 +1,5 @@
+> **DO NOT DISPATCH (2026-11-21):** This proposed parallel slice overlaps an **already-running full MA08 Cursor**, which owns DB outbox, logging and host consumers. This packet is superseded as a commission; retain only as planning history. Let the original MA08 complete and integrate. Do not run MA08B or interfere with MA08's worktree.
+
 # MA08B | Move durable outbox lease and safe host logger to actual infrastructure owners
 
 **State: PLANNER-READY, independent lane B** of the [parallel structural wave](../../../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Baseline:** MA07 `4168db58`; integration `undertaking/storyteller-workshop`. Preserve all Application compatibility source/tests until final retirement. No SQL migration or paid model call.
