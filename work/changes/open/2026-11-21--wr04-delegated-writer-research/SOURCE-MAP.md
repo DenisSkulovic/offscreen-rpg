@@ -1,0 +1,10 @@
+# WR04 | verified source and ownership map
+**Baseline:** `f2e0b237`, static branch source, tests NOT RUN; depends on WR03 as actually landed, not its proposed shape.
+- Existing parent budget and attempt custody: `packages/db/src/schema/storyteller.ts:storytellerOperation`, `storytellerAttempt`, `storytellerRun`; code `packages/application/src/storyteller/execution.ts:createStorytellerExecution`.
+- Existing multi-round exploration state: `packages/application/src/storyteller/memory-exploration-controller.ts:runMemoryExploration` with generation-keyed snapshots. It does **not** establish independent child conversation contexts.
+- Existing task validation: `packages/storyteller/src/tasks/{task-contracts,resources}.ts`; child uses a narrower **versioned** task contract and read-only WR03 tool executor, not an open shell or a new service.
+- Existing pinned v1 navigator: `packages/application/src/storyteller/library-navigation.ts:createPinnedLibraryNavigation`; replace after WR02 v2 membership substrate; enforce root and visibility per tool result.
+## Chosen ownership
+Parent mission owns child request IDs, reserved budget and join order. Each child owns its **own** provider request, attempt ledger and round transcript (not an instruction inserted into parent's chat). Child receives immutable root, restricted capabilities, finite round/token/money ceilings, skill pins, explicit no stage/publish/launch/delegate.
+## Collision/unknown
+WR04 modifies WR03 controller + budget + custody fields: **no concurrent implementation**. Selected prospective WR03 tables are now `storyteller_writer_mission` and `storyteller_writer_step` with `(missionId,contextId,ordinal)` step identity, plus WR04 `storyteller_writer_child` with parent-scoped spend reservation. Their names and fields are **planned**, not observed in current source. All WR04 tasks are `PLANNER-READY AFTER` named predecessors, but ChatGPT must recheck the committed WR03 implementation before release; no Cursor schema improvisation. Scripted provider fixtures can validate isolation but cannot prove real-provider creative quality.

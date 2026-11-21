@@ -1,11 +1,45 @@
-# WR07 | implementation tasks (planner handoff)
-**Execution:** after WR03+WR05, not concurrently with GA publication. **Decision:** Launch is one idempotent authenticated request with captured immutable intent/preset root and a durable status state machine; it feeds WR03 then WR05. Drafts remain optional convenience, never compulsory.
-## T01 | Launch contract + authenticated edge
-**DEPTH=PATCH-M.** Sources: `apps/api/src/modules/stories/controller.ts`, `packages/contracts/src/{drafts,campaign}.ts`. Typed request: idempotency key, prompt OR pinned prepared-root reference, optional customization/hints, world invention/time policy, explicit authorized model budget. No mandatory body/title/character/profile/rules. Validate size, scope, owner, conflict and anonymous denial.
-## T02 | Immutable request capture and pinned library
-**DEPTH=PATCH-L.** Sources: `packages/application/src/{storyteller/openings,stories/start,stories/initialization}.ts`, `packages/documents/src/{start-import,start-instantiation}.ts`. Persist operation status + captured source, prompt verbatim `STORY_PROMPT.md`, creative-only profile and orientation roots before paid dispatch. Reuse prepared immutable overlays; no enormous copy or compulsory model pre-step. Changed preset after capture cannot modify request.
-## T03 | Orchestrate Writer to first GA scene
-**DEPTH=PATCH-L.** Sources: `packages/application/src/storyteller/{start,execution}.ts`, WR05 publication route. Pending→preparing→composing→ready/held/failed/uncertain transitions; replay-safe recovery and first-scene identity. Stage preparatory files privately if needed; only WR05 publishes playable complete opening. No idle-fiction clock. Unknown provider delivery held.
-## T04 | Scripted API and recovery matrix
-**DEPTH=PATCH-L.** Provider-free Nest/application tests: prepared authored launch (no prep LLM), `BAH`, conscious galaxy, prompt override; lost response returns same scene; duplicate Play/cross-owner/stale package/corrupt source/uncertain delivery fail/hold correctly, zero double spend. Update launch/status API docs after proof. No UI implementation here.
-**Stop:** backend requires character wizard or first output is preview not selected scene. **Receipt:** captured request hashes/ids, transition trace, tests and NOT-RUN.
+# WR07 | bounded Composer execution queue (planner revision 2026-11-21)
+
+**Branch:** `undertaking/storyteller-workshop` ONLY. **Code baseline inspected:** `f2e0b237` committed remote source; Cursor local dirty tree unknown. **Current selection:** not selected; Proposed, dependent on predecessors. **Model:** Composer 2.5 Standard; `DEPTH=PATCH` for one task only. **Read:** this T-ID, named 2–4 source files and exact relevant [EXECUTION](EXECUTION.md) section. Parent may consult [SOURCE-MAP](SOURCE-MAP.md), [PROOF](PROOF.md) only when needed. **No full-repo exploration, redesign, provider spending, destructive DB, live cluster or automatically selecting successor Change.**
+
+**Execution sequence:** T01 → T02 → T03 → T04 → T05 → T06. Dispatch only one planner-ready T-ID with dependencies met. Each task is one cohesive mutation + focused test; parent owns integration, cross-task reconciliation, docs, archive. **If a path/algorithm contradicts the live worktree, STOP and report file:symbol + exact failed assumption; ChatGPT repairs the plan.** Do not 'investigate architecture' in Cursor. Task status reflects planning, not landed code or execution authorization.
+
+## T01 | Define tiny authenticated launch request/result DTO | PLANNER-READY AFTER WR03+WR05
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/contracts/src/campaign.ts; packages/contracts/src/drafts.ts; apps/api/src/modules/stories/controller.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Add strict launch.v1 discriminated prompt|prepared-root input, operation UUID, optional hints/policy/spend and read-status DTO. No character/name/body required; owner only from session. Do not implement route yet.
+
+**Positive test:** contracts package build and DTO tests. **Discriminating negative:** blank unsafe root, excessive prompt bytes and unsolicited grant rejected. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T02 | Add SQL Launch custody and CAS prompt capture | PLANNER-READY AFTER T01
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/db/src/schema/storyteller.ts; packages/db/migrations; packages/documents/src/schema.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Add owner+operation unique Launch row with captured request hash, immutable prompt/source CAS hashes, status/pins, stable story ID; exact same request replay, same key changed request conflict. Do not store large Markdown body in SQL.
+
+**Positive test:** disposable DB idempotency test. **Discriminating negative:** cross owner status, stale preset and duplicate different request rejected. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T03 | Write application Launch status state machine | PLANNER-READY AFTER T02
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/application/src/storyteller/openings.ts; packages/application/src/storyteller/start.ts; packages/application/src/storyteller/execution.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** pending→preparing→composing→ready/held/failed/uncertain, one durable revision per transition; pin source roots at capture and dispatch WR03 mission on those hashes, not draft wizard. Provider uncertainty holds, no retry send.
+
+**Positive test:** scripted launch state transition + crash replay test. **Discriminating negative:** lost request, changed preset, unknown provider dispatch never double charge. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T04 | Adopt full WR05 first scene | PLANNER-READY AFTER T03
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/application/src/stories/start.ts; packages/application/src/stories/initialization.ts; packages/application/src/storyteller/publication.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Route final writer proposal through WR05 Game Authority scene-1 selection. Only selected scene is playable/ready; no idle clock; completed preset skips redundant preparatory paid model step.
+
+**Positive test:** GA scripted first scene and BAH/galaxy tests. **Discriminating negative:** preview-only, uncommitted root and stale frontier cannot return ready. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T05 | Wire Nest and private GA launch/status | PLANNER-READY AFTER T04
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `apps/api/src/modules/stories/controller.ts; apps/api/src/modules/stories/game-authority-client.ts; packages/contracts/src/campaign.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Extend apps/api/src/modules/stories/game-authority-client.ts:StorySeam, LocalStorySeamSource, createLocalStorySeam and createRemoteStorySeam with launch/status; add authenticated PUT/GET in StoriesController; add corresponding apps/game-authority/src/application.ts:GameAuthoritySeam/createGameAuthoritySeam and apps/game-authority/src/server.ts:Route/routeFor handlers at /internal/v1/stories/launches/:operationId. Reuse callGameAuthority story-role actor header and existing error mapping. Do not call provider from Nest.
+
+**Positive test:** Nest route e2e authenticated preset/freeform/status. **Discriminating negative:** anonymous, wrong owner and changed key denied. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T06 | Verify full provider-free launch and docs | PLANNER-READY AFTER T05
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/application/src/storyteller/openings.ts; apps/api/src/modules/stories/controller.ts; docs/product/experience/entry-and-onboarding.md`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Run prepared Play, BAH, conscious galaxy, restart/uncertain and no timed autoplay; reconcile actual API contract. Keep legacy candidate start compatible until WR08 removes wizard.
+
+**Positive test:** application+Nest focused tests in disposable setup. **Discriminating negative:** no duplicate scene or spending, no mandatory character fields. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## Closure gate
+
+Task completion does not close Change. Parent must run designated [PROOF](PROOF.md) matrix, reconcile actual canonical docs/status/ledger, integrate into `undertaking/storyteller-workshop`, delete temporary worktree only after successful reconciliation and archive when accepted. Do **not** merge to `main` or launch adjacent WR Changes automatically. **Planner-ready is not proof of implementation correctness.**

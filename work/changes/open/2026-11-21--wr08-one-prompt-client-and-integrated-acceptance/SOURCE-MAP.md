@@ -1,0 +1,15 @@
+# WR08 | verified client & end-to-end surface
+**Baseline:** `f2e0b237`, static inspection, tests NOT RUN; depends on WR04, WR06, WR07.
+- `apps/web/src/features/stories/draft-editor.tsx:DraftEditor` is a 516-line client React Hook Form multi-step editor with declared `steps`, draft queries, StorytellerSelect and opening preview flow. Do not merely hide wizard steps while calling old preview route.
+- `apps/web/src/features/play/history.tsx:StoryHistoryView` uses `storyHistoricalSceneOptions` and `storyHistoryInfiniteOptions`; current historical UI must consume WR05/06 as-of DTOs rather than live campaign.
+- `apps/web/src/features/play/ui/campaign-play.tsx:CampaignPlay` is a small composition of useCampaignCommand, activity, history, offer and status panels. Keep command/permission ownership in existing hooks and API clients.
+- `apps/api/src/modules/stories/controller.ts:{historicalScene,history,fork}` already exposes historical/fork API primitives, but current fork cannot carry active work. WR07 will add launch command and durable status; UI cannot fabricate those.
+## Correct UI boundary
+Prepared Play and one freeform prompt → WR07 launch → truthful status including uncertain/held → WR05 complete first scene → authenticated gameplay; history uses exact scene frontier, and Fork invokes WR06 with historical selector. Hide private notes, maintain source/root access.
+## Verified route and transport anchors (additional source inspection)
+- `apps/web/app/(authenticated)/stories/page.tsx:Stories` prefetches live stories/drafts and links `Create story` to `/stories/new`.
+- `apps/web/app/(authenticated)/stories/new/page.tsx:NewDraft` currently requires draft UUID query and renders `DraftEditor`; this is the entry to replace with WR07-backed Play, leaving the old draft detail route available for genuinely saved content.
+- `apps/web/src/features/stories/use-start-story.ts:useStartStory` PUTs `/api/stories/${storyId}/start` with candidateId/expectedDraftRevision, persists `FrozenStartEnvelope` and reads latest opening on conflict. **Do not repurpose this legacy candidate hook** for direct launch.
+- `apps/web/src/shared/api/query-keys.ts:queryKeys` scopes keys to viewer ID; add `storyLaunch(viewerId,operationId)` and implement a new typed useLaunchStory hook using WR07 DTO, not existing opening preview types.
+- `apps/web/src/features/play/history.tsx:StoryHistoryView` and `apps/web/src/features/play/ui/campaign-play.tsx:CampaignPlay` are existing history/gameplay components.
+**Interface selection:** new StoryLaunch form + hook; old draft flow retained solely for actual saved drafts pending compatibility proof. Full WR07 response schema is a predecessor artifact, not a Cursor architecture question. Integrated proof must distinguish zero-provider scripted correctness from optional funded creative quality.

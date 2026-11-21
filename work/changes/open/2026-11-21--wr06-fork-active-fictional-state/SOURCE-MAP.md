@@ -1,0 +1,11 @@
+# WR06 | verified historical fork map
+**Baseline:** branch `f2e0b237`, static code, tests NOT RUN; WR05 prerequisite.
+- `packages/application/src/stories/forks.ts:forkFromSceneCheckpoint` resolves checkpoint and explicitly throws `unsupported_active_work` when holds/offer/acceptedActivityPlan/activeActivityId/activeActionOperationId exist and `continuity_remap_required` for nonempty notes.
+- **Current lossy behavior:** same function writes `campaign` with `acceptedActivityPlan:null`, `holds:[]`, `offer:null`, `activeActivityId:null`, `activeActionOperationId:null`; these are safe only because active input is refused. Replacing the guard alone is catastrophically wrong.
+- `writeBranchManifest` copies `ancestor.entries` into v1 manifest; WR02 must supply a branch-neutral root pointer first.
+- `forkFromSceneCheckpoint` correctly creates child owner+provenance and new passage/interaction IDs, maps initial items, pins historical settings using `lte(campaignSettings.revision, mechanics.settingsRevision)`, writes `storyDocumentCommit` and staged checkpoint selector in transaction.
+- `packages/db/src/schema/campaign.ts:{campaign,worldObligation,gameOffer,gameActivity,gameActivityEvent}` hold distinct ongoing semantic and operational projections; `packages/application/src/stories/{timing,resolution}.ts` are current action/timing consumers.
+- `packages/application/src/stories/scene-checkpoint.ts:readSceneCheckpointForRow` checks immutable historical payload; **do not reconstruct from parent live campaign row**.
+## Required remapping
+At historical scene state, preserve semantic facts/time/progress and option labels; create child-local event, offer, action, obligation and execution identities, keeping original provenance references only as read-only origin. Reanchor the child fictional clock; parent providers, worker leases, finance, outbox or live Temporal jobs are not inherited. Separate pure mapper test before DB writes. Reader visibility uses child's root/authority, not ancestor's current root.
+**Stop risk:** only WR05 can establish that all active state is actually present at the checkpoint. Until then, active-fork implementation is **not** executable; no Cursor redesign to fill missing fields.
