@@ -1,5 +1,7 @@
 # Offscreen RPG
 
+**Engineering map:** [How we work](WORKFLOW.md) explains the development lifecycle; [Repository structure](REPOSITORY-STRUCTURE.md) explains folder ownership, permanent vs temporary records and cleanup rules. Agents start at [AGENTS.md](AGENTS.md).
+
 **Two projects in one repository: an off-screen AI storytelling RPG, and an engineering system for building software with AI agents without surrendering architecture, correctness or maintainability.**
 
 The game is the proving ground. **The engineering workflow is currently the primary focus of this portfolio.** The idea is not “ask an LLM to generate a game.” It is to make product intent, technical decisions, implementation scope, source evidence and verification individually discoverable, durable and reviewable, including when different agents perform different roles.

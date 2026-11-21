@@ -1,5 +1,7 @@
 # How we work | engineering lifecycle and agent handbook
 
+**Companion map:** [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) owns the *where and how-long* of each folder, including permanent vs transient zones, admission and retirement, and safe housekeeping. This page owns the *sequence of work*. Consult both before reorganizing the repository.
+
 **Start here for the development method.** This is the **one navigational front door** for humans, ChatGPT planners and coding agents. It explains the sequence and where each decision belongs; it is **not** a second product specification, task queue, or replacement for the linked detailed standards. Read this page by role, then follow only relevant links. The short compulsory entrypoint is [AGENTS.md](AGENTS.md); [CHATGPT.md](CHATGPT.md) adds planner obligations; [.agents/HARNESS.md](.agents/HARNESS.md) governs the coding-agent harness.
 
 > **Operating principle:** Decide what must be true; ratify it in product/technical documentation; let ChatGPT do expensive source-grounded planning; let cheaper Cursor agents execute small predecided edits; verify with real evidence; reconcile and retire temporary work. **Never confuse proposed, selected, implemented and proven.**

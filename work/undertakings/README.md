@@ -1,5 +1,7 @@
 # Undertakings | themed integration envelopes
 
+**Folder lifecycle:** [Repository structure](../../REPOSITORY-STRUCTURE.md#4-work-is-temporary-coordination-not-product-truth) and [How we work](../../WORKFLOW.md) cover temporary integration dossiers, distinct Change branches, landing and retirement.
+
 **Lifecycle/branch map:** [How we work](../../WORKFLOW.md) covers Undertaking creation, documentation-first work, dedicated Change subbranches, integration and retirement. This page owns the Undertaking-specific rules.
 
 An **Undertaking** is a temporary, named engineering transformation that groups multiple existing work units under one coherent focus and integration branch. It is larger than a Change and narrower than the product roadmap.

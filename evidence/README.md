@@ -1,5 +1,7 @@
 # Evidence
 
+**Observed history, not product law:** [Repository structure](../REPOSITORY-STRUCTURE.md#5-durable-history-evidence-and-concluded-research). Preserve exact source/environment provenance and unique proof before considering snapshot deduplication or retirement.
+
 Dated observations, inspections, and run manifests. **Not** product or technical authority.
 
 | Path | Use |

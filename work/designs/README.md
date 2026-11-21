@@ -1,5 +1,7 @@
 # Designs | active working set
 
+**Lifecycle and retirement reference:** [Repository structure](../../REPOSITORY-STRUCTURE.md#4-work-is-temporary-coordination-not-product-truth). Every dossier in `open/` must have an unresolved decision and next review; accepted or historical designs leave the active tree only after canon/ledger/link reconciliation. No age-only deletion.
+
 Unaccepted designs and investigations that still need an owner decision, selected implementation or a dated review. **Completed and dormant folders do not belong under `open/`.** Not product bible. Not a Change or standalone Task authorization. [Work taxonomy](../WORK-TAXONOMY.md) distinguishes ongoing investigation from concluded [research](../../research/README.md) and observed [evidence](../../evidence/README.md). [Current work selection](../QUEUE.md) remains separate.
 
 **Review command:** `pnpm repo:retirement` inventories working designs, their approximate age and Markdown backlinks, and aged archived Changes. No automatic deletion. 

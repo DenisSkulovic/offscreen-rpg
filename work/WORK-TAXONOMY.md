@@ -1,5 +1,7 @@
 # Work taxonomy | what we decide, modify, execute and learn
 
+**Placement/permanence:** [Repository structure](../REPOSITORY-STRUCTURE.md) distinguishes living authority, durable history, temporary workspaces and generated/source-owned output. This taxonomy remains the precise work-type classifier.
+
 **Lifecycle walkthrough:** [How we work](../WORKFLOW.md) connects these types to the practical docs-first / ChatGPT-plans / Cursor-implements / verification and branch workflow. This file remains the precise classification reference.
 
 **Status:** selected repository operating convention, 2026-11-20. **Owner:** engineering work management, not game product behavior. [One selection queue](QUEUE.md) · [Change standard](../.agents/references/change-work-unit-standard.md) · [Composer microtasks](../.agents/references/composer-first-execution.md) · [Tasks](tasks/README.md).

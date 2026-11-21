@@ -1,5 +1,7 @@
 # Research
 
+**Curated historical, not normative:** [Repository structure](../REPOSITORY-STRUCTURE.md#5-durable-history-evidence-and-concluded-research). Preserve conclusions and reopen criteria; move accepted authority to product/technical owners rather than creating competing rules here.
+
 Curated non-normative studies. Explicitly **not** product/technical authority.
 
 | Path | Candidate content |

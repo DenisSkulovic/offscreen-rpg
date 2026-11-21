@@ -1,5 +1,7 @@
 # Temporary work
 
+**Temporary by design:** [Repository structure](../REPOSITORY-STRUCTURE.md#4-work-is-temporary-coordination-not-product-truth) states each work folder's admission, expected lifetime, promotion and retirement. Every open dossier needs an owner, unresolved outcome and exit; catalogs must not become perpetual archives.
+
 **First:** [How we work](../WORKFLOW.md) explains this folder's work-unit taxonomy, lifecycles, decisions, dependency/parallel execution and retirement in one diagram-led guide. This index remains the directory router, not a second workflow policy.
 
 **Owns:** one [Current work selector](QUEUE.md), open Changes, standalone operational Tasks, unaccepted design investigations and short-lived session notes. This is **not** the product/technical bible, source evidence store, or agent rule owner.

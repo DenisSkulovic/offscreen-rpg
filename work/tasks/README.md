@@ -1,5 +1,7 @@
 # Standalone Tasks | action/verification catalog
 
+**Place vs lifecycle:** [Repository structure](../../REPOSITORY-STRUCTURE.md#4-work-is-temporary-coordination-not-product-truth). A standalone Task is an independent operational action/receipt, not a microtask inside a Change and not a lasting implementation diff.
+
 **Purpose:** independently tracked operational work that can finish with a run receipt and **no intended lasting code or normative-document diff**. Selection is owned by [work/QUEUE.md](../QUEUE.md); this is a catalog and lifecycle index. [Work taxonomy](../WORK-TAXONOMY.md) · [Task template](TEMPLATE.md).
 
 | Collection | Purpose |

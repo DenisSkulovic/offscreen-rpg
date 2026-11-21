@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+**Directory ownership and cleanup:** [Repository structure](../../REPOSITORY-STRUCTURE.md#4-work-is-temporary-coordination-not-product-truth). This index routes currently unresolved Changes; terminal packets move to short-lived archive, unique proof/ledger is retained, and later pruning requires a link/provenance review.
+
 **Integration provenance (2026-11-21):** squashed [documentation d500f8ce](https://github.com/DenisSkulovic/offscreen-rpg/commit/d500f8ceb0eee7c8f82c8ff5f2cc02273da86639) and [housekeeping f6d86030](https://github.com/DenisSkulovic/offscreen-rpg/commit/f6d860301f098eb6b0dd326ebef99f8cbb1de4b5) over [main 34e2b4fd](https://github.com/DenisSkulovic/offscreen-rpg/commit/34e2b4fd8d9d9967e13311da3a938460b1a02244). Source branches preserve their full incremental history. `main` is unchanged.
 
 **This is the working queue directory, not a history book.** Current selection belongs only to [work/QUEUE.md](../QUEUE.md); a packet listed here may be Proposed, Ready, Blocked, or temporarily awaiting verification. Its own `CHANGE.md` determines its actual state. This catalog is **not** authorization to run it.

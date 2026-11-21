@@ -1,5 +1,7 @@
 # ChatGPT | architecture planning and Cursor handoffs
 
+**Repository geography gate:** When designing new packet folders, doing maintenance, moving docs or reviewing staleness, also read [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) and the nearest existing catalog. Avoid new folders unless the owner, lifecycle, current home and retirement trigger are genuinely distinct.
+
 **Method entry:** [WORKFLOW.md](WORKFLOW.md) is the shared human/agent lifecycle map, including decision diagrams, documentation-first rule, design/Change/Task taxonomy, Undertaking and per-Change branching, parallel planning and cheap Cursor execution. Read its relevant route after AGENTS; this file adds ChatGPT-specific planner obligations rather than duplicating the whole methodology.
 
 ## Mandatory cold-start contract for ChatGPT planning

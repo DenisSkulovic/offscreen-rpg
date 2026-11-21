@@ -1,5 +1,7 @@
 # Documentation
 
+**Repository-wide file ownership:** [Repository structure](../REPOSITORY-STRUCTURE.md) distinguishes permanent product/technical authority from proposals, proofs, work packets, agent rules and operational runbooks. Use that map before adding another docs subtree.
+
 **How documentation enters the development lifecycle:** [How we work](../WORKFLOW.md) explains ratifying product and technical contracts *before* Cursor implementation, how authoritative documentation Changes work, and how verification/realized-state reconciliation returns here. This page remains the product/technical knowledge router.
 
 Product behavior is the bible. Technical contracts say what the system must guarantee. Code and tests are artifacts of those contracts. A selected target is not a claim that it is implemented, and selection is not proof that the target is coherent, enjoyable, or affordable. A proposed design is not a norm. Deterministic selected invariants stay binding, including consent, no model-owned dice, and no duplicate effects. Naming shared play inside a selected ambition does not make that play deliverable or implemented. `pnpm wiki:find` labels each heading from that heading: a nested proposal stays out of the normative lane, and a status or uncertain hit is not a gameplay rule or a paid-production grant.
