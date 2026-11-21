@@ -2,7 +2,7 @@
 
 Inspected d3ba2917. Better Auth in apps/api/src/modules/auth/auth.ts has cookie session and GitHub OAuth, no device/bearer plugin. IdentityService.requireUser in identity.ts resolves cookie. StoriesController in apps/api/src/modules/stories/controller.ts uses requireUser in run, runLaunch and separately in storyUpdates plus periodic stillAuthorized. Those **three** sites must switch to a StoryPlayerIdentity service, never the global IdentityService used by Admin, Drafts and QA.
 
-apps/api/src/app.ts registers Nest controllers/DI and has a global Origin check for non-Auth unsafe methods at lines ~395-409. Do not remove it; terminal sends the configured origin on PUT/POST/DELETE. After MA12 this app.ts will have a typed optional Lab extension; rebase and register terminal-auth in ordinary production API without reintroducing Lab.
+apps/api/src/modules/auth/config.ts:readAuthConfig already reads BETTER_AUTH_SECRET of at least 32 bytes and apps/api/src/main.ts constructs authConfig and passes createApp options. CL01 passes this existing secret to a narrow server-only pairing HMAC option (not to terminal API responses or client). apps/api/src/app.ts registers Nest controllers/DI and has a global Origin check for non-Auth unsafe methods at lines ~395-409. Do not remove it; terminal sends the configured origin on PUT/POST/DELETE. After MA12 this app.ts will have a typed optional Lab extension; rebase and register terminal-auth in ordinary production API without reintroducing Lab.
 
 packages/db/src/schema/auth.ts has user/session; migration journal in inspected HEAD ends at idx23 0023_wr09a_writer_response_object. CL01 alone owns next available migration, with two tables pairing and token. No personal credentials in cleartext SQL.
 
