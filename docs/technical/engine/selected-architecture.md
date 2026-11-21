@@ -39,6 +39,14 @@ Full event sourcing is not selected. A transactionally committed causal business
 
 The 2026-11-19 educational laboratory does not select the event-sourced microservices row. Its contract is [Distributed learning target](../platform/topology.md#distributed-learning-target). Campaign state stays a PostgreSQL projection.
 
+## Transitional package extraction selected for MA06A (2026-11-21)
+
+The physical package extraction now proceeds in one **cohesive engine** workspace rather than premature independent Story Authority and Storyteller-runtime npm packages. `@offscreen/story-engine` will initially own the implementation subtrees `stories/`, `campaign/`, `storyteller/`, and `generations/`; `@offscreen/application` retains short-lived compatibility exports, composition and developer tools. The pre-existing `@offscreen/storyteller` workspace continues to own its pure task/context/provider abstractions.
+
+**Physical co-location is not authority sharing.** SQL story/campaign admissions, historical truth and transaction ownership remain authoritative; Storyteller's creative/runtime operations remain proposals or controlled executions. Do not use the broad initial package as permission for creative code to mutate canonical state without authorization. This transition avoids inventing disposable ports before the evolved Writer/scene gameplay code defines stable interfaces. Remove compatibility only after actual consumers migrate and proof survives.
+
+The MA06A implementation is authorized as a package-structure migration, not a gameplay behavior change. Preserve owner-scoped locks, source/root evidence, replay, capture/materialization transaction boundaries, provider spend and uncertain-delivery controls. The permanent **logical** six-subsystem architecture below is unchanged.
+
 ## Six logical subsystems
 
 ```text
