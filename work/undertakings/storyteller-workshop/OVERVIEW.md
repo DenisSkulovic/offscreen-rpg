@@ -51,6 +51,12 @@ flowchart LR
 4. **Finish the monorepo in one decisive migration.** Redirect remaining callers from compatibility forwarding, enforce dependency direction and leave clear responsibilities. Avoid creating new packages just for tidiness.
 5. **Land the transformation.** Integrated product/security/cost/graph tests, documentation reconciliation, merge the undertaking into `main`, retire temporary Changes/Designs/branch.
 
+## 🛠️ Next Cursor wave: what is actually confirmed?
+
+**Checked against the published undertaking branch on 2026-11-21:** WR07B and WR06 are Done/archived. **The three later P3 Cursor chats (Living Writer gameplay, real provider custody, long-form acceptance) are NOT YET verified as integrated here.** Local Cursor completion or unpushed branches cannot be established from this GitHub view; don't describe them as Done or start dependent work until their receipts and integration SHAs appear.
+
+**Once all three P3 outcomes really land:** the next two large user-visible outcomes are [WR04 independent research assistants](../../changes/open/2026-11-21--wr04-delegated-writer-research/POST-P3-EXECUTION.md) and [WR08 complete Play/reentry experience](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/POST-P3-EXECUTION.md), designed for separate Writer/DB versus Web ownership. Both plans are **conditional**, needing brief current-source interface reconciliation before Cursor commission. After those, one bulk monorepo cleanup and final integrated acceptance/merge remain. This is a meaningful roadmap, not evidence of implementation.
+
 ## 🧭 Right now and next decision
 
 **Most important next milestone:** a new story supports **scene 1 → genuine player choice → scene 2 → another choice → scene 3**, with accurate time, remembered facts and no duplicate operations. A good first scene is not the same thing as a living game.
