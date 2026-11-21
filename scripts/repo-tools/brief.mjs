@@ -134,40 +134,55 @@ export function receiptFrom(checkout, selectedWork, checkpoint) {
   return receipt;
 }
 
-function renderHuman(checkout, orientation, work, checkpoint) {
+const DEFAULT_DIRTY_LIMIT = 10;
+
+export function renderHuman(checkout, orientation, work, checkpoint, { full = false } = {}) {
+  const listed = statusPaths(checkout.status);
+  if (full) {
+    const lines = [
+      '# Repository brief (full)',
+      `Branch: ${checkout.branch || '(detached)'}`,
+      `HEAD: ${checkout.sha}`,
+      '',
+      '## Working tree',
+      checkout.status.trim() || 'clean',
+      '',
+      '## Recent commits',
+      checkout.log,
+      '',
+      '## Orientation (STATUS.md)',
+      orientation,
+      '',
+      '## Current Work',
+      work ?? 'None selected (valid).',
+    ];
+    if (checkpoint !== undefined) lines.push('', '## Current checkpoint', checkpoint ?? 'No globally selected Change/Task.');
+    lines.push('', '## Read next',
+      'STATUS.md — demonstrated boundary',
+      'ROADMAP.md — owner strategy',
+      'work/QUEUE.md — sole selection pointer',
+      'work/changes/README.md — Change catalog',
+      'work/tasks/README.md — standalone Tasks',
+      'docs/README.md — canonical wiki');
+    return lines.join('\\n');
+  }
+
   const lines = [
     '# Repository brief',
-    `Branch: ${checkout.branch}`,
-    '',
-    '## Working tree',
-    checkout.status.trim() || 'clean',
-    '',
-    '## Recent commits',
-    checkout.log,
-    '',
-    '## Orientation (STATUS.md)',
-    orientation,
-    '',
-    '## Current Work',
-    work ?? 'None selected (valid).',
+    `Branch: ${checkout.branch || '(detached)'}  HEAD: ${checkout.sha.slice(0, 12)}`,
+    `Working tree: ${listed.paths.length}${listed.truncated ? '+' : ''} changed/untracked paths`,
   ];
-  if (checkpoint !== undefined) {
-    lines.push('', '## Current checkpoint', checkpoint ?? 'No active implementation Change.');
+  const visible = listed.paths.slice(0, DEFAULT_DIRTY_LIMIT);
+  for (const item of visible) lines.push(`  ${item}`);
+  if (listed.paths.length > visible.length || listed.truncated) lines.push('  … more paths; run git status --short');
+  lines.push(`Current work (global queue): ${work ?? 'none'}`);
+  if (checkout.branch?.startsWith('change/')) {
+    lines.push(`Checkout is a Change branch, not necessarily the globally selected work. Read its commissioned CHANGE.md/TASKS.md.`);
   }
-  lines.push(
-    '',
-    '## Read next',
-    'STATUS.md — demonstrated boundary',
-    'ROADMAP.md — owner strategy',
-    'work/QUEUE.md — sole selection pointer',
-    'work/changes/README.md — lasting Change packets',
-    'work/tasks/README.md — standalone operations and test runs',
-    'docs/product/README.md — product bible map',
-    'docs/technical/README.md — technical owner map',
-    '.agents/README.md — conditional rules and repository commands',
-    'Use --checkpoint for a selected Change or Task; no services or providers are contacted.',
-  );
-  return lines.join('\n');
+  if (checkpoint !== undefined) lines.push('', '## Selected checkpoint', checkpoint ?? 'None selected.');
+  lines.push('', 'Next: AGENTS.md → commissioned packet or work/QUEUE.md; STATUS.md for implementation truth.');
+  lines.push('More: pnpm repo:brief --full | --json | --health | --checkpoint');
+  return lines.join('\\n');
 }
 
 function loadRoute() {
@@ -207,16 +222,16 @@ function maintenanceReport() {
 function main() {
   const args = process.argv.slice(2);
   if (args.includes('--help')) {
-    console.log('Usage: pnpm repo:brief [--checkpoint] [--json] [--health]');
+    console.log('Usage: pnpm repo:brief [--full] [--checkpoint] [--json] [--health]');
     console.log(
-      'Read-only Git/status/priority summary. --checkpoint includes the selected Change checkpoint or standalone Task procedure, if one exists. --json prints a local checkout receipt and does not contact a remote. --health adds the top three maintenance review candidates.',
+      'Read-only concise Git/status/priority summary. --full includes the complete STATUS orientation and recent commits. --checkpoint includes the selected Change checkpoint or standalone Task procedure, if one exists. --json prints a local checkout receipt and does not contact a remote. --health adds the top three maintenance review candidates.',
     );
     return;
   }
   if (args.includes('--self-test')) {
     return import('./brief-self-test.mjs').then((mod) => mod.runBriefSelfTest());
   }
-  const allowed = new Set(['--checkpoint', '--json', '--health']);
+  const allowed = new Set(['--checkpoint', '--json', '--health', '--full']);
   if (args.some((arg) => !allowed.has(arg))) {
     throw new Error('Unknown argument. Usage: pnpm repo:brief [--checkpoint] [--json] [--health]');
   }
@@ -236,7 +251,7 @@ function main() {
     console.log(JSON.stringify(receipt));
     return;
   }
-  const text = renderHuman(checkout, orientation, work, checkpoint);
+  const text = renderHuman(checkout, orientation, work, checkpoint, { full: args.includes('--full') });
   console.log(health ? `${text}\n\n## Maintenance\n${healthSummary(health)}` : text);
 }
 
