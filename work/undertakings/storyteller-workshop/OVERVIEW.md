@@ -4,6 +4,12 @@
 
 **Next executable architecture Change:** none until a planner clears [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md). [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) stays blocked on WR09. [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) migrates the 112 tests and removes `@offscreen/application` after MA09 and WR09. [MA08](../../changes/archive/2026-11/other/2026-11-21--ma08-application-owner-extraction/CHANGE.md) is Done. Existing older status charts further below are historical; do not commission obsolete WR04/WR08 links.
 
+## Post-MA08 execution choice, November 21
+
+**MA08 is complete on the undertaking** (`6dd12761`); the next *planned, not implemented* wave has three source-disjoint full Change packets: [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) removes the entire old Application facade while protecting **112 tests**, [WR09A](../../changes/open/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) makes real-provider response custody replayable and protects billing (using fake network only), and [MA11](../../changes/open/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) makes internal Story Engine domain dependencies measurable and ratchets new forbidden imports. [Integration protocol and exact file exclusions](PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21). No parallel parent edits the undertaking catalogs or merges into the shared branch.
+
+**Progress remains estimated at modular monolith ~80% (~20% remaining), Storyteller ~60% (~40% remaining), combined ~65% (~35% remaining), ±10–15 percentage points.** Merely creating this batch makes **zero** progress on tested product acceptance. Real Writer worker wiring, authority→Writer inversion, public API/SCC cleanup, longform quality proof and final main landing remain beyond this batch. None of the packets authorize paid provider calls.
+
 ## 🎯 What are we building?
 
 You give a one-sentence premise and enter a persistent fictional life. You can choose, work, wait, leave and come back. The Writer remembers what *actually* happened and narrates the next consequential scene. Old scenes are available to read or fork into a different future. The monorepo beneath it has clear owners and no accumulating `application` junk drawer.
