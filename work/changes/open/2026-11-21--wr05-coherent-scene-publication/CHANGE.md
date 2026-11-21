@@ -2,6 +2,8 @@
 
 **State:** Proposed. **Kind:** implementation. **Dependencies:** WR02 + WR03. **Outcome:** *every newly published scene* commits one coherent, historically addressable boundary: immutable Library root (including new passage), exact accepted world-state frontier and active fictional commitments, admitted visible+private intentions, effective creative/source/rule pins and causal event identity. A staged provider result alone is **not** a published scene.
 
+**Undertaking branch rule:** this Change belongs to **Storyteller Workshop**. Create its isolated worktree/temporary branch from the current head of `undertaking/storyteller-workshop`; after acceptance, merge/reconcile the complete Change back into `undertaking/storyteller-workshop`, then remove the temporary branch/worktree. Do **not** merge this Change directly into `main`. Rebase/refresh from the undertaking branch before beginning if earlier WR work has landed.
+
 **Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad code source from `09d5820bcafe`; recheck current HEAD/worktrees before editing. **Implementation owner: Cursor.** This packet is Proposed/unselected and conveys no authorization for paid provider, destructive DB, live cluster or external effects. [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [Current queue](../../../QUEUE.md).
 
 ## Cursor source route
