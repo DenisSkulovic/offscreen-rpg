@@ -4,7 +4,7 @@
 
 ## Observed source
 
-`apps/web/src/features/stories` contains ~13 **flat direct production source files** mixing draft editing, library lists, opening preview and Launch. Contrastingly `features/play` already uses useful `api/`, `model/`, `presentation/`, `ui/` groups, but retains several top-level cross-cutting hooks and a 328-line `view.tsx`. Many names do not immediately disclose whether a file is a query, command, presentation or local draft editor. `apps/web/app` is already relatively small and is not a reason to rewrite Next.js routing.
+`apps/web/src/features/stories` contains 13 **flat direct production source files** mixing draft editing, library lists, opening preview and Launch. Contrastingly `features/play` already uses useful `api/`, `model/`, `presentation/`, `ui/` groups, but retains several top-level cross-cutting hooks and a 328-line `view.tsx`. Many names do not immediately disclose whether a file is a query, command, presentation or local draft editor. `apps/web/app` is already relatively small and is not a reason to rewrite Next.js routing.
 
 ## Selected target, balanced for human and agent navigation
 
