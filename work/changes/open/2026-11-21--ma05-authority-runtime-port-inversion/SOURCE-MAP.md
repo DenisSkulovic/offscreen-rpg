@@ -1,8 +1,34 @@
-# MA05 | sources inspected, remaining proof
-- `packages/application/src/stories/index.ts` ~375 lines: `createStories` around 63, `retryStoryteller` call around 128, `createStoryApplication` around 286, `chamberAllowsResponse` around 299. It composes Storyteller retry and campaign operations directly.
-- `packages/application/src/stories/resolution.ts` ~501 lines: first import from `../storyteller/admission`; `prepareStorytellerResolution` used around 466; generated task and resolution operations.
-- `packages/application/src/storyteller/admission.ts` ~641 lines: imports `stories/{persistence,errors,passage-documents}`, Writer task schemas, SQL and source captures; exports prepare/commit/replay operations.
-- `packages/application/src/storyteller/publication.ts` ~978 lines: imports story continuation/checkpoint/persistence/appearance and campaign holds/delegated actions.
-- `packages/application/src/stories/continuation.ts` ~735 lines and `campaign/persistence.ts` ~346 lines: SQL owner utility and transaction semantics; keep ordering and CAS.
-- `apps/game-authority/src/application.ts`, `apps/api/src/app.ts`, `apps/worker/src/activities/index.ts`: outer compositions consuming application subpaths.
-**Pending planner evidence before task readiness:** full MA01 SCC/public export graph, function signatures and their transaction scopes, precise importer list, regression fixtures for stale-root/replay, settled publication and rollback. Source baseline will change after WR05/WR06, hence do not ask Cursor to rediscover it.
+# MA05 | source-observed authority/runtime edges and transaction scopes
+
+**Source:** extracted full source files from repository snapshot `dac6b69813b52ecb1f202158791deaa3b7ea89d7`; remote `stories/index.ts`, `stories/resolution.ts`, `storyteller/admission.ts` independently reconfirmed on target branch at `0a52a9a3991732bb1003eb7bdf83899e7a798c83`. **Not** a live MA01 --json run and **not** proof that future Writer changes preserve these edges. Source import search includes relative imports in stories/campaign; classify actual behavior from inspected functions, not import names.
+
+## Eleven direct Authority → Storyteller runtime relative import declarations
+
+| Authority source | Imported runtime symbol / owner | Behavior seam |
+| --- | --- | --- |
+| `stories/index.ts` | `retryStoryteller` → `storyteller/recovery.ts` | retry existing admitted intent, SQL idempotency + source snapshot; outer factory may supply callback |
+| `stories/resolution.ts` | `prepareStorytellerResolution`, `commitStorytellerResolution`, `replayStorytellerResolutionIfMatching` → `storyteller/admission.ts` | read-only captured snapshot, replay shortcut/outbox, commit under same explicit DB transaction with story lock/revision CAS |
+| `stories/start.ts` | `storytellerKind` → `storyteller/records.ts` | discriminate generation kind for candidate start; pure stable symbol candidate |
+| `stories/start.ts` | `startStorytellerCandidate` → `storyteller/start.ts` | **inside** `database.db.transaction(tx)`, staged checkpoint selector plus story initialize; cannot defer until after commit |
+| `stories/reads.ts` | `storytellerContextCaptureKind` → `storyteller/context-capture.ts` | stable generation-kind discriminator; should not load large capture implementation to read constant |
+| `stories/continuation.ts` | `publishStorytellerNotes` → `storyteller/memory.ts` | **inside same authoritative continuation transaction** (notes update and notice enqueue); must not become post-commit |
+| `campaign/reports.ts` | `captureHistoricalReport` → `storyteller/context-capture.ts` | **inside caller tx**, returns generationId inserted into campaignReport row |
+| `campaign/follow-up-intents.ts` | `storytellerNoticeTopicForWake` → `storyteller/records.ts` | reads frozen notice topic inside tx; no new computed topic/version |
+| `campaign/follow-up-intents.ts` | `isProvisionalContextCapture` → `storyteller/capture-materialization.ts` | inside tx; determines correct outbox topic without racing promotion |
+| `campaign/narration.ts` | `capture*ConsequenceNarration` functions → `storyteller/context-capture.ts` | tx-scoped context capture for action/activity/obligation narration; initial immutable evidence/mutable hold order |
+| `campaign/narration.ts` | `materializePendingActionCapture` → `storyteller/capture-materialization.ts` | database-level receipt preflight and story lock before saved materialization; replay and context hash semantics |
+
+**Additional reverse coupling:** `stories/resolution.ts` imports `createGenerations,GenerationError` from `generations/index.ts` and scripted-continuation topic from `generations/scripted-continuations.ts`. They carry scripted admission/outbox/failure behavior and cannot be hand-waved away by a Storyteller port. `campaign` and `stories` also import `outbox/Transaction,enqueue` in many modules; pure shared SQL outbox ownership must be settled before package extraction. MA04 removes the one `stories/index.ts → developer-tools/chamber-fixtures` edge.
+
+## Reverse runtime → authority dependencies (must remain legal through narrow authority APIs)
+- `storyteller/admission.ts` imports `stories/{persistence,errors,passage-documents}` and SQL generation/campaign/outbox sources; export signatures include `StorytellerResolutionFence`, `PreparedStorytellerResolution`, `prepareStorytellerResolution(database,input)`, `commitStorytellerResolution(tx,prepared)`, `replayStorytellerResolutionIfMatching(database,input)`.
+- `storyteller/publication.ts` imports `stories/{continuation,scene-checkpoint,command-policy,errors,persistence,...}` and `campaign/{persistence,delegated-offer,...}`; its write side must continue owning observed story commit boundaries and publication pins.
+- `storyteller/recovery.ts:retryStoryteller` uses `lockOwnedStory`, generation row, prior retry, outbox and attempt policy in one SQL transaction.
+- `storyteller/memory.ts:publishStorytellerNotes(tx,input)` updates story continuityNotes under caller's existing transaction.
+
+## External factories and direct users
+- `packages/application/src/stories/index.ts` exports `createStories`, `createStoryApplication`, `readOwnedStorySource` and public passthrough helpers. Consumers include `apps/api/src/app.ts`, `apps/game-authority/src/application.ts`, `apps/worker/src/runtime/index.ts`, `packages/application/src/developer-tools/chamber.ts` and many `tools/api-integration/test` calls; **do not** turn this source file into a raw authority package by blindly moving it.
+- `createStoryResolution(database,documentStore?)` has direct calls from `packages/application/test/eng03-resolution-lock-measurement.live.test.mjs`, as well as `createStories`. Its default-construction compatibility must be explicitly designed before requiring a new port.
+- Outbox owner `application/src/outbox/index.ts` exports `Transaction` (Drizzle inferred from `Database.db.transaction`) and `enqueue(tx,notice)` with deterministic conflict check, plus dispatcher-lease `createOutbox`; a port must preserve that exact SQL identity.
+
+**Research limits:** These are source facts as of the inspected baseline, not a full AST transitive SCC or exhaustive imports after WR04–WR08. Run MA01 graph and compare source signatures after actual predecessor integration, not inside paid Cursor "first task".
