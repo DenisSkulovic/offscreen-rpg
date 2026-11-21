@@ -13,7 +13,7 @@ A Change with two-line edits does **not** need TASKS.md; hand off one route card
 
 For complex stateful Changes, ChatGPT must deliver a **verified SOURCE-MAP + decided EXECUTION + falsifiable PROOF + narrow TASKS** or equivalent equally exact canonical references **before** the executor begins. A vague `CHANGE.md`, even accompanied by a `TASKS.md` containing four enormous cross-package missions, is **NOT** Composer-ready. `TASKS.md` tasks are small edits with named owner paths and exact test outcomes, not sub-Changes that secretly require architecture. `PLANNER-READY AFTER predecessor` conveys a planned recipe that must be checked by ChatGPT against landed predecessor code, not carte blanche for Cursor to invent missing interfaces. If a task discovers a missing schema/lock/transport design, the Cursor parent stops after one precise contradiction and sends it to ChatGPT; no autonomous multi-agent redesign. Avoid arbitrary blind application: focused live verification and error-directed debugging remain the executor's responsibility.
 
-## Composer-ready quality gate (planner responsibility)
+**Code craftsmanship during dispatch:** [code-quality rule](../rules/code-quality.md) applies to every new/modified source file. Each Composer T-ID should produce understandable named responsibilities, explicit trust-boundary types and concise comments for non-obvious invariants, with changed-file Prettier and ESLint quality checks at the parent checkpoint. No giant single-function controller as a default implementation tactic; no blanket style refactors.\n\n## Composer-ready quality gate (planner responsibility)
 
 A task is **READY-FOR-COMPOSER** only if all are demonstrably supplied:
 

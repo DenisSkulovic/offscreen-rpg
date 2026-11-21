@@ -16,7 +16,7 @@ For new/changed behavior: ensure product intent and technical contract reflect t
 
 **Portfolio-renewal gate:** for any significant React/Next, backend, UX or architecture redesign, use [target-first engineering](target-driven-renewal.md) before diagnosing code or cutting Changes. Agree the intended end state, then document evidence-based gaps, then Changes that move toward it. A random cleanup or technology insertion with no target trace is not an approved plan.
 
-## Invariants not to optimize away
+**Source code is maintained by humans too:** The [code craftsmanship standard](code-quality.md) governs TypeScript domain boundaries, semantic decomposition, comments that explain invariants, and focused lint/format review. Do not treat machine-generated code as exempt from readability or runtime validation, and do not equate passing typecheck with authorization correctness.\n\n## Invariants not to optimize away
 
 - Engine is world-independent and creatively neutral. The selected profile/world determines tone, pace and fiction. Game/application logic owns mechanics, fictional time, rights, persistence, model budget and publication.
 - A _Storyteller turn_, _scene_, _passage_, _model round_ and _memory segment_ are different concepts. Use `docs/product/foundations/concepts.md`; no chapters.
