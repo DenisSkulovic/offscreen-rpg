@@ -34,11 +34,11 @@ Combined          65%  █████████████░░░░░░
 | 📚 Library, Writer Workdesk and immutable scene history | **Implemented** | Source-aware memory foundation and v2 publication are in place |
 | 🌿 Historical forks with active commitments | **Implemented** | WR06 is archived; broader player journey still needs acceptance |
 | 🚪 One-prompt opening | **Scripted implementation** | WR07B archived; public Launch feature remains gated |
-| 🎭 Actual choices and subsequent Writer scenes | **Scripted kernel implemented** | P3-A archived: world-neutral intent, existing clock, scene 2 and 3; this is not a tested live-model UI |
+| 🎭 Actual choices and subsequent Writer scenes | **Scripted kernel implemented** | P3-A plus WR08: characterless `observe` on the first scene and a scripted `writer.scene.v1` wake; not a live-model UI |
 | 💳 Real provider transport / spending custody | **Code integrated, live proof missing** | P3-B archived, transport and usage-settlement tests exist; end-to-end Writer-loop injection/real spend must still be verified |
 | 🧪 Long-form acceptance harness | **Harness integrated** | P3-C archived; does not prove all long-story or live-narrative quality criteria |
 | 🔍 Independent research children | **Not yet implemented** | WR04 planned, actual child separation and shared budget still needed |
-| 🎮 Complete Play/reentry UI | **Not yet accepted** | WR08 planned, must use the real player choice API and honest pending states |
+| 🎮 Complete Play/reentry UI | **Gated scripted path implemented** | WR08 archived: Play uses the real action API when the Launch flag is on. History and fork UI were already present. Live provider play is not accepted |
 | 🧹 Final monorepo cleanup / main merge | **Outstanding** | One bulk consumer migration, final joined validation and undertaking retirement |
 
 ## 🗺️ The journey

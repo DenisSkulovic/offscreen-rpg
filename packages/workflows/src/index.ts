@@ -16,6 +16,7 @@ import type {
   StorytellerDistributedExecutionActivities,
   CampaignActivities,
   StoryLaunchActivities,
+  WriterSceneActivities,
 } from './contracts';
 import {
   storytellerControlTaskQueue,
@@ -124,6 +125,16 @@ export async function storyLaunchV1(
   reservedStoryId: string,
 ): Promise<'composing' | 'failed' | 'uncertain' | 'replayed'> {
   return await runScriptedLaunchWriter(reservedStoryId);
+}
+
+const { runScriptedWriterScene } = proxyActivities<WriterSceneActivities>({
+  startToCloseTimeout: '3 minutes',
+  retry: { maximumAttempts: 1 },
+});
+
+/** One scripted writer-scene continuation; no live provider dispatch. */
+export async function writerSceneV1(missionId: string): Promise<void> {
+  await runScriptedWriterScene(missionId);
 }
 
 const distributedExecuteRetry = {

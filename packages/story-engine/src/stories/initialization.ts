@@ -35,8 +35,16 @@ import {
 } from '@offscreen/documents';
 import { wholeGameSeconds } from '@offscreen/game/time';
 import type { Pace } from '@offscreen/game/time';
-import type { SceneAfterState } from './scene-after-state';
-import { toV2FictionalState } from './scene-checkpoint-v2';
+import type {
+  SceneAfterState,
+  SceneAfterStateGameOffer,
+} from './scene-after-state';
+import {
+  toV2FictionalState,
+  wrapVersionedOpenPayload,
+  type SceneCheckpointV2FictionalState,
+} from './scene-checkpoint-v2';
+import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
 
 type InitializeStory = Readonly<{
   ownerId: string;
@@ -76,6 +84,37 @@ function openingPassage(args: {
   };
 }
 
+function checkpointDocumentSituationAuthorization(authorization: unknown) {
+  const parsed = situationAuthorizationSchema.parse(authorization);
+  return {
+    version: 2 as const,
+    offerId: parsed.offerId,
+    activityAccess:
+      parsed.activityAccess.kind === 'none'
+        ? parsed.activityAccess
+        : wrapVersionedOpenPayload(parsed.activityAccess),
+    preparedPlans: parsed.preparedPlans.map((plan) =>
+      wrapVersionedOpenPayload(plan),
+    ),
+  };
+}
+
+/** Matches `sceneCheckpointSchema` v2 encoding for live SQL after-states. */
+export function projectCheckpointV2FictionalState(
+  afterState: SceneAfterState,
+): SceneCheckpointV2FictionalState {
+  const base = toV2FictionalState(afterState);
+  if (base.mechanicsAbsent) {
+    return base;
+  }
+  return {
+    ...base,
+    situationAuthorization: checkpointDocumentSituationAuthorization(
+      base.situationAuthorization,
+    ),
+  };
+}
+
 function openingCheckpointShell(
   args: {
     storyId: string;
@@ -108,7 +147,7 @@ function openingCheckpointShell(
     ancestor: { storyId: null, rootHash: null, rootRevision: null },
     pins: args.pins,
     passage: openingPassage(args),
-    fictionalState: toV2FictionalState(afterState),
+    fictionalState: projectCheckpointV2FictionalState(afterState),
   });
 }
 
@@ -141,6 +180,12 @@ export function absentOpeningCheckpoint(args: {
   });
 }
 
+export type TrustedOpeningCampaignOffer = Readonly<{
+  publicationOffer: unknown;
+  situationAuthorization: unknown;
+  gameOffers: readonly SceneAfterStateGameOffer[];
+}>;
+
 /** The campaign row `initializeCampaign` writes when it is given no character seed. */
 export function quiescentCampaignOpeningCheckpoint(args: {
   storyId: string;
@@ -152,7 +197,9 @@ export function quiescentCampaignOpeningCheckpoint(args: {
   contentDocumentHash: string;
   pins: SceneCheckpoint['pins'];
   pace: Pace;
+  trustedOpeningOffer?: TrustedOpeningCampaignOffer;
 }): SceneCheckpoint {
+  const trustedOffer = args.trustedOpeningOffer;
   return openingCheckpointShell(args, {
     continuityNotes: args.input.storyteller ? [] : null,
     activeSceneScope: args.input.storyteller
@@ -176,8 +223,8 @@ export function quiescentCampaignOpeningCheckpoint(args: {
       clock: wholeGameSeconds(0),
       clockPace: args.pace,
       holds: [],
-      offer: null,
-      situationAuthorization: {
+      offer: trustedOffer?.publicationOffer ?? null,
+      situationAuthorization: trustedOffer?.situationAuthorization ?? {
         version: 2,
         offerId: null,
         activityAccess: { kind: 'none' },
@@ -189,7 +236,7 @@ export function quiescentCampaignOpeningCheckpoint(args: {
     },
     activities: [],
     worldObligations: [],
-    gameOffers: [],
+    gameOffers: trustedOffer?.gameOffers ?? [],
     actionExecutions: [],
   });
 }

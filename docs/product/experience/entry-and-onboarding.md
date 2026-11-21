@@ -35,7 +35,7 @@ Provider/model latency does not advance fictional time. Retrying after an uncert
 
 ### Current POC honesty
 
-The existing staged editor/preview/Start flow is legacy implementation to be replaced by this target. Retained drafts or published stories remain migration inputs; they do not define the future creation contract.
+When the Launch feature gate is on, Stories home Play opens the one-prompt Launch screen. The gate stays off by default. Saved drafts remain at the legacy creator and `/stories/[id]`. A published opening can carry one server-scripted `observe` choice with no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation. The staged editor remains available for saved drafts.
 
 ## Drafts vs playable stories
 

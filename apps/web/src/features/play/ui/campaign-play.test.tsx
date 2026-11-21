@@ -143,6 +143,30 @@ describe('CampaignPlay composition', () => {
     expect(screen.getByText(/^World$/i)).toBeInTheDocument();
   });
 
+  it('sends one exact actions payload for a commit choice', async () => {
+    const user = userEvent.setup();
+    const campaign = makeCampaign();
+    const story = makeStorySnapshot({ resolution: null, campaign });
+    const queryClient = createBrowserQueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CampaignPlay
+          story={story}
+          campaign={campaign}
+          onSnapshot={() => undefined}
+        />
+      </QueryClientProvider>,
+    );
+    await user.click(screen.getByRole('button', { name: /Look around/i }));
+    await user.click(screen.getByRole('button', { name: /Approach the gate/i }));
+    expect(command.send).toHaveBeenCalledTimes(1);
+    expect(command.send).toHaveBeenCalledWith('actions', {
+      expectedRevision: story.revision,
+      offerId: campaign.offer!.id,
+      path: ['look', 'approach'],
+    });
+  });
+
   it('keeps opening preview off the Play Client campaign module (negative)', () => {
     const previewSource = readFileSync(
       resolve(__dirname, '../../stories/opening-preview.tsx'),

@@ -69,3 +69,9 @@ export interface StoryLaunchActivities {
 }
 export const storyLaunchWorkflowType = 'storyLaunchV1';
 export const storyLaunchWorkflowId = (id: string) => `story-launch/${id}`;
+
+export interface WriterSceneActivities {
+  runScriptedWriterScene(missionId: string): Promise<void>;
+}
+export const writerSceneWorkflowType = 'writerSceneV1';
+export const writerSceneWorkflowId = (id: string) => `writer-scene/${id}`;

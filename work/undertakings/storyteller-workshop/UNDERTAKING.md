@@ -96,7 +96,7 @@ The current Writer program is the core constituent set:
 | WR05 | Coherent scene publication | Proposed |
 | WR06 | Fork active fictional state | Proposed |
 | WR07 | One-prompt launch backend | Done, scripted first scene, not on main |
-| WR08 | One-prompt client and integrated acceptance | PLANNER-READY, owner commissioned; actual code/tests pending |
+| WR08 | One-prompt client and scripted first choice | **Done / archived**. Gated Play, scripted opening offer, writer.scene.v1 wake. Not on main. Live model not claimed |
 
 The existing [Writer implementation program](PROGRAM.md) remains the detailed sequencing owner. This undertaking does not replace it.
 

@@ -24,6 +24,7 @@ import {
   allocateStorySnapshotEpoch,
   writeStorySnapshot,
 } from '@/src/shared/api/story-snapshot-write';
+import { isActivityActive } from './model/campaign-projections';
 
 function subscribeOnline(onStoreChange: () => void) {
   window.addEventListener('online', onStoreChange);
@@ -135,9 +136,11 @@ export function PlayScene({
   const scene = story;
   const pending = resolution.pending || control.pending;
   const status = resolution.error || control.error || resolutionMessage(scene);
-  // A campaign character chooses through CampaignPlay. This value stays null then,
-  // so the legacy option list never needs a non-null assertion.
-  const legacyOffer = offer && !scene.campaign?.character ? offer : null;
+  const campaignSurface =
+    scene.campaign &&
+    (scene.campaign.offer != null || isActivityActive(scene.campaign.activity));
+  // Legacy Storyteller choices apply only when the snapshot has no Writer offer.
+  const legacyOffer = offer && !scene.campaign?.offer ? offer : null;
   const storyLabel =
     scene.storyteller?.name?.trim() ||
     scene.current.content.title.trim() ||
@@ -263,12 +266,12 @@ export function PlayScene({
               </SystemNotice>
             ) : null}
             <ResolutionRecovery story={scene} onSnapshot={acceptSnapshot} />
-            {scene.campaign?.character ? (
+            {campaignSurface ? (
               <div className="story-frame__threshold">
                 <CampaignPlay
-                  key={scene.campaign.offer?.id ?? scene.id}
+                  key={scene.campaign!.offer?.id ?? scene.id}
                   story={scene}
-                  campaign={scene.campaign}
+                  campaign={scene.campaign!}
                   onSnapshot={acceptSnapshot}
                   presentation={presentation}
                 />

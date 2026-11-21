@@ -348,6 +348,12 @@ describe('PlayScene', () => {
         },
       }),
     },
+    {
+      label: 'campaign offer present',
+      story: makeStorySnapshot({
+        campaign: makeCampaign(),
+      }),
+    },
   ])(
     'does not offer legacy choice buttons or resolution PUT when $label',
     async ({ story }) => {
@@ -600,6 +606,84 @@ describe('PlayScene', () => {
       focusManager.setFocused(undefined);
       vi.useRealTimers();
     }
+  });
+
+  it('submits one campaign actions command for a character-free world', async () => {
+    vi.resetModules();
+    vi.doUnmock('./ui/campaign-play');
+    const { PlayScene: LivePlayScene } = await import('./view');
+    const user = userEvent.setup();
+    const campaign = makeCampaign();
+    const initial = makeStorySnapshot({
+      interaction: null,
+      campaign,
+    });
+    const afterAction = makeStorySnapshot({
+      viewVersion: 4,
+      revision: 4,
+      canRespond: false,
+      interaction: null,
+      campaign,
+      resolution: {
+        state: 'pending',
+        evidence: 'pending-action',
+        version: 1,
+      },
+    });
+    let actionBody: Record<string, unknown> | null = null;
+    let actionPuts = 0;
+    let resolutionPuts = 0;
+    server.use(
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/actions/:operationId`,
+        async ({ request }) => {
+          actionPuts += 1;
+          actionBody = (await request.json()) as Record<string, unknown>;
+          await delay(25);
+          return HttpResponse.json(afterAction);
+        },
+      ),
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/resolutions/:operationId`,
+        () => {
+          resolutionPuts += 1;
+          return HttpResponse.json(initial);
+        },
+      ),
+    );
+
+    const { element } = renderWithStoryQuery(
+      ({ viewerId, storyId }) => (
+        <LivePlayScene viewerId={viewerId} storyId={storyId} />
+      ),
+      initial,
+    );
+    render(element);
+
+    expect(screen.queryByText(/Character abilities/i)).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Walk the gate road' }),
+    ).toBeNull();
+    await user.click(screen.getByRole('button', { name: /Look around/i }));
+    const commit = screen.getByRole('button', { name: /Approach the gate/i });
+    await user.click(commit);
+    await user.click(commit);
+
+    await waitFor(() => {
+      expect(actionBody).not.toBeNull();
+    });
+    expect(actionBody).toMatchObject({
+      expectedRevision: initial.revision,
+      offerId: campaign.offer!.id,
+      path: ['look', 'approach'],
+    });
+    expect(actionPuts).toBe(1);
+    expect(resolutionPuts).toBe(0);
+    vi.resetModules();
+    vi.doMock('./ui/campaign-play', () => ({
+      CampaignPlay: () => null,
+    }));
+    await import('./view');
   });
 
   it('surfaces a refresh control after repeated 503 without dispatching a mutation (negative)', async () => {

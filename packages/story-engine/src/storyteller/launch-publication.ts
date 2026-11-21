@@ -5,6 +5,10 @@ import { storyLaunch } from '@offscreen/db/launch-schema';
 import { storySceneCheckpoint } from '@offscreen/db/story-schema';
 import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
 import type { DocumentStore } from '@offscreen/documents';
+import { stableNamespacedDocumentId } from '@offscreen/documents';
+import { campaign } from '@offscreen/db/campaign-schema';
+import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
+import { offerSchema } from '@offscreen/game/offers';
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import type { z } from 'zod';
 import { defaultWorldTimeDefinition } from '@offscreen/game/calendar';
@@ -13,16 +17,16 @@ import {
   writerOpeningSceneProposalV2Schema,
   type WriterOpeningSceneProposal,
 } from '@offscreen/storyteller/tasks';
+import { saveOfferPlans } from '../campaign/persistence';
 import { initializeCampaign } from '../campaign/settings';
+import { lockStoryById } from '../stories/persistence';
 import {
   initializeStoryInTransaction,
+  projectCheckpointV2FictionalState,
   quiescentCampaignOpeningCheckpoint,
 } from '../stories/initialization';
 import { checkpointPinsForRoot } from '../stories/passage-documents';
-import {
-  assertV2PostStateMatches,
-  toV2FictionalState,
-} from '../stories/scene-checkpoint-v2';
+import { assertV2PostStateMatches } from '../stories/scene-checkpoint-v2';
 import { readSceneAfterState } from '../stories/scene-after-state';
 import {
   checkpointWriterStore,
@@ -32,6 +36,7 @@ import {
 import { stageStoryBootstrapDocuments } from '../stories/passage-documents';
 import type { InitialStory } from '../stories/command-policy';
 import { StoryError } from '../stories/errors';
+import { envelopPublicationOffer } from './publication-candidate';
 
 type PassageContent = z.infer<typeof passageContentSchema>;
 
@@ -45,6 +50,65 @@ const launchStorytellerProfile = storytellerCatalogue.resolve({
   id: 'absurd-action-comedy',
   revision: 1,
 });
+
+/** Scripted POC opening choice — not model-authored narrative. */
+const LAUNCH_SCRIPTED_OBSERVE_PLAN = narrativeIntentPlanSchema.parse({
+  kind: 'narrative-intent.v1',
+  key: 'observe',
+  label: 'Observe the surroundings',
+  intention: 'Observe what is happening nearby.',
+  risk: 'You may attract attention.',
+  fictionalDurationSeconds: 1,
+  effects: [],
+});
+
+function scriptedLaunchOpeningOffer(reservedStoryId: string) {
+  const offerId = stableNamespacedDocumentId(
+    'launch-choice',
+    reservedStoryId,
+    'offer',
+  );
+  const plannedOffer = offerSchema.parse({
+    id: offerId,
+    nodes: [
+      {
+        id: LAUNCH_SCRIPTED_OBSERVE_PLAN.key,
+        parent: null,
+        label: LAUNCH_SCRIPTED_OBSERVE_PLAN.label,
+        description: LAUNCH_SCRIPTED_OBSERVE_PLAN.intention,
+        action: {
+          kind: 'attempt',
+          timing: {
+            kind: 'finite',
+            fictionalSeconds: LAUNCH_SCRIPTED_OBSERVE_PLAN.fictionalDurationSeconds,
+          },
+        },
+      },
+    ],
+  });
+  const publicationOffer = envelopPublicationOffer(plannedOffer);
+  const situationAuthorization = {
+    version: 2 as const,
+    offerId,
+    activityAccess: {
+      kind: 'selected' as const,
+      actionKeys: [LAUNCH_SCRIPTED_OBSERVE_PLAN.key],
+    },
+    preparedPlans: [] as const,
+  };
+  return {
+    offerId,
+    plan: LAUNCH_SCRIPTED_OBSERVE_PLAN,
+    publicationOffer,
+    situationAuthorization,
+    narrativeRevision: 1,
+    gameOffer: {
+      id: offerId,
+      narrativeRevision: 1,
+      plans: [LAUNCH_SCRIPTED_OBSERVE_PLAN],
+    },
+  };
+}
 
 export type PublishLaunchOpeningSceneInput = Readonly<{
   ownerId: string;
@@ -197,6 +261,7 @@ export async function publishLaunchOpeningScene(
     storytellerProfile: null,
   });
 
+  const scriptedOffer = scriptedLaunchOpeningOffer(launch.reservedStoryId);
   const checkpoint = quiescentCampaignOpeningCheckpoint({
     storyId: launch.reservedStoryId,
     passageId: launch.reservedFirstPassageId,
@@ -207,6 +272,11 @@ export async function publishLaunchOpeningScene(
     contentDocumentHash: stagedPassage.objectHash,
     pins,
     pace: LAUNCH_OPENING_PACE,
+    trustedOpeningOffer: {
+      publicationOffer: scriptedOffer.publicationOffer,
+      situationAuthorization: scriptedOffer.situationAuthorization,
+      gameOffers: [scriptedOffer.gameOffer],
+    },
   });
 
   const staged = await stageSceneCheckpointObject(writer, checkpoint);
@@ -296,7 +366,23 @@ export async function publishLaunchOpeningScene(
       },
     );
 
-    const actual = toV2FictionalState(
+    const currentStory = await lockStoryById(tx, lockedLaunch.reservedStoryId);
+    await saveOfferPlans(
+      tx,
+      lockedLaunch.reservedStoryId,
+      currentStory.revision,
+      scriptedOffer.offerId,
+      [scriptedOffer.plan],
+    );
+    await tx
+      .update(campaign)
+      .set({
+        offer: scriptedOffer.publicationOffer,
+        situationAuthorization: scriptedOffer.situationAuthorization,
+      })
+      .where(eq(campaign.storyId, lockedLaunch.reservedStoryId));
+
+    const actual = projectCheckpointV2FictionalState(
       await readSceneAfterState(tx, lockedLaunch.reservedStoryId),
     );
     if (staged.checkpoint.format !== 'offscreen.scene-checkpoint.v2') {

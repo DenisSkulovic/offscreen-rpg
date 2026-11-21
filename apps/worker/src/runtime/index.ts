@@ -54,6 +54,9 @@ export async function startRuntime(
           };
     const activities = createWorkerActivities({
       database,
+      ...(storytellerOptions.documentStore
+        ? { documentStore: storytellerOptions.documentStore }
+        : {}),
       stories,
       storyteller: createStorytellerRuntime(database, resolvedStorytellerOptions),
       openings: createScriptedOpenings(database),
