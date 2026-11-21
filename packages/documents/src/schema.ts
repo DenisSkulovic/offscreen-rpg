@@ -512,7 +512,9 @@ export const documentManifestSchema = z
 export const maximumLibraryNodeCanonicalBytes = 1024 * 1024;
 
 export const libraryTrieChildV2Schema = z.strictObject({
-  nibble: z.string().regex(/^[0-9a-f]$/, 'Expected a single lowercase hex nibble'),
+  nibble: z
+    .string()
+    .regex(/^[0-9a-f]$/, 'Expected a single lowercase hex nibble'),
   hash: contentHashSchema,
 });
 
@@ -552,7 +554,8 @@ export const libraryNodeV2Schema = z
         context.addIssue({
           code: 'custom',
           path: ['children'],
-          message: 'Library node children must be strictly ascending in hex order',
+          message:
+            'Library node children must be strictly ascending in hex order',
         });
         break;
       }
@@ -631,10 +634,7 @@ const checkpointSkillSchema = z.strictObject({
 const sceneCheckpointCharacterSchema = z
   .strictObject({
     name: z.string().min(1).max(100),
-    scores: z.record(
-      checkpointAbilitySchema,
-      z.number().int().min(1).max(30),
-    ),
+    scores: z.record(checkpointAbilitySchema, z.number().int().min(1).max(30)),
     applicableAbilities: z
       .array(checkpointAbilitySchema)
       .max(6)
@@ -859,124 +859,347 @@ const absentMechanicsSchema = z.strictObject({
   items: z.tuple([]),
 });
 
+const maximumSceneCheckpointOpenPayloadBytes = 16 * 1024;
+
+/**
+ * Historical capture of an open-work blob. Parsing it does not authorize
+ * execution; a later writer must check the live validator.
+ */
+const sceneCheckpointVersionedPayloadSchema = z
+  .strictObject({
+    version: z.literal(1),
+    body: z.json(),
+  })
+  .superRefine((payload, context) => {
+    if (
+      Buffer.byteLength(canonicalJson(payload)) >
+      maximumSceneCheckpointOpenPayloadBytes
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Open-work payload exceeds 16 KiB',
+      });
+    }
+  });
+
+const sceneCheckpointHoldKindSchema = z.enum([
+  'storyteller-intent',
+  'storyteller',
+  'decision',
+  'world-obligation',
+]);
+
+const sceneCheckpointHoldSchema = z.strictObject({
+  kind: sceneCheckpointHoldKindSchema,
+  id: z.uuid(),
+});
+
+const sceneCheckpointHoldsSchema = z
+  .array(sceneCheckpointHoldSchema)
+  .max(20)
+  .refine(
+    (holds) =>
+      new Set(holds.map((hold) => `${hold.kind}:${hold.id}`)).size ===
+      holds.length,
+    'Hold owners must be unique',
+  );
+
+const sceneCheckpointOfferSnapshotSchema = z.strictObject({
+  id: z.uuid(),
+  source: z.string().min(1).max(200),
+  meaning: z.string().min(1).max(200),
+  payload: sceneCheckpointVersionedPayloadSchema,
+});
+
+const sceneCheckpointActivityAccessSchema = z.union([
+  z.strictObject({ kind: z.literal('none') }),
+  sceneCheckpointVersionedPayloadSchema,
+]);
+
+const sceneCheckpointSituationAuthorizationSchema = z.strictObject({
+  version: z.literal(2),
+  offerId: z.uuid().nullable(),
+  activityAccess: sceneCheckpointActivityAccessSchema,
+  preparedPlans: z.array(sceneCheckpointVersionedPayloadSchema).max(20),
+});
+
+const sceneCheckpointActiveActivitySchema = z.strictObject({
+  id: z.uuid(),
+  state: z.string().min(1).max(80),
+  revision: z.number().int().nonnegative(),
+  plan: sceneCheckpointVersionedPayloadSchema,
+  progress: sceneCheckpointVersionedPayloadSchema,
+});
+
+const sceneCheckpointActiveActivitiesSchema = z
+  .array(sceneCheckpointActiveActivitySchema)
+  .max(256)
+  .refine(
+    (activities) =>
+      new Set(activities.map((activity) => activity.id)).size ===
+      activities.length,
+    'Active activity identities must be unique',
+  );
+
+const sceneCheckpointWorldObligationSnapshotSchema = z.strictObject({
+  id: z.uuid(),
+  revision: z.number().int().nonnegative(),
+  state: z.string().min(1).max(80),
+  dueGameSecond: z.number().int().nonnegative().nullable(),
+  definition: sceneCheckpointVersionedPayloadSchema,
+});
+
+const sceneCheckpointWorldObligationsSchema = z
+  .array(sceneCheckpointWorldObligationSnapshotSchema)
+  .max(256)
+  .refine(
+    (obligations) =>
+      new Set(obligations.map((obligation) => obligation.id)).size ===
+      obligations.length,
+    'World obligation identities must be unique',
+  );
+
+const sceneCheckpointActiveActionSchema = z.strictObject({
+  id: z.uuid(),
+  status: z.string().min(1).max(80),
+  startGameSecond: z.number().int().nonnegative(),
+  target: z
+    .strictObject({
+      kind: z.string().min(1).max(80),
+      id: z.string().min(1).max(200),
+    })
+    .nullable(),
+  pending: sceneCheckpointVersionedPayloadSchema,
+});
+
+const sceneCheckpointContinuityNotesSchema = z.union([z.null(), z.tuple([])]);
+
+const presentFictionalStateSchema = z.strictObject({
+  mechanicsAbsent: z.literal(false),
+  character: sceneCheckpointCharacterSchema.nullable(),
+  items: checkpointItemsSchema,
+  storyFacts: z
+    .array(sceneCheckpointStoryFactSchema)
+    .max(64)
+    .refine(
+      (facts) => new Set(facts.map((fact) => fact.id)).size === facts.length,
+      'Duplicate story fact identity',
+    ),
+  activityOccurrences: z
+    .array(
+      z.strictObject({
+        scopeKey: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+        completed: z.number().int().nonnegative().max(1000),
+      }),
+    )
+    .max(64)
+    .refine(
+      (occurrences) =>
+        new Set(occurrences.map((occurrence) => occurrence.scopeKey)).size ===
+        occurrences.length,
+      'Duplicate activity occurrence scope',
+    ),
+  location: z.string().min(1).max(2000).nullable(),
+  gameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  clock: sceneCheckpointClockSchema,
+  pace: sceneCheckpointPaceSchema,
+  settingsRevision: z.number().int().positive().max(2147483647),
+  content: z.json(),
+  continuityNotes: sceneCheckpointContinuityNotesSchema,
+  activeSceneScope: sceneCheckpointAnchorSchema.nullable(),
+  holds: sceneCheckpointHoldsSchema,
+  offer: sceneCheckpointOfferSnapshotSchema.nullable(),
+  acceptedActivityPlan: sceneCheckpointVersionedPayloadSchema.nullable(),
+  activeActivityId: z.uuid().nullable(),
+  activeActionOperationId: z.uuid().nullable(),
+  situationAuthorization: sceneCheckpointSituationAuthorizationSchema,
+  worldConditions: z
+    .array(
+      z.strictObject({
+        id: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/),
+        label: z.string().trim().min(1).max(160),
+        value: z.union([z.string().trim().min(1).max(300), z.boolean()]),
+        provenance: z.strictObject({
+          kind: z.literal('world-obligation'),
+          obligationId: z.uuid(),
+        }),
+        setAtGameSecond: z
+          .number()
+          .int()
+          .nonnegative()
+          .max(Number.MAX_SAFE_INTEGER),
+      }),
+    )
+    .max(64)
+    .refine(
+      (conditions) =>
+        new Set(conditions.map((condition) => condition.id)).size ===
+        conditions.length,
+      'Duplicate world condition identity',
+    ),
+  activeActivities: sceneCheckpointActiveActivitiesSchema,
+  worldObligations: sceneCheckpointWorldObligationsSchema,
+  activeAction: sceneCheckpointActiveActionSchema.nullable(),
+});
+
+const absentFictionalStateSchema = z.strictObject({
+  mechanicsAbsent: z.literal(true),
+  continuityNotes: sceneCheckpointContinuityNotesSchema,
+  activeSceneScope: sceneCheckpointAnchorSchema.nullable(),
+});
+
+const sceneCheckpointPassageSchema = z.strictObject({
+  response: z.json(),
+  responseSource: z.enum(['player', 'default']).nullable(),
+  initialItems: checkpointItemsSchema.nullable(),
+  effects: z.array(checkpointItemEffectSchema).max(50),
+  decisionPlan: z.null(),
+  waitPlan: z.null(),
+  controlRevision: z.number().int().nonnegative().max(2147483647),
+  content: z.json(),
+  contentDocumentHash: contentHashSchema.nullable(),
+  interaction: sceneCheckpointChoiceSchema.nullable(),
+});
+
+const sceneCheckpointCoreSchema = z.strictObject({
+  storyId: z.uuid(),
+  passageId: z.uuid(),
+  sceneSequence: z.number().int().positive().max(2147483647),
+  transitionId: z.uuid().nullable(),
+  source: z.string().min(1).max(200),
+  premise: z.json(),
+  storyteller: z.json(),
+  execution: z.json(),
+  usagePolicy: z.json(),
+  canon: z.strictObject({
+    rootHash: contentHashSchema.nullable(),
+    rootRevision: z.number().int().nonnegative().max(2147483647),
+  }),
+  ancestor: z.strictObject({
+    storyId: z.uuid().nullable(),
+    rootHash: contentHashSchema.nullable(),
+    rootRevision: z.number().int().nonnegative().max(2147483647).nullable(),
+  }),
+  pins: z.strictObject({
+    worlds: z.array(worldPackageReferenceSchema).max(8),
+    rules: rulePackageReferenceSchema.nullable(),
+    start: startPackageReferenceSchema.nullable(),
+    storytellerProfile: z.json(),
+  }),
+  passage: sceneCheckpointPassageSchema,
+});
+
+function refineSceneCheckpointShared(
+  checkpoint: z.infer<typeof sceneCheckpointCoreSchema>,
+  context: z.RefinementCtx,
+) {
+  if (
+    Buffer.byteLength(canonicalJson(checkpoint)) > maximumSceneCheckpointBytes
+  ) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Scene checkpoint exceeds 1 MiB',
+    });
+  }
+  const opening = checkpoint.sceneSequence === 1;
+  if (opening !== (checkpoint.transitionId === null)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['transitionId'],
+      message: 'Scene 1 has no transition; a later scene requires one',
+    });
+  }
+  const emptyRoot = checkpoint.canon.rootHash === null;
+  if (emptyRoot !== (checkpoint.canon.rootRevision === 0)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['canon'],
+      message: 'A canon root hash and revision are paired',
+    });
+  }
+  const ancestor = checkpoint.ancestor;
+  const ancestorEmpty =
+    ancestor.storyId === null &&
+    ancestor.rootHash === null &&
+    ancestor.rootRevision === null;
+  const ancestorComplete =
+    ancestor.storyId !== null &&
+    ancestor.rootHash !== null &&
+    ancestor.rootRevision !== null;
+  if (!ancestorEmpty && !ancestorComplete) {
+    context.addIssue({
+      code: 'custom',
+      path: ['ancestor'],
+      message: 'Ancestor provenance is complete or entirely absent',
+    });
+  }
+  const passage = checkpoint.passage;
+  if ((passage.response === null) !== (passage.responseSource === null)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['passage', 'responseSource'],
+      message: 'A response and its source are paired',
+    });
+  }
+  const inlineContent = passage.content !== null;
+  const hashedContent = passage.contentDocumentHash !== null;
+  if (inlineContent === hashedContent) {
+    context.addIssue({
+      code: 'custom',
+      path: ['passage', 'content'],
+      message: 'Passage content is either inline or a content hash',
+    });
+  }
+  if (
+    new Set(checkpoint.pins.worlds.map((world) => world.mount)).size !==
+    checkpoint.pins.worlds.length
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['pins', 'worlds'],
+      message: 'Pinned world mounts must be unique',
+    });
+  }
+}
+
 /**
  * DATA01 quiescent scene checkpoint. Active work is not representable:
  * a hold, an offer, a wait, a decision deadline, or a running activity
  * fails this parser instead of being stored as finished.
  */
-export const sceneCheckpointSchema = z
-  .strictObject({
+export const sceneCheckpointV1Schema = sceneCheckpointCoreSchema
+  .extend({
     format: z.literal('offscreen.scene-checkpoint.v1'),
     stateSchemaVersion: z.literal(1),
-    storyId: z.uuid(),
-    passageId: z.uuid(),
-    sceneSequence: z.number().int().positive().max(2147483647),
-    transitionId: z.uuid().nullable(),
-    source: z.string().min(1).max(200),
-    premise: z.json(),
-    storyteller: z.json(),
-    execution: z.json(),
-    usagePolicy: z.json(),
-    canon: z.strictObject({
-      rootHash: contentHashSchema.nullable(),
-      rootRevision: z.number().int().nonnegative().max(2147483647),
-    }),
-    ancestor: z.strictObject({
-      storyId: z.uuid().nullable(),
-      rootHash: contentHashSchema.nullable(),
-      rootRevision: z.number().int().nonnegative().max(2147483647).nullable(),
-    }),
-    pins: z.strictObject({
-      worlds: z.array(worldPackageReferenceSchema).max(8),
-      rules: rulePackageReferenceSchema.nullable(),
-      start: startPackageReferenceSchema.nullable(),
-      storytellerProfile: z.json(),
-    }),
     mechanics: z.discriminatedUnion('mechanicsAbsent', [
       quiescentMechanicsSchema,
       absentMechanicsSchema,
     ]),
-    passage: z.strictObject({
-      response: z.json(),
-      responseSource: z.enum(['player', 'default']).nullable(),
-      initialItems: checkpointItemsSchema.nullable(),
-      effects: z.array(checkpointItemEffectSchema).max(50),
-      decisionPlan: z.null(),
-      waitPlan: z.null(),
-      controlRevision: z.number().int().nonnegative().max(2147483647),
-      content: z.json(),
-      contentDocumentHash: contentHashSchema.nullable(),
-      interaction: sceneCheckpointChoiceSchema.nullable(),
-    }),
   })
   .superRefine((checkpoint, context) => {
-    if (Buffer.byteLength(canonicalJson(checkpoint)) > maximumSceneCheckpointBytes) {
-      context.addIssue({
-        code: 'custom',
-        message: 'Scene checkpoint exceeds 1 MiB',
-      });
-    }
-    const opening = checkpoint.sceneSequence === 1;
-    if (opening !== (checkpoint.transitionId === null)) {
-      context.addIssue({
-        code: 'custom',
-        path: ['transitionId'],
-        message: 'Scene 1 has no transition; a later scene requires one',
-      });
-    }
-    const emptyRoot = checkpoint.canon.rootHash === null;
-    if (emptyRoot !== (checkpoint.canon.rootRevision === 0)) {
-      context.addIssue({
-        code: 'custom',
-        path: ['canon'],
-        message: 'A canon root hash and revision are paired',
-      });
-    }
-    const ancestor = checkpoint.ancestor;
-    const ancestorEmpty =
-      ancestor.storyId === null &&
-      ancestor.rootHash === null &&
-      ancestor.rootRevision === null;
-    const ancestorComplete =
-      ancestor.storyId !== null &&
-      ancestor.rootHash !== null &&
-      ancestor.rootRevision !== null;
-    if (!ancestorEmpty && !ancestorComplete) {
-      context.addIssue({
-        code: 'custom',
-        path: ['ancestor'],
-        message: 'Ancestor provenance is complete or entirely absent',
-      });
-    }
-    const passage = checkpoint.passage;
-    if ((passage.response === null) !== (passage.responseSource === null)) {
-      context.addIssue({
-        code: 'custom',
-        path: ['passage', 'responseSource'],
-        message: 'A response and its source are paired',
-      });
-    }
-    const inlineContent = passage.content !== null;
-    const hashedContent = passage.contentDocumentHash !== null;
-    if (inlineContent === hashedContent) {
-      context.addIssue({
-        code: 'custom',
-        path: ['passage', 'content'],
-        message: 'Passage content is either inline or a content hash',
-      });
-    }
-    if (
-      new Set(checkpoint.pins.worlds.map((world) => world.mount)).size !==
-      checkpoint.pins.worlds.length
-    ) {
-      context.addIssue({
-        code: 'custom',
-        path: ['pins', 'worlds'],
-        message: 'Pinned world mounts must be unique',
-      });
-    }
+    refineSceneCheckpointShared(checkpoint, context);
   });
 
+export const sceneCheckpointV2Schema = sceneCheckpointCoreSchema
+  .extend({
+    format: z.literal('offscreen.scene-checkpoint.v2'),
+    stateSchemaVersion: z.literal(2),
+    fictionalState: z.discriminatedUnion('mechanicsAbsent', [
+      presentFictionalStateSchema,
+      absentFictionalStateSchema,
+    ]),
+  })
+  .superRefine((checkpoint, context) => {
+    refineSceneCheckpointShared(checkpoint, context);
+  });
+
+export const sceneCheckpointSchema = z.discriminatedUnion('format', [
+  sceneCheckpointV1Schema,
+  sceneCheckpointV2Schema,
+]);
+
+export type SceneCheckpointV1 = z.infer<typeof sceneCheckpointV1Schema>;
+export type SceneCheckpointV2 = z.infer<typeof sceneCheckpointV2Schema>;
 export type SceneCheckpoint = z.infer<typeof sceneCheckpointSchema>;
 
 export type CanonicalDocument = z.infer<typeof canonicalDocumentSchema>;

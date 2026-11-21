@@ -192,10 +192,7 @@ export const storySceneCheckpoint = pgTable(
     unique('story_scene_checkpoint_passage').on(t.passageId),
     unique('story_scene_checkpoint_operation').on(t.storyId, t.operationId),
     unique('story_scene_checkpoint_transition').on(t.storyId, t.transitionId),
-    check(
-      'story_scene_checkpoint_sequence',
-      sql`${t.sceneSequence} > 0`,
-    ),
+    check('story_scene_checkpoint_sequence', sql`${t.sceneSequence} > 0`),
     check(
       'story_scene_checkpoint_hash',
       sql`${t.checkpointHash} ~ '^[0-9a-f]{64}$'`,
@@ -206,7 +203,7 @@ export const storySceneCheckpoint = pgTable(
     ),
     check(
       'story_scene_checkpoint_schema',
-      sql`${t.stateSchemaVersion} = 1`,
+      sql`${t.stateSchemaVersion} IN (1, 2)`,
     ),
     check(
       'story_scene_checkpoint_opening',

@@ -134,6 +134,13 @@
       "when": 1794803200000,
       "tag": "0018_wr03_writer_mission",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794806800000,
+      "tag": "0019_wr05s_scene_checkpoint_schema",
+      "breakpoints": true
     }
   ]
 }

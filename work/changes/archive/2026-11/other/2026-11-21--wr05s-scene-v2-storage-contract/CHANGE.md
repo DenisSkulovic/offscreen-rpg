@@ -1,5 +1,7 @@
 # WR05S | Scene-v2 checkpoint storage grammar and SQL selector support
 
+**State:** Done (2026-11-21). Storage grammar and SQL selector only. Publication still writes v1. Not on `main`.
+
 **READY; independent of MA06A.** Integration target: `undertaking/storyteller-workshop`. Code baseline 2026-11-21: `packages/documents/src/schema.ts` (v1 checkpoint ~571–980), `packages/db/src/schema/stories.ts:storySceneCheckpoint` (~166–218); no changes to `packages/application`, Story Engine, web or provider code. **This is the storage substrate of WR05, not scene-v2 publication itself.** The existing WR05 execution packet stays unselected until its post-state projector is grounded. Commission only this bounded Change.
 
 ## Outcome and decided algorithm
@@ -27,3 +29,16 @@ Provide a **versioned v2 payload** and SQL selector that can persist full active
 - One custodian serializes joins and shared catalogs. Each Cursor parent works in its own dedicated linked worktree from the *actual undertaking HEAD*, not `main`. Do not run concurrent migration tests against the same disposable DB. Tests inside one task stay focused; no hidden live S3/billing.
 
 **Acceptance:** v1 compatibility + typed v2 historical storage + SQL allows exactly versions 1/2 + negative malformed/size/duplicate/fk checks. Does not claim actual game can publish v2 yet. This independent storage contract makes later WR05 scene publication less coupled to package reshuffling.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Scene checkpoint v1 | docs/technical/platform/data-and-persistence.md | unchanged for publication: v1 format, version 1, and quiescent rejection stay the published contract. changed for storage: the same heading now points at a v2 grammar that publication does not write | packages/documents/src/schema.ts sceneCheckpointV1Schema; packages/documents/test/scene-checkpoint.test.mjs | fixture-tested | a v1 object with format v1 and stateSchemaVersion 2, a nonempty hold, or a partial offer still throws ZodError | #scene-checkpoint-v2-storage on the same page |
+| Scene checkpoint v2 storage | docs/technical/platform/data-and-persistence.md | changed: v2 historical fictionalState is representable and the selector allows versions 1 and 2. unchanged: no publication writer emits v2 | packages/documents/src/schema.ts sceneCheckpointV2Schema; packages/db/src/schema/stories.ts story_scene_checkpoint_schema; packages/db/migrations/0019_wr05s_scene_checkpoint_schema.sql | fixture-tested and disposable SQL | duplicate activity ids and an over-1-MiB v2 object throw; SQL state_schema_version 3 returns SQLSTATE 23514; unique and foreign keys remain | new heading on the persistence page |
+| Scene-rooted canon checkpoint pair | docs/technical/storyteller/canonical-documents-and-packages.md | unchanged: the committed pair is still a v1 object. changed: the page names the v2 object and selector versions without making them the published pair | packages/documents/src/schema.ts; no application or story-engine edit | source-observed | v2 object that still carries mechanics instead of fictionalState throws ZodError unrecognized_keys | link to #scene-checkpoint-v2-storage |
+| Player-facing checkpoint behavior | docs/product/README.md | unchanged: no product rule changed and no scene publication path writes v2 | docs/product/README.md at c67e7fc5330165ee368c87a622d8726f6fe6ad0e; no product behavior changed | source-observed | publication modules were not in the diff | N/A |
+
+Proof on the change branch before the undertaking squash: `pnpm --filter @offscreen/documents test` — 46 pass, 0 fail, 2 skipped (pre-existing ENG05 live S3, s3mock unavailable). `pnpm --filter @offscreen/db build` exit 0. `DATABASE_TEST_URL` pathname `/offscreen_db_test` on 127.0.0.1, `node --test packages/db/dist/test/wr05s-scene-checkpoint-schema.integration.js` — 1 pass, 0 fail. Version 3 rejected with SQLSTATE 23514. Prettier wrote the changed TypeScript and tests. `eslint.quality.config.mjs` on the changed TypeScript reports four pre-existing curly findings in the document manifest refiner, outside this diff. Provider spend zero.
+
+Closeout paths: packages/documents/src/schema.ts, packages/documents/test/scene-checkpoint.test.mjs, packages/db/src/schema/stories.ts, packages/db/migrations/0019_wr05s_scene_checkpoint_schema.sql, packages/db/migrations/meta/_journal.json, packages/db/test/wr05s-scene-checkpoint-schema.integration.ts, docs/technical/platform/data-and-persistence.md, docs/technical/storyteller/canonical-documents-and-packages.md, work/changes/README.md, work/changes/ledger/2026-11.md, work/undertakings/storyteller-workshop/PARALLEL-EXECUTION-2026-11-21.md.
