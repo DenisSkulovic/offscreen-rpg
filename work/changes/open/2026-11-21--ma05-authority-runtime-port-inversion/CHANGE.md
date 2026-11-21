@@ -1,0 +1,11 @@
+# MA05 | cut story authority's reverse dependency on Storyteller runtime
+
+**Status:** **Proposed, NOT CURSOR-READY** until MA01 graph proves all inbound/outbound edges and post-Writer contracts are ratified. **Integration target:** future `undertaking/modular-monolith`. **Outcome:** story/campaign authority can compile without runtime Writer/admission/retry/fixture implementations. No database schema, network service or new gameplay semantics.
+
+**Evidence at `fa8e4865`:** `application/src/stories/index.ts` imports `../storyteller/recovery` for `retryStoryteller(database,args)`; `stories/resolution.ts` imports `prepareStorytellerResolution`, `commitStorytellerResolution`, `replayStorytellerResolutionIfMatching` from `storyteller/admission.ts`. That module imports story persistence, generated task custody and Storyteller context. Conversely `storyteller/publication.ts` imports story continuation, persistence, checkpoint, errors and campaign holds/persistence. `stories/index.ts` additionally imports developer Chamber fixtures (addressed by MA04). This is **a source-level cycle between conceptual owners**, hidden in a single workspace, and cannot be safely solved by moving files alone.
+
+**Selected direction for architecture review:** The authority core defines **typed admission/retry ports** and retains story ownership checks, revision/transaction fences, clock mechanics and committed history. A separate outer application composition layer injects the Writer runtime implementations. Storyteller publication calls *narrow authority exports* but authority never imports the runtime package. No general event bus or extra service is required. The precise TS type ownership of `PreparedStorytellerResolution` and transaction-scoped callbacks is intentionally held for MA01-derived interface analysis, not delegated to Cursor.
+
+**Acceptance:** source SCC no longer includes stories ↔ Storyteller runtime or stories ↔ developer-tools; story normal/negative tests, stale revision, retry idempotence, correct publication, deterministic receipts and outbox behavior unchanged. **Not Ready** until `SOURCE-MAP.md`/port signatures and T-ID algorithms are updated from current stable source.
+
+[Source map](SOURCE-MAP.md) · [Execution design](EXECUTION.md) · [Proof](PROOF.md).

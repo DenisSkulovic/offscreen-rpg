@@ -1,0 +1,8 @@
+# MA06 | observed ownership / future exact map
+- `packages/application/package.json`: `./stories`, `./stories/resolution`, `./stories/persistence`, `./storyteller`, `./storyteller/saved-generation-publish`, `./generations`, `./admin`, `./outbox` and `./developer-tools` export map. Downstream API, Game Authority, Worker, cache and tools currently consume these paths.
+- 180 application source files / 1.75 MB; Storyteller 63/742 KB; developer tools 39/385 KB; stories 21/256 KB; campaign 32/229 KB; Admin 13/102 KB; generations 7/25 KB. These statistics are a baseline, not move justification by themselves.
+- `stories/index.ts` creates story application and campaign services; `stories/resolution.ts` enters Storyteller admission; `storyteller/publication.ts` calls story/campaign persistence. Source graph MA01 and port inversion MA05 must remove back-edge.
+- `packages/storyteller/src/tasks`, `providers/openrouter.ts`, `context`: pure/provider-boundary package; must never gain db/application import.
+- `apps/game-authority/src/application.ts` uses application story resolution/persistence and Storyteller runtime; `apps/worker/src/runtime/index.ts` creates Storyteller runtime and story operations; `apps/api/src/app.ts` builds API handler. This is **outer composition** and not permission to duplicate authority.
+- `packages/application/src/developer-tools` must not be mechanically absorbed into story-authority. It is a future lab-support candidate after all reverse fixture edges are removed.
+- `packages/application/src/generations` and `outbox`: shared supporting service/transaction code. Their final owner must be chosen by ChatGPT after graph and transaction inspection; no assumption they are pure by name.
