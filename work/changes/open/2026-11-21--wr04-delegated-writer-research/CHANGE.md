@@ -1,5 +1,8 @@
 # WR04 | real independent research contexts for the Writer
 
+> **New post-P3 successor plan (2026-11-21):** [POST-P3-EXECUTION.md](POST-P3-EXECUTION.md) contains the updated, outcome-sized implementation and bounded proof. **CONDITIONAL / NOT YET CURSOR-READY.** Do not dispatch until the three P3-A/B/C outcomes are actually integrated and the relevant source contracts are rechecked. The obsolete pre-MA06A TASKS below remain non-executable; a planner must promote the new plan with exact landed anchors and independent readiness evidence. Integration stays on undertaking/storyteller-workshop; no paid provider authorization.
+
+
 > **Execution readiness audit (2026-11-21): PLANNER-BLOCKED, NOT CURSOR-READY.** Source-grounded G0–G7 review is recorded in [PROOF.md](PROOF.md); exact observed code gaps and ChatGPT-owned corrective decisions are in [SOURCE-MAP.md](SOURCE-MAP.md). The existing TASKS are *design placeholders*, not dispatchable child instructions. Do not reinterpret `PLANNER-READY AFTER` as approval; only reissue precise T-IDs against landed predecessor code and audit every one before commission. The integration target remains `undertaking/storyteller-workshop`; `main` untouched. No provider spend, destructive DB or live deployment is authorized by this packet.
 
 
