@@ -1,0 +1,13 @@
+# MA04 | remove developer Chamber fixture dependency from story authority
+
+**State:** Planner-ready algorithm after MA01/branch activation; **execute only when WR/story authority call sites stable**. **Target:** `undertaking/modular-monolith`; branch `change/ma04-chamber-domain-decoupling`. This is a critical dependency-inversion precursor to extracting story authority; no game design change.
+
+**Baseline:** inspected `undertaking/storyteller-workshop` at `fa8e486533943e952c908c21af8d7a73aae84efa` (2026-11-21). No local tests run. **Execution requires activation of `undertaking/modular-monolith` from a stable, owner-approved upstream and revalidation of source anchors.** Dedicated linked Change worktree; keep primary checkout untouched. Implement/test/reconcile/integrate the entire commissioned Change without a gratuitous independent ChatGPT pre-merge checkpoint; stop for real failed safety or Git conflict.
+
+**Observed:** `application/src/stories/index.ts` imports `chamberAllowsResponse` from `../developer-tools/chamber-fixtures`; `createStoryApplication.read` uses it to derive `canRespond` for fixture sources. `developer-tools/chamber.ts` imports `createStoryApplication` and the fixture functions. Thus ordinary story projection and test harness mutually depend on each other at source-domain level.
+
+**Selected result:** Make fixture eligibility an explicit **outer composition policy**, not a hidden dependency of story authority. Extend `StoryApplicationOptions` with a narrowly typed optional source capability predicate, default deny for fixture-only responses; preserve normal `playableOpeningStorySource` handling. Pass the actual `chamberAllowsResponse` only from explicitly authorized Chamber/local-dev composition paths where fixtures are allowed. Regular user/production composition must not enable synthetic sources unintentionally. Ensure existing Chamber tests retain behavior under explicit test policy. No DB schema, new fixture content or broadened response permissions.
+
+**Important:** Review *all* callers and actual local/GA runtime fixture wiring from the MA01 graph before execution; the executor follows explicit caller table in EXECUTION and does not select a new authorization model. Do not silently break the intentional Chamber POC.
+
+[Source](SOURCE-MAP.md) · [Algorithm](EXECUTION.md) · [Proof](PROOF.md) · [Tasks](TASKS.md).

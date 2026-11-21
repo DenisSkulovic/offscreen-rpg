@@ -1,0 +1,13 @@
+# MA03 | extract Admin business module from the Application catch-all
+
+**Status:** Planner-ready after CQ02 and stable Undertaking branch. **Kind:** structural code move, behavior-preserving. **Target:** `undertaking/modular-monolith`; Change branch `change/ma03-admin-package-extraction`. **Peer:** MA02 if shared manifest/lockfile edits are serialized by the integration custodian.
+
+**Baseline:** inspected `undertaking/storyteller-workshop` at `fa8e486533943e952c908c21af8d7a73aae84efa` (2026-11-21). No local tests run. **Execution requires activation of `undertaking/modular-monolith` from a stable, owner-approved upstream and revalidation of source anchors.** Dedicated linked Change worktree; keep primary checkout untouched. Implement/test/reconcile/integrate the entire commissioned Change without a gratuitous independent ChatGPT pre-merge checkpoint; stop for real failed safety or Git conflict.
+
+**Root finding:** `packages/application/src/admin/` contains 13 files/102 KB of cohesive staff rights, session, audit and safe-support read policies. It is not gameplay application orchestration. `@offscreen/application/admin` exposes its whole API; `apps/api` consumes this façade. Most Admin imports are db/contracts/drizzle; **exception:** `admin/situation-reads.ts` imports `campaignHoldsSchema` from `../campaign/holds.js`. That is the one identified dependency that must be inverted first, **not ignored**.
+
+**Selected outcome:** New `packages/admin` workspace / `@offscreen/admin`, owning original Admin policies, auth tokens, staff sessions, safe reads and case operations. Extract the **pure campaign holds Zod schema** from `application/campaign/holds.ts` into an explicit `@offscreen/contracts/campaign-holds` subpath. Both campaign code and Admin reads import that same schema. Keep one compatibility re-export `@offscreen/application/admin` during consumer migration; migrate API callers to new package where straightforward and record when compatibility can be removed. No staff capability, cookie, expiry, case privacy or audit-write changes.
+
+**Risk:** Admin diagnostics read multiple story/campaign DB schemas. These are read projections, not authorization. Preserve safe-column projections, READ ONLY snapshots, privacy 404 and grant checks exactly. Source equivalence and negative tests determine acceptance; file movement does not imply security correctness.
+
+[Source](SOURCE-MAP.md) · [Algorithm](EXECUTION.md) · [Proof](PROOF.md) · [Tasks](TASKS.md).

@@ -1,0 +1,5 @@
+# MA04 | inspected source
+- `packages/application/src/stories/index.ts`: `StoryApplicationOptions`, `createStories`, `createStoryApplication.read` around lines 286–310; predicate `(source === playableOpeningStorySource || chamberAllowsResponse(source)) && ...`.
+- `packages/application/src/developer-tools/chamber-fixtures.ts`: `selectChamberFixture(source)`, `chamberAllowsResponse(source)` delegates to a selected fixture with `respond` present. There is no proof that catalog membership alone equals response permission.
+- `packages/application/src/developer-tools/chamber.ts`: imports `createStoryApplication` and `chamberAllowsResponse`, uses both for Chamber play/fixtures.
+- `apps/api/src/app.ts`: calls `createStoryApplication(database, ...)` and accepts optional Chamber control; `apps/game-authority/src/application.ts`: creates game authority seam from same application surface. `packages/application/test/chamber-lab-catalog.test.mjs` and `tools/api-integration/test/*chamber*/*stories*.integration.ts` (resolve via actual graph) provide fixture behavior.

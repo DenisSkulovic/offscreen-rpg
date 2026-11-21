@@ -1,0 +1,5 @@
+# MA03 | required proof
+- Compile/build `@offscreen/contracts`, `@offscreen/admin`, `@offscreen/application`, `@offscreen/api`; consumer resolution must work under NodeNext and Turbo build ordering.
+- Positive: existing staff session mint/validate, access package/grant resolution, safe audit/case/usage reads and same Admin DI token identity as before the move. Negative: stale/malformed staff session denied; no role/case privilege widening; missing staff scope remains privacy 404, safe situation reader never selects private story body; malformed/duplicate campaign holds still rejected with same error.
+- Compare old/new exported names and schema parse fixtures; ensure `admin/situation-reads` never imports campaign implementation. `@offscreen/admin` must not declare an application dependency.
+- Run existing unit Admin suite and disposable API integration negatives with authorized test database, changed-file format/quality lint, package graph check. Mark NOT RUN if resources absent; do not call that complete security proof.
