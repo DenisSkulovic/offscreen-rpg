@@ -1,0 +1,11 @@
+# WR06 | implementation tasks (planner handoff)
+**Execution:** after WR05, exclusive GA/fork/outbox ownership. **Decision:** fork reads ONLY immutable selected historical scene tuple; creates new identity/causation, reuses the exact document root, and projects semantic state into child namespace. Parent provider/workflow accounting is excluded.
+## T01 | Historical selector and authorization
+**DEPTH=PATCH-M.** Sources: `packages/application/src/stories/{forks,reads,scene-checkpoint}.ts`, `historical-fork.test.mjs`. Resolve exact scene frontier, source pins, document/state roots, admitted choices; refuse missing/corrupt or legacy-incomplete boundary. Check owning user's fork access. Never read parent's current mutable row as scene-N state.
+## T02 | Pure semantic rehome mapper
+**DEPTH=PATCH-L.** Sources: `packages/application/src/stories/{timing,resolution,forks}.ts`, `packages/game/src/{time,state}.ts`, campaign schema. Deterministically remap actor/item/offer/obligation/activity IDs with child namespace; preserve progress, remaining **fictional** duration, holds and settled outcomes. Reanchor scheduling at child creation, not retroactive parent wall-clock elapsed time. **Negative:** inherited live worker/Temporal/provider/finance identity.
+## T03 | Atomic child branch initialization
+**DEPTH=PATCH-L.** Sources: `packages/application/src/stories/forks.ts`, DB `stories,campaign,outbox` schemas. Idempotent fork request creates one child lineage + semantic state selector and its own dispatch IDs. Initially reference ancestor Library root without duplicating entries; child can later copy-on-write. New authorization/budget belongs to child. Inherited choice retains semantic meaning but mints new interaction identity.
+## T04 | Active fork and independent continuation proof
+**DEPTH=PATCH-L.** Scene 37, travel 2/10 hours, offer+obligation and choice; parent advances to 80; fork 37 and assert 8h remaining, playable choice, no parent mutation. Repeat fork idempotency; fork twice, divergent ID@revision hashes, absent later sibling/parent facts and privacy denial. Run focused game+application+private GA DB tests.
+**Stop:** any active semantic class cannot be reconstructed without parent workers; return exact missing typed-state case to WR05. **Receipt:** selector hashes, rehome mapping evidence, tests/negative assertions, NOT-RUN.

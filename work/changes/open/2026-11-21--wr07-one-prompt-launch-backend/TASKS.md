@@ -1,0 +1,11 @@
+# WR07 | implementation tasks (planner handoff)
+**Execution:** after WR03+WR05, not concurrently with GA publication. **Decision:** Launch is one idempotent authenticated request with captured immutable intent/preset root and a durable status state machine; it feeds WR03 then WR05. Drafts remain optional convenience, never compulsory.
+## T01 | Launch contract + authenticated edge
+**DEPTH=PATCH-M.** Sources: `apps/api/src/modules/stories/controller.ts`, `packages/contracts/src/{drafts,campaign}.ts`. Typed request: idempotency key, prompt OR pinned prepared-root reference, optional customization/hints, world invention/time policy, explicit authorized model budget. No mandatory body/title/character/profile/rules. Validate size, scope, owner, conflict and anonymous denial.
+## T02 | Immutable request capture and pinned library
+**DEPTH=PATCH-L.** Sources: `packages/application/src/{storyteller/openings,stories/start,stories/initialization}.ts`, `packages/documents/src/{start-import,start-instantiation}.ts`. Persist operation status + captured source, prompt verbatim `STORY_PROMPT.md`, creative-only profile and orientation roots before paid dispatch. Reuse prepared immutable overlays; no enormous copy or compulsory model pre-step. Changed preset after capture cannot modify request.
+## T03 | Orchestrate Writer to first GA scene
+**DEPTH=PATCH-L.** Sources: `packages/application/src/storyteller/{start,execution}.ts`, WR05 publication route. Pending→preparing→composing→ready/held/failed/uncertain transitions; replay-safe recovery and first-scene identity. Stage preparatory files privately if needed; only WR05 publishes playable complete opening. No idle-fiction clock. Unknown provider delivery held.
+## T04 | Scripted API and recovery matrix
+**DEPTH=PATCH-L.** Provider-free Nest/application tests: prepared authored launch (no prep LLM), `BAH`, conscious galaxy, prompt override; lost response returns same scene; duplicate Play/cross-owner/stale package/corrupt source/uncertain delivery fail/hold correctly, zero double spend. Update launch/status API docs after proof. No UI implementation here.
+**Stop:** backend requires character wizard or first output is preview not selected scene. **Receipt:** captured request hashes/ids, transition trace, tests and NOT-RUN.
