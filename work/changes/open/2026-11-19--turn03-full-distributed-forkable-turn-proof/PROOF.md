@@ -1,3 +1,5 @@
+> **Source recheck, 2026-11-22:** The existing `offscreen.distributed-poc-proof.v1` scorer, eight mandatory gates, orientation-only checkpointed golden fixture and lower-tier STORY03 harness are in source. Use the new [TURN03-CURRENT-EXECUTION](TURN03-CURRENT-EXECUTION.md) for a cold-kind-only PASS. No authentication, actual Pod path or future fork may be faked by directly calling Story Engine classes. Missing OAuth, cluster, image or S3 prerequisite is BLOCKED/NOT-RUN, not PASS. Cluster exercise after combined WR10/MA12 integration. No paid model call.
+
 # TURN03 | one golden full-stack run, falsifiable proof and machine ledger
 
 **Profile:** `PROOF`/RELEASE join · **Source baseline:** `584b594` · **State:** authored test specification, **NOT RUN**. Existing [D5 acceptance](../../../designs/open/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) remains normative. [POC current-head audit](../../../designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) is the priority-ordered gap list. This is **one fixture and one integrated runner**, not a fourth test framework.
