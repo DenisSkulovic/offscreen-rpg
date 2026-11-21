@@ -1,0 +1,10 @@
+# WR07 | verified launch path map
+**Baseline:** `f2e0b237`, static source, tests NOT RUN; must build on WR03+WR05.
+- `apps/api/src/modules/stories/controller.ts:StoriesController.startFromCandidate` currently exposes `PUT :id/start`, parses `startStorySchema`, and calls `this.seam.startFromCandidate`; it assumes prior candidate/draft workflow. Fork is `PUT :id/forks/:forkId`. Preserve existing `StoriesController.run` auth/error translation.
+- `packages/application/src/storyteller/openings.ts:createStorytellerOpenings` uses `storyDraft`, `draftOpening`, `generation` and `storytellerOperation`/attempts; `packages/application/src/storyteller/start.ts:startStorytellerCandidate` still starts from generated candidate.
+- `packages/application/src/stories/{start,initialization}.ts` handle story/campaign bootstrap; `packages/documents/src/{start-import,start-instantiation}.ts` already parse/store package sources.
+- `packages/db/src/schema/stories.ts:story` owner and root/version; `packages/db/src/schema/storyteller.ts:storytellerOperation` models spend; `packages/db/src/schema/campaign.ts:storytellerPreset` is an existing preset owner. New Launch operation needs a **durable idempotency key and captured immutable request**; cannot be an in-memory controller flag.
+## Ownership chain
+Authenticated PUT launch request → durable immutable owner-scoped record + pinned preset/user prompt/profile/source root → WR03 Writer mission (provider optional) → WR05 GA publication → durable status/read→ full first scene. Never expose a preview as a playable scene. Unknown paid dispatch is held; same key returns same operation. Freeform `BAH` and conscious galaxy have no required humanoid mechanics.
+## Known open seam
+Actual Nest `StorySeam` public/private GA contract and its generated client interfaces need targeted inspection before route wiring. **Do not** ask Cursor to decide whether launch lives in Next vs Nest vs GA; decision: Nest edge + application coordinator + private GA authoritative commit. Cursor must verify the installed seam when task selected.
