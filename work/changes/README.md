@@ -1,3 +1,15 @@
+## Three-Cursor parallel structural batch, 2026-11-21
+
+**Selected parallel dispatch and single integration custodian:** [parallel structural execution policy](../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Do not execute the former single [MA08 umbrella](open/2026-11-21--ma08-application-owner-extraction/CHANGE.md).**
+
+| Lane | Change | State |
+| --- | --- | --- |
+| Cursor A | [MA08A lab-support](open/2026-11-21--ma08a-lab-support-extraction/CHANGE.md) | **Planner-ready, parallel**: new lab-support workspace and Chamber consumers |
+| Cursor B | [MA08B infrastructure](open/2026-11-21--ma08b-infrastructure-owner-extraction/CHANGE.md) | **Planner-ready, parallel**: DB outbox relay + host runtime logging |
+| Cursor C | [MA10A graph instrumentation](open/2026-11-21--ma10a-module-graph-instrumentation/CHANGE.md) | **Planner-ready, parallel**: AST Story Engine domains, runtime/type-only graph and tests |
+
+These three write disjoint source/manifests and no shared lockfile/catalog. Parents produce independent branch receipts; one custodian serializes B→A→C joins and combined negative proofs. After the wave, source-readiness for MA08C, MA09 and full MA10 must be updated; dependency-gated packets are **not** parallel commissions.
+
 # Changes | active catalog
 
 **Purpose:** index open, independently reviewable Change packets. This directory root is **not** a storage area for standalone roadmap, handoff, audit or program Markdown. [Current work](../QUEUE.md) alone owns the global selector; [work taxonomy](../WORK-TAXONOMY.md) distinguishes Changes from Designs/Tasks. Archived and historic outcomes belong in the [ledger](ledger/2026-11.md), [short-lived archive](archive/README.md) and exact Git history. No automatic execution follows from being listed here.
