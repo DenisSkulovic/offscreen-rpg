@@ -9,6 +9,10 @@
 
 A Change with two-line edits does **not** need TASKS.md; hand off one route card directly. A STATE/CONTRACT/RELEASE Change should usually have TASKS.md before a Composer worker is selected, because “implement the distributed Storyteller” is not a bounded assignment.
 
+## Hard requirement: pay for reasoning upstream, not in Cursor
+
+For complex stateful Changes, ChatGPT must deliver a **verified SOURCE-MAP + decided EXECUTION + falsifiable PROOF + narrow TASKS** or equivalent equally exact canonical references **before** the executor begins. A vague `CHANGE.md`, even accompanied by a `TASKS.md` containing four enormous cross-package missions, is **NOT** Composer-ready. `TASKS.md` tasks are small edits with named owner paths and exact test outcomes, not sub-Changes that secretly require architecture. `PLANNER-READY AFTER predecessor` conveys a planned recipe that must be checked by ChatGPT against landed predecessor code, not carte blanche for Cursor to invent missing interfaces. If a task discovers a missing schema/lock/transport design, the Cursor parent stops after one precise contradiction and sends it to ChatGPT; no autonomous multi-agent redesign. Avoid arbitrary blind application: focused live verification and error-directed debugging remain the executor's responsibility.
+
 ## Composer-ready quality gate (planner responsibility)
 
 A task is **READY-FOR-COMPOSER** only if all are demonstrably supplied:
