@@ -1,3 +1,5 @@
+> **Parallelism decision, 2026-11-21:** MA09 is not one of the current three Cursor commissions. Its authority/Writer transaction work touches existing legacy tests and Writer-continuation contracts; executing it concurrently with MA10 test migration and WR09A custody would violate verified file/interface ownership. Source-rebase and independent readiness review after the first integrated wave and stable WR09B Writer interfaces. The selected same-transaction collaborator design below remains the target, not a blank redesign request.
+
 # MA09 | Authority → Writer dependency inversion without moving transaction boundaries
 
 **State: PLANNED, CONDITIONAL ON WR09 INTERFACES; NOT YET DISPATCHABLE.** This is a complete source/transaction algorithm and task packet for the accepted logical boundary, with a hard integration trigger: WR09's final captured Writer mission APIs must be stable before executing T01–T05. Baseline original code `e122d080`, MA07 `4168db58`; integration `undertaking/storyteller-workshop`. It is a deliberately **one substantial Change**, not an open-ended redesign.
