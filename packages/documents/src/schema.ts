@@ -508,6 +508,65 @@ export const documentManifestSchema = z
       });
   });
 
+/** Byte cap for one library-node v2 canonical object. Matches stored-object cap. */
+export const maximumLibraryNodeCanonicalBytes = 1024 * 1024;
+
+export const libraryTrieChildV2Schema = z.strictObject({
+  nibble: z.string().regex(/^[0-9a-f]$/, 'Expected a single lowercase hex nibble'),
+  hash: contentHashSchema,
+});
+
+const libraryNodeV2ValueSchema = z.union([
+  z.null(),
+  z.record(z.string(), z.unknown()),
+]);
+
+export const libraryRootV2Schema = z.strictObject({
+  format: z.literal('offscreen.library-root.v2'),
+  pathsRootHash: contentHashSchema,
+  idsRootHash: contentHashSchema,
+});
+
+export const libraryNodeV2Schema = z
+  .strictObject({
+    format: z.literal('offscreen.library-node.v2'),
+    value: libraryNodeV2ValueSchema,
+    children: z.array(libraryTrieChildV2Schema).max(16),
+  })
+  .superRefine((node, context) => {
+    const nibbles = node.children.map((child) => child.nibble);
+    if (new Set(nibbles).size !== nibbles.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['children'],
+        message: 'Library node children must have unique nibbles',
+      });
+    }
+    for (let index = 1; index < nibbles.length; index += 1) {
+      const current = nibbles[index];
+      const previous = nibbles[index - 1];
+      if (current === undefined || previous === undefined) {
+        break;
+      }
+      if (current.localeCompare(previous) <= 0) {
+        context.addIssue({
+          code: 'custom',
+          path: ['children'],
+          message: 'Library node children must be strictly ascending in hex order',
+        });
+        break;
+      }
+    }
+    if (
+      Buffer.byteLength(canonicalJson(node)) > maximumLibraryNodeCanonicalBytes
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Library node exceeds 1 MiB',
+      });
+    }
+  });
+
 /** Byte cap for one scene-checkpoint object. The store enforces the same cap. */
 export const maximumSceneCheckpointBytes = 1024 * 1024;
 
@@ -930,6 +989,9 @@ export type CanonicalStructuredDocument = z.infer<
 export type DocumentEnvelope = z.infer<typeof documentEnvelopeSchema>;
 export type DocumentManifest = z.infer<typeof documentManifestSchema>;
 export type DocumentManifestEntry = z.infer<typeof documentManifestEntrySchema>;
+export type LibraryRootV2 = z.infer<typeof libraryRootV2Schema>;
+export type LibraryNodeV2 = z.infer<typeof libraryNodeV2Schema>;
+export type LibraryTrieChildV2 = z.infer<typeof libraryTrieChildV2Schema>;
 export type WorldPackageManifest = z.infer<typeof worldPackageManifestSchema>;
 export type WorldPackageReference = z.infer<typeof worldPackageReferenceSchema>;
 export type RulePackageManifest = z.infer<typeof rulePackageManifestSchema>;

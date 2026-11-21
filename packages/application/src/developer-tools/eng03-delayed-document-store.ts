@@ -76,5 +76,11 @@ export function createEng03DelayedDocumentStore(
       delayRead('readStartPackageManifest', () =>
         inner.readStartPackageManifest(hash),
       ),
+    putLibraryNode: (node) => inner.putLibraryNode(node),
+    putLibraryRoot: (root) => inner.putLibraryRoot(root),
+    readLibraryNode: (hash) =>
+      delayRead('readLibraryNode', () => inner.readLibraryNode(hash)),
+    readLibraryRoot: (hash) =>
+      delayRead('readLibraryRoot', () => inner.readLibraryRoot(hash)),
   };
 }

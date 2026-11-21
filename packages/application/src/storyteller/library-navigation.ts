@@ -1,3 +1,12 @@
+import {
+  documentManifestEntrySchema,
+  getLibraryTriePathValue,
+  pageLibraryPaths,
+  type DocumentManifestEntry,
+  type LibraryNodeV2,
+  type LibraryRootV2,
+} from '@offscreen/documents';
+
 /**
  * Provider-neutral, read-only Library navigation for a captured campaign root.
  *
@@ -39,7 +48,37 @@ type LibraryReader = Readonly<{
     envelope: SourceEnvelope;
     content: { paragraphs: readonly string[] };
   }>;
+  readLibraryRoot?: (rootHash: string) => Promise<LibraryRootV2>;
+  readLibraryNode?: (hash: string) => Promise<LibraryNodeV2>;
 }>;
+
+export type LibraryBrowseCursor = Readonly<{
+  rootHash: string;
+  prefix: string;
+  after?: string;
+}>;
+
+function manifestEntryToLibraryEntry(entry: DocumentManifestEntry): LibraryEntry {
+  return {
+    documentId: entry.documentId,
+    revision: entry.revision,
+    path: entry.path,
+    objectHash: entry.objectHash,
+    kind: entry.kind,
+    authority: entry.authority,
+    visibility: entry.visibility,
+  };
+}
+
+function visibleEntry(
+  entry: LibraryEntry,
+  access: LibraryAccess,
+): boolean {
+  return (
+    entry.visibility === 'player-known' ||
+    (entry.visibility === 'storyteller-private' && access.privateDocuments)
+  );
+}
 
 export type LibraryAccess = Readonly<{ privateDocuments: boolean }>;
 
@@ -86,9 +125,35 @@ export function createPinnedLibraryNavigation(input: {
   rootRevision: number;
   authorize: () => Promise<LibraryAccess | null>;
 }) {
+  async function tryV2Root(): Promise<LibraryRootV2 | null> {
+    if (
+      input.reader.readLibraryRoot === undefined ||
+      input.reader.readLibraryNode === undefined
+    ) {
+      return null;
+    }
+    try {
+      const root = await input.reader.readLibraryRoot(input.rootHash);
+      if (root.format === 'offscreen.library-root.v2') return root;
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
   async function entriesForCurrentAccess(): Promise<readonly LibraryEntry[]> {
     const access = await input.authorize();
     if (!access) throw new LibraryNavigationError('not-authorized');
+    const v2Root = await tryV2Root();
+    if (v2Root) {
+      const readNode = (hash: string) => input.reader.readLibraryNode!(hash);
+      const page = await pageLibraryPaths(readNode, v2Root.pathsRootHash, {
+        pageSize: maxPageEntries,
+      });
+      return page.entries
+        .map(manifestEntryToLibraryEntry)
+        .filter((entry) => visibleEntry(entry, access));
+    }
     const manifest = await input.reader.readManifest(input.rootHash);
     if (
       manifest.campaignId !== input.storyId ||
@@ -103,11 +168,29 @@ export function createPinnedLibraryNavigation(input: {
       }
       paths.add(entry.path);
     }
-    return manifest.entries.filter(
-      (entry) =>
-        entry.visibility === 'player-known' ||
-        (entry.visibility === 'storyteller-private' && access.privateDocuments),
-    );
+    return manifest.entries.filter((entry) => visibleEntry(entry, access));
+  }
+
+  async function entryForPath(
+    path: string,
+    access: LibraryAccess,
+  ): Promise<LibraryEntry | null> {
+    const v2Root = await tryV2Root();
+    if (v2Root) {
+      const readNode = (hash: string) => input.reader.readLibraryNode!(hash);
+      const value = await getLibraryTriePathValue(
+        readNode,
+        v2Root.pathsRootHash,
+        path,
+      );
+      if (value === null) return null;
+      const entry = manifestEntryToLibraryEntry(
+        documentManifestEntrySchema.parse(value),
+      );
+      return visibleEntry(entry, access) ? entry : null;
+    }
+    const entries = await entriesForCurrentAccess();
+    return entries.find((item) => item.path === path) ?? null;
   }
 
   return {
@@ -115,9 +198,17 @@ export function createPinnedLibraryNavigation(input: {
       prefix?: string;
       after?: string;
       pageSize?: number;
+      cursor?: LibraryBrowseCursor;
     } = {}) {
-      const prefix = options.prefix ?? '';
-      const after = options.after;
+      const prefix =
+        options.cursor?.prefix ?? options.prefix ?? '';
+      const after = options.cursor?.after ?? options.after;
+      if (
+        options.cursor !== undefined &&
+        options.cursor.rootHash !== input.rootHash
+      ) {
+        throw new LibraryNavigationError('stale-root');
+      }
       if (prefix && !normalizedPath(prefix, true)) {
         throw new LibraryNavigationError('invalid-path');
       }
@@ -128,17 +219,74 @@ export function createPinnedLibraryNavigation(input: {
         throw new LibraryNavigationError('invalid-path');
       }
       const pageSize = validPageSize(options.pageSize ?? 32, maxPageEntries);
-      const entries = (await entriesForCurrentAccess())
-        .filter((entry) => entry.path.startsWith(prefix) && (after === undefined || entry.path > after))
+      const access = await input.authorize();
+      if (!access) throw new LibraryNavigationError('not-authorized');
+      const v2Root = await tryV2Root();
+      if (v2Root) {
+        const readNode = (hash: string) => input.reader.readLibraryNode!(hash);
+        const page = await pageLibraryPaths(readNode, v2Root.pathsRootHash, {
+          prefix,
+          ...(after === undefined ? {} : { after }),
+          pageSize,
+        });
+        const entries = page.entries
+          .map(manifestEntryToLibraryEntry)
+          .filter((entry) => visibleEntry(entry, access));
+        return {
+          rootHash: input.rootHash,
+          rootRevision: input.rootRevision,
+          entries: entries.map(
+            ({ documentId, revision, path, objectHash, kind, authority, visibility }) => ({
+              documentId,
+              revision,
+              path,
+              objectHash,
+              kind,
+              authority,
+              visibility,
+            }),
+          ),
+          nextAfter: page.nextAfter,
+        };
+      }
+      const manifest = await input.reader.readManifest(input.rootHash);
+      if (
+        manifest.campaignId !== input.storyId ||
+        manifest.revision !== input.rootRevision
+      ) {
+        throw new LibraryNavigationError('stale-root');
+      }
+      const paths = new Set<string>();
+      for (const entry of manifest.entries) {
+        if (paths.has(entry.path)) {
+          throw new LibraryNavigationError('corrupt-source');
+        }
+        paths.add(entry.path);
+      }
+      const entries = manifest.entries
+        .filter((entry) => visibleEntry(entry, access))
+        .filter(
+          (entry) =>
+            entry.path.startsWith(prefix) &&
+            (after === undefined || entry.path > after),
+        )
         .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
       const selected = entries.slice(0, pageSize);
       const last = selected.at(-1);
       return {
         rootHash: input.rootHash,
         rootRevision: input.rootRevision,
-        entries: selected.map(({ documentId, revision, path, objectHash, kind, authority, visibility }) => ({
-          documentId, revision, path, objectHash, kind, authority, visibility,
-        })),
+        entries: selected.map(
+          ({ documentId, revision, path, objectHash, kind, authority, visibility }) => ({
+            documentId,
+            revision,
+            path,
+            objectHash,
+            kind,
+            authority,
+            visibility,
+          }),
+        ),
         nextAfter: entries.length > pageSize ? last?.path ?? null : null,
       };
     },
@@ -155,9 +303,13 @@ export function createPinnedLibraryNavigation(input: {
       if (!Number.isSafeInteger(offset) || offset < 0) {
         throw new LibraryNavigationError('invalid-page');
       }
-      const characters = validPageSize(options.characters ?? 4096, maxReadCharacters);
-      const entries = await entriesForCurrentAccess();
-      const entry = entries.find((item) => item.path === options.path);
+      const characters = validPageSize(
+        options.characters ?? 4096,
+        maxReadCharacters,
+      );
+      const access = await input.authorize();
+      if (!access) throw new LibraryNavigationError('not-authorized');
+      const entry = await entryForPath(options.path, access);
       if (!entry) throw new LibraryNavigationError('not-found');
       if (!entry.path.endsWith('.md')) {
         throw new LibraryNavigationError('not-found');
@@ -167,8 +319,10 @@ export function createPinnedLibraryNavigation(input: {
           ? await input.reader.readSourcePassage(entry.objectHash)
           : await input.reader.readDocument(entry.objectHash);
       const envelope = source.envelope;
+      if (envelope.documentId !== entry.documentId) {
+        throw new LibraryNavigationError('corrupt-source');
+      }
       if (
-        envelope.documentId !== entry.documentId ||
         envelope.revision !== entry.revision ||
         envelope.kind !== entry.kind ||
         envelope.authority !== entry.authority ||
@@ -191,7 +345,8 @@ export function createPinnedLibraryNavigation(input: {
         authority: entry.authority,
         visibility: entry.visibility,
         content: codepoints.slice(offset, offset + characters).join(''),
-        nextOffset: offset + characters < codepoints.length ? offset + characters : null,
+        nextOffset:
+          offset + characters < codepoints.length ? offset + characters : null,
         totalCharacters: codepoints.length,
       };
     },

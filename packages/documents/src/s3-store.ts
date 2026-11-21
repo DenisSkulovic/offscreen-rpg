@@ -28,6 +28,8 @@ import {
   sceneCheckpointSchema,
   startPackageManifestSchema,
   worldPackageManifestSchema,
+  libraryNodeV2Schema,
+  libraryRootV2Schema,
   type CanonicalDocument,
   type CanonicalSourcePassage,
   type CanonicalStructuredDocument,
@@ -36,6 +38,8 @@ import {
   type SceneCheckpoint,
   type StartPackageManifest,
   type WorldPackageManifest,
+  type LibraryNodeV2,
+  type LibraryRootV2,
 } from './schema.js';
 
 export type S3DocumentStoreConfig = Readonly<{
@@ -209,6 +213,14 @@ export class S3DocumentStore implements DocumentStore {
     return this.putValidated(sceneCheckpointSchema.parse(checkpoint));
   }
 
+  putLibraryNode(node: LibraryNodeV2) {
+    return this.putValidated(libraryNodeV2Schema.parse(node));
+  }
+
+  putLibraryRoot(root: LibraryRootV2) {
+    return this.putValidated(libraryRootV2Schema.parse(root));
+  }
+
   readDocument(hash: string) {
     return this.readValidated(hash, canonicalDocumentSchema);
   }
@@ -239,6 +251,14 @@ export class S3DocumentStore implements DocumentStore {
 
   readSceneCheckpoint(hash: string) {
     return this.readValidated(hash, sceneCheckpointSchema);
+  }
+
+  readLibraryNode(hash: string) {
+    return this.readValidated(hash, libraryNodeV2Schema);
+  }
+
+  readLibraryRoot(hash: string) {
+    return this.readValidated(hash, libraryRootV2Schema);
   }
 
   async objectExists(hash: string) {

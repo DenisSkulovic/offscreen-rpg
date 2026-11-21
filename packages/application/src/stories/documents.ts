@@ -2,9 +2,12 @@ import {
   canonicalDocumentSchema,
   documentAuthoritySchema,
   documentKindSchema,
+  documentManifestEntrySchema,
   documentManifestSchema,
   documentSourceSchema,
   documentVisibilitySchema,
+  DocumentStorageError,
+  getLibraryTriePathValue,
   hashCanonicalJson,
   logicalDocumentPathSchema,
   selectCompleteMarkdownSection,
@@ -87,6 +90,88 @@ function assertManifestReferences(byIdentity: ReadonlySet<string>) {
     ) {
       throw new StoryError('invalid', 'missing_document_source');
     }
+  };
+}
+
+const libraryIdLeafSchema = z.strictObject({
+  documentId: z.uuid(),
+  path: logicalDocumentPathSchema,
+});
+
+export type ResolvedOwnedLibraryDocument = {
+  rootHash: string;
+  documentId: string;
+  objectHash: string;
+  path: string;
+  entry: DocumentManifestEntry;
+  document:
+    | Awaited<ReturnType<DocumentStore['readDocument']>>
+    | Awaited<ReturnType<DocumentStore['readSourcePassage']>>;
+};
+
+export async function resolveOwnedLibraryDocument(
+  storage: DocumentStore,
+  args: {
+    rootHash: string;
+    documentId: string;
+    revision?: number;
+  },
+): Promise<ResolvedOwnedLibraryDocument | 'v1-fallback'> {
+  const documentId = parseStoryIdentifier(args.documentId);
+  let libraryRoot;
+  try {
+    libraryRoot = await storage.readLibraryRoot(args.rootHash);
+  } catch (error) {
+    if (error instanceof DocumentStorageError) {
+      if (error.code === 'missing') throw new StoryError('not_found');
+      if (error.code === 'corrupt') return 'v1-fallback';
+    }
+    throw error;
+  }
+  if (libraryRoot.format !== 'offscreen.library-root.v2') {
+    return 'v1-fallback';
+  }
+  const readNode = (hash: string) => storage.readLibraryNode(hash);
+  const idKey = documentId.toLowerCase();
+  const idValue = await getLibraryTriePathValue(
+    readNode,
+    libraryRoot.idsRootHash,
+    idKey,
+  );
+  if (idValue === null) throw new StoryError('not_found');
+  const idLeaf = libraryIdLeafSchema.parse(idValue);
+  const pathValue = await getLibraryTriePathValue(
+    readNode,
+    libraryRoot.pathsRootHash,
+    idLeaf.path,
+  );
+  if (pathValue === null) {
+    throw new Error('Library path entry is missing for an indexed document ID');
+  }
+  const entry = documentManifestEntrySchema.parse(pathValue);
+  if (entry.documentId !== idLeaf.documentId || entry.path !== idLeaf.path) {
+    throw new Error('Library ID and path index reverse-link mismatch');
+  }
+  if (args.revision !== undefined && entry.revision !== args.revision) {
+    throw new StoryError('not_found');
+  }
+  const document =
+    entry.kind === 'source-passage'
+      ? await storage.readSourcePassage(entry.objectHash)
+      : await storage.readDocument(entry.objectHash);
+  if (
+    document.envelope.documentId !== entry.documentId ||
+    document.envelope.revision !== entry.revision
+  ) {
+    throw new Error('Document object does not match its manifest entry');
+  }
+  return {
+    rootHash: args.rootHash,
+    documentId: entry.documentId,
+    objectHash: entry.objectHash,
+    path: entry.path,
+    entry,
+    document,
   };
 }
 
@@ -364,9 +449,27 @@ export function createCampaignDocuments(
           ),
         );
       if (!owned) throw new StoryError('not_found');
-      const manifest = owned.rootHash
-        ? await storage.readManifest(owned.rootHash)
-        : emptyManifest(args.storyId);
+      let manifest: DocumentManifest;
+      if (owned.rootHash) {
+        try {
+          const libraryRoot = await storage.readLibraryRoot(owned.rootHash);
+          if (libraryRoot.format === 'offscreen.library-root.v2') {
+            throw new Error(
+              'Published document root does not match its campaign',
+            );
+          }
+        } catch (error) {
+          if (error instanceof DocumentStorageError) {
+            if (error.code === 'missing') throw new StoryError('not_found');
+            if (error.code !== 'corrupt') throw error;
+          } else {
+            throw error;
+          }
+        }
+        manifest = await storage.readManifest(owned.rootHash);
+      } else {
+        manifest = emptyManifest(args.storyId);
+      }
       if (
         manifest.campaignId !== args.storyId ||
         manifest.revision !== owned.rootRevision
@@ -383,7 +486,38 @@ export function createCampaignDocuments(
       revision?: number;
     }) {
       const documentId = parseStoryIdentifier(args.documentId);
-      const { rootHash, manifest } = await this.readRoot(args);
+      const [owned] = await database.db
+        .select({
+          rootHash: story.documentRootHash,
+          rootRevision: story.documentRootRevision,
+        })
+        .from(story)
+        .where(
+          and(
+            eq(story.id, parseStoryIdentifier(args.storyId)),
+            eq(story.ownerId, args.ownerId),
+          ),
+        );
+      if (!owned) throw new StoryError('not_found');
+      const rootHash = owned.rootHash;
+      if (!rootHash) throw new StoryError('not_found');
+
+      const resolved = await resolveOwnedLibraryDocument(storage, {
+        rootHash,
+        documentId,
+        ...(args.revision === undefined ? {} : { revision: args.revision }),
+      });
+      if (resolved !== 'v1-fallback') {
+        return resolved;
+      }
+
+      const manifest = await storage.readManifest(rootHash);
+      if (
+        manifest.campaignId !== args.storyId ||
+        manifest.revision !== owned.rootRevision
+      ) {
+        throw new Error('Published document root does not match its campaign');
+      }
       const history = await readManifestHistory(
         args.storyId,
         rootHash,
@@ -408,7 +542,14 @@ export function createCampaignDocuments(
       ) {
         throw new Error('Document object does not match its manifest entry');
       }
-      return { rootHash, entry, document };
+      return {
+        rootHash,
+        documentId: entry.documentId,
+        objectHash: entry.objectHash,
+        path: entry.path,
+        entry,
+        document,
+      };
     },
 
     async admit(args: {

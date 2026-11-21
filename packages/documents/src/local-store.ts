@@ -21,6 +21,8 @@ import {
   sceneCheckpointSchema,
   startPackageManifestSchema,
   worldPackageManifestSchema,
+  libraryNodeV2Schema,
+  libraryRootV2Schema,
   type CanonicalDocument,
   type CanonicalSourcePassage,
   type CanonicalStructuredDocument,
@@ -29,6 +31,8 @@ import {
   type SceneCheckpoint,
   type StartPackageManifest,
   type WorldPackageManifest,
+  type LibraryNodeV2,
+  type LibraryRootV2,
 } from './schema.js';
 import {
   renderCanonicalMarkdown,
@@ -144,6 +148,14 @@ export class LocalDocumentStore {
     return this.putValidated(sceneCheckpointSchema.parse(checkpoint));
   }
 
+  putLibraryNode(node: LibraryNodeV2) {
+    return this.putValidated(libraryNodeV2Schema.parse(node));
+  }
+
+  putLibraryRoot(root: LibraryRootV2) {
+    return this.putValidated(libraryRootV2Schema.parse(root));
+  }
+
   private async readValidated<T>(
     hash: string,
     schema: z.ZodType<T>,
@@ -198,6 +210,14 @@ export class LocalDocumentStore {
 
   readSceneCheckpoint(hash: string) {
     return this.readValidated(hash, sceneCheckpointSchema);
+  }
+
+  readLibraryNode(hash: string) {
+    return this.readValidated(hash, libraryNodeV2Schema);
+  }
+
+  readLibraryRoot(hash: string) {
+    return this.readValidated(hash, libraryRootV2Schema);
   }
 
   async exportPublishedRoot(rootHash: string, destination: string) {
@@ -265,6 +285,8 @@ export type DocumentStore = Pick<
   | 'putWorldPackageManifest'
   | 'putRulePackageManifest'
   | 'putStartPackageManifest'
+  | 'putLibraryNode'
+  | 'putLibraryRoot'
   | 'readDocument'
   | 'readSourcePassage'
   | 'readStructuredDocument'
@@ -272,4 +294,6 @@ export type DocumentStore = Pick<
   | 'readWorldPackageManifest'
   | 'readRulePackageManifest'
   | 'readStartPackageManifest'
+  | 'readLibraryNode'
+  | 'readLibraryRoot'
 >;
