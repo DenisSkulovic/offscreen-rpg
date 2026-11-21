@@ -164,7 +164,7 @@ export function renderHuman(checkout, orientation, work, checkpoint, { full = fa
       'work/changes/README.md — Change catalog',
       'work/tasks/README.md — standalone Tasks',
       'docs/README.md — canonical wiki');
-    return lines.join('\\n');
+    return lines.join('\n');
   }
 
   const lines = [
@@ -182,12 +182,12 @@ export function renderHuman(checkout, orientation, work, checkpoint, { full = fa
   if (checkpoint !== undefined) lines.push('', '## Selected checkpoint', checkpoint ?? 'None selected.');
   lines.push('', 'Next: AGENTS.md → commissioned packet or work/QUEUE.md; STATUS.md for implementation truth.');
   lines.push('More: pnpm repo:brief --full | --json | --health | --checkpoint');
-  return lines.join('\\n');
+  return lines.join('\n');
 }
 
-function loadRoute() {
+function loadRoute(includeOrientation = false) {
   const statusPath = 'STATUS.md';
-  const orientation = section(read(statusPath), '## Orientation', statusPath);
+  const orientation = includeOrientation ? section(read(statusPath), '## Orientation', statusPath) : null;
   const work = selectedWorkFromQueue(
     read(WORK_QUEUE_FILE),
     (rel) => existsSync(path.join(root, ...rel.split('/'))),
