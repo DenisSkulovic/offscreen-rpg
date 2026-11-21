@@ -27,30 +27,30 @@ import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { startRuntime } from '../src/runtime/index.js';
 
 const requireFromHere = createRequire(__filename);
-const applicationDist = join(
+const storyEngineDist = join(
   __dirname,
-  '../../../../packages/application/dist',
+  '../../../../packages/story-engine/dist',
 );
 const { initializeStoryInTransaction } = requireFromHere(
-  join(applicationDist, 'stories/initialization.js'),
+  join(storyEngineDist, 'stories/initialization.js'),
 );
 const { ensureCampaign, initializeCampaign } = requireFromHere(
-  join(applicationDist, 'campaign/settings.js'),
+  join(storyEngineDist, 'campaign/settings.js'),
 );
 const { saveOfferPlans } = requireFromHere(
-  join(applicationDist, 'campaign/persistence.js'),
+  join(storyEngineDist, 'campaign/persistence.js'),
 );
 const { lockStoryById, readDatabaseClockMs } = requireFromHere(
-  join(applicationDist, 'stories/persistence.js'),
+  join(storyEngineDist, 'stories/persistence.js'),
 );
 const { captureDelegatedOfferOnPublication } = requireFromHere(
-  join(applicationDist, 'campaign/delegated-offer.js'),
+  join(storyEngineDist, 'campaign/delegated-offer.js'),
 );
 const {
   declineHarmlessInvitationWithdrawalPlan,
   harmlessSocialInvitationPlan,
 } = requireFromHere(
-  join(applicationDist, 'campaign/fixtures/harmless-invitation-offer.js'),
+  join(storyEngineDist, 'campaign/fixtures/harmless-invitation-offer.js'),
 );
 
 const profile = storytellerCatalogue.resolve({

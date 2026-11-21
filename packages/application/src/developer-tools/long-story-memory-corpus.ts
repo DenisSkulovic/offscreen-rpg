@@ -1,1 +1,0 @@
-export * from '@offscreen/lab-support/long-story-memory-corpus';

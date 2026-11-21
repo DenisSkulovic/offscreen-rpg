@@ -1,1 +1,0 @@
-export * from '@offscreen/story-engine/stories/scene-appearance';

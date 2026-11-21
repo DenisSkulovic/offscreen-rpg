@@ -1,1 +1,0 @@
-export * from '@offscreen/lab-support/lab/fixture-specimens';

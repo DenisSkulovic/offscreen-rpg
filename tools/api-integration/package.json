@@ -33,7 +33,11 @@
     "test:admin-audit": "node --test dist/test/admin-audit.integration.js",
     "test:admin-cases": "node --test dist/test/admin-cases.integration.js",
     "test:admin-control-ssr": "node --test dist/test/admin-control-ssr.integration.js",
-    "test:turn03-proof": "node --test dist/test/turn03-distributed-poc-proof.test.js"
+    "test:turn03-proof": "node --test dist/test/turn03-distributed-poc-proof.test.js",
+    "test:legacy-engine:pure": "node scripts/run-legacy-engine-tests.mjs --mode=pure",
+    "test:legacy-engine:disposable": "node scripts/run-legacy-engine-tests.mjs --mode=disposable",
+    "test:legacy-engine:integration": "node scripts/run-legacy-engine-tests.mjs --mode=integration",
+    "test:legacy-engine:live": "node scripts/run-legacy-engine-tests.mjs --mode=live"
   },
   "dependencies": {
     "@temporalio/client": "1.24.0",
@@ -44,6 +48,7 @@
     "@offscreen/story-engine": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",
+    "@offscreen/game": "workspace:*",
     "@offscreen/storyteller": "workspace:*",
     "@offscreen/web": "workspace:*",
     "@offscreen/worker": "workspace:*",

@@ -17,19 +17,19 @@ import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { startRuntime } from '../src/runtime/index.js';
 
 const requireFromHere = createRequire(__filename);
-const applicationDist = join(
+const storyEngineDist = join(
   __dirname,
-  '../../../../packages/application/dist',
+  '../../../../packages/story-engine/dist',
 );
 const { initializeStoryInTransaction } = requireFromHere(
-  join(applicationDist, 'stories/initialization.js'),
-) as typeof import('../../../packages/application/dist/stories/initialization.js');
+  join(storyEngineDist, 'stories/initialization.js'),
+) as typeof import('@offscreen/story-engine/stories/initialization');
 const { initializeCampaign } = requireFromHere(
-  join(applicationDist, 'campaign/settings.js'),
-) as typeof import('../../../packages/application/dist/campaign/settings.js');
+  join(storyEngineDist, 'campaign/settings.js'),
+) as typeof import('@offscreen/story-engine/campaign/settings');
 const { harborCompassItems } = requireFromHere(
-  join(applicationDist, 'campaign/fixtures/item-transfer-plans.js'),
-) as typeof import('../../../packages/application/dist/campaign/fixtures/item-transfer-plans.js');
+  join(storyEngineDist, 'campaign/fixtures/item-transfer-plans.js'),
+) as typeof import('@offscreen/story-engine/campaign/fixtures/item-transfer-plans');
 
 const profile = storytellerCatalogue.resolve({
   id: 'absurd-action-comedy',

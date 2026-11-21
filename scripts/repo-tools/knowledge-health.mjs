@@ -48,7 +48,7 @@ const LIVE_STATUS = [
   'docs/technical/platform/identities-and-access.md',
   'docs/technical/lab/chamber-and-fixtures.md',
   'docs/technical/lab/experiment-protocol.md',
-  'packages/application/src/developer-tools/README.md',
+  'packages/lab-support/src/README.md',
   'research/README.md',
   'research/engineering-manuals.md',
   'research/legacy-engineering/README.md',
