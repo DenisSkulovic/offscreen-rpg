@@ -13,6 +13,12 @@ Re-found the Storyteller from a prompt-shaped component into a disciplined **wri
 
 **Storyteller Workshop** is intentionally broader than “Storyteller docs” and more specific than “Storyteller evolution.” The undertaking names the shared transformation that the WR/WRD Changes collectively serve.
 
+## 2026-11-22 | Next three Changes designed, no implementation credit
+
+**Planning baseline:** actual source snapshot `d3ba291763de`, branch `undertaking/storyteller-workshop`. Three source-disjoint executor packets have been prepared: [WR10](../../changes/open/2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) creates the previously missing GA-owned Writer custody ↔ executor-owned provider transport boundary while preserving the executor's no-SQL contract; [MA12](../../changes/open/2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) removes runtime Lab Support from production API by moving four Chamber/QA controllers behind one outer `@offscreen/api-lab` workspace; [TURN03](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) reuses its already accepted golden fixture/report and prepares a genuine cold-kind authenticated turn/fork runner. No fresh tests, provider calls or deployments occurred in planning, and no completion percentage rises. [Source ownership and custodial integration](PROGRAM.md#selected-next-engineering-wave-2026-11-22-source-grounded-not-yet-implemented).
+
+**Critical non-substitutions:** WR10 is a provider-free split private round protocol **not** yet the ordinary Launch/Temporal Writer admission or a paid live model; TURN03's scripted cold cluster result, even if all gates pass, is **not** real-model quality; MA12 production dependency cleanup does not resolve the source-level Authority↔Writer reverse imports (MA09). New model and cluster claims require actual evidence, not created packets.
+
 ## Whole-undertaking completion control | living ledger
 
 **Current evidence snapshot: 2026-11-22, inspected undertaking at `d3ba291763de26a0135c1ad84b077bf4f1c153a8`.** This is the **single overall completion ledger** for the combined Storyteller Workshop **and** Modular Monolith program. [Writer implementation program](PROGRAM.md) owns packet-level sequencing; [Modular Monolith dossier](../modular-monolith/UNDERTAKING.md) owns the MA history and structural acceptance. Do not create a second global queue: [work/QUEUE.md](../../QUEUE.md) remains the only default current selection. A user-commissioned independent Change can execute without changing it.
