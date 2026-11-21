@@ -172,18 +172,26 @@ function isUniqueViolation(error: unknown) {
   return false;
 }
 
+function hasCallableMethods(value: object, names: readonly string[]): boolean {
+  const record = value as Record<string, unknown>;
+  return names.every((name) => typeof record[name] === 'function');
+}
+
+const CHECKPOINT_WRITER_METHODS = [
+  'readManifest',
+  'readStructuredDocument',
+  'readLibraryRoot',
+  'readSceneCheckpoint',
+  'putSceneCheckpoint',
+] as const;
+
 export function checkpointWriterStore(
   store: object,
 ): SceneCheckpointWriterStore | undefined {
-  if (
-    typeof (store as SceneCheckpointWriterStore).putSceneCheckpoint !==
-      'function' ||
-    typeof (store as SceneCheckpointWriterStore).readSceneCheckpoint !==
-      'function' ||
-    typeof (store as SceneCheckpointWriterStore).readManifest !== 'function'
-  ) {
+  if (!hasCallableMethods(store, CHECKPOINT_WRITER_METHODS)) {
     return undefined;
   }
+  // Runtime check is the trust boundary; assertion only narrows a fully checked port.
   return store as SceneCheckpointWriterStore;
 }
 

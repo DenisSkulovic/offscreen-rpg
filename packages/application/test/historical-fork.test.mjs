@@ -965,6 +965,48 @@ function delayCheckpointStore(inner, delayMs, hooks) {
   });
 }
 
+test('fork with checkpoint refuses a store missing putManifest before document IO', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-cq04-putmanifest-'));
+  const store = new LocalDocumentStore(root);
+  await withDisposable(async (database) => {
+    const seeded = await seedTwoScenes(database, store);
+    const adapter = {
+      readManifest: (...args) => store.readManifest(...args),
+      readStructuredDocument: (...args) => store.readStructuredDocument(...args),
+      readLibraryRoot: () => {
+        throw new Error('document IO must not run');
+      },
+      readSceneCheckpoint: () => {
+        throw new Error('document IO must not run');
+      },
+      putSceneCheckpoint: () => {
+        throw new Error('document IO must not run');
+      },
+    };
+    const forkStoryId = randomUUID();
+    const stories = createStories(database, { documentStore: adapter });
+    await assert.rejects(
+      () =>
+        stories.fork({
+          ownerId: seeded.ownerId,
+          sourceStoryId: seeded.storyId,
+          forkStoryId,
+          expectedRevision: 1,
+          sourcePassageId: seeded.passage1,
+        }),
+      (error) =>
+        error instanceof StoryError &&
+        error.code === 'unavailable' &&
+        error.reason === 'document_store',
+    );
+    const rows = await database.db
+      .select({ id: story.id })
+      .from(story)
+      .where(eq(story.id, forkStoryId));
+    assert.equal(rows.length, 0);
+  });
+});
+
 test('ENG03: fork checkpoint read does not hold the source story lock', async () => {
   process.env.DB_STATEMENT_TIMEOUT_MS = '120000';
   process.env.DB_IDLE_TRANSACTION_TIMEOUT_MS = '120000';

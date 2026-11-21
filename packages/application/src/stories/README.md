@@ -15,6 +15,7 @@
 | Owner/resource lock | `persistence.ts: lockOwnedStory` | WHERE `ownerId` and `storyId`; only application action may admit |
 | Publication | `continuation.ts: commitStoryContinuation` | Persists next passage and calls `advanceStoryView` to increment `viewVersion` in same transaction |
 | Staged scene-checkpoint reference | `scene-checkpoint.ts: insertSceneCheckpointReference` | Inserts `story_scene_checkpoint` for an already staged `offscreen.scene-checkpoint.v1` object when the locked story revision and canon root match. Does not update `story`, does not call publication, and does not build a historical fork |
+| Injected document-store capability | `scene-checkpoint.ts: checkpointWriterStore`; `forks.ts: forkDocumentStore` | Accepts the caller-supplied port only when every required method is callable. A missing method returns no writer before object IO. A historical fork that already has a checkpoint then refuses `unavailable` / `document_store`. Hash, canon, and publication rules stay the same |
 | Interval controls | `timing.ts: createStoryTiming` | Calls `incrementStoryViewVersion`, reads database clock, coordinates with committed wait |
 | Start reviewed candidate | `start.ts: createStoryStart` | Checks existing story/candidate/expected draft revision; permanent Start ID is story UUID |
 | Campaign action/passage | [campaign actions](../campaign/actions.ts), [campaign persistence](../campaign/persistence.ts) | Additional `viewVersion` writers **not reached through StoriesController alone** |

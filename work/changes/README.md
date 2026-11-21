@@ -11,7 +11,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [CQ01](archive/2026-11/other/2026-11-21--cq01-admin-session-freshness/CHANGE.md) | Session timestamp rejection; Done on the undertaking branch |
 | [CQ02](archive/2026-11/other/2026-11-21--cq02-admin-http-ownership/CHANGE.md) | Admin HTTP ownership; Done on the undertaking branch |
 | [CQ03](archive/2026-11/other/2026-11-21--cq03-play-surface-readability/CHANGE.md) | Play readability; Done on the undertaking branch |
-| [CQ04](open/2026-11-21--cq04-document-store-capability-guards/CHANGE.md) | Runtime capability guards; avoid WR06 overlap |
+| [CQ04](archive/2026-11/other/2026-11-21--cq04-document-store-capability-guards/CHANGE.md) | Runtime capability guards; Done on the undertaking branch |
 | [CQ05](open/2026-11-21--cq05-recurring-source-health/CHANGE.md) | Read-only structural source health checker |
 
 ## Modular Monolith architecture program (proposed Undertaking, not selected)

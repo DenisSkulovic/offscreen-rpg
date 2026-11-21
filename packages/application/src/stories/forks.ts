@@ -75,12 +75,10 @@ function remapInitialScene(
 
 function forkDocumentStore(store: object | undefined): ForkStore | undefined {
   const checkpoint = store ? checkpointWriterStore(store) : undefined;
-  if (
-    !checkpoint ||
-    typeof (store as ForkStore).putManifest !== 'function' ||
-    typeof (store as ForkStore).readManifest !== 'function' ||
-    typeof (store as ForkStore).readLibraryRoot !== 'function'
-  ) {
+  if (!checkpoint) {
+    return undefined;
+  }
+  if (typeof (store as ForkStore).putManifest !== 'function') {
     return undefined;
   }
   return store as ForkStore;
