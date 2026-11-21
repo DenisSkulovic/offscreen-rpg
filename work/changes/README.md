@@ -1,5 +1,19 @@
 # Changes | active catalog
 
+## 2026-11-22 brainstorming proposals (NOT executable)
+
+The owner requested a **durable capture**, not more prematurely Cursor-ready tasks. The full reconstructed chronology and reasoning is in [2026-11-22 session minutes](../sessions/2026-11-22.md), following [daily-minutes rule](../../.agents/rules/session-minutes.md). Four *lightweight* packets capture new, unsettled work and have no approval to edit runtime or spend money:
+
+| Packet | Future outcome | Status / prerequisite |
+| --- | --- | --- |
+| [CFG01 versioned Writer policy](open/2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md) | Dynamic strongly typed recipe resolution and frozen effective budgets instead of 4/8000/2000/$0.25 hard-coded continuation | **PROPOSED**, inspect existing entitlement resolver and WR10/WR11 |
+| [EV01 centwise evals](open/2026-11-22--ev01-centwise-agent-evaluation/CHANGE.md) | Reuse saved outcomes and deterministic evals for $0; separately approve single traced call after preflight | **PROPOSED**, reuse Lab Support and AI02 traces |
+| [CH01 Chamber experiments](open/2026-11-22--ch01-chamber-experiment-workbench/CHANGE.md) | Isolated scene-N Scenario × Recipe × Experiment and transparent run/compare | **PROPOSED**, after MA12/CFG01/EV01 interfaces |
+| [CFG02 Admin governance](open/2026-11-22--cfg02-admin-policy-management/CHANGE.md) | Draft/validate/activate/roll back operator-managed policies with permissions/audit | **DEFERRED**, after CFG01 accepted |
+
+No Change has an authorized T-ID; do not dispatch these shallow packets to Composer. Paid evals default to **zero authorized spend**, even if a prior proposal mentioned a possible $0.75 cap. Real run requires separate explicit user authorization and measured worst-case cost. No automatic model judge, CI eval, retry or paid background run.
+
+
 ## Agent internals, reproducibility and inspectability (planned 2026-11-22)
 
 **Human-owner objective:** understand the actual Writer context, loop, Library/tool use, and Temporal Workflow→Activity topology by reading the code and later inspecting a real mission scene-by-scene. This is a **dependency chain, not three parallel commissions**:
