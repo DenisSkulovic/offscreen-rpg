@@ -16,6 +16,8 @@ export function makeStorySnapshot(
     paragraphs: string[];
     resolution: StorySnapshot['resolution'];
     interaction: StorySnapshot['current']['interaction'];
+    campaign: StorySnapshot['campaign'];
+    waiting: StorySnapshot['waiting'];
   }> = {},
 ): StorySnapshot {
   return storySnapshotSchema.parse({
@@ -25,8 +27,9 @@ export function makeStorySnapshot(
     canRespond: overrides.canRespond ?? true,
     items: [],
     decision: null,
-    waiting: null,
+    waiting: overrides.waiting === undefined ? null : overrides.waiting,
     lineage: null,
+    campaign: overrides.campaign,
     resolution:
       overrides.resolution === undefined ? null : overrides.resolution,
     current: {

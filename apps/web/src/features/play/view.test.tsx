@@ -12,7 +12,37 @@ import {
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { focusManager } from '@tanstack/react-query';
+import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { StorySnapshot } from '@offscreen/contracts/stories';
+import { makeCampaign } from '@/src/test/campaign-fixtures';
 import { makeStorySnapshot, fixtureIds } from '@/src/test/story-fixtures';
+
+const minimalCampaignCharacter = {
+  name: 'Outlander',
+  scores: {
+    strength: 10,
+    dexterity: 10,
+    constitution: 10,
+    intelligence: 10,
+    wisdom: 10,
+    charisma: 10,
+  },
+  applicableAbilities: [
+    'strength',
+    'dexterity',
+    'constitution',
+    'intelligence',
+    'wisdom',
+    'charisma',
+  ],
+  skills: [{ id: 'perception', label: 'Perception' }],
+  proficientSkills: ['perception'],
+  proficiencyBonus: 2,
+  hp: 10,
+  maxHp: 10,
+  facts: [],
+  quantities: [],
+} as NonNullable<CampaignView['character']>;
 import { renderWithStoryQuery } from '@/src/test/query-harness';
 
 vi.mock('@/src/features/session/session-refresh', () => ({
@@ -55,9 +85,155 @@ function renderPlay(story: ReturnType<typeof makeStorySnapshot>) {
   return render(element);
 }
 
+const travellingWaiting = {
+  dueAt: '2026-11-21T14:30:00.000Z',
+  canControl: true,
+  controlRevision: 7,
+  remainingMs: null,
+  gameDurationMs: 600_000,
+} satisfies NonNullable<StorySnapshot['waiting']>;
+
 describe('PlayScene', () => {
   afterEach(() => {
     window.location.hash = '';
+  });
+
+  it('shows travelling wait copy and sends pause on control click', async () => {
+    const user = userEvent.setup();
+    const snapshot = makeStorySnapshot({
+      waiting: travellingWaiting,
+      interaction: null,
+    });
+    let controlBody: Record<string, unknown> | null = null;
+    let controlPuts = 0;
+
+    server.use(
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/controls/:operationId`,
+        async ({ request }) => {
+          controlPuts += 1;
+          controlBody = (await request.json()) as Record<string, unknown>;
+          return HttpResponse.json(snapshot);
+        },
+      ),
+    );
+
+    renderPlay(snapshot);
+
+    expect(
+      screen.getByText(/Still travelling\. Arrival estimated at/i),
+    ).toHaveTextContent(travellingWaiting.dueAt);
+    const pause = screen.getByRole('button', { name: 'Pause' });
+    await user.click(pause);
+
+    await waitFor(() => {
+      expect(controlPuts).toBe(1);
+    });
+    expect(controlBody).toEqual({
+      intervalId: fixtureIds.passageId,
+      expectedControlRevision: travellingWaiting.controlRevision,
+      action: 'pause',
+    });
+  });
+
+  it('shows paused wait copy and sends resume on control click', async () => {
+    const user = userEvent.setup();
+    const pausedWaiting = {
+      ...travellingWaiting,
+      remainingMs: 15_000,
+    };
+    const snapshot = makeStorySnapshot({
+      waiting: pausedWaiting,
+      interaction: null,
+    });
+    let controlBody: Record<string, unknown> | null = null;
+
+    server.use(
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/controls/:operationId`,
+        async ({ request }) => {
+          controlBody = (await request.json()) as Record<string, unknown>;
+          return HttpResponse.json(snapshot);
+        },
+      ),
+    );
+
+    renderPlay(snapshot);
+
+    expect(screen.getByText(/Journey paused\./i)).toHaveTextContent(
+      '15 real seconds remain.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Resume' }));
+
+    await waitFor(() => {
+      expect(controlBody).toEqual({
+        intervalId: fixtureIds.passageId,
+        expectedControlRevision: pausedWaiting.controlRevision,
+        action: 'resume',
+      });
+    });
+  });
+
+  it('does not POST or PUT journey control on mount when waiting is shown (negative)', async () => {
+    const snapshot = makeStorySnapshot({
+      waiting: travellingWaiting,
+      interaction: null,
+    });
+    let controlPuts = 0;
+    let posts = 0;
+
+    server.use(
+      http.post('/api/*', () => {
+        posts += 1;
+        return HttpResponse.json({}, { status: 500 });
+      }),
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/controls/:operationId`,
+        () => {
+          controlPuts += 1;
+          return HttpResponse.json(snapshot);
+        },
+      ),
+    );
+
+    renderPlay(snapshot);
+
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
+    expect(controlPuts).toBe(0);
+    expect(posts).toBe(0);
+  });
+
+  it('disables journey control while the first command is in flight (negative)', async () => {
+    const user = userEvent.setup();
+    const snapshot = makeStorySnapshot({
+      waiting: travellingWaiting,
+      interaction: null,
+    });
+    let controlPuts = 0;
+
+    server.use(
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/controls/:operationId`,
+        async () => {
+          controlPuts += 1;
+          await delay(200);
+          return HttpResponse.json(snapshot);
+        },
+      ),
+    );
+
+    renderPlay(snapshot);
+
+    const pause = screen.getByRole('button', { name: 'Pause' });
+    await user.click(pause);
+    await waitFor(() => {
+      expect(pause).toBeDisabled();
+    });
+    await user.click(pause);
+
+    await waitFor(() => {
+      expect(controlPuts).toBe(1);
+    });
   });
 
   it('opens Journal from the book without posting a command', async () => {
@@ -85,7 +261,8 @@ describe('PlayScene', () => {
 
     expect(screen.getByRole('heading', { name: 'Journal' })).toBeVisible();
     expect(
-      screen.getByText('Technical details').closest('details')?.textContent ?? '',
+      screen.getByText('Technical details').closest('details')?.textContent ??
+        '',
     ).not.toMatch(/Journal/);
     await user.click(screen.getByRole('button', { name: 'Contents' }));
     await user.click(screen.getByRole('link', { name: 'Now' }));
@@ -115,10 +292,12 @@ describe('PlayScene', () => {
       interaction: null,
     });
 
+    let choiceBody: Record<string, unknown> | null = null;
     server.use(
       http.put(
         `/api/stories/${fixtureIds.storyId}/resolutions/:operationId`,
-        async () => {
+        async ({ request }) => {
+          choiceBody = (await request.json()) as Record<string, unknown>;
           await delay(25);
           return HttpResponse.json(afterChoice);
         },
@@ -143,10 +322,57 @@ describe('PlayScene', () => {
         screen.getByRole('heading', { name: 'Choice accepted' }),
       ).toBeInTheDocument();
     });
+    expect(choiceBody).toMatchObject({
+      expectedRevision: initial.revision,
+      submission: {
+        interactionId: fixtureIds.interactionId,
+        answer: { kind: 'choice.v1', optionId: 'walk' },
+      },
+    });
     expect(screen.getByRole('status')).toHaveTextContent(
       /The storyteller is resolving this intention/i,
     );
   });
+
+  it.each([
+    {
+      label: 'interaction absent',
+      story: makeStorySnapshot({ interaction: null }),
+    },
+    {
+      label: 'campaign character present',
+      story: makeStorySnapshot({
+        campaign: {
+          ...makeCampaign(),
+          character: minimalCampaignCharacter,
+        },
+      }),
+    },
+  ])(
+    'does not offer legacy choice buttons or resolution PUT when $label',
+    async ({ story }) => {
+      let puts = 0;
+      server.use(
+        http.put(
+          `/api/stories/${fixtureIds.storyId}/resolutions/:operationId`,
+          () => {
+            puts += 1;
+            return HttpResponse.json(story);
+          },
+        ),
+      );
+
+      renderPlay(story);
+
+      expect(
+        screen.queryByRole('button', { name: 'Walk the gate road' }),
+      ).toBeNull();
+      expect(
+        screen.queryByRole('button', { name: 'Wait and watch' }),
+      ).toBeNull();
+      expect(puts).toBe(0);
+    },
+  );
 
   it('keeps the newer scene when a stale poll arrives later (negative)', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });

@@ -3,10 +3,12 @@ import { CampaignPlay } from './ui/campaign-play';
 import { CampaignSettingsEditor } from './campaign-settings';
 import { StoryHistoryView } from './history';
 import { resolveLivePresentation } from './model/live-presentation';
+import { resolutionMessage, stageStatusLabel } from './model/play-status';
 import { ResolutionRecovery } from './resolution-recovery';
 import { useControlCommand } from './use-control-command';
 import { useResolutionCommand } from './use-resolution-command';
 import { useStoryLiveUpdates } from './use-story-live-updates';
+import { JourneyTimingNotice } from './ui/journey-timing-notice';
 import { StoryFrame } from './ui/story-frame';
 import { Action } from '@/src/shared/ui/action';
 import { SystemNotice } from '@/src/shared/ui/system-notice';
@@ -45,75 +47,6 @@ function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
     return 'pause' as const;
   }
   return 'resume' as const;
-}
-
-function resolutionMessage(story: StorySnapshot) {
-  if (!story.resolution) {
-    return null;
-  }
-  const pendingAction =
-    story.resolution.evidence === 'pending-action' &&
-    story.campaign?.actionExecution;
-  if (pendingAction) {
-    if (story.resolution.state === 'uncertain') {
-      return 'Private narration preparation has uncertain provider usage and is stopped. The accepted action is still in progress; its outcome, roll and effects are not current before the target.';
-    }
-    if (story.resolution.state === 'failed') {
-      return 'Private narration preparation failed. The accepted action is still in progress; its outcome, roll and effects are not current before the target. Recovery can reuse the same frozen result after mechanics settle.';
-    }
-    if (story.resolution.state === 'blocked') {
-      return 'Private narration is prepared but cannot publish before the accepted action settles.';
-    }
-    return 'The storyteller is preparing privately while the accepted action runs. No outcome, roll, effect or next choice is current before the target.';
-  }
-  const savedOutcome = story.campaign?.character
-    ? 'The outcome and dice are saved. '
-    : '';
-  if (story.resolution.state === 'uncertain') {
-    return `${savedOutcome}Provider usage is uncertain. Paid generation is stopped until it is reconciled; refreshing does not send another model request.`;
-  }
-  if (story.resolution.state === 'failed') {
-    if (story.resolution.blocker?.kind === 'funding') {
-      return `${savedOutcome}The generation allowance is unavailable. Your scene is unchanged.`;
-    }
-    if (story.resolution.blocker?.kind === 'usage-window') {
-      return `${savedOutcome}This story has reached a renewable generation limit. Your scene is saved; retry after capacity returns.`;
-    }
-    if (story.resolution.blocker?.kind === 'authority') {
-      return `${savedOutcome}Generation authorization changed before dispatch. Nothing was sent and your scene is unchanged.`;
-    }
-    if (story.resolution.blocker?.kind === 'task-input') {
-      return `${savedOutcome}The required story context does not fit this generation policy. Retrying the unchanged request will not help.`;
-    }
-    if (story.resolution.blocker?.kind === 'provider-disabled') {
-      return `${savedOutcome}Live generation is disabled. Your scene is unchanged.`;
-    }
-    if (story.campaign?.character) {
-      return 'The outcome and dice are saved. Narration could not finish, and this spent operation cannot be repeated.';
-    }
-    return 'Continuation failed. Your intention is saved and the current scene is unchanged.';
-  }
-  if (story.resolution.state === 'blocked') {
-    return `${savedOutcome}The saved continuation could not be published. Your current scene is unchanged.`;
-  }
-  if (story.campaign?.character) {
-    return 'The outcome and dice are saved. The storyteller is preparing the next passage.';
-  }
-  return 'The storyteller is resolving this intention.';
-}
-
-function stageStatusLabel(story: StorySnapshot, canChoose: boolean) {
-  if (story.waiting) {
-    return story.waiting.remainingMs === null
-      ? 'Journey underway'
-      : 'Journey paused';
-  }
-  if (story.resolution?.state === 'uncertain') return 'Usage uncertain';
-  if (story.resolution?.state === 'failed') return 'Continuation failed';
-  if (story.resolution?.state === 'blocked') return 'Publication blocked';
-  if (story.resolution) return 'Resolving your action';
-  if (canChoose) return 'Waiting for your choice';
-  return 'Nothing underway';
 }
 
 export function PlayScene({
@@ -202,7 +135,9 @@ export function PlayScene({
   const scene = story;
   const pending = resolution.pending || control.pending;
   const status = resolution.error || control.error || resolutionMessage(scene);
-  const showLegacyOffer = Boolean(offer && !scene.campaign?.character);
+  // A campaign character chooses through CampaignPlay. This value stays null then,
+  // so the legacy option list never needs a non-null assertion.
+  const legacyOffer = offer && !scene.campaign?.character ? offer : null;
   const storyLabel =
     scene.storyteller?.name?.trim() ||
     scene.current.content.title.trim() ||
@@ -228,8 +163,8 @@ export function PlayScene({
           <section aria-label="Saved journal">
             <h2 className="story-frame__threshold-heading">Journal</h2>
             <p className="story-frame__intention-support">
-              Return to Now for the current situation. This journal is
-              read-only chronology of published passages.
+              Return to Now for the current situation. This journal is read-only
+              chronology of published passages.
             </p>
             <a className="story-frame__back" href="#story-frame-now">
               ← Back to Now
@@ -239,8 +174,8 @@ export function PlayScene({
         }
         thresholdHeading={offer?.specification.prompt || 'What will you do?'}
         intentions={
-          showLegacyOffer
-            ? offer!.specification.options.map((option) => ({
+          legacyOffer
+            ? legacyOffer.specification.options.map((option) => ({
                 id: option.id,
                 label: option.label,
                 support: [option.description, option.risk]
@@ -251,12 +186,14 @@ export function PlayScene({
         }
         intentionsDisabled={pending || !canChoose}
         onIntentionSelect={
-          showLegacyOffer
+          legacyOffer
             ? (optionId) => {
-                if (!canChoose || !offer || pending) return;
+                if (!canChoose || pending) {
+                  return;
+                }
                 void resolution.submitChoice({
                   expectedRevision: scene.revision,
-                  interactionId: offer.id,
+                  interactionId: legacyOffer.id,
                   optionId,
                 });
               }
@@ -265,42 +202,17 @@ export function PlayScene({
         stageExtras={
           <>
             {waiting ? (
-              <section
-                className="story-frame__notice"
-                aria-label="Journey timing"
-              >
-                {waiting.remainingMs !== null ? (
-                  <p>
-                    Journey paused. {Math.ceil(waiting.remainingMs / 1000)} real
-                    seconds remain.
-                  </p>
-                ) : (
-                  <p>
-                    Still travelling. Arrival estimated at {waiting.dueAt}.
-                    Reloading never restarts the wait.
-                  </p>
-                )}
-                <p>
-                  Fictional duration: {waiting.gameDurationMs / 60000} minutes.
-                  The saved deadline is authoritative.
-                </p>
-                {waiting.canControl ? (
-                  <button
-                    type="button"
-                    className="story-frame__intention"
-                    disabled={pending || control.hasFrozen}
-                    onClick={() =>
-                      control.submit({
-                        intervalId: scene.current.id,
-                        expectedControlRevision: waiting.controlRevision,
-                        action: journeyAction(waiting),
-                      })
-                    }
-                  >
-                    {waiting.remainingMs === null ? 'Pause' : 'Resume'}
-                  </button>
-                ) : null}
-              </section>
+              <JourneyTimingNotice
+                waiting={waiting}
+                disabled={pending || control.hasFrozen}
+                onControl={() =>
+                  control.submit({
+                    intervalId: scene.current.id,
+                    expectedControlRevision: waiting.controlRevision,
+                    action: journeyAction(waiting),
+                  })
+                }
+              />
             ) : null}
             {control.canRetrySame ? (
               <button
@@ -312,7 +224,7 @@ export function PlayScene({
                 Retry control
               </button>
             ) : null}
-            {showLegacyOffer && resolution.canRetrySame ? (
+            {legacyOffer !== null && resolution.canRetrySame ? (
               <button
                 className="story-frame__intention"
                 disabled={pending}
@@ -391,9 +303,9 @@ export function PlayScene({
                     </dd>
                     <dt>Reserved pending usage (USD)</dt>
                     <dd>
-                      {(
-                        Number(scene.usage.reservedMicrousd) / 1000000
-                      ).toFixed(6)}
+                      {(Number(scene.usage.reservedMicrousd) / 1000000).toFixed(
+                        6,
+                      )}
                     </dd>
                   </>
                 ) : null}
