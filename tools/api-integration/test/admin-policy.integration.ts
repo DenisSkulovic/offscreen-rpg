@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bootstrapAdminStaff } from '@offscreen/application/admin';
+import { bootstrapAdminStaff } from '@offscreen/admin';
 import { withApiOnlyAuth } from './helpers/api-only-auth.js';
 
 function combineCookies(...parts: Array<string | null | undefined>) {

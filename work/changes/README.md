@@ -2,11 +2,11 @@
 
 | Change | Readiness / commission |
 | --- | --- |
-| [MA08: Application owner extraction](open/2026-11-21--ma08-application-owner-extraction/CHANGE.md) | **ACTIVE COMMISSION** after integrated MA07. Move lab, drafts, outbox lease, logging and production consumers to real owners; preserve 112 test files through temporary shims. |
+| [MA08: Application owner extraction](archive/2026-11/other/2026-11-21--ma08-application-owner-extraction/CHANGE.md) | **Done (2026-11-21).** Lab, drafts, outbox relay, and runtime logging have real owners. Host and tool manifests no longer depend on Application. 112 legacy tests remain until MA10. |
 | [MA09: Authority/Writer dependency inversion](open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) | **PLANNER-BLOCKED until WR09 and MA08 integration**; exact typed collaborator, existing transaction boundaries and failure paths planned; fresh source re-audit required before Cursor commission. |
 | [MA10: Module boundary enforcement](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | **PLANNER-BLOCKED until MA08/MA09/WR09 integration**; migrate all 112 legacy tests, remove Application workspace, narrow exports, resolve real SCCs, enforce AST graph, preserve product semantics. |
 
-**Safe sequence:** MA07 integrated at `4168db58` → MA08 → WR09 runtime stabilization → MA09 → MA10 → separate final undertaking acceptance. These packets are not a blanket authorization for Cursor to select their own successors.
+**Safe sequence:** MA07 integrated at `4168db58` → MA08 Done on the undertaking → WR09 runtime stabilization → MA09 → MA10 → separate final undertaking acceptance. These packets are not a blanket authorization for Cursor to select their own successors.
 
 ## Code craftsmanship implementation packets
 

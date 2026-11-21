@@ -65,7 +65,7 @@ function adminEnvironmentForOrigin(origin: string): AdminEnvironment {
   }
   return 'local';
 }
-import { createDrafts } from '@offscreen/application/drafts';
+import { createDrafts } from '@offscreen/story-engine/drafts';
 import { DRAFTS, DraftsController } from './modules/drafts/controller.js';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import {
@@ -78,7 +78,7 @@ import {
   createLabWorkbenchService,
   createQaJourneys,
   type ChamberStorytellerControl,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { createStoryApplication } from '@offscreen/story-engine/stories';
 import {
   readStoryAuthorityConfig,
@@ -105,7 +105,8 @@ import {
   CHAMBER_LAB,
   ChamberLabController,
 } from './modules/stories/chamber-lab-controller.js';
-import type { CacheIncident, ReadCache } from '@offscreen/application/cache';
+import type { ReadCache } from '@offscreen/contracts/read-cache';
+import type { CacheIncident } from '@offscreen/story-engine/stories/read-cache-options';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import {
   QA_JOURNEYS,

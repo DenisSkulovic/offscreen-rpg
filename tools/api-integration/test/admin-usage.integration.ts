@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
-import { bootstrapAdminStaff } from '@offscreen/application/admin';
+import { bootstrapAdminStaff } from '@offscreen/admin';
 import { usageStatusEnvelopeV1Schema } from '@offscreen/contracts/admin';
 import { withApiOnlyAuth } from './helpers/api-only-auth.js';
 

@@ -19,7 +19,7 @@ import {
 } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { createApp } from '@offscreen/api/app';
-import type { ChamberStorytellerControl } from '@offscreen/application/developer-tools';
+import type { ChamberStorytellerControl } from '@offscreen/lab-support';
 import { authOptions } from '@offscreen/api/auth';
 import { LocalDocumentStore, type DocumentStore } from '@offscreen/documents';
 import type { RulePackageReference } from '@offscreen/documents';

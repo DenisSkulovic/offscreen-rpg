@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   WRITER_RESEARCH_JOIN_WAKE_TOPIC,
   WRITER_RESEARCH_WAKE_TOPIC,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   writerResearchJoinWorkflowId,
   writerResearchJoinWorkflowType,

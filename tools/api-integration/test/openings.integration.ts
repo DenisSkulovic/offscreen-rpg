@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import type { Database } from '@offscreen/db';
-import { createOutbox } from '@offscreen/application/outbox';
+import { createOutbox } from '@offscreen/db/outbox-relay';
 import {
   scriptedOpeningTopic,
   createScriptedOpenings,
   scriptedPlayableOpening,
   scriptedOpeningPresentation,
-} from '@offscreen/application/generations';
+} from '@offscreen/story-engine/generations';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { setTimeout as delay } from 'node:timers/promises';
 import {

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { campaign as campaignTable, campaignReport } from '@offscreen/db/campaign-schema';
-import { createStorytellerRuntime } from '@offscreen/application/storyteller';
+import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { requireDefined } from './helpers/require.js';
 import type { TestContext } from 'node:test';

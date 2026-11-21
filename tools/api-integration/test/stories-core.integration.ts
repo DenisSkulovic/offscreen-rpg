@@ -10,16 +10,16 @@ import {
 } from '@offscreen/contracts/stories';
 import { listChamberScenarios } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
-import type { ReadCache } from '@offscreen/application/cache';
+import type { ReadCache } from '@offscreen/contracts/read-cache';
 import {
   createStories,
   StoryError,
   type CampaignDocumentRoot,
-} from '@offscreen/application/stories';
+} from '@offscreen/story-engine/stories';
 import {
   createChamber,
   listChamberScenarios as listServerScenarios,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 import { LocalDocumentStore } from '@offscreen/documents';

@@ -37,9 +37,11 @@
   },
   "dependencies": {
     "@temporalio/client": "1.24.0",
+    "@offscreen/admin": "workspace:*",
     "@offscreen/api": "workspace:*",
-    "@offscreen/application": "workspace:*",
     "@offscreen/contracts": "workspace:*",
+    "@offscreen/lab-support": "workspace:*",
+    "@offscreen/story-engine": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/storyteller": "workspace:*",

@@ -10,8 +10,8 @@ import {
 import {
   createStorytellerBudget,
   resourcesForEffectiveUsagePolicy,
-} from '@offscreen/application/storyteller';
-import { insertSyntheticCurrentAuthorityForTest } from '@offscreen/application/storyteller/test-synthetic-current-authority';
+} from '@offscreen/story-engine/storyteller';
+import { insertSyntheticCurrentAuthorityForTest } from '@offscreen/story-engine/storyteller/test-synthetic-current-authority';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { createTestUsagePolicy } from './helpers/usage-policy.js';
 import type { TestContext } from 'node:test';

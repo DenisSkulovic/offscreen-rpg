@@ -1,6 +1,6 @@
 # MA08 | Extract real Application owners; eliminate the production facade
 
-**State: READY WITH EXPLICIT LIMITS (post-MA07).** Integration branch `undertaking/storyteller-workshop`, inspected source baseline `e122d080`, MA07 integration `4168db589eff302dab176e532d53db0425cd853c`. **This packet supersedes the broad MA08 candidate in the architecture audit; it does not delete the 112-file test suite.** Run branch guard against current undertaking HEAD; targeted source drift from MA07 is expected and approved. No DB migration, provider request, deployed service, protected environment or new policy.
+**State: Done (2026-11-21).** Lab, drafts, outbox relay, and runtime logging have real owners. Production apps and tools no longer import `@offscreen/application`. The package remains a test-only compatibility build with 112 test files until MA10. Not on `main`. Integration branch `undertaking/storyteller-workshop`, inspected source baseline `e122d080`, MA07 integration `4168db589eff302dab176e532d53db0425cd853c`. **This packet supersedes the broad MA08 candidate in the architecture audit; it does not delete the 112-file test suite.** Run branch guard against current undertaking HEAD; targeted source drift from MA07 is expected and approved. No DB migration, provider request, deployed service, protected environment or new policy.
 
 ## Selected end-state and ownership
 
@@ -18,3 +18,16 @@
 Changed workspace `build` and `typecheck` pass, changed API/Worker/GA and two tools build, lab and test consumers resolve NodeNext exports, no runtime import cycle, integration/chamber developer auth gates unchanged, outbox lease negative tests, drafts owner/revision tests, harmless logging records, `pnpm repo:module-graph` plus focused graph tests; report pre-existing baseline failures honestly. Test-only Application remains compiled. Source guard ensures no App production/tool imports. Existing developer paths remain gated; no live evaluation/external model requests, no sandbox reset. Update package references, catalog and ledger after proof; archive, squash-integrate to undertaking and retire worktree.
 
 Read [source map](SOURCE-MAP.md), [decided edits](EXECUTION.md), [bounded tasks](TASKS.md), [proof](PROOF.md). Parent executes whole Change T01–T05, not sibling MA09 or MA10.
+
+## Affected-claim reconciliation
+
+| Claim | Target | Source | Evidence | Negative | Map |
+| --- | --- | --- | --- | --- | --- |
+| Lab ownership | changed: `@offscreen/lab-support` owns developer tools; Story Engine does not depend on lab | `packages/lab-support/src` | `pnpm --filter @offscreen/lab-support build` PASS | no `@offscreen/application` import under lab-support; no lab-support dependency on story-engine manifest | technical lab links retargeted |
+| Drafts | changed owner, same predicates | `packages/story-engine/src/drafts/index.ts` | story-engine build PASS; wrong-owner `DraftError('not_found')` PASS on disposable DB | cross-owner read denied | N/A |
+| Outbox lease | changed owner, same SQL | `packages/db/src/outbox-relay.ts` | db build PASS; wrong `leaseId` leaves row undelivered PASS | ack fence kept; no migration | N/A |
+| Runtime log | changed package, verbatim fields | `packages/runtime-logging/src/index.ts` | runtime-logging build PASS | spread still emits extra runtime keys; TypeScript whitelist only; not a new strip | N/A |
+| Production imports | changed: apps and tools import new owners | apps and tools manifests | api, chamber, api-integration typecheck PASS | production-import ratchet 18/18; Application absent from host/tool manifests | N/A |
+| Legacy tests | unchanged: 112 files remain | `packages/application/test` | application build PASS; 112 files counted | no claim the package is removed | N/A |
+
+`pnpm repo:module-graph` still FAIL on the pre-existing undeclared imports `apps/api/src/app.ts` `@offscreen/game-authority/application` and `apps/game-authority/src/launch-put.ts` `@offscreen/storyteller/tasks`. Same two errors on base `ae312c863`. Worker generation-evidence typecheck remains the known baseline failure and was not rerun as a pass.

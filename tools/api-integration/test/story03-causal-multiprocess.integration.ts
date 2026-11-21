@@ -14,7 +14,7 @@ import {
   openingPreviewSchema,
 } from '@offscreen/contracts/openings';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
-import { createChamberStorytellerControl } from '@offscreen/application/developer-tools';
+import { createChamberStorytellerControl } from '@offscreen/lab-support';
 import { outbox } from '@offscreen/db/outbox-schema';
 import { worldObligation } from '@offscreen/db/campaign-schema';
 import { story, storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
@@ -22,7 +22,7 @@ import {
   storytellerAttempt,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
-import { storytellerDistributedTopic } from '@offscreen/application/storyteller';
+import { storytellerDistributedTopic } from '@offscreen/story-engine/storyteller';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { createRequire } from 'node:module';
 import type * as Drizzle from 'drizzle-orm' with { 'resolution-mode': 'require' };

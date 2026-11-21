@@ -10,7 +10,7 @@ import {
   dryRunLiveComparison,
   fingerprintFrozenStoryAuthority,
   formatLiveComparisonTrial,
-} from '../../packages/application/dist/developer-tools/live-comparison.js';
+} from '../../packages/lab-support/dist/live-comparison.js';
 
 const option = (name) =>
   process.argv

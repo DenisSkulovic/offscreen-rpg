@@ -4,7 +4,7 @@ import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import type { Database } from '@offscreen/db';
-import type { StorytellerRuntimeOptions } from '@offscreen/application/storyteller';
+import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
 import { startStorytellerDistributedLiveStack } from '@offscreen/worker/runtime/storyteller-distributed-live';
 
 const INTEGRATION_GA_EXECUTOR_TOKEN =

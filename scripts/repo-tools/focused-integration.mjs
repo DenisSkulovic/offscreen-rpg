@@ -68,7 +68,9 @@ try {
     for (const filter of [
       '@offscreen/contracts',
       '@offscreen/db',
-      '@offscreen/application',
+      '@offscreen/story-engine',
+      '@offscreen/lab-support',
+      '@offscreen/runtime-logging',
       '@offscreen/api',
       '@offscreen/api-integration',
     ]) {

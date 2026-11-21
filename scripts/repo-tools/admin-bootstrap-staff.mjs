@@ -10,7 +10,7 @@
  * Requires DATABASE_URL. Rejects --environment production.
  */
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { bootstrapAdminStaff } from '@offscreen/application/admin';
+import { bootstrapAdminStaff } from '@offscreen/admin';
 
 function arg(name) {
   const index = process.argv.indexOf(name);

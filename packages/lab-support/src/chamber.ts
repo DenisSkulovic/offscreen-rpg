@@ -16,10 +16,10 @@ import {
   playableOpeningStorySource,
   readOwnedStorySource,
   StoryError,
-} from '../stories/index';
-import type { StoryApplicationOptions } from '../stories/index';
+} from '@offscreen/story-engine/stories';
+import type { StoryApplicationOptions } from '@offscreen/story-engine/stories';
 import { enqueue } from '@offscreen/db/outbox';
-import { storytellerNoticeTopicForWake } from '../storyteller/records';
+import { storytellerNoticeTopicForWake } from '@offscreen/story-engine/storyteller/records';
 import type { ChamberStorytellerControl } from './storyteller-control';
 
 export { listChamberScenarios };

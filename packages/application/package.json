@@ -31,6 +31,50 @@
       "types": "./dist/developer-tools/index.d.ts",
       "default": "./dist/developer-tools/index.js"
     },
+    "./developer-tools/usage-profiles": {
+      "types": "./dist/developer-tools/usage-profiles.d.ts",
+      "default": "./dist/developer-tools/usage-profiles.js"
+    },
+    "./developer-tools/lab/fixture-specimens": {
+      "types": "./dist/developer-tools/lab/fixture-specimens.d.ts",
+      "default": "./dist/developer-tools/lab/fixture-specimens.js"
+    },
+    "./developer-tools/chamber-lab-catalog": {
+      "types": "./dist/developer-tools/chamber-lab-catalog.d.ts",
+      "default": "./dist/developer-tools/chamber-lab-catalog.js"
+    },
+    "./developer-tools/long-story-memory-corpus": {
+      "types": "./dist/developer-tools/long-story-memory-corpus.d.ts",
+      "default": "./dist/developer-tools/long-story-memory-corpus.js"
+    },
+    "./developer-tools/memory-evaluator": {
+      "types": "./dist/developer-tools/memory-evaluator.d.ts",
+      "default": "./dist/developer-tools/memory-evaluator.js"
+    },
+    "./developer-tools/evidence-packing-evaluator": {
+      "types": "./dist/developer-tools/evidence-packing-evaluator.d.ts",
+      "default": "./dist/developer-tools/evidence-packing-evaluator.js"
+    },
+    "./developer-tools/creative-exploration-evaluator": {
+      "types": "./dist/developer-tools/creative-exploration-evaluator.d.ts",
+      "default": "./dist/developer-tools/creative-exploration-evaluator.js"
+    },
+    "./developer-tools/live-evaluation": {
+      "types": "./dist/developer-tools/live-evaluation.d.ts",
+      "default": "./dist/developer-tools/live-evaluation.js"
+    },
+    "./developer-tools/storyteller-control": {
+      "types": "./dist/developer-tools/storyteller-control.d.ts",
+      "default": "./dist/developer-tools/storyteller-control.js"
+    },
+    "./developer-tools/playability-harness": {
+      "types": "./dist/developer-tools/playability-harness.d.ts",
+      "default": "./dist/developer-tools/playability-harness.js"
+    },
+    "./developer-tools/live-comparison": {
+      "types": "./dist/developer-tools/live-comparison.d.ts",
+      "default": "./dist/developer-tools/live-comparison.js"
+    },
     "./storyteller": {
       "types": "./dist/storyteller/index.d.ts",
       "default": "./dist/storyteller/index.js"
@@ -70,6 +114,8 @@
     "@offscreen/game": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/story-engine": "workspace:*",
+    "@offscreen/lab-support": "workspace:*",
+    "@offscreen/runtime-logging": "workspace:*",
     "drizzle-orm": "0.45.2"
   },
   "devDependencies": {

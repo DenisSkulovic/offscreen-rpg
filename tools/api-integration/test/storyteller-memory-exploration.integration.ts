@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerAttempt, storytellerFunding, storytellerMemoryExploration, storytellerOperation, storytellerRun } from '@offscreen/db/storyteller-schema';
-import { createStorytellerBudget, createDispatchReviewControls, createMemoryProviderRoundRuntime, CanonicalMemoryExplorationError, MemoryExplorationControllerError, resourcesForEffectiveUsagePolicy, runMemoryExploration, type MemoryExplorationSnapshot } from '@offscreen/application/storyteller';
+import { createStorytellerBudget, createDispatchReviewControls, createMemoryProviderRoundRuntime, CanonicalMemoryExplorationError, MemoryExplorationControllerError, resourcesForEffectiveUsagePolicy, runMemoryExploration, type MemoryExplorationSnapshot } from '@offscreen/story-engine/storyteller';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';

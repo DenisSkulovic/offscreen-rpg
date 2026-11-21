@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import { gameAuthoritySeamVersion } from '@offscreen/contracts/game-authority';
 import {
   createRemoteStorySeam,

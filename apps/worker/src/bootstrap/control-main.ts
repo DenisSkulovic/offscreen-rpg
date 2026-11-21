@@ -1,7 +1,7 @@
 import {
   classifyRuntimeError,
   writeRuntimeLog,
-} from '@offscreen/application/runtime-logging';
+} from '@offscreen/runtime-logging';
 import { startControlRuntime } from '../runtime/control';
 import { readControlWorkerConfig } from './config';
 

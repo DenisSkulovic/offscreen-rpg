@@ -4,7 +4,7 @@ import {
   LAUNCH_WAKE_TOPIC,
   storytellerDistributedTopic,
   storytellerTopic,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   storytellerControlTaskQueue,
   storytellerDistributedWorkflowType,

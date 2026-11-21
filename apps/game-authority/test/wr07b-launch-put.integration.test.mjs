@@ -14,8 +14,8 @@ import { storyPassage } from '@offscreen/db/story-schema';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
-import { StoryError } from '@offscreen/application/stories';
+} from '@offscreen/lab-support';
+import { StoryError } from '@offscreen/story-engine/stories';
 import { createGameAuthoritySeam } from '../dist/src/application.js';
 
 function entitlementProfile(revision) {

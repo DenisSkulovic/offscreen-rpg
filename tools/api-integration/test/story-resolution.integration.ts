@@ -7,7 +7,7 @@ import {
   storySnapshotSchema,
 } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
-import { createChamber } from '@offscreen/application/developer-tools';
+import { createChamber } from '@offscreen/lab-support';
 import {
   createScriptedContinuations,
   scriptedGeneratedIntervalRealMs,
@@ -15,16 +15,16 @@ import {
   scriptedPlayableContinuation,
   scriptedTimedContinuation,
   storyContinuationFromGeneratedResult,
-} from '@offscreen/application/generations';
+} from '@offscreen/story-engine/generations';
 import {
   scriptedOpeningPresentation,
   scriptedPlayableOpening,
-} from '@offscreen/application/generations';
+} from '@offscreen/story-engine/generations';
 import {
   createStories,
   resolutionRequestDigest,
   StoryError,
-} from '@offscreen/application/stories';
+} from '@offscreen/story-engine/stories';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';

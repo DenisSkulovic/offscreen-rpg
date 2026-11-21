@@ -4,7 +4,7 @@ import type { Database } from '@offscreen/db';
 import {
   createMemoryEvaluationManifest,
   preflightMemoryEvaluation,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import {
   evaluationPacketInspectionSchema,
   type MemoryEvaluationManifest,

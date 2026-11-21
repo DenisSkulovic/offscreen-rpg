@@ -32,12 +32,12 @@ import {
 } from '@offscreen/db/story-schema';
 import { and, desc, eq, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { parseStoryIdentifier, StoryError } from '../stories/errors';
-import { decisionPlanSchema, waitPlanSchema } from '../stories/plans';
-import { createStories } from '../stories/index';
-import { campaignReportSourceSchema } from '../campaign/report-source';
+import { parseStoryIdentifier, StoryError } from '@offscreen/story-engine/stories/errors';
+import { decisionPlanSchema, waitPlanSchema } from '@offscreen/story-engine/stories/plans';
+import { createStories } from '@offscreen/story-engine/stories';
+import { campaignReportSourceSchema } from '@offscreen/story-engine/campaign/report-source';
 import type { DocumentStore } from '@offscreen/documents';
-import { readPassageDocument } from '../stories/passage-documents';
+import { readPassageDocument } from '@offscreen/story-engine/stories/passage-documents';
 
 type OwnedStory = Readonly<{
   ownerId: string;

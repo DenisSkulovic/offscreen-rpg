@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
-import { bootstrapAdminStaff } from '@offscreen/application/admin';
+import { bootstrapAdminStaff } from '@offscreen/admin';
 import {
   adminAuditPageV1Schema,
   adminStaffAccessV1Schema,

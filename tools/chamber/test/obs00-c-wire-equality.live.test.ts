@@ -24,7 +24,7 @@ import {
   destroyDisposableSandboxDatabase,
   materializeLongStoryMemoryCorpus,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import {
   buildLexicalStoryIndex,
   createCanonicalMemoryExplorer,
@@ -44,7 +44,7 @@ import {
   wrapApprovedWorkerProvider,
   insertSyntheticCurrentAuthorityForTest,
   storytellerTopic,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';

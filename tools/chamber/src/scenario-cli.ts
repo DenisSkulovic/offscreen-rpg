@@ -6,7 +6,7 @@
 import {
   createLabWorkbenchService,
   LabWorkbenchError,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { LauncherFlagError, parseLabCliArgs } from './modes/cli-flags.js';
 
 async function main(argv: string[]): Promise<number> {

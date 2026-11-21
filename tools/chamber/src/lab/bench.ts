@@ -6,7 +6,7 @@ import {
   createLabEntropy,
   createSeededDraw,
   openChamberLabScenario,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import {
   addCalendarMonths,
   compileWorldDate,

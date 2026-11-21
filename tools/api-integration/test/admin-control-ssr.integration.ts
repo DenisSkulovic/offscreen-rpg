@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
-import { bootstrapAdminStaff } from '@offscreen/application/admin';
+import { bootstrapAdminStaff } from '@offscreen/admin';
 import { withAppIntegration } from './helpers/app-integration.js';
 import { withBrowserSession } from './helpers/browser-session.js';
 

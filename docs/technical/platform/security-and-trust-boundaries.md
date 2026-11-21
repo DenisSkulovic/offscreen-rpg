@@ -148,5 +148,5 @@ Read at `b3113814`, and not re-executed. Admin policy and the situation read lat
 - [situation read](../../../packages/admin/src/situation-reads.ts)
 - [situation schema](../../../packages/contracts/src/admin.ts) `supportSituationV1Schema`
 - [operation trace](../../../packages/storyteller/src/providers/operation-trace.ts)
-- [lab evidence redaction](../../../packages/application/src/developer-tools/lab/lab-evidence.ts)
+- [lab evidence redaction](../../../packages/lab-support/src/lab/lab-evidence.ts)
 - [worker activities](../../../apps/worker/src/activities/index.ts) and [worker map](../../../apps/worker/README.md)

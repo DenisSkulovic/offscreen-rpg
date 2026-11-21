@@ -11,13 +11,13 @@ import type { Database } from '@offscreen/db';
 import {
   scriptedOpeningPresentation,
   scriptedPlayableOpening,
-} from '@offscreen/application/generations';
+} from '@offscreen/story-engine/generations';
 import {
   createStories,
   StoryError,
   playableOpeningStorySource,
-} from '@offscreen/application/stories';
-import { createChamber } from '@offscreen/application/developer-tools';
+} from '@offscreen/story-engine/stories';
+import { createChamber } from '@offscreen/lab-support';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';

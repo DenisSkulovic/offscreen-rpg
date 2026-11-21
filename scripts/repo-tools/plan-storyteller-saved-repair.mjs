@@ -5,12 +5,12 @@ import { createDatabase } from '../../packages/db/dist/src/index.js';
 import {
   applySavedRepair,
   SavedRepairApplyError,
-} from '../../packages/application/dist/storyteller/saved-repair-apply.js';
+} from '../../packages/story-engine/dist/storyteller/saved-repair-apply.js';
 import {
   previewSavedRepair,
   SavedRepairPlanRefusal,
-} from '../../packages/application/dist/storyteller/saved-repair-plan.js';
-import { SavedRepairInspectionRefusal } from '../../packages/application/dist/storyteller/saved-response-inspection.js';
+} from '../../packages/story-engine/dist/storyteller/saved-repair-plan.js';
+import { SavedRepairInspectionRefusal } from '../../packages/story-engine/dist/storyteller/saved-response-inspection.js';
 import { fail } from './process.mjs';
 
 const ALLOWED_DATABASE_PATHS = new Set([

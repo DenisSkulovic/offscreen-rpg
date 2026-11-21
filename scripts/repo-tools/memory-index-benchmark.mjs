@@ -5,10 +5,10 @@ import { LocalDocumentStore } from '../../packages/documents/dist/index.js';
 import {
   buildLongStoryMemoryCorpus,
   materializeLongStoryMemoryCorpus,
-} from '../../packages/application/dist/developer-tools/long-story-memory-corpus.js';
-import { evaluateIndexedMemoryRetrieval } from '../../packages/application/dist/developer-tools/memory-evaluator.js';
-import { createLexicalStoryIndexCache } from '../../packages/application/dist/storyteller/lexical-story-index-cache.js';
-import { resolveStoryRetrievalRecipe } from '../../packages/application/dist/storyteller/retrieval-recipes.js';
+} from '../../packages/lab-support/dist/long-story-memory-corpus.js';
+import { evaluateIndexedMemoryRetrieval } from '../../packages/lab-support/dist/memory-evaluator.js';
+import { createLexicalStoryIndexCache } from '../../packages/story-engine/dist/storyteller/lexical-story-index-cache.js';
+import { resolveStoryRetrievalRecipe } from '../../packages/story-engine/dist/storyteller/retrieval-recipes.js';
 
 const requested = process.argv.slice(2).map(Number);
 const sceneCounts = requested.length ? requested : [200, 2000];

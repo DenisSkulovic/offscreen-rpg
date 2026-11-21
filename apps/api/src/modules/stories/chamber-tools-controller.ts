@@ -10,7 +10,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { createChamber } from '@offscreen/application/developer-tools';
+import type { createChamber } from '@offscreen/lab-support';
 import { StoryError } from '@offscreen/story-engine/stories';
 import { IdentityService } from '../auth/identity.js';
 import { OPENINGS } from '../drafts/openings-controller.js';

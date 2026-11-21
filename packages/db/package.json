@@ -31,6 +31,10 @@
       "types": "./dist/src/outbox.d.ts",
       "default": "./dist/src/outbox.js"
     },
+    "./outbox-relay": {
+      "types": "./dist/src/outbox-relay.d.ts",
+      "default": "./dist/src/outbox-relay.js"
+    },
     "./story-schema": {
       "types": "./dist/src/schema/stories.d.ts",
       "default": "./dist/src/schema/stories.js"

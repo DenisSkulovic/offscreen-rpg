@@ -14,12 +14,12 @@ import {
   storySceneCheckpoint,
 } from '@offscreen/db/story-schema';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import { createGameAuthoritySeam } from '../../../apps/game-authority/dist/src/application.js';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import {
   HARBOR_PROMPT,
   assertQuiescentOpening,

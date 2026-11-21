@@ -23,14 +23,15 @@
     "story-play": "node ../../scripts/repo-tools/story-play.mjs",
     "story-inspect": "node ../../scripts/repo-tools/story-session-report.mjs",
     "storyteller-packet-audit": "pnpm --filter @offscreen/storyteller build && node ../../scripts/repo-tools/storyteller-request-audit.mjs",
-    "storyteller-playability": "pnpm --filter @offscreen/storyteller build && pnpm --filter @offscreen/application build && node ../../scripts/repo-tools/storyteller-playability.mjs",
-    "storyteller-live-comparison": "pnpm --filter @offscreen/contracts build && pnpm --filter @offscreen/application build && node ../../scripts/repo-tools/storyteller-live-comparison.mjs",
-    "memory-index-benchmark": "pnpm --filter @offscreen/documents build && pnpm --filter @offscreen/application build && node ../../scripts/repo-tools/memory-index-benchmark.mjs"
+    "storyteller-playability": "pnpm --filter @offscreen/storyteller build && pnpm --filter @offscreen/lab-support build && node ../../scripts/repo-tools/storyteller-playability.mjs",
+    "storyteller-live-comparison": "pnpm --filter @offscreen/contracts build && pnpm --filter @offscreen/lab-support build && node ../../scripts/repo-tools/storyteller-live-comparison.mjs",
+    "memory-index-benchmark": "pnpm --filter @offscreen/documents build && pnpm --filter @offscreen/lab-support build && pnpm --filter @offscreen/story-engine build && node ../../scripts/repo-tools/memory-index-benchmark.mjs"
   },
   "dependencies": {
     "@offscreen/api": "workspace:*",
-    "@offscreen/application": "workspace:*",
     "@offscreen/contracts": "workspace:*",
+    "@offscreen/lab-support": "workspace:*",
+    "@offscreen/story-engine": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/game": "workspace:*",
     "@offscreen/storyteller": "workspace:*",

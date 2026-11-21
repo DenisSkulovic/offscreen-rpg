@@ -34,6 +34,10 @@
     "./generations/*": {
       "types": "./dist/generations/*.d.ts",
       "default": "./dist/generations/*.js"
+    },
+    "./drafts": {
+      "types": "./dist/drafts/index.d.ts",
+      "default": "./dist/drafts/index.js"
     }
   },
   "scripts": {

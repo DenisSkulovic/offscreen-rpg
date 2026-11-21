@@ -14,7 +14,7 @@ import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import { offerSchema } from '@offscreen/game/offers';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
-import { WRITER_SCENE_WAKE_TOPIC } from '@offscreen/application/storyteller';
+import { WRITER_SCENE_WAKE_TOPIC } from '@offscreen/story-engine/storyteller';
 import {
   writerSceneWorkflowId,
   writerSceneWorkflowType,
@@ -22,7 +22,7 @@ import {
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { admitCampaignActionInTransaction } from '../../../packages/story-engine/dist/campaign/actions.js';
 import { settleActionExecution } from '../../../packages/story-engine/dist/campaign/action-executions.js';
 import { saveOfferPlans } from '../../../packages/story-engine/dist/campaign/persistence.js';

@@ -6,7 +6,7 @@ import {
 import { Client, Connection } from '@temporalio/client';
 import { NativeConnection, Worker } from '@temporalio/worker';
 import type { Database } from '@offscreen/db';
-import { createOutbox } from '@offscreen/application/outbox';
+import { createOutbox } from '@offscreen/db/outbox-relay';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createScriptedContinuations } from '@offscreen/story-engine/generations';
 import { createStories } from '@offscreen/story-engine/stories';

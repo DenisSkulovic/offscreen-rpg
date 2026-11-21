@@ -3,7 +3,7 @@ import { readExecutionWorkerConfig } from './config';
 import {
   classifyRuntimeError,
   writeRuntimeLog,
-} from '@offscreen/application/runtime-logging';
+} from '@offscreen/runtime-logging';
 
 async function main() {
   let runtime: Awaited<ReturnType<typeof startExecutionRuntime>> | undefined;

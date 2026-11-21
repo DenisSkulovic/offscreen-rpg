@@ -10,18 +10,18 @@ import type * as Drizzle from 'drizzle-orm' with {
   'resolution-mode': 'require',
 };
 import type { CampaignStart } from '@offscreen/contracts/campaign';
-import { createDrafts } from '@offscreen/application/drafts';
-import { createScriptedOpenings } from '@offscreen/application/generations';
+import { createDrafts } from '@offscreen/story-engine/drafts';
+import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import {
   createStorytellerRuntime,
   storytellerDistributedTopic,
   storytellerTopic,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   createChamber,
   createChamberStorytellerControl,
-} from '@offscreen/application/developer-tools';
-import { createStories } from '@offscreen/application/stories';
+} from '@offscreen/lab-support';
+import { createStories } from '@offscreen/story-engine/stories';
 import { LocalDocumentStore } from '@offscreen/documents';
 import {
   withAppIntegration,

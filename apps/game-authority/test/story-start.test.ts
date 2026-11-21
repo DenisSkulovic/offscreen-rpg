@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import type { GameAuthoritySeam } from '../src/application';
 import { startGameAuthorityServer } from '../src/server';
 

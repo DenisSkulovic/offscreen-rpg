@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { HttpException } from '@nestjs/common';
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import { startGameAuthorityServer } from '@offscreen/game-authority/server';
 import { StoriesController } from '../dist/src/modules/stories/controller.js';
 import {

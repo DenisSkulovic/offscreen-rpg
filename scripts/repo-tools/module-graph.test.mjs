@@ -14,6 +14,9 @@ import {
 } from './module-graph-core.mjs';
 import {
   buildModuleGraph,
+  collectRequireSpecifiers,
+  isApplicationImportBanScope,
+  isForbiddenApplicationSpecifier,
   isProductionSource,
   renderHuman,
   renderMermaid,
@@ -372,6 +375,115 @@ function packageRecord(
     manifest: { name, exports: exportsField, dependencies, devDependencies },
   };
 }
+
+test('a synthetic forbidden application import in production scope fails', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'abc',
+    typescript,
+    packages: [
+      packageRecord('apps/api', '@offscreen/api', { '.': './dist/index.js' }),
+      packageRecord('packages/application', '@offscreen/application', {
+        '.': './dist/index.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'apps/api/src/app.ts',
+        text: "import { createDrafts } from '@offscreen/application/drafts';\n",
+      },
+    ],
+  });
+  assert.equal(report.result, 'fail');
+  assert.ok(
+    report.errors.some(
+      (item) =>
+        item.code === 'forbidden-production-application-import' &&
+        item.file === 'apps/api/src/app.ts',
+    ),
+  );
+});
+
+test('comment-only application mention and legacy test imports stay out of scope', () => {
+  const host = buildModuleGraph({
+    baselineSha: 'abc',
+    typescript,
+    packages: [
+      packageRecord('apps/worker', '@offscreen/worker', {
+        '.': './dist/index.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'apps/worker/src/runtime/index.ts',
+        text: "// import { createOutbox } from '@offscreen/application/outbox';\nexport const ready = true;\n",
+      },
+    ],
+  });
+  assert.ok(
+    !host.errors.some(
+      (item) => item.code === 'forbidden-production-application-import',
+    ),
+  );
+  assert.equal(
+    isApplicationImportBanScope('packages/application/test/wr07b.test.mjs'),
+    false,
+  );
+  assert.equal(
+    isForbiddenApplicationSpecifier('@offscreen/application/stories'),
+    true,
+  );
+  const legacy = buildModuleGraph({
+    baselineSha: 'abc',
+    typescript,
+    packages: [
+      packageRecord('packages/application', '@offscreen/application', {
+        '.': './dist/index.js',
+        './stories': './dist/stories/index.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'packages/application/test/compat.test.mjs',
+        text: "import { StoryError } from '@offscreen/application/stories';\n",
+      },
+    ],
+  });
+  assert.ok(
+    !legacy.errors.some(
+      (item) => item.code === 'forbidden-production-application-import',
+    ),
+  );
+});
+
+test('repo-tools require of application fails and comments do not', () => {
+  assert.deepEqual(
+    collectRequireSpecifiers(
+      "const mod = require('@offscreen/application/outbox');\n",
+    ).map((item) => item.specifier),
+    ['@offscreen/application/outbox'],
+  );
+  assert.deepEqual(
+    collectRequireSpecifiers("// require('@offscreen/application/outbox')\n"),
+    [],
+  );
+  const report = buildModuleGraph({
+    baselineSha: 'abc',
+    typescript,
+    packages: [],
+    sources: [
+      {
+        path: 'scripts/repo-tools/synthetic-forbidden.mjs',
+        text: "const x = require('@offscreen/application/drafts');\n",
+      },
+    ],
+  });
+  assert.equal(report.result, 'fail');
+  assert.ok(
+    report.errors.some(
+      (item) => item.code === 'forbidden-production-application-import',
+    ),
+  );
+});
 
 test('application domains are the first source subdirectory', () => {
   assert.equal(

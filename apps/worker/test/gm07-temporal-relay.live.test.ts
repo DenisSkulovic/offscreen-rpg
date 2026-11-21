@@ -17,11 +17,11 @@ import {
   gameActionReceipt,
   storyPublicEvent,
 } from '@offscreen/db/campaign-schema';
-import { createStories } from '@offscreen/application/stories';
+import { createStories } from '@offscreen/story-engine/stories';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { startRuntime } from '../src/runtime/index.js';

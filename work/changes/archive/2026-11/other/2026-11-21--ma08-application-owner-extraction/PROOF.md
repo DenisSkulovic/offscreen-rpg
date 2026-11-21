@@ -13,4 +13,12 @@
 | Package graph | all selected builds, module graph and import ratchet | test-only compatibility passes, runtime App import fails |
 | Legacy | 112 test files retained in existing package | no wholesale deletion or counterfeit green |
 
-**Actual evidence:** `NOT RUN`; exact test harness and baseline failures to be recorded by MA08 parent. No external provider spend or protected SQL mutation authorized. Post-MA08 Application is a compatibility/test shell, intentionally removed only by MA10.
+**Actual evidence (2026-11-21, worktree `change/ma08-application-owner-extraction`):**
+
+- `pnpm --filter @offscreen/lab-support build` PASS; `@offscreen/db`, `@offscreen/story-engine`, `@offscreen/runtime-logging`, `@offscreen/application` build PASS.
+- `pnpm --filter @offscreen/api typecheck` PASS; `@offscreen/chamber` typecheck PASS; `@offscreen/api-integration` typecheck PASS.
+- `node --test scripts/repo-tools/module-graph.test.mjs` PASS 18/18, including forbidden import, comment-only, and legacy test-only cases.
+- Disposable DB: wrong outbox `leaseId` does not ack; draft read by non-owner returns `DraftError('not_found')`. PASS.
+- Logger: `writeRuntimeLog` still spreads `input`, so an extra field is present in JSON. Preserved verbatim behavior, not a runtime field strip.
+- `pnpm repo:module-graph` FAIL. Errors match base `ae312c863`: undeclared `@offscreen/game-authority/application` and `@offscreen/storyteller/tasks`. Not introduced by this Change.
+- Application test file count remains 112. No provider spend. No sandbox reset.

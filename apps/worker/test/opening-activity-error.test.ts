@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { StoryError } from '@offscreen/application/stories';
-import { GenerationError } from '@offscreen/application/generations';
+import { StoryError } from '@offscreen/story-engine/stories';
+import { GenerationError } from '@offscreen/story-engine/generations';
 import { createWorkerActivities } from '../src/activities/index';
 
 const generationId = '00000000-0000-4000-8000-000000000101';

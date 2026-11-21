@@ -6,11 +6,11 @@ import {
   resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
   usageEntitlementProfileSchema,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   syntheticPlatformUsagePolicy,
   syntheticUsageProfiles,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 
 test('task admission intersects entitlement, provider and price ceilings', () => {

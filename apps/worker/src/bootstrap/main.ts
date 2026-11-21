@@ -5,7 +5,7 @@ import { startRuntime } from '../runtime';
 import {
   classifyRuntimeError,
   writeRuntimeLog,
-} from '@offscreen/application/runtime-logging';
+} from '@offscreen/runtime-logging';
 import { OutboxRelayError } from '../outbox/relay';
 import {
   createDocumentStoreFromEnv,

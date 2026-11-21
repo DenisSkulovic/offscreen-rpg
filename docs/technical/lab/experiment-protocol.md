@@ -62,7 +62,7 @@ This is *semantic setup* and must be rejected if a real accepted-shift fixture c
 
 **Selected source/module ownership (future):**
 - `packages/contracts/src/chamber-lab.ts`: versioned scenario/run/command/observation public contracts; no Node/DB import.
-- `packages/application/src/developer-tools/lab/`: typed fixture recipe validators, app-boundary command adapter, run orchestration/steps, observation/diff/assertion policy, faults under explicitly local composition. Use separate small modules by responsibility; keep `createChamber` legacy API stable until migration.
+- `packages/lab-support/src/lab/`: typed fixture recipe validators, app-boundary command adapter, run orchestration/steps, observation/diff/assertion policy, faults under explicitly local composition. Use separate small modules by responsibility; keep `createChamber` legacy API stable until migration. Application keeps a test-only reexport until MA10.
 - `tools/chamber/src/lab/`: CLI, Bench direct pure evaluator, isolated Sandbox provisioning, Connected/held mode adapters and launch commands. Existing `tools/chamber/src/main.ts` mode flags remain compatible until a controlled launcher Change.
 - `apps/api/src/modules/stories/*`: conditional dev routes mapping **only authenticated local Chamber** commands/reads; no normal API developer endpoints.
 - `apps/web/src/features/developer-tools/chamber/`: React 19/Next 16/TanStack client, query keys by fixture/run/story/viewer, semantic editor, timeline, diff, command palette and QA. **No business rule or untyped mutation union in React.**

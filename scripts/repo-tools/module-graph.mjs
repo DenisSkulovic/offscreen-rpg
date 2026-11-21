@@ -16,10 +16,12 @@ import {
   stronglyConnectedComponents,
   typeOnlyCycles,
 } from './module-graph-core.mjs';
+import { stripComments } from './host-domain-imports.mjs';
 
 export const SCHEMA = 'offscreen.module-graph.v1';
 const SUMMARY_LIMIT = 12;
 const WORKSPACE_SCOPE = '@offscreen/';
+export const FORBIDDEN_APPLICATION_IMPORT = '@offscreen/application';
 
 /**
  * @typedef {object} PackageRecord
@@ -183,6 +185,25 @@ export function buildModuleGraph(input) {
         warnings,
       });
     }
+    if (isApplicationImportBanScope(file)) {
+      for (const specifier of collectRequireSpecifiers(source.text)) {
+        if (!isForbiddenApplicationSpecifier(specifier.specifier)) continue;
+        classifySpecifier({
+          specifier,
+          file,
+          owner,
+          packages,
+          byName,
+          fileSet,
+          exists: input.exists ?? (() => false),
+          sourceEdges,
+          domainEdges,
+          mismatches,
+          errors,
+          warnings,
+        });
+      }
+    }
   }
 
   const packageNodes = packages.map((item) => item.name);
@@ -301,7 +322,9 @@ export function collectSpecifiers(typescript, filePath, text) {
     true,
     filePath.endsWith('.tsx')
       ? typescript.ScriptKind.TSX
-      : typescript.ScriptKind.TS,
+      : filePath.endsWith('.mjs')
+        ? typescript.ScriptKind.JS
+        : typescript.ScriptKind.TS,
   );
   /** @type {Array<{ specifier: string, kind: string, line: number }>} */
   const found = [];
@@ -369,6 +392,50 @@ export function subpathIsExported(manifest, subpath) {
     if (new RegExp(expression, 'u').test(key)) return true;
   }
   return false;
+}
+
+/**
+ * @param {string} specifier
+ */
+export function isForbiddenApplicationSpecifier(specifier) {
+  return (
+    specifier === FORBIDDEN_APPLICATION_IMPORT ||
+    specifier.startsWith(`${FORBIDDEN_APPLICATION_IMPORT}/`)
+  );
+}
+
+/**
+ * Production apps, tools, and repo-tool entrypoints must not import Application.
+ *
+ * @param {string} filePath
+ */
+export function isApplicationImportBanScope(filePath) {
+  const file = normalize(filePath);
+  if (/^scripts\/repo-tools\/[^/]+\.mjs$/u.test(file)) {
+    return !file.endsWith('.test.mjs');
+  }
+  if (/^(?:apps|tools)\/[^/]+\/src\//u.test(file)) {
+    return isProductionSource(file);
+  }
+  return false;
+}
+
+/**
+ * @param {string} text
+ * @returns {Array<{ specifier: string, kind: string, line: number }>}
+ */
+export function collectRequireSpecifiers(text) {
+  const code = stripComments(text);
+  /** @type {Array<{ specifier: string, kind: string, line: number }>} */
+  const found = [];
+  for (const match of code.matchAll(
+    /\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+  )) {
+    const index = match.index ?? 0;
+    const line = text.slice(0, index).split('\n').length;
+    found.push({ specifier: match[1], kind: 'require', line });
+  }
+  return found;
 }
 
 /**
@@ -475,6 +542,14 @@ export function matchWorkspacePackage(specifier, packageNames) {
  */
 function classifySpecifier(input) {
   const { specifier, file, owner } = input;
+  if (
+    !specifier.specifier.startsWith('.') &&
+    isForbiddenApplicationSpecifier(specifier.specifier) &&
+    isApplicationImportBanScope(file)
+  ) {
+    pushMismatch(input, 'forbidden-production-application-import', true);
+    return;
+  }
   if (specifier.specifier.startsWith('.')) {
     if (isAssetSpecifier(specifier.specifier)) return;
     classifyRelative(input);
@@ -831,10 +906,16 @@ function listWorkspaceSources(root) {
  * @param {string} file
  */
 function isWorkspaceSource(file) {
-  if (!/\.(?:ts|tsx)$/u.test(file) || file.endsWith('.d.ts')) return false;
   if (file.split('/').some((part) => part === 'dist' || part === 'generated')) {
     return false;
   }
+  if (
+    /^scripts\/repo-tools\/[^/]+\.mjs$/u.test(file) &&
+    !file.endsWith('.test.mjs')
+  ) {
+    return true;
+  }
+  if (!/\.(?:ts|tsx)$/u.test(file) || file.endsWith('.d.ts')) return false;
   return /^(?:apps|packages|tools)\/[^/]+\/src\//u.test(file);
 }
 

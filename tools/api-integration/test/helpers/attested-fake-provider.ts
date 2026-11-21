@@ -1,4 +1,4 @@
-import type { StorytellerRuntimeOptions } from '@offscreen/application/storyteller';
+import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
 import { prepareOpenRouterWire } from '@offscreen/storyteller/providers/openrouter';
 
 type FakeProvider = NonNullable<StorytellerRuntimeOptions['provider']>;

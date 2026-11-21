@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Database } from '@offscreen/db';
-import { preflightLiveEvaluation } from '@offscreen/application/developer-tools';
+import { preflightLiveEvaluation } from '@offscreen/lab-support';
 import type {
   EvaluationPacketConfig,
   MemoryEvaluationPacketConfig,

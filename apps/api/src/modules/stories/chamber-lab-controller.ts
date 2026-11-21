@@ -13,7 +13,7 @@ import type { Request } from 'express';
 import {
   LabWorkbenchError,
   type createLabWorkbenchService,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { z } from 'zod';
 import { IdentityService } from '../auth/identity.js';
 

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import {
   buildLongStoryMemoryCorpus,
   materializeLongStoryMemoryCorpus,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import {
   buildLexicalStoryIndex,
   createCanonicalMemoryExplorer,
@@ -15,7 +15,7 @@ import {
   prepareMemoryEvidenceContext,
   prepareAdmittedStorytellerTask,
   resolveStoryRetrievalRecipe,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import type { Database } from '@offscreen/db';

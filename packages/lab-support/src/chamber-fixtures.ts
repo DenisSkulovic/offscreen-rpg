@@ -2,7 +2,7 @@ import {
   listChamberScenarios as listCatalogScenarios,
   type ChamberScenario,
 } from '@offscreen/contracts/chamber';
-import { StoryError } from '../stories/errors';
+import { StoryError } from '@offscreen/story-engine/stories/errors';
 
 export type { ChamberScenario };
 

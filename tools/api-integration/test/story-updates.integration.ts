@@ -6,7 +6,7 @@ import {
   storySnapshotSchema,
   storyUpdateHintSchema,
 } from '@offscreen/contracts/stories';
-import { incrementStoryViewVersion } from '@offscreen/application/stories';
+import { incrementStoryViewVersion } from '@offscreen/story-engine/stories';
 import { registerStoryConcern } from './helpers/story-suite.js';
 import { prepareCurrentCandidate } from './story-start.integration.js';
 

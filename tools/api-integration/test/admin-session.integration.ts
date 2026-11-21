@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bootstrapAdminStaff } from '@offscreen/application/admin';
+import { bootstrapAdminStaff } from '@offscreen/admin';
 import type { AdminErrorV1, AdminSelfV1 } from '@offscreen/contracts/admin';
 import { withApiOnlyAuth } from './helpers/api-only-auth.js';
 

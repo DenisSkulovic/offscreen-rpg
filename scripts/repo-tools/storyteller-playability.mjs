@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import {
   createPlayabilityRunManifest,
   formatPlayabilityRunManifest,
-} from '../../packages/application/dist/developer-tools/playability-harness.js';
+} from '../../packages/lab-support/dist/playability-harness.js';
 
 const directory = join(
   tmpdir(),

@@ -7,11 +7,11 @@ import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { createStories } from '@offscreen/application/stories';
+import { createStories } from '@offscreen/story-engine/stories';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { startRuntime } from '../src/runtime/index.js';

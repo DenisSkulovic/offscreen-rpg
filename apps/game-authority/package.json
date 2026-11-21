@@ -20,7 +20,7 @@
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
-    "@offscreen/application": "workspace:*",
+    "@offscreen/runtime-logging": "workspace:*",
     "@offscreen/story-engine": "workspace:*",
     "@offscreen/contracts": "workspace:*",
     "@offscreen/db": "workspace:*",

@@ -13,11 +13,11 @@ import {
 } from '@offscreen/db/storyteller-schema';
 import {
   admitLaunchWriterMission,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { runScriptedLaunchWriter } from '../src/launch/scripted-launch';
 
 const LIBRARY_ROOT_HASH = 'c'.repeat(64);

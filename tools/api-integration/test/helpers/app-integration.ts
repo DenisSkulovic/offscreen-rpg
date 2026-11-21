@@ -18,8 +18,8 @@ import {
   type StorytellerDistributedLiveWorkers,
 } from './storyteller-distributed-live-workers.js';
 import { createApp } from '@offscreen/api/app';
-import type { ChamberStorytellerControl } from '@offscreen/application/developer-tools';
-import type { StorytellerRuntimeOptions } from '@offscreen/application/storyteller';
+import type { ChamberStorytellerControl } from '@offscreen/lab-support';
+import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
 import { authOptions } from '@offscreen/api/auth';
 import { requireCookie } from './require.js';
 

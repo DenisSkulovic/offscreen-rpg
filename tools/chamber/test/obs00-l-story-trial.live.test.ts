@@ -17,11 +17,11 @@ import {
   readStorytellerWorkerOptions,
   resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';
 import {
   storytellerTaskSchema,

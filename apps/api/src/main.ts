@@ -7,7 +7,7 @@ import { readAuthConfig } from './modules/auth/config.js';
 import {
   classifyRuntimeError,
   writeRuntimeLog,
-} from '@offscreen/application/runtime-logging';
+} from '@offscreen/runtime-logging';
 import { createCacheAdapter } from '@offscreen/cache';
 import {
   createDocumentStoreFromEnv,

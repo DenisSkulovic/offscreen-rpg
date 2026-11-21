@@ -4,10 +4,10 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
-import { createDrafts } from '@offscreen/application/drafts';
-import { createScriptedOpenings } from '@offscreen/application/generations';
-import { createStories } from '@offscreen/application/stories';
-import { retrievalOracleCase } from '@offscreen/application/developer-tools';
+import { createDrafts } from '@offscreen/story-engine/drafts';
+import { createScriptedOpenings } from '@offscreen/story-engine/generations';
+import { createStories } from '@offscreen/story-engine/stories';
+import { retrievalOracleCase } from '@offscreen/lab-support';
 import {
   canonicalRuleEvidence,
   createStorytellerRuntime,
@@ -20,7 +20,7 @@ import {
   type MemoryExplorationSnapshot,
   MemoryExplorationControllerError,
   type ScriptedMemoryRoundSource,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   storytellerFunding,

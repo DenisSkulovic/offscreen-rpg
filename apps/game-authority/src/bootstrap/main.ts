@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { classifyRuntimeError } from '@offscreen/application/runtime-logging';
+import { classifyRuntimeError } from '@offscreen/runtime-logging';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { resolve } from 'node:path';
 import {

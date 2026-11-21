@@ -15,8 +15,8 @@ import {
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '@offscreen/api/app';
-import type { ChamberStorytellerControl } from '@offscreen/application/developer-tools';
-import type { StorytellerRuntimeOptions } from '@offscreen/application/storyteller';
+import type { ChamberStorytellerControl } from '@offscreen/lab-support';
+import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
 import { authOptions } from '@offscreen/api/auth';
 import { requireCookie } from './require.js';
 import type { AppIntegration } from './app-integration.js';

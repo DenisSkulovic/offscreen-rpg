@@ -1,7 +1,7 @@
 /**
  * Local Chamber launcher: child processes, auth bootstrap and eval harness
  * wiring. Must not own application use cases; see
- * @offscreen/application/developer-tools/chamber.ts for the composed facade.
+ * @offscreen/lab-support/chamber.ts for the composed facade.
  */
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
@@ -19,13 +19,13 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '@offscreen/api/app';
-import { resolveEffectiveUsagePolicy } from '@offscreen/application/storyteller';
+import { resolveEffectiveUsagePolicy } from '@offscreen/story-engine/storyteller';
 import {
   createChamberStorytellerControl,
   createLiveEvaluationManifest,
   createMemoryEvaluationManifest,
   preflightMemoryEvaluation,
-} from '@offscreen/application/developer-tools';
+} from '@offscreen/lab-support';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import type { StartPackageReference } from '@offscreen/contracts/campaign';
 import { authOptions, createAuth } from '@offscreen/api/auth';

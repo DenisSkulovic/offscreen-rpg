@@ -4,12 +4,12 @@ import type { TestContext } from 'node:test';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { chamberInspectorSchema } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
-import { chamberAllowsResponse } from '@offscreen/application/developer-tools';
+import { chamberAllowsResponse } from '@offscreen/lab-support';
 import {
   createStories,
   createStoryApplication,
   StoryError,
-} from '@offscreen/application/stories';
+} from '@offscreen/story-engine/stories';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 
