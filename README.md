@@ -1,90 +1,102 @@
 # Offscreen RPG
 
-**Engineering map:** [How we work](WORKFLOW.md) explains the development lifecycle; [Repository structure](REPOSITORY-STRUCTURE.md) explains folder ownership, permanent vs temporary records and cleanup rules. Agents start at [AGENTS.md](AGENTS.md).
+**A persistent, AI-assisted storytelling RPG and a repository-native engineering system for developing complex software with AI agents.** Both are first-class parts of this project.
 
-**Two projects in one repository: an off-screen AI storytelling RPG, and an engineering system for building software with AI agents without surrendering architecture, correctness or maintainability.**
+The **game** explores what happens when a fictional world keeps coherent state, consequences, time and history beyond a single conversation. The **engineering system** explores how humans, ChatGPT, Cursor and other coding agents can design, implement, test and maintain that world without losing decisions, handing off unresolved architecture or mistaking generated text for working software.
 
-The game is the proving ground. **The engineering workflow is currently the primary focus of this portfolio.** The idea is not “ask an LLM to generate a game.” It is to make product intent, technical decisions, implementation scope, source evidence and verification individually discoverable, durable and reviewable, including when different agents perform different roles.
+> **Project status:** An evolving local engineering portfolio and experimental game platform, **not a publicly hosted or production-ready RPG**. Product/technical documentation describes selected targets; [STATUS.md](STATUS.md) separates implemented source, tested behavior, incomplete integrations and unproven capabilities.
 
-> **How do we actually build this repository?** Start with the [**How we work handbook**](WORKFLOW.md): one lifecycle from Undertaking and Design through ratified wiki, source-grounded Change packets, budget-first Cursor subagents, isolated Change branches, proof and retirement. [AGENTS.md](AGENTS.md) is the compact agent bootstrap.
+## Two systems, developed together
 
-> **Exploring this as an engineer or potential employer?** Start with the [Engineering System Tour](ENGINEERING.md), then ask your coding assistant to explain how a decision flows from product documentation into technical contracts, a bounded Change, executable source and verifiable evidence. [`AGENTS.md`](AGENTS.md) is the shared agent entry; [`CLAUDE.md`](CLAUDE.md) imports it. A fresh session should be able to learn the method from the repository, not from its author's chat history.
+| The storytelling platform | The engineering ecosystem |
+| --- | --- |
+| Persistent stories, characters and worlds | Product and technical documentation as explicit design authority |
+| Deterministic rules, state, time and outcomes | Undertaking → Design → Change → small implementation tasks → proof |
+| AI Storyteller proposing narrative continuations | ChatGPT as source-grounded architect/planner; bounded Cursor executors |
+| Durable Library, branch/fork and source identity | A navigable wiki with retrieval, link/claim-health checks and lifecycle rules |
+| Controlled publication, retries and provider costs | Reproducible evidence, negative tests, cost-aware agent orchestration |
+| Browser, API, workers and data services | Isolated Change worktrees, parallel workstreams and controlled integration |
 
-**Understand what we're building visually:** [Architecture atlas](docs/architecture/README.md) · [Work taxonomy](work/WORK-TAXONOMY.md) · [Current work](work/QUEUE.md) includes Mermaid system boundaries, current vs distributed runtime, a complete Storyteller turn, SQL/S3/Temporal durability, crash/replay cases, branch-safe forks, Kubernetes and browser trust. Each picture distinguishes **source**, **selected target** and **still unproven**. For how the repo gets implemented economically, see [Composer-first Cursor policy](.agents/references/cursor-model-budget-policy.md) and [atomic microtasks](.agents/references/composer-first-execution.md). The default Cursor parent and implementation child are Composer Standard; ChatGPT owns most source investigation/design.\n\n## The engineering system: design first, code second
+These are not two unrelated demos: **the RPG provides the hard, stateful engineering problems; the engineering system provides the repeatable method for solving them.** Each exposes weaknesses in the other.
+
+## The engineering ecosystem
+
+The repository treats its development process as **inspectable software engineering**, not a collection of chat prompts. It aims to keep architectural intent, current implementation, work authorization and test evidence distinguishable.
 
 ```mermaid
 flowchart LR
-  A["Product intent<br/>docs/product"] --> B["Technical contracts<br/>docs/technical"]
-  B --> C["Bounded, selected Change<br/>work/changes"]
-  C --> D["Implementation<br/>apps · packages · tools"]
-  D --> E["Tests, failures & evidence"]
-  E --> F["Reconcile specs, status<br/>and Change ledger"]
-  F -. "new decisions" .-> A
+    A["Product intent\ndocs/product"] --> B["Technical contracts\ndocs/technical"]
+    B --> C["ChatGPT planning\nDesigns + bounded Changes"]
+    C --> D["Cursor implementation\nindependent worktrees"]
+    D --> E["Source + focused tests\nnegative cases"]
+    E --> F["Evidence + reconciliation\nstatus, wiki, lifecycle"]
+    F -. "New findings" .-> A
 ```
 
-Five deliberate practices hold this together:
+The current method emphasizes:
 
-| Practice | What to inspect |
+- **Documentation before new contracts:** Selected product behavior and architectural guarantees are established in the owning wiki before implementation is commissioned. Code and tests show *realization*, not product authority.
+- **Explicit work lifecycles:** Undertakings coordinate multi-Change efforts; Designs resolve questions; Changes own lasting code or substantive documentation outcomes; standalone Tasks record independent actions; temporary packets retire after their results are promoted.
+- **Planner-first, executor-cheap:** ChatGPT inspects source, interfaces, data schemas, failure paths and tests, deciding algorithms and preparing small execution-ready tasks. Cursor's parent and inexpensive subagents implement bounded edits and return factual receipts rather than repeating the investigation.
+- **Parallelism without shared-checkout chaos:** Independently commissioned Changes get separate branches **and linked Git worktrees**. One integration custodian serializes shared files, reconciliations and final joins.
+- **Discoverability and evidence:** The wiki has heading-level lookup and health checks. Change outcomes are reconciled with product/technical claims, tests, status and dated evidence. A selected design, an inspected implementation, a passing fixture and a live operational proof are not interchangeable.
+- **Economics with correctness:** Limit unnecessary agent context, fanout and repeated test sweeps, without waiving authorization, privacy, data integrity, idempotency or provider spending safeguards.
+
+### Explore the methodology
+
+| Start here | What it explains |
 | --- | --- |
-| **Product → technical → code** | [Product owners](docs/product/README.md) establish intent; [technical owners](docs/technical/README.md) specify invariants; code and tests show what is *actually* realized. A selected future target is not a claim of implementation. |
-| **Changes, not vague “features”** | [Change work-unit standard](.agents/references/change-work-unit-standard.md) and the [Change queue](work/changes/README.md) define bounded executable **or substantive documentation** outcomes, acceptance, exclusions and reconciliation. **An explicitly empty `Current work: none` selection is also valid.** |
-| **A traversable, tested documentation wiki** | [Documentation router](docs/README.md), `wiki:find` / `wiki:read` for heading-level retrieval, [wiki health and benchmarks](.agents/README.md) for navigability and known limits. |
-| **Portable, role-aware agent harness** | [Agent entry](AGENTS.md), [layer-zero operating model](.agents/HARNESS.md), [roles](.agents/roles/README.md), on-demand skills and source receipts. ChatGPT performs deep architecture/source investigation; Cursor defaults to narrow Composer implementation/testing and only bounded error-directed lookup. Claude Code may investigate/implement when explicitly tasked. No agent is an authority simply because it generated text. |
-| **Falsifiable evidence and cost control** | [Current realization](STATUS.md), source/tests, negative cases and dated [evidence](evidence/README.md). Evaluation tooling distinguishes a working fixture from a live proof, and recorded tool experiments from claims of productivity gains. |
+| [Engineering System Tour](ENGINEERING.md) | Why the method exists, concrete examples, trade-offs and limitations |
+| [How We Work](WORKFLOW.md) | End-to-end Undertaking, Design, Change, Task, review and Git lifecycle |
+| [Repository Structure](REPOSITORY-STRUCTURE.md) | What belongs where; permanent knowledge versus temporary dossiers and retirement |
+| [Documentation wiki](docs/README.md) | Product/technical authority and discoverable topic maps |
+| [Agent entrypoint](AGENTS.md) · [ChatGPT planner](CHATGPT.md) | How a new coding agent or planner bootstraps repository-specific rules |
+| [Work selection](work/QUEUE.md) · [Change catalog](work/changes/README.md) | Current default assignment, proposed work and execution receipts |
+| [Evidence](evidence/README.md) · [realization status](STATUS.md) | What actually ran, what exists and what remains unproven |
 
-### Explore it yourself
+### Try the repository navigation
 
-After installing the [pinned local toolchain](docs/runbooks/local-development.md), run these from the repository root. `pnpm stack:acceptance` is the read-only clean-clone gate; a fresh workstation run has not been timed.
+With the [pinned local toolchain](docs/runbooks/local-development.md), from the repository root:
 
 ```bash
 pnpm repo:brief
 pnpm wiki:find "When does a completed activity earn its reward?"
 pnpm wiki:read docs/product/gameplay/time-and-autonomy.md --outline
 pnpm wiki:health
+pnpm repo:maintenance
 ```
 
-`repo:brief --json` reports the local Git revision and dirty paths. The wiki tools locate **source-exact headings** and return bounded text, not free-floating AI summaries. Do not interpret a search hit as proof that the behavior is implemented; read `STATUS.md` and the relevant source/tests.
+These are **discovery and integrity tools**, not proof that the game is production-ready. For a revision-stamped, Git-ignored source/wiki snapshot suitable for analysis in ChatGPT, run `pnpm repo:snapshot:chatgpt` ([runbook](docs/runbooks/chatgpt-design-snapshot.md)); it exports committed material, not your dirty working tree.
 
-**Want to investigate this repository with ordinary ChatGPT rather than a separate coding-agent session?** Run:
+## The game: a life that continues while you're away
 
-```bash
-pnpm repo:snapshot:chatgpt
-```
+The long-term ambition is a story-driven RPG where you choose a world, create a character, act within its rules and return to a life with history. Time, travel, work, relationships, opportunities and consequences should persist rather than being reinvented whenever an LLM produces a new paragraph.
 
-This creates a **Git-ignored, revision-stamped ZIP** under `out/chatgpt-snapshots/`, including committed source/docs, `SNAPSHOT.json` provenance, and a portable `WIKI-INDEX.json` built from the existing wiki parser. The default is intentionally strict: if the wiki index cannot be generated, export fails instead of quietly downgrading. The explicit `--no-index` escape hatch produces a source-only ZIP when necessary. Neither mode includes uncommitted work. [Snapshot runbook](docs/runbooks/chatgpt-design-snapshot.md).
-
-**For a 5-minute guided tour, examples, agent prompts, what has been measured and what remains experimental:** [**ENGINEERING.md**](ENGINEERING.md).
-
-## The game: a life that continues when you're away
-
-Choose a world, create a character, make decisions and return to a life that has accumulated history. Work, relationships and extraordinary events can all matter. Time and consequences should be earned: starting a journey does not mean arriving, and beginning a shift does not award its pay.
-
-The Storyteller proposes narration and choices using bounded evidence. **The application and deterministic rules**, not the language model, own time, mechanics, state transitions, publication authority and spending limits. Durable documents are designed to preserve people, locations and continuity across story turns.
+The distinction is **Storyteller versus authority**. The model can propose narration, explore context and suggest choices, but application rules and persistent state determine what is valid, what has happened, what can be published and what may be spent.
 
 ```mermaid
 flowchart LR
-  A["Player chooses"] --> B["Application admits commitment"]
-  B --> C["Rules and time settle outcome"]
-  C --> D["Storyteller proposes continuation"]
-  D --> E["Application validates & publishes"]
-  E --> A
+    Player["Player decision"] --> Authority["Application + deterministic rules"]
+    Authority --> State["Durable story state and sources"]
+    State --> Writer["AI Storyteller proposes continuation"]
+    Writer --> Gate["Validate + publish or reject"]
+    Gate --> Player
 ```
 
-### What is real, and what is still a target?
+The current codebase includes a Next.js frontend, API and worker services, TypeScript application packages, PostgreSQL and supporting infrastructure/lab tooling. The [architecture atlas](docs/architecture/README.md) distinguishes **current source**, **selected targets** and **gaps**, including crash/replay and persistence boundaries. [Product](docs/product/README.md) and [technical contracts](docs/technical/README.md) provide the governing details.
 
-This is a **local pre-POC engineering portfolio**, not a shipped commercial game. There is source for persistent story creation/openings, generated choices, mechanical checks, timed commitments, saved consequences, bounded retrieval and provider accounting. A historical OpenRouter rehearsal completed a 1,800-fictional-second warehouse shift with a single six-septim payout; this is **dated evidence**, not proof of general long-campaign reliability.
+**Reality check:** The repository contains implementation and focused tests for parts of persistent story creation, decisions, mechanical outcomes, time and publication. A coherent, generally reliable long-running campaign, arbitrary world mechanics, mature shared play and production hosting are **not established by those components**. See [STATUS.md](STATUS.md) and the dated [evidence](evidence/README.md), rather than inferring completeness from a diagram.
 
-A configuration-faithful 10–15-turn campaign with durable change and later recall remains **unproved**. Full arbitrary-premise mechanics, general combat/travel, shared play, notifications and public hosting are not demonstrated. See [STATUS.md](STATUS.md) for current realization and [ROADMAP.md](ROADMAP.md) for owner strategy.
+## Browse by role
 
-Next.js presents the experience; NestJS, Temporal workers, application packages and PostgreSQL implement the current platform. The proposed end-state may be ahead of the code by design. [Engine authority](docs/technical/engine/authority-and-transitions.md) and [platform topology](docs/technical/platform/topology.md) explain the distinction.
+| If you are… | Start with |
+| --- | --- |
+| **Evaluating the engineering work or portfolio** | [Engineering System Tour](ENGINEERING.md), then one product → technical → source → evidence trace |
+| **Exploring the game design** | [Product wiki](docs/product/README.md) and [architecture atlas](docs/architecture/README.md) |
+| **A new ChatGPT planner** | [AGENTS.md](AGENTS.md) → [CHATGPT.md](CHATGPT.md) → relevant source and planning standards |
+| **A Cursor or other coding agent** | [AGENTS.md](AGENTS.md) → commissioned Change → bounded task and worktree instructions |
+| **Running locally or checking proofs** | [Local development](docs/runbooks/local-development.md) → [STATUS.md](STATUS.md) → focused tests/evidence |
 
-## Start by role
+This project deliberately exposes its assumptions, gaps, unsuccessful experiments and development process. Its goal is not to appear finished, but to make both **the software and the way it gets built** understandable and testable.
 
-| You are… | Open first | Then |
-| --- | --- | --- |
-| **Evaluating the engineer and methodology** | [Engineering System Tour](ENGINEERING.md) | [Agent harness](.agents/HARNESS.md) · [documentation wiki](docs/README.md) · [Change standard](.agents/references/change-work-unit-standard.md) |
-| **A fresh coding agent (including Claude Code)** | [AGENTS.md](AGENTS.md); [CLAUDE.md](CLAUDE.md) imports it | [STATUS](STATUS.md) · [selected Change](work/changes/README.md) · one relevant owner/heading |
-| **Investigating a product/design question** | [Product map](docs/product/README.md) | [Technical map](docs/technical/README.md) · current implementation evidence |
-| **Running the game or local tests** | [Local development](docs/runbooks/local-development.md) | [Chamber](docs/technical/lab/chamber-and-fixtures.md) · safe targeted checks |
-
-The point of this repository is not that its code or workflow is perfect. It is that both are **inspectable, challengeable and designed to evolve**, with documented gaps and tests instead of confident anecdotes. No project license has been selected yet.
+*No project license has been selected yet.*
