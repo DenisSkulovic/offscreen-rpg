@@ -1,5 +1,20 @@
 # Changes | active catalog
 
+## Subsequent wave prepared while WR10 / MA12 / TURN03 are still open (2026-11-22)
+
+**PLANNED, not yet dispatched or integrated.** This wave begins after the current three resolve their real acceptance gates. It is deliberately mixed: human/agent player ergonomics, the actual Writer vertical, and operational proof.
+
+| Lane | Change | Source ownership | Dispatch readiness |
+| --- | --- | --- | --- |
+| A | [CL01 first-class terminal player](open/2026-11-22--cl01-terminal-player-client/CHANGE.md) | New tools/terminal, story-only Nest auth, browser consent, terminal token DB migration | **CONDITIONAL READY after MA12 source rebase** |
+| B | [WR11 authorized provider continuation](open/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) | Story Engine writer-continuation, GA private control, Worker/Temporal provider workflow, fake player integration | **PLANNER-GATED until WR10 actual interfaces** |
+| C | [K8S10 real-game chaos and mini-load](open/2026-11-19--k8s10-distributed-fault-and-load-harness/K8S10-CURRENT-EXECUTION.md) | Existing chaos controller/driver/oracle, one eligible Pod fault and 9-command scripted load | **Harness conditional on TURN03; real Pod mutation requires separate specific authorization** |
+
+**No fourth duplicate K8S10 Change.** CLI consumes the same public APIs as Web, never a second game engine. WR11 keeps historic scripted mission topic/workflow immutable and adds provider-specific wake only under trusted policy; paid model cap is **proposed USD $3/three attempts**, but **not authorized now**. K8S10 does zero paid/model work and requires a real TURN03 authenticated cold-kind PASS. All three remain separate write sets; one custodian owns lockfile, common catalogs and actual cluster operators.
+
+**Future custodian:** CL01 parent after owner commissions this wave, receives verified WR11 and K8S10 harness branches, joins source serially **WR11 → CL01 → K8S10 harness**, runs combined build/permission/financial negatives, writes one lockfile and publishes current undertaking. K8S10 live fault run occurs only against joined release and one owner-approved disposable Pod/cluster. Keep Change OPEN if live gate NOT RUN/BLOCKED. No self-merging sibling branches or automatic paid request.
+
+
 ## Three parallel implementation commissions designed 2026-11-22
 
 **Source baseline:** `d3ba291763de` (recheck latest undertaking HEAD before worktree); **no implementation or verification has happened from these planning commits**. These are three substantial, independently owned Changes, not three slices of a running Change. One custodian coordinates source joins and resource-gated cold-kind verification.
