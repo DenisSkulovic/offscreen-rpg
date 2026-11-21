@@ -1,0 +1,11 @@
+# MA08A | Isolate developer laboratories into lab-support
+
+**State: PLANNER-READY, independent lane A** of the [parallel structural wave](../../../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Baseline:** MA07 integrated at `4168db58`, verified planning HEAD `ae312c86`; executor verifies the current undertaking branch before starting. **Target:** `undertaking/storyteller-workshop`, never main.
+
+**Outcome:** Build new `@offscreen/lab-support` workspace from the 39-TS-module `packages/application/src/developer-tools/**` implementation, preserve same public surface and compile Chamber consumers directly against it. This is outermost developer/evaluation functionality, not an engine dependency. The current Application implementation and all 112 tests remain intact until the later migration/retirement Change. **Copy first, do not delete old implementation in this lane.** Two source copies are intentional temporary migration state, not permanent ownership.
+
+**Exclusive write area:** `packages/lab-support/**`, `tools/chamber/src/**`, `tools/chamber/test/**`, `tools/chamber/package.json`, and **only if required for pre-mapped Story Engine nested read-only fixtures** `packages/story-engine/package.json` exports. NO `apps/**`, `packages/db/**`, `packages/runtime-logging/**`, `scripts/repo-tools/module-graph*.mjs`, `pnpm-lock.yaml`, `work/{changes,undertakings}/**`. MA08B does not own Story Engine manifest; MA10A owns only graph tools. Integration custodian regenerates lockfile and writes catalogs/ledgers after joined receipt.
+
+**Acceptance:** new lab package builds with identical barrel/API behavior; Chamber source and tests no longer import `@offscreen/application/developer-tools`, actual Story Engine deep specifiers resolve; production Story Engine does not depend on lab; deliberate existing API developer endpoints remain on legacy path until a later consumer-cutover Change; no reauthorization of model spend, fixture control or protected SQL. Historical Application tests not deleted. Test with disposable fixtures only.
+
+[Exact mapping](SOURCE-MAP.md) · [algorithm](EXECUTION.md) · [tasks](TASKS.md) · [proof](PROOF.md). Parent finishes this Change on its worktree; one integration custodian lands it after independent lanes, not the parent rebasing blindly during another join.
