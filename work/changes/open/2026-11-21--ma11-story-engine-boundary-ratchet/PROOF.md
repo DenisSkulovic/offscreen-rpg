@@ -1,9 +1,22 @@
-# MA11 | independent G0–G7 cold-read readiness
+# MA11 | independent source-readiness and proof
 
-G0 PASS: source HEAD 6dd12761 and integration branch recorded. G1 PASS: real AST graph code/classifier and synthetic legacy tests inspected. G2 PASS: four domain names, five exact temporary backedges, hard import direction and no changing runtime code decided. G3 PASS: exact write ownership and T01–T03. G4 PASS: T01 legal first edit. G5 PASS: disjoint from MA10 facade deletion and WR09A custody edits. G6 PASS: normal/negative graph fixtures, old tests, baseline error preservation. G7 PASS: meaningful enforceable boundary and honest debt reporting, no cosmetic package split. **READY for source-bounded implementation only; planner did not execute any tests.**
+**Source inspected:** MA08 `6dd1276131a813f694ec3bccf4f9062ad3708208`, module-graph-core, module-graph.mjs (`buildModuleGraph`, `collectSpecifiers`, `classifyRelative`, `classifySpecifier`, `resolveRelative`, report/renderers), existing unit tests and selected actual Authority→Writer importers. No implementation build or test executed by ChatGPT.
 
-Expected: existing synthetic Application graph tests still pass after real package deletion; runtime cycles reported only for runtime/reexport/dynamic edges; type-only remains separate; exact existing five authority backedges warn; new sixth fails; Engine→Lab and pure→Engine fail; Writer→Authority publication allowed; pre-existing undeclared imports and invalid exports retain error status. Actual pnpm repo:module-graph may remain FAIL until the two pre-existing undeclared imports are fixed by another bounded Change. Record command, CWD, result and whether failure is new or preexisting. No provider calls or protected SQL.
+| Gate | Verdict / reason |
+| --- | --- |
+| G0 | PASS target/branch, distinct Change worktree, single MA10 custodian |
+| G1 | PASS exact AST data flow and existing schema/errors inspected |
+| G2 | PASS six additive arrays, file SCC vs domain SCC separation, exact five-pair exception law, package direction rules |
+| G3 | PASS T01–T03 have exact files, inputs/outputs, focused negatives |
+| G4 | PASS T01 pure classifier can begin without runtime survey |
+| G5 | PASS tool-only writes do not overlap MA10 legacy test/script or WR09A DB/Writer/provider |
+| G6 | PASS *specified tests*, not executed: same-domain runtime vs type-only, new forbidden import, unchanged old failures |
+| G7 | PASS one meaningful architecture checker outcome, no ungrounded purity refactor |
 
-### Re-audit-specific proof additions
-
-G1 correction: verified `classifyRelative` currently returns early for equal Application domains, so source-file SCC analysis **requires the newly decided distinct Engine file-edge array**. A test with `stories/a.ts → stories/b.ts → stories/a.ts` must yield a runtime *file* SCC while its Engine *domain* SCC remains empty. Type-only equivalent yields a type-only file SCC and no runtime SCC. Report JSON must preserve old `domainEdges` and `SCHEMA` so old tests remain valid. Policy tests must match **resolved file path** and AST kind, never regex-string imported specifier. The five pre-MA09 exceptions are individually asserted warnings; a sixth directed edge becomes a failing error. Existing undeclared production imports continue to fail with same codes. No test run by planner.
+**Ready to implement; no test claims yet.** Required:
+- Current Application synthetic fixtures still pass even after MA10 deletes real Application; schema `offscreen.module-graph.v1` and old fields unchanged.
+- A 2-node **same Story Authority domain** runtime SCC appears at file level; domain level may be acyclic. Type-only pair never appears in runtime SCC; reexports/dynamic literals are runtime-kind.
+- Exactly five known current Authority→Writer runtime edges each warn `authority-writer-debt`, never appear as hidden allowed green; sixth edge hard-fails `forbidden-authority-writer-import`; type-only neutral import allowed.
+- Runtime Engine→Lab and Game/Contracts→Engine imports are forbidden; Writer→Authority publication allowed.
+- Old unknown export, undeclared dependency, package-cycle errors remain hard; graph command may remain FAIL due to two previously recorded undeclared imports. Do not reclassify baseline FAIL as PASS. No real runtime source changes, paid provider or protected SQL.
+- `node --test scripts/repo-tools/module-graph.test.mjs`, `pnpm repo:module-graph`, `git diff --check` results recorded with exact command CWD and PASS/FAIL/SKIP/NOT RUN; push tested branch to integration custodian.
