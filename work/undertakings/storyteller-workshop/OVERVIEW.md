@@ -37,7 +37,7 @@ Prepared **three sequential, planner-gated stages**: [AI01 readable agent/captur
 
 This adds recognized remaining product/maintainability scope; the existing **65% monorepo / 40% Storyteller / 25% operations / 40% overall** estimates have not been mechanically changed from planning docs. Confidence is low enough (±20pp+) that subsequent implementation may reveal further work.
 
-## Progress, recalibrated to the real end state## Evaluation and operational configuration vision captured (2026-11-22; planning only)
+## Evaluation and operational configuration vision captured (2026-11-22; planning only)
 
 The owner wants an unusually **money-conscious** tuning workflow: default $0 deterministic and previously recorded model-output evaluation; when evidence justifies it, one manually authorized, tightly capped provider call and extended human inspection. Repeated model sweeps, paid LLM judges and automatic $0.75 experiments are inappropriate without fresh per-run approval. [EV01 proposal](../../changes/open/2026-11-22--ev01-centwise-agent-evaluation/CHANGE.md) reuses the existing Lab Support scoring and funding/preflight.
 
@@ -46,6 +46,8 @@ Runtime must ultimately support **versioned, strongly typed, product/business-co
 The owner envisions Chamber as a real, disposable **Scenario × Recipe × Experiment** laboratory: instantly synthesize a coherent hypothetical scene-20 campaign, preview context/cost, run free fake or previously paid responses, and only manually approve paid one-call experiments, preserving traces/annotations and comparison. [CH01 proposal](../../changes/open/2026-11-22--ch01-chamber-experiment-workbench/CHANGE.md). This is **not** a second game engine or hidden Admin production override. All new packets are **PROPOSED/DEFERRED**, no new tests/spend/completion credit. [Complete owner minutes](../../sessions/2026-11-22.md) retain nuanced rationale. Previous estimates remain roughly **65% monorepo, 40% Storyteller, 25% distributed operations, 40% overall**, ±20 percentage points or more, pending real proof.
 
 
+
+## Progress, recalibrated to the real end state
 
 | Track | Rough complete | Rough remaining | Confidence / explanation |
 | --- | ---: | ---: | --- |
