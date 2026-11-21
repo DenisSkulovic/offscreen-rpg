@@ -19,7 +19,7 @@ Only cross-domain relative source import found: `situation-reads.ts:campaignHold
 | `apps/api/src/modules/admin/admin-http-errors.ts` | direct `@offscreen/admin` | preserve `instanceof AdminSessionError` |
 | `tools/api-integration/test/admin-*.integration.ts` | remains old Application alias | meaningful compatibility/denial regression without duplicating Admin implementation |
 
-**New manifests:** `packages/admin/package.json` exports root to `dist/index`, deps DB/contracts/drizzle (not Application), dev config/typescript/node; `packages/admin/tsconfig.json` NodeNext/rootDir src/outDir dist. `packages/application/package.json` and `apps/api/package.json` add Admin workspace dependency. Shared `pnpm-lock.yaml` updates once in T04, never in parallel.
+**New manifests:** `packages/admin/package.json` exports root to `dist/index`, deps DB/contracts/drizzle (not Application), dev config/typescript/node; **same NodeNext CommonJS module classification as Application (no `type:module`)**; `packages/admin/tsconfig.json` NodeNext/rootDir src/outDir dist. `packages/application/package.json` and `apps/api/package.json` add Admin workspace dependency. Shared `pnpm-lock.yaml` updates once in T04, never in parallel.
 
 ## Test migration (7 files)
 `packages/application/test/admin-{audit,cases,diagnostics,player-reads,policy,session,usage}.test.mjs` → identical `packages/admin/test/` names. In every file replace only `../dist/admin/index.js` with `../dist/index.js`. No other relative test import found in these files. Application gets one `admin-compat.test.mjs` to prove strict identity of new and old exports. API integration tests remain as-is and exercise the old alias.
