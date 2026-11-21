@@ -12,7 +12,7 @@ import {
 } from '../campaign/narration';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { respondToStorySchema } from '@offscreen/contracts/stories';
-import { retryStoryteller } from '../storyteller/recovery';
+import { retryStoryteller } from './storyteller-retry';
 import type { Database } from '@offscreen/db';
 import { createStoryContinuation } from './continuation';
 import { StoryError } from './errors';

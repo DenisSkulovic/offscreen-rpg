@@ -3,7 +3,7 @@ import {
   type CampaignStart,
 } from '@offscreen/contracts/campaign';
 import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
-import { startStorytellerCandidate } from '../storyteller/start';
+import { startStorytellerCandidate } from './storyteller-start-candidate';
 import {
   playableOpeningArtifactSchema,
   playablePresentation,
@@ -586,7 +586,9 @@ export function createStoryStart(
         ...(existingPassageContent === undefined
           ? {}
           : { existingPassageContent }),
-        ...(openingInteractionId ? { interactionId: openingInteractionId } : {}),
+        ...(openingInteractionId
+          ? { interactionId: openingInteractionId }
+          : {}),
         ...(stagedOpeningCheckpoint && openingCheckpointKind === 'absent'
           ? { stagedCheckpoint: stagedOpeningCheckpoint }
           : {}),

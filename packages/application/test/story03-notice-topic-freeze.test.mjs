@@ -288,6 +288,7 @@ test('STORY03 negative: outbox identity conflict rolls back enqueue', async () =
 const wakeSources = [
   'storyteller/admission.ts',
   'storyteller/recovery.ts',
+  'stories/storyteller-retry.ts',
   'storyteller/openings.ts',
   'storyteller/dispatch-review.ts',
   'campaign/follow-up-intents.ts',
