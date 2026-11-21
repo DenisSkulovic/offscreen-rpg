@@ -26,7 +26,7 @@ Legacy scenes that lack sufficient historical semantic state remain viewable but
 
 ### Fork identity remap
 
-**Current compatibility realization.** The v1/checkpoint implementation below remains binding for retained history until WR05/WR06 replace its quiescent-only limits. The new target broadens what can be represented; it does not relax identity isolation, historical-root selection, or clock remapping.
+**Current compatibility realization.** Retained v1 checkpoints and the quiescent v1 fork below remain binding. New representable publication writes v2, including notes and admitted active-work snapshots. Forking that v2 snapshot onto a new story is still a later change. The broader target does not relax identity isolation, historical-root selection, or clock remapping.
 
 Source-observed compatibility baseline at `af512d1f`. The field classes live on [Mutable field inventory](../platform/data-and-persistence.md#mutable-field-inventory). This heading owns how a fork mints ids. The SQL selector is `story_scene_checkpoint`. Historical GET and checkpoint fork are `readHistoricalScene` and `createStoryForks`. `forkCurrent` does not mint a branch manifest.
 
@@ -38,7 +38,7 @@ Stable business keys stay: item key, holder key, fact id, skill id, quantity id,
 
 `campaign.clock_anchor_at` is not copied. The fork stores the checkpoint's `gameSecond` and `clock`, then writes a new anchor at fork-commit time. The parent's elapsed wall time is not added. `campaign_settings` rows are copied only through the captured `settingsRevision`.
 
-Unsupported active work is not silently cloned. The POC refuses a non-empty hold, a non-null offer, a non-null accepted activity plan, a non-null active activity or action, a decision deadline, a wait, a pending resolution, a world-obligation row, and continuity notes other than null or `[]`. Refusal does not fall back to the latest parent rows and does not mark the work complete. The target any-scene contract supersedes that old open choice: new-format published scenes must represent admitted pending fictional work so a child can rehome it with new operational ids and without the parent's timer. Legacy v1 checkpoints may still refuse unsupported active work rather than fabricate it. This page does not implement either choice.
+Unsupported active work is not silently cloned. The v1 fork refuses a non-empty hold, a non-null offer, a non-null accepted activity plan, a non-null active activity or action, a decision deadline, a wait, a pending resolution, a world-obligation row, and continuity notes other than null or `[]`. Refusal does not fall back to the latest parent rows and does not mark the work complete. New v2 publication stores that pending work on the checkpoint. `forkFromSceneCheckpoint` refuses any checkpoint whose format is not v1 with `checkpoint_version_unsupported`. It does not clone the v2 snapshot and it does not read live parent rows. Legacy v1 checkpoints may still refuse unsupported active work rather than fabricate it. Rehoming a v2 snapshot under a new story id remains a later fork change.
 
 The branch manifest's `campaignId` is the fork's story id. The ancestor manifest's `campaignId` is not copied. See [Inherited manifest campaign id](../storyteller/canonical-documents-and-packages.md#inherited-manifest-campaign-id).
 

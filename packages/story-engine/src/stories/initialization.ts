@@ -35,6 +35,8 @@ import {
 } from '@offscreen/documents';
 import { wholeGameSeconds } from '@offscreen/game/time';
 import type { Pace } from '@offscreen/game/time';
+import type { SceneAfterState } from './scene-after-state';
+import { toV2FictionalState } from './scene-checkpoint-v2';
 
 type InitializeStory = Readonly<{
   ownerId: string;
@@ -52,19 +54,44 @@ type InitializeStoryInTransaction = Readonly<{
   stagedCheckpoint?: StagedSceneCheckpoint;
 }>;
 
-export function absentOpeningCheckpoint(args: {
-  storyId: string;
-  passageId: string;
+function openingPassage(args: {
   input: InitialStory;
   interactionId: string | null;
-  rootHash: string | null;
-  rootRevision: number;
   contentDocumentHash: string | null;
-  pins: SceneCheckpoint['pins'];
-}): SceneCheckpoint {
+}) {
+  return {
+    response: null,
+    responseSource: null,
+    initialItems: null,
+    effects: [],
+    decisionPlan: null,
+    waitPlan: null,
+    controlRevision: 0,
+    content: args.contentDocumentHash ? null : args.input.content,
+    contentDocumentHash: args.contentDocumentHash,
+    interaction:
+      args.input.interaction && args.interactionId
+        ? { id: args.interactionId, specification: args.input.interaction }
+        : null,
+  };
+}
+
+function openingCheckpointShell(
+  args: {
+    storyId: string;
+    passageId: string;
+    input: InitialStory;
+    rootHash: string | null;
+    rootRevision: number;
+    pins: SceneCheckpoint['pins'];
+    contentDocumentHash: string | null;
+    interactionId: string | null;
+  },
+  afterState: SceneAfterState,
+) {
   return sceneCheckpointSchema.parse({
-    format: 'offscreen.scene-checkpoint.v1',
-    stateSchemaVersion: 1,
+    format: 'offscreen.scene-checkpoint.v2',
+    stateSchemaVersion: 2,
     storyId: args.storyId,
     passageId: args.passageId,
     sceneSequence: 1,
@@ -80,22 +107,37 @@ export function absentOpeningCheckpoint(args: {
     },
     ancestor: { storyId: null, rootHash: null, rootRevision: null },
     pins: args.pins,
-    mechanics: { mechanicsAbsent: true, items: [] },
-    passage: {
-      response: null,
-      responseSource: null,
-      initialItems: [],
-      effects: [],
-      decisionPlan: null,
-      waitPlan: null,
-      controlRevision: 0,
-      content: args.contentDocumentHash ? null : args.input.content,
-      contentDocumentHash: args.contentDocumentHash,
-      interaction:
-        args.input.interaction && args.interactionId
-          ? { id: args.interactionId, specification: args.input.interaction }
-          : null,
-    },
+    passage: openingPassage(args),
+    fictionalState: toV2FictionalState(afterState),
+  });
+}
+
+export function absentOpeningCheckpoint(args: {
+  storyId: string;
+  passageId: string;
+  input: InitialStory;
+  interactionId: string | null;
+  rootHash: string | null;
+  rootRevision: number;
+  contentDocumentHash: string | null;
+  pins: SceneCheckpoint['pins'];
+}): SceneCheckpoint {
+  return openingCheckpointShell(args, {
+    continuityNotes: args.input.storyteller ? [] : null,
+    activeSceneScope: args.input.storyteller
+      ? {
+          version: 'active-scene-anchor.v1',
+          fromSequence: 1,
+          requiredPassageIds: [args.passageId],
+          recallCues: [],
+        }
+      : null,
+    storyItems: [],
+    campaign: null,
+    activities: [],
+    worldObligations: [],
+    gameOffers: [],
+    actionExecutions: [],
   });
 }
 
@@ -111,41 +153,44 @@ export function quiescentCampaignOpeningCheckpoint(args: {
   pins: SceneCheckpoint['pins'];
   pace: Pace;
 }): SceneCheckpoint {
-  const absent = absentOpeningCheckpoint(args);
-  return sceneCheckpointSchema.parse({
-    ...absent,
-    mechanics: {
-      mechanicsAbsent: false,
+  return openingCheckpointShell(args, {
+    continuityNotes: args.input.storyteller ? [] : null,
+    activeSceneScope: args.input.storyteller
+      ? {
+          version: 'active-scene-anchor.v1',
+          fromSequence: 1,
+          requiredPassageIds: [args.passageId],
+          recallCues: [],
+        }
+      : null,
+    storyItems: [],
+    campaign: {
+      settingsRevision: 1,
       character: null,
-      items: [],
       storyFacts: [],
       activityOccurrences: [],
+      acceptedActivityPlan: null,
+      content: null,
       location: null,
       gameSecond: 0,
       clock: wholeGameSeconds(0),
-      pace: args.pace,
+      clockPace: args.pace,
       holds: [],
       offer: null,
-      acceptedActivityPlan: null,
-      activeActivityId: null,
-      activeActionOperationId: null,
       situationAuthorization: {
         version: 2,
         offerId: null,
         activityAccess: { kind: 'none' },
         preparedPlans: [],
       },
+      activeActivityId: null,
+      activeActionOperationId: null,
       worldConditions: [],
-      settingsRevision: 1,
-      content: null,
-      continuityNotes: [],
-      activeSceneScope: {
-        version: 'active-scene-anchor.v1',
-        fromSequence: 1,
-        requiredPassageIds: [args.passageId],
-        recallCues: [],
-      },
     },
+    activities: [],
+    worldObligations: [],
+    gameOffers: [],
+    actionExecutions: [],
   });
 }
 
@@ -155,11 +200,11 @@ export async function initializeStoryInTransaction(
     ownerId,
     storyId,
     input,
-  stagedPassage,
-  existingPassageContent,
-  interactionId,
-  stagedCheckpoint,
-}: InitializeStoryInTransaction,
+    stagedPassage,
+    existingPassageContent,
+    interactionId,
+    stagedCheckpoint,
+  }: InitializeStoryInTransaction,
 ) {
   const firstPassageId = stagedPassage?.documentId ?? randomUUID();
   const inserted = await tx
@@ -272,10 +317,17 @@ export async function initializeStoryInTransaction(
       rootRevision: stagedPassage.rootRevision,
     });
   }
-  if (
-    stagedCheckpoint &&
-    stagedCheckpoint.checkpoint.mechanics.mechanicsAbsent === true
+  let openingAbsentMechanics = false;
+  if (stagedCheckpoint?.checkpoint.format === 'offscreen.scene-checkpoint.v2') {
+    openingAbsentMechanics =
+      stagedCheckpoint.checkpoint.fictionalState.mechanicsAbsent === true;
+  } else if (
+    stagedCheckpoint?.checkpoint.format === 'offscreen.scene-checkpoint.v1'
   ) {
+    openingAbsentMechanics =
+      stagedCheckpoint.checkpoint.mechanics.mechanicsAbsent === true;
+  }
+  if (stagedCheckpoint && openingAbsentMechanics) {
     if (
       stagedCheckpoint.checkpoint.passageId !== firstPassageId ||
       stagedCheckpoint.checkpoint.storyId !== storyId ||

@@ -927,6 +927,7 @@ const sceneCheckpointActiveActivitySchema = z.strictObject({
   id: z.uuid(),
   state: z.string().min(1).max(80),
   revision: z.number().int().nonnegative(),
+  boundariesSettled: z.number().int().nonnegative(),
   plan: sceneCheckpointVersionedPayloadSchema,
   progress: sceneCheckpointVersionedPayloadSchema,
 });
@@ -946,6 +947,7 @@ const sceneCheckpointWorldObligationSnapshotSchema = z.strictObject({
   revision: z.number().int().nonnegative(),
   state: z.string().min(1).max(80),
   dueGameSecond: z.number().int().nonnegative().nullable(),
+  firedAtGameSecond: z.number().int().nonnegative().nullable(),
   definition: sceneCheckpointVersionedPayloadSchema,
 });
 
@@ -961,18 +963,47 @@ const sceneCheckpointWorldObligationsSchema = z
 
 const sceneCheckpointActiveActionSchema = z.strictObject({
   id: z.uuid(),
+  offerId: z.uuid(),
+  actionKey: z.string().min(1).max(200),
+  baseRevision: z.number().int().nonnegative(),
+  offer: sceneCheckpointVersionedPayloadSchema,
+  plan: sceneCheckpointVersionedPayloadSchema,
+  pendingResolution: sceneCheckpointVersionedPayloadSchema.nullable(),
   status: z.string().min(1).max(80),
+  revision: z.number().int().nonnegative(),
   startGameSecond: z.number().int().nonnegative(),
+  targetGameSecond: z.number().int().nonnegative(),
   target: z
     .strictObject({
       kind: z.string().min(1).max(80),
       id: z.string().min(1).max(200),
     })
     .nullable(),
-  pending: sceneCheckpointVersionedPayloadSchema,
 });
 
-const sceneCheckpointContinuityNotesSchema = z.union([z.null(), z.tuple([])]);
+/** Matches storyteller continuity note limits without a package import. */
+const sceneCheckpointContinuityNoteSchema = z.strictObject({
+  key: z
+    .string()
+    .min(1)
+    .max(80)
+    .regex(/^[a-zA-Z0-9_-]+$/),
+  text: z.string().min(1).max(400),
+  sources: z.array(z.uuid()).min(1).max(4),
+  revision: z.number().int().positive(),
+});
+
+const sceneCheckpointV2ContinuityNotesSchema = z.union([
+  z.null(),
+  z.tuple([]),
+  z
+    .array(sceneCheckpointContinuityNoteSchema)
+    .max(20)
+    .refine(
+      (notes) => new Set(notes.map((note) => note.key)).size === notes.length,
+      'Duplicate note keys',
+    ),
+]);
 
 const presentFictionalStateSchema = z.strictObject({
   mechanicsAbsent: z.literal(false),
@@ -1005,7 +1036,7 @@ const presentFictionalStateSchema = z.strictObject({
   pace: sceneCheckpointPaceSchema,
   settingsRevision: z.number().int().positive().max(2147483647),
   content: z.json(),
-  continuityNotes: sceneCheckpointContinuityNotesSchema,
+  continuityNotes: sceneCheckpointV2ContinuityNotesSchema,
   activeSceneScope: sceneCheckpointAnchorSchema.nullable(),
   holds: sceneCheckpointHoldsSchema,
   offer: sceneCheckpointOfferSnapshotSchema.nullable(),
@@ -1044,21 +1075,31 @@ const presentFictionalStateSchema = z.strictObject({
 
 const absentFictionalStateSchema = z.strictObject({
   mechanicsAbsent: z.literal(true),
-  continuityNotes: sceneCheckpointContinuityNotesSchema,
+  continuityNotes: sceneCheckpointV2ContinuityNotesSchema,
   activeSceneScope: sceneCheckpointAnchorSchema.nullable(),
 });
 
-const sceneCheckpointPassageSchema = z.strictObject({
+const sceneCheckpointPassageFieldsSchema = {
   response: z.json(),
   responseSource: z.enum(['player', 'default']).nullable(),
   initialItems: checkpointItemsSchema.nullable(),
   effects: z.array(checkpointItemEffectSchema).max(50),
-  decisionPlan: z.null(),
-  waitPlan: z.null(),
   controlRevision: z.number().int().nonnegative().max(2147483647),
   content: z.json(),
   contentDocumentHash: contentHashSchema.nullable(),
   interaction: sceneCheckpointChoiceSchema.nullable(),
+} as const;
+
+const sceneCheckpointPassageSchema = z.strictObject({
+  ...sceneCheckpointPassageFieldsSchema,
+  decisionPlan: z.null(),
+  waitPlan: z.null(),
+});
+
+const sceneCheckpointV2PassageSchema = z.strictObject({
+  ...sceneCheckpointPassageFieldsSchema,
+  decisionPlan: sceneCheckpointVersionedPayloadSchema.nullable(),
+  waitPlan: sceneCheckpointVersionedPayloadSchema.nullable(),
 });
 
 const sceneCheckpointCoreSchema = z.strictObject({
@@ -1089,8 +1130,22 @@ const sceneCheckpointCoreSchema = z.strictObject({
   passage: sceneCheckpointPassageSchema,
 });
 
+type SceneCheckpointSharedRefinement = {
+  sceneSequence: number;
+  transitionId: string | null;
+  canon: z.infer<typeof sceneCheckpointCoreSchema>['canon'];
+  ancestor: z.infer<typeof sceneCheckpointCoreSchema>['ancestor'];
+  passage: {
+    response: unknown;
+    responseSource: 'player' | 'default' | null;
+    content: unknown;
+    contentDocumentHash: string | null;
+  };
+  pins: z.infer<typeof sceneCheckpointCoreSchema>['pins'];
+};
+
 function refineSceneCheckpointShared(
-  checkpoint: z.infer<typeof sceneCheckpointCoreSchema>,
+  checkpoint: SceneCheckpointSharedRefinement,
   context: z.RefinementCtx,
 ) {
   if (
@@ -1181,9 +1236,11 @@ export const sceneCheckpointV1Schema = sceneCheckpointCoreSchema
   });
 
 export const sceneCheckpointV2Schema = sceneCheckpointCoreSchema
+  .omit({ passage: true })
   .extend({
     format: z.literal('offscreen.scene-checkpoint.v2'),
     stateSchemaVersion: z.literal(2),
+    passage: sceneCheckpointV2PassageSchema,
     fictionalState: z.discriminatedUnion('mechanicsAbsent', [
       presentFictionalStateSchema,
       absentFictionalStateSchema,

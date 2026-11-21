@@ -310,7 +310,9 @@ async function forkLiveRevisionOne(
       .where(eq(campaignSettings.storyId, sourceStoryId));
     if (
       !settings.length ||
-      !settings.some((entry) => entry.revision === campaignState.settingsRevision)
+      !settings.some(
+        (entry) => entry.revision === campaignState.settingsRevision,
+      )
     ) {
       forkConflict('settings_incomplete');
     }
@@ -350,10 +352,7 @@ async function forkFromSceneCheckpoint(
 ) {
   const forkStoryId = parseStoryIdentifier(input.forkStoryId);
   const checkpoint = referenced.checkpoint;
-  if (
-    input.sourcePassageId &&
-    input.sourcePassageId !== checkpoint.passageId
-  ) {
+  if (input.sourcePassageId && input.sourcePassageId !== checkpoint.passageId) {
     throw new StoryError('invalid', 'checkpoint_passage_mismatch');
   }
   if (
@@ -361,6 +360,9 @@ async function forkFromSceneCheckpoint(
     input.sourceCheckpointHash !== referenced.checkpointHash
   ) {
     throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+  }
+  if (checkpoint.format !== 'offscreen.scene-checkpoint.v1') {
+    forkConflict('checkpoint_version_unsupported');
   }
   const mechanics = checkpoint.mechanics;
   if (!mechanics.mechanicsAbsent) {
@@ -609,10 +611,7 @@ async function assertIdempotentCheckpointHash(
         eq(storySceneCheckpoint.sceneSequence, input.expectedRevision),
       ),
     );
-  if (
-    !row ||
-    row.checkpointHash !== input.sourceCheckpointHash
-  ) {
+  if (!row || row.checkpointHash !== input.sourceCheckpointHash) {
     throw new StoryError('invalid', 'checkpoint_hash_mismatch');
   }
 }
@@ -670,9 +669,7 @@ export function createStoryForks(
       throw new StoryError('unavailable', 'document_store');
     }
     const referenced =
-      preview && store
-        ? await readSceneCheckpointForRow(store, preview)
-        : null;
+      preview && store ? await readSceneCheckpointForRow(store, preview) : null;
     const checkpointPassage = referenced
       ? (
           await database.db
@@ -724,7 +721,10 @@ export function createStoryForks(
           .where(eq(storyPassage.id, checkpointPassage.id));
         if (
           !passageNow ||
-          !isDeepStrictEqual(passageNow.appearance, checkpointPassage.appearance)
+          !isDeepStrictEqual(
+            passageNow.appearance,
+            checkpointPassage.appearance,
+          )
         ) {
           forkConflict('checkpoint_changed');
         }

@@ -54,6 +54,7 @@ import {
   type SceneCheckpointStore,
 } from './scene-checkpoint';
 import type { SceneCheckpoint } from '@offscreen/documents';
+import { projectV2HistoricalCampaign } from './scene-checkpoint-v2';
 
 type StoryReadOptions = ReadCacheOptions &
   Readonly<{
@@ -233,24 +234,59 @@ function checkpointReadStore(
 }
 
 function parseSceneSequence(value: unknown) {
-  const parsed = z
-    .number()
-    .int()
-    .positive()
-    .max(2147483647)
-    .safeParse(value);
+  const parsed = z.number().int().positive().max(2147483647).safeParse(value);
   if (!parsed.success) throw new StoryError('invalid');
   return parsed.data;
+}
+
+function checkpointMechanicsAbsent(checkpoint: SceneCheckpoint) {
+  if (checkpoint.format === 'offscreen.scene-checkpoint.v2') {
+    return checkpoint.fictionalState.mechanicsAbsent;
+  }
+  return checkpoint.mechanics.mechanicsAbsent;
+}
+
+function checkpointItems(checkpoint: SceneCheckpoint) {
+  if (checkpoint.format === 'offscreen.scene-checkpoint.v2') {
+    return checkpoint.fictionalState.mechanicsAbsent
+      ? []
+      : checkpoint.fictionalState.items;
+  }
+  return checkpoint.mechanics.mechanicsAbsent ? [] : checkpoint.mechanics.items;
+}
+
+function checkpointSettingsRevision(checkpoint: SceneCheckpoint) {
+  if (checkpoint.format === 'offscreen.scene-checkpoint.v2') {
+    if (checkpoint.fictionalState.mechanicsAbsent) {
+      return null;
+    }
+    return checkpoint.fictionalState.settingsRevision;
+  }
+  if (checkpoint.mechanics.mechanicsAbsent) {
+    return null;
+  }
+  return checkpoint.mechanics.settingsRevision;
 }
 
 function projectCheckpointCampaign(
   checkpoint: SceneCheckpoint,
   settingsRow: { settings: unknown } | undefined,
 ) {
-  if (checkpoint.mechanics.mechanicsAbsent) return null;
+  if (checkpointMechanicsAbsent(checkpoint)) return null;
   if (!settingsRow) throw new StoryError('conflict', 'settings_incomplete');
   const settings = campaignSettingsSchema.parse(settingsRow.settings);
+  if (checkpoint.format === 'offscreen.scene-checkpoint.v2') {
+    if (checkpoint.fictionalState.mechanicsAbsent) {
+      return null;
+    }
+    return campaignViewSchema.parse(
+      projectV2HistoricalCampaign(checkpoint.fictionalState, settings),
+    );
+  }
   const mechanics = checkpoint.mechanics;
+  if (mechanics.mechanicsAbsent) {
+    return null;
+  }
   return campaignViewSchema.parse({
     settings,
     character: mechanics.character,
@@ -767,7 +803,8 @@ export function createStoryReads(
             })
             .from(storyPassage)
             .where(eq(storyPassage.id, checkpoint.passageId));
-          if (!passage) throw new StoryError('invalid', 'checkpoint_passage_mismatch');
+          if (!passage)
+            throw new StoryError('invalid', 'checkpoint_passage_mismatch');
           const content = await resolvePassageContent(
             {
               content: checkpoint.passage.content,
@@ -775,18 +812,16 @@ export function createStoryReads(
             },
             options.documentStore,
           );
+          const settingsRevision = checkpointSettingsRevision(checkpoint);
           let settingsRow;
-          if (!checkpoint.mechanics.mechanicsAbsent) {
+          if (settingsRevision !== null) {
             const [row] = await tx
               .select({ settings: campaignSettings.settings })
               .from(campaignSettings)
               .where(
                 and(
                   eq(campaignSettings.storyId, owned.id),
-                  eq(
-                    campaignSettings.revision,
-                    checkpoint.mechanics.settingsRevision,
-                  ),
+                  eq(campaignSettings.revision, settingsRevision),
                 ),
               );
             settingsRow = row;
@@ -820,7 +855,7 @@ export function createStoryReads(
                 : executionPolicySchema.parse(owned.execution).mode,
             revision: checkpoint.sceneSequence,
             viewVersion: 1,
-            items: checkpoint.mechanics.items,
+            items: checkpointItems(checkpoint),
             decision: null,
             waiting: null,
             current: {

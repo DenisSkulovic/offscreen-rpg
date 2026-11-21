@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { and, eq, gt, inArray, lte } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
@@ -32,13 +31,6 @@ function normalizeActiveSceneScope(scope: unknown) {
   if (scope === null || scope === undefined) return null;
   return activeSceneAnchorSchema.parse(scope);
 }
-import { offerSchema } from '@offscreen/game/offers';
-import {
-  authorizeSituation,
-  immediateActionAvailable,
-  validateImmediateActionProposal,
-  type ImmediateActionPlan,
-} from '@offscreen/game/immediate-actions';
 import {
   storytellerTaskSchema,
   validateStorytellerResult,
@@ -52,7 +44,10 @@ import {
   stageSupportedContinuationCheckpoint,
   type StagedContinuationCheckpoint,
 } from '../stories/continuation';
-import { checkpointWriterStore } from '../stories/scene-checkpoint';
+import {
+  checkpointWriterStore,
+  insertStagedSceneCheckpointSelector,
+} from '../stories/scene-checkpoint';
 import {
   lockOwnedStory,
   insertContinuationPassage,
@@ -60,6 +55,7 @@ import {
   incrementStoryViewVersion,
   readDatabaseClockMs,
   restartActiveSceneAtPassage,
+  findPassageByTransition,
 } from '../stories/persistence';
 import {
   publicationAppearanceWrite,
@@ -69,7 +65,6 @@ import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
-import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
 import {
   campaignHoldsSchema,
   transitionStorytellerHoldToDecision,
@@ -89,6 +84,19 @@ import {
   type StagedStoryPublication,
 } from '../stories/passage-documents';
 import type { ProposedDocumentChange } from '@offscreen/storyteller/tasks';
+import {
+  admitConsequenceSelectedPlans,
+  stageConsequencePublicationCheckpoint,
+  type StagedConsequencePublication,
+} from './publication-candidate';
+import {
+  assertV2PostStateMatches,
+  toV2FictionalState,
+} from '../stories/scene-checkpoint-v2';
+import {
+  readSceneAfterState,
+  SceneAfterStateError,
+} from '../stories/scene-after-state';
 
 function activeSceneRecallCues(
   changes: readonly ProposedDocumentChange[],
@@ -142,6 +150,7 @@ export async function publishStorytellerResult(
 ) {
   let stagedDocuments: StagedStoryPublication | undefined;
   let stagedContinuation: StagedContinuationCheckpoint | undefined;
+  let stagedConsequence: StagedConsequencePublication | undefined;
   const [candidate] = await database.db
     .select()
     .from(generation)
@@ -248,6 +257,58 @@ export async function publishStorytellerResult(
             },
           );
         }
+      }
+      if (
+        writer &&
+        (task.task === 'consequence' || task.task === 'pending-consequence') &&
+        current &&
+        current.revision === task.source.narrativeRevision
+      ) {
+        const sceneCandidate = publicationSceneCandidate({
+          internalCandidate: internalAppearance?.candidate,
+          suggestion: result.appearanceSuggestion,
+        });
+        const written = publicationAppearanceWrite({
+          generationId: id,
+          storyId: task.source.storyId,
+          ...(stagedDocuments
+            ? { stagedPassageId: stagedDocuments.passageId }
+            : {}),
+          ...(sceneCandidate !== undefined ? { candidate: sceneCandidate } : {}),
+        });
+        stagedConsequence = await stageConsequencePublicationCheckpoint(
+          database,
+          writer,
+          {
+            ownerId: candidate.ownerId,
+            storyId: task.source.storyId,
+            generationId: id,
+            transitionId: preparedResolution.operationId,
+            task,
+            result,
+            passageId: written.passageId,
+            contentDocumentHash: stagedDocuments?.passageObjectHash ?? null,
+            nextRootHash: stagedDocuments?.rootHash ?? current.rootHash,
+            nextRootRevision:
+              stagedDocuments?.rootRevision ?? current.rootRevision,
+            baseRootHash: stagedDocuments?.baseRootHash ?? current.rootHash,
+            baseRootRevision:
+              stagedDocuments?.baseRootRevision ?? current.rootRevision,
+            restartActiveScene:
+              result.activeScene?.kind === 'restart-at-current',
+            ...(result.activeScene?.kind === 'restart-at-current'
+              ? {
+                  activeSceneRecallCues: activeSceneRecallCues(
+                    result.documentChanges,
+                    preparedResolution.operationId,
+                    task.context.canonicalKnowledge?.catalogue ?? [],
+                    result.activeScene.recallDocuments,
+                  ),
+                }
+              : {}),
+            ...(stagedDocuments ? { stagedDocuments } : {}),
+          },
+        );
       }
     }
   }
@@ -725,6 +786,38 @@ export async function publishStorytellerResult(
       ) {
         throw new StoryError('conflict', 'document_root');
       }
+      if (!stagedConsequence) {
+        if (documentStore && checkpointWriterStore(documentStore)) {
+          throw new StoryError('conflict', 'state_not_representable');
+        }
+        throw new StoryError('unavailable', 'checkpoint_store_unavailable');
+      }
+      const priorPassage = await findPassageByTransition(tx, {
+        storyId: current.id,
+        transitionId: resolution.operationId,
+      });
+      if (priorPassage) {
+        if (priorPassage.sourceGenerationId !== id) {
+          throw new StoryError('conflict');
+        }
+        await setPublication(tx, id, 'published');
+        return;
+      }
+      const nextRootHash =
+        stagedDocuments?.rootHash ?? current.documentRootHash;
+      const nextRootRevision =
+        stagedDocuments?.rootRevision ?? current.documentRootRevision;
+      if (
+        current.documentRootHash !== stagedConsequence.baseRootHash ||
+        current.documentRootRevision !== stagedConsequence.baseRootRevision ||
+        stagedConsequence.checkpoint.canon.rootHash !== nextRootHash ||
+        stagedConsequence.checkpoint.canon.rootRevision !== nextRootRevision ||
+        stagedConsequence.checkpoint.sceneSequence !== current.revision + 1 ||
+        (stagedDocuments &&
+          stagedConsequence.passageId !== stagedDocuments.passageId)
+      ) {
+        throw new StoryError('conflict', 'stale_canon_root');
+      }
       const [campaignState] = await tx
         .select()
         .from(campaign)
@@ -738,99 +831,15 @@ export async function publishStorytellerResult(
       ) {
         throw new StoryError('invalid');
       }
-      const resolutionContext = task.context.resolution;
-      if (!resolutionContext) {
-        throw new StoryError('invalid');
-      }
-      const evidenceHandles = new Set(
-        task.context.evidence.map((passage) => `p${passage.sequence}`),
-      );
-      const selectedPlans: ImmediateActionPlan[] = [];
-      for (const proposal of result.scene.next.plans) {
-        const validation = validateImmediateActionProposal({
-          proposal,
-          character: resolutionContext.character,
-          storyFacts: resolutionContext.storyFacts,
-          evidenceHandles,
-          requireFactTransitionDeclarations: true,
-          allowWorldEffects: false,
-        });
-        if (validation.kind === 'rejected') {
-          throw new StoryError('invalid');
-        }
-        if (
-          !immediateActionAvailable(
-            resolutionContext.character,
-            resolutionContext.storyFacts,
-            validation.plan,
-          )
-        ) {
-          throw new StoryError('invalid');
-        }
-        let admittedPlan = validation.plan;
-        if (admittedPlan.resolution.kind === 'resume') {
-          const resume = admittedPlan.resolution;
-          const retained = (
-            await tx
-              .select()
-              .from(gameActivity)
-              .where(
-                and(
-                  eq(gameActivity.storyId, current.id),
-                  inArray(gameActivity.state, ['encounter', 'suspended']),
-                ),
-              )
-          ).filter((candidate) => {
-            if (
-              resolvedActivityPlanSchema.parse(candidate.plan).action.id ===
-              resume.activityActionId
-            ) {
-              return (
-                resume.activityId === undefined ||
-                (candidate.id === resume.activityId &&
-                  candidate.revision === resume.activityRevision)
-              );
-            }
-            return false;
-          });
-          if (retained.length !== 1 || !retained[0]) {
-            throw new StoryError('invalid');
-          }
-          admittedPlan = {
-            ...admittedPlan,
-            resolution: {
-              ...admittedPlan.resolution,
-              activityId: retained[0].id,
-              activityRevision: retained[0].revision,
-            },
-          };
-        }
-        selectedPlans.push(admittedPlan);
-      }
-      const plannedOffer = offerSchema.parse({
-        id: randomUUID(),
-        nodes: selectedPlans.map((plan) => {
-          return {
-            id: plan.key,
-            parent: null,
-            label: plan.label,
-            description: plan.intention,
-            risk: plan.risk,
-            action: {
-              kind: 'attempt',
-              timing:
-                plan.resolution.kind === 'process' ||
-                plan.resolution.kind === 'resume'
-                  ? { kind: 'process' }
-                  : {
-                      kind: 'finite',
-                      fictionalSeconds:
-                        plan.resolution.fictionalDurationSeconds,
-                    },
-            },
-          };
-        }),
+      const selectedPlans = await admitConsequenceSelectedPlans(tx, {
+        storyId: current.id,
+        generationId: id,
+        task,
+        result,
       });
+      if (!isDeepStrictEqual(selectedPlans, stagedConsequence.selectedPlans)) {
+        throw new StoryError('conflict', 'stale_story_revision');
+      }
       const sceneCandidate = publicationSceneCandidate({
         internalCandidate: internalAppearance?.candidate,
         suggestion: result.appearanceSuggestion,
@@ -838,18 +847,19 @@ export async function publishStorytellerResult(
       const written = publicationAppearanceWrite({
         generationId: id,
         storyId: current.id,
-        ...(stagedDocuments
-          ? { stagedPassageId: stagedDocuments.passageId }
-          : {}),
+        stagedPassageId: stagedConsequence.passageId,
         ...(sceneCandidate !== undefined ? { candidate: sceneCandidate } : {}),
       });
+      if (written.passageId !== stagedConsequence.passageId) {
+        throw new StoryError('conflict', 'stale_story_revision');
+      }
       const passageId = await insertContinuationPassage(tx, {
         storyId: current.id,
         sequence: current.revision + 1,
         transitionId: resolution.operationId,
         sourceGenerationId: id,
         responseSource: null,
-        passageId: written.passageId,
+        passageId: stagedConsequence.passageId,
         ...(written.appearance ? { appearance: written.appearance } : {}),
         input: {
           expectedRevision: current.revision,
@@ -874,14 +884,6 @@ export async function publishStorytellerResult(
           staged: stagedDocuments,
         });
       }
-      await publishStorytellerNotes(tx, {
-        storyId: current.id,
-        generationId: id,
-        passageId,
-        revision: current.revision + 1,
-        sourcePart: 'current',
-        notes: current.continuityNotes,
-      });
       if (result.activeScene?.kind === 'restart-at-current') {
         await restartActiveSceneAtPassage(tx, {
           storyId: current.id,
@@ -899,18 +901,14 @@ export async function publishStorytellerResult(
         tx,
         current.id,
         current.revision + 1,
-        plannedOffer.id,
-        selectedPlans,
+        stagedConsequence.offerId,
+        stagedConsequence.selectedPlans,
       );
       await tx
         .update(campaign)
         .set({
-          offer: plannedOffer,
-          situationAuthorization: authorizeSituation(
-            selectedPlans,
-            plannedOffer.id,
-            result.scene.next.activityAccess,
-          ),
+          offer: stagedConsequence.publicationOffer,
+          situationAuthorization: stagedConsequence.situationAuthorization,
         })
         .where(eq(campaign.storyId, current.id));
       const publicationClockMs = await readDatabaseClockMs(tx, current.id);
@@ -918,21 +916,55 @@ export async function publishStorytellerResult(
         tx,
         campaignState,
         id,
-        plannedOffer.id,
+        stagedConsequence.offerId,
         publicationClockMs,
       );
       await captureDelegatedOfferOnPublication(tx, {
         storyId: current.id,
         ownerId: current.ownerId,
         narrativeRevision: current.revision + 1,
-        offerId: plannedOffer.id,
-        plans: selectedPlans,
+        offerId: stagedConsequence.offerId,
+        plans: stagedConsequence.selectedPlans,
         clockMs: publicationClockMs,
       });
       await advanceStoryView(tx, {
         storyId: current.id,
         revision: current.revision + 1,
         viewVersion: current.viewVersion + 1,
+      });
+      await publishStorytellerNotes(tx, {
+        storyId: current.id,
+        generationId: id,
+        passageId,
+        revision: current.revision + 1,
+        sourcePart: 'current',
+        notes: current.continuityNotes,
+      });
+      let actualAfter;
+      try {
+        actualAfter = await readSceneAfterState(tx, current.id);
+      } catch (error) {
+        if (error instanceof SceneAfterStateError) {
+          throw new StoryError('conflict', 'stale_story_revision');
+        }
+        throw error;
+      }
+      const stagedCheckpoint = stagedConsequence.checkpoint;
+      if (stagedCheckpoint.format !== 'offscreen.scene-checkpoint.v2') {
+        throw new StoryError('conflict', 'state_not_representable');
+      }
+      try {
+        assertV2PostStateMatches(
+          stagedCheckpoint.fictionalState,
+          toV2FictionalState(actualAfter),
+        );
+      } catch {
+        throw new StoryError('conflict', 'stale_story_revision');
+      }
+      await insertStagedSceneCheckpointSelector(tx, {
+        ownerId: record.ownerId,
+        operationId: resolution.operationId,
+        staged: stagedConsequence,
       });
       await setPublication(tx, id, 'published');
       return;

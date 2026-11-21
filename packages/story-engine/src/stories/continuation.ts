@@ -5,20 +5,9 @@ import {
   validateInteractionSubmission,
 } from '@offscreen/contracts/interactions';
 import type { Database } from '@offscreen/db';
-import {
-  campaign,
-  campaignReport,
-  gameActivity,
-  gameOffer,
-  worldObligation,
-} from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/db/campaign-schema';
 import type { Transaction } from '@offscreen/db/outbox';
-import {
-  DocumentStorageError,
-  sceneCheckpointSchema,
-  type DocumentStore,
-  type SceneCheckpoint,
-} from '@offscreen/documents';
+import { type DocumentStore, type SceneCheckpoint } from '@offscreen/documents';
 import {
   activeWaitBlocksContinuation,
   continuationIncludesWaitWithOffer,
@@ -37,28 +26,43 @@ import {
   findPassageByTransition,
   insertContinuationPassage,
   lockOwnedStory,
-  projectStoryItemEffects,
   readDatabaseClockMs,
   requireCurrentPassage,
   restartActiveSceneAtPassage,
   type ActiveSceneRecallCue,
   type StoryItemSnapshot,
 } from './persistence';
-import {
-  checkpointPinsForRoot,
-  type StagedStoryPublication,
-} from './passage-documents';
+import { type StagedStoryPublication } from './passage-documents';
 import {
   checkpointWriterStore,
   insertStagedSceneCheckpointSelector,
-  stageSceneCheckpointObject,
-  type SceneCheckpointWriterStore,
-  type StagedSceneCheckpoint,
 } from './scene-checkpoint';
-import { story, storyDocumentCommit, storyItem, storyPassage, storyResolution } from '@offscreen/db/story-schema';
-import { and, eq } from 'drizzle-orm';
+import {
+  assertV2PostStateMatches,
+  SceneAfterStateError,
+  toV2FictionalState,
+} from './scene-checkpoint-v2';
+import {
+  checkpointAnchor,
+  checkpointNotes,
+  stageSupportedContinuationCheckpoint,
+  type StagedContinuationCheckpoint,
+} from './continuation-checkpoint';
+
+import { readSceneAfterState } from './scene-after-state';
+import {
+  story,
+  storyDocumentCommit,
+  storyItem,
+} from '@offscreen/db/story-schema';
+import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { enqueue } from '@offscreen/db/outbox';
+
+export {
+  stageSupportedContinuationCheckpoint,
+  type StagedContinuationCheckpoint,
+};
 
 type CommitContinuation = Readonly<{
   ownerId: string;
@@ -73,14 +77,6 @@ type CommitContinuation = Readonly<{
   stagedDocuments?: StagedStoryPublication;
   stagedCheckpoint?: StagedContinuationCheckpoint;
 }>;
-
-export type StagedContinuationCheckpoint = StagedSceneCheckpoint &
-  Readonly<{
-    passageId: string;
-    interactionId: string | null;
-    baseRootHash: string | null;
-    baseRootRevision: number;
-  }>;
 
 type AppendContinuation = Readonly<{
   ownerId: string;
@@ -177,173 +173,18 @@ function sortedItems(items: readonly StoryItemSnapshot[]) {
   );
 }
 
-function checkpointNotes(notes: unknown): [] | null | undefined {
-  if (notes == null) return null;
-  if (Array.isArray(notes) && notes.length === 0) return [];
-  return undefined;
-}
-
-function checkpointAnchor(scope: unknown) {
-  if (scope == null) return null;
-  if (typeof scope !== 'object') return undefined;
-  const record = scope as Record<string, unknown>;
-  if (record.version !== 'active-scene-anchor.v1') return undefined;
-  return {
-    version: 'active-scene-anchor.v1' as const,
-    fromSequence: record.fromSequence,
-    requiredPassageIds: record.requiredPassageIds,
-    recallCues: Array.isArray(record.recallCues) ? record.recallCues : [],
-  };
-}
-
-async function checkpointIsBlocked(
-  database: Database,
-  storyId: string,
-  transitionId: string,
-) {
-  const resolutions = await database.db
-    .select({ operationId: storyResolution.operationId })
-    .from(storyResolution)
-    .where(eq(storyResolution.storyId, storyId));
-  if (resolutions.some((row) => row.operationId !== transitionId)) return true;
-  const [obligation] = await database.db
-    .select({ id: worldObligation.id })
-    .from(worldObligation)
-    .where(eq(worldObligation.storyId, storyId))
-    .limit(1);
-  if (obligation) return true;
-  const [offer] = await database.db
-    .select({ id: gameOffer.id })
-    .from(gameOffer)
-    .where(eq(gameOffer.storyId, storyId))
-    .limit(1);
-  if (offer) return true;
-  const [activity] = await database.db
-    .select({ id: gameActivity.id })
-    .from(gameActivity)
-    .where(eq(gameActivity.storyId, storyId))
-    .limit(1);
-  if (activity) return true;
-  const [report] = await database.db
-    .select({ id: campaignReport.id })
-    .from(campaignReport)
-    .where(
-      and(
-        eq(campaignReport.storyId, storyId),
-        eq(campaignReport.state, 'pending'),
-      ),
-    )
-    .limit(1);
-  return Boolean(report);
-}
-
-function continuationCheckpointCandidate(args: {
-  storyId: string;
-  passageId: string;
-  transitionId: string;
-  input: StoryContinuation;
-  completingDecisionPassageId: string | undefined;
-  interactionId: string | null;
-  contentDocumentHash: string | null;
-  rootHash: string | null;
-  rootRevision: number;
-  pins: SceneCheckpoint['pins'];
-  source: string;
-  premise: unknown;
-  storyteller: unknown;
-  execution: unknown;
-  usagePolicy: unknown;
-  items: readonly StoryItemSnapshot[];
-  campaign: typeof campaign.$inferSelect | undefined;
-  activeSceneScope: unknown;
-  continuityNotes: unknown;
-}) {
-  if (args.input.decision || args.input.wait) return undefined;
-  const notes = checkpointNotes(args.continuityNotes);
-  if (notes === undefined) return undefined;
-  const anchor = checkpointAnchor(args.activeSceneScope);
-  if (anchor === undefined) return undefined;
-  const passage = {
-    response: args.input.response,
-    responseSource: continuationResponseProvenance({
-      response: args.input.response,
-      completingDecisionPassageId: args.completingDecisionPassageId,
-    }),
-    initialItems: null,
-    effects: args.input.effects,
-    decisionPlan: null,
-    waitPlan: null,
-    controlRevision: 0,
-    content: args.contentDocumentHash ? null : args.input.content,
-    contentDocumentHash: args.contentDocumentHash,
-    interaction:
-      args.input.interaction && args.interactionId
-        ? { id: args.interactionId, specification: args.input.interaction }
-        : null,
-  };
-  const shared = {
-    format: 'offscreen.scene-checkpoint.v1' as const,
-    stateSchemaVersion: 1 as const,
-    storyId: args.storyId,
-    passageId: args.passageId,
-    sceneSequence: args.input.expectedRevision + 1,
-    transitionId: args.transitionId,
-    source: args.source,
-    premise: args.premise ?? null,
-    storyteller: args.storyteller ?? null,
-    execution: args.execution ?? null,
-    usagePolicy: args.usagePolicy ?? null,
-    canon: { rootHash: args.rootHash, rootRevision: args.rootRevision },
-    ancestor: { storyId: null, rootHash: null, rootRevision: null },
-    pins: args.pins,
-    passage,
-  };
-  if (!args.campaign) {
-    if (args.items.length > 0) return undefined;
-    return { ...shared, mechanics: { mechanicsAbsent: true as const, items: [] } };
-  }
-  const row = args.campaign;
-  if (
-    row.offer != null ||
-    row.acceptedActivityPlan != null ||
-    row.activeActivityId != null ||
-    row.activeActionOperationId != null ||
-    !Array.isArray(row.holds) ||
-    row.holds.length > 0
-  ) {
-    return undefined;
-  }
-  return {
-    ...shared,
-    mechanics: {
-      mechanicsAbsent: false as const,
-      character: row.character ?? null,
-      items: args.items,
-      storyFacts: row.storyFacts,
-      activityOccurrences: row.activityOccurrences,
-      location: row.location,
-      gameSecond: row.gameSecond,
-      clock: row.clock,
-      pace: row.clockPace,
-      holds: [] as [],
-      offer: null,
-      acceptedActivityPlan: null,
-      activeActivityId: null,
-      activeActionOperationId: null,
-      situationAuthorization: row.situationAuthorization,
-      worldConditions: row.worldConditions,
-      settingsRevision: row.settingsRevision,
-      content: row.content ?? null,
-      continuityNotes: notes,
-      activeSceneScope: anchor,
-    },
-  };
+function sourceGenerationPart(input: StoryContinuation): 'current' | 'arrival' {
+  return input.sourceGenerationPart === 'arrival' ? 'arrival' : 'current';
 }
 
 export async function lockedCheckpointMatches(
   tx: Transaction,
   checkpoint: SceneCheckpoint,
 ) {
+  if (checkpoint.format !== 'offscreen.scene-checkpoint.v1') {
+    return false;
+  }
+  const mechanics = checkpoint.mechanics;
   const items = sortedItems(
     await tx
       .select({
@@ -355,14 +196,14 @@ export async function lockedCheckpointMatches(
       .where(eq(storyItem.storyId, checkpoint.storyId)),
   );
   const expected = sortedItems(
-    checkpoint.mechanics.mechanicsAbsent ? [] : checkpoint.mechanics.items,
+    mechanics.mechanicsAbsent ? [] : mechanics.items,
   );
   if (!isDeepStrictEqual(items, expected)) return false;
   const [row] = await tx
     .select()
     .from(campaign)
     .where(eq(campaign.storyId, checkpoint.storyId));
-  if (checkpoint.mechanics.mechanicsAbsent) return !row;
+  if (mechanics.mechanicsAbsent) return !row;
   if (!row) return false;
   const [storyRow] = await tx
     .select({
@@ -373,16 +214,13 @@ export async function lockedCheckpointMatches(
     .where(eq(story.id, checkpoint.storyId));
   const notes = checkpointNotes(storyRow?.continuityNotes);
   return (
-    isDeepStrictEqual(row.character ?? null, checkpoint.mechanics.character) &&
-    isDeepStrictEqual(row.storyFacts, checkpoint.mechanics.storyFacts) &&
-    isDeepStrictEqual(
-      row.activityOccurrences,
-      checkpoint.mechanics.activityOccurrences,
-    ) &&
-    row.location === checkpoint.mechanics.location &&
-    row.gameSecond === checkpoint.mechanics.gameSecond &&
-    isDeepStrictEqual(row.clock, checkpoint.mechanics.clock) &&
-    isDeepStrictEqual(row.clockPace, checkpoint.mechanics.pace) &&
+    isDeepStrictEqual(row.character ?? null, mechanics.character) &&
+    isDeepStrictEqual(row.storyFacts, mechanics.storyFacts) &&
+    isDeepStrictEqual(row.activityOccurrences, mechanics.activityOccurrences) &&
+    row.location === mechanics.location &&
+    row.gameSecond === mechanics.gameSecond &&
+    isDeepStrictEqual(row.clock, mechanics.clock) &&
+    isDeepStrictEqual(row.clockPace, mechanics.pace) &&
     Array.isArray(row.holds) &&
     row.holds.length === 0 &&
     row.offer == null &&
@@ -391,154 +229,29 @@ export async function lockedCheckpointMatches(
     row.activeActionOperationId == null &&
     isDeepStrictEqual(
       row.situationAuthorization,
-      checkpoint.mechanics.situationAuthorization,
+      mechanics.situationAuthorization,
     ) &&
-    isDeepStrictEqual(row.worldConditions, checkpoint.mechanics.worldConditions) &&
-    row.settingsRevision === checkpoint.mechanics.settingsRevision &&
-    isDeepStrictEqual(row.content ?? null, checkpoint.mechanics.content) &&
+    isDeepStrictEqual(row.worldConditions, mechanics.worldConditions) &&
+    row.settingsRevision === mechanics.settingsRevision &&
+    isDeepStrictEqual(row.content ?? null, mechanics.content) &&
     checkpointNotes(storyRow?.continuityNotes) !== undefined &&
     isDeepStrictEqual(
       checkpointNotes(storyRow?.continuityNotes),
-      checkpoint.mechanics.continuityNotes,
+      mechanics.continuityNotes,
     ) &&
     isDeepStrictEqual(
       checkpointAnchor(storyRow?.scope),
-      checkpoint.mechanics.activeSceneScope,
+      mechanics.activeSceneScope,
     ) &&
     notes !== undefined
   );
 }
 
 /**
- * Stage a quiescent continuation checkpoint before the story lock.
- * Unsupported active work returns undefined and the narrative commit still
- * proceeds. A failed object write throws and must not open the SQL transaction.
+ * Stage a continuation checkpoint before the story lock using the predicted
+ * post-commit fictional state, including continuity notes and active work.
+ * A failed object write throws and must not open the SQL transaction.
  */
-export async function stageSupportedContinuationCheckpoint(
-  database: Database,
-  documentStore: SceneCheckpointWriterStore,
-  args: Readonly<{
-    ownerId: string;
-    storyId: string;
-    transitionId: string;
-    input: StoryContinuation;
-    passageId?: string;
-    contentDocumentHash?: string | null;
-    nextRootHash?: string | null;
-    nextRootRevision?: number;
-    baseRootHash?: string | null;
-    baseRootRevision?: number;
-    restartActiveScene?: boolean;
-    activeSceneRecallCues?: readonly ActiveSceneRecallCue[];
-    completingDecisionPassageId?: string;
-  }>,
-): Promise<StagedContinuationCheckpoint | undefined> {
-  if (args.input.decision || args.input.wait) return undefined;
-  const [current] = await database.db
-    .select()
-    .from(story)
-    .where(eq(story.id, args.storyId));
-  if (!current || current.ownerId !== args.ownerId) return undefined;
-  if (current.revision !== args.input.expectedRevision) return undefined;
-  const [prior] = await database.db
-    .select({ id: storyPassage.id })
-    .from(storyPassage)
-    .where(
-      and(
-        eq(storyPassage.storyId, args.storyId),
-        eq(storyPassage.transitionId, args.transitionId),
-      ),
-    );
-  if (prior) return undefined;
-  if (await checkpointIsBlocked(database, args.storyId, args.transitionId)) {
-    return undefined;
-  }
-  const baseRootHash = args.baseRootHash ?? current.documentRootHash;
-  const baseRootRevision = args.baseRootRevision ?? current.documentRootRevision;
-  if (
-    current.documentRootHash !== baseRootHash ||
-    current.documentRootRevision !== baseRootRevision
-  ) {
-    return undefined;
-  }
-  const rootHash = args.nextRootHash ?? current.documentRootHash;
-  const rootRevision = args.nextRootRevision ?? current.documentRootRevision;
-  const items = projectStoryItemEffects(
-    await database.db
-      .select({
-        key: storyItem.key,
-        label: storyItem.label,
-        holderKey: storyItem.holderKey,
-      })
-      .from(storyItem)
-      .where(eq(storyItem.storyId, args.storyId)),
-    args.input.effects,
-  );
-  const [campaignRow] = await database.db
-    .select()
-    .from(campaign)
-    .where(eq(campaign.storyId, args.storyId));
-  const passageId = args.passageId ?? randomUUID();
-  const interactionId = args.input.interaction ? randomUUID() : null;
-  const scope = args.restartActiveScene
-    ? {
-        version: 'active-scene-anchor.v1' as const,
-        fromSequence: args.input.expectedRevision + 1,
-        requiredPassageIds: [passageId],
-        recallCues: args.activeSceneRecallCues ?? [],
-      }
-    : current.activeSceneScope;
-  let pins: SceneCheckpoint['pins'];
-  try {
-    pins = await checkpointPinsForRoot({
-      storage: documentStore,
-      rootHash,
-      storytellerProfile: current.storyteller ?? null,
-    });
-  } catch (error) {
-    if (error instanceof DocumentStorageError) {
-      throw new StoryError(
-        error.code === 'unavailable' ? 'unavailable' : 'invalid',
-        error.code === 'unavailable'
-          ? 'checkpoint_store_unavailable'
-          : 'canon_root_mismatch',
-      );
-    }
-    throw error;
-  }
-  const candidate = continuationCheckpointCandidate({
-    storyId: args.storyId,
-    passageId,
-    transitionId: args.transitionId,
-    input: args.input,
-    completingDecisionPassageId: args.completingDecisionPassageId,
-    interactionId,
-    contentDocumentHash: args.contentDocumentHash ?? null,
-    rootHash,
-    rootRevision,
-    pins,
-    source: current.source,
-    premise: current.premise,
-    storyteller: current.storyteller,
-    execution: current.execution,
-    usagePolicy: current.usagePolicy,
-    items,
-    campaign: campaignRow,
-    activeSceneScope: scope,
-    continuityNotes: current.continuityNotes,
-  });
-  if (!candidate) return undefined;
-  const parsed = sceneCheckpointSchema.safeParse(candidate);
-  if (!parsed.success) return undefined;
-  const staged = await stageSceneCheckpointObject(documentStore, parsed.data);
-  return {
-    ...staged,
-    passageId,
-    interactionId,
-    baseRootHash,
-    baseRootRevision,
-  };
-}
 
 export async function commitStoryContinuation(
   tx: Transaction,
@@ -658,25 +371,46 @@ export async function commitStoryContinuation(
     revision: nextRevision,
     viewVersion: current.viewVersion + 1,
   });
+  const shouldPublishNotes = Boolean(
+    current.storyteller != null && args.input.sourceGenerationId,
+  );
+  if (shouldPublishNotes) {
+    await publishStorytellerNotes(tx, {
+      storyId: args.storyId,
+      generationId: args.input.sourceGenerationId!,
+      passageId,
+      revision: nextRevision,
+      sourcePart: sourceGenerationPart(args.input),
+      notes: current.continuityNotes,
+    });
+  }
   if (stagedCheckpoint) {
-    if (!(await lockedCheckpointMatches(tx, stagedCheckpoint.checkpoint))) {
+    const checkpoint = stagedCheckpoint.checkpoint;
+    if (checkpoint.format === 'offscreen.scene-checkpoint.v2') {
+      let actual;
+      try {
+        actual = await readSceneAfterState(tx, args.storyId);
+      } catch (error) {
+        if (error instanceof SceneAfterStateError) {
+          throw new StoryError('conflict', 'stale_story_revision');
+        }
+        throw error;
+      }
+      try {
+        assertV2PostStateMatches(
+          checkpoint.fictionalState,
+          toV2FictionalState(actual),
+        );
+      } catch {
+        throw new StoryError('conflict', 'stale_story_revision');
+      }
+    } else if (!(await lockedCheckpointMatches(tx, checkpoint))) {
       throw new StoryError('conflict', 'stale_story_revision');
     }
     await insertStagedSceneCheckpointSelector(tx, {
       ownerId: args.ownerId,
       operationId: args.transitionId,
       staged: stagedCheckpoint,
-    });
-  }
-  if (current.storyteller != null && args.input.sourceGenerationId) {
-    await publishStorytellerNotes(tx, {
-      storyId: args.storyId,
-      generationId: args.input.sourceGenerationId,
-      passageId,
-      revision: nextRevision,
-      sourcePart:
-        args.input.sourceGenerationPart === 'arrival' ? 'arrival' : 'current',
-      notes: current.continuityNotes,
     });
   }
   await enqueueContinuationNotices(tx, { passageId, input: args.input });

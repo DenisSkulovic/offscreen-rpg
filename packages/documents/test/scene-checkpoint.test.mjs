@@ -316,7 +316,13 @@ function activeV2Checkpoint() {
         id: offerId,
         source: 'test-offer',
         meaning: 'choose',
-        payload,
+        payload: {
+          version: 1,
+          body: {
+            offer: { id: offerId, nodes: [] },
+            plans: payload,
+          },
+        },
       },
       acceptedActivityPlan: payload,
       activeActivityId: activityId,
@@ -333,6 +339,7 @@ function activeV2Checkpoint() {
           id: activityId,
           state: 'running',
           revision: 1,
+          boundariesSettled: 0,
           plan: payload,
           progress: payload,
         },
@@ -343,18 +350,74 @@ function activeV2Checkpoint() {
           revision: 1,
           state: 'active',
           dueGameSecond: null,
+          firedAtGameSecond: null,
           definition: payload,
         },
       ],
       activeAction: {
         id: actionId,
-        status: 'pending',
+        offerId,
+        actionKey: 'strike',
+        baseRevision: 1,
+        offer: payload,
+        plan: payload,
+        pendingResolution: payload,
+        status: 'running',
+        revision: 0,
         startGameSecond: 0,
+        targetGameSecond: 120,
         target: { kind: 'entity', id: 'npc-1' },
-        pending: payload,
+      },
+    },
+    passage: {
+      ...base.passage,
+      waitPlan: {
+        version: 1,
+        body: {
+          version: 1,
+          realDurationMs: 60_000,
+          gameDurationMs: 120_000,
+          arrival: {
+            content: {
+              version: 1,
+              title: 'After the wait',
+              paragraphs: ['Time passes.'],
+            },
+            interaction: null,
+          },
+        },
       },
     },
   });
+}
+
+function activeV2CheckpointWithNotes() {
+  const checkpoint = activeV2Checkpoint();
+  const noteSource = '88888888-8888-4888-8888-888888888888';
+  return {
+    ...checkpoint,
+    fictionalState: {
+      ...checkpoint.fictionalState,
+      continuityNotes: [
+        {
+          key: 'quay-rumor',
+          text: 'The dockhands whisper about delayed ships.',
+          sources: [noteSource],
+          revision: 1,
+        },
+      ],
+      offer: {
+        ...checkpoint.fictionalState.offer,
+        payload: {
+          version: 1,
+          body: {
+            offer: { id: checkpoint.fictionalState.offer.id, nodes: [] },
+            plans: { version: 1, body: { phase: 'open' } },
+          },
+        },
+      },
+    },
+  };
 }
 
 test('v1 checkpoint hash and parse are stable', () => {
@@ -376,6 +439,76 @@ test('v2 checkpoint with open work parses and round-trips locally', async () => 
   assert.deepEqual(await store.readSceneCheckpoint(hash), checkpoint);
 });
 
+test('v2 continuity notes, wait plan, and action snapshot round-trip', () => {
+  const fixture = activeV2CheckpointWithNotes();
+  const parsed = sceneCheckpointSchema.parse(fixture);
+  assert.equal(parsed.passage.waitPlan.version, 1);
+  assert.ok(parsed.passage.waitPlan.body);
+  assert.equal(parsed.fictionalState.continuityNotes.length, 1);
+  assert.equal(parsed.fictionalState.continuityNotes[0].key, 'quay-rumor');
+  assert.equal(parsed.fictionalState.activeAction.offerId, fixture.fictionalState.activeAction.offerId);
+  assert.equal(parsed.fictionalState.activeAction.targetGameSecond, 120);
+  assert.equal(
+    parsed.fictionalState.offer.payload.body.offer.id,
+    fixture.fictionalState.offer.id,
+  );
+  assert.deepEqual(parsed, fixture);
+});
+
+test('v2 schema rejects duplicate continuity note keys and over-limit notes', () => {
+  const checkpoint = activeV2CheckpointWithNotes();
+  const noteSource = '88888888-8888-4888-8888-888888888888';
+  const duplicateNotes = {
+    ...checkpoint,
+    fictionalState: {
+      ...checkpoint.fictionalState,
+      continuityNotes: [
+        {
+          key: 'same-key',
+          text: 'First note',
+          sources: [noteSource],
+          revision: 1,
+        },
+        {
+          key: 'same-key',
+          text: 'Second note',
+          sources: [noteSource],
+          revision: 2,
+        },
+      ],
+    },
+  };
+  assert.throws(() => sceneCheckpointSchema.parse(duplicateNotes), ZodError);
+  const overLimit = {
+    ...checkpoint,
+    fictionalState: {
+      ...checkpoint.fictionalState,
+      continuityNotes: Array.from({ length: 21 }, (_, index) => ({
+        key: `note-${index}`,
+        text: `Note ${index}`,
+        sources: [noteSource],
+        revision: 1,
+      })),
+    },
+  };
+  assert.throws(() => sceneCheckpointSchema.parse(overLimit), ZodError);
+});
+
+test('v2 passage rejects non-null decision or wait plans with extra keys', () => {
+  const checkpoint = activeV2Checkpoint();
+  assert.throws(
+    () =>
+      sceneCheckpointSchema.parse({
+        ...checkpoint,
+        passage: {
+          ...checkpoint.passage,
+          decisionPlan: { version: 1, body: {}, extra: true },
+        },
+      }),
+    ZodError,
+  );
+});
+
 test('v2 schema rejects duplicate ids, oversized payloads, and invalid pairings', () => {
   const checkpoint = activeV2Checkpoint();
   const payload = { version: 1, body: { phase: 'open' } };
@@ -388,6 +521,7 @@ test('v2 schema rejects duplicate ids, oversized payloads, and invalid pairings'
           id: '55555555-5555-4555-8555-555555555555',
           state: 'running',
           revision: 1,
+          boundariesSettled: 0,
           plan: payload,
           progress: payload,
         },
@@ -395,6 +529,7 @@ test('v2 schema rejects duplicate ids, oversized payloads, and invalid pairings'
           id: '55555555-5555-4555-8555-555555555555',
           state: 'paused',
           revision: 2,
+          boundariesSettled: 1,
           plan: payload,
           progress: payload,
         },
@@ -412,6 +547,7 @@ test('v2 schema rejects duplicate ids, oversized payloads, and invalid pairings'
           revision: 1,
           state: 'active',
           dueGameSecond: null,
+          firedAtGameSecond: null,
           definition: payload,
         },
         {
@@ -419,6 +555,7 @@ test('v2 schema rejects duplicate ids, oversized payloads, and invalid pairings'
           revision: 2,
           state: 'active',
           dueGameSecond: 1,
+          firedAtGameSecond: null,
           definition: payload,
         },
       ],

@@ -1,4 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
+import type { Database } from '@offscreen/db';
 import {
   campaign,
   gameActionExecution,
@@ -315,4 +316,12 @@ export async function readSceneAfterState(
 
   assertSceneAfterStateRepresentable(snapshot);
   return snapshot;
+}
+
+/** Read-only snapshot outside a caller-owned story lock transaction. */
+export async function readSceneAfterStateFromDatabase(
+  database: Database,
+  storyId: string,
+): Promise<SceneAfterState> {
+  return database.db.transaction((tx) => readSceneAfterState(tx, storyId));
 }

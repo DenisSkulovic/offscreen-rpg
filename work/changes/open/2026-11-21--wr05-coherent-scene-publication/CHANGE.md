@@ -1,5 +1,7 @@
 # WR05 | atomic scene publication with exact post-world state
 
+> **Superseded for publication (2026-11-21):** representable v2 scene publication and historical read landed in [WR05P2](../../archive/2026-11/storyteller/2026-11-21--wr05p2-v2-scene-publication/CHANGE.md). Do not dispatch this parent. Fork rehoming remains WR06. The readiness note below is historical.
+
 > **Execution readiness audit (2026-11-21): PLANNER-BLOCKED, NOT CURSOR-READY.** Source-grounded G0–G7 review is recorded in [PROOF.md](PROOF.md); exact observed code gaps and ChatGPT-owned corrective decisions are in [SOURCE-MAP.md](SOURCE-MAP.md). The existing TASKS are *design placeholders*, not dispatchable child instructions. Do not reinterpret `PLANNER-READY AFTER` as approval; only reissue precise T-IDs against landed predecessor code and audit every one before commission. The integration target remains `undertaking/storyteller-workshop`; `main` untouched. No provider spend, destructive DB or live deployment is authorized by this packet.
 
 

@@ -338,7 +338,12 @@ export function campaignStoryFacts(state: CampaignRecord) {
   return storyFactsSchema.parse(state.storyFacts);
 }
 export function campaignOffer(state: CampaignRecord) {
-  return offerSchema.parse(state.offer);
+  const raw = state.offer;
+  if (raw == null) {
+    throw new StoryError('conflict');
+  }
+  const record = raw as { id?: unknown; nodes?: unknown };
+  return offerSchema.parse({ id: record.id, nodes: record.nodes });
 }
 export function campaignSituationAuthorization(state: CampaignRecord) {
   return situationAuthorizationSchema.parse(state.situationAuthorization);
