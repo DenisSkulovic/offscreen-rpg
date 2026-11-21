@@ -5,7 +5,7 @@
 
 | Need / scenario Change | Actual first source | Important existing property |
 | --- | --- | --- |
-| Fixed scripts and normal operations | [`chamber.ts`](chamber.ts): `createChamber` | `start/respond/control/fork` call real `createStoryApplication`; response fixture is a versioned scripted proposal |
+| Fixed scripts and normal operations | [`chamber.ts`](chamber.ts): `createChamber` | `start/respond/control/fork` call real `createStoryApplication` with `fixtureSourceCanRespond: chamberAllowsResponse`; response fixture is a versioned scripted proposal |
 | Script details | [`chamber-fixtures.ts`](chamber-fixtures.ts): `chamberFixtures` | v1 read-only, v2 conversation, v3 20s wait, v4 15s deadline, v5 letter transfer; no arbitrary overlays |
 | Point-in-time inspector | [`chamber-inspector.ts`](chamber-inspector.ts): `createChamberInspector.inspect` | reads snapshot + separate SQL queries for passage/resolution/activity/provider; not one full consistent transaction |
 | Manual evidence journal | [`qa-journeys.ts`](qa-journeys.ts): `createQaJourneys.open/recordStage` | stores versioned immutable case, revision-fenced append-only operator observations; does **not** execute case |

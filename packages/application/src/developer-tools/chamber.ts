@@ -33,7 +33,10 @@ export function createChamber(
     storytellerControl?: ChamberStorytellerControl;
   } = {},
 ) {
-  const stories = createStoryApplication(database, options);
+  const stories = createStoryApplication(database, {
+    ...options,
+    fixtureSourceCanRespond: chamberAllowsResponse,
+  });
   const inspector = createChamberInspector(database, options.documentStore);
 
   async function read(args: { ownerId: string; storyId: string }) {

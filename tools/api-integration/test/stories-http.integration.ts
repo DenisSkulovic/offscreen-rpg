@@ -4,7 +4,12 @@ import type { TestContext } from 'node:test';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { chamberInspectorSchema } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
-import { createStories, StoryError } from '@offscreen/application/stories';
+import { chamberAllowsResponse } from '@offscreen/application/developer-tools';
+import {
+  createStories,
+  createStoryApplication,
+  StoryError,
+} from '@offscreen/application/stories';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 
@@ -49,6 +54,15 @@ export async function checkStoryHttp({
       assert.equal(start.status, 200);
       const first = storySnapshotSchema.parse(await start.json());
       assert.equal(first.canRespond, true);
+      const plainRead = await createStoryApplication(database).read({
+        ownerId: owner,
+        storyId: id,
+      });
+      assert.equal(plainRead.canRespond, false);
+      const optedInRead = await createStoryApplication(database, {
+        fixtureSourceCanRespond: chamberAllowsResponse,
+      }).read({ ownerId: owner, storyId: id });
+      assert.equal(optedInRead.canRespond, true);
       const offer = requireDefined(
         first.current.interaction,
         'Expected playable chamber offer',

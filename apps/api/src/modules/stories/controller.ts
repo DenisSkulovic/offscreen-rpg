@@ -17,7 +17,11 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import type { Observable } from 'rxjs';
-import type { createStoryApplication } from '@offscreen/application/stories';
+import type {
+  CampaignDocumentRoot,
+  ResolvedOwnedLibraryDocument,
+  createStoryApplication,
+} from '@offscreen/application/stories';
 import { StoryError } from '@offscreen/application/stories';
 import {
   forkStorySchema,
@@ -418,7 +422,10 @@ export class StoriesController {
     });
   }
   @Get(':id/documents')
-  documents(@Req() request: Request, @Param('id') storyId: string) {
+  documents(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+  ): Promise<CampaignDocumentRoot> {
     return this.run(request, (ownerId) => {
       if (!this.stories.documents) throw new StoryError('unavailable');
       return this.stories.documents.readRoot({ ownerId, storyId });
@@ -446,7 +453,7 @@ export class StoriesController {
     @Param('id') storyId: string,
     @Param('documentId') documentId: string,
     @Query('revision') revision?: string,
-  ) {
+  ): Promise<ResolvedOwnedLibraryDocument> {
     return this.run(request, (ownerId) => {
       if (!this.stories.documents) throw new StoryError('unavailable');
       const parsedRevision =

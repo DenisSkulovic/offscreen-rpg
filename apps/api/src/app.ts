@@ -73,6 +73,7 @@ import {
   OpeningsController,
 } from './modules/drafts/openings-controller.js';
 import {
+  chamberAllowsResponse,
   createChamber,
   createLabWorkbenchService,
   createQaJourneys,
@@ -214,6 +215,9 @@ export async function createApp(
     ...(options.readCache ? { cache: options.readCache } : {}),
     ...(options.onCacheIncident
       ? { onCacheIncident: options.onCacheIncident }
+      : {}),
+    ...(options.developerTools === true
+      ? { fixtureSourceCanRespond: chamberAllowsResponse }
       : {}),
   });
   const requireExplicitStoryAuthority =

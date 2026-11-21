@@ -12,13 +12,13 @@ Make the modular-monolith boundaries visible and enforceable: packages and domai
 | --- | --- | --- | --- |
 | 0 | [MA01](../../changes/archive/2026-11/other/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Mechanically measure manifest, exports, actual source edges and intra-application cycles | Done. `pnpm repo:module-graph` on `undertaking/storyteller-workshop` |
 | 1 | [MA02](../../changes/archive/2026-11/other/2026-11-21--ma02-cache-port-inversion/CHANGE.md) | Remove Cache → Application inverse dependency | Done. `@offscreen/cache` depends on `@offscreen/contracts/read-cache` |
-| 1 | [MA03](../../changes/open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | Move Admin domain code into cohesive workspace with temporary compatibility export | READY WITH LIMITS after MA02; exact 13-module/7-test/4-API import map and SQL proof prerequisites |
-| 2 | [MA04](../../changes/open/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary Stories → developer Chamber fixture policy | READY WITH LIMITS after MA03; explicit dev-only policy injection, default-deny GA and HTTP proof |
+| 1 | [MA03](../../changes/archive/2026-11/other/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | Move Admin domain code into cohesive workspace with temporary compatibility export | Done. `@offscreen/admin` owns the staff modules |
+| 2 | [MA04](../../changes/archive/2026-11/other/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary Stories → developer Chamber fixture policy | Done. Optional fixture predicate, default deny; story HTTP 4/4 and core 10/10 on `offscreen_auth_test` |
 | 3 | MA05 | Establish story-authority ↔ Storyteller-runtime typed injection boundary and preserve SQL/fence | PLANNER-BLOCKED: complete tx-scoped port typing for 11 authority→runtime imports and generation/outbox ownership still needed |
 | 4 | MA06 | Extract cohesive story-authority/Storyteller-runtime workspaces, migrate consumers, retire obsolete application exports | PLANNER-BLOCKED: reserved A–D staged design, not one Cursor Change; requires post-MA05 extracted ownership and source map |
 | Separate decision | Document schema/adapter split | Possible further extraction if dependency/bundle evidence justifies | Not selected; no speculative package proliferation |
 
-**Execution selection (G0–G7 audited 2026-11-21):** MA02 is Done on `undertaking/storyteller-workshop`. MA03 stays uncommissioned until a separate owner commission; then MA04. MA03 and MA04 should not run concurrently because both edit `apps/api/src/app.ts`. Within MA03, T02/T03 may execute in parallel only with genuinely disjoint filesystem work and no shared Git/build activity. MA05/MA06 remain PLANNER-BLOCKED and are not automatically commissioned; their staged design is ChatGPT's responsibility, never a vague paid Cursor investigation.
+**Execution selection:** MA02, MA03, and MA04 are Done on `undertaking/storyteller-workshop`. MA05/MA06 remain PLANNER-BLOCKED and are not automatically commissioned; their staged design is ChatGPT's responsibility, never a vague paid Cursor investigation.
 
 ## Admission / branch policy
 

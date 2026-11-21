@@ -37,7 +37,6 @@ import { story } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import { createCampaignDocuments } from './documents';
-import { chamberAllowsResponse } from '../developer-tools/chamber-fixtures';
 import { createStoryDelegationPolicy } from './delegation-policy';
 import { createDelegatedOfferControls } from '../campaign/delegated-offer';
 import { advanceDelegatedWithdrawal as advanceDelegatedWithdrawalFn } from '../campaign/delegated-expiry';
@@ -45,6 +44,12 @@ import { advanceDelegatedWithdrawal as advanceDelegatedWithdrawalFn } from '../c
 export type StoryApplicationOptions = ReadCacheOptions & {
   documentStore?: DocumentStore;
   defaultRules?: RulePackageReference;
+  /**
+   * Optional synthetic-fixture presentation eligibility. Ordinary callers omit
+   * this; absence denies every non-playable source. Authorization stays with
+   * owner, interaction, and resolution checks.
+   */
+  fixtureSourceCanRespond?: (source: string) => boolean;
 };
 
 export {
@@ -75,10 +80,7 @@ export function createStories(
     options.documentStore,
     options.defaultRules,
   );
-  const continuation = createStoryContinuation(
-    database,
-    options.documentStore,
-  );
+  const continuation = createStoryContinuation(database, options.documentStore);
   const resolution = createStoryResolution(database, options.documentStore);
   const resolutionReceipts = createResolutionReceiptReader(database);
   const timing = createStoryTiming(database);
@@ -296,7 +298,7 @@ export function createStoryApplication(
       ...snapshot,
       canRespond:
         (source === playableOpeningStorySource ||
-          chamberAllowsResponse(source)) &&
+          (options.fixtureSourceCanRespond?.(source) ?? false)) &&
         !snapshot.campaign?.character &&
         snapshot.current.interaction !== null &&
         snapshot.resolution === null,
@@ -365,7 +367,12 @@ export function createStoryApplication(
 export { StoryError };
 export { playableOpeningStorySource } from './start';
 export { campaignConsequenceTopic };
-export { createCampaignDocuments, knowledgeIndexTopic } from './documents';
+export {
+  createCampaignDocuments,
+  knowledgeIndexTopic,
+  type CampaignDocumentRoot,
+  type ResolvedOwnedLibraryDocument,
+} from './documents';
 export {
   resolutionRequestDigest,
   publicReceiptState,

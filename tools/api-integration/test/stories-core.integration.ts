@@ -11,7 +11,11 @@ import {
 import { listChamberScenarios } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
 import type { ReadCache } from '@offscreen/application/cache';
-import { createStories, StoryError } from '@offscreen/application/stories';
+import {
+  createStories,
+  StoryError,
+  type CampaignDocumentRoot,
+} from '@offscreen/application/stories';
 import {
   createChamber,
   listChamberScenarios as listServerScenarios,
@@ -19,6 +23,15 @@ import {
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 import { LocalDocumentStore } from '@offscreen/documents';
+
+function requireManifestRoot(
+  root: CampaignDocumentRoot,
+): Extract<CampaignDocumentRoot, { manifest: unknown }> {
+  if (!('manifest' in root)) {
+    throw new Error('Expected a v1 document manifest root');
+  }
+  return root;
+}
 
 type StoryCoreArgs = {
   t: TestContext;
@@ -54,7 +67,9 @@ export async function checkStoryCore({
         storyId,
         scenario: 'chamber.v5',
       });
-      const initialRoot = await documents.readRoot({ ownerId: owner, storyId });
+      const initialRoot = requireManifestRoot(
+        await documents.readRoot({ ownerId: owner, storyId }),
+      );
       assert.equal(initialRoot.manifest.revision, 1);
       assert.deepEqual(
         [...initialRoot.manifest.entries.map((entry) => entry.path)].sort(),
@@ -128,7 +143,9 @@ export async function checkStoryCore({
         }),
         { ...first, replayed: true },
       );
-      const root = await documents.readRoot({ ownerId: owner, storyId });
+      const root = requireManifestRoot(
+        await documents.readRoot({ ownerId: owner, storyId }),
+      );
       assert.equal(root.rootHash, first.rootHash);
       assert.equal(root.manifest.entries.length, 5);
 

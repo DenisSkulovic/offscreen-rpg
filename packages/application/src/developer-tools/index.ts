@@ -1,4 +1,5 @@
 export * from './chamber';
+export { chamberAllowsResponse } from './chamber-fixtures';
 export * from './chamber-lab-catalog';
 export * from './eng03-delayed-document-store';
 export * from './lab/fixture-specimens';
