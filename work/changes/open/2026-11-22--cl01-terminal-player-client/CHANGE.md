@@ -20,7 +20,7 @@ Store token in owner-only local config file (mode 0600), refuse symlinks, atomic
 
 ## Implementation ownership
 
-NEW tools/terminal/**; NEW packages/contracts/src/terminal-auth.ts and export; NEW packages/db/src/schema/terminal-auth.ts and next SQL migration/journal after current 0023 (recheck after prior wave); NEW apps/api/src/modules/terminal-auth/**; narrow apps/api/src/modules/stories/{controller,story-player-identity}.ts and apps/api/src/app.ts DI after MA12 and apps/api/src/main.ts HMAC-secret injection from the existing BetterAuth config; NEW apps/web/app/(authenticated)/terminal/connect/**. Central custodian owns shared lockfile/catalog/STATUS.
+NEW tools/terminal/**; NEW packages/contracts/src/terminal-auth.ts and export; NEW packages/db/src/schema/terminal-auth.ts and one packages/db/package.json public subpath export plus next SQL migration/journal after current 0023 (recheck after prior wave); NEW apps/api/src/modules/terminal-auth/**; narrow apps/api/src/modules/stories/{controller,story-player-identity}.ts and apps/api/src/app.ts DI after MA12 and apps/api/src/main.ts HMAC-secret injection from the existing BetterAuth config; NEW apps/web/app/(authenticated)/terminal/connect/**. Central custodian owns shared lockfile/catalog/STATUS.
 
 Do not edit apps/game-authority, apps/worker, packages/story-engine, provider secrets or infra/kubernetes/lab/chaos. This lane is disjoint from WR11 and K8S10.
 
