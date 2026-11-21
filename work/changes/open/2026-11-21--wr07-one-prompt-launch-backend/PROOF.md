@@ -15,3 +15,7 @@
 | Fictional time | model runs minutes with no active plan | no invisible time progression |
 
 **Routes:** focused Nest e2e + application tests and disposable DB. No provider network, no unapproved cluster. Verify private GA call path; route status must never mark preview as ready.
+
+### G0–G7 adversarial review, initial verdict: PLANNER-BLOCKED
+
+G0 PASS branch, WR03 implemented but WR05 missing; G1 PARTIAL (actual Nest/GA seam/Writer custody observed; launch schema and consumers not yet existent); G2 FAIL (DTO limits/route alternatives/SQL identity/first scene adoption); G3 FAIL T01–T05 (child would select architecture and chase local+remote callers); G4 FAIL (no first T-ID with final host contract); G5 FAIL (no noncolliding authenticated route/GA/SQL writer plan); G6 FAIL (no concrete scripted status+failure fixtures or local/remote suite commands); G7 FAIL (wide multi-service Change and possible accidental provider-cost work). No provider/test calls in this review; real provider authorization is separate.
