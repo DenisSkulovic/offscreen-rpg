@@ -34,6 +34,14 @@
 - WR06 when landed owns the fork mapper; A must extend its typed plan remap for narrative-intent if necessary without allowing parent charges/jobs to carry.
 - **No parallel monorepo cleanup before gameplay integration settles.** Earlier MA06A already moved the coherent engine cohort, so one later bulk migration remains.
 
+### Crucial B/A transport-and-money interface to freeze before parallel commission
+
+**Exact current source:** `packages/story-engine/src/storyteller/writer-mission-custody.ts:WriterMissionProviderTransport` is currently a no-argument `() => Promise<{kind:'delivered',serializedResponse}|{kind:'unknown'}>`; `advanceWriterMissionProviderStep` reserves an attempt and invokes the transport *only after marking it dispatched*. But for delivered responses it calls `budget.settle` with **`zeroUsage` and `zeroTelemetry`**. Its internal `writerMissionProviderPolicy` uses `inputMicrousdPerMillion:'0',outputMicrousdPerMillion:'0'`. These are **scripted-only fixtures**, NOT a real provider financial implementation. Treat this as a release-blocking issue for lane B.
+
+**Selected narrow handoff contract:** B owns a trustworthy provider route `createWriterRoundTransport(capturedRoundWire, pinnedModelPolicy, capturedGrant)` that returns **`delivered(serializedResponse,providerUsage,providerTelemetry,exactWireSha)`**, **`failed(classifiedFailure,providerUsage,providerTelemetry)`**, or **`unknown(telemetry)`** after a single possible-send boundary. A injects that transport into the existing Writer loop; the loop doesn't create a second budget or call HTTP. Custody must persist **actual settled usage/price and outcome**, validate the frozen request-wire hash and selected route, and stop any replay after `dispatched` or `uncertain` unless a verified durable result was already stored. A B-funded simulation may claim **zero-cost scripted** proof; a real HTTP response may NOT be billed as zero or settled from a simulated zero-price policy. Tests explicitly assert real cost, missing usage/telemetry policy, finite cap and charged failure. B must not reprice old historical attempts.
+
+A is responsible for one typed injection/import (in A's exclusive writer-loop file) and source/capture knowledge, but does **not** change B-owned custody or provider transport files. B can own any necessary custody-facing attempt columns and focused migration, provided A uses no overlapping schema migration. If the actual landed WR07B has changed these signatures, freeze the **equivalent** interface against actual source, not these stale signatures. This is the exact cross-lane seam that enables A/B parallelism.
+
 ### Integration coordinator
 
 1. User launches distinct linked worktrees, all from live `undertaking/storyteller-workshop` HEAD, with named lanes. No two worktrees share output directories or disposable SQL DB.
