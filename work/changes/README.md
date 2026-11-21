@@ -35,6 +35,13 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [MA05](archive/2026-11/other/2026-11-21--ma05-authority-runtime-port-inversion/CHANGE.md) | Remaining tx-bound Story Authority → Storyteller-runtime inversion | Superseded (2026-11-21) by MA06A. MA05A–G are Done. Intra-engine capture edges remain. Not a completed dependency inversion |
 | [MA06](open/2026-11-21--ma06-domain-package-migration/CHANGE.md) | Extract story-authority and Storyteller-runtime packages, retire application catch-all | **PLANNER-BLOCKED:** reserved A–D extraction stages; requires post-MA05 graph and exact file/export/consumer migration maps |
 
+## Next Storyteller Workshop and modular-monolith wave (2026-11-21)
+
+| Change | Status / dispatch |
+| --- | --- |
+| [MA07](open/2026-11-21--ma07-direct-domain-consumers/CHANGE.md) | **READY**: one bulk host consumer migration onto direct Story Engine exports; T01–T03, no paid provider or SQL effects |
+| [WR09](open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) | **PLANNER-BLOCKED**: real-provider Writer recovery/custody design; not commissioned for Cursor; final response persistence and Worker policy must be decided by ChatGPT |
+
 ## Open packets
 
 ### Distributed gameplay, Kubernetes and developer experience
