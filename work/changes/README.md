@@ -67,6 +67,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | **PLANNER-BLOCKED:** v2 after-world-state schema, transaction projection and migration not fully settled |
 | [WR06](open/2026-11-21--wr06-fork-active-fictional-state/CHANGE.md) | **PLANNER-BLOCKED:** depends on WR05 and exact ID/FK/active-work remap |
 | [WR07C](archive/2026-11/storyteller/2026-11-21--wr07c-launch-wire-contract/CHANGE.md) | Launch request and status parsers in `@offscreen/contracts/story-launch` (Done). This does not unblock WR07 |
+| [WR08A](open/2026-11-21--wr08a-play-launch-surface/CHANGE.md) | One-prompt Launch form, safe persisted operation pointer, truthful status and gated route | **READY / OWNER-COMMISSIONED**, WR07C landed. Web-only, parallel with WR05S |
 | [WR07](open/2026-11-21--wr07-one-prompt-launch-backend/CHANGE.md) | **PLANNER-BLOCKED:** request/route, SQL custody, GA scene-one and uncertain-replay contracts |
 | [WR08](open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | **PLANNER-BLOCKED:** typed WR04/06/07 contracts and exact UI/E2E fixture not landed |
 
