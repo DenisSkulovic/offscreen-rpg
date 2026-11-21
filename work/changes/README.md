@@ -14,6 +14,19 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [CQ04](open/2026-11-21--cq04-document-store-capability-guards/CHANGE.md) | Runtime capability guards; avoid WR06 overlap |
 | [CQ05](open/2026-11-21--cq05-recurring-source-health/CHANGE.md) | Read-only structural source health checker |
 
+## Modular Monolith architecture program (proposed Undertaking, not selected)
+
+[Domain ownership Design](../designs/open/code-architecture-health/MONOREPO-MODULE-OWNERSHIP.md) · [Proposed Undertaking and dependency schedule](../undertakings/modular-monolith/UNDERTAKING.md). These packets **must not execute on** `main` or `undertaking/storyteller-workshop`; the future `undertaking/modular-monolith` integration branch is intentionally uncreated until the Writer undertaking lands and source anchors are refreshed.
+
+| Change | Architectural result | Readiness |
+| --- | --- | --- |
+| [MA01](open/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Manifest + source AST graph, runtime/type-only cycles and import rules | Bounded algorithm; target branch prerequisite |
+| [MA02](open/2026-11-21--ma02-cache-port-inversion/CHANGE.md) | Invert Redis adapter → application type dependency | Bounded algorithm; target branch prerequisite |
+| [MA03](open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | New Admin workspace with extracted campaign-holds schema, compatibility | After CQ02; target branch prerequisite |
+| [MA04](open/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary story authority's developer-fixture import | After MA01 / source caller check |
+| [MA05](open/2026-11-21--ma05-authority-runtime-port-inversion/CHANGE.md) | Invert story authority → Storyteller-runtime callback dependencies | **Proposed; not Cursor-ready** until exact post-WR port contracts |
+| [MA06](open/2026-11-21--ma06-domain-package-migration/CHANGE.md) | Extract story-authority and Storyteller-runtime packages, retire application catch-all | **Proposed; not Cursor-ready**; split into bounded A/B/C after MA05 |
+
 ## Open packets
 
 ### Distributed gameplay, Kubernetes and developer experience

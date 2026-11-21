@@ -4,6 +4,8 @@
 
 **Observed baseline:** At 2026-11-21 the committed `packages/application/src/storyteller/` held **63 direct TypeScript files, no subdirectories and 741,865 bytes**. `context-capture.ts` was 3,078 lines, `capture-materialization.ts` 1,612, and `writer-loop.ts` 780. Flatness and size trigger review, not automatic file moves or security conclusions. The full [dated audit](https://github.com/DenisSkulovic/offscreen-rpg/blob/4ee459b9acdc73c7f63674b697baeb9c7e685da4/work/changes/CODE-CRAFT-REMEDIATION-2026-11-21.md) is preserved at an exact Git revision for source evidence, not as a live instruction.
 
+**Monorepo package/domain ownership:** [inspected architectural diagnosis and proposed modular-monolith target](MONOREPO-MODULE-OWNERSHIP.md). This is a **Design**, not current technical authority. [Separate proposed Undertaking](../../../undertakings/modular-monolith/UNDERTAKING.md) tracks MA01–MA06 and the future integration branch; no automatic implementation or source movement.
+
 **Already scoped implementation:** [CQ01–CQ05 Change packets](../../../changes/README.md) own their own source maps, algorithms and acceptance. Do not duplicate their schedules here.
 
 | Unresolved design question | Evidence required before deciding |

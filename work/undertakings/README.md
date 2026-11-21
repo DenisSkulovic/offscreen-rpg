@@ -14,6 +14,12 @@ Undertakings exist to prevent a familiar failure mode: a week of related Designs
 | --- | --- | --- | --- |
 | [Storyteller Workshop](storyteller-workshop/UNDERTAKING.md) | `undertaking/storyteller-workshop` | **Active** | Re-found the Storyteller as a disciplined writing system with persistent source/library identity, a writer workdesk, bounded research support, coherent publication, fork-aware fictional state and one-prompt creation flow |
 
+## Proposed subsequent Undertaking (not active)
+
+| Undertaking | Intended integration branch | Gate |
+| --- | --- | --- |
+| [Modular Monolith](modular-monolith/UNDERTAKING.md) | `undertaking/modular-monolith` **not created** | After Storyteller Workshop lands into the selected upstream and the package/module target is ratified; MA01–MA06 are plans, not automatically authorized work |
+
 Only one active Undertaking is preferred unless there is a strong reason to run truly independent integration programs concurrently.
 
 ## Rules
