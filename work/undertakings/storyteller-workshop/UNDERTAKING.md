@@ -5,6 +5,8 @@
 **Started:** 2026-11-21  
 **Integration base:** `main` at `34e2b4fd8d9d9967e13311da3a938460b1a02244`
 
+**Supervisor / first read:** [**The big picture · accessible progress overview**](OVERVIEW.md). Read it before the ledger below; it tracks visible progress toward *both* Storyteller evolution and modular-monolith shaping, without requiring Change IDs or code knowledge. Mandatory refresh and supervisor presentation cadence: [Undertaking process](../README.md#required-supervisor-overview-first-class). The technical evidence and acceptance definitions remain below.
+
 ## Purpose
 
 Re-found the Storyteller from a prompt-shaped component into a disciplined **writing system**: it has durable sources and a persistent Library, a bounded writer's workdesk, explicit research assistance, coherent scene publication, fork-aware active fictional state and a clean creation path from one prompt into an actual playable campaign.
