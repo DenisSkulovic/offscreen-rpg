@@ -62,9 +62,9 @@ Close it when the coherent branch is merged to `main` or explicitly abandoned. T
 
 ## Branch policy for this undertaking
 
-Target visible topology: **two branches only**:
+Target **long-lived** topology after Change integration: **two branches only**:
 
 - `main`
 - `undertaking/storyteller-workshop`
 
-No per-Change branch is required by default. If Cursor temporarily needs an isolated branch/worktree for a risky operation, it must be reconciled back promptly and deleted rather than becoming a new long-lived branch.
+**Every commissioned WR Change MUST use one short-lived Change branch** created from the then-current `undertaking/storyteller-workshop` HEAD before implementation. Branch names: `change/wr02-library`, `change/wr03-workdesk`, `change/wr04-research`, `change/wr05-publication`, `change/wr06-fork`, `change/wr07-launch`, `change/wr08-client`. Parent and its children work within that branch without per-T-ID branches. A distinct worktree is optional when no other checkout is active. When accepted, squash-integrate into `undertaking/storyteller-workshop`, verify, and delete the temporary branch/worktree. `main` is reserved for the later Undertaking landing. These transient Change branches do not contradict the two-long-lived-branches policy.
