@@ -1,0 +1,15 @@
+# CQ05 | bounded Composer executor queue
+
+**Owner commission required.** Linked worktree + branch `change/cq05-source-health` from `undertaking/storyteller-workshop`; never switch primary checkout. Run `pnpm repo:change-branch --change CQ05 --target undertaking/storyteller-workshop` before edits. Scope to script, root package scripts, code-craft/workflow references and existing catalog only. Four sequential tasks; one child at a time. No Storyteller production source edits.
+
+## T01 | Pure source scanner and deterministic findings | PLANNER-READY
+**Read:** `package.json` TypeScript dependency; `scripts/repo-tools/maintenance-core.mjs`, `code-quality.md`, CQ05 EXECUTION §Discover and measure. **Write:** `scripts/repo-tools/code-health-core.mjs`, focused test. **Contract:** `scanCodeHealth(entries, {readText, parse, baselineEntries?, readBaseline?})` or equivalently pure injected readers, returns normalized paths/direct-directory metrics/file AST counts and threshold findings. **Positive:** synthetic 35/63 files and 1,200-line module classified. **Negative:** tests/fixtures and 34 files not flagged. **Stop:** source representation deviates from documented TS AST behavior, return exact issue, not new parser framework.
+
+## T02 | Read-only Git/FS adapter and concise CLI | PLANNER-READY AFTER T01
+**Read:** `scripts/repo-tools/process.mjs:root`, `maintenance.mjs:collectGit`, CQ05 EXECUTION §Tool contracts. **Write:** `scripts/repo-tools/code-health.mjs`, tests and `package.json` scripts. **Positive:** `pnpm repo:code-health` prints bounded top findings and `--json` matches stable schema; **negative:** nonexistent Git/baseline refuses strict-new, untracked/removed handled, zero mutations. **Stop:** Git history inaccessible, report not-run rather than interpreting empty output as green.
+
+## T03 | Explicit-baseline growth and regression semantics | PLANNER-READY AFTER T02
+**Read:** `code-health-core.mjs`, `code-health.mjs`, CQ05 EXECUTION growth section. **Write:** focused scanner and CLI tests plus bounded code. **Positive:** newly crossed 1,200-line / 35-directory and 150-line+30% growth correctly flagged only against explicit base; **negative:** established legacy 1,500 lines does not fail strict-new, missing baseline exits 2. **Stop:** target ref is moving or not locally available; don't assume `main`.
+
+## T04 | Maintenance policy integration and proof | PLANNER-READY AFTER T03
+**Read:** `.agents/rules/code-quality.md` and `WORKFLOW.md` maintenance section, existing `work/changes/CODE-CRAFT-REMEDIATION-2026-11-21.md`. **Write:** only short routing additions, source checker docs, proof receipt. Run focused tests and actual report, compare Storyteller direct count (should be **63 at baseline**, may have changed since), show current hotspots and evidence of no auto-refactor. **Negative:** no wide lint/reformat or unauthorized work items generated. **Stop:** wrong counts or nondeterministic output unresolved. Parent reconciles Change and custodian merges when accepted.
