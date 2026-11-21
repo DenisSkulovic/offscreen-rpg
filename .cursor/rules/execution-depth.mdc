@@ -1,26 +1,16 @@
 ---
-description: Cursor task-depth policy; minimize subagent investigation
+description: Cursor task-depth policy; minimized subagent investigation
 alwaysApply: true
 ---
 
-# Cursor-only execution depth
+# Cursor execution: thin adapter
 
-**File placement:** For any tasked documentation move, new folder or housekeeping work, use the repository [structure map](../../REPOSITORY-STRUCTURE.md); do not manufacture new work queues or retain completed Design/Change folders indefinitely. Ordinary T-ID implementation need not preload the map.
+Read root [AGENTS.md](../../AGENTS.md), the commissioned Change's `CHANGE.md`/`TASKS.md`, and the [canonical parent policy](../../.agents/references/bounded-parent-orchestration.md); **those own the rules**. Do not duplicate lifecycle/branch/batch policy here.
 
-**Development lifecycle and branches:** [WORKFLOW.md](../../WORKFLOW.md) is the shared map. Before the first implementation edit on a commissioned Change, create its dedicated `change/<id>-<slug>` branch from the packet's actual integration target; no per-T-ID branches. Parent squash-integrates to that same target after closure. See [mandatory branch policy](../../.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy).
+**Before first implementation edit:** on a dedicated `change/<id>-<slug>` branch based on the packet's real integration target, run `node scripts/repo-tools/change-branch-guard.mjs --change <ID> --target <reference-branch>`. If the target moved, reconcile it rather than resetting. A separate worktree is required for concurrent checkouts; not per T-ID.
 
-**PARENT FINITE-BATCH RULE (always):** [bounded orchestration](../../.agents/references/bounded-parent-orchestration.md). Before launching children, name a finite authorized batch (normally 2–5 T-IDs or one integration-heavy join), owners/resources and its exit proof. **Checkpoint at five dispatches or earlier on a boundary:** inspect combined diff, focused/negative tests, reconcile each touched Change, archive only truly achieved Goals, commit coherent owned files, report, then STOP **for a batch-only commission**. For an explicitly commissioned full Change, checkpoint and then **continue through remaining ready T-IDs within that same Change** until its Goal is accepted or genuinely blocked; do not request owner approval after every checkpoint. At most two checkpoints per parent turn applies to batch-only work, not the lifetime of an expressly commissioned Change. No automatic next-Change sweep; no repeated failure loop. Shared-checkout subagents must not stage/commit; isolated branch commits are optional. The parent alone integrates. Keep this rule more important than producing lengthy reports.
+**Parent:** default Composer Standard; dispatch one small PLANNER-READY T-ID at a time (two only for disjoint source owners). Checkpoint each 2–5 tasks and continue the **same** owner-commissioned Change through its true acceptance/closure. Do not auto-start another Change. The designated integration owner serializes shared-file merges when several Change chats operate concurrently.
 
-Parent MUST give every delegated task `DEPTH=VERIFY|PATCH|INVESTIGATE` plus a selected microtask T-ID when TASKS.md exists. **Default model is Composer Standard for parent and child.** **Depth is not risk or model effort.** A money-sensitive but fully specified, safely isolated test is `VERIFY` with Composer Standard; risk controls live in approved preconditions, not model price. Allowed model configurations remain in [Cursor cost policy](../../.agents/references/cursor-model-budget-policy.md).
+**Child:** assigned `DEPTH=VERIFY|PATCH|INVESTIGATE`, one T-ID, a few named source anchors, specific patch/normal/negative test and short receipt. No agent swarms, broad research, unrelated refactors, expensive-model self-upgrades, full suite per child, or shared-checkout commits. Verify only what the task needs. If a true architecture/permission/transaction contradiction appears, return file:symbol, failing assumption and reproducer to parent/ChatGPT. Ordinary unrelated local errors may be fixed with bounded diagnosis; do not loop on the same unexplained failure.
 
-- **VERIFY:** run the given command/procedure and record factual evidence. Read only the handoff, exact safety preconditions and necessary named runbook heading. Check git status; run the specified check once. No broad wiki/code discovery, speculative fixes, or unrelated tests. If blocked, make at most one error-directed diagnostic, record FAIL/NOT-RUN and stop. No silent promotion to PATCH.
-- **PATCH:** implement ONE owner-selected, planner-resolved microtask (or one tiny Change when TASKS.md is unnecessary). Read the selected Change/route card, one relevant authority heading and 2–5 named source/test anchors. Then edit, run focused normal/negative proof, reconcile affected docs and required closure guards. Expand reading only for a concrete conflict, and say which uncertainty justified it.
-- **INVESTIGATE:** only for an explicitly unresolved source/design question. Search narrowly, compare evidence and return the answer/owner or a proposed bounded Change. No unsolicited full-repo audit or speculative code edits.
-
-**Stop searching** when owner, contract and negative case are known. Do not preload global skills, guard implementations or Markdown parsers. Run a guard first; inspect its implementation only if the error actually requires it. Prefer slices/symbols to large entire files. Do not spawn children to rediscover a parent's findings.
-
-On a mismatch, report exact file/symbol, failed prerequisite and suggested narrow next action to ChatGPT planner via parent. No self-upgrade to Grok. Parent may issue a **new** scoped task; the child may not silently upgrade depth, model, speed or effort. Never High/Fast/Grok 4.7/Auto.
-
-**Return:** DEPTH, command/edits, result/counts, actual checks, meaningful negative, blocker, source/commit and any justified extra reads. Unknown cost/tokens remain unknown.
-
-**HK03 example:** 32-case Storyteller integration suite = `VERIFY`: check status and named disposable prerequisites, conditionally start the authorized local services, run the specified suite once, record pass/fail or NOT-RUN and commit the packet evidence. Don't start new engine/wiki research. Never reset protected DBs, delete volumes, run kind or call paid providers.
+**Evidence:** report actual edits, tests/results, negative case, remaining blocker and spend. Never treat unrun checks as passed; no paid model calls or destructive resources without explicit approval. For repo-folder work consult [structure map](../../REPOSITORY-STRUCTURE.md).

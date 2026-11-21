@@ -41,7 +41,7 @@
 | [WR07](open/2026-11-21--wr07-one-prompt-launch-backend/CHANGE.md) | One-prompt launch backend |
 | [WR08](open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | Creation UI and integrated acceptance |
 
-[Writer implementation program](WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT permanent-wiki handoff](WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02 is selected for Cursor implementation. WR03–WR08 remain Proposed/unselected and dependency-gated.** Cursor should create the mandatory `change/wr02-library` implementation branch from the current `undertaking/storyteller-workshop` HEAD, implement WR02 there, and squash-integrate accepted work back into the undertaking branch. No permission to dispatch paid models or mutate deployment follows from these statuses.
+[Writer implementation program](WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT permanent-wiki handoff](WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02 is Done and archived on the undertaking branch; WR03–WR08 remain Proposed/unselected and dependency-gated.** Before any successor commission, refresh its source anchors and dependencies against the landed WR02 implementation. No permission to dispatch paid models or mutate deployment follows from these statuses.
 
 ## Layout
 

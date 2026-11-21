@@ -97,8 +97,8 @@ When all selected child outcomes are complete, review the integrated docs, sourc
 For new behavior or changed guarantees:
 1. Investigate actual existing rules/source and plausible alternatives. Work unresolved questions in a [Design](work/designs/README.md) when warranted; don't manufacture one for a settled decision.
 2. Obtain necessary owner product/technical authority. Mark proposals, selected-but-unimplemented behavior and observed implementation distinctly.
-3. **Reconcile the accepted product and technical documentation on the reference/Undertaking branch *before* commissioning Cursor to implement that behavior.** A substantive doc revision can itself be a [documentation Change](.agents/references/change-work-unit-standard.md), with normal lifecycle/negative review. A small editorial adjustment need not become a packet.
-4. Only then prepare implementation Changes against that selected target. Existing correct documents may simply be cited; no-op rewrites are not a quality gate.
+3. **For newly accepted product behavior or changed architecture/authority, reconcile the canonical documents on the reference/Undertaking branch *before* commissioning Cursor.** A substantive doc revision can itself be a [documentation Change](.agents/references/change-work-unit-standard.md), with normal lifecycle/negative review. A small editorial adjustment need not become a packet.
+4. Only then prepare implementation Changes against that selected target. Existing accepted contracts for bug fixes or implementation details may simply be cited, with any discovered drift reconciled before Change closure; no-op rewrites are not a quality gate.
 
 After implementation, update realized-state claims, source mappings, proofs and any necessary technical details **again**. Documentation-first does **not** imply falsely labeling future behavior implemented. If reality challenges the selected design, return the decision to ChatGPT/owner, rather than silently changing the product bible to match code.
 

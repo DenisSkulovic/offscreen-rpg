@@ -10,7 +10,7 @@ function git(cwd, ...args) { return execFileSync('git', args, { cwd, encoding: '
 function fixture(fn) {
   const cwd = mkdtempSync(path.join(os.tmpdir(), 'offscreen-branch-'));
   try {
-    git(cwd, 'init', '-q');
+    git(cwd, 'init', '-q', '-b', 'main');
     git(cwd, 'config', 'user.email', 'fixture@example.invalid');
     git(cwd, 'config', 'user.name', 'Fixture');
     writeFileSync(path.join(cwd, 'README.md'), 'main\n');
