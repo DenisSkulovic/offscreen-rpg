@@ -12,6 +12,9 @@ import {
 import {
   writerMissionCaptureV1Schema,
   writerMissionCaptureV2OpeningSchema,
+  writerOpeningSceneProposalV2Schema,
+  writerSceneProposalSchema,
+  writerSceneProposalV1Schema,
 } from '../src/tasks/writer-mission.js';
 import {
   compileWriterRoundCapturedRequest,
@@ -210,11 +213,75 @@ test('writer-round captured request pins v1 oracle hash and v2 opening sceneScop
   assert.equal('passageHistory' in userPayload, false);
   assert.equal('priorPassages' in userPayload, false);
 
+  const v2OutputSchemaJson = JSON.stringify(v2Request.outputSchema);
+  assert.match(v2OutputSchemaJson, /"paragraphs"/);
+  assert.match(v2OutputSchemaJson, /"title"/);
+  assert.match(v2OutputSchemaJson, /"const":2/);
+
   const v2Hash = hashWriterRoundCapturedRequest(v2Request);
   const v2ReplayHash = hashWriterRoundCapturedRequest(
     compileWriterRoundCapturedRequest(v2Capture, []),
   );
   assert.equal(v2ReplayHash, v2Hash);
+});
+
+test('writer-round capture validation pins final proposal version to mission capture', () => {
+  const v1Capture = writerMissionCaptureV1Schema.parse(
+    finiteWriterMissionCapture(),
+  );
+  const v1Final = writerRoundDecisionSchema.parse({
+    kind: 'final',
+    proposal: finiteV1SceneProposal(),
+  });
+  validateWriterRoundDecisionForCapture(v1Capture, v1Final);
+
+  const v2Capture = writerMissionCaptureV2OpeningSchema.parse(
+    finiteWriterMissionV2OpeningCapture(),
+  );
+  const v2Final = writerRoundDecisionSchema.parse({
+    kind: 'final',
+    proposal: finiteV2OpeningSceneProposal(),
+  });
+  validateWriterRoundDecisionForCapture(v2Capture, v2Final);
+
+  assert.throws(
+    () =>
+      validateWriterRoundDecisionForCapture(
+        v1Capture,
+        writerRoundDecisionSchema.parse({
+          kind: 'final',
+          proposal: finiteV2OpeningSceneProposal(),
+        }),
+      ),
+    /writer_proposal_version_mismatch/,
+  );
+
+  assert.throws(
+    () =>
+      validateWriterRoundDecisionForCapture(
+        v2Capture,
+        writerRoundDecisionSchema.parse({
+          kind: 'final',
+          proposal: finiteV1SceneProposal(),
+        }),
+      ),
+    /writer_proposal_version_mismatch/,
+  );
+
+  const ungranted = writerRoundDecisionSchema.parse({
+    kind: 'tool-calls',
+    calls: [
+      {
+        id: 't1',
+        name: 'library.diff',
+        args: { handle: 's12' },
+      },
+    ],
+  });
+  assert.throws(
+    () => validateWriterRoundDecisionForCapture(v1Capture, ungranted),
+    /ungranted_writer_tool/,
+  );
 });
 
 test('writer-mission.v1 capture and round decisions accept finite bounded grants', () => {
@@ -257,6 +324,7 @@ test('writer-mission.v1 capture and round decisions accept finite bounded grants
     },
   });
   assert.equal(finalRound.kind, 'final');
+  validateWriterRoundDecisionForCapture(capture, finalRound);
 
   const roundTask = writerRoundTaskSchema.parse({
     version: 'writer-round.v1',
@@ -398,6 +466,153 @@ test('writer-mission.v2 opening capture accepts reserved scope without sceneFron
     mission: capture,
   });
   assert.equal(roundTask.mission.version, 'writer-mission.v2');
+});
+
+function finiteV1SceneProposal() {
+  return {
+    version: 1 as const,
+    summary: 'The scene closes with the promised cargo delivered.',
+    stagedObjectHashes: [ROOT_HASH],
+    sourceEvidence: [
+      {
+        rootHash: ROOT_HASH,
+        objectHash: PROFILE_HASH,
+        section: 's1',
+        assertedAsFact: false,
+      },
+    ],
+  };
+}
+
+function validOpeningPassageContent() {
+  return {
+    version: 1 as const,
+    title: 'Seyda Neen',
+    paragraphs: [
+      'Rain beads on the hull as the skiff nudges the Imperial dock.',
+      'Along the jetty, crates marked for Census Office wait under a sputtering lantern.',
+    ],
+  };
+}
+
+function validOpeningChoiceInteraction() {
+  return {
+    kind: 'choice.v1' as const,
+    prompt: 'Where will you go first in Seyda Neen?',
+    options: [
+      { id: 'visit_officer', label: 'Seek the Census and Excise Office' },
+      { id: 'wander_dock', label: 'Walk the dockside and listen' },
+    ],
+  };
+}
+
+function finiteV2OpeningSceneProposal() {
+  return {
+    version: 2 as const,
+    summary: 'Opening at Seyda Neen with a grounded dock choice.',
+    stagedObjectHashes: [ROOT_HASH],
+    sourceEvidence: [
+      {
+        rootHash: ROOT_HASH,
+        objectHash: PROFILE_HASH,
+        section: 'seyda-neen.docks',
+        assertedAsFact: true,
+      },
+    ],
+    scene: {
+      content: validOpeningPassageContent(),
+      interaction: validOpeningChoiceInteraction(),
+    },
+  };
+}
+
+test('writer scene proposals keep v1 replay and accept v2 opening scene bodies', () => {
+  const v1 = writerSceneProposalV1Schema.parse(finiteV1SceneProposal());
+  assert.equal(v1.version, 1);
+  assert.equal(writerSceneProposalSchema.parse(v1).version, 1);
+
+  const v1Final = writerRoundDecisionSchema.parse({
+    kind: 'final',
+    proposal: finiteV1SceneProposal(),
+  });
+  assert.equal(v1Final.kind, 'final');
+  assert.equal(v1Final.proposal.version, 1);
+
+  const v2 = writerOpeningSceneProposalV2Schema.parse(
+    finiteV2OpeningSceneProposal(),
+  );
+  assert.equal(v2.version, 2);
+  assert.equal(v2.scene.content.title, 'Seyda Neen');
+  assert.equal(v2.scene.interaction?.kind, 'choice.v1');
+
+  const v2Final = writerRoundDecisionSchema.parse({
+    kind: 'final',
+    proposal: finiteV2OpeningSceneProposal(),
+  });
+  assert.equal(v2Final.kind, 'final');
+  assert.equal(v2Final.proposal.version, 2);
+
+  const v2NullInteraction = writerOpeningSceneProposalV2Schema.parse({
+    ...finiteV2OpeningSceneProposal(),
+    scene: {
+      content: validOpeningPassageContent(),
+      interaction: null,
+    },
+  });
+  assert.equal(v2NullInteraction.scene.interaction, null);
+});
+
+test('writer v2 opening scene proposals reject invalid scene bodies and unknown keys', () => {
+  const base = finiteV2OpeningSceneProposal();
+
+  assert.throws(
+    () =>
+      writerOpeningSceneProposalV2Schema.parse({
+        ...base,
+        scene: undefined,
+      }),
+    /Invalid input: expected object, received undefined/,
+  );
+
+  assert.throws(
+    () =>
+      writerOpeningSceneProposalV2Schema.parse({
+        ...base,
+        scene: {
+          ...base.scene,
+          content: {
+            ...validOpeningPassageContent(),
+            title: '',
+          },
+        },
+      }),
+    /Too small: expected string to have >=1 characters/,
+  );
+
+  assert.throws(
+    () =>
+      writerOpeningSceneProposalV2Schema.parse({
+        ...base,
+        scene: {
+          ...base.scene,
+          interaction: {
+            ...validOpeningChoiceInteraction(),
+            options: [
+              { id: 'dup', label: 'First path' },
+              { id: 'dup', label: 'Second path' },
+            ],
+          },
+        },
+      }),
+    /Option identities must be unique/,
+  );
+
+  assert.throws(() =>
+    writerOpeningSceneProposalV2Schema.parse({
+      ...base,
+      extraField: 'forged',
+    }),
+  );
 });
 
 test('writer-mission.v2 opening rejects malformed scope, drifted story, sceneFrontier injection, and grant violations', () => {

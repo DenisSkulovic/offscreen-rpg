@@ -1,3 +1,5 @@
+import { interactionSpecificationSchema } from '@offscreen/contracts/interactions';
+import { passageContentSchema } from '@offscreen/contracts/stories';
 import { z } from 'zod';
 
 const sha256HexSchema = z.string().regex(/^[a-f0-9]{64}$/);
@@ -155,37 +157,69 @@ export type WriterSceneSourceEvidence = z.infer<
   typeof writerSceneSourceEvidenceSchema
 >;
 
-export const writerSceneProposalSchema = z
+const writerSceneProposalCommonFields = {
+  summary: z.string().trim().min(1).max(2_000),
+  stagedObjectHashes: z.array(sha256HexSchema).max(16),
+  sourceEvidence: z.array(writerSceneSourceEvidenceSchema).max(32),
+} as const;
+
+function refineWriterSceneProposalDuplicates(
+  proposal: {
+    stagedObjectHashes: string[];
+    sourceEvidence: WriterSceneSourceEvidence[];
+  },
+  context: z.RefinementCtx,
+): void {
+  if (
+    new Set(proposal.stagedObjectHashes).size !==
+    proposal.stagedObjectHashes.length
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['stagedObjectHashes'],
+      message: 'Staged object hashes must be unique',
+    });
+  }
+  const sourceKeys = proposal.sourceEvidence.map(
+    (item) => `${item.rootHash}:${item.objectHash}:${item.section}`,
+  );
+  if (new Set(sourceKeys).size !== sourceKeys.length) {
+    context.addIssue({
+      code: 'custom',
+      path: ['sourceEvidence'],
+      message: 'Source-evidence provenance rows must be unique',
+    });
+  }
+}
+
+export const writerSceneProposalV1Schema = z
   .strictObject({
     version: z.literal(1),
-    summary: z.string().trim().min(1).max(2_000),
-    stagedObjectHashes: z.array(sha256HexSchema).max(16),
-    sourceEvidence: z.array(writerSceneSourceEvidenceSchema).max(32),
+    ...writerSceneProposalCommonFields,
   })
-  .superRefine((proposal, context) => {
-    if (
-      new Set(proposal.stagedObjectHashes).size !==
-      proposal.stagedObjectHashes.length
-    ) {
-      context.addIssue({
-        code: 'custom',
-        path: ['stagedObjectHashes'],
-        message: 'Staged object hashes must be unique',
-      });
-    }
-    const sourceKeys = proposal.sourceEvidence.map(
-      (item) => `${item.rootHash}:${item.objectHash}:${item.section}`,
-    );
-    if (new Set(sourceKeys).size !== sourceKeys.length) {
-      context.addIssue({
-        code: 'custom',
-        path: ['sourceEvidence'],
-        message: 'Source-evidence provenance rows must be unique',
-      });
-    }
-  });
+  .superRefine(refineWriterSceneProposalDuplicates);
+
+export const writerOpeningSceneProposalV2Schema = z
+  .strictObject({
+    version: z.literal(2),
+    ...writerSceneProposalCommonFields,
+    scene: z.strictObject({
+      content: passageContentSchema,
+      interaction: interactionSpecificationSchema.nullable(),
+    }),
+  })
+  .superRefine(refineWriterSceneProposalDuplicates);
+
+export const writerSceneProposalSchema = z.discriminatedUnion('version', [
+  writerSceneProposalV1Schema,
+  writerOpeningSceneProposalV2Schema,
+]);
 
 export type WriterSceneProposal = z.infer<typeof writerSceneProposalSchema>;
+
+export type WriterOpeningSceneProposal = z.infer<
+  typeof writerOpeningSceneProposalV2Schema
+>;
 
 export const writerRoundDecisionSchema = z
   .discriminatedUnion('kind', [
@@ -231,13 +265,19 @@ export function validateWriterRoundDecisionForCapture(
   capture: WriterMissionCapture,
   decision: WriterRoundDecision,
 ): void {
-  if (decision.kind !== 'tool-calls') {
+  if (decision.kind === 'tool-calls') {
+    const granted = new Set(capture.toolsAllowlist);
+    for (const call of decision.calls) {
+      if (!granted.has(call.name)) {
+        throw new Error('ungranted_writer_tool');
+      }
+    }
     return;
   }
-  const granted = new Set(capture.toolsAllowlist);
-  for (const call of decision.calls) {
-    if (!granted.has(call.name)) {
-      throw new Error('ungranted_writer_tool');
-    }
+
+  const expectedProposalVersion =
+    capture.version === 'writer-mission.v1' ? 1 : 2;
+  if (decision.proposal.version !== expectedProposalVersion) {
+    throw new Error('writer_proposal_version_mismatch');
   }
 }

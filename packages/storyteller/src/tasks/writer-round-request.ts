@@ -2,7 +2,10 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { CapturedProviderRequest } from './opening';
 import {
+  writerOpeningSceneProposalV2Schema,
   writerRoundDecisionSchema,
+  writerSceneProposalV1Schema,
+  writerToolCallSchema,
   type WriterMissionCapture,
   type WriterToolInvocationResult,
 } from './writer-mission';
@@ -10,9 +13,53 @@ import {
 const WRITER_ROUND_SYSTEM =
   'You are a writer agent on a bounded mission. Reply with exactly one JSON object: either tool-calls with typed tool requests, or a final scene proposal.';
 
+/**
+ * Wire schema for one capture version.
+ * Version-1 requests must stay byte-identical to the pre-WR07N oracle, so they
+ * offer only the version-1 proposal. Opening captures offer only the version-2
+ * scene body. The shared parser still accepts both; capture validation rejects
+ * a crossed pair.
+ */
+function writerRoundDecisionSchemaForCapture(capture: WriterMissionCapture) {
+  const proposalSchema =
+    capture.version === 'writer-mission.v1'
+      ? writerSceneProposalV1Schema
+      : writerOpeningSceneProposalV2Schema;
+
+  return z
+    .discriminatedUnion('kind', [
+      z.strictObject({
+        kind: z.literal('tool-calls'),
+        calls: z.array(writerToolCallSchema).min(1).max(8),
+      }),
+      z.strictObject({
+        kind: z.literal('final'),
+        proposal: proposalSchema,
+      }),
+    ])
+    .superRefine((decision, context) => {
+      if (decision.kind !== 'tool-calls') {
+        return;
+      }
+      const ids = decision.calls.map((call) => call.id);
+      if (new Set(ids).size !== ids.length) {
+        context.addIssue({
+          code: 'custom',
+          path: ['calls'],
+          message: 'Tool-call ids must be unique within a round',
+        });
+      }
+    });
+}
+
 /** Domain JSON Schema for writer-round decisions (strict projection happens at the wire). */
-export function writerRoundOutputJsonSchema(): unknown {
-  return z.toJSONSchema(writerRoundDecisionSchema);
+export function writerRoundOutputJsonSchema(
+  capture?: WriterMissionCapture,
+): unknown {
+  if (capture === undefined) {
+    return z.toJSONSchema(writerRoundDecisionSchema);
+  }
+  return z.toJSONSchema(writerRoundDecisionSchemaForCapture(capture));
 }
 
 function writerRoundPinsForCapture(
@@ -56,8 +103,9 @@ export function compileWriterRoundCapturedRequest(
         }),
       },
     ],
-    outputSchema:
-      writerRoundOutputJsonSchema() as CapturedProviderRequest['outputSchema'],
+    outputSchema: writerRoundOutputJsonSchema(
+      capture,
+    ) as CapturedProviderRequest['outputSchema'],
   };
 }
 
