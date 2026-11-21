@@ -47,6 +47,12 @@ The physical package extraction uses one **cohesive engine** workspace rather th
 
 The MA06A implementation is authorized as a package-structure migration, not a gameplay behavior change. Preserve owner-scoped locks, source/root evidence, replay, capture/materialization transaction boundaries, provider spend and uncertain-delivery controls. The permanent **logical** six-subsystem architecture below is unchanged.
 
+## Post-MA08 internal ownership target and enforcement
+
+The transitional Story Engine physically co-locates **Story Authority** (`stories/`, `campaign/`), **Writer runtime** (`storyteller/`) and **Generation orchestration** (`generations/`). The selected long-term modular-monolith boundary is **behavioral and enforced by typed callers and source import rules**, not a promise to proliferate npm packages. Story Authority continues owning canonical SQL state, story locks, fictional clock, permissions, effects, receipts, forks and publication admission; Writer captures/prepares privately, spends only under a pinned bounded operation, and proposes changes for Authority to admit. No provider, Lab or Worker may bypass the authoritative command/receipt path. Outer composition roots may inject typed Writer collaborators; calls that are already inside an Authority transaction remain within that same transaction rather than becoming best-effort post-commit tasks. A transitional direct Authority→Writer implementation edge must be enumerated and retired under MA09, never expanded by convenience.
+
+`@offscreen/application` is a transitional **test-compatibility shell after MA08**, not a production service or domain owner. Its remaining 112 tests must be preserved, moved to the existing API Integration test workspace, and made independent of obsolete exports before the workspace is removed (MA10). `@offscreen/lab-support` is outermost and can depend on Story Engine for bounded test access; Story Engine must never depend on developer labs. Module-level AST checks must distinguish runtime cycles from type-only relations and classify actual `packages/story-engine/src` code, not just deleted Application forwarders (MA11). After the authority/Writer seam is corrected, tighten the source-level import ratchet, retire exact temporary exceptions and review explicit package public exports. A package graph with no cycle alone does not prove these logical boundaries.
+
 ## Six logical subsystems
 
 ```text
