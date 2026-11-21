@@ -1,3 +1,5 @@
+> **DO NOT DISPATCH (2026-11-21):** This proposed parallel slice overlaps an **already-running full MA08 Cursor**, which owns lab-support and Chamber. This packet is superseded as a commission; retain only as planning history. Let the original MA08 complete and integrate. Do not run MA08A or interfere with MA08's worktree.
+
 # MA08A | Isolate developer laboratories into lab-support
 
 **State: PLANNER-READY, independent lane A** of the [parallel structural wave](../../../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Baseline:** MA07 integrated at `4168db58`, verified planning HEAD `ae312c86`; executor verifies the current undertaking branch before starting. **Target:** `undertaking/storyteller-workshop`, never main.
