@@ -48,7 +48,7 @@ import { decisionPlanSchema, waitPlanSchema } from './plans';
 import { disabledReadCache, type ReadCacheOptions } from '../cache/read-cache';
 import type { DocumentStore } from '@offscreen/documents';
 import { readPassageDocument } from './passage-documents';
-import { storytellerContextCaptureKind } from '../storyteller/context-capture';
+import { storytellerContextCaptureKind } from '@offscreen/contracts/storyteller-kinds';
 import {
   readSceneCheckpointReference,
   type SceneCheckpointStore,

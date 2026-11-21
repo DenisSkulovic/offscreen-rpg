@@ -86,6 +86,10 @@
     "./read-cache": {
       "types": "./dist/src/read-cache.d.ts",
       "default": "./dist/src/read-cache.js"
+    },
+    "./storyteller-kinds": {
+      "types": "./dist/src/storyteller-kinds.d.ts",
+      "default": "./dist/src/storyteller-kinds.js"
     }
   },
   "scripts": {

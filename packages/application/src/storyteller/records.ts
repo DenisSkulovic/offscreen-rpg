@@ -13,8 +13,9 @@ import {
 import { createGenerations } from '../generations/index';
 import type { Database } from '@offscreen/db';
 import { recordExecutionStage } from './execution-stages';
+import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
 
-export const storytellerKind = 'storyteller.profiled.v1';
+export { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
 /** Legacy monolith workflow selector; frozen on each durable notice at admission. */
 export const storytellerTopic = 'storyteller.profiled.v1';
 /** Versioned distributed workflow selector; frozen on each durable notice at admission. */

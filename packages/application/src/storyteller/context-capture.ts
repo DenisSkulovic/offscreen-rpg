@@ -83,8 +83,9 @@ import {
   storytellerActivityContextFilter,
 } from './activity-context';
 import { recordExecutionStage } from './execution-stages';
+import { storytellerContextCaptureKind } from '@offscreen/contracts/storyteller-kinds';
 
-export const storytellerContextCaptureKind = 'storyteller.context-capture.v1';
+export { storytellerContextCaptureKind } from '@offscreen/contracts/storyteller-kinds';
 export const CONTEXT_CAPTURE_MAX_MATERIALIZATION_ATTEMPTS = 3;
 export const CONTEXT_CAPTURE_LEASE_MS = 25_000;
 
