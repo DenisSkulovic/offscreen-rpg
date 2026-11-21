@@ -1,3 +1,5 @@
+> **CURRENT DISPATCH CORRECTION (2026-11-21):** An MA08 Cursor was **already executing** its full original T01–T05 and remains the active commissioner/integrator. The advertised MA08A, MA08B, MA10A three-lane wave is **withdrawn from dispatch** due to overlapping files, including `scripts/repo-tools/module-graph*` in MA08 T04. Do not commission those packets concurrently or replace MA08 instructions. This notice overrides the earlier three-Cursor section below; the linked wave plan is retracted. Await MA08 receipt, then re-audit remaining unowned work to prepare 2–3 *genuinely independent* packets.
+
 ## Three-Cursor parallel structural batch, 2026-11-21
 
 **Selected parallel dispatch and single integration custodian:** [parallel structural execution policy](../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Do not execute the former single [MA08 umbrella](open/2026-11-21--ma08-application-owner-extraction/CHANGE.md).**
