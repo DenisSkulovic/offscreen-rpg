@@ -1,0 +1,7 @@
+# AI01 | structural readiness and strict behavior preservation
+
+**Source inspected:** context-capture 3,079 lines, capture-materialization 1,598, writer-loop 1,302, writer-round-replay 503, tasks/writer-round-request 144, workflows/index 219, contracts 89, Worker dispatch 270 and runtime entries. No tests executed in planning.
+
+**G0** PASS actual undertaking/head, **future predecessor WR10/WR11 blocks dispatch**. **G1** PASS real function groups and store boundaries mapped. **G2** PASS selected target modules and stable façade/no SQL transaction split. **G3/G4** CONDITIONAL on actual post-WR11 source: task moves may need planner adjustment if Writer implementation changes. **G5** PASS no simultaneous CLI/API/DB refactor source overlap; not with WR10/WR11. **G6** PASS capture/wire hash, tool/cost/SQL, Temporal identities and source roots negative suite. **G7** PASS direct human ownership improvement with reasonable file count. **Verdict PLANNER-GATED today**. It is **not** an invitation to Composer to redesign monetary or state logic.
+
+Accept only if original public exports, 7 capture variant objects, exact hashes, test fixtures, SQL statements/lock scopes, Temporal tasks and provider wire are unchanged. Prove a two-to-three-hop source tour; line count alone is not proof. Retain existing behavior tests, avoid per-helper unit tests. When source change is larger than a routine move, return precise source contradiction to planner. No proof or budget effect credited by this planning Change.
