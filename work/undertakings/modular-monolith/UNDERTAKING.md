@@ -2,6 +2,8 @@
 
 **State:** Program dossier riding the active Storyteller Workshop integration branch. **Planning evidence baseline:** inspected source at `dac6b698` with critical remote anchors rechecked at `0a52a9a3` on 2026-11-21; live integration HEAD advances with documentation changes. Recheck named symbols after each implemented predecessor, not just the SHA. A separate `undertaking/modular-monolith` branch would be the cleaner long-term home. Owner decision 2026-11-21: MA01–MA06 integrate on `undertaking/storyteller-workshop`. Leave `main` alone. Do not create a nested undertaking branch.
 
+**Supervisor view of the combined undertaking:** [Storyteller Workshop · The big picture](../storyteller-workshop/OVERVIEW.md). This covers **both** the monorepo and Storyteller work; do not maintain a conflicting second human summary while this is the same integration program.
+
 **Completion tracking:** The [Storyteller Workshop whole-undertaking ledger](../storyteller-workshop/UNDERTAKING.md#whole-undertaking-completion-control--living-ledger) is the **single combined finish-line tracker** for the Storyteller and Modular Monolith work. MA01–MA06A structural changes are already integrated; the monorepo component is **not** finally closed until the post-gameplay dependency/exports graph, compatibility retirement, code-health regressions and actual merge to `main` satisfy that ledger. Do not mark the entire modular-monolith program Done solely because MA06A archived.
 
 ## Goal and architecture
