@@ -5,6 +5,7 @@ import {
   disabledCreativeExplorationRecipe,
 } from '@offscreen/contracts/creative-exploration';
 import type { ExecutionPolicy } from './policy';
+import { writerToolNameSchema } from './writer-mission.js';
 
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 
@@ -45,6 +46,31 @@ const memoryExplorationRecipeSchema = z
     'Exploration must leave a final-answer round',
   );
 
+export const writerMissionRecipeSchema = z
+  .strictObject({
+    version: z.literal('writer-mission.v1'),
+    maxModelRounds: z.number().int().min(2).max(24),
+    maxToolCallsPerRound: z.number().int().min(1).max(8),
+    tools: z.array(writerToolNameSchema).min(1).max(10),
+    automaticEscalation: z.literal(false),
+    finalProposalReserveRounds: z.literal(1),
+    maxRepairRounds: z.union([z.literal(0), z.literal(1)]),
+  })
+  .refine(
+    (recipe) => recipe.maxModelRounds > recipe.finalProposalReserveRounds,
+    'Writer mission must leave a final-proposal round',
+  )
+  .superRefine((recipe, context) => {
+    const toolNames = recipe.tools;
+    if (new Set(toolNames).size !== toolNames.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['tools'],
+        message: 'Writer mission recipe must not grant duplicate tools',
+      });
+    }
+  });
+
 export const storytellerRecipeDecisionSchema = z.strictObject({
   version: z.literal('storyteller-recipe-decision.v1'),
   selectedRecipeFamily: z.enum([
@@ -62,6 +88,33 @@ export const storytellerRecipeDecisionSchema = z.strictObject({
 export type StorytellerRecipeDecision = z.infer<
   typeof storytellerRecipeDecisionSchema
 >;
+
+export const writerMissionTaskResourcesSchema = z.strictObject({
+  version: z.literal('storyteller-resources.v2'),
+  recipe: writerMissionRecipeSchema,
+  creativeExploration: creativeExplorationRecipeSchema.default(
+    disabledCreativeExplorationRecipe,
+  ),
+  recipeDecision: storytellerRecipeDecisionSchema.optional(),
+  envelope: z.strictObject({
+    maxSerializedRequestBytes: count.positive().max(1_000_000),
+    maxInputTokens: count.positive().max(200_000),
+    maxGeneratedTokens: count.positive().max(32_000),
+    maxReasoningTokens: count.max(32_000),
+    maxMicrousd: z.string().regex(/^\d{1,16}$/),
+    deadlineMs: count.positive().max(120_000),
+  }),
+  authority: z.discriminatedUnion('kind', [
+    z.strictObject({
+      kind: z.literal('offline'),
+      version: z.literal('offline-rehearsal.v1'),
+    }),
+    z.strictObject({
+      kind: z.literal('effective-usage-policy'),
+      policy: effectiveUsagePolicySchema,
+    }),
+  ]),
+});
 
 export const storytellerTaskResourcesSchema = z.strictObject({
   version: z.literal('storyteller-resources.v2'),
@@ -186,5 +239,35 @@ export function validateResourcesForExecution(
     resources.envelope.deadlineMs > execution.policy.timeoutMs
   ) {
     throw new Error('invalid_task_resources');
+  }
+}
+
+/** Writer missions stay on a separate resources route until WR03 wires provider execution. */
+export function validateWriterMissionTaskResources(
+  resources: z.infer<typeof writerMissionTaskResourcesSchema>,
+): void {
+  const creative = resources.creativeExploration;
+  const creativeFitsRecipe =
+    !creative.enabled ||
+    (creative.limits.maxModelRounds <=
+      resources.recipe.maxModelRounds -
+        resources.recipe.finalProposalReserveRounds &&
+      creative.limits.maxReads <= 0 &&
+      creative.limits.maxRetainedBytes <= 0);
+  const creativeFitsEnvelope =
+    creative.limits.maxGeneratedTokens <=
+      resources.envelope.maxGeneratedTokens &&
+    creative.limits.maxLatencyMs <= resources.envelope.deadlineMs &&
+    BigInt(creative.limits.maxCostMicrousd) <=
+      BigInt(resources.envelope.maxMicrousd);
+  if (!creativeFitsRecipe || !creativeFitsEnvelope) {
+    throw new Error('invalid_writer_task_resources');
+  }
+  if (
+    resources.envelope.maxMicrousd === '0' ||
+    resources.envelope.maxGeneratedTokens === 0 ||
+    resources.envelope.deadlineMs === 0
+  ) {
+    throw new Error('invalid_writer_task_resources');
   }
 }

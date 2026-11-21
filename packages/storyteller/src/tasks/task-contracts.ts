@@ -107,6 +107,19 @@ export const storytellerRoundOutputSchema = z.union([
 export type StorytellerRoundOutput = z.infer<
   typeof storytellerRoundOutputSchema
 >;
+
+export {
+  writerMissionCaptureSchema,
+  writerRoundDecisionSchema,
+  writerRoundTaskSchema,
+  writerToolInvocationResultSchema,
+  writerToolNameSchema,
+  validateWriterRoundDecisionForCapture,
+  type WriterMissionCapture,
+  type WriterRoundDecision,
+  type WriterToolInvocationResult,
+  type WriterToolName,
+} from './writer-mission.js';
 // Provider guidance and local parsing share the same task-specific structural contract.
 export const openingProviderResultSchema = z.strictObject({
   version: z.literal(1),

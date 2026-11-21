@@ -10,6 +10,7 @@ import {
   jsonb,
   check,
   index,
+  primaryKey,
   unique,
   uniqueIndex,
   foreignKey,
@@ -945,6 +946,188 @@ export const storytellerCurrentOwnerGrant = pgTable(
     check(
       'storyteller_current_owner_grant_requested_funding',
       sql`${t.requestedFundingMode} IN ('sponsored','prepaid','on-demand')`,
+    ),
+  ],
+);
+
+/**
+ * WR03: durable writer mission identity and pinned scope. Charging remains on
+ * storyteller_operation; this row coordinates capture pins and step revision.
+ */
+export const storytellerWriterMission = pgTable(
+  'storyteller_writer_mission',
+  {
+    id: uuid('id').primaryKey(),
+    generationId: uuid('generation_id')
+      .notNull()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    operationId: uuid('operation_id')
+      .notNull()
+      .references(() => storytellerOperation.generationId, {
+        onDelete: 'restrict',
+      }),
+    ownerId: uuid('owner_id').notNull(),
+    storyId: uuid('story_id').notNull(),
+    captureSha256: text('capture_sha256').notNull(),
+    libraryRootHash: text('library_root_hash').notNull(),
+    libraryRootRevision: integer('library_root_revision').notNull(),
+    stageRootHash: text('stage_root_hash'),
+    stageRootRevision: integer('stage_root_revision'),
+    nextRevision: integer('next_revision').notNull().default(1),
+    state: text('state')
+      .notNull()
+      .default('captured')
+      .$type<
+        | 'captured'
+        | 'active'
+        | 'proposal-ready'
+        | 'held'
+        | 'failed'
+        | 'uncertain'
+      >(),
+    budgetSnapshot: jsonb('budget_snapshot').notNull().$type<{
+      maxModelRounds: number;
+      maxInputTokens: number;
+      maxGeneratedTokens: number;
+      maxMicrousd: string;
+      deadlineMs: number;
+    }>(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('storyteller_writer_mission_generation').on(t.generationId),
+    index('storyteller_writer_mission_story').on(t.storyId),
+    check(
+      'storyteller_writer_mission_state',
+      sql`${t.state} IN ('captured','active','proposal-ready','held','failed','uncertain')`,
+    ),
+    check(
+      'storyteller_writer_mission_capture_sha',
+      sql`${t.captureSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_writer_mission_library_root_hash',
+      sql`${t.libraryRootHash} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_writer_mission_library_root_revision',
+      sql`${t.libraryRootRevision} > 0`,
+    ),
+    check(
+      'storyteller_writer_mission_stage_root_pair',
+      sql`(${t.stageRootHash} IS NULL) = (${t.stageRootRevision} IS NULL)`,
+    ),
+    check(
+      'storyteller_writer_mission_stage_root_hash',
+      sql`${t.stageRootHash} IS NULL OR ${t.stageRootHash} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_writer_mission_stage_root_revision',
+      sql`${t.stageRootRevision} IS NULL OR ${t.stageRootRevision} > 0`,
+    ),
+    check(
+      'storyteller_writer_mission_next_revision',
+      sql`${t.nextRevision} > 0`,
+    ),
+    check(
+      'storyteller_writer_mission_budget_snapshot_schema',
+      sql`jsonb_typeof(${t.budgetSnapshot}) = 'object'
+        AND ${t.budgetSnapshot} ? 'maxModelRounds'
+        AND ${t.budgetSnapshot} ? 'maxInputTokens'
+        AND ${t.budgetSnapshot} ? 'maxGeneratedTokens'
+        AND ${t.budgetSnapshot} ? 'maxMicrousd'
+        AND ${t.budgetSnapshot} ? 'deadlineMs'`,
+    ),
+  ],
+);
+
+/**
+ * WR03: revisioned step journal keyed by mission, context and ordinal. Parent
+ * writer uses contextId = missionId; WR04 children receive separate context IDs.
+ */
+export const storytellerWriterStep = pgTable(
+  'storyteller_writer_step',
+  {
+    missionId: uuid('mission_id')
+      .notNull()
+      .references(() => storytellerWriterMission.id, { onDelete: 'restrict' }),
+    contextId: uuid('context_id').notNull(),
+    ordinal: integer('ordinal').notNull(),
+    attemptId: uuid('attempt_id').references(() => storytellerAttempt.id, {
+      onDelete: 'restrict',
+    }),
+    toolCallId: text('tool_call_id'),
+    requestCasHash: text('request_cas_hash').notNull(),
+    resultCasHash: text('result_cas_hash'),
+    revision: integer('revision').notNull(),
+    state: text('state')
+      .notNull()
+      .$type<
+        | 'captured'
+        | 'model-request-prepared'
+        | 'attempt-reserved'
+        | 'dispatched'
+        | 'result-settled'
+        | 'tools-applied'
+        | 'proposal-ready'
+        | 'held'
+        | 'failed'
+        | 'uncertain'
+      >(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.missionId, t.contextId, t.ordinal] }),
+    uniqueIndex('storyteller_writer_step_attempt')
+      .on(t.attemptId)
+      .where(sql`${t.attemptId} IS NOT NULL`),
+    uniqueIndex('storyteller_writer_step_tool_call')
+      .on(t.missionId, t.contextId, t.toolCallId)
+      .where(sql`${t.toolCallId} IS NOT NULL`),
+    check(
+      'storyteller_writer_step_ordinal',
+      sql`${t.ordinal} > 0`,
+    ),
+    check(
+      'storyteller_writer_step_revision',
+      sql`${t.revision} > 0`,
+    ),
+    check(
+      'storyteller_writer_step_request_hash',
+      sql`${t.requestCasHash} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_writer_step_result_hash',
+      sql`${t.resultCasHash} IS NULL OR ${t.resultCasHash} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_writer_step_tool_call_id',
+      sql`${t.toolCallId} IS NULL OR ${t.toolCallId} ~ '^t[1-9][0-9]*$'`,
+    ),
+    check(
+      'storyteller_writer_step_state',
+      sql`${t.state} IN (
+        'captured',
+        'model-request-prepared',
+        'attempt-reserved',
+        'dispatched',
+        'result-settled',
+        'tools-applied',
+        'proposal-ready',
+        'held',
+        'failed',
+        'uncertain'
+      )`,
     ),
   ],
 );
