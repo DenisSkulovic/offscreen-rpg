@@ -23,6 +23,11 @@ export function checkChangeBranch({ cwd, change, target, resume = false }) {
     throw Error('Specify --change <Change ID>, e.g. WR03');
   if (!target || !/^[A-Za-z0-9][A-Za-z0-9/_-]*$/.test(target) || target.includes('..'))
     throw Error('Specify --target <actual reference branch>; do not assume main');
+  // A dedicated branch in the primary checkout is NOT filesystem isolation.
+  // Linked worktrees have a per-worktree git-dir distinct from the common dir.
+  const gitDir = path.resolve(cwd, git(['rev-parse', '--git-dir'], cwd));
+  const commonDir = path.resolve(cwd, git(['rev-parse', '--git-common-dir'], cwd));
+  if (gitDir === commonDir) throw Error('Primary checkout detected: create a separate linked worktree; do not switch the user checkout.');
   const actual = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], cwd);
   const prefix = `change/${change.toLowerCase()}-`;
   if (!actual.toLowerCase().startsWith(prefix) || actual.length <= prefix.length)

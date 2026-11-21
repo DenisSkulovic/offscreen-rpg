@@ -157,7 +157,7 @@ main
 ```
 
 1. Parent identifies **actual reference branch** from the Change/Undertaking. No assumption that it is `main`. For an ordinary stand-alone Change outside an undertaking, the selected reference may be `main`.
-2. **Before the first implementation edit**, create `change/<id>-<slug>` from that reference branch's current HEAD; record base SHA and target. The Change branch is **mandatory**. A separate worktree is optional for one checkout, but **required for concurrent checkouts** writing at once.
+2. **Before the first implementation edit**, create `change/<id>-<slug>` from that reference branch's current HEAD; record base SHA and target. The Change branch is **mandatory**. A dedicated linked Git worktree is **mandatory for every commissioned Cursor Change**, including when it is the only active chat. The primary checkout stays on its existing integration branch. Never `git switch` it to the Change branch.
 3. The Cursor parent and its bounded children work on the **same Change branch**. No per-T-ID branches, no child commit ceremony. Parent commits coherent batch milestones.
 4. On actual accepted Change completion, parent refreshes the reference branch, reconciles changed shared ownership, runs proportionate join checks, **squash-integrates into that same reference branch** by default, records final SHA, closes/retires packet and deletes the temporary branch/worktree.
 5. Only the Undertaking *itself*, after all relevant work is accepted, integrates into `main`. Do not leave temporary Change branches as permanent graveyards.

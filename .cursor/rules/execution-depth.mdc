@@ -7,7 +7,7 @@ alwaysApply: true
 
 Read root [AGENTS.md](../../AGENTS.md), the commissioned Change's `CHANGE.md`/`TASKS.md`, and the [canonical parent policy](../../.agents/references/bounded-parent-orchestration.md); **those own the rules**. Do not duplicate lifecycle/branch/batch policy here.
 
-**Before first implementation edit:** on a dedicated `change/<id>-<slug>` branch based on the packet's real integration target, run `node scripts/repo-tools/change-branch-guard.mjs --change <ID> --target <reference-branch>`. If the target moved, reconcile it rather than resetting. A separate worktree is required for concurrent checkouts; not per T-ID.
+**Before first implementation edit:** on a dedicated `change/<id>-<slug>` branch based on the packet's real integration target, run `node scripts/repo-tools/change-branch-guard.mjs --change <ID> --target <reference-branch>`. If the target moved, reconcile it rather than resetting. A **separate linked worktree is mandatory per commissioned Change**, even if no other chat is active. Never switch the user's primary checkout. No worktree per T-ID. Run the branch guard inside the dedicated worktree.
 
 **Parent:** default Composer Standard; dispatch one small PLANNER-READY T-ID at a time (two only for disjoint source owners). Checkpoint each 2–5 tasks and continue the **same** owner-commissioned Change through its true acceptance/closure. Do not auto-start another Change. The designated integration owner serializes shared-file merges when several Change chats operate concurrently.
 

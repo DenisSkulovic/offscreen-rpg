@@ -19,7 +19,15 @@ function fixture(fn) {
     git(cwd, 'switch', '-q', 'undertaking/storyteller-workshop');
     writeFileSync(path.join(cwd, 'README.md'), 'undertaking\n');
     git(cwd, 'commit', '-qam', 'undertaking work');
-    return fn(cwd);
+    const wt = path.join(path.dirname(cwd), path.basename(cwd) + '-linked');
+    let linked = false;
+    const add = (name, base = 'undertaking/storyteller-workshop') => {
+      git(cwd, 'worktree', 'add', '-q', '-b', name, wt, base);
+      linked = true;
+      return wt;
+    };
+    try { return fn(cwd, add); }
+    finally { if (linked) git(cwd, 'worktree', 'remove', '--force', wt); rmSync(wt, { recursive: true, force: true }); }
   } finally { rmSync(cwd, { recursive: true, force: true }); }
 }
 const target = 'undertaking/storyteller-workshop';
@@ -51,4 +59,9 @@ test('advanced integration target requires explicit resume flag', () => fixture(
   assert.throws(() => checkChangeBranch({ cwd, change: 'WR03', target }), /moved/);
   const r = checkChangeBranch({ cwd, change: 'WR03', target, resume: true });
   assert.equal(r.targetAdvanced, true);
+}));
+
+test('even a Change-named branch in the primary checkout is rejected', () => fixture(cwd => {
+  git(cwd, 'switch', '-qc', 'change/wr03-workdesk');
+  assert.throws(() => checkChangeBranch({ cwd, change: 'WR03', target }), /Primary checkout/);
 }));
