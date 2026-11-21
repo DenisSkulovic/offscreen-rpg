@@ -30,7 +30,7 @@ This file records a **selected direction**, a complete known edge matrix and the
 
 **Important gate:** [MA05D](../2026-11-21--ma05d-frozen-wake-sql-seam/CHANGE.md) now supplies the independently reviewed T-ID queue and SQL proof. It is **conditional** on MA05C integration and source freshness. Do not commission D before C or send the broad MA05 packet to Cursor.
 
-## Pre-commission hard requirements owned by ChatGPT
+## Selected follow-on MA05E after MA05D: continuity note authority\n\n[MA05E](../2026-11-21--ma05e-continuity-note-authority/CHANGE.md) is source-audited conditionally against the present post-MA05B source. The 2.5 KB Storyteller memory SQL module exports only publishStorytellerNotes, a caller-transaction-owned validation/write function; Stories continuation imports it in the authoritative commit. Move unchanged body into stories/continuity-notes.ts using neutral Storyteller kind and DB Transaction; direct-reexport from old runtime memory path, switch one Stories import, prove strict export identity and the existing disposable scene publication continuity SQL tests. No new callback or transaction split. Do not execute before C/D joins and source freshness.\n\n## Pre-commission hard requirements owned by ChatGPT
 - Actual graph + full direct source import inventory on **post-MA04 and relevant WR HEAD**, including tests and all host consumers.
 - Function signatures, local SQL transaction ownership, explicit port interface declarations and file→file edit map for every edge above; decide scripted generation and outbox ownership. No placeholder "or callback".
 - Complete positive/negative replay, source-root, publication and privacy fixture matrix, with exact command/runner and authorized disposable SQL availability assessment.
