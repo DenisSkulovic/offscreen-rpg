@@ -19,6 +19,10 @@
       "types": "./dist/src/providers/openrouter.d.ts",
       "default": "./dist/src/providers/openrouter.js"
     },
+    "./providers/writer-round-transport": {
+      "types": "./dist/src/providers/writer-round-transport.d.ts",
+      "default": "./dist/src/providers/writer-round-transport.js"
+    },
     "./providers/request-audit": {
       "types": "./dist/src/providers/request-audit.d.ts",
       "default": "./dist/src/providers/request-audit.js"

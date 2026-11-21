@@ -14,7 +14,11 @@ import {
   storytellerWriterStep,
 } from '@offscreen/db/storyteller-schema';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
-import type { ProviderTelemetry, ProviderUsage } from '@offscreen/storyteller/providers/openrouter';
+import type {
+  ProviderTelemetry,
+  ProviderUsage,
+} from '@offscreen/storyteller/providers/openrouter';
+import type { WriterRoundModelPolicy } from '@offscreen/storyteller/providers/writer-round-transport';
 import type { Transaction } from '@offscreen/db/outbox';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import type { WriterMissionParentStepInsert } from './writer-mission-store';
@@ -38,6 +42,23 @@ const writerMissionProviderPolicy = {
   timeoutMs: 60_000,
 };
 
+function writerRoundPersistedPolicy(policy: WriterRoundModelPolicy) {
+  return {
+    version: 'writer-round.v1',
+    route: 'writer-round.v1',
+    model: policy.model,
+    provider: policy.provider,
+    priceVersion: policy.priceVersion,
+    outputProtocol: 'native-json-schema' as const,
+    responseTransport: 'buffered-json' as const,
+    inputMicrousdPerMillion: policy.inputMicrousdPerMillion,
+    outputMicrousdPerMillion: policy.outputMicrousdPerMillion,
+    maxInputTokens: policy.maxInputTokens,
+    maxOutputTokens: policy.maxOutputTokens,
+    timeoutMs: policy.timeoutMs,
+  };
+}
+
 export class WriterMissionCustodyError extends Error {
   constructor(
     public readonly code:
@@ -51,10 +72,36 @@ export class WriterMissionCustodyError extends Error {
   }
 }
 
-export type WriterMissionProviderTransport = () => Promise<
-  | { kind: 'delivered'; serializedResponse: string }
-  | { kind: 'unknown' }
->;
+export type WriterMissionProviderTransportResult =
+  | {
+      kind: 'delivered';
+      serializedResponse: string;
+      usage?: ProviderUsage;
+      telemetry?: ProviderTelemetry;
+      exactWireSha256?: string;
+    }
+  | {
+      kind: 'failed';
+      failureCode:
+        | 'provider_refusal'
+        | 'provider_unavailable'
+        | 'invalid_output'
+        | 'malformed_output'
+        | 'over_budget'
+        | 'wire_rejected';
+      usage: ProviderUsage;
+      telemetry: ProviderTelemetry;
+      exactWireSha256: string | null;
+      sent: boolean;
+    }
+  | {
+      kind: 'unknown';
+      telemetry?: ProviderTelemetry;
+      exactWireSha256?: string;
+    };
+
+export type WriterMissionProviderTransport =
+  () => Promise<WriterMissionProviderTransportResult>;
 
 export type AdvanceWriterMissionProviderStepInput = {
   missionId: string;
@@ -66,6 +113,8 @@ export type AdvanceWriterMissionProviderStepInput = {
   reservedGeneratedTokens?: number;
   reservedReasoningTokens?: number;
   requestBytes?: number;
+  providerPolicy?: WriterRoundModelPolicy;
+  expectedWireSha256?: string;
 };
 
 export type AdvanceWriterMissionProviderStepResult =
@@ -79,8 +128,9 @@ export type AdvanceWriterMissionProviderStepResult =
       resultCasHash: string | null;
       stepState: string;
     }
-  | { status: 'held'; reason: string; transportInvoked: false }
-  | { status: 'uncertain'; transportInvoked: boolean };
+  | { status: 'held'; reason: string; transportInvoked: boolean }
+  | { status: 'uncertain'; transportInvoked: boolean }
+  | { status: 'failed'; reason: string; transportInvoked: boolean };
 
 export function hashWriterMissionSerializedResponse(body: string): string {
   return createHash('sha256').update(body, 'utf8').digest('hex');
@@ -102,7 +152,10 @@ function providerExecutionFromAttempt(
     accountId: row.accountId,
     runId: row.runId,
     dispatchReview: { mode: 'off' },
-    policy: row.policy as Extract<ExecutionPolicy, { mode: 'provider' }>['policy'],
+    policy: row.policy as Extract<
+      ExecutionPolicy,
+      { mode: 'provider' }
+    >['policy'],
   };
 }
 
@@ -210,8 +263,21 @@ export async function reserveWriterMissionProviderAttempt(
     reservedGeneratedTokens: number;
     reservedReasoningTokens: number;
     budgetSnapshot: WriterMissionBudgetSnapshot;
+    providerPolicy?: WriterRoundModelPolicy;
   },
 ): Promise<'reserved' | typeof storytellerAttempt.$inferSelect.state> {
+  const attemptPolicy = input.providerPolicy
+    ? writerRoundPersistedPolicy(input.providerPolicy)
+    : writerMissionProviderPolicy;
+  const requestedModel = input.providerPolicy
+    ? input.providerPolicy.model
+    : writerMissionProviderPolicy.model;
+  const requestedProvider = input.providerPolicy
+    ? input.providerPolicy.provider
+    : writerMissionProviderPolicy.provider;
+  const priceVersion = input.providerPolicy
+    ? input.providerPolicy.priceVersion
+    : writerMissionProviderPolicy.priceVersion;
   const [prior] = await tx
     .select()
     .from(storytellerAttempt)
@@ -305,9 +371,7 @@ export async function reserveWriterMissionProviderAttempt(
     account.stopped ||
     !allowance.enabled ||
     allowance.admittedAttempts >= allowance.maxAttempts ||
-    account.limitMicrousd -
-      account.settledMicrousd -
-      account.reservedMicrousd <
+    account.limitMicrousd - account.settledMicrousd - account.reservedMicrousd <
       input.reservedMicrousd ||
     allowance.limitMicrousd -
       allowance.settledMicrousd -
@@ -338,9 +402,9 @@ export async function reserveWriterMissionProviderAttempt(
     promptVersion: WRITER_MISSION_ATTEMPT_PURPOSE,
     recipeVersion: WRITER_MISSION_ATTEMPT_PURPOSE,
     resourcePolicyVersion: WRITER_MISSION_ATTEMPT_PURPOSE,
-    requestedModel: writerMissionProviderPolicy.model,
-    requestedProvider: writerMissionProviderPolicy.provider,
-    priceVersion: writerMissionProviderPolicy.priceVersion,
+    requestedModel,
+    requestedProvider,
+    priceVersion,
     attribution,
     state: 'reserved',
     reservedMicrousd: input.reservedMicrousd,
@@ -352,7 +416,7 @@ export async function reserveWriterMissionProviderAttempt(
     estimationMethod: 'writer-mission-custody',
     reconciliation: 'pending',
     requestBytes: input.requestBytes,
-    policy: writerMissionProviderPolicy,
+    policy: attemptPolicy,
   });
 
   await tx
@@ -362,11 +426,11 @@ export async function reserveWriterMissionProviderAttempt(
       reservedInputTokens:
         operationRecord.reservedInputTokens + input.reservedInputTokens,
       reservedGeneratedTokens:
-        operationRecord.reservedGeneratedTokens +
-        input.reservedGeneratedTokens,
+        operationRecord.reservedGeneratedTokens + input.reservedGeneratedTokens,
       reservedReasoningTokens:
         operationRecord.reservedReasoningTokens + input.reservedReasoningTokens,
-      reservedMicrousd: operationRecord.reservedMicrousd + input.reservedMicrousd,
+      reservedMicrousd:
+        operationRecord.reservedMicrousd + input.reservedMicrousd,
       updatedAt: sql`clock_timestamp()`,
     })
     .where(eq(storytellerOperation.generationId, input.operationId));
@@ -460,6 +524,7 @@ export async function advanceWriterMissionProviderStep(
   const reservedGeneratedTokens = input.reservedGeneratedTokens ?? 256;
   const reservedReasoningTokens = input.reservedReasoningTokens ?? 0;
   const requestBytes = input.requestBytes ?? 128;
+  const isRealMode = Boolean(input.providerPolicy && input.expectedWireSha256);
 
   const plan = await database.db.transaction(async (tx) => {
     const { mission, step } = await lockWriterParentStep(
@@ -497,6 +562,25 @@ export async function advanceWriterMissionProviderStep(
       };
     }
 
+    if (step.state === 'dispatched') {
+      const boundAttemptId = step.attemptId ?? input.attemptId;
+      await casWriterStep(tx, {
+        missionId: input.missionId,
+        ordinal: input.ordinal,
+        expectedRevision: step.revision,
+        patch: { state: 'uncertain', attemptId: boundAttemptId },
+      });
+      await tx
+        .update(storytellerWriterMission)
+        .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
+        .where(eq(storytellerWriterMission.id, input.missionId));
+      return {
+        status: 'already_dispatched' as const,
+        attemptId: boundAttemptId,
+        requestCasHash: step.requestCasHash,
+      };
+    }
+
     let revision = step.revision;
     let state: WriterMissionParentStepInsert['state'] = step.state;
     let attemptId = step.attemptId ?? input.attemptId;
@@ -516,8 +600,10 @@ export async function advanceWriterMissionProviderStep(
           reservedInputTokens,
           reservedGeneratedTokens,
           reservedReasoningTokens,
-          budgetSnapshot:
-            mission.budgetSnapshot as WriterMissionBudgetSnapshot,
+          budgetSnapshot: mission.budgetSnapshot as WriterMissionBudgetSnapshot,
+          ...(isRealMode && input.providerPolicy
+            ? { providerPolicy: input.providerPolicy }
+            : {}),
         });
         if (reserveState !== 'reserved') {
           return {
@@ -579,6 +665,7 @@ export async function advanceWriterMissionProviderStep(
       status: 'transport' as const,
       attemptId,
       revision,
+      requestCasHash: step.requestCasHash,
     };
   });
 
@@ -587,6 +674,14 @@ export async function advanceWriterMissionProviderStep(
   }
   if (plan.status === 'held') {
     return plan;
+  }
+  if (plan.status === 'already_dispatched') {
+    const uncertainAttempt = await loadAttempt(database, plan.attemptId);
+    await budget.uncertain(
+      plan.attemptId,
+      providerExecutionFromAttempt(uncertainAttempt),
+    );
+    return { status: 'uncertain', transportInvoked: false };
   }
   if (plan.status !== 'transport') {
     return plan;
@@ -599,6 +694,7 @@ export async function advanceWriterMissionProviderStep(
     await budget.uncertain(
       plan.attemptId,
       providerExecutionFromAttempt(uncertainAttempt),
+      transportOutcome.telemetry,
     );
     await database.db.transaction(async (tx) => {
       const { step } = await lockWriterParentStep(
@@ -620,18 +716,108 @@ export async function advanceWriterMissionProviderStep(
     return { status: 'uncertain', transportInvoked: true };
   }
 
+  if (transportOutcome.kind === 'failed') {
+    const attemptRow = await loadAttempt(database, plan.attemptId);
+    const execution = providerExecutionFromAttempt(attemptRow);
+
+    if (!transportOutcome.sent) {
+      await budget.confirmUnsent(
+        plan.attemptId,
+        execution,
+        transportOutcome.telemetry,
+      );
+      await database.db.transaction(async (tx) => {
+        await holdWriterStep(tx, {
+          missionId: input.missionId,
+          ordinal: input.ordinal,
+          expectedRevision: plan.revision,
+          reason: transportOutcome.failureCode,
+        });
+      });
+      return {
+        status: 'held',
+        reason: transportOutcome.failureCode,
+        transportInvoked: true,
+      };
+    }
+
+    await budget.settle({
+      id: plan.attemptId,
+      execution,
+      usage: transportOutcome.usage,
+      telemetry: transportOutcome.telemetry,
+      operationOutcome: 'continue',
+    });
+    await database.db.transaction(async (tx) => {
+      await casWriterStep(tx, {
+        missionId: input.missionId,
+        ordinal: input.ordinal,
+        expectedRevision: plan.revision,
+        patch: { state: 'failed', attemptId: plan.attemptId },
+      });
+      await tx
+        .update(storytellerWriterMission)
+        .set({ state: 'held', updatedAt: sql`clock_timestamp()` })
+        .where(eq(storytellerWriterMission.id, input.missionId));
+    });
+    return {
+      status: 'failed',
+      reason: transportOutcome.failureCode,
+      transportInvoked: true,
+    };
+  }
+
+  const attemptRow = await loadAttempt(database, plan.attemptId);
+  const execution = providerExecutionFromAttempt(attemptRow);
+
+  if (isRealMode) {
+    const wireOk =
+      transportOutcome.exactWireSha256 === input.expectedWireSha256 &&
+      transportOutcome.exactWireSha256 === plan.requestCasHash;
+    const usageOk =
+      transportOutcome.usage !== undefined &&
+      transportOutcome.telemetry !== undefined;
+    if (!wireOk || !usageOk) {
+      await budget.uncertain(plan.attemptId, execution);
+      await database.db.transaction(async (tx) => {
+        const { step } = await lockWriterParentStep(
+          tx,
+          input.missionId,
+          input.ordinal,
+        );
+        await casWriterStep(tx, {
+          missionId: input.missionId,
+          ordinal: input.ordinal,
+          expectedRevision: step.revision,
+          patch: { state: 'uncertain' },
+        });
+        await tx
+          .update(storytellerWriterMission)
+          .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
+          .where(eq(storytellerWriterMission.id, input.missionId));
+      });
+      return { status: 'uncertain', transportInvoked: true };
+    }
+    await budget.settle({
+      id: plan.attemptId,
+      execution,
+      usage: transportOutcome.usage!,
+      telemetry: transportOutcome.telemetry!,
+      operationOutcome: 'continue',
+    });
+  } else {
+    await budget.settle({
+      id: plan.attemptId,
+      execution,
+      usage: zeroUsage,
+      telemetry: zeroTelemetry,
+      operationOutcome: 'continue',
+    });
+  }
+
   const resultCasHash = hashWriterMissionSerializedResponse(
     transportOutcome.serializedResponse,
   );
-  const attemptRow = await loadAttempt(database, plan.attemptId);
-  const execution = providerExecutionFromAttempt(attemptRow);
-  await budget.settle({
-    id: plan.attemptId,
-    execution,
-    usage: zeroUsage,
-    telemetry: zeroTelemetry,
-    operationOutcome: 'continue',
-  });
 
   await database.db.transaction(async (tx) => {
     const { step } = await lockWriterParentStep(

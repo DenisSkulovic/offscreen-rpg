@@ -21,6 +21,8 @@ Billable dispatch now reloads independent current authority inside the `budget.d
 
 [Safety boundaries](#safety-boundaries) still forbid a release from adding a retry beyond the captured operation envelope. The status paragraph keeps live paid release behind a separate spending and evaluation preflight. This map does not add a live route or a recovery grant.
 
+Writer rounds use `createWriterRoundTransport` (`@offscreen/storyteller/providers/writer-round-transport`). The factory sends one captured wire after a local preflight (model, provider pin, no fallback, finite timeout and price). Results are `delivered` with reported usage, `failed` (unsent wire rejection releases the attempt; a sent failure settles reported usage), or `unknown` (lost or unaccounted response). `advanceWriterMissionProviderStep` settles that reported cost when a real `providerPolicy` and `expectedWireSha256` are supplied. Scripted openings that omit that policy still settle the historical zero-usage receipt and do not reprice older attempts. A step already `dispatched` or `uncertain` is not sent again.
+
 Negative: an uncertain charged dispatch does not start a second paid call. That stop follows [Window accounting and admission](../platform/spending-and-entitlements.md#window-accounting-and-admission). A changed creative profile does not replace the request or the permissions captured for that attempt.
 
 ### Contract dependencies
