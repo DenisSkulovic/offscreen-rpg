@@ -8,4 +8,6 @@ Expected normal: two fake provider-shaped rounds, model1 tool and model2 final; 
 
 Command proof: pnpm --filter @offscreen/story-engine build; pnpm --filter @offscreen/storyteller test; pnpm --filter @offscreen/api-integration build; focused disposable SQL test through its known harness; git diff --check. No paid provider proof, no protected DB writes, no claim the production Worker currently connects to this path.
 
+**Policy mismatch negative:** retry same attemptId with altered model/provider/priceVersion/input-output unit prices/maxTokens/timeout must refuse pre-send even if original missionId and request hash match. A preexisting legacy custody helper that only compares owner/story/requestBytes is insufficient for real provider execution. This proof must be present in WR09A's strict adapter or WR09B remains PLANNER-GATED.
+
 **Promotion checklist for ChatGPT before sending to Cursor:** verify WR09A integrated SHA, exports & signature, attempt re-read/no-send semantics, nullable SQL pointer migration and shared budget settle PASS, confirm no collisions from current integration branch, then update G4 to PASS and mark READY. No approval theater for ordinary implementation; this is real prerequisite code drift.
