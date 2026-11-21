@@ -69,23 +69,18 @@ flowchart LR
 - **P3-B** integrated real Writer transport and usage-settlement custody with provider-free tests. **No funded live call has been proved.**
 - **P3-C** integrated a provider-free long-form acceptance runner. Its presence does not by itself certify narrative quality.
 
-## 🔨 What remains, in outcome-sized chunks
+## 🔨 What remains, as concrete outcomes
 
-1. **Independent Writer research (WR04).** Bounded child contexts, read-only tools, trustworthy citations and one shared finite budget. Conditional packet exists; recheck post-P3 interfaces before executing.
-2. **One cohesive player experience (WR08).** Prompt → loading/held → scene → executable choice → later scene; revisit history and fork, preserve drafts and honor the feature gate.
-3. **Finish the actual AI runtime.** Confirm P3-B transport is connected to the Writer loop, exercise a bounded provider-backed mission with **explicit spending approval**, and verify uncertainty/billing/recovery. An adapter alone is not a live game.
-4. **Bulk monorepo finish.** Replace obsolete `@offscreen/application` forwarding consumers, enforce clear graph boundaries and compile/test the joined apps.
-5. **Prove and land the whole thing.** Long-running source-correct story/fork/reentry scenarios, permissions/financial negatives, product docs, merge to `main` and retire worktrees/undertaking.
+1. **Parallel architectural and custody wave (not yet implemented):** [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) retires Application with **all 112 tests preserved**, [WR09A](../../changes/open/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) atomically persists/replays the provider response and cost without real spend, and [MA11](../../changes/open/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) makes actual engine domains visible and rejects new forbidden imports. Their implementation sources are separate, with one integration custodian.
+2. **Actually run the creative Writer.** A later WR09B wires real provider-shaped model decisions, Worker credential/policy composition, launch/continuation and delegated research into existing admission/publication, first through fake fetch and no paid calls. Provider funding requires separate explicit approval.
+3. **Close the authoritative architecture.** MA09 inverts the existing Authority→Writer implementation edges while preserving current SQL locks/receipts; final module SCC/public export ratchet after it, not premature splitting of packages.
+4. **Product and release acceptance.** Demonstrate actual prompt → meaningful playable choices → source-faithful long-form scenes → reentry/history/fork, recover after faults, prove owner/permissions/charge/idempotency negatives; reconcile ledgers/STATUS and merge the undertaking to `main` only after end gates.
 
-## 🧭 Right now and next decision
+## 🧭 Current decision and evidence
 
-**Current next wave:** [WR04 independent research](../../changes/open/2026-11-21--wr04-delegated-writer-research/TASKS.md) and [WR08 complete Play/reentry](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/TASKS.md) are **source-reconciled, owner-commissioned PLANNER-READY (with explicit limits)**. The earlier blocked packets were repaired; independent G0–G7 review is in each `PROOF.md`. They have **NOT** been implemented or tested yet. WR04 T01–T03 may run beside WR08, but WR04 T04 must wait for WR08's shared Worker/Workflow integration. Important current discovery: WR07B first scene contains no executable offer and P3-A queues a Writer continuation without a registered Worker wake, both now explicitly included in WR08, without real provider spend. Final bulk architecture cleanup follows stabilized Writer/Play interfaces.
+**MA08 is Done at `6dd12761`**, including real Lab, Drafts, DB relay and Runtime Logging owners; the old Application is test-only compatibility. The next three source-disjoint implementation packets are READY for separate user-authorized Cursor commissions, **not yet tested or integrated**. The known two undeclared-production-import errors in `pnpm repo:module-graph` remain triage items, not waved-away passes. The rough status figures above remain **80% architecture, 60% Storyteller, 65% combined** with ±10–15 percentage-point uncertainty. No external provider spend has been authorized.
 
-**Most important next milestone:** a user can start a story, make two *real* choices and return to subsequent scenes in the browser using the same trusted backend, with honest pending/error states. A scripted engine test alone is not this milestone.
-
-**Supervisor decision:** real paid provider testing requires an explicit spending grant; none has been authorized here.
-
-**Risks:** integration between P3-B transport and real Writer mission execution; child research cost/source isolation; incomplete public Play UX; cleanup during moving gameplay interfaces.
+**Integration rule:** Three worktrees can implement in parallel; only one custodian joins `undertaking/storyteller-workshop`, regenerates the lockfile, runs combined proofs, archives and updates the overview. See [exact collision matrix](PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21). Future Cursor parents must not independently self-merge these three Changes while siblings remain active.
 
 ## ⚑ Required maintenance
 
