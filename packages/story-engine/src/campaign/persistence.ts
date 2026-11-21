@@ -13,10 +13,15 @@ import {
 import {
   immediateActionContentSchema,
   immediateActionAvailable,
-  immediateActionPlanSchema,
   situationAuthorizationSchema,
   type ImmediateActionPlan,
 } from '@offscreen/game/immediate-actions';
+import type { NarrativeIntentPlan } from '@offscreen/game/narrative-intent';
+import {
+  parseStoredActionPlan,
+  parseStoredActionPlans,
+  type StoredActionPlan,
+} from './stored-action-plan';
 import type { Roll } from '@offscreen/game/checks';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { offerSchema, type GameOffer } from '@offscreen/game/offers';
@@ -266,13 +271,13 @@ export async function saveOfferPlans(
   storyId: string,
   narrativeRevision: number,
   offerId: string,
-  plans: readonly ImmediateActionPlan[],
+  plans: readonly (ImmediateActionPlan | NarrativeIntentPlan)[],
 ) {
   await tx.insert(gameOffer).values({
     id: offerId,
     storyId,
     narrativeRevision,
-    plans: plans.map((plan) => immediateActionPlanSchema.parse(plan)),
+    plans: parseStoredActionPlans(plans),
   });
 }
 
@@ -284,7 +289,7 @@ export async function loadOfferPlan(
     narrativeRevision: number;
     actionKey: string;
   },
-) {
+): Promise<StoredActionPlan | null> {
   const [stored] = await tx
     .select()
     .from(gameOffer)
@@ -296,13 +301,20 @@ export async function loadOfferPlan(
       ),
     );
   if (!stored) return null;
-  return (
-    z
-      .array(immediateActionPlanSchema)
-      .parse(stored.plans)
-      .find((plan) => plan.key === input.actionKey) ?? null
-  );
+  const plans = z
+    .array(z.unknown())
+    .parse(stored.plans)
+    .map((entry) => parseStoredActionPlan(entry));
+  return plans.find((plan) => plan.key === input.actionKey) ?? null;
 }
+
+export type { StoredActionPlan } from './stored-action-plan';
+export {
+  isImmediateActionPlan,
+  isNarrativeIntentPlan,
+  isNarrativeIntentPlanValue,
+  parseStoredActionPlan,
+} from './stored-action-plan';
 export async function appendMechanicalPassage(
   tx: Transaction,
   current: StoryRecord,

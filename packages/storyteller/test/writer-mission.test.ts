@@ -12,9 +12,11 @@ import {
 import {
   writerMissionCaptureV1Schema,
   writerMissionCaptureV2OpeningSchema,
+  writerMissionCaptureV3ContinuationSchema,
   writerOpeningSceneProposalV2Schema,
   writerSceneProposalSchema,
   writerSceneProposalV1Schema,
+  writerSceneProposalV3Schema,
 } from '../src/tasks/writer-mission.js';
 import {
   compileWriterRoundCapturedRequest,
@@ -749,5 +751,183 @@ test('writer-mission.v2 opening rejects malformed scope, drifted story, sceneFro
         }),
       ),
     /ungranted_writer_tool/,
+  );
+});
+
+const CHECKPOINT_HASH = 'e'.repeat(64);
+const BASE_OBJECT_HASH = 'f'.repeat(64);
+
+function finiteWriterMissionV3ContinuationCapture() {
+  const storyId = randomUUID();
+  const basePassageId = randomUUID();
+  return {
+    version: 'writer-mission.v3' as const,
+    generationId: randomUUID(),
+    operationId: randomUUID(),
+    ownerId: randomUUID(),
+    storyId,
+    sceneScope: {
+      kind: 'continuation' as const,
+      baseSceneSequence: 4,
+      basePassageId,
+      baseCheckpointHash: CHECKPOINT_HASH,
+      baseRootHash: ROOT_HASH,
+      baseRootRevision: 3,
+      baseNarrativeRevision: 2,
+      baseCampaignStateRevision: 1,
+      controllingIntentOrReceiptId: randomUUID(),
+      scenarioKind: 'narrative-only' as const,
+    },
+    libraryRootHash: ROOT_HASH,
+    libraryRootRevision: 3,
+    profileObjectHash: PROFILE_HASH,
+    skillObjectHashes: [SKILL_HASH],
+    toolsAllowlist: ['library.read', 'workdesk.stage', 'submit_scene'] as const,
+    modelSelection: {
+      provider: 'openrouter' as const,
+      model: 'test/writer-model',
+    },
+    budgets: {
+      maxModelRounds: 6,
+      maxInputTokens: 12_288,
+      maxGeneratedTokens: 4_096,
+      maxMicrousd: '250000',
+      deadlineMs: 120_000,
+    },
+    capturedRequestHash: REQUEST_HASH,
+  };
+}
+
+function narrativeIntentForOption(optionId: string, label: string) {
+  return {
+    kind: 'narrative-intent.v1' as const,
+    key: optionId,
+    label,
+    intention: `The player means to ${label.toLowerCase()}.`,
+    risk: 'The path may draw unwanted attention.',
+    fictionalDurationSeconds: 600,
+    effects: [] as [],
+  };
+}
+
+function finiteV3ContinuationSceneProposal() {
+  const interaction = validOpeningChoiceInteraction();
+  return {
+    version: 3 as const,
+    summary: 'Continuation at the docks with bound narrative intents.',
+    stagedObjectHashes: [ROOT_HASH],
+    sourceEvidence: [
+      {
+        rootHash: ROOT_HASH,
+        objectHash: PROFILE_HASH,
+        section: 'seyda-neen.continuation',
+        assertedAsFact: true,
+      },
+    ],
+    scene: {
+      content: validOpeningPassageContent(),
+      interaction,
+      authoredIntents: interaction.options.map((option) =>
+        narrativeIntentForOption(option.id, option.label),
+      ),
+    },
+    documentChanges: [] as [],
+  };
+}
+
+test('writer-mission.v3 continuation capture and v3 scene proposals bind narrative intents to choices', () => {
+  writerMissionCaptureV1Schema.parse(frozenWriterMissionV1Capture());
+  writerMissionCaptureV2OpeningSchema.parse(finiteWriterMissionV2OpeningCapture());
+
+  const v3Capture = writerMissionCaptureV3ContinuationSchema.parse(
+    finiteWriterMissionV3ContinuationCapture(),
+  );
+  assert.equal(v3Capture.version, 'writer-mission.v3');
+  assert.equal(v3Capture.sceneScope.kind, 'continuation');
+  assert.equal(v3Capture.sceneScope.baseRootHash, v3Capture.libraryRootHash);
+  assert.equal(writerMissionCaptureSchema.parse(v3Capture).version, 'writer-mission.v3');
+  assert.throws(
+    () =>
+      writerMissionCaptureV3ContinuationSchema.parse({
+        ...finiteWriterMissionV3ContinuationCapture(),
+        sceneScope: {
+          ...finiteWriterMissionV3ContinuationCapture().sceneScope,
+          baseRootHash: PROFILE_HASH,
+        },
+      }),
+    /Continuation baseRootHash must match libraryRootHash/,
+  );
+
+  const v3Proposal = writerSceneProposalV3Schema.parse(
+    finiteV3ContinuationSceneProposal(),
+  );
+  assert.equal(v3Proposal.version, 3);
+  assert.equal(v3Proposal.scene.authoredIntents.length, 2);
+  assert.equal(writerSceneProposalSchema.parse(v3Proposal).version, 3);
+
+  const v3CaptureParsed = writerMissionCaptureV3ContinuationSchema.parse(
+    finiteWriterMissionV3ContinuationCapture(),
+  );
+  const v3Final = writerRoundDecisionSchema.parse({
+    kind: 'final',
+    proposal: finiteV3ContinuationSceneProposal(),
+  });
+  validateWriterRoundDecisionForCapture(v3CaptureParsed, v3Final);
+
+  const base = finiteV3ContinuationSceneProposal();
+
+  assert.throws(
+    () =>
+      writerSceneProposalV3Schema.parse({
+        ...base,
+        scene: {
+          ...base.scene,
+          authoredIntents: [base.scene.authoredIntents[0]],
+        },
+      }),
+    /exactly one authored intent/,
+  );
+
+  assert.throws(
+    () =>
+      writerSceneProposalV3Schema.parse({
+        ...base,
+        scene: {
+          ...base.scene,
+          authoredIntents: [
+            ...base.scene.authoredIntents,
+            narrativeIntentForOption('visit_officer', 'Duplicate path'),
+          ],
+        },
+      }),
+    /unique|exactly one authored intent/,
+  );
+
+  assert.throws(
+    () =>
+      writerSceneProposalV3Schema.parse({
+        ...base,
+        scene: {
+          ...base.scene,
+          authoredIntents: [
+            narrativeIntentForOption('visit_officer', 'Office'),
+            narrativeIntentForOption('unknown_path', 'Forged path'),
+          ],
+        },
+      }),
+    /not an offered choice option/,
+  );
+
+  assert.throws(
+    () =>
+      writerSceneProposalV3Schema.parse({
+        ...base,
+        scene: {
+          content: base.scene.content,
+          interaction: null,
+          authoredIntents: [narrativeIntentForOption('visit_officer', 'Office')],
+        },
+      }),
+    /require a choice interaction/,
   );
 });

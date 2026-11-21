@@ -21,7 +21,11 @@ import {
   readStoryItemHolders,
   type StoryRecord,
 } from '../stories/persistence';
-import { requireCampaign } from './persistence';
+import {
+  isNarrativeIntentPlanValue,
+  requireCampaign,
+} from './persistence';
+import { settleNarrativeIntentExecution } from './narrative-intent-settlement';
 import { campaignActionTopic } from './topics';
 import type { CampaignRecord } from './persistence';
 import { decideActionExecutionTransition } from './action-execution-transition';
@@ -98,6 +102,23 @@ export async function settleActionExecution(
   now: number,
   documentStore?: DocumentStore,
 ) {
+  if (isNarrativeIntentPlanValue(execution.plan)) {
+    const narrative = await settleNarrativeIntentExecution(
+      tx,
+      current,
+      state,
+      execution,
+      now,
+    );
+    if (narrative.state === 'waiting') {
+      return {
+        state: 'waiting' as const,
+        projected: narrative.projected,
+        remainingRealMs: narrative.remainingRealMs,
+      };
+    }
+    return { state: 'settled' as const, campaign: narrative.campaign };
+  }
   const plan = immediateActionPlanSchema.parse(execution.plan);
   const items = await readStoryItemHolders(tx, current.id);
   const controllingObligations = await readNearestPendingWorldObligations(tx, {
@@ -329,13 +350,20 @@ export function createCampaignActionExecutions(
         if (!reference || reference.state !== 'running') return null;
 
         const current = await lockStoryById(tx, reference.storyId);
-        const state = await requireCampaign(tx, current.id);
-        if (state.activeActionOperationId !== operationId) return null;
         const [execution] = await tx
           .select()
           .from(gameActionExecution)
           .where(eq(gameActionExecution.operationId, operationId));
         if (!execution || execution.state !== 'running') return null;
+        const [stateRow] = await tx
+          .select()
+          .from(campaign)
+          .where(eq(campaign.storyId, current.id));
+        if (!stateRow) return null;
+        if (stateRow.activeActionOperationId !== operationId) return null;
+        const state = isNarrativeIntentPlanValue(execution.plan)
+          ? stateRow
+          : await requireCampaign(tx, current.id);
 
         const now = await readDatabaseClockMs(tx, current.id);
         const result = await settleActionExecution(

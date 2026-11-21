@@ -16,7 +16,7 @@ import {
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
 import { projectWorldTime } from '@offscreen/game/calendar';
-import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
+import { parseStoredActionPlan } from '../campaign/stored-action-plan';
 import { offerSchema } from '@offscreen/game/offers';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
 import {
@@ -742,7 +742,7 @@ export function projectV2HistoricalCampaign(
     : undefined;
   const actionExecution = fictionalState.activeAction
     ? (() => {
-        const plan = immediateActionPlanSchema.parse(
+        const plan = parseStoredActionPlan(
           unwrapVersionedOpenPayload(fictionalState.activeAction.plan),
         );
         return {

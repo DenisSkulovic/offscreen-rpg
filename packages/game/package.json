@@ -43,6 +43,10 @@
       "types": "./dist/src/immediate-actions.d.ts",
       "default": "./dist/src/immediate-actions.js"
     },
+    "./narrative-intent": {
+      "types": "./dist/src/narrative-intent.d.ts",
+      "default": "./dist/src/narrative-intent.js"
+    },
     "./actor": {
       "types": "./dist/src/actor.d.ts",
       "default": "./dist/src/actor.js"

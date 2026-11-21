@@ -5,6 +5,7 @@ import {
   writerOpeningSceneProposalV2Schema,
   writerRoundDecisionSchema,
   writerSceneProposalV1Schema,
+  writerSceneProposalV3Schema,
   writerToolCallSchema,
   type WriterMissionCapture,
   type WriterToolInvocationResult,
@@ -24,7 +25,9 @@ function writerRoundDecisionSchemaForCapture(capture: WriterMissionCapture) {
   const proposalSchema =
     capture.version === 'writer-mission.v1'
       ? writerSceneProposalV1Schema
-      : writerOpeningSceneProposalV2Schema;
+      : capture.version === 'writer-mission.v2'
+        ? writerOpeningSceneProposalV2Schema
+        : writerSceneProposalV3Schema;
 
   return z
     .discriminatedUnion('kind', [
@@ -75,15 +78,36 @@ function writerRoundPinsForCapture(
   if (capture.version === 'writer-mission.v1') {
     return { ...leading, sceneFrontier: capture.sceneFrontier };
   }
-  const { sceneScope } = capture;
-  return {
-    ...leading,
-    sceneScope: {
-      kind: sceneScope.kind,
-      reservedStoryId: sceneScope.reservedStoryId,
-      reservedFirstPassageId: sceneScope.reservedFirstPassageId,
-    },
-  };
+  if (capture.version === 'writer-mission.v2') {
+    const { sceneScope } = capture;
+    return {
+      ...leading,
+      sceneScope: {
+        kind: sceneScope.kind,
+        reservedStoryId: sceneScope.reservedStoryId,
+        reservedFirstPassageId: sceneScope.reservedFirstPassageId,
+      },
+    };
+  }
+  if (capture.version === 'writer-mission.v3') {
+    const { sceneScope } = capture;
+    return {
+      ...leading,
+      sceneScope: {
+        kind: sceneScope.kind,
+        baseSceneSequence: sceneScope.baseSceneSequence,
+        basePassageId: sceneScope.basePassageId,
+        baseCheckpointHash: sceneScope.baseCheckpointHash,
+        baseRootHash: sceneScope.baseRootHash,
+        baseRootRevision: sceneScope.baseRootRevision,
+        baseNarrativeRevision: sceneScope.baseNarrativeRevision,
+        baseCampaignStateRevision: sceneScope.baseCampaignStateRevision,
+        controllingIntentOrReceiptId: sceneScope.controllingIntentOrReceiptId,
+        scenarioKind: sceneScope.scenarioKind,
+      },
+    };
+  }
+  throw new Error('continuation capture is not an opening round');
 }
 
 /** Compile pinned mission context and durable prior tool summaries into one provider request. */

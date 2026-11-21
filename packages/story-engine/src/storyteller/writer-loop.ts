@@ -15,6 +15,7 @@ import {
   compileWriterRoundCapturedRequest,
   writerRoundDecisionSchema,
   validateWriterRoundDecisionForCapture,
+  writerSceneProposalV3Schema,
   type WriterMissionCapture,
   type WriterRoundDecision,
   type WriterToolInvocationResult,
@@ -83,7 +84,7 @@ export type WriterLoopRoundResult =
   | {
       status: 'proposal-ready';
       proposal: WriterRoundDecision & { kind: 'final' };
-      accepted: WriterSceneProposalAccepted;
+      accepted?: WriterSceneProposalAccepted;
       wireSha256: string;
     }
   | {
@@ -652,15 +653,22 @@ export async function runWriterMissionModelRound(
   }
 
   if (decision.kind === 'final') {
-    let accepted: WriterSceneProposalAccepted;
+    let accepted: WriterSceneProposalAccepted | undefined;
     try {
-      accepted = await acceptWriterSceneProposal(database, input.storage, {
-        missionId: input.missionId,
-        capture: input.capture,
-        access: input.access,
-        reader: input.reader,
-        proposal: decision.proposal,
-      });
+      if (
+        input.capture.version === 'writer-mission.v3' &&
+        decision.proposal.version === 3
+      ) {
+        writerSceneProposalV3Schema.parse(decision.proposal);
+      } else {
+        accepted = await acceptWriterSceneProposal(database, input.storage, {
+          missionId: input.missionId,
+          capture: input.capture,
+          access: input.access,
+          reader: input.reader,
+          proposal: decision.proposal,
+        });
+      }
     } catch (error) {
       const reason =
         error instanceof WriterSceneProposalError
@@ -697,7 +705,7 @@ export async function runWriterMissionModelRound(
     return {
       status: 'proposal-ready',
       proposal: decision,
-      accepted,
+      ...(accepted === undefined ? {} : { accepted }),
       wireSha256,
     };
   }

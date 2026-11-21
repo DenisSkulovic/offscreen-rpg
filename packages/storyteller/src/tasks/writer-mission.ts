@@ -1,5 +1,9 @@
-import { interactionSpecificationSchema } from '@offscreen/contracts/interactions';
+import {
+  interactionSpecificationSchema,
+  type InteractionSpecification,
+} from '@offscreen/contracts/interactions';
 import { passageContentSchema } from '@offscreen/contracts/stories';
+import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import { z } from 'zod';
 
 const sha256HexSchema = z.string().regex(/^[a-f0-9]{64}$/);
@@ -52,6 +56,19 @@ export const writerMissionSceneScopeOpeningSchema = z.strictObject({
   kind: z.literal('opening'),
   reservedStoryId: z.uuid(),
   reservedFirstPassageId: z.uuid(),
+});
+
+export const writerMissionSceneScopeContinuationSchema = z.strictObject({
+  kind: z.literal('continuation'),
+  baseSceneSequence: z.number().int().nonnegative(),
+  basePassageId: z.uuid(),
+  baseCheckpointHash: sha256HexSchema,
+  baseRootHash: sha256HexSchema,
+  baseRootRevision: z.number().int().positive(),
+  baseNarrativeRevision: z.number().int().positive(),
+  baseCampaignStateRevision: z.number().int().nonnegative(),
+  controllingIntentOrReceiptId: z.uuid(),
+  scenarioKind: z.enum(['narrative-only', 'mechanical']),
 });
 
 /** v1 capture bytes require a UUID owner; v2 opening allows Better Auth text ids. */
@@ -132,9 +149,28 @@ export const writerMissionCaptureV2OpeningSchema = z
     }
   });
 
+export const writerMissionCaptureV3ContinuationSchema = z
+  .strictObject({
+    version: z.literal('writer-mission.v3'),
+    ownerId: writerMissionV2OpeningOwnerIdSchema,
+    ...writerMissionCaptureCommonFields,
+    sceneScope: writerMissionSceneScopeContinuationSchema,
+  })
+  .superRefine((capture, context) => {
+    refineWriterMissionCaptureDuplicates(capture, context);
+    if (capture.sceneScope.baseRootHash !== capture.libraryRootHash) {
+      context.addIssue({
+        code: 'custom',
+        path: ['sceneScope', 'baseRootHash'],
+        message: 'Continuation baseRootHash must match libraryRootHash',
+      });
+    }
+  });
+
 export const writerMissionCaptureSchema = z.discriminatedUnion('version', [
   writerMissionCaptureV1Schema,
   writerMissionCaptureV2OpeningSchema,
+  writerMissionCaptureV3ContinuationSchema,
 ]);
 
 export type WriterMissionCapture = z.infer<typeof writerMissionCaptureSchema>;
@@ -204,6 +240,107 @@ function refineWriterSceneProposalDuplicates(
   }
 }
 
+type WriterSceneProposalV3Scene = {
+  interaction: InteractionSpecification | null;
+  authoredIntents: z.infer<typeof narrativeIntentPlanSchema>[];
+};
+
+function refineWriterSceneProposalV3AuthoredIntents(
+  proposal: { scene: WriterSceneProposalV3Scene },
+  context: z.RefinementCtx,
+): void {
+  const { interaction, authoredIntents } = proposal.scene;
+  if (interaction === null) {
+    if (authoredIntents.length > 0) {
+      context.addIssue({
+        code: 'custom',
+        path: ['scene', 'authoredIntents'],
+        message:
+          'Authored narrative intents require a choice interaction binding',
+      });
+    }
+    return;
+  }
+
+  if (interaction.kind === 'choice.v1') {
+    const optionIds = interaction.options.map((option) => option.id);
+    const intentKeys = authoredIntents.map((intent) => intent.key);
+    if (new Set(intentKeys).size !== intentKeys.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['scene', 'authoredIntents'],
+        message: 'Authored narrative intent keys must be unique',
+      });
+    }
+    for (const optionId of optionIds) {
+      const matches = authoredIntents.filter((intent) => intent.key === optionId);
+      if (matches.length !== 1) {
+        context.addIssue({
+          code: 'custom',
+          path: ['scene', 'authoredIntents'],
+          message: `Each choice option must have exactly one authored intent (missing or duplicate for ${optionId})`,
+        });
+      }
+    }
+    for (const intent of authoredIntents) {
+      if (!optionIds.includes(intent.key)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['scene', 'authoredIntents'],
+          message: `Authored intent key is not an offered choice option (${intent.key})`,
+        });
+      }
+    }
+    return;
+  }
+
+  if (authoredIntents.length > 0) {
+    context.addIssue({
+      code: 'custom',
+      path: ['scene', 'authoredIntents'],
+      message: 'Authored narrative intents are only allowed for choice.v1 interactions',
+    });
+  }
+}
+
+function refineWriterSceneProposalV3DocumentChanges(
+  proposal: {
+    documentChanges: {
+      documentId: string;
+      path: string;
+    }[];
+  },
+  context: z.RefinementCtx,
+): void {
+  const documentIds = proposal.documentChanges.map((change) => change.documentId);
+  if (new Set(documentIds).size !== documentIds.length) {
+    context.addIssue({
+      code: 'custom',
+      path: ['documentChanges'],
+      message: 'Document change documentId values must be unique',
+    });
+  }
+  const paths = proposal.documentChanges.map((change) => change.path);
+  if (new Set(paths).size !== paths.length) {
+    context.addIssue({
+      code: 'custom',
+      path: ['documentChanges'],
+      message: 'Document change paths must be unique',
+    });
+  }
+}
+
+const writerSceneDocumentChangeV3Schema = z.strictObject({
+  documentId: z.uuid(),
+  path: z.string().trim().min(1).max(240),
+  stagedObjectHash: sha256HexSchema,
+  changeKind: z.enum(['adopt', 'discard']),
+  expectedBaseObjectHash: sha256HexSchema,
+  visibility: z.enum(['public', 'private']),
+  authority: z.enum(['canon', 'possibility']),
+  sourceEvidenceRefs: z.array(z.number().int().nonnegative()).max(8),
+});
+
 export const writerSceneProposalV1Schema = z
   .strictObject({
     version: z.literal(1),
@@ -222,9 +359,27 @@ export const writerOpeningSceneProposalV2Schema = z
   })
   .superRefine(refineWriterSceneProposalDuplicates);
 
+export const writerSceneProposalV3Schema = z
+  .strictObject({
+    version: z.literal(3),
+    ...writerSceneProposalCommonFields,
+    scene: z.strictObject({
+      content: passageContentSchema,
+      interaction: interactionSpecificationSchema.nullable(),
+      authoredIntents: z.array(narrativeIntentPlanSchema).max(8),
+    }),
+    documentChanges: z.array(writerSceneDocumentChangeV3Schema).max(8),
+  })
+  .superRefine((proposal, context) => {
+    refineWriterSceneProposalDuplicates(proposal, context);
+    refineWriterSceneProposalV3AuthoredIntents(proposal, context);
+    refineWriterSceneProposalV3DocumentChanges(proposal, context);
+  });
+
 export const writerSceneProposalSchema = z.discriminatedUnion('version', [
   writerSceneProposalV1Schema,
   writerOpeningSceneProposalV2Schema,
+  writerSceneProposalV3Schema,
 ]);
 
 export type WriterSceneProposal = z.infer<typeof writerSceneProposalSchema>;
@@ -232,6 +387,8 @@ export type WriterSceneProposal = z.infer<typeof writerSceneProposalSchema>;
 export type WriterOpeningSceneProposal = z.infer<
   typeof writerOpeningSceneProposalV2Schema
 >;
+
+export type WriterSceneProposalV3 = z.infer<typeof writerSceneProposalV3Schema>;
 
 export const writerRoundDecisionSchema = z
   .discriminatedUnion('kind', [
@@ -288,7 +445,11 @@ export function validateWriterRoundDecisionForCapture(
   }
 
   const expectedProposalVersion =
-    capture.version === 'writer-mission.v1' ? 1 : 2;
+    capture.version === 'writer-mission.v1'
+      ? 1
+      : capture.version === 'writer-mission.v2'
+        ? 2
+        : 3;
   if (decision.proposal.version !== expectedProposalVersion) {
     throw new Error('writer_proposal_version_mismatch');
   }

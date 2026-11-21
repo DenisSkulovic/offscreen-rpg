@@ -10,6 +10,11 @@ import {
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
+import {
+  isImmediateActionPlan,
+  isNarrativeIntentPlanValue,
+  parseStoredActionPlan,
+} from '../campaign/stored-action-plan';
 import { offerSchema } from '@offscreen/game/offers';
 import { worldObligationSchema } from '@offscreen/game/world-obligations';
 import { z } from 'zod';
@@ -235,13 +240,22 @@ function remapOfferPayloadBody(
   const plansValue = record.plans;
   if (plansValue !== undefined && plansValue !== null) {
     const unwrapped = unwrapVersionedPayload(plansValue);
-  const parsedPlans = z.array(immediateActionPlanSchema).safeParse(unwrapped);
-    if (parsedPlans.success) {
-      record.plans = remapImmediatePlans(parsedPlans.data, remapChild);
+  if (Array.isArray(unwrapped)) {
+    const parsedPlans = unwrapped.map((entry) => parseStoredActionPlan(entry));
+    const mechanicalOnly = parsedPlans.every(isImmediateActionPlan);
+    if (mechanicalOnly) {
+      record.plans = remapImmediatePlans(
+        parsedPlans.filter(isImmediateActionPlan),
+        remapChild,
+      );
     } else {
       assertNoUnmappedExecutionIds(unwrapped, sourceIds);
-      record.plans = plansValue;
+      record.plans = parsedPlans;
     }
+  } else {
+    assertNoUnmappedExecutionIds(unwrapped, sourceIds);
+    record.plans = plansValue;
+  }
   }
   assertNoUnmappedExecutionIds(record, sourceIds);
   return record;
@@ -380,6 +394,9 @@ function remapActiveActionVersionedField(
         }
       }
       if (kind === 'plan') {
+        if (isNarrativeIntentPlanValue(body)) {
+          return parseStoredActionPlan(body);
+        }
         const parsed = immediateActionPlanSchema.safeParse(body);
         if (parsed.success) {
           return remapImmediatePlans([parsed.data], remapChild)[0];

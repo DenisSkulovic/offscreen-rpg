@@ -15,6 +15,10 @@ import type {
   storyPassage,
 } from '@offscreen/db/story-schema';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
+import {
+  isNarrativeIntentPlanValue,
+  parseStoredActionPlan,
+} from '../campaign/stored-action-plan';
 import { offerSchema } from '@offscreen/game/offers';
 import { ForkStateError } from './fork-state.js';
 
@@ -180,7 +184,13 @@ function extractOfferPlans(
   }
   const unwrapped = unwrapVersioned(plans);
   if (Array.isArray(unwrapped)) {
-    return unwrapped.map((plan) => immediateActionPlanSchema.parse(plan));
+    return unwrapped.map((plan) => {
+      const parsed = parseStoredActionPlan(plan);
+      if (isNarrativeIntentPlanValue(parsed)) {
+        return parsed;
+      }
+      return immediateActionPlanSchema.parse(plan);
+    });
   }
   return unwrapped;
 }

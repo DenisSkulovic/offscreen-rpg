@@ -42,4 +42,6 @@ export * from './writer-scene-proposal';
 export * from './launch-source';
 export * from './launch-admission';
 export * from './launch-publication';
+export * from './writer-continuation';
+export * from './writer-continuation-publication';
 export * from './scripted-launch-writer';

@@ -23,6 +23,7 @@ import {
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
+import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import {
   actionAvailable,
   initialActivityProgress,
@@ -47,9 +48,13 @@ import {
   campaignSituationAuthorization,
   requireCampaign,
   loadOfferPlan,
+  isImmediateActionPlan,
+  isNarrativeIntentPlan,
+  isNarrativeIntentPlanValue,
   processOccurrenceAvailable,
   recordActivityEvent,
 } from './persistence';
+import { admitNarrativeIntentAction } from './narrative-intent-action';
 import { scheduleActivity } from './activities';
 import {
   recordActionExecutionEvent,
@@ -164,6 +169,66 @@ export async function admitCampaignActionInTransaction(
   if (pendingConsequence) {
     throw new StoryError('conflict');
   }
+  const [existingExecution] = await tx
+    .select()
+    .from(gameActionExecution)
+    .where(eq(gameActionExecution.operationId, operationId));
+  if (
+    existingExecution?.storyId === current.id &&
+    isNarrativeIntentPlanValue(existingExecution.plan)
+  ) {
+    const parsedPlan = narrativeIntentPlanSchema.parse(existingExecution.plan);
+    const replayKey = path[path.length - 1];
+    if (
+      existingExecution.actionKey !== replayKey ||
+      parsedPlan.key !== replayKey ||
+      existingExecution.offerId !== offerId
+    ) {
+      throw new StoryError('conflict');
+    }
+    return;
+  }
+  const [preState] = await tx
+    .select()
+    .from(campaign)
+    .where(eq(campaign.storyId, current.id));
+  if (!preState) {
+    throw new StoryError('conflict');
+  }
+  if (preState.offer != null) {
+    const preOffer = campaignOffer(preState);
+    if (preOffer.id === offerId) {
+      const preAuthorization = campaignSituationAuthorization(preState);
+      if (preAuthorization.offerId === preOffer.id) {
+        const preSelection = selectOfferAction(preOffer, path);
+        if (preSelection.state === 'incomplete') {
+          throw new StoryError('invalid');
+        }
+        if (preSelection.state === 'selected') {
+          const storedPlan = await loadOfferPlan(tx, {
+            storyId: current.id,
+            offerId: preOffer.id,
+            narrativeRevision: current.revision,
+            actionKey: preSelection.actionKey,
+          });
+          if (storedPlan && isNarrativeIntentPlan(storedPlan)) {
+            await admitNarrativeIntentAction(
+              tx,
+              current,
+              preState,
+              validatedRequest,
+              preSelection.actionKey,
+              storedPlan,
+              preOffer,
+              trustedSource,
+              request,
+            );
+            return;
+          }
+        }
+      }
+    }
+  }
   const state = await requireCampaign(tx, current.id);
   const offer = campaignOffer(state);
   const authorization = campaignSituationAuthorization(state);
@@ -188,6 +253,7 @@ export async function admitCampaignActionInTransaction(
   });
   if (
     !definition ||
+    !isImmediateActionPlan(definition) ||
     !immediateActionAvailable(
       campaignCharacter(state),
       campaignStoryFacts(state),
@@ -210,6 +276,7 @@ export async function admitCampaignActionInTransaction(
     });
     if (
       !successor ||
+      !isImmediateActionPlan(successor) ||
       successor.resolution.kind !== 'process' ||
       authorization.activityAccess.kind !== 'selected' ||
       !authorization.activityAccess.actionKeys.includes(successor.key) ||
@@ -675,6 +742,7 @@ export async function admitPreapprovedWithdrawal(
 
     if (
       !fallbackPlan ||
+      !isImmediateActionPlan(fallbackPlan) ||
       !isDeclineHarmlessInvitation(fallbackPlan) ||
       canonicalPlanFingerprint(fallbackPlan, row.fallbackActionKey) !==
         row.sourceFingerprint
