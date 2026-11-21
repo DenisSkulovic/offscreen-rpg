@@ -73,7 +73,7 @@ flowchart LR
 
 ## 🧭 Right now and next decision
 
-**Current next wave:** prepare/reconcile [WR04 independent research](../../changes/open/2026-11-21--wr04-delegated-writer-research/POST-P3-EXECUTION.md) and [WR08 Play/reentry](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/POST-P3-EXECUTION.md). Both are **conditional planner packets**, not yet verified Ready against all landed P3 interfaces. Final bulk architecture cleanup follows stabilized Writer/Play interfaces.
+**Current next wave:** [WR04 independent research](../../changes/open/2026-11-21--wr04-delegated-writer-research/TASKS.md) and [WR08 complete Play/reentry](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/TASKS.md) are **source-reconciled, owner-commissioned PLANNER-READY (with explicit limits)**. The earlier blocked packets were repaired; independent G0–G7 review is in each `PROOF.md`. They have **NOT** been implemented or tested yet. WR04 T01–T03 may run beside WR08, but WR04 T04 must wait for WR08's shared Worker/Workflow integration. Important current discovery: WR07B first scene contains no executable offer and P3-A queues a Writer continuation without a registered Worker wake, both now explicitly included in WR08, without real provider spend. Final bulk architecture cleanup follows stabilized Writer/Play interfaces.
 
 **Most important next milestone:** a user can start a story, make two *real* choices and return to subsequent scenes in the browser using the same trusted backend, with honest pending/error states. A scripted engine test alone is not this milestone.
 
