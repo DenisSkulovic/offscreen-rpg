@@ -10,4 +10,15 @@
 
 **Selected fix:** A single complete runtime method-capability type guard at the existing scene-checkpoint adapter boundary, reused by fork guard, checking **all required methods** before narrowing. No opaque dynamic proxy, automatic fallback store or unsafe widening. Preserve `DocumentStore | object` compatibility and existing output/errors; missing capability must be refused **before any store read/write** and before publication/fork mutation. Do not alter checkpoint hashing, source ownership, v1/v2 fork behavior or SQL transaction choreography.
 
-**Proof:** provider-free pure guard negative tests plus existing fork/checkpoint/Library-v2 tests (disposable SQL only when authorized); no late TypeError, no wrong-story read, no silent missing canon. [Source](SOURCE-MAP.md) · [Execution](EXECUTION.md) · [Proof](PROOF.md) · [Tasks](TASKS.md).
+**Proof:** provider-free pure guard negative tests plus existing fork/checkpoint/Library-v2 tests (disposable SQL only when authorized); no late TypeError, no wrong-story read, no silent missing canon. ## Planned-impact.v1 (before implementation)
+
+| Owner | Disposition |
+| --- | --- |
+| Product | No gameplay or fork semantics change. |
+| Technical | Existing document-store/scene-checkpoint contract maintained, enforcement stronger for incomplete ports. |
+| Code and tests | Checkpoint capability guard, fork adapter check and normal/negative tests. |
+| Related status, maps and evidence | Story source map update if needed; actual historical-fork SQL proof recorded. |
+
+This is **planning**, not the post-implementation affected-claim closure ledger. The parent records actual outcomes and NOT RUN gaps at acceptance.
+
+[Source](SOURCE-MAP.md) · [Execution](EXECUTION.md) · [Proof](PROOF.md) · [Tasks](TASKS.md).

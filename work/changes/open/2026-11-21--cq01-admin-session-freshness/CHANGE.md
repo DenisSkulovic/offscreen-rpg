@@ -16,4 +16,15 @@
 
 **Ready gate:** exact application and API functions confirmed; normal and negative outcomes decided. **Done requires** new invalid/future-date negatives, existing valid/old tests, full affected typecheck and no privilege mint on refusal. **Security review:** ChatGPT checks the focused diff and evidence *before* the integration custodian joins. Tests NOT RUN by planner.
 
+## Planned-impact.v1 (before implementation)
+
+| Owner | Disposition |
+| --- | --- |
+| Product | No new user-facing behavior; preserve staff login freshness and denial. |
+| Technical | Existing identity/admin session contract; add explicit finite-time denial note only if missing. |
+| Code and tests | Application Admin session + API conversion + focused tests. |
+| Related status, maps and evidence | STATUS unchanged unless coverage/test evidence materially changes; denial audit preserved. |
+
+This is **planning**, not the post-implementation affected-claim closure ledger. The parent records actual outcomes and NOT RUN gaps at acceptance.
+
 [Source map](SOURCE-MAP.md) · [Execution](EXECUTION.md) · [Proof](PROOF.md) · [Composer tasks](TASKS.md).

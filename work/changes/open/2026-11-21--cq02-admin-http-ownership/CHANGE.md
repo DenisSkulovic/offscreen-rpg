@@ -14,4 +14,15 @@
 
 **Proof:** imports resolve under NodeNext, DI uses the same symbol instances/class token, original API tests still exercise normal + denied paths, no copied second grant evaluator. Reviewer compares control flow with old code. **Do not use “smaller file” as sole acceptance.**
 
+## Planned-impact.v1 (before implementation)
+
+| Owner | Disposition |
+| --- | --- |
+| Product | No product change; all routes, staff rights and status codes preserved. |
+| Technical | Existing Admin HTTP/permission contract unchanged; source map only. |
+| Code and tests | Admin actor/error extraction, route imports, focused integration tests. |
+| Related status, maps and evidence | API source README update if route owner changes; evidence truthful. |
+
+This is **planning**, not the post-implementation affected-claim closure ledger. The parent records actual outcomes and NOT RUN gaps at acceptance.
+
 [Source](SOURCE-MAP.md) · [Execution](EXECUTION.md) · [Proof](PROOF.md) · [Tasks](TASKS.md).

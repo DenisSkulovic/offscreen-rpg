@@ -8,6 +8,19 @@
 
 **History:** [monthly Change ledger](ledger/2026-11.md) · [short-lived packet archive](archive/README.md) · [full historical catalog as it stood before pruning](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/README.md). For exact archived source, use that Git revision and the ledger's program/leaf; historical narratives should not be copied into this active index.
 
+## Code craftsmanship and source-risk remediation (2026-11-21)
+
+[Source-grounded execution schedule and review gates](CODE-CRAFT-REMEDIATION-2026-11-21.md). These packets are **not globally selected**; inspect each Change's own readiness and active worktree ownership before commission. Cross-reference the existing [code-quality standard](../../.agents/rules/code-quality.md).
+
+| Change | Prepared scope | Dependency |
+| --- | --- | --- |
+| [CQ01](open/2026-11-21--cq01-admin-session-freshness/CHANGE.md) | P0 staff session freshness rejects invalid/future timestamp | First; security review |
+| [CQ02](open/2026-11-21--cq02-admin-http-ownership/CHANGE.md) | Extract Admin HTTP auth/error owners | **After CQ01** |
+| [CQ03](open/2026-11-21--cq03-play-surface-readability/CHANGE.md) | Play UI readable phase/typing boundaries | Can parallel CQ01 when WR08/UI owner disjoint |
+| [CQ04](open/2026-11-21--cq04-document-store-capability-guards/CHANGE.md) | Complete runtime checkpoint/fork store port validation | Can parallel CQ01 when WR05/WR06 source disjoint |
+
+Deep Writer-loop, capture/materialization, provider/budget/publication and deployment-environment concerns remain **ChatGPT planning candidates, not Cursor-ready Changes**. Do not fabricate a second queue or execute a candidate automatically.
+
 ## Open packets
 
 ### Distributed gameplay, Kubernetes and developer experience

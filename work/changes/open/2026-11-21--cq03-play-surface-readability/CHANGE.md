@@ -12,4 +12,15 @@
 
 **Out of scope:** UX redesign, typography/theme, changing disabled rules, new React state machine/context, browser auth, server contracts, WR08 new features. No product doc change: current intended behavior remains the same; source-adjacent Play map may be updated for new helpers.
 
-**Done:** user interactions, state labels, no-request-on-Journal, disabled choices, safe retries and reduced-mount behavior remain covered. Changed-file format/quality lint + web typecheck + focused Vitest run; clearly state NOT RUN for anything unavailable. [Source](SOURCE-MAP.md) · [Algorithm](EXECUTION.md) · [Proof](PROOF.md) · [Tasks](TASKS.md).
+**Done:** user interactions, state labels, no-request-on-Journal, disabled choices, safe retries and reduced-mount behavior remain covered. Changed-file format/quality lint + web typecheck + focused Vitest run; clearly state NOT RUN for anything unavailable. ## Planned-impact.v1 (before implementation)
+
+| Owner | Disposition |
+| --- | --- |
+| Product | No user-visible change; Play navigation and choices identical. |
+| Technical | Existing browser Query/command boundary unchanged. |
+| Code and tests | PlayScene pure status + journey UI extraction, narrowed offer, focused UI tests. |
+| Related status, maps and evidence | Play source README after ownership movement; no invented UI acceptance. |
+
+This is **planning**, not the post-implementation affected-claim closure ledger. The parent records actual outcomes and NOT RUN gaps at acceptance.
+
+[Source](SOURCE-MAP.md) · [Algorithm](EXECUTION.md) · [Proof](PROOF.md) · [Tasks](TASKS.md).
