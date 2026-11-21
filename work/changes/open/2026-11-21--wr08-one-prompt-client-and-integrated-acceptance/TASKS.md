@@ -1,11 +1,51 @@
-# WR08 | implementation tasks (planner handoff)
-**Execution:** after WR04+WR06+WR07 are integrated, on `undertaking/storyteller-workshop`. **Decision:** new direct Play replaces mandatory wizard; old saved draft content gets a safe transition where relevant. UI renders truth from durable launch and historical selectors; it never manufactures completion.
-## T01 | Direct create + prepared Play
-**DEPTH=PATCH-M.** Sources: `apps/web/src/features/stories/{draft-editor,draft-content,opening-preview}.tsx` (check actual extensions), route page and current API client. One prompt textarea + optional hints, prepared Play/Customize cards. No mandatory body/name/rules/profile or review wizard. Preserve accessibility/responsive layout.
-## T02 | Durable launch progress and recovery
-**DEPTH=PATCH-M.** Sources: `apps/web/src/features/stories/{use-opening-generate,use-start-story}.ts` and live client wrappers. Poll/subscription per current API, show pending/preparing/composing/ready/held/failed/uncertain distinctly. Reconnect by idempotency ID; ready opens full first scene. No automatic paid retry on unknown. Test stale/error/denial.
-## T03 | Historical source/state + fork experience
-**DEPTH=PATCH-L.** Sources: `apps/web/src/features/play/{view,history}.tsx`, `apps/web/src/features/play/ui/campaign-play.tsx`. Render exact historic passage/provenance/state, visibly distinguish current/historic, scope document reads, fork scene and execute inherited choice. Never show private Storyteller notes to player. Remove dead wizard hooks only after parity.
-## T04 | Integrated truthful acceptance
-**DEPTH=PATCH-L.** Run authenticated scripted-provider local end-to-end: authored bundle, `BAH`, conscious galaxy, long 200-scene recall with skill, Workdesk revisions, **independent** child research, selected scene, meaningful action, historic fork of active state, child continuation while parent unchanged. Test negative ownership/source root, uncertain provider, missing checkpoint, lost response, no stray timer, double spend. Separate scripted functionality from independently funded creative-quality evaluation. Commands `pnpm --filter @offscreen/web test`, `pnpm --filter @offscreen/web typecheck`, app integration and authorized stack smoke.
-**Stop:** backend invariant is missing; send precise failure to its owner WR02–07, do not fake client workaround. **Receipt:** UI/API/DB evidence, scenarios, commands, negative cases, NOT-RUN; archive only after full journey.
+# WR08 | bounded Composer execution queue (planner revision 2026-11-21)
+
+**Branch:** `undertaking/storyteller-workshop` ONLY. **Code baseline inspected:** `f2e0b237` committed remote source; Cursor local dirty tree unknown. **Current selection:** not selected; Proposed, dependent on predecessors. **Model:** Composer 2.5 Standard; `DEPTH=PATCH` for one task only. **Read:** this T-ID, named 2–4 source files and exact relevant [EXECUTION](EXECUTION.md) section. Parent may consult [SOURCE-MAP](SOURCE-MAP.md), [PROOF](PROOF.md) only when needed. **No full-repo exploration, redesign, provider spending, destructive DB, live cluster or automatically selecting successor Change.**
+
+**Execution sequence:** T01 → T02 → T03 → T04 → T05 → T06 → T07. Dispatch only one planner-ready T-ID with dependencies met. Each task is one cohesive mutation + focused test; parent owns integration, cross-task reconciliation, docs, archive. **If a path/algorithm contradicts the live worktree, STOP and report file:symbol + exact failed assumption; ChatGPT repairs the plan.** Do not 'investigate architecture' in Cursor. Task status reflects planning, not landed code or execution authorization.
+
+## T01 | Identify exact Next route and API hooks | PLANNER-BLOCKED: route files not yet mapped
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `apps/web/src/features/stories/draft-editor.tsx; apps/web/src/features/stories/use-start-story.ts (verify); apps/web/src/shared/api (locate exact files)`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Planner, not Cursor, must map current pages, hook names, query keys and WR07 route DTO after landing. No repo-wide Cursor reconnaissance; deliver verified hook/edit paths before enabling T02.
+
+**Positive test:** source-map review only; no code mutation. **Discriminating negative:** wrong assumed Next routes => stop/refresh packet. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T02 | Add typed launch/status API hooks | PLANNER-READY AFTER T01
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `apps/web/src/shared/api/query-keys.ts; verified WR07 API client module; verified use-start-story hook`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** One stable UUID per user Play action; PUT launch once, query GET status on reconnect; never automatic new paid operation for uncertain. Type all statuses/denials.
+
+**Positive test:** web hook tests with mocked exact responses. **Discriminating negative:** stale/lost HTTP and uncertain do not submit second Play. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T03 | Build one-prompt and prepared Play surface | PLANNER-READY AFTER T02
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `apps/web/src/features/stories/draft-editor.tsx; actual stories home route (T01); new launch UI module`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** New visible prepared Play/Customize and freeform textarea; no mandatory name/role/body/rules/review; use T02 hooks for status and direct first-scene navigation. Preserve authenticated responsive design.
+
+**Positive test:** web UI tests for BAH/galaxy and preset. **Discriminating negative:** compulsory wizard/preview path not triggered. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T04 | Render durable statuses and recovery | PLANNER-READY AFTER T03
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `new launch UI module; T02 status hook; apps/web/src/shared/api/query-keys.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Render pending/preparing/composing/held/failed/uncertain/ready distinctly, reconnect to operation ID, only navigate on selected scene; no raw chain-of-thought or private notes.
+
+**Positive test:** reload/reconnect and status UI tests. **Discriminating negative:** uncertain neither infinite spinner nor paid auto retry. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T05 | Wire exact history scene and active fork view | PLANNER-READY AFTER T04
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `apps/web/src/features/play/history.tsx:StoryHistoryView; apps/web/src/features/play/ui/campaign-play.tsx; apps/web/src/shared/api/story-historical-query.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Display as-of scene/source provenance and state distinct from live; invoke WR06 fork by selected immutable checkpoint and open inherited child choice. Keep player-only source filter.
+
+**Positive test:** web history/fork/ownership tests. **Discriminating negative:** parent scene80 fact and private note absent in child scene37. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T06 | Retire mandatory wizard only after migration check | PLANNER-READY AFTER T05
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `apps/web/src/features/stories/draft-editor.tsx; opening-preview.tsx; draft-content.ts; verified route/hook owners from T01`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Replace mandatory old creation path; retain safe route to genuine saved drafts if any, remove dead required form hooks only after equivalent Play passes. No unrelated aesthetics refactor.
+
+**Positive test:** web unit/typecheck + draft compatibility test. **Discriminating negative:** saved draft not destroyed, no extra Start click. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## T07 | Run actual integrated scripted acceptance | PLANNER-READY AFTER T06
+
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `apps/web/src/features/play/ui/campaign-play.tsx; packages/application/test/long-story-memory-evaluation.test.mjs; appropriate API E2E fixture`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Run authenticated scripted journey: prompt/preset→WR03 tools/skill/Workdesk→WR04 two contexts→WR05 scene→action→WR06 historic active fork→child continuation. Capture HTTP/DB/CAS receipts, provider_calls=0; separately note creative quality not tested.
+
+**Positive test:** pnpm --filter @offscreen/web test; pnpm --filter @offscreen/web typecheck; app/API fixture. **Discriminating negative:** wrong owner, corrupt checkpoint, double submit, stale root or unexpected timer fails. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
+
+## Closure gate
+
+Task completion does not close Change. Parent must run designated [PROOF](PROOF.md) matrix, reconcile actual canonical docs/status/ledger, integrate into `undertaking/storyteller-workshop`, delete temporary worktree only after successful reconciliation and archive when accepted. Do **not** merge to `main` or launch adjacent WR Changes automatically. **Planner-ready is not proof of implementation correctness.**
