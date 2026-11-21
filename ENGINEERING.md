@@ -83,6 +83,16 @@ pnpm repo:snapshot:chatgpt
 
 The [snapshot runbook](docs/runbooks/chatgpt-design-snapshot.md) explains the default **required wiki index**, SHA manifest, excluded historical links, dirty-worktree provenance and opt-out `--no-index`. The snapshot is a frozen view: reconcile against fresh GitHub commits before publishing, and never treat uncommitted edits as included.
 
+## Local commands and developer checks
+
+For day-to-day code changes, `pnpm build`, `pnpm typecheck`, and `pnpm test` remain the **full-monorepo** Turbo commands. When you want a conservative scope estimate between two Git revisions, use read-only affected planning:
+
+```bash
+pnpm repo:affected --base <ancestor-sha> [--head <sha>] [--tasks build,typecheck,test] [--run]
+```
+
+By default the command prints a deterministic JSON plan only; add `--run` to execute the selected Turbo tasks. `--tasks` is a comma list from `build`, `typecheck`, `test`, and `test:fast` (default: `build,typecheck,test`). The tool compares `base`..`head` (default `HEAD`), uses Turborepo `--affected` when the diff is source-scoped and Git history is trustworthy, and **falls back to the full selected task set** on a dirty or untracked tree, missing or non-ancestor refs, root toolchain or lockfile changes, unknown non-documentation paths, or unreliable Turbo dry-run output. Documentation-only diffs select zero code tasks; docs and maintenance gates still apply separately.
+
 ## 6. Benchmark fancy tools rather than assuming they help
 
 The repository does not mandate a vector database or graph service. The November 2026 HAR03 local study tested Grepai and QMD and reported **significant misses, stale-index/freshness concerns and no live agent Stage B test**. It did **not** adopt either vendor as a default. Those comparison runners are removed from HEAD. The [trial receipt](work/changes/archive/2026-11/retrieval/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) and the [experiment register](research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) keep the result.
