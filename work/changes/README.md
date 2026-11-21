@@ -18,7 +18,7 @@
 | [MA09: Authority/Writer dependency inversion](open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) | **PLANNER-BLOCKED until WR09 and MA08 integration**; exact typed collaborator, existing transaction boundaries and failure paths planned; fresh source re-audit required before Cursor commission. |
 | [MA10: Application compatibility retirement](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | **READY, independent parallel lane A** after MA08; preserve/migrate all 112 tests into existing API Integration workspace, delete Application and executable legacy paths. Graph instrumentation is MA11; deep SCC/authority inversion later. |
 
-**Safe sequence:** MA07 integrated at `4168db58` → MA08 Done on the undertaking → WR09 runtime stabilization → MA09 → MA10 → separate final undertaking acceptance. These packets are not a blanket authorization for Cursor to select their own successors.
+**Selected near-term DAG:** MA07 + MA08 Done → **parallel MA10 / WR09A / MA11** → one custodial integration → WR09B Worker provider runtime → MA09 authority/Writer inversion and final graph-export closure → full product/architecture release gate. No automatic self-selected successor work or real paid provider send.
 
 ## Code craftsmanship implementation packets
 
