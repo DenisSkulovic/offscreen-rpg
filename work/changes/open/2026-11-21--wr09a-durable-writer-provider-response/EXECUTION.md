@@ -1,0 +1,21 @@
+# WR09A | design selection and state ordering
+
+## New data contract
+`response_object_hash text NULL CHECK (response_object_hash IS NULL OR response_object_hash ~ '^[0-9a-f]{64}$')` on `storyteller_writer_step`; migration 0023 and schema. Preserve existing `result_cas_hash` as raw SHA256 for **all old and new model results**, and as CAS hash for **tool summary rows** as before. Never repurpose it globally, because P3B and Writer tool replay depend on it. `responseObjectHash` is only for an actual delivered model response, never tool steps.
+
+New structured CAS object `writer-provider-response.v1`: exact immutable IDs/pins + `serializedResponse`; private noncanonical lore envelope documentId is the attempt UUID; deterministic envelope means duplicate same-attempt/same-output writes deduplicate naturally. Reject size beyond Documents limit rather than truncate. Store before step's terminal settled state; validate read-back and digest.
+
+## Strict adapter vs legacy shim
+Keep `advanceWriterMissionProviderStep` behavior for existing scripted/P3B compatibility and tests; it is **not** an allowed production live Writer route and must be clearly marked legacy/test scope. Implement `advanceDurableWriterMissionProviderStep(database, storage, input, transport)` by extracting a shared internal custody state machine (reservation→dispatched→outcome) with an explicit injected **delivered-response persistence strategy**, NOT by copying and maintaining two independent implementations of reservation or accounting. Strict adapter chooses CAS-first/read-back/SQL pointer semantics for real providerPolicy; missing/invalid storage or pin rejects pre-send. Scripted path retains raw SHA and no object pointer. Keep existing attempt UUID, revision CAS and `createStorytellerBudget` ledger; do not mint another.
+
+## Fail-safe transaction ordering
+1. Validate strict credentials/policy (transport side) and store existence, expectedWireSha, real mode, bounded dimensions. Persist/verify frozen request before spend. Reserve existing funding and attempt; mark possibly-dispatched using existing SQL transaction and operation fence.
+2. Send **once** through injected fake transport. On unknown outcome, keep uncertain and do not reset reservation. On pre-send failure, confirm unsent; on known sent failure, settle reported usage once and hold.
+3. On delivered, validate exact wire digest and nonnegative usage/telemetry; put private structured response CAS; immediately read it back and verify SHA/schema and pinned IDs; bounded size. **Do not let raw prose into SQL, logs or Temporal state.**
+4. Store pointer with CAS step revision check and attempt ID under locked SQL. Settle the existing accounting attempt exactly once, then ensure final `result-settled` state is consistent with the pointer/attempt settlement. If those can't be atomically co-committed because budget.settle opens its own transaction, use distinct durable intermediate step state or keep `dispatched` until both are observed, and regard crashes as uncertain; **never** publish/retry from partial state. The invariant is stronger than avoiding a harmless orphaned CAS object.
+5. Strict replay reader uses pointer after settled state, not transport. On missing or inconsistent CAS, refuse and report held/unavailable; **do not** change attempt charge or automatically resend.
+6. Inject `apiKey:string` into `createWriterRoundTransport`. Validate non-empty string without logging value. Do not introduce a default credential. Existing unit fixtures supply a disposable fake key and fake fetch only. No Worker wiring or environment secret change in WR09A.
+
+**Not selected:** invent second provider-attempt ledger; change Story Authority tables; automatic resend for interrupted send; call a live endpoint; make exposed model response part of player records; place private objects into Shared Library. **Open live integration belongs to WR09B**.
+
+**Hard stop / planner return:** if existing `budget.settle` cannot safely be reused with durable CAS+SQL step state, record specific attempt-state and transaction conflict and return to ChatGPT. Do not silently simulate atomicity or duplicate settle in a new helper. A ready change here is defined by no-double-send/charge safety, not by minimizing SQL phases.
