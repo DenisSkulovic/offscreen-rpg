@@ -236,7 +236,7 @@ function main() {
     throw new Error('Unknown argument. Usage: pnpm repo:brief [--checkpoint] [--json] [--health]');
   }
   const checkout = collectCheckout(root);
-  const { orientation, work } = loadRoute();
+  const { orientation, work } = loadRoute(args.includes('--full'));
   const wantCheckpoint = args.includes('--checkpoint');
   const checkpoint = wantCheckpoint ? checkpointFor(work) : undefined;
   const health = args.includes('--health') ? maintenanceReport() : null;
