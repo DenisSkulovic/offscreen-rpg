@@ -4,7 +4,7 @@ All commands from repo root except where noted. Build packages in dependency ord
 
 | Boundary | Positive | Negative | Source/test anchor |
 | --- | --- | --- | --- |
-| Zod holds | four valid kinds accepted; prior schemas same ref/export | duplicate owner, second decision, >20, unknown kind rejected | `contracts/test/campaign-holds.test.ts`; `application/src/campaign/holds.ts` |
+| Zod holds | four valid kinds accepted; unchanged schema; old campaign re-export strict identity checked only by Application's compatibility test | duplicate owner, second decision, >20, unknown kind rejected | `contracts/test/campaign-holds.test.ts`; `application/src/campaign/holds.ts` |
 | Admin exports | same named public exports via `@offscreen/admin` and old alias | `AdminSessionError` and token/session/class factories must be `===`, no duplicate implementation | `application/test/admin-compat.test.mjs` |
 | Admin unit behavior | seven original unit suites run relocated | original negative grant/session/projection tests still execute, not merely compile | `packages/admin/test/admin-*.test.mjs` |
 | HTTP composition | app/controller/actor/errors import Admin directly | exception mapping, stale session and tenant privacy denial unchanged | `apps/api/src/modules/admin/*`; existing disposable integration suites |
