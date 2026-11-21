@@ -35,7 +35,7 @@
 
 - `obs00-b-current-authority-loader.integration.test.mjs`, `obs00-b-dispatch-authority.integration.test.mjs`, `saved-repair-plan.integration.test.mjs`, `saved-repair-apply.integration.test.mjs`: all use `createRequire(new URL('../../db/package.json', import.meta.url))`. After move replace `../../db/package.json` with `../../../packages/db/package.json`.
 - Both `obs00-b-*.integration.test.mjs` tests use `new URL('../../db/migrations', import.meta.url)`: replace with `../../../packages/db/migrations`.
-- `eng03-lock-measurement.live.test.mjs`: `../../docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md` → `../../../docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md`, checking actual document existence.
+- `eng03-lock-measurement.live.test.mjs` uses `join(process.cwd(),'../../docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md')`, **NOT** an import-meta-relative path. Preserve the literal `../../docs/**` and run with `cwd=tools/api-integration` (same two-level workspace depth as original `packages/application`); then the output remains inside repo `docs/**`. Do not change it to `../../../docs`, which would escape the repository. This live evidence writer is explicitly gated.
 - `delegated-decision.test.mjs`: `../src/campaign/delegated-decision.ts` → `../../../packages/story-engine/src/campaign/delegated-decision.ts`.
 - `saved-repair-apply.integration.test.mjs`: `../src/storyteller/saved-repair-apply.ts` → `../../../packages/story-engine/src/storyteller/saved-repair-apply.ts`.
 - `saved-response-inspection.test.mjs`: `../src/storyteller/saved-response-inspection.ts` → `../../../packages/story-engine/src/storyteller/saved-response-inspection.ts`.
