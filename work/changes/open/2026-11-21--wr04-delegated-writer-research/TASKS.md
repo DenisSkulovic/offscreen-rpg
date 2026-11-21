@@ -10,13 +10,13 @@
 
 **Positive test:** focused contract parser tests. **Discriminating negative:** child requesting wider scope/budget or recursion rejected. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
 
-## T02 | Reserve total child funds before dispatch | PLANNER-BLOCKED UNTIL WR03 MISSIONS LAND
+## T02 | Reserve total child funds before dispatch | PLANNER-READY AFTER WR03 T02
 
-**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/application/src/storyteller/budget.ts; packages/db/src/schema/storyteller.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Planner refresh must name actual WR03 mission/step foreign keys and reservation method. Then add child reservation under parent budget lock, stable child ID and at-most-once dispatch admission; never unreserve uncertain spent budget on timeout.
+**MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/application/src/storyteller/budget.ts; packages/db/src/schema/storyteller.ts`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Use WR03's selected `storyteller_writer_mission` and `storyteller_writer_step` contract: add `storyteller_writer_child` PK(parentMissionId,childId), unique (parentMissionId,ordinal), with questionHash, immutable sourceRootHash, readOnlyTools, reservedMicrousd/tokens/rounds, consumed counters and state. Under `storytellerOperation` row lock and parent mission revision, reserve per-child slices within parent's remaining allowance; WR03 step engine uses contextId=childId and same parent chargeable operation, not a new spending pool. Never unreserve uncertain used budget on timeout.
 
 **Positive test:** disposable-DB two-child concurrency test. **Discriminating negative:** second reserve over remaining cap denied without provider call. **Stop:** source drift, unsupported authority, unowned migration, missing predecessor, unsafe operation or two focused attempts failing for an architectural reason; return exact evidence instead of changing design. **Receipt:** actual paths/commit, positive+negative test command/result, task IDs, source SHA, NOT-RUN, remaining risk and model/provider spend (zero unless separately authorized).
 
-## T03 | Execute independent child contexts | PLANNER-BLOCKED UNTIL T02
+## T03 | Execute independent child contexts | PLANNER-READY AFTER T02
 
 **MODEL=Composer 2.5 Standard | DEPTH=PATCH.** **Initial read/write anchors:** `packages/application/src/storyteller/execution.ts; WR03 writer tool runtime and its new step table`. Limit edits to those owner files, a narrowly necessary helper, and focused tests. **Steps:** Instantiate WR03 step engine with separate child transcript/attempt and read-only tool registry; child cannot stage/publish/delegate. Preserve unknown delivery and settled response.
 

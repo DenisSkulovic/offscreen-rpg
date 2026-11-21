@@ -1,6 +1,9 @@
 # WR04 | decided execution design (planner-owned)
 **Starts only after WR03 source/API reconciliation.** A child means a separate provider conversation/attempt ledger, not a parent prompt pretending to be two agents.
 
+## SQL and step engine reuse (selected before WR03 lands)
+WR03 owns two new tables: `storyteller_writer_mission` and `storyteller_writer_step` keyed by `(missionId,contextId,ordinal)`; parent uses `contextId=missionId`. WR04 adds `storyteller_writer_child` keyed by `(parentMissionId,childId)` with unique `(parentMissionId,ordinal)` and captured root/tools/question and finite reservations. Children set `contextId=childId` in the **same WR03 step engine** and share the parent's existing `storytellerOperation` charging authority, so child creation NEVER refreshes owner spend. Parent/child budget reservation is serialized on the parent operation row; child per-context counters prevent one child from consuming the other's reserved slice. Independent provider context means a separate captured message/attempt sequence, not a separate money wallet. Schema must be reconciled against the actual WR03 implementation before WR04 T02 executes; any mismatch returns to ChatGPT, not Cursor design.
+
 ## Parent/child contract
 `writer-child-task.v1` = {parentMissionId, childRequestId, ordinal, question, pinnedLibraryRoot, skillHashes, restrictedTools, maxRounds, maxTokens, maxMicrousd, requiredEvidence}. Parent reserves money/rounds **atomically before** dispatch and issues child permission = intersection(parent grants, requested grants, read-only tools). No child recursion, staging, scene submit, root change, canonical writes or external side effects. Parent gets a stable child ID and status pending/running/settled/held/uncertain/cancelled. The read-only child may query Library and skills only.
 
