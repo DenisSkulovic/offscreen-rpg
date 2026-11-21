@@ -18,6 +18,10 @@
 | [WR08A](../../changes/archive/2026-11/storyteller/2026-11-21--wr08a-play-launch-surface/CHANGE.md) | Gated one-prompt Launch screen | **Done** on `undertaking/storyteller-workshop`. Web only. Flag default off until the Launch backend exists. Not integrated acceptance |
 | [WR08](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | UI launch/history/fork and scripted acceptance | **PLANNER-BLOCKED:** depends on actual WR04, WR06, WR07 response and fixture contracts; current T01 is source-only, not a PATCH |
 
+## Next dispatch once WR05P2 lands
+
+**Owner-commissioned conditional pair:** Execute **[WR07 Direct Play](../../changes/open/2026-11-21--wr07-one-prompt-launch-backend/POST-WR05P2-EXECUTION.md)** and **[WR06 Active Historical Forks](../../changes/open/2026-11-21--wr06-fork-active-fictional-state/POST-WR05P2-EXECUTION.md)** in parallel, **only after WR05P2's code/closure is actually integrated**. These successor routes supersede older pre-MA06A T-IDs. They are two **whole outcome Changes**, not two more preparatory code moves. WR07 owns Launch/Writer/GA/API/Worker/DB migration/Web stories; WR06 owns fork engine, fork lineage in Storyteller context and Web play/history. Both treat v2 snapshot/schema/reader as read-only. Distinct linked worktrees, distinct disposable SQL databases, serial final squash integrations. Full Undertaking continues to Writer research/provider, bulk monorepo cleanup, acceptance and main landing. If WR05P2's output cannot represent required active state or scene-one publication, pause the affected Change at the exact incompatibility; do not silently weaken acceptance or spawn micro-Changes.
+
 ## Dependency and concurrency plan
 
 ```mermaid
