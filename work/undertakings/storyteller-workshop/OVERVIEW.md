@@ -1,14 +1,12 @@
 ## Planning update: modular-monolith finish line expanded (2026-11-21)
 
-**Latest inspected integrated code:** MA08 on `undertaking/storyteller-workshop`. The earlier modularization percentage was optimistic relative to the now-enforced target. **Revised rough estimate after MA08:** modular monolith **~70% complete / ~30% remaining**, Storyteller **~60% / ~40% remaining**, blended undertaking **~65% / ~35% remaining**, **±10 percentage points**. MA08 moved the remaining real Application owners out and left the 112-test compatibility package. Baseline worker generation-evidence typecheck and `repo:module-graph` undeclared-import errors are still not green.
-
-**Next executable architecture Change:** none until a planner clears [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md). [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) stays blocked on WR09. [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) migrates the 112 tests and removes `@offscreen/application` after MA09 and WR09. [MA08](../../changes/archive/2026-11/other/2026-11-21--ma08-application-owner-extraction/CHANGE.md) is Done. Existing older status charts further below are historical; do not commission obsolete WR04/WR08 links.
+**Latest inspected integrated code:** MA10, WR09A, and MA11 on `undertaking/storyteller-workshop`. The Application compatibility package is gone and the 112 tests run from API Integration. Writer response custody is crash-safe under a fake provider. **Revised rough estimate:** modular monolith **~85% complete / ~15% remaining**, Storyteller **~60% / ~40% remaining**, blended undertaking **~70% / ~30% remaining**, **±10–15 percentage points**. Worker generation-evidence typecheck is still not green. Live provider play is not proved.
 
 ## Post-MA08 execution choice, November 21
 
-**MA08 is complete on the undertaking** (`6dd12761`); the next *planned, not implemented* wave has three source-disjoint full Change packets: [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) removes the entire old Application facade while protecting **112 tests**, [WR09A](../../changes/open/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) makes real-provider response custody replayable and protects billing (using fake network only), and [MA11](../../changes/open/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) makes internal Story Engine domain dependencies measurable and ratchets new forbidden imports. [Integration protocol and exact file exclusions](PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21). No parallel parent edits the undertaking catalogs or merges into the shared branch.
+**MA10, WR09A, and MA11 are joined.** [MA10](../../changes/archive/2026-11/other/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) removed the Application facade and kept all 112 tests. [WR09A](../../changes/archive/2026-11/other/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) stores the private provider response and settles the charge in one transaction, using a fake network. [MA11](../../changes/archive/2026-11/other/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) records Story Engine domain edges and the two host runtime dependencies. The [integration contract](PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21) is the historical execution record.
 
-**Progress remains estimated at modular monolith ~80% (~20% remaining), Storyteller ~60% (~40% remaining), combined ~65% (~35% remaining), ±10–15 percentage points.** Merely creating this batch makes **zero** progress on tested product acceptance. Real Writer worker wiring, authority→Writer inversion, public API/SCC cleanup, longform quality proof and final main landing remain beyond this batch. None of the packets authorize paid provider calls.
+**Progress is now modular monolith ~85% (~15% remaining), Storyteller ~60% (~40% remaining), combined ~70% (~30% remaining), ±10–15 percentage points.** Real Writer worker wiring, authority→Writer inversion, public API/SCC cleanup, longform quality proof and final main landing remain. None of this authorizes a paid provider call.
 
 ## 🎯 What are we building?
 
@@ -18,25 +16,25 @@ You give a one-sentence premise and enter a persistent fictional life. You can c
 
 | Track | Our current estimate | Remaining | What the number means |
 | --- | ---: | ---: | --- |
-| 🏗️ **Modular Monolith shaping** | **~80%** | ~20% | Production hosts import Story Engine directly. Compatibility forwarders, graph hygiene and final validation remain |
+| 🏗️ **Modular Monolith shaping** | **~85%** | ~15% | The Application package is gone. Authority→Writer inversion and final validation remain |
 | 🎭 **Storyteller evolution** | **~60%** | ~40% | Library, scene truth, launch, forks and a scripted scene-1→2→3 gameplay kernel exist; real integrated provider, research, user-facing journey and convincing quality proof are incomplete |
-| 🧭 **Combined undertaking** | **~65%** | ~35% | A subjective effort-and-risk blend: roughly **70% Storyteller / 30% architecture**, rounded to the nearest 5 percentage points |
+| 🧭 **Combined undertaking** | **~70%** | ~30% | A subjective effort-and-risk blend: roughly **70% Storyteller / 30% architecture**, rounded to the nearest 5 percentage points |
 
 ```text
-Modular Monolith  80%  ████████████████░░░░   ~20% left
+Modular Monolith  85%  █████████████████░░░   ~15% left
 Storyteller       60%  ████████████░░░░░░░░   ~40% left
-Combined          65%  █████████████░░░░░░░   ~35% left
+Combined          70%  ██████████████░░░░░░   ~30% left
 ```
 
 **Confidence:** low-to-moderate, **roughly ±10–15 percentage points**. These are **subjective estimates of remaining engineering effort and integration risk**, not completed-Change ratios, tested-feature coverage, a deadline or a promise that exactly 35% effort remains. Storyteller's *proven end-user experience* lags behind the foundational code. Percentages can go **down** if real provider or long-form acceptance reveals major defects; do not mechanically increase them whenever a packet closes.
 
-**Why these numbers?** Monorepo package extraction is done and production hosts now call Story Engine directly. Application forwarders and final integration work remain. Storyteller's core pieces, scripted continued-scene tests, and provider-free research children are present. The live provider journey, narrative quality, and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
+**Why these numbers?** Monorepo package extraction is done, production hosts call Story Engine directly, and the Application package is gone. Authority inversion and final integration work remain. Storyteller's core pieces, scripted continued-scene tests, and provider-free research children are present. The live provider journey, narrative quality, and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
 
 ## At a glance
 
 | Major capability | Verified state on undertaking | Human interpretation |
 | --- | --- | --- |
-| 🧱 Package separation and domain owners | **Mostly achieved** | API, Game Authority, and worker import Story Engine directly. Compatibility forwarders remain for tests and scripts |
+| 🧱 Package separation and domain owners | **Mostly achieved** | API, Game Authority, and worker import Story Engine directly. The Application package is removed |
 | 📚 Library, Writer Workdesk and immutable scene history | **Implemented** | Source-aware memory foundation and v2 publication are in place |
 | 🌿 Historical forks with active commitments | **Implemented** | WR06 is archived; broader player journey still needs acceptance |
 | 🚪 One-prompt opening | **Scripted implementation** | WR07B archived; public Launch feature remains gated |
@@ -45,7 +43,7 @@ Combined          65%  █████████████░░░░░░
 | 🧪 Long-form acceptance harness | **Harness integrated** | P3-C archived; does not prove all long-story or live-narrative quality criteria |
 | 🔍 Independent research children | **Scripted implementation** | WR04: explicit grant, read-only children, shared operation cap, verified join. Not a live provider proof |
 | 🎮 Complete Play/reentry UI | **Gated scripted path implemented** | WR08 archived: Play uses the real action API when the Launch flag is on. History and fork UI were already present. Live provider play is not accepted |
-| 🧹 Final monorepo cleanup / main merge | **Outstanding** | Host consumer migration is done. Forwarder retirement, final joined validation, and undertaking retirement remain |
+| 🧹 Final monorepo cleanup / main merge | **Outstanding** | Application retirement is joined. Authority inversion, final validation, and undertaking retirement remain |
 
 ## 🗺️ The journey
 
@@ -71,14 +69,14 @@ flowchart LR
 
 ## 🔨 What remains, as concrete outcomes
 
-1. **Parallel architectural and custody wave (not yet implemented):** [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) retires Application with **all 112 tests preserved**, [WR09A](../../changes/open/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) atomically persists/replays the provider response and cost without real spend, and [MA11](../../changes/open/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) makes actual engine domains visible and rejects new forbidden imports. Their implementation sources are separate, with one integration custodian.
+1. **Joined architectural and custody wave:** [MA10](../../changes/archive/2026-11/other/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md), [WR09A](../../changes/archive/2026-11/other/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md), and [MA11](../../changes/archive/2026-11/other/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) are on the undertaking branch. Pure legacy tests 215/215, WR09A disposable custody 9/9, module-graph tests 26/26.
 2. **Actually run the creative Writer.** A later WR09B wires real provider-shaped model decisions, Worker credential/policy composition, launch/continuation and delegated research into existing admission/publication, first through fake fetch and no paid calls. Provider funding requires separate explicit approval.
 3. **Close the authoritative architecture.** MA09 inverts the existing Authority→Writer implementation edges while preserving current SQL locks/receipts; final module SCC/public export ratchet after it, not premature splitting of packages.
 4. **Product and release acceptance.** Demonstrate actual prompt → meaningful playable choices → source-faithful long-form scenes → reentry/history/fork, recover after faults, prove owner/permissions/charge/idempotency negatives; reconcile ledgers/STATUS and merge the undertaking to `main` only after end gates.
 
 ## 🧭 Current decision and evidence
 
-**MA08 is Done at `6dd12761`**, including real Lab, Drafts, DB relay and Runtime Logging owners; the old Application is test-only compatibility. The next three source-disjoint implementation packets are READY for separate user-authorized Cursor commissions, **not yet tested or integrated**. The known two undeclared-production-import errors in `pnpm repo:module-graph` remain triage items, not waved-away passes. The rough status figures above remain **80% architecture, 60% Storyteller, 65% combined** with ±10–15 percentage-point uncertainty. No external provider spend has been authorized.
+**MA10, WR09A, and MA11 are joined.** The Application package is gone, writer response settlement is crash-safe with a fake provider, and the two previously undeclared host imports are runtime dependencies. The rough figures above are **85% architecture, 60% Storyteller, 70% combined**, ±10–15 percentage points. No external provider spend has been authorized.
 
 **Integration rule:** Three worktrees can implement in parallel; only one custodian joins `undertaking/storyteller-workshop`, regenerates the lockfile, runs combined proofs, archives and updates the overview. See [exact collision matrix](PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21). Future Cursor parents must not independently self-merge these three Changes while siblings remain active.
 

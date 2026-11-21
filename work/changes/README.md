@@ -2,13 +2,13 @@
 
 ## Selected three-lane source-disjoint post-MA08 wave (2026-11-21)
 
-**MA08 Done at `6dd12761`.** Three independent commissioned **candidates** exist below; owner commissions each named Change explicitly. They can be implemented concurrently in separate linked worktrees, but a **single integration custodian** serializes merge/lockfile/catalog/archive/OVERVIEW. Branches are **not** to auto-merge or delete themselves while the other lanes remain unjoined. [Exact source contracts](../undertakings/storyteller-workshop/PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21).
+**Joined on `undertaking/storyteller-workshop`.** The custodian squash-merged MA10, then WR09A, then MA11. [Exact source contracts](../undertakings/storyteller-workshop/PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21).
 
 | Cursor lane | Change packet | Owned implementation area | Readiness |
 | --- | --- | --- | --- |
-| A | [MA10](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | Delete legacy Application; migrate **all 112 tests** to existing API Integration; scripts and old Worker test references | READY for parallel worktree |
-| B | [WR09A](open/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) | DB response-object pointer + migration; private CAS; atomic Writer budget/step settlement; credential-injected provider transport | READY for **fake-provider-only** parallel worktree |
-| C | [MA11](open/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) | `scripts/repo-tools/module-graph*.mjs` AST reporter/tests plus exact API/GA manifest runtime-dependency fixes | READY for parallel worktree |
+| A | [MA10](archive/2026-11/other/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | Application package removed; 112 tests live in API Integration | **Done (2026-11-21).** Pure tests 215/215 |
+| B | [WR09A](archive/2026-11/other/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) | Crash-safe writer response and charge settlement | **Done (2026-11-21).** Disposable custody 9/9. No paid call |
+| C | [MA11](archive/2026-11/other/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) | Story Engine domain ratchet and two host runtime dependencies | **Done (2026-11-21).** Module-graph tests 26/26 |
 
 **Remaining:** [WR09](open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) real worker/provider vertical, [MA09](open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) authority→Writer transaction seam after Writer interfaces stable, followed by internal SCC/public export closure and final undertaking acceptance. These are **not** simultaneous commissions of this wave.
 
@@ -18,9 +18,9 @@
 | --- | --- |
 | [MA08: Application owner extraction](archive/2026-11/other/2026-11-21--ma08-application-owner-extraction/CHANGE.md) | **Done (2026-11-21).** Lab, drafts, outbox relay, and runtime logging have real owners. Host and tool manifests no longer depend on Application. 112 legacy tests remain until MA10. |
 | [MA09: Authority/Writer dependency inversion](open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) | **PLANNER-BLOCKED until WR09 and MA08 integration**; exact typed collaborator, existing transaction boundaries and failure paths planned; fresh source re-audit required before Cursor commission. |
-| [MA10: Application compatibility retirement](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | **READY, independent parallel lane A** after MA08; preserve/migrate all 112 tests into existing API Integration workspace, delete Application and executable legacy paths. Graph instrumentation is MA11; deep SCC/authority inversion later. |
+| [MA10: Application compatibility retirement](archive/2026-11/other/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | **Done (2026-11-21).** Application is removed. 112 tests run from API Integration. Graph instrumentation is the archived MA11. |
 
-**Selected near-term DAG:** MA07 + MA08 Done → **parallel MA10 / WR09A / MA11** → one custodial integration → WR09B Worker provider runtime → MA09 authority/Writer inversion and final graph-export closure → full product/architecture release gate. No automatic self-selected successor work or real paid provider send.
+**Selected near-term DAG:** MA07 + MA08 + MA10 + WR09A + MA11 Done on the undertaking → WR09B Worker provider runtime → MA09 authority/Writer inversion and final graph-export closure → full product/architecture release gate. No automatic self-selected successor work or real paid provider send.
 
 ## Code craftsmanship implementation packets
 

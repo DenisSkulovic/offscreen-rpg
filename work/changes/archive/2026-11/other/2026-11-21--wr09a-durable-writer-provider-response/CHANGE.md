@@ -1,6 +1,6 @@
 # WR09A | Crash-safe Writer response custody before live provider integration
 
-**Status: READY FOR SOURCE-BOUNDED IMPLEMENTATION, subject to hard money/lock stops.** Baseline source: `6dd1276131a813f694ec3bccf4f9062ad3708208`, MA08 integrated, target `undertaking/storyteller-workshop`. This is the *first correctness stage* of WR09, not provider-enabled gameplay. **No real OpenRouter request, secret installation, funded account, production feature flag, protected SQL or main merge authorized.** Fake transport and disposable SQL only.
+**State: Done (2026-11-21).** Private writer responses settle with the step pointer in one transaction. Writer-provider-response 5/5, transport 8/8, disposable custody 9/9. Joined at `2a62a9b1`. No real provider call. Not on `main`. Baseline source: `6dd1276131a813f694ec3bccf4f9062ad3708208`, MA08 integrated, target `undertaking/storyteller-workshop`. This is the *first correctness stage* of WR09, not provider-enabled gameplay. **No real OpenRouter request, secret installation, funded account, production feature flag, protected SQL or main merge authorized.** Fake transport and disposable SQL only.
 
 ## Exact outcome
 

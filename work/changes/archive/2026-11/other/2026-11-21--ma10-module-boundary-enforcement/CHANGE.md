@@ -1,5 +1,7 @@
 # MA10 | Remove the Application test facade without losing coverage
 
+**State: Done (2026-11-21).** `packages/application` is gone. All 112 legacy tests live under `tools/api-integration/legacy-engine-tests/`. Pure runner 215/215. Disposable, integration, and live suites stay gated. Joined on `undertaking/storyteller-workshop` at `66ced2cd`. Not on `main`.
+
 **Readiness: READY for independent Cursor lane A, subject to HEAD and worktree guard.** **Inspected code baseline:** MA08 integrated at `6dd1276131a813f694ec3bccf4f9062ad3708208`. **Integration target:** `undertaking/storyteller-workshop`, never `main`. **Not an authorization** for paid AI, protected database writes, or reset/force-push. MA08 is Done, and MA10 must not relitigate its ownership decisions.
 
 ## Chosen outcome
@@ -17,6 +19,14 @@
 **MA10:** deletion of `packages/application/**`; creation of `tools/api-integration/legacy-engine-tests/**`, `tools/api-integration/scripts/run-legacy-engine-tests.mjs`, adjustments to `tools/api-integration/package.json`; legacy dist/manifest references in `apps/worker/test/{eng06-worker-restart,gm07-temporal-relay}.live.test.ts`, the specific `scripts/repo-tools/{focused-integration,knowledge-health,storyteller-playability,storyteller-live-comparison,plan-storyteller-saved-repair}.mjs` and `tools/chamber/package.json` only if still used. The integration custodian owns the single joined `pnpm-lock.yaml` regeneration and global ledgers.
 
 **Strict exclusions:** no `packages/story-engine/src/**`, `packages/db/src/**`, `packages/storyteller/src/**`, `scripts/repo-tools/module-graph*.mjs`, `apps/worker/src/**`, `packages/story-engine/package.json`, `tools/api-integration/test/wr09a-*.ts`; those belong to other Changes.
+
+## Affected-claim reconciliation
+
+| Claim | Target | Source | Evidence | Negative | Map |
+| --- | --- | --- | --- | --- | --- |
+| Application package | changed: removed | `packages/application` absent | joined pure tests 215/215 | disposable mode refuses before import | catalog updated |
+| Legacy tests | changed location, same basenames | `tools/api-integration/legacy-engine-tests` | 112 files, 60/16/14/22 | OBS00-B resolves the DB package | N/A |
+| Gated SQL | unchanged behavior, not a blanket pass | P3B integration | 5/5 on disposable Postgres | live and remaining SQL suites NOT RUN | N/A |
 
 ## Done
 
