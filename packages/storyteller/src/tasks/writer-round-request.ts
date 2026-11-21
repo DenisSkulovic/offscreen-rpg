@@ -15,6 +15,30 @@ export function writerRoundOutputJsonSchema(): unknown {
   return z.toJSONSchema(writerRoundDecisionSchema);
 }
 
+function writerRoundPinsForCapture(
+  capture: WriterMissionCapture,
+): Record<string, unknown> {
+  const leading = {
+    libraryRootHash: capture.libraryRootHash,
+    libraryRootRevision: capture.libraryRootRevision,
+    profileObjectHash: capture.profileObjectHash,
+    skillObjectHashes: capture.skillObjectHashes,
+    toolsAllowlist: capture.toolsAllowlist,
+  };
+  if (capture.version === 'writer-mission.v1') {
+    return { ...leading, sceneFrontier: capture.sceneFrontier };
+  }
+  const { sceneScope } = capture;
+  return {
+    ...leading,
+    sceneScope: {
+      kind: sceneScope.kind,
+      reservedStoryId: sceneScope.reservedStoryId,
+      reservedFirstPassageId: sceneScope.reservedFirstPassageId,
+    },
+  };
+}
+
 /** Compile pinned mission context and durable prior tool summaries into one provider request. */
 export function compileWriterRoundCapturedRequest(
   capture: WriterMissionCapture,
@@ -27,19 +51,13 @@ export function compileWriterRoundCapturedRequest(
         role: 'user',
         content: JSON.stringify({
           version: 'writer-round.v1',
-          pins: {
-            libraryRootHash: capture.libraryRootHash,
-            libraryRootRevision: capture.libraryRootRevision,
-            profileObjectHash: capture.profileObjectHash,
-            skillObjectHashes: capture.skillObjectHashes,
-            toolsAllowlist: capture.toolsAllowlist,
-            sceneFrontier: capture.sceneFrontier,
-          },
+          pins: writerRoundPinsForCapture(capture),
           priorToolResults,
         }),
       },
     ],
-    outputSchema: writerRoundOutputJsonSchema() as CapturedProviderRequest['outputSchema'],
+    outputSchema:
+      writerRoundOutputJsonSchema() as CapturedProviderRequest['outputSchema'],
   };
 }
 

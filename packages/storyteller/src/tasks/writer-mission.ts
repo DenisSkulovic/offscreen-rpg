@@ -46,24 +46,34 @@ export const writerMissionSceneFrontierSchema = z.strictObject({
   sequence: z.number().int().nonnegative(),
 });
 
-export const writerMissionCaptureSchema = z
-  .strictObject({
-    version: z.literal('writer-mission.v1'),
-    generationId: z.uuid(),
-    operationId: z.uuid(),
-    ownerId: z.uuid(),
-    storyId: z.uuid(),
-    sceneFrontier: writerMissionSceneFrontierSchema,
-    libraryRootHash: sha256HexSchema,
-    libraryRootRevision: z.number().int().positive(),
-    profileObjectHash: sha256HexSchema,
-    skillObjectHashes: z.array(sha256HexSchema).max(16),
-    toolsAllowlist: z.array(writerToolNameSchema).min(1).max(10),
-    modelSelection: writerModelSelectionSchema,
-    budgets: writerMissionEffectiveBudgetsSchema,
-    capturedRequestHash: sha256HexSchema,
-  })
-  .superRefine((capture, context) => {
+export const writerMissionSceneScopeOpeningSchema = z.strictObject({
+  kind: z.literal('opening'),
+  reservedStoryId: z.uuid(),
+  reservedFirstPassageId: z.uuid(),
+});
+
+const writerMissionCaptureCommonFields = {
+  generationId: z.uuid(),
+  operationId: z.uuid(),
+  ownerId: z.uuid(),
+  storyId: z.uuid(),
+  libraryRootHash: sha256HexSchema,
+  libraryRootRevision: z.number().int().positive(),
+  profileObjectHash: sha256HexSchema,
+  skillObjectHashes: z.array(sha256HexSchema).max(16),
+  toolsAllowlist: z.array(writerToolNameSchema).min(1).max(10),
+  modelSelection: writerModelSelectionSchema,
+  budgets: writerMissionEffectiveBudgetsSchema,
+  capturedRequestHash: sha256HexSchema,
+} as const;
+
+function refineWriterMissionCaptureDuplicates(
+  capture: {
+    toolsAllowlist: WriterToolName[];
+    skillObjectHashes: string[];
+  },
+  context: z.RefinementCtx,
+): void {
   const toolNames = capture.toolsAllowlist;
   if (new Set(toolNames).size !== toolNames.length) {
     context.addIssue({
@@ -80,7 +90,38 @@ export const writerMissionCaptureSchema = z
       message: 'Skill pins must be unique within a mission capture',
     });
   }
-});
+}
+
+export const writerMissionCaptureV1Schema = z
+  .strictObject({
+    version: z.literal('writer-mission.v1'),
+    ...writerMissionCaptureCommonFields,
+    sceneFrontier: writerMissionSceneFrontierSchema,
+  })
+  .superRefine(refineWriterMissionCaptureDuplicates);
+
+export const writerMissionCaptureV2OpeningSchema = z
+  .strictObject({
+    version: z.literal('writer-mission.v2'),
+    ...writerMissionCaptureCommonFields,
+    sceneScope: writerMissionSceneScopeOpeningSchema,
+  })
+  .superRefine((capture, context) => {
+    refineWriterMissionCaptureDuplicates(capture, context);
+    if (capture.sceneScope.reservedStoryId !== capture.storyId) {
+      context.addIssue({
+        code: 'custom',
+        path: ['sceneScope', 'reservedStoryId'],
+        message:
+          'Opening scene scope reservedStoryId must match the mission storyId',
+      });
+    }
+  });
+
+export const writerMissionCaptureSchema = z.discriminatedUnion('version', [
+  writerMissionCaptureV1Schema,
+  writerMissionCaptureV2OpeningSchema,
+]);
 
 export type WriterMissionCapture = z.infer<typeof writerMissionCaptureSchema>;
 
