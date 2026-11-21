@@ -1,0 +1,5 @@
+# MA10A | independent tool-readiness and required negative proofs
+
+Static inspection of source `e122d080`, previous MA07 receipt notes module-graph baseline errors. G0 branch gate; G1 AST/core graph symbols inspected; G2 added second classifier without replacing old one; G3 T01–T03 file-limited; G4 first edit bounded; G5 disjoint from lab/infrastructure owners; G6 runtime vs type-only test matrix; G7 useful measurement/report and future enforceability, no premature architecture claim. **Planner-ready subject to current HEAD source drift check; no test run by planner.**
+
+Expected: existing graph tests unchanged PASS; newly added synthetic Story Engine runtime SCC reported; identical type-only import pair appears only type-only; old Application categories still reported; undeclared workspace import remains failure; baseline Story Authority→Writer edge remains visible debt, not new failure; no new package manifests or SDK exports, no model spend. Actual checks to be reported by Cursor, not assumed.
