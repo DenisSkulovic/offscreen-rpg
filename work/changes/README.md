@@ -1,26 +1,8 @@
-> **CURRENT DISPATCH CORRECTION (2026-11-21):** An MA08 Cursor was **already executing** its full original T01–T05 and remains the active commissioner/integrator. The advertised MA08A, MA08B, MA10A three-lane wave is **withdrawn from dispatch** due to overlapping files, including `scripts/repo-tools/module-graph*` in MA08 T04. Do not commission those packets concurrently or replace MA08 instructions. This notice overrides the earlier three-Cursor section below; the linked wave plan is retracted. Await MA08 receipt, then re-audit remaining unowned work to prepare 2–3 *genuinely independent* packets.
-
-## Three-Cursor parallel structural batch, 2026-11-21
-
-**Selected parallel dispatch and single integration custodian:** [parallel structural execution policy](../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Do not execute the former single [MA08 umbrella](open/2026-11-21--ma08-application-owner-extraction/CHANGE.md).**
-
-| Lane | Change | State |
-| --- | --- | --- |
-| Cursor A | [MA08A lab-support](open/2026-11-21--ma08a-lab-support-extraction/CHANGE.md) | **Planner-ready, parallel**: new lab-support workspace and Chamber consumers |
-| Cursor B | [MA08B infrastructure](open/2026-11-21--ma08b-infrastructure-owner-extraction/CHANGE.md) | **Planner-ready, parallel**: DB outbox relay + host runtime logging |
-| Cursor C | [MA10A graph instrumentation](open/2026-11-21--ma10a-module-graph-instrumentation/CHANGE.md) | **Planner-ready, parallel**: AST Story Engine domains, runtime/type-only graph and tests |
-
-These three write disjoint source/manifests and no shared lockfile/catalog. Parents produce independent branch receipts; one custodian serializes B→A→C joins and combined negative proofs. After the wave, source-readiness for MA08C, MA09 and full MA10 must be updated; dependency-gated packets are **not** parallel commissions.
-
-# Changes | active catalog
-
-**Purpose:** index open, independently reviewable Change packets. This directory root is **not** a storage area for standalone roadmap, handoff, audit or program Markdown. [Current work](../QUEUE.md) alone owns the global selector; [work taxonomy](../WORK-TAXONOMY.md) distinguishes Changes from Designs/Tasks. Archived and historic outcomes belong in the [ledger](ledger/2026-11.md), [short-lived archive](archive/README.md) and exact Git history. No automatic execution follows from being listed here.
-
 ## Structural completion packets (2026-11-21)
 
 | Change | Readiness / commission |
 | --- | --- |
-| [MA08: Application owner extraction](open/2026-11-21--ma08-application-owner-extraction/CHANGE.md) | **READY WITH EXPLICIT LIMITS, next structurally executable** after integrated MA07. Move lab, drafts, outbox lease, logging and production consumers to real owners; preserve 112 test files through temporary shims. |
+| [MA08: Application owner extraction](open/2026-11-21--ma08-application-owner-extraction/CHANGE.md) | **ACTIVE COMMISSION** after integrated MA07. Move lab, drafts, outbox lease, logging and production consumers to real owners; preserve 112 test files through temporary shims. |
 | [MA09: Authority/Writer dependency inversion](open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) | **PLANNER-BLOCKED until WR09 and MA08 integration**; exact typed collaborator, existing transaction boundaries and failure paths planned; fresh source re-audit required before Cursor commission. |
 | [MA10: Module boundary enforcement](open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) | **PLANNER-BLOCKED until MA08/MA09/WR09 integration**; migrate all 112 legacy tests, remove Application workspace, narrow exports, resolve real SCCs, enforce AST graph, preserve product semantics. |
 
