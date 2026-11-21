@@ -12,7 +12,7 @@
 
 **Out of scope:** New Zod API request contracts, renaming routes, changing 403/404, Admin roles, environment mapping, migrations and new feature design. Existing type contracts preserved.
 
-**Proof:** imports resolve under NodeNext, DI uses the same symbol instances/class token, original API tests still exercise normal + denied paths, no copied second grant evaluator. Reviewer compares control flow with old code. **Do not use “smaller file” as sole acceptance.**
+**Completion contract:** Whole-Change commission includes integration into `undertaking/storyteller-workshop` after the specified tests, parent diff review, reconciliation and branch refresh; independent ChatGPT review is not required before joining. Real permission regressions or unsafe Git conflicts remain blockers.\n\n**Proof:** imports resolve under NodeNext, DI uses the same symbol instances/class token, original API tests still exercise normal + denied paths, no copied second grant evaluator. Reviewer compares control flow with old code. **Do not use “smaller file” as sole acceptance.**
 
 ## Planned-impact.v1 (before implementation)
 

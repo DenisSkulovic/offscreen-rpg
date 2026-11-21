@@ -8,4 +8,4 @@
 | Source dependency graph | controller → actor-service/errors; actor-service → errors/application, **no import from controller** |
 | Diff review | function bodies/permissions unchanged apart from import/re-export movement |
 
-Run `pnpm --filter @offscreen/api typecheck`; build API + `pnpm --filter @offscreen/api-integration build` and `test:admin-session` / `test:admin-policy` / `test:admin-cases` when disposable integration resources are authorized; changed-file quality lint and format. No model spending. High-risk permission paths receive ChatGPT focused review before integration.
+Run `pnpm --filter @offscreen/api typecheck`; build API + `pnpm --filter @offscreen/api-integration build` and `test:admin-session` / `test:admin-policy` / `test:admin-cases` when disposable integration resources are authorized; changed-file quality lint and format. No model spending. The Cursor parent verifies permission-path and error equivalence against the source diff and focused negative tests **before** integration; optional independent ChatGPT audit follows the joined Change. No mandatory pre-merge second opinion for this behavior-preserving extraction.
