@@ -9,6 +9,14 @@
 **Landed prototype:** opening, continuation, mechanical consequence and historical-report tasks on the existing generation row, described in [current prototype runtime](operation-and-controller.md#current-prototype-runtime).  
 **Not a claim** that the adaptive multi-round controller or a narrative director is running.
 
+## Selected durable Writer replay stage (WR09B; prerequisite WR09A)
+
+A model-delivered response is only useful for recovery if the exact decision can be rehydrated and its **downstream tool and publication effects** can continue idempotently. After WR09A atomically links a private response object and provider charge to a Writer step, WR09B will read those exact bytes after restart and pass them through one versioned decision interpreter shared with scripted operation. A result-settled step does **not** mean tools were applied or a scene was published.
+
+The parent Writer round uses the existing (mission, context, ordinal) step identity and a unique recorded tool-call ID within the mission context. Recorded Library calls are replayed from saved request/result digests; Workdesk mutations use their existing idempotent tool ledger. A mismatch in name/arguments for a reused ID is rejected, not executed again. Next model-round preparation and parent step transition must commit in one SQL transaction after tool results, with existing maximum-round and shared research budgets respected. A final proposal is rehydrated from the immutable response and passed to Game Authority's usual publication fence. Writer code never admits a canonical passage by independently writing story rows. No model-provider credentials or paid calls are authorized for this next offline implementation stage; tests use injected fake transport and disposable SQL.
+
+The current continuation admission still pins scripted-offline, and live player/provider routing, approved spending and source-faithful long-form quality remain separately gated. The source-inspected **design** is [WR09B](../../../work/changes/open/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md), not evidence of a running feature.
+
 ## What publication is allowed to do
 
 Publication may admit one coherent scene outcome against the captured prior frontier: immutable passage/choices; accepted descriptive/document changes; exact resulting Library root; typed mechanical/world effects where supported; fictional clock/progress and active commitments; effective source/profile/rule pins; and causal lineage.
