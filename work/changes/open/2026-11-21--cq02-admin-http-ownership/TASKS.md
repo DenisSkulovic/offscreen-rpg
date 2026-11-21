@@ -1,0 +1,11 @@
+# CQ02 | Composer execution
+**Dependency:** CQ01 Done and integrated. Reinspect source anchors because CQ01 changes AuthProof conversion. Dedicated `change/cq02-admin-http-ownership` linked worktree from the latest Undertaking branch; never switch primary. Run `pnpm repo:change-branch --change CQ02 --target undertaking/storyteller-workshop`. T01 → T02 → T03.
+
+## T01 | Extract pure HTTP error mapper | PLANNER-READY AFTER CQ01
+**Read:** `apps/api/src/modules/admin/controller.ts:adminError/mapAdminError`, `packages/application/src/admin/session.ts:AdminSessionError`. **Write:** `admin-http-errors.ts`, `controller.ts`. Move mapper without changing codes/statuses, import using NodeNext `.js`. **Positive:** API typecheck; **negative:** unknown failure maps 503, denial 403 or privacy override at caller. **Stop:** mismatch in current error mapping, not permission to redesign.
+
+## T02 | Isolate authentication actor service + token registry | PLANNER-READY AFTER T01
+**Read:** `controller.ts:AdminActorService`, `apps/api/src/app.ts` imports. **Write:** `admin-actor-service.ts`, `controller.ts`. Move symbol exports/class/required imports as exact same declarations; re-export old public names from controller; leave routes, DI registration and provider factories intact. **Positive:** API compile and staff session test; **negative:** unauthorized staff still denied, no duplicated token classes. **Stop:** circular import or decorator identity change.
+
+## T03 | Verify route equivalence and close | PLANNER-READY AFTER T02
+**Read:** complete focused diff, admin-session/policy/cases/situation integration tests. Run affected typecheck and disposable admin integration negatives, changed-file quality lint and format. Inspect denial mapping and missing identity semantics, report any NOT RUN. **Stop:** privilege-denial behavior changed, escalate to ChatGPT; don't fix by widening grant. Parent reconciles source map and collects ChatGPT security review before accepted join.

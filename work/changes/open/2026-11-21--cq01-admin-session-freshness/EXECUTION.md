@@ -1,0 +1,6 @@
+# CQ01 | selected algorithm
+
+1. In `packages/application/src/admin/session.ts`, compute `nowMs = now.getTime()`, `createdMs = input.authSessionCreatedAt.getTime()`, `ageMs = nowMs - createdMs`. Refuse when either time is not finite, age is negative (future), or age exceeds `ADMIN_LOGIN_FRESHNESS_MS`. Use the existing audit with `reason: 'stale_login'` and throw `AdminSessionError('step_up_required')`, before any staff lookup, token mint or session insert. The valid range is inclusive `0 <= ageMs <= freshness`.
+2. In `AdminActorService.requireAuthProof` parse the Better Auth date once; reject `Number.isFinite(parsed.getTime()) === false` as the existing 403 `step_up_required`. Do not accept arbitrary object coercion, timestamps or automatic repair. The application check remains independently authoritative; the API check is defence in depth.
+3. Do not expose raw timestamps or tokens in failure bodies or audit payload. Preserve status/error contract. Add application-level pure/controlled negative tests and the best narrow HTTP regression fixture the current mock setup permits. A test that injects an invalid Date directly into `enter` must prove the authoritative guard, independent of HTTP.
+4. New source tests must run against a disposable environment; never mutate an existing non-disposable DB or fetch paid providers.
