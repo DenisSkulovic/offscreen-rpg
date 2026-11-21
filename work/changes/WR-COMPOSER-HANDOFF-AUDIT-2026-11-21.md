@@ -16,6 +16,12 @@
 
 **Total:** 45 narrow T-ID instructions. Each T-ID names a code delta, initial files, algorithm, test, diagnostic negative, stop and evidence receipt. Some future T-IDs cannot execute until predecessor APIs exist; that is a **ChatGPT source refresh gate**, not permission for Cursor to design.
 
+## Cursor coordination and token-budget contract
+
+**GO for WR02 only, after synchronizing existing work**. Read [budget-first parent orchestration](../../.agents/references/bounded-parent-orchestration.md#0a-budget-first-composer-dispatcher-contract-2026-11-21). The parent is a **traffic controller**, not the architecture engineer: load queue, pick first unfinished T-ID, launch one Composer 2.5 Standard subagent, receive compact receipt, inspect only changed files and targeted proof, integrate, continue. No broad exploration, no “design thinking,” no speculative agent swarm, no full SOURCE-MAP/PROOF reread on every T-ID. One targeted diagnosis plus one revised attempt is the default failure budget; architectural mismatches go straight to ChatGPT.
+
+**Cost priority:** cheap incremental correct functionality > optional polish/extra review. Deep audits and additional architectural reviews are assigned to ChatGPT; Cursor must still run proportionate tests and uphold security/data integrity. Keep already-completed work and reuse trustworthy existing results. Execute T-IDs one-by-one without asking owner permission at routine checkpoints. Finish the commissioned WR02 Change including appropriate docs/ledger/archive on the undertaking branch. Do not auto-start WR03. Do not run paid model providers or mutate real non-disposable infrastructure.
+
 ## Parent's only first dispatch
 
 1. Check local `git status --short`, branch ancestry and in-flight Cursor implementation. Fetch latest `undertaking/storyteller-workshop`; incorporate planning additions into the existing WR02 worktree **without discarding edits**. No forced reset.
