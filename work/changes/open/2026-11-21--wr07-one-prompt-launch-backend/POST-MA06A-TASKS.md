@@ -28,9 +28,9 @@ Accept only v2 Writer scene content+interaction, exact source citations/staged h
 
 ## T05 | Authenticated Nest and private Game Authority route | PATCH
 
-**Anchors:** `apps/api/src/modules/stories/{controller,game-authority-client}.ts`, `apps/api/src/app.ts:createApp`, `apps/game-authority/src/{server,application,bootstrap/main}.ts`, WR07L public status projector. **Write:** these files plus focused API+GA tests.
+**Anchors:** `apps/api/src/modules/stories/{controller,game-authority-client}.ts`, `apps/api/src/app.ts:createApp`, `apps/game-authority/src/{server,application,bootstrap/main}.ts`, `packages/contracts/src/story-launch.ts`, `apps/web/src/shared/api/story-launch-intent-store.ts:hashStoryLaunchRequest`, WR07L public status projector. **Write:** these files plus focused API+GA tests.
 
-Add authenticated PUT/GET at exact Web URLs with URI/body UUID equality; extend local and remote StorySeam, private GA `PUT/GET /internal/v1/stories/launch/:operationId` using story-role token+actor header, no direct API SQL in distributed mode. Identical replays show same status, conflicting request 409, foreign GET 404, lost reply reconnect. No endpoint available should masquerade as ready. Only recommend enabling Web `STORY_LAUNCH_ENABLED` after joined scripted acceptance; no live model calls.
+Add authenticated PUT/GET at exact Web URLs with URI/body UUID equality; extend local and remote StorySeam, private GA `PUT/GET /internal/v1/stories/launch/:operationId` using story-role token+actor header, no direct API SQL in distributed mode. Identical replays show same status, conflicting request 409, foreign GET 404, lost reply reconnect. Browser SHA currently differs from server canonical SHA: export pure canonical request serialization from Contracts (recursive sorted keys, trailing newline), hash it with WebCrypto in `hashStoryLaunchRequest`, assert identical hash from server in hook and parity test vs `@offscreen/documents:hashCanonicalJson`. No Node crypto in Web. No endpoint available should masquerade as ready. Only recommend enabling Web `STORY_LAUNCH_ENABLED` after joined scripted acceptance; no live model calls.
 
 ## T06 | Whole-Change proof, reconcile and close | VERIFY/PATCH
 
