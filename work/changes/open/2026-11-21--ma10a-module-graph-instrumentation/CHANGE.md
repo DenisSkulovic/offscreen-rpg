@@ -1,3 +1,5 @@
+> **DO NOT DISPATCH WHILE MA08 IS RUNNING (2026-11-21):** MA08 T04 already owns `scripts/repo-tools/module-graph.mjs` and its tests. This proposed parallel packet collides with that active Change. Treat it as uncommissioned future design, requiring a new post-MA08 source-readiness assessment; do not tell the MA08 Cursor to give up its own T04.
+
 # MA10A | Instrument actual Story Engine runtime/type-only boundary graph
 
 **State: PLANNER-READY, independent lane C** of the [parallel structural wave](../../../undertakings/storyteller-workshop/PARALLEL-STRUCTURAL-WAVE.md). **Baseline:** source `e122d080`, MA07 `4168db58`; **target:** `undertaking/storyteller-workshop`. This is a **functional architecture tool Change**, not a cosmetic report: measure meaningful module ownership and reject independently checkable forbidden edges without moving product code. Final Application removal and export allowlisting remain MA10 proper.
