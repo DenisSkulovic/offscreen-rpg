@@ -12,7 +12,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [CQ02](archive/2026-11/other/2026-11-21--cq02-admin-http-ownership/CHANGE.md) | Admin HTTP ownership; Done on the undertaking branch |
 | [CQ03](archive/2026-11/other/2026-11-21--cq03-play-surface-readability/CHANGE.md) | Play readability; Done on the undertaking branch |
 | [CQ04](archive/2026-11/other/2026-11-21--cq04-document-store-capability-guards/CHANGE.md) | Runtime capability guards; Done on the undertaking branch |
-| [CQ05](open/2026-11-21--cq05-recurring-source-health/CHANGE.md) | Read-only structural source health checker |
+| [CQ05](archive/2026-11/other/2026-11-21--cq05-recurring-source-health/CHANGE.md) | Read-only structural source health checker; Done on the undertaking branch |
 
 ## Modular Monolith architecture program (proposed Undertaking, not selected)
 

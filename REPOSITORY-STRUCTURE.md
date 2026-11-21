@@ -121,13 +121,14 @@ Run receipts and experiments are distinct from proposed design dossiers. Histori
 git status -sb
 pnpm repo:brief
 pnpm repo:maintenance
+pnpm repo:code-health
 pnpm repo:retirement
 pnpm repo:docs-health
 pnpm wiki:health
 pnpm wiki:content-health
 ```
 
-Use the commands relevant to the zone and real available runtime. `pnpm repo:maintenance --strict` is a **high-confidence lifecycle/route check**; freshness signals remain warnings. `pnpm wiki:health` verifies paths/heading reachability, **not semantic correctness**. `pnpm wiki:content-health` produces review signals, not autonomous rewrite permission. `python scripts/check_docs.py` helps check Markdown links. No huge full-test suite for a narrow documentation move.
+Use the commands relevant to the zone and real available runtime. `pnpm repo:maintenance --strict` is a **high-confidence lifecycle/route check**; freshness signals remain warnings. `pnpm repo:code-health` reports production source shape and growth against an explicit `--base` when you pass one. Its default exit stays 0 for existing size warnings. `--strict-new` fails only newly crossed severe bands, and exit 2 means the baseline was unavailable. `pnpm wiki:health` verifies paths/heading reachability, **not semantic correctness**. `pnpm wiki:content-health` produces review signals, not autonomous rewrite permission. `python scripts/check_docs.py` helps check Markdown links. No huge full-test suite for a narrow documentation move.
 
 For each candidate record briefly: **path, current owner/lane, exact observed problem, inbound references, unique evidence, current successor, proposed keep/update/promote/retire disposition and authorization gate**. Inspect and resolve link dependencies first; don't replace broken citations with silence.
 

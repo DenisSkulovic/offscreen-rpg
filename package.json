@@ -25,6 +25,8 @@
     "repo:docs-health": "node scripts/repo-tools/docs-health.mjs",
     "repo:maintenance": "node scripts/repo-tools/maintenance.mjs",
     "repo:maintenance:test": "node --test scripts/repo-tools/work-selection.test.mjs scripts/repo-tools/maintenance.test.mjs scripts/repo-tools/archive-changes.test.mjs",
+    "repo:code-health": "node scripts/repo-tools/code-health.mjs",
+    "repo:code-health:test": "node --test scripts/repo-tools/code-health.test.mjs",
     "wiki:health": "node scripts/repo-tools/wiki-health.mjs",
     "wiki:content-health": "node scripts/repo-tools/wiki-content-health.mjs",
     "wiki:graph": "node scripts/repo-tools/wiki-health.mjs --graph",

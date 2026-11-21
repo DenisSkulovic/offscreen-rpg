@@ -308,8 +308,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-12--web-storybook-state-workbench](../../../../work/changes/archive/2026-11/web/2026-11-12--web-storybook-state-workbench/CHANGE.md)
 - [2026-11-12--web-tanstack-query-hydration](../../../../work/changes/archive/2026-11/web/2026-11-12--web-tanstack-query-hydration/CHANGE.md)
 
-## other (2)
+## other (3)
 
+- [2026-11-21--cq05-recurring-source-health](../../../../work/changes/archive/2026-11/other/2026-11-21--cq05-recurring-source-health/CHANGE.md)
 - [2026-11-21--cq04-document-store-capability-guards](../../../../work/changes/archive/2026-11/other/2026-11-21--cq04-document-store-capability-guards/CHANGE.md)
 - [2026-11-11--s3a-continuity-report](../../../../work/changes/archive/2026-11/other/2026-11-11--s3a-continuity-report/CHANGE.md)
 
