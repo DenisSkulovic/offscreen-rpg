@@ -21,6 +21,10 @@ import {
   importRulePackageDirectory,
   importStartPackageDirectory,
   instantiateStartPackage,
+  applyLibraryBatch,
+  collectLibraryManifestEntries,
+  createEmptyLibraryIndex,
+  loadLibraryIndex,
 } from '../dist/index.js';
 
 function fixture() {
@@ -785,5 +789,281 @@ test('start package instantiation clones campaign documents with exact provenanc
   assert.equal(
     first.manifest.entries.some((entry) => entry.kind === 'character'),
     false,
+  );
+});
+
+async function stageV2CampaignEntries(store, campaignId) {
+  const leftId = randomUUID();
+  const rightId = randomUUID();
+  const leftDoc = canonicalDocumentSchema.parse({
+    format: 'offscreen.document.v1',
+    envelope: {
+      documentId: leftId,
+      kind: 'lore',
+      schemaVersion: 1,
+      revision: 1,
+      authority: 'canon',
+      visibility: 'player-known',
+      sources: [],
+    },
+    title: 'Harbor',
+    body: 'Fog on the quay.',
+  });
+  const rightDoc = canonicalDocumentSchema.parse({
+    format: 'offscreen.document.v1',
+    envelope: {
+      documentId: rightId,
+      kind: 'lore',
+      schemaVersion: 1,
+      revision: 1,
+      authority: 'canon',
+      visibility: 'player-known',
+      sources: [],
+    },
+    title: 'Ledger',
+    body: 'Unpaid mooring fees.',
+  });
+  const leftHash = await store.putDocument(leftDoc);
+  const rightHash = await store.putDocument(rightDoc);
+  let library = createEmptyLibraryIndex();
+  library = applyLibraryBatch(library, [
+    {
+      op: 'create',
+      entry: {
+        documentId: leftId,
+        revision: 1,
+        path: 'world/harbor.md',
+        objectHash: leftHash,
+        kind: 'lore',
+        authority: 'canon',
+        visibility: 'player-known',
+      },
+    },
+    {
+      op: 'create',
+      entry: {
+        documentId: rightId,
+        revision: 1,
+        path: 'world/ledger.md',
+        objectHash: rightHash,
+        kind: 'lore',
+        authority: 'canon',
+        visibility: 'player-known',
+      },
+    },
+  ]);
+  for (const [, node] of library.store) await store.putLibraryNode(node);
+  const baseRootHash = await store.putLibraryRoot(library.root);
+  return { baseRootHash, leftId, leftHash, rightHash, campaignId };
+}
+
+async function minimalStartPackage(store) {
+  const ruleSetId = randomUUID();
+  const ruleDocumentId = randomUUID();
+  const ruleObjectHash = await store.putDocument(
+    canonicalDocumentSchema.parse({
+      format: 'offscreen.document.v1',
+      envelope: {
+        documentId: ruleDocumentId,
+        kind: 'orientation',
+        schemaVersion: 1,
+        revision: 1,
+        authority: 'source',
+        visibility: 'player-known',
+        sources: [],
+      },
+      title: 'Rules',
+      body: '# Rules',
+    }),
+  );
+  const ruleRootHash = await store.putRulePackageManifest(
+    rulePackageManifestSchema.parse({
+      format: 'offscreen.rule-package-manifest.v1',
+      ruleSetId,
+      title: 'Test rules',
+      revision: 1,
+      previousRootHash: null,
+      authorOperationId: randomUUID(),
+      orientationDocumentId: ruleDocumentId,
+      engine: { adapterId: 'offscreen-core', adapterVersion: 1 },
+      license: {
+        name: 'Test fixture',
+        source: 'https://example.invalid/rules',
+        attribution: 'Invented test rules.',
+      },
+      entries: [
+        {
+          documentId: ruleDocumentId,
+          revision: 1,
+          path: 'RULES.md',
+          objectHash: ruleObjectHash,
+          kind: 'orientation',
+          authority: 'source',
+          visibility: 'player-known',
+          sourceBytes: 7,
+          topics: ['orientation'],
+          sections: [
+            { heading: 'Rules', level: 1, line: 1, topics: ['orientation'] },
+          ],
+        },
+      ],
+    }),
+  );
+  const packageDocumentId = randomUUID();
+  const packageObjectHash = await store.putDocument(
+    canonicalDocumentSchema.parse({
+      format: 'offscreen.document.v1',
+      envelope: {
+        documentId: packageDocumentId,
+        kind: 'orientation',
+        schemaVersion: 1,
+        revision: 1,
+        authority: 'canon',
+        visibility: 'player-known',
+        sources: [],
+      },
+      title: 'Opening',
+      body: 'Salt air.',
+    }),
+  );
+  return store.putStartPackageManifest(
+    startPackageManifestSchema.parse({
+      format: 'offscreen.start-package-manifest.v1',
+      startPackageId: randomUUID(),
+      title: 'Quay start',
+      revision: 1,
+      previousRootHash: null,
+      authorOperationId: randomUUID(),
+      orientationDocumentId: packageDocumentId,
+      worlds: [],
+      rules: {
+        ruleSetId,
+        rootHash: ruleRootHash,
+        revision: 1,
+        engine: { adapterId: 'offscreen-core', adapterVersion: 1 },
+      },
+      entries: [
+        {
+          documentId: packageDocumentId,
+          revision: 1,
+          path: 'START.md',
+          objectHash: packageObjectHash,
+          kind: 'orientation',
+          authority: 'canon',
+          visibility: 'player-known',
+          activation: 'initial-canon',
+        },
+      ],
+    }),
+  );
+}
+
+test('start package overlays a v2 library root without rehashing untouched nodes', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-start-v2-'));
+  const store = new LocalDocumentStore(root);
+  const campaignId = randomUUID();
+  const operationId = randomUUID();
+  const staged = await stageV2CampaignEntries(store, campaignId);
+  const startRootHash = await minimalStartPackage(store);
+  const overlaid = await instantiateStartPackage(store, {
+    startRootHash,
+    campaignId,
+    operationId,
+    baseRootHash: staged.baseRootHash,
+    baseRootRevision: 1,
+  });
+  const v2Root = await store.readLibraryRoot(overlaid.rootHash);
+  assert.equal(v2Root.format, 'offscreen.library-root.v2');
+  const indexed = collectLibraryManifestEntries(
+    await loadLibraryIndex((hash) => store.readLibraryNode(hash), v2Root),
+  );
+  const harbor = indexed.find((entry) => entry.path === 'world/harbor.md');
+  const ledger = indexed.find((entry) => entry.path === 'world/ledger.md');
+  assert.equal(harbor.objectHash, staged.leftHash);
+  assert.equal(ledger.objectHash, staged.rightHash);
+  assert.ok(indexed.some((entry) => entry.path === 'start/package.md'));
+});
+
+test('start package v2 overlay rejects colliding paths', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-start-v2-collision-'));
+  const store = new LocalDocumentStore(root);
+  const campaignId = randomUUID();
+  const staged = await stageV2CampaignEntries(store, campaignId);
+  const rulesStartRoot = await minimalStartPackage(store);
+  const rules = await store.readStartPackageManifest(rulesStartRoot);
+  const orientationDocumentId = randomUUID();
+  const collisionDocumentId = randomUUID();
+  const orientationObjectHash = await store.putDocument(
+    canonicalDocumentSchema.parse({
+      format: 'offscreen.document.v1',
+      envelope: {
+        documentId: orientationDocumentId,
+        kind: 'orientation',
+        schemaVersion: 1,
+        revision: 1,
+        authority: 'canon',
+        visibility: 'player-known',
+        sources: [],
+      },
+      title: 'Opening',
+      body: 'Salt air.',
+    }),
+  );
+  const collisionObjectHash = await store.putDocument(
+    canonicalDocumentSchema.parse({
+      format: 'offscreen.document.v1',
+      envelope: {
+        documentId: collisionDocumentId,
+        kind: 'lore',
+        schemaVersion: 1,
+        revision: 1,
+        authority: 'canon',
+        visibility: 'player-known',
+        sources: [],
+      },
+      title: 'Harbor clash',
+      body: 'Different fog.',
+    }),
+  );
+  const startRootHash = await store.putStartPackageManifest(
+    startPackageManifestSchema.parse({
+      ...rules,
+      startPackageId: randomUUID(),
+      title: 'Collision start',
+      authorOperationId: randomUUID(),
+      orientationDocumentId,
+      entries: [
+        {
+          documentId: orientationDocumentId,
+          revision: 1,
+          path: 'START.md',
+          objectHash: orientationObjectHash,
+          kind: 'orientation',
+          authority: 'canon',
+          visibility: 'player-known',
+          activation: 'initial-canon',
+        },
+        {
+          documentId: collisionDocumentId,
+          revision: 1,
+          path: 'world/harbor.md',
+          objectHash: collisionObjectHash,
+          kind: 'lore',
+          authority: 'canon',
+          visibility: 'player-known',
+          activation: 'initial-canon',
+        },
+      ],
+    }),
+  );
+  await assert.rejects(
+    instantiateStartPackage(store, {
+      startRootHash,
+      campaignId,
+      operationId: randomUUID(),
+      baseRootHash: staged.baseRootHash,
+      baseRootRevision: 1,
+    }),
+    /collides with campaign: world\/harbor\.md/,
   );
 });

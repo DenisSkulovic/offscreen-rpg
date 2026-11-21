@@ -25,7 +25,7 @@
 
 [DXK07](archive/2026-11/infrastructure/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) is **Done for implementation**; full fresh-clone/Headlamp operator proof remains [DXK-FINAL](../tasks/open/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md). · [Implementation roadmap](../IMPLEMENTATION-ROADMAP.md) · [Current distributed source review](../designs/open/distributed-turn-poc/README.md) · [First-campaign readiness study](../designs/open/first-campaign-readiness-2026-11-20/README.md) · [Cursor backlog handoff](CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md). These source maps are dated; they do not supersede HEAD code or current Change states.
 
-### Writer refoundation | documentation completed, WR02 selected
+### Writer refoundation | WR02 archived
 
 | Change | Work item |
 | --- | --- |
@@ -33,7 +33,7 @@
 | [WRD02](archive/2026-11/other/2026-11-21--wrd02-storyteller-library-technical-docs/CHANGE.md) | Storyteller/Library technical wiki (Done) |
 | [WRD03](archive/2026-11/other/2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md) | Engine/fork technical wiki (Done) |
 | [WRD04](archive/2026-11/other/2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md) | Wiki reconciliation (Done) |
-| [WR02](open/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | Persistent Library / source identity |
+| [WR02](archive/2026-11/storyteller/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | Persistent Library / source identity (Done) |
 | [WR03](open/2026-11-21--wr03-agentic-writers-workdesk/CHANGE.md) | Writer's Workdesk |
 | [WR04](open/2026-11-21--wr04-delegated-writer-research/CHANGE.md) | Bounded research assistants |
 | [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | Coherent scene publication |

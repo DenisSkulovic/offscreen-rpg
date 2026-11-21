@@ -15,6 +15,12 @@ import {
   type DocumentManifestEntry,
   type DocumentStore,
   worldPackageReferenceSchema,
+  applyLibraryBatch,
+  collectLibraryManifestEntries,
+  createEmptyLibraryIndex,
+  loadLibraryIndex,
+  type LibraryBatchOperation,
+  type LibraryRootV2,
 } from '@offscreen/documents';
 import type { Database } from '@offscreen/db';
 import { story, storyDocumentCommit } from '@offscreen/db/story-schema';
@@ -58,6 +64,43 @@ export const admitDocumentChangesSchema = z.strictObject({
   expectedRootRevision: z.number().int().nonnegative(),
   changes: z.array(admittedDocumentChangeSchema).min(1).max(32),
 });
+
+export const adoptLibraryV2Schema = z.strictObject({
+  expectedRootHash: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/)
+    .nullable(),
+  expectedRootRevision: z.number().int().nonnegative(),
+});
+
+export type CampaignDocumentRoot =
+  | {
+      rootHash: string | null;
+      manifest: DocumentManifest;
+    }
+  | {
+      rootHash: string;
+      rootRevision: number;
+      format: 'offscreen.library-root.v2';
+      root: LibraryRootV2;
+    };
+
+function isLibraryRootV2(root: CampaignDocumentRoot): root is Extract<
+  CampaignDocumentRoot,
+  { format: 'offscreen.library-root.v2' }
+> {
+  return 'format' in root && root.format === 'offscreen.library-root.v2';
+}
+
+async function persistLibraryIndex(
+  storage: DocumentStore,
+  library: Awaited<ReturnType<typeof loadLibraryIndex>>,
+) {
+  for (const node of library.store.values()) {
+    await storage.putLibraryNode(node);
+  }
+  return storage.putLibraryRoot(library.root);
+}
 
 function emptyManifest(campaignId: string): DocumentManifest {
   return documentManifestSchema.parse({
@@ -435,28 +478,34 @@ export function createCampaignDocuments(
       };
     },
 
-    async readRoot(args: { ownerId: string; storyId: string }) {
+    async readRoot(args: {
+      ownerId: string;
+      storyId: string;
+    }): Promise<CampaignDocumentRoot> {
+      const storyId = parseStoryIdentifier(args.storyId);
       const [owned] = await database.db
         .select({
           rootHash: story.documentRootHash,
           rootRevision: story.documentRootRevision,
         })
         .from(story)
-        .where(
-          and(
-            eq(story.id, parseStoryIdentifier(args.storyId)),
-            eq(story.ownerId, args.ownerId),
-          ),
-        );
+        .where(and(eq(story.id, storyId), eq(story.ownerId, args.ownerId)));
       if (!owned) throw new StoryError('not_found');
-      let manifest: DocumentManifest;
       if (owned.rootHash) {
         try {
           const libraryRoot = await storage.readLibraryRoot(owned.rootHash);
           if (libraryRoot.format === 'offscreen.library-root.v2') {
-            throw new Error(
-              'Published document root does not match its campaign',
-            );
+            if (owned.rootRevision <= 0) {
+              throw new Error(
+                'Published document root does not match its campaign',
+              );
+            }
+            return {
+              rootHash: owned.rootHash,
+              rootRevision: owned.rootRevision,
+              format: 'offscreen.library-root.v2',
+              root: libraryRoot,
+            };
           }
         } catch (error) {
           if (error instanceof DocumentStorageError) {
@@ -466,14 +515,17 @@ export function createCampaignDocuments(
             throw error;
           }
         }
-        manifest = await storage.readManifest(owned.rootHash);
-      } else {
-        manifest = emptyManifest(args.storyId);
+        const manifest = await storage.readManifest(owned.rootHash);
+        if (
+          manifest.campaignId !== storyId ||
+          manifest.revision !== owned.rootRevision
+        ) {
+          throw new Error('Published document root does not match its campaign');
+        }
+        return { rootHash: owned.rootHash, manifest };
       }
-      if (
-        manifest.campaignId !== args.storyId ||
-        manifest.revision !== owned.rootRevision
-      ) {
+      const manifest = emptyManifest(storyId);
+      if (manifest.revision !== owned.rootRevision) {
         throw new Error('Published document root does not match its campaign');
       }
       return { rootHash: owned.rootHash, manifest };
@@ -552,6 +604,119 @@ export function createCampaignDocuments(
       };
     },
 
+    async adoptLibraryV2(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      const storyId = parseStoryIdentifier(args.storyId);
+      const operationId = parseStoryIdentifier(args.operationId);
+      const request = adoptLibraryV2Schema.safeParse(args.body);
+      if (!request.success) throw new StoryError('invalid');
+      const requestHash = hashCanonicalJson(request.data);
+
+      const [priorCommit] = await database.db
+        .select({
+          requestHash: storyDocumentCommit.requestHash,
+          rootHash: storyDocumentCommit.rootHash,
+          rootRevision: storyDocumentCommit.rootRevision,
+        })
+        .from(storyDocumentCommit)
+        .innerJoin(story, eq(story.id, storyDocumentCommit.storyId))
+        .where(
+          and(
+            eq(storyDocumentCommit.storyId, storyId),
+            eq(storyDocumentCommit.operationId, operationId),
+            eq(story.ownerId, args.ownerId),
+          ),
+        );
+      if (priorCommit) {
+        if (priorCommit.requestHash !== requestHash)
+          throw new StoryError('conflict', 'operation_identity');
+        return {
+          rootHash: priorCommit.rootHash,
+          rootRevision: priorCommit.rootRevision,
+          replayed: true,
+        };
+      }
+
+      const current = await this.readRoot({ ownerId: args.ownerId, storyId });
+      if (isLibraryRootV2(current)) {
+        throw new StoryError('conflict', 'document_root');
+      }
+      if (
+        current.rootHash !== request.data.expectedRootHash ||
+        current.manifest.revision !== request.data.expectedRootRevision
+      ) {
+        throw new StoryError('conflict', 'document_root');
+      }
+
+      let library = createEmptyLibraryIndex();
+      for (const entry of current.manifest.entries) {
+        library = applyLibraryBatch(library, [{ op: 'create', entry }]);
+      }
+      const rootHash = await persistLibraryIndex(storage, library);
+      const nextRevision = current.manifest.revision + 1;
+
+      return database.db.transaction(async (tx) => {
+        const locked = await lockOwnedStory(tx, {
+          ownerId: args.ownerId,
+          storyId,
+        });
+        const [receipt] = await tx
+          .select()
+          .from(storyDocumentCommit)
+          .where(
+            and(
+              eq(storyDocumentCommit.storyId, storyId),
+              eq(storyDocumentCommit.operationId, operationId),
+            ),
+          );
+        if (receipt) {
+          if (receipt.requestHash !== requestHash)
+            throw new StoryError('conflict', 'operation_identity');
+          return {
+            rootHash: receipt.rootHash,
+            rootRevision: receipt.rootRevision,
+            replayed: true,
+          };
+        }
+        if (
+          locked.documentRootHash !== current.rootHash ||
+          locked.documentRootRevision !== current.manifest.revision
+        ) {
+          throw new StoryError('conflict', 'document_root');
+        }
+        await tx.insert(storyDocumentCommit).values({
+          storyId,
+          operationId,
+          requestHash,
+          baseRootHash: current.rootHash,
+          rootHash,
+          rootRevision: nextRevision,
+        });
+        await tx
+          .update(story)
+          .set({
+            documentRootHash: rootHash,
+            documentRootRevision: nextRevision,
+            viewVersion: locked.viewVersion + 1,
+          })
+          .where(eq(story.id, storyId));
+        await enqueue(tx, {
+          id: randomUUID(),
+          topic: knowledgeIndexTopic,
+          operationId,
+        });
+        return {
+          rootHash,
+          rootRevision: nextRevision,
+          replayed: false,
+        };
+      });
+    },
+
     async admit(args: {
       ownerId: string;
       storyId: string;
@@ -591,6 +756,165 @@ export function createCampaignDocuments(
       }
 
       const current = await this.readRoot({ ownerId: args.ownerId, storyId });
+
+      if (isLibraryRootV2(current)) {
+        if (
+          current.rootHash !== request.data.expectedRootHash ||
+          current.rootRevision !== request.data.expectedRootRevision
+        ) {
+          throw new StoryError('conflict', 'document_root');
+        }
+
+        const library = await loadLibraryIndex(
+          (hash) => storage.readLibraryNode(hash),
+          current.root,
+        );
+        const entriesByDocument = new Map(
+          collectLibraryManifestEntries(library).map((entry) => [
+            entry.documentId,
+            entry,
+          ]),
+        );
+        const changedDocuments: {
+          change: z.infer<typeof admittedDocumentChangeSchema>;
+          document: z.infer<typeof canonicalDocumentSchema>;
+        }[] = [];
+        for (const change of request.data.changes) {
+          const previous = entriesByDocument.get(change.documentId);
+          if (
+            (previous === undefined && change.expectedRevision !== null) ||
+            (previous !== undefined &&
+              previous.revision !== change.expectedRevision)
+          ) {
+            throw new StoryError('conflict', 'document_revision');
+          }
+          const revision = (change.expectedRevision ?? 0) + 1;
+          const document = canonicalDocumentSchema.parse({
+            format: 'offscreen.document.v1',
+            envelope: {
+              documentId: change.documentId,
+              kind: change.kind,
+              schemaVersion: 1,
+              revision,
+              authority: change.authority,
+              visibility: change.visibility,
+              sources: change.sources,
+            },
+            title: change.title,
+            body: change.body,
+          });
+          changedDocuments.push({ change, document });
+        }
+
+        const batch: LibraryBatchOperation[] = [];
+        const projectedEntries = new Map(entriesByDocument);
+        const nextEntries: DocumentManifestEntry[] = [];
+        for (const { change, document } of changedDocuments) {
+          const objectHash = await storage.putDocument(document);
+          const previous = entriesByDocument.get(change.documentId);
+          const entry: DocumentManifestEntry = {
+            documentId: change.documentId,
+            revision: document.envelope.revision,
+            path: change.path,
+            objectHash,
+            kind: change.kind,
+            authority: change.authority,
+            visibility: change.visibility,
+          };
+          projectedEntries.set(change.documentId, entry);
+          nextEntries.push(entry);
+          if (previous === undefined) {
+            batch.push({ op: 'create', entry });
+          } else {
+            if (previous.path !== change.path) {
+              batch.push({
+                op: 'rename',
+                documentId: change.documentId,
+                path: change.path,
+              });
+            }
+            batch.push({ op: 'replace', entry });
+          }
+        }
+        const projectedPaths = [...projectedEntries.values()].map(
+          (entry) => entry.path,
+        );
+        if (new Set(projectedPaths).size !== projectedPaths.length) {
+          throw new StoryError('conflict', 'document_path');
+        }
+
+        const availableSources = new Set(
+          [...projectedEntries.values()].map(
+            (entry) => `${entry.documentId}@${entry.revision}`,
+          ),
+        );
+        const requireSources = assertManifestReferences(availableSources);
+        for (const { document } of changedDocuments)
+          requireSources(document.envelope.sources);
+
+        const nextLibrary = applyLibraryBatch(library, batch);
+        const rootHash = await persistLibraryIndex(storage, nextLibrary);
+        const expectedRevision = current.rootRevision;
+
+        return database.db.transaction(async (tx) => {
+          const locked = await lockOwnedStory(tx, {
+            ownerId: args.ownerId,
+            storyId,
+          });
+          const [receipt] = await tx
+            .select()
+            .from(storyDocumentCommit)
+            .where(
+              and(
+                eq(storyDocumentCommit.storyId, storyId),
+                eq(storyDocumentCommit.operationId, operationId),
+              ),
+            );
+          if (receipt) {
+            if (receipt.requestHash !== requestHash)
+              throw new StoryError('conflict', 'operation_identity');
+            return {
+              rootHash: receipt.rootHash,
+              rootRevision: receipt.rootRevision,
+              replayed: true,
+            };
+          }
+          if (
+            locked.documentRootHash !== current.rootHash ||
+            locked.documentRootRevision !== expectedRevision
+          ) {
+            throw new StoryError('conflict', 'document_root');
+          }
+          const nextRevision = locked.documentRootRevision + 1;
+          await tx.insert(storyDocumentCommit).values({
+            storyId,
+            operationId,
+            requestHash,
+            baseRootHash: current.rootHash,
+            rootHash,
+            rootRevision: nextRevision,
+          });
+          await tx
+            .update(story)
+            .set({
+              documentRootHash: rootHash,
+              documentRootRevision: nextRevision,
+              viewVersion: locked.viewVersion + 1,
+            })
+            .where(eq(story.id, storyId));
+          await enqueue(tx, {
+            id: randomUUID(),
+            topic: knowledgeIndexTopic,
+            operationId,
+          });
+          return {
+            rootHash,
+            rootRevision: nextRevision,
+            replayed: false,
+          };
+        });
+      }
+
       if (
         current.rootHash !== request.data.expectedRootHash ||
         current.manifest.revision !== request.data.expectedRootRevision

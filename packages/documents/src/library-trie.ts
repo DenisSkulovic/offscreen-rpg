@@ -26,6 +26,46 @@ export function createEmptyLibraryTrie(): {
   };
 }
 
+/** Overlay store: reads fall through to base; writes touch only the edit path. */
+export type LibraryTrieEdit = {
+  readonly base: LibraryTrieStore;
+  readonly overlay: Map<string, LibraryNodeV2>;
+  readonly parsedBase: Map<string, LibraryNodeV2>;
+  get(hash: string): LibraryNodeV2 | undefined;
+  set(hash: string, node: LibraryNodeV2): void;
+  hasOverlay(hash: string): boolean;
+  finalize(): LibraryTrieStore;
+};
+
+export function createLibraryTrieEdit(base: LibraryTrieStore): LibraryTrieEdit {
+  const overlay = new Map<string, LibraryNodeV2>();
+  const parsedBase = new Map<string, LibraryNodeV2>();
+  return {
+    base,
+    overlay,
+    parsedBase,
+    get(hash: string) {
+      return overlay.get(hash) ?? base.get(hash);
+    },
+    set(hash: string, node: LibraryNodeV2) {
+      overlay.set(hash, node);
+    },
+    hasOverlay(hash: string) {
+      return overlay.has(hash);
+    },
+    finalize() {
+      if (overlay.size === 0) {
+        return new Map(base);
+      }
+      const next = new Map(base);
+      for (const [hash, node] of overlay) {
+        next.set(hash, node);
+      }
+      return next;
+    },
+  };
+}
+
 function assertValidKey(key: string): void {
   if (key.length === 0) {
     throw new Error('Library trie key must not be empty');
@@ -58,15 +98,32 @@ function loadNode(store: LibraryTrieStore, hash: string): LibraryNodeV2 {
   return libraryNodeV2Schema.parse(node);
 }
 
+function loadNodeForEdit(store: LibraryTrieEdit, hash: string): LibraryNodeV2 {
+  assertValidHash(hash);
+  const node = store.get(hash);
+  if (node === undefined) {
+    throw new Error(`Missing library node for hash ${hash}`);
+  }
+  if (store.hasOverlay(hash)) {
+    return node;
+  }
+  const cached = store.parsedBase.get(hash);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const parsed = libraryNodeV2Schema.parse(node);
+  store.parsedBase.set(hash, parsed);
+  return parsed;
+}
+
 function commitNode(
-  store: LibraryTrieStore,
+  store: LibraryTrieEdit,
   node: LibraryNodeV2,
-): { store: LibraryTrieStore; hash: string } {
+): { store: LibraryTrieEdit; hash: string } {
   const validated = libraryNodeV2Schema.parse(node);
   const hash = hashCanonicalJson(validated);
-  const next = new Map(store);
-  next.set(hash, validated);
-  return { store: next, hash };
+  store.set(hash, validated);
+  return { store, hash };
 }
 
 function updateChildren(
@@ -84,9 +141,9 @@ function updateChildren(
 }
 
 function collapseNode(
-  store: LibraryTrieStore,
+  store: LibraryTrieEdit,
   node: LibraryNodeV2,
-): { store: LibraryTrieStore; hash: string } {
+): { store: LibraryTrieEdit; hash: string } {
   const validated = libraryNodeV2Schema.parse(node);
   if (validated.value === null && validated.children.length === 0) {
     return { store, hash: emptyLibraryRootHash };
@@ -95,12 +152,12 @@ function collapseNode(
 }
 
 function setAt(
-  store: LibraryTrieStore,
+  store: LibraryTrieEdit,
   nodeHash: string,
   nibbles: string[],
   value: Record<string, unknown>,
-): { store: LibraryTrieStore; hash: string } {
-  const node = loadNode(store, nodeHash);
+): { store: LibraryTrieEdit; hash: string } {
+  const node = loadNodeForEdit(store, nodeHash);
   if (nibbles.length === 0) {
     return commitNode(store, {
       format: 'offscreen.library-node.v2',
@@ -124,11 +181,11 @@ function setAt(
 }
 
 function deleteAt(
-  store: LibraryTrieStore,
+  store: LibraryTrieEdit,
   nodeHash: string,
   nibbles: string[],
-): { store: LibraryTrieStore; hash: string; deleted: boolean } {
-  const node = loadNode(store, nodeHash);
+): { store: LibraryTrieEdit; hash: string; deleted: boolean } {
+  const node = loadNodeForEdit(store, nodeHash);
   if (nibbles.length === 0) {
     if (node.value === null) {
       return { store, hash: nodeHash, deleted: false };
@@ -188,14 +245,7 @@ export function getLibraryTrieValue(
   return terminal.value;
 }
 
-export function setLibraryTrieValue(
-  store: LibraryTrieStore,
-  rootHash: string,
-  key: string,
-  value: Record<string, unknown>,
-): { store: LibraryTrieStore; rootHash: string } {
-  assertValidKey(key);
-  assertValidHash(rootHash);
+function assertTrieValue(value: Record<string, unknown>): void {
   if (
     value === null ||
     typeof value !== 'object' ||
@@ -203,8 +253,56 @@ export function setLibraryTrieValue(
   ) {
     throw new Error('Library trie value must be a plain JSON object');
   }
-  const result = setAt(store, rootHash, keyToNibbles(key), value);
-  return { store: result.store, rootHash: result.hash };
+}
+
+export function finalizeLibraryTrieEdit(edit: LibraryTrieEdit): LibraryTrieStore {
+  return edit.finalize();
+}
+
+export function libraryTrieEditReadView(edit: LibraryTrieEdit): LibraryTrieStore {
+  return {
+    get(hash: string) {
+      return edit.get(hash);
+    },
+  } as LibraryTrieStore;
+}
+
+export function setLibraryTrieValueInEdit(
+  edit: LibraryTrieEdit,
+  rootHash: string,
+  key: string,
+  value: Record<string, unknown>,
+): string {
+  assertValidKey(key);
+  assertValidHash(rootHash);
+  assertTrieValue(value);
+  const result = setAt(edit, rootHash, keyToNibbles(key), value);
+  return result.hash;
+}
+
+export function deleteLibraryTrieKeyInEdit(
+  edit: LibraryTrieEdit,
+  rootHash: string,
+  key: string,
+): string {
+  assertValidKey(key);
+  assertValidHash(rootHash);
+  const result = deleteAt(edit, rootHash, keyToNibbles(key));
+  if (!result.deleted) {
+    throw new Error('Library trie key not found');
+  }
+  return result.hash;
+}
+
+export function setLibraryTrieValue(
+  store: LibraryTrieStore,
+  rootHash: string,
+  key: string,
+  value: Record<string, unknown>,
+): { store: LibraryTrieStore; rootHash: string } {
+  const editStore = createLibraryTrieEdit(store);
+  const nextRootHash = setLibraryTrieValueInEdit(editStore, rootHash, key, value);
+  return { store: editStore.finalize(), rootHash: nextRootHash };
 }
 
 export function deleteLibraryTrieKey(
@@ -212,11 +310,7 @@ export function deleteLibraryTrieKey(
   rootHash: string,
   key: string,
 ): { store: LibraryTrieStore; rootHash: string } {
-  assertValidKey(key);
-  assertValidHash(rootHash);
-  const result = deleteAt(store, rootHash, keyToNibbles(key));
-  if (!result.deleted) {
-    throw new Error('Library trie key not found');
-  }
-  return { store: result.store, rootHash: result.hash };
+  const editStore = createLibraryTrieEdit(store);
+  const nextRootHash = deleteLibraryTrieKeyInEdit(editStore, rootHash, key);
+  return { store: editStore.finalize(), rootHash: nextRootHash };
 }
