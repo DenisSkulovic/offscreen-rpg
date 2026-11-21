@@ -1,3 +1,7 @@
+## Parallel commissioning supersedes single MA08 dispatch (2026-11-21)
+
+**Current selected three-Cursor wave:** [Parallel structural wave: MA08A + MA08B + MA10A](PARALLEL-STRUCTURAL-WAVE.md). MA08's previous label Ready is withdrawn: **do not dispatch MA08 itself**. Launch MA08A (lab-support), MA08B (DB outbox relay / logging), MA10A (AST graph) in three separate linked worktrees from a common current undertaking HEAD. Their source ownership does not overlap. One integration custodian serializes joins, lockfile regeneration, catalog updates and proof. MA08C follows for drafts and final consumers. MA09 and full MA10 remain dependency-blocked until actual Writer interfaces/previous migrations settle.
+
 # Writer implementation | Storyteller Workshop
 
 **Human first:** [Storyteller Workshop · The big picture](OVERVIEW.md) is the required supervisor-oriented status and finish-line view. It must be checked and refreshed with material wave/Change integrations; this implementation map is *not* the supervisor's entrypoint.
