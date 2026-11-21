@@ -110,6 +110,12 @@ The same skeleton covers studying for a week, a five-second sentence, giving awa
 
 These are logical ownership lines. They are not an order to create seven top-level packages. Existing `packages/game`, `application`, `storyteller`, `documents`, `db` and `workflows` may already be the right deployable seams. A file, import or transaction that crosses the seam is the defect, not the absence of a new package.
 
+## Selected near-term module ownership cuts (MA05A / MA05B)
+
+**Selected implementation direction, not yet a claim of landed code:** persisted generation-kind identities (`storyteller.profiled.v1` and `storyteller.context-capture.v1`) are neutral contracts, distinct from durable outbox workflow *topics* and runtime/provider selection. The MA05A extraction publishes both from `@offscreen/contracts/storyteller-kinds` with historical literal values and old Storyteller exports retained. SQL transaction typing and outbox `enqueue(tx,notice)` identity/conflict semantics belong with PostgreSQL infrastructure in `@offscreen/db/outbox`; MA05B moves exactly those primitives, preserving the old Application re-export and leaving delivery/lease dispatcher behavior unchanged. No new SQL schema, timing, authorization, publication or model-spend behavior is selected by these moves.
+
+These are prerequisite boundary cuts, **not** the complete Story Authority / Storyteller-runtime inversion. Transaction-scoped start, admission, narrative capture, follow-up, scripted generation and publication remain coupled and require source-grounded typed interfaces and a separate accepted proof plan before workspace extraction. An outer application composition layer may assemble both dependencies, but neither domain should import an implementation-only service from the other to determine its own authority. MA06's eventual workspace relocation must not repeat the already-completed foundational cuts or mistake an acyclic package graph for SQL correctness.
+
 ## Preferred capture shape
 
 Some current paths read canonical documents while an action's story lock remains held. The preferred evolution is a **short capture transaction, immutable evidence materialization outside the lock, then a fenced publication transaction**, with the exact captured authority. Early outcome generation stays selective for explicitly covered dependencies. It is not a universal future-action policy. The general capability engine remains a conceptual target until one new mechanic is demonstrated. It is not permission to build a plugin framework.
