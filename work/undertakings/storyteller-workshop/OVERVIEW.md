@@ -1,76 +1,92 @@
 # Storyteller Workshop | The big picture
 
-**The supervisor's first page.** This is the plain-language, visual status of the *entire* Storyteller evolution **and** Modular Monolith reshaping. Start here, not with the Change queue. The [Undertaking ledger](UNDERTAKING.md#whole-undertaking-completion-control--living-ledger) records technical evidence; [Program](PROGRAM.md) routes implementation.
+**The supervisor's first page.** This is the accessible, numeric progress view for **both** Storyteller evolution and Modular Monolith reshaping. The [technical undertaking ledger](UNDERTAKING.md#whole-undertaking-completion-control--living-ledger) owns factual evidence and [Program](PROGRAM.md) owns execution planning.
 
-**Checked:** 2026-11-21 · **Integration branch:** `undertaking/storyteller-workshop` · **Truth boundary:** integrated on this branch is not merged to `main`. This is a snapshot, **not live monitoring**. Next ChatGPT visit should compare it with the current HEAD and receipts.
+**Checked:** 2026-11-21 · **Reference branch:** `undertaking/storyteller-workshop` · **Latest inspected implementation:** P3-A `852f01a0` (P3-B `4005a0e2`, P3-C `5615f077` are ancestors). Additional overview/planning commits may advance HEAD. **Not merged to `main`**, not live-product verification.
 
-## 🎯 What are we trying to finish?
+## 🎯 What are we building?
 
-You can invent a premise in one sentence, enter an ongoing fictional life, make meaningful decisions, work or wait, return later, and meet a Writer that **remembers what actually happened**. You can revisit or fork an old scene without inheriting the parent's future.
+You give a one-sentence premise and enter a persistent fictional life. You can choose, work, wait, leave and come back. The Writer remembers what *actually* happened and narrates the next consequential scene. Old scenes are available to read or fork into a different future. The monorepo beneath it has clear owners and no accumulating `application` junk drawer.
 
-Underneath, one understandable modular monolith owns the game's truth. Not an ever-growing `application` junk drawer, a second clock, or a collection of fragile prompt scripts.
+## 📊 Rough completion estimates
+
+| Track | Our current estimate | Remaining | What the number means |
+| --- | ---: | ---: | --- |
+| 🏗️ **Modular Monolith shaping** | **~75%** | ~25% | The major package/domain extraction is done; consumer/compatibility cleanup, graph enforcement and final validation remain |
+| 🎭 **Storyteller evolution** | **~60%** | ~40% | Library, scene truth, launch, forks and a scripted scene-1→2→3 gameplay kernel exist; real integrated provider, research, user-facing journey and convincing quality proof are incomplete |
+| 🧭 **Combined undertaking** | **~65%** | ~35% | A subjective effort-and-risk blend: roughly **70% Storyteller / 30% architecture**, rounded to the nearest 5 percentage points |
+
+```text
+Modular Monolith  75%  ███████████████░░░░░   ~25% left
+Storyteller       60%  ████████████░░░░░░░░   ~40% left
+Combined          65%  █████████████░░░░░░░   ~35% left
+```
+
+**Confidence:** low-to-moderate, **roughly ±10–15 percentage points**. These are **subjective estimates of remaining engineering effort and integration risk**, not completed-Change ratios, tested-feature coverage, a deadline or a promise that exactly 35% effort remains. Storyteller's *proven end-user experience* lags behind the foundational code. Percentages can go **down** if real provider or long-form acceptance reveals major defects; do not mechanically increase them whenever a packet closes.
+
+**Why these numbers?** Monorepo already underwent its main package extractions but retains old forwarding imports and final integration work. Storyteller's core pieces and scripted continued-scene tests are present, but the playable Web journey, independent researchers, provider wiring/live evaluation, narrative quality and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
 
 ## At a glance
 
-| Big outcome | State | What this means to a player or maintainer |
+| Major capability | Verified state on undertaking | Human interpretation |
 | --- | --- | --- |
-| 🏗️ **Reshape the monorepo's foundation** | **Mostly built** | Story Engine and Admin have real owners; remaining compatibility forwarding and dependency cleanup are still due |
-| 📚 **Remember stories and preserve scene history** | **Built on undertaking** | Library, Writer Workdesk and immutable scene-v2 publication exist |
-| 🌿 **Revisit and fork an earlier life** | **Built on undertaking** | WR06 restores active historical commitments into a separate branch; still needs final end-to-end experience proof |
-| 🚪 **Start from one prompt** | **Scripted core built** | WR07B saves an authenticated, readable first scene with safe retry; public Launch remains gated, real model mode unproved |
-| 🎭 **Make a real choice and live through the next scene** | **Not yet built** | Writer-generated choice buttons are not yet executable; the continuing Living Writer must produce scene 2, scene 3 and beyond |
-| 🧠 **Use a real model with bounded research and spending** | **Incomplete / proof outstanding** | Writer tools/custody foundations exist; a working funded provider route and optional independent read-only researchers remain to be demonstrated |
-| 🧹 **Finish and land the whole undertaking** | **Not yet** | One bulk monorepo cleanup, long-life gameplay/failure acceptance, truthful docs, merge to `main` and retirement |
+| 🧱 Package separation and domain owners | **Mostly achieved** | Story Engine and Admin have distinct ownership; compatibility cleanup remains |
+| 📚 Library, Writer Workdesk and immutable scene history | **Implemented** | Source-aware memory foundation and v2 publication are in place |
+| 🌿 Historical forks with active commitments | **Implemented** | WR06 is archived; broader player journey still needs acceptance |
+| 🚪 One-prompt opening | **Scripted implementation** | WR07B archived; public Launch feature remains gated |
+| 🎭 Actual choices and subsequent Writer scenes | **Scripted kernel implemented** | P3-A archived: world-neutral intent, existing clock, scene 2 and 3; this is not a tested live-model UI |
+| 💳 Real provider transport / spending custody | **Code integrated, live proof missing** | P3-B archived, transport and usage-settlement tests exist; end-to-end Writer-loop injection/real spend must still be verified |
+| 🧪 Long-form acceptance harness | **Harness integrated** | P3-C archived; does not prove all long-story or live-narrative quality criteria |
+| 🔍 Independent research children | **Not yet implemented** | WR04 planned, actual child separation and shared budget still needed |
+| 🎮 Complete Play/reentry UI | **Not yet accepted** | WR08 planned, must use the real player choice API and honest pending states |
+| 🧹 Final monorepo cleanup / main merge | **Outstanding** | One bulk consumer migration, final joined validation and undertaking retirement |
 
-### The journey, visually
+## 🗺️ The journey
 
 ```mermaid
 flowchart LR
-  A["🏗️ Foundations\nBuilt"] --> B["🚪 First scene + 🌿 Forks\nBuilt, limited"]
-  B --> C["🎭 Living Writer\nNext major outcome"]
-  C --> D["🧠 Real model + research\nStill required"]
-  D --> E["🧹 Monorepo + full acceptance\nFinal gate"]
-  E --> F["✅ Merge to main\nUndertaking finished"]
+  A["✅ Foundations / scene truth"] --> B["✅ Scripted Launch + forks"]
+  B --> C["✅ Scripted choice → scene 2 → 3"]
+  C --> D["🔧 Research + real-provider integration + Play UX"]
+  D --> E["🧹 Bulk monorepo cleanup + final tests"]
+  E --> F["🏁 Merge main / Done"]
 ```
 
-**Human interpretation:** we've completed much of the *engineering foundation*, **not** most of the playable experience. Resist turning a passing narrow test or a newly archived packet into a “game complete” claim.
+**Interpretation:** we've moved beyond building the engine room. The next stretch is turning these pieces into a *complete, observable, trustworthy experience*, then finishing the package structure. It is not 65% of end-user acceptance tests passing.
 
-## ✅ Already achieved
+## ✅ What is already achieved
 
-- The large legacy application responsibilities were substantially separated into **Story Engine** and **Admin**. Further cleanup is real, but this is no longer square one.
-- Stories have a persistent **Library, source-aware Writer Workdesk, mission identity and guarded execution scaffolding**.
-- Scene v2 captures **historical fictional truth**, not just a text passage.
-- **WR06** is integrated: an old scene can be forked into a child with remapped active commitments and source lineage. This is not yet the whole user experience acceptance.
-- **WR07B** is integrated: the scripted, authenticated Launch path can commit one readable opening scene and recover its status. The Web flag remains off, and an opening with unsupported clickable choices is rejected rather than faked.
+- Major Story Engine/Admin ownership extraction and core package restructuring.
+- Persistent Library and Workdesk, verified sources, Writer missions and historical v2 scene truth.
+- WR07B scripted one-prompt opening and WR06 active historical fork reconstruction.
+- **P3-A** integrated world-neutral narrative-intent admission, existing fictional-time authority and Writer scene 2→3 publication, with focused scripted tests.
+- **P3-B** integrated real Writer transport and usage-settlement custody with provider-free tests. **No funded live call has been proved.**
+- **P3-C** integrated a provider-free long-form acceptance runner. Its presence does not by itself certify narrative quality.
 
-## 🔨 What is left, in meaningful chunks?
+## 🔨 What remains, in outcome-sized chunks
 
-1. **Give the story its heartbeat.** One actual choice → admitted world action or finite quiet commitment → a Writer-produced next scene → another real choice. Support ordinary, abstract/nonhuman and mechanical worlds without fabricating character sheets.
-2. **Make the Writer real and safe.** Use a genuine model transport, actual charge/usage settlement, strict replay/uncertainty rules and optional independent **read-only** research assistants. Any real paid demonstration requires explicit authorization.
-3. **Prove the whole player journey.** Source-correct memories, accumulated time, return after absence, believable choices, historical branches, failed/retried operations and long-running narrative tests. Only then enable public Play and retire compulsory old entry paths.
-4. **Finish the monorepo in one decisive migration.** Redirect remaining callers from compatibility forwarding, enforce dependency direction and leave clear responsibilities. Avoid creating new packages just for tidiness.
-5. **Land the transformation.** Integrated product/security/cost/graph tests, documentation reconciliation, merge the undertaking into `main`, retire temporary Changes/Designs/branch.
-
-## 🛠️ Next Cursor wave: what is actually confirmed?
-
-**Checked against the published undertaking branch on 2026-11-21:** WR07B and WR06 are Done/archived. **The three later P3 Cursor chats (Living Writer gameplay, real provider custody, long-form acceptance) are NOT YET verified as integrated here.** Local Cursor completion or unpushed branches cannot be established from this GitHub view; don't describe them as Done or start dependent work until their receipts and integration SHAs appear.
-
-**Once all three P3 outcomes really land:** the next two large user-visible outcomes are [WR04 independent research assistants](../../changes/open/2026-11-21--wr04-delegated-writer-research/POST-P3-EXECUTION.md) and [WR08 complete Play/reentry experience](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/POST-P3-EXECUTION.md), designed for separate Writer/DB versus Web ownership. Both plans are **conditional**, needing brief current-source interface reconciliation before Cursor commission. After those, one bulk monorepo cleanup and final integrated acceptance/merge remain. This is a meaningful roadmap, not evidence of implementation.
+1. **Independent Writer research (WR04).** Bounded child contexts, read-only tools, trustworthy citations and one shared finite budget. Conditional packet exists; recheck post-P3 interfaces before executing.
+2. **One cohesive player experience (WR08).** Prompt → loading/held → scene → executable choice → later scene; revisit history and fork, preserve drafts and honor the feature gate.
+3. **Finish the actual AI runtime.** Confirm P3-B transport is connected to the Writer loop, exercise a bounded provider-backed mission with **explicit spending approval**, and verify uncertainty/billing/recovery. An adapter alone is not a live game.
+4. **Bulk monorepo finish.** Replace obsolete `@offscreen/application` forwarding consumers, enforce clear graph boundaries and compile/test the joined apps.
+5. **Prove and land the whole thing.** Long-running source-correct story/fork/reentry scenarios, permissions/financial negatives, product docs, merge to `main` and retire worktrees/undertaking.
 
 ## 🧭 Right now and next decision
 
-**Most important next milestone:** a new story supports **scene 1 → genuine player choice → scene 2 → another choice → scene 3**, with accurate time, remembered facts and no duplicate operations. A good first scene is not the same thing as a living game.
+**Current next wave:** prepare/reconcile [WR04 independent research](../../changes/open/2026-11-21--wr04-delegated-writer-research/POST-P3-EXECUTION.md) and [WR08 Play/reentry](../../changes/open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/POST-P3-EXECUTION.md). Both are **conditional planner packets**, not yet verified Ready against all landed P3 interfaces. Final bulk architecture cleanup follows stabilized Writer/Play interfaces.
 
-**Supervisor decisions currently needed:** none merely to continue safe planning or approved scripted implementation. **Separate permission is needed** before real paid provider runs, protected infrastructure, destructive operations or changed product scope.
+**Most important next milestone:** a user can start a story, make two *real* choices and return to subsequent scenes in the browser using the same trusted backend, with honest pending/error states. A scripted engine test alone is not this milestone.
 
-**Watch these risks:** publishing cosmetic choices with no action; mistaking zero-price scripted custody for correct real billing; two copies of the game clock; forking from live parent SQL rather than the selected historical checkpoint; premature monorepo cleanup while interfaces still change.
+**Supervisor decision:** real paid provider testing requires an explicit spending grant; none has been authorized here.
 
-## ⚑ How to keep this page useful
+**Risks:** integration between P3-B transport and real Writer mission execution; child research cost/source isolation; incomplete public Play UX; cleanup during moving gameplay interfaces.
 
-- **ChatGPT is the editorial owner** of the accessible story and must check it at every Undertaking cold start and after a material implementation wave or changed plan. The **named integration custodian** updates it when accepted Changes are joined, without colliding with other parents.
-- Reconcile this page with **actual integration HEAD, archived Change receipts, STATUS and the technical ledger**. Label “done on undertaking,” “planned,” “blocked” and “not verified” accurately. Do not claim a running Cursor's branch is integrated.
-- **Present this overview to the supervisor proactively** at Undertaking kickoff, major completed milestones, changed priorities/risk, when commissioning the next wave, and before final landing. In chat, summarize the human story and link this exact file. Do **not** promise autonomous background updates; refresh it when work is actually performed.
-- Maintain the sections above as a compact human navigation aid. Avoid raw SQL, detailed file maps, packet soup and invented precision. Do not maintain a second execution queue or authoritative technical truth here.
-- Before closing the Undertaking, give the supervisor a final **before/after and remaining limitations** summary. Then retire this working page with the Undertaking dossier per the lifecycle; preserve accepted enduring product descriptions in the permanent docs and recoverable history in Git.
+## ⚑ Required maintenance
 
-**Technical source of truth:** [Undertaking ledger](UNDERTAKING.md#whole-undertaking-completion-control--living-ledger) · [Writer implementation map](PROGRAM.md) · [Modular Monolith dossier](../modular-monolith/UNDERTAKING.md) · [Demonstrated status](../../../STATUS.md).
+- **ChatGPT reads this page first** at Undertaking cold start, rechecks its claims against integrated HEAD/Change receipts and updates **the three numeric estimates** after material integrations, scope or risk changes and before commissioning another wave. Do not leave estimates frozen while underlying capabilities change.
+- Preserve **three numbers (Storyteller %, monorepo %, combined %)**, remaining percentages, an uncertainty statement and the reasoning behind movements. Round to 5% increments; prefer a defensible judgment to fake precision. If cannot estimate one axis, explicitly mark it uncertain and explain instead of silently deleting the metric.
+- **Proactively show the supervisor the numbers and a plain-language interpretation** at significant milestones and handoffs, with a link here. No need to repeat an unchanged chart after every T-ID; do not promise autonomous background monitoring.
+- The **integration custodian** serializes substantive overview edits from accepted receipts. The technical ledger, `STATUS.md` and branch state stay factual authorities; this page is a human communication layer, not a second queue.
+- On closure present a final before/after and any limitations, then retire the temporary page with the undertaking.
+
+**Technical evidence:** [Undertaking ledger](UNDERTAKING.md#whole-undertaking-completion-control--living-ledger) · [Execution program](PROGRAM.md) · [Monorepo dossier](../modular-monolith/UNDERTAKING.md) · [Demonstrated status](../../../STATUS.md).
