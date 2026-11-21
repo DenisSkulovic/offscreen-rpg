@@ -131,11 +131,18 @@ export class AdminActorService {
         HttpStatus.FORBIDDEN,
       );
     }
+    const parsedCreatedAt =
+      createdAt instanceof Date ? createdAt : new Date(createdAt);
+    if (Number.isFinite(parsedCreatedAt.getTime()) === false) {
+      throw new HttpException(
+        adminError('step_up_required'),
+        HttpStatus.FORBIDDEN,
+      );
+    }
     return {
       userId: session.user.id,
       sessionId: session.session.id,
-      sessionCreatedAt:
-        createdAt instanceof Date ? createdAt : new Date(createdAt),
+      sessionCreatedAt: parsedCreatedAt,
     };
   }
 

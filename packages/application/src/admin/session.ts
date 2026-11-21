@@ -85,9 +85,16 @@ export function createAdminSessions(database: Database) {
       now?: Date;
     }): Promise<{ token: string; self: AdminSelfV1 }> {
       const now = input.now ?? new Date();
+      const nowMs = now.getTime();
+      const createdMs = input.authSessionCreatedAt.getTime();
+      const ageMs = nowMs - createdMs;
+      // NaN > freshness and a negative future age are both false under the old subtraction check,
+      // so non-finite and future times must be explicit refusals.
       if (
-        now.getTime() - input.authSessionCreatedAt.getTime() >
-        ADMIN_LOGIN_FRESHNESS_MS
+        !Number.isFinite(nowMs) ||
+        !Number.isFinite(createdMs) ||
+        ageMs < 0 ||
+        ageMs > ADMIN_LOGIN_FRESHNESS_MS
       ) {
         await appendAudit(database, {
           kind: 'admin.session.enter_denied',

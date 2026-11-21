@@ -14,7 +14,7 @@
 
 | Change | Prepared scope | Dependency |
 | --- | --- | --- |
-| [CQ01](open/2026-11-21--cq01-admin-session-freshness/CHANGE.md) | P0 staff session freshness rejects invalid/future timestamp | First; security review |
+| [CQ01](archive/2026-11/other/2026-11-21--cq01-admin-session-freshness/CHANGE.md) | P0 staff session freshness rejects invalid/future timestamp | Done on the undertaking branch |
 | [CQ02](open/2026-11-21--cq02-admin-http-ownership/CHANGE.md) | Extract Admin HTTP auth/error owners | **After CQ01** |
 | [CQ03](open/2026-11-21--cq03-play-surface-readability/CHANGE.md) | Play UI readable phase/typing boundaries | Can parallel CQ01 when WR08/UI owner disjoint |
 | [CQ04](open/2026-11-21--cq04-document-store-capability-guards/CHANGE.md) | Complete runtime checkpoint/fork store port validation | Can parallel CQ01 when WR05/WR06 source disjoint |
