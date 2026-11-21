@@ -1,3 +1,5 @@
+> **Current executor route, 2026-11-22:** Run T01–T04 from [TURN03-CURRENT-EXECUTION.md](TURN03-CURRENT-EXECUTION.md) instead of treating older historical prerequisite assumptions or the existing T01/T02 as unimplemented. Preserve the already-accepted 4/4 fixture and 5/5 STORY03 local causal receipts. New write ownership is only `infra/kubernetes/lab/app-release/turn03/**`, uniquely named evidence test and Change docs. Live cluster operator gate remains separate; don't claim DONE until actual all-eight-gate cross-Pod scorecard passes.
+
 # TURN03 | Composer tasks: one real scripted full-campaign acceptance
 
 **Dependency correction (2026-11-20):** [FORK01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/data/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md) is Done for the local private GA fork. A local success through Nest `this.stories.fork` is not a single-authority cold-kind proof. TURN03 T03 cold kind/browser fork remains NOT-RUN. [Roadmap](../../../IMPLEMENTATION-ROADMAP.md) owns order, not this historical note.
