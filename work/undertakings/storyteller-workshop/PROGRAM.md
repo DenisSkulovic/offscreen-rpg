@@ -1,5 +1,17 @@
 # Storyteller Workshop | current execution program
 
+## 2026-11-22 owner brainstorm preserved: economy, policy and Chamber
+
+Read [dated minutes](../../sessions/2026-11-22.md) for the owner's **reconstructed** thoughts, motives, objections and links, not as accepted implementation rules. New **proposed** and **not-dispatchable** packets:
+
+- [CFG01 typed versioned Writer execution policy](../../changes/open/2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md): source reconcile B1/B2 entitlement/funding/usage-window owner and WR11 actual SQL-capable Worker admission; replace hard-coded v3 effort numbers with server-resolved immutable snapshots only after transaction proof.
+- [EV01 centwise eval evidence](../../changes/open/2026-11-22--ev01-centwise-agent-evaluation/CHANGE.md): reuse Lab Support evaluator/oracle/preflight; all deterministic/re-score by default ($0), one paid inference only with explicit exact user approval and strict ledger-backed reservation. A quoted $0.75 upper suggestion is not a spending allocation.
+- [CH01 Chamber Scenario × Recipe × Experiment](../../changes/open/2026-11-22--ch01-chamber-experiment-workbench/CHANGE.md): hypothetical scene-20 setup in *disposable* canonical state, preview/fake run, source-pinned human comparison and saved cost/quality evidence, no independent engine or production credentials.
+- [CFG02 Admin config governance](../../changes/open/2026-11-22--cfg02-admin-policy-management/CHANGE.md): later draft/validate/publish/rollback with capabilities/audit, **deferred** until CFG01 is accepted.
+
+**Scope decision:** do not create alternate funding, policy or evaluation engines. Existing selected [platform spending authority](../../../docs/technical/platform/spending-and-entitlements.md) separates entitlement, funding, task recipe, creative profile and windows, and must remain canonical. Existing `writer-continuation.ts` has a pinned 4-round/8000-input/2000-output/$0.25 budget that still needs a real dynamic admission recipe. No implementation tests or paid calls have occurred during this brainstorming. Preserve current/previous batch execution priorities; do not automatically make any of these `work/QUEUE.md` current work.
+
+
 **Source-inspected checkpoint:** 2026-11-22 at `d3ba291763de26a0135c1ad84b077bf4f1c153a8`. **State:** active undertaking; **Current work:** [none](../../QUEUE.md). [Human overview](OVERVIEW.md) is the supervisor's first read; [full evidence ledger](UNDERTAKING.md#2026-11-22--source-audit-checkpoint-at-d3ba2917) owns nuanced Done/NOT RUN distinctions. These headings supersede the historical 2026-11-21 batch contracts below.
 
 
