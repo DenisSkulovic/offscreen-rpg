@@ -77,7 +77,7 @@ A two-service workflow Change may decompose as:
 - T05: separate worker composition and wiring + stopped-executor test;
 - T06: integration and permanent-doc reconciliation.
 
-This example is a **shape**, not an authorization to run these steps before prerequisites or assume the code already supports them. If each step is too small to test and review separately, combine two adjacent steps. A one-file fix is often better handled by the parent without a child at all.
+This example is a **shape**, not an authorization to run these steps before prerequisites or assume the code already supports them. If each step is too small to test and review separately, combine two adjacent steps. A **truly tiny mechanical** one-file fix already understood by the parent may be cheaper to do directly; a one-file authorization, state or nontrivial negative-test edit is still substantive and defaults to Composer delegation inside a multi-task Change. The canonical [one-time delegation decision](bounded-parent-orchestration.md#0a-budget-first-composer-dispatcher-contract-2026-11-21) resolves this exception. Parent should not chain substantive direct edits under the guise of saving dispatch overhead.
 
 **Example non-ready:** “add a Storyteller saga with correct retries, get it working in Kubernetes.” No defined saga compensation, writer, error states or test; even Grok Medium should not invent this in implementation. Ask ChatGPT to design the exact retry/hold contract first.
 
