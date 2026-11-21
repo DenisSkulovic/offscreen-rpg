@@ -2,6 +2,8 @@
 
 **Owns:** what is implemented, proved, or still absent. Strategy is [ROADMAP](ROADMAP.md). Contracts are [docs](docs/README.md). The selected Change is [work/changes](work/changes/README.md).
 
+**2026-11-21 launch ledger (WR07L):** One owner and one operation id can reserve a `story_launch` row, a story id, and a first-passage id without inserting a story, passage, generation, or outbox notice. The same request returns that row. A different request for that id conflicts and leaves the stored hash in place. A second owner with the same operation id is a separate row. Disposable proof on `offscreen_db_test`: schema constraints 1/1; Game Authority admission, conflict, concurrent pair, and reconnect 3/3. There is still no Launch HTTP endpoint and no provider call. This is not on `main`.
+
 **2026-11-21 opening scene proposal (WR07N):** A version-2 opening final must include passage content and a nullable interaction. A version-1 final on that capture, and a version-2 final on a version-1 capture, are rejected. The frozen version-1 captured-request SHA256 stays `7c62d3be002da2280b039ba6cdb9df00e3b4b12860a22987c7141c0696f9dac3`. This candidate is not published and does not call a provider. This is not on `main`.
 
 **2026-11-21 opening writer scope (WR07M):** `writer-mission.v2` can capture an opening `sceneScope` with a reserved story id and a reserved first passage id, and the compiled round pins that scope instead of a scene frontier. The v1 captured-request SHA256 for the frozen fixture stays `7c62d3be002da2280b039ba6cdb9df00e3b4b12860a22987c7141c0696f9dac3`. Storyteller package tests passed 59/59. This parse does not insert a passage, admit a story, or call a provider. This is not on `main`.

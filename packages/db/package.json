@@ -35,6 +35,10 @@
       "types": "./dist/src/schema/stories.d.ts",
       "default": "./dist/src/schema/stories.js"
     },
+    "./launch-schema": {
+      "types": "./dist/src/schema/launch.d.ts",
+      "default": "./dist/src/schema/launch.js"
+    },
     "./storyteller-schema": {
       "types": "./dist/src/schema/storyteller.d.ts",
       "default": "./dist/src/schema/storyteller.js"

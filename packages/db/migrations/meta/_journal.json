@@ -141,6 +141,13 @@
       "when": 1794806800000,
       "tag": "0019_wr05s_scene_checkpoint_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794810400000,
+      "tag": "0020_wr07l_launch_ledger",
+      "breakpoints": true
     }
   ]
 }

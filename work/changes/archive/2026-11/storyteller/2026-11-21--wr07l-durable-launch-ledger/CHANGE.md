@@ -1,6 +1,27 @@
 # WR07L | Durable idempotent Launch operation ledger
 
-**READY / OWNER-COMMISSIONED.** Standalone implementation Change, parallel to WR05P2 (Documents/Story Engine) and WR07N (pure Storyteller tasks). Integration target `undertaking/storyteller-workshop`, never `main`. This Change writes **only** `packages/db/src/schema/launch.ts`, `packages/db/package.json`, `packages/db/migrations/{0020_wr07l_launch_ledger.sql,meta/_journal.json}`, new `apps/game-authority/src/launch-ledger.ts`, focused GA/DB tests, and packet/ledger metadata. **No Story Engine, Documents, Contracts, Web, API routes, worker, outbox or provider execution modifications.**
+**State:** Done (2026-11-21). Integrated on `undertaking/storyteller-workshop` by squash from `change/wr07l-launch-ledger`. Not merged to `main`. Dispatch HEAD `0d2590a1a1136d2cbb245c03a467fff34417f098`. Internal SQL and Game Authority ledger only. No public Launch route, no story row, and no provider call.
+
+## Execution proof
+
+T01 added `packages/db/src/schema/launch.ts`, `packages/db/package.json` export `./launch-schema`, `packages/db/migrations/0020_wr07l_launch_ledger.sql`, and journal idx 20. T02 added `apps/game-authority/src/launch-ledger.ts`. T03 extended `apps/game-authority/test/launch-ledger.test.ts`. The schema test is `packages/db/test/wr07l-launch-ledger.integration.ts`.
+
+`pnpm --filter @offscreen/db build`, `pnpm --filter @offscreen/documents build`, `pnpm --filter @offscreen/storyteller build`, and `pnpm --filter @offscreen/game-authority build` exited 0. Disposable `DATABASE_TEST_URL` pathname `/offscreen_db_test` on 127.0.0.1: `node --test packages/db/dist/test/wr07l-launch-ledger.integration.js` 1 pass / 0 fail; `node --test apps/game-authority/dist/test/launch-ledger.test.js` 3 pass / 0 fail. Premature `ready` without `generation_id` returned SQLSTATE 23514. Concurrent different prompts produced `launch_conflict` and left the winner's hash. Reconnect through a new pool returned the same reserved id. Story, generation, passage, and outbox counts stayed unchanged. Provider spend zero. Migration `0019_wr05s_scene_checkpoint_schema` remains in `packages/db/migrations/meta/_journal.json`.
+
+## Reconciliation ledger
+
+| Affected claim | Authority | Target delta | Source delta | Evidence tier | Negative proof | Map update |
+| --- | --- | --- | --- | --- | --- | --- |
+| Submitting Play creates one durable launch operation that can be recovered after a lost reply, and an uncertain retry must not create a second story | docs/product/experience/entry-and-onboarding.md#launch-and-first-arrival | unchanged: that heading remains the product target. This Change stores the internal row and does not expose Play, a route, or publication | apps/game-authority/src/launch-ledger.ts and packages/db/src/schema/launch.ts at dispatch 0d2590a1a1136d2cbb245c03a467fff34417f098 plus the WR07L commits on change/wr07l-launch-ledger | fixture-tested | a different prompt for the same owner and operation id throws launch_conflict; a third owner reads launch_not_found; public pending JSON omits the prompt and storyId | apps/game-authority/README.md and packages/db/README.md |
+| A reserved launch id is not a published story, passage, generation, or outbox notice, and ready requires a real first scene rather than a status flag | docs/technical/platform/data-and-persistence.md#implemented-launch-operation-ledger | changed: the durable-records owner now records `story_launch`, the composite key, the hash conflict, and the absence of a public route | packages/db/migrations/0020_wr07l_launch_ledger.sql and apps/game-authority/src/launch-ledger.ts | fixture-tested | SQLSTATE 23514 rejects ready without generation_id or scene_sequence 1; admit leaves story, generation, story_passage, and outbox counts unchanged | docs/technical/platform/data-and-persistence.md#implemented-launch-operation-ledger |
+
+## Diff paths
+
+packages/db/src/schema/launch.ts packages/db/package.json packages/db/migrations/0020_wr07l_launch_ledger.sql packages/db/migrations/meta/_journal.json packages/db/test/wr07l-launch-ledger.integration.ts packages/db/README.md apps/game-authority/src/launch-ledger.ts apps/game-authority/test/launch-ledger.test.ts apps/game-authority/README.md docs/technical/platform/data-and-persistence.md STATUS.md work/changes/README.md work/changes/ledger/2026-11.md work/undertakings/storyteller-workshop/PROGRAM.md work/changes/open/2026-11-21--wr07l-durable-launch-ledger/CHANGE.md work/changes/open/2026-11-21--wr07l-durable-launch-ledger/TASKS.md work/changes/open/2026-11-21--wr07l-durable-launch-ledger/PROOF.md
+
+## Original commission
+
+Standalone implementation Change, parallel to WR05P2 (Documents/Story Engine) and WR07N (pure Storyteller tasks). Integration target `undertaking/storyteller-workshop`, never `main`. **No Story Engine, Documents, Contracts, Web, API routes, worker, outbox or provider execution modifications.**
 
 ## Outcome
 

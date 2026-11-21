@@ -9,6 +9,7 @@
 | Connection and config | [database.ts](src/database.ts) `createDatabase`, [config.ts](src/config.ts) `readDatabaseConfig` |
 | Controlled migration execution | [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts) |
 | Story, passage, item, and scene-checkpoint selector | [schema/stories.ts](src/schema/stories.ts) `story`, `storyPassage`, `storyItem`, `storySceneCheckpoint` |
+| Launch admission ledger, reserved ids, no story row | [schema/launch.ts](src/schema/launch.ts) `storyLaunch` |
 | Campaign clocks, actions and activities | [schema/campaign.ts](src/schema/campaign.ts) |
 | Generation, provider attempt and financial records | [schema/generations.ts](src/schema/generations.ts), [schema/storyteller.ts](src/schema/storyteller.ts) |
 | Authentication, drafts, outbox and QA | [schema/auth.ts](src/schema/auth.ts), [schema/drafts.ts](src/schema/drafts.ts), [schema/outbox.ts](src/schema/outbox.ts), [schema/qa.ts](src/schema/qa.ts) |
