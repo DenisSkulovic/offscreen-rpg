@@ -22,14 +22,14 @@ The current Writer program is the core constituent set:
 | WRD03 | Engine fork technical contract | Done / archived |
 | WRD04 | Wiki navigation and validation reconciliation | Done / archived |
 | WR02 | Persistent Library and source identity implementation | **Done / archived** |
-| WR03 | Agentic writer's workdesk | Proposed |
+| WR03 | Agentic writer's workdesk | Done / archived |
 | WR04 | Delegated bounded writer research | Proposed |
 | WR05 | Coherent scene publication | Proposed |
 | WR06 | Fork active fictional state | Proposed |
 | WR07 | One-prompt launch backend | Proposed |
 | WR08 | One-prompt client and integrated acceptance | Proposed |
 
-The existing [Writer implementation program](../changes/WRITER-IMPLEMENTATION-2026-11-21.md) remains the detailed sequencing owner. This undertaking does not replace it.
+The existing [Writer implementation program](PROGRAM.md) remains the detailed sequencing owner. This undertaking does not replace it.
 
 ## Integration provenance
 
