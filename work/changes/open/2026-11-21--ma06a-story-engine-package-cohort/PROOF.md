@@ -2,11 +2,11 @@
 
 ## Grounding and status
 
-- Source basis: mounted 2bcebcdd repository snapshot with actual all-subtree import census; GitHub re-read 2026-11-21 current Storyteller capture + materialization, campaign narration/reports, Storyteller and Application manifests, module architecture Design. MA05F already landed; MA05G is commissioned but not inspected as integrated.
+- Source basis: mounted 2bcebcdd repository snapshot with actual all-subtree import census; GitHub re-read 2026-11-21 current Storyteller capture + materialization, campaign narration/reports, Storyteller and Application manifests, module architecture Design. MA05F and MA05G are integrated and archived. Post-G new authority-core, SQL replay/commit, contract, task-record and activity-filter source files were inspected; no new inverse application package imports were found.
 - Snapshot corpus: four source directories 125 .ts files, 39,092 TS lines, **engine→remaining-app only two `../cache/read-cache` imports**, and remaining-app Developer Tools→engine 16 relative import edges; application tests have 287 direct `../dist/{stories,campaign,storyteller,generations}/*` imports, 81 unique paths in 80 test files. These values are baseline observations, not final post-G acceptance.
 - Current capture inspected: `storyteller/context-capture.ts` 3,079 lines, exports six SQL capture writers at lines 1463,1597,1760,2015,2323,2666; `capture-materialization.ts` 1,598 lines, materializer at ~1504 and failure release at ~887. `campaign/narration.ts` directly invokes five capture functions and the pending materializer; `campaign/reports.ts` invokes `captureHistoricalReport`.
 - External host callsites: `apps/game-authority/src/application.ts` uses `@offscreen/application/stories`, `stories/resolution`, `stories/persistence`, `storyteller`, and `storyteller/saved-generation-publish`. `apps/worker/src/runtime/index.ts` uses `stories`, `storyteller`, `generations`; `apps/worker/src/activities/storyteller-application-bridge.ts` resolves the old Storyteller package specifier dynamically. These remain stable for MA06A.
-- **What has NOT been done:** executing builds, SQL integration suites, or inspecting MA05G's not-yet-integrated implementation. MA06A is owner-commissioned **conditionally on G integration**; this is a sequencing gate, not an architectural planning hold.
+- **What has NOT been done:** executing builds, SQL integration suites, or inspecting MA05G's not-yet-integrated implementation. MA06A is owner-commissioned **unconditionally now that G is integrated**; no sequencing gate remains.
 
 ## Proof matrix (actual expected behavior, not test name alone)
 
@@ -26,13 +26,13 @@
 
 ## Independent planner gate
 
-- **G0 PASS for successor admission; execution dependency pending:** MA05G has not yet landed; do not start a worktree until it has. Parent uses the actual updated HEAD, never the snapshot. No new owner approval needed for routine source additions.
+- **G0 PASS:** MA05G integrated and archived at live target; parent uses the current undertaking HEAD, never the snapshot. No new owner approval needed for routine source additions.
 - **G1 PASS with post-G factual check:** large domain directories, cross-directory imports, captures/materialization, manifests, host callsites and sample deep imports inspected. The 2bcebcdd sample has 125/125 exporting TS files, no fs-path side effects and one JSON asset. Parent checks just the G delta before move.
 - **G2 PASS for chosen package topology:** one cohesive engine with four internal modules, old Application façade, pure Storyteller library retained; rejected two premature runtime/authority packages and unnecessary MA05H per-function moves.
 - **G3 PASS:** exact domain migration map, two cache edges, compatibility strategy, package specifiers, deep runtime paths, and five bounded tasks. T02's deterministic pre-move manifest captures any G-introduced symbols and files.
-- **G4 PASS once predecessor condition holds:** MA06A's first T-ID is unambiguous; parent must wait until G's merge and pin the fresh target HEAD, then start.
+- **G4 PASS, immediate dispatch:** MA05G is integrated; MA06A T01 can start in a dedicated worktree from the current undertaking HEAD.
 - **G5 PASS:** T01→T02→T03→T04→T05; one parent/worktree/merge, no shared concurrently edited manifests.
 - **G6 PASS at packet level, runtime UNRUN:** named builds, graph and specific safety suites are known; existing disposable-DB harness and target must be inspected before destructive SQL tests. Cannot mark Done on failing mandatory integrity negatives.
 - **G7 PASS for intended scope, NOT for release:** one large migration rather than 125 trivial Changes; compatibility retirement deferred to later MA06C, no changed gameplay mechanics.
 
-**Verdict: READY / OWNER-COMMISSIONED SUCCESSOR, EXECUTION WAITS FOR MA05G INTEGRATION.** Post-G verification is bounded to HEAD, the deterministic migration manifest and any genuinely new reverse dependency. No fresh broad audit or ceremonial approval. One coherent MA06A migration with focused negative proof. No requirement to split the runtime into another workspace ahead of evolved gameplay.
+**Verdict: READY / OWNER-COMMISSIONED, START NOW.** Post-G verification is bounded to HEAD, the deterministic migration manifest and any genuinely new reverse dependency. No fresh broad audit or ceremonial approval. One coherent MA06A migration with focused negative proof. No requirement to split the runtime into another workspace ahead of evolved gameplay.
