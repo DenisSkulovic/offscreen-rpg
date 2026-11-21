@@ -4,6 +4,12 @@
 
 **Checked:** 2026-11-21 · **Reference branch:** `undertaking/storyteller-workshop` · **Latest inspected implementation:** P3-A `852f01a0` (P3-B `4005a0e2`, P3-C `5615f077` are ancestors). Additional overview/planning commits may advance HEAD. **Not merged to `main`**, not live-product verification.
 
+## Planning update: modular-monolith finish line expanded (2026-11-21)
+
+**Latest inspected integrated code:** MA07 `4168db58`; later commits on the undertaking branch are architectural planning only. The earlier modularization percentage was optimistic relative to the now-enforced target. **Revised rough estimate:** modular monolith **~60–65% complete / ~35–40% remaining**, Storyteller **~60% / ~40% remaining**, blended undertaking **~60% / ~40% remaining**, **±10–15 percentage points** subjective confidence. This revises scope; it is not evidence that work was undone. MA07 successfully migrated most production host domain imports but its receipt reports baseline worker and module-graph failures, so we must not label all builds green.
+
+**Next executable architecture Change:** [MA08](../../changes/open/2026-11-21--ma08-application-owner-extraction/CHANGE.md), the bulk extraction of remaining Application actual owners and production consumers. The 112 Application tests remain protected during MA08. **Source/transaction planned but not yet executable:** [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) after stable [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md), then [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) which migrates all tests and finally removes `@offscreen/application` and its legacy export surface. Existing older status charts and sections further below are historical estimates superseded by this checkpoint; do not commission their obsolete WR04/WR08 links.
+
 ## 🎯 What are we building?
 
 You give a one-sentence premise and enter a persistent fictional life. You can choose, work, wait, leave and come back. The Writer remembers what *actually* happened and narrates the next consequential scene. Old scenes are available to read or fork into a different future. The monorepo beneath it has clear owners and no accumulating `application` junk drawer.
