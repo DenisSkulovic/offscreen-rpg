@@ -10,7 +10,7 @@ Make the modular-monolith boundaries visible and enforceable: packages and domai
 
 | Stage | Change | Selected bounded outcome | Dependency / readiness |
 | --- | --- | --- | --- |
-| 0 | [MA01](../../changes/open/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Mechanically measure manifest, exports, actual source edges and intra-application cycles | Ready algorithm; commission on `undertaking/storyteller-workshop` |
+| 0 | [MA01](../../changes/archive/2026-11/other/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Mechanically measure manifest, exports, actual source edges and intra-application cycles | Done. `pnpm repo:module-graph` on `undertaking/storyteller-workshop` |
 | 1 | [MA02](../../changes/open/2026-11-21--ma02-cache-port-inversion/CHANGE.md) | Remove Cache → Application inverse dependency | Ready algorithm; independent of MA03 |
 | 1 | [MA03](../../changes/open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | Move Admin domain code into cohesive workspace with temporary compatibility export | After CQ02; revalidate anchors on the current undertaking HEAD |
 | 2 | [MA04](../../changes/open/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary Stories → developer Chamber fixture policy | After MA01; exact caller/projection tests |
