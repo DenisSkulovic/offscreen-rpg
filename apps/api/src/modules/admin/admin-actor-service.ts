@@ -18,7 +18,7 @@ import {
   type AdminCapability,
   type AdminEnvironment,
   type AdminSessions,
-} from '@offscreen/application/admin';
+} from '@offscreen/admin';
 import type { Auth } from '../auth/auth.js';
 import { AUTH } from '../auth/identity.js';
 import { adminError, mapAdminError } from './admin-http-errors.js';

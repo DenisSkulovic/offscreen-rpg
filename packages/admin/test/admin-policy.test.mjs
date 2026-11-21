@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import {
   evaluateAdminAccess,
   workspaceFamiliesFromAssignments,
-} from '../dist/admin/index.js';
+} from '../dist/index.js';
 
 const readerLocal = {
   assignmentId: 'a1',
@@ -72,15 +72,12 @@ test('out-of-scope player id denies without inventing capability', () => {
 });
 
 test('inert assignment never authorizes', () => {
-  const result = evaluateAdminAccess(
-    [{ ...readerLocal, status: 'inert' }],
-    {
-      capability: 'player.summary.read',
-      resourceKind: 'player',
-      resourceId: 'player-allowed',
-      environment: 'local',
-    },
-  );
+  const result = evaluateAdminAccess([{ ...readerLocal, status: 'inert' }], {
+    capability: 'player.summary.read',
+    resourceKind: 'player',
+    resourceId: 'player-allowed',
+    environment: 'local',
+  });
   assert.equal(result.decision, 'deny');
   assert.equal(result.reason, 'assignment_inert');
 });

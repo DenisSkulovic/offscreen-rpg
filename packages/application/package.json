@@ -58,6 +58,7 @@
     "test": "pnpm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
+    "@offscreen/admin": "workspace:*",
     "@offscreen/storyteller": "workspace:*",
     "zod": "4.6.5",
     "@offscreen/db": "workspace:*",

@@ -7,7 +7,7 @@ import {
   projectRedactedOperation,
   sanitizeFailureCode,
   sanitizeOperationKind,
-} from '../dist/admin/index.js';
+} from '../dist/index.js';
 import {
   campaignMetadataV1Schema,
   redactedOperationV1Schema,
@@ -30,7 +30,10 @@ test('campaign metadata uses legacy-owner and never embeds passages', () => {
 });
 
 test('redacted operation strips unsafe kind/failure and keeps publication honest', () => {
-  assert.equal(sanitizeOperationKind('storyteller.opening.v1'), 'storyteller.opening.v1');
+  assert.equal(
+    sanitizeOperationKind('storyteller.opening.v1'),
+    'storyteller.opening.v1',
+  );
   assert.equal(sanitizeOperationKind('SELECT * FROM secret'), 'other');
   assert.equal(sanitizeFailureCode('invalid_output'), 'invalid_output');
   assert.equal(sanitizeFailureCode('raw provider dump'), 'failed');

@@ -17,7 +17,7 @@ import {
   readAdminTokenFromCookieHeader,
   selectAdminCookieMode,
   serializeAdminCookie,
-} from '../dist/admin/index.js';
+} from '../dist/index.js';
 
 /** Recording Database stub: tracks audit denial vs staff lookup vs session insert. */
 function createRecordingDatabase() {

@@ -8,7 +8,7 @@ import {
 import {
   projectPlayerSummary,
   wrapPlayerSummaryEnvelope,
-} from '../dist/admin/index.js';
+} from '../dist/index.js';
 
 test('PlayerSummaryV1 never includes email or passage fields', () => {
   const summary = projectPlayerSummary({

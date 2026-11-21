@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { projectUsageStatus } from '../dist/admin/index.js';
+import { projectUsageStatus } from '../dist/index.js';
 import { usageStatusV1Schema } from '@offscreen/contracts/admin';
 
 test('usage projection never invents free-tier or zero-cost authority', () => {

@@ -131,7 +131,7 @@ These were not established in the files read for this page.
 
 ## Evidence read
 
-Read at `b3113814`, and not re-executed:
+Read at `b3113814`, and not re-executed. Admin policy and the situation read later moved into `@offscreen/admin`; those two links follow the current files:
 
 - [identity.ts](../../../apps/api/src/modules/auth/identity.ts)
 - [app.ts](../../../apps/api/src/app.ts) handler mount
@@ -144,8 +144,8 @@ Read at `b3113814`, and not re-executed:
 - [hint schema](../../../packages/contracts/src/stories.ts) `storyUpdateHintSchema`
 - [admin actor service](../../../apps/api/src/modules/admin/admin-actor-service.ts) `requireCapability`
 - [admin controller](../../../apps/api/src/modules/admin/controller.ts) campaign situation route
-- [admin policy](../../../packages/application/src/admin/policy.ts) case and campaign scope
-- [situation read](../../../packages/application/src/admin/situation-reads.ts)
+- [admin policy](../../../packages/admin/src/policy.ts) case and campaign scope
+- [situation read](../../../packages/admin/src/situation-reads.ts)
 - [situation schema](../../../packages/contracts/src/admin.ts) `supportSituationV1Schema`
 - [operation trace](../../../packages/storyteller/src/providers/operation-trace.ts)
 - [lab evidence redaction](../../../packages/application/src/developer-tools/lab/lab-evidence.ts)

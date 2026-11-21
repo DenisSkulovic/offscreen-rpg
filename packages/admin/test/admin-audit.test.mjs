@@ -4,7 +4,7 @@ import {
   projectAuditEvent,
   projectStaffAccess,
   summarizeGrantScope,
-} from '../dist/admin/index.js';
+} from '../dist/index.js';
 import {
   adminAuditEventV1Schema,
   adminStaffAccessV1Schema,
@@ -29,7 +29,10 @@ test('staff access summarizes scope without listing private resource ids', () =>
   assert.equal(access.packages[0]?.scope.playerScope, 'named');
   assert.equal(access.packages[0]?.provenanceKind, 'cli-bootstrap');
   assert.ok(!JSON.stringify(access).includes('secret-player'));
-  assert.deepEqual(summarizeGrantScope({ environments: ['local'] }).playerScope, 'any');
+  assert.deepEqual(
+    summarizeGrantScope({ environments: ['local'] }).playerScope,
+    'any',
+  );
 });
 
 test('audit projection drops unsafe kinds and payload blobs', () => {

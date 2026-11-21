@@ -61,7 +61,7 @@ import {
   type AdminSituationReads,
   type AdminSessions,
   type AdminUsageReads,
-} from '@offscreen/application/admin';
+} from '@offscreen/admin';
 import type { Database } from '@offscreen/db';
 import { adminError, mapAdminError } from './admin-http-errors.js';
 import {

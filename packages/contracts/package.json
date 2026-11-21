@@ -47,6 +47,10 @@
       "types": "./dist/src/campaign.d.ts",
       "default": "./dist/src/campaign.js"
     },
+    "./campaign-holds": {
+      "types": "./dist/src/campaign-holds.d.ts",
+      "default": "./dist/src/campaign-holds.js"
+    },
     "./usage-policy": {
       "types": "./dist/src/usage-policy.d.ts",
       "default": "./dist/src/usage-policy.js"

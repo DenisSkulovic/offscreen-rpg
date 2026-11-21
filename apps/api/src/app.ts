@@ -52,7 +52,7 @@ import {
   createAdminSessions,
   createAdminUsageReads,
   type AdminEnvironment,
-} from '@offscreen/application/admin';
+} from '@offscreen/admin';
 
 function adminEnvironmentForOrigin(origin: string): AdminEnvironment {
   try {

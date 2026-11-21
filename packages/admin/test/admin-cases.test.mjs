@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { projectCaseSummary } from '../dist/admin/index.js';
+import { projectCaseSummary } from '../dist/index.js';
 import { caseSummaryV1Schema } from '@offscreen/contracts/admin';
 
 test('case summary holds only safe link references', () => {
