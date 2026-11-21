@@ -1,4 +1,6 @@
 # WR08 | planner proof matrix
+
+**CURRENT VERDICT: READY WITH EXPLICIT LIMITS, owner commissioned (2026-11-21).** The independent post-P3 G0–G7 review at the bottom supersedes the retained initial PLANNER-BLOCKED historical review. T01 is dispatchable and T03a closes the real first-scene choice gap. Code/tests have not been run by the planner.
 **Evidence:** planned, not executed; depends WR04+WR06+WR07, and actual UI routes must be verified.
 | Case | UI/flow | Expected |
 |---|---|---|
