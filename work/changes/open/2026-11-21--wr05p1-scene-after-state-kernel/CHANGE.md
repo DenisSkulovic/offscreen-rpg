@@ -1,0 +1,24 @@
+# WR05P1 | Scene after-state capture and notes projection kernel
+
+**READY / OWNER-COMMISSIONED FOR CURSOR B NOW**. Actual integration branch `undertaking/storyteller-workshop`. Source verified 2026-11-21 after WR05S: `packages/documents/src/schema.ts` exports `SceneCheckpointV2` with `fictionalState`; `packages/db/migrations/0019_wr05s_scene_checkpoint_schema.sql` admits selector 2; WR05S Done/archived. **The old WR05 parent packet is still blocked and must NOT be executed.** This is the first bounded implementation Change in its critical path, not a claim of finished v2 publication.
+
+## Outcome
+
+Establish **one consistent and testable Story Engine source of truth for the semantic state at a scene boundary**, including a pure continuity-note calculation. Later WR05 publication invokes the same module **before staging and after applying SQL mutations**, so mismatched after-state fails inside its existing transaction.
+
+**One key inspected gap:** WR05S's v2 `continuityNotes` schema currently accepts only `null` or `[]`; actual Storyteller uses `applyContinuityPatch` to produce substantive notes. Do not erase those notes to fit v2. This Change captures the real value and must report unrepresentable v2 states explicitly. A subsequent WR05 publishing slice must widen the immutable notes schema safely before adopting nonempty notes; never silently down-convert them. The schema's versioned payloads `{version:1,body:unknown}` are historical capture envelopes, **not execution permissions**.
+
+## Chosen implementation
+
+- New `packages/story-engine/src/stories/scene-after-state.ts`: define an **internal** normalized `SceneAfterState` type with story/campaign semantic rows, sorted owner-scoped item rows, exact notes/scope, holds/offer/plans/authorization, active activity ID and work rows, obligations and active action. Keep operational provider attempts, dispatch, funding, worker leases, outbox and private credentials out. This type is *not* a public API DTO and not automatically `SceneCheckpointV2`.
+- `readSceneAfterState(tx, storyId)` reads a coherent state on the **caller transaction** (do not open a nested transaction). Read story, storyItem, campaign, gameActivity, worldObligation, gameActionExecution, gameOffer rows by storyId. Use stable sort by key/id and relevant revision. Retain explicit campaign absence for narrative-only worlds. For correctness, capture all rows whose state could affect ongoing fictional commitments; if a collection exceeds v2 representability limits, return a typed `state_not_representable` result/error. Never use a partial truncation or current settings in place of the referenced revision.
+- `projectSceneItemAfterState(base, effects)` **reuses** `stories/persistence.ts:projectStoryItemEffects`; it does not implement another item transfer policy.
+- `compareSceneAfterState(actual, expected)` uses a deterministic normalization for versioned semantic fields and checks all captured fields, not JSON string order, while excluding operational timestamps/attempt IDs. It reports which semantic component differs in a compact code. Concurrent stale writes will later be rejected under `lockOwnedStory`, never repaired by silently taking a fresh unrelated state.
+- `stories/continuity-notes.ts`: extract a **pure** notes computation `projectStorytellerNotes` that reuses `applyContinuityPatch`, existing `storytellerTaskSchema`, result/evidence validation and source-part rules. Keep existing exported `publishStorytellerNotes` as the SQL writer delegating to this calculation and writing exactly the result in the caller's transaction. For `arrival` proof requiring a departure passage SQL read, use a caller-supplied validated departure evidence obtained from the same transaction; do not skip this check. Preserve current source/report exclusion and stale context checks. No provider call.
+- Do not yet alter existing publication control flow, SELECT v2 checkpoint, fork logic, public historical DTO or SQL schema. The immediate goal is to make the after-state and notes machinery trustworthy and reusable before the next publication Change.
+
+## Ownership and dependency
+
+Write paths: `packages/story-engine/src/stories/{scene-after-state,continuity-notes}.ts`, focused Story Engine test files, minimal reference/wiring only if required by TS exports. **Do not edit** `packages/documents/src/schema.ts`, DB schema/migrations, `apps/web`, `packages/contracts`, `stories/continuation.ts`, or `storyteller/publication.ts` in this Change. WR08A can run simultaneously in its own Web worktree. Source baseline is landed WR05S; no predecessor hold.
+
+**Risk policy:** no changing SQL writes, owner checks, permissions, locks, CAS or spending. The parent should finish whole Change, archive, squash-integrate to the undertaking, retire branch/worktree. No `main` merge. [Tasks](TASKS.md) · [Proof](PROOF.md).
