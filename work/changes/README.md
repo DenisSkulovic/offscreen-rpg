@@ -1,5 +1,17 @@
 # Changes | active catalog
 
+## Next wave, queued behind the active MA10 / WR09A / MA11 integration (2026-11-21)
+
+**PLANNING ONLY: do not dispatch these while the current three Cursors are running.** They are three **source-disjoint** successor Change packets; a new batch needs explicit user commission and post-integration source/HEAD reconciliation. No package explosion or paid provider call.
+
+| Next lane | Change | Dependency / state | Exclusive implementation owner |
+| --- | --- | --- | --- |
+| A | [WR09B durable multi-round Writer replay](open/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md) | **PLANNER-GATED** until WR09A actual custody API is merged and source-confirmed | Story Engine writer-loop + new WR09B integration test only |
+| B | [OPS12 distributed Worker lifecycle](open/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md) | **READY after current-wave integration** | Worker runtime control/execution/live-stack lifecycle and focused Worker tests |
+| C | [DX12 affected builds and checks](open/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) | **READY after current-wave integration** | Root affected-check tooling/script, conditional Turbo config and local engineering notes |
+
+**Next-wave join:** Cursor C (DX12) coordinates OPS12 → WR09B → DX12 serial integration after all three tested receipts; no independent parent edits global undertaking, lockfile or integration HEAD. WR09B cannot run before the previous custody code exists. These are *not* MA09, WR09C production provider wiring, a new npm package or a claim that end-to-end gameplay survived deployment/kill tests.
+
 ## Selected three-lane source-disjoint post-MA08 wave (2026-11-21)
 
 **Joined on `undertaking/storyteller-workshop`.** The custodian squash-merged MA10, then WR09A, then MA11. [Exact source contracts](../undertakings/storyteller-workshop/PROGRAM.md#post-ma08-three-lane-execution-contract-2026-11-21).
