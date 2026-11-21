@@ -1,6 +1,6 @@
 ## Current structural execution (2026-11-21)
 
-**MA08 is Done** on `undertaking/storyteller-workshop`. Lab, drafts, outbox relay, and runtime logging have real owners, and production hosts no longer import Application. The 112 Application tests stay until MA10. Packet: [MA08](../../changes/archive/2026-11/other/2026-11-21--ma08-application-owner-extraction/CHANGE.md). [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md), [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) and [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) remain dependency-gated.
+**MA08 is Done** on `undertaking/storyteller-workshop`. Lab, drafts, outbox relay, and runtime logging have real owners, and production hosts no longer import Application. The 112 Application tests stay until MA10. Packet: [MA08](../../changes/archive/2026-11/other/2026-11-21--ma08-application-owner-extraction/CHANGE.md). [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) and [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) remain dependency-gated; **MA10, WR09A and MA11 are the three parallel-ready Changes** defined immediately below, not blocked by the future Writer runtime.
 
 
 ## Post-MA08 three-lane execution contract (2026-11-21)
