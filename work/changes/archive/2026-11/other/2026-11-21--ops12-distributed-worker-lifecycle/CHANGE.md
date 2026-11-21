@@ -1,6 +1,6 @@
 # OPS12 | Failure-safe distributed Worker startup, shutdown and recovery ownership
 
-**State: IMPLEMENTED on change/ops12-distributed-worker-lifecycle; awaiting the named DX12 custodian join into undertaking/storyteller-workshop.** **Source-inspected baseline:** MA08 integration 6dd1276131a813f694ec3bccf4f9062ad3708208; target undertaking/storyteller-workshop. Do NOT commission while prior worktrees are active. No external provider, Kubernetes deployment, DB mutation or real Temporal server required for scoped tests.
+**State: Done on undertaking/storyteller-workshop (2026-11-22).** Injected lifecycle tests 16/16. Worker `tsc` of the whole package is still blocked by the pre-existing `storyteller-generation-evidence` GameAuthoritySeam gap. No process-kill trial. **Source-inspected baseline:** MA08 integration 6dd1276131a813f694ec3bccf4f9062ad3708208; target undertaking/storyteller-workshop. Do NOT commission while prior worktrees are active. No external provider, Kubernetes deployment, DB mutation or real Temporal server required for scoped tests.
 
 ## Source-proven problems
 - apps/worker/src/runtime/storyteller-distributed-live.ts starts relay → control → executor without a try/catch rollback. If control/executor startup fails, already-running components are left running. Its stop() awaits relay, then executor, then control serially: first rejected stop strands the others.

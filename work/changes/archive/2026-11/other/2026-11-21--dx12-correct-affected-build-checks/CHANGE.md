@@ -1,6 +1,6 @@
 # DX12 | Correct affected-only builds, typechecks and unit tests
 
-**Status: READY for next wave after MA10/WR09A/MA11 integrate.** Source basis: 6dd1276131a813f694ec3bccf4f9062ad3708208, target undertaking/storyteller-workshop. No new package, deployed service, paid GitHub Actions/CI, provider calls or protected SQL.
+**Status: Done on undertaking/storyteller-workshop (2026-11-22).** Affected-check unit tests 15/15. Live `--run` was not executed. No remote cache or CI workflow change. Source basis: 6dd1276131a813f694ec3bccf4f9062ad3708208, target undertaking/storyteller-workshop. No new package, deployed service, paid GitHub Actions/CI, provider calls or protected SQL.
 
 **Source finding:** root package.json runs Turbo for full build/typecheck/test; turbo.json has build dependsOn ^build with dist/.next outputs, typecheck dependsOn ^build, test dependsOn build with outputs []. The root scripts and code.yml select broad CI checks. There is no trusted affected-only local developer command with a source-scoped task receipt, missing-Git-history/dirty-worktree fallbacks, or measured cache hits. Do not claim Turbo is useless: the existing task graph is a foundation, but optimization needs proof.
 
