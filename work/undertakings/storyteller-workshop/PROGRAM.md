@@ -1,3 +1,11 @@
+## Brainstorm inventory and staged future Change ownership (2026-11-22)
+
+All 2026-11-22 owner brainstorming now maps to **20 distinct existing or newly proposed bounded Changes** in the [canonical grouped catalog](../../changes/README.md#complete-2026-11-22-brainstorm-to-change-coverage-map-20-bounded-outcomes) and [dated owner minutes](../../sessions/2026-11-22.md). The final four otherwise-missing high-level outcomes were recorded as [WR12 generated opening](../../changes/open/2026-11-22--wr12-provider-authored-opening/CHANGE.md), [CTX01 context selection/packing](../../changes/open/2026-11-22--ctx01-context-composition-and-retrieval-policy/CHANGE.md), [DX13 measured affected/cache](../../changes/open/2026-11-22--dx13-measured-monorepo-build-cache/CHANGE.md), and [SQL01 transaction/lease human audit](../../changes/open/2026-11-22--sql01-transaction-and-lease-source-audit/CHANGE.md). These are shallow Proposed records, **not technical instructions ready to execute**.
+
+Do not merge their concerns: **WR12** differs from WR11's provider continuation; **CTX01** assembles what the model *sees* rather than CFG01's numeric limits or AI02's historical archive; **DX13** measures real cache correctness rather than reimplementing the completed DX12 selector; **SQL01** investigates correctness/recoverability and teaches the human owner rather than repeating HR03's table-definition rearrangement. Reuse the existing Chamber, Eval and Admin policy proposals, never create duplicate owners.
+
+**Next work is gated by demonstrated predecessor source.** Current three changes and subsequent Writer/client/cluster readiness take priority. The owner has requested historical preservation and high-level planning, **not** launching all 20. Keep the existing `work/QUEUE.md` selector unchanged. Paid provider evaluation remains **$0 authorized by default**; no packet or upper-limit estimate authorizes spend. No implementation, build, cluster or financial proof was run during this planning update.
+
 # Storyteller Workshop | current execution program
 
 ## 2026-11-22 owner brainstorm preserved: economy, policy and Chamber
