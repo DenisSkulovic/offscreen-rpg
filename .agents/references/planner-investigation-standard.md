@@ -5,6 +5,8 @@
 
 **Selected owner direction, 2026-11-19.** This is an **authoring standard for ChatGPT and other architecture/design planners** preparing Offscreen RPG Changes for lower-cost Cursor executors. It is NOT an instruction for every executor to reread the wiki. See [the bounded Change standard](change-work-unit-standard.md), [template](../skills/change-workflow/assets/CHANGE.md) and [Cursor handoff skill](../skills/cursor-handoff/SKILL.md).
 
+**Required follow-through:** Use [execution-first packet design](packet-design-manual.md) to generate the task DAG and [adversarial readiness review](packet-readiness-review.md) to independently challenge it before any Ready claim. A self-authored checklist is not itself evidence that Composer can dispatch. [Audit worksheet](packet-review-checklist.md) captures the verdict without creating a permanent parallel dossier.
+
 ## Responsibility split
 
 **Planner (especially ChatGPT):** own the broad investigation, reconcile product/technical authority against the *actual current source*, make supported design decisions, inspect dependencies and integration seams, and hand off **verified, small source routes plus concrete behavior and failure tests**. Use its own tooling, time and context to settle expensive unknowns *before* asking Cursor to burn usage rediscovering them. Research is not itself proof of code execution, and a planner must not make unsupported claims.
