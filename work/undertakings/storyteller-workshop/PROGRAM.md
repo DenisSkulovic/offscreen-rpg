@@ -1,18 +1,6 @@
-> **ACTIVE CHANGE CORRECTION (2026-11-21):** **MA08 is already underway in Cursor** under its original complete T01–T05 commission. It must proceed undisturbed and own its branch integration. The subsequently proposed MA08A/MA08B/MA10A parallel wave is **retracted**, not an active execution route. All three overlap MA08's edits, including its graph-checker tests. Do not dispatch them or change active worktree scope. Other MA09/MA10/WR09 packets retain their explicit readiness gates. Parallel-first planning for future work must start with a live collision map.
+## Current structural execution (2026-11-21)
 
-## Parallel commissioning supersedes single MA08 dispatch (2026-11-21)
-
-**Current selected three-Cursor wave:** [Parallel structural wave: MA08A + MA08B + MA10A](PARALLEL-STRUCTURAL-WAVE.md). MA08's previous label Ready is withdrawn: **do not dispatch MA08 itself**. Launch MA08A (lab-support), MA08B (DB outbox relay / logging), MA10A (AST graph) in three separate linked worktrees from a common current undertaking HEAD. Their source ownership does not overlap. One integration custodian serializes joins, lockfile regeneration, catalog updates and proof. MA08C follows for drafts and final consumers. MA09 and full MA10 remain dependency-blocked until actual Writer interfaces/previous migrations settle.
-
-# Writer implementation | Storyteller Workshop
-
-**Human first:** [Storyteller Workshop · The big picture](OVERVIEW.md) is the required supervisor-oriented status and finish-line view. It must be checked and refreshed with material wave/Change integrations; this implementation map is *not* the supervisor's entrypoint.
-
-## Current structural execution DAG, 2026-11-21
-
-**MA07 implemented** in `4168db589eff302dab176e532d53db0425cd853c` with a mixed test receipt; it is not still queued. [MA08 Application owner extraction](../../changes/open/2026-11-21--ma08-application-owner-extraction/CHANGE.md) is the next READY WITH LIMITS bulk Change. [WR09 provider runtime](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) is planner-blocked. [MA09 authority–Writer inversion](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) has complete proposed contracts/task/proof but awaits WR09 and MA08 integration, and [MA10 module-boundary closure](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) awaits all three. Do not commission blocked packets or merge the undertaking to main.
-
-These are three large outcome-oriented Change packets, NOT an automatic self-managed Cursor queue. One integration custodian serializes catalogs, lockfile and branch joins; product/technical docs remain authority. Historic execution plans below may describe older waves.
+**MA07 is integrated. MA08 is already commissioned and remains the active whole Change (T01–T05)** on `undertaking/storyteller-workshop`. Its Cursor owns the lab, infrastructure, service consumer, test, source guard, ledger and archive work specified by the [MA08 packet](../../changes/open/2026-11-21--ma08-application-owner-extraction/CHANGE.md). [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md), [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) and [MA10](../../changes/open/2026-11-21--ma10-module-boundary-enforcement/CHANGE.md) remain dependency-gated, not simultaneous Cursor assignments.
 
 **Owner:** [Storyteller Workshop](UNDERTAKING.md). **Integration target:** `undertaking/storyteller-workshop` (never individual WR → `main`). **Purpose:** dependency map and planner gate, not a second work queue or permission to spend. [Global selection](../../QUEUE.md) controls default work; owner may commission a named independently ready Change. **Re-audited 2026-11-21** against source snapshot `dac6b698`, selected remote key anchors at undertaking HEAD `7fccbc6417b4959985c633a9c073571a032030ba`. These are **source-inspection observations, not runtime test passes**. Later packet-audit documentation commits advance branch HEAD without changing the inspected code.
 
