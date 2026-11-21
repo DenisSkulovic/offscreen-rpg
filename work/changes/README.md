@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-## Next wave, queued behind the active MA10 / WR09A / MA11 integration (2026-11-21)
+## Next three source-disjoint Changes, after MA10 / WR09A / MA11 integrated (2026-11-21)
 
 **PLANNING ONLY: do not dispatch these while the current three Cursors are running.** They are three **source-disjoint** successor Change packets; a new batch needs explicit user commission and post-integration source/HEAD reconciliation. No package explosion or paid provider call.
 
