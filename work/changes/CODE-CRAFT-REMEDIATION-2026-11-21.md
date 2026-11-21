@@ -45,6 +45,26 @@ flowchart TD
 
 **Integration owner:** For concurrent commissioned CQ01/CQ03/CQ04 Changes, human owner designates one existing Cursor coordinator/custodian to squash-integrate each accepted branch, refreshing the undertaking HEAD, shared docs and latest source anchors. No two Change parents simultaneously edit the integration checkout, `work/QUEUE.md`, status or catalogs. Each Change has a separate linked worktree and branch from the correct target; primary checkout stays untouched. Shared statuses are updated by custodian, not by several competing Cursor chats.
 
+## Recurring structural health: one repeatable audit, no debt-factory
+
+The observed `packages/application/src/storyteller/` at `2680de6f` is **63 direct TypeScript files, no subdirectories and 741,865 source bytes**. The largest committed sources include `context-capture.ts` (3,078 lines), `capture-materialization.ts` (1,612) and `writer-loop.ts` (780). This is a serious *cohesion and change-ownership* review signal, not evidence that every file needs relocation.
+
+[CQ05](open/2026-11-21--cq05-recurring-source-health/CHANGE.md) is the **planned implementation** of a source-health checker. Until Cursor implements and tests it, `pnpm repo:code-health` **does not exist**. The command will report AST-aware file/function growth, direct-directory file pressure and new regressions against an explicit reference; it will never mutate code, create backlog tickets, infer security, or automatically fail existing debt.
+
+**Review frequency after CQ05 acceptance:** at every code-bearing Change closure, compare to the integration base (cheap, targeted). Once every **two weeks** while active work is heavy, run the broader report and let ChatGPT pick at most **three** top candidates for manual source/ownership review. Also review before major Undertaking integration or after a large feature program lands. This is a documented human/agent process cadence, **not a background timer or CI job**.
+
+**Triage algorithm:** Is the module large because of one coherent versioned contract, or because it mixes unrelated durable/transaction/provider responsibilities? Does it change repeatedly across independent Changes? How hard is it to locate the authority and failure path? Is it safe to extract a pure submodule with identical behavior and no transaction movement? Recommend **keep**, **local clarity edit**, **bounded ownership extraction**, or **postpone until predecessor lands**. Only a confirmed, meaningful extraction becomes a ChatGPT-designed Change. Store the result in the existing Change/program record; don't create one Task per warning.
+
+### D5 · Storyteller directory architecture after WR03/WR05
+
+**Candidate, not PLANNER-READY for Cursor.** Inspect `packages/application/src/storyteller/index.ts` (currently broad barrel exports), all imports/consumers, `writer-loop.ts`, `writer-mission-custody.ts`, `writer-workdesk.ts`, `context-capture.ts`, `capture-materialization.ts`, `budget.ts`, `publication.ts`, `canonical-knowledge.ts`, `library-navigation.ts` and neighboring `packages/storyteller/src/tasks` / `providers` ownership.
+
+Possible cohesion clusters for *investigation*, **not prescribed directories**: `writer mission/workdesk`, `capture/lease/materialization`, `knowledge/library retrieval`, `provider/admission/budget`, and `publication/recovery`. These concern names may overlap transactions; do not force a new layer or duplicate a runtime owner to make the flat-file count smaller.
+
+Selected **planning constraint:** preserve package public export behavior for `@offscreen/application/storyteller`; avoid circular re-export chains; keep exact versioned Zod contract identities, hash/serialization bytes, database lease/transaction fences, spend accounting and hidden/private disclosure boundaries. First produce a **source import/consumer graph**, **side-effect/transaction owner map**, and proof of at least one meaningful semantic seam. If a cluster is already coherent despite being flat, leaving it flat is acceptable. ChatGPT determines whether one or more small independent refactors are warranted, rather than assigning Cursor an open-ended directory reshuffle.
+
+**Gate:** WR03/WR05 landed and integration SHA refreshed, actual committed source available, focused negative and replay fixtures identified. No broad filesystem move while Writer implementation worktrees are dirty.
+
 ## Deep follow-up candidates (not executable Changes yet)
 
 These are **named, evidence-backed planning targets**, not extra open Change folders that Cursor can mistake for Ready. Their decisions stay with ChatGPT and the owner.

@@ -21,6 +21,14 @@
 - **Keep authority and failure paths visible.** Reads/writes must preserve caller permissions, tenant/story scope, transaction lock/CAS, idempotency, retry behavior and spend/dispatch limits as applicable. A helper whose name sounds like authorization is not proof of authorization. Trace inputs to actual enforcement and negative tests.
 - Never import private server/stateful dependencies into a prohibited package. Existing ESLint architectural restrictions stay in force. Prefer existing shared contract owners over duplicate locally invented interfaces.
 
+## Structural-growth review: make code debt observable
+
+A formatter and green typecheck are **not** an architectural health report. At code-bearing Change closure, inspect the changed source for new large multi-owner functions/files, repeated casts across an unvalidated boundary, and newly flat directories. A module that repeatedly accumulates independent features deserves proactive ownership review **before** it becomes impossible for a human to navigate.
+
+[Source-health checker CQ05](../../work/changes/open/2026-11-21--cq05-recurring-source-health/CHANGE.md) is scheduled for implementation, **not yet available as a runnable command**. Once implemented and locally validated, use `pnpm repo:code-health --base <actual-integration-branch>` at a coherent parent checkpoint, and `--strict-new` only to catch newly introduced high-severity growth, not legacy debt. An initial 63-file flat Storyteller directory remains a **review signal**, not a mandatory failing build or license to create decorative subfolders.
+
+**Cadence:** Change parent reviews *its diff* on every closure; the integration custodian samples repo-wide hotspots about **every two weeks during active programs**, plus before major Undertaking integration. Record no more than the top three actionable candidates in the existing remediation program; human/ChatGPT validates cohesion, contracts, callers, evidence and overlap before creating any new implementation Change. No automatic refactors, issue spam, permanent exception registry or scheduled paid-agent swarm.
+
 ## Verification and handoff: required for affected code, proportionate to risk
 
 **Every implementation T-ID / Change parent** must inspect the changed diff for the rules above and run **focused checks on changed files**, not a full repository style migration:
