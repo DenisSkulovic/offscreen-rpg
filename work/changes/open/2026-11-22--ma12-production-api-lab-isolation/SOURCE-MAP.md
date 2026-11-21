@@ -1,0 +1,11 @@
+# MA12 | current code and exact migration
+
+`apps/api/src/app.ts`: top-level Lab imports lines 74–82; optional developerTools + qaContext + chamberStorytellerControl around 173–194; fixtureSourceCanRespond injection around 221; four dev controller list around 265; CHAMBER, QA_JOURNEYS, CHAMBER_LAB providers around 348–383. Remove those imports while leaving createApp production setup, auth origin/CSRF, cache close and story authority unchanged. `apps/api/src/main.ts` currently passes no developerTools.
+
+**Move 3 files / 4 controllers**: `modules/stories/chamber-tools-controller.ts` (ChamberStoriesController, ChamberToolsController and CHAMBER token), `chamber-lab-controller.ts` (ChamberLabController + CHAMBER_LAB), `qa-journeys-controller.ts` (QaJourneysController + QA_JOURNEYS). Current imports of `IdentityService` and `OPENINGS` are from API internal paths; add a narrow `@offscreen/api/lab-host-contract` export with those providers/tokens, no Lab dependencies. Preserve all decorators, validation and route names.
+
+`apps/api/package.json` currently has Lab Support in dependencies and only four exports. Add one `./lab-host-contract` export and remove Lab Support dependency. `pnpm-workspace.yaml` already includes tools/*; add `tools/api-lab/package.json`, NodeNext tsconfig matching other tools, workspace dependencies on API, Lab Support, Story Engine, Contracts, Nest and types actually imported.
+
+**Exactly observed developerTools:true callers:** `tools/api-integration/test/helpers/app-integration.ts`, `boot03-distributed-app-integration.ts`, `story03-causal-multiprocess-harness.ts`. Also `tools/chamber/src/main.ts` is local developer API launch. Callers forwarding chamberStorytellerControl via helpers must continue functioning. `tools/api-integration/test/stories-http.integration.ts` directly imports chamberAllowsResponse for a Story Engine test and is allowed to keep that outer test-workspace dependency. Production app tests and release Dockerfile.api are read-only during this Change.
+
+**Security negative:** no Chamber endpoints in production factory and no Lab route accessible without local factory; Lab factory retains IdentityService.requireUser for all routes. No new export exposing the database or privileged Admin DI to unauthenticated clients.
