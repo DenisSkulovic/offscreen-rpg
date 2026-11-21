@@ -74,6 +74,9 @@ importers:
       '@offscreen/documents':
         specifier: workspace:*
         version: link:../../packages/documents
+      '@offscreen/game-authority':
+        specifier: workspace:*
+        version: link:../game-authority
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
@@ -105,9 +108,6 @@ importers:
       '@offscreen/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@offscreen/game-authority':
-        specifier: workspace:*
-        version: link:../game-authority
       '@types/express':
         specifier: 5.0.6
         version: 5.0.6
@@ -144,6 +144,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
+      '@offscreen/storyteller':
+        specifier: workspace:*
+        version: link:../../packages/storyteller
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -151,9 +154,6 @@ importers:
       '@offscreen/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@offscreen/storyteller':
-        specifier: workspace:*
-        version: link:../../packages/storyteller
       '@types/node':
         specifier: 22.20.3
         version: 22.20.3
