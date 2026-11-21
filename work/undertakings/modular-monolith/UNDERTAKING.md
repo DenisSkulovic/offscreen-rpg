@@ -12,13 +12,13 @@ Make the modular-monolith boundaries visible and enforceable: packages and domai
 | --- | --- | --- | --- |
 | 0 | [MA01](../../changes/archive/2026-11/other/2026-11-21--ma01-workspace-import-graph/CHANGE.md) | Mechanically measure manifest, exports, actual source edges and intra-application cycles | Done. `pnpm repo:module-graph` on `undertaking/storyteller-workshop` |
 | 1 | [MA02](../../changes/open/2026-11-21--ma02-cache-port-inversion/CHANGE.md) | Remove Cache → Application inverse dependency | Ready algorithm; independent of MA03 |
-| 1 | [MA03](../../changes/open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | Move Admin domain code into cohesive workspace with temporary compatibility export | After CQ02; revalidate anchors on the current undertaking HEAD |
-| 2 | [MA04](../../changes/open/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary Stories → developer Chamber fixture policy | After MA01; exact caller/projection tests |
+| 1 | [MA03](../../changes/open/2026-11-21--ma03-admin-package-extraction/CHANGE.md) | Move Admin domain code into cohesive workspace with temporary compatibility export | PLANNER-BLOCKED: exact file/export/consumer/test relocation map required after CQ02 |
+| 2 | [MA04](../../changes/open/2026-11-21--ma04-chamber-domain-decoupling/CHANGE.md) | Remove ordinary Stories → developer Chamber fixture policy | PLANNER-BLOCKED: ChatGPT must publish complete API/GA/Chamber composition and authorization matrix |
 | 3 | MA05 | Establish story-authority ↔ Storyteller-runtime typed injection boundary and preserve SQL/fence | **Not Cursor-Ready** until graph, WR completion and resolved interface map |
 | 4 | MA06 | Extract cohesive story-authority/Storyteller-runtime workspaces, migrate consumers, retire obsolete application exports | **Not Cursor-Ready**; depends MA05, ratified source graph and root/fence proof |
 | Separate decision | Document schema/adapter split | Possible further extraction if dependency/bundle evidence justifies | Not selected; no speculative package proliferation |
 
-**Parallel preference:** MA02 and MA03 write disjoint source owners and may run concurrently on separate linked worktrees after MA01 supplies graph/proof and after the actual base is stable; MA04 should serialize with story/campaign/WR-changing work. MA05/MA06 are deliberately staged, not vague paid Cursor investigations.
+**Execution selection:** MA02 is the next narrow Composer trial after MA01. MA03 and MA04 must NOT be commissioned as PATCH until the ChatGPT planner has replaced their broad tasks with source-verified, fully decided routes. MA03 also touches the shared lockfile; if it later runs alongside other Changes, integration is serialized. MA04 serializes with story/campaign/WR-changing work. MA05/MA06 are deliberately staged, not vague paid Cursor investigations.
 
 ## Admission / branch policy
 
