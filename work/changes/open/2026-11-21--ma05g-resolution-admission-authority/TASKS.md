@@ -1,6 +1,6 @@
 # MA05G | implementation work units
 
-**Single Change, serial T01 → T02 → T03 → T04.** Every Composer child may read its assigned 2–5 anchors first and the relevant subsection of SOURCE-MAP only when needed; no open-ended architecture discovery. Parent uses Composer Standard and owns the one Change branch/worktree/acceptance/closure. `DEPTH=PATCH` for T01–03, `DEPTH=VERIFY` for T04 except focused repairs. Target `undertaking/storyteller-workshop`, **only after MA05F integration and fresh packet recheck**. Do not commission this planning-branch packet automatically.
+**Single Change, serial T01 → T02 → T03 → T04.** Every Composer child may read its assigned 2–5 anchors first and the relevant subsection of SOURCE-MAP only when needed; no open-ended architecture discovery. Parent uses Composer Standard and owns the one Change branch/worktree/acceptance/closure. `DEPTH=PATCH` for T01–03, `DEPTH=VERIFY` for T04 except focused repairs. Target `undertaking/storyteller-workshop`. **OWNER-COMMISSIONED after MA05F integration.** Post-MA05F GitHub symbol recheck passed for all major admission, records, context and resolution anchors. Start T01 in a dedicated `change/ma05g-resolution-admission` worktree. Preserve MA05F additions to `story03-notice-topic-freeze.test.mjs` when extending its source guard; no overwriting test with the older snapshot.
 
 ## T01 | Move neutral SQL primitives and fence types (PATCH)
 
