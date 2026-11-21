@@ -31,6 +31,8 @@ import {
 import { IdentityService } from '../auth/identity.js';
 import type { StorySeam } from './game-authority-client.js';
 import type { StoryUpdateHub } from './story-update-hub.js';
+import { z } from 'zod';
+import { storyLaunchRequestSchema } from '@offscreen/contracts/story-launch';
 
 export const STORIES = Symbol('STORIES');
 export const STORY_SEAM = Symbol('STORY_SEAM');
@@ -66,11 +68,73 @@ export class StoriesController {
       throw new ServiceUnavailableException('Story unavailable');
     }
   }
+  private async runLaunch<T>(
+    request: Request,
+    work: (owner: string) => Promise<T>,
+  ) {
+    const user = await this.identity.requireUser(request.headers);
+    try {
+      return await work(user.id);
+    } catch (error) {
+      if (
+        error instanceof StoryError &&
+        error.code === 'invalid' &&
+        error.reason === 'not-admitted'
+      ) {
+        throw new HttpException({ code: 'not-admitted' }, 403);
+      }
+      if (error instanceof StoryError) {
+        throw new HttpException(
+          {
+            code: error.code,
+            ...(error.reason ? { reason: error.reason } : {}),
+          },
+          { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+            error.code
+          ],
+        );
+      }
+      throw new ServiceUnavailableException('Story unavailable');
+    }
+  }
   @Get()
   list(@Req() request: Request, @Query('before') before?: string) {
     return this.run(request, (ownerId) =>
       this.stories.list(before ? { ownerId, before } : { ownerId }),
     );
+  }
+  @Put('launch/:operationId')
+  @HttpCode(200)
+  putLaunch(
+    @Req() request: Request,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.runLaunch(request, async (ownerId) => {
+      const urlId = z.uuid().safeParse(operationId);
+      const parsed = storyLaunchRequestSchema.safeParse(body);
+      if (!urlId.success || !parsed.success || urlId.data !== parsed.data.operationId) {
+        throw new StoryError('conflict');
+      }
+      return this.seam.putLaunch({
+        ownerId,
+        operationId: urlId.data,
+        body: parsed.data,
+      });
+    });
+  }
+  @Get('launch/:operationId')
+  getLaunch(
+    @Req() request: Request,
+    @Param('operationId') operationId: string,
+  ) {
+    return this.runLaunch(request, (ownerId) => {
+      const urlId = z.uuid().safeParse(operationId);
+      if (!urlId.success) {
+        throw new StoryError('not_found');
+      }
+      return this.seam.getLaunch({ ownerId, operationId: urlId.data });
+    });
   }
   @Get('presets/catalogue')
   presetCatalogue(@Req() request: Request) {

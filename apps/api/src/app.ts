@@ -85,6 +85,7 @@ import {
   storySeamFor,
   type StoryAuthorityConfig,
 } from './modules/stories/game-authority-client.js';
+import { createGameAuthoritySeam } from '@offscreen/game-authority/application';
 import {
   STORIES,
   STORY_SEAM,
@@ -228,7 +229,27 @@ export async function createApp(
     readStoryAuthorityConfig(process.env, {
       requireExplicitMode: requireExplicitStoryAuthority,
     });
-  const storySeam = storySeamFor(stories, storyAuthority);
+  const launchAuthority =
+    storyAuthority.mode === 'embedded'
+      ? createGameAuthoritySeam(database, {
+          ...(options.documentStore
+            ? { documentStore: options.documentStore }
+            : {}),
+          ...(options.defaultRules ? { defaultRules: options.defaultRules } : {}),
+        })
+      : null;
+  const storySeam = storySeamFor(
+    {
+      ...stories,
+      ...(launchAuthority
+        ? {
+            putLaunch: (args) => launchAuthority.putLaunch(args),
+            getLaunch: (args) => launchAuthority.getLaunch(args),
+          }
+        : {}),
+    },
+    storyAuthority,
+  );
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,

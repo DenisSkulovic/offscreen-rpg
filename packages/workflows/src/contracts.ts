@@ -61,3 +61,11 @@ export const campaignConsequenceWorkflowId = (id: string) =>
   `campaign-consequence/${id}`;
 export const storytellerWorkflowType = 'storytellerV1';
 export const storytellerWorkflowId = (id: string) => `storyteller/${id}`;
+
+export interface StoryLaunchActivities {
+  runScriptedLaunchWriter(
+    reservedStoryId: string,
+  ): Promise<'composing' | 'failed' | 'uncertain' | 'replayed'>;
+}
+export const storyLaunchWorkflowType = 'storyLaunchV1';
+export const storyLaunchWorkflowId = (id: string) => `story-launch/${id}`;

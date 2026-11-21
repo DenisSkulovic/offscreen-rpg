@@ -1,6 +1,7 @@
 import {
   storytellerTopic,
   storytellerDistributedTopic,
+  LAUNCH_WAKE_TOPIC,
 } from '@offscreen/application/storyteller';
 import {
   storytellerWorkflowType,
@@ -15,6 +16,8 @@ import {
   campaignConsequenceWorkflowId,
   campaignDelegatedDecisionWorkflowType,
   campaignDelegatedDecisionWorkflowId,
+  storyLaunchWorkflowType,
+  storyLaunchWorkflowId,
 } from '@offscreen/workflows/contracts';
 import type { Client, Connection } from '@temporalio/client';
 import { WorkflowExecutionAlreadyStartedError } from '@temporalio/client';
@@ -108,6 +111,11 @@ const noticeDispatch = {
     workflowType: continuationWorkflowType,
     workflowId: continuationWorkflowId,
   },
+  [LAUNCH_WAKE_TOPIC]: {
+    kind: 'start',
+    workflowType: storyLaunchWorkflowType,
+    workflowId: storyLaunchWorkflowId,
+  },
 } as const satisfies Record<string, StartNotice | WakeNotice>;
 
 export const dispatchedNoticeTopics = [
@@ -122,6 +130,7 @@ export const dispatchedNoticeTopics = [
   controlledIntervalTopic,
   intervalWakeTopic,
   decisionDeadlineTopic,
+  LAUNCH_WAKE_TOPIC,
 ] as const;
 
 export function selectNoticeDispatch(topic: string) {

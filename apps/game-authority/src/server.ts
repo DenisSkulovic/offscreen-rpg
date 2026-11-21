@@ -9,6 +9,7 @@ import {
   gameAuthorityStoryIdSchema,
 } from '@offscreen/contracts/game-authority';
 import { forkStorySchema, startStorySchema } from '@offscreen/contracts/stories';
+import { z } from 'zod';
 import {
   parseStorytellerTaskCustodyClaimRequest,
   parseStorytellerTaskCustodySaveResultRequest,
@@ -31,6 +32,7 @@ import type {
   StorytellerPublicationSeam,
   StorytellerTaskCustodySeam,
 } from './application.js';
+import { LaunchLedgerError } from './launch-ledger.js';
 
 const BODY_LIMIT = 64 * 1024;
 
@@ -165,19 +167,31 @@ async function readBody(request: IncomingMessage) {
 type Route =
   | { kind: 'health' }
   | { kind: 'snapshot'; storyId: string }
+  | { kind: 'launch-put'; operationId: string }
+  | { kind: 'launch-get'; operationId: string }
   | { kind: 'start'; storyId: string }
   | { kind: 'fork'; storyId: string; forkStoryId: string }
   | { kind: 'resolution'; storyId: string; operationId: string }
   | { kind: 'invalid' }
   | { kind: 'absent' };
 
-function routeFor(method: string, pathname: string): Route {
+export function routeFor(method: string, pathname: string): Route {
   if (method === 'GET' && pathname === '/internal/v1/health/live') {
     return { kind: 'health' };
   }
   const parts = pathname.split('/').filter((part) => part.length > 0);
   if (parts[0] !== 'internal' || parts[1] !== 'v1' || parts[2] !== 'stories') {
     return { kind: 'absent' };
+  }
+  if (parts.length === 5 && parts[3] === 'launch') {
+    const operationId = z.uuid().safeParse(parts[4]);
+    if (method === 'PUT' && operationId.success) {
+      return { kind: 'launch-put', operationId: operationId.data };
+    }
+    if (method === 'GET' && operationId.success) {
+      return { kind: 'launch-get', operationId: operationId.data };
+    }
+    return { kind: 'invalid' };
   }
   if (parts.length === 4 && method === 'GET') {
     const storyId = gameAuthorityStoryIdSchema.safeParse(parts[3]);
@@ -517,6 +531,30 @@ async function handle(
     return;
   }
   try {
+    if (storyRoute.kind === 'launch-get') {
+      const status = await withTimeout(
+        options.seam.getLaunch({
+          ownerId: actor.data,
+          operationId: storyRoute.operationId,
+        }),
+        options.timeoutMs,
+      );
+      send(response, 200, status);
+      return;
+    }
+    if (storyRoute.kind === 'launch-put') {
+      const body = await readBody(request);
+      const status = await withTimeout(
+        options.seam.putLaunch({
+          ownerId: actor.data,
+          operationId: storyRoute.operationId,
+          body,
+        }),
+        options.timeoutMs,
+      );
+      send(response, 200, status);
+      return;
+    }
     if (storyRoute.kind === 'snapshot') {
       const snapshot = await withTimeout(
         options.seam.read({ ownerId: actor.data, storyId: storyRoute.storyId }),
@@ -582,6 +620,30 @@ async function handle(
     );
     send(response, 202, snapshot);
   } catch (error) {
+    if (
+      error instanceof StoryError &&
+      error.code === 'invalid' &&
+      error.reason === 'not-admitted'
+    ) {
+      sendError(response, 403, 'unauthorized', 'not-admitted');
+      return;
+    }
+    if (error instanceof LaunchLedgerError) {
+      sendError(
+        response,
+        {
+          launch_invalid: 400,
+          launch_not_found: 404,
+          launch_conflict: 409,
+        }[error.code],
+        error.code === 'launch_conflict'
+          ? 'conflict'
+          : error.code === 'launch_not_found'
+            ? 'not_found'
+            : 'invalid',
+      );
+      return;
+    }
     if (error instanceof StoryError) {
       sendError(
         response,

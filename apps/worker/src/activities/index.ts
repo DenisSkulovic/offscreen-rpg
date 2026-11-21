@@ -1,3 +1,4 @@
+import type { Database } from '@offscreen/db';
 import type { createStorytellerRuntime } from '@offscreen/application/storyteller';
 import type {
   StorytellerActivities,
@@ -13,7 +14,9 @@ import type {
   DecisionActivities,
   IntervalActivities,
   OpeningActivities,
+  StoryLaunchActivities,
 } from '@offscreen/workflows/contracts';
+import { runScriptedLaunchWriter } from '../launch/scripted-launch';
 
 function mapOpeningActivityError(error: unknown): never {
   if (
@@ -49,6 +52,7 @@ function mapStoryActivityError(
 }
 
 export function createWorkerActivities(collaborators: {
+  database: Database;
   storyteller: ReturnType<typeof createStorytellerRuntime>;
   stories: ReturnType<typeof createStories>;
   openings: ReturnType<typeof createScriptedOpenings>;
@@ -58,7 +62,8 @@ export function createWorkerActivities(collaborators: {
   OpeningActivities &
   ContinuationActivities &
   IntervalActivities &
-  DecisionActivities {
+  DecisionActivities &
+  StoryLaunchActivities {
   const { stories, openings, continuations } = collaborators;
   return {
     async advanceCampaignActivity(id) {
@@ -123,6 +128,9 @@ export function createWorkerActivities(collaborators: {
       } catch (error) {
         mapOpeningActivityError(error);
       }
+    },
+    async runScriptedLaunchWriter(reservedStoryId) {
+      return runScriptedLaunchWriter(collaborators.database, reservedStoryId);
     },
   };
 }

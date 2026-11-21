@@ -306,6 +306,45 @@ async function stageDraftAndPropose(database, { privatePossibility }) {
   };
 }
 
+test('WR03 T07: v2 opening proposal returns scene content, not summary', async () => {
+  await withDisposable(async (database) => {
+    const ctx = await stageDraftAndPropose(database, {
+      privatePossibility: false,
+    });
+    const paragraph = 'A bashful moon watches.';
+    const accepted = await submitWriterSceneProposal(database, ctx.storage, {
+      missionId: ctx.missionId,
+      capture: ctx.capture,
+      access: ctx.access,
+      reader: ctx.reader,
+      proposal: {
+        version: 2,
+        summary: 'Summary text must not replace passage body.',
+        stagedObjectHashes: [ctx.stagedObjectHash],
+        sourceEvidence: [
+          {
+            rootHash: ctx.rootHash,
+            objectHash: ctx.firstCanonObjectHash,
+            section: 'ledger',
+            assertedAsFact: false,
+          },
+        ],
+        scene: {
+          content: {
+            version: 1,
+            title: 'Opening',
+            paragraphs: [paragraph],
+          },
+          interaction: null,
+        },
+      },
+    });
+    assert.equal(accepted.format, 'offscreen.writer-scene-proposal.v2');
+    assert.equal(accepted.scene.content.paragraphs[0], paragraph);
+    assert.notEqual(accepted.scene.content.paragraphs[0], accepted.summary);
+  });
+});
+
 test('WR03 T07: submitWriterSceneProposal returns staged hashes and provenance', async () => {
   await withDisposable(async (database) => {
     const ctx = await stageDraftAndPropose(database, {

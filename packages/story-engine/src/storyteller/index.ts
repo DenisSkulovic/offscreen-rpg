@@ -38,3 +38,7 @@ export * from './writer-mission-custody';
 export * from './writer-workdesk';
 export * from './writer-loop';
 export * from './writer-scene-proposal';
+export * from './launch-source';
+export * from './launch-admission';
+export * from './launch-publication';
+export * from './scripted-launch-writer';

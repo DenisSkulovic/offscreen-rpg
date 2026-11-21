@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  LAUNCH_WAKE_TOPIC,
   storytellerDistributedTopic,
   storytellerTopic,
 } from '@offscreen/application/storyteller';
@@ -9,6 +10,8 @@ import {
   storytellerDistributedWorkflowType,
   storytellerWorkflowId,
   storytellerWorkflowType,
+  storyLaunchWorkflowId,
+  storyLaunchWorkflowType,
 } from '@offscreen/workflows/contracts';
 import {
   deliverOutboxNotice,
@@ -18,6 +21,17 @@ import {
 
 const generationId = '00000000-0000-4000-8000-000000000101';
 const retryNoticeId = '00000000-0000-4000-8000-000000000202';
+
+test('story.launch.v1 routes to storyLaunchV1 without storytellerDistributedV1', () => {
+  const reservedStoryId = '00000000-0000-4000-8000-000000000303';
+  const launch = selectNoticeDispatch(LAUNCH_WAKE_TOPIC);
+  assert.equal(launch?.kind, 'start');
+  if (launch?.kind === 'start') {
+    assert.equal(launch.workflowType, storyLaunchWorkflowType);
+    assert.equal(launch.workflowId(reservedStoryId), storyLaunchWorkflowId(reservedStoryId));
+    assert.notEqual(launch.workflowType, storytellerDistributedWorkflowType);
+  }
+});
 
 test('dispatcher routes persisted legacy topic without consulting runtime flag', () => {
   const legacy = selectNoticeDispatch(storytellerTopic);

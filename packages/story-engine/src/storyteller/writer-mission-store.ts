@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
+import type { Transaction } from '@offscreen/db/outbox';
 import {
   storytellerWriterMission,
   storytellerWriterStep,
@@ -51,38 +52,47 @@ export type WriterMissionParentStepInsert = {
 };
 
 /** Inserts one mission row and one parent step (contextId = missionId). */
+export async function insertWriterMissionParentStepInTransaction(
+  tx: Transaction,
+  mission: WriterMissionRowInsert,
+  step: WriterMissionParentStepInsert,
+) {
+  await tx.insert(storytellerWriterMission).values({
+    id: mission.missionId,
+    generationId: mission.generationId,
+    operationId: mission.operationId,
+    ownerId: mission.ownerId,
+    storyId: mission.storyId,
+    captureSha256: mission.captureSha256,
+    libraryRootHash: mission.libraryRootHash,
+    libraryRootRevision: mission.libraryRootRevision,
+    stageRootHash: mission.stageRootHash ?? null,
+    stageRootRevision: mission.stageRootRevision ?? null,
+    nextRevision: mission.nextRevision ?? 1,
+    state: mission.state ?? 'captured',
+    budgetSnapshot: mission.budgetSnapshot,
+  });
+  await tx.insert(storytellerWriterStep).values({
+    missionId: mission.missionId,
+    contextId: mission.missionId,
+    ordinal: step.ordinal,
+    attemptId: step.attemptId ?? null,
+    toolCallId: step.toolCallId ?? null,
+    requestCasHash: step.requestCasHash,
+    resultCasHash: step.resultCasHash ?? null,
+    revision: step.revision,
+    state: step.state,
+  });
+}
+
+/** Inserts one mission row and one parent step (contextId = missionId). */
 export async function insertWriterMissionParentStep(
   database: Database,
   mission: WriterMissionRowInsert,
   step: WriterMissionParentStepInsert,
 ) {
   await database.db.transaction(async (tx) => {
-    await tx.insert(storytellerWriterMission).values({
-      id: mission.missionId,
-      generationId: mission.generationId,
-      operationId: mission.operationId,
-      ownerId: mission.ownerId,
-      storyId: mission.storyId,
-      captureSha256: mission.captureSha256,
-      libraryRootHash: mission.libraryRootHash,
-      libraryRootRevision: mission.libraryRootRevision,
-      stageRootHash: mission.stageRootHash ?? null,
-      stageRootRevision: mission.stageRootRevision ?? null,
-      nextRevision: mission.nextRevision ?? 1,
-      state: mission.state ?? 'captured',
-      budgetSnapshot: mission.budgetSnapshot,
-    });
-    await tx.insert(storytellerWriterStep).values({
-      missionId: mission.missionId,
-      contextId: mission.missionId,
-      ordinal: step.ordinal,
-      attemptId: step.attemptId ?? null,
-      toolCallId: step.toolCallId ?? null,
-      requestCasHash: step.requestCasHash,
-      resultCasHash: step.resultCasHash ?? null,
-      revision: step.revision,
-      state: step.state,
-    });
+    await insertWriterMissionParentStepInTransaction(tx, mission, step);
   });
 }
 

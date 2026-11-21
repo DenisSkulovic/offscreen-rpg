@@ -160,7 +160,7 @@ export function useStoryLaunch(viewerId: string) {
   );
 
   const refreshStatus = useCallback(async () => {
-    const pointer = loadLaunchPointer(viewerId);
+    const pointer = await loadLaunchPointer(viewerId);
     if (!pointer) {
       setPhase({
         kind: 'needs-input',
@@ -259,11 +259,12 @@ export function useStoryLaunch(viewerId: string) {
       return;
     }
     mountRecoveryStarted.current = true;
-    const pointer = loadLaunchPointer(viewerId);
-    if (!pointer) {
-      return;
-    }
-    void getLaunchStatus(pointer.operationId).then(handleGetResult);
+    void loadLaunchPointer(viewerId).then((pointer) => {
+      if (!pointer) {
+        return;
+      }
+      void getLaunchStatus(pointer.operationId).then(handleGetResult);
+    });
   }, [handleGetResult, viewerId]);
 
   useEffect(() => {

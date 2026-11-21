@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import type { StoryLaunchRequest } from '@offscreen/contracts/story-launch';
+import {
+  canonicalStoryLaunchRequestJson,
+  type StoryLaunchRequest,
+} from '@offscreen/contracts/story-launch';
 
 const TTL_MS = 24 * 60 * 60 * 1000;
 const storagePrefix = 'offscreen:story-launch-pointer:v1';
@@ -33,7 +36,10 @@ function readRaw(viewerId: string): unknown {
   }
 }
 
-export function loadLaunchPointer(viewerId: string): LaunchPointer | null {
+export async function loadLaunchPointer(
+  viewerId: string,
+  request?: StoryLaunchRequest,
+): Promise<LaunchPointer | null> {
   const parsed = launchPointerSchema.safeParse(readRaw(viewerId));
   if (!parsed.success) {
     if (readRaw(viewerId) !== null) {
@@ -48,6 +54,13 @@ export function loadLaunchPointer(viewerId: string): LaunchPointer | null {
   if (parsed.data.viewerId !== viewerId) {
     clearLaunchPointer(viewerId);
     return null;
+  }
+  if (request && parsed.data.requestHash !== undefined) {
+    const digest = await hashStoryLaunchRequest(request);
+    if (parsed.data.requestHash !== digest) {
+      clearLaunchPointer(viewerId);
+      return null;
+    }
   }
   return parsed.data;
 }
@@ -74,7 +87,7 @@ export function parseLaunchPointer(raw: unknown): LaunchPointer | null {
 export async function hashStoryLaunchRequest(
   request: StoryLaunchRequest,
 ): Promise<string> {
-  const data = new TextEncoder().encode(JSON.stringify(request));
+  const data = new TextEncoder().encode(canonicalStoryLaunchRequestJson(request));
   const digest = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, '0'))

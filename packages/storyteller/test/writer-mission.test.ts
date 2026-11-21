@@ -615,6 +615,45 @@ test('writer v2 opening scene proposals reject invalid scene bodies and unknown 
   );
 });
 
+test('writer-mission ownerId: v1 keeps uuid, v2 accepts Better Auth text ids', () => {
+  const v1Base = frozenWriterMissionV1Capture();
+  writerMissionCaptureV1Schema.parse(v1Base);
+
+  assert.throws(
+    () =>
+      writerMissionCaptureV1Schema.parse({
+        ...v1Base,
+        ownerId: 'user_bah_launch',
+      }),
+    /Invalid UUID/,
+  );
+
+  const v2Base = {
+    ...finiteWriterMissionV2OpeningCapture(),
+    ownerId: 'user_bah_launch',
+  };
+  const v2 = writerMissionCaptureV2OpeningSchema.parse(v2Base);
+  assert.equal(v2.ownerId, 'user_bah_launch');
+
+  assert.throws(
+    () =>
+      writerMissionCaptureV2OpeningSchema.parse({
+        ...v2Base,
+        ownerId: '',
+      }),
+    /Too small: expected string to have >=1 characters/,
+  );
+
+  assert.throws(
+    () =>
+      writerMissionCaptureV2OpeningSchema.parse({
+        ...v2Base,
+        ownerId: '   ',
+      }),
+    /must not be empty or whitespace-only/,
+  );
+});
+
 test('writer-mission.v2 opening rejects malformed scope, drifted story, sceneFrontier injection, and grant violations', () => {
   const base = finiteWriterMissionV2OpeningCapture();
 

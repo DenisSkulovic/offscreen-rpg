@@ -9,6 +9,8 @@ import { forkStorySchema } from '@offscreen/contracts/stories';
 import { StoryError } from '@offscreen/application/stories';
 import type { Database } from '@offscreen/db';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
+import type { StoryLaunchStatus } from '@offscreen/contracts/story-launch';
+import { createLaunchPutService } from './launch-put.js';
 
 /**
  * The functions the story façade already uses for this seam.
@@ -47,6 +49,15 @@ export type GameAuthoritySeam = {
     forkStoryId: string;
     body: unknown;
   }): Promise<unknown>;
+  putLaunch(args: {
+    ownerId: string;
+    operationId: string;
+    body: unknown;
+  }): Promise<StoryLaunchStatus>;
+  getLaunch(args: {
+    ownerId: string;
+    operationId: string;
+  }): Promise<StoryLaunchStatus>;
 };
 
 /** Least-privilege Storyteller generation custody; owner and root come from the database. */
@@ -113,6 +124,9 @@ export function createGameAuthoritySeam(
     ...(options.documentStore ? { documentStore: options.documentStore } : {}),
     ...(options.defaultRules ? { defaultRules: options.defaultRules } : {}),
   });
+  const launch = createLaunchPutService(database, {
+    ...(options.documentStore ? { documentStore: options.documentStore } : {}),
+  });
   return {
     read(args: { ownerId: string; storyId: string }) {
       return stories.read(args);
@@ -156,6 +170,16 @@ export function createGameAuthoritySeam(
           ? { sourceCheckpointHash: body.data.sourceCheckpointHash }
           : {}),
       });
+    },
+    putLaunch(args: {
+      ownerId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      return launch.putLaunch(args);
+    },
+    getLaunch(args: { ownerId: string; operationId: string }) {
+      return launch.getLaunch(args);
     },
   };
 }

@@ -966,7 +966,7 @@ export const storytellerWriterMission = pgTable(
       .references(() => storytellerOperation.generationId, {
         onDelete: 'restrict',
       }),
-    ownerId: uuid('owner_id').notNull(),
+    ownerId: text('owner_id').notNull(),
     storyId: uuid('story_id').notNull(),
     captureSha256: text('capture_sha256').notNull(),
     libraryRootHash: text('library_root_hash').notNull(),

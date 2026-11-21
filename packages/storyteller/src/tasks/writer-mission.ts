@@ -54,10 +54,20 @@ export const writerMissionSceneScopeOpeningSchema = z.strictObject({
   reservedFirstPassageId: z.uuid(),
 });
 
+/** v1 capture bytes require a UUID owner; v2 opening allows Better Auth text ids. */
+export const writerMissionV1OwnerIdSchema = z.uuid();
+
+export const writerMissionV2OpeningOwnerIdSchema = z
+  .string()
+  .min(1)
+  .max(200)
+  .refine((value) => value.trim().length > 0, {
+    message: 'Writer mission ownerId must not be empty or whitespace-only',
+  });
+
 const writerMissionCaptureCommonFields = {
   generationId: z.uuid(),
   operationId: z.uuid(),
-  ownerId: z.uuid(),
   storyId: z.uuid(),
   libraryRootHash: sha256HexSchema,
   libraryRootRevision: z.number().int().positive(),
@@ -97,6 +107,7 @@ function refineWriterMissionCaptureDuplicates(
 export const writerMissionCaptureV1Schema = z
   .strictObject({
     version: z.literal('writer-mission.v1'),
+    ownerId: writerMissionV1OwnerIdSchema,
     ...writerMissionCaptureCommonFields,
     sceneFrontier: writerMissionSceneFrontierSchema,
   })
@@ -105,6 +116,7 @@ export const writerMissionCaptureV1Schema = z
 export const writerMissionCaptureV2OpeningSchema = z
   .strictObject({
     version: z.literal('writer-mission.v2'),
+    ownerId: writerMissionV2OpeningOwnerIdSchema,
     ...writerMissionCaptureCommonFields,
     sceneScope: writerMissionSceneScopeOpeningSchema,
   })

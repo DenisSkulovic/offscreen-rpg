@@ -35,6 +35,15 @@ export type StorySeam = {
     operationId: string;
     body: unknown;
   }): Promise<unknown>;
+  putLaunch(args: {
+    ownerId: string;
+    operationId: string;
+    body: unknown;
+  }): Promise<unknown>;
+  getLaunch(args: {
+    ownerId: string;
+    operationId: string;
+  }): Promise<unknown>;
 };
 
 type LocalStorySeamSource = {
@@ -46,6 +55,15 @@ type LocalStorySeamSource = {
     storyId: string;
     operationId: string;
     body: unknown;
+  }): Promise<unknown>;
+  putLaunch?(args: {
+    ownerId: string;
+    operationId: string;
+    body: unknown;
+  }): Promise<unknown>;
+  getLaunch?(args: {
+    ownerId: string;
+    operationId: string;
   }): Promise<unknown>;
 };
 
@@ -147,6 +165,14 @@ export function createLocalStorySeam(stories: LocalStorySeamSource): StorySeam {
     startFromCandidate: (args) => stories.startFromCandidate(args),
     fork: (args) => stories.fork(args),
     admitResolution: (args) => stories.admitResolution(args),
+    putLaunch: (args) => {
+      if (!stories.putLaunch) throw new StoryError('unavailable');
+      return stories.putLaunch(args);
+    },
+    getLaunch: (args) => {
+      if (!stories.getLaunch) throw new StoryError('unavailable');
+      return stories.getLaunch(args);
+    },
   };
 }
 
@@ -287,6 +313,25 @@ export function createRemoteStorySeam(
         path: `/internal/v1/stories/${id.data}/resolutions/${operation.data}`,
         ownerId,
         body,
+      });
+    },
+    putLaunch({ ownerId, operationId, body }) {
+      const operation = z.uuid().safeParse(operationId);
+      if (!operation.success) throw new StoryError('conflict');
+      return callGameAuthority(config, {
+        method: 'PUT',
+        path: `/internal/v1/stories/launch/${operation.data}`,
+        ownerId,
+        body,
+      });
+    },
+    getLaunch({ ownerId, operationId }) {
+      const operation = z.uuid().safeParse(operationId);
+      if (!operation.success) throw new StoryError('not_found');
+      return callGameAuthority(config, {
+        method: 'GET',
+        path: `/internal/v1/stories/launch/${operation.data}`,
+        ownerId,
       });
     },
   };

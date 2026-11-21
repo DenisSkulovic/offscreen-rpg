@@ -53,6 +53,7 @@ export async function startRuntime(
               createGenerationDispatchAuthorityReader(database),
           };
     const activities = createWorkerActivities({
+      database,
       stories,
       storyteller: createStorytellerRuntime(database, resolvedStorytellerOptions),
       openings: createScriptedOpenings(database),

@@ -15,6 +15,7 @@ import type {
   StorytellerDistributedControlActivities,
   StorytellerDistributedExecutionActivities,
   CampaignActivities,
+  StoryLaunchActivities,
 } from './contracts';
 import {
   storytellerControlTaskQueue,
@@ -111,6 +112,18 @@ const { completeStoryteller } = proxyActivities<
 // Redelivery retries execution bookkeeping/publication, never an uncertain paid dispatch.
 export async function storytellerV1(id: string): Promise<void> {
   await completeStoryteller(id);
+}
+
+const { runScriptedLaunchWriter } = proxyActivities<StoryLaunchActivities>({
+  startToCloseTimeout: '30 seconds',
+  retry: { maximumAttempts: 1 },
+});
+
+/** One scripted launch writer round; no provider or storyteller distributed path. */
+export async function storyLaunchV1(
+  reservedStoryId: string,
+): Promise<'composing' | 'failed' | 'uncertain' | 'replayed'> {
+  return await runScriptedLaunchWriter(reservedStoryId);
 }
 
 const distributedExecuteRetry = {

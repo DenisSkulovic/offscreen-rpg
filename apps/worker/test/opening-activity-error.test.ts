@@ -8,6 +8,7 @@ const generationId = '00000000-0000-4000-8000-000000000101';
 
 function stubActivities(storytellerComplete: (id: string) => Promise<void>) {
   return createWorkerActivities({
+    database: {} as never,
     storyteller: { complete: storytellerComplete } as never,
     stories: {} as never,
     openings: {} as never,

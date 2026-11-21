@@ -64,6 +64,12 @@ function receiptSeam() {
       }
       return { storyId: args.forkStoryId, view: 'forked-snapshot' };
     },
+    async putLaunch() {
+      throw new StoryError('not_found');
+    },
+    async getLaunch() {
+      throw new StoryError('not_found');
+    },
     async admitResolution(args: {
       ownerId: string;
       storyId: string;
@@ -320,6 +326,12 @@ test('fork rejects bad auth, malformed body, and maps seam errors', async () => 
         conflictForkCalls += 1;
         throw new StoryError('conflict');
       },
+      async putLaunch() {
+        throw new StoryError('not_found');
+      },
+      async getLaunch() {
+        throw new StoryError('not_found');
+      },
       async admitResolution() {
         throw new StoryError('not_found');
       },
@@ -353,6 +365,12 @@ test('fork rejects bad auth, malformed body, and maps seam errors', async () => 
       async fork() {
         hashMismatchForkCalls += 1;
         throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+      },
+      async putLaunch() {
+        throw new StoryError('not_found');
+      },
+      async getLaunch() {
+        throw new StoryError('not_found');
       },
       async admitResolution() {
         throw new StoryError('not_found');
@@ -388,6 +406,12 @@ test('a slow admission becomes unavailable and does not invent a receipt', async
         throw new StoryError('not_found');
       },
       async fork() {
+        throw new StoryError('not_found');
+      },
+      async putLaunch() {
+        throw new StoryError('not_found');
+      },
+      async getLaunch() {
         throw new StoryError('not_found');
       },
       admitResolution() {

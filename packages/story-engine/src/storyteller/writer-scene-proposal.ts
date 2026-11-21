@@ -5,11 +5,16 @@ import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
 import type { DocumentStore } from '@offscreen/documents';
+import { passageContentSchema } from '@offscreen/contracts/stories';
+import type { z } from 'zod';
 import {
   writerSceneProposalSchema,
   type WriterMissionCapture,
+  type WriterOpeningSceneProposal,
   type WriterSceneProposal,
 } from '@offscreen/storyteller/tasks';
+
+type PassageContent = z.infer<typeof passageContentSchema>;
 import {
   createPinnedLibraryNavigation,
   LibraryNavigationError,
@@ -56,23 +61,38 @@ export class WriterSceneProposalError extends Error {
   }
 }
 
-export type WriterSceneProposalAccepted = Readonly<{
+type WriterSceneProposalSourceEvidence = Readonly<{
+  rootHash: string;
+  objectHash: string;
+  section: string;
+  assertedAsFact: boolean;
+  path: string;
+  documentId: string;
+  revision: number;
+  kind: string;
+}>;
+
+export type WriterSceneProposalAcceptedV1 = Readonly<{
   format: 'offscreen.writer-scene-proposal.v1';
   summary: string;
   stagedObjectHashes: readonly string[];
-  sourceEvidence: ReadonlyArray<
-    Readonly<{
-      rootHash: string;
-      objectHash: string;
-      section: string;
-      assertedAsFact: boolean;
-      path: string;
-      documentId: string;
-      revision: number;
-      kind: string;
-    }>
-  >;
+  sourceEvidence: readonly WriterSceneProposalSourceEvidence[];
 }>;
+
+export type WriterSceneProposalAcceptedV2 = Readonly<{
+  format: 'offscreen.writer-scene-proposal.v2';
+  summary: string;
+  scene: Readonly<{
+    content: PassageContent;
+    interaction: WriterOpeningSceneProposal['scene']['interaction'];
+  }>;
+  stagedObjectHashes: readonly string[];
+  sourceEvidence: readonly WriterSceneProposalSourceEvidence[];
+}>;
+
+export type WriterSceneProposalAccepted =
+  | WriterSceneProposalAcceptedV1
+  | WriterSceneProposalAcceptedV2;
 
 async function listRootObjectHashes(
   navigation: ReturnType<typeof createPinnedLibraryNavigation>,
@@ -154,8 +174,7 @@ export async function acceptWriterSceneProposal(
     authorize,
   });
 
-  const provenance: WriterSceneProposalAccepted['sourceEvidence'][number][] =
-    [];
+  const provenance: WriterSceneProposalSourceEvidence[] = [];
   for (const citation of proposal.sourceEvidence) {
     if (citation.rootHash !== input.capture.libraryRootHash) {
       throw new WriterSceneProposalError('foreign-citation-root');
@@ -192,6 +211,19 @@ export async function acceptWriterSceneProposal(
       }
       throw error;
     }
+  }
+
+  if (proposal.version === 2) {
+    return {
+      format: 'offscreen.writer-scene-proposal.v2',
+      summary: proposal.summary,
+      scene: {
+        content: proposal.scene.content,
+        interaction: proposal.scene.interaction,
+      },
+      stagedObjectHashes: proposal.stagedObjectHashes,
+      sourceEvidence: provenance,
+    };
   }
 
   return {
