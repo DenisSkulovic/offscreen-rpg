@@ -15,4 +15,10 @@ Several pages below are **proposed operating policy**. They are written here so 
 | What does the landing view claim? | [Command center and insights](command-center-and-insights.md) | Direction |
 | Which operator journeys are contracts? | [Operator workflows](operator-workflows.md) | Direction |
 
+## Future historical game and configuration exploration (Proposed, 2026-11-22)
+
+For the owner's detailed future staff investigation experience, refer to the four **Proposed** bounded Changes: [ADI01 scene history/game state](../../../work/changes/open/2026-11-22--adi01-scene-history-game-state-explorer/CHANGE.md), [ADI02 historical Library files/diffs](../../../work/changes/open/2026-11-22--adi02-historical-library-explorer/CHANGE.md), [ADI03 historical effective model/entitlement/configuration](../../../work/changes/open/2026-11-22--adi03-effective-policy-history-explorer/CHANGE.md), and the **non-Admin runtime** [CFG03 safe re-admission after changed plans/retired models](../../../work/changes/open/2026-11-22--cfg03-resume-policy-eligibility-and-portability/CHANGE.md). These extend the existing Player 360, Gameplay & Worlds and AI & Engineering *jobs*; they do **not** introduce another Admin architecture or confer raw-content permissions. [AI03](../../../work/changes/open/2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md) separately owns model-visible request/thread inspection, and [CFG02](../../../work/changes/open/2026-11-22--cfg02-admin-policy-management/CHANGE.md) separately owns future policy editing.
+
+The scene is the chronological player-facing unit, not a chapter, not one Workflow, and not always one model request. Historical Library availability, exact model-visible context and actual effective mission policy are three distinct evidence surfaces. All are metadata-first and capability scoped. Product/Support/Engineering/Business roles require individually authorized projections, not universal access.
+
 Technical companions: [admin technical](../../technical/admin/topology-and-authorization.md).
