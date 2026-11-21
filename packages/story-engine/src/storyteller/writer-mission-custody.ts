@@ -10,6 +10,7 @@ import {
   storytellerFunding,
   storytellerOperation,
   storytellerRun,
+  storytellerWriterChild,
   storytellerWriterMission,
   storytellerWriterStep,
 } from '@offscreen/db/storyteller-schema';
@@ -22,6 +23,13 @@ import type { WriterRoundModelPolicy } from '@offscreen/storyteller/providers/wr
 import type { Transaction } from '@offscreen/db/outbox';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import type { WriterMissionParentStepInsert } from './writer-mission-store';
+import {
+  assertWriterSharedMicrousdBudget,
+  defaultWriterContextId,
+  markWriterChildState,
+  resolveWriterStepContext,
+  type ResolvedWriterStepContext,
+} from './writer-child-custody';
 
 export const WRITER_MISSION_ATTEMPT_PURPOSE = 'writer-mission.v1';
 
@@ -105,6 +113,8 @@ export type WriterMissionProviderTransport =
 
 export type AdvanceWriterMissionProviderStepInput = {
   missionId: string;
+  /** Defaults to missionId (parent context). Child contexts use durable childId. */
+  contextId?: string;
   ordinal: number;
   attemptId: string;
   expectedRevision: number;
@@ -159,25 +169,16 @@ function providerExecutionFromAttempt(
   };
 }
 
-async function lockWriterParentStep(
+async function lockWriterContextStep(
   tx: Transaction,
   missionId: string,
+  contextId: string,
   ordinal: number,
-) {
-  const [step] = await tx
-    .select()
-    .from(storytellerWriterStep)
-    .where(
-      and(
-        eq(storytellerWriterStep.missionId, missionId),
-        eq(storytellerWriterStep.contextId, missionId),
-        eq(storytellerWriterStep.ordinal, ordinal),
-      ),
-    )
-    .for('update');
-  if (!step) {
-    throw new WriterMissionCustodyError('step_not_found');
-  }
+): Promise<{
+  step: typeof storytellerWriterStep.$inferSelect;
+  context: ResolvedWriterStepContext;
+}> {
+  const context = await resolveWriterStepContext(tx, missionId, contextId);
   const [mission] = await tx
     .select()
     .from(storytellerWriterMission)
@@ -186,13 +187,38 @@ async function lockWriterParentStep(
   if (!mission) {
     throw new WriterMissionCustodyError('mission_not_found');
   }
-  return { mission, step };
+  if (context.role === 'child' && context.child) {
+    await tx
+      .select()
+      .from(storytellerWriterChild)
+      .where(eq(storytellerWriterChild.childId, context.child.childId))
+      .for('update');
+  }
+  const [step] = await tx
+    .select()
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, context.contextId),
+        eq(storytellerWriterStep.ordinal, ordinal),
+      ),
+    )
+    .for('update');
+  if (!step) {
+    throw new WriterMissionCustodyError('step_not_found');
+  }
+  return {
+    step,
+    context: { ...context, mission },
+  };
 }
 
 async function casWriterStep(
   tx: Transaction,
   input: {
     missionId: string;
+    contextId: string;
     ordinal: number;
     expectedRevision: number;
     patch: Partial<typeof storytellerWriterStep.$inferInsert>;
@@ -209,7 +235,7 @@ async function casWriterStep(
     .where(
       and(
         eq(storytellerWriterStep.missionId, input.missionId),
-        eq(storytellerWriterStep.contextId, input.missionId),
+        eq(storytellerWriterStep.contextId, input.contextId),
         eq(storytellerWriterStep.ordinal, input.ordinal),
         eq(storytellerWriterStep.revision, input.expectedRevision),
       ),
@@ -225,21 +251,28 @@ async function holdWriterStep(
   tx: Transaction,
   input: {
     missionId: string;
+    contextId: string;
     ordinal: number;
     expectedRevision: number;
     reason: string;
+    childId?: string | null;
   },
 ) {
   await casWriterStep(tx, {
     missionId: input.missionId,
+    contextId: input.contextId,
     ordinal: input.ordinal,
     expectedRevision: input.expectedRevision,
     patch: { state: 'held' },
   });
-  await tx
-    .update(storytellerWriterMission)
-    .set({ state: 'held', updatedAt: sql`clock_timestamp()` })
-    .where(eq(storytellerWriterMission.id, input.missionId));
+  if (input.childId) {
+    await markWriterChildState(tx, input.childId, 'held');
+  } else {
+    await tx
+      .update(storytellerWriterMission)
+      .set({ state: 'held', updatedAt: sql`clock_timestamp()` })
+      .where(eq(storytellerWriterMission.id, input.missionId));
+  }
   return {
     status: 'held' as const,
     reason: input.reason,
@@ -252,6 +285,8 @@ export async function reserveWriterMissionProviderAttempt(
   input: {
     attemptId: string;
     missionId: string;
+    contextId: string;
+    context: ResolvedWriterStepContext;
     generationId: string;
     operationId: string;
     ownerId: string;
@@ -301,6 +336,35 @@ export async function reserveWriterMissionProviderAttempt(
     throw new StorytellerBudgetError('budget_unavailable');
   }
 
+  await assertWriterSharedMicrousdBudget(
+    tx,
+    input.context,
+    input.reservedMicrousd,
+  );
+
+  const childFunding =
+    input.context.role === 'child' && input.context.child
+      ? (
+          input.context.child.policy as {
+            funding: {
+              maxModelRounds: number;
+              maxInputTokens: number;
+              maxGeneratedTokens: number;
+              maxMicrousd: number;
+            };
+          }
+        ).funding
+      : null;
+  const effectiveMaxMicrousd = childFunding
+    ? BigInt(childFunding.maxMicrousd)
+    : snapshotMaxMicrousd;
+  const effectiveMaxModelRounds =
+    childFunding?.maxModelRounds ?? input.budgetSnapshot.maxModelRounds;
+  const effectiveMaxInputTokens =
+    childFunding?.maxInputTokens ?? input.budgetSnapshot.maxInputTokens;
+  const effectiveMaxGeneratedTokens =
+    childFunding?.maxGeneratedTokens ?? input.budgetSnapshot.maxGeneratedTokens;
+
   const [operationRecord] = await tx
     .select()
     .from(storytellerOperation)
@@ -322,28 +386,28 @@ export async function reserveWriterMissionProviderAttempt(
   if (
     operationRecord.state !== 'open' ||
     operationRecord.reservedRounds + operationRecord.dispatchedRounds >=
-      input.budgetSnapshot.maxModelRounds ||
+      effectiveMaxModelRounds ||
     operationRecord.reservedInputTokens +
       operationRecord.consumedInputTokens +
       input.reservedInputTokens >
       Math.min(
         operationRecord.maxInputTokens,
-        input.budgetSnapshot.maxInputTokens,
+        effectiveMaxInputTokens,
       ) ||
     operationRecord.reservedGeneratedTokens +
       operationRecord.consumedGeneratedTokens +
       input.reservedGeneratedTokens >
       Math.min(
         operationRecord.maxGeneratedTokens,
-        input.budgetSnapshot.maxGeneratedTokens,
+        effectiveMaxGeneratedTokens,
       ) ||
     operationRecord.reservedMicrousd +
       operationRecord.consumedMicrousd +
       input.reservedMicrousd >
       BigInt(
-        operationRecord.maxMicrousd < snapshotMaxMicrousd
+        operationRecord.maxMicrousd < effectiveMaxMicrousd
           ? operationRecord.maxMicrousd
-          : snapshotMaxMicrousd,
+          : effectiveMaxMicrousd,
       )
   ) {
     throw new StorytellerBudgetError('budget_unavailable');
@@ -381,11 +445,21 @@ export async function reserveWriterMissionProviderAttempt(
     throw new StorytellerBudgetError('budget_unavailable');
   }
 
-  const attribution = {
-    kind: 'writer-mission.v1' as const,
-    missionId: input.missionId,
-    requestCasHash: input.requestCasHash,
-  };
+  const attribution =
+    input.context.role === 'child'
+      ? {
+          kind: 'writer-research.v1' as const,
+          missionId: input.missionId,
+          contextId: input.contextId,
+          childId: input.contextId,
+          requestCasHash: input.requestCasHash,
+        }
+      : {
+          kind: 'writer-mission.v1' as const,
+          missionId: input.missionId,
+          contextId: input.contextId,
+          requestCasHash: input.requestCasHash,
+        };
 
   await tx.insert(storytellerAttempt).values({
     id: input.attemptId,
@@ -510,6 +584,66 @@ const zeroTelemetry: ProviderTelemetry = {
   durationMs: 0,
 };
 
+type WriterCustodyScope = {
+  contextId: string;
+  childId: string | null;
+};
+
+function writerCustodyScope(
+  input: AdvanceWriterMissionProviderStepInput,
+): WriterCustodyScope {
+  const contextId = defaultWriterContextId(input.missionId, input.contextId);
+  return {
+    contextId,
+    childId: contextId === input.missionId ? null : contextId,
+  };
+}
+
+async function markWriterContextUncertain(
+  tx: Transaction,
+  missionId: string,
+  childId: string | null,
+) {
+  if (childId) {
+    await markWriterChildState(tx, childId, 'uncertain');
+    return;
+  }
+  await tx
+    .update(storytellerWriterMission)
+    .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
+    .where(eq(storytellerWriterMission.id, missionId));
+}
+
+async function markWriterContextHeld(
+  tx: Transaction,
+  missionId: string,
+  childId: string | null,
+) {
+  if (childId) {
+    await markWriterChildState(tx, childId, 'held');
+    return;
+  }
+  await tx
+    .update(storytellerWriterMission)
+    .set({ state: 'held', updatedAt: sql`clock_timestamp()` })
+    .where(eq(storytellerWriterMission.id, missionId));
+}
+
+async function markWriterContextActive(
+  tx: Transaction,
+  missionId: string,
+  childId: string | null,
+) {
+  if (childId) {
+    await markWriterChildState(tx, childId, 'running');
+    return;
+  }
+  await tx
+    .update(storytellerWriterMission)
+    .set({ state: 'active', updatedAt: sql`clock_timestamp()` })
+    .where(eq(storytellerWriterMission.id, missionId));
+}
+
 /**
  * Advances one writer-mission provider step: reserve, optional transport, settle/replay.
  */
@@ -519,6 +653,7 @@ export async function advanceWriterMissionProviderStep(
   transport: WriterMissionProviderTransport,
 ): Promise<AdvanceWriterMissionProviderStepResult> {
   const budget = createStorytellerBudget(database);
+  const scope = writerCustodyScope(input);
   const reservedMicrousd = input.reservedMicrousd ?? 1_000n;
   const reservedInputTokens = input.reservedInputTokens ?? 256;
   const reservedGeneratedTokens = input.reservedGeneratedTokens ?? 256;
@@ -527,11 +662,13 @@ export async function advanceWriterMissionProviderStep(
   const isRealMode = Boolean(input.providerPolicy && input.expectedWireSha256);
 
   const plan = await database.db.transaction(async (tx) => {
-    const { mission, step } = await lockWriterParentStep(
+    const { step, context } = await lockWriterContextStep(
       tx,
       input.missionId,
+      scope.contextId,
       input.ordinal,
     );
+    const mission = context.mission;
 
     if (step.revision !== input.expectedRevision) {
       throw new WriterMissionCustodyError('revision_conflict');
@@ -540,9 +677,11 @@ export async function advanceWriterMissionProviderStep(
     if (step.attemptId && step.attemptId !== input.attemptId) {
       return holdWriterStep(tx, {
         missionId: input.missionId,
+        contextId: scope.contextId,
         ordinal: input.ordinal,
         expectedRevision: input.expectedRevision,
         reason: 'attempt_mismatch',
+        childId: scope.childId,
       });
     }
 
@@ -566,14 +705,12 @@ export async function advanceWriterMissionProviderStep(
       const boundAttemptId = step.attemptId ?? input.attemptId;
       await casWriterStep(tx, {
         missionId: input.missionId,
+        contextId: scope.contextId,
         ordinal: input.ordinal,
         expectedRevision: step.revision,
         patch: { state: 'uncertain', attemptId: boundAttemptId },
       });
-      await tx
-        .update(storytellerWriterMission)
-        .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
-        .where(eq(storytellerWriterMission.id, input.missionId));
+      await markWriterContextUncertain(tx, input.missionId, scope.childId);
       return {
         status: 'already_dispatched' as const,
         attemptId: boundAttemptId,
@@ -590,6 +727,8 @@ export async function advanceWriterMissionProviderStep(
         const reserveState = await reserveWriterMissionProviderAttempt(tx, {
           attemptId: input.attemptId,
           missionId: input.missionId,
+          contextId: scope.contextId,
+          context,
           generationId: mission.generationId,
           operationId: mission.operationId,
           ownerId: String(mission.ownerId),
@@ -614,6 +753,7 @@ export async function advanceWriterMissionProviderStep(
         }
         const reservedStep = await casWriterStep(tx, {
           missionId: input.missionId,
+          contextId: scope.contextId,
           ordinal: input.ordinal,
           expectedRevision: revision,
           patch: {
@@ -624,13 +764,18 @@ export async function advanceWriterMissionProviderStep(
         revision = reservedStep.revision;
         state = reservedStep.state;
         attemptId = input.attemptId;
+        if (scope.childId) {
+          await markWriterChildState(tx, scope.childId, 'running');
+        }
       } catch (error) {
         if (error instanceof StorytellerBudgetError) {
           return holdWriterStep(tx, {
             missionId: input.missionId,
+            contextId: scope.contextId,
             ordinal: input.ordinal,
             expectedRevision: revision,
             reason: error.code,
+            childId: scope.childId,
           });
         }
         throw error;
@@ -642,13 +787,16 @@ export async function advanceWriterMissionProviderStep(
       if (!dispatched) {
         return holdWriterStep(tx, {
           missionId: input.missionId,
+          contextId: scope.contextId,
           ordinal: input.ordinal,
           expectedRevision: revision,
           reason: 'dispatch_failed',
+          childId: scope.childId,
         });
       }
       const dispatchedStep = await casWriterStep(tx, {
         missionId: input.missionId,
+        contextId: scope.contextId,
         ordinal: input.ordinal,
         expectedRevision: revision,
         patch: { state: 'dispatched', attemptId },
@@ -697,21 +845,20 @@ export async function advanceWriterMissionProviderStep(
       transportOutcome.telemetry,
     );
     await database.db.transaction(async (tx) => {
-      const { step } = await lockWriterParentStep(
+      const { step } = await lockWriterContextStep(
         tx,
         input.missionId,
+        scope.contextId,
         input.ordinal,
       );
       await casWriterStep(tx, {
         missionId: input.missionId,
+        contextId: scope.contextId,
         ordinal: input.ordinal,
         expectedRevision: step.revision,
         patch: { state: 'uncertain' },
       });
-      await tx
-        .update(storytellerWriterMission)
-        .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
-        .where(eq(storytellerWriterMission.id, input.missionId));
+      await markWriterContextUncertain(tx, input.missionId, scope.childId);
     });
     return { status: 'uncertain', transportInvoked: true };
   }
@@ -729,9 +876,11 @@ export async function advanceWriterMissionProviderStep(
       await database.db.transaction(async (tx) => {
         await holdWriterStep(tx, {
           missionId: input.missionId,
+          contextId: scope.contextId,
           ordinal: input.ordinal,
           expectedRevision: plan.revision,
           reason: transportOutcome.failureCode,
+          childId: scope.childId,
         });
       });
       return {
@@ -751,14 +900,12 @@ export async function advanceWriterMissionProviderStep(
     await database.db.transaction(async (tx) => {
       await casWriterStep(tx, {
         missionId: input.missionId,
+        contextId: scope.contextId,
         ordinal: input.ordinal,
         expectedRevision: plan.revision,
         patch: { state: 'failed', attemptId: plan.attemptId },
       });
-      await tx
-        .update(storytellerWriterMission)
-        .set({ state: 'held', updatedAt: sql`clock_timestamp()` })
-        .where(eq(storytellerWriterMission.id, input.missionId));
+      await markWriterContextHeld(tx, input.missionId, scope.childId);
     });
     return {
       status: 'failed',
@@ -780,21 +927,20 @@ export async function advanceWriterMissionProviderStep(
     if (!wireOk || !usageOk) {
       await budget.uncertain(plan.attemptId, execution);
       await database.db.transaction(async (tx) => {
-        const { step } = await lockWriterParentStep(
+        const { step } = await lockWriterContextStep(
           tx,
           input.missionId,
+          scope.contextId,
           input.ordinal,
         );
         await casWriterStep(tx, {
           missionId: input.missionId,
+          contextId: scope.contextId,
           ordinal: input.ordinal,
           expectedRevision: step.revision,
           patch: { state: 'uncertain' },
         });
-        await tx
-          .update(storytellerWriterMission)
-          .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
-          .where(eq(storytellerWriterMission.id, input.missionId));
+        await markWriterContextUncertain(tx, input.missionId, scope.childId);
       });
       return { status: 'uncertain', transportInvoked: true };
     }
@@ -820,13 +966,15 @@ export async function advanceWriterMissionProviderStep(
   );
 
   await database.db.transaction(async (tx) => {
-    const { step } = await lockWriterParentStep(
+    const { step } = await lockWriterContextStep(
       tx,
       input.missionId,
+      scope.contextId,
       input.ordinal,
     );
     await casWriterStep(tx, {
       missionId: input.missionId,
+      contextId: scope.contextId,
       ordinal: input.ordinal,
       expectedRevision: step.revision,
       patch: {
@@ -835,10 +983,7 @@ export async function advanceWriterMissionProviderStep(
         attemptId: plan.attemptId,
       },
     });
-    await tx
-      .update(storytellerWriterMission)
-      .set({ state: 'active', updatedAt: sql`clock_timestamp()` })
-      .where(eq(storytellerWriterMission.id, input.missionId));
+    await markWriterContextActive(tx, input.missionId, scope.childId);
   });
 
   return {

@@ -47,6 +47,7 @@ export * from './descriptive-materialization.js';
 export * from './descriptive-materialization-fixtures.js';
 export * from './memory-exploration.js';
 export * from './writer-mission.js';
+export * from './writer-research.js';
 export * from './writer-round-request.js';
 
 export {

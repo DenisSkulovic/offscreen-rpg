@@ -24,7 +24,7 @@ Combined          65%  █████████████░░░░░░
 
 **Confidence:** low-to-moderate, **roughly ±10–15 percentage points**. These are **subjective estimates of remaining engineering effort and integration risk**, not completed-Change ratios, tested-feature coverage, a deadline or a promise that exactly 35% effort remains. Storyteller's *proven end-user experience* lags behind the foundational code. Percentages can go **down** if real provider or long-form acceptance reveals major defects; do not mechanically increase them whenever a packet closes.
 
-**Why these numbers?** Monorepo already underwent its main package extractions but retains old forwarding imports and final integration work. Storyteller's core pieces and scripted continued-scene tests are present, but the playable Web journey, independent researchers, provider wiring/live evaluation, narrative quality and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
+**Why these numbers?** Monorepo already underwent its main package extractions but retains old forwarding imports and final integration work. Storyteller's core pieces, scripted continued-scene tests, and provider-free research children are present. The live provider journey, narrative quality, and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
 
 ## At a glance
 
@@ -37,7 +37,7 @@ Combined          65%  █████████████░░░░░░
 | 🎭 Actual choices and subsequent Writer scenes | **Scripted kernel implemented** | P3-A plus WR08: characterless `observe` on the first scene and a scripted `writer.scene.v1` wake; not a live-model UI |
 | 💳 Real provider transport / spending custody | **Code integrated, live proof missing** | P3-B archived, transport and usage-settlement tests exist; end-to-end Writer-loop injection/real spend must still be verified |
 | 🧪 Long-form acceptance harness | **Harness integrated** | P3-C archived; does not prove all long-story or live-narrative quality criteria |
-| 🔍 Independent research children | **Not yet implemented** | WR04 planned, actual child separation and shared budget still needed |
+| 🔍 Independent research children | **Scripted implementation** | WR04: explicit grant, read-only children, shared operation cap, verified join. Not a live provider proof |
 | 🎮 Complete Play/reentry UI | **Gated scripted path implemented** | WR08 archived: Play uses the real action API when the Launch flag is on. History and fork UI were already present. Live provider play is not accepted |
 | 🧹 Final monorepo cleanup / main merge | **Outstanding** | One bulk consumer migration, final joined validation and undertaking retirement |
 

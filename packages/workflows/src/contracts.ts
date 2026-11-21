@@ -75,3 +75,14 @@ export interface WriterSceneActivities {
 }
 export const writerSceneWorkflowType = 'writerSceneV1';
 export const writerSceneWorkflowId = (id: string) => `writer-scene/${id}`;
+
+export interface WriterResearchActivities {
+  runScriptedWriterResearchChild(childId: string): Promise<void>;
+  runWriterResearchParentJoin(joinOperationId: string): Promise<void>;
+}
+export const writerResearchWorkflowType = 'writerResearchV1';
+export const writerResearchWorkflowId = (childId: string) =>
+  `writer-research/${childId}`;
+export const writerResearchJoinWorkflowType = 'writerResearchJoinV1';
+export const writerResearchJoinWorkflowId = (joinOperationId: string) =>
+  `writer-research-join/${joinOperationId}`;

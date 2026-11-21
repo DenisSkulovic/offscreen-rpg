@@ -42,3 +42,25 @@ G0 PASS (undertaking branch and WR03 Done); G1 PASS for named parent-schema/loop
 **Dispatch wave:** T01 → T02 → T03 → WR08 integration dependency → T04 → T05. Old pre-MA06A TIDs are superseded, not independently executable. No additional planning approval for ordinary code adaptation. Real-provider calls remain unauthorized. An actual money/authority contradiction returns to ChatGPT with exact proof instead of bypass.
 
 **Honest limitation:** The reviewer cannot guarantee all tests pass or the final product is correct; these tests are for Cursor to execute. Historical v1/v2/v3 capture hashes must remain stable. The shared cap and SQL locks must be proved, not merely asserted.
+
+## Implementation receipt (2026-11-21)
+
+**State:** Done, provider-free. Rebased onto WR08 `d60b7880`.
+
+| Proof | Result |
+| --- | --- |
+| `pnpm --filter @offscreen/storyteller test` | 81/81 PASS |
+| story-engine build + typecheck, workflows build | PASS |
+| `node --test` wr04 + p3b together | 19 pass, 1 fail: P3B "unavailable grant" teardown `42501 permission denied to terminate process` (sandbox drop). Isolated rerun of that test PASS |
+| `apps/worker/test/writer-research-dispatch.test.mjs` | 2/2 PASS |
+| `pnpm --filter @offscreen/worker build` | NOT claimed. Pre-existing `storyteller-generation-evidence.test.ts` cannot resolve `@offscreen/game-authority/server` |
+| Paid provider | NOT RUN |
+
+## Reconciliation ledger
+
+| Claim | Owner | Disposition |
+| --- | --- | --- |
+| Optional read-only research children | `docs/technical/storyteller/prompts-and-tools.md` | Updated to the landed grant, tool fence, and provider-free limit |
+| Research still unimplemented | OVERVIEW, PROGRAM, UNDERTAKING, changes README | Point at this archive; live provider quality remains open |
+| Historical Writer capture hashes | `writer-mission` tests | Unchanged mandatory tool list |
+| Product play behavior | product docs | unchanged: research is not a player-facing control |

@@ -17,9 +17,14 @@ import type {
   OpeningActivities,
   StoryLaunchActivities,
   WriterSceneActivities,
+  WriterResearchActivities,
 } from '@offscreen/workflows/contracts';
 import { runScriptedLaunchWriter } from '../launch/scripted-launch';
 import { runScriptedWriterScene } from './scripted-writer-scene';
+import {
+  runScriptedWriterResearchChild,
+  runWriterResearchParentJoin,
+} from './writer-research';
 
 function mapOpeningActivityError(error: unknown): never {
   if (
@@ -68,7 +73,8 @@ export function createWorkerActivities(collaborators: {
   IntervalActivities &
   DecisionActivities &
   StoryLaunchActivities &
-  WriterSceneActivities {
+  WriterSceneActivities &
+  WriterResearchActivities {
   const { stories, openings, continuations } = collaborators;
   return {
     async advanceCampaignActivity(id) {
@@ -143,6 +149,32 @@ export function createWorkerActivities(collaborators: {
         collaborators.documentStore,
         missionId,
       );
+    },
+    async runScriptedWriterResearchChild(childId) {
+      await runScriptedWriterResearchChild(
+        collaborators.database,
+        collaborators.documentStore,
+        childId,
+      );
+    },
+    async runWriterResearchParentJoin(joinOperationId) {
+      const outcome = await runWriterResearchParentJoin(
+        collaborators.database,
+        collaborators.documentStore,
+        joinOperationId,
+      );
+      if (outcome.status === 'held') {
+        throw ApplicationFailure.nonRetryable(
+          outcome.reason,
+          'WriterResearchJoinHeld',
+        );
+      }
+      if (outcome.status === 'incomplete') {
+        throw ApplicationFailure.nonRetryable(
+          'join_incomplete',
+          'WriterResearchJoinIncomplete',
+        );
+      }
     },
   };
 }

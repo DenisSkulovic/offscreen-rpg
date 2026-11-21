@@ -137,6 +137,26 @@ export async function writerSceneV1(missionId: string): Promise<void> {
   await runScriptedWriterScene(missionId);
 }
 
+type WriterResearchActivities = import('./contracts').WriterResearchActivities;
+
+const { runScriptedWriterResearchChild, runWriterResearchParentJoin } =
+  proxyActivities<WriterResearchActivities>({
+    startToCloseTimeout: '3 minutes',
+    retry: { maximumAttempts: 1 },
+  });
+
+/** One bounded read-only research child; no live provider dispatch. */
+export async function writerResearchV1(childId: string): Promise<void> {
+  await runScriptedWriterResearchChild(childId);
+}
+
+/** Join completed research children and resume the parent writer mission. */
+export async function writerResearchJoinV1(
+  joinOperationId: string,
+): Promise<void> {
+  await runWriterResearchParentJoin(joinOperationId);
+}
+
 const distributedExecuteRetry = {
   initialInterval: '2 seconds',
   maximumInterval: '30 seconds',

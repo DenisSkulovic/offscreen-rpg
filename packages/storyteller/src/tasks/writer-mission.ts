@@ -21,7 +21,10 @@ export const WRITER_MANDATORY_TOOL_NAMES = [
   'submit_scene',
 ] as const;
 
-export const writerToolNameSchema = z.enum(WRITER_MANDATORY_TOOL_NAMES);
+export const writerToolNameSchema = z.enum([
+  ...WRITER_MANDATORY_TOOL_NAMES,
+  'research.delegate',
+]);
 
 export type WriterToolName = z.infer<typeof writerToolNameSchema>;
 

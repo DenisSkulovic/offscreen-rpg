@@ -29,7 +29,7 @@ This heading names the recipes. It does not implement the packer. Today's code d
 | Continuity curator | Source passage and existing record | Mechanical statistics for a mentioned name |
 | Narrative director | Only if a future policy explicitly accepts initiative | Any automatic world effect |
 
-**Current runtime:** no subagent is spawned. **Target:** bounded research assistants are optional, separately contextualized children with frozen source scope and carved-out parent allowance. No recursive delegation, no private story data crossing scope, no child budget recharge, and no direct canon/mechanical publication.
+**Current runtime:** an explicitly granted v3 mission may call `research.delegate`. The server then runs one or two read-only `writer-research.v1` children (`library.browse/find/read/diff`, `skills.open` only) under the parent operation cap and joins verified citations before the next parent step. Default captures still have zero children. This path is provider-free in tests; it is not a live-model quality proof. **Target constraints that remain:** no recursive delegation, no private story data crossing scope, no child budget recharge, and no direct canon or mechanical publication.
 
 ## Stopping
 

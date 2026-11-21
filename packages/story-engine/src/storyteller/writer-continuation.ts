@@ -41,6 +41,12 @@ const writerContinuationMissionBudgets = {
   deadlineMs: 120_000,
 } as const;
 
+/** Explicit opt-in research delegation for newly admitted v3 continuation missions. */
+export type WriterContinuationResearchGrant = Readonly<{
+  maxConcurrentChildren: 1 | 2;
+  maxMicrousdPerChild: number;
+}>;
+
 export type ScheduleWriterContinuationInput = Readonly<{
   storyId: string;
   operationId: string;
@@ -53,6 +59,7 @@ export type ScheduleWriterContinuationInput = Readonly<{
   baseNarrativeRevision: number;
   baseCampaignStateRevision: number;
   controllingIntentOrReceiptId: string;
+  researchGrant?: WriterContinuationResearchGrant;
 }>;
 
 export type ScheduleWriterContinuationResult = Readonly<{
@@ -113,6 +120,20 @@ function buildWriterContinuationCapture(input: {
   ownerId: string;
   schedule: ScheduleWriterContinuationInput;
 }) {
+  const researchGrant = input.schedule.researchGrant;
+  if (
+    researchGrant !== undefined &&
+    (researchGrant.maxConcurrentChildren < 1 ||
+      researchGrant.maxConcurrentChildren > 2 ||
+      !Number.isFinite(researchGrant.maxMicrousdPerChild) ||
+      researchGrant.maxMicrousdPerChild <= 0)
+  ) {
+    throw new Error('writer_research_grant_invalid');
+  }
+  const toolsAllowlist =
+    researchGrant === undefined
+      ? ([...WRITER_MANDATORY_TOOL_NAMES] as const)
+      : ([...WRITER_MANDATORY_TOOL_NAMES, 'research.delegate'] as const);
   const captureBody = {
     version: 'writer-mission.v3' as const,
     generationId: input.generationId,
@@ -123,7 +144,7 @@ function buildWriterContinuationCapture(input: {
     libraryRootRevision: input.schedule.baseRootRevision,
     profileObjectHash: WRITER_CONTINUATION_SCRIPTED_PROFILE_HASH,
     skillObjectHashes: [] as string[],
-    toolsAllowlist: [...WRITER_MANDATORY_TOOL_NAMES],
+    toolsAllowlist,
     sceneScope: {
       kind: 'continuation' as const,
       baseSceneSequence: input.schedule.baseSceneSequence,

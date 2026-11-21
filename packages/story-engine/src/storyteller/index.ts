@@ -34,10 +34,14 @@ export { insertSyntheticCurrentAuthorityForTest } from './test-synthetic-current
 export * from './library-navigation';
 export * from './writer-library-tools';
 export * from './writer-mission-store';
+export * from './writer-child-custody';
 export * from './writer-mission-custody';
 export * from './writer-provider-transport';
 export * from './writer-workdesk';
 export * from './writer-loop';
+export * from './writer-research';
+export * from './writer-research-runner';
+export * from './writer-research-join';
 export * from './writer-scene-proposal';
 export * from './launch-source';
 export * from './launch-admission';
