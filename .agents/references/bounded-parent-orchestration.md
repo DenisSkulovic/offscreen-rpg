@@ -2,6 +2,12 @@
 
 **Selected operating rule (2026-11-20).** Applies to Cursor **parent/coordinator**, whether children run in the same checkout or isolated branches. Child implementation depth and model selection remain governed by [Composer microtasks](composer-first-execution.md), [Cursor budget](cursor-model-budget-policy.md), and [Change work units](change-work-unit-standard.md). [Current selection](../../work/QUEUE.md) stays the **only** global selector. This is a procedure, **not** a new Change kind, queue, automated approval or product rule.
 
+## Mandatory Change branch policy
+
+**At commissioning, before any implementation edit**, the parent resolves the actual reference/integration branch (the named Undertaking branch when one exists; otherwise the selected project branch, `main` only when actually selected), records its HEAD, and creates/switches to a dedicated `change/<id>-<slug>` branch starting at that HEAD. Parent and inexpensive children work on that Change branch for all T-IDs. A separate filesystem worktree is optional for one checkout, but necessary to isolate concurrently active checkouts. No branch per T-ID; shared-checkout children do not commit.
+
+At acceptance the parent refreshes its recorded reference branch, reconciles genuine conflicts, **squash-merges the Change into that branch in one coherent commit by default**, confirms the result, then retires the temporary branch/worktree. An Undertaking Change does NOT land directly on `main`. This overrides any older references to conditional branching, base `main`, or unconditional finish-to-main. For already-started direct work, preserve changes; start a Change branch at the next safe checkpoint, without destructive reset or rewriting completed shared history.
+
 ## 0a. Budget-first Composer dispatcher contract (2026-11-21)
 
 **Default for predesigned implementation Changes:** the Cursor parent is an inexpensive **dispatcher, integrator and keeper of receipts**, not a second architect. ChatGPT owns architectural investigation, decisions, source maps, execution recipes and deep design/review. The parent loads the selected `CHANGE.md` + `TASKS.md`, checks branch/status and existing work, then dispatches the first unfinished authorized `PLANNER-READY` T-ID to **one Composer 2.5 Standard child**. The child reads only its T-ID and 2–5 named anchors, performs the exact edit, runs its focused positive and diagnostic negative checks, and returns the six-line receipt. The parent validates status, integrates and dispatches the next ready T-ID. Normally **one child at a time**, two only for explicitly disjoint paths; no automatic parallel research/reviewers or agent swarm. A child cannot spawn children.
@@ -22,13 +28,13 @@ It means:
 
 - the named Change is authorized for that parent chat even if `work/QUEUE.md` currently points to another globally selected item; this is the same owner-authorized parallel-work exception described by the Change work-unit standard, not a second global selector;
 - the parent owns the **whole Change lifecycle**, not merely its first T-ID;
-- when concurrent chats may exist, the parent creates/uses a dedicated branch and isolated worktree from current `main`, records its base SHA, and does not edit another chat's checkout;
+- parent creates its dedicated Change branch from the selected reference branch before editing, and uses a separate worktree only if concurrent checkouts require it;
 - the parent may orchestrate bounded subagents in parallel when paths/resources are genuinely disjoint, using Auto utility children for context-isolation chores and Composer children for substantive implementation;
 - internal T-ID/batch checkpoints remain mandatory for clean integration and context control, but they are **continuation checkpoints, not owner-prompt checkpoints**;
 - after a checkpoint, the parent re-reads the Change's acceptance and proceeds to the next necessary T-ID in the **same Change** automatically;
 - the job is not finished until the Change is either truthfully Done and retired, or genuinely blocked by something the parent cannot resolve within existing authority.
 
-### Finish-to-main responsibility
+### Finish-to-reference-branch responsibility
 
 For a successfully completed dedicated commission, the parent is responsible for the entire landing sequence:
 
@@ -39,9 +45,9 @@ For a successfully completed dedicated commission, the parent is responsible for
 5. mark the Change Done and move its folder from `work/changes/open/` to the correct archive path in the **same ownership window**;
 6. repair inbound links, Change catalog, roadmap/queue references and stale status claims caused by that retirement;
 7. commit coherent milestones on the dedicated branch;
-8. refresh current `main`, reconcile concurrent changes, merge/rebase/cherry-pick as appropriate **without force, history loss, or silently overwriting another chat's work**;
+8. refresh the recorded reference branch, reconcile concurrent changes, merge/rebase/cherry-pick as appropriate **without force, history loss, or silently overwriting another chat's work**;
 9. rerun the smallest integration/guard checks needed after the join;
-10. ensure the completed Change and archive move are on `main`, then report the **final main SHA**, proof, and any explicitly out-of-scope successor.
+10. ensure the completed Change and archive move are on the recorded reference branch, then report its **final SHA**, proof, and any explicitly out-of-scope successor.
 
 A parent may use subagents to perform parts of this sequence, but **closure, archive and merge remain parent responsibilities**.
 
