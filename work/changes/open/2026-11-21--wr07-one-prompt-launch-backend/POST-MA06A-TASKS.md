@@ -1,0 +1,39 @@
+# WR07B | Six bounded implementation tasks (planner prepared)
+
+**PLANNED / NOT OWNER-COMMISSIONED WHILE WR05P2, WR07N, WR07L RUN.** [Source map](POST-MA06A-SOURCE-MAP.md) · [full algorithm](POST-MA06A-EXECUTION.md) · [proof](POST-MA06A-PROOF.md). Once their actual integrations are inspected, replace old pre-MA06A `TASKS.md` with these T-IDs; do NOT ask Cursor to reconstruct contracts. One parent Change branch from `undertaking/storyteller-workshop`, six serial batches, modest Composer children (one or two truly independent only), one accepted whole-Change integration. No live payment or production deployment authorization.
+
+## T01 | Owner identity and v2 source capture | PATCH
+
+**Anchors:** `packages/storyteller/src/tasks/writer-mission.ts:writerMissionCaptureV2OpeningSchema`, `packages/db/src/schema/storyteller.ts:storytellerWriterMission`, `packages/db/migrations/meta/_journal.json`, `packages/documents/src/{library-index,markdown-metadata,schema}.ts`, new `packages/story-engine/src/storyteller/launch-source.ts`. **Write:** the latter files, migration after WR07L, affected focused tests.
+
+Preserve v1 Writer capture/serialized hash exactly. For v2-only ownerId use `gameAuthorityActorIdSchema` semantics (actor string matching auth user.id) without changing v1; migrate writer-mission SQL ownerId UUID→TEXT `USING owner_id::text`. Stage deterministic `STORY_PROMPT.md` content from stored verbatim request using `createEmptyLibraryIndex`, `stableNamespacedDocumentId('story-launch',reservedStoryId,'STORY_PROMPT.md')`, `canonicalDocumentSchema` (kind creative-guidance, authority source, visibility player-known), `applyLibraryBatch`, put nodes/root. Preset: validate pinned root reference and no mutable name fallback. Capture root + policy, tool/profile/skill pins. Tests: actor string non-UUID accepted only v2, old oracle intact, replay root hash identical, prompt preserved verbatim, swapped preset rejected. **Stop:** an actual effective owner-grant or preset source cannot be pinned without unchosen policy; send exact owner evidence, do not invent.
+
+## T02 | Atomic generation + Writer mission + outbox | PATCH
+
+**Anchors:** WR07L's landed `apps/game-authority/src/launch-ledger.ts`, `packages/db/src/schema/launch.ts`; `packages/story-engine/src/storyteller/writer-mission-store.ts:insertWriterMissionParentStep`; `packages/db/src/schema/{generations,storyteller,outbox}.ts`. **Write:** new `apps/game-authority/src/launch-admission.ts`, the transaction-taking Mission helper, tests.
+
+GA reads owner-scoped pending ledger, freezes effective source, then under row lock creates one generation and one `storytellerOperation` finite account/run budget, mission/first step and a single outbox row in **ONE SQL transaction**, sets `story_launch.generationId`. Keep old `insertWriterMissionParentStep(database,...)` facade, introduce `insertWriterMissionParentStepInTransaction(tx,...)` with same row insert semantics. Frozen generation ID is never reallocated after a successful transaction. Use outbox `operationId=reservedStoryId` **not** client operationId because WR07L's client ID is owner-scoped. The worker can query uniquely by reserved story UUID. Tests: two-owner same client ID isolated, duplicate same request one generation/wake, fail at each insert rolls back all, no funding grant produces held and zero provider dispatch. Ensure budget custody uses authenticated owner and valid run/account, not fake free entitlement.
+
+## T03 | Durable local Writer wake and step replay | PATCH
+
+**Anchors:** `apps/worker/src/outbox/dispatch.ts:noticeDispatch`, `packages/workflows/src/{contracts,index}.ts`, `apps/worker/src/{activities/index,runtime/index}.ts`, `packages/story-engine/src/storyteller/writer-loop.ts:runWriterMissionModelRound`, `writer-mission-custody.ts`. **Write:** these route owners, narrow new worker activity and focused tests.
+
+Register `story.launch.v1` to `storyLaunchV1(reservedStoryId)`, workflow ID `story-launch/<reservedStoryId>` and local task queue. Activity reloads SQL launch/mission/step, validates same owner/pins, runs finite **scripted** round through existing Writer custody; tool round advances only to next ordinal under maxModelRounds. Replayed settled/uncertain step never invokes model transport. Held/uncertain updates owner-scoped status and finishes with no auto-retry. Do not reuse distributed old `StorytellerTask` executor (currently rejects provider). Tests: lost outbox ACK, duplicate wake, uncertain step, attempted owner confusion, bounded rounds, 0 paid model calls.
+
+## T04 | Writer final proposal → authoritative scene-one | PATCH
+
+**Anchors:** WR07N landed `packages/storyteller/src/tasks/writer-mission.ts:writerOpeningSceneProposalV2Schema`; `packages/story-engine/src/storyteller/writer-scene-proposal.ts:acceptWriterSceneProposal`; WR05P2 actual v2 opening publication helper in `packages/story-engine/src/stories`; `apps/game-authority/src/application.ts`; `packages/story-engine/src/stories/initialization.ts:initializeStoryInTransaction`; WR07L ledger.
+
+Accept only v2 Writer scene content+interaction, exact source citations/staged hashes and authenticated owner. Submit a **single** authority first-scene command carrying frozen `reservedStoryId`/`reservedFirstPassageId`. Prestage v2 Library and checkpoint outside SQL. In one transaction verify successful mission and source-root/revision, insert story+first passage+checkpoint selector and update `story_launch.ready`; if already published, return same selector/status. If WR05P2's opener has no explicit reserved passage argument, add it without changing old default, not a second publisher. Negative: wrong passage/source/revision, invalid proposal, partial SQL rollback, no extra model dispatch. Do not use proposal summary as passage.
+
+## T05 | Authenticated Nest and private Game Authority route | PATCH
+
+**Anchors:** `apps/api/src/modules/stories/{controller,game-authority-client}.ts`, `apps/api/src/app.ts:createApp`, `apps/game-authority/src/{server,application,bootstrap/main}.ts`, WR07L public status projector. **Write:** these files plus focused API+GA tests.
+
+Add authenticated PUT/GET at exact Web URLs with URI/body UUID equality; extend local and remote StorySeam, private GA `PUT/GET /internal/v1/stories/launch/:operationId` using story-role token+actor header, no direct API SQL in distributed mode. Identical replays show same status, conflicting request 409, foreign GET 404, lost reply reconnect. No endpoint available should masquerade as ready. Only recommend enabling Web `STORY_LAUNCH_ENABLED` after joined scripted acceptance; no live model calls.
+
+## T06 | Whole-Change proof, reconcile and close | VERIFY/PATCH
+
+Use verified disposable DBs and scripted fixtures. Build/test `@offscreen/storyteller`, `@offscreen/db`, `@offscreen/story-engine`, `@offscreen/game-authority`, API, worker/workflows and Web's Launch hook with proportionate targeted commands. Actual joined test: authenticated word `BAH` → immutable `STORY_PROMPT.md` → Writer mission and one outbox → bounded scripted proposal → GA v2 scene-one selector → exact ready story on GET and playable Web navigation. Test negative matrix in PROOF (cross-owner/repeat/uncertain/grant/source/root/SQL rollback), no provider spend. Record what was actually run and unresolved real-provider readiness. Reconcile status/program/undertaking ledger and affected permanent docs; archive WR07 backend Change, squash-integrate to undertaking (not `main`), retire worktree. If major cross-service source contradiction surfaced, send one precise packet back to ChatGPT, not a research swarm.
+
+**After WR07B:** the full undertaking is still not Done. WR06 historical active fork, WR04 child research, real paid-provider deployment contract, WR08 long-form acceptance, monorepo cleanup and final merge remain.
