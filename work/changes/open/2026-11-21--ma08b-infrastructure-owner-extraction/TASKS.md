@@ -1,9 +1,0 @@
-# MA08B | serial bounded tasks within independent lane B
-
-T01 **DB-owned relay.** Reads `packages/application/src/outbox/index.ts`, `packages/db/src/{outbox,outbox-schema}.ts`, `packages/db/package.json`. Writes `packages/db/src/outbox-relay.ts`, `packages/db/package.json`. Copy method and SQL constraints verbatim, no new query abstraction. Positive: DB build, claim/ack focused test. Negative: stale lease cannot acknowledge, topic empty returns null. Stop: DB package becomes circular.
-
-T02 **Host-safe logging.** Reads `packages/application/src/runtime-logging/index.ts`, `apps/api/src/main.ts`, `apps/game-authority/src/bootstrap/main.ts`, `apps/worker/src/bootstrap/main.ts`. Writes `packages/runtime-logging/**`, those bootstrap source files plus worker control/executor bootstraps. New own workspace with exact former logger contract; change imports, not log content. Positive: logger import/typecheck and formatted JSON output. Negative: raw Error stack/message never included from an unselected object. Stop: requires API error-mapping rewrite.
-
-T03 **Worker relay consumers, manifests and proof.** Reads `apps/worker/src/{runtime/index.ts,outbox/relay.ts}`, `apps/{api,worker,game-authority}/package.json`. Writes only those files and host manifests. Import `createOutbox` from DB new subpath; other Notice/Transaction/enqueue from DB/outbox. Positive: API, GA, Worker targeted typecheck and existing lease/relay tests. Negative: no old Application outbox/logging import in named production files; old test compatibility files still build. Stop: runtime package cycle or changed lease semantics.
-
-T04 **Handoff.** Run build/typecheck for affected packages, graph checker and changed-file quality; `git diff --check`. Do not edit global lockfile/ledger. Report exact pass/fail and commit SHA to integration custodian; do not self-merge while other lane active. No MA09/MA10 auto-commission.
