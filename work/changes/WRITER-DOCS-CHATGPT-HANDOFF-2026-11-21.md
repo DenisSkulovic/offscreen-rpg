@@ -39,7 +39,7 @@ Relevant local rules: [documentation reconciliation](../../.agents/skills/docume
 3. Actually edit the permanent owner pages in coherent batches; use connected GitHub file/commit tools. Keep a stable \`main\` lease or branch that is later merged with owner approval. If concurrent changes occur, re-read/rebase instead of overwriting Cursor's work.
 4. Run actual docs/wiki health commands when a local checkout is available, and targeted Markdown link/anchor checks. Report what's not runnable. Regenerate generated indexes only with their official script; do not patch derived search indexes manually.
 5. Produce one small per-Change **reconciliation receipt**; mark Proposed → Done only after diff/checks, accepted owner authority and closing review. Don't turn a requirements rewrite into “code implemented.”
-6. Hand off to Cursor with **permanent governing \`docs/\` links** and an explicit owner sign-off. After WRD04, code Change [WR02](open/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) can be considered for selection, not blindly dispatched.
+6. Hand off to Cursor with **permanent governing `docs/` links** and an explicit owner sign-off. After WRD04, code Change [WR02](archive/2026-11/storyteller/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) was selected and is now Done.
 
 ## What must remain open
 

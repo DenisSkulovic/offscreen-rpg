@@ -2,7 +2,7 @@
 
 **Execution direction (2026-11-20):** [one short-term implementation roadmap](IMPLEMENTATION-ROADMAP.md) supersedes older competing schedules. **TURN02 is Done and archived. FORK01 is Done and archived. DXK01 is Done and archived** for the warm `kind-offscreen-lab` reconcile. **DXK02 is Done and archived** for Tilt CI and the single-context kubeconfig. **DXK03 is Done and archived** for GitHub sign-in and one scripted Seyda Neen action on the warm lab. **DXK04 is Done and archived** for the root command surface. Current work is none. BOOT03 is archived. No implicit model spend or unsafe cluster authorization.
 
-Current work: [WR02](changes/open/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md)
+Current work: none
 
 This is the **one active selection pointer** for independently tracked work. The current themed integration envelope, when one exists, is recorded separately under [Undertakings](undertakings/README.md) and never selects execution by itself. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 
@@ -30,4 +30,4 @@ Start with this pointer, then the selected packet, then **one** T-ID when the se
 
 ## Transition
 
-The previous `Current change:` line in the Change catalog is retired as an independent selector. The maintenance scanner and repository brief must read **this file**, not infer selection from a Change-only index. Open Change packets remain in `work/changes/open/` until each packet's independently verifiable Goal is proved. WORK01 is Done and archived. WR02 is the selected first Storyteller Workshop implementation Change. No standalone Task is selected.
+The previous `Current change:` line in the Change catalog is retired as an independent selector. The maintenance scanner and repository brief must read **this file**, not infer selection from a Change-only index. Open Change packets remain in `work/changes/open/` until each packet's independently verifiable Goal is proved. WORK01 is Done and archived. WR02 is Done and archived. No successor Change is selected. No standalone Task is selected.

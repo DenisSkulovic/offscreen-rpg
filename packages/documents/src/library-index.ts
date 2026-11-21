@@ -1,10 +1,16 @@
 import { hashCanonicalJson } from './canonical-json.js';
 import {
   createEmptyLibraryTrie,
+  createLibraryTrieEdit,
   deleteLibraryTrieKey,
+  deleteLibraryTrieKeyInEdit,
   emptyLibraryRootHash,
+  finalizeLibraryTrieEdit,
   getLibraryTrieValue,
+  libraryTrieEditReadView,
   setLibraryTrieValue,
+  setLibraryTrieValueInEdit,
+  type LibraryTrieEdit,
   type LibraryTrieStore,
 } from './library-trie.js';
 import {
@@ -177,39 +183,44 @@ export function assertLibraryIndexConsistent(library: LibraryIndex): void {
   }
 }
 
-function applyOne(
-  store: LibraryTrieStore,
+function applyOneInEdit(
+  edit: LibraryTrieEdit,
   pathsRootHash: string,
   idsRootHash: string,
   operation: LibraryBatchOperation,
-): { store: LibraryTrieStore; pathsRootHash: string; idsRootHash: string } {
+): { pathsRootHash: string; idsRootHash: string } {
+  const readStore = libraryTrieEditReadView(edit);
   switch (operation.op) {
     case 'create': {
       const entry = documentManifestEntrySchema.parse(operation.entry);
       const idKey = idTrieKey(entry.documentId);
-      if (getLibraryTrieValue(store, pathsRootHash, entry.path) !== null) {
+      if (getLibraryTrieValue(readStore, pathsRootHash, entry.path) !== null) {
         throw new Error('Document path already exists');
       }
-      if (getLibraryTrieValue(store, idsRootHash, idKey) !== null) {
+      if (getLibraryTrieValue(readStore, idsRootHash, idKey) !== null) {
         throw new Error('Document ID already exists');
       }
-      const pathResult = setLibraryTrieValue(store, pathsRootHash, entry.path, manifestRecord(entry));
-      const idResult = setLibraryTrieValue(
-        pathResult.store,
+      const nextPathsRootHash = setLibraryTrieValueInEdit(
+        edit,
+        pathsRootHash,
+        entry.path,
+        manifestRecord(entry),
+      );
+      const nextIdsRootHash = setLibraryTrieValueInEdit(
+        edit,
         idsRootHash,
         idKey,
         idLeafValue(entry),
       );
       return {
-        store: idResult.store,
-        pathsRootHash: pathResult.rootHash,
-        idsRootHash: idResult.rootHash,
+        pathsRootHash: nextPathsRootHash,
+        idsRootHash: nextIdsRootHash,
       };
     }
     case 'replace': {
       const entry = documentManifestEntrySchema.parse(operation.entry);
       const idKey = idTrieKey(entry.documentId);
-      const existingId = getLibraryTrieValue(store, idsRootHash, idKey);
+      const existingId = getLibraryTrieValue(readStore, idsRootHash, idKey);
       if (existingId === null) {
         throw new Error('Cannot replace unknown document ID');
       }
@@ -217,7 +228,7 @@ function applyOne(
       if (idLeaf.path !== entry.path) {
         throw new Error('Replace cannot change document path; use rename');
       }
-      const existingPath = getLibraryTrieValue(store, pathsRootHash, entry.path);
+      const existingPath = getLibraryTrieValue(readStore, pathsRootHash, entry.path);
       if (existingPath === null) {
         throw new Error('Cannot replace missing path entry');
       }
@@ -225,43 +236,46 @@ function applyOne(
       if (prior.documentId !== entry.documentId) {
         throw new Error('Path entry documentId does not match replace target');
       }
-      const pathResult = setLibraryTrieValue(store, pathsRootHash, entry.path, manifestRecord(entry));
+      const nextPathsRootHash = setLibraryTrieValueInEdit(
+        edit,
+        pathsRootHash,
+        entry.path,
+        manifestRecord(entry),
+      );
       return {
-        store: pathResult.store,
-        pathsRootHash: pathResult.rootHash,
+        pathsRootHash: nextPathsRootHash,
         idsRootHash,
       };
     }
     case 'delete': {
       const idKey = idTrieKey(operation.documentId);
-      const existingId = getLibraryTrieValue(store, idsRootHash, idKey);
+      const existingId = getLibraryTrieValue(readStore, idsRootHash, idKey);
       if (existingId === null) {
         throw new Error('Cannot delete unknown document ID');
       }
       const idLeaf = libraryIdLeafSchema.parse(existingId);
-      const pathResult = deleteLibraryTrieKey(store, pathsRootHash, idLeaf.path);
-      const idResult = deleteLibraryTrieKey(pathResult.store, idsRootHash, idKey);
+      const nextPathsRootHash = deleteLibraryTrieKeyInEdit(edit, pathsRootHash, idLeaf.path);
+      const nextIdsRootHash = deleteLibraryTrieKeyInEdit(edit, idsRootHash, idKey);
       return {
-        store: idResult.store,
-        pathsRootHash: pathResult.rootHash,
-        idsRootHash: idResult.rootHash,
+        pathsRootHash: nextPathsRootHash,
+        idsRootHash: nextIdsRootHash,
       };
     }
     case 'rename': {
       const idKey = idTrieKey(operation.documentId);
       const newPath = logicalDocumentPathSchema.parse(operation.path);
-      const existingId = getLibraryTrieValue(store, idsRootHash, idKey);
+      const existingId = getLibraryTrieValue(readStore, idsRootHash, idKey);
       if (existingId === null) {
         throw new Error('Cannot rename unknown document ID');
       }
       const idLeaf = libraryIdLeafSchema.parse(existingId);
       if (idLeaf.path === newPath) {
-        return { store, pathsRootHash, idsRootHash };
+        return { pathsRootHash, idsRootHash };
       }
-      if (getLibraryTrieValue(store, pathsRootHash, newPath) !== null) {
+      if (getLibraryTrieValue(readStore, pathsRootHash, newPath) !== null) {
         throw new Error('Document path already exists');
       }
-      const existingPath = getLibraryTrieValue(store, pathsRootHash, idLeaf.path);
+      const existingPath = getLibraryTrieValue(readStore, pathsRootHash, idLeaf.path);
       if (existingPath === null) {
         throw new Error('Cannot rename missing path entry');
       }
@@ -270,13 +284,22 @@ function applyOne(
         throw new Error('Path entry documentId does not match rename target');
       }
       const renamed = documentManifestEntrySchema.parse({ ...entry, path: newPath });
-      const setNew = setLibraryTrieValue(store, pathsRootHash, newPath, manifestRecord(renamed));
-      const dropOld = deleteLibraryTrieKey(setNew.store, setNew.rootHash, idLeaf.path);
-      const setId = setLibraryTrieValue(dropOld.store, idsRootHash, idKey, idLeafValue(renamed));
+      const pathsAfterSet = setLibraryTrieValueInEdit(
+        edit,
+        pathsRootHash,
+        newPath,
+        manifestRecord(renamed),
+      );
+      const nextPathsRootHash = deleteLibraryTrieKeyInEdit(edit, pathsAfterSet, idLeaf.path);
+      const nextIdsRootHash = setLibraryTrieValueInEdit(
+        edit,
+        idsRootHash,
+        idKey,
+        idLeafValue(renamed),
+      );
       return {
-        store: setId.store,
-        pathsRootHash: dropOld.rootHash,
-        idsRootHash: setId.rootHash,
+        pathsRootHash: nextPathsRootHash,
+        idsRootHash: nextIdsRootHash,
       };
     }
     default: {
@@ -286,20 +309,36 @@ function applyOne(
   }
 }
 
+function applyOne(
+  store: LibraryTrieStore,
+  pathsRootHash: string,
+  idsRootHash: string,
+  operation: LibraryBatchOperation,
+): { store: LibraryTrieStore; pathsRootHash: string; idsRootHash: string } {
+  const edit = createLibraryTrieEdit(store);
+  const next = applyOneInEdit(edit, pathsRootHash, idsRootHash, operation);
+  return {
+    store: finalizeLibraryTrieEdit(edit),
+    pathsRootHash: next.pathsRootHash,
+    idsRootHash: next.idsRootHash,
+  };
+}
+
 export function applyLibraryBatch(
   library: LibraryIndex,
   operations: readonly LibraryBatchOperation[],
 ): LibraryIndex {
-  let store: LibraryTrieStore = new Map(library.store);
+  const edit = createLibraryTrieEdit(library.store);
   let pathsRootHash = library.root.pathsRootHash;
   let idsRootHash = library.root.idsRootHash;
 
   for (const operation of operations) {
-    const next = applyOne(store, pathsRootHash, idsRootHash, operation);
-    store = next.store;
+    const next = applyOneInEdit(edit, pathsRootHash, idsRootHash, operation);
     pathsRootHash = next.pathsRootHash;
     idsRootHash = next.idsRootHash;
   }
+
+  const store = finalizeLibraryTrieEdit(edit);
 
   const root = libraryRootV2Schema.parse({
     format: 'offscreen.library-root.v2',
