@@ -27,6 +27,10 @@
       "types": "./dist/src/schema/outbox.d.ts",
       "default": "./dist/src/schema/outbox.js"
     },
+    "./outbox": {
+      "types": "./dist/src/outbox.d.ts",
+      "default": "./dist/src/outbox.js"
+    },
     "./story-schema": {
       "types": "./dist/src/schema/stories.d.ts",
       "default": "./dist/src/schema/stories.js"

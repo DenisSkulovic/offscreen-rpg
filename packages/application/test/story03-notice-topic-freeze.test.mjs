@@ -255,6 +255,33 @@ test('STORY03: non-storyteller outbox topics do not select workflow', async () =
   });
 });
 
+test('STORY03 negative: outbox identity conflict rolls back enqueue', async () => {
+  await withDisposable(async (database) => {
+    const noticeId = randomUUID();
+    await assert.rejects(
+      () =>
+        database.db.transaction(async (tx) => {
+          await enqueue(tx, {
+            id: noticeId,
+            operationId: randomUUID(),
+            topic: 'campaign.consequence.v1',
+          });
+          await enqueue(tx, {
+            id: noticeId,
+            operationId: randomUUID(),
+            topic: storytellerTopic,
+          });
+        }),
+      /Outbox identity conflict/,
+    );
+    const rows = await database.db
+      .select()
+      .from(outbox)
+      .where(eq(outbox.id, noticeId));
+    assert.equal(rows.length, 0);
+  });
+});
+
 const wakeSources = [
   'storyteller/admission.ts',
   'storyteller/recovery.ts',
@@ -267,9 +294,6 @@ test('STORY03: wake enqueue sites do not call admission topic selector', () => {
   const forbidden = 'selectStorytellerNoticeTopicAtAdmission';
   for (const rel of wakeSources) {
     const body = readFileSync(join(srcRoot, rel), 'utf8');
-    assert.ok(
-      !body.includes(forbidden),
-      `${rel} must not call ${forbidden}`,
-    );
+    assert.ok(!body.includes(forbidden), `${rel} must not call ${forbidden}`);
   }
 });

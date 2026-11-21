@@ -2,38 +2,17 @@ import { randomUUID } from 'node:crypto';
 import { and, eq, isNull, lte, sql, inArray } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { outbox } from '@offscreen/db/outbox-schema';
+import { enqueue, type Notice, type Transaction } from '@offscreen/db/outbox';
 
-export type Transaction = Parameters<
-  Parameters<Database['db']['transaction']>[0]
->[0];
-export type Notice = {
-  id: string;
-  topic: string;
-  operationId: string;
-  leaseId: string;
-};
-
-export async function enqueue(
-  tx: Transaction,
-  notice: Omit<Notice, 'leaseId'>,
-) {
-  await tx.insert(outbox).values(notice).onConflictDoNothing();
-  const [existing] = await tx
-    .select()
-    .from(outbox)
-    .where(eq(outbox.id, notice.id));
-  if (
-    existing?.topic !== notice.topic ||
-    existing.operationId !== notice.operationId
-  )
-    throw new Error('Outbox identity conflict');
-}
+export { enqueue, type Notice, type Transaction };
 
 /** Short leases protect delivery attempts, not execution of the referenced work. */
 export function createOutbox(database: Database) {
   return {
     async claim(topics: readonly string[]): Promise<Notice | null> {
-      if (!topics.length) return null;
+      if (!topics.length) {
+        return null;
+      }
       return database.db.transaction(async (tx) => {
         const [row] = await tx
           .select()
@@ -48,7 +27,9 @@ export function createOutbox(database: Database) {
           .orderBy(outbox.availableAt, outbox.id)
           .limit(1)
           .for('update', { skipLocked: true });
-        if (!row) return null;
+        if (!row) {
+          return null;
+        }
         const leaseId = randomUUID();
         await tx
           .update(outbox)
