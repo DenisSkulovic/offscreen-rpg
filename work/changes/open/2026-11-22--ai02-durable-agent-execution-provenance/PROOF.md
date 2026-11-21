@@ -1,0 +1,7 @@
+# AI02 | independent readiness and historical truth limits
+
+**Grounded baseline:** writer-round-request emits 2 message/strict schema request; writer-loop stores request SHA on step and tool result summaries; WR09A private response object pointer; generation capture source; separate Temporal orchestration. No exact outgoing request CAS pointer identified in inspected old code. No tests executed now.
+
+G0 PASS target; **not yet authorized to mutate schema**. G1 PASS existing Writer request/result/step source inspected. G2 CONDITIONAL on actual WR10 prepare contract and retention/purge design, both need ChatGPT recheck. G3 CONDITIONAL post-AI01/HR03 symbols/migrations. G4 **PLANNER-BLOCKED**: source-drift and deletion policy unresolved, no legal T02 today. G5 planned independent of UI AI03 only when staged; not parallel with Writer/DB migrations. G6 explicit byte-for-byte, CAS identity, fork, duplicate and privacy negatives; G7 material forensics capability with honest old-record limitations. **Verdict PLANNER-GATED.**
+
+Evidence classes required: exact archived request is an immutable object linked before send; current compiler match alone not equal to archived bytes; missing old objects explicitly uninspectable; no automatic claim that full model hidden reasoning is accessible. Chronological transcript uses only persisted evidence and no provider transport. Record count/hashes + SQL/CAS existence, not UI screenshots. This Change does NOT implement an Admin UI.
