@@ -1,4 +1,6 @@
 # WR04 | planner proof matrix
+
+**CURRENT VERDICT: READY WITH EXPLICIT LIMITS, owner commissioned (2026-11-21).** The independent post-P3 G0–G7 review at the bottom supersedes the retained initial PLANNER-BLOCKED historical review. T01 is dispatchable; T04 Worker wiring waits for WR08 integration. Code/tests have not been run by the planner.
 **Evidence:** planned only; run after WR03. Provider-free distinct scripted model contexts required.
 | Case | Setup | Result |
 |---|---|---|
