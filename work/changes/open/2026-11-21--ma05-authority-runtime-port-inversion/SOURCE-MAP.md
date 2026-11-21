@@ -2,15 +2,15 @@
 
 **Source:** extracted full source files from repository snapshot `dac6b69813b52ecb1f202158791deaa3b7ea89d7`; remote `stories/index.ts`, `stories/resolution.ts`, `storyteller/admission.ts` independently reconfirmed on target branch at `0a52a9a3991732bb1003eb7bdf83899e7a798c83`. **Not** a live MA01 --json run and **not** proof that future Writer changes preserve these edges. Source import search includes relative imports in stories/campaign; classify actual behavior from inspected functions, not import names.
 
-## Eleven direct Authority → Storyteller runtime relative import declarations
+## Originally eleven reverse imports: two resolved in MA05A, nine remain at post-MA05B HEAD
 
 | Authority source | Imported runtime symbol / owner | Behavior seam |
 | --- | --- | --- |
 | `stories/index.ts` | `retryStoryteller` → `storyteller/recovery.ts` | retry existing admitted intent, SQL idempotency + source snapshot; outer factory may supply callback |
 | `stories/resolution.ts` | `prepareStorytellerResolution`, `commitStorytellerResolution`, `replayStorytellerResolutionIfMatching` → `storyteller/admission.ts` | read-only captured snapshot, replay shortcut/outbox, commit under same explicit DB transaction with story lock/revision CAS |
-| `stories/start.ts` | `storytellerKind` → `storyteller/records.ts` | discriminate generation kind for candidate start; pure stable symbol candidate |
+| `stories/start.ts` | **RESOLVED MA05A:** generation kind now imports `@offscreen/contracts/storyteller-kinds` | retains persisted literal / no runtime import for this symbol |
 | `stories/start.ts` | `startStorytellerCandidate` → `storyteller/start.ts` | **inside** `database.db.transaction(tx)`, staged checkpoint selector plus story initialize; cannot defer until after commit |
-| `stories/reads.ts` | `storytellerContextCaptureKind` → `storyteller/context-capture.ts` | stable generation-kind discriminator; should not load large capture implementation to read constant |
+| `stories/reads.ts` | **RESOLVED MA05A:** context capture kind now imports `@offscreen/contracts/storyteller-kinds` | no massive runtime capture module loaded solely for kind classification |
 | `stories/continuation.ts` | `publishStorytellerNotes` → `storyteller/memory.ts` | **inside same authoritative continuation transaction** (notes update and notice enqueue); must not become post-commit |
 | `campaign/reports.ts` | `captureHistoricalReport` → `storyteller/context-capture.ts` | **inside caller tx**, returns generationId inserted into campaignReport row |
 | `campaign/follow-up-intents.ts` | `storytellerNoticeTopicForWake` → `storyteller/records.ts` | reads frozen notice topic inside tx; no new computed topic/version |
@@ -32,3 +32,5 @@
 - Outbox owner `application/src/outbox/index.ts` exports `Transaction` (Drizzle inferred from `Database.db.transaction`) and `enqueue(tx,notice)` with deterministic conflict check, plus dispatcher-lease `createOutbox`; a port must preserve that exact SQL identity.
 
 **Research limits:** These are source facts as of the inspected baseline, not a full AST transitive SCC or exhaustive imports after WR04–WR08. Run MA01 graph and compare source signatures after actual predecessor integration, not inside paid Cursor "first task".
+
+**Post-MA05B check (2026-11-21):** source imports from `stories/start.ts`, `stories/reads.ts` now use neutral Contracts; `application/outbox/index.ts` is a strict DB outbox re-export plus the existing lease dispatcher. 46 current files still use the old relative outbox subpath and are now owned by planned [MA05C](../2026-11-21--ma05c-direct-db-outbox-imports/CHANGE.md). The remaining *direct* Authority→Storyteller imports in the original table total **nine** (not 11). A fresh AST/SCC test after C is required before claiming an overall cycle reduction.
