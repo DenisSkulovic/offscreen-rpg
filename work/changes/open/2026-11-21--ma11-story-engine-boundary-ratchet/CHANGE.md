@@ -1,6 +1,6 @@
 # MA11 | Make Story Engine's real internal module boundaries enforceable
 
-**Status: READY FOR INDEPENDENT CURSOR LANE C, subject to source/branch guard.** Inspected MA08 source `6dd1276131a813f694ec3bccf4f9062ad3708208` on `undertaking/storyteller-workshop`. No real code imports, manifests, SQL, providers, package names, or runtime logic changed by this Change.
+**Status: READY FOR INDEPENDENT CURSOR LANE C, subject to source/branch guard.** Inspected MA08 source `6dd1276131a813f694ec3bccf4f9062ad3708208` on `undertaking/storyteller-workshop`. No production TypeScript, SQL, providers, package names or runtime logic change in this Change. **Two existing host manifests are corrected** to declare runtime dependencies accurately; the graph checker and tests are the other owned edits.
 
 ## Source-grounded problem
 
