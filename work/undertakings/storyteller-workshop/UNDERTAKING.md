@@ -73,6 +73,8 @@ WR03 + Writer mission custody ------> WR04 (bounded research) ------+
 
 **Delivery sequencing:** [Workshop program: Finish-line execution strategy](PROGRAM.md#finish-line-execution-strategy--outcome-waves-not-micro-refactors) groups the remaining work into **five product/architecture outcomes**, each deliberately larger than a function-move Change. This table owns evidence status; that program section owns how to reach it. The largest remaining goals are direct Play, active historic forks with UI, real funded Writer and independent research, one bulk compatibility/monorepo cleanup, and final integrated acceptance/landing. Do not multiply Change folders just to make the progress table move.
 
+> **Vision reconciliation (planning-branch observation, 2026-11-21):** The full Storyteller target requires the *same bounded, source-aware Writer* to write **subsequent** scenes after admitted player actions or meaningful off-screen events. [Detailed source-grounded audit](VISION-TO-IMPLEMENTATION-RECONCILIATION.md) found that the currently planned WR07B produces the **first** scripted Writer scene, while legacy `StorytellerTask` remains the ordinary continuation path. The full Undertaking cannot be called Done after WR07B + WR06 merely because creation and history work. P3 [Living Writer implementation](../../changes/open/2026-11-21--wr04-delegated-writer-research/POST-MA06A-LIVING-WRITER-EXECUTION.md) must cover repeatable authoring, admitted Workdesk canon changes, real guarded provider transport, optional child research and ordinary quiet life. This is a *planning* update, not runtime evidence or a change to the active branch.
+
 ## What belongs here
 
 The current Writer program is the core constituent set:
