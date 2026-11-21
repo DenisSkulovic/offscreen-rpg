@@ -2,7 +2,7 @@
 
 ## Next three source-disjoint Changes, after MA10 / WR09A / MA11 integrated (2026-11-21)
 
-**PLANNING ONLY: do not dispatch these while the current three Cursors are running.** They are three **source-disjoint** successor Change packets; a new batch needs explicit user commission and post-integration source/HEAD reconciliation. No package explosion or paid provider call.
+**MA10, WR09A and MA11 are archived Done.** These three next Changes are now source-reconciled against the integrated custody code; the owner may commission them as the next separate parallel batch. Their implementation/test evidence is NOT yet present. No package explosion or paid provider call.
 
 | Next lane | Change | Dependency / state | Exclusive implementation owner |
 | --- | --- | --- | --- |
