@@ -15,3 +15,7 @@
 | Unsupported class | offer/activity fields not fully represented | no v2 scene selected; precise failure, never silent omission |
 
 **Routes:** `pnpm --filter @offscreen/application test`; focused `scene-checkpoint-publication.test.mjs`, `story-publication-documents.test.mjs`, `scene-checkpoint.test.mjs`; DB/GA integration in disposable environment. No S3/SQL atomicity claim; assert selector rule.
+
+### G0–G7 adversarial review, initial verdict: PLANNER-BLOCKED
+
+G0 PASS; G1 PARTIAL (verified v1 schema, continuation/publication anchors, but not every active SQL transition and consumer); G2 FAIL (world-state v2 field schema, overflow and atomic after-image decisions left to executor); G3 FAIL T01–T05 (new contract, mapper, migration and after-state algorithm require planner design); G4 FAIL (no safe immediate dispatch for the whole Change); G5 FAIL (DAG currently assumes all serial without justified safe pair, not a blocker by itself, but resources are unmapped); G6 FAIL (negative crash/offer/notes/active classes lack concrete fixture+test commands); G7 FAIL (one Change spans many domain transitions and demands broad QA). No runtime/SQL proof executed; current v1 historical objects must remain byte-readable. Re-audit every resulting slice after exact state schema/transaction contract is ratified.
