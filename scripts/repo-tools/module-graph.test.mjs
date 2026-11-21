@@ -9,6 +9,7 @@ import {
   applicationDomain,
   runtimeCycles,
   sortEdges,
+  storyEngineDomain,
   stronglyConnectedComponents,
   typeOnlyCycles,
 } from './module-graph-core.mjs';
@@ -496,4 +497,262 @@ test('application domains are the first source subdirectory', () => {
   );
   assert.equal(applicationDomain('packages/application/src/index.ts'), null);
   assert.equal(applicationDomain('packages/cache/src/index.ts'), null);
+});
+
+test('story engine domains map the four production namespaces', () => {
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/stories/index.ts'),
+    'story-engine:authority.stories',
+  );
+  assert.equal(
+    storyEngineDomain('packages\\story-engine\\src\\campaign\\narration.ts'),
+    'story-engine:authority.campaign',
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/storyteller/admission.ts'),
+    'story-engine:writer',
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/generations/orchestrator.ts'),
+    'story-engine:generation',
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/stories/nested/module.ts'),
+    'story-engine:authority.stories',
+  );
+});
+
+test('story engine domain refuses lookalike, test, generated and non-module paths', () => {
+  assert.equal(
+    storyEngineDomain('packages/story-engine-extra/src/stories/index.ts'),
+    null,
+  );
+  assert.equal(
+    storyEngineDomain('packages/application/src/stories/index.ts'),
+    null,
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/stories/index.test.ts'),
+    null,
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/stories/__tests__/helper.ts'),
+    null,
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/campaign/generated/stub.ts'),
+    null,
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/dist/stories/index.ts'),
+    null,
+  );
+  assert.equal(storyEngineDomain('packages/story-engine/src/index.ts'), null);
+  assert.equal(storyEngineDomain('packages/story-engine/src/stories'), null);
+  assert.equal(
+    storyEngineDomain('packages/story-engine/src/custody/ledger.ts'),
+    null,
+  );
+  assert.equal(
+    storyEngineDomain('packages/story-engine/dist/stories/index.ts'),
+    null,
+  );
+});
+
+const storyEnginePackage = packageRecord(
+  'packages/story-engine',
+  '@offscreen/story-engine',
+  { '.': './dist/index.js' },
+);
+
+test('story engine runtime same-domain relative import forms a file SCC', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [storyEnginePackage],
+    sources: [
+      {
+        path: 'packages/story-engine/src/stories/a.ts',
+        text: "import { b } from './b.js';\nexport const a = b;\n",
+      },
+      {
+        path: 'packages/story-engine/src/stories/b.ts',
+        text: "import { a } from './a.js';\nexport const b = a;\n",
+      },
+    ],
+  });
+  assert.deepEqual(report.storyEngineRuntimeFileSccs, [
+    [
+      'packages/story-engine/src/stories/a.ts',
+      'packages/story-engine/src/stories/b.ts',
+    ],
+  ]);
+  assert.deepEqual(report.storyEngineRuntimeDomainSccs, []);
+  assert.equal(report.storyEngineFileEdges.length, 2);
+});
+
+test('story engine type-only same-domain import forms only a type-only file SCC', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [storyEnginePackage],
+    sources: [
+      {
+        path: 'packages/story-engine/src/stories/a.ts',
+        text: "import type { B } from './b.js';\nexport type A = B;\n",
+      },
+      {
+        path: 'packages/story-engine/src/stories/b.ts',
+        text: "import type { A } from './a.js';\nexport type B = A;\n",
+      },
+    ],
+  });
+  assert.deepEqual(report.storyEngineRuntimeFileSccs, []);
+  assert.deepEqual(report.storyEngineTypeOnlyFileSccs, [
+    [
+      'packages/story-engine/src/stories/a.ts',
+      'packages/story-engine/src/stories/b.ts',
+    ],
+  ]);
+});
+
+test('known authority-writer debt warns and a sixth runtime import fails', () => {
+  const admission = {
+    path: 'packages/story-engine/src/storyteller/admission.ts',
+    text: 'export const prepareStorytellerResolution = 1;\n',
+  };
+  const known = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [storyEnginePackage],
+    sources: [
+      admission,
+      {
+        path: 'packages/story-engine/src/stories/resolution.ts',
+        text: "import { prepareStorytellerResolution } from '../storyteller/admission.js';\n",
+      },
+    ],
+  });
+  assert.ok(
+    known.warnings.some((item) => item.code === 'authority-writer-debt'),
+  );
+  assert.ok(
+    !known.errors.some(
+      (item) => item.code === 'forbidden-authority-writer-import',
+    ),
+  );
+
+  const forbidden = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [storyEnginePackage],
+    sources: [
+      admission,
+      {
+        path: 'packages/story-engine/src/stories/new.ts',
+        text: "import { prepareStorytellerResolution } from '../storyteller/admission.js';\n",
+      },
+    ],
+  });
+  assert.ok(
+    forbidden.errors.some(
+      (item) =>
+        item.code === 'forbidden-authority-writer-import' &&
+        item.file === 'packages/story-engine/src/stories/new.ts',
+    ),
+  );
+  assert.equal(forbidden.result, 'fail');
+});
+
+test('type-only authority to writer import stays neutral', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [storyEnginePackage],
+    sources: [
+      {
+        path: 'packages/story-engine/src/storyteller/admission.ts',
+        text: 'export type StorytellerAdmission = { ready: true };\n',
+      },
+      {
+        path: 'packages/story-engine/src/stories/resolution.ts',
+        text: "import type { StorytellerAdmission } from '../storyteller/admission.js';\n",
+      },
+    ],
+  });
+  assert.ok(
+    !report.warnings.some((item) => item.code === 'authority-writer-debt'),
+  );
+  assert.ok(
+    !report.errors.some(
+      (item) => item.code === 'forbidden-authority-writer-import',
+    ),
+  );
+  assert.deepEqual(report.storyEngineRuntimeDomainSccs, []);
+});
+
+test('forbidden engine-to-lab and pure-to-engine package runtime imports fail', () => {
+  const engineToLab = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      storyEnginePackage,
+      packageRecord('packages/lab-support', '@offscreen/lab-support', {
+        '.': './dist/index.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'packages/story-engine/src/stories/index.ts',
+        text: "import { bench } from '@offscreen/lab-support';\nexport const value = bench;\n",
+      },
+    ],
+  });
+  assert.ok(
+    engineToLab.errors.some((item) => item.code === 'forbidden-engine-to-lab'),
+  );
+
+  const pureToEngine = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      storyEnginePackage,
+      packageRecord(
+        'packages/game',
+        '@offscreen/game',
+        { '.': './dist/index.js' },
+        { '@offscreen/story-engine': 'workspace:*' },
+      ),
+    ],
+    sources: [
+      {
+        path: 'packages/game/src/effects.ts',
+        text: "import { createStoryResolution } from '@offscreen/story-engine';\nexport const ready = createStoryResolution;\n",
+      },
+    ],
+  });
+  assert.ok(
+    pureToEngine.errors.some(
+      (item) => item.code === 'forbidden-pure-to-application',
+    ),
+  );
+});
+
+test('legacy application graph fields and schema stay stable', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [storyEnginePackage],
+    sources: [
+      {
+        path: 'packages/story-engine/src/stories/index.ts',
+        text: 'export const ready = true;\n',
+      },
+    ],
+  });
+  assert.equal(report.schema, SCHEMA);
+  assert.ok(Array.isArray(report.domainEdges));
+  assert.ok(Array.isArray(report.runtimePackageSccs));
+  assert.ok(Array.isArray(report.storyEngineFileEdges));
+  assert.ok(Array.isArray(report.storyEngineRuntimeFileSccs));
 });

@@ -13,6 +13,7 @@ import {
   applicationDomain,
   runtimeCycles,
   sortEdges,
+  storyEngineDomain,
   stronglyConnectedComponents,
   typeOnlyCycles,
 } from './module-graph-core.mjs';
@@ -22,6 +23,16 @@ export const SCHEMA = 'offscreen.module-graph.v1';
 const SUMMARY_LIMIT = 12;
 const WORKSPACE_SCOPE = '@offscreen/';
 export const FORBIDDEN_APPLICATION_IMPORT = '@offscreen/application';
+const STORY_ENGINE_ROOT = 'packages/story-engine/src/';
+const RUNTIME_EDGE_KINDS = new Set(['runtime', 'reexport', 'dynamic']);
+/** Pre-MA09 Authority→Writer runtime relative imports (fromFile\\0toFile). */
+const AUTHORITY_WRITER_DEBT_PAIRS = new Set([
+  'packages/story-engine/src/stories/resolution.ts\0packages/story-engine/src/storyteller/admission.ts',
+  'packages/story-engine/src/campaign/reports.ts\0packages/story-engine/src/storyteller/context-capture.ts',
+  'packages/story-engine/src/campaign/narration.ts\0packages/story-engine/src/storyteller/context-capture.ts',
+  'packages/story-engine/src/campaign/narration.ts\0packages/story-engine/src/storyteller/capture-materialization.ts',
+  'packages/story-engine/src/campaign/narrative-intent-settlement.ts\0packages/story-engine/src/storyteller/writer-continuation.ts',
+]);
 
 /**
  * @typedef {object} PackageRecord
@@ -136,6 +147,10 @@ export function buildModuleGraph(input) {
   /** @type {Array<Record<string, unknown>>} */
   const domainEdges = [];
   /** @type {Array<Record<string, unknown>>} */
+  const storyEngineFileEdges = [];
+  /** @type {Array<Record<string, unknown>>} */
+  const storyEngineDomainEdges = [];
+  /** @type {Array<Record<string, unknown>>} */
   const mismatches = [];
   /** @type {Array<Record<string, string>>} */
   const errors = [];
@@ -180,6 +195,8 @@ export function buildModuleGraph(input) {
         exists: input.exists ?? (() => false),
         sourceEdges,
         domainEdges,
+        storyEngineFileEdges,
+        storyEngineDomainEdges,
         mismatches,
         errors,
         warnings,
@@ -198,6 +215,8 @@ export function buildModuleGraph(input) {
           exists: input.exists ?? (() => false),
           sourceEdges,
           domainEdges,
+          storyEngineFileEdges,
+          storyEngineDomainEdges,
           mismatches,
           errors,
           warnings,
@@ -274,6 +293,34 @@ export function buildModuleGraph(input) {
     });
   }
 
+  const storyEngineFileNodes = input.sources
+    .map((source) => normalize(source.path))
+    .filter(isStoryEngineProductionFile);
+  const storyEngineRuntimeFileSccs = runtimeCycles(
+    storyEngineFileNodes,
+    storyEngineFileEdges.map(plainEdge),
+  );
+  const storyEngineTypeOnlyFileSccs = typeOnlyCycles(
+    storyEngineFileNodes,
+    storyEngineFileEdges.map(plainEdge),
+  );
+  const storyEngineDomainNodes = [
+    ...new Set(
+      storyEngineDomainEdges.flatMap((edge) => [
+        String(edge.from),
+        String(edge.to),
+      ]),
+    ),
+  ];
+  const storyEngineRuntimeDomainSccs = runtimeCycles(
+    storyEngineDomainNodes,
+    storyEngineDomainEdges.map(plainEdge),
+  );
+  const storyEngineTypeOnlyDomainSccs = typeOnlyCycles(
+    storyEngineDomainNodes,
+    storyEngineDomainEdges.map(plainEdge),
+  );
+
   const report = {
     schema: SCHEMA,
     baselineSha: input.baselineSha,
@@ -297,12 +344,33 @@ export function buildModuleGraph(input) {
       'specifier',
       'kind',
     ]),
+    storyEngineFileEdges: sortRecords(storyEngineFileEdges, [
+      'from',
+      'to',
+      'fromFile',
+      'line',
+      'specifier',
+      'kind',
+    ]),
+    storyEngineDomainEdges: sortRecords(storyEngineDomainEdges, [
+      'from',
+      'to',
+      'fromFile',
+      'toFile',
+      'line',
+      'specifier',
+      'kind',
+    ]),
     mismatches: sortRecords(mismatches, ['file', 'line', 'specifier', 'code']),
     runtimePackageSccs: packageRuntimeSccs,
     typeOnlyPackageSccs: packageTypeOnlySccs,
     declaredDependencySccs: declaredSccs,
     domainRuntimeSccs,
     domainTypeOnlySccs,
+    storyEngineRuntimeFileSccs,
+    storyEngineTypeOnlyFileSccs,
+    storyEngineRuntimeDomainSccs,
+    storyEngineTypeOnlyDomainSccs,
     errors: sortRecords(errors, ['code', 'file', 'specifier', 'message']),
     warnings: sortRecords(warnings, ['code', 'message']),
   };
@@ -454,6 +522,15 @@ export function isProductionSource(filePath) {
 /**
  * @param {string} filePath
  */
+function isStoryEngineProductionFile(filePath) {
+  const file = normalize(filePath);
+  if (!isProductionSource(file)) return false;
+  return file.startsWith(STORY_ENGINE_ROOT);
+}
+
+/**
+ * @param {string} filePath
+ */
 export function isTestSource(filePath) {
   const file = normalize(filePath);
   return (
@@ -476,6 +553,8 @@ export function renderHuman(report) {
     `declared edges ${report.declaredEdges?.length ?? 0}`,
     `source edges ${report.sourceEdges?.length ?? 0}`,
     `domain edges ${report.domainEdges?.length ?? 0}`,
+    `story engine file edges ${report.storyEngineFileEdges?.length ?? 0}`,
+    `story engine domain edges ${report.storyEngineDomainEdges?.length ?? 0}`,
   ];
   appendCapped(lines, 'declared', report.declaredEdges, (edge) => {
     return `${edge.from} -> ${edge.to} (${edge.field})`;
@@ -484,6 +563,14 @@ export function renderHuman(report) {
     lines,
     'domain',
     uniqueDomainPairs(report.domainEdges ?? []),
+    (edge) => {
+      return `${edge.from} -> ${edge.to} (${edge.kind})`;
+    },
+  );
+  appendCapped(
+    lines,
+    'story-engine-domain',
+    uniqueDomainPairs(report.storyEngineDomainEdges ?? []),
     (edge) => {
       return `${edge.from} -> ${edge.to} (${edge.kind})`;
     },
@@ -585,6 +672,30 @@ function classifySpecifier(input) {
     pushMismatch(input, 'unknown-export-subpath', true);
     return;
   }
+  if (
+    production &&
+    RUNTIME_EDGE_KINDS.has(specifier.kind) &&
+    owner &&
+    target &&
+    owner.name !== target.name
+  ) {
+    if (
+      owner.name === '@offscreen/story-engine' &&
+      target.name === '@offscreen/lab-support'
+    ) {
+      pushMismatch(input, 'forbidden-engine-to-lab', true);
+      return;
+    }
+    if (
+      (owner.name === '@offscreen/contracts' ||
+        owner.name === '@offscreen/game') &&
+      (target.name === '@offscreen/story-engine' ||
+        target.name === '@offscreen/lab-support')
+    ) {
+      pushMismatch(input, 'forbidden-pure-to-application', true);
+      return;
+    }
+  }
   if (!owner || !target || owner.name === target.name) return;
   const field = dependencyField(owner.manifest, target.name);
   if (production && field !== 'dependencies' && field !== 'peerDependencies') {
@@ -618,6 +729,52 @@ function classifyRelative(input) {
     });
     pushMismatch(input, 'unresolved-relative', false);
     return;
+  }
+  if (
+    isStoryEngineProductionFile(file) &&
+    isStoryEngineProductionFile(resolved)
+  ) {
+    input.storyEngineFileEdges.push({
+      from: file,
+      to: resolved,
+      fromFile: file,
+      specifier: specifier.specifier,
+      kind: specifier.kind,
+      line: specifier.line,
+    });
+    const engineFromDomain = storyEngineDomain(file);
+    const engineToDomain = storyEngineDomain(resolved);
+    if (
+      engineFromDomain &&
+      engineToDomain &&
+      engineFromDomain !== engineToDomain
+    ) {
+      input.storyEngineDomainEdges.push({
+        from: engineFromDomain,
+        to: engineToDomain,
+        fromFile: file,
+        toFile: resolved,
+        specifier: specifier.specifier,
+        kind: specifier.kind,
+        line: specifier.line,
+      });
+    }
+    if (
+      RUNTIME_EDGE_KINDS.has(specifier.kind) &&
+      engineToDomain === 'story-engine:writer' &&
+      (engineFromDomain === 'story-engine:authority.stories' ||
+        engineFromDomain === 'story-engine:authority.campaign')
+    ) {
+      const pairKey = `${file}\0${resolved}`;
+      if (AUTHORITY_WRITER_DEBT_PAIRS.has(pairKey)) {
+        input.warnings.push({
+          code: 'authority-writer-debt',
+          message: `${file}:${specifier.line} -> ${resolved}`,
+        });
+      } else {
+        pushMismatch(input, 'forbidden-authority-writer-import', true);
+      }
+    }
   }
   if (!owner) return;
   const fromDomain = applicationDomain(file);
@@ -814,12 +971,18 @@ function unavailableReport(baselineSha, code, message) {
     declaredEdges: [],
     sourceEdges: [],
     domainEdges: [],
+    storyEngineFileEdges: [],
+    storyEngineDomainEdges: [],
     mismatches: [],
     runtimePackageSccs: [],
     typeOnlyPackageSccs: [],
     declaredDependencySccs: [],
     domainRuntimeSccs: [],
     domainTypeOnlySccs: [],
+    storyEngineRuntimeFileSccs: [],
+    storyEngineTypeOnlyFileSccs: [],
+    storyEngineRuntimeDomainSccs: [],
+    storyEngineTypeOnlyDomainSccs: [],
     errors: [{ code, message }],
     warnings: [],
   };
