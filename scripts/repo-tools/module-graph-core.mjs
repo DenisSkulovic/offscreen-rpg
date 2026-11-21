@@ -31,6 +31,43 @@ export function applicationDomain(filePath) {
   return domain;
 }
 
+const STORY_ENGINE_MARKER = 'packages/story-engine/src/';
+const STORY_ENGINE_DOMAIN_VALUES = new Map([
+  ['stories', 'story-engine:authority.stories'],
+  ['campaign', 'story-engine:authority.campaign'],
+  ['storyteller', 'story-engine:writer'],
+  ['generations', 'story-engine:generation'],
+]);
+const STORY_ENGINE_EXCLUDED_SEGMENTS = new Set([
+  'dist',
+  'generated',
+  'tests',
+  'test',
+  '__tests__',
+]);
+
+/**
+ * @param {string} filePath
+ * @returns {string | null}
+ */
+export function storyEngineDomain(filePath) {
+  const normalized = filePath.replaceAll('\\', '/');
+  const start = normalized.indexOf(STORY_ENGINE_MARKER);
+  if (start < 0) return null;
+  const segments = normalized
+    .slice(start + STORY_ENGINE_MARKER.length)
+    .split('/');
+  const [domain, ...rest] = segments;
+  if (!domain || rest.length === 0) return null;
+  if (domain.endsWith('.ts') || domain.endsWith('.tsx')) return null;
+  if (segments.some((part) => STORY_ENGINE_EXCLUDED_SEGMENTS.has(part))) {
+    return null;
+  }
+  const leaf = rest.at(-1) ?? '';
+  if (/\.(?:test|spec)\.tsx?$/u.test(leaf)) return null;
+  return STORY_ENGINE_DOMAIN_VALUES.get(domain) ?? null;
+}
+
 /**
  * @param {readonly GraphEdge[]} edges
  * @returns {GraphEdge[]}
