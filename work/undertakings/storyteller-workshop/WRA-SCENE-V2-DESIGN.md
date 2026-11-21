@@ -77,6 +77,9 @@ Source scan on the 2bcebcdd snapshot of Drizzle `.insert/.update/.delete` for `c
 
 **Engineering consequence:** do not attempt an unbounded pure projection of *every* campaign command just for WRA. Project only the **scene-publication transition** from an existing typed base and a finite admitted effect plan. Other commands remain the owners of their own state changes; their updates must serialize against or be detected by the publication fence. An expanded world-state snapshot captures their **current accepted result** at scene-boundary time. Full replay of arbitrary past actions is not required.
 
+
+**Initial lock scan:** `campaign/{settings,actions,activities,action-executions,controls,custom-intent,world-obligation-controls}.ts` use `lockOwnedStory` or `lockStoryById` in their transaction entrypoints and expose `incrementStoryViewVersion` in their write paths. `campaign/holds.ts` and `campaign/world-obligations.ts` have no direct story-lock/view-version call in the scanned file, indicating helper-level mutation; inspect their **callers' lock discipline** before declaring the story lock a universal semantic-state fence. The probable simplest option is reuse the existing story row lock plus a post-mutation comparison rather than invent per-entity event-sourcing revisions.
+
 **Pre-release source questions (specific, not for Cursor investigation):** which writers already call `lockOwnedStory` or `lockStoryById` before updating campaign state; which writes change `story.viewVersion`; which mutate `gameActivity`/`worldObligation` without either; and which existing typed effect helpers can project the finite scene transition from a captured base. These are the only remaining implementation-critical design holes. If the current engine cannot enforce a consistent snapshot at publication, the WRA packet stays unready until this is closed.
 
 ## Release gate
