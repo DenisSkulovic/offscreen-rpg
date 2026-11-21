@@ -1,0 +1,11 @@
+# MA05A | neutral persisted Storyteller generation-kind constants
+
+**State:** READY WITH EXPLICIT LIMITS for owner commission; planned against `undertaking/storyteller-workshop` source at `681c5fa910344551c5b4f40fd39dc1fdf87378ca` (source verified remotely). **Change kind/profile:** implementation / CONTRACT (small). **Branch:** `change/ma05a-neutral-storyteller-kinds` in a separate linked worktree; squash integration target `undertaking/storyteller-workshop` only. **No real provider or database required.** ChatGPT has not run implementation tests.
+
+**Goal:** eliminate two specific reverse runtime imports without changing persisted generation-kind strings or old exports: `stories/start.ts → storyteller/records.ts:storytellerKind` and `stories/reads.ts → storyteller/context-capture.ts:storytellerContextCaptureKind`. Move these **two literal identities only** into the neutral `@offscreen/contracts/storyteller-kinds` subpath and keep both old Storyteller modules re-exporting the same values. Do not move Storyteller notice topics or frozen-topic selection; they are distinct runtime/SQL contracts.
+
+**Contract:** `storytellerKind = 'storyteller.profiled.v1' as const` and `storytellerContextCaptureKind = 'storyteller.context-capture.v1' as const`. New contracts file has no runtime dependency. Source consumers import the neutral subpath directly; Storyteller retains import + named re-export for existing internal and test consumers. Public Application package subpath mapping and database `generation.kind` are unchanged.
+
+**Acceptance:** source imports of the two target Storyteller files from `stories/start.ts` and `stories/reads.ts` are absent; old exported bindings remain strictly identical to neutral value; Contracts/Application builds pass, focused tests prove both values and history/source classification. MA01 graph has no *new* invalid manifest/exports edge; other Storyteller cycles remain known MA05 blockers, not a reason to broaden this Change.
+
+[Exact anchors](SOURCE-MAP.md) · [Composer tasks](TASKS.md) · [Proof](PROOF.md). Commission covers this one bounded Change only, not MA05B, MA05 or MA06.
