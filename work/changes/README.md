@@ -1,5 +1,17 @@
 # Changes | active catalog
 
+## Human-owner readability wave, planned 2026-11-22
+
+**A separate structural refactor wave, not a replacement for CL01/WR11/K8S10.** The [canonical code-quality rule](../.agents/rules/code-quality.md#human-ownership-refactors-controlled-mechanical-freedom) now explicitly supports **planner-fixed package layouts + Composer mechanical discretion**. No new feature, scheme, SQL transaction, external provider or migration.
+
+| Change | Package ownership and purpose | Gate |
+| --- | --- | --- |
+| [HR01 Nest API route ownership](open/2026-11-22--hr01-api-route-ownership-readability/CHANGE.md) | `apps/api` Stories/Admin controllers, readable route families and explicit composition | **PLANNER-GATED until MA12 + CL01 code integrates**, then post-CL01 controller/DI rebase |
+| [HR02 Next player features](open/2026-11-22--hr02-web-player-feature-readability/CHANGE.md) | `apps/web/src/features/stories/**` coherent library/drafts/opening/launch; selective Play readability | **READY WITH LIMITS**, no simultaneous Web source edit in same paths |
+| [HR03 DB schema + SQL reading atlas](open/2026-11-22--hr03-db-schema-and-sql-navigation/CHANGE.md) | `packages/db/src/schema/storyteller.ts` 20 tables → 5 nested modules + stable barrel; accurate `story-engine/SQL-OWNERSHIP.md` | **READY WITH STRICT ZERO-SCHEMA-DELTA**; no CL01 migration/journal collision |
+
+**Integration/parallel:** After prior feature branches, the three target disjoint source owners `apps/api`, `apps/web`, and `packages/db/src/schema/storyteller*` + Story Engine documentation only. HR01 must not overlap MA12 or CL01; HR02 must not overlap another same-feature Web editor; HR03 only moves definitions with a read-only Drizzle fingerprint, never a migration. Use one nominated custodian when the user commissions the wave: **HR03 parent**, source joins **HR03 → HR02 → HR01**, shared catalog/README updates and final tests. Until then, these are **planned**, not actively running, and source validation is not execution evidence. Existing behavioral tests are preserved, but no one-test-per-moved-helper campaign.
+
 ## Subsequent wave prepared while WR10 / MA12 / TURN03 are still open (2026-11-22)
 
 **PLANNED, not yet dispatched or integrated.** This wave begins after the current three resolve their real acceptance gates. It is deliberately mixed: human/agent player ergonomics, the actual Writer vertical, and operational proof.
