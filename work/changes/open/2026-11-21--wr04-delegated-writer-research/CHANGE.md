@@ -2,6 +2,8 @@
 
 **State:** Proposed. **Kind:** implementation. **Dependencies:** WR03. **Outcome:** the parent Storyteller can launch and join **separate model contexts** for narrow Library research/editorial questions, without leaking branch knowledge or delegating canon authority. Optional when useful, never a mandatory performance tax.
 
+**Undertaking branch rule:** this Change belongs to **Storyteller Workshop**. Create its isolated worktree/temporary branch from the current head of `undertaking/storyteller-workshop`; after acceptance, merge/reconcile the complete Change back into `undertaking/storyteller-workshop`, then remove the temporary branch/worktree. Do **not** merge this Change directly into `main`. Rebase/refresh from the undertaking branch before beginning if earlier WR work has landed.
+
 **Planning baseline:** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad source review of uploaded `09d5820bcafe`; current worktree unknown. Reinspect named symbols before editing. **Execution owner: Cursor, not ChatGPT.** No model-spend, database migration, kind cluster mutation or new work selection is authorized merely by this packet. [Program](../../WRITER-IMPLEMENTATION-2026-11-21.md) · [Current queue](../../../QUEUE.md).
 
 ## Cursor first-screen route
