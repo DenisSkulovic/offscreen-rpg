@@ -21,7 +21,7 @@ The current Writer program is the core constituent set:
 | WRD02 | Persistent Library technical contract | Done / archived |
 | WRD03 | Engine fork technical contract | Done / archived |
 | WRD04 | Wiki navigation and validation reconciliation | Done / archived |
-| WR02 | Persistent Library and source identity implementation | Proposed |
+| WR02 | Persistent Library and source identity implementation | **Selected / Ready** |
 | WR03 | Agentic writer's workdesk | Proposed |
 | WR04 | Delegated bounded writer research | Proposed |
 | WR05 | Coherent scene publication | Proposed |
