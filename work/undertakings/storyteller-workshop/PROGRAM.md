@@ -1,5 +1,7 @@
 # Writer implementation | Storyteller Workshop
 
+> **Post-refactor planning overlay (not yet integrated):** [Execution reset after MA06A](POST-REFACTOR-REPLAN.md) preserves the WR04–WR08 product outcomes but proposes replacing their pre-refactor Composer packets with WRA scene v2, WRB direct Play vertical slice, WRC playable fork, WRD optional child research, and WRE final acceptance. Until MA06A lands and the new packets are verified, the table below remains historical/PLANNER-BLOCKED; **do not dispatch its old T-IDs**. This overlay is on the planning branch only and does not commission any work.
+
 **Owner:** [Storyteller Workshop](UNDERTAKING.md). **Integration target:** `undertaking/storyteller-workshop` (never individual WR → `main`). **Purpose:** dependency map and planner gate, not a second work queue or permission to spend. [Global selection](../../QUEUE.md) controls default work; owner may commission a named independently ready Change. **Re-audited 2026-11-21** against source snapshot `dac6b698`, selected remote key anchors at undertaking HEAD `7fccbc6417b4959985c633a9c073571a032030ba`. These are **source-inspection observations, not runtime test passes**. Later packet-audit documentation commits advance branch HEAD without changing the inspected code.
 
 | Change | Outcome | Reality and current execution disposition |
