@@ -1,0 +1,11 @@
+# MA05B | relocate transaction-bound outbox enqueue primitive into DB
+
+**State:** READY WITH EXPLICIT LIMITS for owner commission after MA05A joins (independent source paths but serial join simplifies provenance). **Target:** `undertaking/storyteller-workshop`, short-lived linked worktree branch `change/ma05b-sql-outbox-port`. **Source inspected:** `681c5fa910344551c5b4f40fd39dc1fdf87378ca`, critical remote DB and Application SQL files verified. **Kind/profile:** implementation / CONTRACT with transactional SQL negative test. No migrations or provider calls.
+
+**Problem:** `packages/application/src/outbox/index.ts` contains the generic `Transaction` type and `enqueue(tx,notice)` SQL idempotent identity check alongside a delivery/lease dispatcher. `stories`, `campaign`, `storyteller` all depend on those low-level primitives through Application, obstructing later package extraction. DB already owns `outbox` table and `Database` type.
+
+**Selected result:** add `@offscreen/db/outbox` exporting the exact existing `Transaction`, `Notice` and `enqueue` definitions (same SQL; identical conflict error). Re-export these three from `@offscreen/application/outbox` for backward compatibility; retain **only** `createOutbox` lease/delivery implementation in Application with its previous public signature, using imported `Notice` type. Do not move/rewrite lease dispatch, switch dozens of consumers, change row/schema/index, or add a second enqueue implementation. A separate future MA05/MA06 cohort will migrate importers to the DB port where it makes sense.
+
+**Proof:** original and new `enqueue` are the same function reference; existing frozen notice-topic behavioral/negative suite runs with disposable sandbox SQL (or explicitly NOT RUN, no false security PASS). Include new negative test for same ID / different operationId or topic within one transaction and zero committed rows after rollback. Compare unchanged `createOutbox` code and no new DB→Application dependency. [Source](SOURCE-MAP.md) · [Tasks](TASKS.md) · [Proof](PROOF.md).
+
+**Permissions:** database tests only via existing explicitly confirmed disposable sandbox provisioning; no production DB/deploy/provider. Owner commissioning covers this Change only, not MA05 itself or MA06.
