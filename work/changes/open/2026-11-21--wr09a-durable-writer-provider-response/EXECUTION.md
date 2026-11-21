@@ -19,3 +19,62 @@ Keep `advanceWriterMissionProviderStep` behavior for existing scripted/P3B compa
 **Not selected:** invent second provider-attempt ledger; change Story Authority tables; automatic resend for interrupted send; call a live endpoint; make exposed model response part of player records; place private objects into Shared Library. **Open live integration belongs to WR09B**.
 
 **Hard stop / planner return:** if existing `budget.settle` cannot safely be reused with durable CAS+SQL step state, record specific attempt-state and transaction conflict and return to ChatGPT. Do not silently simulate atomicity or duplicate settle in a new helper. A ready change here is defined by no-double-send/charge safety, not by minimizing SQL phases.
+
+## Revision 2: exact API and lock algorithm, replacing any ambiguous "strategy" wording above
+
+**Source facts verified:** `writer-mission-custody.ts:advanceWriterMissionProviderStep` performs one SQL transaction for mission/step reserve→dispatch and then invokes `transport()`, calling `budget.settle` separately from `casWriterStep` on delivered. `budget.ts:createStorytellerBudget(...).settle` at ~619–918 validates usage and runs *exactly one* `database.db.transaction`; **every SQL statement inside it operates on the supplied `tx`**. `lockAllowance` locks global advisory key `714092631`, then funding FOR UPDATE, then run FOR UPDATE; next it locks attempt and operation. Writer reservation currently locks mission/step, operation, funding/run. Those orders can invert under concurrency.
+
+### Decided TypeScript contracts (no new paid route)
+
+**Transport provider module** `packages/storyteller/src/providers/writer-round-transport.ts`:
+```ts
+export type WriterRoundPreflight =
+  | { kind: 'ready'; wireSha256: string }
+  | { kind: 'rejected'; reason: 'credential_missing' | 'wire_rejected' };
+export type PreparedWriterRoundTransport = Readonly<{
+  preflight: () => WriterRoundPreflight;
+  invoke: () => Promise<WriterRoundTransportResult>;
+}>;
+export function prepareWriterRoundTransport(input: {
+  capturedWire: PreparedProviderWire;
+  pinnedModelPolicy: WriterRoundModelPolicy;
+  outputSchema: unknown;
+  apiKey: string | undefined;
+  fetchImpl: typeof fetch;
+}): PreparedWriterRoundTransport;
+```
+`preflight()` is synchronous and checks a nonblank credential plus `validateWireAgainstPolicy` (including exact model/provider/no fallback/maxTokens and self-consistent hash), returning only reason/hash, never key. `invoke()` performs `preflight()` again immediately before fetch; if rejected, returns a `failed` `sent:false` with `wire_rejected` and zeroUsage/zeroTelemetry (no fetch), otherwise uses `authorization: 'Bearer ' + apiKey` only in HTTP headers. Do not place key in serialized wire, telemetry or return value. Keep old callable `createWriterRoundTransport` as a *thin wrapper around this prepared object* **but require apiKey in its input as well**, updating its six current unit-test call sites. The legacy callable API is still available to those tests; production strict custody must accept only `PreparedWriterRoundTransport`, never an arbitrary `() => transport` with no preflight.
+
+**New strict custody** in `writer-mission-custody.ts`:
+```ts
+advanceDurableWriterMissionProviderStep(
+ database: Database,
+ storage: DocumentStore,
+ input: AdvanceWriterMissionProviderStepInput & {
+   providerPolicy: WriterRoundModelPolicy; expectedWireSha256: string;
+ },
+ transport: PreparedWriterRoundTransport
+): Promise<AdvanceWriterMissionProviderStepResult>;
+readDurableWriterMissionResponse(database: Database, storage: DocumentStore,
+ input: {missionId:string; contextId?:string; ordinal:number; attemptId:string; requestSha256:string}
+): Promise<string>;
+```
+The strict path calls `transport.preflight()` before **any new reservation or dispatch SQL**, and checks `ready.wireSha256 === input.expectedWireSha256 === step.requestCasHash` before send. On already-settled strict replay it checks linked pointer and reads exact private CAS **without requiring a current credential**. The current scripted `advanceWriterMissionProviderStep` retains its fake-callable mode and legacy `resultCasHash` semantics. Neither function changes the Writer loop/Worker.
+
+### SQL transaction extraction, existing lock order
+
+In `budget.ts`, introduce `type SettleInput` covering exactly the current `settle` arguments (including `generationOutcome`, `operationOutcome`, and `recoveryFence`); export `settleStorytellerAttemptInTransaction(tx: Transaction, input: SettleInput): Promise<void|'already-applied'>`. Lift lines from the **inside** of the existing `database.db.transaction(async(tx)=>{...})` into that helper unchanged, including validation, advisory/funding/run/attempt/operation locks, window debits, recovery fence and idempotency comparison; `createStorytellerBudget(database).settle(input)` calls `database.db.transaction(tx => settleStorytellerAttemptInTransaction(tx,input))`. No second implementation of charge arithmetic, no SQL migration to funding/attempt/run. Existing budget cases must prove identical before and after.
+
+**Important lock-order decision:** strict Writer custody SQL transactions acquire the current global budget advisory lock `SELECT pg_advisory_xact_lock(714092631)` **as their first SQL lock**, *before* `lockWriterContextStep`/mission/operation/funding, in both reservation→dispatched and final-settlement transactions. Where shared reservation helper obtains funding/operation locks, do not add a second reversed lock path. On final delivery, call `settleStorytellerAttemptInTransaction(tx,...)` **before locking Writer mission/step** (the advisory is reentrant), then lock and validate matching attempt/context/ordinal/revision/state/request sha and CAS-write both hashes + state. This common advisory pre-lock serializes strict Writer transitions with the global budget settlement and prevents strict reserve (mission→funding) from deadlocking strict final settle (funding→mission). Existing legacy callers remain unchanged, are not eligible for strict real-mode on the same mission, and must not simultaneously use the same strict context/ordinal. No manual transaction nesting.
+
+### Delivered outcome: exact state transition
+
+1. Preflight sync before reservation. On rejection return `held` with `transportInvoked:false`, **zero new attempt**, no `dispatched` transition.
+2. Acquire advisory first; lock Writer step; verify selected policy, model, request hash, ordinal and revision; use existing `reserveWriterMissionProviderAttempt` and `markWriterMissionDispatched` without changing funding amounts; commit. The send boundary is now possible; crash after this is liable/uncertain even if fetch never began.
+3. Call `transport.invoke()` once. For `unknown` or thrown/timeout outcome, existing `budget.uncertain` keeps liability; retry sees dispatched/uncertain and **must not send**.
+4. On valid delivered outcome with expected exact wire hash and usage, put `writer-provider-response.v1` private structured object, read back and verify all identity fields and raw response SHA. No CAS I/O while a DB transaction is open. Do not persist >1MiB, reject input/output hash mismatches.
+5. Final SQL TX begins advisory lock first. Execute existing settle logic via `settleStorytellerAttemptInTransaction(tx,{ id:attemptId,execution,usage,telemetry,operationOutcome:'continue' })`; then lock Writer mission/step; demand step `dispatched`, same attempt, same request SHA and captured revision. CAS update `responseObjectHash`, legacy raw `resultCasHash`, `state:'result-settled'`, and mission/child state. If any check/update throws, **roll back accounting and pointer together**. No second provider send on retry.
+6. On a known `failed,sent:true`, settle reported usage **in the same kind of SQL TX** with step `failed`/held; no response pointer required because there is no delivered payload. On `failed,sent:false`, existing `confirmUnsent` path releases liability and step held; if its committed state is temporarily inconsistent after crash, restart must refuse resend, recheck bound attempt, and reconcile unsent without charging. Do not turn a previously dispatched attempt into automatic new attempt.
+7. Replay strictly requires linked CAS object **and** settled attempt, matching request hash, attemptId and raw digest. Missing pointer on a historical legacy scripted step is not a valid strict/provider replay; refuse without send. Missing/corrupt pointer on strict step means held/unavailable; preserve prior settled charge. Orphan CAS without committed SQL pointer is inert; restart remains dispatched/uncertain, never scans storage guessing a prior response.
+
+**Stop condition retained and sharpened:** If original global account-advisory lock cannot be acquired first in both strict SQL transitions while preserving existing reservation semantics or existing global budget lock order, the executor reports the exact named conflicting function and **does not invent another lock hierarchy**. This is a real safety stop, not permission to relax cost fences.
