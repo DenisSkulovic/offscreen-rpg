@@ -473,7 +473,7 @@ test('WR09A: wrong wire pin and request pin are denied before send', async () =>
     assert.equal(wrongExpected.status, 'held');
     assert.match(
       wrongExpected.reason ?? '',
-      /wire_mismatch|request_pin_mismatch/,
+      /wire_mismatch|request_pin_mismatch|request_cas_mismatch/,
     );
     assert.equal(fetchCalls.count, 0);
 

@@ -6,7 +6,7 @@
 
 | Next lane | Change | Dependency / state | Exclusive implementation owner |
 | --- | --- | --- | --- |
-| A | [WR09B durable multi-round Writer replay](open/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md) | **READY WITH EXPLICIT LIMITS**, WR09A merged/source-verified; mandatory narrow T00 stored-policy replay fence first | Story Engine writer-loop + narrow writer-mission-custody policy fence + new WR09B integration test |
+| A | [WR09B durable multi-round Writer replay](archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md) | **Done on the undertaking branch** (offline replay and policy fence; no paid call) | Story Engine writer-loop + narrow writer-mission-custody policy fence + new WR09B integration test |
 | B | [OPS12 distributed Worker lifecycle](open/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md) | **READY, predecessor integrated** | Worker runtime control/execution/live-stack lifecycle and focused Worker tests |
 | C | [DX12 affected builds and checks](open/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md) | **READY after current-wave integration** | Root affected-check tooling/script, conditional Turbo config and local engineering notes |
 

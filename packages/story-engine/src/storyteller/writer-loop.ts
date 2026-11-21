@@ -2,7 +2,7 @@
  * WR03 T06: one writer model round — compile request, prepare wire, custody, tools.
  */
 import { randomUUID } from 'node:crypto';
-import { and, asc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   storytellerWriterMission,
@@ -61,7 +61,8 @@ export class WriterLoopError extends Error {
       | 'invalid_step_state'
       | 'malformed_decision'
       | 'ungranted_tool'
-      | 'tool_execution_failed',
+      | 'tool_execution_failed'
+      | 'tool_call_replay_mismatch',
   ) {
     super(code);
     this.name = 'WriterLoopError';
@@ -112,7 +113,7 @@ type LibraryReader = Parameters<
   typeof createWriterLibraryToolExecutor
 >[0]['reader'];
 
-async function loadModelStep(
+export async function loadModelStep(
   database: Database,
   missionId: string,
   ordinal: number,
@@ -320,7 +321,11 @@ async function recordToolInvocationStep(
     resultCasHash: string;
   },
 ): Promise<number> {
-  const ordinal = await nextContextOrdinal(tx, input.missionId, input.contextId);
+  const ordinal = await nextContextOrdinal(
+    tx,
+    input.missionId,
+    input.contextId,
+  );
   await tx.insert(storytellerWriterStep).values({
     missionId: input.missionId,
     contextId: input.contextId,
@@ -344,7 +349,11 @@ async function insertNextModelStepPrepared(
     touchMissionState?: boolean;
   },
 ): Promise<number> {
-  const ordinal = await nextContextOrdinal(tx, input.missionId, input.contextId);
+  const ordinal = await nextContextOrdinal(
+    tx,
+    input.missionId,
+    input.contextId,
+  );
   await tx.insert(storytellerWriterStep).values({
     missionId: input.missionId,
     contextId: input.contextId,
@@ -370,6 +379,244 @@ function toolRequestCasHash(
   return hashCanonicalJson({ name, args });
 }
 
+/** Exported for replay mismatch tests without disposable SQL. */
+export function libraryToolRequestReplayMatches(
+  storedRequestCasHash: string,
+  name: WriterToolName,
+  args: Record<string, unknown>,
+): boolean {
+  return storedRequestCasHash === toolRequestCasHash(name, args);
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  const seen = new Set<unknown>();
+  let current: unknown = error;
+  while (current && typeof current === 'object' && !seen.has(current)) {
+    seen.add(current);
+    if ('code' in current && current.code === '23505') return true;
+    current = 'cause' in current ? current.cause : undefined;
+  }
+  return false;
+}
+
+async function loadExistingToolReceiptStep(
+  database: Database,
+  missionId: string,
+  contextId: string,
+  toolCallId: string,
+) {
+  const [row] = await database.db
+    .select({
+      requestCasHash: storytellerWriterStep.requestCasHash,
+      resultCasHash: storytellerWriterStep.resultCasHash,
+      state: storytellerWriterStep.state,
+    })
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, contextId),
+        eq(storytellerWriterStep.toolCallId, toolCallId),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
+async function readValidatedToolInvocationSummary(
+  storage: DocumentStore,
+  resultCasHash: string,
+  toolCallId: string,
+): Promise<WriterToolInvocationResult> {
+  const record = await storage.readStructuredDocument(resultCasHash);
+  if (record.data === null || typeof record.data !== 'object') {
+    throw new Error('invalid_writer_tool_summary');
+  }
+  if (record.schemaId === WRITER_TOOL_SUMMARY_SCHEMA) {
+    const summary = record.data as WriterToolInvocationResult;
+    if (summary.toolCallId !== toolCallId) {
+      throw new Error('invalid_writer_tool_summary');
+    }
+    return summary;
+  }
+  if (record.schemaId === 'writer-workdesk-tool-result.v1') {
+    const data = record.data as {
+      toolCallId?: string;
+      name?: WriterToolName;
+      result?: unknown;
+    };
+    if (!data.name || (data.toolCallId ?? toolCallId) !== toolCallId) {
+      throw new Error('invalid_writer_tool_summary');
+    }
+    return {
+      version: 'writer-tool-result.v1',
+      toolCallId,
+      name: data.name,
+      resultHash: hashCanonicalJson(data.result),
+      summary: `${data.name} completed`,
+    };
+  }
+  throw new Error('invalid_writer_tool_summary');
+}
+
+async function lockParentModelStep(
+  tx: Transaction,
+  missionId: string,
+  contextId: string,
+  ordinal: number,
+) {
+  const [step] = await tx
+    .select()
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, contextId),
+        eq(storytellerWriterStep.ordinal, ordinal),
+        isNull(storytellerWriterStep.toolCallId),
+      ),
+    )
+    .for('update')
+    .limit(1);
+  return step ?? null;
+}
+
+async function findNextPreparedModelStep(
+  tx: Transaction,
+  missionId: string,
+  contextId: string,
+  afterOrdinal: number,
+) {
+  const [step] = await tx
+    .select()
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, contextId),
+        sql`${storytellerWriterStep.ordinal} > ${afterOrdinal}`,
+        isNull(storytellerWriterStep.toolCallId),
+      ),
+    )
+    .orderBy(asc(storytellerWriterStep.ordinal))
+    .limit(1);
+  return step ?? null;
+}
+
+async function commitParentToolRoundCompletion(
+  database: Database,
+  input: {
+    missionId: string;
+    contextId: string;
+    ordinal: number;
+    expectedRevision: number;
+    capture: WriterMissionCapture;
+    nextRequestCasHash: string;
+  },
+): Promise<{ replayed: boolean }> {
+  const maxModelRounds = input.capture.budgets.maxModelRounds;
+
+  const finishReplayedNext = async (
+    tx: Transaction,
+    parentOrdinal: number,
+  ): Promise<{ replayed: boolean }> => {
+    const next = await findNextPreparedModelStep(
+      tx,
+      input.missionId,
+      input.contextId,
+      parentOrdinal,
+    );
+    if (
+      !next ||
+      next.requestCasHash !== input.nextRequestCasHash ||
+      next.state !== 'model-request-prepared'
+    ) {
+      throw new WriterLoopError('revision_conflict');
+    }
+    return { replayed: true };
+  };
+
+  try {
+    return await database.db.transaction(async (tx) => {
+      const parent = await lockParentModelStep(
+        tx,
+        input.missionId,
+        input.contextId,
+        input.ordinal,
+      );
+      if (!parent) {
+        throw new WriterLoopError('step_not_found');
+      }
+
+      if (parent.state === 'tools-applied') {
+        return finishReplayedNext(tx, parent.ordinal);
+      }
+
+      if (parent.revision !== input.expectedRevision) {
+        throw new WriterLoopError('revision_conflict');
+      }
+      if (parent.state !== 'result-settled') {
+        throw new WriterLoopError('invalid_step_state');
+      }
+
+      const modelSteps = await tx
+        .select({ ordinal: storytellerWriterStep.ordinal })
+        .from(storytellerWriterStep)
+        .where(
+          and(
+            eq(storytellerWriterStep.missionId, input.missionId),
+            eq(storytellerWriterStep.contextId, input.contextId),
+            isNull(storytellerWriterStep.toolCallId),
+          ),
+        );
+      if (modelSteps.length >= maxModelRounds) {
+        throw new WriterLoopError('invalid_step_state');
+      }
+
+      await casModelStep(tx, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        ordinal: input.ordinal,
+        expectedRevision: input.expectedRevision,
+        patch: { state: 'tools-applied' },
+      });
+
+      try {
+        await insertNextModelStepPrepared(tx, {
+          missionId: input.missionId,
+          contextId: input.contextId,
+          requestCasHash: input.nextRequestCasHash,
+        });
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          return finishReplayedNext(tx, input.ordinal);
+        }
+        throw error;
+      }
+
+      return { replayed: false };
+    });
+  } catch (error) {
+    if (
+      error instanceof WriterLoopError &&
+      error.code === 'revision_conflict'
+    ) {
+      const parent = await loadModelStep(
+        database,
+        input.missionId,
+        input.ordinal,
+        input.contextId,
+      );
+      if (parent?.state === 'tools-applied') {
+        return database.db.transaction(async (tx) =>
+          finishReplayedNext(tx, parent.ordinal),
+        );
+      }
+    }
+    throw error;
+  }
+}
+
 function summarizeToolResult(
   call: { id: string; name: WriterToolName },
   resultHash: string,
@@ -383,7 +630,7 @@ function summarizeToolResult(
   };
 }
 
-async function holdModelRound(
+export async function holdModelRound(
   database: Database,
   input: {
     missionId: string;
@@ -391,6 +638,7 @@ async function holdModelRound(
     ordinal: number;
     revision: number;
     reason: string;
+    transportInvoked?: boolean;
   },
 ) {
   await database.db.transaction(async (tx) => {
@@ -409,7 +657,7 @@ async function holdModelRound(
   return {
     status: 'held' as const,
     reason: input.reason,
-    transportInvoked: true as const,
+    transportInvoked: (input.transportInvoked ?? true) as boolean,
   };
 }
 
@@ -501,11 +749,96 @@ type ApplyToolCallsResult =
       replayed: boolean;
     };
 
+async function executeIdempotentLibraryTool(
+  database: Database,
+  storage: DocumentStore,
+  input: {
+    missionId: string;
+    contextId: string;
+    call: WriterLibraryToolCall;
+    requestCasHash: string;
+    library: ReturnType<typeof createWriterLibraryToolExecutor>;
+  },
+): Promise<WriterToolInvocationResult> {
+  const existing = await loadExistingToolReceiptStep(
+    database,
+    input.missionId,
+    input.contextId,
+    input.call.id,
+  );
+  if (existing?.resultCasHash) {
+    if (existing.requestCasHash !== input.requestCasHash) {
+      throw new WriterLoopError('tool_call_replay_mismatch');
+    }
+    if (existing.state !== 'tools-applied') {
+      throw new WriterLoopError('invalid_step_state');
+    }
+    return readValidatedToolInvocationSummary(
+      storage,
+      existing.resultCasHash,
+      input.call.id,
+    );
+  }
+
+  const outcome = await input.library.execute(input.call);
+  if (!outcome.ok) {
+    if (
+      outcome.code === 'tool-not-granted' ||
+      outcome.code === 'tool-not-supported'
+    ) {
+      throw new WriterLoopError('ungranted_tool');
+    }
+    throw new WriterLoopError('tool_execution_failed');
+  }
+  const resultHash = hashCanonicalJson(outcome.result);
+  const summary = summarizeToolResult(input.call, resultHash);
+  const resultCasHash = await persistToolSummary(storage, summary);
+
+  try {
+    await database.db.transaction(async (tx) => {
+      await recordToolInvocationStep(tx, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        toolCallId: input.call.id,
+        requestCasHash: input.requestCasHash,
+        resultCasHash,
+      });
+    });
+  } catch (error) {
+    if (!isUniqueViolation(error)) {
+      throw error;
+    }
+    const winner = await loadExistingToolReceiptStep(
+      database,
+      input.missionId,
+      input.contextId,
+      input.call.id,
+    );
+    if (!winner?.resultCasHash) {
+      throw new WriterLoopError('revision_conflict');
+    }
+    if (winner.requestCasHash !== input.requestCasHash) {
+      throw new WriterLoopError('tool_call_replay_mismatch');
+    }
+    if (winner.state !== 'tools-applied') {
+      throw new WriterLoopError('invalid_step_state');
+    }
+    return readValidatedToolInvocationSummary(
+      storage,
+      winner.resultCasHash,
+      input.call.id,
+    );
+  }
+
+  return summary;
+}
+
 async function applyToolCalls(
   database: Database,
   storage: DocumentStore,
   input: {
     missionId: string;
+    contextId: string;
     capture: WriterMissionCapture;
     access: LibraryAccess;
     reader: LibraryReader;
@@ -576,27 +909,12 @@ async function applyToolCalls(
       resultHash = hashCanonicalJson(outcome.result);
       summaries.push(summarizeToolResult(call, resultHash));
     } else {
-      const outcome = await library.execute(call as WriterLibraryToolCall);
-      if (!outcome.ok) {
-        if (
-          outcome.code === 'tool-not-granted' ||
-          outcome.code === 'tool-not-supported'
-        ) {
-          throw new WriterLoopError('ungranted_tool');
-        }
-        throw new WriterLoopError('tool_execution_failed');
-      }
-      resultHash = hashCanonicalJson(outcome.result);
-      const summary = summarizeToolResult(call, resultHash);
-      const resultCasHash = await persistToolSummary(storage, summary);
-      await database.db.transaction(async (tx) => {
-        await recordToolInvocationStep(tx, {
-          missionId: input.missionId,
-          contextId: input.missionId,
-          toolCallId: call.id,
-          requestCasHash,
-          resultCasHash,
-        });
+      const summary = await executeIdempotentLibraryTool(database, storage, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        call: call as WriterLibraryToolCall,
+        requestCasHash,
+        library,
       });
       summaries.push(summary);
     }
@@ -604,12 +922,245 @@ async function applyToolCalls(
   return { kind: 'completed', summaries };
 }
 
-function parseProviderDecisionBody(body: string): WriterRoundDecision | null {
+export function parseProviderDecisionBody(
+  body: string,
+): WriterRoundDecision | null {
   try {
     const parsed = JSON.parse(body) as unknown;
     return writerRoundDecisionSchema.parse(parsed);
   } catch {
     return null;
+  }
+}
+
+export async function interpretPersistedWriterDecision(
+  database: Database,
+  input: {
+    missionId: string;
+    contextId: string;
+    ordinal: number;
+    capture: WriterMissionCapture;
+    access: LibraryAccess;
+    reader: LibraryReader;
+    storage: DocumentStore;
+    body: string;
+    resultCasHash: string;
+    wireSha256: string;
+    transportInvoked: boolean;
+  },
+): Promise<WriterLoopRoundResult> {
+  const step = await loadModelStep(
+    database,
+    input.missionId,
+    input.ordinal,
+    input.contextId,
+  );
+  if (!step) {
+    throw new WriterLoopError('step_not_found');
+  }
+  const stepRevision = step.revision;
+
+  const decision = parseProviderDecisionBody(input.body);
+  if (!decision) {
+    await holdModelRound(database, {
+      missionId: input.missionId,
+      contextId: input.contextId,
+      ordinal: input.ordinal,
+      revision: stepRevision,
+      reason: 'malformed_decision',
+    });
+    return {
+      status: 'held',
+      reason: 'malformed_decision',
+      wireSha256: input.wireSha256,
+      transportInvoked: input.transportInvoked,
+    };
+  }
+
+  try {
+    validateWriterRoundDecisionForCapture(input.capture, decision);
+  } catch {
+    await holdModelRound(database, {
+      missionId: input.missionId,
+      contextId: input.contextId,
+      ordinal: input.ordinal,
+      revision: stepRevision,
+      reason: 'ungranted_tool',
+    });
+    return {
+      status: 'held',
+      reason: 'ungranted_tool',
+      wireSha256: input.wireSha256,
+      transportInvoked: input.transportInvoked,
+    };
+  }
+
+  if (decision.kind === 'final') {
+    let accepted: WriterSceneProposalAccepted | undefined;
+    try {
+      if (
+        input.capture.version === 'writer-mission.v3' &&
+        decision.proposal.version === 3
+      ) {
+        writerSceneProposalV3Schema.parse(decision.proposal);
+      } else {
+        accepted = await acceptWriterSceneProposal(database, input.storage, {
+          missionId: input.missionId,
+          capture: input.capture,
+          access: input.access,
+          reader: input.reader,
+          proposal: decision.proposal,
+        });
+      }
+    } catch (error) {
+      const reason =
+        error instanceof WriterSceneProposalError
+          ? error.code
+          : 'invalid_proposal';
+      await holdModelRound(database, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        ordinal: input.ordinal,
+        revision: stepRevision,
+        reason,
+      });
+      return {
+        status: 'held',
+        reason,
+        wireSha256: input.wireSha256,
+        transportInvoked: input.transportInvoked,
+      };
+    }
+    await database.db.transaction(async (tx) => {
+      await casModelStep(tx, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        ordinal: input.ordinal,
+        expectedRevision: stepRevision,
+        patch: {
+          state: 'proposal-ready',
+          resultCasHash: input.resultCasHash,
+        },
+      });
+      await tx
+        .update(storytellerWriterMission)
+        .set({
+          state: 'proposal-ready',
+          updatedAt: sql`clock_timestamp()`,
+        })
+        .where(eq(storytellerWriterMission.id, input.missionId));
+    });
+    return {
+      status: 'proposal-ready',
+      proposal: decision,
+      ...(accepted === undefined ? {} : { accepted }),
+      wireSha256: input.wireSha256,
+    };
+  }
+
+  try {
+    const applied = await applyToolCalls(database, input.storage, {
+      missionId: input.missionId,
+      contextId: input.contextId,
+      capture: input.capture,
+      access: input.access,
+      reader: input.reader,
+      calls: decision,
+    });
+    const latestStep = await loadModelStep(
+      database,
+      input.missionId,
+      input.ordinal,
+      input.contextId,
+    );
+    if (!latestStep) {
+      throw new WriterLoopError('step_not_found');
+    }
+    if (applied.kind === 'research-delegated') {
+      await database.db.transaction(async (tx) => {
+        await casModelStep(tx, {
+          missionId: input.missionId,
+          contextId: input.contextId,
+          ordinal: input.ordinal,
+          expectedRevision: latestStep.revision,
+          patch: { state: 'tools-applied' },
+        });
+      });
+      return {
+        status: 'research-delegated',
+        parentToolCallId: applied.parentToolCallId,
+        childIds: applied.childIds,
+        joinOperationId: applied.joinOperationId,
+        wireSha256: input.wireSha256,
+        replayed: applied.replayed,
+      };
+    }
+    const ordinals = await database.db
+      .select({ ordinal: storytellerWriterStep.ordinal })
+      .from(storytellerWriterStep)
+      .where(
+        and(
+          eq(storytellerWriterStep.missionId, input.missionId),
+          eq(storytellerWriterStep.contextId, input.contextId),
+        ),
+      );
+    const maxOrdinal = ordinals.reduce(
+      (max, row) => Math.max(max, row.ordinal),
+      0,
+    );
+    const priorForNextRound = await loadPriorToolSummaries(
+      database,
+      input.storage,
+      input.missionId,
+      input.contextId,
+      maxOrdinal + 1,
+    );
+    const nextWire = buildWriterMissionRoundWire(
+      input.capture,
+      priorForNextRound,
+    );
+    await commitParentToolRoundCompletion(database, {
+      missionId: input.missionId,
+      contextId: input.contextId,
+      ordinal: input.ordinal,
+      expectedRevision: latestStep.revision,
+      capture: input.capture,
+      nextRequestCasHash: nextWire.wire.sha256,
+    });
+    return {
+      status: 'tool-round-complete',
+      decision,
+      wireSha256: input.wireSha256,
+      toolSummaries: applied.summaries,
+    };
+  } catch (error) {
+    const reason =
+      error instanceof WriterLoopError
+        ? error.code
+        : error instanceof WriterLibraryToolError
+          ? error.code
+          : 'tool_execution_failed';
+    const stepNow = await loadModelStep(
+      database,
+      input.missionId,
+      input.ordinal,
+      input.contextId,
+    );
+    if (stepNow) {
+      await holdModelRound(database, {
+        missionId: input.missionId,
+        contextId: input.contextId,
+        ordinal: input.ordinal,
+        revision: stepNow.revision,
+        reason,
+      });
+    }
+    return {
+      status: 'held',
+      reason,
+      wireSha256: input.wireSha256,
+      transportInvoked: input.transportInvoked,
+    };
   }
 }
 
@@ -635,13 +1186,17 @@ export async function runWriterMissionModelRound(
   input: RunWriterMissionModelRoundInput,
 ): Promise<WriterLoopRoundResult> {
   const contextId = defaultWriterContextId(input.missionId, input.contextId);
-  const prepared = await prepareWriterMissionModelStep(database, input.storage, {
-    missionId: input.missionId,
-    contextId,
-    ordinal: input.ordinal,
-    expectedRevision: input.expectedRevision,
-    capture: input.capture,
-  });
+  const prepared = await prepareWriterMissionModelStep(
+    database,
+    input.storage,
+    {
+      missionId: input.missionId,
+      contextId,
+      ordinal: input.ordinal,
+      expectedRevision: input.expectedRevision,
+      capture: input.capture,
+    },
+  );
   const wireSha256 = prepared.wireSha256;
   let stepRevision = prepared.revision;
 
@@ -727,219 +1282,20 @@ export async function runWriterMissionModelRound(
     throw new WriterLoopError('invalid_step_state');
   }
 
-  const step = await loadModelStep(
-    database,
-    input.missionId,
-    input.ordinal,
+  return interpretPersistedWriterDecision(database, {
+    missionId: input.missionId,
     contextId,
-  );
-  if (!step) {
-    throw new WriterLoopError('step_not_found');
-  }
-  stepRevision = step.revision;
-
-  const decision = parseProviderDecisionBody(input.scriptedDecisionBody);
-  if (!decision) {
-    await holdModelRound(database, {
-      missionId: input.missionId,
-      contextId,
-      ordinal: input.ordinal,
-      revision: stepRevision,
-      reason: 'malformed_decision',
-    });
-    return {
-      status: 'held',
-      reason: 'malformed_decision',
-      wireSha256,
-      transportInvoked: transportCalls > 0,
-    };
-  }
-
-  try {
-    validateWriterRoundDecisionForCapture(input.capture, decision);
-  } catch {
-    await holdModelRound(database, {
-      missionId: input.missionId,
-      contextId,
-      ordinal: input.ordinal,
-      revision: stepRevision,
-      reason: 'ungranted_tool',
-    });
-    return {
-      status: 'held',
-      reason: 'ungranted_tool',
-      wireSha256,
-      transportInvoked: transportCalls > 0,
-    };
-  }
-
-  if (decision.kind === 'final') {
-    let accepted: WriterSceneProposalAccepted | undefined;
-    try {
-      if (
-        input.capture.version === 'writer-mission.v3' &&
-        decision.proposal.version === 3
-      ) {
-        writerSceneProposalV3Schema.parse(decision.proposal);
-      } else {
-        accepted = await acceptWriterSceneProposal(database, input.storage, {
-          missionId: input.missionId,
-          capture: input.capture,
-          access: input.access,
-          reader: input.reader,
-          proposal: decision.proposal,
-        });
-      }
-    } catch (error) {
-      const reason =
-        error instanceof WriterSceneProposalError
-          ? error.code
-          : 'invalid_proposal';
-      await holdModelRound(database, {
-        missionId: input.missionId,
-        contextId,
-        ordinal: input.ordinal,
-        revision: stepRevision,
-        reason,
-      });
-      return {
-        status: 'held',
-        reason,
-        wireSha256,
-        transportInvoked: transportCalls > 0,
-      };
-    }
-    await database.db.transaction(async (tx) => {
-      await casModelStep(tx, {
-        missionId: input.missionId,
-        contextId,
-        ordinal: input.ordinal,
-        expectedRevision: stepRevision,
-        patch: { state: 'proposal-ready', resultCasHash: custody.resultCasHash },
-      });
-      await tx
-        .update(storytellerWriterMission)
-        .set({
-          state: 'proposal-ready',
-          updatedAt: sql`clock_timestamp()`,
-        })
-        .where(eq(storytellerWriterMission.id, input.missionId));
-    });
-    return {
-      status: 'proposal-ready',
-      proposal: decision,
-      ...(accepted === undefined ? {} : { accepted }),
-      wireSha256,
-    };
-  }
-
-  try {
-    const applied = await applyToolCalls(database, input.storage, {
-      missionId: input.missionId,
-      capture: input.capture,
-      access: input.access,
-      reader: input.reader,
-      calls: decision,
-    });
-    const latestStep = await loadModelStep(
-      database,
-      input.missionId,
-      input.ordinal,
-      contextId,
-    );
-    if (!latestStep) {
-      throw new WriterLoopError('step_not_found');
-    }
-    if (applied.kind === 'research-delegated') {
-      await database.db.transaction(async (tx) => {
-        await casModelStep(tx, {
-          missionId: input.missionId,
-          contextId,
-          ordinal: input.ordinal,
-          expectedRevision: latestStep.revision,
-          patch: { state: 'tools-applied' },
-        });
-      });
-      return {
-        status: 'research-delegated',
-        parentToolCallId: applied.parentToolCallId,
-        childIds: applied.childIds,
-        joinOperationId: applied.joinOperationId,
-        wireSha256,
-        replayed: applied.replayed,
-      };
-    }
-    const ordinals = await database.db
-      .select({ ordinal: storytellerWriterStep.ordinal })
-      .from(storytellerWriterStep)
-      .where(
-        and(
-          eq(storytellerWriterStep.missionId, input.missionId),
-          eq(storytellerWriterStep.contextId, contextId),
-        ),
-      );
-    const maxOrdinal = ordinals.reduce(
-      (max, row) => Math.max(max, row.ordinal),
-      0,
-    );
-    const priorForNextRound = await loadPriorToolSummaries(
-      database,
-      input.storage,
-      input.missionId,
-      contextId,
-      maxOrdinal + 1,
-    );
-    const nextWire = buildWriterMissionRoundWire(
-      input.capture,
-      priorForNextRound,
-    );
-    await database.db.transaction(async (tx) => {
-      await casModelStep(tx, {
-        missionId: input.missionId,
-        contextId,
-        ordinal: input.ordinal,
-        expectedRevision: latestStep.revision,
-        patch: { state: 'tools-applied' },
-      });
-      await insertNextModelStepPrepared(tx, {
-        missionId: input.missionId,
-        contextId,
-        requestCasHash: nextWire.wire.sha256,
-      });
-    });
-    return {
-      status: 'tool-round-complete',
-      decision,
-      wireSha256,
-      toolSummaries: applied.summaries,
-    };
-  } catch (error) {
-    const reason =
-      error instanceof WriterLoopError
-        ? error.code
-        : error instanceof WriterLibraryToolError
-          ? error.code
-          : 'tool_execution_failed';
-    const stepNow = await loadModelStep(
-      database,
-      input.missionId,
-      input.ordinal,
-      contextId,
-    );
-    if (stepNow) {
-      await holdModelRound(database, {
-        missionId: input.missionId,
-        contextId,
-        ordinal: input.ordinal,
-        revision: stepNow.revision,
-        reason,
-      });
-    }
-    return {
-      status: 'held',
-      reason,
-      wireSha256,
-      transportInvoked: transportCalls > 0,
-    };
-  }
+    ordinal: input.ordinal,
+    capture: input.capture,
+    access: input.access,
+    reader: input.reader,
+    storage: input.storage,
+    body: input.scriptedDecisionBody,
+    resultCasHash: custody.resultCasHash,
+    wireSha256,
+    transportInvoked: transportCalls > 0,
+  });
 }
+
+export type { RunDurableWriterMissionModelRoundInput } from './writer-round-replay';
+export { runDurableWriterMissionModelRound } from './writer-round-replay';

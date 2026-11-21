@@ -3,6 +3,7 @@
  * attempt insert, dispatch/settle/replay without StorytellerTask.
  */
 import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
@@ -79,6 +80,46 @@ function writerRoundPersistedPolicy(policy: WriterRoundModelPolicy) {
   };
 }
 
+function isStrictWriterRoundAttemptPolicy(
+  policy: unknown,
+): policy is ReturnType<typeof writerRoundPersistedPolicy> {
+  return (
+    typeof policy === 'object' &&
+    policy !== null &&
+    (policy as { version?: string }).version === 'writer-round.v1' &&
+    typeof (policy as { model?: string }).model === 'string'
+  );
+}
+
+type WriterRoundAttemptPolicyPin =
+  | 'ok'
+  | 'hold_missing_caller'
+  | 'mismatch'
+  | 'legacy_skip';
+
+function evaluateWriterRoundAttemptPolicyPin(
+  attempt: typeof storytellerAttempt.$inferSelect,
+  callerPolicy?: WriterRoundModelPolicy,
+): WriterRoundAttemptPolicyPin {
+  const strictStored = isStrictWriterRoundAttemptPolicy(attempt.policy);
+  if (!strictStored) {
+    return 'legacy_skip';
+  }
+  if (!callerPolicy) {
+    return 'hold_missing_caller';
+  }
+  const expected = writerRoundPersistedPolicy(callerPolicy!);
+  if (
+    !isDeepStrictEqual(attempt.policy, expected) ||
+    attempt.requestedModel !== callerPolicy!.model ||
+    attempt.requestedProvider !== callerPolicy!.provider ||
+    attempt.priceVersion !== callerPolicy!.priceVersion
+  ) {
+    return 'mismatch';
+  }
+  return 'ok';
+}
+
 export class WriterMissionCustodyError extends Error {
   constructor(
     public readonly code:
@@ -141,7 +182,6 @@ export type AdvanceWriterMissionProviderStepInput = {
 
 export type AdvanceDurableWriterMissionProviderStepInput =
   AdvanceWriterMissionProviderStepInput & {
-    providerPolicy: WriterRoundModelPolicy;
     expectedWireSha256: string;
   };
 
@@ -345,6 +385,16 @@ export async function reserveWriterMissionProviderAttempt(
       prior.requestBytes !== input.requestBytes
     ) {
       throw new StorytellerBudgetError('budget_unavailable');
+    }
+    if (input.providerPolicy) {
+      if (
+        !isDeepStrictEqual(prior.policy, attemptPolicy) ||
+        prior.requestedModel !== requestedModel ||
+        prior.requestedProvider !== requestedProvider ||
+        prior.priceVersion !== priceVersion
+      ) {
+        throw new StorytellerBudgetError('budget_unavailable');
+      }
     }
     return prior.state;
   }
@@ -1286,6 +1336,36 @@ export async function advanceDurableWriterMissionProviderStep(
     };
   }
 
+  if (peek.requestCasHash !== input.expectedWireSha256) {
+    return {
+      status: 'held',
+      reason: 'request_cas_mismatch',
+      transportInvoked: false,
+    };
+  }
+
+  if (peek.attemptId) {
+    const pinnedAttempt = await loadAttempt(database, peek.attemptId);
+    const policyPin = evaluateWriterRoundAttemptPolicyPin(
+      pinnedAttempt,
+      input.providerPolicy,
+    );
+    if (policyPin === 'hold_missing_caller') {
+      return {
+        status: 'held',
+        reason: 'provider_policy_unpinned',
+        transportInvoked: false,
+      };
+    }
+    if (policyPin === 'mismatch') {
+      return {
+        status: 'held',
+        reason: 'attempt_policy_mismatch',
+        transportInvoked: false,
+      };
+    }
+  }
+
   if (
     strictReplayStepStates.has(peek.state) &&
     peek.responseObjectHash &&
@@ -1352,6 +1432,15 @@ export async function advanceDurableWriterMissionProviderStep(
     throw new WriterMissionCustodyError('invalid_step_state');
   }
 
+  if (!input.providerPolicy) {
+    return {
+      status: 'held',
+      reason: 'provider_policy_unpinned',
+      transportInvoked: false,
+    };
+  }
+  const pinnedProviderPolicy = input.providerPolicy;
+
   const plan = await database.db.transaction(async (tx) => {
     await acquireGlobalBudgetAdvisoryLock(tx);
     return planWriterProviderStepInTransaction(tx, {
@@ -1366,7 +1455,7 @@ export async function advanceDurableWriterMissionProviderStep(
       reservedGeneratedTokens,
       reservedReasoningTokens,
       requestBytes,
-      providerPolicy: input.providerPolicy,
+      providerPolicy: pinnedProviderPolicy,
       requireProviderPolicy: true,
     });
   });
