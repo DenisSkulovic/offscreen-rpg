@@ -20,6 +20,10 @@
 | Definition of success | [Acceptance C01–C16](#11-verifiable-acceptance-c01c16) |
 | Alternative approaches | [Trade-offs](#12-architectural-challenges-and-decisions) |
 
+## Story response capability boundary (MA04 selected target; not yet implementation proof)
+
+Ordinary Story Authority must **not import** the Chamber fixture catalogue to decide whether a public story snapshot has a respondable source. The selected composition contract is an optional, typed fixture-response predicate. Without that predicate, only the ordinary playable opening source may qualify, subject to the existing owner, campaign-character, interaction and active-resolution conditions. The developer Chamber wrapper retains its existing authenticated fixture/response operations and supplies the predicate to its underlying story factory. The API supplies it to ordinary story reads **only when its existing `developerTools === true` flag mounts the Chamber routes**. Game Authority and production without that flag default to no fixture eligibility; neither hostname nor Origin header grants it. This is a *planned* MA04 seam until tests and source prove the implementation. `canRespond` is a view projection, never a substitute for server-side command authorization.
+
 ## 1. Operating model
 
 The Chamber is **a developer laboratory with several execution lanes**, sharing scenario identity and evidence vocabulary, **not one giant UI or a second game engine**.
