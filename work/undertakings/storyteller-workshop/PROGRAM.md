@@ -3,6 +3,14 @@
 **MA08, MA10, WR09A, and MA11 are Done** on `undertaking/storyteller-workshop`. The Application package is gone and its 112 tests live in API Integration. [WR09](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) and [MA09](../../changes/open/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) remain the next dependency-gated work. The three-lane contract below is the completed execution record.
 
 
+## Successor wave designed, not commissioned (2026-11-21)
+
+**Do not commission while MA10/WR09A/MA11 run.** After their integrated acceptance on `undertaking/storyteller-workshop`, the next candidate wave is [WR09B durable Writer round replay](../../changes/open/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md), [OPS12 independent Worker lifecycle](../../changes/open/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md), and [DX12 local affected build/test](../../changes/open/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md). WR09B's **G4 is presently blocked** until WR09A's actual merged strict custody signatures and private CAS semantics pass a planner source recheck. OPS12/DX12 have independent code paths and only a current-HEAD drift check after first wave.
+
+**Parallel collision matrix:** WR09B writes story-engine/src/storyteller/writer-loop.ts, optional new sibling helper and uniquely named WR09B integration test; OPS12 writes apps/worker/src/runtime/control.ts, execution.ts, storyteller-distributed-live.ts, connections.ts / small helper and their worker lifecycle tests; DX12 writes scripts/repo-tools/affected-check*.mjs, root package.json single script, ENGINEERING.md and turbo.json only on explicit evidence. **No shared source or test basename.** WR09B uses a uniquely provisioned disposable DB only; OPS12 uses injected pure fake Workers; DX12 uses fake Git/Turbo and optional safe local builds. No simultaneous DB/cluster reset. Parent code branches do not own common work catalogs/STATUS/lockfile.
+
+**Suggested successor integration custodian:** DX12 parent, after explicit user commission, receives OPS12 and WR09B tested branch SHAs, joins **OPS12 → WR09B → DX12** serially under current repo policy, verifies combined builds/negative tests, reconciles archive/ledgers and pushes the undertaking. No parent auto-merges or starts a fourth Change; failed financial, permission, recovery or real source drift is escalated to ChatGPT. Neither package splitting nor production-paid Writer is authorized by these three Changes.
+
 ## Post-MA08 three-lane execution contract (2026-11-21)
 
 **Verified implementation base:** MA08 integrated at `6dd1276131a813f694ec3bccf4f9062ad3708208`. Planning-only commits advance branch HEAD; every Cursor worktree must fork the **current** undertaking integration HEAD, not the snapshot commit or `main`. The active selected batch has **three independently executable Changes** with distinct ownership, not three overlapping slices of MA08.
