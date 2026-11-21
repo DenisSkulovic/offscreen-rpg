@@ -6,7 +6,7 @@ Add tables terminal_device_pairing (id UUID PK, code_hash unique SHA256, challen
 
 Endpoints under dedicated Nest TerminalAuthController:
 POST /api/terminal-auth/pairings unauth, input challengeSha256 and label, response pairingId, code, verificationUri, expiry, pollAfterSeconds=2. Rate limit by querying indexed pairing rows on source_ip_hash+created_at: at most five created in ten minutes per HMAC-SHA256(client IP, server-side secret), and three outstanding per challenge; derive client IP from the trusted socket-injected value, not user-supplied forwarded headers. No separate counter/third table or process-local limiter.
-POST /api/terminal-auth/pairings/:id/approve browser cookie + Origin, body userCode. Check hash/code/expiry/state under SQL transaction; set owner and approved. No bearer approval.
+POST /api/terminal-auth/pairings/:id/approve browser cookie + Origin, body userCode **typed by user in a consent form, not automatically accepted from a URL**. Check hash/code/expiry/state under SQL transaction; set owner and approved. No bearer approval.
 POST /api/terminal-auth/pairings/:id/exchange with base64url verifier. Verify hash constant time, pending returns 202, approved consumes row + inserts seven-day hashed token in one transaction; return raw token only in response once. Consumed returns 409, expired 410, unknown uniformly 404; never return token from a GET, logs or audit body.
 DELETE /api/terminal-auth/tokens/current bearer of scope player-story revokes its own token, no userId input. Admin cannot create or enumerate tokens.
 
