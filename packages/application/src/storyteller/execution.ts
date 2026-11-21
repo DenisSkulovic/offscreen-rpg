@@ -37,6 +37,13 @@ import { resolveStoryRetrievalRecipe } from './retrieval-recipes';
 import { recordExecutionStage } from './execution-stages';
 import { storytellerKind } from './records';
 import type { Transaction } from '../outbox/index';
+import {
+  acceptWriterSceneProposal,
+  type WriterSceneProposalAccepted,
+} from './writer-scene-proposal';
+
+export type { WriterSceneProposalAccepted };
+export { acceptWriterSceneProposal as submitWriterSceneProposal };
 
 const custodyVersion = 'storyteller.task-claim.v1';
 const scriptedCustodyProvider = 'scripted-custody';

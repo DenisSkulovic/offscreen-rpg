@@ -79,7 +79,9 @@ Recipes, task roles and stop states: [prompts and tools](prompts-and-tools.md). 
 
 ## Current prototype runtime
 
-The following sections are the **landed prototype contract** (profiled tasks, v17 artifacts, publication path). They are not the selected two-loop controller. Where they conflict with the selected target, the selected target is the destination and this prototype is what code is currently specified against until a Change replaces it.
+The following sections are the **landed prototype contract** (profiled tasks, v17 artifacts, publication path). They are not the selected two-loop controller. Where they conflict with the selected target, the selected target is the destination and this prototype is what ordinary gameplay still runs.
+
+**Landed writer mission (WR03, fixture-tested, not ordinary play).** `writer-mission.v1` can capture a pinned library root, finite budgets, and a skill hash, then run `library.browse`, `library.find`, `library.read`, `library.diff`, `skills.open`, and private `workdesk.stage` / `read` / `diff` / `discard` rounds. Each model round is one strict JSON decision, reserved on the existing `storyteller_operation` before a scripted transport, and replayed from `storyteller_writer_step` without a second send. Unknown delivery stays reserved. A final proposal lists staged hashes and source provenance. It does not call Game Authority and it does not publish. Ordinary admission is still `single-turn.v1`, `repairable-turn.v1`, or funded `memory-exploration.v1`. Child research contexts are not implemented. No paid provider was called.
 
 
 **Find the section:** [profile and task contract](#profile-and-task-contracts) · [context and continuity](#context-and-continuity) · [execution and publication](#execution-and-publication) · [provider budget boundary](#provider-and-budget-boundary) · [tool use and remaining design](#tools-rules-and-the-remaining-dm-task) · [proven limits](#supported-behavior-and-evidence-limits). Read the relevant section rather than loading this entire document.

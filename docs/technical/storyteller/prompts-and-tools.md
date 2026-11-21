@@ -82,6 +82,8 @@ The controller compiles a small mandatory mission pack, then exposes a semantic 
 
 The facade must not expose arbitrary shell, SQL, host filesystem or unrestricted network access. Search indexes are rebuildable aids; a result outside the captured root or visibility scope is invalid even if its vector similarity is excellent.
 
+**Landed tool names (WR03).** The fixture-tested mission accepts only `library.browse`, `library.find`, `library.read`, `library.diff`, `skills.open`, `workdesk.stage`, `workdesk.read`, `workdesk.diff`, `workdesk.discard`, and `submit_scene`. A skill file does not add a tool or raise the budget. `submit_scene` returns a proposal. Semantic search, child agents, and publication remain outside this landing. Ordinary one-shot and `memory-exploration.v1` packs below are unchanged.
+
 No fixed `maxReads=6`, `maxRounds=3`, 2–5 option count or mandatory child agent is part of the target contract. Numeric limits are route/resource policy and can evolve without redefining the Storyteller.
 
 ### Detailed pre-refoundation pack and transport baseline retained

@@ -25,7 +25,7 @@
 
 [DXK07](archive/2026-11/infrastructure/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) is **Done for implementation**; full fresh-clone/Headlamp operator proof remains [DXK-FINAL](../tasks/open/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md). · [Implementation roadmap](../IMPLEMENTATION-ROADMAP.md) · [Current distributed source review](../designs/open/distributed-turn-poc/README.md) · [First-campaign readiness study](../designs/open/first-campaign-readiness-2026-11-20/README.md) · [Cursor backlog handoff](CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md). These source maps are dated; they do not supersede HEAD code or current Change states.
 
-### Writer refoundation | WR02 archived
+### Writer refoundation | WR02 and WR03 archived
 
 | Change | Work item |
 | --- | --- |
@@ -34,14 +34,14 @@
 | [WRD03](archive/2026-11/other/2026-11-21--wrd03-engine-fork-technical-docs/CHANGE.md) | Engine/fork technical wiki (Done) |
 | [WRD04](archive/2026-11/other/2026-11-21--wrd04-wiki-navigation-and-validation/CHANGE.md) | Wiki reconciliation (Done) |
 | [WR02](archive/2026-11/storyteller/2026-11-21--wr02-persistent-library-and-source-identity/CHANGE.md) | Persistent Library / source identity (Done) |
-| [WR03](open/2026-11-21--wr03-agentic-writers-workdesk/CHANGE.md) | Writer's Workdesk |
+| [WR03](archive/2026-11/storyteller/2026-11-21--wr03-agentic-writers-workdesk/CHANGE.md) | Writer's Workdesk (Done) |
 | [WR04](open/2026-11-21--wr04-delegated-writer-research/CHANGE.md) | Bounded research assistants |
 | [WR05](open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) | Coherent scene publication |
 | [WR06](open/2026-11-21--wr06-fork-active-fictional-state/CHANGE.md) | Active-fiction fork semantics |
 | [WR07](open/2026-11-21--wr07-one-prompt-launch-backend/CHANGE.md) | One-prompt launch backend |
 | [WR08](open/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) | Creation UI and integrated acceptance |
 
-[Writer implementation program](WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT permanent-wiki handoff](WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02 is Done and archived on the undertaking branch; WR03–WR08 remain Proposed/unselected and dependency-gated.** Before any successor commission, refresh its source anchors and dependencies against the landed WR02 implementation. No permission to dispatch paid models or mutate deployment follows from these statuses.
+[Writer implementation program](WRITER-IMPLEMENTATION-2026-11-21.md) · [ChatGPT permanent-wiki handoff](WRITER-DOCS-CHATGPT-HANDOFF-2026-11-21.md). **WR01 and WRD02–WRD04 are Done** and archived here; their canonical wiki rewrite is included. **WR02 and WR03 are Done and archived on the undertaking branch; WR04–WR08 remain Proposed/unselected and dependency-gated.** Before any successor commission, refresh its source anchors against the landed writer mission. WR03 does not publish scenes and does not select WR04. No permission to dispatch paid models or mutate deployment follows from these statuses.
 
 ## Layout
 

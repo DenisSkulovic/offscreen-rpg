@@ -32,3 +32,9 @@ export * from './branch-pinned-memory';
 export { insertSyntheticCurrentAuthorityForTest } from './test-synthetic-current-authority';
 
 export * from './library-navigation';
+export * from './writer-library-tools';
+export * from './writer-mission-store';
+export * from './writer-mission-custody';
+export * from './writer-workdesk';
+export * from './writer-loop';
+export * from './writer-scene-proposal';

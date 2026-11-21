@@ -46,6 +46,8 @@ export * from './document-changes.js';
 export * from './descriptive-materialization.js';
 export * from './descriptive-materialization-fixtures.js';
 export * from './memory-exploration.js';
+export * from './writer-mission.js';
+export * from './writer-round-request.js';
 
 export {
   mechanicalOpeningSceneSchema,
@@ -54,12 +56,19 @@ export {
   storytellerOutputSchema,
   storytellerRoundOutputSchema,
   storytellerTaskSchema,
+  writerMissionCaptureSchema,
+  writerRoundDecisionSchema,
+  writerToolInvocationResultSchema,
+  validateWriterRoundDecisionForCapture,
   type StorytellerRoundOutput,
   type StorytellerTask,
   type StorytellerSceneTask,
   type StorytellerResult,
   type StorytellerReportResult,
   type StorytellerOutput,
+  type WriterMissionCapture,
+  type WriterRoundDecision,
+  type WriterToolInvocationResult,
 } from './task-contracts.js';
 export {
   taskEvidence,

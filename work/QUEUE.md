@@ -30,4 +30,4 @@ Start with this pointer, then the selected packet, then **one** T-ID when the se
 
 ## Transition
 
-The previous `Current change:` line in the Change catalog is retired as an independent selector. The maintenance scanner and repository brief must read **this file**, not infer selection from a Change-only index. Open Change packets remain in `work/changes/open/` until each packet's independently verifiable Goal is proved. WORK01 is Done and archived. WR02 is Done and archived. No successor Change is selected. No standalone Task is selected.
+The previous `Current change:` line in the Change catalog is retired as an independent selector. The maintenance scanner and repository brief must read **this file**, not infer selection from a Change-only index. Open Change packets remain in `work/changes/open/` until each packet's independently verifiable Goal is proved. WORK01 is Done and archived. WR02 and WR03 are Done and archived. No successor Change is selected. No standalone Task is selected.

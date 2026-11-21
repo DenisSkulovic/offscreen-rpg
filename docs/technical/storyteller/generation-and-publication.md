@@ -2,6 +2,8 @@
 
 **Target seam:** generation ends with a **proposal**; publication is Game Authority's coherent commit of passage, visible choices with stored intent, admitted document changes, exact Library root, semantic world-state frontier and effective source/profile/rule pins. The writer never mutates canon or mechanics directly.
 
+**WR03 landing:** a writer mission can return that proposal, including staged object hashes and pinned-root citations, without calling publication. Forged citations and a private possibility asserted as fact are refused. Game Authority still owns the later commit.
+
 **Owns:** when a Storyteller operation may become a published passage, a historical report, or a held state, and what must stay unpublished.  
 **Selected target:** the publication step of the [bounded controller](operation-and-controller.md#two-loops).  
 **Landed prototype:** opening, continuation, mechanical consequence and historical-report tasks on the existing generation row, described in [current prototype runtime](operation-and-controller.md#current-prototype-runtime).  

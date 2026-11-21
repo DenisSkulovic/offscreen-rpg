@@ -365,7 +365,7 @@ export function buildOpenRouterRequest(
   };
 }
 
-function wireForBody(body: ReturnType<typeof buildOpenRouterRequest>) {
+function wireForBody(body: Record<string, unknown>) {
   // The only serializer for the provider-facing body (OBS00-C).
   const serialized = JSON.stringify(body);
   return {
@@ -384,6 +384,83 @@ export function prepareOpenRouterWire(
   return wireForBody(
     buildOpenRouterRequest(task, providerDispatch(task, dispatch)),
   );
+}
+
+export type WriterRoundWireInput = Readonly<{
+  model: string;
+  /** Upstream id in the OpenRouter `provider.only` list. */
+  provider: string;
+  messages: ReadonlyArray<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }>;
+  outputSchema: unknown;
+  maxGeneratedTokens: number;
+  maxSerializedRequestBytes: number;
+  maxInputTokens: number;
+}>;
+
+/**
+ * Credential-free OpenRouter body for one writer-round provider attempt. Does not
+ * require legacy StorytellerTask; shares wire serialization with memory routes.
+ */
+export function buildWriterRoundOpenRouterRequest(input: WriterRoundWireInput) {
+  const policy = {
+    version: 'writer-round.v1',
+    route: 'writer-round.v1',
+    model: input.model,
+    provider: input.provider,
+    priceVersion: 'writer-round.v1',
+    outputProtocol: 'native-json-schema' as const,
+    responseTransport: 'buffered-json' as const,
+    inputMicrousdPerMillion: '0',
+    outputMicrousdPerMillion: '0',
+    maxInputTokens: input.maxInputTokens,
+    maxOutputTokens: input.maxGeneratedTokens,
+    timeoutMs: 60_000,
+  };
+  const projectedSchema = projectOpenAiStrictSchema(input.outputSchema);
+  const request = {
+    messages: input.messages,
+    outputSchema: projectedSchema,
+  };
+  reservationForRequest(
+    request,
+    policy,
+    input.maxSerializedRequestBytes,
+    input.maxInputTokens,
+    input.maxGeneratedTokens,
+  );
+  return {
+    model: input.model,
+    messages: [...input.messages],
+    stream: false,
+    max_tokens: input.maxGeneratedTokens,
+    reasoning: { enabled: false, exclude: true },
+    plugins: [
+      { id: 'web', enabled: false },
+      { id: 'context-compression', enabled: false },
+    ],
+    provider: {
+      only: [input.provider],
+      allow_fallbacks: false,
+      require_parameters: true,
+    },
+    response_format: {
+      type: 'json_schema' as const,
+      json_schema: {
+        name: 'writer_round_decision',
+        strict: true,
+        schema: projectedSchema,
+      },
+    },
+  };
+}
+
+export function prepareWriterRoundWire(
+  input: WriterRoundWireInput,
+): PreparedProviderWire {
+  return wireForBody(buildWriterRoundOpenRouterRequest(input));
 }
 
 /** True only when the claimed digest/length describe exactly these bytes. */
