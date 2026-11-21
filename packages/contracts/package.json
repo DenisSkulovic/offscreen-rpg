@@ -90,6 +90,10 @@
     "./storyteller-kinds": {
       "types": "./dist/src/storyteller-kinds.d.ts",
       "default": "./dist/src/storyteller-kinds.js"
+    },
+    "./storyteller-notices": {
+      "types": "./dist/src/storyteller-notices.d.ts",
+      "default": "./dist/src/storyteller-notices.js"
     }
   },
   "scripts": {

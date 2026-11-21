@@ -6,6 +6,7 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
+import { generation } from '@offscreen/db/generation-schema';
 import { outbox } from '@offscreen/db/outbox-schema';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
@@ -17,6 +18,8 @@ import {
   storytellerNoticeTopicForWake,
   storytellerTopic,
 } from '../dist/storyteller/records.js';
+import { isProvisionalContextCapture } from '../dist/storyteller/capture-materialization.js';
+import { isProvisionalContextCapture as wakeIsProvisionalContextCapture } from '../dist/campaign/storyteller-wake.js';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
@@ -296,4 +299,40 @@ test('STORY03: wake enqueue sites do not call admission topic selector', () => {
     const body = readFileSync(join(srcRoot, rel), 'utf8');
     assert.ok(!body.includes(forbidden), `${rel} must not call ${forbidden}`);
   }
+});
+
+test('STORY03 MA05D: provisional context capture kind classifier parity', async () => {
+  assert.equal(isProvisionalContextCapture, wakeIsProvisionalContextCapture);
+  await withDisposable(async (database) => {
+    const ownerId = `story03-${randomUUID()}`;
+    const captureId = randomUUID();
+    const profiledId = randomUUID();
+    const missingId = randomUUID();
+    await insertUser(database, ownerId);
+    await database.db.transaction(async (tx) => {
+      await tx.insert(generation).values([
+        {
+          id: captureId,
+          ownerId,
+          kind: 'storyteller.context-capture.v1',
+          input: {},
+        },
+        {
+          id: profiledId,
+          ownerId,
+          kind: 'storyteller.profiled.v1',
+          input: {},
+        },
+      ]);
+      assert.equal(await isProvisionalContextCapture(tx, captureId), true);
+      assert.equal(await isProvisionalContextCapture(tx, profiledId), false);
+      assert.equal(await isProvisionalContextCapture(tx, missingId), false);
+      assert.equal(await wakeIsProvisionalContextCapture(tx, captureId), true);
+      assert.equal(
+        await wakeIsProvisionalContextCapture(tx, profiledId),
+        false,
+      );
+      assert.equal(await wakeIsProvisionalContextCapture(tx, missingId), false);
+    });
+  });
 });

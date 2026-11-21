@@ -822,7 +822,8 @@ async function claimCaptureLease(
       return { claimed: false as const, reason: 'terminal' as const };
     }
     if (
-      row.materializationAttempts >= CONTEXT_CAPTURE_MAX_MATERIALIZATION_ATTEMPTS
+      row.materializationAttempts >=
+      CONTEXT_CAPTURE_MAX_MATERIALIZATION_ATTEMPTS
     ) {
       return { claimed: false as const, reason: 'exhausted' as const };
     }
@@ -1256,8 +1257,7 @@ async function promoteCapture(
       throw new Error('stale_source:actor');
     }
   } else if (capture.sourceKind === 'campaign-activity-report') {
-    const reportCapture =
-      capture as ActivityHistoricalReportContextCaptureV1;
+    const reportCapture = capture as ActivityHistoricalReportContextCaptureV1;
     const [hook] = await tx
       .select()
       .from(campaignReport)
@@ -1272,10 +1272,7 @@ async function promoteCapture(
       hook.generationId !== capture.captureId ||
       hook.sourceKey !== reportCapture.sourceKey ||
       !hookSource ||
-      !campaignReportSourcesMatch(
-        hookSource,
-        reportCapture.reportSource,
-      ) ||
+      !campaignReportSourcesMatch(hookSource, reportCapture.reportSource) ||
       hook.sourcePassageId !== capture.passageId ||
       hook.sourceRevision !== capture.narrativeRevision ||
       hook.sourceGameSecond !== reportCapture.acceptedEvent.sourceGameSecond ||
@@ -1297,7 +1294,10 @@ async function promoteCapture(
           eq(gameActivity.storyId, capture.storyId),
         ),
       );
-    if (!activity || activity.revision !== reportActivitySource.activityRevision) {
+    if (
+      !activity ||
+      activity.revision !== reportActivitySource.activityRevision
+    ) {
       throw new Error('activity_source_mismatch');
     }
     const rolls = await tx
@@ -1340,10 +1340,7 @@ async function promoteCapture(
       hook.generationId !== capture.captureId ||
       hook.sourceKey !== reportCapture.sourceKey ||
       !hookSource ||
-      !campaignReportSourcesMatch(
-        hookSource,
-        reportCapture.reportSource,
-      ) ||
+      !campaignReportSourcesMatch(hookSource, reportCapture.reportSource) ||
       hook.sourcePassageId !== capture.passageId ||
       hook.sourceRevision !== capture.narrativeRevision ||
       hook.sourceGameSecond !== reportCapture.acceptedEvent.sourceGameSecond ||
@@ -1575,8 +1572,7 @@ export async function materializePendingActionCapture(
       });
     });
   } catch (error) {
-    const code =
-      error instanceof Error ? error.message : 'promotion_failed';
+    const code = error instanceof Error ? error.message : 'promotion_failed';
     const released = await releaseCaptureFailure(database, {
       captureId: claim.captureId,
       leaseId: claim.leaseId,
@@ -1598,14 +1594,4 @@ export async function materializePendingActionCapture(
   return { handled: true, outcome: 'promoted' };
 }
 
-/** True when generation G is still the provisional capture kind. */
-export async function isProvisionalContextCapture(
-  tx: Transaction,
-  generationId: string,
-) {
-  const [row] = await tx
-    .select({ kind: generation.kind })
-    .from(generation)
-    .where(eq(generation.id, generationId));
-  return row?.kind === storytellerContextCaptureKind;
-}
+export { isProvisionalContextCapture } from '../campaign/storyteller-wake';

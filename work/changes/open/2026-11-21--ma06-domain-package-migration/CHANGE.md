@@ -8,7 +8,7 @@
 
 **Authority continuity SQL cohort:** [MA05E](../2026-11-21--ma05e-continuity-note-authority/CHANGE.md), after D, moves a full transactional continuity note validator/updater from Storyteller runtime into Stories, keeping exact legacy export. If later extracting Authority, move its single canonical source, not the old re-export wrapper.
 
-**Next authority fact cohort:** [MA05D](../2026-11-21--ma05d-frozen-wake-sql-seam/CHANGE.md) plans the immutable frozen notice-topic contract and Campaign-owned read-only wake helper. Once it lands, this helper may move with Story Authority; do not rewrite it into a runtime callback or duplicate its SQL query during MA06.
+**Next authority fact cohort:** [MA05D](../../archive/2026-11/other/2026-11-21--ma05d-frozen-wake-sql-seam/CHANGE.md) landed the immutable frozen notice-topic contract and Campaign-owned read-only wake helper. This helper may move with Story Authority; do not rewrite it into a runtime callback or duplicate its SQL query during MA06.
 
 **Current prerequisite staging:** [MA05A](../../archive/2026-11/other/2026-11-21--ma05a-neutral-storyteller-kinds/CHANGE.md) and [MA05B](../../archive/2026-11/other/2026-11-21--ma05b-sql-outbox-port/CHANGE.md) are landed foundational boundaries; neither establishes full MA05 inversion or authorizes MA06. Stage A's generic SQL primitive now lives in `@offscreen/db/outbox` and **must not be implemented a second time** during MA06. Later MA06 extraction remains dependent on a post-inversion graph and exact export/caller map.
 

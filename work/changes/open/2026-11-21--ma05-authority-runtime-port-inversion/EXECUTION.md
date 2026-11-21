@@ -36,7 +36,7 @@ Each is a small bounded Change with its own source-proof instructions. MA05 as a
 4. The new helper becomes an independently movable **authority SQL cohort** in MA06; it does **not** own dispatching, provider routing or Storyteller generation. This avoids adding a domain-specific transport protocol to generic `@offscreen/db/outbox`, avoids runtime→authority→runtime cycles, and retains historical topic/error semantics. No table migration.
 5. Focused proof: current `story03-notice-topic-freeze.test.mjs` SQL suite plus a new disposable-generation fixture with `generation(kind='storyteller.context-capture.v1')` true, ordinary generation false, absent generation false; strict equality of old/new re-exported function references; source graph shows both `campaign/follow-up-intents → storyteller/*` edges gone; same transaction/notice error strings preserved. No provider calls. Parent only joins after the negative SQL test succeeds.
 
-**Important gate:** [MA05D](../2026-11-21--ma05d-frozen-wake-sql-seam/CHANGE.md) now supplies the independently reviewed T-ID queue and SQL proof. It is **conditional** on MA05C integration and source freshness. Do not commission D before C or send the broad MA05 packet to Cursor.
+**Important gate:** [MA05D](../../archive/2026-11/other/2026-11-21--ma05d-frozen-wake-sql-seam/CHANGE.md) landed the frozen-topic contract, Campaign wake helper, and disposable SQL proof. Do not send the broad MA05 packet to Cursor.
 
 ## Selected follow-on MA05E after MA05D: continuity note authority
 
