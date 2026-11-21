@@ -1,4 +1,4 @@
-import { readStorytellerWorkerOptions } from '@offscreen/application/storyteller';
+import { readStorytellerWorkerOptions } from '@offscreen/story-engine/storyteller';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { readWorkerConfig } from './config';
 import { startRuntime } from '../runtime';

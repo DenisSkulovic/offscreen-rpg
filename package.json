@@ -30,6 +30,8 @@
     "repo:code-health:test": "node --test scripts/repo-tools/code-health.test.mjs",
     "repo:module-graph": "node scripts/repo-tools/module-graph.mjs",
     "repo:module-graph:test": "node --test scripts/repo-tools/module-graph.test.mjs",
+    "repo:host-domain-imports": "node scripts/repo-tools/host-domain-imports.mjs",
+    "repo:host-domain-imports:test": "node --test scripts/repo-tools/host-domain-imports.test.mjs",
     "wiki:health": "node scripts/repo-tools/wiki-health.mjs",
     "wiki:content-health": "node scripts/repo-tools/wiki-content-health.mjs",
     "wiki:graph": "node scripts/repo-tools/wiki-health.mjs --graph",

@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 
 const requireFromModule = createRequire(__filename);
 const applicationStorytellerDist = dirname(
-  requireFromModule.resolve('@offscreen/application/storyteller'),
+  requireFromModule.resolve('@offscreen/story-engine/storyteller'),
 );
 
 type GenerationAdoptionModule = {

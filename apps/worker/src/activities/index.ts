@@ -1,15 +1,15 @@
 import type { Database } from '@offscreen/db';
 import type { DocumentStore } from '@offscreen/documents';
-import type { createStorytellerRuntime } from '@offscreen/application/storyteller';
+import type { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
 import type {
   StorytellerActivities,
   CampaignActivities,
 } from '@offscreen/workflows/contracts';
 import { ApplicationFailure } from '@temporalio/client';
-import { GenerationError } from '@offscreen/application/generations';
-import type { createScriptedOpenings } from '@offscreen/application/generations';
-import type { createScriptedContinuations } from '@offscreen/application/generations';
-import { StoryError, type createStories } from '@offscreen/application/stories';
+import { GenerationError } from '@offscreen/story-engine/generations';
+import type { createScriptedOpenings } from '@offscreen/story-engine/generations';
+import type { createScriptedContinuations } from '@offscreen/story-engine/generations';
+import { StoryError, type createStories } from '@offscreen/story-engine/stories';
 import type {
   ContinuationActivities,
   DecisionActivities,

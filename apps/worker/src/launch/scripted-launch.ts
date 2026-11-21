@@ -1,4 +1,4 @@
 export {
   runScriptedLaunchWriter,
   type ScriptedLaunchWriterResult,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';

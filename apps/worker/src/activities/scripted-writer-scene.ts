@@ -14,7 +14,7 @@ import {
   prepareWriterMissionModelStep,
   publishAcceptedWriterScene,
   runWriterMissionModelRound,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   writerMissionCaptureV3ContinuationSchema,
   writerRoundDecisionSchema,

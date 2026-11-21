@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   BranchPinnedMemoryError,
   resolveBranchPinnedEvidence,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import {
   parseStorytellerTaskCustodyEvidenceRequest,

@@ -1,4 +1,4 @@
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import {
   gameAuthorityActorIdSchema,

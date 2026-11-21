@@ -67,7 +67,7 @@ function adminEnvironmentForOrigin(origin: string): AdminEnvironment {
 }
 import { createDrafts } from '@offscreen/application/drafts';
 import { DRAFTS, DraftsController } from './modules/drafts/controller.js';
-import { createScriptedOpenings } from '@offscreen/application/generations';
+import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import {
   OPENINGS,
   OpeningsController,
@@ -79,7 +79,7 @@ import {
   createQaJourneys,
   type ChamberStorytellerControl,
 } from '@offscreen/application/developer-tools';
-import { createStoryApplication } from '@offscreen/application/stories';
+import { createStoryApplication } from '@offscreen/story-engine/stories';
 import {
   readStoryAuthorityConfig,
   storySeamFor,
@@ -178,7 +178,7 @@ export type CreateAppOptions = Readonly<{
   onCacheIncident?: (incident: CacheIncident) => void;
   documentStore?: DocumentStore;
   defaultRules?: RulePackageReference;
-  openingContent?: readonly import('@offscreen/application/storyteller').OpeningContentEntry[];
+  openingContent?: readonly import('@offscreen/story-engine/storyteller').OpeningContentEntry[];
   scriptedOpeningFallback?: boolean;
   /** Enables PostgreSQL LISTEN → SSE story view hints (W16). */
   databaseConfig?: DatabaseConfig;

@@ -2,14 +2,14 @@ import {
   createGenerationDispatchAuthorityReader,
   createStorytellerRuntime,
   type StorytellerRuntimeOptions,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import { Client, Connection } from '@temporalio/client';
 import { NativeConnection, Worker } from '@temporalio/worker';
 import type { Database } from '@offscreen/db';
 import { createOutbox } from '@offscreen/application/outbox';
-import { createScriptedOpenings } from '@offscreen/application/generations';
-import { createScriptedContinuations } from '@offscreen/application/generations';
-import { createStories } from '@offscreen/application/stories';
+import { createScriptedOpenings } from '@offscreen/story-engine/generations';
+import { createScriptedContinuations } from '@offscreen/story-engine/generations';
+import { createStories } from '@offscreen/story-engine/stories';
 // Keep the directory entrypoint explicit. A removed legacy `activities.ts` can
 // leave `dist/src/activities.js` behind and otherwise shadow `activities/index.js`
 // in incremental/local builds, silently dropping newly registered activities.

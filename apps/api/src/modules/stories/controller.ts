@@ -21,8 +21,8 @@ import type {
   CampaignDocumentRoot,
   ResolvedOwnedLibraryDocument,
   createStoryApplication,
-} from '@offscreen/application/stories';
-import { StoryError } from '@offscreen/application/stories';
+} from '@offscreen/story-engine/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import {
   forkStorySchema,
   startStorySchema,

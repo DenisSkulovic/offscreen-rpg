@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { storyLaunch } from '@offscreen/db/launch-schema';
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import {
   storyLaunchRequestSchema,
   type StoryLaunchRequest,
@@ -19,7 +19,7 @@ import {
   runScriptedLaunchWriter,
   stageLaunchPromptLibrary,
   WriterSceneProposalError,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   WRITER_MANDATORY_TOOL_NAMES,
   writerMissionCaptureV2OpeningSchema,

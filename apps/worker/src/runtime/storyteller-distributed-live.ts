@@ -1,5 +1,5 @@
 import type { Database } from '@offscreen/db';
-import type { StorytellerRuntimeOptions } from '@offscreen/application/storyteller';
+import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
 import { startRuntime } from './index';
 import { startControlRuntime } from './control';
 import { startExecutionRuntime } from './execution';

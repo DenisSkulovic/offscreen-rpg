@@ -32,6 +32,7 @@
   "dependencies": {
     "@offscreen/contracts": "workspace:*",
     "@offscreen/application": "workspace:*",
+    "@offscreen/story-engine": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/workflows": "workspace:*",

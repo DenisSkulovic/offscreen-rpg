@@ -11,11 +11,11 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import type { createChamber } from '@offscreen/application/developer-tools';
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import { IdentityService } from '../auth/identity.js';
 import { OPENINGS } from '../drafts/openings-controller.js';
-import type { createScriptedOpenings } from '@offscreen/application/generations';
-import { DispatchReviewConflictError } from '@offscreen/application/storyteller';
+import type { createScriptedOpenings } from '@offscreen/story-engine/generations';
+import { DispatchReviewConflictError } from '@offscreen/story-engine/storyteller';
 import { dispatchReviewDecisionRequestSchema } from '@offscreen/contracts/chamber';
 import {
   respondToStorySchema,

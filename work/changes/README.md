@@ -32,6 +32,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [MA05F](archive/2026-11/other/2026-11-21--ma05f-authority-start-retry-cohort/CHANGE.md) | Move start/retry SQL authority and retry decision policy in one coherent Change while retaining old runtime-path identity | Done (2026-11-21). Story Authority owns start, retry admission, and the retry gate. Identity 1/1. Publication context 5/5. Playable start 5/5. Target `undertaking/storyteller-workshop` |
 | [MA05G](archive/2026-11/other/2026-11-21--ma05g-resolution-admission-authority/CHANGE.md) | Move resolution replay, locked commit, and task-record SQL into Story Authority while keeping off-lock preparation and the public factory | Done (2026-11-21). Identity 7/7. Notice-topic freeze 8/8. ENG03 lock measurement 2/2. Module graph has the existing intra-application cycle and no new package cycle. Target `undertaking/storyteller-workshop` |
 | [MA06A](archive/2026-11/other/2026-11-21--ma06a-story-engine-package-cohort/CHANGE.md) | One coherent bulk extraction of stories, campaign, storyteller runtime and generations into `@offscreen/story-engine`, keeping compatibility | Done (2026-11-21). 134 modules, 134 forwarders, compatibility 4/4, notice freeze 8/8, ENG03 2/2. Module graph clear. Target `undertaking/storyteller-workshop` |
+| [MA07](archive/2026-11/other/2026-11-21--ma07-direct-domain-consumers/CHANGE.md) | Production hosts import stories, generations, and storyteller from Story Engine | Done (2026-11-21). Twenty host files migrated. Forwarders kept. Host import guard 3/3. API and Game Authority typecheck passed. Target `undertaking/storyteller-workshop` |
 | [MA05](archive/2026-11/other/2026-11-21--ma05-authority-runtime-port-inversion/CHANGE.md) | Remaining tx-bound Story Authority → Storyteller-runtime inversion | Superseded (2026-11-21) by MA06A. MA05A–G are Done. Intra-engine capture edges remain. Not a completed dependency inversion |
 | [MA06](open/2026-11-21--ma06-domain-package-migration/CHANGE.md) | Extract story-authority and Storyteller-runtime packages, retire application catch-all | **PLANNER-BLOCKED:** reserved A–D extraction stages; requires post-MA05 graph and exact file/export/consumer migration maps |
 
@@ -39,7 +40,6 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 
 | Change | Status / dispatch |
 | --- | --- |
-| [MA07](open/2026-11-21--ma07-direct-domain-consumers/CHANGE.md) | **READY**: one bulk host consumer migration onto direct Story Engine exports; T01–T03, no paid provider or SQL effects |
 | [WR09](open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) | **PLANNER-BLOCKED**: real-provider Writer recovery/custody design; not commissioned for Cursor; final response persistence and Worker policy must be decided by ChatGPT |
 
 ## Open packets

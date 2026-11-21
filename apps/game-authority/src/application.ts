@@ -1,12 +1,12 @@
-import { createStoryApplication } from '@offscreen/application/stories';
-import { createStoryResolution } from '@offscreen/application/stories/resolution';
-import { lockOwnedStory } from '@offscreen/application/stories/persistence';
-import { createStorytellerRuntime } from '@offscreen/application/storyteller';
-import { createStorytellerSavedGenerationPublish } from '@offscreen/application/storyteller/saved-generation-publish';
+import { createStoryApplication } from '@offscreen/story-engine/stories';
+import { createStoryResolution } from '@offscreen/story-engine/stories/resolution';
+import { lockOwnedStory } from '@offscreen/story-engine/stories/persistence';
+import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
+import { createStorytellerSavedGenerationPublish } from '@offscreen/story-engine/storyteller/saved-generation-publish';
 import type { StorytellerGenerationPublishResponse } from '@offscreen/contracts/storyteller-task-custody';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { forkStorySchema } from '@offscreen/contracts/stories';
-import { StoryError } from '@offscreen/application/stories';
+import { StoryError } from '@offscreen/story-engine/stories';
 import type { Database } from '@offscreen/db';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import type { StoryLaunchStatus } from '@offscreen/contracts/story-launch';

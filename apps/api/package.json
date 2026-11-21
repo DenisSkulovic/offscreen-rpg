@@ -38,6 +38,7 @@
     "@offscreen/contracts": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/application": "workspace:*",
+    "@offscreen/story-engine": "workspace:*",
     "@offscreen/cache": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "better-auth": "1.7.5",

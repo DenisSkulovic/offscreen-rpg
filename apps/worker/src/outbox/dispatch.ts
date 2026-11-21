@@ -5,7 +5,7 @@ import {
   WRITER_SCENE_WAKE_TOPIC,
   WRITER_RESEARCH_WAKE_TOPIC,
   WRITER_RESEARCH_JOIN_WAKE_TOPIC,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   storytellerWorkflowType,
   storytellerDistributedWorkflowType,
@@ -37,9 +37,9 @@ import {
   decisionDeadlineTopic,
   DELEGATED_DECISION_NOTICE_TOPIC,
   intervalWakeTopic,
-} from '@offscreen/application/stories';
-import { scriptedOpeningTopic } from '@offscreen/application/generations';
-import { scriptedContinuationTopic } from '@offscreen/application/generations';
+} from '@offscreen/story-engine/stories';
+import { scriptedOpeningTopic } from '@offscreen/story-engine/generations';
+import { scriptedContinuationTopic } from '@offscreen/story-engine/generations';
 import {
   continuationWorkflowId,
   continuationWorkflowType,

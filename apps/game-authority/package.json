@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@offscreen/application": "workspace:*",
+    "@offscreen/story-engine": "workspace:*",
     "@offscreen/contracts": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",

@@ -12,25 +12,25 @@ You give a one-sentence premise and enter a persistent fictional life. You can c
 
 | Track | Our current estimate | Remaining | What the number means |
 | --- | ---: | ---: | --- |
-| 🏗️ **Modular Monolith shaping** | **~75%** | ~25% | The major package/domain extraction is done; consumer/compatibility cleanup, graph enforcement and final validation remain |
+| 🏗️ **Modular Monolith shaping** | **~80%** | ~20% | Production hosts import Story Engine directly. Compatibility forwarders, graph hygiene and final validation remain |
 | 🎭 **Storyteller evolution** | **~60%** | ~40% | Library, scene truth, launch, forks and a scripted scene-1→2→3 gameplay kernel exist; real integrated provider, research, user-facing journey and convincing quality proof are incomplete |
 | 🧭 **Combined undertaking** | **~65%** | ~35% | A subjective effort-and-risk blend: roughly **70% Storyteller / 30% architecture**, rounded to the nearest 5 percentage points |
 
 ```text
-Modular Monolith  75%  ███████████████░░░░░   ~25% left
+Modular Monolith  80%  ████████████████░░░░   ~20% left
 Storyteller       60%  ████████████░░░░░░░░   ~40% left
 Combined          65%  █████████████░░░░░░░   ~35% left
 ```
 
 **Confidence:** low-to-moderate, **roughly ±10–15 percentage points**. These are **subjective estimates of remaining engineering effort and integration risk**, not completed-Change ratios, tested-feature coverage, a deadline or a promise that exactly 35% effort remains. Storyteller's *proven end-user experience* lags behind the foundational code. Percentages can go **down** if real provider or long-form acceptance reveals major defects; do not mechanically increase them whenever a packet closes.
 
-**Why these numbers?** Monorepo already underwent its main package extractions but retains old forwarding imports and final integration work. Storyteller's core pieces, scripted continued-scene tests, and provider-free research children are present. The live provider journey, narrative quality, and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
+**Why these numbers?** Monorepo package extraction is done and production hosts now call Story Engine directly. Application forwarders and final integration work remain. Storyteller's core pieces, scripted continued-scene tests, and provider-free research children are present. The live provider journey, narrative quality, and broad fault/end-to-end proof remain. A successful scripted test is not the same as a demonstrated live AI-powered game.
 
 ## At a glance
 
 | Major capability | Verified state on undertaking | Human interpretation |
 | --- | --- | --- |
-| 🧱 Package separation and domain owners | **Mostly achieved** | Story Engine and Admin have distinct ownership; compatibility cleanup remains |
+| 🧱 Package separation and domain owners | **Mostly achieved** | API, Game Authority, and worker import Story Engine directly. Compatibility forwarders remain for tests and scripts |
 | 📚 Library, Writer Workdesk and immutable scene history | **Implemented** | Source-aware memory foundation and v2 publication are in place |
 | 🌿 Historical forks with active commitments | **Implemented** | WR06 is archived; broader player journey still needs acceptance |
 | 🚪 One-prompt opening | **Scripted implementation** | WR07B archived; public Launch feature remains gated |
@@ -39,7 +39,7 @@ Combined          65%  █████████████░░░░░░
 | 🧪 Long-form acceptance harness | **Harness integrated** | P3-C archived; does not prove all long-story or live-narrative quality criteria |
 | 🔍 Independent research children | **Scripted implementation** | WR04: explicit grant, read-only children, shared operation cap, verified join. Not a live provider proof |
 | 🎮 Complete Play/reentry UI | **Gated scripted path implemented** | WR08 archived: Play uses the real action API when the Launch flag is on. History and fork UI were already present. Live provider play is not accepted |
-| 🧹 Final monorepo cleanup / main merge | **Outstanding** | One bulk consumer migration, final joined validation and undertaking retirement |
+| 🧹 Final monorepo cleanup / main merge | **Outstanding** | Host consumer migration is done. Forwarder retirement, final joined validation, and undertaking retirement remain |
 
 ## 🗺️ The journey
 

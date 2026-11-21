@@ -13,11 +13,11 @@ import {
   resolveWriterResearchJoinTarget,
   submitWriterResearchJoinNotice,
   type JoinWriterResearchParentResult,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   runWriterResearchChildModelRound,
   writerResearchJoinOperationId,
-} from '@offscreen/application/storyteller';
+} from '@offscreen/story-engine/storyteller';
 import {
   writerMissionCaptureV3ContinuationSchema,
   type WriterMissionCapture,

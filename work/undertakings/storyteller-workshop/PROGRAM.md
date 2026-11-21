@@ -36,11 +36,11 @@
 
 Both [WR04](../../changes/archive/2026-11/storyteller/2026-11-21--wr04-delegated-writer-research/CHANGE.md) and [WR08](../../changes/archive/2026-11/storyteller/2026-11-21--wr08-one-prompt-client-and-integrated-acceptance/CHANGE.md) are integrated and archived. Earlier text describing them as pending is historical.
 
-1. **[MA07 direct domain consumers](../../changes/open/2026-11-21--ma07-direct-domain-consumers/CHANGE.md): READY** for bounded execution, whole-Change integration to this undertaking branch. Migrates production hosts away from old Application domain facade, leaves compatibility for tests/scripts.
+1. **[MA07 direct domain consumers](../../changes/archive/2026-11/other/2026-11-21--ma07-direct-domain-consumers/CHANGE.md): Done** on this undertaking branch. Production hosts import Story Engine directly. Compatibility forwarders remain for tests and scripts.
 2. **[WR09 provider-ready Writer](../../changes/open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md): PLANNER-BLOCKED.** Planner must settle durable exact response custody and Worker mode/credential policy, author TASKS, independently re-audit before any Cursor commission. No funded calls authorized.
 3. After WR09 runtime proof, review an integrated Writer/Play long-form acceptance Change and remaining compatibility retirement; perform final architecture and product end gates before any main landing.
 
-The MA07 source migration is safe to schedule independently of WR09 planning; WR09 implementation in the Worker waits for MA07 integration. One undertaking integration owner; no unapproved external paid provider requests.
+MA07 is integrated. WR09 implementation in the Worker can be commissioned only after its planner blocker is cleared. One undertaking integration owner; no unapproved external paid provider requests.
 
 ## Dependency and concurrency plan
 
