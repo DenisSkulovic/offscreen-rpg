@@ -1,6 +1,6 @@
 # MA11 | bounded, parallel-safe Composer route
 
-**Setup:** linked `change/ma11-story-engine-boundary-ratchet` worktree from current `undertaking/storyteller-workshop` HEAD, guard `node scripts/repo-tools/change-branch-guard.mjs --change MA11 --target undertaking/storyteller-workshop`. Parent executes T01 → T02 → T03 and pushes tested branch SHA/receipt to Cursor A (MA10 custodian); **do not merge into undertaking or retire worktree yourself**.
+**Setup:** linked `change/ma11-story-engine-boundary-ratchet` worktree from current `undertaking/storyteller-workshop` HEAD, guard `node scripts/repo-tools/change-branch-guard.mjs --change MA11 --target undertaking/storyteller-workshop`. Parent executes T01 → T02 → T03 → T04 and pushes tested branch SHA/receipt to Cursor A (MA10 custodian); **do not merge into undertaking or retire worktree yourself**.
 
 **T01 | Exact domain classifier.** Initial reads `scripts/repo-tools/{module-graph-core.mjs,module-graph.test.mjs}` and read-only `packages/story-engine/src/stories/index.ts`. Writes helper+focused tests only. Add `storyEngineDomain` four exact namespaces; preserve `applicationDomain`. **Positive:** real POSIX/Windows source paths recognized. **Negative:** lookalike package, test, generated and non-module paths return null. **Stop:** would alter old classifier behavior.
 
