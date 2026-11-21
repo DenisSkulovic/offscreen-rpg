@@ -5,6 +5,9 @@ import type { Database } from '@offscreen/db';
 import {
   campaign,
   campaignSettings,
+  gameActionExecution,
+  gameActivity,
+  gameOffer,
   worldObligation,
 } from '@offscreen/db/campaign-schema';
 import {
@@ -22,6 +25,7 @@ import {
   type DocumentManifest,
   type DocumentStore,
   type SceneCheckpoint,
+  type SceneCheckpointV2,
 } from '@offscreen/documents';
 import {
   makeValidatedAppearanceForPublication,
@@ -39,6 +43,15 @@ import {
   stageSceneCheckpointObject,
   type SceneCheckpointWriterStore,
 } from './scene-checkpoint';
+import {
+  buildV2ForkRows,
+  SettingsIncompleteError,
+} from './fork-v2-reconstruct.js';
+import { ForkStateError } from './fork-state.js';
+import {
+  assertReconstructedV2Matches,
+  stageV2ForkCheckpoint,
+} from './fork-reconstruct.js';
 
 type ForkInput = Readonly<{
   ownerId: string;
@@ -342,6 +355,140 @@ async function forkLiveRevisionOne(
   });
 }
 
+type V2ForkPrepared = Readonly<{
+  mappedCheckpoint: SceneCheckpointV2;
+  staged: Awaited<ReturnType<typeof stageSceneCheckpointObject>>;
+  sourcePassageId: string;
+  sourceSceneSequence: number;
+}>;
+
+function settingsIncompleteConflict(error: unknown): never {
+  if (error instanceof SettingsIncompleteError) {
+    forkConflict('settings_incomplete');
+  }
+  throw error;
+}
+
+async function forkFromSceneCheckpointV2(
+  tx: Transaction,
+  input: ForkInput,
+  source: typeof story.$inferSelect,
+  sourcePassage: typeof storyPassage.$inferSelect,
+  referenced: Awaited<ReturnType<typeof readSceneCheckpointForRow>>,
+  prepared: V2ForkPrepared,
+) {
+  const forkStoryId = parseStoryIdentifier(input.forkStoryId);
+  const checkpoint = prepared.mappedCheckpoint;
+  if (
+    input.sourcePassageId &&
+    input.sourcePassageId !== prepared.sourcePassageId
+  ) {
+    throw new StoryError('invalid', 'checkpoint_passage_mismatch');
+  }
+  if (
+    input.sourceCheckpointHash &&
+    input.sourceCheckpointHash !== referenced.checkpointHash
+  ) {
+    throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+  }
+  const appearance = remapForkAppearance(
+    sourcePassage.appearance,
+    forkStoryId,
+    checkpoint.passageId,
+  );
+  const settings = await tx
+    .select()
+    .from(campaignSettings)
+    .where(
+      and(
+        eq(campaignSettings.storyId, source.id),
+        lte(
+          campaignSettings.revision,
+          checkpoint.fictionalState.mechanicsAbsent
+            ? 0
+            : checkpoint.fictionalState.settingsRevision,
+        ),
+      ),
+    );
+  if (checkpoint.fictionalState.mechanicsAbsent) {
+    forkConflict('checkpoint_version_unsupported');
+  }
+  const now = await readDatabaseClockMs(tx, source.id);
+  let rows;
+  try {
+    rows = buildV2ForkRows({
+      checkpoint,
+      settingsRows: settings,
+      forkStoryId,
+      ownerId: input.ownerId,
+      sourceStoryId: source.id,
+      sourcePassageId: prepared.sourcePassageId,
+      sourceSceneSequence: prepared.sourceSceneSequence,
+      checkpointHash: referenced.checkpointHash,
+      clockAnchorAt: new Date(now),
+    });
+  } catch (error) {
+    if (error instanceof ForkStateError) {
+      if (
+        error.code === 'obligation_not_representable' ||
+        error.code === 'action_not_representable'
+      ) {
+        forkConflict(error.code);
+      }
+      throw new StoryError('invalid', error.code);
+    }
+    settingsIncompleteConflict(error);
+  }
+  const inserted = await tx
+    .insert(story)
+    .values({
+      ...rows.story,
+      storyteller: source.storyteller,
+      execution: source.execution,
+      usagePolicy: source.usagePolicy,
+      revision: 1,
+    })
+    .onConflictDoNothing()
+    .returning({ id: story.id });
+  if (!inserted.length) forkConflict('destination_in_use');
+  if (rows.storyItems.length) {
+    await tx.insert(storyItem).values(rows.storyItems);
+  }
+  if (rows.campaignSettings.length) {
+    await tx.insert(campaignSettings).values(rows.campaignSettings);
+  }
+  await tx.insert(campaign).values(rows.campaign);
+  for (const offer of rows.gameOffers) {
+    await tx.insert(gameOffer).values(offer);
+  }
+  for (const activity of rows.gameActivities) {
+    await tx.insert(gameActivity).values(activity);
+  }
+  for (const obligation of rows.worldObligations) {
+    await tx.insert(worldObligation).values(obligation);
+  }
+  for (const execution of rows.gameActionExecutions) {
+    await tx.insert(gameActionExecution).values(execution);
+  }
+  await tx.insert(storyPassage).values({
+    ...rows.storyPassage,
+    appearance: appearance ?? null,
+  });
+  if (rows.storyDocumentCommit) {
+    await tx.insert(storyDocumentCommit).values(rows.storyDocumentCommit);
+  }
+  await insertStagedSceneCheckpointSelector(tx, {
+    ownerId: input.ownerId,
+    operationId: forkStoryId,
+    staged: prepared.staged,
+  });
+  await assertReconstructedV2Matches(
+    tx,
+    forkStoryId,
+    checkpoint.fictionalState,
+  );
+}
+
 async function forkFromSceneCheckpoint(
   tx: Transaction,
   input: ForkInput,
@@ -349,6 +496,7 @@ async function forkFromSceneCheckpoint(
   sourcePassage: typeof storyPassage.$inferSelect,
   store: ForkStore,
   referenced: Awaited<ReturnType<typeof readSceneCheckpointForRow>>,
+  preparedV2?: V2ForkPrepared,
 ) {
   const forkStoryId = parseStoryIdentifier(input.forkStoryId);
   const checkpoint = referenced.checkpoint;
@@ -360,6 +508,20 @@ async function forkFromSceneCheckpoint(
     input.sourceCheckpointHash !== referenced.checkpointHash
   ) {
     throw new StoryError('invalid', 'checkpoint_hash_mismatch');
+  }
+  if (checkpoint.format === 'offscreen.scene-checkpoint.v2') {
+    if (!preparedV2) {
+      forkConflict('checkpoint_version_unsupported');
+    }
+    await forkFromSceneCheckpointV2(
+      tx,
+      input,
+      source,
+      sourcePassage,
+      referenced,
+      preparedV2,
+    );
+    return;
   }
   if (checkpoint.format !== 'offscreen.scene-checkpoint.v1') {
     forkConflict('checkpoint_version_unsupported');
@@ -670,6 +832,34 @@ export function createStoryForks(
     }
     const referenced =
       preview && store ? await readSceneCheckpointForRow(store, preview) : null;
+    let preparedV2: V2ForkPrepared | undefined;
+    if (
+      referenced?.checkpoint.format === 'offscreen.scene-checkpoint.v2' &&
+      store
+    ) {
+      try {
+        const { mapped, staged } = await stageV2ForkCheckpoint(
+          store,
+          referenced.checkpoint as SceneCheckpointV2,
+          sourceStoryId,
+          forkStoryId,
+        );
+        preparedV2 = {
+          mappedCheckpoint: mapped.checkpoint,
+          staged,
+          sourcePassageId: referenced.checkpoint.passageId,
+          sourceSceneSequence: referenced.checkpoint.sceneSequence,
+        };
+      } catch (error) {
+        if (error instanceof ForkStateError) {
+          if (error.code === 'mechanics_absent') {
+            forkConflict('mechanics_absent');
+          }
+          throw new StoryError('invalid', error.code);
+        }
+        throw error;
+      }
+    }
     const checkpointPassage = referenced
       ? (
           await database.db
@@ -736,6 +926,7 @@ export function createStoryForks(
           passageNow,
           store,
           referenced,
+          preparedV2,
         );
         return;
       }

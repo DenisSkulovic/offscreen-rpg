@@ -213,6 +213,14 @@ function resolveAssociatedGameOffer(
   return state.gameOffers.find((row) => candidateIds.has(row.id)) ?? null;
 }
 
+function offerTreeFromCampaignColumn(offer: unknown): unknown {
+  const record = asRecord(offer);
+  if (!record || !Array.isArray(record.nodes)) {
+    return offer;
+  }
+  return { id: requireUuid(record.id), nodes: record.nodes };
+}
+
 function buildOfferSnapshot(
   state: SceneAfterState,
   campaign: SceneAfterStateCampaign,
@@ -229,7 +237,7 @@ function buildOfferSnapshot(
     payload: {
       version: 1 as const,
       body: {
-        offer: campaign.offer,
+        offer: offerTreeFromCampaignColumn(campaign.offer),
         plans: associated
           ? wrapVersionedOpenPayload(associated.plans)
           : (null as JsonValue),
@@ -260,12 +268,39 @@ function mapWorldObligations(state: SceneAfterState) {
   }));
 }
 
+function executionPlanWithoutTarget(plan: unknown): unknown {
+  const record = asRecord(plan);
+  if (!record) {
+    return plan;
+  }
+  const { target: _target, __v2ForkTarget: _forkTarget, ...rest } = record;
+  if ('target' in record || '__v2ForkTarget' in record) {
+    return rest;
+  }
+  return plan;
+}
+
 function actionTargetFromExecution(execution: SceneAfterStateActionExecution) {
   const extra = execution as SceneAfterStateActionExecution & {
     target?: unknown;
   };
   if (extra.target !== undefined) {
     const parsed = activeActionTargetSchema.safeParse(extra.target);
+    if (!parsed.success) {
+      throwNotRepresentable();
+    }
+    return parsed.data;
+  }
+  const plan = asRecord(execution.plan);
+  if (plan && plan.__v2ForkTarget !== undefined) {
+    const parsed = activeActionTargetSchema.safeParse(plan.__v2ForkTarget);
+    if (!parsed.success) {
+      throwNotRepresentable();
+    }
+    return parsed.data;
+  }
+  if (plan && plan.target !== undefined) {
+    const parsed = activeActionTargetSchema.safeParse(plan.target);
     if (!parsed.success) {
       throwNotRepresentable();
     }
@@ -292,7 +327,7 @@ function mapActiveAction(
     actionKey: execution.actionKey,
     baseRevision: execution.baseRevision,
     offer: wrapVersionedOpenPayload(execution.offer),
-    plan: wrapVersionedOpenPayload(execution.plan),
+    plan: wrapVersionedOpenPayload(executionPlanWithoutTarget(execution.plan)),
     pendingResolution:
       execution.pendingResolution == null
         ? null

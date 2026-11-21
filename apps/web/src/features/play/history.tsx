@@ -6,6 +6,7 @@ import { flattenUniqueById } from '@/src/shared/api/list-page';
 import { queryKeys } from '@/src/shared/api/query-keys';
 import { storyHistoricalSceneOptions } from '@/src/shared/api/story-historical-query';
 import { storyHistoryInfiniteOptions } from '@/src/shared/api/story-history-query';
+import { ForkHistoricalScene } from './fork-historical-scene';
 import './ui/story-frame.css';
 
 type HistoryItem = {
@@ -197,6 +198,12 @@ export function StoryHistoryView({
             <p className="story-frame__intention-support">
               This saved scene is not an independent fork point.
             </p>
+          ) : null}
+          {historicalQuery.data ? (
+            <ForkHistoricalScene
+              sourceStoryId={storyId}
+              scene={historicalQuery.data}
+            />
           ) : null}
           <button
             type="button"

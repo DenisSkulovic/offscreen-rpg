@@ -43,6 +43,7 @@ import {
   realMsUntilGameSecond,
   gameTimeProgressSchema,
 } from '@offscreen/game/time';
+import { offerSchema } from '@offscreen/game/offers';
 import { characterSchema } from '@offscreen/game/state';
 import {
   projectAcceptedActivityPlan,
@@ -50,6 +51,29 @@ import {
 } from './accepted-plans';
 import { campaignHoldsSchema } from './holds';
 import { campaignReportSourceSchema } from './report-source';
+
+function campaignOfferForView(offer: unknown): unknown {
+  if (offer == null) {
+    return null;
+  }
+  if (typeof offer !== 'object') {
+    return offer;
+  }
+  const record = offer as Record<string, unknown>;
+  if (Array.isArray(record.nodes) && typeof record.id === 'string') {
+    return offerSchema.parse({ id: record.id, nodes: record.nodes });
+  }
+  return offer;
+}
+
+function actionPlanForCampaignRead(plan: unknown): unknown {
+  if (typeof plan !== 'object' || plan === null) {
+    return plan;
+  }
+  const { __v2ForkTarget: _forkTarget, target: _target, ...rest } =
+    plan as Record<string, unknown>;
+  return rest;
+}
 
 function appliedWorldEffects(plan: unknown, outcome: string) {
   const parsed = immediateActionPlanSchema.safeParse(plan);
@@ -289,14 +313,16 @@ export async function readCampaign(
     gameSecond: state.gameSecond,
     worldTime: projectWorldTime(settings.time, state.gameSecond),
     holds,
-    offer: state.offer,
+    offer: campaignOfferForView(state.offer),
     activityAccess: situationAuthorizationSchema.parse(
       state.situationAuthorization,
     ).activityAccess,
     activity: activityView,
     actionExecution: actionExecution
       ? (() => {
-          const plan = immediateActionPlanSchema.parse(actionExecution.plan);
+          const plan = immediateActionPlanSchema.parse(
+            actionPlanForCampaignRead(actionExecution.plan),
+          );
           return {
             operationId: actionExecution.operationId,
             label: plan.label,

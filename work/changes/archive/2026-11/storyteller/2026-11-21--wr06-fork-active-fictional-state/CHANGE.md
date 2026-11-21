@@ -1,19 +1,30 @@
 # WR06 | fork any newly published scene, including active fictional commitments
 
-> **CURRENT EXECUTION ROUTE, CONDITIONAL ON WR05P2 LANDING (2026-11-21):** The owner has commissioned the complete **Active historical forks** successor for dispatch **immediately after WR05P2 is fully integrated, archived and current scene-v2 interfaces rechecked**. Read [POST-WR05P2-EXECUTION.md](POST-WR05P2-EXECUTION.md) instead of the obsolete pre-MA06A T-IDs and source routes below. This is ONE large Change, not a new micro-Change chain. Its execution stays on a dedicated worktree from the live undertaking HEAD; WR07B and WR06 may run concurrently only under the explicit disjoint write ownership in their successor routes, separate DB fixtures and serialized integration. The historical PLANNER-BLOCKED statement below applies to the **old instructions**, not a demand for another architecture workshop. If WR05P2's actual v2 APIs materially violate the successor's specified contracts, stop at that precise mismatch and return it to ChatGPT. **Not authorized to start while WR05P2 remains open.**
+**State:** Done (2026-11-21). Integrated on `undertaking/storyteller-workshop`. Not on `main`.
 
-> **Execution readiness audit (2026-11-21): PLANNER-BLOCKED, NOT CURSOR-READY.** Source-grounded G0–G7 review is recorded in [PROOF.md](PROOF.md); exact observed code gaps and ChatGPT-owned corrective decisions are in [SOURCE-MAP.md](SOURCE-MAP.md). The existing TASKS are *design placeholders*, not dispatchable child instructions. Do not reinterpret `PLANNER-READY AFTER` as approval; only reissue precise T-IDs against landed predecessor code and audit every one before commission. The integration target remains `undertaking/storyteller-workshop`; `main` untouched. No provider spend, destructive DB or live deployment is authorized by this packet.
+## Reconciliation ledger
 
+| Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Forked continuities | `docs/technical/engine/lifecycle-and-compatibility.md#forked-continuities` | changed: v2 checkpoint forks into a child story | `packages/story-engine/src/stories/forks.ts` on this Change | disposable SQL | wrong owner, bad hash, and conflicting destination leave no child rows | heading updated |
+| Fictional clock on a fork | `docs/product/gameplay/time-and-autonomy.md` | unchanged because the page already says a fork resumes from the scene clock, not the parent wall-clock scheduler | child `clockAnchorAt` is the fork-commit clock | SQL test asserts scene-37 clock fields survive | parent scene 80 text is absent on the child | N/A |
+| Launch, worker, migrations | WR07B owners | unchanged because this Change does not edit them | no diff in controller, worker, migrations, or launch UI | not the WR06 proof | N/A | N/A |
 
-**State:** Proposed / PLANNER-BLOCKED for implementation, independently reviewed 2026-11-21. **Kind:** implementation. **Dependencies:** WR05. **Outcome:** from a scene's exact immutable boundary, create an independently playable branch with the *same prior fictional truth and unresolved meaningful activity*, without copying the parent Library, cloning its provider/worker jobs or leaking later knowledge.
+The historical readiness note below records the pre-WR05P2 block. The landed route was [POST-WR05P2-EXECUTION.md](POST-WR05P2-EXECUTION.md).
+
+Historical commission text, kept for the packet:
+
+The owner had commissioned the complete **Active historical forks** successor for dispatch immediately after WR05P2. That dispatch is complete.
+
+**Historical state:** Proposed / PLANNER-BLOCKED before WR05P2. **Kind:** implementation. **Dependencies:** WR05. **Outcome:** from a scene's exact immutable boundary, create an independently playable branch with the *same prior fictional truth and unresolved meaningful activity*, without copying the parent Library, cloning its provider/worker jobs or leaking later knowledge.
 
 **Undertaking branch rule:** this Change belongs to **Storyteller Workshop**. Create `change/wr06-fork` from the then-current `undertaking/storyteller-workshop` HEAD **before code edits**. Work through all T-IDs on this Change branch, then squash-integrate into the undertaking branch and delete the temporary branch; dedicated linked worktree mandatory even when alone; preserve the primary checkout's active branch. Do **not** merge this Change directly into `main`. Rebase/refresh from the undertaking branch before beginning if earlier WR work has landed.
 
-**Original planning baseline (historical; current source re-audit in SOURCE-MAP):** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad code source from `09d5820bcafe`; recheck current HEAD/worktrees before editing. **Implementation owner: Cursor.** This packet is Proposed/unselected and conveys no authorization for paid provider, destructive DB, live cluster or external effects. [Program](../../../undertakings/storyteller-workshop/PROGRAM.md) · [Current queue](../../../QUEUE.md).
+**Original planning baseline (historical; current source re-audit in SOURCE-MAP):** GitHub `0d423b687c9a0a84d45dfe20823d7d313651ea25` (2026-11-21), broad code source from `09d5820bcafe`; recheck current HEAD/worktrees before editing. **Implementation owner: Cursor.** This packet is Proposed/unselected and conveys no authorization for paid provider, destructive DB, live cluster or external effects. [Program](../../../../undertakings/storyteller-workshop/PROGRAM.md) · [Current queue](../../../../QUEUE.md).
 
 ## Cursor source route
 
-**DEPTH=PATCH-L, Game Authority fork/state owner.** Start `packages/application/src/stories/{forks,reads,scene-checkpoint,timing,resolution}.ts`, `packages/db/src/schema/{stories,campaign,outbox}.ts`, `packages/game/src/{time,state}.ts` plus actual activity/offer/world-obligation helpers. Existing `packages/application/test/historical-fork.test.mjs`, `packages/application/test/scene-checkpoint.test.mjs`. Review [WR05](../2026-11-21--wr05-coherent-scene-publication/CHANGE.md) commit contract. **Never reconstruct scene 37 from parent's current SQL row.**
+**DEPTH=PATCH-L, Game Authority fork/state owner.** Start `packages/application/src/stories/{forks,reads,scene-checkpoint,timing,resolution}.ts`, `packages/db/src/schema/{stories,campaign,outbox}.ts`, `packages/game/src/{time,state}.ts` plus actual activity/offer/world-obligation helpers. Existing `packages/application/test/historical-fork.test.mjs`, `packages/application/test/scene-checkpoint.test.mjs`. Review [WR05](../../../../open/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) commit contract. **Never reconstruct scene 37 from parent's current SQL row.**
 
 ## Fork contract, already chosen for implementation
 

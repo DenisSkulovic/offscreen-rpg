@@ -26,12 +26,105 @@ import { continuityNotesSchema } from './continuity';
 export * from './continuity';
 export * from './premise';
 
+export const evidenceLineageSchema = z.enum(['child', 'ancestor']);
 export const evidencePassageSchema = z.strictObject({
   id: z.uuid(),
   sequence: z.number().int().positive(),
   content: passageContentSchema,
   response: z.string().max(2000).nullable(),
+  lineage: evidenceLineageSchema.optional(),
 });
+
+export type EvidenceLineage = z.infer<typeof evidenceLineageSchema>;
+
+export function lineageEvidenceHandle(passage: {
+  sequence: number;
+  lineage?: EvidenceLineage | undefined;
+}): string {
+  return (passage.lineage ?? 'child') === 'ancestor'
+    ? `a${passage.sequence}`
+    : `p${passage.sequence}`;
+}
+
+function pinnedPassageHash(
+  pinnedPassageHashById: ReadonlyMap<string, string> | Record<string, string>,
+  id: string,
+): string | undefined {
+  if (pinnedPassageHashById instanceof Map) {
+    return pinnedPassageHashById.get(id);
+  }
+  const record = pinnedPassageHashById as Record<string, string>;
+  if (Object.hasOwn(record, id)) {
+    return record[id];
+  }
+  return undefined;
+}
+
+export type ForkLineagePassageRow = {
+  id: string;
+  sequence: number;
+  content: z.infer<typeof passageContentSchema>;
+  response: string | null;
+  rootHash: string;
+  contentHash: string;
+  storyId: string;
+};
+
+export function selectForkLineageEvidence(input: {
+  ancestorStoryId: string;
+  pinnedRootHash: string;
+  pinnedPassageHashById: ReadonlyMap<string, string> | Record<string, string>;
+  cutoffSequence: number;
+  parentPassages: readonly ForkLineagePassageRow[];
+  childPassages: readonly ForkLineagePassageRow[];
+}): {
+  evidence: Array<z.infer<typeof evidencePassageSchema>>;
+  notesSourcesUnchanged: true;
+} {
+  const pinForId = (id: string): string | undefined =>
+    pinnedPassageHash(input.pinnedPassageHashById, id);
+  const parentIds = new Set<string>();
+  const evidence: Array<z.infer<typeof evidencePassageSchema>> = [];
+
+  for (const passage of input.parentPassages) {
+    if (passage.sequence > input.cutoffSequence) {
+      throw new Error('future_ancestor');
+    }
+    if (passage.storyId !== input.ancestorStoryId) {
+      throw new Error('ancestor_pin_mismatch');
+    }
+    if (passage.rootHash !== input.pinnedRootHash) {
+      throw new Error('ancestor_pin_mismatch');
+    }
+    const pinnedHash = pinForId(passage.id);
+    if (pinnedHash === undefined || pinnedHash !== passage.contentHash) {
+      throw new Error('ancestor_pin_mismatch');
+    }
+    parentIds.add(passage.id);
+    evidence.push({
+      id: passage.id,
+      sequence: passage.sequence,
+      content: passage.content,
+      response: passage.response,
+      lineage: 'ancestor',
+    });
+  }
+
+  for (const passage of input.childPassages) {
+    if (parentIds.has(passage.id)) {
+      throw new Error('parent_as_child');
+    }
+    evidence.push({
+      id: passage.id,
+      sequence: passage.sequence,
+      content: passage.content,
+      response: passage.response,
+      lineage: 'child',
+    });
+  }
+
+  return { evidence, notesSourcesUnchanged: true };
+}
 const canonicalLibraryCatalogueEntrySchema = z.strictObject({
   handle: z.string().regex(/^k[1-9][0-9]*$/),
   path: z.string().min(1).max(320),
@@ -420,7 +513,7 @@ export function contextRequestSections(context: StorytellerContext) {
     if (!passage) {
       throw new Error('Missing continuity evidence');
     }
-    return `p${passage.sequence}`;
+    return lineageEvidenceHandle(passage);
   };
   return {
     sceneContext: {
@@ -447,7 +540,7 @@ export function contextRequestSections(context: StorytellerContext) {
       evidence: context.evidence
         .filter((passage) => passage.id !== context.current?.id)
         .map((passage) => ({
-          handle: `p${passage.sequence}`,
+          handle: lineageEvidenceHandle(passage),
           content: passage.content,
           response: passage.response,
         })),
@@ -499,7 +592,7 @@ export function contextRequestSections(context: StorytellerContext) {
         : {}),
       current: context.current
         ? {
-            handle: `p${context.current.sequence}`,
+            handle: lineageEvidenceHandle(context.current),
             content: context.current.content,
           }
         : null,
@@ -516,10 +609,12 @@ export function boundStorytellerContext(
 ) {
   const context = contextInputSchema.parse(input);
   const ids = context.evidence.map((passage) => passage.id);
-  const sequences = context.evidence.map((passage) => passage.sequence);
+  const lineageSequenceKeys = context.evidence.map(
+    (passage) => `${passage.lineage ?? 'child'}:${passage.sequence}`,
+  );
   if (
     new Set(ids).size !== ids.length ||
-    new Set(sequences).size !== sequences.length
+    new Set(lineageSequenceKeys).size !== lineageSequenceKeys.length
   ) {
     throw new Error('Duplicate context evidence');
   }
@@ -532,7 +627,11 @@ export function boundStorytellerContext(
       throw new Error('Current passage differs from context evidence');
     }
     if (
-      context.evidence.some((passage) => passage.sequence > current.sequence)
+      context.evidence.some(
+        (passage) =>
+          (passage.lineage ?? 'child') === 'child' &&
+          passage.sequence > current.sequence,
+      )
     ) {
       throw new Error('Context evidence includes a future passage');
     }
