@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { collectCheckout, healthSummary, receiptFrom, selectedWorkFromQueue, statusPaths } from './brief.mjs';
+import { collectCheckout, healthSummary, receiptFrom, renderHuman, selectedWorkFromQueue, statusPaths } from './brief.mjs';
 
 function git(cwd, args) {
   const result = spawnSync(
@@ -110,6 +110,27 @@ export function runBriefSelfTest() {
       'work',
       'workKind',
     ]);
+    const concise = renderHuman({
+      branch: 'change/wr03-workdesk',
+      sha: 'a'.repeat(40),
+      status: ' M packages/example.ts',
+      log: 'unrelated historical log',
+    }, 'VERY-LONG-HISTORICAL-ORIENTATION', null);
+    assert.match(concise, /change\/wr03-workdesk/);
+    assert.match(concise, /Current work \(global queue\): none/);
+    assert.equal(concise.includes('VERY-LONG-HISTORICAL-ORIENTATION'), false);
+    assert.equal(concise.includes('unrelated historical log'), false);
+    assert.ok(concise.split('\\n').length < 20);
+
+    const full = renderHuman({
+      branch: 'change/wr03-workdesk',
+      sha: 'a'.repeat(40),
+      status: '',
+      log: 'last commit',
+    }, 'HISTORICAL-ORIENTATION', null, undefined, { full: true });
+    assert.match(full, /HISTORICAL-ORIENTATION/);
+    assert.match(full, /last commit/);
+
     const summary = healthSummary({
       top3: [
         { code: 'needs-revalidation', path: 'STATUS.md', dependency: 'packages/engine/src/time.ts', suggestion: 'pnpm repo:maintenance' },
