@@ -7,7 +7,7 @@
 | G0 | PASS target/branch, distinct Change worktree, single MA10 custodian |
 | G1 | PASS exact AST data flow and existing schema/errors inspected |
 | G2 | PASS six additive arrays, file SCC vs domain SCC separation, exact five-pair exception law, package direction rules |
-| G3 | PASS T01–T03 have exact files, inputs/outputs, focused negatives |
+| G3 | PASS T01–T04 have exact files, inputs/outputs, focused negatives |
 | G4 | PASS T01 pure classifier can begin without runtime survey |
 | G5 | PASS graph-tool writes plus two explicit API/GA manifest fixes do not overlap MA10 legacy test/script or WR09A DB/Writer/provider |
 | G6 | PASS *specified tests*, not executed: same-domain runtime vs type-only, new forbidden import, unchanged old failures |
