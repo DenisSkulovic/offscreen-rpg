@@ -1,7 +1,11 @@
-# MA06 | cross-cutting definition of done
-1. Graph: direct package dependencies acyclic; no forbidden intra-application paths hiding after partial migration; `story-authority` independent from runtime, provider or lab; new runtime consumes narrow authority APIs.
-2. Build: pnpm lock, NodeNext exports, per-package tsc, Turbo dependency order, API/GA/worker and tool integration references work. Browser imports remain pure contract/game only.
-3. Source behavior: same story owner/refusal paths, campaign clock and action settlements, typed World state, document source hash and fork root, Writer dispatch lease/fence, retry idempotency, SQL rollback/outbox and public evidence projection.
-4. Costs/security: reserve/settle/uncertain provider outcomes, spending caps, permission boundaries, scoped tenants and private knowledge remain unchanged. No new network/paid call or production DB migration.
-5. Verification: same-byte fixtures where canonical serialization changes module location, source/replay negative tests on disposable SQL, independent committed SHA receipts, compatibility consumer tests; declare NOT RUN where unavailable.
-6. End-state: `@offscreen/application` exports no unbounded operational subdomain; every remaining entry is documented composition or a compatibility shim with a *specific removal gate*. No permanent alternate architecture manuals or packet archives.
+# MA06 | cross-package proof obligations (not yet executed)
+
+**Static architecture:** package graph acyclic at every joined stage; no `story-authority → application/storyteller-runtime/dev-tools`, no runtime back-edge, no unbounded new barrels, no unadvertised production imports and no new type-only dependency that prevents build. Re-run MA01 graph after every stage; distinguish existing unrelated warnings from new violations.
+
+**Package/build correctness:** real NodeNext `types`/`default` resolution including CommonJS/ESM classification and explicit root/subpath exports; pnpm lockfile importer refresh; Turbo dependency DAG; API/GA/worker and tools compile from clean relevant outputs; strict original/new symbol identity across compatibility layers. Verify generated `dist` isn't confused with stale output.
+
+**SQL/fence/canonical invariants:** story and campaign ownership, same-row lock/revision, receipt exactly once, outbox notice same SQL transaction, canonical root/hash/checkpoint and fork lineage, read-only privacy projection, Game Authority admission authority, Storyteller lease/custody/retry/payment reservations and uncertain provider results. Failure/crash replay and stale root/owner/token negative suites on disposable SQL, no real provider calls.
+
+**Gates by stage:** Stage A requires outbox ID conflict and lease semantics unchanged; B requires authority stale revision/campaign atomicity/denied owner and transaction compatibility; C requires admitted generation/capture/retry/publication fences and no duplicate spend/outbox; D requires host/worker consumer tests, no unknown legacy importer and exact export retirement. Each future stage packet must translate these into runnable commands with fixture names, not say “run all integration tests”.
+
+**Provenance:** past source-map observations are not live SQL proof. Record PASS/FAIL/NOT RUN with command, cwd, test counts and actual environment. The program becomes Done only after all separately integrated Changes meet their obligations; an empty `application` directory is not proof of separation.
