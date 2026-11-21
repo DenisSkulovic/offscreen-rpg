@@ -4,7 +4,7 @@
 
 Current work: none
 
-This is the **one active selection pointer** for independently tracked work. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
+This is the **one active selection pointer** for independently tracked work. The current themed integration envelope, when one exists, is recorded separately under [Undertakings](undertakings/README.md) and never selects execution by itself. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 
 Use exactly one `Current work:` line near the top. Valid values are `none`, a Markdown link to `changes/open/<leaf>/CHANGE.md`, or a Markdown link to `tasks/open/<leaf>/TASK.md`. Examples (illustrative, **not selected**): `[FORK01](changes/archive/2026-11/other/2026-11-20--fork01-private-game-authority-historical-fork/CHANGE.md)` and `[task](tasks/open/YYYY-MM-DD--slug/TASK.md)`. No `TASKS.md#Txx` or open design is a top-level selection.
 
@@ -17,6 +17,7 @@ Use exactly one `Current work:` line near the top. Valid values are `none`, a Ma
 | Modify implementation or ratified documents | [Changes](changes/README.md) | Each `CHANGE.md`, with optional Composer `TASKS.md` |
 | Execute independently tracked verification, migration or maintenance | [Tasks](tasks/README.md) | Each `TASK.md` with prerequisites, scope, stops and evidence |
 | Resolve an unknown or design choice | [Designs](designs/README.md) | Open study; not automatically executable |
+| Understand the current themed integration push | [Undertakings](undertakings/README.md) | Coordination envelope only; never a work selector |
 | Read concluded investigations | [Research](../research/README.md) | Non-normative findings |
 | Assess actual successful/failed runs | [Evidence](../evidence/README.md) | Dated reproducible observations |
 | Know shipped/observed capability | [STATUS](../STATUS.md) | Demonstrated implementation only |

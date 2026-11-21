@@ -33,7 +33,7 @@ A technical target may describe a system that doesn't exist yet. That's not auto
 
 A **Change** is a planned, code-changing outcome, not synonymous with a game feature or a broad initiative. Its smallest useful dossier identifies the desired behavior, source/technical authority, baseline, intended files, exclusions, a normal case, a meaningful negative case and cheap verification. Significant work can add a short PLAN/checkpoint.
 
-**Only the [Change queue](work/changes/README.md) selects executable work.** `Current change: none` is a legitimate state, not a reason to pick a random old ticket. Upon landing code, reconcile the affected permanent docs, implementation evidence and a closeout ledger. Retire completed packets to archive so the live queue stays narrow.
+**Only [work/QUEUE.md](work/QUEUE.md) selects independently tracked executable work.** `Current work: none` is a legitimate state, not a reason to pick a random old ticket. Upon landing code, reconcile the affected permanent docs, implementation evidence and a closeout ledger. Retire completed packets to archive so the live queue stays narrow.
 
 See the [Change work-unit standard](.agents/references/change-work-unit-standard.md), [workflow skill](.agents/skills/change-workflow/SKILL.md) and [change reconciliation guard](.agents/rules/documentation.md). Avoid inventing a code-bearing Change for a pure research note or Markdown improvement.
 
@@ -93,4 +93,4 @@ This is a **pre-POC engineering laboratory**. The documentation graph, targeted 
 
 The point is a sustainable method: explain *why* a change exists; find the rule it implements; trace the executing source; test a counterexample; and preserve the knowledge after the chat ends.
 
-**Next:** [Agent operating model](.agents/README.md) · [Product docs](docs/product/README.md) · [Technical docs](docs/technical/README.md) · [Current status](STATUS.md) · [Actual Change queue](work/changes/README.md).
+**Next:** [Agent operating model](.agents/README.md) · [Product docs](docs/product/README.md) · [Technical docs](docs/technical/README.md) · [Current status](STATUS.md) · [Current work selector](work/QUEUE.md) · [Active Undertaking](work/undertakings/README.md).

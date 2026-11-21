@@ -7,6 +7,7 @@
 | Noun | Question it answers | Durable owner | Terminal disposition |
 | --- | --- | --- | --- |
 | **Initiative** | Which broader outcome are we pursuing? | Existing product/technical initiative overview or program design; do not manufacture a folder per noun | Explicitly reconcile into [ROADMAP](../ROADMAP.md) and [STATUS](../STATUS.md) |
+| **Undertaking** | Which temporary, named transformation are we concentrating on across several work units? | [work/undertakings/](undertakings/README.md) while active; normally one integration branch `undertaking/<slug>` | Land the coherent result, record a compact disposition, then remove the active dossier/branch; Git preserves the full history |
 | **Design** | Which behavior, boundary or contract should we select? | [work/designs/](designs/README.md) only while actively unresolved; approved behavior lives in docs/product or docs/technical | Record completion, rejection, supersession or deferral in the [design ledger](designs/ledger/2026-11.md), then remove from HEAD after link review; exact source is recoverable from Git |
 | **Investigation** | What is true, why, or still unknown? | Open design dossier for unresolved inquiry; source-based research note if independent | Findings in [research](../research/README.md), dated observations in [evidence](../evidence/README.md), new decisions back to canonical owners |
 | **Change** | Which lasting **diff** should be produced? | [work/changes/open/<leaf>/CHANGE.md](changes/README.md) | Reconcile to canonical owners; archive briefly, then prune the full packet after a cool-off/link audit, durable [Change ledger](changes/ledger/2026-11.md) and immutable Git source pointer |
@@ -16,6 +17,16 @@
 | **Composer microtask** | Which tiny edit/test step belongs **inside one Change**? | That Change's `TASKS.md#Txx` | Receipt and reconciliation back to parent Change, **not** a standalone Task |
 
 **The classifier is the desired outcome, not the verb.** A test-run command under a code Change is usually an embedded microtask. A separately scheduled repeatable verification run with its own authorization and evidence is a standalone Task. Writing a new migration is a Change; applying an existing migration to a specified approved database is a Task. Creating a chaos runner is a Change; executing one bounded chaos scenario is a Task/Experiment. An audit may be an Investigation and eventually produce Evidence, a Design, or a Change. The categories can relate without being identical.
+
+## Undertakings coordinate themed transformations
+
+An **Undertaking** is a temporary integration envelope for a coherent, memorable engineering push that spans several Changes, Designs, investigations or Tasks. It is useful when the work has one shared theme and integration boundary but is too large to pretend it is one Change. Examples include a documentation wikipedization, a Kubernetes-first developer-experience refoundation, or the current Storyteller Workshop.
+
+An Undertaking **does not create another truth or execution authority**. It cannot mark a child Change Done, select work instead of [QUEUE](QUEUE.md), ratify a Design, or turn a proposal into shipped capability. Child artifacts retain their own lifecycle and evidence requirements. The undertaking dossier owns only scope, integration intent, constituent map, entry/exit conditions and branch identity.
+
+Repository branch hygiene defaults to **two long-lived visible branches during an Undertaking**: `main` and one `undertaking/<slug>` branch. Extra branches are exceptional, temporary implementation tools and should be deleted immediately after their work is reconciled. Do not create a branch per Design or Change by habit. An undertaking branch should be named for the actual transformation, not a generic sequence such as `evolution-2` or `consolidated`.
+
+Lifecycle: **Active → Landing → Closed**. Active means the themed scope is still being shaped or implemented. Landing means constituent work has been reconciled and the branch is being validated as one coherent candidate for `main`. Closed means it has landed or been explicitly abandoned; the active dossier and branch should then disappear from HEAD after a compact disposition is retained. See [Undertakings](undertakings/README.md).
 
 ## Work retirement is part of completion
 
