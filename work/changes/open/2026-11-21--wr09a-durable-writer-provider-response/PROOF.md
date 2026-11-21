@@ -4,6 +4,7 @@
 
 Required deterministic evidence, default no external network:
 - Attempt reserved → dispatched → delivered: one injected fake fetch, exact bound wire SHA, response CAS returned, nullable new SQL pointer populated, original result SHA unchanged, exactly one provider charge.
+- Atomic fault injection inside SQL transaction *after* accounting settlement calculation but *before* Writer step update rolls back attempt charge, funding/run counters and step pointer together; a later restart marks possibly-dispatched uncertain and refuses resend. No separate settled attempt without a response pointer.
 - Replay after simulated process death/reader reconstruction: identical exact bytes from CAS, zero additional transport calls/charges.
 - Wrong mission/context/ordinal/attempt/response hash, invalid CAS envelope, missing document, unauthorized identity: fail closed and do not leak contents.
 - CAS fail before SQL pointer and crash after possible send: held/uncertain, no resend, reserved liability not marked free; same attempt can't be recharged.
