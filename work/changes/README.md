@@ -1,5 +1,19 @@
 # Changes | active catalog
 
+## Agent internals, reproducibility and inspectability (planned 2026-11-22)
+
+**Human-owner objective:** understand the actual Writer context, loop, Library/tool use, and Temporal Workflow→Activity topology by reading the code and later inspecting a real mission scene-by-scene. This is a **dependency chain, not three parallel commissions**:
+
+| Stage | Change | User-visible outcome | Readiness |
+| --- | --- | --- | --- |
+| **AI01** | [Agent runtime + Temporal readable topology](open/2026-11-22--ai01-agent-runtime-and-temporal-navigation/CHANGE.md) | Coherent Story Engine capture/round modules, real source tour and Workflow/activity/queue map | **PLANNER-GATED after WR10/WR11 source rebase** |
+| **AI02** | [Durable exact request and tool provenance](open/2026-11-22--ai02-durable-agent-execution-provenance/CHANGE.md) | New rounds archive exact outgoing wire, input tool calls and logical transcript with evidence classifications | **PLANNER-GATED after AI01, WR10/WR11, HR03 migration and retention design** |
+| **AI03** | [Case-bound Admin Agent Inspector](open/2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md) | Scene/mission timeline, prompt composition, tool/result history, diff and permitted source/Temporal links | **PLANNER-GATED after AI02 and HR01 + explicit new sensitive read capability** |
+
+**Crucial source truth:** current `compileWriterRoundCapturedRequest` initially sends short system instruction and *pins/summaries* JSON, **not all Library contents**. The Library remains accessible through permitted tools. Current `storyteller_writer_step.request_cas_hash` stores a SHA digest, **not** an immutable request-object pointer. WR09A strict responses and tool result summaries have private pointers, but a complete archived request+tool-argument thread for every historic mission has not been proven. AI02 must distinguish exact archived, recompiled hash match, current-compiler preview, unavailable and redacted. Temporal Workflow History records orchestration, not hidden model reasoning. Old unavailable data must not be invented.
+
+**Coordination:** AI01 changes Writer/capture source touched by WR10/WR11; AI02 changes private step schema/Writer source and must wait for HR03 and CL01 migration source; AI03 touches Admin API/Web owned by HR01 and depends on AI02. None is authorized to run as an extra Cursor batch tonight or to incur paid model/DB/cluster effects. No completion-credit increase; owner can approve the design, then ChatGPT source-rebases first executable stage. Planned eventual single custodian, not an unbounded swarm.
+
 ## Human-owner readability wave, planned 2026-11-22
 
 **A separate structural refactor wave, not a replacement for CL01/WR11/K8S10.** The [canonical code-quality rule](../../.agents/rules/code-quality.md#human-ownership-refactors-controlled-mechanical-freedom) now explicitly supports **planner-fixed package layouts + Composer mechanical discretion**. No new feature, scheme, SQL transaction, external provider or migration.
