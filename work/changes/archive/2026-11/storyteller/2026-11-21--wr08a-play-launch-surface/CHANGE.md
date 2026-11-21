@@ -1,6 +1,8 @@
 # WR08A | Real one-prompt Launch screen and status flow
 
-**State: READY / OWNER-COMMISSIONED; EXECUTE NOW IN INDEPENDENT WEB WORKTREE.** WR07C is Done/archived on `undertaking/storyteller-workshop` and its exact `@offscreen/contracts/story-launch` public request/status grammar has been verified on live HEAD (prompt up to 24k, preset root SHA, `held`/`failed` reasons, `uncertain.explanation`, `ready.storyId` + `sceneSequence`). Targets integration `undertaking/storyteller-workshop`. The distinct active WR07C Cursor owns only Contracts; this Change owns only `apps/web`. Do not start from this planning branch or edit Contracts. The backend Launch endpoint does not exist yet; keep the new UI **gated and not advertised as working** until WR07B lands and passes real integration. No paid model requests by this Change.
+**State:** Done (2026-11-21). WR07C is Done/archived on `undertaking/storyteller-workshop` and its exact `@offscreen/contracts/story-launch` public request/status grammar has been verified on live HEAD (prompt up to 24k, preset root SHA, `held`/`failed` reasons, `uncertain.explanation`, `ready.storyId` + `sceneSequence`). Targets integration `undertaking/storyteller-workshop`. The distinct active WR07C Cursor owns only Contracts; this Change owns only `apps/web`. Do not start from this planning branch or edit Contracts. The backend Launch endpoint does not exist yet; keep the new UI **gated and not advertised as working** until WR07B lands and passes real integration.
+
+No provider call and no paid model request by this Change.
 
 ## Concrete product outcome
 
@@ -28,3 +30,22 @@ An authenticated player can create a Story Prompt without a required title, avat
 Scripted MSW/Vitest UI tests must prove: one freeform prompt, optional preset, no compulsory character/title; one immutable body/operation across retry; malformed status rejected; `ready` navigates to exact story; lost PUT response causes GET and no duplicate PUT; held/uncertain never silently resubmit; cross-viewer session pointer rejected; disabled production gate does not link to 404; empty/oversize prompt rejected; private prompt not stored in browser storage/URL. No server API additions, no DB writes, no Story Engine edits, no change to legacy draft flow, no claims of real end-to-end Play before WR07B.
 
 [Executor tasks](TASKS.md) · [Acceptance proof](PROOF.md). WR07C landed, contract reconciled. **This packet is commissioned; no WR05P/scene-v2 completion is needed for Web-only implementation.** Start from live undertaking HEAD in dedicated `change/wr08a-play-surface` worktree; final integration must be serialized with any WR05S archive/catalog change. Keep launch navigation gated OFF by default until WR07B backend exists.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Disposition |
+| --- | --- |
+| Product | unchanged because the draft wizard remains the creation path and one-prompt Play is not claimed while the Launch HTTP endpoint is absent |
+| Technical | unchanged because `@offscreen/contracts/story-launch` stays the wire grammar from WR07C and this Change adds no route, migration, or retry authority on the server |
+| Code | changed: apps/web/src/features/stories/use-story-launch.ts and apps/web/app/(authenticated)/stories/launch/page.tsx. Negative: a lost or uncertain response does not PUT a second operation, and the default flag does not link `/stories/launch` |
+| Related | changed: apps/web/src/features/stories/README.md and apps/web/app/README.md name the gated route. STATUS.md records that the screen is not a playable launch |
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | none | unchanged because the player still creates through `/stories/new` unless `STORY_LAUNCH_ENABLED` is exactly `true`, and no Launch endpoint, schema, or product rule was edited | apps/web/src/features/stories/use-story-launch.ts, apps/web/src/server/story-launch-capability.ts @ 92431ee9 plus this Change | fixture-tested | disabled home has no `/stories/launch` link; 404 recovery does not PUT; held, failed, and uncertain do not navigate or resubmit; the prompt text is absent from sessionStorage; malformed status does not navigate | apps/web/src/features/stories/README.md and apps/web/app/README.md |
+| Stories source map | apps/web/src/features/stories/README.md | changed: the map names the gated launch route, the pointer store, and the one-PUT/GET recovery rule. unchanged: the draft editor and Start intent stay the creation path | apps/web/src/features/stories/README.md @ 92431ee9 plus this Change | source-observed | the map does not say a story can be played from a prompt while the flag is off | heading updated in place |
+| App route map | apps/web/app/README.md | changed: `/stories/launch` is listed as flag-gated and server-render does not call the launch API | apps/web/app/README.md @ 92431ee9 plus this Change | source-observed | the route row does not claim an implemented Nest handler | row added |
+
+Closeout paths: apps/web/src/shared/api/story-launch-intent-store.ts, apps/web/src/shared/api/story-launch-intent-store.test.ts, apps/web/src/features/stories/use-story-launch.ts, apps/web/src/features/stories/use-story-launch.test.tsx, apps/web/src/features/stories/story-launch-form.tsx, apps/web/src/features/stories/story-launch-form.test.tsx, apps/web/src/features/stories/story-launch-status.tsx, apps/web/src/features/stories/story-launch.css, apps/web/src/features/stories/stories-home-actions.tsx, apps/web/src/features/stories/stories-home-actions.test.tsx, apps/web/src/server/story-launch-capability.ts, apps/web/src/server/story-launch-capability.test.ts, apps/web/app/(authenticated)/stories/page.tsx, apps/web/app/(authenticated)/stories/launch/page.tsx, apps/web/src/features/stories/README.md, apps/web/app/README.md, STATUS.md, work/undertakings/storyteller-workshop/PROGRAM.md, work/changes/README.md, work/changes/ledger/2026-11.md. The open packet `work/changes/open/2026-11-21--wr08a-play-launch-surface/` moved to `work/changes/archive/2026-11/storyteller/2026-11-21--wr08a-play-launch-surface/`. Provider spend: no call. Launch HTTP endpoint NOT present. Browser click-through NOT RUN. Not on main.

@@ -1,0 +1,98 @@
+/* WR08A: prompt launch surface. Token block mirrors stories-library. */
+
+.story-launch {
+  --sl-ink: var(--ui-ink);
+  --sl-muted: var(--ui-muted);
+  --sl-quiet: #8a9690;
+  --sl-panel: #1a242c;
+  --sl-edge: var(--ui-border);
+  --sl-action: var(--ui-action);
+  --sl-focus: var(--ui-focus);
+  --sl-font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+  --sl-font-ui: 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem) 4rem;
+  color: var(--sl-ink);
+}
+
+.story-launch *,
+.story-launch *::before,
+.story-launch *::after {
+  box-sizing: border-box;
+}
+
+.story-launch__title {
+  margin: 0 0 0.5rem;
+  font: normal clamp(1.75rem, 4vw, 2.5rem) / 1.15 var(--sl-font-display);
+}
+
+.story-launch__lede {
+  margin: 0 0 1.5rem;
+  max-width: 34rem;
+  color: var(--sl-muted);
+  font: 1rem / 1.5 var(--sl-font-ui);
+}
+
+.story-launch__form {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.story-launch__field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.story-launch__label {
+  color: var(--sl-ink);
+  font: 600 0.92rem / 1.3 var(--sl-font-ui);
+}
+
+.story-launch__prompt,
+.story-launch__select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--sl-edge);
+  border-radius: 0.2rem;
+  background: var(--sl-panel);
+  color: var(--sl-ink);
+  font: 1rem / 1.45 var(--sl-font-ui);
+}
+
+.story-launch__prompt {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.story-launch__prompt:focus-visible,
+.story-launch__select:focus-visible {
+  outline: 2px solid var(--sl-focus);
+  outline-offset: 2px;
+}
+
+.story-launch__prompt:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.story-launch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+}
+
+.story-launch__status {
+  margin-top: 1rem;
+}
+
+@media (max-width: 720px) {
+  .story-launch {
+    max-width: none;
+    padding: 1.25rem 0.9rem 3rem;
+  }
+}

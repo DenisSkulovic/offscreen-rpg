@@ -12,6 +12,7 @@
 | `/sign-in` | [sign-in page](sign-in/page.tsx) | `sign-in-button` + `safe-entry-destination` | public entry; optional `?next=` allowlisted return; Better Auth `callbackURL` |
 | `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `src/features/stories/{live-story-list,draft-list}.tsx` | parallel drafts+stories Nest reads |
 | `/stories/new?id=UUID` | [(authenticated)/stories/new/page.tsx]((authenticated)/stories/new/page.tsx) | `src/features/stories/draft-editor.tsx` | server UUID/query normalization |
+| `/stories/launch` | [(authenticated)/stories/launch/page.tsx]((authenticated)/stories/launch/page.tsx) | `src/features/stories/story-launch-form.tsx` | `STORY_LAUNCH_ENABLED=true` only; otherwise redirect to `/stories/new`. Server render does not call the launch API |
 | `/stories/:id` | [(authenticated)/stories/[id]/page.tsx]((authenticated)/stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
 | `/stories/:id/preview` | [(authenticated)/stories/[id]/preview/page.tsx]((authenticated)/stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
 | `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `PlayQueryBoundary` + `PlayScene` | Nest read first (401/404/503 propagate), then seed Query + hydrate; `loading`/`error`/`not-found` |
