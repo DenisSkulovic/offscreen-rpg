@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { sceneCheckpointSchema } from '@offscreen/documents';
+import {
+  immediateActionPlanSchema,
+  situationAuthorizationSchema,
+} from '@offscreen/game/immediate-actions';
 import {
   assertV2PostStateMatches,
+  projectHistoricalSituationAuthorization,
+  projectV2HistoricalCampaign,
   SceneAfterStateError,
   toV2FictionalState,
   wrapValidatedDecisionPlan,
@@ -72,6 +80,95 @@ function minimalCampaign(
     worldConditions: [],
     ...overrides,
   };
+}
+
+function envelopeOfferWithNodes() {
+  return {
+    id: OFFER_ID,
+    source: 'test-offer',
+    meaning: 'choose',
+    payload: { revision: 1 },
+    nodes: [
+      {
+        id: 'continue-root',
+        parent: null,
+        label: 'Continue',
+        description: 'Keep working.',
+        action: {
+          kind: 'attempt' as const,
+          timing: { kind: 'finite' as const, fictionalSeconds: 1 },
+        },
+      },
+    ],
+  };
+}
+
+function testCampaignSettings() {
+  return campaignSettingsSchema.parse({
+    revision: 1,
+    creative: {
+      profile: { id: 'test-narrator', revision: 1 },
+      tone: 'A quay at dusk.',
+      emphasis: 'balanced',
+      surprises: 'occasional',
+      tags: [],
+      guidance: [],
+    },
+    pace: { kind: 'instant' },
+    locked: false,
+    rules: 'srd-5.2.1-subset.v1',
+    risk: 'nonlethal',
+  });
+}
+
+function minimalProcessPlan() {
+  return immediateActionPlanSchema.parse({
+    version: 1,
+    key: 'continue-over-time',
+    label: 'Continue over time',
+    intention: 'Keep working under the admitted terms.',
+    risk: null,
+    evidence: [],
+    requires: [],
+    resolution: {
+      kind: 'process',
+      reuse: 'once',
+      action: {
+        id: 'continue-over-time',
+        label: 'Continue over time',
+        description: 'Keep working under the admitted terms.',
+        requires: [],
+        capacity: 'primary',
+        process: {
+          kind: 'contribution.v1',
+          progressLabel: 'Progress',
+          requiredContribution: 1,
+          everyFictionalSeconds: 1,
+          attempt: {
+            check: {
+              rule: 'srd-5.2.1-subset.v1',
+              purpose: 'Continue the admitted work',
+              skill: null,
+              ability: 'wisdom',
+              dc: 10,
+              advantage: false,
+              disadvantage: false,
+              modifiers: [],
+            },
+            successContribution: 1,
+            failureContribution: 0,
+            successText: 'Progress is made.',
+            failureText: 'Time passes without progress.',
+          },
+        },
+        conditionPolicy: { kind: 'admission-only' },
+        occurrence: { kind: 'unbounded' },
+        completionFollowUp: 'quiet',
+        checks: [],
+        completion: { text: 'The work is complete.', effects: [] },
+      },
+    },
+  });
 }
 
 function emptyAfterState(
@@ -275,6 +372,216 @@ test('missing offer envelope metadata is state_not_representable', () => {
       assert.equal(error.code, 'state_not_representable');
       return true;
     },
+  );
+});
+
+test('none authorization round-trips through checkpoint capture and historical decode', () => {
+  const liveAuthorization = situationAuthorizationSchema.parse({
+    version: 2,
+    offerId: null,
+    activityAccess: { kind: 'none' },
+    preparedPlans: [],
+  });
+  const fictional = toV2FictionalState(
+    emptyAfterState({
+      campaign: minimalCampaign({ situationAuthorization: liveAuthorization }),
+    }),
+  );
+  assert.equal(fictional.mechanicsAbsent, false);
+  if (fictional.mechanicsAbsent) {
+    throw new Error('expected mechanics present');
+  }
+  assert.deepEqual(fictional.situationAuthorization.activityAccess, {
+    kind: 'none',
+  });
+  assert.deepEqual(fictional.situationAuthorization.preparedPlans, []);
+  assert.deepEqual(
+    projectHistoricalSituationAuthorization(fictional.situationAuthorization),
+    liveAuthorization,
+  );
+  const view = projectV2HistoricalCampaign(fictional, testCampaignSettings());
+  assert.deepEqual(view.activityAccess, liveAuthorization.activityAccess);
+});
+
+test('selected access and prepared process plans store versioned open payloads', () => {
+  const processPlan = minimalProcessPlan();
+  const liveAuthorization = situationAuthorizationSchema.parse({
+    version: 2,
+    offerId: OFFER_ID,
+    activityAccess: {
+      kind: 'selected',
+      actionKeys: ['continue-over-time'],
+    },
+    preparedPlans: [processPlan],
+  });
+  const fictional = toV2FictionalState(
+    emptyAfterState({
+      campaign: minimalCampaign({
+        offer: envelopeOfferWithNodes(),
+        situationAuthorization: liveAuthorization,
+      }),
+      gameOffers: [
+        {
+          id: OFFER_ID,
+          narrativeRevision: 1,
+          plans: [{ key: 'continue-over-time', label: 'Continue' }],
+        },
+      ],
+    }),
+  );
+  assert.equal(fictional.mechanicsAbsent, false);
+  if (fictional.mechanicsAbsent) {
+    throw new Error('expected mechanics present');
+  }
+  const checkpointAccess = fictional.situationAuthorization.activityAccess;
+  assert.notEqual((checkpointAccess as { kind?: string }).kind, 'none');
+  assert.equal((checkpointAccess as { version: number }).version, 1);
+  assert.deepEqual(
+    (checkpointAccess as { body: unknown }).body,
+    liveAuthorization.activityAccess,
+  );
+  assert.equal(fictional.situationAuthorization.preparedPlans.length, 1);
+  const checkpointPlan = fictional.situationAuthorization.preparedPlans[0];
+  assert.equal(checkpointPlan?.version, 1);
+  assert.deepEqual(checkpointPlan?.body, processPlan);
+  assert.deepEqual(
+    projectHistoricalSituationAuthorization(fictional.situationAuthorization),
+    liveAuthorization,
+  );
+  const view = projectV2HistoricalCampaign(fictional, testCampaignSettings());
+  assert.deepEqual(view.activityAccess, liveAuthorization.activityAccess);
+  const replay = toV2FictionalState(
+    emptyAfterState({
+      campaign: minimalCampaign({
+        offer: envelopeOfferWithNodes(),
+        situationAuthorization: liveAuthorization,
+      }),
+      gameOffers: [
+        {
+          id: OFFER_ID,
+          narrativeRevision: 1,
+          plans: [{ key: 'continue-over-time', label: 'Continue' }],
+        },
+      ],
+    }),
+  );
+  assertV2PostStateMatches(fictional, replay);
+  const staged = sceneCheckpointSchema.safeParse({
+    format: 'offscreen.scene-checkpoint.v2',
+    stateSchemaVersion: 2,
+    storyId: '11111111-1111-4111-8111-111111111111',
+    passageId: '22222222-2222-4222-8222-222222222222',
+    sceneSequence: 2,
+    transitionId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+    source: 'test.story03s.v1',
+    premise: null,
+    storyteller: null,
+    execution: null,
+    usagePolicy: null,
+    canon: { rootHash: null, rootRevision: 0 },
+    ancestor: { storyId: null, rootHash: null, rootRevision: null },
+    pins: {
+      worlds: [],
+      rules: null,
+      start: null,
+      storytellerProfile: null,
+    },
+    passage: {
+      response: null,
+      responseSource: null,
+      initialItems: null,
+      effects: [],
+      decisionPlan: null,
+      waitPlan: null,
+      controlRevision: 0,
+      content: { text: 'The road continues.' },
+      contentDocumentHash: null,
+      interaction: null,
+    },
+    fictionalState: fictional,
+  });
+  assert.equal(
+    staged.success,
+    true,
+    staged.success ? '' : JSON.stringify(staged.error.issues),
+  );
+});
+
+test('malformed wrapped situation authorization fails historical decode', () => {
+  const fictional = toV2FictionalState(
+    emptyAfterState({
+      campaign: minimalCampaign({
+        offer: envelopeOfferWithNodes(),
+        situationAuthorization: situationAuthorizationSchema.parse({
+          version: 2,
+          offerId: OFFER_ID,
+          activityAccess: {
+            kind: 'selected',
+            actionKeys: ['continue-over-time'],
+          },
+          preparedPlans: [minimalProcessPlan()],
+        }),
+      }),
+      gameOffers: [
+        {
+          id: OFFER_ID,
+          narrativeRevision: 1,
+          plans: [{ key: 'continue-over-time', label: 'Continue' }],
+        },
+      ],
+    }),
+  );
+  assert.equal(fictional.mechanicsAbsent, false);
+  if (fictional.mechanicsAbsent) {
+    throw new Error('expected mechanics present');
+  }
+  const badAccess = {
+    ...fictional,
+    situationAuthorization: {
+      ...fictional.situationAuthorization,
+      activityAccess: {
+        version: 1 as const,
+        body: { kind: 'selected', actionKeys: [] },
+      },
+    },
+  };
+  assert.throws(() =>
+    projectHistoricalSituationAuthorization(badAccess.situationAuthorization),
+  );
+  assert.throws(() =>
+    projectV2HistoricalCampaign(badAccess, testCampaignSettings()),
+  );
+
+  const badPlan = {
+    ...fictional,
+    situationAuthorization: {
+      ...fictional.situationAuthorization,
+      preparedPlans: [
+        {
+          version: 1 as const,
+          body: {
+            version: 1,
+            key: 'linger',
+            label: 'Linger',
+            intention: 'Wait and listen.',
+            risk: null,
+            evidence: [],
+            requires: [],
+            resolution: {
+              kind: 'automatic',
+              fictionalDurationSeconds: 5,
+              outcome: { text: 'Done.', effects: [] },
+            },
+          },
+        },
+      ],
+    },
+  };
+  assert.throws(() =>
+    projectHistoricalSituationAuthorization(badPlan.situationAuthorization),
+  );
+  assert.throws(() =>
+    projectV2HistoricalCampaign(badPlan, testCampaignSettings()),
   );
 });
 

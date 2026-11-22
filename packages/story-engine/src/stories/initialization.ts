@@ -41,10 +41,8 @@ import type {
 } from './scene-after-state';
 import {
   toV2FictionalState,
-  wrapVersionedOpenPayload,
   type SceneCheckpointV2FictionalState,
 } from './scene-checkpoint-v2';
-import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
 
 type InitializeStory = Readonly<{
   ownerId: string;
@@ -84,35 +82,15 @@ function openingPassage(args: {
   };
 }
 
-function checkpointDocumentSituationAuthorization(authorization: unknown) {
-  const parsed = situationAuthorizationSchema.parse(authorization);
-  return {
-    version: 2 as const,
-    offerId: parsed.offerId,
-    activityAccess:
-      parsed.activityAccess.kind === 'none'
-        ? parsed.activityAccess
-        : wrapVersionedOpenPayload(parsed.activityAccess),
-    preparedPlans: parsed.preparedPlans.map((plan) =>
-      wrapVersionedOpenPayload(plan),
-    ),
-  };
-}
-
-/** Matches `sceneCheckpointSchema` v2 encoding for live SQL after-states. */
+/**
+ * v2 document fictional state. Situation authorization is already the
+ * checkpoint representation from `toV2FictionalState`; parsing it again as
+ * live authorization would reject selected access and prepared plans.
+ */
 export function projectCheckpointV2FictionalState(
   afterState: SceneAfterState,
 ): SceneCheckpointV2FictionalState {
-  const base = toV2FictionalState(afterState);
-  if (base.mechanicsAbsent) {
-    return base;
-  }
-  return {
-    ...base,
-    situationAuthorization: checkpointDocumentSituationAuthorization(
-      base.situationAuthorization,
-    ),
-  };
+  return toV2FictionalState(afterState);
 }
 
 function openingCheckpointShell(

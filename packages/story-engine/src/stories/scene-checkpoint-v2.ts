@@ -360,6 +360,60 @@ function sortedItems(state: SceneAfterState) {
     }));
 }
 
+type SceneCheckpointSituationAuthorization = Extract<
+  SceneCheckpointV2FictionalState,
+  { mechanicsAbsent: false }
+>['situationAuthorization'];
+
+/** Live adoption boundary: wrap open-work payloads for checkpoint storage. */
+export function projectCheckpointSituationAuthorization(
+  live: unknown,
+): SceneCheckpointSituationAuthorization {
+  const parsed = situationAuthorizationSchema.parse(live);
+  return {
+    version: 2,
+    offerId: parsed.offerId,
+    activityAccess:
+      parsed.activityAccess.kind === 'none'
+        ? parsed.activityAccess
+        : wrapVersionedOpenPayload(parsed.activityAccess),
+    preparedPlans: parsed.preparedPlans.map((plan) =>
+      wrapVersionedOpenPayload(plan),
+    ),
+  };
+}
+
+/** Historical read boundary: unwrap checkpoint payloads back into live shape. */
+function checkpointActivityAccessIsNone(
+  activityAccess: SceneCheckpointSituationAuthorization['activityAccess'],
+): activityAccess is { kind: 'none' } {
+  return (
+    typeof activityAccess === 'object' &&
+    activityAccess !== null &&
+    'kind' in activityAccess &&
+    activityAccess.kind === 'none'
+  );
+}
+
+export function projectHistoricalSituationAuthorization(
+  checkpoint: SceneCheckpointSituationAuthorization,
+): z.infer<typeof situationAuthorizationSchema> {
+  const activityAccess = checkpointActivityAccessIsNone(
+    checkpoint.activityAccess,
+  )
+    ? checkpoint.activityAccess
+    : unwrapVersionedOpenPayload(checkpoint.activityAccess);
+  const preparedPlans = checkpoint.preparedPlans.map((plan) =>
+    unwrapVersionedOpenPayload(plan),
+  );
+  return situationAuthorizationSchema.parse({
+    version: checkpoint.version,
+    offerId: checkpoint.offerId,
+    activityAccess,
+    preparedPlans,
+  });
+}
+
 function presentMechanicsFictionalState(
   state: SceneAfterState,
   campaign: SceneAfterStateCampaign,
@@ -396,7 +450,9 @@ function presentMechanicsFictionalState(
       campaign.activeActionOperationId == null
         ? null
         : requireUuid(campaign.activeActionOperationId),
-    situationAuthorization: campaign.situationAuthorization,
+    situationAuthorization: projectCheckpointSituationAuthorization(
+      campaign.situationAuthorization,
+    ),
     worldConditions: campaign.worldConditions,
     activeActivities: mapActiveActivities(state),
     worldObligations: mapWorldObligations(state),
@@ -729,7 +785,7 @@ export function projectV2HistoricalCampaign(
   >,
   settings: CampaignSettings,
 ) {
-  const authorization = situationAuthorizationSchema.parse(
+  const authorization = projectHistoricalSituationAuthorization(
     fictionalState.situationAuthorization,
   );
   const commitments = fictionalState.activeActivities

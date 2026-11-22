@@ -1,6 +1,6 @@
 # STORY03S | Make v2 consequence checkpoints represent selected situation authorization
 
-**State: READY.**  
+**State: Done (2026-11-22).** Joined to `undertaking/storyteller-workshop`. Live TURN03 scene-2 rerun is still the operational unblock and was not run here.  
 **Kind:** implementation · **Profile:** PATCH/STATE · **Reference:** `undertaking/storyteller-workshop`  
 **Baseline:** `87d0a86fd04dcd8cea5c5e6cc69075ab88bd6753`  
 **Unblocks:** TURN03 `ga-scene-publication`.  
@@ -67,3 +67,14 @@ No DB migration, no Worker/GA workflow change, no TURN03 harness edit, no provid
 - malformed wrapped access or prepared plan still fails closed;
 - existing scene-checkpoint-v2 tests and STORY03 causal publication tests remain green;
 - TURN03 reruns a fresh mechanics-enabled story and must advance to scene 2 before this Change is considered operationally proven.
+
+## Reconciliation
+
+| Claim | Disposition | Evidence |
+| --- | --- | --- |
+| Checkpoint schema stays versioned open-work | unchanged | `sceneCheckpointSituationAuthorizationSchema` not edited |
+| Live selected access and prepared plans are representable | changed in `scene-checkpoint-v2.ts` | `scene-checkpoint-v2.test.js` 8/8, including `sceneCheckpointSchema` accept and historical round-trip |
+| Opening document projection must not re-parse checkpoint auth as live | changed in `initialization.ts` | `projectCheckpointV2FictionalState` now returns `toV2FictionalState` |
+| Product/technical authority | unchanged because this restores the already selected checkpoint representation | no product page edit |
+| STORY03 causal suite | not a new failure of this projection | 0/7 on disposable `offscreen_auth_test`; golden path `checkpoint_state_mismatch` from `lockedCheckpointMatches` rejecting non-v1; later cases time out in opening preview. Package `tsc` still fails on unrelated TURN03/WR10 tests |
+| TURN03 mechanics scene 2 | not run | no paid call; existing TURN03 chat rebuilds images |
