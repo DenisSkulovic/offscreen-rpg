@@ -290,3 +290,5 @@ Review archive candidates with `pnpm repo:retirement` (read-only). No automated 
 [HR01 API readable route owners](open/2026-11-22--hr01-api-route-ownership-readability/CHANGE.md) · [HR02 Web feature navigation](open/2026-11-22--hr02-web-player-feature-readability/CHANGE.md) · [HR03 DB schema/SQL atlas](open/2026-11-22--hr03-db-schema-and-sql-navigation/CHANGE.md). These are **near-term conditional** packets, not automatic selections under `work/QUEUE.md` and not proof of implementation. [Dependency, custody and launch checks](../undertakings/storyteller-workshop/NEXT-WAVE.md).
 
 **TURN03 blocker (2026-11-22):** [FORK01 historical authorization reconstruction](archive/2026-11/data/2026-11-22--fork01-historical-situation-authorization/CHANGE.md) is Done for the Story Engine projection. TURN03 remains blocked on the live kind fork replay and recovery gates.
+
+**2026-11-22 TURN03 systemic repair:** [FORK02 v2 checkpoint round-trip fidelity](open/2026-11-22--fork02-v2-checkpoint-roundtrip-fidelity/CHANGE.md) is commissioned, source-mapped, and test-first. Preserve null vs empty plans and all subsequent checkpoint fields. Live kind acceptance remains TURN03.
