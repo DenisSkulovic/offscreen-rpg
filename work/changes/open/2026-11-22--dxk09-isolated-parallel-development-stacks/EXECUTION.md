@@ -14,6 +14,10 @@
 
 From canonical worktree realpath resolve stable assigned slot ID in atomic user-local registry. Allocate new ID from validated DNS-safe collision-checked unbounded sequence/UUID encoding; derive bounded resource names and labels. Reserve disjoint port bundles from validated finite loopback range with atomic conflict detection; check OS bind, preserving assigned ports on restart when possible. Store cluster, worktree, ports, process start identity, namespace, resource UIDs and lease. On stale process, reconcile against K8s resource owner labels before reclaim. A mismatch refuses. Run identity allocation for at least 1, 4, 5, 10, 100 synthetic worktrees without adding config cases. **No extra always-on coordinator.**
 
+## Post-foundation actual image proof
+
+At undertaking `ca3bd03d`, the corrected Dockerfile-specific ignore was exercised in a real successful 123s BuildKit dev image build, transferring 9.75MB in 2.7s; Game Authority CommonJS output and in-image dependency were checked. This retires the first clean-context image compilation question but **does not prove** watcher-loaded process updates or multi-worktree Kubernetes behavior. Do not repeat expensive clean builds as an automatic Cursor task without a changed build input or specific regression hypothesis.
+
 ## C. Dev cluster and backing tenants (planner gate before T03)
 
 Create distinct `kind-offscreen-dev` with pinned loopback-only API and scoped dev-only bootstrap; never pass a dev context into unmodified `infra/kubernetes/lab/lib.sh` consumers because these pin `kind-offscreen-lab`. One shared CNPG service, S3-compatible object storage and Temporal service. Review actual image pins/schema bootstrap, PVCs and resource consumption before adoption; avoid duplicate operator installation and environment-changing default `kubectl` context. Note Temporal uses its **own** Postgres persistence in the current lab, separate from app CNPG.
@@ -25,6 +29,10 @@ For each slot, create dedicated app database and login using bootstrap/admin cre
 Create Temporal namespace with the already-used `temporal operator namespace describe/create` pattern in `infra/kubernetes/lab/temporal/namespace-job.yaml`, unique queue names and workers pointing only at that namespace. Treat Temporal server auth limitations as accidental isolation and validate against misconfigured worker routing. No cross-slot worker sharing or unscoped workflow IDs.
 
 Provisioning is idempotent and recoverable: validate owner labels/IDs before adopting existing resources; retry a partially completed slot without modifying other slots. No implicit teardown, no cluster-wide mutating fallback, no app credentials with tenant-admin privilege.
+
+## Decided narrow T04a config boundary
+
+The currently shared `127.0.0.1` host means cookies from different ports can collide. To preserve existing single-stack/release behavior, add validated *optional* `BETTER_AUTH_COOKIE_PREFIX` to `readAuthConfig` and thread it to `authOptions().advanced.cookiePrefix` **only if specified**. Future slot rendering derives prefix `offscreen-dev-<allocatedId>`, with byte/length/character validation. No per-port cookie assumption, no auth bypass, no release default change. Perform negative config tests and separate two-port real OAuth verification later as T04b. The code-side cookie-prefix contract is Ready; full T04 is not.
 
 ## D. App rendering, Tilt and Auth (planner gate before T04)
 
