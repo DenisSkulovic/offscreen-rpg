@@ -12,6 +12,7 @@
 
 | Change | Why it remains open |
 | --- | --- |
+| [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
 | [WR10 private Writer protocol](2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) | Commissioned wave / GA–Worker provider boundary |
 | [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |
 | [TURN03 cold distributed game proof](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Commissioned proof, true cold-kind gates unresolved |
