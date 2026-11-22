@@ -1,12 +1,12 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED. TURN03 stays open. No gate is PASS.** Undertaking HEAD is `e57d8ce815dcfb89245866776006134442011945`, which includes WR10B. The running lab images predate that commit. Rebuilding them fails before any cold trace.
+**State: BLOCKED. TURN03 stays open. No gate is PASS.** Current HEAD is `2e7e59ff7f938a29e8579c5e30a9a26d0b534257`, which contains the lockfile fix `ac277ba5b1dba0f0e84e9826b3aa3c5d0ec908db`. Rebuilding the lab images still fails before any cold trace.
 
 - Command: `DOCKER=$HOME/.local/bin/docker ./infra/kubernetes/lab/app-release/build.sh` and the same for `build-worker.sh`.
-- Both stop in `pnpm install --frozen-lockfile` (`Dockerfile.api` and `Dockerfile.worker`) with `ERR_PNPM_OUTDATED_LOCKFILE`.
-- Cause: `apps/api/package.json` no longer depends on `@offscreen/lab-support@workspace:*`, and `pnpm-lock.yaml` still lists it.
+- Both stop in `pnpm install --frozen-lockfile` with `ERR_PNPM_OUTDATED_LOCKFILE`.
+- Cause: `tools/api-lab/package.json` exists and declares twelve dependencies, including `@offscreen/api` and `@offscreen/lab-support`. `pnpm-lock.yaml` has no `tools/api-lab` importer.
 - Gate blocked: `cluster-real-app`. The joined Writer code is not in the pods, so the later gates were not run.
-- Fixing the lockfile or `apps/api/package.json` is outside TURN03’s write set. No provider call was sent. The paid opening button was not pressed.
+- Updating `pnpm-lock.yaml` is outside TURN03’s write set. No provider call was sent. The paid opening button was not pressed.
 
 The public `/demo` page is a browser-only excerpt and is not this proof. Overall remains `BLOCKED`. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
