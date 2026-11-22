@@ -1,5 +1,19 @@
 # Changes | active catalog
 
+## External-provider usage, costs, reconciliation and reliability (4 more, 2026-11-22)
+
+The [owner's minutes](../sessions/2026-11-22.md#14-external-provider-economics-usage-delayed-reconciliation-model-outages-and-multi-product-financial-integrity) add four **PROPOSED / NOT CURSOR-READY** Changes, taking the 31 named brainstorm outcomes to **35**. The existing Writer reserve/settlement/usage-window SQL is not a provider billing reconciliation engine. These records separate provider-native money evidence, multi-provider metering, operational reliability and internal investigations.
+
+| Change | Outcome | Boundary / prerequisite |
+| --- | --- | --- |
+| [FIN01 provider reconciliation](open/2026-11-22--fin01-provider-usage-reconciliation-ledger/CHANGE.md) | Import delayed/missing/corrected usage and reconcile original attempt to provider request/invoice totals, retaining unresolved variances | After WR10/WR11 custody, keep original funding ledger authoritative; no assumed OpenRouter billing API |
+| [FIN02 multi-provider metering](open/2026-11-22--fin02-provider-cost-adapter-contracts/CHANGE.md) | Typed metering, maximum-charge and normalized financial evidence for token and future image/unit/duration suppliers | No image-generation implementation, no new billing ledger; exact units and route capabilities |
+| [PROV01 provider failure/recovery](open/2026-11-22--prov01-provider-health-outage-and-routing/CHANGE.md) | Health, 429/outages, model retirement, bounded backoff, safe unknown-send and fresh routing | CFG01/CFG03 + Writer custody; no paid health probes or unauthorized fallback |
+| [FIN03 internal spend investigation](open/2026-11-22--fin03-internal-spend-controls-and-investigation/CHANGE.md) | Admin/Finance authorized usage vs supplier cost, unreconciled charges, alerts, discrepancy/incident history | FIN01/FIN02 + staff permissions; not a player dashboard, checkout or unrestricted customer data API |
+
+**Financial invariant:** calculate/reserve worst-case exposure before possible paid dispatch; delayed provider usage must not retroactively grant availability or silently move an in-flight charge to a different payer/tier. Provider and internal evidence may remain temporarily inconsistent; a “last cent” reconciliation means every discrepancy must be **matched or explicitly accounted for as unresolved/unallocatable**, not that a per-request cent can be fabricated from aggregate provider invoices. Use exact money units, preserve original evidence and compensating adjustments. **No spending authorized** by a provider packet or a configured ceiling; $0 remains the default for experiments. No live provider calls, DB changes or implementation were carried out.
+
+
 ## Production-minded database and data lifecycle (3 more, 2026-11-22)
 
 The owner's [same-day session minutes](../sessions/2026-11-22.md#13-owner-requests-production-minded-database-and-complete-data-lifecycle-operations) add three **PROPOSED / NOT CURSOR-READY** Changes, extending the brainstorm coverage from 28 to **31 named outcomes**. These distinguish *schema evolution*, *routine performance/maintenance*, *HA failover* and *whole-system disaster recovery*. A migration Job and a single-primary Pod-restart test do not prove any of the latter three.
