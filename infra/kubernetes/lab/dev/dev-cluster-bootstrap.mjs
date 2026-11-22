@@ -73,13 +73,26 @@ export function assessDevCluster(probe, options = {}) {
   }
   const cluster = (probe.clusters ?? []).find((item) => item.name === DEV_KIND_CLUSTER_NAME);
   const context = (probe.contexts ?? []).find((item) => item.name === DEV_KIND_CONTEXT_NAME);
-  if (cluster && !ownsDevResource(cluster)) {
+  const clusterOwnership = classifyOwnership(cluster);
+  if (clusterOwnership === 'foreign') {
     refusals.push({ id: 'foreign-cluster', detail: `${DEV_KIND_CLUSTER_NAME} exists without dev ownership` });
+  }
+  if (clusterOwnership === 'unknown') {
+    refusals.push({
+      id: 'ownership-unknown',
+      detail: `${DEV_KIND_CLUSTER_NAME} exists but its owner label was not verified`,
+    });
   }
   if (context && (context.cluster !== DEV_KIND_CLUSTER_NAME || !ownsDevResource(context))) {
     refusals.push({
       id: 'foreign-context',
       detail: `${DEV_KIND_CONTEXT_NAME} does not point at the owned dev cluster`,
+    });
+  }
+  if ((probe.timedOutCommands ?? []).length > 0) {
+    refusals.push({
+      id: 'command-timeout',
+      detail: `read-only command timed out: ${probe.timedOutCommands.join(', ')}`,
     });
   }
   if (
@@ -104,6 +117,19 @@ function ownsDevResource(resource) {
 }
 
 /**
+ * Missing or unverified owner evidence is unknown. A different owner is foreign.
+ * @param {{ owner?: string, uid?: string, ownership?: string } | undefined} resource
+ * @returns {'absent' | 'owned' | 'foreign' | 'unknown'}
+ */
+function classifyOwnership(resource) {
+  if (!resource) return 'absent';
+  if (resource.ownership === 'unknown' || resource.owner == null || resource.owner === '') {
+    return 'unknown';
+  }
+  return ownsDevResource(resource) ? 'owned' : 'foreign';
+}
+
+/**
  * @param {object} probe
  * @param {{ portRange?: { start: number, end: number } }} [options]
  */
@@ -121,7 +147,16 @@ export function planDevCluster(probe, options = {}) {
     currentContext: probe.currentContext ?? null,
     releaseCluster: RELEASE_KIND_CLUSTER_NAME,
     releaseContext: RELEASE_KIND_CONTEXT_NAME,
-    releasePresent: assessment.releasePresent,
+    releasePresent:
+      probe.releaseClusterObserved === undefined
+        ? assessment.releasePresent
+        : probe.releaseClusterObserved,
+    apiServerPortStatus: 'candidate-unreserved',
+    portOwnership: 'recheck-and-bind-at-create',
+    hostMemoryMiB: probe.memoryMiB ?? null,
+    memAvailableMiB: probe.capacity?.memAvailableMiB ?? probe.memoryMiB ?? null,
+    memTotalMiB: probe.capacity?.memTotalMiB ?? null,
+    timedOutCommands: probe.timedOutCommands ?? [],
     refusals: assessment.refusals,
     actions: [],
   };
@@ -135,11 +170,15 @@ export function statusDevCluster(probe) {
   const namespace = (probe.namespaces ?? []).find(
     (item) => item.cluster === DEV_KIND_CLUSTER_NAME && item.name === DEV_BASELINE_NAMESPACE,
   );
+  const kindTimedOut = (probe.timedOutCommands ?? []).includes('kind');
   return {
     mode: 'status',
     readOnly: true,
-    cluster: !cluster ? 'absent' : ownsDevResource(cluster) ? 'owned' : 'foreign',
-    namespace: !namespace ? 'absent' : ownsDevResource(namespace) ? 'owned' : 'foreign',
+    cluster: classifyOwnership(cluster) === 'absent' && kindTimedOut ? 'unknown' : classifyOwnership(cluster),
+    namespace:
+      classifyOwnership(namespace) === 'absent' && kindTimedOut
+        ? 'unknown'
+        : classifyOwnership(namespace),
     currentContext: probe.currentContext ?? null,
     actions: [],
   };
@@ -198,32 +237,10 @@ export function ensureDevCluster(probe, options = {}) {
 
 function readProbeFromEnv(env) {
   const raw = env.OFFSCREEN_DEV_CLUSTER_PROBE;
-  if (!raw) {
-    return {
-      dockerAvailable: false,
-      kindAvailable: false,
-      memoryMiB: 0,
-      clusters: [],
-      contexts: [],
-      namespaces: [],
-      listeningPorts: [],
-      currentContext: null,
-    };
-  }
+  if (!raw) return null;
   return JSON.parse(raw);
 }
 
-if (process.argv[1] && process.argv[1].endsWith('dev-cluster-bootstrap.mjs')) {
-  const command = process.argv[2] ?? 'plan';
-  if (command === 'ensure') {
-    process.stderr.write('refusing live ensure: T03a does not authorize cluster creation\n');
-    process.exitCode = 2;
-  } else if (command !== 'plan' && command !== 'status') {
-    process.stderr.write('usage: dev-cluster-bootstrap.mjs <plan|status>\n');
-    process.exitCode = 2;
-  } else {
-    const probe = readProbeFromEnv(process.env);
-    const result = command === 'plan' ? planDevCluster(probe) : statusDevCluster(probe);
-    process.stdout.write(`${JSON.stringify(result)}\n`);
-  }
+export function readInjectedDevClusterProbe(env) {
+  return readProbeFromEnv(env);
 }

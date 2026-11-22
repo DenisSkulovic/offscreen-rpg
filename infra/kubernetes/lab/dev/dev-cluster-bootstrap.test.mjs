@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { spawnSync } from 'node:child_process';
+import { collectDevClusterProbe, parseLoopbackListenPorts, parseMeminfoMiB } from './dev-cluster-host-probe.mjs';
 import {
   DEV_API_PORT_RANGE,
   DEV_BASELINE_NAMESPACE,
@@ -204,8 +205,124 @@ test('a partial create refuses without deleting the release cluster or the new c
   );
 });
 
+test('unverified ownership stays unknown and is not treated as owned', () => {
+  const status = statusDevCluster({
+    ...readyProbe,
+    clusters: [
+      ...readyProbe.clusters,
+      { name: DEV_KIND_CLUSTER_NAME, owner: null, ownership: 'unknown' },
+    ],
+  });
+  assert.equal(status.cluster, 'unknown');
+  const ensured = ensureDevCluster(
+    {
+      ...readyProbe,
+      clusters: [
+        ...readyProbe.clusters,
+        { name: DEV_KIND_CLUSTER_NAME, owner: null, ownership: 'unknown' },
+      ],
+    },
+    { authorize: true },
+  );
+  assert.equal(ensured.ok, false);
+  assert.ok(ensured.refusals.some((refusal) => refusal.id === 'ownership-unknown'));
+  assert.equal(ensured.apiServerPortStatus, 'candidate-unreserved');
+  assert.deepEqual(ensured.actions, []);
+});
+
+function commandResult(overrides) {
+  return {
+    command: 'docker',
+    ok: true,
+    missing: false,
+    timedOut: false,
+    stdout: '',
+    stderr: '',
+    ...overrides,
+  };
+}
+
+test('host probe reports unreachable docker, missing kind, foreign ownership, and timeouts', () => {
+  const calls = [];
+  const probe = collectDevClusterProbe({
+    readMeminfo: () => 'MemTotal:     8388608 kB\nMemAvailable:  1048576 kB\n',
+    readTcp: () => 'sl local_address rem_address st\n0: 0100007F:1F90 00000000:0000 0A\n',
+    run(command, args) {
+      calls.push([command, ...args]);
+      if (command === 'docker') return commandResult({ command, ok: false, timedOut: true });
+      if (command === 'kind') return commandResult({ command, ok: false, missing: true });
+      if (command === 'kubectl' && args[0] === 'config' && args[1] === 'current-context') {
+        return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+      }
+      if (command === 'kubectl') return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+      return commandResult({ command, ok: false });
+    },
+  });
+  assert.equal(probe.dockerAvailable, false);
+  assert.equal(probe.kindAvailable, false);
+  assert.deepEqual(probe.timedOutCommands, ['docker']);
+  assert.equal(probe.capacity.memAvailableMiB, 1024);
+  assert.equal(probe.listeningPorts.includes(8080), true);
+  assert.equal(probe.currentContext, 'kind-offscreen-lab');
+  assert.equal(calls.some((call) => call.includes('use-context')), false);
+  const plan = planDevCluster(probe);
+  assert.ok(plan.refusals.some((refusal) => refusal.id === 'command-timeout'));
+  assert.ok(plan.refusals.some((refusal) => refusal.id === 'docker-unavailable'));
+  assert.ok(plan.refusals.some((refusal) => refusal.id === 'kind-unavailable'));
+  assert.equal(plan.apiServerPortStatus, 'candidate-unreserved');
+  assert.equal(plan.releasePresent, null);
+  assert.equal(statusDevCluster({ ...probe, timedOutCommands: ['kind'] }).cluster, 'unknown');
+});
+
+test('a same-name cluster without a verified label is unknown, and a foreign label is foreign', () => {
+  const unknown = collectDevClusterProbe({
+    readMeminfo: () => 'MemAvailable: 8388608 kB\nMemTotal: 8388608 kB\n',
+    readTcp: () => '',
+    run(command, args) {
+      if (command === 'docker') return commandResult({ command, stdout: '29.9.3\n' });
+      if (command === 'kind') return commandResult({ command, stdout: 'offscreen-dev\noffscreen-lab\n' });
+      if (command === 'kubectl' && args.includes('current-context')) {
+        return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+      }
+      if (command === 'kubectl' && args[0] === 'config') {
+        return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+      }
+      return commandResult({ command, ok: false });
+    },
+  });
+  const dev = unknown.clusters.find((cluster) => cluster.name === 'offscreen-dev');
+  assert.equal(dev.ownership, 'unknown');
+  assert.equal(unknown.releaseClusterObserved, true);
+  assert.equal(statusDevCluster(unknown).cluster, 'unknown');
+
+  const foreign = collectDevClusterProbe({
+    readMeminfo: () => 'MemAvailable: 8388608 kB\nMemTotal: 8388608 kB\n',
+    readTcp: () => '',
+    run(command, args) {
+      if (command === 'docker') return commandResult({ command, stdout: '29.9.3\n' });
+      if (command === 'kind') return commandResult({ command, stdout: 'offscreen-dev\n' });
+      if (command === 'kubectl' && args.includes('get')) {
+        return commandResult({
+          command,
+          stdout: JSON.stringify({
+            metadata: { labels: { 'offscreen.dev/owner': 'someone-else' }, uid: 'uid-1' },
+          }),
+        });
+      }
+      if (command === 'kubectl' && args.includes('current-context')) {
+        return commandResult({ command, stdout: 'kind-offscreen-dev\n' });
+      }
+      return commandResult({ command, stdout: 'kind-offscreen-dev\n' });
+    },
+  });
+  assert.equal(foreign.clusters[0].ownership, 'foreign');
+  assert.equal(statusDevCluster(foreign).cluster, 'foreign');
+  assert.equal(parseLoopbackListenPorts('').length, 0);
+  assert.equal(parseMeminfoMiB('').memAvailableMiB, null);
+});
+
 test('the CLI plans from an injected probe and refuses live ensure', () => {
-  const script = join(here, 'dev-cluster-bootstrap.mjs');
+  const script = join(here, 'dev-cluster-bootstrap-cli.mjs');
   const plan = spawnSync(process.execPath, [script, 'plan'], {
     encoding: 'utf8',
     env: { ...process.env, OFFSCREEN_DEV_CLUSTER_PROBE: JSON.stringify(readyProbe) },
