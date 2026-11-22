@@ -524,6 +524,43 @@ export function ensureDevTemporal(probe, options = {}) {
   return { ...plan, mode: 'ensure', readOnly: false, ok: true, mutated: true, manifest: undefined, actions };
 }
 
+function kubectlSample(deps, args) {
+  return deps.run('kubectl', ['--context', DEV_TEMPORAL_CONTEXT, '-n', DEV_TEMPORAL_NAMESPACE, ...args]).stdout?.trim() ?? '';
+}
+
+export function waitForDevTemporalSchema(deps) {
+  const sleep = deps.sleep ?? (() => {});
+  const now = deps.now ?? Date.now;
+  const deadline = now() + (deps.readinessTimeoutMs ?? 360000);
+  let postgresReady = '';
+  let schemaSucceeded = '';
+  let schemaFailed = '';
+  while (now() <= deadline) {
+    postgresReady = kubectlSample(deps, ['get', 'deploy', 'temporal-postgres', '-o', 'jsonpath={.status.availableReplicas}']);
+    schemaSucceeded = kubectlSample(deps, ['get', 'job', DEV_TEMPORAL_SCHEMA_JOB, '-o', 'jsonpath={.status.succeeded}']);
+    schemaFailed = kubectlSample(deps, ['get', 'job', DEV_TEMPORAL_SCHEMA_JOB, '-o', 'jsonpath={.status.failed}']);
+    if (Number(postgresReady) >= 1 && schemaSucceeded === '1') return { ok: true, postgresReady, schemaSucceeded, schemaFailed };
+    if (Number(schemaFailed) > 0) return { ok: false, postgresReady, schemaSucceeded, schemaFailed };
+    if (!deps.sleep || now() >= deadline) break;
+    sleep(5000);
+  }
+  return { ok: false, postgresReady, schemaSucceeded, schemaFailed };
+}
+
+export function waitForDevTemporalServer(deps) {
+  const sleep = deps.sleep ?? (() => {});
+  const now = deps.now ?? Date.now;
+  const deadline = now() + (deps.readinessTimeoutMs ?? 360000);
+  let availableReplicas = '';
+  while (now() <= deadline) {
+    availableReplicas = kubectlSample(deps, ['get', 'deploy', 'temporal-server', '-o', 'jsonpath={.status.availableReplicas}']);
+    if (Number(availableReplicas) >= 1) return { ok: true, availableReplicas };
+    if (!deps.sleep || now() >= deadline) break;
+    sleep(5000);
+  }
+  return { ok: false, availableReplicas };
+}
+
 function parts() {
   return renderDevTemporal().split('---').map((part) => part.trim()).filter(Boolean);
 }
@@ -559,10 +596,10 @@ export function executeAuthorizedDevTemporal(deps) {
       continue;
     }
     if (action.op === 'verify-schema') {
-      const checked = deps.run('kubectl', ['--context', DEV_TEMPORAL_CONTEXT, '-n', DEV_TEMPORAL_NAMESPACE, 'get', 'job', DEV_TEMPORAL_SCHEMA_JOB, '-o', 'jsonpath={.status.succeeded}']);
-      completed.push({ op: 'verify-schema', context: DEV_TEMPORAL_CONTEXT });
-      if (!checked.ok || checked.stdout?.trim() !== '1') {
-        return { ...again, ok: false, mutated: completed.some((item) => item.op === 'create-secret' || item.op === 'apply-postgres' || item.op === 'create-schema-job'), refusals: [{ id: 'schema-not-ready', detail: 'schema Job has not succeeded; the server was not applied and the Job was not deleted' }], actions: completed };
+      const checked = waitForDevTemporalSchema(deps);
+      completed.push({ op: 'verify-schema', context: DEV_TEMPORAL_CONTEXT, postgresReady: checked.postgresReady, schemaSucceeded: checked.schemaSucceeded });
+      if (!checked.ok) {
+        return { ...again, ok: false, mutated: completed.some((item) => item.op === 'create-secret' || item.op === 'apply-postgres' || item.op === 'create-schema-job'), refusals: [{ id: 'schema-not-ready', detail: 'PostgreSQL or the schema Job is not ready; the server was not applied and the Job was not deleted' }], actions: completed };
       }
       continue;
     }
@@ -580,6 +617,13 @@ export function executeAuthorizedDevTemporal(deps) {
     completed.push({ op: action.op, context: DEV_TEMPORAL_CONTEXT });
     if (!applied.ok) {
       return { ...again, ok: false, mutated: true, refusals: [{ id: `${action.op}-failed`, detail: 'owned secret and PVC were not deleted' }], actions: completed };
+    }
+    if (action.op === 'apply-server') {
+      const server = waitForDevTemporalServer(deps);
+      completed.push({ op: 'verify-server', context: DEV_TEMPORAL_CONTEXT, availableReplicas: server.availableReplicas });
+      if (!server.ok) {
+        return { ...again, ok: false, mutated: true, refusals: [{ id: 'server-not-ready', detail: 'Temporal server did not become available; owned data was not deleted' }], actions: completed };
+      }
     }
   }
   const mutating = new Set(['ensure-namespace', 'create-secret', 'apply-postgres', 'create-schema-job', 'apply-server']);

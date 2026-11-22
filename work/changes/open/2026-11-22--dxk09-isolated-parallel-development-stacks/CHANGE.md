@@ -1,6 +1,6 @@
 # DXK09 | Reliable, elastic and isolated developer environments
 
-**State: T03b-1a installed `dev-pg`. T03b-1b installed SeaweedFS. T03b-1c renders the release Temporal PostgreSQL startup script, dynamic config, and schema Job, and adds a read-only host probe. Live Temporal installation is not authorized. T03b-2, T04b, T05 and T07 remain held.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
+**State: T03b-1a installed `dev-pg`. T03b-1b installed SeaweedFS. T03b-1c installed owned Temporal into `kind-offscreen-dev`: PostgreSQL, one completed schema Job, and Temporal server 1.32.2. No disposable workflow runner exists for this namespace. T03b-2, T04b, T05 and T07 remain held.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
 
 ## Problem and goal
 

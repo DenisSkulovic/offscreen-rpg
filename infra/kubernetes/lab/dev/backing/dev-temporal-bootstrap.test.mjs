@@ -130,7 +130,11 @@ test('execution omits the password from the receipt and the CLI refuses live ens
     generatePassword: () => 'temporal-password-value',
     run(_command, args, options = {}) {
       assert.equal(args[1], DEV_TEMPORAL_CONTEXT);
-      return { ok: true, stdout: args.includes('jsonpath={.status.succeeded}') ? '1' : options.input ?? '' };
+      const joined = args.join(' ');
+      if (joined.includes('availableReplicas')) return { ok: true, stdout: '1' };
+      if (joined.includes('status.succeeded')) return { ok: true, stdout: '1' };
+      if (joined.includes('status.failed')) return { ok: true, stdout: '0' };
+      return { ok: true, stdout: options.input ?? '' };
     },
   });
   assert.equal(result.ok, true);
@@ -141,7 +145,7 @@ test('execution omits the password from the receipt and the CLI refuses live ens
     env: { ...process.env, OFFSCREEN_DEV_TEMPORAL_ENSURE: 'authorized', OFFSCREEN_DEV_TEMPORAL_PROBE: JSON.stringify(ready), OFFSCREEN_DEV_TEMPORAL_PROBE_MODE: 'test' },
   });
   assert.equal(ensure.status, 2);
-  assert.match(ensure.stderr, /cannot authorize mutation/);
+  assert.match(ensure.stderr, /injected probe cannot authorize mutation/);
   const injectedPlan = spawnSync(process.execPath, [script, 'plan'], {
     encoding: 'utf8',
     env: { ...process.env, OFFSCREEN_DEV_TEMPORAL_PROBE: JSON.stringify(ready) },
