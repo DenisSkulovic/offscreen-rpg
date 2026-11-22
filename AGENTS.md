@@ -2,6 +2,8 @@
 
 **Identify the actual repository, branch, HEAD and scope before work.** Follow this file first; its links identify the owners, not optional competing rulebooks. Do not assume `main`, infer permission from a proposal, or claim to have inspected inaccessible material.
 
+**Change folder lifecycle (2026-11-22):** [Backlog](work/changes/backlog/README.md) is for future/deferred Changes, grouped by domain; [open](work/changes/README.md) is current/near-term and unresolved partially executed Changes; [archive](work/changes/archive/README.md) is terminal reconciled work. Never treat a Proposed backlog packet as Cursor-ready or create every future idea in open. Recheck source at promotion and repair links.
+
 ## First reads, by role
 
 - **Everyone:** [WORKFLOW.md](WORKFLOW.md) is the lifecycle map; [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) routes new/moved/retired artifacts. [STATUS.md](STATUS.md) shows demonstrated reality; [work/QUEUE.md](work/QUEUE.md) is the only global current-work selector. The owner may explicitly commission a different independent Change without updating that selector.

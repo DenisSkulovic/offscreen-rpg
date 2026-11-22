@@ -1,5 +1,7 @@
 # ChatGPT | architecture planning and Cursor handoffs
 
+**Change-placement gate:** Future named outcomes belong in the categorized [Change backlog](work/changes/backlog/README.md), not automatically in \`work/changes/open/\`. Only currently commissioned/next-days or actively unresolved work stays open. A backlog proposal is not source-ready merely because it has TASKS/PROOF. Promotion requires owner choice and new source/readiness review; update inbound links and the domain index. See [repository geography](REPOSITORY-STRUCTURE.md).
+
 **Repository geography gate:** When designing new packet folders, doing maintenance, moving docs or reviewing staleness, also read [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) and the nearest existing catalog. Avoid new folders unless the owner, lifecycle, current home and retirement trigger are genuinely distinct.
 
 **Method entry:** [WORKFLOW.md](WORKFLOW.md) is the shared human/agent lifecycle map, including decision diagrams, documentation-first rule, design/Change/Task taxonomy, Undertaking and per-Change branching, parallel planning and cheap Cursor execution. Read its relevant route after AGENTS; this file adds ChatGPT-specific planner obligations rather than duplicating the whole methodology.

@@ -73,7 +73,7 @@ flowchart TD
 | --- | --- | --- | --- |
 | **Undertaking** | [`work/undertakings/`](work/undertakings/README.md) | Several thematically related work units need one integration identity | Active → Landing → Closed; land or abandon, record disposition, retire branch/dossier |
 | **Design / open investigation** | [`work/designs/open/`](work/designs/README.md) | A real product/architecture choice or unknown remains | Accept into canonical wiki, defer/reject/retire with [design ledger](work/designs/ledger/2026-11.md) and Git provenance |
-| **Change** | [`work/changes/open/YYYY-MM-DD--slug/CHANGE.md`](work/changes/README.md) | Produce independently verifiable **lasting source/config/test or authoritative-doc diff** | Prove + reconcile; archive briefly and ledger/Git retire |
+| **Change** | [future backlog](work/changes/backlog/README.md) → [`open/YYYY-MM-DD--slug/CHANGE.md`](work/changes/README.md) | Produce independently verifiable **lasting source/config/test or authoritative-doc diff** | Prove + reconcile; archive briefly and ledger/Git retire |
 | **Standalone Task** | [`work/tasks/open/YYYY-MM-DD--slug/TASK.md`](work/tasks/README.md) | An independent run, cleanup action, scheduled verification or explicit resource gate merits its own receipt | Record actual action/evidence; archive |
 | **Composer T-ID** | `<Change>/TASKS.md#Txx` | Tiny implementation step **inside** one Change | Child receipt; parent Change owns acceptance |
 | **Experiment / evidence / research** | [lab protocols](docs/technical/lab/chamber-and-fixtures.md), [evidence](evidence/README.md), [research](research/README.md) | Test a hypothesis, preserve what happened, or explain a finding | Dated facts and reproducibility, not automatic product authority |
@@ -137,7 +137,8 @@ For a **nontrivial implementation Change**, ChatGPT verifies current branch/HEAD
 Packet layers (not all mandatory for tiny work):
 
 ```text
-work/changes/open/YYYY-MM-DD--change-name/
+work/changes/backlog/<domain>/YYYY-MM-DD--change-name/   # future, Proposed, not dispatchable
+work/changes/open/YYYY-MM-DD--change-name/                 # active or realistically next few days
   CHANGE.md        # mandatory front door: desired outcome, authority, readiness, branch, acceptance and reconciliation
   SOURCE-MAP.md    # planner's verified source symbols, call/data ownership and observed baseline (complex work)
   EXECUTION.md     # planner's selected step-by-step algorithm / contracts and failure cases (complex work)
@@ -195,6 +196,7 @@ At a full Change close: demonstrate its accepted Goal; reconcile the Change's pr
 The working tree should describe **what is actionable today**, not keep an endlessly growing graveyard.
 
 - **Design:** once accepted/declined/deferred, retain the decision and original full SHA in the [design ledger](work/designs/ledger/2026-11.md), migrate accepted normative claims to docs, repair links, and retire the original after review. No permanent design archive.
+- **Deferred Change:** place in [domain backlog](work/changes/backlog/README.md) while unselected, retain explicit owner/dependency; promote into \`open/\` only after current branch/source/readiness reconciliation and owner commission. **Do not mislabel backlog placement as Done or Ready.**
 - **Change:** after actual Done/Cancelled reconciliation, move to [Change archive](work/changes/archive/README.md) for short review. The normal seven-day age is a **review signal, not deletion permission**. Move unique proof to evidence, store full-SHA recovery pointer in [Change ledger](work/changes/ledger/2026-11.md), repair inbound links, then prune only after an authorized review.
 - **Undertaking:** close only after integrated acceptance and consistent status/queue/docs, **including a final supervisor-readable before/after view in `OVERVIEW.md` and a human handoff**; retire active dossier and integration branch with compact record.
 - **Source architecture and code growth:** code quality receives the same lifecycle attention as documentation. At every code-bearing Change's closure, inspect the changed code for understandable responsibilities, runtime trust boundaries and size/growth signals, and run `pnpm repo:code-health --base <actual-integration-branch>`. Use `--strict-new` only for newly crossed severe bands. Review repo-wide hotspots roughly **every two weeks** during heavy development and before Undertaking integration. Numeric warnings trigger manual source/owner investigation, not automatic directory moves or new packets. Top confirmed findings belong in the [existing code-craft remediation schedule](work/designs/open/code-architecture-health/README.md). This is a practice cadence, not an installed background automation.
