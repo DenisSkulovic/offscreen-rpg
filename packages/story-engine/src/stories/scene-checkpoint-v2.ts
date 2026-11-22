@@ -198,20 +198,21 @@ function resolveAssociatedGameOffer(
   state: SceneAfterState,
   campaign: SceneAfterStateCampaign,
 ) {
+  const envelope = campaignOfferEnvelope(campaign.offer);
+  if (!envelope) {
+    return null;
+  }
   const authorization = asRecord(campaign.situationAuthorization);
   const authorizationOfferId = authorization?.offerId;
-  const candidateIds = new Set<string>();
-  const envelope = campaignOfferEnvelope(campaign.offer);
-  if (envelope) {
-    candidateIds.add(envelope.id);
+  if (
+    typeof authorizationOfferId === 'string' &&
+    authorizationOfferId !== envelope.id
+  ) {
+    throwNotRepresentable();
   }
-  if (typeof authorizationOfferId === 'string') {
-    candidateIds.add(authorizationOfferId);
-  }
-  for (const execution of state.actionExecutions) {
-    candidateIds.add(execution.offerId);
-  }
-  return state.gameOffers.find((row) => candidateIds.has(row.id)) ?? null;
+  // Current campaign offer only. Historical executions and UUID sort order
+  // must not substitute a different plan payload.
+  return state.gameOffers.find((row) => row.id === envelope.id) ?? null;
 }
 
 function offerTreeFromCampaignColumn(offer: unknown): unknown {

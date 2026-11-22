@@ -21,6 +21,7 @@ import type {
 } from './scene-after-state';
 
 const OFFER_ID = '44444444-4444-4444-8444-444444444444';
+const HISTORICAL_OFFER_ID = '11111111-1111-4111-8111-111111111111';
 const HOLD_OFFER_ID = '33333333-3333-4333-8333-333333333333';
 const ACTIVITY_ID = '55555555-5555-4555-8555-555555555555';
 const OBLIGATION_ID = '66666666-6666-4666-8666-666666666666';
@@ -189,6 +190,93 @@ function emptyAfterState(
 
 const ANCHOR_PASSAGE = '22222222-2222-4222-8222-222222222222';
 const RECALL_DOCUMENT = '99999999-9999-4999-8999-999999999999';
+
+function historicalExecution(offerId: string) {
+  return {
+    operationId: ACTION_ID,
+    offerId,
+    actionKey: 'ask',
+    baseRevision: 1,
+    offer: { id: offerId },
+    plan: { key: 'ask' },
+    pendingResolution: null,
+    preparationGenerationId: null,
+    startGameSecond: 0,
+    targetGameSecond: 1,
+    state: 'settled',
+    revision: 1,
+  };
+}
+
+function offerPlans(state: ReturnType<typeof toV2FictionalState>) {
+  if (state.mechanicsAbsent || state.offer == null) {
+    throw new Error('expected a current offer snapshot');
+  }
+  const payload = state.offer.payload as unknown as {
+    body: { plans: { body: unknown } | null };
+  };
+  return payload.body.plans?.body ?? null;
+}
+
+function stateWithOffers(
+  gameOffers: SceneAfterState['gameOffers'],
+  authorizationOfferId: string | null = OFFER_ID,
+) {
+  return emptyAfterState({
+    campaign: minimalCampaign({
+      offer: envelopeOfferWithNodes(),
+      situationAuthorization: {
+        version: 2,
+        offerId: authorizationOfferId,
+        activityAccess: { kind: 'none' },
+        preparedPlans: [],
+      },
+    }),
+    gameOffers,
+    actionExecutions: [historicalExecution(HISTORICAL_OFFER_ID)],
+  });
+}
+
+const currentOffer = {
+  id: OFFER_ID,
+  narrativeRevision: 2,
+  plans: [{ key: 'current', label: 'Current' }],
+};
+const historicalOffer = {
+  id: HISTORICAL_OFFER_ID,
+  narrativeRevision: 1,
+  plans: [{ key: 'historical', label: 'Historical' }],
+};
+
+test('current offer plans ignore historical offers that sort first by UUID', () => {
+  const fictional = toV2FictionalState(
+    stateWithOffers([historicalOffer, currentOffer]),
+  );
+  assert.deepEqual(offerPlans(fictional), currentOffer.plans);
+});
+
+test('current offer plans ignore historical offers that sort after by UUID', () => {
+  const fictional = toV2FictionalState(
+    stateWithOffers([currentOffer, historicalOffer]),
+  );
+  assert.deepEqual(offerPlans(fictional), currentOffer.plans);
+  assertV2PostStateMatches(
+    toV2FictionalState(stateWithOffers([historicalOffer, currentOffer])),
+    fictional,
+  );
+});
+
+test('mismatched authorization and campaign offer identity is not representable', () => {
+  assert.throws(
+    () =>
+      toV2FictionalState(
+        stateWithOffers([historicalOffer, currentOffer], HISTORICAL_OFFER_ID),
+      ),
+    (error: unknown) =>
+      error instanceof SceneAfterStateError &&
+      error.code === 'state_not_representable',
+  );
+});
 
 test('toV2FictionalState supplies empty recall cues when an anchor omits them', () => {
   const fictional = toV2FictionalState(
