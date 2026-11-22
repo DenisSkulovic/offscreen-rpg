@@ -1,15 +1,14 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED. TURN03 stays open. Cold-kind POC is not Done.** T04 was rerun against `3b7d0a0a9d03d02768c140a25d872b6fc89e00e9`. `@offscreen/db` now resolves. `game-api` still does not become Ready.
+**State: BLOCKED after the pinned-rule prerequisite. TURN03 stays open. No gate is PASS.** T04 continued on `3b7d0a0a9d03d02768c140a25d872b6fc89e00e9` without editing API, overlays, or the pinned hash.
 
-- Rebuilt API image id `sha256:b605eb53ee35a3c6887bec855be9d3a0c6bad41c588b2399ad6e6632e96846b9`; the restarted pod ran `import-2026-11-22@sha256:a452b0ceeafded9f5fae207ecbea6b0606400d617bea5ad5efc0589524f544f5`
-- Database check and document-store bucket check succeeded inside that image
-- Startup then failed in `resolveStartupDefaultRules` with `Error` message `missing` (`api.runtime.startup_failed`)
-- `game-api` rollout exceeded its progress deadline
-- The Worker image was not rebuilt: `apps/worker` typecheck still fails, including the `GameAuthoritySeam` test double missing `putLaunch` and `getLaunch`. The loaded worker image remained `sha256:e159434ea7f1ef2d54290efd8362ad376f4e3c8e9b8a9b37088063f31aab6ce1`
-- All eight cold-kind gates remain `NOT-RUN`; overall `NOT-RUN`
+- The existing importer Job wrote the pinned fixture. A different reader Pod returned `rule=d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab`, `match=yes`, `pinPath=null`, `campaignCreated=false`. The store Secret was not rotated.
+- `game-api` then rolled out Ready. The new pod logged `Nest application successfully started`. The previous pod's `api.runtime.startup_failed` log is the pre-seed crash.
+- `game-web`, `game-authority`, `game-control`, `game-executor`, and `game-relay` were already Running.
+- Gateway listener `web` is programmed and has no status address. There is no authenticated browser session. Forging a cookie is not allowed.
+- All eight cold-kind gates remain `NOT-RUN`. Overall `NOT-RUN`.
 
-No `apps/api`, lockfile, Worker, or shared release file was edited in this rerun. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
+Receipt of this continuation is the commit that contains this paragraph. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
 ## What actually exists now
 
