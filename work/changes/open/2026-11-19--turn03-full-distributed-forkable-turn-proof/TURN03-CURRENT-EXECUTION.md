@@ -1,12 +1,11 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED after the pinned-rule prerequisite. TURN03 stays open. No gate is PASS.** T04 continued on `3b7d0a0a9d03d02768c140a25d872b6fc89e00e9` without editing API, overlays, or the pinned hash.
+**State: BLOCKED on interactive GitHub sign-in. TURN03 stays open. No gate is PASS.** The pinned rule package is present and `game-api` is Ready. The edge was then probed. No API, overlay, hash, or session was forged.
 
-- The existing importer Job wrote the pinned fixture. A different reader Pod returned `rule=d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab`, `match=yes`, `pinPath=null`, `campaignCreated=false`. The store Secret was not rotated.
-- `game-api` then rolled out Ready. The new pod logged `Nest application successfully started`. The previous pod's `api.runtime.startup_failed` log is the pre-seed crash.
-- `game-web`, `game-authority`, `game-control`, `game-executor`, and `game-relay` were already Running.
-- Gateway listener `web` is programmed and has no status address. There is no authenticated browser session. Forging a cookie is not allowed.
-- All eight cold-kind gates remain `NOT-RUN`. Overall `NOT-RUN`.
+- Loopback port-forward `127.0.0.1:18080` to `svc/lab-gateway-traefik` reached the cluster. `GET /api/health/live` returned `{"status":"ok"}`. `GET /api/me` returned `401`.
+- `GET /sign-in` is the real web page and offers only “Continue with GitHub”. `POST /api/auth/sign-in/social` with callback `http://127.0.0.1:18080/` was rejected: `Invalid callbackURL`.
+- The API’s configured `APP_ORIGIN` is `http://127.0.0.1:3000`. That origin is the Tilt loopback to `game-web`. Nothing is listening there, and completing GitHub OAuth requires a person at that origin.
+- All eight cold-kind gates remain unproven. Auth-dependent gates are `BLOCKED`. Overall is `BLOCKED`, not `PASS`.
 
 Receipt of this continuation is the commit that contains this paragraph. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
