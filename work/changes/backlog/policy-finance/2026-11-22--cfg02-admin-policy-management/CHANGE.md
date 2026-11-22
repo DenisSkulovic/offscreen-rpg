@@ -1,6 +1,6 @@
 # CFG02 | Admin governance for versioned Storyteller runtime policies
 
-**State: DEFERRED PROPOSAL / NOT READY / no execution authorization.** Recorded because the owner explicitly wants product/business operators to tune Storyteller configuration without editing code, but this must **follow CFG01 resolver and financial proofs**. Source intent: [2026-11-22 minutes](../../../sessions/2026-11-22.md#6-strongly-configurable-runtime-policies-not-hard-coded-subscription-logic).
+**State: DEFERRED PROPOSAL / NOT READY / no execution authorization.** Recorded because the owner explicitly wants product/business operators to tune Storyteller configuration without editing code, but this must **follow CFG01 resolver and financial proofs**. Source intent: [2026-11-22 minutes](../../../../sessions/2026-11-22.md#6-strongly-configurable-runtime-policies-not-hard-coded-subscription-logic).
 
 ## Desired later outcome
 

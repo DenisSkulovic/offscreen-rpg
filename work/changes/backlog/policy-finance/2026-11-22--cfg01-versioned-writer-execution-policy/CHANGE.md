@@ -1,6 +1,6 @@
 # CFG01 | Effective versioned Writer execution recipe, not hard-coded tier branches
 
-**State: PROPOSED / PLANNER-BLOCKED. This is a durable design packet, not executable instructions.** Owner idea in [2026-11-22 minutes](../../../sessions/2026-11-22.md#6-strongly-configurable-runtime-policies-not-hard-coded-subscription-logic).
+**State: PROPOSED / PLANNER-BLOCKED. This is a durable design packet, not executable instructions.** Owner idea in [2026-11-22 minutes](../../../../sessions/2026-11-22.md#6-strongly-configurable-runtime-policies-not-hard-coded-subscription-logic).
 
 ## Why
 

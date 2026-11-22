@@ -1,6 +1,6 @@
 # SQL01 | Human-guided transaction, lease and recovery audit
 
-**State: PROPOSED / review-first Change; no executable data mutation.** Owner intends to personally understand SQL semantics, locks, fault safety and scaling. [HR03](../2026-11-22--hr03-db-schema-and-sql-navigation/CHANGE.md) creates the initial query-owner atlas and reorganizes **table declarations**, but deliberately does **not** assess whether transactional code is correct. SQL01 records that separate, harder task rather than bury it inside a cosmetic refactor.
+**State: PROPOSED / review-first Change; no executable data mutation.** Owner intends to personally understand SQL semantics, locks, fault safety and scaling. [HR03](../../quality-evaluation/2026-11-22--hr03-db-schema-and-sql-navigation/CHANGE.md) creates the initial query-owner atlas and reorganizes **table declarations**, but deliberately does **not** assess whether transactional code is correct. SQL01 records that separate, harder task rather than bury it inside a cosmetic refactor.
 
 ## End state
 
