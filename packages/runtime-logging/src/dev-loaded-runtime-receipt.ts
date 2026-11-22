@@ -1,8 +1,6 @@
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 export const DEV_LOADED_RUNTIME_RECEIPT_SCHEMA =
   'offscreen.dev-loaded-runtime.v1' as const;
 
@@ -19,8 +17,7 @@ export type DevLoadedRuntimeReceipt = {
  * Identity of the compiled entry artifact the running Node process actually
  * loaded, not a source-tree fingerprint.
  */
-export function fingerprintCompiledModuleFile(moduleUrl: string) {
-  const compiledModulePath = fileURLToPath(moduleUrl);
+export function fingerprintCompiledModuleFile(compiledModulePath: string) {
   const bytes = readFileSync(compiledModulePath);
   return {
     compiledModulePath,
@@ -38,10 +35,10 @@ export function devLoadedRuntimeReceiptRoot() {
 
 export function writeDevLoadedRuntimeReceipt(input: {
   role: string;
-  entryModuleUrl: string;
+  compiledModulePath: string;
 }) {
   const { compiledModulePath, compiledModuleIdentity } =
-    fingerprintCompiledModuleFile(input.entryModuleUrl);
+    fingerprintCompiledModuleFile(input.compiledModulePath);
   const receiptRoot = devLoadedRuntimeReceiptRoot();
   const receipt: DevLoadedRuntimeReceipt = {
     schema: DEV_LOADED_RUNTIME_RECEIPT_SCHEMA,

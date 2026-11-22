@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Classifies repo paths for the dev Dockerfile root build context.
-// Mirrors infra/kubernetes/lab/dev/dev-dockerignore (wired via load-dev-image.sh --ignorefile).
+// Mirrors infra/kubernetes/lab/dev/Dockerfile.dockerignore (BuildKit's Dockerfile-specific ignore).
 
 import { lstatSync, readdirSync, readFileSync, readlinkSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const DEV_DOCKER_IGNORE_RELATIVE = 'infra/kubernetes/lab/dev/dev-dockerignore';
+export const DEV_DOCKER_IGNORE_RELATIVE = 'infra/kubernetes/lab/dev/Dockerfile.dockerignore';
 
 const EXCLUDED_TOP_LEVEL = new Set([
   '.git',

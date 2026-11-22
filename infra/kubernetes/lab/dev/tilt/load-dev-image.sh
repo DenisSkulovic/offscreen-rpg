@@ -5,10 +5,12 @@ set -euo pipefail
 filter="$1"
 repo="$(cd "$(dirname "$0")/../../../../.." && pwd)"
 cd "$repo"
-DEV_IGNORE="${repo}/infra/kubernetes/lab/dev/dev-dockerignore"
+# Docker reads <Dockerfile>.dockerignore beside -f. Do not pass a custom ignore flag.
+# Patterns are relative to the repo-root context, not the Dockerfile directory.
+DEV_IGNORE="${repo}/infra/kubernetes/lab/dev/Dockerfile.dockerignore"
+test -f "$DEV_IGNORE"
 docker build \
   -f infra/kubernetes/lab/dev/Dockerfile \
-  --ignorefile "$DEV_IGNORE" \
   --build-arg "TURBO_FILTER=${filter}" \
   -t "$EXPECTED_REF" \
   .

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -14,10 +14,14 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const loadScript = join(repoRoot, 'infra/kubernetes/lab/dev/tilt/load-dev-image.sh');
 const libBuild = join(repoRoot, 'infra/kubernetes/lab/app-release/lib-build.sh');
 
-test('load-dev-image uses dev-dockerignore; release builds use pruned context not repo root', () => {
+test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned context not repo root', () => {
   const script = readFileSync(loadScript, 'utf8');
-  assert.match(script, /--ignorefile/);
-  assert.match(script, /dev-dockerignore/);
+  const build = script.slice(script.indexOf('docker build'));
+  assert.doesNotMatch(build, /ignorefile/);
+  const ignoreFile = join(repoRoot, 'infra/kubernetes/lab/dev/Dockerfile.dockerignore');
+  assert.equal(existsSync(ignoreFile), true);
+  assert.match(readFileSync(ignoreFile, 'utf8'), /\*\*\/node_modules/);
+  assert.match(script, /Dockerfile\.dockerignore/);
   const release = readFileSync(libBuild, 'utf8');
   assert.doesNotMatch(release, /docker build[^\n]*\s\.$/m);
   assert.match(release, /stage_pruned_context/);

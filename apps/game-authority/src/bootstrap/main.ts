@@ -27,10 +27,11 @@ import {
 } from '../writer-round-lab-policy.js';
 import { writeDevLoadedRuntimeReceipt } from '@offscreen/runtime-logging/dev-loaded-runtime';
 
-if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1') {
+const devCompiledEntry = process.env.OFFSCREEN_DEV_COMPILED_ENTRY;
+if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1' && devCompiledEntry) {
   writeDevLoadedRuntimeReceipt({
     role: 'game-authority',
-    entryModuleUrl: import.meta.url,
+    compiledModulePath: devCompiledEntry,
   });
 }
 

@@ -3,7 +3,6 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
-import { pathToFileURL } from 'node:url';
 import {
   evaluateDevLoadedRuntimeReadiness,
   fingerprintCompiledEntryFile,
@@ -20,7 +19,7 @@ test('TS and MJS agree on compiled module identity', () => {
   writeFileSync(entryPath, 'export const marker = "v1";\n', 'utf8');
 
   const fromMjs = fingerprintCompiledEntryFile(entryPath);
-  const fromTs = fingerprintCompiledModuleFile(pathToFileURL(entryPath));
+  const fromTs = fingerprintCompiledModuleFile(entryPath);
   assert.equal(fromTs.compiledModuleIdentity, fromMjs);
 });
 
@@ -44,7 +43,7 @@ test('positive: loaded receipt matches desired compiled artifact', () => {
   process.env.OFFSCREEN_DEV_WATCHED_COMPILATION = '1';
   writeDevLoadedRuntimeReceipt({
     role: 'api',
-    entryModuleUrl: pathToFileURL(entryAbs).href,
+    compiledModulePath: entryAbs,
   });
 
   const status = evaluateDevLoadedRuntimeReadiness({

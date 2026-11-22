@@ -76,11 +76,11 @@ test('dev Dockerfile is unsafe', () => {
 
 test('dev dockerignore is unsafe warm rebuild', () => {
   assert.equal(
-    isUnsafeDevSyncPath('infra/kubernetes/lab/dev/dev-dockerignore'),
+    isUnsafeDevSyncPath('infra/kubernetes/lab/dev/Dockerfile.dockerignore'),
     true,
   );
   assert.equal(
-    resolveDevSync('infra/kubernetes/lab/dev/dev-dockerignore', repoRoot).mode,
+    resolveDevSync('infra/kubernetes/lab/dev/Dockerfile.dockerignore', repoRoot).mode,
     'warm',
   );
 });

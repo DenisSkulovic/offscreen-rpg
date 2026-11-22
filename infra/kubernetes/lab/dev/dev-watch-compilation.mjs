@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 import { markDevWatchedCompilation } from './dev-watched-compilation-receipt.mjs';
 
 const [phase, role, compiledEntryPath] = process.argv.slice(2);
@@ -21,6 +22,7 @@ if (!phase || !role || !compiledEntryPath) {
       env: {
         ...process.env,
         OFFSCREEN_DEV_WATCHED_COMPILATION: '1',
+        OFFSCREEN_DEV_COMPILED_ENTRY: path.resolve(process.cwd(), compiledEntryPath),
       },
     },
   );

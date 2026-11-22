@@ -13,10 +13,11 @@ import {
 } from '@offscreen/documents';
 import { writeDevLoadedRuntimeReceipt } from '@offscreen/runtime-logging/dev-loaded-runtime';
 
-if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1') {
+const devCompiledEntry = process.env.OFFSCREEN_DEV_COMPILED_ENTRY;
+if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1' && devCompiledEntry) {
   writeDevLoadedRuntimeReceipt({
     role: 'worker-relay',
-    entryModuleUrl: import.meta.url,
+    compiledModulePath: devCompiledEntry,
   });
 }
 

@@ -1,4 +1,5 @@
-# Dev image root-context ignore only (infra/kubernetes/lab/dev/tilt/load-dev-image.sh).
+# Dev image only. BuildKit loads this because load-dev-image.sh passes
+# -f infra/kubernetes/lab/dev/Dockerfile. Patterns match the repo-root context.
 # Release images build from turbo-pruned staging context, not this file.
 
 .git
