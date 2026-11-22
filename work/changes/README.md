@@ -288,3 +288,5 @@ Review archive candidates with `pnpm repo:retirement` (read-only). No automated 
 ## Next three independent commissions, after CL01/WR11/K8S10
 
 [HR01 API readable route owners](open/2026-11-22--hr01-api-route-ownership-readability/CHANGE.md) · [HR02 Web feature navigation](open/2026-11-22--hr02-web-player-feature-readability/CHANGE.md) · [HR03 DB schema/SQL atlas](open/2026-11-22--hr03-db-schema-and-sql-navigation/CHANGE.md). These are **near-term conditional** packets, not automatic selections under `work/QUEUE.md` and not proof of implementation. [Dependency, custody and launch checks](../undertakings/storyteller-workshop/NEXT-WAVE.md).
+
+**TURN03 blocker (2026-11-22):** [FORK01 historical authorization reconstruction](open/2026-11-22--fork01-historical-situation-authorization/CHANGE.md) is a narrowly prepared Story Engine repair. Not yet implemented; TURN03 remains blocked on fork and recovery gates.
