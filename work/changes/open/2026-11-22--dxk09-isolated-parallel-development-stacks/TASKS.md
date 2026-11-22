@@ -102,7 +102,7 @@
 
 **Readiness:** READY for code-only bounded T03b-2a implementation; subsequent LIVE BASELINE ACL/tenant creation is HELD until current host preflight and explicit owner authorization. **T03b-2b** S3 bucket scopes and **T03b-2c** Temporal namespaces remain planner-held and are not part of this task.
 
-## T03b-2 | Per-worktree SQL/S3/Temporal tenant provisioning | PLANNER HOLD
+## T03b-2 | Remaining per-worktree S3/Temporal tenants and live tenant authorization | PLANNER HOLD
 
 **Selected identities:** derive stable DNS-safe tenant ID from T02 registry; allocate SQL `dev_<id>` database with unique runtime role, separate bounded migration authority, bucket `offscreen-dev-<id>` with truly bucket-scoped credentials, and unique Temporal namespace + task queues. No hardcoded worktree-count limit. Preserve tenant state on ordinary stop; destroy separate explicit operation.
 
