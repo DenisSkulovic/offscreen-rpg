@@ -1,5 +1,18 @@
 # Changes | active catalog
 
+## Production-minded database and data lifecycle (3 more, 2026-11-22)
+
+The owner's [same-day session minutes](../sessions/2026-11-22.md#13-owner-requests-production-minded-database-and-complete-data-lifecycle-operations) add three **PROPOSED / NOT CURSOR-READY** Changes, extending the brainstorm coverage from 28 to **31 named outcomes**. These distinguish *schema evolution*, *routine performance/maintenance*, *HA failover* and *whole-system disaster recovery*. A migration Job and a single-primary Pod-restart test do not prove any of the latter three.
+
+| Change | Independent objective | Nearest existing owner / gate |
+| --- | --- | --- |
+| [DBOPS01 safe schema changes](open/2026-11-22--dbops01-safe-schema-migrations-and-release-compatibility/CHANGE.md) | Drizzle SQL review, expand/backfill/contract, one runner, mixed-version app/Temporal and interruption proof | Existing migration runner, Kubernetes game-migrate Job; read actual release orchestration first |
+| [DBOPS02 PostgreSQL health](open/2026-11-22--dbops02-postgres-operational-health-and-performance/CHANGE.md) | Connection pools, slow queries, locks, indexes, VACUUM/WAL/lag/disk, safe maintenance observability | [SQL01 domain transaction audit](open/2026-11-22--sql01-transaction-and-lease-source-audit/CHANGE.md) and future [LOAD01](open/2026-11-22--load01-scripted-multiuser-load-and-autoscaling/CHANGE.md) |
+| [DATAOPS01 cross-store restoration](open/2026-11-22--dataops01-cross-store-backup-restore-and-retention/CHANGE.md) | Backup and reconstruct coherent SQL/Temporal/CAS/configuration state, RPO/RTO, restore rehearsal, retention | [SCALE02 stateful failover](open/2026-11-22--scale02-stateful-data-and-workflow-ha/CHANGE.md), AI02 private-evidence retention and existing release/restore checklist |
+
+**Operational correction:** PostgreSQL physical standby replicas normally follow primary schema/WAL changes; schema migration is **not** defined as taking an arbitrary standby offline and independently altering it. Schema rollout should accommodate concurrently deployed old/new binaries, and recovery from an incomplete migration is not necessarily a down migration. Multiple replicas do not provide point-in-time backup and one restored database may not recreate Temporal history or immutable Library objects. Documentation is not permission for any protected DB read, migration, restore, paid infrastructure or cluster mutation.
+
+
 ## Future horizontal scaling and zero-funded load rehearsal (4 more, 2026-11-22)
 
 Following the owner's [session-minutes entry](../sessions/2026-11-22.md#12-owner-asks-for-future-minimal-horizontal-scalability-and-100-user-zero-llm-load-rehearsal), four **PROPOSED / NOT CURSOR-READY** work units extend the brainstorm coverage from 24 to **28 distinct named Change outcomes**. They are not today's work selector or a claim that the system is already highly available.
