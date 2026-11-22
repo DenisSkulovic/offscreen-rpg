@@ -1,29 +1,39 @@
-# WR11 | A real provider-mode continuation through Game Authority, Temporal and executor
+# WR11 | Authorized provider continuation on the landed WR10B Writer path
 
-**Status: PLANNER-GATED ON WR10 integration and actual interface reconciliation. Not yet Cursor-ready.** Current inspected baseline d3ba291763de, target undertaking/storyteller-workshop. This is a deliberately prepared successor, not a commission or a claim that WR10 already landed.
+**State: READY AFTER TURN03 CLOSE/HEAD RECHECK.**  
+**Kind:** implementation · **Profile:** STATE/CONTRACT · **Reference:** `undertaking/storyteller-workshop`  
+**Source baseline:** `22b46a828b56a8b3094bfab30162d5718c406e22`. WR10B is integrated; TURN03 is the only predecessor gate for release execution.  
+**No paid provider call is authorized by this packet.**
 
-## Observable functional outcome
+## Outcome
 
-An authenticated player starts an existing scripted campaign, makes one valid decision, and receives a fresh **provider-authored v3 continuation scene** with meaningful offered choices, committed by normal Game Authority admission and publication. After process death or lost reply, one attempted provider call is not silently repeated, prior accounting is preserved, tool receipts are reused and the player can resume/fork. All free proof uses injected fake provider transport. Production default remains scripted. A later narrowly approved paid test may establish genuine inference, but does not become automatic.
+A trusted server-side provider admission can create a v3 continuation mission whose model/policy is frozen before dispatch, execute through the **existing** `writer.scene.v1 → writerSceneDistributedV2 → storyteller-execute-v1 → WR10 private custody` path, use bounded Library/Workdesk tool rounds, and publish one v3 scene through Game Authority. Free acceptance uses an injected fake provider transport. Production/default remains scripted/disabled unless explicit provider-authorized configuration exists.
 
-## Exact architectural selection
+## Corrected architecture after WR10B
 
-The existing writer.scene.v1 outbox topic → writerSceneV1 workflow → runScriptedWriterScene activity stays intact for old missions, scripted tests and retries. Add separate writer.scene.provider.v1 outbox topic, writerSceneProviderV1 Temporal workflow and distinct stable workflow ID writer-scene-provider/<missionId>. The SQL-capable legacy Worker that settles narrative actions receives one boot-frozen, **disposable-lab-only fake-provider admission policy** through StoryApplicationOptions → campaign/action-executions → narrative-intent-settlement → scheduleWriterContinuation. GA enforces the persisted capture/attempt policy separately. The server-owned continuation admission decision is frozen in the v3 mission capture: scripted-offline OR an explicitly allowlisted OpenRouter model/profile, with immutable model/cost/capture hash and current owner funding. Do not let the player command body select provider, prices or spend.
+Do **not** add `writer.scene.provider.v1`, a second Writer workflow, a second workflow ID, or a second custody protocol. WR10B already moved new `writer.scene.v1` wakes to `writerSceneDistributedV2` and the no-SQL execution worker.
 
-**GA retains all SQL/CAS/tool interpretation and publication**; executor has only the narrow private WR10 authenticated request/submit interface and a model credential. Workflow coordinates a bounded round: GA/control-side observe prepared state, executor-side execute one WR10 prepared round, GA-side resume committed decision/apply Library tools/research boundary, repeat up to captured maxModelRounds, GA-side publish validated final proposal under existing root/owner/story/clock fence. Workflow history holds IDs, status and hashes only, never private prompts, credentials or provider body. A dispatched/uncertain attempt is held for operator recovery; Temporal automatic Activity retry cannot cause a second provider send. All steps idempotent under same mission/step/attempt identity. No second Writer state database or new package.
+WR11 adds only the missing layers:
 
-**Preliminary choice for first cut:** parent v3 continuation with mandatory Library tools and final scene only. Research.delegate is **explicitly rejected/held** in provider mode unless a separate tested child join path is already safe; no pretending that research children are integrated. Launch remains scripted for this wave, and user-visible sourceMode must reflect the committed scene rather than admission intent.
+1. **Trusted admission.** Add a typed `WriterContinuationAdmission`: default scripted; provider admission is server-owned and contains the exact allowlisted model plus policy version. It is injected at SQL-worker boot and passed through `createStories → createCampaignActionExecutions → settleNarrativeIntentExecution → scheduleWriterContinuation`. Player bodies never select provider/model/price.
+2. **Frozen policy identity.** Extend the v3 continuation capture with an optional provider policy/version pin used only for provider admissions. Existing scripted captures remain valid. GA rejects a provider capture whose pinned model/policy version does not match its installed policy before reserving/sending.
+3. **Explicit provider bootstrap.** Extend GA bootstrap from `unavailable | scripted-offline-lab` with an explicit provider-authorized mode using one strict non-secret policy configuration. Execution worker uses normal WR10 provider transport and requires a key only in provider-authorized runtime; absent/mixed config fails closed. Free tests inject fake transport and never need a key.
+4. **Multi-round loop on existing workflow.** `writerSceneDistributedV2` becomes a bounded plan→execute→finalize/advance loop. Control plan selects the latest parent model step (tool_call_id NULL, highest ordinal) and returns ordinal/revision/model/max-round bound. GA finalization interprets the saved decision:
+   - final v3 proposal → publish and return published/replayed;
+   - normal Library/Workdesk tool calls → apply idempotently, prepare the next parent model step, return `needs-next-round`;
+   - `research.delegate` → held unsupported in WR11;
+   - uncertain/held/failed → preserve existing terminal semantics.
+   Workflow loops only on `needs-next-round`, never after uncertain/possibly-sent.
+5. **No duplicate provider send.** Every round keeps WR10 mission/context/ordinal/attempt custody. Activity automatic retry remains one attempt for the send. Saved response/tool receipts are replayed; a possibly-sent attempt never receives a new attempt ID automatically.
 
-## Dependencies
+## Write owners
 
-WR10 must land the private prepare/outcome/status wire and GA settlement. MA12 must land app graph packaging; TURN03 must establish a real scripted cold-kind baseline. Before marking Ready ChatGPT must inspect WR10's actual contracts, authenticated GA control role endpoints, exporter surface, integration receipt and output replay. A Cursor child must NOT decide a new schema, credential source, price policy, or retry algorithm because planned WR10 names drifted.
+Primary: `packages/story-engine/src/{stories/index,campaign/action-executions,campaign/narrative-intent-settlement,storyteller/writer-continuation,storyteller/writer-round-settled-finalization}.ts`; v3 capture schema owner under `packages/storyteller/src/tasks/**`; `packages/contracts/src/writer-scene-round-control.ts`; `packages/workflows/src/{contracts,index}.ts`; `apps/worker/src/{bootstrap/config,bootstrap/main,runtime/index,runtime/execution,activities/writer-scene-distributed-control}.ts`; `apps/game-authority/src/{writer-round-lab-policy,writer-round-control-seam,bootstrap/main}.ts`; focused tests and one unique `tools/api-integration/test/wr11-provider-continuation.integration.ts`.
 
-**Write ownership after predecessor:** packages/story-engine/src/storyteller/{writer-continuation,writer-continuation-publication,writer-round-replay}.ts as necessary (and named provider admission mode policy), packages/workflows/src/{contracts,index}.ts, apps/worker/src/{outbox/dispatch,activities/writer-provider-scene,activities/storyteller-distributed-control,runtime/control,runtime/execution,bootstrap/config}.ts narrowly, apps/game-authority/src/{writer-round-private-seam,server,bootstrap/main}.ts narrowly, unique tools/api-integration/test/wr11-provider-continuation.integration.ts, one Worker workflow test. **No** apps/api/src/modules/stories/** or terminal pairing/CLI, no infra/kubernetes/lab/chaos/**, no Lab package split. One integration custodian handles docs/lockfile.
+Do not edit Web/CL01, DB migrations, K8S10 chaos, launch/opening, Admin, or TURN03 harness.
 
-## Paid inference envelope, NOT permission to execute now
+## Acceptance
 
-An optional final quality smoke may use OpenRouter only if every **free** source, SQL, private HTTP, full build, local distributed, TURN03 scripted cold-kind **AND a real joined-Pod WR11 fake-provider continuation (executor→GA private custody→publication→player GET, with restart and no second send)**, ownership, replay and fault test passes. A fake-provider kind run uses an explicitly test-only worker adapter/allowlist, not a real external URL; missing cluster or OAuth leaves live paid test NOT RUN. Proposed hard ceiling **USD $0.75 total, at most three model attempts spread across no more than three disposable missions, and at most $0.25 per mission including all its rounds**, server-side account/run and token caps, no auto-retry of uncertain sends. Use exactly one owner-approved model/price-version and no fallback; calculate worst-case reservation before sending and stop if budget cannot cover it. Paid tests require separate explicit owner authorization and configured key; absence produces NOT RUN, never switches to a mock that reports real PASS.
+Free fake-provider proof: one real player narrative action admits a provider-mode capture, provider round 1 returns a Library tool call, GA applies/replays the tool once, round 2 returns a final v3 scene, GA publishes exactly one passage/checkpoint/offer. Replay/worker restart performs no second fake send. Wrong actor, stale root, policy-version mismatch, over-budget, `research.delegate`, missing provider authorization and uncertain dispatch all fail closed. Existing scripted WR10B path remains green.
 
-**Outcome evidence:** free two-round tool→scene integration, negative root/actor/spend/unknown/double-send, one real player continuation and fork after fake network; optional real inference is a different evidence tier. WR11 cannot mark live model quality or launch as Done from a fake schema-valid result.
-
-See SOURCE-MAP.md, EXECUTION.md, TASKS.md, PROOF.md.
+Optional real OpenRouter smoke is a separate owner authorization and may remain NOT RUN without blocking WR11 code completion.

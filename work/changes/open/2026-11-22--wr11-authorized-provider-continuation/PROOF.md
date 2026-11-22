@@ -1,7 +1,19 @@
-# WR11 | independent readiness audit
+# WR11 proof matrix
 
-**Baseline source:** d3ba2917 actual scripted wake/persistence in writer-continuation.ts, dispatch topic table, workflows WriterSceneActivities and writerSceneV1, Worker scripted/exec-control split, GA custody and WR09B test. **WR10's final exports are still future, not inspected; this packet does not claim to have run any tests.**
+| Case | Required |
+| --- | --- |
+| default scripted | existing scripted mission/topic/capture remains valid |
+| provider admission | exact model + policy-version pin frozen before enqueue |
+| same choreography | provider mission still uses writer.scene.v1 / writerSceneDistributedV2 / writer-scene/<missionId> |
+| tool round | first fake response executes one granted Library tool exactly once |
+| next round | latest parent ordinal/revision is planned from durable state |
+| final | second fake response publishes one v3 passage/checkpoint/offer |
+| replay | workflow/activity restart causes no third fake invoke |
+| uncertain | possibly-sent attempt never creates replacement send |
+| policy negative | model/policy-version/budget mismatch holds before send |
+| auth negative | player cannot select provider/model/price |
+| research negative | research.delegate held unsupported |
+| spend | zero external provider calls in required proof |
+| regression | WR10/WR10B scripted path remains green |
 
-G0 PASS target and predecessor chain. G1 PASS current scripted route/wake identity map. G2 PASS separate provider notice/workflow and a specifically mapped legacy SQL worker → StoryApplicationOptions → action-settlement → Writer schedule mode injection, GA independent persisted-policy checks and executor I/O, default off. The mode remains **fake-only disposable lab** until a separately ratified production owner-consent/price authorization. G3 PASS bounded T01–T04 + separately gated T05, with full error and budget outcomes. G4 **PLANNER BLOCKED** until actual WR10 output is inspected and API contracts reconciled. G5 PASS planned disjoint source ownership from CL01 and K8S10. G6 PASS fake, root, refund/uncertain, replay/anti-double-send negatives specified. G7 PASS major actual Storyteller advancement if implemented. **Verdict: PLANNER-GATED, not dispatchable before WR10 rebase.** Do not ask Cursor to invent the missing GA control APIs if WR10 interfaces differ.
-
-Proof tiers: (1) legacy scripted mission input, capture SHA and topic unchanged; (2) provider opt-in captured with server-owned model+policy and append-only topic; (3) fake two-round Writer with Library tool and canonical proposal; (4) authentic player action → real outbox/Temporal/GA and resumed scene with a visible choice; (5) fault/duplicate/unknown and authorization negatives; (6) joined cold-kind **fake-provider** continuation through real GA/Temporal/executor Pods and player GET, including executor restart and zero external model calls; (7) optional paid model with explicit separate approval and total <=USD0.75, not automatic. Every tier has PASS/FAIL/NOT RUN and exact command/seed/IDs. No claim of production HA or creative quality from one model output.
+Paid OpenRouter quality is optional, separately authorized, and not a closure gate.

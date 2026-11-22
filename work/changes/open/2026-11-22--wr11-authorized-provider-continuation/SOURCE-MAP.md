@@ -1,32 +1,36 @@
-## Source-grounded admission-composition correction (2026-11-22)
+# WR11 source map
 
-**Critical actual call chain:** The narrative action's due-time SQL transition is **not** executed by `apps/game-authority/src/application.ts`. It runs in `apps/worker/src/bootstrap/main.ts` → `runtime/index.ts:startRuntime` (legacy `offscreen-local` task queue, with SQL) → `createWorkerActivities` → `stories.advanceCampaignAction` → `createCampaignActionExecutions(...).advance` → `settleActionExecution` → `settleNarrativeIntentExecution` → `scheduleWriterContinuation`. The kind `game-relay` Pod still runs this SQL-capable legacy worker with `STORYTELLER_DISTRIBUTED_V1=true`; control/execution Pods poll separate queues and have no SQL. Therefore **injecting a mode only at Game Authority application composition would not affect normal action settlement**. Do not tell Cursor to discover this chain.
+**Inspected:** `22b46a828b56a8b3094bfab30162d5718c406e22`.
 
-**Selected source owner/algorithm:** Define an immutable, side-effect-free `WriterContinuationAdmission` value object (default `{kind:'scripted'}`; provider test mode requires exact allowlisted model/provider/priceVersion, capped amount and fixed capture policy). Do not call an external service or read process.env inside the SQL transaction. The SQL-capable legacy worker's `startRuntime` reads a **frozen, validated, explicitly test-only allowlist** from its injected `storytellerOptions` (or one typed non-secret `WorkerRuntimeOptions.writerContinuationAdmission` field) once at boot; `bootstrap/main.ts` parses the test-only config with default scripted and rejects provider selection unless explicit disposable-lab mode and allowlisted exact price are present. Pass that frozen value through exactly these typed functions:
-1. `runtime/index.ts:createStories(database,{documentStore,writerContinuationAdmission})`
-2. `stories/index.ts:StoryApplicationOptions.writerContinuationAdmission` → `createCampaignActionExecutions(database,documentStore,writerContinuationAdmission)`
-3. `campaign/action-executions.ts:createCampaignActionExecutions` → `settleActionExecution(...,writerContinuationAdmission)`
-4. `campaign/narrative-intent-settlement.ts:settleNarrativeIntentExecution(...,writerContinuationAdmission)` → `scheduleWriterContinuation(tx,{...bases,writerContinuationAdmission})`
-5. `storyteller/writer-continuation.ts:scheduleWriterContinuation` chooses `writer.scene.v1` or `writer.scene.provider.v1` **before insert**, persisting the selected v3 capture/model/profile and exact outbox topic in the SAME original SQL transaction. On existing mission, use recorded capture and `assertWriterSceneWakeOutbox` to check the **persisted** topic; do not reselect policy from current env. Refuse if a replay attempts to reinterpret an earlier scripted mission as provider.
+## Landed path
 
-**Important trust qualifier:** This first provider admission is a **disposable-lab, fake-only Worker authority mode**; the legacy SQL worker is already authorized to settle an owner's action but may not be allowed to select a funded real provider policy in arbitrary production deployments. Before real paid mode, server-controlled owner consent/pricing must be persisted and verified by GA/SQL under a separate explicit contract. GA's WR10 private service independently validates stored capture + exact persisted attempted policy, not an arbitrary model from the executor. No player-supplied provider mode. A real model requires a separate allowed host configuration+owner consent. This is a genuine functional stage, not production-paid availability.
+`packages/story-engine/src/storyteller/writer-continuation.ts` still hardcodes `modelSelection.model='scripted-offline'` and `WRITER_SCENE_WAKE_TOPIC='writer.scene.v1'`.
 
-**No broad worker credential change:** This packet may touch the SQL worker `apps/worker/src/{bootstrap/main,runtime/index,activities/index}.ts` only to carry this immutable admission config. It does not add DATABASE_URL to the executor and never changes control/executor no-SQL invariant. It does not add a second scheduler or a direct worker publication route.
+`apps/worker/src/outbox/dispatch.ts` now maps that topic to `writerSceneDistributedWorkflowType='writerSceneDistributedV2'` on `storytellerControlTaskQueue`, with stable id `writer-scene/<missionId>`.
 
-**Acceptance for this exact seam:** tests configured scripted retain identical captureHash/topic; injected fake provider policy at SQL-worker boot produces *new* topic/capture only under explicit disposable mode; a pre-existing mission never switches mode after environment restart/change; no provider command from player body can override; actual kind game-relay task queue receives the same frozen policy; no secret in Temporal payload or capture. Source signature drift after WR10 must be reconciled by ChatGPT.
+`packages/workflows/src/index.ts:writerSceneDistributedV2` calls:
+`planWriterSceneRound → executePreparedWriterRound(storyteller-execute-v1) → finalizeWriterSceneRound`.
+It currently performs one ordinal only.
 
-# WR11 | exact existing scripted topology and missing provider routing
+`apps/game-authority/src/writer-round-control-seam.ts` currently fixes `SCENE_CONTINUATION_ORDINAL=1`; plan validates the capture against one installed policy and returns ordinal/revision/model. Finalize calls `finalizeSettledWriterSceneRound`.
 
-Inspected d3ba2917:
-- packages/story-engine/src/storyteller/writer-continuation.ts:buildWriterContinuationCapture lines ~130-171 sets modelSelection.provider=openrouter and model=scripted-offline; writerContinuationMissionBudgets maxModelRounds4, input8k, output2k, total250000 microusd; loadAdmissibleGrant verifies enabled owner funding and run, but does not authorize specific new model price. scheduleWriterContinuation(tx,input) lines ~216-310 creates generation/operation/mission/step inside SAME authority transaction and enqueues WRITER_SCENE_WAKE_TOPIC='writer.scene.v1' with notice.id=missionId. Existing mission replay checks wake outbox, must preserve exact once and root. Choosing provider requires trusted server-owned policy *before* creating capture/hash/notice, no player-set value.
-- apps/worker/src/outbox/dispatch.ts table maps writer.scene.v1 to writerSceneWorkflowType/Id; packages/workflows/src/contracts.ts:WriterSceneActivities and writerSceneWorkflowType='writerSceneV1', id writer-scene/<id>; packages/workflows/src/index.ts:writerSceneV1 invokes runScriptedWriterScene with maxAttempts 1. Add distinct provider topic/type/id to prevent a replay of old scripted mission from being reinterpreted as paid.
-- apps/worker/src/activities/index.ts:createWorkerActivities mounts runScriptedWriterScene via runtime with DB/DocumentStore. apps/worker/src/activities/scripted-writer-scene.ts:runScriptedWriterScene uses database, builds fake decision, runWriterMissionModelRound, then publishAcceptedWriterScene inside a transaction. Do not run this function on the no-SQL distributed executor. Existing apps/worker/src/runtime/control.ts has only publication client and Temporal workflows; runtime/execution.ts registers only generation custody. WR10 will provide new GA private round endpoints and an execution-only adapter; WR11 must inspect actual exported functions before wiring Temporal activities.
-- packages/story-engine/src/storyteller/writer-round-replay.ts:runDurableWriterMissionModelRound can resume fake provider result and tool/final proposal via DB/DocumentStore; it must run in the GA private authority context. packages/story-engine/src/storyteller/writer-continuation-publication.ts:publishAcceptedWriterScene checks accepted proposal, root/checkpoint/owner, and committed source, not a generic executor write.
-- apps/game-authority/src/server.ts private role checks story/control/executor; WR10 adds executor-only prepare/outcome/status. WR11 may add control-only observe/advance/publish endpoints, with no raw private body in HTTP response or Temporal history. GA never sends model HTTP itself.
-- apps/worker/src/bootstrap/config.ts:forbidBroadDatabaseOnExecutor prohibits DB env; provider key, if enabled later, comes only through execution host config and is excluded from workflows.
-- tools/api-integration/test/wr09b-round-recovery.integration.ts seeds parent v3 capture and tests two fake rounds; tools/api-integration/test/wr10-private-round-protocol.integration.ts is planned and may differ after integration. Use actual finished WR10 receipt to rebase tests.
-- Current ordinary player still has scripted launch path in apps/game-authority/src/launch-put.ts and scripted writer scene. No existing model-enabled flag or provider price owner has been selected for production. First safe improvement is provider *continuation* after a scripted opening, not silently enabling model launch/research children.
+`writer-round-settled-finalization.ts` can already rehydrate a settled response and call `interpretPersistedWriterDecision`. When the interpreter returns a tool-round result it currently collapses that to held `needs_next_round`. That is the exact seam WR11 promotes into a typed continuation result.
 
-**Post-WR10 blocker to reconcile before Ready:** source-confirm exact typed private GA prepare/outcome/status, emitted wire, bearer role, CAS settled/uncertain semantics, executor adapter, and GA composition. The planned WR10 packet is not proof of these exports. If actual shapes disagree, ChatGPT resolves, not Cursor.
+`writer-loop.ts:interpretPersistedWriterDecision` already executes idempotent Library/Workdesk tools, records tool receipts, commits parent state `tools-applied`, prepares the next parent step and returns `tool-round-complete`. Research delegation is separately represented and stays unsupported for WR11.
 
-**Collision matrix:** CL01 owns Nest API story auth and Web terminal, DB migration; K8S10 owns chaos harness; WR11 owns Story Engine writer-continuation, GA private service, Worker workflow + typed contracts. Only one integration custodian changes shared lockfile/docs. K8S10 live fault run needs integrated source and one cluster operator.
+`apps/worker/src/bootstrap/config.ts` already has no-SQL executor custody plus real `prepareWriterRoundTransport`; scripted lab mode swaps only the transport. `apps/game-authority/src/writer-round-lab-policy.ts` currently exposes only unavailable/scripted-lab bootstrap and must gain explicit provider-authorized policy installation.
+
+## Selected admission path
+
+The SQL-capable legacy worker is still the action-settlement owner:
+`apps/worker/src/bootstrap/main.ts → startRuntime → createStories → createCampaignActionExecutions → settleNarrativeIntentExecution → scheduleWriterContinuation`.
+
+Inject the frozen admission there. Do not move SQL authority to GA/executor.
+
+Existing missions are immutable: replay reads the persisted capture/topic. A boot-time policy change may affect only newly admitted missions. Provider capture policy mismatch at GA holds before prepare/send.
+
+## Round selection algorithm
+
+Control planning queries the latest **parent model step** for `missionId/contextId` where `toolCallId IS NULL`, ordered ordinal DESC, limit 1. It returns that exact ordinal/revision. Never infer ordinal from Temporal loop count.
+
+After a tool result, the interpreter prepares/records the next parent step. A subsequent plan therefore sees the new ordinal. Workflow may loop at most the capture's `maxModelRounds`; exceeding it holds before another send.

@@ -1,6 +1,6 @@
 # CL01 | First-class terminal campaign client
 
-**State: SOURCE-DESIGNED, READY AFTER MA12 INTEGRATES AND EXACT HEAD RECHECK.** Inspected snapshot d3ba291763de on undertaking/storyteller-workshop. Prior WR10/MA12/TURN03 wave remains unimplemented. No actual player terminal exists yet, no paid model call.
+**State: READY FOR EXECUTION.** Source-rechecked on `undertaking/storyteller-workshop@22b46a828b56a8b3094bfab30162d5718c406e22`. MA12 is integrated: production API now exposes the narrow `ApiOptionalExtension` seam without a production Lab dependency. Current DB migration journal still ends at `0023_wr09a_writer_response_object`, so CL01 owns `0024_terminal_player_auth` for this wave. No paid model call.
 
 ## Product end state
 
@@ -20,7 +20,7 @@ Store token in owner-only local config file (mode 0600), refuse symlinks, atomic
 
 ## Implementation ownership
 
-NEW tools/terminal/**; NEW packages/contracts/src/terminal-auth.ts and export; NEW packages/db/src/schema/terminal-auth.ts and one packages/db/package.json public subpath export plus next SQL migration/journal after current 0023 (recheck after prior wave); NEW apps/api/src/modules/terminal-auth/**; narrow apps/api/src/modules/stories/{controller,story-player-identity}.ts and apps/api/src/app.ts DI after MA12 and apps/api/src/main.ts HMAC-secret injection from the existing BetterAuth config; NEW apps/web/app/(authenticated)/terminal/connect/**. Central custodian owns shared lockfile/catalog/STATUS.
+NEW tools/terminal/**; NEW packages/contracts/src/terminal-auth.ts and export; NEW packages/db/src/schema/terminal-auth.ts and one packages/db/package.json public subpath export plus next SQL migration/journal after current 0023 (recheck after prior wave); NEW apps/api/src/modules/terminal-auth/**; narrow apps/api/src/modules/stories/{controller,story-player-identity}.ts and apps/api/src/app.ts DI using the post-MA12 production API composition and apps/api/src/main.ts HMAC-secret injection from the existing BetterAuth config; NEW apps/web/app/(authenticated)/terminal/connect/**. CL01 owns the wave's only DB migration and the workspace lockfile delta caused by the new terminal package. Its parent may self-integrate after acceptance; shared STATUS/overview reconciliation is serialized at join.
 
 Do not edit apps/game-authority, apps/worker, packages/story-engine, provider secrets or infra/kubernetes/lab/chaos. This lane is disjoint from WR11 and K8S10.
 

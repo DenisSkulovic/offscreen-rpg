@@ -1,6 +1,6 @@
 # K8S10 | Current post-TURN03 real-game fault and bounded load execution (2026-11-22)
 
-**State: SOURCE-GROUNDED NEXT-WAVE PLAN; executable harness work conditional on TURN03 integrated; actual Pod mutation remains a separate exact disposable-cluster authorization.** This updates the existing K8S10 Change, not a competing third folder. Inspected d3ba2917 source. No live kind test or provider call performed by planner.
+**State: READY FOR T01–T04 AFTER TURN03 PASS; T05 LIVE MUTATION REQUIRES SEPARATE OWNER AUTHORIZATION.** Source-rechecked against `22b46a828b56a8b3094bfab30162d5718c406e22`. Existing chaos plan/preflight/selector/oracle remain the selected owners; `controller --execute` is still intentionally unimplemented.
 
 ## Source truth, not reinvented pieces
 
@@ -26,7 +26,7 @@ Only infra/kubernetes/lab/chaos/{controller,preflight,oracle,scripted-driver,liv
 
 ## Small executor tasks
 
-T01 | Source reconcile after TURN03: read current chaos/controller.mjs, chaos/preflight.mjs, chaos/selector.mjs, TURN03 proof/report, release image ref. Implement a pure report adapter that requires TURN03 PASS and matching SHA/UID/digest, refuses all missing/mismatch. Negative test missing release/Pod opt-in/old SHA and zero kubectl mutations. Stop absent real TURN03 proof.
+T01 | TURN03 proof adapter after TURN03 closes: read current chaos/controller.mjs, chaos/preflight.mjs, chaos/selector.mjs, TURN03 proof/report, release image ref. Implement a pure report adapter that requires TURN03 PASS and matching SHA/UID/digest, refuses all missing/mismatch. Negative test missing release/Pod opt-in/old SHA and zero kubectl mutations. Stop absent real TURN03 proof.
 
 T02 | One targeted Pod fault controller: read controller.mjs, preflight.mjs, selector.mjs, test/preflight.test.mjs. Add --execute and exact confirm-run-id/confirm-pod-uid flags, default plan unchanged. Build one revalidated and memoized planned Pod delete with execFileSync argument arrays, never shell. Test spy: exactly one delete on good injected fake, zero delete with stale UID or non-kind context, no force. STOP if Pod eligibility requires a nonlab production manifest change.
 
@@ -34,7 +34,7 @@ T03 | Real-game oracle adapter: read chaos/oracle.mjs, scripted-driver.mjs, TURN
 
 T04 | Bounded 9-command load and evidence: read new live driver, chaos oracle, tools/api-integration/test/helpers/turn03-distributed-poc-proof.ts. Add deterministic <=3 identities/3 actions limit, 60s timeout, low-memory abort, raw latency/queue status evidence, zero-provider spy. Validate report schema, no hidden failures, correct NOT RUN for missing second/third owner.
 
-T05 | Actual gated run: after new wave branches joined and TURN03 has fresh genuine PASS, run read-only plan first on an explicitly approved disposable kind cluster. Only if owner explicitly authorizes **the exact cluster Pod/release/runId** may execute --execute. One fault, one confirmation and resource cleanup; if unavailable, record NOT RUN and leave Change open, with code test receipt separate. Never auto-reset cluster, provider call or destructive persistent volume operation.
+T05 | Actual gated run (PERMISSION GATE): after T01–T04 code/tests and a fresh TURN03 PASS, run read-only plan. Do not delete a Pod until the owner explicitly authorizes the exact disposable cluster + release + runId + Pod UID in that execution chat.
 
 ## Acceptance and stop
 

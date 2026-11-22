@@ -1,48 +1,43 @@
-## Source-grounded admission-composition correction (2026-11-22)
+# WR11 selected execution
 
-**Critical actual call chain:** The narrative action's due-time SQL transition is **not** executed by `apps/game-authority/src/application.ts`. It runs in `apps/worker/src/bootstrap/main.ts` → `runtime/index.ts:startRuntime` (legacy `offscreen-local` task queue, with SQL) → `createWorkerActivities` → `stories.advanceCampaignAction` → `createCampaignActionExecutions(...).advance` → `settleActionExecution` → `settleNarrativeIntentExecution` → `scheduleWriterContinuation`. The kind `game-relay` Pod still runs this SQL-capable legacy worker with `STORYTELLER_DISTRIBUTED_V1=true`; control/execution Pods poll separate queues and have no SQL. Therefore **injecting a mode only at Game Authority application composition would not affect normal action settlement**. Do not tell Cursor to discover this chain.
+## T01 admission + policy pin
 
-**Selected source owner/algorithm:** Define an immutable, side-effect-free `WriterContinuationAdmission` value object (default `{kind:'scripted'}`; provider test mode requires exact allowlisted model/provider/priceVersion, capped amount and fixed capture policy). Do not call an external service or read process.env inside the SQL transaction. The SQL-capable legacy worker's `startRuntime` reads a **frozen, validated, explicitly test-only allowlist** from its injected `storytellerOptions` (or one typed non-secret `WorkerRuntimeOptions.writerContinuationAdmission` field) once at boot; `bootstrap/main.ts` parses the test-only config with default scripted and rejects provider selection unless explicit disposable-lab mode and allowlisted exact price are present. Pass that frozen value through exactly these typed functions:
-1. `runtime/index.ts:createStories(database,{documentStore,writerContinuationAdmission})`
-2. `stories/index.ts:StoryApplicationOptions.writerContinuationAdmission` → `createCampaignActionExecutions(database,documentStore,writerContinuationAdmission)`
-3. `campaign/action-executions.ts:createCampaignActionExecutions` → `settleActionExecution(...,writerContinuationAdmission)`
-4. `campaign/narrative-intent-settlement.ts:settleNarrativeIntentExecution(...,writerContinuationAdmission)` → `scheduleWriterContinuation(tx,{...bases,writerContinuationAdmission})`
-5. `storyteller/writer-continuation.ts:scheduleWriterContinuation` chooses `writer.scene.v1` or `writer.scene.provider.v1` **before insert**, persisting the selected v3 capture/model/profile and exact outbox topic in the SAME original SQL transaction. On existing mission, use recorded capture and `assertWriterSceneWakeOutbox` to check the **persisted** topic; do not reselect policy from current env. Refuse if a replay attempts to reinterpret an earlier scripted mission as provider.
+Add a typed provider admission value and provider policy/version pin to v3 continuation capture with backward-compatible scripted parsing. Default admission stays scripted. Provider admission is constructed only from validated server configuration and passed through the existing SQL-worker call chain. Existing mission replay never reselects admission.
 
-**Important trust qualifier:** This first provider admission is a **disposable-lab, fake-only Worker authority mode**; the legacy SQL worker is already authorized to settle an owner's action but may not be allowed to select a funded real provider policy in arbitrary production deployments. Before real paid mode, server-controlled owner consent/pricing must be persisted and verified by GA/SQL under a separate explicit contract. GA's WR10 private service independently validates stored capture + exact persisted attempted policy, not an arbitrary model from the executor. No player-supplied provider mode. A real model requires a separate allowed host configuration+owner consent. This is a genuine functional stage, not production-paid availability.
+## T02 explicit provider-authorized bootstrap
 
-**No broad worker credential change:** This packet may touch the SQL worker `apps/worker/src/{bootstrap/main,runtime/index,activities/index}.ts` only to carry this immutable admission config. It does not add DATABASE_URL to the executor and never changes control/executor no-SQL invariant. It does not add a second scheduler or a direct worker publication route.
+GA: extend Writer bootstrap with `provider-authorized`, install one validated `WriterRoundModelPolicy`, and validate capture model + policy version + budgets before plan/prepare.
 
-**Acceptance for this exact seam:** tests configured scripted retain identical captureHash/topic; injected fake provider policy at SQL-worker boot produces *new* topic/capture only under explicit disposable mode; a pre-existing mission never switches mode after environment restart/change; no provider command from player body can override; actual kind game-relay task queue receives the same frozen policy; no secret in Temporal payload or capture. Source signature drift after WR10 must be reconciled by ChatGPT.
+SQL worker: parse the same non-secret provider policy at boot and derive `WriterContinuationAdmission`.
 
-# WR11 | selected server admission and distributed continuation algorithm
+Execution worker: provider-authorized mode uses the existing WR10 real transport; key absent => fail before invoke. Scripted-lab mode remains mutually exclusive with provider key. Free integration tests inject fake transport directly; do not add a fake production endpoint.
 
-## Gate 0, source rebase
+## T03 multi-round GA control result
 
-Do not begin implementation until WR10 source/positive and financial negative tests are integrated and actual types match private prepare/outcome/status and executor adapter. Require TURN03 scripted cold-kind baseline (or mark live KIND proof blocked; source implementation may proceed once WR10 is verified). Fix no new transport/budget schema in this packet. The planner, not Cursor, owns any mismatched interface decisions.
+Extend control contracts:
+- execution plan includes `maxModelRounds`;
+- finalize result adds `needs-next-round` with next ordinal/revision (or enough typed state for the next plan to return it).
 
-## Admission mode, one authority transaction
+Remove fixed ordinal=1 planning. Query latest parent step. Finalization interprets current saved response. Final -> publish. Tool round -> execute/replay tools through existing interpreter, ensure next parent step exists, return needs-next-round. Research-delegated -> held `research_delegate_unsupported`.
 
-Introduce server-owned immutable WriterContinuationMode = scripted | provider with policy object from GA host configuration, **default scripted**. Provider mode only with explicit server mode flag, allowlisted OpenRouter provider+exact model/priceVersion, max token and worst-case price cap, healthy current owner funding/run and opt-in consent already stored by authority. No client request field can enable provider or choose prices. For this first slice use a disposable test-only enabled policy injected at GA composition; production flag stays off unless a later separately granted live run. At scheduleWriterContinuation(tx,input), select policy once BEFORE generation insertion. Build capture v3 modelSelection and pinned price/profile hash, preserving capture canonical sha, owner/root/campaign/controlling intent. For scripted route retain bit-identical modelSelection and old wake topic. For provider create new outbox topic writer.scene.provider.v1 (id/operationId=missionId), new workflow type writerSceneProviderV1 with id writer-scene-provider/<missionId>. Existing mission replay reads its recorded outbox topic and validates it against pinned captured mode; it must not decide a new mode on retry. One transaction owns both mission generation/step and outbox. No provider request on this path, only scheduled work.
+## T04 workflow loop
 
-## Temporal workflow orchestration, no SQL in executor
+Keep stable workflow type/id. Loop:
+1. plan;
+2. enforce ordinal <= maxModelRounds;
+3. create deterministic Temporal attempt id;
+4. executePreparedWriterRound exactly once;
+5. terminal held/uncertain/failed => stop;
+6. finalize;
+7. published/replayed => return;
+8. needs-next-round => loop and re-plan durable state.
 
-Add WriterProviderSceneActivities with:
-- control side observeWriterProviderMission(missionId): returns strictly bounded status union {kind:'ready',ordinal,attemptId} | {kind:'round-settled',ordinal} | {kind:'proposal-ready'} | {kind:'held'|'uncertain'|'failed',reasonCode}, reading GA private control API.
-- executor side executeWriterProviderRound(missionId,ordinal,attemptId): uses WR10 private client and adapter, returns only {status,attemptId,requestSha256} after submit; any lost/ambiguous send -> uncertain and no internal retry.
-- control side advanceWriterProviderMission(missionId,ordinal): GA reads committed private CAS, invokes idempotent WR09B decision interpreter/tools, prepares next model-step if needed, or marks proposal-ready, never returning text.
-- control side publishWriterProviderScene(missionId): GA transaction calls existing publishAcceptedWriterScene with a validated rehydrated proposal, same source pin and expected story revision.
+Do not retain prompt/body/tool contents in workflow history.
 
-The Temporal workflow loops maxModelRounds captured bound, never recursive, never serializes private prompt/response, uses separate control/executor TaskQueues already in workflows/index.ts. All provider transport activities have retry.maximumAttempts=1, and restart logic observes mission state before any new send. If unconfirmed execution, STOP/hold; do not invoke again merely because a Temporal Activity timed out. Publish success and duplicate delivery idempotent. Controller role cannot impersonate executor and vice versa.
+## T05 free connected proof + close
 
-## Child research and bad outcomes
+Injected fake provider:
+round 1 = one granted Library browse/read call; round 2 = final v3 scene with two authored intents.
+Prove exactly two fake invocations, one tool receipt, one passage/checkpoint, zero paid/network calls, restart/replay no extra send. Run existing WR10B scripted proof/regressions.
 
-Provider mode v1 permits mandatory read-only Library tool calls and final v3 proposal, **not research.delegate**. If model emits research.delegate, the GA interpreter reports held unsupported_tool without spending a second parent call or granting publish to child. No latent child workflow auto-spawn. Wrong actor/root/source proof, malformed tool, stale checkpoint, unexpected policy price, provider timeout/unknown, corrupted CAS or too-many-rounds fail closed; preserve operation funding and uncertain accounting. Valid final commits one new scene and offered decisions; web and terminal consume same ordinary StorySnapshot.
-
-## Bounded paid qualification (optional only)
-
-Free positive and negative gates must all pass: full affected build/typecheck, WR10 private HTTP receipt and SQL custody faults, two-round fake Writer tool/scene, authenticated player scene2, recovery/duplicate, TURN03 scripted cold-kind, and **a joined-release WR11 fake-provider continuation through actual GA/control/execution Pods with player GET and one executor restart**. A fake kind-specific provider adapter must be explicitly isolated and unable to call OpenRouter or reach any funded endpoint; its config cannot install a live key. Missing OAuth/cluster or inability to prove no external sends means paid stage NOT RUN. Then propose exact one allowlisted model and price-version; maximum three calls across at most three separately admitted disposable missions, hard cumulative cap USD 0.75 (750_000 microusd), and **each mission** must stay within its existing writerContinuationMissionBudgets.maxMicrousd=250_000 (USD 0.25) across all its rounds. Calculate worst-case model charge against the **smaller** of the exact stored mission balance and preauthorized account/run allowance before each send; stop when the sum cannot fit, never increase the captured budget to fit the smoke. Block if budget/price data cannot guarantee ceiling. No auto-fallback, no retries of unknown, no child calls, logs redacted. **User must explicitly authorize paid execution at that stage**, and supply secret via approved local config; otherwise NOT RUN. A fake-model test cannot count as live-model proof. This is not permission to deploy a permanent provider flag.
-
-## Proof
-
-Run original scripted regression and new provider workflow/GA/worker tests on disposable SQL/Temporal fake; one local integrated player flow through actual API/GA/outbox/Temporal executor on fake fetch, then controlled test Pod restart. Actual kinds/real provider may be NOT RUN, not Pass. No changes to Nest StoriesController or CLI auth schema.
+On acceptance archive/integrate/retire. Optional paid smoke remains separate permission/evidence.

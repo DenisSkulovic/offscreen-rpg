@@ -1,4 +1,4 @@
-> **Source-rebased readiness, 2026-11-22:** [K8S10-CURRENT-EXECUTION.md](K8S10-CURRENT-EXECUTION.md) selects only real-game graceful executor Pod replacement and bounded <=9 scripted commands, not a broad chaos catalog. The live gate requires a real TURN03 cold-kind PASS, matching release SHA, verified Pod→ReplicaSet→Deployment UID and exact Pod UID/digest/opt-in, user permission for that disposable cluster, zero provider dispatch, authoritative single operation/effect/checkpoint, and redacted evidence. Mocked controller/test/oracle suites are lower-tier; actual kind tests remain NOT RUN until executed. An observed duplicate effect FAILs the Change; do not label it a successful resilience test.
+> **Source-rebased readiness, 22b46a828b56a8b3094bfab30162d5718c406e22:** T01–T04 implementation is READY once TURN03 produces a genuine cold-kind PASS artifact. T05 Pod deletion remains separately permission-gated. No Cursor commission may interpret packet readiness as authorization to mutate Kubernetes.
 
 # K8S10 | resilience proof catalog and falsification matrix
 
