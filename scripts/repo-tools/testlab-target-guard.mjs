@@ -53,6 +53,8 @@ export const TESTLAB_TARGET_REFUSAL_CODES = Object.freeze({
   PROVIDER_PIN_PRESENT: 'provider-pin-present',
   MIXED_PROVIDER_PIN: 'mixed-provider-pin',
   MISSING_PROVIDER_PIN: 'missing-provider-pin',
+  ENV_FROM_AMBIGUOUS: 'env-from-ambiguous',
+  VALUE_FROM_AMBIGUOUS: 'value-from-ambiguous',
 });
 
 /** @param {unknown} value */
@@ -134,6 +136,27 @@ function verifyProviderFreeWorkloadEnv(env, workloadLabel, refusals) {
  * @param {string} workloadLabel
  * @param {TestlabTargetRefusal[]} refusals
  */
+/**
+ * envFrom and valueFrom hide whether a provider credential is present.
+ * @param {{ envFrom?: boolean, ambiguousValueFrom?: boolean }} workload
+ * @param {string} workloadLabel
+ * @param {TestlabTargetRefusal[]} refusals
+ */
+function verifyWorkloadCredentialShape(workload, workloadLabel, refusals) {
+  if (workload?.envFrom === true) {
+    refusals.push({
+      id: TESTLAB_TARGET_REFUSAL_CODES.ENV_FROM_AMBIGUOUS,
+      message: `${workloadLabel} must not use envFrom; provider credentials would be ambiguous.`,
+    });
+  }
+  if (workload?.ambiguousValueFrom === true) {
+    refusals.push({
+      id: TESTLAB_TARGET_REFUSAL_CODES.VALUE_FROM_AMBIGUOUS,
+      message: `${workloadLabel} writer or provider env uses valueFrom; refusing ambiguous credentials.`,
+    });
+  }
+}
+
 function verifyDisposableProviderFreeEnv(env, workloadLabel, refusals) {
   verifyProviderFreeWorkloadEnv(env, workloadLabel, refusals);
   const mode = env?.[OFFSCREEN_WRITER_EXECUTION_MODE_ENV]?.trim() ?? '';
@@ -174,13 +197,21 @@ function verifyDisposableProviderFreeEnv(env, workloadLabel, refusals) {
  *     namespace?: string,
  *     deploymentName?: string,
  *     image?: string,
+ *     podImage?: string,
+ *     ready?: boolean,
  *     env?: Record<string, string | undefined>,
+ *     envFrom?: boolean,
+ *     ambiguousValueFrom?: boolean,
  *   },
  *   gameExecutor?: {
  *     namespace?: string,
  *     deploymentName?: string,
  *     image?: string,
+ *     podImage?: string,
+ *     ready?: boolean,
  *     env?: Record<string, string | undefined>,
+ *     envFrom?: boolean,
+ *     ambiguousValueFrom?: boolean,
  *   },
  *   operatorGrantAuthorized?: boolean,
  *   dbConnection?: unknown,
@@ -191,9 +222,12 @@ function verifyDisposableProviderFreeEnv(env, workloadLabel, refusals) {
 
 /**
  * @param {TestlabTargetObservation | null | undefined} observation
+ * @param {{ intent?: 'read' | 'write' }} [options]
+ *   Default intent is `write`, so existing callers keep the operator-grant requirement.
  * @returns {{ ok: true, target: string } | { ok: false, refusals: readonly TestlabTargetRefusal[] }}
  */
-export function verifyTestlabTarget(observation) {
+export function verifyTestlabTarget(observation, options = {}) {
+  const intent = options.intent === 'read' ? 'read' : 'write';
   /** @type {TestlabTargetRefusal[]} */
   const refusals = [];
 
@@ -283,23 +317,23 @@ export function verifyTestlabTarget(observation) {
       id: TESTLAB_TARGET_REFUSAL_CODES.MISSING_CLUSTER_UID,
       message: 'Observed cluster UID is required for kind-offscreen-lab.',
     });
-  } else if (!expectedClusterUid) {
+  } else if (intent === 'write' && !expectedClusterUid) {
     refusals.push({
       id: TESTLAB_TARGET_REFUSAL_CODES.WRONG_CLUSTER_UID,
       message:
         'expectedClusterUid must be supplied and match the observed cluster UID.',
     });
-  } else if (clusterUid !== expectedClusterUid) {
+  } else if (expectedClusterUid && clusterUid !== expectedClusterUid) {
     refusals.push({
       id: TESTLAB_TARGET_REFUSAL_CODES.WRONG_CLUSTER_UID,
       message: 'Observed cluster UID does not match expectedClusterUid.',
     });
   }
 
-  if (observation?.operatorGrantAuthorized !== true) {
+  if (intent === 'write' && observation?.operatorGrantAuthorized !== true) {
     refusals.push({
       id: TESTLAB_TARGET_REFUSAL_CODES.OPERATOR_GRANT_REQUIRED,
-      message: 'operatorGrantAuthorized must be true for kind-offscreen-lab.',
+      message: 'operatorGrantAuthorized must be true for kind-offscreen-lab writes.',
     });
   }
 
@@ -350,6 +384,12 @@ export function verifyTestlabTarget(observation) {
         message:
           'Observed dbInstance UID is required (not inferred from DATABASE_URL).',
       });
+    } else if (intent === 'write' && !expectedDbUid) {
+      refusals.push({
+        id: TESTLAB_TARGET_REFUSAL_CODES.WRONG_DB_INSTANCE_UID,
+        message:
+          'expectedDbInstanceUid must be supplied independently for a kind write.',
+      });
     } else if (expectedDbUid && instanceUid !== expectedDbUid) {
       refusals.push({
         id: TESTLAB_TARGET_REFUSAL_CODES.WRONG_DB_INSTANCE_UID,
@@ -371,6 +411,7 @@ export function verifyTestlabTarget(observation) {
       message: `game-authority must be Deployment/${identity.gameAuthorityDeployment} in ${identity.authorityNamespace}.`,
     });
   } else {
+    verifyWorkloadCredentialShape(ga, 'game-authority', refusals);
     verifyProviderFreeWorkloadEnv(ga.env, 'game-authority', refusals);
   }
 
@@ -386,6 +427,7 @@ export function verifyTestlabTarget(observation) {
       message: `game-executor must be Deployment/${identity.gameExecutorDeployment} in ${identity.workersNamespace}.`,
     });
   } else {
+    verifyWorkloadCredentialShape(ex, 'game-executor', refusals);
     verifyProviderFreeWorkloadEnv(ex.env, 'game-executor', refusals);
   }
 

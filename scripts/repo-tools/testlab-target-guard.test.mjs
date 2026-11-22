@@ -199,6 +199,24 @@ test('negative: DATABASE_URL without dbInstance is ambiguous', () => {
   );
 });
 
+test('read intent accepts a complete kind observation without the operator grant flag', () => {
+  const result = verifyTestlabTarget(
+    validKind({ operatorGrantAuthorized: false, expectedClusterUid: undefined, expectedDbInstanceUid: undefined }),
+    { intent: 'read' },
+  );
+  assert.equal(result.ok, true);
+});
+
+test('negative: envFrom on a kind workload is refused', () => {
+  const result = verifyTestlabTarget(
+    validKind({
+      gameExecutor: { ...validKind().gameExecutor, envFrom: true },
+    }),
+  );
+  assert.equal(result.ok, false);
+  assert.ok(result.refusals.some((r) => r.id === TESTLAB_TARGET_REFUSAL_CODES.ENV_FROM_AMBIGUOUS));
+});
+
 test('negative: missing operator grant on kind target is refused', () => {
   const result = verifyTestlabTarget(
     validKind({

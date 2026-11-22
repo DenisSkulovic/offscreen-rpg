@@ -1,6 +1,6 @@
 # TESTLAB02 | Real kind operator adapter for durable provider-free test grants
 
-**Status:** READY for bounded source implementation and non-mutating live observation; **kind funding writes require independent explicit owner authorization**. **Commission:** current TURN03 blocker, 2026-11-22. **Reference:** `undertaking/storyteller-workshop@34a4567015b98145cb3cc442de647f28751fd689`. No Kubernetes mutation, SQL write or provider send is approved by this planning commit.
+**Status:** Done on `undertaking/storyteller-workshop`. Live kind `ensure` remains **NOT RUN** and still needs a separate owner authorization. **Reference:** `undertaking/storyteller-workshop@73230477c4e1`. No Kubernetes mutation, SQL grant write, or provider send was performed.
 
 ## Defect and ownership
 TESTLAB01 is Done for disposable integration but its bare `scripts/repo-tools/testlab-funding.mjs` lacks `observeKindTarget`, `queryReadOnly`, and `grantStore`. A live `status` receives an empty synthetic kind observation and returns misleading wrong-cluster errors. `plan` succeeds internally but crashes in the CLI on `BigInt` JSON serialization (line ~624). `verifyTestlabTarget()` currently requires `operatorGrantAuthorized=true` even for read-only status. This is an **unfinished operational boundary**, not permission to insert SQL by hand or modify production grant/admission.

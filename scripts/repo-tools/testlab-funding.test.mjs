@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import {
   buildTestlabSuiteApprovalIdentity,
@@ -399,6 +401,44 @@ test('runTestlabFundingCommand blocks foreign suite for same owner', async () =>
   assert.equal(store.state.funding.size, 1);
 });
 
+test('negative: kind status without an observer is missing-kind-observer', async () => {
+  const receipt = await runTestlabFundingStatus(
+    { target: 'kind-offscreen-lab', owner: OWNER, suite: SUITE },
+    {},
+  );
+  assert.equal(receipt.outcome, 'blocked');
+  assert.equal(receipt.refusals[0].id, 'missing-kind-observer');
+});
+
 test('CLI operator grant flag constant matches packet', () => {
   assert.equal(TESTLAB_OPERATOR_GRANT_CLI_FLAG, '--operator-grant-authorized');
+});
+
+test('plan CLI prints JSON with decimal 250000', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/repo-tools/testlab-funding.mjs',
+      'plan',
+      '--target',
+      'kind-offscreen-lab',
+      '--owner',
+      'test',
+      '--suite',
+      'turn03',
+      '--operator',
+      'testlab:human',
+      '--approval',
+      'testlab:suite:turn03',
+    ],
+    {
+      encoding: 'utf8',
+      cwd: fileURLToPath(new URL('../..', import.meta.url)),
+    },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  const receipt = JSON.parse(result.stdout);
+  assert.equal(receipt.ok, true);
+  assert.equal(receipt.plan.funding.limitMicrousd, '250000');
+  assert.equal(result.stdout.includes('250000'), true);
 });

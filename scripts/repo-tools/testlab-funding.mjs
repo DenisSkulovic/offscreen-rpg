@@ -283,20 +283,26 @@ async function buildTargetObservation(flags, deps, command) {
         },
       };
     }
-    if (typeof deps.observeKindTarget === 'function') {
-      const observation = await deps.observeKindTarget();
+    if (typeof deps.observeKindTarget !== 'function') {
       return {
-        observation: {
-          ...observation,
-          target: 'kind-offscreen-lab',
-          operatorGrantAuthorized: flags.operatorGrantAuthorized === true,
+        observation: null,
+        refusal: {
+          id: 'missing-kind-observer',
+          message:
+            'kind-offscreen-lab requires an injected or CLI kind observer; refusing an empty cluster observation.',
         },
       };
     }
+    const observation = await deps.observeKindTarget();
+    const expectClusterUid = stringFlag(flags, 'expectClusterUid');
+    const expectDbUid = stringFlag(flags, 'expectDbUid');
     return {
       observation: {
+        ...observation,
         target: 'kind-offscreen-lab',
         operatorGrantAuthorized: flags.operatorGrantAuthorized === true,
+        ...(expectClusterUid ? { expectedClusterUid: expectClusterUid } : {}),
+        ...(expectDbUid ? { expectedDbInstanceUid: expectDbUid } : {}),
       },
     };
   }
@@ -325,7 +331,7 @@ export async function runTestlabFundingStatus(flags, deps = {}) {
     return blockedReceipt([built.refusal], targetIdentity);
   }
 
-  const verified = verifyTestlabTarget(built.observation);
+  const verified = verifyTestlabTarget(built.observation, { intent: 'read' });
   if (!verified.ok) {
     return blockedReceipt(verified.refusals, targetIdentity);
   }
@@ -470,7 +476,7 @@ export async function runTestlabFundingEnsure(flags, deps = {}) {
       return blockedReceipt([built.refusal], targetIdentity);
     }
 
-    const verified = verifyTestlabTarget(built.observation);
+    const verified = verifyTestlabTarget(built.observation, { intent: 'write' });
     if (!verified.ok) {
       return blockedReceipt(verified.refusals, targetIdentity);
     }
@@ -603,6 +609,12 @@ export async function runTestlabFundingCommand(command, flags, deps = {}) {
  * @param {unknown} receipt
  * @returns {number}
  */
+export function serializeTestlabReceipt(receipt) {
+  return JSON.stringify(receipt, (_key, value) =>
+    typeof value === 'bigint' ? value.toString(10) : value,
+  );
+}
+
 export function testlabFundingExitCode(receipt) {
   if (receipt && typeof receipt === 'object' && receipt.outcome === 'blocked') {
     return 1;
@@ -617,10 +629,20 @@ const invokedAsScript =
   process.argv[1] && process.argv[1].endsWith('testlab-funding.mjs');
 if (invokedAsScript) {
   const { command, flags } = parseTestlabFundingArgv(process.argv.slice(2));
-  const receipt = await runTestlabFundingCommand(
-    /** @type {'plan' | 'status' | 'ensure'} */ (command),
-    flags,
-  );
-  console.log(JSON.stringify(receipt));
+  const kindOperator =
+    (command === 'status' || command === 'ensure') &&
+    flags.target === 'kind-offscreen-lab';
+  const receipt = kindOperator
+    ? await import('./testlab-kind-cli.mjs').then((mod) =>
+        mod.runBareKindFunding(command, flags, {
+          runStatus: runTestlabFundingStatus,
+          runEnsure: runTestlabFundingEnsure,
+        }),
+      )
+    : await runTestlabFundingCommand(
+        /** @type {'plan' | 'status' | 'ensure'} */ (command),
+        flags,
+      );
+  console.log(serializeTestlabReceipt(receipt));
   process.exitCode = testlabFundingExitCode(receipt);
 }

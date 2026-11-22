@@ -14,7 +14,7 @@ Ordinary local boot stays on [Local development](local-development.md). Disposab
 | `status` | Read-only SQL when a query hook is supplied | No |
 | `ensure` | May insert storyteller funding/run/grant rows when hooks pass guards | No provider calls; not production entitlement |
 | Provider-free launch integration test | Disposable sandbox Postgres only | No; tripwire fails if a provider path is invoked |
-| Bare CLI `node scripts/repo-tools/testlab-funding.mjs …` | Prints JSON receipt only; without injected hooks, `ensure`/`status` block before mutation | No |
+| Bare CLI `node scripts/repo-tools/testlab-funding.mjs …` | `plan` is pure JSON. `status`/`ensure --target kind-offscreen-lab` use the kind observer and an ephemeral `lab-pg-rw` port-forward. Disposable status/ensure still need injected hooks. | No |
 
 `pnpm dev`, sign-in, and ordinary startup **do not** create or refresh testlab grants. There is **no** automatic first-user or login entitlement and **no** production entitlement profile in this path—the canonical testlab profile is `p3c-launch-entitlement.v1` with route `writer:launch` only.
 
@@ -102,17 +102,29 @@ Provisions or reuses a grant when target guards pass and the grant store is wire
 
 **Disposable:** `--owner` and `--suite` are required. For mutation, callers must inject `grantStore`, `observeDisposableTarget`, and related hooks (see `tools/api-integration/test/helpers/testlab-disposable-grant-deps.ts`). The bare CLI blocks with `missing-disposable-runner` before writes.
 
-**kind-offscreen-lab:** requires `--owner`, `--suite`, and `--approval`, plus **`--operator-grant-authorized`**, and a complete kind observation hook. Without the flag, the CLI blocks with `operator-grant-cli-missing`. **TESTLAB01 does not authorize operators to run this against the live lab database**; document and test only unless a separate Change grants that approval.
+**kind-offscreen-lab status** (read-only; no grant flag):
 
-Example shape (not an authorization to run on kind):
+```sh
+node scripts/repo-tools/testlab-funding.mjs status \
+  --target kind-offscreen-lab \
+  --owner <existing-auth-user> \
+  --suite turn03
+```
+
+The command reads the pinned kind context, CNPG `lab-postgres/lab-pg`, Ready game-authority and game-executor pods, then opens a short-lived `kubectl --context kind-offscreen-lab -n lab-postgres port-forward service/lab-pg-rw` to loopback and runs `BEGIN READ ONLY`. No grant: `missing-active-grant`. A failed observation names that failure (`missing-kind-observer` only when no observer is injected). It does not change kube context.
+
+**kind-offscreen-lab ensure** requires `--owner`, `--suite`, `--approval`, `--operator`, `--operator-grant-authorized`, and independently copied `--expect-cluster-uid` / `--expect-db-uid` from a prior status. The CLI rechecks cluster, database, pod image, and scripted-offline mode immediately before the existing grant transaction. Drift blocks with `target-drift` and does not retry. **TESTLAB02 does not authorize a live ensure.** That still needs a separate owner approval naming the target, owner, and suite. The flag is the operator's assertion of that approval; it is not approval by itself.
 
 ```sh
 node scripts/repo-tools/testlab-funding.mjs ensure \
   --target kind-offscreen-lab \
-  --owner <userId> \
-  --suite <suiteId> \
-  --approval testlab:suite:<suiteId> \
-  --operator-grant-authorized
+  --owner <existing-auth-user> \
+  --suite turn03 \
+  --approval testlab:suite:turn03 \
+  --operator <human> \
+  --operator-grant-authorized \
+  --expect-cluster-uid <uid-from-status> \
+  --expect-db-uid <uid-from-status>
 ```
 
 #### Ensure outcomes (grant store)
@@ -164,6 +176,9 @@ node --test scripts/repo-tools/testlab-funding.test.mjs
 node --test scripts/repo-tools/testlab-target-guard.test.mjs
 node --test scripts/repo-tools/testlab-grant-store.test.mjs
 node --test scripts/repo-tools/testlab-grant-contract.test.mjs
+node --test scripts/repo-tools/testlab-kind-observer.test.mjs
+node --test scripts/repo-tools/testlab-kind-db.test.mjs
+node --test scripts/repo-tools/testlab-kind-cli.test.mjs
 ```
 
 The integration test provisions disposable Postgres, ensures a grant via injected funding deps, admits a pending launch with `admitLaunchWriterMission`, and asserts the provider tripwire count stays zero.
