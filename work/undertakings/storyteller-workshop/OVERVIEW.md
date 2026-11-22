@@ -2,6 +2,8 @@
 
 **Reviewed:** 2026-11-22 · **Integration branch:** `undertaking/storyteller-workshop` · **Inspected HEAD:** `d3ba291763de26a0135c1ad84b077bf4f1c153a8` · [Technical ledger](UNDERTAKING.md) · [Historical program](PROGRAM.md) · [Demonstrated status](../../../STATUS.md)
 
+**WR10B joined:** new Writer scene wakes use `writerSceneDistributedV2` and the execution worker under an explicit lab-only scripted transport. That is a zero-cost distributed bridge, not a paid model scene and not a TURN03 gate PASS. TURN03 T04 can be rerun against the joined undertaking HEAD.
+
 **One-sentence verdict:** We have a substantial, carefully constrained **foundation** for a durable game/Writer, not yet a functioning, AI-driven Storyteller product on a demonstrated resilient Kubernetes system. Treat “implemented”, “focused-test passed”, “local connected proof”, “cold Kubernetes proof” and “user-experienced quality” as **five different claims**. The first is far ahead of the last two.
 
 ## Next three implementation Changes prepared (2026-11-22; NO COMPLETION CREDIT YET)

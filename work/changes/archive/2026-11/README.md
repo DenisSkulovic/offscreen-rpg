@@ -264,7 +264,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-17--har09-architectural-memory-pilot](../../../../work/changes/archive/2026-11/retrieval/2026-11-17--har09-architectural-memory-pilot/CHANGE.md)
 - [2026-11-17--har10-retire-retrieval-experiments](../../../../work/changes/archive/2026-11/retrieval/2026-11-17--har10-retire-retrieval-experiments/CHANGE.md)
 
-## storyteller (16)
+## storyteller (17)
+
+- [2026-11-22--wr10b-provider-free-temporal-writer](../../../../work/changes/archive/2026-11/storyteller/2026-11-22--wr10b-provider-free-temporal-writer/CHANGE.md)
 
 - [2026-11-14--sa01-operation-trace](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa01-operation-trace/CHANGE.md)
 - [2026-11-14--sa02-prompt-constitution](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa02-prompt-constitution/CHANGE.md)

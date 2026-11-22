@@ -35,6 +35,10 @@
       "types": "./dist/src/writer-round-private-custody.d.ts",
       "default": "./dist/src/writer-round-private-custody.js"
     },
+    "./writer-scene-round-control": {
+      "types": "./dist/src/writer-scene-round-control.d.ts",
+      "default": "./dist/src/writer-scene-round-control.js"
+    },
     "./chamber": {
       "types": "./dist/src/chamber.d.ts",
       "default": "./dist/src/chamber.js"

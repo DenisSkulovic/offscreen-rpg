@@ -7,7 +7,7 @@ import {
   writerRoundPrivateCustodyVersionHeader,
   writerRoundPrivatePreparePath,
 } from '@offscreen/contracts/writer-round-private-custody';
-import type { WriterRoundPrivateSeam } from '../src/writer-round-private-seam';
+import type { WriterRoundSeam } from '../src/application';
 import { startGameAuthorityServer } from '../src/server';
 
 const storyToken = 'test-story-service-credential';
@@ -40,7 +40,7 @@ function noopSeam() {
   };
 }
 
-function memoryWriterRounds(): WriterRoundPrivateSeam & {
+function memoryWriterRounds(): WriterRoundSeam & {
   prepareCalls: number;
   submitCalls: number;
 } {
@@ -88,6 +88,15 @@ function memoryWriterRounds(): WriterRoundPrivateSeam & {
     },
     async getStatus() {
       return { status: 'dispatched' as const, attemptId };
+    },
+    async planRound() {
+      throw new Error('unexpected control plan');
+    },
+    async readMissionState() {
+      return { status: 'pending' as const };
+    },
+    async finalizeRound() {
+      throw new Error('unexpected control finalize');
     },
   };
 }

@@ -17,6 +17,14 @@ import {
 } from '../application.js';
 import { readGameAuthorityConfig } from '../config.js';
 import { startGameAuthorityServer } from '../server.js';
+import {
+  createWriterRoundSeam,
+  writerRoundCapturePolicyModeForBootstrap,
+} from '../writer-round-control-seam.js';
+import {
+  readWriterRoundBootstrapMode,
+  scriptedOfflineLabWriterRoundPolicy,
+} from '../writer-round-lab-policy.js';
 
 function log(
   level: 'info' | 'error',
@@ -126,6 +134,17 @@ async function main() {
     ...applicationOptions,
     ...(defaultRules ? { defaultRules } : {}),
   };
+  const writerRoundBootstrapMode = readWriterRoundBootstrapMode(process.env);
+  const writerRounds =
+    writerRoundBootstrapMode === 'unavailable' || documentStore === undefined
+      ? undefined
+      : createWriterRoundSeam(database, documentStore, {
+          providerPolicy: scriptedOfflineLabWriterRoundPolicy,
+          capturePolicyMode: writerRoundCapturePolicyModeForBootstrap(
+            writerRoundBootstrapMode,
+          ),
+        });
+
   const server = await startGameAuthorityServer({
     seam: createGameAuthoritySeam(database, seamOptions),
     custody: createStorytellerTaskCustodySeam(database, applicationOptions),
@@ -133,6 +152,7 @@ async function main() {
       database,
       applicationOptions,
     ),
+    ...(writerRounds === undefined ? {} : { writerRounds }),
     ...(documentStore === undefined ? {} : { documentStore }),
     token: config.token,
     executorToken,

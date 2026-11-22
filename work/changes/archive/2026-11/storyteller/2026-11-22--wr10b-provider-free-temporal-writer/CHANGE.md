@@ -1,6 +1,6 @@
 # WR10B | Provider-free Writer round through the real Temporal executor
 
-**State: READY.**  
+**State: Done.** Joined to `undertaking/storyteller-workshop`. No paid provider call. TURN03 T04 was not rerun by this Change.  
 **Kind:** implementation · **Profile:** RELEASE/CONTRACT · **Reference branch:** `undertaking/storyteller-workshop`  
 **Planner baseline and source recheck:** `b59c22e9f874933666b86f6412693e996bdc4db5`.  
 **Predecessor:** WR10 private split-custody Writer round protocol is integrated.  

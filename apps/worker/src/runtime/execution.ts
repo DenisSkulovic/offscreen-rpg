@@ -3,6 +3,7 @@ import {
   storytellerExecuteTaskQueue,
 } from '@offscreen/workflows/contracts';
 import { createStorytellerDistributedExecutionActivities } from '../activities/storyteller-distributed-execution';
+import { createWriterRoundProviderExecutionActivities } from '../activities/writer-round-provider-execution';
 import { createStorytellerTaskCustodyClient } from '../custody/storyteller-task-custody-client';
 import { closeWorkerConnections, createCloseOnce } from './connections';
 import type { ExecutionWorkerConfig } from '../bootstrap/config';
@@ -62,7 +63,21 @@ export async function startExecutionRuntime(
 
   try {
     const custody = createStorytellerTaskCustodyClient(config.custody);
-    const activities = createStorytellerDistributedExecutionActivities(custody);
+    const storytellerActivities =
+      createStorytellerDistributedExecutionActivities(custody);
+    const writerRoundActivities = createWriterRoundProviderExecutionActivities(
+      config.writerRound.privateCustody,
+      {
+        apiKey: config.writerRound.apiKey,
+        outputSchema: config.writerRound.outputSchema,
+        fetchImpl: config.writerRound.fetchImpl,
+        prepareTransport: config.writerRound.prepareTransport,
+      },
+    );
+    const activities = {
+      ...storytellerActivities,
+      ...writerRoundActivities,
+    };
     worker = await createWorker({
       connection: native as NonNullable<WorkerCreateOptions['connection']>,
       namespace: config.namespace,

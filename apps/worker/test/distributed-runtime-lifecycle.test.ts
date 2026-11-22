@@ -7,7 +7,11 @@ import {
   storytellerExecuteTaskQueue,
 } from '@offscreen/workflows/contracts';
 import type { Database } from '@offscreen/db';
-import type { ControlWorkerConfig, ExecutionWorkerConfig } from '../src/bootstrap/config';
+import {
+  readExecutionWorkerConfig,
+  type ControlWorkerConfig,
+  type ExecutionWorkerConfig,
+} from '../src/bootstrap/config';
 import { startControlRuntime } from '../src/runtime/control';
 import { startExecutionRuntime } from '../src/runtime/execution';
 import { startStorytellerDistributedLiveStack } from '../src/runtime/storyteller-distributed-live';
@@ -22,15 +26,12 @@ const controlRuntimeSource = readFileSync(
 );
 
 function executionConfig(): ExecutionWorkerConfig {
-  return {
-    address: 'test:7233',
-    namespace: 'default',
-    custody: {
-      origin: 'http://127.0.0.1:9911',
-      executorToken: '0123456789abcdef',
-      timeoutMs: 1_000,
-    },
-  };
+  return readExecutionWorkerConfig({
+    TEMPORAL_ADDRESS: 'test:7233',
+    TEMPORAL_NAMESPACE: 'default',
+    GAME_AUTHORITY_ORIGIN: 'http://127.0.0.1:9911',
+    GAME_AUTHORITY_EXECUTOR_TOKEN: '0123456789abcdef',
+  });
 }
 
 function trackNativeClose() {

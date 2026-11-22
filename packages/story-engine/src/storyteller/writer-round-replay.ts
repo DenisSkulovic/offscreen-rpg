@@ -30,6 +30,7 @@ import {
   type WriterLoopRoundResult,
   type RunWriterMissionModelRoundInput,
 } from './writer-loop';
+import { validateWriterRoundCaptureAgainstPolicy } from './writer-round-capture-validation';
 
 const MAX_SERIALIZED_REQUEST_BYTES = 48 * 1024;
 
@@ -101,16 +102,8 @@ function hasStrictResponsePointer(
 function validateDurableCapture(
   capture: WriterMissionCapture,
   policy: WriterRoundModelPolicy,
+  budgetSnapshot: WriterMissionBudgetSnapshot,
 ): string | null {
-  if (capture.version !== 'writer-mission.v3') {
-    return 'invalid_capture_version';
-  }
-  if (capture.modelSelection.model === 'scripted-offline') {
-    return 'scripted_offline_model';
-  }
-  if (capture.modelSelection.model !== policy.model) {
-    return 'model_policy_mismatch';
-  }
   const { budgets } = capture;
   if (
     !Number.isFinite(budgets.maxModelRounds) ||
@@ -124,7 +117,12 @@ function validateDurableCapture(
   ) {
     return 'invalid_budget';
   }
-  return null;
+  return validateWriterRoundCaptureAgainstPolicy(
+    capture,
+    policy,
+    budgetSnapshot,
+    'provider-default',
+  );
 }
 
 async function readValidatedResponseBody(
@@ -215,7 +213,21 @@ export async function runDurableWriterMissionModelRound(
   );
   const wireSha256 = prepared.wireSha256;
 
-  const captureHold = validateDurableCapture(input.capture, input.policy);
+  const budgetSnapshot = await loadWriterMissionBudgetSnapshot(
+    database,
+    input.missionId,
+  );
+  const captureHold = validateDurableCapture(
+    input.capture,
+    input.policy,
+    budgetSnapshot ?? {
+      maxModelRounds: input.capture.budgets.maxModelRounds,
+      maxInputTokens: input.capture.budgets.maxInputTokens,
+      maxGeneratedTokens: input.capture.budgets.maxGeneratedTokens,
+      maxMicrousd: input.capture.budgets.maxMicrousd,
+      deadlineMs: input.capture.budgets.deadlineMs,
+    },
+  );
   if (captureHold) {
     const step = await loadModelStep(
       database,

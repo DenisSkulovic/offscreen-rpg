@@ -16,6 +16,7 @@ import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { WRITER_SCENE_WAKE_TOPIC } from '@offscreen/story-engine/storyteller';
 import {
+  writerSceneDistributedWorkflowType,
   writerSceneWorkflowId,
   writerSceneWorkflowType,
 } from '@offscreen/workflows/contracts';
@@ -269,12 +270,13 @@ async function admitAndSettle(database, storyId, offerId) {
   return missions[0].id;
 }
 
-test('writer.scene.v1 dispatches writerSceneV1 with writer-scene/<missionId>', () => {
+test('writer.scene.v1 dispatches writerSceneDistributedV2 with writer-scene/<missionId>', () => {
   const missionId = randomUUID();
   const dispatch = selectNoticeDispatch(WRITER_SCENE_WAKE_TOPIC);
   assert.equal(dispatch?.kind, 'start');
   if (dispatch?.kind === 'start') {
-    assert.equal(dispatch.workflowType, writerSceneWorkflowType);
+    assert.equal(dispatch.workflowType, writerSceneDistributedWorkflowType);
+    assert.notEqual(dispatch.workflowType, writerSceneWorkflowType);
     assert.equal(dispatch.workflowId(missionId), writerSceneWorkflowId(missionId));
   }
 });

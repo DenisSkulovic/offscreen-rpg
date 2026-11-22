@@ -76,6 +76,60 @@ export interface WriterSceneActivities {
 export const writerSceneWorkflowType = 'writerSceneV1';
 export const writerSceneWorkflowId = (id: string) => `writer-scene/${id}`;
 
+export type WriterSceneRoundExecutionPlan = {
+  missionId: string;
+  contextId: string;
+  ordinal: number;
+  expectedRevision: number;
+  model: string;
+};
+
+export type ExecutePreparedWriterRoundWorkflowInput = {
+  missionId: string;
+  contextId: string;
+  ordinal: number;
+  expectedRevision: number;
+  attemptId: string;
+};
+
+export type WriterSceneRoundExecutorResult = {
+  status: 'delivered' | 'replayed' | 'held' | 'uncertain' | 'failed';
+  reason?: string;
+};
+
+export type WriterSceneRoundMissionState = {
+  status: 'published' | 'replayed' | 'held' | 'uncertain' | 'pending';
+  reason?: string;
+};
+
+export type WriterSceneRoundFinalizeResult = {
+  status: 'published' | 'replayed' | 'held' | 'uncertain';
+  reason?: string;
+};
+
+/** Control worker: GA plan/finalize and mission-state reads; no provider I/O. */
+export interface WriterSceneDistributedControlActivities {
+  planWriterSceneRound(
+    missionId: string,
+  ): Promise<WriterSceneRoundExecutionPlan>;
+  readWriterSceneRoundMissionState(
+    missionId: string,
+  ): Promise<WriterSceneRoundMissionState>;
+  finalizeWriterSceneRound(
+    missionId: string,
+  ): Promise<WriterSceneRoundFinalizeResult>;
+}
+
+/** Execution worker: one bounded WR10 prepare/outcome slot per attempt. */
+export interface WriterSceneDistributedExecutionActivities {
+  executePreparedWriterRound(
+    input: ExecutePreparedWriterRoundWorkflowInput,
+  ): Promise<WriterSceneRoundExecutorResult>;
+}
+
+export const writerSceneDistributedWorkflowType =
+  'writerSceneDistributedV2' as const;
+
 export interface WriterResearchActivities {
   runScriptedWriterResearchChild(childId: string): Promise<void>;
   runWriterResearchParentJoin(joinOperationId: string): Promise<void>;

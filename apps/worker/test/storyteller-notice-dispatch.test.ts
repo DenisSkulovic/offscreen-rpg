@@ -4,7 +4,9 @@ import {
   LAUNCH_WAKE_TOPIC,
   storytellerDistributedTopic,
   storytellerTopic,
+  WRITER_SCENE_WAKE_TOPIC,
 } from '@offscreen/story-engine/storyteller';
+import { WorkflowExecutionAlreadyStartedError } from '@temporalio/client';
 import {
   storytellerControlTaskQueue,
   storytellerDistributedWorkflowType,
@@ -12,6 +14,8 @@ import {
   storytellerWorkflowType,
   storyLaunchWorkflowId,
   storyLaunchWorkflowType,
+  writerSceneDistributedWorkflowType,
+  writerSceneWorkflowId,
 } from '@offscreen/workflows/contracts';
 import {
   deliverOutboxNotice,
@@ -198,4 +202,92 @@ test('distributed storyteller notice starts on control task queue', async () => 
   assert.equal(starts[0]?.workflowId, storytellerWorkflowId(generationId));
   assert.equal(starts[0]?.taskQueue, storytellerControlTaskQueue);
   assert.equal(starts[0]?.workflowIdReusePolicy, 'ALLOW_DUPLICATE_FAILED_ONLY');
+});
+
+const missionId = '00000000-0000-4000-8000-000000000404';
+
+test('writer.scene.v1 notice starts writerSceneDistributedV2 on control task queue', async () => {
+  const relayTaskQueue = 'browser-integration';
+  const starts: Array<{
+    workflowType: string;
+    workflowId: string;
+    taskQueue: string;
+    workflowIdReusePolicy: string;
+  }> = [];
+  await deliverOutboxNotice(
+    {
+      topic: WRITER_SCENE_WAKE_TOPIC,
+      operationId: missionId,
+    },
+    {
+      connection: {
+        withDeadline: async (_deadline: number, run: () => Promise<void>) => {
+          await run();
+        },
+      } as never,
+      client: {
+        workflow: {
+          start: async (
+            workflowType: string,
+            options: {
+              workflowId: string;
+              taskQueue: string;
+              workflowIdReusePolicy: string;
+            },
+          ) => {
+            starts.push({
+              workflowType,
+              workflowId: options.workflowId,
+              taskQueue: options.taskQueue,
+              workflowIdReusePolicy: options.workflowIdReusePolicy,
+            });
+          },
+        },
+      } as never,
+      taskQueue: relayTaskQueue,
+      intervalNeedsWake: async () => false,
+    },
+  );
+  assert.equal(starts.length, 1);
+  assert.equal(starts[0]?.workflowType, writerSceneDistributedWorkflowType);
+  assert.equal(starts[0]?.workflowId, writerSceneWorkflowId(missionId));
+  assert.equal(starts[0]?.taskQueue, storytellerControlTaskQueue);
+  assert.equal(starts[0]?.workflowIdReusePolicy, 'REJECT_DUPLICATE');
+});
+
+test('duplicate writer.scene.v1 start does not create a second workflow', async () => {
+  let startAttempts = 0;
+  let workflowsCreated = 0;
+  const deps = {
+    connection: {
+      withDeadline: async (_deadline: number, run: () => Promise<void>) => {
+        await run();
+      },
+    } as never,
+    client: {
+      workflow: {
+        start: async () => {
+          startAttempts += 1;
+          if (startAttempts > 1) {
+            throw new WorkflowExecutionAlreadyStartedError(
+              'already started',
+              writerSceneWorkflowId(missionId),
+              writerSceneDistributedWorkflowType,
+            );
+          }
+          workflowsCreated += 1;
+        },
+      },
+    } as never,
+    taskQueue: 'browser-integration',
+    intervalNeedsWake: async () => false,
+  };
+  const notice = {
+    topic: WRITER_SCENE_WAKE_TOPIC,
+    operationId: missionId,
+  };
+  await deliverOutboxNotice(notice, deps);
+  await deliverOutboxNotice(notice, deps);
+  assert.equal(startAttempts, 2);
+  assert.equal(workflowsCreated, 1);
 });

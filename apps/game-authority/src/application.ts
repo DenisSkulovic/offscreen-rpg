@@ -77,6 +77,7 @@ export type StorytellerTaskCustodySeam = {
 };
 
 export type { WriterRoundPrivateSeam } from './writer-round-private-seam.js';
+export type { WriterRoundSeam } from './writer-round-control-seam.js';
 
 /** Control identity publish bridge: adopts saved attempt output then publishes on GA. */
 export type StorytellerPublicationSeam = {

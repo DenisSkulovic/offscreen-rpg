@@ -5,6 +5,8 @@ import {
 import { storytellerControlTaskQueue } from '@offscreen/workflows/contracts';
 import { createStorytellerPublicationClient } from '../custody/storyteller-publication-client';
 import { createStorytellerDistributedControlActivities } from '../activities/storyteller-distributed-control';
+import { createWriterSceneDistributedControlActivities } from '../activities/writer-scene-distributed-control';
+import { createWriterSceneRoundControlClient } from '../custody/writer-scene-round-control-client';
 import { closeWorkerConnections, createCloseOnce } from './connections';
 import type { ControlWorkerConfig } from '../bootstrap/config';
 
@@ -63,7 +65,13 @@ export async function startControlRuntime(
 
   try {
     const publication = createStorytellerPublicationClient(config.publication);
-    const activities = createStorytellerDistributedControlActivities(publication);
+    const writerSceneControl = createWriterSceneRoundControlClient(
+      config.publication,
+    );
+    const activities = {
+      ...createStorytellerDistributedControlActivities(publication),
+      ...createWriterSceneDistributedControlActivities(writerSceneControl),
+    };
     worker = await createWorker({
       connection: native as NonNullable<WorkerCreateOptions['connection']>,
       namespace: config.namespace,

@@ -1,9 +1,11 @@
 import {
+  ApplicationFailure,
   proxyActivities,
   condition,
   defineSignal,
   setHandler,
   sleep,
+  uuid4,
 } from '@temporalio/workflow';
 import { intervalChangedSignal } from './contracts';
 import type {
@@ -17,6 +19,10 @@ import type {
   CampaignActivities,
   StoryLaunchActivities,
   WriterSceneActivities,
+  WriterSceneDistributedControlActivities,
+  WriterSceneDistributedExecutionActivities,
+  WriterSceneRoundFinalizeResult,
+  WriterSceneRoundMissionState,
 } from './contracts';
 import {
   storytellerControlTaskQueue,
@@ -135,6 +141,89 @@ const { runScriptedWriterScene } = proxyActivities<WriterSceneActivities>({
 /** One scripted writer-scene continuation; no live provider dispatch. */
 export async function writerSceneV1(missionId: string): Promise<void> {
   await runScriptedWriterScene(missionId);
+}
+
+const writerSceneDistributedControlRetry = {
+  initialInterval: '2 seconds',
+  maximumInterval: '30 seconds',
+  maximumAttempts: 5,
+} as const;
+
+const {
+  planWriterSceneRound,
+  readWriterSceneRoundMissionState,
+  finalizeWriterSceneRound,
+} = proxyActivities<WriterSceneDistributedControlActivities>({
+  taskQueue: storytellerControlTaskQueue,
+  startToCloseTimeout: '3 minutes',
+  retry: writerSceneDistributedControlRetry,
+});
+
+const { executePreparedWriterRound } =
+  proxyActivities<WriterSceneDistributedExecutionActivities>({
+    taskQueue: storytellerExecuteTaskQueue,
+    startToCloseTimeout: '3 minutes',
+    // A retry must not re-invoke a possibly-sent provider/fake transport round.
+    retry: { maximumAttempts: 1 },
+  });
+
+function holdWriterSceneRound(message: string): never {
+  throw ApplicationFailure.nonRetryable(message, 'WriterSceneHeld');
+}
+
+function uncertainWriterSceneRound(message: string): never {
+  throw ApplicationFailure.nonRetryable(message, 'WriterSceneUncertain');
+}
+
+function requirePublishedOrReplayed(
+  state: WriterSceneRoundMissionState | WriterSceneRoundFinalizeResult,
+): void {
+  if (state.status === 'published' || state.status === 'replayed') {
+    return;
+  }
+  if (state.status === 'held') {
+    holdWriterSceneRound(state.reason ?? 'writer-scene-round-held');
+  }
+  uncertainWriterSceneRound(state.reason ?? 'writer-scene-round-uncertain');
+}
+
+/** Distributed writer scene: control plans/finalizes; executor runs one WR10 round. */
+export async function writerSceneDistributedV2(missionId: string): Promise<void> {
+  const plan = await planWriterSceneRound(missionId);
+  const attemptId = uuid4();
+  const executorResult = await executePreparedWriterRound({
+    missionId: plan.missionId,
+    contextId: plan.contextId,
+    ordinal: plan.ordinal,
+    expectedRevision: plan.expectedRevision,
+    attemptId,
+  });
+
+  if (executorResult.status === 'replayed') {
+    const missionState = await readWriterSceneRoundMissionState(missionId);
+    requirePublishedOrReplayed(missionState);
+    return;
+  }
+
+  if (executorResult.status === 'held') {
+    holdWriterSceneRound(executorResult.reason ?? 'writer-scene-executor-held');
+  }
+
+  if (executorResult.status === 'uncertain') {
+    uncertainWriterSceneRound(
+      executorResult.reason ?? 'writer-scene-executor-uncertain',
+    );
+  }
+
+  if (executorResult.status === 'failed') {
+    throw ApplicationFailure.nonRetryable(
+      executorResult.reason ?? 'writer-scene-executor-failed',
+      'WriterSceneExecutorFailed',
+    );
+  }
+
+  const finalized = await finalizeWriterSceneRound(missionId);
+  requirePublishedOrReplayed(finalized);
 }
 
 type WriterResearchActivities = import('./contracts').WriterResearchActivities;

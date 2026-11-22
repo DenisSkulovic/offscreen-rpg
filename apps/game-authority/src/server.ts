@@ -36,6 +36,16 @@ import {
   writerRoundPrivateStatusResponseSchema,
   writerRoundPrivateSubmitOutcomeResponseSchema,
 } from '@offscreen/contracts/writer-round-private-custody';
+import {
+  routeWriterSceneRoundControl,
+  writerSceneRoundControlContractVersion,
+  writerSceneRoundControlVersionHeader,
+  writerSceneRoundExecutionPlanSchema,
+  writerSceneRoundFinalizeResultSchema,
+  writerSceneRoundHttpErrorSchema,
+  writerSceneRoundMissionStateSchema,
+  writerSceneRoundPlanResponseSchema,
+} from '@offscreen/contracts/writer-scene-round-control';
 import { WriterRoundPrivateCustodyError } from '@offscreen/story-engine/storyteller/writer-round-private-custody';
 import { WriterMissionCustodyError } from '@offscreen/story-engine/storyteller/writer-mission-custody';
 import type { DocumentStore } from '@offscreen/documents';
@@ -44,7 +54,7 @@ import type {
   GameAuthoritySeam,
   StorytellerPublicationSeam,
   StorytellerTaskCustodySeam,
-  WriterRoundPrivateSeam,
+  WriterRoundSeam,
 } from './application.js';
 import { LaunchLedgerError } from './launch-ledger.js';
 
@@ -63,7 +73,7 @@ export type GameAuthorityServerOptions = {
   executorToken?: string;
   controlToken?: string;
   custody?: StorytellerTaskCustodySeam;
-  writerRounds?: WriterRoundPrivateSeam;
+  writerRounds?: WriterRoundSeam;
   publication?: StorytellerPublicationSeam;
   documentStore?: DocumentStore;
   timeoutMs: number;
@@ -143,6 +153,33 @@ function sendWriterRoundPrivateHttpError(
     response,
     status,
     writerRoundPrivateHttpErrorSchema.parse({
+      code,
+      ...(reason ? { reason } : {}),
+    }),
+  );
+}
+
+function sendWriterSceneRoundControl(
+  response: ServerResponse,
+  status: number,
+  body: unknown,
+) {
+  send(response, status, body, {
+    [writerSceneRoundControlVersionHeader]:
+      writerSceneRoundControlContractVersion,
+  });
+}
+
+function sendWriterSceneRoundControlHttpError(
+  response: ServerResponse,
+  status: number,
+  code: 'invalid' | 'not_found' | 'conflict' | 'unavailable' | 'unauthorized',
+  reason?: string,
+) {
+  sendWriterSceneRoundControl(
+    response,
+    status,
+    writerSceneRoundHttpErrorSchema.parse({
       code,
       ...(reason ? { reason } : {}),
     }),
@@ -395,6 +432,58 @@ async function handlePublish(
   }
 }
 
+async function handleWriterSceneRoundControl(
+  response: ServerResponse,
+  route: Exclude<
+    ReturnType<typeof routeWriterSceneRoundControl>,
+    { kind: 'absent' | 'invalid' }
+  >,
+  options: GameAuthorityServerOptions,
+) {
+  const writerRounds = options.writerRounds;
+  if (!writerRounds) {
+    sendWriterSceneRoundControlHttpError(response, 503, 'unavailable');
+    return;
+  }
+  try {
+    if (route.kind === 'plan') {
+      const outcome = await withTimeout(
+        writerRounds.planRound(route.missionId),
+        options.timeoutMs,
+      );
+      sendWriterSceneRoundControl(
+        response,
+        200,
+        writerSceneRoundPlanResponseSchema.parse(outcome),
+      );
+      return;
+    }
+    if (route.kind === 'state') {
+      const outcome = await withTimeout(
+        writerRounds.readMissionState(route.missionId),
+        options.timeoutMs,
+      );
+      sendWriterSceneRoundControl(
+        response,
+        200,
+        writerSceneRoundMissionStateSchema.parse(outcome),
+      );
+      return;
+    }
+    const outcome = await withTimeout(
+      writerRounds.finalizeRound(route.missionId),
+      options.timeoutMs,
+    );
+    sendWriterSceneRoundControl(
+      response,
+      200,
+      writerSceneRoundFinalizeResultSchema.parse(outcome),
+    );
+  } catch {
+    sendWriterSceneRoundControlHttpError(response, 503, 'unavailable');
+  }
+}
+
 async function handleWriterRoundPrivate(
   request: IncomingMessage,
   response: ServerResponse,
@@ -609,6 +698,28 @@ async function handle(
       ? {}
       : { control: options.controlToken }),
   };
+
+  const writerSceneRoundRoute = routeWriterSceneRoundControl(
+    method,
+    url.pathname,
+  );
+  if (writerSceneRoundRoute.kind !== 'absent') {
+    const role = authorizedRole(request, authTokens);
+    if (role !== 'control') {
+      sendWriterSceneRoundControlHttpError(response, 401, 'unauthorized');
+      return;
+    }
+    if (writerSceneRoundRoute.kind === 'invalid') {
+      sendWriterSceneRoundControlHttpError(response, 400, 'invalid');
+      return;
+    }
+    await handleWriterSceneRoundControl(
+      response,
+      writerSceneRoundRoute,
+      options,
+    );
+    return;
+  }
 
   const writerRoundRoute = routeWriterRoundPrivateCustody(method, url.pathname);
   if (writerRoundRoute.kind !== 'absent') {

@@ -36,6 +36,10 @@ import {
   type WriterToolInvocationResult,
   type WriterToolName,
 } from '@offscreen/storyteller/tasks';
+import {
+  validateWriterRoundCaptureAgainstPolicy,
+  type WriterRoundCapturePolicyMode,
+} from '@offscreen/story-engine/storyteller/writer-round-capture-validation';
 
 const WRITER_TOOL_SUMMARY_SCHEMA = 'writer-tool-invocation-summary.v1';
 
@@ -65,6 +69,11 @@ export type WriterRoundPrivateSeam = {
 export type WriterRoundPrivateSeamOptions = {
   /** Frozen GA-owned provider policy; never accepted from HTTP callers. */
   providerPolicy: WriterRoundModelPolicy;
+  /**
+   * Omitted callers are the pre-WR10B private seam: provider-default.
+   * Lab mode is selected only by an explicit WR10B caller.
+   */
+  capturePolicyMode?: WriterRoundCapturePolicyMode;
 };
 
 async function loadPriorToolSummaries(
@@ -125,37 +134,6 @@ async function loadPriorToolSummaries(
     throw new WriterLoopError('invalid_step_state');
   }
   return summaries;
-}
-
-function validateCaptureAgainstPolicy(
-  capture: WriterMissionCapture,
-  policy: WriterRoundModelPolicy,
-  budgetSnapshot: WriterMissionBudgetSnapshot,
-): string | null {
-  if (capture.version !== 'writer-mission.v3') {
-    return 'invalid_capture_version';
-  }
-  if (capture.modelSelection.model === 'scripted-offline') {
-    return 'scripted_offline_model';
-  }
-  if (capture.modelSelection.model !== policy.model) {
-    return 'model_policy_mismatch';
-  }
-  const captureMicrousd = BigInt(capture.budgets.maxMicrousd);
-  const snapshotMicrousd = BigInt(budgetSnapshot.maxMicrousd);
-  if (captureMicrousd !== snapshotMicrousd) {
-    return 'budget_snapshot_mismatch';
-  }
-  if (capture.budgets.maxModelRounds !== budgetSnapshot.maxModelRounds) {
-    return 'budget_snapshot_mismatch';
-  }
-  if (
-    policy.maxModelRounds > budgetSnapshot.maxModelRounds ||
-    policy.maxMicrousd > snapshotMicrousd
-  ) {
-    return 'policy_budget_too_permissive';
-  }
-  return null;
 }
 
 async function loadWriterMissionCapture(
@@ -315,6 +293,7 @@ export function createWriterRoundPrivateSeam(
   options: WriterRoundPrivateSeamOptions,
 ): WriterRoundPrivateSeam {
   const policy = options.providerPolicy;
+  const capturePolicyMode = options.capturePolicyMode ?? 'provider-default';
 
   return {
     async prepareRound(input) {
@@ -323,10 +302,11 @@ export function createWriterRoundPrivateSeam(
         return { status: 'held', reason: 'mission_not_found' };
       }
 
-      const captureFault = validateCaptureAgainstPolicy(
+      const captureFault = validateWriterRoundCaptureAgainstPolicy(
         loaded.capture,
         policy,
         loaded.budgetSnapshot,
+        capturePolicyMode,
       );
       if (captureFault) {
         return { status: 'held', reason: captureFault };

@@ -21,7 +21,7 @@ import {
   campaignDelegatedDecisionWorkflowId,
   storyLaunchWorkflowType,
   storyLaunchWorkflowId,
-  writerSceneWorkflowType,
+  writerSceneDistributedWorkflowType,
   writerSceneWorkflowId,
   writerResearchWorkflowType,
   writerResearchWorkflowId,
@@ -127,7 +127,7 @@ const noticeDispatch = {
   },
   [WRITER_SCENE_WAKE_TOPIC]: {
     kind: 'start',
-    workflowType: writerSceneWorkflowType,
+    workflowType: writerSceneDistributedWorkflowType,
     workflowId: writerSceneWorkflowId,
   },
   [WRITER_RESEARCH_WAKE_TOPIC]: {
@@ -202,6 +202,9 @@ function resolveWorkflowTaskQueue(
   relayTaskQueue: string,
 ): string {
   if (notice.topic === storytellerDistributedTopic) {
+    return storytellerControlTaskQueue;
+  }
+  if (notice.topic === WRITER_SCENE_WAKE_TOPIC) {
     return storytellerControlTaskQueue;
   }
   return relayTaskQueue;
