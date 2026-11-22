@@ -1,12 +1,12 @@
 # WR12 | Provider-authored first scene and canonical Launch
 
-**State: PROPOSED / PLANNER-GATED, not Cursor-ready.** Owner outcome: an actual Storyteller creates a playable new campaign from a premise, not only a scripted opening followed by a generated continuation. [Owner minutes](../../../sessions/2026-11-22.md#4-understand-the-agent-its-context-and-temporal-holistically) · [Undertaking overview](../../../undertakings/storyteller-workshop/OVERVIEW.md).
+**State: PROPOSED / PLANNER-GATED, not Cursor-ready.** Owner outcome: an actual Storyteller creates a playable new campaign from a premise, not only a scripted opening followed by a generated continuation. [Owner minutes](../../../../sessions/2026-11-22.md#4-understand-the-agent-its-context-and-temporal-holistically) · [Undertaking overview](../../../../undertakings/storyteller-workshop/OVERVIEW.md).
 
 ## Independent outcome
 
 An authenticated player's one-prompt Launch admits a **provider-authorized opening Writer mission** with correct v2 opening capture, durable Library/profile/skill/root identities, bounded tools and the same no-SQL executor/private GA custody as subsequent rounds. A valid original scene, offered choices, initial canonical world and scene-1 checkpoint are committed exactly once. Failed, held, uncertain and restarted attempts remain recoverable, with no duplicate story, charge or scene.
 
-**Existing reality to preserve:** WR07/WR08 already provide scripted first-scene Launch and initial source/scene construction. [WR11](../2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) focuses deliberately on *continuation* using the proven private Writer protocol; it does not grant provider-authoring of openings. Reuse its admission, pricing, activity queues and cash controls, while accounting for the **different v2 opening scope without a previous scene**. Do not reinterpret historic scripted operation identities or bypass player admission.
+**Existing reality to preserve:** WR07/WR08 already provide scripted first-scene Launch and initial source/scene construction. [WR11](../../../open/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) focuses deliberately on *continuation* using the proven private Writer protocol; it does not grant provider-authoring of openings. Reuse its admission, pricing, activity queues and cash controls, while accounting for the **different v2 opening scope without a previous scene**. Do not reinterpret historic scripted operation identities or bypass player admission.
 
 ## Scope and boundaries
 

@@ -1,6 +1,6 @@
 # CTX01 | Explicit, inspectable context composition and retrieval strategy
 
-**State: PROPOSED / PLANNER-GATED.** This is a distinct agent-quality/runtime behavior Change, not the [CFG01](../2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md) numeric/entitlement resolver, [AI02](../2026-11-22--ai02-durable-agent-execution-provenance/CHANGE.md) exact provenance archive, or [EV01](../2026-11-22--ev01-centwise-agent-evaluation/CHANGE.md) evaluation ledger.
+**State: PROPOSED / PLANNER-GATED.** This is a distinct agent-quality/runtime behavior Change, not the [CFG01](../../policy-finance/2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md) numeric/entitlement resolver, [AI02](../2026-11-22--ai02-durable-agent-execution-provenance/CHANGE.md) exact provenance archive, or [EV01](../../quality-evaluation/2026-11-22--ev01-centwise-agent-evaluation/CHANGE.md) evaluation ledger.
 
 ## Why it exists
 
