@@ -13,8 +13,9 @@ test('dev-1 and dev-2 graphs stay in their own namespaces with distinct images',
   const right = graph('dev-2');
   assert.equal(left.namespace, 'offscreen-dev-1');
   assert.equal(right.namespace, 'offscreen-dev-2');
-  assert.equal(left.image, 'offscreen-dev-workspace:dev-1');
-  assert.notEqual(left.image, right.image);
+  assert.equal(left.images.api, 'offscreen-dev-workspace:dev-1-api');
+  assert.notEqual(left.images.api, right.images.api);
+  assert.match(JSON.stringify(left.documents), /access-key-id/);
   assert.equal(left.cookiePrefix, 'dev-1');
   assert.equal(deriveSlotCookiePrefix('dev-10'), 'dev-10');
   const leftText = JSON.stringify(left.documents);
