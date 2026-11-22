@@ -125,7 +125,11 @@
 **Negative:** wrong context, existing foreign resource, missing S3 scope or database overconnection refuse without destructive side effect.
 **Stop:** exact S3/DB privilege APIs unverified, host capacity unknown. Planner must settle those, not a Composer child.
 
-## T04 | Per-slot app graph, OAuth and credentials | PLANNER HOLD
+## T04-A | Slot application graph and credential projection | CODE, NOT DEPLOYED
+
+One renderer in `infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs` emits the six workloads for any `dev-N` namespace. It references runtime SQL, scoped S3 and app-token Secrets only, sets `DB_POOL_MAX=2`, cookie prefix `dev-N`, and Temporal namespace `offscreen-dev-N`. Legacy lab manifests are unchanged. Live apply and GitHub OAuth remain T04-B.
+
+## T04 | Per-slot app graph, OAuth and credentials | T04-A CODE; LIVE HOLD
 
 **Read:** `infra/kubernetes/lab/dev/{Tiltfile,web.yaml,api.yaml,authority.yaml,workers.yaml}`, `apps/api/src/modules/auth/{config.ts,auth.ts}`.
 **Edit:** one typed manifest renderer/graph, tests, no four/five copied files; all output generated outside git tree.
