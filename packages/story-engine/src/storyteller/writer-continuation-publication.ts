@@ -18,6 +18,7 @@ import {
   writerSceneProposalV3Schema,
   type WriterSceneProposalV3,
 } from '@offscreen/storyteller/tasks';
+import { attachWriterPublicationStage } from './writer-publication-diagnostic';
 import { continuationSchema } from '../stories/command-policy';
 import { StoryError } from '../stories/errors';
 import {
@@ -159,12 +160,31 @@ export async function publishAcceptedWriterScene(
   store: DocumentStore,
   input: PublishAcceptedWriterSceneInput,
 ): Promise<PublishAcceptedWriterSceneResult> {
+  let publicationStage = 'validate-proposal';
+  try {
+    return await publishAcceptedWriterSceneAtStage(tx, store, input, (stage) => {
+      publicationStage = stage;
+    });
+  } catch (error) {
+    attachWriterPublicationStage(error, publicationStage);
+    throw error;
+  }
+}
+
+async function publishAcceptedWriterSceneAtStage(
+  tx: Transaction,
+  store: DocumentStore,
+  input: PublishAcceptedWriterSceneInput,
+  mark: (stage: string) => void,
+): Promise<PublishAcceptedWriterSceneResult> {
   const proposal = writerSceneProposalV3Schema.parse(input.proposal);
+  mark('validate-proposal');
   assertAdoptableDocumentChanges(proposal);
   const plans = proposal.scene.authoredIntents.map((plan) =>
     narrativeIntentPlanSchema.parse(plan),
   );
 
+  mark('lock-mission');
   const [mission] = await tx
     .select()
     .from(storytellerWriterMission)
@@ -174,6 +194,7 @@ export async function publishAcceptedWriterScene(
     throw new StoryError('conflict', 'writer_scene_mission_not_ready');
   }
 
+  mark('read-generation');
   const [generationRow] = await tx
     .select()
     .from(generation)
@@ -225,11 +246,13 @@ export async function publishAcceptedWriterScene(
     };
   }
 
+  mark('lock-story');
   const current = await lockOwnedStory(tx, {
     ownerId: mission.ownerId,
     storyId: mission.storyId,
   });
 
+  mark('base-identity');
   const [committedCheckpoint] = await tx
     .select({ checkpointHash: storySceneCheckpoint.checkpointHash })
     .from(storySceneCheckpoint)
@@ -250,6 +273,7 @@ export async function publishAcceptedWriterScene(
     throw new StoryError('conflict', 'writer_scene_base_stale');
   }
 
+  mark('document-store');
   const writer = checkpointWriterStore(store);
   if (!writer) {
     throw new StoryError('unavailable', 'document_store');
@@ -260,6 +284,7 @@ export async function publishAcceptedWriterScene(
   const transitionId = mission.generationId;
   const interactionId = proposal.scene.interaction ? randomUUID() : null;
 
+  mark('canon-adopt');
   const publicationChanges =
     proposal.documentChanges.length > 0
       ? await mapCanonAdoptChanges(
@@ -269,6 +294,7 @@ export async function publishAcceptedWriterScene(
         )
       : [];
 
+  mark('stage-documents');
   const stagedPublication = await stageStoryPublicationDocuments({
     storage: store,
     storyId: mission.storyId,
@@ -307,6 +333,7 @@ export async function publishAcceptedWriterScene(
     capture.sceneScope.baseRootHash,
   );
 
+  mark('insert-passage');
   await insertContinuationPassage(tx, {
     storyId: mission.storyId,
     sequence: nextSequence,
@@ -319,6 +346,7 @@ export async function publishAcceptedWriterScene(
     ...(interactionId ? { interactionId } : {}),
   });
 
+  mark('campaign-offer');
   const offerId = randomUUID();
   if (proposal.scene.interaction?.kind === 'choice.v1') {
     const plannedOffer = buildChoiceOffer(
@@ -364,6 +392,7 @@ export async function publishAcceptedWriterScene(
       .where(eq(campaign.storyId, mission.storyId));
   }
 
+  mark('commit-canon');
   await commitStagedStoryPublication(tx, {
     storyId: mission.storyId,
     operationId: transitionId,
@@ -396,6 +425,7 @@ export async function publishAcceptedWriterScene(
     storytellerProfile: current.storyteller ?? null,
   });
 
+  mark('scene-checkpoint');
   const sceneAfter = await readSceneAfterState(tx, mission.storyId);
   const narrativeOnly =
     sceneAfter.campaign?.character == null &&
@@ -470,6 +500,7 @@ export async function publishAcceptedWriterScene(
   }
   assertV2PostStateMatches(stagedCheckpoint.checkpoint.fictionalState, actual);
 
+  mark('checkpoint-selector');
   const selector = await insertStagedSceneCheckpointSelector(tx, {
     ownerId: mission.ownerId,
     operationId: transitionId,

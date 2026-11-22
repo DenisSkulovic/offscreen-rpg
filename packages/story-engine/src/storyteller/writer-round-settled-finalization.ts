@@ -24,6 +24,7 @@ import {
   WriterLoopError,
 } from './writer-loop';
 import { publishAcceptedWriterScene } from './writer-continuation-publication';
+import { recordWriterPublicationFailure } from './writer-publication-diagnostic';
 import type { WriterRoundCapturePolicyMode } from './writer-round-capture-validation';
 import { validateWriterRoundCaptureAgainstPolicy } from './writer-round-capture-validation';
 import type { WriterRoundModelPolicy } from '@offscreen/storyteller/providers/writer-round-transport';
@@ -443,7 +444,7 @@ export async function finalizeSettledWriterSceneRound(
       passageId: published.passageId,
       checkpointHash: published.checkpointHash,
     };
-  } catch {
+  } catch (error) {
     const after = await passageAlreadyPublished(
       database,
       loaded.storyId,
@@ -457,6 +458,10 @@ export async function finalizeSettledWriterSceneRound(
         checkpointHash: after.checkpointHash,
       };
     }
-    return { status: 'held', reason: 'publication_failed' };
+    return recordWriterPublicationFailure(error, {
+      missionId: input.missionId,
+      generationId: loaded.generationId,
+      storyId: loaded.storyId,
+    });
   }
 }
