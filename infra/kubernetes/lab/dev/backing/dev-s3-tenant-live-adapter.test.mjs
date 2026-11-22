@@ -2,10 +2,15 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createDevS3LiveAdapter, parseCredentials } from './dev-s3-tenant-live-adapter.mjs';
 
-test('credential lines parse without echoing the secret back', () => {
-  const parsed = parseCredentials('user dev-1\naccessKey: AKEXAMPLE\nsecretKey: SECRETVALUE\n');
+test('credential lines parse the SeaweedFS provision format', () => {
+  const parsed = parseCredentials('Created user "dev-1"\n\nAccess Key: AKEXAMPLE\nSecret Key: SECRETVALUE\n');
   assert.equal(parsed.accessKeyId, 'AKEXAMPLE');
   assert.equal(parsed.secretAccessKey, 'SECRETVALUE');
+  const split = parseCredentials('Access Key: AKERR\nSecret Key: SKERR\n');
+  assert.equal(split.secretAccessKey, 'SKERR');
+  const exported = parseCredentials('noise {"identities":[{"name":"dev-1","credentials":[{"accessKey":"AKJSON","secretKey":"SKJSON"}]}]}');
+  assert.equal(exported.accessKeyId, 'AKJSON');
+  assert.equal(parseCredentials('Created user without keys'), null);
 });
 
 test('provision stores the secret from stdin and the receipt has only a uid', () => {
@@ -13,7 +18,7 @@ test('provision stores the secret from stdin and the receipt has only a uid', ()
   const exec = (command, args, input) => {
     calls.push({ command, args, input });
     const joined = args.join(' ');
-    if (String(input).includes('s3.user.provision')) return 'accessKey: AK\nsecretKey: SK\n';
+    if (String(input).includes('s3.user.provision')) return 'Access Key: AK\nSecret Key: SK\n';
     if (joined.includes('jsonpath={.metadata.uid}')) return 'uid-1\n';
     if (joined.includes('apply')) {
       assert.equal(args.includes('SK'), false);

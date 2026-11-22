@@ -20,10 +20,46 @@ function weed(script, exec) {
 }
 
 function parseCredentials(text) {
-  const access = text.match(/accessKey[:=]\s*(\S+)/i);
-  const secret = text.match(/secretKey[:=]\s*(\S+)/i);
-  if (!access || !secret) return null;
-  return { accessKeyId: access[1], secretAccessKey: secret[1] };
+  const source = String(text ?? '');
+  const labeledAccess = source.match(/access key:\s*(\S+)/i);
+  const labeledSecret = source.match(/secret key:\s*(\S+)/i);
+  if (labeledAccess && labeledSecret) {
+    return { accessKeyId: labeledAccess[1], secretAccessKey: labeledSecret[1] };
+  }
+  const start = source.indexOf('{');
+  if (start >= 0) {
+    try {
+      const parsed = JSON.parse(source.slice(start));
+      const identity = parsed.identities?.find((item) => item.credentials?.[0]?.accessKey && item.credentials?.[0]?.secretKey) ?? parsed;
+      const credential = identity.credentials?.[0] ?? identity;
+      if (credential.accessKey && credential.secretKey) {
+        return { accessKeyId: credential.accessKey, secretAccessKey: credential.secretKey };
+      }
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function storeSecret(exec, names, credentials) {
+  const manifest = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: names.secret,
+      namespace: DEV_S3_NAMESPACE,
+      labels: { 'offscreen.dev/owner': DEV_S3_OWNER, 'offscreen.dev/slot': names.slotId },
+    },
+    type: 'Opaque',
+    stringData: {
+      'access-key-id': credentials.accessKeyId,
+      'secret-access-key': credentials.secretAccessKey,
+    },
+  };
+  kubectl(['apply', '-f', '-'], JSON.stringify(manifest), exec);
+  const uid = kubectl(['-n', DEV_S3_NAMESPACE, 'get', 'secret', names.secret, '-o', 'jsonpath={.metadata.uid}'], undefined, exec).trim();
+  return { secret: names.secret, uid };
 }
 
 export function createDevS3LiveAdapter({ exec = run } = {}) {
@@ -75,23 +111,25 @@ export function createDevS3LiveAdapter({ exec = run } = {}) {
         error.code = 'credential-capture-failed';
         throw error;
       }
-      const manifest = {
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: {
-          name: names.secret,
-          namespace: DEV_S3_NAMESPACE,
-          labels: { 'offscreen.dev/owner': DEV_S3_OWNER, 'offscreen.dev/slot': names.slotId },
-        },
-        type: 'Opaque',
-        stringData: {
-          'access-key-id': credentials.accessKeyId,
-          'secret-access-key': credentials.secretAccessKey,
-        },
-      };
-      kubectl(['apply', '-f', '-'], JSON.stringify(manifest), exec);
-      const uid = kubectl(['-n', DEV_S3_NAMESPACE, 'get', 'secret', names.secret, '-o', 'jsonpath={.metadata.uid}'], undefined, exec).trim();
-      return { secret: names.secret, uid };
+      return storeSecret(exec, names, credentials);
+    },
+    recoverUser(names) {
+      const output = weed('s3.iam.export\nexit\n', exec);
+      const start = output.indexOf('{');
+      const end = output.lastIndexOf('}');
+      const parsed = JSON.parse(output.slice(start, end + 1));
+      const identity = parsed.identities?.find((item) => item.name === names.user);
+      const policy = `${names.bucket}-${names.user}-readwrite`;
+      const shared = (parsed.identities ?? []).filter((item) => item.name !== names.user && item.policyNames?.includes(policy));
+      if (!identity || identity.credentials?.length !== 1 || identity.policyNames?.join(',') !== policy || shared.length) {
+        const error = new Error('existing identity is not recoverable');
+        error.code = 'identity-not-recoverable';
+        throw error;
+      }
+      return storeSecret(exec, names, {
+        accessKeyId: identity.credentials[0].accessKey,
+        secretAccessKey: identity.credentials[0].secretKey,
+      });
     },
     access() {
       return { ownWrite: true, otherWrite: false, adminDistributed: false, deferred: true };

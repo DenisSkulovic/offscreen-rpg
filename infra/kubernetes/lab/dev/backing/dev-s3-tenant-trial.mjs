@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import http from 'node:http';
 import { createDevS3LiveAdapter } from './dev-s3-tenant-live-adapter.mjs';
+import { deriveDevS3Tenant } from './dev-s3-tenant.mjs';
 import { ensureDevS3Tenant } from './dev-s3-tenant.mjs';
 import { signS3Request } from './dev-object-store-s3-proof.mjs';
 import { DEV_S3_CONTEXT, DEV_S3_NAMESPACE } from './dev-object-store-bootstrap.mjs';
@@ -48,6 +49,8 @@ async function readSecret(name) {
 async function matrix(label, left, right, admin) {
   const own = await signed(left.credentials, 'PUT', `/${left.bucket}/marker-${label}.txt`, label);
   const read = await signed(left.credentials, 'GET', `/${left.bucket}/marker-${label}.txt`);
+  await signed(left.credentials, 'PUT', `/${left.bucket}/temporary-${label}.txt`, label);
+  const removed = await signed(left.credentials, 'DELETE', `/${left.bucket}/temporary-${label}.txt`);
   const cross = await signed(left.credentials, 'GET', `/${right.bucket}/marker-${label}.txt`);
   const proof = await signed(left.credentials, 'GET', '/dev-s3-proof/kept.txt');
   const otherOwn = await signed(right.credentials, 'PUT', `/${right.bucket}/marker-${label}.txt`, label);
@@ -56,6 +59,7 @@ async function matrix(label, left, right, admin) {
   return {
     [`${left.user} own put`]: own.status,
     [`${left.user} own get`]: read.status,
+    [`${left.user} own delete`]: removed.status,
     [`${left.user} cross get`]: cross.status,
     [`${left.user} proof get`]: proof.status,
     [`${right.user} own put`]: otherOwn.status,
@@ -65,6 +69,7 @@ async function matrix(label, left, right, admin) {
 }
 
 const adapter = createDevS3LiveAdapter();
+const recovered = adapter.secret('dev-1-s3') ? null : adapter.recoverUser(deriveDevS3Tenant('dev-1'));
 const first = await ensureDevS3Tenant({ slotId: 'dev-1', authorizeLive: TOKEN, adapter });
 const second = await ensureDevS3Tenant({ slotId: 'dev-2', authorizeLive: TOKEN, adapter });
 if (!first.ok || !second.ok) {
@@ -86,15 +91,18 @@ for (let attempt = 0; attempt < 30; attempt += 1) {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 await new Promise((resolve) => setTimeout(resolve, 1000));
+forward.kill();
+const rebound = spawn('kubectl', ['--context', DEV_S3_CONTEXT, '-n', DEV_S3_NAMESPACE, 'port-forward', 'svc/object-store', '18334:8333'], { stdio: 'ignore' });
+await new Promise((resolve) => setTimeout(resolve, 800));
 const after = await matrix('before', { user: 'dev-1', bucket: 'offscreen-dev-1', credentials: dev1 }, { user: 'dev-2', bucket: 'offscreen-dev-2', credentials: dev2 }, adminSecret);
 const kept = await signed(dev1, 'GET', '/offscreen-dev-1/marker-before.txt');
 const again = await ensureDevS3Tenant({ slotId: 'dev-1', authorizeLive: TOKEN, adapter: createDevS3LiveAdapter() });
 const afterUid = JSON.parse(await kubectlJson(['-n', DEV_S3_NAMESPACE, 'get', 'pvc', 'object-store-data', '-o', 'json'])).metadata.uid;
-const receipt = { before, after, kept: kept.status, secretUid: again.retained?.[0]?.uid, firstUid: first.retained?.[0]?.uid, pvcBefore: beforeUid, pvcAfter: afterUid };
+const receipt = { recovery: recovered ? 'retrieved' : 'already-stored', before, after, kept: kept.status, secretUid: again.retained?.[0]?.uid, firstUid: first.retained?.[0]?.uid, pvcBefore: beforeUid, pvcAfter: afterUid };
 const serialized = JSON.stringify(receipt);
 if (serialized.includes(dev1.secretAccessKey) || serialized.includes(dev1.accessKeyId)) {
   console.log(JSON.stringify({ ok: false, reason: 'receipt leaked' }));
   process.exit(1);
 }
 console.log(serialized);
-forward.kill();
+rebound.kill();
