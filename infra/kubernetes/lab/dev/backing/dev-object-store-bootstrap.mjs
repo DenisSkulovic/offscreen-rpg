@@ -68,10 +68,23 @@ export function renderDevObjectStore() {
     `        ${OWNER_LABEL}: ${DEV_S3_OWNER}`,
     '    spec:',
     '      automountServiceAccountToken: false',
+    '      enableServiceLinks: false',
+    '      securityContext:',
+    '        runAsNonRoot: true',
+    '        runAsUser: 1000',
+    '        runAsGroup: 1000',
+    '        fsGroup: 1000',
+    '        seccompProfile:',
+    '          type: RuntimeDefault',
     '      containers:',
     '        - name: seaweedfs',
     `          image: ${DEV_S3_IMAGE}`,
+    '          imagePullPolicy: IfNotPresent',
     '          args: ["mini", "-dir=/data"]',
+    '          securityContext:',
+    '            allowPrivilegeEscalation: false',
+    '            capabilities:',
+    '              drop: ["ALL"]',
     '          ports:',
     '            - name: s3',
     '              containerPort: 8333',
@@ -139,12 +152,15 @@ export function assessDevObjectStore(probe) {
   const secret = resources.find((item) => item.kind === 'Secret' && item.name === DEV_S3_SECRET);
   const pvc = resources.find((item) => item.kind === 'PersistentVolumeClaim' && item.name === DEV_S3_PVC);
   const deployment = resources.find((item) => item.kind === 'Deployment' && item.name === 'object-store');
+  const service = resources.find((item) => item.kind === 'Service' && item.name === 'object-store');
   if (classify(namespace) === 'foreign') refusals.push({ id: 'foreign-namespace', detail: `${DEV_S3_NAMESPACE} exists without dev ownership` });
   if (classify(secret) === 'foreign') refusals.push({ id: 'foreign-secret', detail: `${DEV_S3_SECRET} exists without dev ownership` });
   if (classify(pvc) === 'foreign') refusals.push({ id: 'foreign-pvc', detail: `${DEV_S3_PVC} exists without dev ownership` });
-  if (deployment && deployment.image !== DEV_S3_IMAGE) refusals.push({ id: 'image-mismatch', detail: `image is ${deployment.image}` });
-  if (deployment && deployment.serviceType && deployment.serviceType !== 'ClusterIP') {
-    refusals.push({ id: 'service-not-private', detail: `service type is ${deployment.serviceType}` });
+  if (classify(deployment) === 'foreign') refusals.push({ id: 'foreign-deployment', detail: 'object-store Deployment exists without dev ownership' });
+  if (classify(service) === 'foreign') refusals.push({ id: 'foreign-service', detail: 'object-store Service exists without dev ownership' });
+  if (classify(deployment) === 'owned' && deployment.image !== DEV_S3_IMAGE) refusals.push({ id: 'image-mismatch', detail: `image is ${deployment.image}` });
+  if (classify(service) === 'owned' && service.serviceType !== 'ClusterIP') {
+    refusals.push({ id: 'service-not-private', detail: `service type is ${service.serviceType}` });
   }
   if (resources.some((item) => item.namespace === RELEASE_S3_NAMESPACE || item.name === RELEASE_S3_NAMESPACE)) {
     refusals.push({ id: 'release-resource-in-probe', detail: 'release object-store resource was included in the dev probe' });
@@ -157,8 +173,17 @@ export function assessDevObjectStore(probe) {
     namespace: classify(namespace),
     secret: classify(secret),
     pvc: classify(pvc),
-    deployment: deployment ? 'present' : 'absent',
+    deployment: classify(deployment),
+    service: classify(service),
   };
+}
+
+function namespaceManifest() {
+  return renderDevObjectStore().split('---')[0];
+}
+
+function workloadManifest() {
+  return renderDevObjectStore().split('---').slice(1).join('---');
 }
 
 /**
@@ -201,24 +226,25 @@ export function ensureDevObjectStore(probe, options = {}) {
   }
   if (plan.refusals.length > 0) return { ...plan, mode: 'ensure', readOnly: false, ok: false, mutated: false, manifest: undefined };
   const assessment = assessDevObjectStore(probe);
-  if (assessment.namespace === 'owned' && assessment.secret === 'owned' && assessment.pvc === 'owned' && assessment.deployment === 'present') {
-    return { ...plan, mode: 'ensure', readOnly: false, ok: true, mutated: false, manifest: undefined, actions: [{ op: 'reuse-secret' }, { op: 'noop' }] };
+  const complete = assessment.namespace === 'owned' && assessment.secret === 'owned' && assessment.pvc === 'owned' && assessment.deployment === 'owned' && assessment.service === 'owned';
+  if (complete) {
+    return { ...plan, mode: 'ensure', readOnly: false, ok: true, mutated: false, manifest: undefined, actions: [{ op: 'reuse-secret' }, { op: 'verify-readiness', context: DEV_S3_CONTEXT }] };
   }
   /** @type {{ op: string, context?: string, [key: string]: unknown }[]} */
   const actions = [];
+  if (assessment.namespace !== 'owned') {
+    actions.push({ op: 'ensure-namespace', context: DEV_S3_CONTEXT, name: DEV_S3_NAMESPACE });
+  }
   if (assessment.secret !== 'owned') {
     actions.push({ op: 'create-secret', context: DEV_S3_CONTEXT, namespace: DEV_S3_NAMESPACE, name: DEV_S3_SECRET });
   } else {
     actions.push({ op: 'reuse-secret', name: DEV_S3_SECRET });
   }
   if (options.failAfterSecret) {
-    return { ...plan, mode: 'ensure', readOnly: false, ok: false, mutated: true, manifest: undefined, refusals: [{ id: 'partial-secret', detail: 'store was not applied; the secret was not deleted' }], actions };
+    return { ...plan, mode: 'ensure', readOnly: false, ok: false, mutated: true, manifest: undefined, refusals: [{ id: 'partial-secret', detail: 'workloads were not applied; the secret was not deleted' }], actions };
   }
-  actions.push({
-    op: 'apply-store',
-    context: DEV_S3_CONTEXT,
-    args: ['--context', DEV_S3_CONTEXT, 'apply', '-f', '-'],
-  });
+  actions.push({ op: 'apply-workloads', context: DEV_S3_CONTEXT });
+  actions.push({ op: 'verify-readiness', context: DEV_S3_CONTEXT });
   return {
     ...plan,
     mode: 'ensure',
@@ -244,8 +270,24 @@ export function executeAuthorizedDevObjectStore(deps) {
   if (!again.ok && again.actions.length === 0) return { ...again, mutated: false };
   const completed = [];
   for (const action of again.actions) {
-    if (action.op === 'reuse-secret' || action.op === 'noop') {
+    if (action.op === 'reuse-secret') {
       completed.push(action);
+      continue;
+    }
+    if (action.op === 'ensure-namespace') {
+      const created = deps.run('kubectl', ['--context', DEV_S3_CONTEXT, 'apply', '-f', '-'], { input: namespaceManifest() });
+      completed.push({ op: 'ensure-namespace', context: DEV_S3_CONTEXT });
+      if (!created.ok) {
+        return { ...again, ok: false, mutated: true, refusals: [{ id: 'ensure-namespace-failed', detail: 'namespace apply failed' }], actions: completed };
+      }
+      continue;
+    }
+    if (action.op === 'verify-readiness') {
+      const checked = deps.run('kubectl', ['--context', DEV_S3_CONTEXT, '-n', DEV_S3_NAMESPACE, 'get', `pvc/${DEV_S3_PVC}`, 'deploy/object-store', 'svc/object-store']);
+      completed.push({ op: 'verify-readiness', context: DEV_S3_CONTEXT });
+      if (!checked.ok) {
+        return { ...again, ok: false, mutated: completed.some((item) => item.op !== 'reuse-secret' && item.op !== 'verify-readiness'), refusals: [{ id: 'readiness-failed', detail: 'owned workloads were not ready' }], actions: completed };
+      }
       continue;
     }
     if (action.op === 'create-secret') {
@@ -274,10 +316,10 @@ export function executeAuthorizedDevObjectStore(deps) {
       }
       continue;
     }
-    const applied = deps.run('kubectl', action.args, { input: renderDevObjectStore() });
+    const applied = deps.run('kubectl', ['--context', DEV_S3_CONTEXT, 'apply', '-f', '-'], { input: workloadManifest() });
     completed.push({ op: action.op, context: action.context });
     if (!applied.ok) {
-      return { ...again, ok: false, mutated: true, refusals: [{ id: 'apply-store-failed', detail: 'store apply failed; owned secret and PVC were not deleted' }], actions: completed };
+      return { ...again, ok: false, mutated: true, refusals: [{ id: 'apply-workloads-failed', detail: 'workload apply failed; owned secret was not deleted' }], actions: completed };
     }
   }
   return { ...again, ok: true, mutated: completed.some((action) => action.op !== 'reuse-secret' && action.op !== 'noop'), actions: completed };

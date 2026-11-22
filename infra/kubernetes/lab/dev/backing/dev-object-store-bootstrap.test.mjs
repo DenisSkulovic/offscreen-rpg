@@ -31,6 +31,8 @@ test('the rendered store is private, pinned, and uses the dev storage class', ()
   assert.equal(renderDevObjectStore(), manifest);
   assert.match(manifest, new RegExp(DEV_S3_IMAGE));
   assert.match(manifest, new RegExp(`storageClassName: ${DEV_S3_STORAGE_CLASS}`));
+  assert.match(manifest, /runAsNonRoot: true/);
+  assert.match(manifest, /automountServiceAccountToken: false/);
   assert.match(manifest, /type: ClusterIP/);
   assert.doesNotMatch(manifest, /local-path/);
   assert.doesNotMatch(manifest, new RegExp(RELEASE_S3_NAMESPACE));
@@ -42,11 +44,11 @@ test('the rendered store is private, pinned, and uses the dev storage class', ()
 
 test('fresh ensure creates one admin secret and a partial failure keeps it', () => {
   const created = ensureDevObjectStore(ready, { authorize: true });
-  assert.deepEqual(created.actions.map((action) => action.op), ['create-secret', 'apply-store']);
+  assert.deepEqual(created.actions.map((action) => action.op), ['ensure-namespace', 'create-secret', 'apply-workloads', 'verify-readiness']);
   assert.equal(created.actions.every((action) => !action.context || action.context === DEV_S3_CONTEXT), true);
   const partial = ensureDevObjectStore(ready, { authorize: true, failAfterSecret: true });
   assert.equal(partial.ok, false);
-  assert.deepEqual(partial.actions.map((action) => action.op), ['create-secret']);
+  assert.deepEqual(partial.actions.map((action) => action.op), ['ensure-namespace', 'create-secret']);
   assert.equal(JSON.stringify(partial.actions).includes('delete'), false);
 });
 
@@ -57,7 +59,8 @@ test('owned reentry reuses the secret and does not generate a new one', () => {
       { kind: 'Namespace', name: DEV_S3_NAMESPACE, owner: 'offscreen-dev', uid: 'ns' },
       { kind: 'Secret', name: 'object-store-s3', namespace: DEV_S3_NAMESPACE, owner: 'offscreen-dev', uid: 'sec' },
       { kind: 'PersistentVolumeClaim', name: 'object-store-data', owner: 'offscreen-dev', uid: 'pvc' },
-      { kind: 'Deployment', name: 'object-store', image: DEV_S3_IMAGE, serviceType: 'ClusterIP' },
+      { kind: 'Deployment', name: 'object-store', owner: 'offscreen-dev', uid: 'dep', image: DEV_S3_IMAGE },
+      { kind: 'Service', name: 'object-store', owner: 'offscreen-dev', uid: 'svc', serviceType: 'ClusterIP' },
     ],
   };
   let generated = 0;
@@ -67,13 +70,14 @@ test('owned reentry reuses the secret and does not generate a new one', () => {
       generated += 1;
       return { accessKeyId: 'new', secretAccessKey: 'new' };
     },
-    run() {
-      throw new Error('owned reentry must not apply');
+    run(command) {
+      if (command !== 'kubectl') throw new Error('owned reentry must not apply workloads');
+      return { ok: true };
     },
   });
   assert.equal(result.ok, true);
   assert.equal(generated, 0);
-  assert.deepEqual(result.actions.map((action) => action.op), ['reuse-secret', 'noop']);
+  assert.deepEqual(result.actions.map((action) => action.op), ['reuse-secret', 'verify-readiness']);
 });
 
 test('foreign resources, wrong context, low memory, and a copied admin secret refuse', () => {
@@ -82,6 +86,8 @@ test('foreign resources, wrong context, low memory, and a copied admin secret re
     { ...ready, context: 'kind-offscreen-lab' },
     { ...ready, memoryMiB: 100 },
     { ...ready, resources: [{ kind: 'Secret', name: 'object-store-s3', namespace: 'app-slot', owner: 'offscreen-dev', uid: 'x' }] },
+    { ...ready, resources: [{ kind: 'Deployment', name: 'object-store', image: DEV_S3_IMAGE }] },
+    { ...ready, resources: [{ kind: 'Service', name: 'object-store', serviceType: 'ClusterIP' }] },
     { ...ready, resources: [{ kind: 'Namespace', name: RELEASE_S3_NAMESPACE }] },
   ];
   for (const probe of cases) {
@@ -105,8 +111,33 @@ test('execution applies only the dev context and omits credential bytes from the
   assert.equal(result.ok, true);
   assert.equal(JSON.stringify(result).includes('access-secret-value'), false);
   assert.equal(calls[0].args[1], DEV_S3_CONTEXT);
-  assert.match(calls[0].input, /access-secret-value/);
-  assert.match(calls[1].input, new RegExp(DEV_S3_NAMESPACE));
+  assert.match(calls[0].input, new RegExp(`name: ${DEV_S3_NAMESPACE}`));
+  assert.match(calls[1].input, /access-secret-value/);
+  assert.doesNotMatch(calls[2].input, /kind: Secret/);
+  assert.match(calls[2].input, /kind: Deployment/);
+});
+
+test('secret creation failure does not apply workloads, and a later pass reuses the secret', () => {
+  const calls = [];
+  const failed = executeAuthorizedDevObjectStore({
+    collect: () => ready,
+    generateCredentials: () => ({ accessKeyId: 'kept-access', secretAccessKey: 'kept-secret' }),
+    run(_command, _args, options = {}) {
+      calls.push(options.input ?? '');
+      return { ok: !String(options.input).includes('kind: Secret') };
+    },
+  });
+  assert.equal(failed.ok, false);
+  assert.equal(failed.refusals[0].id, 'create-secret-failed');
+  assert.equal(calls.some((input) => input.includes('kind: Deployment')), false);
+  const recovered = ensureDevObjectStore({
+    ...ready,
+    resources: [
+      { kind: 'Namespace', name: DEV_S3_NAMESPACE, owner: 'offscreen-dev', uid: 'ns' },
+      { kind: 'Secret', name: 'object-store-s3', namespace: DEV_S3_NAMESPACE, owner: 'offscreen-dev', uid: 'sec' },
+    ],
+  }, { authorize: true });
+  assert.deepEqual(recovered.actions.map((action) => action.op), ['reuse-secret', 'apply-workloads', 'verify-readiness']);
 });
 
 test('the CLI plans from an injected probe and refuses live ensure', () => {
