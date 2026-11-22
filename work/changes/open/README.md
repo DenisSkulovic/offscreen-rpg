@@ -6,10 +6,6 @@
 
 ## Current / immediate work
 
-| [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Owner-promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
-
-
-
 | Change | Why it remains open |
 | --- | --- |
 | [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
