@@ -68,6 +68,26 @@ spec:
                 secretKeyRef:
                   name: game-db
                   key: uri
+            - name: OFFSCREEN_WRITER_EXECUTION_MODE
+              value: scripted-offline-lab
+            - name: OFFSCREEN_DOCUMENT_STORE
+              value: s3
+            - name: OFFSCREEN_DOCUMENT_S3_BUCKET
+              value: lab-objects
+            - name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
+              value: http://object-store.lab-objects.svc.cluster.local:8333
+            - name: OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: access-key-id
+            - name: OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: secret-access-key
             - name: GAME_AUTHORITY_SERVICE_TOKEN
               valueFrom:
                 secretKeyRef:

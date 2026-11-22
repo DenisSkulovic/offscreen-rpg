@@ -117,6 +117,8 @@ spec:
                 secretKeyRef:
                   name: game-runtime
                   key: game-authority-executor-token
+            - name: OFFSCREEN_WRITER_EXECUTION_MODE
+              value: scripted-offline-lab
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
