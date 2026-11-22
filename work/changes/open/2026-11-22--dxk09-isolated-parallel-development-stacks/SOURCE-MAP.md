@@ -1,36 +1,34 @@
-# DXK09 | Source map, seam inventory and unresolved owner decisions
+# DXK09 | Source-grounded failure map and unresolved seams
 
-**Inspected:** `undertaking/storyteller-workshop@752ed422` via connected GitHub. No access to the live workstation/cluster measurements here. Original plan at `62c930a2` listed `s01..s04`; this revision removes that ceiling.
+**Source inspected:** `undertaking/storyteller-workshop@f6abb22b68cb` GitHub files; no workstation process/WSL resource access, no live cluster tests. Historical Cursor terminal excerpts provided by owner are observations, **not** proof of current host state. Do not infer environment success or actual 503 cause.
 
-| Existing owner | Observed constraint | Intended adjustment |
-| --- | --- | --- |
-| `scripts/repo-tools/dev-tilt.mjs` | One canonical repository root, ports 3000/10350, singleton PID file, fixed workload namespace map | Separate worktree-relative launcher and dynamic slot registry/ports; preserve old path until proven |
-| Root `Tiltfile` | Pins `kind-offscreen-lab` | New dev-only context/entrypoint, no release behavior change |
-| `infra/kubernetes/lab/dev/Tiltfile` | Four **image types** (web/API/GA/worker), six shared deployment identities, one source root | One slot-parametric graph and build input closure; don't mistake four image types for a four-worktree limit |
-| `infra/kubernetes/lab/dev/{web,api,authority,workers}.yaml` | Fixed `lab-edge`, `lab-authority`, `lab-workers`, fixed S3 bucket, Temporal `default` | Structured namespace/tenant/service references and secrets per allocated slot |
-| `infra/kubernetes/lab/dev/dev-sync-paths.mjs` | Uses release selector workspace graph, unsafe path fallback | Keep this one dependency graph; prove affected-only per-slot rebuild |
-| `infra/kubernetes/lab/dev/tilt/load-dev-image.sh` | Hardcodes `offscreen-lab` and two node names | Dev-only discovered nodes, slot-specific image IDs, serialized imports |
-| `infra/kubernetes/lab/dev/Dockerfile` | Copies whole workspace trees, pnpm fetch/install, dependency build in image | Reproduce and fix pnpm `node_modules` context/symlink failure and clean build first |
-| `scripts/repo-tools/stack-preflight.mjs` and `infra/kubernetes/lab/lib.sh` | Assert fixed release cluster/context/nodes; release `up.sh` scripts depend on them | Keep release pinning; separate audited dev-only context and capacity guard |
-| `infra/kubernetes/lab/{cnpg,temporal}/install.sh` | Release-targeted installers and fixed namespaces | Use as read-only templates; design dev-only bootstrap and tenant provisioners |
-| `infra/kubernetes/lab/app-release/install.sh` | Fixed release context and reuses existing game-db/game-runtime secrets | Never invoke unmodified in dev cluster; avoid cross-tenant secret adoption |
-| `apps/api/src/modules/auth/{config.ts,auth.ts}` | Better Auth origin, GitHub client ID/secret, trusted-origin requirements | Ratify dynamic slot callback/origin strategy; separate sessions and signing secrets |
-| `infra/kubernetes/lab/dev/workers.yaml` | Fixed `default` Temporal namespace/queues, release-lab S3/GA origins | Per-slot Temporal and route wiring, workers never poll other slots |
-| Current release proof `TURN03` | Cold images and fault matrix require reliable exclusive runtime | Keep release lab independent from dev slots; DXK09 must not weaken TURN03 proof |
+| Failure observed | Source anchor and finding | DXK09 owner / solution | Not solved merely by namespace isolation |
+| --- | --- | --- | --- |
+| `invalid file request apps/api/node_modules/@better-auth/drizzle-adapter` | `infra/kubernetes/lab/dev/Dockerfile` copies monorepo `apps/packages/tools`; `dev/tilt/load-dev-image.sh` calls root-context `docker build ... .`; root `.dockerignore` absent from inspected GitHub ref | T01 build-context exclusion, pnpm install within image, clean-build and dirty-worktree regression | Yes |
+| 2+ GB Docker context | Same Dockerfile and root context; terminal report `transferring context` 2+ GB, actual bytes not independently captured | T01 measure context and shrink; preserve needed manifests | Yes |
+| Speculative Docker cache pollution, forced serialization | `TURBO_FILTER` occurs after pnpm install in Dockerfile; shared dependency layer can be correct. `load-dev-image.sh` imports to hardcoded two Kind nodes one at a time because prior WSL vsock failures | T01/T05 preserve safe layer reuse; measure build/import contention; serialize image loads only if required | Yes |
+| Wrong Tilt CLI arity, manual resource triggers and `kubectl -n a,b` misuse | `dev/Tiltfile` declares six resources; `dev-tilt.mjs` polls fixed namespace map; no worktree-aware status command | T05 coherent CLI and structured diagnostics, no user/agent manual readiness loops | Yes |
+| Source synced but stale `dist` / process | `dev/Tiltfile` `custom_build` and `sync`; game workers use `pnpm ... run dev:*` and TypeScript watches, health primarily deployment availability | T01/T05 compiler-process-runtime freshness receipt and fail-closed desired-version status | Yes |
+| `tsc` OOM and slow worker return | `dev/workers.yaml` has three separately watching workers with 2Gi memory **limits** each, `NODE_OPTIONS=--max-old-space-size=1536`; limits are not measured usage | T01 actual compiler profiling, T07 memory budget/build topology | Yes |
+| Shared runtime despite multiple Git worktrees | `scripts/repo-tools/dev-tilt.mjs`: fixed ports `3000`/`10350`, shared PID file; root Tiltfile and `dev/Tiltfile`: `kind-offscreen-lab` and fixed namespaces/images | T02/T03/T04/T05 dynamic worktree registry and full tenant isolation | Yes |
+| Dev vs cold-release replaces same deployments | `app-release/install.sh` and dev Tilt target `kind-offscreen-lab`, same application footprint | T03 independent dev cluster, T06 guarded release-lab smoke that coexists without dev stop/restore | Yes |
+| Dev tenants can exhaust Postgres connections | `infra/kubernetes/lab/cnpg/cluster.yaml`: `max_connections: "20"`, 1 primary and 768Mi limit in lab; app API/GA/relay use DB | T03/T07 app pool inspection and connection budget, sizing/timeout negative tests | Yes |
+| S3 copied admin credentials | `app-release/install.sh` copies `lab-objects/object-store-s3` access key into `game-runtime` when absent | T03 must use truly scoped per-bucket identities, not copy admin key to every dev tenant | Yes |
+| Per-slot OAuth origin unclear | `apps/api/src/modules/auth/config.ts` validates `APP_ORIGIN` and GitHub keys, `auth.ts` assigns Better Auth `baseURL` and trusted origin; exact callback path `/api/auth/callback/github` | T04 dynamic localhost origin, real two-port callback proof; GitHub now documents loopback redirect port flexibility | Yes |
+| Cold release writer-plan 503 / no scene 2 | TURN03 current execution/proof, Game Authority writer-plan call returned HTTP 503. No observed diagnosis identifying code vs config vs deployment | T06 reproducible release runner / logs only; **TURN03 must still fix actual writer behavior** | **NO: substantive product/release defect remains** |
 
-## Collision boundaries to prove
+## Exact existing owners to read before implementation
 
-Cluster/context; namespace/workload labels; process/registry ownership; dynamic loopback ports; slot-tagged images; PostgreSQL database/login; bucket/scoped key; Temporal namespace/queues; Better Auth origin/secrets; migration permissions; build and process fingerprint; data-preserving stop/destroy.
+- **Build:** `infra/kubernetes/lab/dev/Dockerfile`, `infra/kubernetes/lab/dev/Tiltfile`, `infra/kubernetes/lab/dev/tilt/load-dev-image.sh`, `infra/kubernetes/lab/dev/dev-sync-paths.mjs`, `infra/kubernetes/lab/app-release/select-affected-images.mjs`, `scripts/repo-tools/dev-tilt.mjs` and its tests.
+- **Infrastructure:** `infra/kubernetes/lab/{lib.sh,up.sh,kind.yaml}`, `infra/kubernetes/lab/cnpg/{install.sh,cluster.yaml}`, `infra/kubernetes/lab/temporal/{install.sh,namespace-job.yaml,server.yaml}`, verified actual object store installer (not yet located by this connector read).
+- **Application rendering:** `infra/kubernetes/lab/dev/{web.yaml,api.yaml,authority.yaml,workers.yaml}`. All use fixed namespaces and release-lab backing addresses; worker YAML has a single Temporal namespace `default`.
+- **Auth:** `apps/api/src/modules/auth/{config.ts,auth.ts}`; `docs/runbooks/local-development.md` records current GitHub OAuth app localhost callback.
+- **Release:** `infra/kubernetes/lab/app-release/install.sh`, `infra/kubernetes/lab/dev/tilt/build-release-images.sh`, `work/changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/TURN03-CURRENT-EXECUTION.md`.
 
-## Planner-held source/host decisions
+## Committed architecture versus missing verification
 
-1. **Dev cluster provisioning:** select actual CNPG/Temporal/S3 installation source and fixed dev-only target; establish how to recover after partial infrastructure bootstrap without touching release.
-2. **SQL:** concrete idempotent database/login creation and grant restrictions, migrations executed by a purpose-scoped principal.
-3. **S3:** exact object-store bucket creation and scoped credential policy; an access-key copied from a global admin secret is not least privilege.
-4. **Temporal:** concrete namespace creation/idempotent retry, worker namespace wiring, and limits of namespace-based authorization.
-5. **OAuth:** prove per-slot Better Auth trusted origin/redirect handling with a scalable callback arrangement; identify what operator configuration is needed for a fifth or tenth origin.
-6. **Host:** measure actual WSL RAM/CPU/disk, container memory pressure and clean/build/edit-to-ready timings with one to four stacks; do not assume four full stacks fit simply because scheduling admits four.
-7. **Render:** choose the existing supported structured K8s/Tilt templating route and eliminate raw find/replace or copied manifest trees.
-8. **Runtime identity:** identify exact reliable compile/reload/health/receipt hooks across web, API, Game Authority and workers; no source-only readiness.
+**Selected:** dynamic allocation, shared server with tenant-level data, separate dev Kind, one template graph, source→compiler→runtime version evidence, independent release runner, GitHub loopback redirect rather than a custom OAuth broker.
 
-These decisions belong to ChatGPT planning before T03/T04 readiness. Do not transfer vague architecture investigation to Cursor. No live provisioning has been run by this planning revision.
+**PLANNER BLOCKERS before T03/T04:** actual object-store provisioning implementation and enforceable scoped-bucket credential mechanism; exact CNPG app-pool/tenant-grant/bootstrap path and connection pressure; concrete safe dev-only bootstrap manifests; actual host resource measurements; live GitHub loopback two-port/Better Auth callback and token behavior. Source files inspected here are *insufficient* to assert those live/provider properties. Architecture disagreements return to ChatGPT with source evidence. Pure T01/T02 and bounded T06 runner code need not wait for live deployment.
+
+**External reference:** GitHub OAuth authorization docs, Loopback redirect URLs (current 2026), state `redirect_uri` may use a different local port from registered loopback callback; GitHub also imposes OAuth token creation/rotation limits. Docker build cache guidance favors excluding node_modules and isolating mutable sources, not blanket disabling caches.
