@@ -6,6 +6,10 @@
 
 ## Current / immediate work
 
+| [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Owner-promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
+
+
+
 | Change | Why it remains open |
 | --- | --- |
 | [WR10 private Writer protocol](2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) | Commissioned wave / GA–Worker provider boundary |
