@@ -30,6 +30,7 @@ const ROOT_REBUILD_FILES = new Set([
   'infra/kubernetes/lab/app-release/release-process-env-shim.mjs',
   'infra/kubernetes/lab/app-release/lib-build.sh',
   'infra/kubernetes/lab/dev/tilt/build-release-images.sh',
+  'infra/kubernetes/lab/dev/dev-dockerignore',
 ]);
 
 const RELEASE_DOCKERFILE_PREFIX = 'infra/kubernetes/lab/app-release/Dockerfile.';
@@ -164,6 +165,7 @@ export function unsafeWarmWatchPaths(root) {
     'pnpm-workspace.yaml',
     'turbo.json',
     'infra/kubernetes/lab/dev/Dockerfile',
+    'infra/kubernetes/lab/dev/dev-dockerignore',
     'infra/kubernetes/lab/dev/tilt/build-release-images.sh',
     'packages/db/drizzle.config.ts',
     'infra/kubernetes/lab/app-release/docker.npmrc',

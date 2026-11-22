@@ -16,7 +16,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node --env-file-if-exists=../../.env dist/src/bootstrap/main.js",
-    "dev": "tsc-watch --project tsconfig.dev.json --onSuccess \"node --env-file-if-exists=../../.env dist/src/bootstrap/main.js\"",
+    "dev": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs failure game-authority dist/src/bootstrap/main.js\" --onSuccess \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs success game-authority dist/src/bootstrap/main.js\"",
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {

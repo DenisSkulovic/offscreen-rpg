@@ -74,6 +74,17 @@ test('dev Dockerfile is unsafe', () => {
   );
 });
 
+test('dev dockerignore is unsafe warm rebuild', () => {
+  assert.equal(
+    isUnsafeDevSyncPath('infra/kubernetes/lab/dev/dev-dockerignore'),
+    true,
+  );
+  assert.equal(
+    resolveDevSync('infra/kubernetes/lab/dev/dev-dockerignore', repoRoot).mode,
+    'warm',
+  );
+});
+
 test('api image sync subpaths include story-engine from production closure', () => {
   const dirs = syncSubpathsForImage('api', repoRoot);
   assert.ok(dirs.includes('/packages/story-engine'));

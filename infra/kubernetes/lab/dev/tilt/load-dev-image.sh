@@ -5,8 +5,10 @@ set -euo pipefail
 filter="$1"
 repo="$(cd "$(dirname "$0")/../../../../.." && pwd)"
 cd "$repo"
+DEV_IGNORE="${repo}/infra/kubernetes/lab/dev/dev-dockerignore"
 docker build \
   -f infra/kubernetes/lab/dev/Dockerfile \
+  --ignorefile "$DEV_IGNORE" \
   --build-arg "TURBO_FILTER=${filter}" \
   -t "$EXPECTED_REF" \
   .

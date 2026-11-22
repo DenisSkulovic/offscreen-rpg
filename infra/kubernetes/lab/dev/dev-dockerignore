@@ -1,0 +1,32 @@
+# Dev image root-context ignore only (infra/kubernetes/lab/dev/tilt/load-dev-image.sh).
+# Release images build from turbo-pruned staging context, not this file.
+
+.git
+**/.git
+
+**/node_modules
+node_modules
+
+**/dist
+**/.next
+**/.turbo
+
+.env
+.env.*
+**/.env
+**/.env.*
+
+**/*.pem
+**/*.key
+**/credentials.json
+
+work
+docs
+evidence
+.cursor
+.github
+state
+
+**/coverage
+**/.cache
+**/*.log

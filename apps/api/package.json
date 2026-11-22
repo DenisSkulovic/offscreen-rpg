@@ -27,7 +27,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsc-watch --onSuccess \"node --env-file-if-exists=../../.env dist/src/main.js\"",
+    "dev": "tsc-watch --onFailure \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs failure api dist/src/main.js\" --onSuccess \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs success api dist/src/main.js\"",
     "start": "node --env-file-if-exists=../../.env dist/src/main.js",
     "schema:generate": "auth generate --config auth.generate.ts --output ../../packages/db/src/schema/auth.ts --yes",
     "typecheck": "tsc --noEmit",

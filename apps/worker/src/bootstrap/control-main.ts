@@ -4,6 +4,14 @@ import {
 } from '@offscreen/runtime-logging';
 import { startControlRuntime } from '../runtime/control';
 import { readControlWorkerConfig } from './config';
+import { writeDevLoadedRuntimeReceipt } from '@offscreen/runtime-logging/dev-loaded-runtime';
+
+if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1') {
+  writeDevLoadedRuntimeReceipt({
+    role: 'worker-control',
+    entryModuleUrl: import.meta.url,
+  });
+}
 
 async function main() {
   let runtime: Awaited<ReturnType<typeof startControlRuntime>> | undefined;
