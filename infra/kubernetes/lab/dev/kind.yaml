@@ -1,0 +1,12 @@
+# Dev-only Kind identity. The cluster name is the CLI flag --name offscreen-dev.
+# The API port is chosen at plan time from the dev loopback range and is never 6443.
+# This file does not configure the release-acceptance cluster.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  apiServerAddress: "127.0.0.1"
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.37.0
+  - role: worker
+    image: kindest/node:v1.37.0
