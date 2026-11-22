@@ -86,7 +86,7 @@ export function renderDevSlotAppGraph(slotId, input) {
   if (!input?.schemaReady) throw refusal('stale-schema', `${sql.slotId} schema gate is closed`);
   if (!Number.isInteger(input.ports?.game) || input.ports.game < 1) throw refusal('ports', 'game port is missing');
   const namespace = sql.appNamespace;
-  const image = `offscreen-dev-workspace:${sql.slotId}`;
+  const imageFor = (role) => `offscreen-dev-workspace:${sql.slotId}-${role}`;
   const appSecret = `${sql.slotId}-app`;
   const dbSecret = sql.runtimeSecret;
   const origin = `http://${namespace}.svc.cluster.local`;
@@ -103,12 +103,14 @@ export function renderDevSlotAppGraph(slotId, input) {
     service(sql.slotId, namespace, 'game-api', 3001),
     service(sql.slotId, namespace, 'game-authority', 3002),
     deployment(sql.slotId, namespace, 'game-web', {
-      name: 'web', image, imagePullPolicy: 'Never',
+      name: 'web', image: imageFor('web'), imagePullPolicy: 'Never', workingDir: '/app',
+      command: ['pnpm', '--filter', '@offscreen/web', 'exec', 'next', 'dev', '--hostname', '0.0.0.0', '--port', '3000'],
       ports: [{ name: 'http', containerPort: 3000 }],
       env: [slot, env('API_PROXY_ORIGIN', api), env('API_INTERNAL_ORIGIN', api)],
     }),
     deployment(sql.slotId, namespace, 'game-api', {
-      name: 'api', image, imagePullPolicy: 'Never',
+      name: 'api', image: imageFor('api'), imagePullPolicy: 'Never', workingDir: '/app/apps/api',
+      command: ['sh', '-c', 'pnpm exec tsc && node dist/src/main.js'],
       ports: [{ name: 'http', containerPort: 3001 }],
       env: [
         slot, pool, env('APP_ORIGIN', `http://127.0.0.1:${input.ports.game}`),
@@ -117,8 +119,8 @@ export function renderDevSlotAppGraph(slotId, input) {
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket),
         env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
-        secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'accessKeyId'),
-        secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secretAccessKey'),
+        secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
+        secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secret-access-key'),
         secretEnv('GAME_AUTHORITY_SERVICE_TOKEN', appSecret, 'game-authority-service-token'),
         secretEnv('BETTER_AUTH_SECRET', appSecret, 'better-auth-secret'),
         secretEnv('GITHUB_CLIENT_ID', appSecret, 'github-client-id'),
@@ -126,20 +128,22 @@ export function renderDevSlotAppGraph(slotId, input) {
       ],
     }),
     deployment(sql.slotId, namespace, 'game-authority', {
-      name: 'authority', image, imagePullPolicy: 'Never',
+      name: 'authority', image: imageFor('authority'), imagePullPolicy: 'Never', workingDir: '/app/apps/game-authority',
+      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
       ports: [{ name: 'http', containerPort: 3002 }],
       env: [
         slot, pool, env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
-        secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'accessKeyId'),
-        secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secretAccessKey'),
+        secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
+        secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secret-access-key'),
         secretEnv('GAME_AUTHORITY_SERVICE_TOKEN', appSecret, 'game-authority-service-token'),
         secretEnv('GAME_AUTHORITY_CONTROL_TOKEN', appSecret, 'game-authority-control-token'),
         secretEnv('GAME_AUTHORITY_EXECUTOR_TOKEN', appSecret, 'game-authority-executor-token'),
       ],
     }),
     deployment(sql.slotId, namespace, 'game-control', {
-      name: 'control', image, imagePullPolicy: 'Never',
+      name: 'control', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
+      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/control-main.js'],
       env: [
         slot, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('TEMPORAL_TASK_QUEUE', 'control'), env('GAME_AUTHORITY_ORIGIN', authority),
@@ -147,7 +151,8 @@ export function renderDevSlotAppGraph(slotId, input) {
       ],
     }),
     deployment(sql.slotId, namespace, 'game-executor', {
-      name: 'executor', image, imagePullPolicy: 'Never',
+      name: 'executor', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
+      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/executor-main.js'],
       env: [
         slot, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('TEMPORAL_TASK_QUEUE', 'storyteller-execute-v1'), env('GAME_AUTHORITY_ORIGIN', authority),
@@ -155,18 +160,19 @@ export function renderDevSlotAppGraph(slotId, input) {
       ],
     }),
     deployment(sql.slotId, namespace, 'game-relay', {
-      name: 'relay', image, imagePullPolicy: 'Never',
+      name: 'relay', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
+      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
       env: [
         slot, pool, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
-        secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'accessKeyId'),
-        secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secretAccessKey'),
+        secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
+        secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secret-access-key'),
       ],
     }),
   ];
   assertRenderedGraph(documents, sql.slotId);
-  return { slotId: sql.slotId, namespace, image, cookiePrefix: prefix, appSecret, dbSecret, s3Secret: s3.secret, origin, documents };
+  return { slotId: sql.slotId, namespace, images: { web: imageFor('web'), api: imageFor('api'), authority: imageFor('authority'), worker: imageFor('worker') }, cookiePrefix: prefix, appSecret, dbSecret, s3Secret: s3.secret, origin, documents };
 }
 
 export function assertRenderedGraph(documents, slotId) {
@@ -187,7 +193,7 @@ export function assertRenderedGraph(documents, slotId) {
   if (services.join() !== SERVICES.join()) throw refusal('services', services.join());
   for (const item of documents) {
     if (item.metadata.namespace && item.metadata.namespace !== namespace) throw refusal('foreign-namespace', item.metadata.name);
-    if (item.kind === 'Deployment' && item.spec.template.spec.containers[0].image !== `offscreen-dev-workspace:${slotId}`) {
+    if (item.kind === 'Deployment' && !String(item.spec.template.spec.containers[0].image).startsWith(`offscreen-dev-workspace:${slotId}-`)) {
       throw refusal('image', item.metadata.name);
     }
   }

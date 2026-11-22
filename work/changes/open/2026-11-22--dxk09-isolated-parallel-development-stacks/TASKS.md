@@ -125,7 +125,11 @@
 **Negative:** wrong context, existing foreign resource, missing S3 scope or database overconnection refuse without destructive side effect.
 **Stop:** exact S3/DB privilege APIs unverified, host capacity unknown. Planner must settle those, not a Composer child.
 
-## T04-A | Slot application graph and credential projection | CODE, NOT DEPLOYED
+## T04-B1 | First live dev-1 startup | PARTIAL
+
+`offscreen-dev-1` is running on `kind-offscreen-dev` from worktree `/home/dskul/projects/offscreen-rpg-dxk09`, allocator ports game/control `13100`, tilt `13101`, spare `13102`. Images `offscreen-dev-workspace:dev-1-{web,api,authority,worker}` loaded only into `offscreen-dev`. API listens, Game Authority logs listening, control worker is RUNNING on `offscreen-dev-1` / `control`, executor is RUNNING on `storyteller-execute-v1` but reports no workflows registered, relay is RUNNING on `offscreen-local`. SQL from the API process is `dev_1_run` on `dev_1` and `CREATE TABLE` returns `42501`. Anonymous S3 GET of `offscreen-dev-1` returns 403. Two `dev_1_run` sessions were visible. Original `dev-1-run-auth` UID `94c1317a-8375-45d2-a653-76ae4c8ced39` and `dev-1-s3` UID `83b149cf-6854-41f2-b4da-0bd6750b0de4` stayed in the backing namespaces. No `offscreen-dev-2` app namespace and no lab-cluster `offscreen-dev-1`. GitHub browser OAuth was not exercised. Slot commands compile and start `node` because the image does not contain the Tilt watch-receipt script.
+
+## T04-A | Slot application graph and credential projection | LIVE dev-1 APPLIED
 
 One renderer in `infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs` emits the six workloads for any `dev-N` namespace. It references runtime SQL, scoped S3 and app-token Secrets only, sets `DB_POOL_MAX=2`, cookie prefix `dev-N`, and Temporal namespace `offscreen-dev-N`. Legacy lab manifests are unchanged. Live apply and GitHub OAuth remain T04-B.
 
