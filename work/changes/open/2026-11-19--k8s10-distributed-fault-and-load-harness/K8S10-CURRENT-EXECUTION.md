@@ -1,13 +1,13 @@
 # K8S10 | Current post-TURN03 real-game fault and bounded load execution (2026-11-22)
 
-**State: READY FOR T01–T04 AFTER TURN03 PASS; T05 LIVE MUTATION REQUIRES SEPARATE OWNER AUTHORIZATION.** Source-rechecked against `22b46a828b56a8b3094bfab30162d5718c406e22`. Existing chaos plan/preflight/selector/oracle remain the selected owners; `controller --execute` is still intentionally unimplemented.
+**State: T01–T04 READY FOR EXECUTION NOW; T05 LIVE MUTATION REQUIRES TURN03 PASS PLUS SEPARATE OWNER AUTHORIZATION.** Source-rechecked against `22b46a828b56a8b3094bfab30162d5718c406e22`. Existing chaos plan/preflight/selector/oracle remain the selected owners; `controller --execute` is still intentionally unimplemented.
 
 ## Source truth, not reinvented pieces
 
 - infra/kubernetes/lab/chaos/controller.mjs parses mode plan, execute, seed, runId, releaseRef and maxEvents; controllerOutcome explicitly refuses --execute with reason execute-not-implemented. Add narrowly approved execution mode, do **not** bypass existing plan preflight.
 - chaos/preflight.mjs and selector.mjs already enforce exactly kind-offscreen-lab context, cluster UID, Kubernetes Pod→ReplicaSet→Deployment owner UID, release-ref digest, live chaos-eligible template label, memory floor, operator lock, deterministic target. Retain unchanged policy and use their returned frozen plan. If no eligible Deployment template label is present, refuse; do not silently opt every Pod into chaos.
 - chaos/oracle.mjs:readOnlyOracle and assertOraclePass consume normalized SQL story/operation/passage, private document roots/checkpoints, authorized HTTP snapshot and telemetry; checks zero provider dispatch, duplicate logical application and root/fork integrity. chaos/scripted-driver.mjs has a fake HTTP/DB/store unit driver and LIVE_SCRIPTED_DRIVER currently NOT-RUN. Replace fake *live adapter* with an actual cross-Pod TURN03-generated story/operation evidence source, not by calling in-process Story Engine.
-- TURN03 current Change adds real release runner and offscreen.distributed-poc-proof.v1 scorecard with eight gates; **a PASS at actual cold-kind HEAD** is the mandatory first input to K8S10. Local 4/4 fixture or STORY03 process harness is not sufficient. Use the same release SHA/digests and run ID chain. If TURN03 is blocked by OAuth/cluster, K8S10 mutation is likewise blocked.
+- TURN03 harness and `offscreen.distributed-poc-proof.v1` scorecard are already integrated. T01–T04 may implement against that stable schema now using synthetic/fixture reports for code-level tests. A genuine TURN03 cold-kind PASS at the actual joined release is required only before T05 live baseline/fault execution. Local fixture/process evidence is never substituted for that live gate.
 - Existing negative fixture deliberately demonstrates two Rabbit side effects; that is NOT a game duplicate-publication result. K8S10 must measure actual SQL/GA story result with a single idempotency/receipt identity, not Rabbit log line counts.
 
 ## Exact experimental outcomes
@@ -26,7 +26,7 @@ Only infra/kubernetes/lab/chaos/{controller,preflight,oracle,scripted-driver,liv
 
 ## Small executor tasks
 
-T01 | TURN03 proof adapter after TURN03 closes: read current chaos/controller.mjs, chaos/preflight.mjs, chaos/selector.mjs, TURN03 proof/report, release image ref. Implement a pure report adapter that requires TURN03 PASS and matching SHA/UID/digest, refuses all missing/mismatch. Negative test missing release/Pod opt-in/old SHA and zero kubectl mutations. Stop absent real TURN03 proof.
+T01 | TURN03 proof adapter now: read current chaos/controller.mjs, chaos/preflight.mjs, chaos/selector.mjs and the already-integrated TURN03 proof/report schema. Implement a pure adapter that accepts a supplied report and validates PASS + matching SHA/UID/digest for **live eligibility**, while unit tests use synthetic PASS/FAIL/BLOCKED fixtures. Missing real TURN03 evidence returns NOT-ELIGIBLE; it does not block implementing the adapter. Negative test missing release/Pod opt-in/old SHA and zero kubectl mutations.
 
 T02 | One targeted Pod fault controller: read controller.mjs, preflight.mjs, selector.mjs, test/preflight.test.mjs. Add --execute and exact confirm-run-id/confirm-pod-uid flags, default plan unchanged. Build one revalidated and memoized planned Pod delete with execFileSync argument arrays, never shell. Test spy: exactly one delete on good injected fake, zero delete with stale UID or non-kind context, no force. STOP if Pod eligibility requires a nonlab production manifest change.
 
@@ -40,4 +40,4 @@ T05 | Actual gated run (PERMISSION GATE): after T01–T04 code/tests and a fresh
 
 Pure selector/controller/oracle tests must preserve existing 43/43 or latest baseline; normal real experiment requires replacement Pod, one authoritative operation/effect/checkpoint after replay, zero provider dispatch, no secret/log leak, and specific fault UID. A failing oracle makes K8S10 FAIL, not a closed Change. Crash/SIGKILL, DB failover, S3 outage, 50-player load, multi-replica HA and production observability remain distinct untested conditions. The one graceful Pod replacement **does not prove** those.
 
-**Integration:** source branch may work in parallel with CL01 and WR11; one custodian joins code first, then a single owner runs kind fault test against the joined release; Change stays open until all selected live gates genuinely pass.
+**Integration:** T01–T04 source may be implemented and integrated in parallel with CL01/WR11. TURN03 may finish concurrently. T05 is run only after the final joined release has a genuine TURN03 PASS and explicit mutation permission; Change stays open until selected live gates genuinely pass.

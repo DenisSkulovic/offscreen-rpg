@@ -2,7 +2,7 @@
 
 **Baseline:** `22b46a828b56a8b3094bfab30162d5718c406e22`.
 
-- G0 predecessor: PASS for WR10B; execution should branch after TURN03 close.
+- G0 predecessor: PASS. WR10B and TURN03 harness code are already ancestors of the undertaking. TURN03's remaining live acceptance is not an implementation dependency.
 - G1 source: PASS. Landed distributed Writer topic/workflow/private custody/control/finalization inspected.
 - G2 architecture: PASS. Reuse existing workflow; add admission pin + multi-round loop; no duplicate provider workflow.
 - G3 state/idempotency: PASS. Latest durable parent step selects ordinal; one attempt per ordinal; uncertain never resends.
@@ -12,4 +12,4 @@
 - G7 spend: PASS. Required proof is provider-free; paid smoke separate.
 - G8 collisions: PASS. No CL01/DB migration or K8S10 chaos ownership.
 
-**Verdict: READY AFTER TURN03 CLOSE AND ONE HEAD RECHECK.**
+**Verdict: READY FOR CURSOR NOW; recheck actual undertaking HEAD at branch creation.**

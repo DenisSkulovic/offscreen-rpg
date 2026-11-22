@@ -1,8 +1,8 @@
 # WR11 | Authorized provider continuation on the landed WR10B Writer path
 
-**State: READY AFTER TURN03 CLOSE/HEAD RECHECK.**  
+**State: READY FOR EXECUTION NOW.**  
 **Kind:** implementation · **Profile:** STATE/CONTRACT · **Reference:** `undertaking/storyteller-workshop`  
-**Source baseline:** `22b46a828b56a8b3094bfab30162d5718c406e22`. WR10B is integrated; TURN03 is the only predecessor gate for release execution.  
+**Source baseline:** `22b46a828b56a8b3094bfab30162d5718c406e22`. WR10B and the TURN03 harness are already integrated. TURN03's remaining cold-kind acceptance is an independent proof lane, not a prerequisite for WR11 implementation or its provider-free fake integration proof.  
 **No paid provider call is authorized by this packet.**
 
 ## Outcome
@@ -36,4 +36,4 @@ Do not edit Web/CL01, DB migrations, K8S10 chaos, launch/opening, Admin, or TURN
 
 Free fake-provider proof: one real player narrative action admits a provider-mode capture, provider round 1 returns a Library tool call, GA applies/replays the tool once, round 2 returns a final v3 scene, GA publishes exactly one passage/checkpoint/offer. Replay/worker restart performs no second fake send. Wrong actor, stale root, policy-version mismatch, over-budget, `research.delegate`, missing provider authorization and uncertain dispatch all fail closed. Existing scripted WR10B path remains green.
 
-Optional real OpenRouter smoke is a separate owner authorization and may remain NOT RUN without blocking WR11 code completion.
+Optional real OpenRouter smoke is a separate owner authorization and may remain NOT RUN without blocking WR11 code completion. TURN03 may finish its cold-kind acceptance concurrently; WR11 must not edit the TURN03 harness or reuse its live cluster while TURN03 is actively operating it.

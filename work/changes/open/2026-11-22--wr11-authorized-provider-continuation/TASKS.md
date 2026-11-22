@@ -1,6 +1,6 @@
 # WR11 bounded Cursor tasks
 
-Target current `undertaking/storyteller-workshop` after TURN03 closes. Create `change/wr11-authorized-provider-continuation` linked worktree and run branch guard.
+Target current `undertaking/storyteller-workshop` now. TURN03's harness code is already integrated; its remaining live proof is independent. Create `change/wr11-authorized-provider-continuation` linked worktree from the actual current HEAD and run branch guard. Do not use the live kind cluster concurrently with an active TURN03 run.
 
 ## T01 | provider admission and capture pin
 Read: `writer-continuation.ts`, `narrative-intent-settlement.ts`, `stories/index.ts`, v3 capture schema symbol.  
