@@ -11,6 +11,8 @@ export const DEV_TEMPORAL_POSTGRES_IMAGE = 'docker.io/library/postgres:17.11-boo
 export const DEV_TEMPORAL_SECRET = 'temporal-db';
 export const DEV_TEMPORAL_PVC = 'temporal-postgres';
 export const DEV_TEMPORAL_SCHEMA_JOB = 'temporal-schema';
+export const DEV_TEMPORAL_SCRIPTS_CONFIGMAP = 'temporal-server-scripts';
+export const DEV_TEMPORAL_DYNAMIC_CONFIGMAP = 'temporal-dynamic';
 export const DEV_TEMPORAL_STORAGE_CLASS = 'standard';
 export const DEV_TEMPORAL_MIN_MEMORY_MIB = 4096;
 export const RELEASE_TEMPORAL_NAMESPACE = 'lab-temporal';
@@ -21,6 +23,112 @@ function classify(resource) {
   if (!resource) return 'absent';
   if (resource.owner === DEV_TEMPORAL_OWNER && resource.uid) return 'owned';
   return 'foreign';
+}
+
+function temporalStartScriptLines() {
+  const script = `#!/bin/sh
+set -eu
+if [ -z "\${POSTGRES_PWD:-}" ]; then
+  echo "POSTGRES_PWD is empty." >&2
+  exit 1
+fi
+broadcast="$(getent hosts "$(hostname)" | awk '{print $1; exit}')"
+if [ -z "$broadcast" ]; then
+  echo "Pod address was not resolved." >&2
+  exit 1
+fi
+umask 077
+cat > /tmp/temporal-config.yaml <<EOF
+log:
+  stdout: true
+  level: info
+persistence:
+  numHistoryShards: 4
+  defaultStore: default
+  visibilityStore: visibility
+  datastores:
+    default:
+      sql:
+        pluginName: "postgres12"
+        databaseName: "temporal"
+        connectAddr: "temporal-postgres:5432"
+        connectProtocol: "tcp"
+        user: "temporal"
+        password: "\${POSTGRES_PWD}"
+        maxConns: 8
+        maxIdleConns: 4
+        maxConnLifetime: "1h"
+    visibility:
+      sql:
+        pluginName: "postgres12"
+        databaseName: "temporal_visibility"
+        connectAddr: "temporal-postgres:5432"
+        connectProtocol: "tcp"
+        user: "temporal"
+        password: "\${POSTGRES_PWD}"
+        maxConns: 4
+        maxIdleConns: 2
+        maxConnLifetime: "1h"
+global:
+  membership:
+    maxJoinDuration: 30s
+    broadcastAddress: "\${broadcast}"
+  pprof:
+    port: 0
+services:
+  frontend:
+    rpc:
+      grpcPort: 7233
+      membershipPort: 6933
+      bindOnIP: "0.0.0.0"
+      httpPort: 7243
+  matching:
+    rpc:
+      grpcPort: 7235
+      membershipPort: 6935
+      bindOnIP: "0.0.0.0"
+  history:
+    rpc:
+      grpcPort: 7234
+      membershipPort: 6934
+      bindOnIP: "0.0.0.0"
+  worker:
+    rpc:
+      grpcPort: 7239
+      membershipPort: 6939
+      bindOnIP: "0.0.0.0"
+clusterMetadata:
+  enableGlobalNamespace: false
+  failoverVersionIncrement: 10
+  masterClusterName: "active"
+  currentClusterName: "active"
+  clusterInformation:
+    active:
+      enabled: true
+      initialFailoverVersion: 1
+      rpcName: "frontend"
+      rpcAddress: "127.0.0.1:7233"
+      httpAddress: "127.0.0.1:7243"
+dcRedirectionPolicy:
+  policy: "noop"
+archival:
+  history:
+    state: "disabled"
+  visibility:
+    state: "disabled"
+namespaceDefaults:
+  archival:
+    history:
+      state: "disabled"
+    visibility:
+      state: "disabled"
+dynamicConfigClient:
+  filepath: "/etc/temporal/config/dynamicconfig/lab.yaml"
+  pollInterval: "60s"
+EOF
+exec temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start
+`;
+  return script.replace(/\n$/, '').split('\n').map((line) => `    ${line}`);
 }
 
 export function renderDevTemporal() {
@@ -132,22 +240,81 @@ export function renderDevTemporal() {
     'spec:',
     '  backoffLimit: 2',
     '  template:',
+    '    metadata:',
+    '      labels:',
+    `        ${OWNER_LABEL}: ${DEV_TEMPORAL_OWNER}`,
     '    spec:',
     '      restartPolicy: Never',
     '      automountServiceAccountToken: false',
     '      enableServiceLinks: false',
+    '      securityContext:',
+    '        runAsNonRoot: true',
+    '        runAsUser: 1000',
+    '        runAsGroup: 1000',
+    '        seccompProfile:',
+    '          type: RuntimeDefault',
     '      containers:',
     '        - name: schema',
     `          image: ${DEV_TEMPORAL_ADMIN_IMAGE}`,
+    '          imagePullPolicy: IfNotPresent',
     '          env:',
     '            - name: SQL_PASSWORD',
     '              valueFrom:',
     '                secretKeyRef:',
     `                  name: ${DEV_TEMPORAL_SECRET}`,
     '                  key: password',
+    '            - name: POSTGRES_SEEDS',
+    '              value: temporal-postgres',
+    '            - name: POSTGRES_USER',
+    '              value: temporal',
     '          command: ["/bin/sh", "-c"]',
     '          args:',
-    '            - temporal-sql-tool --plugin postgres12 --ep temporal-postgres -u temporal -p 5432 --db temporal create && temporal-sql-tool --plugin postgres12 --ep temporal-postgres -u temporal -p 5432 --db temporal setup-schema -v 0.0 && temporal-sql-tool --plugin postgres12 --ep temporal-postgres -u temporal -p 5432 --db temporal update-schema -d /etc/temporal/schema/postgresql/v12/temporal/versioned && temporal-sql-tool --plugin postgres12 --ep temporal-postgres -u temporal -p 5432 --db temporal_visibility create && temporal-sql-tool --plugin postgres12 --ep temporal-postgres -u temporal -p 5432 --db temporal_visibility setup-schema -v 0.0 && temporal-sql-tool --plugin postgres12 --ep temporal-postgres -u temporal -p 5432 --db temporal_visibility update-schema -d /etc/temporal/schema/postgresql/v12/visibility/versioned',
+    '            - |',
+    '              set -eu',
+    '              i=0',
+    '              while [ "$i" -lt 60 ]; do',
+    '                if nc -z "$POSTGRES_SEEDS" 5432; then',
+    '                  break',
+    '                fi',
+    '                i=$((i + 1))',
+    '                sleep 2',
+    '              done',
+    '              nc -z "$POSTGRES_SEEDS" 5432',
+    '              temporal-sql-tool --plugin postgres12 --ep "$POSTGRES_SEEDS" -u "$POSTGRES_USER" -p 5432 --db temporal create',
+    '              temporal-sql-tool --plugin postgres12 --ep "$POSTGRES_SEEDS" -u "$POSTGRES_USER" -p 5432 --db temporal setup-schema -v 0.0',
+    '              temporal-sql-tool --plugin postgres12 --ep "$POSTGRES_SEEDS" -u "$POSTGRES_USER" -p 5432 --db temporal update-schema -d /etc/temporal/schema/postgresql/v12/temporal/versioned',
+    '              temporal-sql-tool --plugin postgres12 --ep "$POSTGRES_SEEDS" -u "$POSTGRES_USER" -p 5432 --db temporal_visibility create',
+    '              temporal-sql-tool --plugin postgres12 --ep "$POSTGRES_SEEDS" -u "$POSTGRES_USER" -p 5432 --db temporal_visibility setup-schema -v 0.0',
+    '              temporal-sql-tool --plugin postgres12 --ep "$POSTGRES_SEEDS" -u "$POSTGRES_USER" -p 5432 --db temporal_visibility update-schema -d /etc/temporal/schema/postgresql/v12/visibility/versioned',
+    '              echo "PostgreSQL schema setup complete"',
+    '          securityContext:',
+    '            allowPrivilegeEscalation: false',
+    '            capabilities:',
+    '              drop: ["ALL"]',
+    '---',
+    'apiVersion: v1',
+    'kind: ConfigMap',
+    'metadata:',
+    `  name: ${DEV_TEMPORAL_SCRIPTS_CONFIGMAP}`,
+    `  namespace: ${DEV_TEMPORAL_NAMESPACE}`,
+    '  labels:',
+    `    ${OWNER_LABEL}: ${DEV_TEMPORAL_OWNER}`,
+    'data:',
+    '  start.sh: |',
+    ...temporalStartScriptLines(),
+    '---',
+    'apiVersion: v1',
+    'kind: ConfigMap',
+    'metadata:',
+    `  name: ${DEV_TEMPORAL_DYNAMIC_CONFIGMAP}`,
+    `  namespace: ${DEV_TEMPORAL_NAMESPACE}`,
+    '  labels:',
+    `    ${OWNER_LABEL}: ${DEV_TEMPORAL_OWNER}`,
+    'data:',
+    '  lab.yaml: |',
+    '    limit.maxIDLength:',
+    '      - value: 255',
+    '        constraints: {}',
     '---',
     'apiVersion: apps/v1',
     'kind: Deployment',
@@ -158,6 +325,8 @@ export function renderDevTemporal() {
     `    ${OWNER_LABEL}: ${DEV_TEMPORAL_OWNER}`,
     'spec:',
     '  replicas: 1',
+    '  strategy:',
+    '    type: Recreate',
     '  selector:',
     '    matchLabels:',
     '      app: temporal-server',
@@ -172,22 +341,30 @@ export function renderDevTemporal() {
     '      securityContext:',
     '        runAsNonRoot: true',
     '        runAsUser: 1000',
+    '        runAsGroup: 1000',
+    '        seccompProfile:',
+    '          type: RuntimeDefault',
     '      containers:',
     '        - name: temporal-server',
     `          image: ${DEV_TEMPORAL_SERVER_IMAGE}`,
+    '          imagePullPolicy: IfNotPresent',
+    '          command: ["/bin/sh", "/etc/temporal/lab/start.sh"]',
+    '          ports:',
+    '            - name: grpc',
+    '              containerPort: 7233',
+    '              protocol: TCP',
     '          env:',
     '            - name: POSTGRES_PWD',
     '              valueFrom:',
     '                secretKeyRef:',
     `                  name: ${DEV_TEMPORAL_SECRET}`,
     '                  key: password',
-    '          args: ["start", "--allow-no-auth"]',
-    '          ports:',
-    '            - name: grpc',
-    '              containerPort: 7233',
-    '          readinessProbe:',
-    '            tcpSocket:',
-    '              port: grpc',
+    '            - name: GOMEMLIMIT',
+    '              value: 640MiB',
+    '          securityContext:',
+    '            allowPrivilegeEscalation: false',
+    '            capabilities:',
+    '              drop: ["ALL"]',
     '          resources:',
     '            requests:',
     '              cpu: 50m',
@@ -195,6 +372,35 @@ export function renderDevTemporal() {
     '            limits:',
     '              cpu: 700m',
     '              memory: 768Mi',
+    '          readinessProbe:',
+    '            tcpSocket:',
+    '              port: grpc',
+    '            initialDelaySeconds: 5',
+    '            periodSeconds: 5',
+    '            timeoutSeconds: 2',
+    '            failureThreshold: 36',
+    '          livenessProbe:',
+    '            tcpSocket:',
+    '              port: grpc',
+    '            initialDelaySeconds: 40',
+    '            periodSeconds: 10',
+    '            timeoutSeconds: 2',
+    '            failureThreshold: 6',
+    '          volumeMounts:',
+    '            - name: scripts',
+    '              mountPath: /etc/temporal/lab',
+    '              readOnly: true',
+    '            - name: dynamic',
+    '              mountPath: /etc/temporal/config/dynamicconfig',
+    '              readOnly: true',
+    '      volumes:',
+    '        - name: scripts',
+    '          configMap:',
+    `            name: ${DEV_TEMPORAL_SCRIPTS_CONFIGMAP}`,
+    '            defaultMode: 0555',
+    '        - name: dynamic',
+    '          configMap:',
+    `            name: ${DEV_TEMPORAL_DYNAMIC_CONFIGMAP}`,
     '---',
     'apiVersion: v1',
     'kind: Service',
@@ -229,14 +435,36 @@ export function assessDevTemporal(probe) {
   const secret = resources.find((item) => item.kind === 'Secret' && item.name === DEV_TEMPORAL_SECRET);
   const pvc = resources.find((item) => item.kind === 'PersistentVolumeClaim' && item.name === DEV_TEMPORAL_PVC);
   const job = resources.find((item) => item.kind === 'Job' && item.name === DEV_TEMPORAL_SCHEMA_JOB);
+  const postgres = resources.find((item) => item.kind === 'Deployment' && item.name === 'temporal-postgres');
   const server = resources.find((item) => item.kind === 'Deployment' && item.name === 'temporal-server');
-  for (const [resource, id] of [[namespace, 'foreign-namespace'], [secret, 'foreign-secret'], [pvc, 'foreign-pvc'], [job, 'foreign-job'], [server, 'foreign-server']]) {
+  const postgresService = resources.find((item) => item.kind === 'Service' && item.name === 'temporal-postgres');
+  const serverService = resources.find((item) => item.kind === 'Service' && item.name === 'temporal-server');
+  const scripts = resources.find((item) => item.kind === 'ConfigMap' && item.name === DEV_TEMPORAL_SCRIPTS_CONFIGMAP);
+  const dynamic = resources.find((item) => item.kind === 'ConfigMap' && item.name === DEV_TEMPORAL_DYNAMIC_CONFIGMAP);
+  for (const [resource, id] of [
+    [namespace, 'foreign-namespace'],
+    [secret, 'foreign-secret'],
+    [pvc, 'foreign-pvc'],
+    [job, 'foreign-job'],
+    [postgres, 'foreign-postgres'],
+    [server, 'foreign-server'],
+    [postgresService, 'foreign-postgres-service'],
+    [serverService, 'foreign-server-service'],
+    [scripts, 'foreign-scripts'],
+    [dynamic, 'foreign-dynamic'],
+  ]) {
     if (classify(resource) === 'foreign') refusals.push({ id, detail: 'existing resource has no dev ownership' });
+  }
+  for (const service of [postgresService, serverService]) {
+    if (classify(service) === 'owned' && service.serviceType && service.serviceType !== 'ClusterIP') {
+      refusals.push({ id: 'service-type-mismatch', detail: `${service.name} type is ${service.serviceType}` });
+    }
   }
   if (classify(job) === 'owned' && job.succeeded !== true && job.failed === true) {
     refusals.push({ id: 'schema-job-failed', detail: 'the existing schema Job failed and will not be deleted' });
   }
   if (classify(server) === 'owned' && server.image !== DEV_TEMPORAL_SERVER_IMAGE) refusals.push({ id: 'image-mismatch', detail: `server image is ${server.image}` });
+  if (classify(postgres) === 'owned' && postgres.image !== DEV_TEMPORAL_POSTGRES_IMAGE) refusals.push({ id: 'postgres-image-mismatch', detail: `postgres image is ${postgres.image}` });
   if (resources.some((item) => item.namespace === RELEASE_TEMPORAL_NAMESPACE || item.name === RELEASE_TEMPORAL_NAMESPACE)) {
     refusals.push({ id: 'release-resource-in-probe', detail: 'release Temporal resource was included in the dev probe' });
   }
@@ -247,7 +475,10 @@ export function assessDevTemporal(probe) {
     pvc: classify(pvc),
     schemaJob: classify(job),
     schemaSucceeded: classify(job) === 'owned' && job.succeeded === true,
+    postgres: classify(postgres),
     server: classify(server),
+    scripts: classify(scripts),
+    dynamic: classify(dynamic),
   };
 }
 
@@ -288,8 +519,8 @@ export function ensureDevTemporal(probe, options = {}) {
   actions.push({ op: 'apply-postgres', context: DEV_TEMPORAL_CONTEXT });
   if (!assessment.schemaSucceeded) actions.push({ op: 'create-schema-job', context: DEV_TEMPORAL_CONTEXT, name: DEV_TEMPORAL_SCHEMA_JOB });
   else actions.push({ op: 'reuse-schema-job', name: DEV_TEMPORAL_SCHEMA_JOB });
+  actions.push({ op: 'verify-schema', context: DEV_TEMPORAL_CONTEXT });
   actions.push({ op: 'apply-server', context: DEV_TEMPORAL_CONTEXT });
-  actions.push({ op: 'verify-readiness', context: DEV_TEMPORAL_CONTEXT });
   return { ...plan, mode: 'ensure', readOnly: false, ok: true, mutated: true, manifest: undefined, actions };
 }
 
@@ -315,18 +546,23 @@ export function executeAuthorizedDevTemporal(deps) {
       ...matching('Service', 'temporal-postgres'),
     ].join('\n---\n'),
     'create-schema-job': matching('Job', DEV_TEMPORAL_SCHEMA_JOB)[0],
-    'apply-server': [...matching('Deployment', 'temporal-server'), ...matching('Service', 'temporal-server')].join('\n---\n'),
+    'apply-server': [
+      ...matching('ConfigMap', DEV_TEMPORAL_SCRIPTS_CONFIGMAP),
+      ...matching('ConfigMap', DEV_TEMPORAL_DYNAMIC_CONFIGMAP),
+      ...matching('Deployment', 'temporal-server'),
+      ...matching('Service', 'temporal-server'),
+    ].join('\n---\n'),
   };
   for (const action of again.actions) {
     if (action.op === 'reuse-secret' || action.op === 'reuse-schema-job') {
       completed.push(action);
       continue;
     }
-    if (action.op === 'verify-readiness') {
+    if (action.op === 'verify-schema') {
       const checked = deps.run('kubectl', ['--context', DEV_TEMPORAL_CONTEXT, '-n', DEV_TEMPORAL_NAMESPACE, 'get', 'job', DEV_TEMPORAL_SCHEMA_JOB, '-o', 'jsonpath={.status.succeeded}']);
-      completed.push({ op: 'verify-readiness', context: DEV_TEMPORAL_CONTEXT });
+      completed.push({ op: 'verify-schema', context: DEV_TEMPORAL_CONTEXT });
       if (!checked.ok || checked.stdout?.trim() !== '1') {
-        return { ...again, ok: false, mutated: completed.some((item) => item.op === 'create-secret' || item.op === 'apply-postgres'), refusals: [{ id: 'readiness-failed', detail: 'schema Job has not succeeded; it was not deleted' }], actions: completed };
+        return { ...again, ok: false, mutated: completed.some((item) => item.op === 'create-secret' || item.op === 'apply-postgres' || item.op === 'create-schema-job'), refusals: [{ id: 'schema-not-ready', detail: 'schema Job has not succeeded; the server was not applied and the Job was not deleted' }], actions: completed };
       }
       continue;
     }
