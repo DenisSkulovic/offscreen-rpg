@@ -1,6 +1,6 @@
 # DXK09 | Reliable, elastic and isolated developer environments
 
-**State: T03b-1a installed `dev-pg`. T03b-1b creates the owned namespace before the admin Secret, then applies workloads, and requires positive ownership of the Deployment and Service. A read-only preflight is GO. Live object-store installation, T03b-1c, T03b-2, T04b, T05 and T07 remain held.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
+**State: T03b-1a installed `dev-pg`. T03b-1b installed SeaweedFS 4.54 in `offscreen-dev-objects` and proved S3 put/get/delete plus object survival across a Pod restart. T03b-1c, T03b-2, T04b, T05 and T07 remain held.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
 
 ## Problem and goal
 

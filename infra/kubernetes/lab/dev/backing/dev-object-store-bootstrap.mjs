@@ -147,6 +147,9 @@ export function assessDevObjectStore(probe) {
   if ((probe.memoryMiB ?? 0) < DEV_S3_MIN_MEMORY_MIB) {
     refusals.push({ id: 'insufficient-memory', detail: `available memory ${probe.memoryMiB ?? 0}MiB is below ${DEV_S3_MIN_MEMORY_MIB}MiB` });
   }
+  if (probe.storageClass !== DEV_S3_STORAGE_CLASS) {
+    refusals.push({ id: 'storage-class-missing', detail: `storage class ${DEV_S3_STORAGE_CLASS} was not confirmed` });
+  }
   const resources = probe.resources ?? [];
   const namespace = resources.find((item) => item.kind === 'Namespace' && item.name === DEV_S3_NAMESPACE);
   const secret = resources.find((item) => item.kind === 'Secret' && item.name === DEV_S3_SECRET);
@@ -184,6 +187,39 @@ function namespaceManifest() {
 
 function workloadManifest() {
   return renderDevObjectStore().split('---').slice(1).join('---');
+}
+
+/**
+ * kubectl get is not readiness. The PVC must be Bound, the Deployment Available,
+ * and the private S3 port must answer 200 or 403.
+ * @param {{ pvcPhase?: string, availableReplicas?: string, s3Status?: string }} sample
+ */
+export function objectStoreReadinessMet(sample) {
+  const replicas = Number(sample.availableReplicas);
+  return sample.pvcPhase === 'Bound' && replicas >= 1 && (sample.s3Status === '200' || sample.s3Status === '403');
+}
+
+/**
+ * @param {{ run: Function, sleep?: (ms: number) => void, now?: () => number, readinessTimeoutMs?: number }} deps
+ */
+export function waitForDevObjectStoreReadiness(deps) {
+  const sleep = deps.sleep ?? (() => {});
+  const now = deps.now ?? Date.now;
+  const deadline = now() + (deps.readinessTimeoutMs ?? 360000);
+  let pvcPhase = '';
+  let availableReplicas = '';
+  let s3Status = '';
+  while (now() <= deadline) {
+    pvcPhase = deps.run('kubectl', ['--context', DEV_S3_CONTEXT, '-n', DEV_S3_NAMESPACE, 'get', 'pvc', DEV_S3_PVC, '-o', 'jsonpath={.status.phase}']).stdout?.trim() ?? '';
+    availableReplicas = deps.run('kubectl', ['--context', DEV_S3_CONTEXT, '-n', DEV_S3_NAMESPACE, 'get', 'deploy', 'object-store', '-o', 'jsonpath={.status.availableReplicas}']).stdout?.trim() ?? '';
+    s3Status = deps.run('kubectl', ['--context', DEV_S3_CONTEXT, '-n', DEV_S3_NAMESPACE, 'exec', 'deploy/object-store', '--', 'curl', '-s', '-o', '/dev/null', '-w', '%{http_code}', 'http://127.0.0.1:8333/']).stdout?.trim() ?? '';
+    if (objectStoreReadinessMet({ pvcPhase, availableReplicas, s3Status })) {
+      return { ok: true, pvcPhase, availableReplicas, s3Status };
+    }
+    if (now() === deadline) break;
+    sleep(5000);
+  }
+  return { ok: false, pvcPhase, availableReplicas, s3Status };
 }
 
 /**
@@ -283,10 +319,10 @@ export function executeAuthorizedDevObjectStore(deps) {
       continue;
     }
     if (action.op === 'verify-readiness') {
-      const checked = deps.run('kubectl', ['--context', DEV_S3_CONTEXT, '-n', DEV_S3_NAMESPACE, 'get', `pvc/${DEV_S3_PVC}`, 'deploy/object-store', 'svc/object-store']);
-      completed.push({ op: 'verify-readiness', context: DEV_S3_CONTEXT });
-      if (!checked.ok) {
-        return { ...again, ok: false, mutated: completed.some((item) => item.op !== 'reuse-secret' && item.op !== 'verify-readiness'), refusals: [{ id: 'readiness-failed', detail: 'owned workloads were not ready' }], actions: completed };
+      const ready = waitForDevObjectStoreReadiness(deps);
+      completed.push({ op: 'verify-readiness', context: DEV_S3_CONTEXT, pvcPhase: ready.pvcPhase, availableReplicas: ready.availableReplicas, s3Status: ready.s3Status });
+      if (!ready.ok) {
+        return { ...again, ok: false, mutated: completed.some((item) => item.op !== 'reuse-secret' && item.op !== 'verify-readiness'), refusals: [{ id: 'readiness-failed', detail: 'PVC, Deployment, or S3 endpoint did not become ready' }], actions: completed };
       }
       continue;
     }
@@ -322,5 +358,6 @@ export function executeAuthorizedDevObjectStore(deps) {
       return { ...again, ok: false, mutated: true, refusals: [{ id: 'apply-workloads-failed', detail: 'workload apply failed; owned secret was not deleted' }], actions: completed };
     }
   }
-  return { ...again, ok: true, mutated: completed.some((action) => action.op !== 'reuse-secret' && action.op !== 'noop'), actions: completed };
+  const mutating = new Set(['ensure-namespace', 'create-secret', 'apply-workloads']);
+  return { ...again, ok: true, mutated: completed.some((action) => mutating.has(action.op)), actions: completed };
 }

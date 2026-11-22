@@ -11,9 +11,18 @@ import {
   RELEASE_S3_NAMESPACE,
   ensureDevObjectStore,
   executeAuthorizedDevObjectStore,
+  objectStoreReadinessMet,
   planDevObjectStore,
   renderDevObjectStore,
 } from './dev-object-store-bootstrap.mjs';
+
+function readinessStdout(args) {
+  const text = args.join(' ');
+  if (text.includes('jsonpath={.status.phase}')) return { ok: true, stdout: 'Bound\n' };
+  if (text.includes('availableReplicas')) return { ok: true, stdout: '1\n' };
+  if (text.includes('http_code')) return { ok: true, stdout: '403' };
+  return { ok: true, stdout: '' };
+}
 
 const ready = {
   context: DEV_S3_CONTEXT,
@@ -22,6 +31,7 @@ const ready = {
   dockerAvailable: true,
   kindAvailable: true,
   memoryMiB: 8000,
+  storageClass: 'standard',
   timedOutCommands: [],
   resources: [],
 };
@@ -70,9 +80,8 @@ test('owned reentry reuses the secret and does not generate a new one', () => {
       generated += 1;
       return { accessKeyId: 'new', secretAccessKey: 'new' };
     },
-    run(command) {
-      if (command !== 'kubectl') throw new Error('owned reentry must not apply workloads');
-      return { ok: true };
+    run(_command, args) {
+      return readinessStdout(args);
     },
   });
   assert.equal(result.ok, true);
@@ -105,7 +114,7 @@ test('execution applies only the dev context and omits credential bytes from the
     generateCredentials: () => ({ accessKeyId: 'access-secret-value', secretAccessKey: 'secret-secret-value' }),
     run(command, args, options = {}) {
       calls.push({ command, args, input: options.input ?? '' });
-      return { ok: true };
+      return readinessStdout(args);
     },
   });
   assert.equal(result.ok, true);
@@ -153,5 +162,12 @@ test('the CLI plans from an injected probe and refuses live ensure', () => {
     env: { ...process.env, OFFSCREEN_DEV_S3_ENSURE: 'authorized', OFFSCREEN_DEV_S3_PROBE: JSON.stringify(ready) },
   });
   assert.equal(ensure.status, 2);
-  assert.match(ensure.stderr, /refusing live object-store ensure/);
+  assert.match(ensure.stderr, /injected probe cannot authorize mutation/);
+});
+
+test('a successful kubectl get is not readiness', () => {
+  assert.equal(objectStoreReadinessMet({ pvcPhase: 'Pending', availableReplicas: '1', s3Status: '403' }), false);
+  assert.equal(objectStoreReadinessMet({ pvcPhase: 'Bound', availableReplicas: '0', s3Status: '403' }), false);
+  assert.equal(objectStoreReadinessMet({ pvcPhase: 'Bound', availableReplicas: '1', s3Status: '000' }), false);
+  assert.equal(objectStoreReadinessMet({ pvcPhase: 'Bound', availableReplicas: '1', s3Status: '403' }), true);
 });
