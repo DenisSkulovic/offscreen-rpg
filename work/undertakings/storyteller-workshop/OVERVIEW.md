@@ -4,6 +4,8 @@
 
 **WR10B joined:** new Writer scene wakes use `writerSceneDistributedV2` and the execution worker under an explicit lab-only scripted transport. That is a zero-cost distributed bridge, not a paid model scene and not a TURN03 gate PASS. TURN03 T04 can be rerun against the joined undertaking HEAD.
 
+**Developer infrastructure planning update (2026-11-22):** DXK08's fast Tilt source-sync landed at `62c930a2` per integration branch; [DXK09](../../changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) is now a promoted but **planner-held** near-term packet for a separate dev kind cluster with per-worktree namespace, SQL database, S3 bucket, Temporal namespace, credentials and Tilt process. This is planning only: no extra cluster, proof or completion credit. The previously quoted ~65% monorepo/~40% Storyteller/~25% distributed operations/~40% overall (at least ±20pp) remain uncertain and unchanged by packet creation.
+
 **One-sentence verdict:** We have a substantial, carefully constrained **foundation** for a durable game/Writer, not yet a functioning, AI-driven Storyteller product on a demonstrated resilient Kubernetes system. Treat “implemented”, “focused-test passed”, “local connected proof”, “cold Kubernetes proof” and “user-experienced quality” as **five different claims**. The first is far ahead of the last two.
 
 ## Next three implementation Changes prepared (2026-11-22; NO COMPLETION CREDIT YET)
