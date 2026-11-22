@@ -38,7 +38,11 @@ const KUBE_SYSTEM_UID = 'cluster-uid-1111';
 function labExecFixture(opts = {}) {
   const spy = opts.spy ?? { calls: [] };
   const deployment = {
-    metadata: { uid: 'dep-uid-aaaa', name: 'storyteller-worker', namespace: 'lab-workers' },
+    metadata: {
+      uid: 'dep-uid-aaaa',
+      name: 'storyteller-worker',
+      namespace: 'lab-workers',
+    },
     spec: {
       template: {
         metadata: { labels: { 'offscreen.rpg/chaos-eligible': 'true' } },
@@ -59,7 +63,12 @@ function labExecFixture(opts = {}) {
       uid: 'rs-uid-77f',
       namespace: 'lab-workers',
       ownerReferences: [
-        { kind: 'Deployment', name: 'storyteller-worker', uid: 'dep-uid-aaaa', controller: true },
+        {
+          kind: 'Deployment',
+          name: 'storyteller-worker',
+          uid: 'dep-uid-aaaa',
+          controller: true,
+        },
       ],
     },
   };
@@ -94,7 +103,12 @@ function labExecFixture(opts = {}) {
     const joined = [file, ...args].join('\0');
 
     if (file === 'kind' && args[0] === 'get' && args[1] === 'clusters') {
-      return { argv: [file, ...args], stdout: 'offscreen-lab\n', stderr: '', status: 0 };
+      return {
+        argv: [file, ...args],
+        stdout: 'offscreen-lab\n',
+        stderr: '',
+        status: 0,
+      };
     }
     if (joined.includes('config\0current-context')) {
       return {
@@ -121,7 +135,12 @@ function labExecFixture(opts = {}) {
       };
     }
     if (joined.includes('replicasets') && joined.includes('lab-workers')) {
-      return { argv: [file, ...args], stdout: JSON.stringify({ items: [opts.replicaSet ?? replicaSet] }), stderr: '', status: 0 };
+      return {
+        argv: [file, ...args],
+        stdout: JSON.stringify({ items: [opts.replicaSet ?? replicaSet] }),
+        stderr: '',
+        status: 0,
+      };
     }
     if (joined.includes('pods') && joined.includes('lab-workers')) {
       return {
@@ -131,7 +150,12 @@ function labExecFixture(opts = {}) {
         status: 0,
       };
     }
-    return { argv: [file, ...args], stdout: '', stderr: 'unexpected', status: 1 };
+    return {
+      argv: [file, ...args],
+      stdout: '',
+      stderr: 'unexpected',
+      status: 1,
+    };
   }
 
   return { execFile, spy };
@@ -149,7 +173,15 @@ describe('isMutatingKubectlInvocation', () => {
         'x',
       ]),
     );
-    assert.ok(!isMutatingKubectlInvocation(['kubectl', '--context', LAB_CONTEXT_NAME, 'get', 'pods']));
+    assert.ok(
+      !isMutatingKubectlInvocation([
+        'kubectl',
+        '--context',
+        LAB_CONTEXT_NAME,
+        'get',
+        'pods',
+      ]),
+    );
   });
 });
 
@@ -192,7 +224,10 @@ describe('runPreflightPlan positive', () => {
     assert.equal(mutating.length, 0);
     assert.ok(
       spy.calls.some(
-        (c) => c[0] === 'kubectl' && c.includes('--context') && c.includes(LAB_CONTEXT_NAME),
+        (c) =>
+          c[0] === 'kubectl' &&
+          c.includes('--context') &&
+          c.includes(LAB_CONTEXT_NAME),
       ),
     );
   });
@@ -223,7 +258,12 @@ describe('runPreflightPlan negative', () => {
     const { execFile } = labExecFixture();
     const execNoCluster = (file, args) => {
       if (file === 'kind') {
-        return { argv: [file, ...args], stdout: 'other-lab\n', stderr: '', status: 0 };
+        return {
+          argv: [file, ...args],
+          stdout: 'other-lab\n',
+          stderr: '',
+          status: 0,
+        };
       }
       return execFile(file, args);
     };
@@ -309,14 +349,19 @@ describe('runPreflightPlan negative', () => {
       const result = execFile(file, args);
       if (file === 'kubectl' && args.includes('deployment')) {
         const deployment = JSON.parse(result.stdout);
-        delete deployment.spec.template.metadata.labels['offscreen.rpg/chaos-eligible'];
+        delete deployment.spec.template.metadata.labels[
+          'offscreen.rpg/chaos-eligible'
+        ];
         return { ...result, stdout: JSON.stringify(deployment) };
       }
       return result;
     };
     const plan = runPreflightPlan({
-      runId: 'run-fake-local-label', seed: '1', maxEvents: 1,
-      releaseRefPath: 'fixture-release.json', execFile: badDeployment,
+      runId: 'run-fake-local-label',
+      seed: '1',
+      maxEvents: 1,
+      releaseRefPath: 'fixture-release.json',
+      execFile: badDeployment,
       readReleaseRef: () => RELEASE_REF,
       readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
       clusterLockExists: () => false,
@@ -336,8 +381,11 @@ describe('runPreflightPlan negative', () => {
       return result;
     };
     const plan = runPreflightPlan({
-      runId: 'run-wrong-rs', seed: '1', maxEvents: 1,
-      releaseRefPath: 'fixture-release.json', execFile: badRs,
+      runId: 'run-wrong-rs',
+      seed: '1',
+      maxEvents: 1,
+      releaseRefPath: 'fixture-release.json',
+      execFile: badRs,
       readReleaseRef: () => RELEASE_REF,
       readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
       clusterLockExists: () => false,
@@ -357,8 +405,11 @@ describe('runPreflightPlan negative', () => {
       return result;
     };
     const plan = runPreflightPlan({
-      runId: 'run-wrong-deployment-owner', seed: '1', maxEvents: 1,
-      releaseRefPath: 'fixture-release.json', execFile: badRsParent,
+      runId: 'run-wrong-deployment-owner',
+      seed: '1',
+      maxEvents: 1,
+      releaseRefPath: 'fixture-release.json',
+      execFile: badRsParent,
       readReleaseRef: () => RELEASE_REF,
       readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
       clusterLockExists: () => false,
@@ -378,8 +429,11 @@ describe('runPreflightPlan negative', () => {
       return result;
     };
     const plan = runPreflightPlan({
-      runId: 'run-pod-not-opted', seed: '1', maxEvents: 1,
-      releaseRefPath: 'fixture-release.json', execFile: podNotOpted,
+      runId: 'run-pod-not-opted',
+      seed: '1',
+      maxEvents: 1,
+      releaseRefPath: 'fixture-release.json',
+      execFile: podNotOpted,
       readReleaseRef: () => RELEASE_REF,
       readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
       clusterLockExists: () => false,
@@ -399,8 +453,11 @@ describe('runPreflightPlan negative', () => {
       return result;
     };
     const plan = runPreflightPlan({
-      runId: 'run-wrong-tag', seed: '1', maxEvents: 1,
-      releaseRefPath: 'fixture-release.json', execFile: changedDeployment,
+      runId: 'run-wrong-tag',
+      seed: '1',
+      maxEvents: 1,
+      releaseRefPath: 'fixture-release.json',
+      execFile: changedDeployment,
       readReleaseRef: () => RELEASE_REF,
       readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
       clusterLockExists: () => false,
@@ -411,9 +468,17 @@ describe('runPreflightPlan negative', () => {
   test('unknown or protected app namespace fails closed', () => {
     const { execFile } = labExecFixture();
     const plan = runPreflightPlan({
-      runId: 'run-data-pod', seed: '1', maxEvents: 1,
-      releaseRefPath: 'fixture-release.json', execFile,
-      readReleaseRef: () => ({...RELEASE_REF, releaseOwners: [{...RELEASE_REF.releaseOwners[0], namespace: 'lab-postgres'}]}),
+      runId: 'run-data-pod',
+      seed: '1',
+      maxEvents: 1,
+      releaseRefPath: 'fixture-release.json',
+      execFile,
+      readReleaseRef: () => ({
+        ...RELEASE_REF,
+        releaseOwners: [
+          { ...RELEASE_REF.releaseOwners[0], namespace: 'lab-postgres' },
+        ],
+      }),
       readMeminfo: () => MIN_MEM_AVAILABLE_KIB + 1,
       clusterLockExists: () => false,
     });
@@ -440,7 +505,12 @@ describe('createKubectlAdapter', () => {
 });
 
 describe('controller CLI', () => {
-  test('--execute is rejected until T04', () => {
+  test('--execute without confirm flags refuses with zero mutating kubectl', () => {
+    const spy = { calls: [] };
+    const execFile = (file, args) => {
+      spy.calls.push([file, ...args]);
+      return { argv: [file, ...args], stdout: '', stderr: '', status: 0 };
+    };
     const chunks = [];
     const result = runController({
       argv: [
@@ -453,11 +523,15 @@ describe('controller CLI', () => {
         'ref.json',
       ],
       write: (c) => chunks.push(c),
-      execFile: () => ({ argv: [], stdout: '', stderr: '', status: 0 }),
+      execFile,
     });
     const plan = JSON.parse(chunks.join(''));
-    assert.equal(plan.reason, 'execute-not-implemented');
+    assert.equal(plan.reason, 'missing-confirm-run-id');
     assert.equal(result.exitCode, 2);
+    assert.equal(
+      spy.calls.filter((c) => isMutatingKubectlInvocation(c)).length,
+      0,
+    );
   });
 
   test('default plan path uses dry-run preflight', () => {
@@ -487,7 +561,14 @@ describe('controller CLI', () => {
   });
 
   test('parseControllerArgs defaults', () => {
-    const args = parseControllerArgs(['--run-id', 'a', '--seed', 'b', '--release-ref', 'c']);
+    const args = parseControllerArgs([
+      '--run-id',
+      'a',
+      '--seed',
+      'b',
+      '--release-ref',
+      'c',
+    ]);
     assert.equal(args.mode, 'plan');
     assert.equal(args.dryRun, true);
     assert.equal(args.maxEvents, 1);

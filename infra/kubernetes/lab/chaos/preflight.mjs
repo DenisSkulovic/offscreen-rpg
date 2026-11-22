@@ -565,6 +565,8 @@ export function buildChaosPlan(input) {
       seed: selection.seed,
       index: selection.index,
       candidateCount: selection.candidateCount,
+      podLabels: selection.podLabels ?? {},
+      templateLabels: selection.templateLabels ?? {},
     },
     preflight: {
       memAvailableKib,

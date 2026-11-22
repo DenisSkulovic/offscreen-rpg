@@ -1,6 +1,6 @@
 # K8S10 | Current post-TURN03 real-game fault and bounded load execution (2026-11-22)
 
-**State: T01–T04 READY FOR EXECUTION NOW; T05 LIVE MUTATION REQUIRES TURN03 PASS PLUS SEPARATE OWNER AUTHORIZATION.** Source-rechecked against `22b46a828b56a8b3094bfab30162d5718c406e22`. Existing chaos plan/preflight/selector/oracle remain the selected owners; `controller --execute` is still intentionally unimplemented.
+**State: T01–T04 SOURCE LANDED; CHANGE OPEN. T05 LIVE MUTATION STILL REQUIRES a genuine cold-kind TURN03 PASS at the joined release AND explicit owner authorization naming the disposable cluster, release, runId and Pod UID.** Unit adapters use injected TURN03 reports. Missing a real TURN03 PASS makes live eligibility false and refuses `--execute`; it does not block the unit adapters. `--execute` is implemented as one confirmed `kubectl delete pod --wait=false` on `kind-offscreen-lab` only and is not authorized to run against the live kind cluster from this landing.
 
 ## Source truth, not reinvented pieces
 

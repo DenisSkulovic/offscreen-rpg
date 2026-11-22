@@ -242,6 +242,8 @@ export function selectTarget({ pods, releaseOwners, seed, excludedUids = [] }) {
     seed: String(seed),
     index,
     candidateCount: eligible.length,
+    podLabels: choice.pod.labels ?? {},
+    templateLabels: choice.owner.labels ?? {},
   };
 }
 
