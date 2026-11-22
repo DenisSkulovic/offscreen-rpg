@@ -76,7 +76,11 @@ function forkEntityId(
   kind: string,
   originalId: string,
 ): string {
-  return stableNamespacedDocumentId('fork', forkStoryId, `${kind}:${originalId}`);
+  return stableNamespacedDocumentId(
+    'fork',
+    forkStoryId,
+    `${kind}:${originalId}`,
+  );
 }
 
 function assertMappedId(actual: string, expected: string): void {
@@ -105,7 +109,9 @@ function wrapVersionedPayload(body: unknown): VersionedOpenPayload {
   return { version: 1, body: body as VersionedOpenPayload['body'] };
 }
 
-function collectSourceExecutionIds(identities: ForkStateIdentities): Set<string> {
+function collectSourceExecutionIds(
+  identities: ForkStateIdentities,
+): Set<string> {
   const ids = new Set<string>();
   ids.add(identities.passage.source);
   if (identities.interaction) {
@@ -225,7 +231,10 @@ function remapOfferPayloadBody(
     if (parsedOffer.data.id !== sourceOfferId) {
       throw new ForkStateError('fork_identity_unmapped');
     }
-    record.offer = offerSchema.parse({ ...parsedOffer.data, id: mappedOfferId });
+    record.offer = offerSchema.parse({
+      ...parsedOffer.data,
+      id: mappedOfferId,
+    });
   } else if (
     typeof offerValue === 'object' &&
     offerValue !== null &&
@@ -235,27 +244,39 @@ function remapOfferPayloadBody(
     if (embeddedId !== sourceOfferId) {
       throw new ForkStateError('fork_identity_unmapped');
     }
-    record.offer = { ...(offerValue as Record<string, unknown>), id: mappedOfferId };
+    record.offer = {
+      ...(offerValue as Record<string, unknown>),
+      id: mappedOfferId,
+    };
   }
   const plansValue = record.plans;
   if (plansValue !== undefined && plansValue !== null) {
+    const plansWasVersioned = isVersionedPayload(plansValue);
     const unwrapped = unwrapVersionedPayload(plansValue);
-  if (Array.isArray(unwrapped)) {
-    const parsedPlans = unwrapped.map((entry) => parseStoredActionPlan(entry));
-    const mechanicalOnly = parsedPlans.every(isImmediateActionPlan);
-    if (mechanicalOnly) {
-      record.plans = remapImmediatePlans(
-        parsedPlans.filter(isImmediateActionPlan),
-        remapChild,
+    let remappedBody: unknown;
+    if (Array.isArray(unwrapped)) {
+      const parsedPlans = unwrapped.map((entry) =>
+        parseStoredActionPlan(entry),
       );
+      const mechanicalOnly = parsedPlans.every(isImmediateActionPlan);
+      if (mechanicalOnly) {
+        remappedBody = remapImmediatePlans(
+          parsedPlans.filter(isImmediateActionPlan),
+          remapChild,
+        );
+      } else {
+        assertNoUnmappedExecutionIds(unwrapped, sourceIds);
+        remappedBody = parsedPlans;
+      }
     } else {
       assertNoUnmappedExecutionIds(unwrapped, sourceIds);
-      record.plans = parsedPlans;
+      remappedBody = unwrapped;
     }
-  } else {
-    assertNoUnmappedExecutionIds(unwrapped, sourceIds);
-    record.plans = plansValue;
-  }
+    if (plansWasVersioned || Array.isArray(unwrapped)) {
+      record.plans = wrapVersionedPayload(remappedBody);
+    } else {
+      record.plans = remappedBody;
+    }
   }
   assertNoUnmappedExecutionIds(record, sourceIds);
   return record;
@@ -417,7 +438,8 @@ function remapActiveActionVersionedField(
 
 function parseV2Checkpoint(checkpoint: SceneCheckpointV2): SceneCheckpointV2 {
   if (
-    (checkpoint as { format?: string }).format !== 'offscreen.scene-checkpoint.v2'
+    (checkpoint as { format?: string }).format !==
+    'offscreen.scene-checkpoint.v2'
   ) {
     throw new ForkStateError('checkpoint_version_unsupported');
   }
@@ -615,11 +637,7 @@ function remapPresentFictionalState(
       }
       case 'storyteller':
       case 'storyteller-intent': {
-        const childId = forkEntityId(
-          forkStoryId,
-          'held-generation',
-          hold.id,
-        );
+        const childId = forkEntityId(forkStoryId, 'held-generation', hold.id);
         identities.heldGenerations.push({ source: hold.id, child: childId });
         return { ...hold, id: childId };
       }
@@ -685,9 +703,10 @@ function remapPresentFictionalState(
   };
 }
 
-export function mapV2ForkState(
-  input: MapV2ForkStateInput,
-): { checkpoint: SceneCheckpointV2; identities: ForkStateIdentities } {
+export function mapV2ForkState(input: MapV2ForkStateInput): {
+  checkpoint: SceneCheckpointV2;
+  identities: ForkStateIdentities;
+} {
   const source = parseV2Checkpoint(input.checkpoint);
   if (source.storyId === input.forkStoryId) {
     throw new ForkStateError('fork_identity_unmapped');

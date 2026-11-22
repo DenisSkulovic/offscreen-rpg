@@ -1,6 +1,6 @@
 # FORK02 | Complete v2 checkpoint-to-fork round-trip fidelity
 
-**State:** Ready for bounded implementation (source-backed); no live kind operation authorized by this packet. **Commissioned:** 2026-11-22. **Integration branch:** `undertaking/storyteller-workshop`; **inspected HEAD:** `28e2124bd76f009d61f0e2f1d8b5b056573ee6fa`. **Owner:** Story Engine v2 fork insert/readback. **Blocks:** TURN03 historical fork, independent continuation. This is not another incremental "fix one field and retry" packet.
+**State:** Done (2026-11-22). Disposable PostgreSQL full-field v2 fork round trip passed. Live kind replay remains TURN03. **Commissioned:** 2026-11-22. **Integration branch:** `undertaking/storyteller-workshop`; **inspected HEAD:** `28e2124bd76f009d61f0e2f1d8b5b056573ee6fa`. **Owner:** Story Engine v2 fork insert/readback. **Blocks:** TURN03 historical fork, independent continuation. This is not another incremental "fix one field and retry" packet.
 
 ## Observed live failure and root cause
 
@@ -30,3 +30,20 @@ The active path is `forks.ts::forkFromSceneCheckpointV2` -> `fork-v2-reconstruct
 Expected primary edits `packages/story-engine/src/stories/fork-v2-reconstruct.ts`, `packages/story-engine/src/stories/scene-checkpoint-v2.ts`, and new/updated focused `packages/story-engine/test/*fork*roundtrip*.mjs`; minimal test-only fixture under the same package. If needed, `packages/story-engine/src/stories/fork-reconstruct.ts` only to reconcile the legacy public mapper, after proving a reachable caller/contract. Do **not** change `packages/db/src/schema/**`, database migrations, Game Authority, API, worker, TURN03 runner, Kubernetes, auth, or production comparison strictness. No direct live SQL patches, image swaps, pod restarts, provider spend or disruptive failure injection.
 
 **Acceptance:** disposable PostgreSQL v2 fork tests (real `createStories().fork`) for null plans, empty array, nonempty opaque/extended plans, and active-scene/held-work checkpoint have **zero mismatching fictional fields after round trip**, and full adversarial/identity proof. Record which fields were actually exercised. The historical fork live gate stays BLOCKED until TURN03 replays after merge and verified Tilt compile.
+
+## Evidence
+
+Disposable Postgres on the Change worktree, 2026-11-22:
+
+- `game_offer.plans = 'null'::jsonb` under NOT NULL: `plans IS NULL` false, `jsonb_typeof` `null`, node-pg and Drizzle read JavaScript `null`. SQL NULL insert violates NOT NULL.
+- `node --test` on `fork-v2-roundtrip.integration.test.mjs`, `fork-reconstruct-authorization.integration.test.mjs`, and `fork-reconstruct.test.mjs`: 38 pass, 0 fail. `fork-state.test.mjs`: 4 pass, 0 fail.
+- Zero collector diffs for null plans, empty array, nonempty plans with an extra nested offer key, scene37 mechanics-present fields, selected and absent situation authorization, and a present accepted activity plan.
+- Mutation of `location` fails `assertV2PostStateMatches`. Wrong owner, wrong hash, and malformed payload leave no child and do not change the parent checkpoint hash. Same fork id replays the existing child.
+- Live TURN03 kind replay: NOT RUN.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/technical/engine/lifecycle-and-compatibility.md#fork-identity-remap | technical | changed: v2 fork readback must match the mapped fictional snapshot, and JSON null plans stay distinct from an empty array | packages/story-engine/src/stories/fork-v2-reconstruct.ts, scene-checkpoint-v2.ts, fork-state.ts, forks.ts @ bf635f56 plus this Change | fixture-tested | SQL NULL rejected; wrong owner, hash, and malformed payload roll back; location mutation fails the strict comparator | sentence added in that heading |
+| no product page changed | product | unchanged: player-visible fork rules are the same; this restores checkpoint fidelity already required for a historical fork | docs/technical/engine/lifecycle-and-compatibility.md @ bf635f56 | source-observed | live kind replay was not claimed | N/A |

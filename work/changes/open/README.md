@@ -8,7 +8,6 @@
 
 | Change | Why it remains open |
 | --- | --- |
-| [FORK02 v2 checkpoint round-trip fidelity](2026-11-22--fork02-v2-checkpoint-roundtrip-fidelity/CHANGE.md) | Commissioned source-grounded full-field Story Engine fork reconciliation; current TURN03 offer mismatch and potential hidden later mismatches. |
 | [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
 | [WR10 private Writer protocol](2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) | Commissioned wave / GA–Worker provider boundary |
 | [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |

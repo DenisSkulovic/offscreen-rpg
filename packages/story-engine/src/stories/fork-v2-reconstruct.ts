@@ -1,3 +1,4 @@
+import { sql, type SQL } from 'drizzle-orm';
 import type { SceneCheckpointV2 } from '@offscreen/documents';
 import { hashCanonicalJson } from '@offscreen/documents';
 import type {
@@ -142,6 +143,19 @@ function narrativeRevisionFromCheckpoint(
   return 1;
 }
 
+function omitEnvelopeFields(
+  offerTree: Record<string, unknown>,
+): Record<string, unknown> {
+  const tree = { ...offerTree };
+  delete tree.source;
+  delete tree.meaning;
+  return tree;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function campaignOfferColumnFromFictional(
   offer: PresentFictionalState['offer'],
 ): unknown | null {
@@ -149,24 +163,43 @@ function campaignOfferColumnFromFictional(
     return null;
   }
   const payloadBody = unwrapVersioned(offer.payload);
-  let offerTree: Record<string, unknown> = { id: offer.id, nodes: [] };
+  let offerTree: Record<string, unknown> | null = null;
   if (
     typeof payloadBody === 'object' &&
     payloadBody !== null &&
     'offer' in payloadBody &&
     payloadBody.offer != null
   ) {
-    const parsed = offerSchema.safeParse(payloadBody.offer);
-    offerTree = parsed.success
-      ? (parsed.data as Record<string, unknown>)
-      : (payloadBody.offer as Record<string, unknown>);
+    const nested = payloadBody.offer;
+    if (!isPlainObject(nested)) {
+      throw new ForkStateError('fork_identity_unmapped');
+    }
+    // offerSchema is strict, so validate the known id/nodes shape and keep
+    // any other checkpoint keys on the stored tree.
+    const recognized = { id: nested.id, nodes: nested.nodes };
+    if (!offerSchema.safeParse(recognized).success) {
+      throw new ForkStateError('fork_identity_unmapped');
+    }
+    offerTree = nested;
   }
+  const base =
+    offerTree == null
+      ? { id: offer.id, nodes: [] as unknown[] }
+      : omitEnvelopeFields(offerTree);
   return {
-    ...offerTree,
+    ...base,
     id: offer.id,
     source: offer.source,
     meaning: offer.meaning,
   };
+}
+
+function validateStoredPlanBody(plan: unknown): void {
+  const parsed = parseStoredActionPlan(plan);
+  if (isNarrativeIntentPlanValue(parsed)) {
+    return;
+  }
+  immediateActionPlanSchema.parse(plan);
 }
 
 function extractOfferPlans(offer: PresentFictionalState['offer']): unknown {
@@ -175,23 +208,28 @@ function extractOfferPlans(offer: PresentFictionalState['offer']): unknown {
   }
   const body = unwrapVersioned(offer.payload);
   if (typeof body !== 'object' || body === null) {
-    return [];
+    return null;
   }
   const plans = (body as { plans?: unknown }).plans;
   if (plans == null) {
-    return [];
+    return null;
   }
   const unwrapped = unwrapVersioned(plans);
   if (Array.isArray(unwrapped)) {
-    return unwrapped.map((plan) => {
-      const parsed = parseStoredActionPlan(plan);
-      if (isNarrativeIntentPlanValue(parsed)) {
-        return parsed;
-      }
-      return immediateActionPlanSchema.parse(plan);
-    });
+    for (const plan of unwrapped) {
+      validateStoredPlanBody(plan);
+    }
+    return unwrapped;
   }
   return unwrapped;
+}
+
+/** Drizzle/pg bind SQL NULL as column null; JSONB null literal preserves NOT NULL rows. */
+export function gameOfferPlansColumnValue(plans: unknown): unknown | SQL {
+  if (plans === null) {
+    return sql`'null'::jsonb`;
+  }
+  return plans;
 }
 
 /** Pure insert bundle for a v2 scene checkpoint fork. */

@@ -220,7 +220,14 @@ function offerTreeFromCampaignColumn(offer: unknown): unknown {
   if (!record || !Array.isArray(record.nodes)) {
     return offer;
   }
-  return { id: requireUuid(record.id), nodes: record.nodes };
+  const tree: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (key === 'source' || key === 'meaning') {
+      continue;
+    }
+    tree[key] = value;
+  }
+  return tree;
 }
 
 function buildOfferSnapshot(
@@ -232,6 +239,10 @@ function buildOfferSnapshot(
     return null;
   }
   const associated = resolveAssociatedGameOffer(state, campaign);
+  let plans: JsonValue = null;
+  if (associated && associated.plans !== null) {
+    plans = wrapVersionedOpenPayload(associated.plans);
+  }
   return {
     id: envelope.id,
     source: envelope.source,
@@ -240,9 +251,7 @@ function buildOfferSnapshot(
       version: 1 as const,
       body: {
         offer: offerTreeFromCampaignColumn(campaign.offer),
-        plans: associated
-          ? wrapVersionedOpenPayload(associated.plans)
-          : (null as JsonValue),
+        plans,
       },
     },
   };

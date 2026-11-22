@@ -45,6 +45,7 @@ import {
 } from './scene-checkpoint';
 import {
   buildV2ForkRows,
+  gameOfferPlansColumnValue,
   SettingsIncompleteError,
 } from './fork-v2-reconstruct.js';
 import { ForkStateError } from './fork-state.js';
@@ -459,7 +460,10 @@ async function forkFromSceneCheckpointV2(
   }
   await tx.insert(campaign).values(rows.campaign);
   for (const offer of rows.gameOffers) {
-    await tx.insert(gameOffer).values(offer);
+    await tx.insert(gameOffer).values({
+      ...offer,
+      plans: gameOfferPlansColumnValue(offer.plans),
+    });
   }
   for (const activity of rows.gameActivities) {
     await tx.insert(gameActivity).values(activity);
