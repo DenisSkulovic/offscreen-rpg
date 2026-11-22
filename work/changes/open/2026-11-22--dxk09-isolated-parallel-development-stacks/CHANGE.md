@@ -1,6 +1,6 @@
 # DXK09 | Reliable, elastic and isolated developer environments
 
-**State: T01a/T01b/T02/T06a implemented; T01a now has one real successful Docker image proof. Ready next: bounded T04a auth cookie-prefix contract. T03 and the live portions of T04/T05/T07 remain PLANNER-HELD pending exact tenant provisioning, host and OAuth verification.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
+**State: T01a/T01b/T02/T06a/T04a implemented; T01a has a successful real Docker build. T03a dev-only guarded bootstrap code is now READY. Live cluster creation, T03b tenant provisioning, T04b live OAuth, T05 and T07 remain held pending explicit scoped gates.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
 
 ## Problem and goal
 
