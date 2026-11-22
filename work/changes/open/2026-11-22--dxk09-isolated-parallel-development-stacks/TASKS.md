@@ -86,7 +86,15 @@
 **Negative:** missing auth/env/foreign context/unknown migration returns a read-only refusal; never runs live fault suite implicitly.
 **Stop:** existing TURN03 harness cannot expose needed evidence without modifying acceptance semantics, return exact signature to planner. Live acceptance remains permission gated.
 
-## T07 | Four-way full-stack and elastic capacity acceptance | PLANNER HOLD (after T01–T06)
+## T05 lifecycle refinement | On-demand release vs default dev
+
+**Decision:** everyday use requires only `kind-offscreen-dev`; `kind-offscreen-lab` must be configured and capable of explicit start/status/non-destructive stop for release acceptance. Dev start never implicitly starts release. A deliberate release run may request dev shutdown to free memory, but must not force it. Both clusters must have separate ownership, identity, secrets, data and endpoint routing. New environment purposes can later be added as separately configured targets.
+
+**Hard stop before implementing cluster stop:** Kind has no established, source-proven safe suspend/resume path in this packet. Do not implement stop as `kind delete cluster`. Assess candidate node-container stop/start and recovery **in a disposable fixture only**; verify database/object-store/PVC continuity across restart and Docker Desktop/WSL lifecycle. If unsupported, return an architectural blocker to ChatGPT. Separately, app workload pause/resume may be supported without claiming cluster is stopped.
+
+**Proof updates:** dev-only four-stack test runs with release idle; release-only cold acceptance can run while dev is deliberately stopped; repeated switch dev→release→dev preserves source-bound workloads, auth data, SQL, object data and Temporal state. Optional coexistence proof is capacity-gated, not a requirement of ordinary dev operation.
+
+## T07 | Four-way full-stack and elastic capacity acceptance## T07 | Four-way full-stack and elastic capacity acceptance | PLANNER HOLD (after T01–T06)
 
 **Read:** `PROOF.md`, launcher, actual backing provisioner, `docs/runbooks/local-development.md`.
 **Edit:** tests, runbook, evidence report, status reconciliation; no production feature code.
