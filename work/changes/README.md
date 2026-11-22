@@ -2,9 +2,9 @@
 
 ## Lifecycle at a glance (2026-11-22)
 
-**[Open](open/): 9 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
+**[Open](open/): 13 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
 
-**[Backlog](backlog/README.md): 35 deferred or future Changes in five domain groups.** This includes 29 November 22 proposals and six older unselected/deferred packets. No backlog Change may be treated as Cursor-ready solely from a previous status label; promotion requires a fresh source/readiness check and explicit owner commission.
+**[Backlog](backlog/README.md): 32 deferred or future Changes in five domain groups.** DXK08 was promoted on 2026-11-22 after fresh source/readiness reconciliation. No backlog Change may be treated as Cursor-ready solely from a previous status label; promotion requires a fresh source/readiness check and explicit owner commission.
 
 **[Archive](archive/README.md): terminal Done/Cancelled Changes with evidence and ledger recovery.** Do not archive a packet merely because it was superseded without reconciliation.
 
@@ -237,7 +237,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [K8S11](open/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) | Next/Nest live edge |
 | [TURN03](open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Full distributed forkable turn |
 | [TURN04](backlog/platform-operations/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md) | Opt-in live provider confirmation |
-| [DXK08](backlog/quality-evaluation/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast Kubernetes developer loop |
+| [DXK08](open/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast Kubernetes developer loop — **READY / selected** |
 | [DXK09](backlog/quality-evaluation/2026-11-20--dxk09-parallel-worktree-dev-stacks/CHANGE.md) | Parallel worktree dev stacks |
 
 [DXK07](archive/2026-11/infrastructure/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) is **Done for implementation**; full fresh-clone/Headlamp operator proof remains [DXK-FINAL](../tasks/open/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md). · [Implementation roadmap](../IMPLEMENTATION-ROADMAP.md) · [Current distributed source review](../designs/open/distributed-turn-poc/README.md) · [First-campaign readiness study](../designs/open/first-campaign-readiness-2026-11-20/README.md) · [current selection](../QUEUE.md). These source maps are dated; they do not supersede HEAD code or current Change states.
