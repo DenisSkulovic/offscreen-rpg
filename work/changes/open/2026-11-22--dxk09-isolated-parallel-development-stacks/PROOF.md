@@ -9,6 +9,7 @@
 | B03 source-to-running-code | edit API and shared dependency; compile, reload process, fingerprint and health match desired source | deliberate TS compile failure and old process cannot report desired revision READY |
 | L01 single-stack lifecycle | one command start/status/stop works and reports actual failure phase, existing data persists | bad Tilt arg count, namespace comma syntax, repeated manual trigger requirement, endless readiness polling |
 | L02 worker readiness | actual worker boots, registers intended Temporal namespace/queues, bounded ready report and diagnostic | worker OOM, crashloop, incorrect namespace, stale dist, timeout |
+| I00 dev bootstrap safety | dev-only read-only plan/status and test adapter; context and loopback port separate from release; no live `ensure` until explicit approval | wrong context/foreign same-name resources and pre-existing volume/context change refused |
 | I01 elastic owner identity | allocate 1/4/5/10/100 distinct paths without changing code; reattach stable ID | fixed `s01..s04`, duplicate lease, race, reused PID, forced cross-owner stop |
 | I02 resource fencing | scoped cluster/namespace/UID, unique image refs and ports, wrong-context read-only rejection | A stop/build mutates B or release; occupied port hijacked |
 | I03 SQL tenancy | A/B independent schemas/migrations/sessions/outbox; 4 full stacks supported with budgeted active DB connections | A credential accesses B; dev `max_connections` exhaustion ignored |
