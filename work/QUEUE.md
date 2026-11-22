@@ -4,6 +4,8 @@
 
 Current work: none
 
+Deferred proposals live in the [domain backlog](changes/backlog/README.md); actively commissioned or imminent packets live in [open](changes/README.md). Backlog placement never selects work or confers permission to spend or deploy.
+
 This is the **one active selection pointer** for independently tracked work. The current themed integration envelope, when one exists, is recorded separately under [Undertakings](undertakings/README.md) and never selects execution by itself. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 
 Use exactly one `Current work:` line near the top. Valid values are `none`, a Markdown link to `changes/open/<leaf>/CHANGE.md`, or a Markdown link to `tasks/open/<leaf>/TASK.md`. Examples (illustrative, **not selected**): a Markdown link to an existing open `changes/open/<leaf>/CHANGE.md` or `tasks/open/<leaf>/TASK.md`. Do not copy placeholder paths into the selector. No `TASKS.md#Txx` or open design is a top-level selection.
