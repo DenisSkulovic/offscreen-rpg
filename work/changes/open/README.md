@@ -8,6 +8,7 @@
 
 | Change | Why it remains open |
 | --- | --- |
+| [FORK01 historical authorization reconstruction](2026-11-22--fork01-historical-situation-authorization/CHANGE.md) | Source-verified Story Engine checkpoint wrapper mismatch blocks TURN03 historical fork; small ready patch and required regression proof. |
 | [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
 | [WR10 private Writer protocol](2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) | Commissioned wave / GA–Worker provider boundary |
 | [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |
