@@ -1,6 +1,6 @@
 # DXK09 | Falsifiable operational acceptance, not paper architecture
 
-**Planning source:** `undertaking/storyteller-workshop@f6abb22b68cb`. No live Docker, Kind, WSL or browser test performed by planner. All statuses below are **NOT RUN**. Completion requires evidence across real worktrees, not merely generated YAML/green `kubectl get deploy`.
+**Source baseline:** `undertaking/storyteller-workshop@ca3bd03d`. Cursor reports one successful real Docker image build (9.75MB context, 123s, image SHA in CHANGE.md). **B01 partial PASS for one clean image build only**; remaining context/dirty-worktree regression, watcher reload, live Kubernetes, OAuth and multistack proofs are NOT RUN. The planner did not run Docker/Kind/WSL/browser. Statuses must distinguish Cursor receipt from planner-executed proof. Completion requires evidence across real worktrees, not merely generated YAML/green `kubectl get deploy`.
 
 | Gate | Required positive result | Failure that must be detected |
 | --- | --- | --- |
