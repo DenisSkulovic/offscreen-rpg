@@ -1,6 +1,6 @@
 # DXK09 | Cursor execution route and readiness gates
 
-**Owner-commissioned, staged:** T01a, T01b, T02 and T06a code is integrated on `undertaking/storyteller-workshop` with focused unit tests only. Live Docker image build, cluster provisioning, OAuth and four-stack proof are **not** done. **T03, T04, T05 and T07 remain planner-held** until their source/host contracts are settled. Do not treat this Change as Done. The parent may start on `change/dxk09-elastic-dev-env` from actual `undertaking/storyteller-workshop` HEAD; integrate into that undertaking only. Do not mistake a commissioned initial stage for authorization to provision/modify live clusters or mark the whole Change Done. One parent owns infrastructure/Tilt code; children get *one small task at a time*.
+**Owner-commissioned, staged:** T01a/T01b/T02/T06a code integrated and one real T01a Docker image build succeeded at `ca3bd03d` (123s, 9.75MB transferred, image SHA recorded in CHANGE.md). This does **not** prove runtime reload, Dev Kind, OAuth, release cold acceptance or four stacks. **T04a (pure auth cookie-prefix configuration) is the next bounded Ready implementation; T03, T04b live OAuth, T05 and T07 remain planner-held** until source/host contracts are settled. Do not treat this Change as Done. The parent may start on `change/dxk09-elastic-dev-env` from actual `undertaking/storyteller-workshop` HEAD; integrate into that undertaking only. Do not mistake a commissioned initial stage for authorization to provision/modify live clusters or mark the whole Change Done. One parent owns infrastructure/Tilt code; children get *one small task at a time*.
 
 **Invariant:** preserve existing DXK08 and release code paths until replacement is proven. No raw `tilt down`, `kind delete`, database reset, cluster-wide cleanup, paid provider calls or cross-worktree SIGTERM. Reconcile concurrent local work before commits.
 
@@ -21,6 +21,15 @@
 **Positive:** 1, 4, 5, 10, 100 synthetic identities without config changes, same worktree reattaches same slot, different worktrees don't share ports.
 **Negative:** concurrency allocation race, foreign listener, stale PID reused by another owner, exhausted port range and wrong worktree all refuse without process kill.
 **Stop:** platform file/process identity cannot be validated, return exact conflicting API.
+
+## T04a | Per-worktree Better Auth cookie prefix (pure config, not live OAuth) | READY
+
+**Read:** `apps/api/src/modules/auth/config.ts`, `apps/api/src/modules/auth/auth.ts`, `tools/api-integration/test/auth-config.test.ts`, `tools/api-integration/test/auth-options.test.ts`, `apps/web/src/lib/auth-client.ts`.
+**Edit:** only these auth config/options owners and focused tests; no app API route, client bypass, OAuth secrets or Kubernetes edits.
+**Algorithm:** add optional `BETTER_AUTH_COOKIE_PREFIX` to validated auth config. If omitted, **preserve existing Better Auth default cookie behavior** for release/prod/current single-stack. If set, require a bounded lowercase DNS-safe unique name (e.g. `offscreen-dev-<slotId>`; exact regex must reject empty/whitespace/dots/invalid chars and excessive length). Pass it to `advanced.cookiePrefix` only when configured, alongside existing secureCookie/IP handling. The future slot renderer sets it deterministically from its allocated collision-checked ID. Never derive from TCP port, mutable Git branch name or shared global constant. This is a selected host-cookie isolation strategy because different localhost ports share browser cookie storage.
+**Positive:** unchanged auth options without env; two different valid prefixes result in distinct `advanced.cookiePrefix` while keeping GitHub-only provider, exact trusted origin and secret; compile/typecheck and focused auth tests.
+**Negative:** invalid explicit prefix fails auth config; no prefix may silently enable a dev bypass; passwords/token/callback values never logged. No claim of browser OAuth proof until T04b runs simultaneously on two loopback ports in one browser profile.
+**Stop:** the pinned Better Auth 1.7.5 type/API rejects `cookiePrefix` or a client/SSR cookie reader assumes a fixed prefix; return exact evidence to planner rather than changing authentication architecture.
 
 ## T03 | Shared dev bootstrap + real per-slot SQL/S3/Temporal tenants | PLANNER HOLD
 
