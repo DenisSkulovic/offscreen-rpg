@@ -34,6 +34,10 @@ Auth: existing `apps/api/src/modules/auth/config.ts` requires `APP_ORIGIN`, `BET
 
 `pnpm dev`: worktree-relative guarded start/attach; choose role profile or complete default; start only owner resources and await compilation, runtime and dependency readiness. `pnpm dev:status`: print allocated slot, URLs, source/dirty hash, current image/runtime fingerprint, role status, failing stage, capacity estimate; read-only. `pnpm dev:stop`: gracefully stop only this owner's Tilt and app resources, preserve SQL/S3/Temporal. Do not auto-stop another worktree's process, even if stale by PID heuristic. Privileged `destroy` requires separate explicit scope and actor permission.
 
+## Purpose boundary and extensibility
+
+Treat `kind-offscreen-dev` worktree slots as an **instance allocator within the dev purpose**, not a generic cluster-wide environment allocator. Existing `kind-offscreen-lab` is the independent stable production-like release-acceptance **purpose**, with immutable image builds and no Tilt-driven source updates. Both environments may coexist; do not redirect release commands into development namespaces. Identify target by an explicit, pinned purpose/context configuration at command entry; do not rely on ambient kubecontext, a generic `ENV=prod` string, or naming conventions alone. A future `e2e`, `staging` or other purpose can be added through a separate explicitly owned target/configuration that declares its own cluster/context, persistence, credentials, mutation policy and proof, reusing narrowly suitable primitives. Do not provision future environments or introduce speculative generic frameworks as part of DXK09.
+
 ## E. Independent release-lab test route
 
 DXK09 must expose a clean **release acceptance preflight/smoke path**, in the original `kind-offscreen-lab`, without stopping dev Tilt, copying secrets, reusing dev databases, or substituting dev images. Implement with existing `infra/kubernetes/lab/app-release/install.sh`, image build selector and TURN03 proof harness; do not replace accepted release path with a new orchestration framework.
