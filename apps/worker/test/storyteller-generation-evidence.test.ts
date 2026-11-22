@@ -79,12 +79,6 @@ function noopSeam() {
     async fork() {
       throw new StoryError('not_found');
     },
-    async putLaunch() {
-      throw new StoryError('not_found');
-    },
-    async getLaunch() {
-      throw new StoryError('not_found');
-    },
   };
 }
 
