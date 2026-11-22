@@ -1,30 +1,45 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyDevTenantMigration, assertDevRuntimeReady, devTenantGrantStatements } from './dev-sql-tenant-grants.mjs';
+import { applyDevTenantMigration, assertDevRuntimeReady, devTenantMigrationPrep } from './dev-sql-tenant-grants.mjs';
 
-test('dev-1 grants keep ownership with the migration role and give runtime DML only', () => {
-  const statements = devTenantGrantStatements('dev-1');
-  assert.match(statements.join('\n'), /GRANT USAGE, CREATE ON SCHEMA public TO "dev_1_mig"/);
-  assert.match(statements.join('\n'), /REVOKE CREATE ON SCHEMA public FROM "dev_1_run"/);
-  assert.match(statements.join('\n'), /GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES/);
-  assert.equal(statements.some((sql) => sql.includes('dev_2') || sql.includes('postgres')), false);
+test('migration CREATE is granted before Drizzle and the gate follows verification', async () => {
   const applied = [];
-  const result = applyDevTenantMigration({
+  const result = await applyDevTenantMigration({
     slotId: 'dev-1',
     currentUser: 'dev_1_mig',
     authorizeLive: 'dev-1-migration-live',
     applyMigrations(options) {
       assert.equal(options.role, 'dev_1_mig');
-      assert.equal(options.searchPath, 'public');
       assert.equal(options.lock, 683291351);
+      assert.deepEqual(applied, devTenantMigrationPrep('dev-1'));
+      applied.push('migrate');
     },
     execSql(sql) {
       applied.push(sql);
     },
+    verify: () => ({ ok: true, appliedMigrations: 25 }),
   });
   assert.equal(result.ok, true);
-  assert.deepEqual(applied, statements);
-  const again = applyDevTenantMigration({
+  assert.equal(result.appliedMigrations, 25);
+  const migrateAt = applied.indexOf('migrate');
+  assert.ok(applied.slice(0, migrateAt).every((sql) => sql.includes('dev_1_mig') || sql.includes('PUBLIC')));
+  assert.equal(applied.slice(0, migrateAt).some((sql) => sql.includes('dev_1_run')), false);
+  assert.ok(applied.at(-3).includes('offscreen_dev_schema_gate'));
+  assert.match(applied.at(-2), /migrations\) VALUES \('dev-1', 25\)/);
+  const again = await applyDevTenantMigration({
+    slotId: 'dev-1',
+    currentUser: 'dev_1_mig',
+    authorizeLive: 'dev-1-migration-live',
+    applyMigrations() {},
+    execSql() {},
+    verify: () => ({ ok: true, appliedMigrations: 25 }),
+  });
+  assert.equal(again.ok, true);
+});
+
+test('a failed verification does not mark the schema ready', async () => {
+  const applied = [];
+  const result = await applyDevTenantMigration({
     slotId: 'dev-1',
     currentUser: 'dev_1_mig',
     authorizeLive: 'dev-1-migration-live',
@@ -32,24 +47,27 @@ test('dev-1 grants keep ownership with the migration role and give runtime DML o
     execSql(sql) {
       applied.push(sql);
     },
+    verify: () => ({ ok: false, appliedMigrations: 0 }),
   });
-  assert.equal(again.ok, true);
-  assert.equal(applied.length, statements.length * 2);
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0].id, 'schema-not-verified');
+  assert.equal(applied.some((sql) => sql.includes('offscreen_dev_schema_gate')), false);
+  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: true, schemaCreate: false, appliedMigrations: 24, expectedMigrations: 25 }).refusals[0].id, 'migrations-incomplete');
 });
 
-test('runtime startup waits for the gate and rejects DDL-capable or foreign roles', () => {
-  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: false, schemaCreate: false }).ok, false);
-  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: true, schemaCreate: true }).refusals[0].id, 'runtime-can-create');
-  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_2_run', gatePresent: true, schemaCreate: false }).refusals[0].id, 'runtime-role');
-  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: true, schemaCreate: false }).ok, true);
+test('runtime startup waits for a complete gate and rejects DDL-capable or foreign roles', () => {
+  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: false, schemaCreate: false, appliedMigrations: 25, expectedMigrations: 25 }).ok, false);
+  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: true, schemaCreate: true, appliedMigrations: 25, expectedMigrations: 25 }).refusals[0].id, 'runtime-can-create');
+  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_2_run', gatePresent: true, schemaCreate: false, appliedMigrations: 25, expectedMigrations: 25 }).refusals[0].id, 'runtime-role');
+  assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: true, schemaCreate: false, appliedMigrations: 25, expectedMigrations: 25 }).ok, true);
 });
 
-test('superuser, runtime login, dev-2 and missing authorization do not migrate', () => {
+test('superuser, runtime login, dev-2 and missing authorization do not migrate', async () => {
   const calls = [];
   const exec = () => calls.push('sql');
-  assert.equal(applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'postgres', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec }).refusals[0].id, 'migration-role');
-  assert.equal(applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'dev_1_run', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec }).refusals[0].id, 'migration-role');
-  assert.equal(applyDevTenantMigration({ slotId: 'dev-2', currentUser: 'dev_2_mig', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec }).refusals[0].id, 'slot-not-in-scope');
-  assert.equal(applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'dev_1_mig', authorizeLive: true, applyMigrations() {}, execSql: exec }).refusals[0].id, 'migration-not-authorized');
+  assert.equal((await applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'postgres', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec })).refusals[0].id, 'migration-role');
+  assert.equal((await applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'dev_1_run', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec })).refusals[0].id, 'migration-role');
+  assert.equal((await applyDevTenantMigration({ slotId: 'dev-2', currentUser: 'dev_2_mig', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec })).refusals[0].id, 'slot-not-in-scope');
+  assert.equal((await applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'dev_1_mig', authorizeLive: true, applyMigrations() {}, execSql: exec })).refusals[0].id, 'migration-not-authorized');
   assert.equal(calls.length, 0);
 });
