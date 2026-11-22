@@ -97,6 +97,7 @@ export function renderDevSlotAppGraph(slotId, input) {
   const temporalNamespace = namespace;
   const pool = env('DB_POOL_MAX', DEV_SQL_POOL_MAX);
   const slot = env('OFFSCREEN_DEV_SLOT', sql.slotId);
+  const documentStore = env('OFFSCREEN_DOCUMENT_STORE', 's3');
   const documents = [
     { apiVersion: 'v1', kind: 'Namespace', metadata: { name: namespace, labels: labels(sql.slotId, 'slot') } },
     service(sql.slotId, namespace, 'game-web', 3000),
@@ -116,6 +117,8 @@ export function renderDevSlotAppGraph(slotId, input) {
         slot, pool, env('APP_ORIGIN', `http://127.0.0.1:${input.ports.game}`),
         env('BETTER_AUTH_COOKIE_PREFIX', prefix),
         env('GAME_AUTHORITY_ORIGIN', authority),
+        env('GAME_AUTHORITY_MODE', 'distributed'),
+        documentStore,
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket),
         env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
@@ -132,7 +135,8 @@ export function renderDevSlotAppGraph(slotId, input) {
       command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
       ports: [{ name: 'http', containerPort: 3002 }],
       env: [
-        slot, pool, env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
+        slot, pool, documentStore, env('GAME_AUTHORITY_HOST', '0.0.0.0'), env('GAME_AUTHORITY_PORT', '3002'),
+        env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secret-access-key'),
@@ -163,7 +167,7 @@ export function renderDevSlotAppGraph(slotId, input) {
       name: 'relay', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
       command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
       env: [
-        slot, pool, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
+        slot, pool, documentStore, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),

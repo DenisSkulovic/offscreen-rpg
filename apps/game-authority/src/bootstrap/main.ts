@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { classifyRuntimeError } from '@offscreen/runtime-logging';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
+import { access } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import {
   contentHashSchema,
@@ -106,9 +107,26 @@ async function resolveBootstrapDefaultRules(
     return undefined;
   }
 
+  const source = ruleSource ?? defaultRuleSourceDirectory;
+  if (!ruleSource) {
+    try {
+      await access(resolve(source));
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code?: string }).code === 'ENOENT'
+      ) {
+        return undefined;
+      }
+      throw error;
+    }
+  }
+
   const imported = await importRulePackageDirectory(
     documentStore,
-    resolve(ruleSource ?? defaultRuleSourceDirectory),
+    resolve(source),
   );
   return rulePackageReferenceSchema.parse({
     ruleSetId: imported.manifest.ruleSetId,

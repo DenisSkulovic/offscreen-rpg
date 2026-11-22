@@ -1,3 +1,4 @@
+import { access } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import {
   contentHashSchema,
@@ -41,9 +42,21 @@ export async function resolveStartupDefaultRules(
     return undefined;
   }
 
+  const source = ruleSource ?? defaultRuleSourceDirectory;
+  // Dev slot images copy apps and packages, not content/rules. A missing
+  // implicit directory must not block an otherwise configured S3 store.
+  if (!ruleSource) {
+    try {
+      await access(resolve(source));
+    } catch (error) {
+      if (isMissingPath(error)) return undefined;
+      throw error;
+    }
+  }
+
   const imported = await importRulePackageDirectory(
     documentStore,
-    resolve(ruleSource ?? defaultRuleSourceDirectory),
+    resolve(source),
   );
   return rulePackageReferenceSchema.parse({
     ruleSetId: imported.manifest.ruleSetId,
@@ -51,4 +64,13 @@ export async function resolveStartupDefaultRules(
     revision: imported.manifest.revision,
     engine: imported.manifest.engine,
   });
+}
+
+function isMissingPath(error: unknown) {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === 'ENOENT'
+  );
 }

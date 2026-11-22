@@ -26,6 +26,25 @@ test('dev-1 and dev-2 graphs stay in their own namespaces with distinct images',
   assert.equal(leftText.includes('"value":"default"'), false);
   assert.equal(leftText.includes('dev-1-mig-auth'), false);
   assert.match(leftText, /DB_POOL_MAX/);
+  for (const name of ['game-api', 'game-authority', 'game-relay']) {
+    const deployment = left.documents.find((item) => item.kind === 'Deployment' && item.metadata.name === name);
+    const selected = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'OFFSCREEN_DOCUMENT_STORE');
+    const bucket = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'OFFSCREEN_DOCUMENT_S3_BUCKET');
+    const key = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID');
+    const mode = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'GAME_AUTHORITY_MODE');
+    assert.equal(selected.value, 's3');
+    assert.equal(bucket.value, 'offscreen-dev-1');
+    assert.equal(key.valueFrom.secretKeyRef.name, 'dev-1-s3');
+    if (name === 'game-api') assert.equal(mode.value, 'distributed');
+    if (name === 'game-authority') {
+      const host = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'GAME_AUTHORITY_HOST');
+      assert.equal(host.value, '0.0.0.0');
+    }
+  }
+  const rightText = JSON.stringify(right.documents);
+  assert.match(rightText, /offscreen-dev-2/);
+  assert.equal(rightText.includes('offscreen-dev-1'), false);
+  assert.equal(rightText.includes('dev-1-s3'), false);
 });
 
 test('dev-5 and dev-10 keep distinct ports, services and secret names', () => {

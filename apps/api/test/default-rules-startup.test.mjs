@@ -134,6 +134,22 @@ test('resolveStartupDefaultRules fails when pinned manifest is missing', async (
   }
 });
 
+test('resolveStartupDefaultRules skips a missing implicit rule directory', async () => {
+  const documentRoot = await mkdtemp(
+    join(tmpdir(), 'offscreen-api-missing-rules-'),
+  );
+  const previous = process.cwd();
+  process.chdir(documentRoot);
+  try {
+    const store = new LocalDocumentStore(documentRoot);
+    const rules = await resolveStartupDefaultRules(store, {});
+    assert.equal(rules, undefined);
+  } finally {
+    process.chdir(previous);
+    await rm(documentRoot, { recursive: true, force: true });
+  }
+});
+
 test('resolveStartupDefaultRules preserves directory import when hash is unset', async () => {
   const documentRoot = await mkdtemp(
     join(tmpdir(), 'offscreen-api-compose-rules-'),
