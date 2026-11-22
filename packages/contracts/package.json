@@ -106,6 +106,10 @@
     "./storyteller-notices": {
       "types": "./dist/src/storyteller-notices.d.ts",
       "default": "./dist/src/storyteller-notices.js"
+    },
+    "./terminal-auth": {
+      "types": "./dist/src/terminal-auth.d.ts",
+      "default": "./dist/src/terminal-auth.js"
     }
   },
   "scripts": {

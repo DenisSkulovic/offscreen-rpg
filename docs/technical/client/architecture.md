@@ -82,6 +82,7 @@ React-rendered HTML + interactive Client feature islands
        |
        v
 same-origin typed browser HTTP (cookie session; CSRF enforced)
+terminal client HTTP (player-story bearer only, no cookie; Origin still required on writes)
        |
        v
 Nest API -> application/DB/Temporal authority

@@ -58,6 +58,14 @@
     "./admin-schema": {
       "types": "./dist/src/schema/admin.d.ts",
       "default": "./dist/src/schema/admin.js"
+    },
+    "./terminal-auth-schema": {
+      "types": "./dist/src/schema/terminal-auth.d.ts",
+      "default": "./dist/src/schema/terminal-auth.js"
+    },
+    "./terminal-auth-store": {
+      "types": "./dist/src/terminal-auth-store.d.ts",
+      "default": "./dist/src/terminal-auth-store.js"
     }
   },
   "scripts": {

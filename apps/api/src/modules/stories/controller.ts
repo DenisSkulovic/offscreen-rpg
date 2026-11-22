@@ -28,7 +28,7 @@ import {
   startStorySchema,
   storyVisitAckBodySchema,
 } from '@offscreen/contracts/stories';
-import { IdentityService } from '../auth/identity.js';
+import { StoryPlayerIdentity } from './story-player-identity.js';
 import type { StorySeam } from './game-authority-client.js';
 import type { StoryUpdateHub } from './story-update-hub.js';
 import { z } from 'zod';
@@ -40,7 +40,8 @@ export const STORY_UPDATE_HUB = Symbol('STORY_UPDATE_HUB');
 @Controller('stories')
 export class StoriesController {
   constructor(
-    @Inject(IdentityService) private readonly identity: IdentityService,
+    @Inject(StoryPlayerIdentity)
+    private readonly playerIdentity: StoryPlayerIdentity,
     @Inject(STORIES)
     private readonly stories: ReturnType<typeof createStoryApplication>,
     @Optional()
@@ -50,7 +51,7 @@ export class StoriesController {
     private readonly seam: StorySeam,
   ) {}
   private async run<T>(request: Request, work: (owner: string) => Promise<T>) {
-    const user = await this.identity.requireUser(request.headers);
+    const user = await this.playerIdentity.requireStoryPlayer(request.headers);
     try {
       return await work(user.id);
     } catch (error) {
@@ -72,7 +73,7 @@ export class StoriesController {
     request: Request,
     work: (owner: string) => Promise<T>,
   ) {
-    const user = await this.identity.requireUser(request.headers);
+    const user = await this.playerIdentity.requireStoryPlayer(request.headers);
     try {
       return await work(user.id);
     } catch (error) {
@@ -113,7 +114,11 @@ export class StoriesController {
     return this.runLaunch(request, async (ownerId) => {
       const urlId = z.uuid().safeParse(operationId);
       const parsed = storyLaunchRequestSchema.safeParse(body);
-      if (!urlId.success || !parsed.success || urlId.data !== parsed.data.operationId) {
+      if (
+        !urlId.success ||
+        !parsed.success ||
+        urlId.data !== parsed.data.operationId
+      ) {
         throw new StoryError('conflict');
       }
       return this.seam.putLaunch({
@@ -324,7 +329,7 @@ export class StoriesController {
     if (!this.updates) {
       throw new ServiceUnavailableException('Story updates unavailable');
     }
-    const user = await this.identity.requireUser(request.headers);
+    const user = await this.playerIdentity.requireStoryPlayer(request.headers);
     try {
       await this.seam.read({ ownerId: user.id, storyId: id });
     } catch (error) {
@@ -347,7 +352,7 @@ export class StoriesController {
         storyId: id,
         stillAuthorized: async () => {
           try {
-            await this.identity.requireUser(request.headers);
+            await this.playerIdentity.requireStoryPlayer(request.headers);
             await this.seam.read({ ownerId: user.id, storyId: id });
             return true;
           } catch {
@@ -418,8 +423,8 @@ export class StoriesController {
         before?: unknown;
         limit?: unknown;
       } = { ownerId, storyId: id };
-      if (before !== undefined) query.before = before;
-      if (limit !== undefined) query.limit = limit;
+      if (before !== undefined) {query.before = before;}
+      if (limit !== undefined) {query.limit = limit;}
       return this.stories.events(query);
     });
   }
@@ -491,7 +496,7 @@ export class StoriesController {
     @Param('id') storyId: string,
   ): Promise<CampaignDocumentRoot> {
     return this.run(request, (ownerId) => {
-      if (!this.stories.documents) throw new StoryError('unavailable');
+      if (!this.stories.documents) {throw new StoryError('unavailable');}
       return this.stories.documents.readRoot({ ownerId, storyId });
     });
   }
@@ -502,7 +507,7 @@ export class StoriesController {
     @Query('limit') limit?: string,
   ) {
     return this.run(request, (ownerId) => {
-      if (!this.stories.documents) throw new StoryError('unavailable');
+      if (!this.stories.documents) {throw new StoryError('unavailable');}
       const parsedLimit = limit === undefined ? undefined : Number(limit);
       return this.stories.documents.projectPassageSources({
         ownerId,
@@ -519,14 +524,14 @@ export class StoriesController {
     @Query('revision') revision?: string,
   ): Promise<ResolvedOwnedLibraryDocument> {
     return this.run(request, (ownerId) => {
-      if (!this.stories.documents) throw new StoryError('unavailable');
+      if (!this.stories.documents) {throw new StoryError('unavailable');}
       const parsedRevision =
         revision === undefined ? undefined : Number(revision);
       if (
         parsedRevision !== undefined &&
         (!Number.isInteger(parsedRevision) || parsedRevision < 1)
       )
-        throw new StoryError('invalid');
+        {throw new StoryError('invalid');}
       return this.stories.documents.readDocument({
         ownerId,
         storyId,
@@ -543,7 +548,7 @@ export class StoriesController {
     @Body() body: unknown,
   ) {
     return this.run(request, (ownerId) => {
-      if (!this.stories.documents) throw new StoryError('unavailable');
+      if (!this.stories.documents) {throw new StoryError('unavailable');}
       return this.stories.documents.admit({
         ownerId,
         storyId,
@@ -562,7 +567,7 @@ export class StoriesController {
   ) {
     return this.run(request, (ownerId) => {
       const parsed = forkStorySchema.safeParse(body);
-      if (!parsed.success) throw new StoryError('invalid');
+      if (!parsed.success) {throw new StoryError('invalid');}
       return this.seam.fork({
         ownerId,
         sourceStoryId,

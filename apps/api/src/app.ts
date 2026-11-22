@@ -68,6 +68,7 @@ import {
   OpeningsController,
 } from './modules/drafts/openings-controller.js';
 import { createStoryApplication } from '@offscreen/story-engine/stories';
+import type { OpeningContentEntry } from '@offscreen/story-engine/storyteller/openings';
 import {
   readStoryAuthorityConfig,
   storySeamFor,
@@ -80,6 +81,7 @@ import {
   STORY_UPDATE_HUB,
   StoriesController,
 } from './modules/stories/controller.js';
+import { StoryPlayerIdentity } from './modules/stories/story-player-identity.js';
 import {
   createStoryUpdateHub,
   type StoryUpdateHub,
@@ -88,8 +90,13 @@ import type { ReadCache } from '@offscreen/contracts/read-cache';
 import type { CacheIncident } from '@offscreen/story-engine/stories/read-cache-options';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import type { ApiOptionalExtension } from './lab-host-contract.js';
-
-const DATABASE = Symbol('DATABASE');
+import { DATABASE } from './database-token.js';
+import { TerminalAuthController } from './modules/terminal-auth/controller.js';
+import { TerminalAuthService } from './modules/terminal-auth/service.js';
+import {
+  TERMINAL_AUTH_ORIGIN,
+  TERMINAL_PAIRING_HMAC_SECRET,
+} from './modules/terminal-auth/tokens.js';
 const CACHE_CLOSE = Symbol('CACHE_CLOSE');
 
 @Injectable()
@@ -158,7 +165,7 @@ export type CreateAppOptions = Readonly<{
   onCacheIncident?: (incident: CacheIncident) => void;
   documentStore?: DocumentStore;
   defaultRules?: RulePackageReference;
-  openingContent?: readonly import('@offscreen/story-engine/storyteller').OpeningContentEntry[];
+  openingContent?: readonly OpeningContentEntry[];
   scriptedOpeningFallback?: boolean;
   /** Enables PostgreSQL LISTEN → SSE story view hints (W16). */
   databaseConfig?: DatabaseConfig;
@@ -169,6 +176,8 @@ export type CreateAppOptions = Readonly<{
    * Authority for the snapshot read and scripted resolution only.
    */
   storyAuthority?: StoryAuthorityConfig;
+  /** BETTER_AUTH_SECRET drives HMAC rate limits for device pairing creation. */
+  terminalPairingHmacSecret?: string;
 }>;
 
 export async function createApp(
@@ -177,12 +186,12 @@ export async function createApp(
   origin: string,
   options: CreateAppOptions = {},
 ) {
-  const storyUpdateHub =
-    options.storyUpdateHub === undefined
-      ? options.databaseConfig
-        ? createStoryUpdateHub(options.databaseConfig)
-        : null
-      : options.storyUpdateHub;
+  let storyUpdateHub = options.storyUpdateHub ?? null;
+  if (options.storyUpdateHub === undefined) {
+    storyUpdateHub = options.databaseConfig
+      ? createStoryUpdateHub(options.databaseConfig)
+      : null;
+  }
   if (storyUpdateHub) {
     await storyUpdateHub.start();
   }
@@ -242,12 +251,14 @@ export async function createApp(
         StorytellersController,
         OpeningsController,
         StoriesController,
+        TerminalAuthController,
         ...(options.optionalExtension?.controllers ?? []),
       ],
       providers: [
         options.identity
           ? { provide: IdentityService, useValue: options.identity }
           : IdentityService,
+        StoryPlayerIdentity,
         DatabaseLifecycle,
         CacheLifecycle,
         StoryUpdateHubLifecycle,
@@ -318,6 +329,12 @@ export async function createApp(
         },
         { provide: STORIES, useValue: stories },
         { provide: STORY_SEAM, useValue: storySeam },
+        TerminalAuthService,
+        {
+          provide: TERMINAL_PAIRING_HMAC_SECRET,
+          useValue: options.terminalPairingHmacSecret ?? null,
+        },
+        { provide: TERMINAL_AUTH_ORIGIN, useValue: origin },
         ...(options.optionalExtension?.providers ?? []),
       ],
     },

@@ -56,6 +56,7 @@ async function main() {
         databaseConfig,
         ...(documentStore ? { documentStore } : {}),
         ...(defaultRules ? { defaultRules } : {}),
+        terminalPairingHmacSecret: authConfig.secret,
         storytellerExecution: readStorytellerExecution(process.env),
         readCache: cache.cache,
         closeCache: cache.close,

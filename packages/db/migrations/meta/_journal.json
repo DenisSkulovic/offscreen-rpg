@@ -169,6 +169,13 @@
       "when": 1794821200000,
       "tag": "0023_wr09a_writer_response_object",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794824800000,
+      "tag": "0024_terminal_player_auth",
+      "breakpoints": true
     }
   ]
 }

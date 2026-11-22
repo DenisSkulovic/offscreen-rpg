@@ -1,6 +1,16 @@
 # CL01 | First-class terminal campaign client
 
-**State: READY FOR EXECUTION.** Source-rechecked on `undertaking/storyteller-workshop@22b46a828b56a8b3094bfab30162d5718c406e22`. MA12 is integrated: production API now exposes the narrow `ApiOptionalExtension` seam without a production Lab dependency. Current DB migration journal still ends at `0023_wr09a_writer_response_object`, so CL01 owns `0024_terminal_player_auth` for this wave. No paid model call.
+**State: DONE.** Integrated on `undertaking/storyteller-workshop`. Not on `main`.
+
+## Reconciliation ledger
+
+| Claim | Owner | Disposition |
+| --- | --- | --- |
+| Terminal is a second presentation over the public story API | `docs/product/experience/play-and-decisions.md` | Updated from unimplemented to implemented, with live browser click-through still NOT RUN |
+| Story routes accept a cookie session; writes keep Origin protection | `docs/technical/client/architecture.md` | Added the `player-story` bearer path; cookie sessions and Origin checks unchanged |
+| Admin, Drafts, and `IdentityService` stay cookie-only | source `IdentityService` (unchanged) and story-bearer integration | Proved by disposable test; no product-doc rewrite |
+| Device pairing stores hashes only | migration `0024_terminal_player_auth` | Implemented; no separate technical essay |
+| Workshop next wave still lists CL01 as future | `work/undertakings/storyteller-workshop/OVERVIEW.md` | Pointed at the archive; percentages unchanged | Source-rechecked on `undertaking/storyteller-workshop@22b46a828b56a8b3094bfab30162d5718c406e22`. MA12 is integrated: production API now exposes the narrow `ApiOptionalExtension` seam without a production Lab dependency. Current DB migration journal still ends at `0023_wr09a_writer_response_object`, so CL01 owns `0024_terminal_player_auth` for this wave. No paid model call.
 
 ## Product end state
 

@@ -146,8 +146,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-15--eng03-c1-provisional-recovery](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md)
 - [2026-11-15--eng03-c2-interrupted-action-capture](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md)
 
-## experience (45)
+## experience (46)
 
+- [2026-11-22--cl01-terminal-player-client](../../../../work/changes/archive/2026-11/experience/2026-11-22--cl01-terminal-player-client/CHANGE.md)
 - [2026-11-13--gm-custom-intent-admission](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-admission/CHANGE.md)
 - [2026-11-13--gm-custom-intent-proposal](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-proposal/CHANGE.md)
 - [2026-11-13--gm-delegated-decision](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-delegated-decision/CHANGE.md)
