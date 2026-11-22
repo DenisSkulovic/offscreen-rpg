@@ -195,8 +195,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-17--ui07-design-system-evidence](../../../../work/changes/archive/2026-11/experience/2026-11-17--ui07-design-system-evidence/CHANGE.md)
 - [2026-11-17--ui08-motion-language](../../../../work/changes/archive/2026-11/experience/2026-11-17--ui08-motion-language/CHANGE.md)
 
-## infrastructure (15)
+## infrastructure (16)
 
+- [2026-11-22--k8s12-warm-image-iteration](../../../../work/changes/archive/2026-11/infrastructure/2026-11-22--k8s12-warm-image-iteration/CHANGE.md)
 - [2026-11-19--k8s01-reproducible-kind-foundation](../../../../work/changes/archive/2026-11/infrastructure/2026-11-19--k8s01-reproducible-kind-foundation/CHANGE.md)
 - [2026-11-19--k8s02-postgres-operator-and-data-safety](../../../../work/changes/archive/2026-11/infrastructure/2026-11-19--k8s02-postgres-operator-and-data-safety/CHANGE.md)
 - [2026-11-19--k8s03-rabbitmq-broker-messaging](../../../../work/changes/archive/2026-11/infrastructure/2026-11-19--k8s03-rabbitmq-broker-messaging/CHANGE.md)

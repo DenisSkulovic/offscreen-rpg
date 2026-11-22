@@ -1,21 +1,22 @@
 # syntax=docker/dockerfile:1
-# Build context: workspace root (use build.sh staging; do not bake secrets or content trees).
+# Build context: `turbo prune @offscreen/game-authority --docker` (json/ + full/) plus app-release helpers.
 FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS builder
 WORKDIR /app
 ENV PNPM_HOME=/pnpm
 ENV PATH=/pnpm:$PATH
 ENV CI=true
 RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-COPY infra/kubernetes/lab/app-release/docker.npmrc .npmrc
+COPY docker.npmrc .npmrc
+COPY json/ ./
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm fetch --frozen-lockfile
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --offline
+COPY full/ ./
 COPY infra/kubernetes/lab/app-release/prepare-runtime-tree.sh \
   infra/kubernetes/lab/app-release/production-workspace-closure.mjs \
   infra/kubernetes/lab/app-release/release-process-env-shim.mjs \
   infra/kubernetes/lab/app-release/
-COPY apps apps
-COPY packages packages
-COPY tools tools
-RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @offscreen/game-authority... build
 RUN bash infra/kubernetes/lab/app-release/prepare-runtime-tree.sh apps/game-authority /runtime
 

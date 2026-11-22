@@ -1,4 +1,5 @@
-# Build context: repository root after `pnpm exec turbo prune @offscreen/web --docker`
+# syntax=docker/dockerfile:1
+# Build context: `turbo prune @offscreen/web --docker` directory (json/ + full/), not the repository root.
 # (see build-web.sh). Bakes API_PROXY_ORIGIN at `next build`; set API_INTERNAL_ORIGIN
 # at Pod runtime to the same trusted Nest Service — runtime env does not re-bake rewrites.
 
@@ -9,13 +10,17 @@ RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
 
 FROM base AS deps
 WORKDIR /app
-COPY out/json/ .
-RUN pnpm install --frozen-lockfile
+COPY docker.npmrc .npmrc
+COPY json/ ./
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm fetch --frozen-lockfile
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --offline
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/ .
-COPY out/full/ .
+COPY full/ ./
 COPY infra/kubernetes/lab/app-release/lab-nest-service-origin.mjs \
   infra/kubernetes/lab/app-release/verify-production-rewrite.mjs \
   ./infra/kubernetes/lab/app-release/
