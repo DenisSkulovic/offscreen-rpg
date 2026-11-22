@@ -19,7 +19,7 @@ Under fake transport and disposable ledger, verify effective caps (microusd, tok
 
 **NOT-RUN in this receipt:** **hidden price fallback**, **untrusted usage** negatives, and a **dedicated TURN04-named fixture** (overlap reuses OBS00/budget suites only). Do not treat overlap PASS as exhaustive T01 negative coverage.
 
-**Setup:** provider-free, zero-spend only. **Paid live dispatch:** DENIED. **Canonical spend owner:** [provider-boundary.md](../../../../docs/technical/storyteller/provider-boundary.md) — unchanged (no edit unless a sentence is false).
+**Setup:** provider-free, zero-spend only. **Paid live dispatch:** DENIED. **Canonical spend owner:** [provider-boundary.md](../../../../../docs/technical/storyteller/provider-boundary.md) — unchanged (no edit unless a sentence is false).
 
 ## T02 | Final protocol decision | **PLANNER-BLOCKED**
 ChatGPT reconciles exact persisted reserve→dispatched→uncertain→settled procedure and model API idempotency limits. If one bridge missing, produce a small source-backed Composer PATCH contract plus approval/negative test. Do not let the child infer external exactly-once billing or introduce silent retries to make Temporal green. T01 overlap does not unblock T02.
