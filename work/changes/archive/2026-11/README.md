@@ -195,7 +195,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-17--ui07-design-system-evidence](../../../../work/changes/archive/2026-11/experience/2026-11-17--ui07-design-system-evidence/CHANGE.md)
 - [2026-11-17--ui08-motion-language](../../../../work/changes/archive/2026-11/experience/2026-11-17--ui08-motion-language/CHANGE.md)
 
-## infrastructure (16)
+## infrastructure (17)
 
 - [2026-11-22--k8s12-warm-image-iteration](../../../../work/changes/archive/2026-11/infrastructure/2026-11-22--k8s12-warm-image-iteration/CHANGE.md)
 - [2026-11-19--k8s01-reproducible-kind-foundation](../../../../work/changes/archive/2026-11/infrastructure/2026-11-19--k8s01-reproducible-kind-foundation/CHANGE.md)
@@ -213,6 +213,7 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-20--dxk04-package-command-surface](../../../../work/changes/archive/2026-11/infrastructure/2026-11-20--dxk04-package-command-surface/CHANGE.md)
 - [2026-11-20--dxk05-kubernetes-ci-and-lab-guards](../../../../work/changes/archive/2026-11/infrastructure/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md)
 - [2026-11-20--dxk06-compose-retirement](../../../../work/changes/archive/2026-11/infrastructure/2026-11-20--dxk06-compose-retirement/CHANGE.md)
+- [2026-11-20--dxk08-fast-kubernetes-inner-dev-loop](../../../../work/changes/archive/2026-11/infrastructure/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md)
 
 ## maintenance (10)
 

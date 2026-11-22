@@ -1,0 +1,230 @@
+# Dev-only worker roles: tsc-watch + role-specific bootstrap entrypoints.
+# Control and executor poll Temporal only (no broad database env); relay keeps DATABASE_URL.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab-workers
+  labels:
+    offscreen.rpg/lab: disposable
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-control
+  namespace: lab-workers
+  labels:
+    app: game-control
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/profile: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-control
+      offscreen.rpg/profile: dev
+  template:
+    metadata:
+      labels:
+        app: game-control
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/profile: dev
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: control
+          image: offscreen-lab-dev-workspace:dxk08-worker
+          imagePullPolicy: Never
+          workingDir: /app
+          command:
+            - pnpm
+            - --filter
+            - "@offscreen/worker"
+            - run
+            - dev:control
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: temporal-server.lab-temporal.svc.cluster.local:7233
+            - name: TEMPORAL_NAMESPACE
+              value: default
+            - name: TEMPORAL_TASK_QUEUE
+              value: control
+            - name: GAME_AUTHORITY_ORIGIN
+              value: http://game-authority.lab-authority.svc.cluster.local:3002
+            - name: GAME_AUTHORITY_CONTROL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: game-authority-control-token
+            - name: NODE_OPTIONS
+              value: --max-old-space-size=1536
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-executor
+  namespace: lab-workers
+  labels:
+    app: game-executor
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/profile: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-executor
+      offscreen.rpg/profile: dev
+  template:
+    metadata:
+      labels:
+        app: game-executor
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/profile: dev
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: executor
+          image: offscreen-lab-dev-workspace:dxk08-worker
+          imagePullPolicy: Never
+          workingDir: /app
+          command:
+            - pnpm
+            - --filter
+            - "@offscreen/worker"
+            - run
+            - dev:executor
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: temporal-server.lab-temporal.svc.cluster.local:7233
+            - name: TEMPORAL_NAMESPACE
+              value: default
+            - name: TEMPORAL_TASK_QUEUE
+              value: storyteller-execute-v1
+            - name: GAME_AUTHORITY_ORIGIN
+              value: http://game-authority.lab-authority.svc.cluster.local:3002
+            - name: GAME_AUTHORITY_EXECUTOR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: game-authority-executor-token
+            - name: OFFSCREEN_WRITER_EXECUTION_MODE
+              value: scripted-offline-lab
+            - name: NODE_OPTIONS
+              value: --max-old-space-size=1536
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-relay
+  namespace: lab-workers
+  labels:
+    app: game-relay
+    offscreen.rpg/lab: disposable
+    offscreen.rpg/profile: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-relay
+      offscreen.rpg/profile: dev
+  template:
+    metadata:
+      labels:
+        app: game-relay
+        offscreen.rpg/lab: disposable
+        offscreen.rpg/profile: dev
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: relay
+          image: offscreen-lab-dev-workspace:dxk08-worker
+          imagePullPolicy: Never
+          workingDir: /app
+          command:
+            - pnpm
+            - --filter
+            - "@offscreen/worker"
+            - run
+            - dev:relay
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: game-db
+                  key: uri
+            - name: TEMPORAL_ADDRESS
+              value: temporal-server.lab-temporal.svc.cluster.local:7233
+            - name: TEMPORAL_NAMESPACE
+              value: default
+            - name: STORYTELLER_DISTRIBUTED_V1
+              value: "true"
+            - name: OFFSCREEN_DOCUMENT_STORE
+              value: s3
+            - name: OFFSCREEN_DOCUMENT_S3_BUCKET
+              value: lab-objects
+            - name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
+              value: http://object-store.lab-objects.svc.cluster.local:8333
+            - name: OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: access-key-id
+            - name: OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: game-runtime
+                  key: secret-access-key
+            - name: NODE_OPTIONS
+              value: --max-old-space-size=1536
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 2Gi

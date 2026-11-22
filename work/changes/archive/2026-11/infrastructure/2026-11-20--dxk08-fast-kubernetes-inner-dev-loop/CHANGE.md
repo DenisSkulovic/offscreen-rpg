@@ -1,10 +1,10 @@
 # DXK08 | Fast Kubernetes inner development loop
 
-**State:** READY FOR EXECUTION NOW.  
+**State:** Done (2026-11-22). Tilt copied `apps/api/src/main.ts` into the API container and `tsc-watch` reported 0 errors. Web, Game Authority, and worker pod start times did not change, and that edit did not build or kind-load an image. `apps/api/package.json` stopped live update and started `Building Custom Build` for Game Authority. Release Tiltfile remains `infra/kubernetes/lab/app-release/Tiltfile`. Worker kind load needed one node at a time after a WSL vsock drop.  
 **Kind:** implementation. **Promoted:** 2026-11-22.  
 **Reference branch:** `undertaking/storyteller-workshop`  
 **Source baseline:** `592158da5d6942851e5a08f2e43377ef1a70e0b5`  
-**Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md)
+**Program:** [Kubernetes-first developer experience](../../../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md)
 
 ## Goal
 

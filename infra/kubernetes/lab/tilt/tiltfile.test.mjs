@@ -5,8 +5,13 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
-const tiltfilePath = join(repoRoot, 'Tiltfile');
-const tiltfile = readFileSync(tiltfilePath, 'utf8');
+const rootTiltfilePath = join(repoRoot, 'Tiltfile');
+const releaseTiltfilePath = join(
+  repoRoot,
+  'infra/kubernetes/lab/app-release/Tiltfile',
+);
+const rootTiltfile = readFileSync(rootTiltfilePath, 'utf8');
+const releaseTiltfile = readFileSync(releaseTiltfilePath, 'utf8');
 
 const APP_RESOURCES = [
   'game-web',
@@ -17,51 +22,60 @@ const APP_RESOURCES = [
   'game-relay',
 ];
 
-test('Tiltfile pins kubectl context kind-offscreen-lab', () => {
+test('root Tiltfile pins kubectl context kind-offscreen-lab', () => {
   assert.match(
-    tiltfile,
+    rootTiltfile,
     /allow_k8s_contexts\s*\(\s*['"]kind-offscreen-lab['"]\s*\)/,
   );
 });
 
-test('Tiltfile names the lab app resources', () => {
+test('root Tiltfile loads the dev graph only', () => {
+  assert.match(
+    rootTiltfile,
+    /include\s*\(\s*['"]\.\/infra\/kubernetes\/lab\/dev\/Tiltfile['"]\s*\)/,
+  );
+  assert.doesNotMatch(rootTiltfile, /app-release-images/);
+  assert.doesNotMatch(rootTiltfile, /build-release-images\.sh/);
+});
+
+test('release Tiltfile names the lab app resources', () => {
   for (const name of APP_RESOURCES) {
     assert.match(
-      tiltfile,
+      releaseTiltfile,
       new RegExp(`k8s_resource\\(\\s*['"]${name}['"]`),
       `expected k8s_resource for ${name}`,
     );
   }
 });
 
-test('Tiltfile does not use Docker Compose or compose.yaml', () => {
-  assert.doesNotMatch(tiltfile, /docker_compose/);
-  assert.doesNotMatch(tiltfile, /compose\.yaml/);
+test('root Tiltfile does not use Docker Compose or compose.yaml', () => {
+  assert.doesNotMatch(rootTiltfile, /docker_compose/);
+  assert.doesNotMatch(rootTiltfile, /compose\.yaml/);
 });
 
-test('Tiltfile does not load lab skeleton manifests', () => {
-  assert.doesNotMatch(tiltfile, /infra\/kubernetes\/lab\/skeletons/);
-  assert.doesNotMatch(tiltfile, /skeletons\/workloads/);
+test('root Tiltfile does not load lab skeleton manifests', () => {
+  assert.doesNotMatch(rootTiltfile, /infra\/kubernetes\/lab\/skeletons/);
+  assert.doesNotMatch(rootTiltfile, /skeletons\/workloads/);
 });
 
-test('Tiltfile does not use live_update on app images', () => {
-  assert.doesNotMatch(tiltfile, /live_update\s*\(/);
-  assert.doesNotMatch(tiltfile, /docker_build\s*\(/);
+test('root Tiltfile does not use live_update on app images', () => {
+  assert.doesNotMatch(rootTiltfile, /live_update\s*\(/);
+  assert.doesNotMatch(rootTiltfile, /docker_build\s*\(/);
 });
 
-test('Tiltfile builds images through the app-release scripts', () => {
-  assert.match(tiltfile, /build-release-images\.sh/);
-  assert.match(tiltfile, /app-release-images/);
-  assert.match(tiltfile, /readiness_timeout\s*=\s*['"]45m['"]/);
-  assert.match(tiltfile, /docker tag/);
-  assert.match(tiltfile, /\$EXPECTED_REF/);
+test('release Tiltfile builds images through the app-release scripts', () => {
+  assert.match(releaseTiltfile, /build-release-images\.sh/);
+  assert.match(releaseTiltfile, /app-release-images/);
+  assert.match(releaseTiltfile, /readiness_timeout\s*=\s*['"]45m['"]/);
+  assert.match(releaseTiltfile, /docker tag/);
+  assert.match(releaseTiltfile, /\$EXPECTED_REF/);
 });
 
 test('game-web port-forward is loopback-only on local port 3000', () => {
   assert.match(
-    tiltfile,
+    releaseTiltfile,
     /k8s_resource\s*\(\s*['"]game-web['"][\s\S]*?port_forwards\s*=\s*\[[\s\S]*?['"]127\.0\.0\.1:3000:3000['"]/,
   );
-  assert.doesNotMatch(tiltfile, /0\.0\.0\.0/);
-  assert.doesNotMatch(tiltfile, /\[::\]/);
+  assert.doesNotMatch(releaseTiltfile, /0\.0\.0\.0/);
+  assert.doesNotMatch(releaseTiltfile, /\[::\]/);
 });

@@ -16,7 +16,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node --env-file-if-exists=../../.env dist/src/bootstrap/main.js",
-    "dev": "tsc-watch --onSuccess \"node --env-file-if-exists=../../.env dist/src/bootstrap/main.js\"",
+    "dev": "tsc-watch --project tsconfig.dev.json --onSuccess \"node --env-file-if-exists=../../.env dist/src/bootstrap/main.js\"",
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {

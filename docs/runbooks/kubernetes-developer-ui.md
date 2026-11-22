@@ -12,7 +12,7 @@ From the repository root:
 pnpm dev
 ```
 
-`pnpm dev` is the Tilt front door. It runs the stack preflight, then `tilt up` against the existing `kind-offscreen-lab` context. It does not create the cluster, and it does not print the URLs below until `game-web`, `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay` are Available. Image updates are full rebuilds through the app-release scripts; there is no `live_update` hot swap. On 2026-11-20, `tilt ci` (same Tiltfile, Tilt v0.35.2) exited 0 against the existing `offscreen-lab` cluster and reported all workloads healthy. `pnpm dev` itself was not the process observed.
+`pnpm dev` is the Tilt front door. It runs the stack preflight, then `tilt up` against the existing `kind-offscreen-lab` context. It does not create the cluster, and it does not print the URLs below until `game-web`, `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay` are Available. The root Tiltfile is the dev graph: one workspace image, `live_update` for source, and the warm release script only for lockfile, manifest, Dockerfile, and migration changes. Immutable release acceptance is `tilt up -f infra/kubernetes/lab/app-release/Tiltfile`. Worker dev pods need about 2Gi; three `tsc-watch` processes abort below that. Kind image loads on this WSL host must be one node at a time. On 2026-11-20, `tilt ci` (same Tiltfile, Tilt v0.35.2) exited 0 against the existing `offscreen-lab` cluster and reported all workloads healthy. `pnpm dev` itself was not the process observed.
 
 | Surface | URL | Notes |
 | --- | --- | --- |

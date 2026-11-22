@@ -55,7 +55,7 @@ Existing TURN02 T03→T04→T05→T06 enables real release; related BOOT03/STORY
 | [DXK05](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md) | Kubernetes CI and lab safety replacement |
 | [DXK06](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk06-compose-retirement/CHANGE.md) | Done: Compose runtime and the retired compose mode are removed. Clean-clone proof stays DXK07 |
 | [DXK07](../../../changes/open/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) | Clean-clone readiness and regression harness |
-| [DXK08](../../../changes/open/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast dev/watch loop distinct from immutable release verification |
+| [DXK08](../../../changes/archive/2026-11/infrastructure/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast dev/watch loop distinct from immutable release verification — Done |
 | [DXK09](../../../changes/open/2026-11-20--dxk09-parallel-worktree-dev-stacks/CHANGE.md) | Isolated branch/worktree dev stacks for parallel Cursor chats |
 
 Nothing here makes a change Done or permits paid provider calls, foreign-cluster changes, automatic data deletion, unsafe host binding or automatic selection of all packets.

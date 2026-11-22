@@ -2,7 +2,7 @@
 
 **Direction:** [implementation roadmap](IMPLEMENTATION-ROADMAP.md) owns priorities; the single `Current work:` line below owns default selection. Historical Change statuses belong in the catalogs/ledgers. Explicit owner-commissioned Change chats may run independently of this selector, but must preserve resource and integration ownership. No implicit paid model spend or unsafe cluster authorization.
 
-Current work: [DXK08 fast Kubernetes inner development loop](changes/open/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md)
+Current work: none
 
 Deferred proposals live in the [domain backlog](changes/backlog/README.md); actively commissioned or imminent packets live in [open](changes/README.md). Backlog placement never selects work or confers permission to spend or deploy.
 
