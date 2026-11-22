@@ -1,6 +1,6 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: harness T01–T03 implemented on branch `change/turn03-cold-kind-harness` in worktree `/home/dskul/projects/offscreen-rpg-turn03`; live cold-kind T04 NOT-RUN until WR10 and MA12 join `undertaking/storyteller-workshop`.** Cluster execution remains an explicit environmental gate, not a claimed result. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
+**State: WR10 `f5c5fc04`, MA12 `5cf2e74a`, and TURN03 harness `c90c5a73` are joined on `undertaking/storyteller-workshop` at `e55829b4bd1b3e337ff68dba88c9bcb5975d8def`.** Real preflight at that SHA found context, cluster, four release images, gateway, Postgres secret, object store, Temporal, and OAuth env present. `runTurn03ColdTrace({ runDisposableKind: true })` has no live cross-pod client, so all eight gates stayed `NOT-RUN` and overall stayed `NOT-RUN`. Cold-kind POC is not complete. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
 ## What actually exists now
 
