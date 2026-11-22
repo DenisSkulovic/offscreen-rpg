@@ -39,6 +39,21 @@ const temporalSchema = z.object({
   namespace: z.string().trim().min(1).default('default'),
 });
 
+export function bindDevSlotTemporalNamespace(
+  env: Record<string, string | undefined>,
+  namespace: string | undefined,
+): string | undefined {
+  const slot = env['OFFSCREEN_DEV_SLOT']?.trim();
+  if (!slot) return namespace;
+  const match = /^dev-([1-9][0-9]*)$/.exec(slot);
+  if (!match) throw new Error(`unsupported OFFSCREEN_DEV_SLOT: ${slot}`);
+  const required = `offscreen-dev-${match[1]}`;
+  if (namespace !== required) {
+    throw new Error(`slot ${slot} requires Temporal namespace ${required}`);
+  }
+  return namespace;
+}
+
 const configSchema = temporalSchema.extend({
   taskQueue: z.string().trim().min(1).default('offscreen-local'),
   writerContinuationAdmission: z.custom<WriterContinuationAdmission>().optional(),
@@ -76,7 +91,7 @@ export function readWorkerContinuationAdmission(
 export function readWorkerConfig(env: Record<string, string | undefined>) {
   return configSchema.parse({
     address: env['TEMPORAL_ADDRESS'],
-    namespace: env['TEMPORAL_NAMESPACE'],
+    namespace: bindDevSlotTemporalNamespace(env, env['TEMPORAL_NAMESPACE']),
     taskQueue: env['TEMPORAL_TASK_QUEUE'],
     writerContinuationAdmission: readWorkerContinuationAdmission(env),
   });
@@ -91,7 +106,7 @@ export function readControlWorkerConfig(env: Record<string, string | undefined>)
   forbidBroadDatabaseOnControl(env);
   return controlConfigSchema.parse({
     address: env['TEMPORAL_ADDRESS'],
-    namespace: env['TEMPORAL_NAMESPACE'],
+    namespace: bindDevSlotTemporalNamespace(env, env['TEMPORAL_NAMESPACE']),
     publication: readStorytellerPublicationClientConfig(env),
   });
 }
@@ -201,7 +216,7 @@ export function readExecutionWorkerConfig(
   forbidBroadDatabaseOnExecutor(env);
   return executionConfigSchema.parse({
     address: env['TEMPORAL_ADDRESS'],
-    namespace: env['TEMPORAL_NAMESPACE'],
+    namespace: bindDevSlotTemporalNamespace(env, env['TEMPORAL_NAMESPACE']),
     custody: readStorytellerTaskCustodyClientConfig(env),
     writerRound: readExecutionWriterRoundConfig(env),
   });

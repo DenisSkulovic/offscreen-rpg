@@ -5,6 +5,7 @@ import {
   OFFSCREEN_WRITER_PROVIDER_POLICY_VERSION_ENV,
 } from '@offscreen/storyteller/providers/writer-provider-authorization-policy';
 import {
+  bindDevSlotTemporalNamespace,
   forbidBroadDatabaseOnExecutor,
   OFFSCREEN_WRITER_EXECUTION_MODE_ENV,
   readExecutionWorkerConfig,
@@ -14,6 +15,25 @@ import {
 import { prepareWriterRoundTransport } from '@offscreen/storyteller/providers/writer-round-transport';
 import { storytellerExecuteTaskQueue } from '@offscreen/workflows/contracts';
 import { prepareScriptedOfflineLabWriterRoundTransport } from '../src/custody/scripted-offline-lab-writer-round-transport';
+
+test('a dev slot cannot fall back to the default Temporal namespace', () => {
+  assert.throws(
+    () => bindDevSlotTemporalNamespace({ OFFSCREEN_DEV_SLOT: 'dev-1' }, 'default'),
+    /offscreen-dev-1/,
+  );
+  assert.equal(
+    bindDevSlotTemporalNamespace({ OFFSCREEN_DEV_SLOT: 'dev-1', TEMPORAL_NAMESPACE: 'offscreen-dev-1' }, 'offscreen-dev-1'),
+    'offscreen-dev-1',
+  );
+  const config = readExecutionWorkerConfig({
+    OFFSCREEN_DEV_SLOT: 'dev-2',
+    TEMPORAL_NAMESPACE: 'offscreen-dev-2',
+    TEMPORAL_ADDRESS: '127.0.0.1:7233',
+    GAME_AUTHORITY_ORIGIN: 'http://127.0.0.1:9911',
+    GAME_AUTHORITY_EXECUTOR_TOKEN: '0123456789abcdef',
+  });
+  assert.equal(config.namespace, 'offscreen-dev-2');
+});
 
 test('executor bootstrap rejects broad database credentials', () => {
   assert.throws(
