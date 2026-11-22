@@ -14,6 +14,7 @@ test('auth config accepts the local loopback GitHub origin', () => {
   assert.equal(config.origin, 'http://127.0.0.1:3000');
   assert.equal(config.githubClientId, 'test');
   assert.equal(config.githubClientSecret, 'secret');
+  assert.equal('cookiePrefix' in config, false);
   assert.equal(
     readAuthConfig({ ...valid, APP_ORIGIN: 'https://example.com' }).origin,
     'https://example.com',
@@ -63,6 +64,27 @@ test('missing GitHub client credentials fail clearly', () => {
       }),
     { message: 'Invalid authentication configuration: GITHUB_CLIENT_SECRET' },
   );
+});
+
+test('auth config accepts distinct cookie prefixes and rejects invalid ones', () => {
+  const first = readAuthConfig({
+    ...valid,
+    BETTER_AUTH_COOKIE_PREFIX: 'offscreen-dev-1',
+  });
+  const second = readAuthConfig({
+    ...valid,
+    BETTER_AUTH_COOKIE_PREFIX: 'offscreen-dev-10',
+  });
+  assert.equal(first.cookiePrefix, 'offscreen-dev-1');
+  assert.equal(second.cookiePrefix, 'offscreen-dev-10');
+  assert.notEqual(first.cookiePrefix, second.cookiePrefix);
+  assert.equal(first.githubClientId, 'test');
+  for (const prefix of ['', ' ', 'Offscreen', 'a.b', 'has space', 'a'.repeat(64), '-slot']) {
+    assert.throws(
+      () => readAuthConfig({ ...valid, BETTER_AUTH_COOKIE_PREFIX: prefix }),
+      { message: 'Invalid authentication configuration: BETTER_AUTH_COOKIE_PREFIX' },
+    );
+  }
 });
 
 test('removed local bypass flags do not authenticate or relax GitHub requirements', () => {

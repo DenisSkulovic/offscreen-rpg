@@ -29,4 +29,24 @@ test('auth options use GitHub and omit email/password', () => {
   const serialized = JSON.stringify(options);
   assert.equal(serialized.includes('demo-password'), false);
   assert.equal(serialized.includes('poc-local-player'), false);
+  assert.equal('cookiePrefix' in options.advanced, false);
+  assert.equal(options.advanced.useSecureCookies, false);
+});
+
+test('cookie prefix is passed through without adding another provider', () => {
+  const first = authOptions(database, {
+    ...config,
+    cookiePrefix: 'offscreen-dev-1',
+  });
+  const second = authOptions(database, {
+    ...config,
+    cookiePrefix: 'offscreen-dev-10',
+  });
+  assert.equal(first.advanced.cookiePrefix, 'offscreen-dev-1');
+  assert.equal(second.advanced.cookiePrefix, 'offscreen-dev-10');
+  assert.equal(first.socialProviders.github.clientId, 'client');
+  assert.equal(Object.keys(first.socialProviders).join(','), 'github');
+  assert.equal(first.baseURL, config.origin);
+  assert.equal(first.secret, config.secret);
+  assert.equal(first.trustedOrigins[0], config.origin);
 });

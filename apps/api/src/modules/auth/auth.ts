@@ -29,6 +29,7 @@ export function authOptions(database: Database, config: AuthConfig) {
     advanced: {
       useSecureCookies: config.origin.startsWith('https://'),
       ipAddress: { ipAddressHeaders: ['x-offscreen-client-ip'] },
+      ...(config.cookiePrefix ? { cookiePrefix: config.cookiePrefix } : {}),
     },
     rateLimit: { enabled: true, storage: 'database', window: 60, max: 60 },
     logger: { disabled: true },
