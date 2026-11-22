@@ -1,6 +1,6 @@
 # DX13 | Measured affected-workspace build, test and cache effectiveness
 
-**State: PROPOSED / source-rebase required, not currently dispatched.** Independent performance/verifiability improvement, not duplication of the already-Done [DX12 affected planner](../../archive/2026-11/other/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md). Owner cares about high-quality modular-monolith dependency direction and practical fast local/Jenkins-style incremental builds.
+**State: PROPOSED / source-rebase required, not currently dispatched.** Independent performance/verifiability improvement, not duplication of the already-Done [DX12 affected planner](../../../archive/2026-11/other/2026-11-21--dx12-correct-affected-build-checks/CHANGE.md). Owner cares about high-quality modular-monolith dependency direction and practical fast local/Jenkins-style incremental builds.
 
 ## What remains after DX12
 

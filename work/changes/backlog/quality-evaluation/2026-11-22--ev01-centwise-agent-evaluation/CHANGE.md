@@ -1,6 +1,6 @@
 # EV01 | Centwise Storyteller evaluation and reusable experiment evidence
 
-**State: PROPOSED / PLANNER-BLOCKED. Planning packet only, not Cursor-executable or paid-call authorization.** Owner idea from [2026-11-22 minutes](../../../sessions/2026-11-22.md#5-extremely-economical-storyteller-evals-one-inference-can-justify-an-hour-of-analysis). Reconcile current branch/HEAD and current Lab Support owners before any implementation.
+**State: PROPOSED / PLANNER-BLOCKED. Planning packet only, not Cursor-executable or paid-call authorization.** Owner idea from [2026-11-22 minutes](../../../../sessions/2026-11-22.md#5-extremely-economical-storyteller-evals-one-inference-can-justify-an-hour-of-analysis). Reconcile current branch/HEAD and current Lab Support owners before any implementation.
 
 ## Why
 
