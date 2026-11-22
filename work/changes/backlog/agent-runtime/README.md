@@ -11,3 +11,7 @@
 | [WR12](2026-11-22--wr12-provider-authored-opening/CHANGE.md) | provider authored opening |
 
 These are future work, not today's execution queue. Reconcile source/owner/acceptance before moving any proposal to `open/`.
+
+## Deferred earlier Changes (also in this category)
+
+- [2026-11-21--ma09-authority-writer-dependency-inversion](../../backlog/agent-runtime/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md): previous open packet, not selected; needs source/readiness reconciliation before promotion

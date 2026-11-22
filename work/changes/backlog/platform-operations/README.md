@@ -14,3 +14,8 @@
 | [SQL01](2026-11-22--sql01-transaction-and-lease-source-audit/CHANGE.md) | transaction and lease source audit |
 
 These are future work, not today's execution queue. Reconcile source/owner/acceptance before moving any proposal to `open/`.
+
+## Deferred earlier Changes (also in this category)
+
+- [2026-11-19--turn04-opt-in-real-provider-confirmation](../../backlog/platform-operations/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md): previous open packet, not selected; needs source/readiness reconciliation before promotion
+- [2026-11-15--obs04-finite-action-transition-evidence](../../backlog/platform-operations/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md): previous open packet, not selected; needs source/readiness reconciliation before promotion

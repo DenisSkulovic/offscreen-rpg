@@ -15,3 +15,6 @@
 **Lifecycle:** A proposal may stay here indefinitely if genuinely deferred, but must retain a domain owner, next prerequisite, and recognizable outcome. When the owner selects work for the upcoming execution window, ChatGPT rechecks the latest integration HEAD and dependencies, promotes the packet into `work/changes/open/`, repairs its links, and only then turns it into source-grounded executable Cursor tasks. Closed work goes via the established archive/ledger process. Avoid indefinitely parking an actually active blocker here; `open/` is for current/near-term effort.
 
 **Classification:** These 29 proposal folders were previously in `open/`. Moving their documents does **not** change their readiness or indicate new test evidence. Existing MA12/WR10/TURN03/K8S10 and near-term WR11/CL01 remained in `open/`. Older open Change statuses require individual reconciliation rather than a blind bulk move.
+
+
+**Deferred earlier packets (not counted among the 2026-11-22 gym proposals):** OBS04, TURN04, DXK08, DXK09, MA06 and MA09 were unselected/deferred as of this classification. They are preserved in the corresponding category index and must undergo source review before promotion. Partial/in-flight DIST03, live-edge K8S11, and old WR05/WR09 umbrella reconciliation remain in `open/` until their true disposition is decided.
