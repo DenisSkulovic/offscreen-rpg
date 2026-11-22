@@ -1,13 +1,14 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED before the paid opening call. TURN03 stays open. No gate is PASS.** The user completed GitHub sign-in. The lab web pod at `http://127.0.0.1:3000` showed the signed-in stories page for that session. No cookie was forged and no provider call was made.
+**State: BLOCKED. TURN03 stays open. No gate is PASS.** The signed-in Seyda Neen setup is saved. The paid button was not pressed. There is no deployed provider-free path that still runs the real Temporal executor.
 
-- Seyda Neen setup was saved through the signed-in web pod. The review page says saving spends nothing.
-- The next control, “Create opening,” says one bounded Storyteller call may cost up to one cent and has no automatic fallback. That call was not sent.
-- The public preview at `/demo` is a client-side scripted excerpt. It is not the distributed turn.
-- Auth-dependent cold-kind gates remain unproven. Overall stays `BLOCKED`.
+- `PUT /api/stories/launch/:operationId` is the only signed-in opening entry. `apps/game-authority/src/launch-put.ts` `finalizeReadyLaunch` calls `runScriptedLaunchWriter` in `packages/story-engine/src/storyteller/scripted-launch-writer.ts`. That function settles a local scripted scene in SQL. It does not call a provider and it does not start the executor.
+- The mission it admits is built in `packages/story-engine/src/storyteller/launch-admission.ts` `buildLaunchWriterMissionCapture` with `provider: 'openrouter'` and `model: 'scripted-offline'`.
+- `apps/game-authority/src/writer-round-private-seam.ts` `validateCaptureAgainstPolicy` returns `scripted_offline_model` for that model before a provider send or a Temporal round. The same refusal is in `packages/story-engine/src/storyteller/writer-round-replay.ts` `validateDurableCapture`.
+- That refusal blocks `command-temporal-executor`, and with it `ga-scene-publication`, `sse-get`, `historical-fork-independent-continuation`, and `recovery-negative-matrix`.
+- Letting a scripted command travel through the real executor means changing Game Authority and the story engine. Those files are not in TURN03’s write set.
 
-Receipt of this continuation is the commit that contains this paragraph. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
+The public `/demo` page is a browser-only excerpt and is not this proof. Overall remains `BLOCKED`. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
 ## What actually exists now
 
