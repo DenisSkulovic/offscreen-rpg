@@ -1,16 +1,15 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED. TURN03 stays open. Cold-kind POC is not Done.** This is an API release/runtime-closure defect for MA12, not a harness failure. TURN03 will not edit `apps/api/**`, the lockfile, Worker source, or shared release packaging.
+**State: BLOCKED. TURN03 stays open. Cold-kind POC is not Done.** T04 was rerun against `3b7d0a0a9d03d02768c140a25d872b6fc89e00e9`. `@offscreen/db` now resolves. `game-api` still does not become Ready.
 
-Observed on undertaking HEAD `e07c0d0051fe25f212a4a4f4bd3f817045c957fa` (that HEAD included three out-of-lane repairs that are now reverted):
+- Rebuilt API image id `sha256:b605eb53ee35a3c6887bec855be9d3a0c6bad41c588b2399ad6e6632e96846b9`; the restarted pod ran `import-2026-11-22@sha256:a452b0ceeafded9f5fae207ecbea6b0606400d617bea5ad5efc0589524f544f5`
+- Database check and document-store bucket check succeeded inside that image
+- Startup then failed in `resolveStartupDefaultRules` with `Error` message `missing` (`api.runtime.startup_failed`)
+- `game-api` rollout exceeded its progress deadline
+- The Worker image was not rebuilt: `apps/worker` typecheck still fails, including the `GameAuthoritySeam` test double missing `putLaunch` and `getLaunch`. The loaded worker image remained `sha256:e159434ea7f1ef2d54290efd8362ad376f4e3c8e9b8a9b37088063f31aab6ce1`
+- All eight cold-kind gates remain `NOT-RUN`; overall `NOT-RUN`
 
-- API image `docker.io/library/import-2026-11-22@sha256:85657a683927a1a7811f2ce90a5167674355a5c678b413c053806ecbb61c1c1a`
-- `game-api` logs `api.runtime.startup_failed` with `errorKind=Error` and never becomes Ready
-- deployment `game-api` exceeded its progress deadline
-- from `/app` in that release environment, Node reported it cannot resolve `@offscreen/db`
-- all eight cold-kind gates remain `NOT-RUN` / `BLOCKED`; overall `NOT-RUN`
-
-Cross-lane commits `878b3786`, `971b2f33`, and `17f47052` were reverted. WR10 `f5c5fc04`, MA12 `5cf2e74a`, and the TURN03 harness `c90c5a73` stay joined. Rerun T04 only after MA12's runtime-closure fix is on `undertaking/storyteller-workshop`. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
+No `apps/api`, lockfile, Worker, or shared release file was edited in this rerun. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
 ## What actually exists now
 
