@@ -78,6 +78,8 @@ spec:
               value: http://object-store.lab-objects.svc.cluster.local:8333
             - name: OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE
               value: "true"
+            - name: OFFSCREEN_DEFAULT_RULE_ROOT_HASH
+              value: d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab
             - name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
