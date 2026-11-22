@@ -1,32 +1,47 @@
-# DXK09 | Selected execution algorithm and dependency fences
+# DXK09 | Selected execution algorithm: elastic worktree tenancy
 
-## Identity and tenancy
-Operator allocates explicit slots `s01..s04` (not branch-name-only hashing). Normalize canonical realpath of repo worktree. Write slot lease in ignored OS user runtime directory using exclusive create; lease records {schemaVersion, slot, canonicalWorktree, process identity, context, namespace, ports}. On replay with same identity allow idempotent attach; reject different worktree or live unknown PID. Reclaim only if verified dead and no foreign owner resources. Derive `offscreen-dev-sXX`, dedicated DB `offscreen_dev_sXX`, bucket `offscreen-dev-sXX`, Temporal namespace `offscreen-dev-sXX`, and distinct random slot auth/GA credentials. These are configuration outputs, not guest-submitted names.
+**Status:** architecture intent only; source-specific provisioning/auth commands remain planner-held.
 
-Use slot ports:
-| slot | game | API | Tilt |
-| --- | ---: | ---: | ---: |
-| s01 | 31010 | 31110 | 10410 |
-| s02 | 31020 | 31120 | 10420 |
-| s03 | 31030 | 31130 | 10430 |
-| s04 | 31040 | 31140 | 10440 |
+## Identity and allocation (no fixed slot ceiling)
 
-All binds 127.0.0.1; internal container ports stay 3000/3001/3002. Don't advertise ready until services, database migration, object storage, worker/Temporal and authenticated route checks pass. Persist lease on controlled start and release it on graceful stop only if exact owner still matches; crash leaves stale lease to validate.
+1. Resolve the caller's canonical worktree realpath; confirm repo identity, current branch/HEAD and allowed user. Look up an existing worktree-to-slot binding in a small durable local registry (ignored or outside the repository). A same-worktree restart reuses the same slot and tenants.
+2. For an unbound worktree, atomically reserve a new short, collision-checked, DNS-safe slot ID from an extensible namespace (e.g. `w1`, `w2`, …). **No enumerated `s01..s04`, four-entry port table or maximum-slot constant.** Enforce Kubernetes naming lengths and validate against existing cluster namespaces, database names, object buckets, Temporal namespaces and owned labels before applying.
+3. Allocate a free port bundle for loopback web, API/authority if exposed, Tilt and any required callback from configured legal ranges. Reserve it atomically with the slot; check actual OS binds. Reusing an existing slot attempts to reclaim its same bundle safely; if unavailable, refuse or perform explicit rebind with updated auth/callback configuration.
+4. Registry records stable slot ID, canonical worktree, cluster/namespace, assigned ports, owned process identity and resource fingerprints. Use an atomic file lock or OS-level exclusive creation, and K8s resource labels/UID checks before reconciling stale process records. This is a lightweight local registry, **not a new always-running coordinator**. A dead PID alone does not authorize deleting owned resources.
+5. Admission evaluates requested workload profile, existing active slots, actual available memory/CPU/disk and reservations, leaving defined headroom. Return explicit `capacity-exhausted` with measurements; never silently send the worktree to the release cluster or another slot. Do not cap the number of identities when no workloads are running.
 
-## Cluster
-A dedicated `kind-offscreen-dev` cluster with distinct loopback API server port (e.g. 6444 if unoccupied), independent context and no writes to `kind-offscreen-lab`. Shared infra is installed once, then logical tenants created per slot. Check node capacity and available memory before every new stack. Never copy/relabel release manifests with unsafe unbounded substitution. Release runbooks and acceptance stay unchanged.
+## Shared development cluster and backing tenants
 
-## Provision and boot
-Stage A preflight: verify correct user context/cluster ownership, port availability, disk and memory, slot lease, no foreign resources. Stage B install/create shared infrastructure once under dev-only manifests. Stage C provision dedicated SQL database/user, S3 bucket/limited credentials, Temporal namespace, and per-slot Secrets. Stage D apply only app workloads labeled by the exact slot, run per-database migrations, validate expected content root, start per-slot Tilt with one worktree as sync origin, and report live URLs. Reject partial provision with actionable diagnostic and retain enough identity for safe retry; do not auto-destroy on failure.
+- `kind-offscreen-dev` uses a distinct context, loopback API port and isolated container/storage resources; never mutate `kind-offscreen-lab`. Bootstrap the common infrastructure once via **dev-only audited provisioning**, not blindly by parameterizing release-pinned shell scripts.
+- For slot `<id>`, derive bounded names (exact naming grammar must be source-checked) for namespace, DB/login, bucket, Temporal namespace, workload labels and image tags. Create a database with per-slot owner/least privilege and migrations scoped only to that database; do not give slot API credentials global CREATE DATABASE.
+- Create a *unique bucket* and scoped S3 principal whose access to other buckets is rejected; don't rely on mere key prefixes. Create a separate Temporal namespace and scoped workers/task queues. Where server-side Temporal authorization isn't available, rely on isolated namespace configuration and test against miswired workers; do not claim that task queue naming is a cryptographic security boundary.
+- Generate per-slot secrets without copying credentials from release or other slots. Provision idempotently, track resource ownership labels/fingerprints, and fail closed on partial mismatch. Stop leaves tenant data intact; destructive reset/destroy must have separately confirmed identity and scope.
+- Keep app services in one dedicated namespace per slot with stable internal names and explicit same-namespace DNS; allow opt-in role profiles with no implicit cross-slot dependency fallback. No automatic cross-slot routing.
 
-## Stop, retry, destroy
-`stop --slot`: stop only the exact matching Tilt process and scoped app Deployments/port forwards. SQL, S3, Temporal tenants persist. Re-run start with same worktree/slot keeps tenant identities and committed records. `destroy --slot --confirm offscreen-dev-sXX` is a separate optional destructive action subject to explicit owner authorization and interactive confirmation; no Change acceptance requires running it on actual data. Never target another slot or the release cluster.
+## Build and runtime
 
-## Source separation and dev updates
-Create a slot-specific Tilt config per worktree without modifying shared source trees or generated files inside tracked paths; all generated config and lease material stays ignored/outside repo. Keep DXK08 `live_update` syncs, normal edit only affecting its runtime consumers. Changed lockfile/package schema triggers affected rebuild for that slot alone. Kind image load must use dev-cluster node discovery, serialized, no hardcoded release node IDs. Use per-slot Docker tags and Tilt state directories/ports so identical working source names cannot collide.
+- Before multiplying environments, establish a clean DXK08 build and fix Docker context, pnpm symlinks and TypeScript watcher/compiled artifact consistency. Treat current `invalid file request ... node_modules` as a reproduction requirement.
+- Reuse the existing workspace dependency closure from `select-affected-images.mjs` / `dev-sync-paths.mjs`. Render structured, typed manifest fields from one source template/config; **do not maintain N duplicate YAML or Tilt graphs**.
+- Tilt is instantiated per slot with a unique watched canonical worktree root, own port/UI/state, resource namespace and slot-specific image tags/build ID. Kind image imports target the actual dev nodes and are serialized where necessary, not hardcoded release node names.
+- For every affected edit, validate the compile, process reload/start and health check. Expose source HEAD + dirty fingerprint, build/artifact ID, runtime start generation. Tests collect these before and after. A source-sync event alone is never proof that running code changed.
+- Detect dependency manifest, lockfile and other unsafe source changes and perform a bounded rebuild of only affected services in that slot; do not use a manual pod file-patch fallback. If compile fails, mark runtime stale/blocked rather than advertise source READY.
 
-## Security
-Auth via Better Auth with exact slot `APP_ORIGIN` and per-slot secrets. Require operator-provided matching GitHub OAuth registration for browser-based proof, unless an already accepted local-only provider-free identity route is separately verified; never weaken `readAuthConfig` or allow a generic dev bypass. Local loopback exposure only. Namespace and logical DB alone do **not** secure against privileged host users; treat tenancy as accident-prevention, not a multi-tenant production security boundary.
+## Authentication and interfaces
 
-## Work dependency DAG
-T01 slot pure planning/identity/port lease tests → T02 cluster-specific read-only guard and orchestration → T03 safe backing-tenant provisioning (planner source gate) → T04 manifest generation and credential binding → T05 per-slot Tilt/watch/image and launcher → T06 two-stack integration/negative proof and permanent docs. T03/T04 must not be dispatched until the remaining provisioning/auth specifics are verified and ratified by planner. Cluster creation, database mutation, S3 bucket creation, and Temporal writes during live proofs require operator-specific approval. No automatically authorized deployment from a planning file.
+- Public operator workflows should be worktree-relative (`pnpm dev`, `pnpm dev:status`, `pnpm dev:stop`), not manual `kubectl` sequences. The launcher owns registry/ports/identity and reports service profile, host utilization, source fingerprint, running fingerprint and URLs.
+- A stable per-slot application origin must be compatible with Better Auth and configured GitHub OAuth redirects. Planner must select and test the actual callback model across varying numbers of slots; do not promise dynamic OAuth readiness from dynamic ports without provider compatibility evidence.
+- Provider-free integration fixtures must not bypass application authorization. Any test-only identity route must have a separately decided explicitly scoped contract, not an ad hoc development backdoor.
+
+## Work stages and integration
+
+A. **Single-stack foundation:** clean build, pnpm/Tilt dependency closure, runtime receipt and automatic reload proof. Finish existing DXK08 recovery and distinguish release-only faults.
+
+B. **Allocator/registry:** dynamic identity and port bundle, worktree binding, collision/stale-owner handling, capacity admission, pure negative tests for IDs 5/10/100 and port exhaustion. No cluster writes.
+
+C. **Dev infrastructure:** isolated dev cluster bootstrap and audited tenant APIs. Verify SQL/S3/Temporal privileges with two independent tenants before application rollout; source and privilege model must be ratified before Cursor implementation.
+
+D. **Per-slot application rendering:** one parameterized service graph, unique image identity, namespace/DNS/secrets/roles and authenticated origin; test both full and partial profiles without shared fallback.
+
+E. **Concurrent proof:** run four simultaneous full stacks from distinct worktrees and show source/code, DB, S3, workflows, credentials and ports cannot interfere; run a fifth or tenth only when available capacity supports it. Compare measured edit-to-runtime and restart timings against baseline.
+
+**Integration:** one dedicated Change worktree branched from current `undertaking/storyteller-workshop`, one owner of cluster provisioning/manifests/launcher, bounded task execution. Preserve release lab and all uncommitted work; no paid providers. This design has not been executed or capacity-tested.

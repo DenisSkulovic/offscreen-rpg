@@ -1,53 +1,49 @@
-# DXK09 | Cheap bounded Composer task route
-Baseline: `undertaking/storyteller-workshop@62c930a2050afcc4376130fed4120828b1f70624`. Parent must recheck source, worktrees, and permissions. **Overall PLANNER-HOLD**, not executable until the named source contract blockers in CHANGE/SOURCE-MAP are closed. T01 is implementation-shaped but must not be dispatched while the Change itself is unready.
+# DXK09 | Bounded implementation route, subject to planner readiness
 
-Parent: create linked worktree `change/dxk09-isolated-parallel-dev-stacks` from actual undertaking HEAD. Single integration owner; no parallel shared manifest writes. MODEL=Composer Standard. No paid provider, no release-lab modification, no destructive data work.
+**Status: PLANNER HOLD.** Baseline `undertaking/storyteller-workshop@752ed422`; recheck HEAD, source and concurrent changes at commissioning. The runtime objective is *elastic slot allocation*, not four statically provisioned environments. Current acceptance workload: four full-stack worktrees simultaneously. Tests must explicitly reject any encoded slot-count ceiling.
 
-## T01 | Slot identity and lease pure module | source mapped
-May write: `scripts/repo-tools/dev-stack-identity.mjs`, `scripts/repo-tools/dev-stack-identity.test.mjs`.
-Read: `scripts/repo-tools/dev-tilt.mjs` (PID_FILE / port check), `scripts/repo-tools/dev-tilt.test.mjs`, `EXECUTION.md#identity-and-tenancy`.
-Implement: explicit s01..s04 slot validator; canonical worktree identity; deterministic namespace/db/bucket/Temporal/port set; atomic lock/lease, reject foreign live holder; dead lease reclaim only after owner/resource reconciliation. No kubectl mutation in this module.
-Positive: `node --test scripts/repo-tools/dev-stack-identity.test.mjs` validates stable mapping + same-owner restart.
-Negative: foreign active owner and occupied port refuse without replacing lease.
-Stop: platform process identity cannot be validated safely; report exact symbol/reproducer.
-Receipt: module exports, tests, lease file scope, no shell effects.
+**Execution:** one DXK09 parent in a dedicated change worktree, sequential bounded child tasks, small focused receipts. No release-lab mutations, paid providers, destructive cluster resets, or speculative architecture changes. Relevant source owner paths below are anchors, not authority to invent missing provisioning mechanisms.
 
-## T02 | Dev-only cluster guard | planner gate on bootstrap template
-May write: `scripts/repo-tools/dev-stack-preflight.mjs`, `scripts/repo-tools/dev-stack-preflight.test.mjs`; any new dev-only kind manifest explicitly owned by DXK09.
-Read: `scripts/repo-tools/stack-preflight.mjs` (`runStackPreflight`), `infra/kubernetes/lab/lib.sh`, `infra/kubernetes/lab/kind.yaml`, `EXECUTION.md#cluster`.
-Implement: exact pinned dev context, distinct API port and cluster name, no ambient kubectl context mutation; resource ownership and RAM/port guards.
-Positive: injected dev-cluster probes permit dev-only plan with sufficient resources.
-Negative: release/foreign context yields zero commands and no release mutation.
-Stop: operator cannot confirm isolated cluster ownership or port.
+## T01 | Clean build/runtime foundation (planner source check required)
+**Read:** `infra/kubernetes/lab/dev/Dockerfile`, `infra/kubernetes/lab/dev/Tiltfile`, `dev-sync-paths.mjs`, `scripts/repo-tools/dev-tilt.mjs`, workspace build scripts.
+**Write:** bounded build/sync/test owners selected after current DXK08 fixes are reconciled; avoid simultaneous edits by a separate DXK08 owner.
+**Contract:** clean pnpm Docker build succeeds from fresh checkout, specific node_modules/symlink regression reproduced and fixed, changed TypeScript yields successful compiled output and new process-loaded runtime receipt, failures mark stale. A build must not silently pass using old JS.
+**Proof:** positive fresh build + one changed library dependency reloaded; negative compile failure doesn't advertise new code READY.
+**Stop:** architectural contradiction in build closure or concurrent ownership.
 
-## T03 | Stateful per-slot tenant provisioner | PLANNER BLOCKER
-May write: dev-only provisioner, per-slot manifest/Secret builder and tests under `infra/kubernetes/lab/dev/stacks/`, no edits to release installers.
-Read: `infra/kubernetes/lab/cnpg/install.sh`, `infra/kubernetes/lab/temporal/install.sh`, `infra/kubernetes/lab/app-release/install.sh`, `SOURCE-MAP.md`.
-Algorithm fixed at architecture level: distinct SQL database/login, S3 bucket/permission, Temporal namespace, slots and secrets. **Do not dispatch** until planner records exact dev-cluster installer and tenant API commands, typed configs and rollback/retry identity.
-Positive: two slots can independently migrate/write against own tenants.
-Negative: A credential denied on B SQL and S3; Temporal cannot poll cross namespace.
-Stop: missing safe provider-specific privilege/provision API.
+## T02 | Dynamic slot registry and ports (pure implementation after readiness)
+**Read:** `scripts/repo-tools/dev-tilt.mjs`, `dev-tilt.test.mjs`, `EXECUTION.md`.
+**Write:** new dev-only slot identity/registry and focused tests under `scripts/repo-tools/`.
+**Contract:** canonical worktree path binds to stable opaque ID; atomic allocation and loopback port bundle; no four-slot enums/tables, range exhaustion correctly reported; stale owner cannot be reclaimed from PID alone; idempotent restart reuses tenant identity.
+**Proof:** allocate 1..10 and 100 synthetic identities without changing source config, stop/restart and collisions; foreign port/owner refusal; no Kubernetes calls.
+**Stop:** unable to verify process/resource ownership without dangerous guessing.
 
-## T04 | One namespace, six real dev workloads | after T03, planner source gate
-May write: new generated/statically parameterized templates in `infra/kubernetes/lab/dev/stacks/` and focused tests. Do not mutate release overlay.
-Read: `infra/kubernetes/lab/dev/{web,api,authority,workers}.yaml`, `apps/api/src/modules/auth/config.ts`, `EXECUTION.md#provision-and-boot`.
-Implement: same `game-*` Service/Deployment names all in namespace `offscreen-dev-sXX`, env from slot config and namespace-local Secrets; no release DNS/DB/bucket/Temporal defaults; exact labels and APP_ORIGIN.
-Positive: A/B render to nonoverlapping namespaces, internal service DNS points within each.
-Negative: missing auth/OAuth callback material blocks authenticated READY; wrong tenant secret rejected.
-Stop: legacy hardcoded namespace/resource remains in rendered app YAML.
+## T03 | Dev-only bootstrap and backing tenants (PLANNER BLOCKER)
+**Read:** `infra/kubernetes/lab/{lib.sh,cnpg/install.sh,temporal/install.sh}`, S3 bootstrap and client/config owners, `SOURCE-MAP.md`.
+**Write:** dev-only bootstrap/tenant provisioner and focused tests; **never modify release-pinned scripts to weaken target checks**.
+**Contract:** existing release lab unaffected; idempotent per-ID DB+least privilege login, unique bucket+scoped key, Temporal namespace+queues; any admission failure leaves another tenant unchanged.
+**Proof:** two tenants independently migrate/read/write; credential A denied on database and bucket B; wrong context refused pre-mutation; temporary failures recover without deleting state.
+**Stop:** concrete DB/S3/Temporal provisioning commands or scoped privileges not yet ratified by planner.
 
-## T05 | Slot-aware Tilt launcher and image load | after T01-T04
-May write: new dev-slot Tilt entry/import, `scripts/repo-tools/dev-stack.mjs`, dev image loader and tests; preserve root release target and single-stack command.
-Read: `Tiltfile`, `infra/kubernetes/lab/dev/Tiltfile`, `infra/kubernetes/lab/dev/dev-sync-paths.mjs`, `infra/kubernetes/lab/dev/tilt/load-dev-image.sh`, `scripts/repo-tools/dev-tilt.mjs`.
-Implement: one worktree path per Tilt process, slot tags, slot port forwards, separate PID and Tilt state, dev-cluster-only serialized image loads; keep DXK08 affected sync/fallback.
-Positive: A API edit auto-syncs to A API, no rebuild or B restart.
-Negative: unsafe package manifest in A rebuilds A and never B.
-Stop: Tilt still watches shared worktree roots or emits release-cluster target.
+## T04 | Structured app graph, roles, OAuth (PLANNER BLOCKER)
+**Read:** `infra/kubernetes/lab/dev/{Tiltfile,web.yaml,api.yaml,authority.yaml,workers.yaml}`, `apps/api/src/modules/auth/config.ts`.
+**Write:** one source graph plus slot-specific generated config outside tracked tree; no replicated per-slot YAML/Tiltfiles.
+**Contract:** same-namespace service routes, scoped secrets and per-tenant env, dynamic slot image names, distinct app origin; partial service profiles fail rather than route elsewhere; no bypass of auth.
+**Proof:** identical source graph renders two different slot identities; fifth/tenth rendering needs zero code changes; real OAuth sign-in where configured; missing callback cannot show auth READY; stale cross-slot reference rejected.
+**Stop:** unresolved OAuth strategy, cross-namespace app endpoints or production security implication.
 
-## T06 | Two-stack proof, docs, closure | after T05
-May write: `docs/runbooks/local-development.md`, `docs/runbooks/kubernetes-developer-ui.md`, test and evidence receipt, CHANGE archive reconciliation.
-Read: `PROOF.md`, `scripts/repo-tools/dev-stack.mjs`, `work/changes/README.md`, `work/undertakings/storyteller-workshop/OVERVIEW.md`.
-Run only explicitly authorized dev-cluster provisioning and owner-approved disposable proof. Demonstrate two live stacks, SQL/S3/Temporal segregation, identity and negative failures, isolated Tilt update, stop A preserving B, release lab unchanged. Focused checks before full proof; don't rerun paid models or destructive chaos.
-Negative: cross-slot stop/lease rejection.
-Stop: any cross-tenant write or release-lab mutation. Return exact evidence to ChatGPT.
-Receipt: source SHA, test outcomes and NOT RUN, owned tenant IDs, archive/integration commit.
+## T05 | Worktree-relative dev launcher and live updates
+**Read:** `scripts/repo-tools/dev-tilt.mjs`, `infra/kubernetes/lab/dev/{Tiltfile,dev-sync-paths.mjs,tilt/load-dev-image.sh}`.
+**Write:** slot-aware dev launcher, Tilt adapter, tests, docs.
+**Contract:** simple `pnpm dev` / `pnpm dev:status` / `pnpm dev:stop` behavior; each slot watches its own canonical worktree, imports only into dev nodes, never changes release cluster; affected edits rebuild/reload only affected slot.
+**Proof:** editing A API changes only A runtime; B build, Pods, image identity and state unchanged; stop A preserves tenants and B; failure/rollback does not kill healthy worktree.
+**Stop:** any cross-slot resource mutation, source-only reload claims or unrelated workspace rebuild.
+
+## T06 | Concurrent capacity, proof and documentation
+**Read:** `PROOF.md`, launcher, render and provisioner sources, `docs/runbooks/local-development.md`.
+**Write:** focused proof/evidence, user runbook and reconciliation; do not archive without all gates.
+**Contract:** four genuinely simultaneous full-stack worktrees, independent authenticated provider-free stories, per-slot SQL/S3/Temporal and source/runtime fingerprints, measured RAM/CPU/disk, isolated rebuild/restart, negative credentials/mutation tests. Fifth/tenth identity accepted in allocator/provisioner; live fifth/tenth admitted when resources permit.
+**Proof:** compare against stabilized DXK08 edit-to-running-code and clean rebuild baselines; cross-tenant denial, restart and safe stop, no release mutation; capacity exhaustion refuses cleanly without provisioning half a slot.
+**Stop:** four full stacks cannot fit; report actual measurements and optimize or propose extra capacity without silently reducing the requirement.
+
+**No task may be commissioned merely because this document provides its outline.** Complete the source-specific readiness gate first. One integrator merges back to `undertaking/storyteller-workshop` and archives only after all mandatory checks genuinely pass.
