@@ -10,7 +10,7 @@ import type {
   WriterSceneRoundMissionState,
 } from '@offscreen/contracts/writer-scene-round-control';
 import { defaultWriterContextId } from '@offscreen/story-engine/storyteller/writer-child-custody';
-import { readWriterMissionStepRow } from '@offscreen/story-engine/storyteller/writer-mission-custody';
+import { readLatestParentModelStepRow } from '@offscreen/story-engine/storyteller/writer-mission-custody';
 import {
   validateWriterRoundCaptureAgainstPolicy,
   type WriterRoundCapturePolicyMode,
@@ -23,8 +23,6 @@ import {
 } from '@offscreen/storyteller/tasks';
 import type { WriterRoundPrivateSeamOptions } from './writer-round-private-seam.js';
 import { createWriterRoundPrivateSeam } from './writer-round-private-seam.js';
-
-const SCENE_CONTINUATION_ORDINAL = 1;
 
 export type WriterRoundControlSeam = {
   planRound(missionId: string): Promise<
@@ -114,27 +112,29 @@ function createWriterRoundControlSeam(
         return { status: 'held', reason: captureFault };
       }
       const contextId = defaultWriterContextId(missionId);
-      const ordinal = SCENE_CONTINUATION_ORDINAL;
-      try {
-        const step = await readWriterMissionStepRow(
-          database,
-          missionId,
-          contextId,
-          ordinal,
-        );
-        if (step.state === 'held' || step.state === 'failed') {
-          return { status: 'held', reason: step.state };
-        }
-        return {
-          missionId,
-          contextId,
-          ordinal,
-          expectedRevision: step.revision,
-          model: loaded.capture.modelSelection.model,
-        };
-      } catch {
+      const maxModelRounds = loaded.capture.budgets.maxModelRounds;
+      const step = await readLatestParentModelStepRow(
+        database,
+        missionId,
+        contextId,
+      );
+      if (!step) {
         return { status: 'held', reason: 'step_not_found' };
       }
+      if (step.ordinal > maxModelRounds) {
+        return { status: 'held', reason: 'max_model_rounds' };
+      }
+      if (step.state === 'held' || step.state === 'failed') {
+        return { status: 'held', reason: step.state };
+      }
+      return {
+        missionId,
+        contextId,
+        ordinal: step.ordinal,
+        expectedRevision: step.revision,
+        model: loaded.capture.modelSelection.model,
+        maxModelRounds,
+      };
     },
 
     async readMissionState(missionId) {
@@ -175,10 +175,16 @@ function createWriterRoundControlSeam(
     async finalizeRound(missionId) {
       const result = await finalizeSettledWriterSceneRound(database, storage, {
         missionId,
-        ordinal: SCENE_CONTINUATION_ORDINAL,
         policy,
         capturePolicyMode,
       });
+      if (result.status === 'needs-next-round') {
+        return {
+          status: 'needs-next-round',
+          nextOrdinal: result.nextOrdinal,
+          nextRevision: result.nextRevision,
+        };
+      }
       if (result.status === 'published' || result.status === 'replayed') {
         return { status: result.status };
       }
@@ -204,9 +210,16 @@ export function createWriterRoundSeam(
 }
 
 export function writerRoundCapturePolicyModeForBootstrap(
-  mode: 'unavailable' | 'scripted-offline-lab',
+  mode:
+    | 'unavailable'
+    | 'scripted-offline-lab'
+    | 'provider-authorized',
 ): WriterRoundCapturePolicyMode {
-  return mode === 'scripted-offline-lab'
-    ? 'scripted-offline-lab'
-    : 'provider-default';
+  if (mode === 'scripted-offline-lab') {
+    return 'scripted-offline-lab';
+  }
+  if (mode === 'provider-authorized') {
+    return 'provider-authorized';
+  }
+  return 'provider-default';
 }

@@ -23,7 +23,7 @@ Never infer that current subscription status or model catalog explains an old co
 
 ## Owner and dependencies
 
-Source-map after [CFG01](../../policy-finance/2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md) defines immutable effective policy and [WR11](../../../open/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) proves real admission. Use an authorized `@offscreen/admin` projection of **captured** SQL policy/provenance, not a second policy resolver in React. Presentation belongs in the selected `/control` console next to ADI01 and links to AI03, not an unbounded raw configuration editor. CFG02 remains the only proposed policy mutation UI.
+Source-map after [CFG01](../../policy-finance/2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md) defines immutable effective policy and [WR11](../../../archive/2026-11/storyteller/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) proves real admission. Use an authorized `@offscreen/admin` projection of **captured** SQL policy/provenance, not a second policy resolver in React. Presentation belongs in the selected `/control` console next to ADI01 and links to AI03, not an unbounded raw configuration editor. CFG02 remains the only proposed policy mutation UI.
 
 ## Acceptance
 

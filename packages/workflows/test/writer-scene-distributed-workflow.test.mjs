@@ -37,10 +37,17 @@ test('writerSceneDistributedV2 orders plan, execute, finalize on distinct queues
     indexSource.indexOf('export async function writerSceneDistributedV2'),
     indexSource.indexOf('type WriterResearchActivities'),
   );
-  assert.match(v2Block, /await planWriterSceneRound\(missionId\)/);
-  assert.match(v2Block, /const attemptId = uuid4\(\)/);
-  assert.match(v2Block, /await executePreparedWriterRound\(/);
-  assert.match(v2Block, /await finalizeWriterSceneRound\(missionId\)/);
+  const loopSource = readFileSync(
+    join(here, '../src/writer-scene-distributed-v2-round-loop.ts'),
+    'utf8',
+  );
+  assert.match(v2Block, /runWriterSceneDistributedV2RoundLoop/);
+  assert.match(loopSource, /await deps\.planWriterSceneRound\(missionId\)/);
+  assert.match(loopSource, /deps\.nextAttemptId\(\)/);
+  assert.match(loopSource, /await deps\.executePreparedWriterRound\(/);
+  assert.match(loopSource, /await deps\.finalizeWriterSceneRound\(missionId\)/);
+  assert.match(loopSource, /needs-next-round/);
+  assert.match(loopSource, /maxModelRounds/);
   assert.match(
     indexSource,
     /proxyActivities<WriterSceneDistributedExecutionActivities>\(\{[\s\S]*taskQueue: storytellerExecuteTaskQueue/,
@@ -55,12 +62,25 @@ test('writerSceneDistributedV2 orders plan, execute, finalize on distinct queues
 });
 
 test('writerSceneDistributedV2 reads GA state on uncertain executor terminals', () => {
-  const v2Block = indexSource.slice(
-    indexSource.indexOf('function holdWriterSceneRound'),
-    indexSource.indexOf('type WriterResearchActivities'),
+  const loopSource = readFileSync(
+    join(here, '../src/writer-scene-distributed-v2-round-loop.ts'),
+    'utf8',
   );
-  assert.match(v2Block, /executorResult\.status === 'replayed'/);
-  assert.match(v2Block, /await readWriterSceneRoundMissionState\(missionId\)/);
-  assert.match(v2Block, /WriterSceneHeld/);
-  assert.match(v2Block, /WriterSceneUncertain/);
+  const helperBlock = indexSource.slice(
+    indexSource.indexOf('function holdWriterSceneRound'),
+    indexSource.indexOf('export async function writerSceneDistributedV2'),
+  );
+  assert.match(loopSource, /executorResult\.status === 'replayed'/);
+  assert.match(
+    loopSource,
+    /await deps\.readWriterSceneRoundMissionState\(missionId\)/,
+  );
+  const uncertainBranch = loopSource.match(
+    /} else if \(executorResult\.status === 'uncertain'\) \{[\s\S]*?\n    \}/,
+  )?.[0];
+  assert.ok(uncertainBranch);
+  assert.match(uncertainBranch, /uncertainWriterSceneRound/);
+  assert.doesNotMatch(uncertainBranch, /finalizeWriterSceneRound/);
+  assert.match(helperBlock, /WriterSceneHeld/);
+  assert.match(helperBlock, /WriterSceneUncertain/);
 });

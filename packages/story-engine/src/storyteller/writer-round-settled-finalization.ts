@@ -1,10 +1,13 @@
 /**
  * GA-owned settled writer scene round: interpret durable response, then publish.
  */
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import {
+  storytellerWriterMission,
+  storytellerWriterStep,
+} from '@offscreen/db/storyteller-schema';
 import type { DocumentStore } from '@offscreen/documents';
 import type { WriterSceneProposalV3 } from '@offscreen/storyteller/tasks';
 import { writerSceneProposalV3Schema } from '@offscreen/storyteller/tasks';
@@ -12,6 +15,7 @@ import { defaultWriterContextId } from './writer-child-custody';
 import {
   hashWriterMissionSerializedResponse,
   readDurableWriterMissionResponse,
+  readLatestFinalizableParentModelStepRow,
   readWriterMissionStepRow,
 } from './writer-mission-custody';
 import {
@@ -34,6 +38,11 @@ type WriterContinuationCapture = z.infer<
 export type FinalizeSettledWriterSceneRoundResult =
   | { status: 'published'; passageId: string; checkpointHash: string }
   | { status: 'replayed'; passageId: string; checkpointHash: string }
+  | {
+      status: 'needs-next-round';
+      nextOrdinal: number;
+      nextRevision: number;
+    }
   | { status: 'held'; reason: string }
   | { status: 'uncertain' };
 
@@ -98,8 +107,13 @@ async function loadMissionContext(
 
 function createStorageLibraryReader(storage: DocumentStore) {
   return {
-    readManifest: async () => {
-      throw new Error('v1 manifest not supported for writer scene finalization');
+    readManifest: async (rootHash: string) => {
+      const manifest = await storage.readManifest(rootHash);
+      return {
+        campaignId: manifest.campaignId,
+        revision: manifest.revision,
+        entries: manifest.entries,
+      };
     },
     readDocument: async (objectHash: string) => {
       const document = await storage.readDocument(objectHash);
@@ -166,6 +180,47 @@ function finalProposalFromDecisionBody(body: string): WriterSceneProposalV3 | nu
   return writerSceneProposalV3Schema.parse(decision.proposal);
 }
 
+function decisionRequestsResearchDelegate(body: string): boolean {
+  const decision = parseProviderDecisionBody(body);
+  if (!decision || decision.kind !== 'tool-calls') {
+    return false;
+  }
+  return decision.calls.some((call) => call.name === 'research.delegate');
+}
+
+async function readNextPreparedParentModelStep(
+  database: Database,
+  missionId: string,
+  contextId: string,
+  afterOrdinal: number,
+) {
+  const [step] = await database.db
+    .select({
+      ordinal: storytellerWriterStep.ordinal,
+      revision: storytellerWriterStep.revision,
+      state: storytellerWriterStep.state,
+    })
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, contextId),
+        sql`${storytellerWriterStep.ordinal} > ${afterOrdinal}`,
+        isNull(storytellerWriterStep.toolCallId),
+      ),
+    )
+    .orderBy(asc(storytellerWriterStep.ordinal))
+    .limit(1);
+  return step ?? null;
+}
+
+function mapWriterLoopErrorToHeldReason(error: WriterLoopError): string {
+  if (error.code === 'invalid_step_state') {
+    return 'max_model_rounds';
+  }
+  return error.code;
+}
+
 /**
  * Interprets a settled provider response (if needed) and publishes one v3 scene passage.
  * Idempotent when the generation already has a committed passage.
@@ -220,7 +275,18 @@ export async function finalizeSettledWriterSceneRound(
   }
 
   const contextId = defaultWriterContextId(input.missionId);
-  const ordinal = input.ordinal ?? 1;
+  const latestParent = await readLatestFinalizableParentModelStepRow(
+    database,
+    input.missionId,
+    contextId,
+  );
+  if (!latestParent) {
+    return { status: 'held', reason: 'step_not_found' };
+  }
+  if (input.ordinal !== undefined && input.ordinal !== latestParent.ordinal) {
+    return { status: 'held', reason: 'revision_conflict' };
+  }
+  const ordinal = latestParent.ordinal;
   const step = await readWriterMissionStepRow(
     database,
     input.missionId,
@@ -252,11 +318,22 @@ export async function finalizeSettledWriterSceneRound(
     if (!proposal) {
       return { status: 'held', reason: 'malformed_decision' };
     }
-  } else if (
-    step.state === 'result-settled' ||
-    step.state === 'tools-applied' ||
-    step.state === 'proposal-ready'
-  ) {
+  } else if (step.state === 'tools-applied') {
+    const next = await readNextPreparedParentModelStep(
+      database,
+      input.missionId,
+      contextId,
+      ordinal,
+    );
+    if (!next || next.state !== 'model-request-prepared') {
+      return { status: 'held', reason: 'next_step_not_prepared' };
+    }
+    return {
+      status: 'needs-next-round',
+      nextOrdinal: next.ordinal,
+      nextRevision: next.revision,
+    };
+  } else if (step.state === 'result-settled' || step.state === 'proposal-ready') {
     if (!step.resultCasHash || !step.attemptId || !step.requestCasHash) {
       return { status: 'held', reason: 'strict_response_pointer_missing' };
     }
@@ -283,6 +360,9 @@ export async function finalizeSettledWriterSceneRound(
         return { status: 'held', reason: 'malformed_decision' };
       }
     } else {
+      if (decisionRequestsResearchDelegate(body)) {
+        return { status: 'held', reason: 'research_delegate_unsupported' };
+      }
       let interpreted;
       try {
         interpreted = await interpretPersistedWriterDecision(database, {
@@ -300,12 +380,31 @@ export async function finalizeSettledWriterSceneRound(
         });
       } catch (error) {
         if (error instanceof WriterLoopError) {
-          return { status: 'held', reason: error.code };
+          return {
+            status: 'held',
+            reason: mapWriterLoopErrorToHeldReason(error),
+          };
         }
         throw error;
       }
       if (interpreted.status === 'uncertain') {
         return { status: 'uncertain' };
+      }
+      if (interpreted.status === 'tool-round-complete') {
+        const next = await readNextPreparedParentModelStep(
+          database,
+          input.missionId,
+          contextId,
+          ordinal,
+        );
+        if (!next || next.state !== 'model-request-prepared') {
+          return { status: 'held', reason: 'next_step_not_prepared' };
+        }
+        return {
+          status: 'needs-next-round',
+          nextOrdinal: next.ordinal,
+          nextRevision: next.revision,
+        };
       }
       if (interpreted.status !== 'proposal-ready') {
         return {
@@ -313,7 +412,7 @@ export async function finalizeSettledWriterSceneRound(
           reason:
             interpreted.status === 'held'
               ? (interpreted.reason ?? 'held')
-              : 'needs_next_round',
+              : 'research_delegate_unsupported',
         };
       }
       if (

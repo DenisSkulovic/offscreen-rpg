@@ -82,6 +82,7 @@ export type WriterSceneRoundExecutionPlan = {
   ordinal: number;
   expectedRevision: number;
   model: string;
+  maxModelRounds: number;
 };
 
 export type ExecutePreparedWriterRoundWorkflowInput = {
@@ -102,10 +103,16 @@ export type WriterSceneRoundMissionState = {
   reason?: string;
 };
 
-export type WriterSceneRoundFinalizeResult = {
-  status: 'published' | 'replayed' | 'held' | 'uncertain';
-  reason?: string;
-};
+export type WriterSceneRoundFinalizeResult =
+  | {
+      status: 'published' | 'replayed' | 'held' | 'uncertain';
+      reason?: string;
+    }
+  | {
+      status: 'needs-next-round';
+      nextOrdinal: number;
+      nextRevision: number;
+    };
 
 /** Control worker: GA plan/finalize and mission-state reads; no provider I/O. */
 export interface WriterSceneDistributedControlActivities {

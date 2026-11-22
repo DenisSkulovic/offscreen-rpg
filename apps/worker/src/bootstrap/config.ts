@@ -14,6 +14,25 @@ import {
   type WriterRoundPrivateClientConfig,
 } from '../custody/writer-round-private-client';
 import { prepareScriptedOfflineLabWriterRoundTransport } from '../custody/scripted-offline-lab-writer-round-transport';
+import {
+  assertScriptedOfflineLabNotMixedWithProviderPin,
+  OFFSCREEN_WRITER_EXECUTION_MODE_ENV,
+  readWriterProviderAuthorizationPolicy,
+  WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED,
+  WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB,
+} from '@offscreen/storyteller/providers/writer-provider-authorization-policy';
+import {
+  WRITER_CONTINUATION_ADMISSION_SCRIPTED,
+  type WriterContinuationAdmission,
+} from '@offscreen/story-engine/storyteller/writer-continuation';
+
+export { WRITER_CONTINUATION_ADMISSION_SCRIPTED };
+
+export {
+  OFFSCREEN_WRITER_EXECUTION_MODE_ENV,
+  WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB,
+  WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED,
+} from '@offscreen/storyteller/providers/writer-provider-authorization-policy';
 
 const temporalSchema = z.object({
   address: z.string().trim().min(1).default('127.0.0.1:7233'),
@@ -22,13 +41,44 @@ const temporalSchema = z.object({
 
 const configSchema = temporalSchema.extend({
   taskQueue: z.string().trim().min(1).default('offscreen-local'),
+  writerContinuationAdmission: z.custom<WriterContinuationAdmission>().optional(),
 });
+
+export function readWorkerContinuationAdmission(
+  env: Record<string, string | undefined>,
+): WriterContinuationAdmission {
+  const raw = env[OFFSCREEN_WRITER_EXECUTION_MODE_ENV];
+  if (raw === undefined || raw.trim() === '') {
+    return WRITER_CONTINUATION_ADMISSION_SCRIPTED;
+  }
+  const trimmed = raw.trim();
+  if (trimmed === WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB) {
+    const providerKey = env['OPENROUTER_API_KEY'];
+    if (providerKey !== undefined && providerKey.trim() !== '') {
+      throw new Error(
+        `${OFFSCREEN_WRITER_EXECUTION_MODE_ENV}=${WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB} cannot be combined with OPENROUTER_API_KEY`,
+      );
+    }
+    assertScriptedOfflineLabNotMixedWithProviderPin(env);
+    return WRITER_CONTINUATION_ADMISSION_SCRIPTED;
+  }
+  if (trimmed === WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED) {
+    return readWriterProviderAuthorizationPolicy(env).admission;
+  }
+  if (trimmed === 'unavailable') {
+    return WRITER_CONTINUATION_ADMISSION_SCRIPTED;
+  }
+  throw new Error(
+    `unsupported ${OFFSCREEN_WRITER_EXECUTION_MODE_ENV}: ${trimmed}`,
+  );
+}
 
 export function readWorkerConfig(env: Record<string, string | undefined>) {
   return configSchema.parse({
     address: env['TEMPORAL_ADDRESS'],
     namespace: env['TEMPORAL_NAMESPACE'],
     taskQueue: env['TEMPORAL_TASK_QUEUE'],
+    writerContinuationAdmission: readWorkerContinuationAdmission(env),
   });
 }
 export type WorkerConfig = ReturnType<typeof readWorkerConfig>;
@@ -47,14 +97,10 @@ export function readControlWorkerConfig(env: Record<string, string | undefined>)
 }
 export type ControlWorkerConfig = ReturnType<typeof readControlWorkerConfig>;
 
-export const OFFSCREEN_WRITER_EXECUTION_MODE_ENV =
-  'OFFSCREEN_WRITER_EXECUTION_MODE' as const;
-export const WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB =
-  'scripted-offline-lab' as const;
-
 export type WriterExecutionModeKind =
   | 'provider-default'
-  | typeof WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB;
+  | typeof WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB
+  | typeof WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED;
 
 export type PrepareWriterRoundTransportFn = typeof prepareWriterRoundTransport;
 
@@ -91,7 +137,12 @@ function readWriterExecutionMode(
         `${OFFSCREEN_WRITER_EXECUTION_MODE_ENV}=${WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB} cannot be combined with OPENROUTER_API_KEY`,
       );
     }
+    assertScriptedOfflineLabNotMixedWithProviderPin(env);
     return WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB;
+  }
+  if (trimmed === WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED) {
+    readWriterProviderAuthorizationPolicy(env);
+    return WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED;
   }
   refuseWriterExecutionConfig(
     `unsupported ${OFFSCREEN_WRITER_EXECUTION_MODE_ENV}: ${trimmed}`,
@@ -109,6 +160,22 @@ function readExecutionWriterRoundConfig(
       privateCustody,
       prepareTransport: prepareScriptedOfflineLabWriterRoundTransport,
       apiKey: undefined,
+      outputSchema: writerRoundOutputJsonSchema(),
+      fetchImpl: fetch,
+    };
+  }
+  if (mode === WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED) {
+    const providerKey = env['OPENROUTER_API_KEY'];
+    if (providerKey === undefined || providerKey.trim() === '') {
+      refuseWriterExecutionConfig(
+        `${WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED} requires OPENROUTER_API_KEY`,
+      );
+    }
+    return {
+      mode,
+      privateCustody,
+      prepareTransport: prepareWriterRoundTransport,
+      apiKey: providerKey.trim(),
       outputSchema: writerRoundOutputJsonSchema(),
       fetchImpl: fetch,
     };

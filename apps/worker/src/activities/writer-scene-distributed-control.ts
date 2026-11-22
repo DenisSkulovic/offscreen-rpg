@@ -25,8 +25,12 @@ function isExecutionPlan(
   ordinal: number;
   expectedRevision: number;
   model: string;
+  maxModelRounds: number;
 } {
-  return !('status' in value);
+  if ('status' in value) {
+    return false;
+  }
+  return typeof value.maxModelRounds === 'number' && value.maxModelRounds > 0;
 }
 
 export function createWriterSceneDistributedControlActivities(
@@ -63,6 +67,13 @@ export function createWriterSceneDistributedControlActivities(
     async finalizeWriterSceneRound(missionId) {
       try {
         const finalized = await client.finalize(missionId);
+        if (finalized.status === 'needs-next-round') {
+          return {
+            status: finalized.status,
+            nextOrdinal: finalized.nextOrdinal,
+            nextRevision: finalized.nextRevision,
+          };
+        }
         return finalized.reason === undefined
           ? { status: finalized.status }
           : { status: finalized.status, reason: finalized.reason };

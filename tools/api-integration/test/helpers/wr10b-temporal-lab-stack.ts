@@ -11,10 +11,24 @@ import { fileURLToPath } from 'node:url';
 import type { Database } from '@offscreen/db';
 import { LocalDocumentStore } from '@offscreen/documents';
 import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
-import { startStorytellerDistributedLiveStack } from '@offscreen/worker/runtime/storyteller-distributed-live';
+import type { WriterContinuationAdmission } from '@offscreen/story-engine/storyteller/writer-continuation';
+import {
+  OFFSCREEN_WRITER_EXECUTION_MODE_ENV,
+  OFFSCREEN_WRITER_PROVIDER_MODEL_ENV,
+  OFFSCREEN_WRITER_PROVIDER_POLICY_VERSION_ENV,
+  WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED,
+  WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB,
+} from '@offscreen/storyteller/providers/writer-provider-authorization-policy';
+import {
+  startStorytellerDistributedLiveStack,
+  type StorytellerDistributedLiveStartAdapters,
+} from '@offscreen/worker/runtime/storyteller-distributed-live';
 
-const OFFSCREEN_WRITER_EXECUTION_MODE_ENV = 'OFFSCREEN_WRITER_EXECUTION_MODE';
-const WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB = 'scripted-offline-lab';
+export {
+  OFFSCREEN_WRITER_EXECUTION_MODE_ENV,
+  WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED,
+  WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB,
+};
 
 // Compiled module lives at tools/api-integration/dist/test/helpers/.
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../../..');
@@ -72,6 +86,19 @@ async function waitForGameAuthorityLive(origin: string) {
   throw new Error('Game Authority did not become live on loopback');
 }
 
+/** Non-secret provider pin env shared by GA, executor, and relay admission. */
+export function wr11ProviderAuthorizedEnv(
+  model: string,
+  policyVersion: string,
+): Record<string, string> {
+  return {
+    [OFFSCREEN_WRITER_EXECUTION_MODE_ENV]: WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED,
+    [OFFSCREEN_WRITER_PROVIDER_MODEL_ENV]: model,
+    [OFFSCREEN_WRITER_PROVIDER_POLICY_VERSION_ENV]: policyVersion,
+    OPENROUTER_API_KEY: 'wr11-integration-dummy-openrouter-key',
+  };
+}
+
 export async function startWr10bTemporalLabStack(
   database: Database,
   connectionString: string,
@@ -83,11 +110,18 @@ export async function startWr10bTemporalLabStack(
     gameAuthorityEnv?: Record<string, string>;
     executorEnv?: Record<string, string>;
     storytellerRuntime?: StorytellerRuntimeOptions;
+    writerExecutionMode?:
+      | typeof WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB
+      | typeof WRITER_EXECUTION_MODE_PROVIDER_AUTHORIZED;
+    relayWriterContinuationAdmission?: WriterContinuationAdmission;
+    startAdapters?: Partial<StorytellerDistributedLiveStartAdapters>;
   } = {},
 ): Promise<Wr10bTemporalLabStack & { gaProcess: ChildProcess }> {
   const address = options.temporalAddress ?? process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233';
   const namespace = options.temporalNamespace ?? process.env['TEMPORAL_NAMESPACE'] ?? 'default';
   const relayTaskQueue = options.relayTaskQueue ?? 'wr10b-integration-relay';
+  const writerExecutionMode =
+    options.writerExecutionMode ?? WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB;
   const gaRepoRoot = join(repoRoot, 'apps/game-authority');
   const gaPort = await reserveLoopbackPort();
   const gaOrigin = `http://127.0.0.1:${gaPort}`;
@@ -105,7 +139,7 @@ export async function startWr10bTemporalLabStack(
       GAME_AUTHORITY_EXECUTOR_TOKEN: WR10B_GA_EXECUTOR_TOKEN,
       OFFSCREEN_DOCUMENT_ROOT: documentRoot,
       OFFSCREEN_DEFAULT_RULE_SOURCE: defaultRuleSource,
-      [OFFSCREEN_WRITER_EXECUTION_MODE_ENV]: WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB,
+      [OFFSCREEN_WRITER_EXECUTION_MODE_ENV]: writerExecutionMode,
       ...options.gameAuthorityEnv,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -116,7 +150,16 @@ export async function startWr10bTemporalLabStack(
   const stack = await startStorytellerDistributedLiveStack(
     database,
     {
-      relay: { address, namespace, taskQueue: relayTaskQueue },
+      relay: {
+        address,
+        namespace,
+        taskQueue: relayTaskQueue,
+        ...(options.relayWriterContinuationAdmission === undefined
+          ? {}
+          : {
+              writerContinuationAdmission: options.relayWriterContinuationAdmission,
+            }),
+      },
       controlEnv: {
         TEMPORAL_ADDRESS: address,
         TEMPORAL_NAMESPACE: namespace,
@@ -128,7 +171,7 @@ export async function startWr10bTemporalLabStack(
         TEMPORAL_NAMESPACE: namespace,
         GAME_AUTHORITY_ORIGIN: gaOrigin,
         GAME_AUTHORITY_EXECUTOR_TOKEN: WR10B_GA_EXECUTOR_TOKEN,
-        [OFFSCREEN_WRITER_EXECUTION_MODE_ENV]: WRITER_EXECUTION_MODE_SCRIPTED_OFFLINE_LAB,
+        [OFFSCREEN_WRITER_EXECUTION_MODE_ENV]: writerExecutionMode,
         ...options.executorEnv,
       },
       ...(options.storytellerRuntime
@@ -136,6 +179,7 @@ export async function startWr10bTemporalLabStack(
         : { storytellerOptions: { documentStore } }),
     },
     () => {},
+    options.startAdapters,
   );
 
   return {

@@ -23,6 +23,10 @@
       "types": "./dist/src/providers/writer-round-transport.d.ts",
       "default": "./dist/src/providers/writer-round-transport.js"
     },
+    "./providers/writer-provider-authorization-policy": {
+      "types": "./dist/src/providers/writer-provider-authorization-policy.d.ts",
+      "default": "./dist/src/providers/writer-provider-authorization-policy.js"
+    },
     "./providers/request-audit": {
       "types": "./dist/src/providers/request-audit.d.ts",
       "default": "./dist/src/providers/request-audit.js"

@@ -23,7 +23,7 @@ import {
 } from '../writer-round-control-seam.js';
 import {
   readWriterRoundBootstrapMode,
-  scriptedOfflineLabWriterRoundPolicy,
+  writerRoundModelPolicyForBootstrap,
 } from '../writer-round-lab-policy.js';
 
 function log(
@@ -139,7 +139,10 @@ async function main() {
     writerRoundBootstrapMode === 'unavailable' || documentStore === undefined
       ? undefined
       : createWriterRoundSeam(database, documentStore, {
-          providerPolicy: scriptedOfflineLabWriterRoundPolicy,
+          providerPolicy: writerRoundModelPolicyForBootstrap(
+            writerRoundBootstrapMode,
+            process.env,
+          ),
           capturePolicyMode: writerRoundCapturePolicyModeForBootstrap(
             writerRoundBootstrapMode,
           ),

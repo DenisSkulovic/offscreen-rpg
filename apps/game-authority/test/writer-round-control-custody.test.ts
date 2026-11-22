@@ -75,6 +75,7 @@ function memoryWriterRounds(): WriterRoundSeam & {
         ordinal: 1,
         expectedRevision: 2,
         model: 'scripted-offline',
+        maxModelRounds: 4,
       };
     },
     async readMissionState() {

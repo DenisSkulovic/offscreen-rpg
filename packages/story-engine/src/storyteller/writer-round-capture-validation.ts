@@ -5,6 +5,7 @@ export const SCRIPTED_OFFLINE_MODEL = 'scripted-offline' as const;
 
 export type WriterRoundCapturePolicyMode =
   | 'provider-default'
+  | 'provider-authorized'
   | 'scripted-offline-lab';
 
 type WriterMissionBudgetSnapshot = WriterMissionCapture['budgets'];
@@ -28,6 +29,21 @@ export function validateWriterRoundCaptureAgainstPolicy(
       return 'model_policy_mismatch';
     }
     if (captureModel !== SCRIPTED_OFFLINE_MODEL) {
+      return 'model_policy_mismatch';
+    }
+    if (capture.providerPolicy !== undefined) {
+      return 'model_policy_mismatch';
+    }
+  } else if (mode === 'provider-authorized') {
+    if (captureModel !== policyModel) {
+      return 'model_policy_mismatch';
+    }
+    const pin = capture.providerPolicy;
+    if (
+      pin === undefined ||
+      pin.version !== policy.priceVersion ||
+      pin.model !== policy.model
+    ) {
       return 'model_policy_mismatch';
     }
   } else {

@@ -94,3 +94,84 @@ test('lab mode accepts only scripted-offline', () => {
     'model_policy_mismatch',
   );
 });
+
+test('lab mode rejects provider policy pin on capture', () => {
+  const capture = {
+    ...baseCapture('scripted-offline'),
+    providerPolicy: { version: 'wr10b.lab.v1', model: 'scripted-offline' },
+  };
+  assert.equal(
+    validateWriterRoundCaptureAgainstPolicy(
+      capture,
+      labPolicy,
+      budgetSnapshot,
+      'scripted-offline-lab',
+    ),
+    'model_policy_mismatch',
+  );
+});
+
+const authorizedPolicy = {
+  model: 'openai/gpt-4o-mini',
+  provider: 'OpenAI',
+  priceVersion: 'wr11.bootstrap.v1',
+  inputMicrousdPerMillion: '1000000',
+  outputMicrousdPerMillion: '1000000',
+  maxInputTokens: 8000,
+  maxOutputTokens: 2000,
+  maxModelRounds: 4,
+  maxMicrousd: 250_000n,
+  timeoutMs: 30_000,
+};
+
+test('provider-authorized mode requires matching model and policy pin', () => {
+  const valid = {
+    ...baseCapture('openai/gpt-4o-mini'),
+    providerPolicy: {
+      version: 'wr11.bootstrap.v1',
+      model: 'openai/gpt-4o-mini',
+    },
+  };
+  assert.equal(
+    validateWriterRoundCaptureAgainstPolicy(
+      valid,
+      authorizedPolicy,
+      budgetSnapshot,
+      'provider-authorized',
+    ),
+    null,
+  );
+  assert.equal(
+    validateWriterRoundCaptureAgainstPolicy(
+      baseCapture('other/model'),
+      authorizedPolicy,
+      budgetSnapshot,
+      'provider-authorized',
+    ),
+    'model_policy_mismatch',
+  );
+  assert.equal(
+    validateWriterRoundCaptureAgainstPolicy(
+      {
+        ...baseCapture('openai/gpt-4o-mini'),
+        providerPolicy: {
+          version: 'wrong.version',
+          model: 'openai/gpt-4o-mini',
+        },
+      },
+      authorizedPolicy,
+      budgetSnapshot,
+      'provider-authorized',
+    ),
+    'model_policy_mismatch',
+  );
+  assert.equal(
+    validateWriterRoundCaptureAgainstPolicy(
+      baseCapture('openai/gpt-4o-mini'),
+      authorizedPolicy,
+      budgetSnapshot,
+      'provider-authorized',
+    ),
+    'model_policy_mismatch',
+  );
+});

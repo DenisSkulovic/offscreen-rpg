@@ -15,6 +15,7 @@ export const writerSceneRoundExecutionPlanSchema = z.strictObject({
   ordinal: z.number().int().positive(),
   expectedRevision: z.number().int().positive(),
   model: z.string().min(1).max(128),
+  maxModelRounds: z.number().int().positive(),
 });
 
 export const writerSceneRoundMissionStateSchema = z.strictObject({
@@ -22,10 +23,21 @@ export const writerSceneRoundMissionStateSchema = z.strictObject({
   reason: z.string().min(1).max(256).optional(),
 });
 
-export const writerSceneRoundFinalizeResultSchema = z.strictObject({
+const writerSceneRoundFinalizeTerminalSchema = z.strictObject({
   status: z.enum(['published', 'replayed', 'held', 'uncertain']),
   reason: z.string().min(1).max(256).optional(),
 });
+
+const writerSceneRoundFinalizeNeedsNextRoundSchema = z.strictObject({
+  status: z.literal('needs-next-round'),
+  nextOrdinal: z.number().int().positive(),
+  nextRevision: z.number().int().positive(),
+});
+
+export const writerSceneRoundFinalizeResultSchema = z.union([
+  writerSceneRoundFinalizeTerminalSchema,
+  writerSceneRoundFinalizeNeedsNextRoundSchema,
+]);
 
 export const writerSceneRoundPlanResponseSchema = z.union([
   writerSceneRoundExecutionPlanSchema,

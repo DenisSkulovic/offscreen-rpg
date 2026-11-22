@@ -3,6 +3,8 @@ import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import {
   routeWriterSceneRoundControl,
+  writerSceneRoundExecutionPlanSchema,
+  writerSceneRoundFinalizeResultSchema,
   writerSceneRoundFinalizePath,
   writerSceneRoundPlanPath,
   writerSceneRoundStatePath,
@@ -62,5 +64,39 @@ test('writer scene round control paths and routing', () => {
       writerSceneRoundPlanPath(missionId),
     ).kind,
     'invalid',
+  );
+});
+
+test('writer scene round control schemas include multi-round fields', () => {
+  const plan = writerSceneRoundExecutionPlanSchema.parse({
+    missionId,
+    contextId: missionId,
+    ordinal: 3,
+    expectedRevision: 2,
+    model: 'scripted-offline',
+    maxModelRounds: 4,
+  });
+  assert.equal(plan.maxModelRounds, 4);
+
+  assert.deepEqual(
+    writerSceneRoundFinalizeResultSchema.parse({
+      status: 'needs-next-round',
+      nextOrdinal: 3,
+      nextRevision: 1,
+    }),
+    { status: 'needs-next-round', nextOrdinal: 3, nextRevision: 1 },
+  );
+  assert.deepEqual(
+    writerSceneRoundFinalizeResultSchema.parse({
+      status: 'held',
+      reason: 'max_model_rounds',
+    }),
+    { status: 'held', reason: 'max_model_rounds' },
+  );
+  assert.throws(() =>
+    writerSceneRoundFinalizeResultSchema.parse({
+      status: 'needs-next-round',
+      nextOrdinal: 2,
+    }),
   );
 });

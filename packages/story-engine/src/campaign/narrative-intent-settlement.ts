@@ -14,6 +14,8 @@ import { recordActionExecutionEvent } from './action-executions';
 import {
   resolveWriterContinuationBases,
   scheduleWriterContinuation,
+  type WriterContinuationAdmission,
+  WRITER_CONTINUATION_ADMISSION_SCRIPTED,
 } from '../storyteller/writer-continuation';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
@@ -36,6 +38,7 @@ export async function settleNarrativeIntentExecution(
   state: CampaignRecord,
   execution: ActionExecutionRecord,
   now: number,
+  writerContinuationAdmission: WriterContinuationAdmission = WRITER_CONTINUATION_ADMISSION_SCRIPTED,
 ): Promise<NarrativeActionExecutionTransition> {
   const plan = narrativeIntentPlanSchema.parse(execution.plan);
   if (execution.state === 'settled') {
@@ -104,6 +107,7 @@ export async function settleNarrativeIntentExecution(
     operationId: execution.operationId,
     ownerId: current.ownerId,
     controllingIntentOrReceiptId: execution.operationId,
+    admission: writerContinuationAdmission,
   });
   return { state: 'settled' as const, campaign: settledCampaign };
 }

@@ -39,6 +39,8 @@ import {
 } from './world-obligations';
 import { appendPublicStoryEvent } from '../stories/public-events';
 import type { DocumentStore } from '@offscreen/documents';
+import type { WriterContinuationAdmission } from '../storyteller/writer-continuation';
+import { WRITER_CONTINUATION_ADMISSION_SCRIPTED } from '../storyteller/writer-continuation';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
 export type ActionExecutionEventKind =
@@ -101,6 +103,7 @@ export async function settleActionExecution(
   execution: ActionExecutionRecord,
   now: number,
   documentStore?: DocumentStore,
+  writerContinuationAdmission: WriterContinuationAdmission = WRITER_CONTINUATION_ADMISSION_SCRIPTED,
 ) {
   if (isNarrativeIntentPlanValue(execution.plan)) {
     const narrative = await settleNarrativeIntentExecution(
@@ -109,6 +112,7 @@ export async function settleActionExecution(
       state,
       execution,
       now,
+      writerContinuationAdmission,
     );
     if (narrative.state === 'waiting') {
       return {
@@ -336,10 +340,18 @@ export async function settleActionExecution(
   return { state: 'settled' as const, campaign: settledCampaign };
 }
 
+export type CampaignActionExecutionsOptions = Readonly<{
+  writerContinuationAdmission?: WriterContinuationAdmission;
+}>;
+
 export function createCampaignActionExecutions(
   database: Database,
   documentStore?: DocumentStore,
+  options: CampaignActionExecutionsOptions = {},
 ) {
+  const writerContinuationAdmission =
+    options.writerContinuationAdmission ??
+    WRITER_CONTINUATION_ADMISSION_SCRIPTED;
   return {
     async advance(operationId: string): Promise<number | null> {
       return database.db.transaction(async (tx) => {
@@ -373,6 +385,7 @@ export function createCampaignActionExecutions(
           execution,
           now,
           documentStore,
+          writerContinuationAdmission,
         );
         return result.state === 'waiting' ? result.remainingRealMs : null;
       });

@@ -35,6 +35,12 @@ export const writerModelSelectionSchema = z.strictObject({
   model: z.string().trim().min(1).max(160),
 });
 
+/** Pinned provider policy identity for provider-authorized v3 continuation captures only. */
+export const writerMissionProviderPolicyPinSchema = z.strictObject({
+  version: z.string().trim().min(1).max(80),
+  model: z.string().trim().min(1).max(160),
+});
+
 export const writerMissionEffectiveBudgetsSchema = z.strictObject({
   maxModelRounds: z.number().int().positive().max(32),
   maxInputTokens: z.number().int().positive().max(200_000),
@@ -158,6 +164,7 @@ export const writerMissionCaptureV3ContinuationSchema = z
     ownerId: writerMissionV2OpeningOwnerIdSchema,
     ...writerMissionCaptureCommonFields,
     sceneScope: writerMissionSceneScopeContinuationSchema,
+    providerPolicy: writerMissionProviderPolicyPinSchema.optional(),
   })
   .superRefine((capture, context) => {
     refineWriterMissionCaptureDuplicates(capture, context);

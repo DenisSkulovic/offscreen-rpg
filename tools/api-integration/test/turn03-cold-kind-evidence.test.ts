@@ -6,7 +6,7 @@ import {
   isTurn03GatePassAdmissible,
   TURN03_MANDATORY_GATE_IDS,
   type Turn03DistributedPocProofGate,
-} from './helpers/turn03-distributed-poc-proof.ts';
+} from './helpers/turn03-distributed-poc-proof.js';
 
 test('empty report overall NOT-RUN and exactly eight gates', () => {
   const report = createEmptyTurn03DistributedPocProofReport();

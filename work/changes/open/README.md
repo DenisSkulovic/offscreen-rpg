@@ -12,7 +12,6 @@
 | [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |
 | [TURN03 cold distributed game proof](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Commissioned proof, true cold-kind gates unresolved |
 | [K8S10 bounded fault proof](2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md) | Immediate dependent on TURN03; real one-Pod mutation still separately authorized |
-| [WR11 provider continuation](2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) | Next-wave planner-gated on WR10 current interfaces |
 | [CL01 terminal player](2026-11-22--cl01-terminal-player-client/CHANGE.md) | Next-wave dependent on MA12 source rebase |
 
 ## Existing incomplete or terminal-reconciliation obligations
