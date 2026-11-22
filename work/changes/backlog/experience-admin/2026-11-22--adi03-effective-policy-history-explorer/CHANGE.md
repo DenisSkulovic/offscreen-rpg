@@ -1,6 +1,6 @@
 # ADI03 | Per-scene policy, entitlement and model-routing provenance inspector
 
-**State: PROPOSED / NOT CURSOR-READY.** Read-only historical *explanation* of effective execution policy. Distinct from [CFG01 resolver](../2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md), [CFG02 policy editor](../2026-11-22--cfg02-admin-policy-management/CHANGE.md) and [AI03 prompt/round inspector](../2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md).
+**State: PROPOSED / NOT CURSOR-READY.** Read-only historical *explanation* of effective execution policy. Distinct from [CFG01 resolver](../../policy-finance/2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md), [CFG02 policy editor](../../policy-finance/2026-11-22--cfg02-admin-policy-management/CHANGE.md) and [AI03 prompt/round inspector](../../agent-runtime/2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md).
 
 ## Why
 
@@ -23,7 +23,7 @@ Never infer that current subscription status or model catalog explains an old co
 
 ## Owner and dependencies
 
-Source-map after [CFG01](../2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md) defines immutable effective policy and [WR11](../2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) proves real admission. Use an authorized `@offscreen/admin` projection of **captured** SQL policy/provenance, not a second policy resolver in React. Presentation belongs in the selected `/control` console next to ADI01 and links to AI03, not an unbounded raw configuration editor. CFG02 remains the only proposed policy mutation UI.
+Source-map after [CFG01](../../policy-finance/2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md) defines immutable effective policy and [WR11](../../../open/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md) proves real admission. Use an authorized `@offscreen/admin` projection of **captured** SQL policy/provenance, not a second policy resolver in React. Presentation belongs in the selected `/control` console next to ADI01 and links to AI03, not an unbounded raw configuration editor. CFG02 remains the only proposed policy mutation UI.
 
 ## Acceptance
 

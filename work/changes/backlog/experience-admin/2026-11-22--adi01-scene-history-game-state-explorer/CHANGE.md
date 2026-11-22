@@ -1,6 +1,6 @@
 # ADI01 | Admin scene-by-scene game state explorer
 
-**State: PROPOSED / NOT CURSOR-READY.** Date 2026-11-22, undertaking `storyteller-workshop`. Owner's [gym brainstorming minutes](../../../sessions/2026-11-22.md) are the rationale. This is one **read-only historical navigation experience**, not permission to mutate a campaign or browse unrestricted customer content.
+**State: PROPOSED / NOT CURSOR-READY.** Date 2026-11-22, undertaking `storyteller-workshop`. Owner's [gym brainstorming minutes](../../../../sessions/2026-11-22.md) are the rationale. This is one **read-only historical navigation experience**, not permission to mutate a campaign or browse unrestricted customer content.
 
 ## Outcome and why this is its own Change
 

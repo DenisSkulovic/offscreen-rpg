@@ -1,6 +1,6 @@
 # CH01 | Chamber Scenario × Recipe × Experiment workbench
 
-**State: PROPOSED / PLANNER-BLOCKED.** Owner's envisioned neglected developer laboratory, captured in [2026-11-22 minutes](../../../sessions/2026-11-22.md#7-chamber-as-controlled-scenarioconfigurationeval-laboratory). No code edit or paid run commissioned.
+**State: PROPOSED / PLANNER-BLOCKED.** Owner's envisioned neglected developer laboratory, captured in [2026-11-22 minutes](../../../../sessions/2026-11-22.md#7-chamber-as-controlled-scenarioconfigurationeval-laboratory). No code edit or paid run commissioned.
 
 ## Owner vision
 

@@ -1,6 +1,6 @@
 # ADI02 | Versioned Library explorer for an authorized historical scene
 
-**State: PROPOSED / NOT CURSOR-READY.** Independent from [ADI01 scene/game state](../2026-11-22--adi01-scene-history-game-state-explorer/CHANGE.md) and [AI03 model-visible prompt inspector](../2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md). Owner wants to inspect the Storyteller's **Library as a human-readable file workspace**, including Markdown source, changes and exact historic roots.
+**State: PROPOSED / NOT CURSOR-READY.** Independent from [ADI01 scene/game state](../2026-11-22--adi01-scene-history-game-state-explorer/CHANGE.md) and [AI03 model-visible prompt inspector](../../agent-runtime/2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md). Owner wants to inspect the Storyteller's **Library as a human-readable file workspace**, including Markdown source, changes and exact historic roots.
 
 ## Desired operator experience
 
