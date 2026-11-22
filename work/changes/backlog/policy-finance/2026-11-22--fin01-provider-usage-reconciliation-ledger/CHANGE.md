@@ -1,6 +1,6 @@
 # FIN01 | Provider usage evidence and delayed cost reconciliation
 
-**Status: PROPOSED, NOT CURSOR-READY.** Future financial-integrity Change. [Owner's 2026-11-22 minutes](../../../sessions/2026-11-22.md#14-external-provider-cost-usage-reconciliation-and-financial-integrity). Default paid activity **$0 authorized**. No external account access, payment integration, protected SQL changes or provider calls approved.
+**Status: PROPOSED, NOT CURSOR-READY.** Future financial-integrity Change. [Owner's 2026-11-22 minutes](../../../../sessions/2026-11-22.md#14-external-provider-cost-usage-reconciliation-and-financial-integrity). Default paid activity **$0 authorized**. No external account access, payment integration, protected SQL changes or provider calls approved.
 
 ## Owner's outcome
 
@@ -8,7 +8,7 @@ Every external paid operation on behalf of an account eventually has an auditabl
 
 ## Boundary against existing system
 
-The actual `packages/story-engine/src/storyteller/budget.ts` and usage windows already own atomic **admission, conservative reservation, known immediate settlement and unknown-charge holds**. Do **not** replace them, debit the owner twice, retroactively alter the original dispatch price or create an independent balance. Existing [spending-and-entitlements](../../../../docs/technical/platform/spending-and-entitlements.md) owns funding/quotas. FIN01 adds a **separate reconciliation evidence and adjustment lifecycle** after provider dispatch/settlement. A provider billing correction must result in immutable, linked compensating adjustment/review, never an in-place rewrite of the original attempt. Product account charge and actual provider expense are distinct amounts and may follow different contractual prices.
+The actual `packages/story-engine/src/storyteller/budget.ts` and usage windows already own atomic **admission, conservative reservation, known immediate settlement and unknown-charge holds**. Do **not** replace them, debit the owner twice, retroactively alter the original dispatch price or create an independent balance. Existing [spending-and-entitlements](../../../../../docs/technical/platform/spending-and-entitlements.md) owns funding/quotas. FIN01 adds a **separate reconciliation evidence and adjustment lifecycle** after provider dispatch/settlement. A provider billing correction must result in immutable, linked compensating adjustment/review, never an in-place rewrite of the original attempt. Product account charge and actual provider expense are distinct amounts and may follow different contractual prices.
 
 ## Desired reconciliation model, to decide before implementation
 

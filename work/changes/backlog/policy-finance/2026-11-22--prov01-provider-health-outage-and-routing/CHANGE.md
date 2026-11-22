@@ -16,6 +16,6 @@ The game remains predictable when OpenRouter or a downstream model has a tempora
 
 ## Offline proof
 
-Deterministic fake transport simulates 429/5xx, intermittent latency, model gone, parameter no longer supported, lost acknowledgement and recoveries. Verify admission gating, bounded work queues, safe local player holds and no double charge/scene/tool effect after resumption. Use [SIM01](../2026-11-22--sim01-realistic-zero-cost-provider-simulator/CHANGE.md), [LOAD01](../2026-11-22--load01-scripted-multiuser-load-and-autoscaling/CHANGE.md) and FIN01 to validate without paid calls.
+Deterministic fake transport simulates 429/5xx, intermittent latency, model gone, parameter no longer supported, lost acknowledgement and recoveries. Verify admission gating, bounded work queues, safe local player holds and no double charge/scene/tool effect after resumption. Use [SIM01](../../platform-operations/2026-11-22--sim01-realistic-zero-cost-provider-simulator/CHANGE.md), [LOAD01](../../platform-operations/2026-11-22--load01-scripted-multiuser-load-and-autoscaling/CHANGE.md) and FIN01 to validate without paid calls.
 
 **Dependencies:** actual WR10/WR11 model transport, CFG01/CFG03 eligibility and GA custody. No new model subscription or production routing enabled from this packet.

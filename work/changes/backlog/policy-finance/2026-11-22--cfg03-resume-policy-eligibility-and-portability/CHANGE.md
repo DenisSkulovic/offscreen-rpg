@@ -1,6 +1,6 @@
 # CFG03 | Safe re-admission after long pauses, changed plans and future story portability
 
-**State: PROPOSED / product-and-security decisions remain open.** This is a **runtime eligibility and execution semantics** Change, *not* an Admin view. Keep separate from [CFG01 effective policy resolver](../2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md), [ADI03 historical inspector](../2026-11-22--adi03-effective-policy-history-explorer/CHANGE.md), and [CFG02 Admin editor](../2026-11-22--cfg02-admin-policy-management/CHANGE.md).
+**State: PROPOSED / product-and-security decisions remain open.** This is a **runtime eligibility and execution semantics** Change, *not* an Admin view. Keep separate from [CFG01 effective policy resolver](../2026-11-22--cfg01-versioned-writer-execution-policy/CHANGE.md), [ADI03 historical inspector](../../experience-admin/2026-11-22--adi03-effective-policy-history-explorer/CHANGE.md), and [CFG02 Admin editor](../2026-11-22--cfg02-admin-policy-management/CHANGE.md).
 
 ## User-origin concern
 
