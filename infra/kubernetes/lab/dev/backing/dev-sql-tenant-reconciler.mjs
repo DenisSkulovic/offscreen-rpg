@@ -7,17 +7,17 @@ function refusal(id, detail) {
   return { id, detail };
 }
 
-function database(oid, allowConnections, publicConnect = true) {
-  return { oid, allowConnections, owner: 'postgres', publicConnect, publicTemporary: publicConnect, connect: [] };
+function database(oid, allowConnections, owner, publicConnect = true) {
+  return { oid, allowConnections, owner, publicConnect, publicTemporary: publicConnect, connect: [] };
 }
 
 export function createFakeSqlCatalog(extraDatabases = {}) {
   return {
     databases: {
-      postgres: database(1, true),
-      dev: database(2, true),
-      template1: database(3, true),
-      template0: database(4, false, false),
+      postgres: database(1, true, 'postgres'),
+      dev: database(2, true, 'dev'),
+      template1: database(3, true, 'postgres'),
+      template0: database(4, false, 'postgres', false),
       ...extraDatabases,
     },
     roles: { dev: { login: true, createdb: false, superuser: false } },
@@ -58,8 +58,9 @@ export function fenceBaseline(catalog) {
 export function canConnect(catalog, role, databaseName) {
   const database = catalog.databases[databaseName];
   if (!database?.allowConnections) return false;
+  if (database.owner === role) return true;
   if (database.publicConnect) return true;
-  return database.owner === role || database.connect.includes(role);
+  return database.connect.includes(role);
 }
 
 export function reconcileTenantPrivileges(catalog, slotId) {
