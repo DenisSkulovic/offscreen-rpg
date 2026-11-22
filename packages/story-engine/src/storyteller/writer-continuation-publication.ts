@@ -305,6 +305,7 @@ async function publishAcceptedWriterSceneAtStage(
     rootRevision: capture.sceneScope.baseRootRevision,
     content: proposal.scene.content,
     changes: publicationChanges,
+    inheritedCanonOwnerId: current.forkedFromStoryId,
   });
 
   const continuationInput = continuationSchema.parse({

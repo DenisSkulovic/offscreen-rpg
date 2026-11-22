@@ -155,6 +155,23 @@ export async function checkpointPinsForRoot(args: {
   } as SceneCheckpoint['pins'];
 }
 
+/**
+ * A story may publish on its own canon root. A fork's first publication still
+ * uses the source story's manifest, which the fork row names explicitly.
+ * Any other campaign id remains a conflict.
+ */
+export function publicationCanonOwnerAllowed(
+  storyId: string,
+  manifestCampaignId: string,
+  inheritedCanonOwnerId: string | null,
+): boolean {
+  if (manifestCampaignId === storyId) return true;
+  return (
+    inheritedCanonOwnerId !== null &&
+    manifestCampaignId === inheritedCanonOwnerId
+  );
+}
+
 export async function stageStoryPublicationDocuments(args: {
   storage: DocumentStore;
   storyId: string;
@@ -165,12 +182,17 @@ export async function stageStoryPublicationDocuments(args: {
   rootRevision: number;
   content: unknown;
   changes: readonly ProposedDocumentChange[];
+  inheritedCanonOwnerId?: string | null;
 }) {
   const content = passageContentSchema.parse(args.content);
   const changes = proposedDocumentChangesSchema.parse(args.changes);
   const current = await args.storage.readManifest(args.rootHash);
   if (
-    current.campaignId !== args.storyId ||
+    !publicationCanonOwnerAllowed(
+      args.storyId,
+      current.campaignId,
+      args.inheritedCanonOwnerId ?? null,
+    ) ||
     current.revision !== args.rootRevision
   ) {
     throw new StoryError('conflict', 'document_root');
