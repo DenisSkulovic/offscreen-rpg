@@ -15,6 +15,8 @@
 
 These are future work, not today's execution queue. Reconcile source/owner/acceptance before moving any proposal to `open/`.
 
+**Promoted:** [DXK09 isolated parallel development stacks](../../open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) now lives in open as a planner-held next-days Change. Do not treat the stale old packet link as executable.
+
 ## Deferred earlier Changes (also in this category)
 
 - [2026-11-19--turn04-opt-in-real-provider-confirmation](../../backlog/platform-operations/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md): previous open packet, not selected; needs source/readiness reconciliation before promotion
