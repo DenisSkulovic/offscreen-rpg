@@ -187,6 +187,71 @@ function emptyAfterState(
   };
 }
 
+const ANCHOR_PASSAGE = '22222222-2222-4222-8222-222222222222';
+const RECALL_DOCUMENT = '99999999-9999-4999-8999-999999999999';
+
+test('toV2FictionalState supplies empty recall cues when an anchor omits them', () => {
+  const fictional = toV2FictionalState(
+    emptyAfterState({
+      activeSceneScope: {
+        version: 'active-scene-anchor.v1',
+        fromSequence: 1,
+        requiredPassageIds: [ANCHOR_PASSAGE],
+      },
+    }),
+  );
+  assert.deepEqual(fictional.activeSceneScope?.recallCues, []);
+});
+
+test('toV2FictionalState keeps an explicit empty recall cue list', () => {
+  const fictional = toV2FictionalState(
+    emptyAfterState({
+      activeSceneScope: {
+        version: 'active-scene-anchor.v1',
+        fromSequence: 1,
+        requiredPassageIds: [ANCHOR_PASSAGE],
+        recallCues: [],
+      },
+    }),
+  );
+  assert.deepEqual(fictional.activeSceneScope?.recallCues, []);
+});
+
+test('toV2FictionalState preserves populated recall cues', () => {
+  const fictional = toV2FictionalState(
+    emptyAfterState({
+      activeSceneScope: {
+        version: 'active-scene-anchor.v1',
+        fromSequence: 1,
+        requiredPassageIds: [ANCHOR_PASSAGE],
+        recallCues: [{ documentId: RECALL_DOCUMENT, reason: 'place' }],
+      },
+    }),
+  );
+  assert.deepEqual(fictional.activeSceneScope?.recallCues, [
+    { documentId: RECALL_DOCUMENT, reason: 'place' },
+  ]);
+});
+
+test('toV2FictionalState rejects a non-array recall cue field', () => {
+  assert.throws(
+    () =>
+      toV2FictionalState(
+        emptyAfterState({
+          activeSceneScope: {
+            version: 'active-scene-anchor.v1',
+            fromSequence: 1,
+            requiredPassageIds: [ANCHOR_PASSAGE],
+            recallCues: 'place',
+          },
+        }),
+      ),
+    (error: unknown) =>
+      error instanceof SceneAfterStateError &&
+      error.message === 'state_not_representable',
+  );
+});
+
 test('toV2FictionalState maps mechanics-absent narrative-only state', () => {
   const fictional = toV2FictionalState(
     emptyAfterState({

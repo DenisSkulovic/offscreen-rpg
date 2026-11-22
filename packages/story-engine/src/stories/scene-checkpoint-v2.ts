@@ -56,7 +56,8 @@ const activeSceneAnchorSchema = z.strictObject({
         reason: z.enum(['identity', 'place', 'thread']),
       }),
     )
-    .max(8),
+    .max(8)
+    .default([]),
 });
 
 const activeActionTargetSchema = z
