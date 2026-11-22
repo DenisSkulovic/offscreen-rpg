@@ -15,7 +15,7 @@ import {
   type createLabWorkbenchService,
 } from '@offscreen/lab-support';
 import { z } from 'zod';
-import { IdentityService } from '../auth/identity.js';
+import { IdentityService } from '@offscreen/api/lab-host-contract';
 
 export const CHAMBER_LAB = Symbol('CHAMBER_LAB');
 
@@ -92,16 +92,13 @@ export class ChamberLabController {
 
   @Get('commands')
   listCommands(@Req() request: Request) {
-    return this.identity.requireUser(request.headers).then(() =>
-      this.lab.listCommands(),
-    );
+    return this.identity
+      .requireUser(request.headers)
+      .then(() => this.lab.listCommands());
   }
 
   @Get('scenarios')
-  async listScenarios(
-    @Req() request: Request,
-    @Query('q') q?: string,
-  ) {
+  async listScenarios(@Req() request: Request, @Query('q') q?: string) {
     await this.identity.requireUser(request.headers);
     return this.lab.listScenarios(q);
   }

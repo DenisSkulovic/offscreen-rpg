@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@offscreen/api": "workspace:*",
+    "@offscreen/api-lab": "workspace:*",
     "@offscreen/contracts": "workspace:*",
     "@offscreen/lab-support": "workspace:*",
     "@offscreen/story-engine": "workspace:*",

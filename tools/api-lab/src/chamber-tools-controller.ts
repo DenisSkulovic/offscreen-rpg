@@ -12,8 +12,7 @@ import {
 import type { Request } from 'express';
 import type { createChamber } from '@offscreen/lab-support';
 import { StoryError } from '@offscreen/story-engine/stories';
-import { IdentityService } from '../auth/identity.js';
-import { OPENINGS } from '../drafts/openings-controller.js';
+import { IdentityService, OPENINGS } from '@offscreen/api/lab-host-contract';
 import type { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { DispatchReviewConflictError } from '@offscreen/story-engine/storyteller';
 import { dispatchReviewDecisionRequestSchema } from '@offscreen/contracts/chamber';

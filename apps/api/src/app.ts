@@ -1,11 +1,6 @@
 import { StorytellersController } from './modules/drafts/storytellers-controller.js';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
-import type { z } from 'zod';
-import type {
-  qaEnvironmentSchema,
-  qaGitStateSchema,
-} from '@offscreen/contracts/qa';
 import 'reflect-metadata';
 import {
   Controller,
@@ -72,13 +67,6 @@ import {
   OPENINGS,
   OpeningsController,
 } from './modules/drafts/openings-controller.js';
-import {
-  chamberAllowsResponse,
-  createChamber,
-  createLabWorkbenchService,
-  createQaJourneys,
-  type ChamberStorytellerControl,
-} from '@offscreen/lab-support';
 import { createStoryApplication } from '@offscreen/story-engine/stories';
 import {
   readStoryAuthorityConfig,
@@ -96,22 +84,10 @@ import {
   createStoryUpdateHub,
   type StoryUpdateHub,
 } from './modules/stories/story-update-hub.js';
-import {
-  CHAMBER,
-  ChamberStoriesController,
-  ChamberToolsController,
-} from './modules/stories/chamber-tools-controller.js';
-import {
-  CHAMBER_LAB,
-  ChamberLabController,
-} from './modules/stories/chamber-lab-controller.js';
 import type { ReadCache } from '@offscreen/contracts/read-cache';
 import type { CacheIncident } from '@offscreen/story-engine/stories/read-cache-options';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
-import {
-  QA_JOURNEYS,
-  QaJourneysController,
-} from './modules/stories/qa-journeys-controller.js';
+import type { ApiOptionalExtension } from './lab-host-contract.js';
 
 const DATABASE = Symbol('DATABASE');
 const CACHE_CLOSE = Symbol('CACHE_CLOSE');
@@ -170,8 +146,11 @@ class AppModule {}
 export type CreateAppOptions = Readonly<{
   /** Loopback harnesses may supply a fixed identity without changing normal auth. */
   identity?: IdentityResolver;
-  developerTools?: boolean;
-  chamberStorytellerControl?: ChamberStorytellerControl;
+  /**
+   * Outer tooling (API Lab) may register controllers and providers. Production
+   * bootstrap leaves this unset, so Chamber and QA routes are not created.
+   */
+  optionalExtension?: ApiOptionalExtension;
   storytellerExecution?: ExecutionPolicy;
   storytellerUsagePolicy?: EffectiveUsagePolicy | null;
   readCache?: ReadCache;
@@ -190,10 +169,6 @@ export type CreateAppOptions = Readonly<{
    * Authority for the snapshot read and scripted resolution only.
    */
   storyAuthority?: StoryAuthorityConfig;
-  qaContext?: {
-    git: z.infer<typeof qaGitStateSchema>;
-    environment: z.infer<typeof qaEnvironmentSchema>;
-  };
 }>;
 
 export async function createApp(
@@ -218,8 +193,11 @@ export async function createApp(
     ...(options.onCacheIncident
       ? { onCacheIncident: options.onCacheIncident }
       : {}),
-    ...(options.developerTools === true
-      ? { fixtureSourceCanRespond: chamberAllowsResponse }
+    ...(options.optionalExtension?.fixtureSourceCanRespond
+      ? {
+          fixtureSourceCanRespond:
+            options.optionalExtension.fixtureSourceCanRespond,
+        }
       : {}),
   });
   const requireExplicitStoryAuthority =
@@ -236,7 +214,9 @@ export async function createApp(
           ...(options.documentStore
             ? { documentStore: options.documentStore }
             : {}),
-          ...(options.defaultRules ? { defaultRules: options.defaultRules } : {}),
+          ...(options.defaultRules
+            ? { defaultRules: options.defaultRules }
+            : {}),
         })
       : null;
   const storySeam = storySeamFor(
@@ -262,14 +242,7 @@ export async function createApp(
         StorytellersController,
         OpeningsController,
         StoriesController,
-        ...(options.developerTools === true
-          ? [
-              ChamberStoriesController,
-              ChamberToolsController,
-              ChamberLabController,
-              QaJourneysController,
-            ]
-          : []),
+        ...(options.optionalExtension?.controllers ?? []),
       ],
       providers: [
         options.identity
@@ -345,44 +318,7 @@ export async function createApp(
         },
         { provide: STORIES, useValue: stories },
         { provide: STORY_SEAM, useValue: storySeam },
-        ...(options.developerTools === true
-          ? [
-              {
-                provide: CHAMBER,
-                useValue: createChamber(database, {
-                  ...(options.documentStore
-                    ? { documentStore: options.documentStore }
-                    : {}),
-                  ...(options.readCache ? { cache: options.readCache } : {}),
-                  ...(options.onCacheIncident
-                    ? { onCacheIncident: options.onCacheIncident }
-                    : {}),
-                  ...(options.chamberStorytellerControl
-                    ? {
-                        storytellerControl: options.chamberStorytellerControl,
-                      }
-                    : {}),
-                }),
-              },
-              {
-                provide: QA_JOURNEYS,
-                useValue: createQaJourneys(
-                  database,
-                  options.qaContext ?? {
-                    git: { commit: 'unrecorded', dirty: true },
-                    environment: { identity: 'local-test' },
-                  },
-                ),
-              },
-              {
-                provide: CHAMBER_LAB,
-                useValue: createLabWorkbenchService({
-                  gitCommit: options.qaContext?.git.commit ?? 'unrecorded',
-                  dirty: options.qaContext?.git.dirty ?? true,
-                }),
-              },
-            ]
-          : []),
+        ...(options.optionalExtension?.providers ?? []),
       ],
     },
     {

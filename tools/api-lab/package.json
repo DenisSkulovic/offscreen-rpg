@@ -1,0 +1,33 @@
+{
+  "name": "@offscreen/api-lab",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "exports": {
+    "./create-lab-app": {
+      "types": "./dist/src/create-lab-app.d.ts",
+      "default": "./dist/src/create-lab-app.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm run build && node --test dist/test/*.test.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "12.0.3",
+    "@offscreen/api": "workspace:*",
+    "@offscreen/contracts": "workspace:*",
+    "@offscreen/db": "workspace:*",
+    "@offscreen/lab-support": "workspace:*",
+    "@offscreen/story-engine": "workspace:*",
+    "reflect-metadata": "0.2.2",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "@types/express": "5.0.6",
+    "@types/node": "22.20.3",
+    "typescript": "5.9.3"
+  }
+}

@@ -42,7 +42,7 @@ Proxy note: responses set `Cache-Control: no-store, no-transform` and `X-Accel-B
 
 ## Developer routes are conditional, not globally public
 
-[createApp](../../app.ts) registers `ChamberStoriesController`, `ChamberToolsController` and `QaJourneysController` **only when `options.developerTools===true`**. Ordinary [main](../../main.ts) does **not** pass that option; the loopback [Chamber launcher](../../../../../tools/chamber/src/main.ts) intentionally does.
+Production [createApp](../../app.ts) does not register Chamber or QA controllers. Those four controllers live in `@offscreen/api-lab` and are mounted only by [createLabApp](../../../../../tools/api-lab/src/create-lab-app.ts). Ordinary [main](../../main.ts) does not use that factory; the loopback [Chamber launcher](../../../../../tools/chamber/src/main.ts) does when it is not in story mode.
 
 ## Targeted tests / extend only when needed
 
