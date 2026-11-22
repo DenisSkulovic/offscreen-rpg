@@ -36,6 +36,7 @@ export * from './writer-library-tools';
 export * from './writer-mission-store';
 export * from './writer-child-custody';
 export * from './writer-mission-custody';
+export * from './writer-round-private-custody';
 export * from './writer-provider-transport';
 export * from './writer-workdesk';
 export * from './writer-loop';

@@ -97,7 +97,7 @@ type WriterRoundAttemptPolicyPin =
   | 'mismatch'
   | 'legacy_skip';
 
-function evaluateWriterRoundAttemptPolicyPin(
+export function evaluateWriterRoundAttemptPolicyPin(
   attempt: typeof storytellerAttempt.$inferSelect,
   callerPolicy?: WriterRoundModelPolicy,
 ): WriterRoundAttemptPolicyPin {
@@ -212,7 +212,7 @@ type WriterMissionBudgetSnapshot = {
   deadlineMs: number;
 };
 
-function providerExecutionFromAttempt(
+export function providerExecutionFromAttempt(
   row: typeof storytellerAttempt.$inferSelect,
 ): Extract<ExecutionPolicy, { mode: 'provider' }> {
   return {
@@ -227,7 +227,7 @@ function providerExecutionFromAttempt(
   };
 }
 
-async function lockWriterContextStep(
+export async function lockWriterContextStep(
   tx: Transaction,
   missionId: string,
   contextId: string,
@@ -272,7 +272,7 @@ async function lockWriterContextStep(
   };
 }
 
-async function casWriterStep(
+export async function casWriterStep(
   tx: Transaction,
   input: {
     missionId: string;
@@ -305,7 +305,7 @@ async function casWriterStep(
   return updated;
 }
 
-async function holdWriterStep(
+export async function holdWriterStep(
   tx: Transaction,
   input: {
     missionId: string;
@@ -594,7 +594,7 @@ export async function reserveWriterMissionProviderAttempt(
   return 'reserved';
 }
 
-async function markWriterMissionDispatched(tx: Transaction, attemptId: string) {
+export async function markWriterMissionDispatched(tx: Transaction, attemptId: string) {
   const [record] = await tx
     .select()
     .from(storytellerAttempt)
@@ -667,7 +667,7 @@ function writerCustodyScope(
   };
 }
 
-async function markWriterContextUncertain(
+export async function markWriterContextUncertain(
   tx: Transaction,
   missionId: string,
   childId: string | null,
@@ -718,7 +718,7 @@ const strictReplayStepStates = new Set([
   'proposal-ready',
 ]);
 
-async function acquireGlobalBudgetAdvisoryLock(tx: Transaction) {
+export async function acquireGlobalBudgetAdvisoryLock(tx: Transaction) {
   await tx.execute(sql`SELECT pg_advisory_xact_lock(714092631)`);
 }
 
@@ -758,7 +758,7 @@ type PlanWriterProviderStepResult =
       requestCasHash: string;
     };
 
-async function readWriterMissionStepRow(
+export async function readWriterMissionStepRow(
   database: Database,
   missionId: string,
   contextId: string,
@@ -805,7 +805,7 @@ function writerProviderPreflightReason(
  * Shared reserve/dispatch SQL used by scripted and strict provider custody.
  * Does not acquire the global budget advisory lock; strict callers must do that first.
  */
-async function planWriterProviderStepInTransaction(
+export async function planWriterProviderStepInTransaction(
   tx: Transaction,
   input: PlanWriterProviderStepInput,
 ): Promise<PlanWriterProviderStepResult> {
@@ -979,7 +979,7 @@ type FinalizeDurableDeliveryInput = {
   telemetry: ProviderTelemetry;
 };
 
-async function finalizeDurableWriterDeliveryInTransaction(
+export async function finalizeDurableWriterDeliveryInTransaction(
   tx: Transaction,
   input: FinalizeDurableDeliveryInput,
 ) {
@@ -1042,7 +1042,7 @@ type FinalizeDurableSentFailureInput = {
   telemetry: ProviderTelemetry;
 };
 
-async function finalizeDurableWriterSentFailureInTransaction(
+export async function finalizeDurableWriterSentFailureInTransaction(
   tx: Transaction,
   input: FinalizeDurableSentFailureInput,
 ) {
@@ -1121,7 +1121,7 @@ export async function advanceWriterMissionProviderStep(
     return plan;
   }
   if (plan.status === 'already_dispatched') {
-    const uncertainAttempt = await loadAttempt(database, plan.attemptId);
+    const uncertainAttempt = await loadWriterMissionProviderAttempt(database, plan.attemptId);
     await budget.uncertain(
       plan.attemptId,
       providerExecutionFromAttempt(uncertainAttempt),
@@ -1135,7 +1135,7 @@ export async function advanceWriterMissionProviderStep(
   const transportOutcome = await transport();
 
   if (transportOutcome.kind === 'unknown') {
-    const uncertainAttempt = await loadAttempt(database, plan.attemptId);
+    const uncertainAttempt = await loadWriterMissionProviderAttempt(database, plan.attemptId);
     await budget.uncertain(
       plan.attemptId,
       providerExecutionFromAttempt(uncertainAttempt),
@@ -1161,7 +1161,7 @@ export async function advanceWriterMissionProviderStep(
   }
 
   if (transportOutcome.kind === 'failed') {
-    const attemptRow = await loadAttempt(database, plan.attemptId);
+    const attemptRow = await loadWriterMissionProviderAttempt(database, plan.attemptId);
     const execution = providerExecutionFromAttempt(attemptRow);
 
     if (!transportOutcome.sent) {
@@ -1211,7 +1211,7 @@ export async function advanceWriterMissionProviderStep(
     };
   }
 
-  const attemptRow = await loadAttempt(database, plan.attemptId);
+  const attemptRow = await loadWriterMissionProviderAttempt(database, plan.attemptId);
   const execution = providerExecutionFromAttempt(attemptRow);
 
   if (isRealMode) {
@@ -1290,7 +1290,10 @@ export async function advanceWriterMissionProviderStep(
   };
 }
 
-async function loadAttempt(database: Database, attemptId: string) {
+export async function loadWriterMissionProviderAttempt(
+  database: Database,
+  attemptId: string,
+) {
   const [row] = await database.db
     .select()
     .from(storytellerAttempt)
@@ -1345,7 +1348,7 @@ export async function advanceDurableWriterMissionProviderStep(
   }
 
   if (peek.attemptId) {
-    const pinnedAttempt = await loadAttempt(database, peek.attemptId);
+    const pinnedAttempt = await loadWriterMissionProviderAttempt(database, peek.attemptId);
     const policyPin = evaluateWriterRoundAttemptPolicyPin(
       pinnedAttempt,
       input.providerPolicy,
@@ -1467,7 +1470,7 @@ export async function advanceDurableWriterMissionProviderStep(
     return plan;
   }
   if (plan.status === 'already_dispatched') {
-    const uncertainAttempt = await loadAttempt(database, plan.attemptId);
+    const uncertainAttempt = await loadWriterMissionProviderAttempt(database, plan.attemptId);
     await budget.uncertain(
       plan.attemptId,
       providerExecutionFromAttempt(uncertainAttempt),
@@ -1481,7 +1484,7 @@ export async function advanceDurableWriterMissionProviderStep(
   const transportOutcome = await transport.invoke();
 
   if (transportOutcome.kind === 'unknown') {
-    const uncertainAttempt = await loadAttempt(database, plan.attemptId);
+    const uncertainAttempt = await loadWriterMissionProviderAttempt(database, plan.attemptId);
     await budget.uncertain(
       plan.attemptId,
       providerExecutionFromAttempt(uncertainAttempt),
@@ -1507,7 +1510,7 @@ export async function advanceDurableWriterMissionProviderStep(
   }
 
   if (transportOutcome.kind === 'failed') {
-    const attemptRow = await loadAttempt(database, plan.attemptId);
+    const attemptRow = await loadWriterMissionProviderAttempt(database, plan.attemptId);
     const execution = providerExecutionFromAttempt(attemptRow);
 
     if (!transportOutcome.sent) {
@@ -1557,7 +1560,7 @@ export async function advanceDurableWriterMissionProviderStep(
     transportOutcome.exactWireSha256 === input.expectedWireSha256 &&
     transportOutcome.exactWireSha256 === plan.requestCasHash;
   if (!wireOk) {
-    const attemptRow = await loadAttempt(database, plan.attemptId);
+    const attemptRow = await loadWriterMissionProviderAttempt(database, plan.attemptId);
     const execution = providerExecutionFromAttempt(attemptRow);
     await budget.uncertain(plan.attemptId, execution);
     await database.db.transaction(async (tx) => {
@@ -1579,7 +1582,7 @@ export async function advanceDurableWriterMissionProviderStep(
     return { status: 'uncertain', transportInvoked: true };
   }
 
-  const attemptRow = await loadAttempt(database, plan.attemptId);
+  const attemptRow = await loadWriterMissionProviderAttempt(database, plan.attemptId);
   const execution = providerExecutionFromAttempt(attemptRow);
   const resultCasHash = hashWriterMissionSerializedResponse(
     transportOutcome.serializedResponse,
@@ -1679,7 +1682,7 @@ export async function readDurableWriterMissionResponse(
     throw new WriterMissionCustodyError('invalid_step_state');
   }
 
-  const attemptRow = await loadAttempt(database, input.attemptId);
+  const attemptRow = await loadWriterMissionProviderAttempt(database, input.attemptId);
   if (attemptRow.state !== 'settled') {
     throw new WriterMissionCustodyError('invalid_step_state');
   }

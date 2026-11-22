@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "declaration": false,
+    "paths": {
+      "@offscreen/lab-support": ["../lab-support/dist/index.d.ts"]
+    }
+  },
+  "include": ["test/**/*.ts"]
+}
