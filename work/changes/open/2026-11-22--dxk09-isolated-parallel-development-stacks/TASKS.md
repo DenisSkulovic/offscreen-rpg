@@ -31,6 +31,26 @@
 **Negative:** invalid explicit prefix fails auth config; no prefix may silently enable a dev bypass; passwords/token/callback values never logged. No claim of browser OAuth proof until T04b runs simultaneously on two loopback ports in one browser profile.
 **Stop:** the pinned Better Auth 1.7.5 type/API rejects `cookiePrefix` or a client/SSR cookie reader assumes a fixed prefix; return exact evidence to planner rather than changing authentication architecture.
 
+## T03a | Dedicated dev-cluster identity and guarded bootstrap **code only** | READY
+
+**Why this is independent:** The only implementation authorized here is a safe dev-cluster *foundation* and read-only plan. It does not need the final S3/SQL/OAuth tenant details. Existing `kind-offscreen-lab` release installations remain exclusively pinned to their existing context.
+
+**First reads:** `infra/kubernetes/lab/{kind.yaml,lib.sh,up.sh,namespaces.yaml}`, `scripts/repo-tools/dev-worktree-allocator.mjs`, `infra/kubernetes/lab/cnpg/{install.sh,cluster.yaml,operator.pin}` (read as examples, do not invoke), `infra/kubernetes/lab/temporal/install.sh` (read only). Recheck HEAD and concurrent dirty files first.
+
+**Write ownership:** only new dev-specific, versioned Kind cluster configuration and guarded `plan` / `status` / explicitly separate `ensure` entrypoint and focused tests under `infra/kubernetes/lab/dev/`. Preserve release-lab `lib.sh`, `up.sh`, `kind.yaml`, its cluster/context, and `pnpm dev` until later T05 cutover. This task must NOT own the existing common Tenant provisioner or patch foreign manifests.
+
+**Decided algorithm:**
+1. Use the already selected **`offscreen-dev` Kind name and `kind-offscreen-dev` context**, with loopback-only API binding and nonconflicting dynamic API port (do not copy the release-lab hardcoded port 6443). Pin the existing installed Kind node image as an initial compatible baseline; no default `kubectl config use-context` side effects.
+2. `plan` is strictly read-only, including Docker/Kind/Kubernetes availability/capacity observations and the intended owned cluster/context/namespaces; print source/target/refusals as structured data. `status` is strictly read-only and reports missing vs foreign resources. No implicit `kind delete` or reset path.
+3. `ensure` (implemented but **not invoked by this execution grant**) must reject any preexisting same-named foreign cluster/context, non-loopback API publishing, wrong labels/UIDs or insufficient host resources **before a mutating step**. If creation is later explicitly authorized, create only the independent dev Kind and its dev-owned baseline namespace/storage, preserving pre-existing volumes and kubeconfig current context. Re-entry may adopt only resources with positively verified ownership.
+4. The dev bootstrap does not import a release-pinned installer with environment variables substituting its target; CNPG, SeaweedFS and Temporal come later under T03b/c with source-checked dev-only adaptation. No app deployments or tokens at this stage.
+
+**Positive tests:** dry-run `plan` shows `kind-offscreen-dev`, loopback and dynamic host port with no release-lab mutation; read-only status distinguishes absent/owned; controlled test adapters simulate create/re-entry, preserved kubeconfig current context, and independent namespace targeting.
+
+**Negative tests:** foreign cluster collision, already occupied port, missing Docker/Kind, wrong Kubernetes context, failing memory preflight, stale registry owner, and a simulated partial failure all refuse without deletion or adoption of release resources; idempotent no-op when positively owned.
+
+**Stop criteria:** Kind node image/cluster API config cannot be supported by actual pinned binaries, or inability to distinguish an owned resource from a foreign one. Return exact evidence. **No live cluster creation, test migration, or destructive change is permitted in T03a.** Owner must separately authorize the live `ensure` after reading `plan` and obtaining host capacity evidence.
+
 ## T03 | Shared dev bootstrap + real per-slot SQL/S3/Temporal tenants | PLANNER HOLD
 
 **Read:** `infra/kubernetes/lab/{lib.sh,up.sh,kind.yaml}`, `cnpg/{install.sh,cluster.yaml}`, `temporal/{install.sh,namespace-job.yaml}`, *verified* object-store installer and settings.
