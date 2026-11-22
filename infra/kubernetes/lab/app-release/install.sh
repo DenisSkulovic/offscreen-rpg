@@ -4,8 +4,10 @@
 
 set -euo pipefail
 
+# No arguments: clean install of every runtime image and rollout.
+# Warm install: OFFSCREEN_RELEASE_IMAGES=worker (comma-separated; web,api,game-authority,worker).
 if [[ $# -ne 0 ]]; then
-  echo "install.sh takes no arguments." >&2
+  echo "install.sh takes no arguments. Set OFFSCREEN_RELEASE_IMAGES for a warm subset." >&2
   exit 2
 fi
 
@@ -20,6 +22,28 @@ API_IMAGE="offscreen-lab-app-release-api:turn02"
 GA_IMAGE="offscreen-lab-app-release-ga:turn02"
 WORKER_IMAGE="offscreen-lab-app-release-worker:turn02"
 
+SELECTED="${OFFSCREEN_RELEASE_IMAGES:-web,api,game-authority,worker}"
+IFS=',' read -ra SELECTED_IMAGES <<<"$SELECTED"
+image_selected() {
+  local name="$1"
+  local item
+  for item in "${SELECTED_IMAGES[@]}"; do
+    if [[ "$item" == "$name" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+for item in "${SELECTED_IMAGES[@]}"; do
+  case "$item" in
+    web | api | game-authority | worker) ;;
+    *)
+      echo "Refusing install: unknown image ${item}." >&2
+      exit 2
+      ;;
+  esac
+done
+
 if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME"; then
   echo "Refusing install: kubectl context ${CONTEXT_NAME} is absent. Not switching contexts." >&2
   exit 1
@@ -30,17 +54,18 @@ if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   exit 1
 fi
 
-for image in "$WEB_IMAGE" "$API_IMAGE" "$GA_IMAGE"; do
-  if ! docker image inspect "$image" >/dev/null 2>&1; then
+require_local_image() {
+  local name="$1"
+  local image="$2"
+  if image_selected "$name" && ! docker image inspect "$image" >/dev/null 2>&1; then
     echo "Refusing install: local image ${image} is missing." >&2
     exit 1
   fi
-done
-
-if ! docker image inspect "$WORKER_IMAGE" >/dev/null 2>&1; then
-  echo "Refusing install: local image ${WORKER_IMAGE} is missing." >&2
-  exit 1
-fi
+}
+require_local_image web "$WEB_IMAGE"
+require_local_image api "$API_IMAGE"
+require_local_image game-authority "$GA_IMAGE"
+require_local_image worker "$WORKER_IMAGE"
 
 if ! "${KUBECTL[@]}" -n lab-edge get gateway lab-edge >/dev/null 2>&1; then
   echo "Refusing install: Gateway lab-edge is missing in lab-edge." >&2
@@ -62,13 +87,30 @@ if ! "${KUBECTL[@]}" -n lab-temporal get service temporal-server >/dev/null 2>&1
   exit 1
 fi
 
-echo "Loading release images into ${CLUSTER_NAME}…"
-for image in "$WEB_IMAGE" "$API_IMAGE" "$GA_IMAGE" "$WORKER_IMAGE"; do
+echo "Loading selected release images into ${CLUSTER_NAME}…"
+load_image_if_changed() {
+  local name="$1"
+  local image="$2"
+  if ! image_selected "$name"; then
+    return 0
+  fi
+  local local_id node_id
+  local_id="$(docker image inspect --format '{{.Id}}' "$image")"
+  node_id="$(docker exec "${CLUSTER_NAME}-control-plane" ctr -n k8s.io images ls 2>/dev/null \
+    | awk -v name="docker.io/library/${image}" '$1 == name { print $3; exit }')"
+  if node "$RELEASE_DIR/kind-image-match.mjs" "$local_id" ${node_id:-}; then
+    echo "SKIP unchanged ${image}"
+    return 0
+  fi
   if ! kind load docker-image "$image" --name "$CLUSTER_NAME"; then
     echo "Refusing install: could not load ${image} into ${CLUSTER_NAME}." >&2
     exit 1
   fi
-done
+}
+load_image_if_changed web "$WEB_IMAGE"
+load_image_if_changed api "$API_IMAGE"
+load_image_if_changed game-authority "$GA_IMAGE"
+load_image_if_changed worker "$WORKER_IMAGE"
 
 echo "Preparing release Secrets from the lab database, object store, and root .env…"
 export OFFSCREEN_REPO_ROOT="$(cd "${RELEASE_DIR}/../../../.." && pwd)"
@@ -185,20 +227,39 @@ for namespace in ("lab-edge", "lab-authority", "lab-workers"):
     apply_secret(namespace, "game-runtime", runtime)
 PY
 
-echo "Applying migration Job ${OVERLAY_DIR}/migrate.yaml and waiting for completion…"
-"${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/migrate.yaml"
-"${KUBECTL[@]}" -n lab-edge wait --for=condition=complete "job/game-migrate" --timeout=300s
+# Schema migrations travel with the API image. A worker-only or web-only warm install leaves the Job alone.
+if image_selected api; then
+  echo "Applying migration Job ${OVERLAY_DIR}/migrate.yaml and waiting for completion…"
+  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/migrate.yaml"
+  "${KUBECTL[@]}" -n lab-edge wait --for=condition=complete "job/game-migrate" --timeout=300s
+fi
 
-echo "Applying authority, workers, and edge overlays…"
-"${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/authority.yaml"
-"${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/workers.yaml"
-"${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/edge.yaml"
+if image_selected game-authority; then
+  echo "Applying authority overlay…"
+  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/authority.yaml"
+fi
+if image_selected worker; then
+  echo "Applying workers overlay…"
+  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/workers.yaml"
+fi
+if image_selected web || image_selected api; then
+  echo "Applying edge overlay…"
+  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/edge.yaml"
+fi
 
-"${KUBECTL[@]}" -n lab-edge rollout status deployment/game-api --timeout=300s
-"${KUBECTL[@]}" -n lab-edge rollout status deployment/game-web --timeout=300s
-"${KUBECTL[@]}" -n lab-authority rollout status deployment/game-authority --timeout=300s
-"${KUBECTL[@]}" -n lab-workers rollout status deployment/game-control --timeout=300s
-"${KUBECTL[@]}" -n lab-workers rollout status deployment/game-executor --timeout=300s
-"${KUBECTL[@]}" -n lab-workers rollout status deployment/game-relay --timeout=300s
+if image_selected api; then
+  "${KUBECTL[@]}" -n lab-edge rollout status deployment/game-api --timeout=300s
+fi
+if image_selected web; then
+  "${KUBECTL[@]}" -n lab-edge rollout status deployment/game-web --timeout=300s
+fi
+if image_selected game-authority; then
+  "${KUBECTL[@]}" -n lab-authority rollout status deployment/game-authority --timeout=300s
+fi
+if image_selected worker; then
+  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-control --timeout=300s
+  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-executor --timeout=300s
+  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-relay --timeout=300s
+fi
 
 echo "App release overlay applied."

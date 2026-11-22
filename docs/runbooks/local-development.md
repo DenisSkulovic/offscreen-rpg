@@ -35,6 +35,8 @@ pnpm db:migrate
 pnpm dev
 ```
 
+Repeated kind image builds can use the warm path in [FAST-PATH.md](../../infra/kubernetes/lab/app-release/FAST-PATH.md): affected images only, a shared pnpm store mount, and skipped kind loads when the image id is unchanged. `bash infra/kubernetes/lab/dev/tilt/build-release-images.sh` with no extra variables remains the clean four-image build.
+
 `pnpm stack:acceptance` is the read-only clean-clone gate. It refuses a foreign kubectl context, a non-loopback API bind, a port held by something other than this cluster, a failed `game-migrate` Job, a missing game Pod, an active Compose boot path, and a green health check that never saw a signed-in player. It does not reset the cluster. `--execute` and `reset` are refused. On the existing `kind-offscreen-lab` the command exited 1 because it had no signed-in player, while anonymous `/api/me` was 401. A browser session on that origin could still read the saved story. That read is not a fresh-clone timing.
 
 Open http://127.0.0.1:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to sign-in and signed-in users to their saved drafts. Sign-in is Better Auth GitHub OAuth. Anonymous `/api/me` is unauthorized. There is no open-access player and no email/password sign-in. `pnpm dev` starts Tilt against the lab cluster. No model credentials or paid calls are involved.
