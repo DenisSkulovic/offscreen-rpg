@@ -19,7 +19,10 @@ export function createStorytellerDistributedControlActivities(
               'PublicationUnavailable',
             );
           }
-          throw ApplicationFailure.nonRetryable(error.code, 'PublicationTransport');
+          throw ApplicationFailure.nonRetryable(
+            error.code,
+            'PublicationTransport',
+          );
         }
         throw error;
       }
@@ -30,6 +33,12 @@ export function createStorytellerDistributedControlActivities(
         case 'stale':
           throw ApplicationFailure.nonRetryable('stale', 'PublicationStale');
         case 'blocked':
+          if (response.reason === 'pending-consequence-not-settled') {
+            throw ApplicationFailure.retryable(
+              response.reason,
+              'PublicationPendingSettlement',
+            );
+          }
           throw ApplicationFailure.nonRetryable(
             response.reason,
             'PublicationBlocked',

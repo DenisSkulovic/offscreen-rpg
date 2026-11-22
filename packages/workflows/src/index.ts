@@ -188,7 +188,9 @@ function requirePublishedOrReplayed(
 }
 
 /** Distributed writer scene: control plans/finalizes; executor runs one WR10 round. */
-export async function writerSceneDistributedV2(missionId: string): Promise<void> {
+export async function writerSceneDistributedV2(
+  missionId: string,
+): Promise<void> {
   const plan = await planWriterSceneRound(missionId);
   const attemptId = uuid4();
   const executorResult = await executePreparedWriterRound({
@@ -259,11 +261,16 @@ const { executeFrozenStoryteller } =
     retry: distributedExecuteRetry,
   });
 
+const publicationRetry = {
+  initialInterval: '2 seconds',
+  maximumInterval: '30 seconds',
+} as const;
+
 const { publishSavedStoryteller } =
   proxyActivities<StorytellerDistributedControlActivities>({
     taskQueue: storytellerControlTaskQueue,
     startToCloseTimeout: '3 minutes',
-    retry: distributedExecuteRetry,
+    retry: publicationRetry,
   });
 
 // Two-stage scripted path: executor proposes, control publishes. No provider dispatch here.

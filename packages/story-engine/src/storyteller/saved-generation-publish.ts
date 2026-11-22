@@ -52,7 +52,10 @@ export function createStorytellerSavedGenerationPublish(
         .select({ input: generation.input })
         .from(generation)
         .where(
-          and(eq(generation.id, generationId), eq(generation.kind, storytellerKind)),
+          and(
+            eq(generation.id, generationId),
+            eq(generation.kind, storytellerKind),
+          ),
         );
       if (!record) {
         return { status: 'refused', reason: 'unknown-generation' };
@@ -106,7 +109,7 @@ export function createStorytellerSavedGenerationPublish(
           return {
             status: 'blocked',
             generationId,
-            reason: error.code,
+            reason: error.reason ?? error.code,
           };
         }
         throw error;

@@ -1,6 +1,6 @@
 # STORY03R | Retry saved Storyteller publication while a prepared consequence is still settling
 
-**State: READY.**  
+**State: Done (2026-11-22).**  
 **Kind:** implementation · **Profile:** PATCH/STATE · **Reference branch:** `undertaking/storyteller-workshop`  
 **Planner baseline:** `59863b3e8852cb6cee6d32f47c175b3fb2fb3133`.  
 **Unblocks:** TURN03 `ga-scene-publication` and all downstream gates.  

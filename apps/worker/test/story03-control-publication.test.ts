@@ -1,10 +1,17 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
-import { storytellerTaskCustodyContractVersion, storytellerTaskCustodyVersionHeader } from '@offscreen/contracts/storyteller-task-custody';
+import {
+  storytellerTaskCustodyContractVersion,
+  storytellerTaskCustodyVersionHeader,
+} from '@offscreen/contracts/storyteller-task-custody';
 import { createStorytellerDistributedControlActivities } from '../src/activities/storyteller-distributed-control';
 import {
   readControlWorkerConfig,
@@ -43,7 +50,8 @@ async function startMockPublishAuthority(
       const payload = JSON.stringify(outcome.body);
       response.writeHead(outcome.status, {
         'content-type': 'application/json; charset=utf-8',
-        [storytellerTaskCustodyVersionHeader]: storytellerTaskCustodyContractVersion,
+        [storytellerTaskCustodyVersionHeader]:
+          storytellerTaskCustodyContractVersion,
         'content-length': Buffer.byteLength(payload),
       });
       response.end(payload);
@@ -123,15 +131,66 @@ test('publishSavedStoryteller retries when publication transport is unavailable'
   });
   const activities = createStorytellerDistributedControlActivities(client);
   try {
-    await assert.rejects(() => activities.publishSavedStoryteller(generationId), {
-      name: 'ApplicationFailure',
-      type: 'PublicationUnavailable',
-      nonRetryable: false,
-    });
+    await assert.rejects(
+      () => activities.publishSavedStoryteller(generationId),
+      {
+        name: 'ApplicationFailure',
+        type: 'PublicationUnavailable',
+        nonRetryable: false,
+      },
+    );
   } finally {
     await new Promise<void>((resolve, reject) =>
       hanging.close((error) => (error ? reject(error) : resolve())),
     );
+  }
+});
+
+test('publishSavedStoryteller waits when the consequence has not settled', async () => {
+  const mock = await startMockPublishAuthority(() => ({
+    status: 200,
+    body: {
+      status: 'blocked',
+      generationId,
+      reason: 'pending-consequence-not-settled',
+    },
+  }));
+  const activities = createStorytellerDistributedControlActivities(mock.client);
+  try {
+    await assert.rejects(
+      () => activities.publishSavedStoryteller(generationId),
+      {
+        name: 'ApplicationFailure',
+        type: 'PublicationPendingSettlement',
+        nonRetryable: false,
+      },
+    );
+  } finally {
+    await mock.close();
+  }
+});
+
+test('publishSavedStoryteller stays non-retryable for other blocked reasons', async () => {
+  const mock = await startMockPublishAuthority(() => ({
+    status: 200,
+    body: {
+      status: 'blocked',
+      generationId,
+      reason: 'publication-blocked',
+    },
+  }));
+  const activities = createStorytellerDistributedControlActivities(mock.client);
+  try {
+    await assert.rejects(
+      () => activities.publishSavedStoryteller(generationId),
+      {
+        name: 'ApplicationFailure',
+        type: 'PublicationBlocked',
+        nonRetryable: true,
+      },
+    );
+  } finally {
+    await mock.close();
   }
 });
 
@@ -142,11 +201,14 @@ test('publishSavedStoryteller fails non-retryably on unauthorized', async () => 
   }));
   const activities = createStorytellerDistributedControlActivities(mock.client);
   try {
-    await assert.rejects(() => activities.publishSavedStoryteller(generationId), {
-      name: 'ApplicationFailure',
-      type: 'PublicationTransport',
-      nonRetryable: true,
-    });
+    await assert.rejects(
+      () => activities.publishSavedStoryteller(generationId),
+      {
+        name: 'ApplicationFailure',
+        type: 'PublicationTransport',
+        nonRetryable: true,
+      },
+    );
   } finally {
     await mock.close();
   }
@@ -165,15 +227,14 @@ test('control activity module does not import local publication bridge', () => {
 
 test('readControlWorkerConfig rejects broad database env and accepts GA-only control env', () => {
   const gaOrigin = 'http://127.0.0.1:7355';
-  assert.throws(
-    () =>
-      readControlWorkerConfig({
-        TEMPORAL_ADDRESS: '127.0.0.1:7233',
-        TEMPORAL_NAMESPACE: 'default',
-        GAME_AUTHORITY_ORIGIN: gaOrigin,
-        GAME_AUTHORITY_CONTROL_TOKEN: controlToken,
-        DATABASE_URL: 'postgres://user:pass@127.0.0.1/offscreen_auth_test',
-      }),
+  assert.throws(() =>
+    readControlWorkerConfig({
+      TEMPORAL_ADDRESS: '127.0.0.1:7233',
+      TEMPORAL_NAMESPACE: 'default',
+      GAME_AUTHORITY_ORIGIN: gaOrigin,
+      GAME_AUTHORITY_CONTROL_TOKEN: controlToken,
+      DATABASE_URL: 'postgres://user:pass@127.0.0.1/offscreen_auth_test',
+    }),
   );
   try {
     forbidBroadDatabaseOnControl({

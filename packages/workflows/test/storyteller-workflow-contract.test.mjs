@@ -21,7 +21,10 @@ test('distributed workflow contract names and shared generation identity', () =>
   assert.equal(storytellerControlTaskQueue, 'control');
 
   const generationId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-  assert.equal(storytellerWorkflowId(generationId), `storyteller/${generationId}`);
+  assert.equal(
+    storytellerWorkflowId(generationId),
+    `storyteller/${generationId}`,
+  );
   assert.equal(
     storytellerWorkflowId(generationId),
     storytellerWorkflowId(generationId),
@@ -61,4 +64,16 @@ test('storytellerDistributedV1 orders execution then publish on distinct queues'
   assert.match(indexSource, /taskQueue: storytellerExecuteTaskQueue/);
   assert.match(indexSource, /taskQueue: storytellerControlTaskQueue/);
   assert.match(indexSource, /maximumAttempts: 5/);
+  const executeRetry = indexSource.slice(
+    indexSource.indexOf('const distributedExecuteRetry'),
+    indexSource.indexOf('const publicationRetry'),
+  );
+  const publicationPolicy = indexSource.slice(
+    indexSource.indexOf('const publicationRetry'),
+    indexSource.indexOf('const { publishSavedStoryteller }'),
+  );
+  assert.match(executeRetry, /maximumAttempts: 5/);
+  assert.match(publicationPolicy, /initialInterval: '2 seconds'/);
+  assert.match(publicationPolicy, /maximumInterval: '30 seconds'/);
+  assert.doesNotMatch(publicationPolicy, /maximumAttempts/);
 });
