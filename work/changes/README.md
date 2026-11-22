@@ -1,5 +1,19 @@
 # Changes | active catalog
 
+## Future horizontal scaling and zero-funded load rehearsal (4 more, 2026-11-22)
+
+Following the owner's [session-minutes entry](../sessions/2026-11-22.md#12-owner-asks-for-future-minimal-horizontal-scalability-and-100-user-zero-llm-load-rehearsal), four **PROPOSED / NOT CURSOR-READY** work units extend the brainstorm coverage from 24 to **28 distinct named Change outcomes**. They are not today's work selector or a claim that the system is already highly available.
+
+| Change | Independent scope | Prerequisite / important non-claim |
+| --- | --- | --- |
+| [SCALE01 application replicas](open/2026-11-22--scale01-replicated-application-runtime/CHANGE.md) | Concurrent Web/API/GA and appropriate Worker replicas with one logical effect per operation | TURN03 single-instance proof + K8S10; not blanket 3 replicas or HA ingress |
+| [SCALE02 stateful HA](open/2026-11-22--scale02-stateful-data-and-workflow-ha/CHANGE.md) | PostgreSQL primary/standbys/failover/PITR, Temporal server persistence, private document store | Real operator/failure-domain design; single-primary Pod restart is not three-node HA |
+| [SIM01 simulated provider](open/2026-11-22--sim01-realistic-zero-cost-provider-simulator/CHANGE.md) | Model-transport-compatible scripted response with seeded delays/failures, no real OpenRouter route | Actual WR10/WR11 request/result protocol; no real model calls or paid traffic |
+| [LOAD01 100-user load/autoscale](open/2026-11-22--load01-scripted-multiuser-load-and-autoscaling/CHANGE.md) | Seedable independent-user traffic bursts/idle, telemetry, fixed-vs-autoscaled Pods | TURN03/K8S10 + SIM01 + SCALE01; explicit HPA/KEDA metrics and safe host capacity |
+
+K8S10 already owns **one targeted fault and at most nine scripted commands**, so LOAD01 must not relabel that as 100-user proof. A Kubernetes Service may have one public ingress address while its actual ingress controller Pod remains a failure point. Kubernetes does not automatically scale based on CPU/queues until configured and observable. A kind cluster with one node cannot demonstrate survival of a physical-node failure. Costs: **$0 authorized paid model spend**, and no paid cloud or mutating load experiment commissioned.
+
+
 ## Extended Admin historical inspection and safe-resume proposals (4 more, 2026-11-22)
 
 The owner extended the 20-Change brainstorming record with a **scene-by-scene historical Admin workspace** and an independent future re-admission safety contract. These four additions bring **this conversation's named brainstorm Change coverage to 24**. They are deliberately lightweight **PROPOSED / NOT DISPATCHABLE** records. [Source intent and role/privacy caveats](../sessions/2026-11-22.md#11-admin-must-be-an-inspectable-historical-story-workspace-not-just-a-dashboard).
