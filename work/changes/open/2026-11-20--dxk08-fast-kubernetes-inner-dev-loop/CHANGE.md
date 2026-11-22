@@ -4,7 +4,7 @@
 **Kind:** implementation. **Promoted:** 2026-11-22.  
 **Reference branch:** `undertaking/storyteller-workshop`  
 **Source baseline:** `592158da5d6942851e5a08f2e43377ef1a70e0b5`  
-**Program:** [Kubernetes-first developer experience](../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md)
+**Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md)
 
 ## Goal
 
