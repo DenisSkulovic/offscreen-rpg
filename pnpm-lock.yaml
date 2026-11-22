@@ -616,6 +616,9 @@ importers:
       '@offscreen/api':
         specifier: workspace:*
         version: link:../../apps/api
+      '@offscreen/api-lab':
+        specifier: workspace:*
+        version: link:../api-lab
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
