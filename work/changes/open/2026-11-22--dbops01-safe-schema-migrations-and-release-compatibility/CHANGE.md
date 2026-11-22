@@ -1,0 +1,16 @@
+# DBOPS01 | Safe schema migration and compatible application releases
+
+**State: PROPOSED / NOT CURSOR-READY.** Owner request in the [2026-11-22 minutes](../../../sessions/2026-11-22.md). This Change owns schema evolution, not PostgreSQL replica failover or per-query domain correctness.
+
+## Current foundation and gap
+`packages/db/src/migrate.ts:applyMigrations` uses a database-scoped advisory lock and the Drizzle migrator, `packages/db/package.json` has generate/migrate commands, and the Kubernetes app release has one controlled `game-migrate` Job. [Deployment and compatibility](../../../../docs/technical/platform/deployment-and-compatibility.md) already selects once-per-release migrations, expand/contract changes and cross-version Temporal/Activity compatibility. That is a sound beginning. It is **not** a tested rolling schema-evolution contract covering long-running backfills, locks, old/new app compatibility or interruption.
+
+## Desired outcome
+A developer can safely evolve PostgreSQL schema while preserving valuable fictional state and financial receipts, even if older Web/API/GA/Worker binaries remain deployed briefly. A versioned migration lifecycle must cover **planning and risk grading**, validation of generated SQL, forward compatibility, one elected migration runner, lock/statement timeout and blocking-query assessment, rollout sequencing, backfill strategy, constraint/index validation, mixed-version compatibility checks, telemetry, abort/roll-forward procedure and post-release verification. Distinguish additive/expand migrations, backfills with bounded batches and resumability, and later contract/drop steps only after old readers/writers are retired. Explicitly review concurrent unique index operations, foreign key validation, DDL lock strength and Drizzle transactional constraints on actual PostgreSQL version.
+
+Avoid a generic assumption that every migration is transactional or instant. **No default destructive down migration.** A code rollback is not necessarily a schema rollback; plan compatible roll-forward and tested recovery. Schema data changes, app traffic and Temporal long-running workflows must be reconciled in the release sequence. Where operations require scheduled downtime, say so rather than disguising it as zero downtime.
+
+## Proof / future promotion
+On disposable multi-version services: start old binaries on schema N, safely expand to N+1 with migration runner, run old/new clients and in-flight Writer/Temporal workflows, perform bounded backfill, validate invariant/row counts and later contract only with proof old version is gone. Concurrent migration commands elect one runner; failed migration produces a diagnosed resumable state, not partially assumed success. Preserve original SQL receipts, roots, financial ledgers and source hashes. Review actual Drizzle migration journal, lock/runbook ownership and existing release Job before promoting; do not auto-create migrations just for proof.
+
+**Excluded:** database primary/standby topology and backups (SCALE02, DATAOPS01), query indexes/performance operations (DBOPS02), domain transaction review (SQL01), product schema changes. No live migration, production deployment, data deletion or model call authorized by this proposal.
