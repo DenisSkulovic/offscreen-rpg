@@ -18,6 +18,14 @@ From canonical worktree realpath resolve stable assigned slot ID in atomic user-
 
 At undertaking `ca3bd03d`, the corrected Dockerfile-specific ignore was exercised in a real successful 123s BuildKit dev image build, transferring 9.75MB in 2.7s; Game Authority CommonJS output and in-image dependency were checked. This retires the first clean-context image compilation question but **does not prove** watcher-loaded process updates or multi-worktree Kubernetes behavior. Do not repeat expensive clean builds as an automatic Cursor task without a changed build input or specific regression hypothesis.
 
+## Real dev Kind availability and next dispatch
+
+Cursor's `c760cbd8` host receipt establishes separate dev Kind, both nodes Ready, owned baseline namespace and preserved release context. Actual *backing services* and per-slot tenant resources are still absent.
+
+The next implementation tranche **T03b-1** is infrastructure-only. Treat CNPG, SeaweedFS and Temporal as three distinct bounded file owners in sequence: **T03b-1a** guard/plan and dev CNPG manifests, **T03b-1b** dev SeaweedFS singleton/secret initializer, **T03b-1c** pinned Temporal with separate PostgreSQL and single-run schema initialization. One parent integrates each with focused tests; no broad child rediscovery, no repeated dev image rebuild. The first slice is ready for code but not authorized for a live install; subsequent slices follow the already chosen contract in TASKS.md and must re-evaluate source/manifest conflicts before dispatch.
+
+No app tenant identity or memory-heavy worker is added here. The shared backing services must later meet safe start/reentry and negative ownership proofs before T03b-2 allocates databases/buckets/Temporal namespaces.
+
 ## C0. Dev bootstrap separated from tenant authorization
 
 T03a owns the dedicated Kind target, read-only plan/status, and a fenced ensure path. Live ensure runs only when `OFFSCREEN_DEV_CLUSTER_ENSURE=authorized` and the probe is collected from the host, not injected. It rechecks capacity and port ownership immediately before `kind create`, applies only `offscreen-dev-system` labeled `offscreen.dev/owner=offscreen-dev`, restores the previous kubectl context, and never deletes a cluster.
