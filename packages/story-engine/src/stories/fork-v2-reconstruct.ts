@@ -21,6 +21,7 @@ import {
 } from '../campaign/stored-action-plan';
 import { offerSchema } from '@offscreen/game/offers';
 import { ForkStateError } from './fork-state.js';
+import { projectHistoricalSituationAuthorization } from './scene-checkpoint-v2.js';
 
 type PresentFictionalState = Extract<
   SceneCheckpointV2['fictionalState'],
@@ -168,9 +169,7 @@ function campaignOfferColumnFromFictional(
   };
 }
 
-function extractOfferPlans(
-  offer: PresentFictionalState['offer'],
-): unknown {
+function extractOfferPlans(offer: PresentFictionalState['offer']): unknown {
   if (offer === null) {
     return [];
   }
@@ -300,7 +299,9 @@ export function buildV2ForkRows(input: BuildV2ForkRowsInput): V2ForkRows {
     clockPace: fictional.pace,
     holds: projectCheckpointHolds(fictional.holds),
     offer: campaignOfferColumnFromFictional(fictional.offer),
-    situationAuthorization: fictional.situationAuthorization,
+    situationAuthorization: projectHistoricalSituationAuthorization(
+      fictional.situationAuthorization,
+    ),
     activeActivityId: fictional.activeActivityId,
     activeActionOperationId: fictional.activeActionOperationId,
     worldConditions: fictional.worldConditions,

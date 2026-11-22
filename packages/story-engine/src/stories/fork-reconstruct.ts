@@ -10,12 +10,10 @@ import { StoryError } from './errors';
 import { readSceneAfterState } from './scene-after-state';
 import {
   assertV2PostStateMatches,
+  projectHistoricalSituationAuthorization,
   toV2FictionalState,
 } from './scene-checkpoint-v2';
-import {
-  mapV2ForkState,
-  type ForkStateIdentities,
-} from './fork-state';
+import { mapV2ForkState, type ForkStateIdentities } from './fork-state';
 import {
   type SceneCheckpointWriterStore,
   type StagedSceneCheckpoint,
@@ -279,7 +277,9 @@ export function v2ForkRowPlan(
       clockPace: fictional.pace,
       holds: checkpointHoldsToCampaignHolds(fictional.holds),
       offer: campaignOfferFromSnapshot(fictional.offer),
-      situationAuthorization: fictional.situationAuthorization,
+      situationAuthorization: projectHistoricalSituationAuthorization(
+        fictional.situationAuthorization,
+      ),
       activeActivityId: fictional.activeActivityId,
       activeActionOperationId: fictional.activeActionOperationId,
       worldConditions: fictional.worldConditions,
