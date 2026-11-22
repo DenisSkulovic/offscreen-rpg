@@ -33,6 +33,14 @@
 
 **External reference:** GitHub OAuth authorization docs, Loopback redirect URLs (current 2026), state `redirect_uri` may use a different local port from registered loopback callback; GitHub also imposes OAuth token creation/rotation limits. Docker build cache guidance favors excluding node_modules and isolating mutable sources, not blanket disabling caches.
 
+## 2026-11-22 | T04a integrated and T03a source route (`6cc0ad7a`)
+
+Cursor integrated optional Better Auth per-slot cookie prefixes on the undertaking branch, with seven focused auth tests. No live multi-port OAuth proof.
+
+Read-only bootstrap sources are `infra/kubernetes/lab/kind.yaml` (release `apiServerPort: 6443`, loopback, two pinned Kind nodes), `infra/kubernetes/lab/{lib.sh,up.sh}` (hard-pinned `offscreen-lab`, checks/volume safeguards), and `scripts/repo-tools/dev-worktree-allocator.mjs` (already selects `kind-offscreen-dev`). Therefore T03a can implement a new dev-only cluster identity and read-only lifecycle command without deciding per-slot database/S3 identity. Never mutate release scripts to accept a substituted context.
+
+Source-backed future T03b: CloudNativePG pinned version 1.30.2 has `DatabaseRole` resources and declarative `Database` management; the existing `cnpg/cluster.yaml` has 20 connections; `packages/db/src/config.ts` defaults pool maximum 5. `object-storage/store.yaml` pins SeaweedFS 4.54 `mini`, `object-storage/smoke.sh` issues one global key; upstream `weed shell` documents bucket-scoped identity commands. The actual dev miniserver's runtime identity propagation, persistence and security must be proven before giving Cursor T03b.
+
 ## 2026-11-22 | Verified Docker build and next source anchors
 
 Cursor's integrated `ca3bd03d` records an actual 123s successful dev Docker image build with 9.75MB context transfer (2.7s), image `sha256:23361c339b9028f4ecc6ff8a343bee0cb308f347a7c99be7f5508b4d91e30351`, compiled GA CommonJS entry and installed adapter; separate WSL vsock failures are intermittent. Earlier notes below describe the prior broken `--ignorefile` revision, **now corrected**, not the current behavior. Current source uses `infra/kubernetes/lab/dev/Dockerfile.dockerignore` and no unsupported flag.
