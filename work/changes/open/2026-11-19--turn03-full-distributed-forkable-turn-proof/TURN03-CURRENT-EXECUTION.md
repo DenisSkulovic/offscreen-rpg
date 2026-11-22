@@ -1,11 +1,11 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED on interactive GitHub sign-in. TURN03 stays open. No gate is PASS.** The pinned rule package is present and `game-api` is Ready. The edge was then probed. No API, overlay, hash, or session was forged.
+**State: BLOCKED before the paid opening call. TURN03 stays open. No gate is PASS.** The user completed GitHub sign-in. The lab web pod at `http://127.0.0.1:3000` showed the signed-in stories page for that session. No cookie was forged and no provider call was made.
 
-- Loopback port-forward `127.0.0.1:18080` to `svc/lab-gateway-traefik` reached the cluster. `GET /api/health/live` returned `{"status":"ok"}`. `GET /api/me` returned `401`.
-- `GET /sign-in` is the real web page and offers only “Continue with GitHub”. `POST /api/auth/sign-in/social` with callback `http://127.0.0.1:18080/` was rejected: `Invalid callbackURL`.
-- The API’s configured `APP_ORIGIN` is `http://127.0.0.1:3000`. That origin is the Tilt loopback to `game-web`. Nothing is listening there, and completing GitHub OAuth requires a person at that origin.
-- All eight cold-kind gates remain unproven. Auth-dependent gates are `BLOCKED`. Overall is `BLOCKED`, not `PASS`.
+- Seyda Neen setup was saved through the signed-in web pod. The review page says saving spends nothing.
+- The next control, “Create opening,” says one bounded Storyteller call may cost up to one cent and has no automatic fallback. That call was not sent.
+- The public preview at `/demo` is a client-side scripted excerpt. It is not the distributed turn.
+- Auth-dependent cold-kind gates remain unproven. Overall stays `BLOCKED`.
 
 Receipt of this continuation is the commit that contains this paragraph. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
