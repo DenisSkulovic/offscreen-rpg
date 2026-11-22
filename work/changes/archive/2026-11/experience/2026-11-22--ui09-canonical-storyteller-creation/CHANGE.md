@@ -1,6 +1,14 @@
 # UI09 | Canonical Storyteller creation surface
 
-**State: SOURCE-DESIGNED, READY AFTER CURRENT UNDERTAKING HEAD RECHECK.**  
+**State: Done (2026-11-22).** Integrated on `undertaking/storyteller-workshop` after focused Web proof. Not on `main`. No paid provider call. Prepared catalogue publication is out of scope; `presets=[]` stays an honest custom prompt.
+
+## Reconciliation ledger
+
+| Affected claim | Authority | Target delta | Source delta | Status/evidence tier | Negative proof | Map update |
+| --- | --- | --- | --- | --- | --- | --- |
+| Canonical new-story route | `docs/product/experience/entry-and-onboarding.md` Current POC honesty | changed: `/stories/new` is the one creation door and `/stories/launch` only redirects | `apps/web/app/(authenticated)/stories/new/page.tsx`, `launch/page.tsx`, `stories-home-actions.tsx` | focused Web vitest 22/22 on home, form, canonical route, and draft editor | no `STORY_LAUNCH_ENABLED` consumer remains; saved `/stories/[id]` still renders `DraftEditor` | stories and app READMEs |
+| One Story Prompt and Play-first presets | same experience doc Prepared/Custom sections | unchanged because the ratified target already required one prompt and Play-first presets; the form now matches it | `apps/web/src/features/stories/story-launch-form.tsx` | story-launch-form vitest 10/10 | empty custom prompt sends no PUT; duplicate submit is one PUT; uncertain status is GET only | N/A because product target text was already correct |
+| Launch wire and backend | `packages/contracts/src/story-launch.ts` | unchanged because UI09 consumes the existing request and status contract | no API, Game Authority, Worker, or contracts diff | source inspection of the UI09 diff | no fabricated preset root and no provider call | N/A |  
 **Kind:** implementation · **Profile:** CONTRACT · **Reference branch:** `undertaking/storyteller-workshop`  
 **Planner baseline:** `e07c0d0051fe25f212a4a4f4bd3f817045c957fa`; **remote source recheck:** `e7ebb1d8c31c5462edc8626776b9b4530d51d471` (relevant Web/product/client files verified unchanged from inspected snapshot `bc562b77663472c8cccdd1bb68f79a00bddb619a`).  
 **Authority:** `docs/product/experience/entry-and-onboarding.md` (“Prepared experience: Play first”, “Custom experience: one Story Prompt”, “Launch and first arrival”); `docs/technical/client/interaction-contracts.md`; `docs/technical/engine/lifecycle-and-compatibility.md`.

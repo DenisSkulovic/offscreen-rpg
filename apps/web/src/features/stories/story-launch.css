@@ -1,4 +1,4 @@
-/* WR08A: prompt launch surface. Token block mirrors stories-library. */
+/* WR08A / UI09: canonical story creation surface. */
 
 .story-launch {
   --sl-ink: var(--ui-ink);
@@ -31,15 +31,58 @@
 }
 
 .story-launch__lede {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
   max-width: 34rem;
   color: var(--sl-muted);
   font: 1rem / 1.5 var(--sl-font-ui);
 }
 
-.story-launch__form {
+.story-launch__surface {
   display: grid;
-  gap: 1.1rem;
+  gap: 2rem;
+}
+
+.story-launch__section-title {
+  margin: 0 0 1rem;
+  font: normal 1.25rem / 1.25 var(--sl-font-display);
+}
+
+.story-launch__prepared {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.story-launch__preset-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.story-launch__preset-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--sl-edge);
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--sl-panel) 88%, transparent);
+  display: grid;
+  gap: 0.85rem;
+}
+
+.story-launch__preset-label {
+  margin: 0;
+  font: 600 1.05rem / 1.3 var(--sl-font-ui);
+}
+
+.story-launch__preset-play {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.story-launch__custom {
+  display: grid;
+  gap: 0.75rem;
 }
 
 .story-launch__field {
@@ -69,14 +112,31 @@
 }
 
 .story-launch__prompt:focus-visible,
-.story-launch__select:focus-visible {
+.story-launch__select:focus-visible,
+.story-launch__customize summary:focus-visible {
   outline: 2px solid var(--sl-focus);
   outline-offset: 2px;
 }
 
-.story-launch__prompt:disabled {
+.story-launch__prompt:disabled,
+.story-launch__select:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+.story-launch__customize summary {
+  cursor: pointer;
+  color: var(--sl-muted);
+  font: 600 0.9rem / 1.3 var(--sl-font-ui);
+  user-select: none;
+}
+
+.story-launch__customize-body {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, var(--sl-edge) 70%, transparent);
 }
 
 .story-launch__actions {
@@ -87,7 +147,7 @@
 }
 
 .story-launch__status {
-  margin-top: 1rem;
+  margin-top: 0.25rem;
 }
 
 @media (max-width: 720px) {

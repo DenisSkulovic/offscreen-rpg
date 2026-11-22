@@ -9,7 +9,7 @@ import {
   it,
   vi,
 } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { StoryLaunchStatus } from '@offscreen/contracts/story-launch';
 import { clearLaunchPointer } from '@/src/shared/api/story-launch-intent-store';
@@ -19,6 +19,12 @@ const viewerId = 'viewer-launch-form';
 const requestHash = 'a'.repeat(64);
 
 const server = setupServer();
+
+const samplePreset = {
+  presetId: 'seyda-neen',
+  presetRootHash: 'b'.repeat(64),
+  label: 'Seyda Neen dock',
+};
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
@@ -76,16 +82,7 @@ vi.mock('@/src/features/session/session-refresh', () => ({
 }));
 
 describe('StoryLaunchForm', () => {
-  it('one prompt does not ask for a title or character', () => {
-    render(<StoryLaunchForm viewerId={viewerId} />);
-    expect(screen.getByLabelText('Story prompt')).toBeInTheDocument();
-    expect(screen.queryByLabelText(/title/i)).toBeNull();
-    expect(screen.queryByLabelText(/character/i)).toBeNull();
-    expect(screen.queryByLabelText(/avatar/i)).toBeNull();
-    expect(screen.queryByLabelText(/ruleset/i)).toBeNull();
-  });
-
-  it('optional preset is sent once', async () => {
+  it('custom one-prompt launch sends prompt source once', async () => {
     const user = userEvent.setup();
     let putCount = 0;
     let putBody: unknown;
@@ -99,26 +96,55 @@ describe('StoryLaunchForm', () => {
       }),
     );
 
-    render(
-      <StoryLaunchForm
-        viewerId={viewerId}
-        presets={[
-          {
-            presetId: 'seyda-neen',
-            presetRootHash: 'b'.repeat(64),
-            label: 'Seyda Neen dock',
-          },
-        ]}
-      />,
+    render(<StoryLaunchForm viewerId={viewerId} />);
+    const promptText = 'A pilgrim washed ashore on the Bitter Coast.';
+    await user.type(screen.getByLabelText('Story prompt'), promptText);
+    await user.click(screen.getByRole('button', { name: 'Create story' }));
+
+    await waitFor(() => {
+      expect(putCount).toBe(1);
+    });
+    expect(putBody).toMatchObject({
+      source: { kind: 'prompt', prompt: promptText },
+    });
+  });
+
+  it('does not show a fake prepared section when presets are empty', () => {
+    render(<StoryLaunchForm viewerId={viewerId} />);
+    expect(screen.queryByText('Prepared experiences')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
+    expect(
+      screen.getByRole('heading', { name: 'Create a story' }),
+    ).toBeInTheDocument();
+  });
+
+  it('one prompt does not ask for a title, character, or review wizard', () => {
+    render(<StoryLaunchForm viewerId={viewerId} />);
+    expect(screen.getByLabelText('Story prompt')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/title/i)).toBeNull();
+    expect(screen.queryByLabelText(/character/i)).toBeNull();
+    expect(screen.queryByLabelText(/avatar/i)).toBeNull();
+    expect(screen.queryByLabelText(/ruleset/i)).toBeNull();
+    expect(screen.queryByText(/review your setup/i)).toBeNull();
+    expect(screen.queryByRole('progressbar')).toBeNull();
+  });
+
+  it('preset Play with empty prompt sends exact id and root hash once', async () => {
+    const user = userEvent.setup();
+    let putCount = 0;
+    let putBody: unknown;
+
+    server.use(
+      http.put('/api/stories/launch/:operationId', async ({ request }) => {
+        putCount += 1;
+        putBody = await request.json();
+        const op = (putBody as { operationId: string }).operationId;
+        return HttpResponse.json(pendingStatus(op));
+      }),
     );
 
-    await user.selectOptions(
-      screen.getByLabelText('Prepared start'),
-      'seyda-neen',
-    );
-    const promptText = 'A fresh arrival on the Bitter Coast.';
-    await user.type(screen.getByLabelText('Story prompt'), promptText);
-    await user.click(screen.getByRole('button', { name: 'Launch' }));
+    render(<StoryLaunchForm viewerId={viewerId} presets={[samplePreset]} />);
+    await user.click(screen.getByRole('button', { name: 'Play' }));
 
     await waitFor(() => {
       expect(putCount).toBe(1);
@@ -127,10 +153,73 @@ describe('StoryLaunchForm', () => {
       source: {
         kind: 'preset',
         presetId: 'seyda-neen',
-        customPrompt: promptText,
+        presetRootHash: 'b'.repeat(64),
       },
     });
-    expect(putCount).toBe(1);
+    expect(
+      (putBody as { source: { customPrompt?: string } }).source.customPrompt,
+    ).toBeUndefined();
+  });
+
+  it('optional preset customization adds customPrompt and hints', async () => {
+    const user = userEvent.setup();
+    let putBody: unknown;
+
+    server.use(
+      http.put('/api/stories/launch/:operationId', async ({ request }) => {
+        putBody = await request.json();
+        const op = (putBody as { operationId: string }).operationId;
+        return HttpResponse.json(pendingStatus(op));
+      }),
+    );
+
+    render(<StoryLaunchForm viewerId={viewerId} presets={[samplePreset]} />);
+    const card = screen.getByRole('listitem');
+    await user.click(within(card).getByText('Customize'));
+    const promptText = 'A fresh arrival on the Bitter Coast.';
+    await user.type(within(card).getByLabelText('Story prompt'), promptText);
+    await user.selectOptions(
+      within(card).getByLabelText('World invention'),
+      'source-bound',
+    );
+    await user.click(
+      within(card).getByRole('button', { name: 'Play with customization' }),
+    );
+
+    await waitFor(() => {
+      expect(putBody).toBeDefined();
+    });
+    expect(putBody).toMatchObject({
+      source: {
+        kind: 'preset',
+        presetId: 'seyda-neen',
+        presetRootHash: 'b'.repeat(64),
+        customPrompt: promptText,
+      },
+      hints: { worldInvention: 'source-bound' },
+    });
+  });
+
+  it('rejects empty custom prompt without PUT', async () => {
+    const user = userEvent.setup();
+    let putCount = 0;
+
+    server.use(
+      http.put('/api/stories/launch/:operationId', async () => {
+        putCount += 1;
+        return HttpResponse.json(pendingStatus(crypto.randomUUID()));
+      }),
+    );
+
+    render(<StoryLaunchForm viewerId={viewerId} />);
+    await user.click(screen.getByRole('button', { name: 'Create story' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Enter a prompt before launching.'),
+      ).toBeInTheDocument();
+    });
+    expect(putCount).toBe(0);
   });
 
   it('duplicate submit stays disabled while pending', async () => {
@@ -152,7 +241,7 @@ describe('StoryLaunchForm', () => {
 
     render(<StoryLaunchForm viewerId={viewerId} />);
     await user.type(screen.getByLabelText('Story prompt'), 'Hold at the gate.');
-    const submit = screen.getByRole('button', { name: 'Launch' });
+    const submit = screen.getByRole('button', { name: 'Create story' });
     await user.click(submit);
 
     await waitFor(() => {
@@ -187,7 +276,7 @@ describe('StoryLaunchForm', () => {
 
     render(<StoryLaunchForm viewerId={viewerId} />);
     await user.type(screen.getByLabelText('Story prompt'), 'A lost pilgrim.');
-    await user.click(screen.getByRole('button', { name: 'Launch' }));
+    await user.click(screen.getByRole('button', { name: 'Create story' }));
 
     await waitFor(() => {
       expect(
@@ -218,7 +307,7 @@ describe('StoryLaunchForm', () => {
 
     render(<StoryLaunchForm viewerId={viewerId} />);
     await user.type(screen.getByLabelText('Story prompt'), 'Meet Vivec.');
-    await user.click(screen.getByRole('button', { name: 'Launch' }));
+    await user.click(screen.getByRole('button', { name: 'Create story' }));
 
     await waitFor(() => {
       expect(
@@ -240,7 +329,7 @@ describe('StoryLaunchForm', () => {
 
     render(<StoryLaunchForm viewerId={viewerId} />);
     await user.type(screen.getByLabelText('Story prompt'), secretPrompt);
-    await user.click(screen.getByRole('button', { name: 'Launch' }));
+    await user.click(screen.getByRole('button', { name: 'Create story' }));
 
     await waitFor(() => {
       expect(

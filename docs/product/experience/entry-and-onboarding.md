@@ -35,7 +35,7 @@ Provider/model latency does not advance fictional time. Retrying after an uncert
 
 ### Current POC honesty
 
-When the Launch feature gate is on, Stories home Play opens the one-prompt Launch screen. The gate stays off by default. Saved drafts remain at the legacy creator and `/stories/[id]`. A published opening can carry one server-scripted `observe` choice with no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation. The staged editor remains available for saved drafts.
+Stories home Create story opens `/stories/new`: one Story Prompt via `StoryLaunchForm`, with no env-gated alternate launch route (`/stories/launch` redirects here). The prepared catalogue appears only when the server supplies presets; an empty list must not fake one. Saved drafts remain on the legacy staged creator at `/stories/[id]`. A published opening can carry one server-scripted `observe` choice with no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation.
 
 ## Drafts vs playable stories
 

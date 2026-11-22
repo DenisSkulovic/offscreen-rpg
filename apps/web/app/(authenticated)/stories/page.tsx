@@ -12,13 +12,11 @@ import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { storiesListInfiniteOptions } from '@/src/shared/api/stories-list-query';
 import { draftsListInfiniteOptions } from '@/src/shared/api/drafts-list-query';
 import '@/src/features/stories/stories-library.css';
-import { isStoryLaunchEnabled } from '@/src/server/story-launch-capability';
 import { StoriesHomeActions } from '@/src/features/stories/stories-home-actions';
 
 export default async function Stories() {
   const viewer = await requireViewer();
   const viewerId = viewer.user.id;
-  const launchEnabled = isStoryLaunchEnabled();
   const queryClient = createServerQueryClient();
   await Promise.all([
     queryClient.prefetchInfiniteQuery({
@@ -58,9 +56,6 @@ export default async function Stories() {
           <nav className="stories-library__nav" aria-label="Player home">
             <span aria-current="page">Your stories</span>
             <Link href="/stories/new">Create story</Link>
-            {launchEnabled ? (
-              <Link href="/stories/launch">Play from a prompt</Link>
-            ) : null}
             <Link href="/demo">Try preview</Link>
           </nav>
           <div className="stories-library__account">
@@ -73,7 +68,7 @@ export default async function Stories() {
           unfinished creation stay separate. List status comes only from the
           server — nothing here invents progress.
         </p>
-        <StoriesHomeActions launchEnabled={launchEnabled} />
+        <StoriesHomeActions />
         <LiveStoryList viewerId={viewerId} />
         <DraftList viewerId={viewerId} />
       </main>

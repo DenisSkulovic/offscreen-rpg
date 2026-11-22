@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react';
 import { StoriesHomeActions } from './stories-home-actions';
 
 describe('StoriesHomeActions', () => {
-  it('home omits the launch link when disabled', () => {
-    const { container } = render(<StoriesHomeActions launchEnabled={false} />);
+  it('exposes one canonical create link without a launch feature gate', () => {
+    const { container } = render(<StoriesHomeActions />);
     expect(
       screen.getByRole('link', { name: 'Create a story' }),
     ).toHaveAttribute('href', '/stories/new');
@@ -12,15 +12,5 @@ describe('StoriesHomeActions', () => {
       screen.queryByRole('link', { name: 'Play from a prompt' }),
     ).toBeNull();
     expect(container.innerHTML).not.toContain('/stories/launch');
-  });
-
-  it('home keeps create story and adds launch when enabled', () => {
-    render(<StoriesHomeActions launchEnabled />);
-    expect(
-      screen.getByRole('link', { name: 'Create a story' }),
-    ).toHaveAttribute('href', '/stories/new');
-    expect(
-      screen.getByRole('link', { name: 'Play from a prompt' }),
-    ).toHaveAttribute('href', '/stories/launch');
   });
 });

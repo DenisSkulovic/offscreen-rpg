@@ -1,50 +1,24 @@
-import { randomUUID } from 'node:crypto';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { draftIdSchema } from '@offscreen/contracts/drafts';
-import {
-  PATHNAME_HEADER,
-  signInHrefFor,
-} from '@/src/features/session/safe-entry-destination';
+import Link from 'next/link';
 import { requireViewer } from '@/src/server/viewer';
-import {
-  applyNestRoutePolicy,
-  nestFetch,
-  readNestJson,
-} from '@/src/server/nest-reader';
-import { DraftEditor } from '@/src/features/stories/draft-editor';
-import { mechanicalContentCatalogueSchema } from '@offscreen/contracts/openings';
-import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
+import { SessionRefresh } from '@/src/features/session/session-refresh';
+import { StoryLaunchForm } from '@/src/features/stories/story-launch-form';
+import '@/src/features/stories/story-launch.css';
 
-export default async function NewDraft({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>;
-}) {
+export default async function NewStoryPage() {
   const viewer = await requireViewer();
-  const parsed = draftIdSchema.safeParse((await searchParams).id);
-  if (!parsed.success) redirect(`/stories/new?id=${randomUUID()}`);
-  const existing = await nestFetch(viewer, `/api/drafts/${parsed.data}`);
-  const existingStatus = classifyNestStatus(existing.status);
-  if (existingStatus.kind === 'success') redirect(`/stories/${parsed.data}`);
-  if (existingStatus.kind === 'unauthorized') {
-    redirect(
-      signInHrefFor((await headers()).get(PATHNAME_HEADER)),
-    );
-  }
-  if (existingStatus.kind !== 'not_found')
-    applyNestRoutePolicy(existing.status);
-  const catalogue = await readNestJson(
-    viewer,
-    `/api/drafts/${parsed.data}/openings/catalogue`,
-    mechanicalContentCatalogueSchema,
-  );
+  const viewerId = viewer.user.id;
   return (
-    <DraftEditor
-      viewerId={viewer.user.id}
-      id={parsed.data}
-      initial={null}
-      preparedStarts={catalogue.entries}
-    />
+    <main className="story-launch">
+      <SessionRefresh />
+      <h1 className="story-launch__title">Create a story</h1>
+      <p className="story-launch__lede">
+        Describe where the story should begin. A title and a character are not
+        required. Play starts only after the server reports a ready story.
+      </p>
+      <p>
+        <Link href="/stories">Back to your stories</Link>
+      </p>
+      <StoryLaunchForm viewerId={viewerId} presets={[]} />
+    </main>
   );
 }
