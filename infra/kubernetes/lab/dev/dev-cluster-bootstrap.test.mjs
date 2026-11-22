@@ -16,6 +16,8 @@ import {
   RELEASE_KIND_CLUSTER_NAME,
   RELEASE_KIND_CONTEXT_NAME,
   ensureDevCluster,
+  executeAuthorizedDevCluster,
+  renderBaselineNamespace,
   planDevCluster,
   renderDevKindConfig,
   statusDevCluster,
@@ -334,4 +336,56 @@ test('the CLI plans from an injected probe and refuses live ensure', () => {
   const ensure = spawnSync(process.execPath, [script, 'ensure'], { encoding: 'utf8' });
   assert.equal(ensure.status, 2);
   assert.match(ensure.stderr, /refusing live ensure/);
+  const injected = spawnSync(process.execPath, [script, 'ensure'], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      OFFSCREEN_DEV_CLUSTER_ENSURE: 'authorized',
+      OFFSCREEN_DEV_CLUSTER_PROBE: JSON.stringify(readyProbe),
+    },
+  });
+  assert.equal(injected.status, 2);
+  assert.match(injected.stderr, /injected probe cannot authorize/);
+});
+
+test('authorized execution rechecks, creates only the owned baseline, and restores context', () => {
+  const calls = [];
+  let checks = 0;
+  const result = executeAuthorizedDevCluster({
+    collect() {
+      checks += 1;
+      return readyProbe;
+    },
+    run(command, args, options = {}) {
+      calls.push({ command, args, input: options.input ?? null });
+      return { ok: true, stdout: '', stderr: '' };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(checks, 2);
+  assert.equal(calls[0].command, 'kind');
+  assert.match(calls[0].input, /apiServerAddress: "127.0.0.1"/);
+  assert.match(calls[1].input, new RegExp(`name: ${DEV_BASELINE_NAMESPACE}`));
+  assert.match(renderBaselineNamespace(), /offscreen.dev\/owner: offscreen-dev/);
+  assert.deepEqual(calls.at(-1).args, ['config', 'use-context', 'kind-offscreen-lab']);
+  assert.equal(calls.some((call) => call.args.includes('delete')), false);
+});
+
+test('a changed preflight cancels creation before kind runs', () => {
+  const calls = [];
+  let checks = 0;
+  const result = executeAuthorizedDevCluster({
+    collect() {
+      checks += 1;
+      return checks === 1 ? readyProbe : { ...readyProbe, memoryMiB: 100 };
+    },
+    run(command, args) {
+      calls.push({ command, args });
+      return { ok: true };
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, false);
+  assert.equal(calls.length, 0);
+  assert.equal(result.refusals[0].id, 'insufficient-memory');
 });

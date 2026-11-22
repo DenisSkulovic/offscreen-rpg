@@ -20,7 +20,9 @@ At undertaking `ca3bd03d`, the corrected Dockerfile-specific ignore was exercise
 
 ## C0. Dev bootstrap separated from tenant authorization
 
-T03a is **ready for code-only execution**. It owns only the dedicated Kind target, its read-only plan/status, fenced later-authorization ensure entrypoint and focused fake-adapter tests. It uses `kind-offscreen-dev`, independently from `kind-offscreen-lab`, a dynamic loopback API port, context-preserving operations and a positive cluster ownership identity. It must not call or generalize the pinned release-lab installers. No live `ensure` is commissioned.
+T03a owns the dedicated Kind target, read-only plan/status, and a fenced ensure path. Live ensure runs only when `OFFSCREEN_DEV_CLUSTER_ENSURE=authorized` and the probe is collected from the host, not injected. It rechecks capacity and port ownership immediately before `kind create`, applies only `offscreen-dev-system` labeled `offscreen.dev/owner=offscreen-dev`, restores the previous kubectl context, and never deletes a cluster.
+
+**Authorized create (2026-11-22):** preflight at ~12.3 GiB available, Docker 29.9.3, only `offscreen-lab` present, port 24443 free, refusals empty. `kind create` finished in about 21s. Both `offscreen-dev` nodes became Ready. API is `https://127.0.0.1:24443`. Namespace uid `585975ed-a71a-4b97-86de-86969f15058f`. Current context remained `kind-offscreen-lab`. Release nodes stayed Ready and were not modified. Container memory after create: dev control-plane ~602 MiB, dev worker ~129 MiB. No SQL, S3, Temporal, or application install.
 
 T03b remains held on exact SQL/S3/Temporal provisioner proof. CloudNativePG **1.30.2** exposes `DatabaseRole` and declarative `Database` resources; use one slot-specific app role/database plus a separate migration authority or owner as appropriate. The database role must not be able to connect to other slots' databases by public grants. Source defaults `DB_POOL_MAX=5`, while existing lab `max_connections=20`: budgeting must include all SQL-using runtime roles, migrations, monitoring and reserve; do not infer actual open sockets from maximum pool capacity.
 

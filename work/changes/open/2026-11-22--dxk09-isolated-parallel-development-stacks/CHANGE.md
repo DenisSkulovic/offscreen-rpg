@@ -1,6 +1,6 @@
 # DXK09 | Reliable, elastic and isolated developer environments
 
-**State: T01a/T01b/T02/T06a/T04a implemented; T01a has a successful real Docker build. T03a dev-only guarded bootstrap code is now READY. Live cluster creation, T03b tenant provisioning, T04b live OAuth, T05 and T07 remain held pending explicit scoped gates.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
+**State: T01a/T01b/T02/T06a/T04a implemented; T01a has a successful real Docker build. T03a now has an authorized live `kind-offscreen-dev` with owned baseline namespace `offscreen-dev-system` on `127.0.0.1:24443`. T03b tenant provisioning, T04b live OAuth, T05 and T07 remain held.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
 
 ## Problem and goal
 

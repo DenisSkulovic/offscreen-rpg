@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Dev-cluster foundation. plan/status are read-only.
-// ensureDevCluster mutates only the injected adapter. The CLI refuses live ensure.
+// ensureDevCluster decides actions. executeAuthorizedDevCluster is the only mutator.
 
 export const DEV_KIND_CLUSTER_NAME = 'offscreen-dev';
 export const DEV_KIND_CONTEXT_NAME = 'kind-offscreen-dev';
@@ -233,6 +233,118 @@ export function ensureDevCluster(probe, options = {}) {
   actions.push({ op: 'restore-context', context: previousContext });
   const deleted = actions.some((action) => action.op === 'delete-cluster' || action.op === 'delete-namespace');
   return { ...plan, mode: 'ensure', ok: !deleted, actions };
+}
+
+export function renderBaselineNamespace() {
+  return [
+    'apiVersion: v1',
+    'kind: Namespace',
+    'metadata:',
+    `  name: ${DEV_BASELINE_NAMESPACE}`,
+    '  labels:',
+    `    offscreen.dev/owner: ${DEV_CLUSTER_OWNER}`,
+    '',
+  ].join('\n');
+}
+
+/**
+ * Applies an already authorized ensure plan through an injected command runner.
+ * Rechecks the live probe immediately before the first mutation and restores
+ * the previous kubectl context. It never deletes a cluster or namespace.
+ * @param {{
+ *   collect: () => object,
+ *   run: (command: string, args: string[], options?: { input?: string, timeoutMs?: number }) => { ok: boolean, stdout?: string, stderr?: string },
+ * }} deps
+ */
+export function executeAuthorizedDevCluster(deps) {
+  const probe = deps.collect();
+  const decision = ensureDevCluster(probe, { authorize: true });
+  if (!decision.ok) return { ...decision, readOnly: false, mutated: false };
+  const previousContext = probe.currentContext ?? null;
+  const completed = [];
+  for (const action of decision.actions) {
+    if (action.op === 'create-cluster') {
+      const again = deps.collect();
+      const recheck = ensureDevCluster(again, { authorize: true });
+      if (!recheck.ok || recheck.apiServerPort !== action.apiServerPort) {
+        return {
+          ...decision,
+          ok: false,
+          readOnly: false,
+          mutated: false,
+          refusals: recheck.refusals.length > 0 ? recheck.refusals : [{ id: 'preflight-changed', detail: 'dev API port changed before create' }],
+          actions: completed,
+        };
+      }
+      const created = deps.run(
+        'kind',
+        ['create', 'cluster', '--name', String(action.name), '--config', '-'],
+        { input: String(action.config), timeoutMs: 300000 },
+      );
+      completed.push(action);
+      if (!created.ok) {
+        if (previousContext) {
+          deps.run('kubectl', ['config', 'use-context', previousContext], { timeoutMs: 15000 });
+          completed.push({ op: 'restore-context', context: previousContext });
+        }
+        return {
+          ...decision,
+          ok: false,
+          readOnly: false,
+          mutated: true,
+          refusals: [{ id: 'cluster-create-failed', detail: created.stderr || 'kind create cluster failed' }],
+          actions: completed,
+        };
+      }
+      continue;
+    }
+    if (action.op === 'ensure-namespace') {
+      const applied = deps.run(
+        'kubectl',
+        ['--context', DEV_KIND_CONTEXT_NAME, 'apply', '-f', '-'],
+        { input: renderBaselineNamespace(), timeoutMs: 30000 },
+      );
+      completed.push(action);
+      if (!applied.ok) {
+        if (previousContext) {
+          deps.run('kubectl', ['config', 'use-context', previousContext], { timeoutMs: 15000 });
+          completed.push({ op: 'restore-context', context: previousContext });
+        }
+        return {
+          ...decision,
+          ok: false,
+          readOnly: false,
+          mutated: true,
+          refusals: [{ id: 'namespace-apply-failed', detail: applied.stderr || 'baseline namespace apply failed' }],
+          actions: completed,
+        };
+      }
+      continue;
+    }
+    if (action.op === 'restore-context') {
+      if (previousContext) {
+        const restored = deps.run('kubectl', ['config', 'use-context', previousContext], { timeoutMs: 15000 });
+        completed.push(action);
+        if (!restored.ok) {
+          return {
+            ...decision,
+            ok: false,
+            readOnly: false,
+            mutated: true,
+            refusals: [{ id: 'context-restore-failed', detail: restored.stderr || 'kubectl context restore failed' }],
+            actions: completed,
+          };
+        }
+      }
+    }
+  }
+  return {
+    ...decision,
+    readOnly: false,
+    ok: true,
+    mutated: completed.some((action) => action.op !== 'restore-context' && action.op !== 'noop'),
+    actions: completed,
+  };
 }
 
 function readProbeFromEnv(env) {
