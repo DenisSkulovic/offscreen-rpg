@@ -1,6 +1,16 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED. Cold-kind POC is not complete.** Joined HEAD was rebuilt and loaded into `kind-offscreen-lab`. `game-api` on image `import-2026-11-22@sha256:85657a683927a1a7811f2ce90a5167674355a5c678b413c053806ecbb61c1c1a` still exits with `api.runtime.startup_failed` and `errorKind=Error`. The deployment exceeded its progress deadline, so no cross-pod gate can PASS. An in-cluster import from `/app` could not resolve `@offscreen/db`. The local Docker daemon then failed `UtilAcceptVsock` before a further image inspection. Overall remains `NOT-RUN`. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
+**State: BLOCKED. TURN03 stays open. Cold-kind POC is not Done.** This is an API release/runtime-closure defect for MA12, not a harness failure. TURN03 will not edit `apps/api/**`, the lockfile, Worker source, or shared release packaging.
+
+Observed on undertaking HEAD `e07c0d0051fe25f212a4a4f4bd3f817045c957fa` (that HEAD included three out-of-lane repairs that are now reverted):
+
+- API image `docker.io/library/import-2026-11-22@sha256:85657a683927a1a7811f2ce90a5167674355a5c678b413c053806ecbb61c1c1a`
+- `game-api` logs `api.runtime.startup_failed` with `errorKind=Error` and never becomes Ready
+- deployment `game-api` exceeded its progress deadline
+- from `/app` in that release environment, Node reported it cannot resolve `@offscreen/db`
+- all eight cold-kind gates remain `NOT-RUN` / `BLOCKED`; overall `NOT-RUN`
+
+Cross-lane commits `878b3786`, `971b2f33`, and `17f47052` were reverted. WR10 `f5c5fc04`, MA12 `5cf2e74a`, and the TURN03 harness `c90c5a73` stay joined. Rerun T04 only after MA12's runtime-closure fix is on `undertaking/storyteller-workshop`. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
 ## What actually exists now
 
