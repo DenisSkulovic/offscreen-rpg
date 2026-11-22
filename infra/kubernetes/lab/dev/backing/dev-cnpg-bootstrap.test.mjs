@@ -12,6 +12,7 @@ import {
   DEV_CNPG_POOL_CAP,
   RELEASE_CNPG_NAMESPACE,
   ensureDevCnpg,
+  executeAuthorizedDevCnpg,
   parseCnpgPin,
   planDevCnpg,
   renderDevCnpgCluster,
@@ -102,7 +103,7 @@ test('wrong context, low memory, timeout, bad pin, and missing authorization ref
   assert.equal(digest.refusals[0].id, 'operator-manifest-sha-mismatch');
 });
 
-test('the CLI plans from an injected probe and refuses live ensure', () => {
+test('the CLI plans from an injected probe and refuses an injected live ensure', () => {
   const script = join(here, 'dev-cnpg-bootstrap-cli.mjs');
   const plan = spawnSync(process.execPath, [script, 'plan'], {
     encoding: 'utf8',
@@ -112,8 +113,30 @@ test('the CLI plans from an injected probe and refuses live ensure', () => {
   assert.equal(JSON.parse(plan.stdout).cluster, DEV_CNPG_CLUSTER);
   const ensure = spawnSync(process.execPath, [script, 'ensure'], {
     encoding: 'utf8',
-    env: { ...process.env, OFFSCREEN_DEV_CNPG_ENSURE: 'authorized' },
+    env: { ...process.env, OFFSCREEN_DEV_CNPG_ENSURE: 'authorized', OFFSCREEN_DEV_CNPG_PROBE: JSON.stringify(ready) },
   });
   assert.equal(ensure.status, 2);
-  assert.match(ensure.stderr, /refusing live CNPG ensure/);
+  assert.match(ensure.stderr, /injected probe cannot authorize/);
+});
+
+test('authorized execution rechecks the probe and applies only dev context commands', () => {
+  let checks = 0;
+  const calls = [];
+  const result = executeAuthorizedDevCnpg({
+    collect() {
+      checks += 1;
+      return ready;
+    },
+    readOperatorManifest() {
+      return { body: `image: ${pin.operatorImage}\n`, sha256: pin.sha256 };
+    },
+    run(command, args) {
+      calls.push({ command, args });
+      return { ok: true, stdout: '', stderr: '' };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(checks, 2);
+  assert.equal(calls.every((call) => call.args[0] === '--context' && call.args[1] === DEV_CNPG_CONTEXT), true);
+  assert.equal(calls.some((call) => call.args.includes('delete')), false);
 });
