@@ -1,12 +1,6 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: BLOCKED. TURN03 stays open. No gate is PASS.** Current HEAD is `b5f2c1cf890cbd0ef7e9f5ac5279129d1025ade1`, which contains the api-lab lockfile fix `f2991b15ac3f769cd015e56d3e8d50061a8ab9f4`. Rebuilding the lab images still fails before any cold trace.
-
-- Command: `DOCKER=$HOME/.local/bin/docker ./infra/kubernetes/lab/app-release/build.sh` and the same for `build-worker.sh`.
-- Both stop in `pnpm install --frozen-lockfile` with `ERR_PNPM_OUTDATED_LOCKFILE`.
-- Cause: `tools/api-integration/package.json` depends on `@offscreen/api-lab@workspace:*`. That specifier is absent from the `tools/api-integration` importer in `pnpm-lock.yaml`.
-- Gate blocked: `cluster-real-app`. The joined Writer code is not in the pods, so the later gates were not run.
-- Updating `pnpm-lock.yaml` is outside TURN03’s write set. No provider call was sent. The paid opening button was not pressed.
+**State: OPEN. Images for this HEAD are running. No gate is PASS yet.** Lockfile reconciliation `902ef4f48cc7f8382561fbc5b63b97a788b3c2a0` is pushed. Current HEAD is `59863b3e`. Frozen `pnpm install` succeeded. API image `sha256:928e237e9d9700bc9511cd48af942864b25870dc227412d3079324187a2111c4`, Game Authority `sha256:b64d0c459eb07ef07dbb65edc16cdf06ec3b017cf2e4988a49c37d5c7b451e0a`, and worker `sha256:526ac761e1aaf6cb2ae6e5658d92fca5df1ed792068bafde8645abb789c1a938` are loaded. Nest started. The disposable executor and Game Authority have `OFFSCREEN_WRITER_EXECUTION_MODE=scripted-offline-lab`. The authenticated cold trace has not been executed. No provider call was sent.
 
 The public `/demo` page is a browser-only excerpt and is not this proof. Overall remains `BLOCKED`. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
