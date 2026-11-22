@@ -6,11 +6,11 @@
 
 ## Domains
 
-- [agent runtime](agent-runtime/README.md): 5 proposed Changes
+- [agent runtime](agent-runtime/README.md): 6 proposed Changes
 - [experience admin](experience-admin/README.md): 4 proposed Changes
 - [policy finance](policy-finance/README.md): 7 proposed Changes
-- [quality evaluation](quality-evaluation/README.md): 5 proposed Changes
-- [platform operations](platform-operations/README.md): 8 proposed Changes
+- [quality evaluation](quality-evaluation/README.md): 8 proposed Changes
+- [platform operations](platform-operations/README.md): 10 proposed Changes
 
 **Lifecycle:** A proposal may stay here indefinitely if genuinely deferred, but must retain a domain owner, next prerequisite, and recognizable outcome. When the owner selects work for the upcoming execution window, ChatGPT rechecks the latest integration HEAD and dependencies, promotes the packet into `work/changes/open/`, repairs its links, and only then turns it into source-grounded executable Cursor tasks. Closed work goes via the established archive/ledger process. Avoid indefinitely parking an actually active blocker here; `open/` is for current/near-term effort.
 

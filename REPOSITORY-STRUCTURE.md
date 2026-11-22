@@ -158,7 +158,7 @@ Do **not** place `AUDIT-*.md`, `HANDOFF-*.md`, `ROADMAP-*.md`, `PROGRAM-*.md`, `
 2. **Classify the assertion and artifact:** selected, proposed, implemented, observed, active work, concluded historical. Directory placement alone does not grant authority.
 3. **One canonical home per claim.** Cross-link instead of duplicating. New folders need owner, entrance link, bounded purpose and retirement condition.
 4. **Designs, Changes and Tasks are not permanent encyclopedias.** Their decisions and proofs outlive their packet folders, in the proper durable owner.
-5. **No new queue or cemetery by default.** In particular, avoid `work/features/`, `work/audits/`, `work/plans/`, `work/designs/archive/`, and permanent per-agent work dumps without showing why existing types fail.
+5. **No new uncontrolled queue or cemetery.** The explicit categorized [Change backlog](work/changes/backlog/README.md) is the owner's selected exception for future independently bounded outcomes; `work/QUEUE.md` remains the only execution selector. Avoid other shadow work queues. In particular, avoid `work/features/`, `work/audits/`, `work/plans/`, `work/designs/archive/`, and permanent per-agent work dumps without showing why existing types fail.
 6. **Preserve safely and honestly.** Do not mass-move or delete unknown files; don't mark Done just to clear the backlog; do not claim unrun checks passed.
 7. **Code internals belong to code owners.** This guide should not be used to force a source package layout.
 
@@ -168,7 +168,7 @@ Do **not** place `AUDIT-*.md`, `HANDOFF-*.md`, `ROADMAP-*.md`, `PROGRAM-*.md`, `
 
 | Tracked area | Observed footprint | Review inference (not deletion approval) |
 | --- | ---: | --- |
-| `work/changes/` | 449 files: 57 in `open/` and 385 in `archive/` | Archive dwarfs active working set; follow the short-lived review policy instead of treating HEAD as permanent historical storage |
+| `work/changes/` | **2026-11-22 reclassification:** 10 open Change folders; 35 domain-backlogged folders, plus the separately managed archive | Open is current or pending genuine terminal reconciliation; backlog is not Ready by location. This count is a dated navigation fact, not a live health metric |
 | `work/designs/` | 151 files: 149 under `open/`, 21 first-level open entries | The Designs index itself identifies promoted, completed, dormant and historical candidates; audit them individually |
 | `evidence/` | 149 files: 114 under `inspections/`, 32 under `runs/` | Large retained snapshot batches may contain unique proof; inspect provenance before deduplication |
 | `research/` | 32 files, including 15 under `authored-scenarios/` | Curated studies and authored scenarios are not automatically active Design folders |
