@@ -19,7 +19,18 @@ if [[ ! -d "$APP_ROOT/dist" ]]; then
   exit 1
 fi
 
-mapfile -t CLOSURE < <(node "$CLOSURE_TOOL" "$APP_PATH")
+closure_list="$(mktemp)"
+if ! node "$CLOSURE_TOOL" "$APP_PATH" >"$closure_list"; then
+  echo "production workspace closure failed for $APP_PATH" >&2
+  rm -f "$closure_list"
+  exit 1
+fi
+mapfile -t CLOSURE <"$closure_list"
+rm -f "$closure_list"
+if [[ ${#CLOSURE[@]} -eq 0 ]]; then
+  echo "production workspace closure for $APP_PATH was empty" >&2
+  exit 1
+fi
 
 rm -rf "$OUTPUT"
 mkdir -p "$OUTPUT"
