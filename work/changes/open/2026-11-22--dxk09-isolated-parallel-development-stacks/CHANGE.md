@@ -1,6 +1,6 @@
 # DXK09 | Reliable, elastic and isolated developer environments
 
-**State: T03b-1a installed CloudNativePG 1.30.2 and owned `dev-pg` on `kind-offscreen-dev`. The dev storage class is `standard`. T03b-1b, T03b-1c, T03b-2, T04b, T05 and T07 remain held.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
+**State: T03b-1a installed `dev-pg`. T03b-1b adds the dev SeaweedFS plan and one-time admin-secret adapter. Live object-store installation, T03b-1c, T03b-2, T04b, T05 and T07 remain held.** This is a source-reviewed, staged release, **not** an assertion that all infrastructure is implementation-ready or proven. **Owner:** developer infrastructure. **Integration:** `undertaking/storyteller-workshop`. **Reviewed:** 2026-11-22, integration baseline `f6abb22b68cb` (GitHub source, no live host access). No paid model calls, destructive cleanup or release-cluster mutation authorized by this packet.
 
 ## Problem and goal
 
