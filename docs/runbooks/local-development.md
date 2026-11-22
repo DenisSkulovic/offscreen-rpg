@@ -2,7 +2,7 @@
 
 This page is the safe local boot route: install, loopback dependencies, `pnpm dev`, and ordinary checks. Disposable-database resets and live model commands are on other pages. An ordinary no-spend check stays here.
 
-**Explore by question:** [requirements and startup](#requirements-and-startup) · [fast frontend workflow](#fast-frontend-workflow) · [dependencies](#local-dependencies) · [checks and boundaries](#checks-and-boundaries). Provider-free database and identity checks are [Local integration tests](local-integration-tests.md). A provider-free Chamber demo is [Provider-free Chamber](local-storyteller-rehearsal.md#provider-free-chamber). The paid rehearsal is [Explicitly authorized paid rehearsal](local-storyteller-rehearsal.md#explicitly-authorized-paid-rehearsal); leave that heading closed during an ordinary no-spend check.
+**Explore by question:** [requirements and startup](#requirements-and-startup) · [fast frontend workflow](#fast-frontend-workflow) · [dependencies](#local-dependencies) · [checks and boundaries](#checks-and-boundaries). Provider-free database and identity checks are [Local integration tests](local-integration-tests.md). Repeatable provider-free launch grants and TESTLAB01 proof commands are [Provider-free game tests](provider-free-game-tests.md). A provider-free Chamber demo is [Provider-free Chamber](local-storyteller-rehearsal.md#provider-free-chamber). The paid rehearsal is [Explicitly authorized paid rehearsal](local-storyteller-rehearsal.md#explicitly-authorized-paid-rehearsal); leave that heading closed during an ordinary no-spend check.
 
 ## What a command touches
 

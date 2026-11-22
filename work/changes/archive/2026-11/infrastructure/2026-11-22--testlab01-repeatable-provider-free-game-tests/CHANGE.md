@@ -1,6 +1,6 @@
 # TESTLAB01 | Repeatable provider-free game test tenancy and funding fixtures
 
-**State:** READY for bounded implementation **in a fresh Cursor chat**, with live-mutation gate retained. **Owner-commissioned:** 2026-11-22. **Integration branch:** `undertaking/storyteller-workshop`. **Inspected base:** `73186189e2912d5d809a996595f8a0c1f97a53b0`. **Profile:** developer tooling / test infrastructure. **No production funding or provider spend authorized.**
+**State:** Done (2026-11-22) on `undertaking/storyteller-workshop`. Live kind `ensure` remains separately authorized and was **not run**. **Owner-commissioned:** 2026-11-22. **Integration branch:** `undertaking/storyteller-workshop`. **Inspected base:** `5e82dc0b57e0a9604349c6b3961ad73f72f42e65`. **Profile:** developer tooling / test infrastructure. **No production funding or provider spend authorized.**
 
 ## Why this Change exists
 TURN03 has two stranded launch rows with null generation; the lab has zero `storyteller_current_owner_grant` entries. `loadAdmissibleGrant()` correctly refuses a launch without an approved owner grant. Only isolated test helpers currently insert a grant, not any reusable lab operator lifecycle. Directly inserting rows or granting all first users is a non-solution.
@@ -30,4 +30,22 @@ Deliver a **durable, repeatable provider-free test environment capability**, not
 A fresh disposable PostgreSQL lab with migrated real schema and seeded auth user runs `plan` and `ensure`, then real `admitLaunchWriterMission()` accepts one matching pending launch; repeating ensure leaves identical account/run/grant rows; a different user and foreign cluster are rejected with no writes; unapproved/live provider route is rejected before mutation; expired/exhausted/incompatible cases refuse; provider-call tripwire counts 0 outbound LLM calls. The reusable operator procedure is documented and scripts/tests are committed. One authorized, signed-in real-kind rehearsal may prove actual TURN03 launch afterward, but **that live DB write requires a separate owner approval and is not automatic Change acceptance**.
 
 ## Integration ownership
-One Cursor parent owns `tools/api-integration/test/longform-acceptance/launch-grant.mjs` (or shared test entitlement extraction), new `scripts/repo-tools/testlab-*.mjs`, focused tests and runbook; use linked worktree `change/testlab01-provider-free-game-tests` based on latest undertaking SHA, integrate/squash into undertaking upon verified acceptance and archive per rules. Do not write TURN03 proof files, `apps/game-authority/**`, `packages/story-engine/**`, `packages/db/src/schema/**`, `infra/kubernetes/lab/app-release/**`, or DXK08/DXK09 Tilt resources. If test-only tripwire requires extending shared production adapter, STOP and return a pinpointed planner contradiction rather than silently crossing ownership.
+One Cursor parent owns `tools/api-integration/test/longform-acceptance/launch-grant.mjs` (or shared test entitlement extraction), new `scripts/repo-tools/testlab-*.mjs`, focused tests and runbook; use linked worktree `change/testlab01-provider-free-game-tests` based on latest undertaking SHA, integrate/squash into undertaking upon acceptance and archive per rules. No provider call was performed. Do not write TURN03 proof files, `apps/game-authority/**`, `packages/story-engine/**`, `packages/db/src/schema/**`, `infra/kubernetes/lab/app-release/**`, or DXK08/DXK09 Tilt resources. If test-only tripwire requires extending shared production adapter, STOP and return a pinpointed planner contradiction rather than silently crossing ownership.
+
+No product/technical behavior is impacted. This Change adds developer test tooling and an operator runbook. No provider call was performed.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/runbooks/provider-free-game-tests.md | runbook | changed: operator procedure for disposable plan/status/ensure | scripts/repo-tools/testlab-funding.mjs @ 5e82dc0b57e0a9604349c6b3961ad73f72f42e65 plus this Change | fixture-tested | kind ensure without approval writes nothing | link from docs/runbooks/local-development.md |
+| loadAdmissibleGrant | code | unchanged because admission still requires one eligible grant | packages/story-engine/src/storyteller/launch-admission.ts @ 5e82dc0b57e0a9604349c6b3961ad73f72f42e65 | source-observed | missing and expired grants admit nothing | N/A |
+| provider transport | code | unchanged because production transport was not edited | tools/api-integration/test/helpers/testlab-provider-tripwire.ts @ 5e82dc0b57e0a9604349c6b3961ad73f72f42e65 plus this Change | fixture-tested | tripwire send count stays at zero; no provider call was performed | N/A |
+
+Touched paths: scripts/repo-tools/testlab-funding.mjs, scripts/repo-tools/testlab-funding.test.mjs, scripts/repo-tools/testlab-grant-contract.mjs, scripts/repo-tools/testlab-grant-contract.test.mjs, scripts/repo-tools/testlab-grant-store.mjs, scripts/repo-tools/testlab-grant-store.test.mjs, scripts/repo-tools/testlab-provider-free-proof.mjs, scripts/repo-tools/testlab-target-guard.mjs, scripts/repo-tools/testlab-target-guard.test.mjs, tools/api-integration/test/helpers/testlab-disposable-grant-deps.ts, tools/api-integration/test/helpers/testlab-provider-tripwire.ts, tools/api-integration/test/testlab-provider-free-launch.integration.ts, docs/runbooks/provider-free-game-tests.md, docs/runbooks/local-development.md.
+
+exception: work/changes/README.md because catalog retirement
+exception: work/changes/archive/2026-11/README.md because archive index
+exception: work/changes/ledger/2026-11.md because ledger index
+exception: work/changes/open/README.md because open index
+exception: work/undertakings/storyteller-workshop/OVERVIEW.md because undertaking status line

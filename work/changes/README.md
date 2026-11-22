@@ -2,7 +2,7 @@
 
 ## Lifecycle at a glance (2026-11-22)
 
-**[Open](open/): 13 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
+**[Open](open/): 12 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
 
 **[Backlog](backlog/README.md): 32 deferred or future Changes in five domain groups.** DXK08 was promoted on 2026-11-22 after fresh source/readiness reconciliation. No backlog Change may be treated as Cursor-ready solely from a previous status label; promotion requires a fresh source/readiness check and explicit owner commission.
 
@@ -11,7 +11,7 @@
 The many dated catalog sections below are **historical planning coverage**, not the active queue. For future items, navigate by the [backlog index](backlog/README.md) rather than scanning this chronology.
 
 
-**2026-11-22 near-term permanent test infrastructure:** [TESTLAB01 repeatable provider-free game tests](open/2026-11-22--testlab01-repeatable-provider-free-game-tests/CHANGE.md) is an owner-commissioned implementation packet for transactional, idempotent test-user grants, zero-paid-transport proof and repeatable smoke configuration. It is **not** an implicit production entitlement or authorized live grant. Complementary deferred [SIM01](backlog/platform-operations/2026-11-22--sim01-realistic-zero-cost-provider-simulator/CHANGE.md) later adds scripted model/provider latency and fault behavior. TURN03's live state remains separate.
+**2026-11-22 near-term permanent test infrastructure:** [TESTLAB01 repeatable provider-free game tests](archive/2026-11/infrastructure/2026-11-22--testlab01-repeatable-provider-free-game-tests/CHANGE.md) is Done on the undertaking branch for disposable transactional test-user grants and a zero-paid-transport proof. It is **not** an implicit production entitlement or authorized live kind grant. Complementary deferred [SIM01](backlog/platform-operations/2026-11-22--sim01-realistic-zero-cost-provider-simulator/CHANGE.md) later adds scripted model/provider latency and fault behavior. TURN03's live state remains separate.
 
 ## External-provider usage, costs, reconciliation and reliability (4 more, 2026-11-22)
 
