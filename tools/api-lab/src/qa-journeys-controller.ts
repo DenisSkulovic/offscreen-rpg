@@ -11,11 +11,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import {
-  QaJourneyError,
-  type createQaJourneys,
-} from '@offscreen/lab-support';
-import { IdentityService } from '../auth/identity.js';
+import { QaJourneyError, type createQaJourneys } from '@offscreen/lab-support';
+import { IdentityService } from '@offscreen/api/lab-host-contract';
 
 export const QA_JOURNEYS = Symbol('QA_JOURNEYS');
 

@@ -31,6 +31,10 @@
       "types": "./dist/src/storyteller-task-custody.d.ts",
       "default": "./dist/src/storyteller-task-custody.js"
     },
+    "./writer-round-private-custody": {
+      "types": "./dist/src/writer-round-private-custody.d.ts",
+      "default": "./dist/src/writer-round-private-custody.js"
+    },
     "./chamber": {
       "types": "./dist/src/chamber.d.ts",
       "default": "./dist/src/chamber.js"

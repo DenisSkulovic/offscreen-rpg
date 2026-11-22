@@ -1,6 +1,6 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: READY for harness implementation; cluster execution is an explicit environmental gate, not a claimed result.** Inspected `d3ba291763de26a0135c1ad84b077bf4f1c153a8`. Original TURN03 Change and the source-based prior T01/T02/T09 evidence remain historically valid. **Do not create another TURN change folder.** Integration target `undertaking/storyteller-workshop`, no paid provider, no protected DB mutation or destructive cluster reset.
+**State: harness T01–T03 implemented on branch `change/turn03-cold-kind-harness` in worktree `/home/dskul/projects/offscreen-rpg-turn03`; live cold-kind T04 NOT-RUN until WR10 and MA12 join `undertaking/storyteller-workshop`.** Cluster execution remains an explicit environmental gate, not a claimed result. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
 ## What actually exists now
 

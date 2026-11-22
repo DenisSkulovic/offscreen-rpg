@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build a self-contained runtime tree from a compiled monorepo checkout.
-# Keeps pnpm symlink layout intact by copying compiled packages and node_modules as-is.
+# Copies only the production workspace dependency closure, keeping pnpm symlinks.
 set -euo pipefail
 
 if [[ $# -ne 2 ]]; then
@@ -12,36 +12,37 @@ APP_PATH="$1"
 OUTPUT="$2"
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 APP_ROOT="$ROOT/$APP_PATH"
+CLOSURE_TOOL="$ROOT/infra/kubernetes/lab/app-release/production-workspace-closure.mjs"
 
 if [[ ! -d "$APP_ROOT/dist" ]]; then
   echo "missing dist for $APP_PATH" >&2
   exit 1
 fi
 
+mapfile -t CLOSURE < <(node "$CLOSURE_TOOL" "$APP_PATH")
+
 rm -rf "$OUTPUT"
-mkdir -p "$OUTPUT/$APP_PATH" "$OUTPUT/packages"
+mkdir -p "$OUTPUT"
 
 cp "$ROOT/package.json" "$ROOT/pnpm-workspace.yaml" "$OUTPUT/"
 cp "$ROOT/infra/kubernetes/lab/app-release/release-process-env-shim.mjs" \
   "$OUTPUT/release-process-env-shim.mjs"
 cp -a "$ROOT/node_modules" "$OUTPUT/node_modules"
-cp "$APP_ROOT/package.json" "$OUTPUT/$APP_PATH/"
-cp -a "$APP_ROOT/dist" "$OUTPUT/$APP_PATH/dist"
-if [[ -d "$APP_ROOT/node_modules" ]]; then
-  cp -a "$APP_ROOT/node_modules" "$OUTPUT/$APP_PATH/node_modules"
-fi
 
-for pkg in "$ROOT/packages"/*; do
-  name="$(basename "$pkg")"
-  [[ -d "$pkg/dist" ]] || continue
-  mkdir -p "$OUTPUT/packages/$name"
-  cp "$pkg/package.json" "$OUTPUT/packages/$name/"
-  cp -a "$pkg/dist" "$OUTPUT/packages/$name/dist"
-  if [[ -d "$pkg/migrations" ]]; then
-    cp -a "$pkg/migrations" "$OUTPUT/packages/$name/migrations"
+for rel in "${CLOSURE[@]}"; do
+  src="$ROOT/$rel"
+  if [[ ! -d "$src/dist" ]]; then
+    echo "missing dist for $rel" >&2
+    exit 1
   fi
-  if [[ -d "$pkg/node_modules" ]]; then
-    cp -a "$pkg/node_modules" "$OUTPUT/packages/$name/node_modules"
+  mkdir -p "$OUTPUT/$rel"
+  cp "$src/package.json" "$OUTPUT/$rel/"
+  cp -a "$src/dist" "$OUTPUT/$rel/dist"
+  if [[ -d "$src/migrations" ]]; then
+    cp -a "$src/migrations" "$OUTPUT/$rel/migrations"
+  fi
+  if [[ -d "$src/node_modules" ]]; then
+    cp -a "$src/node_modules" "$OUTPUT/$rel/node_modules"
   fi
 done
 

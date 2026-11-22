@@ -14,7 +14,7 @@ import {
 } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
-import { createApp } from '@offscreen/api/app';
+import { createLabApp } from '@offscreen/api-lab/create-lab-app';
 import type { ChamberStorytellerControl } from '@offscreen/lab-support';
 import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
 import { authOptions } from '@offscreen/api/auth';
@@ -93,7 +93,10 @@ async function release(steps: ReadonlyArray<() => void | Promise<void>>) {
   }
   if (failures.length === 0) return;
   if (failures.length === 1) throw failures[0];
-  throw new AggregateError(failures, 'Boot03 distributed integration cleanup failed');
+  throw new AggregateError(
+    failures,
+    'Boot03 distributed integration cleanup failed',
+  );
 }
 
 /**
@@ -189,8 +192,7 @@ export async function withBoot03DistributedAppIntegration(
     }),
     plugins: [strictUtilities],
   });
-  const app = await createApp(database, auth, apiOrigin, {
-    developerTools: true,
+  const app = await createLabApp(database, auth, apiOrigin, {
     databaseConfig: config,
     ...(options.chamberStorytellerControl
       ? { chamberStorytellerControl: options.chamberStorytellerControl }
@@ -244,7 +246,8 @@ export async function withBoot03DistributedAppIntegration(
       workerTaskQueue: 'browser-integration',
       workerErrors: [],
       gameAuthorityOrigin,
-      gameAuthorityProcess: gameAuthorityProcess ?? (null as unknown as ChildProcess),
+      gameAuthorityProcess:
+        gameAuthorityProcess ?? (null as unknown as ChildProcess),
       documentRoot: options.documentRoot,
       ...(peerGameAuthorityOrigin ? { peerGameAuthorityOrigin } : {}),
     });

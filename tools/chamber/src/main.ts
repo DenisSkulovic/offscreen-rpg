@@ -19,6 +19,7 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '@offscreen/api/app';
+import { createLabApp } from '@offscreen/api-lab/create-lab-app';
 import { resolveEffectiveUsagePolicy } from '@offscreen/story-engine/storyteller';
 import {
   createChamberStorytellerControl,
@@ -628,59 +629,59 @@ const chamberIdentity = {
     };
   },
 };
-const app = await createApp(
-  database,
-  createAuth(database, authConfig),
-  origin,
-  {
-    databaseConfig: config,
-    identity: chamberIdentity,
-    documentStore,
-    defaultRules: {
-      ruleSetId: defaultRulePackage.manifest.ruleSetId,
-      rootHash: defaultRulePackage.rootHash,
-      revision: defaultRulePackage.manifest.revision,
-      engine: defaultRulePackage.manifest.engine,
-    },
-    ...(storyOpeningContent ? { openingContent: storyOpeningContent } : {}),
-    ...(storyMode ? { scriptedOpeningFallback: false } : {}),
-    developerTools: !storyMode,
-    ...(!storyMode ? { chamberStorytellerControl: storytellerControl } : {}),
-    ...(storyAuthority
-      ? {
-          storytellerExecution: storyAuthority.execution,
-          storytellerUsagePolicy: storyAuthority.usagePolicy,
-        }
-      : packetReview ||
-          memoryPacketReview ||
-          memoryComparisonPackets ||
-          memoryEvaluationPacket ||
-          memoryEvaluationRun ||
-          evaluationPacket ||
-          evaluationRun
-        ? {
-            storytellerExecution:
-              evaluationAuthority?.execution ??
-              memoryEvaluationAuthority?.execution ??
-              (memoryPacketReview || memoryComparisonPackets
-                ? memoryDryRunExecution
-                : dryRunExecution),
-            storytellerUsagePolicy:
-              evaluationPolicy?.kind === 'allowed'
-                ? evaluationPolicy.policy
-                : memoryEvaluationPolicy?.kind === 'allowed'
-                  ? memoryEvaluationPolicy.policy
-                  : memoryPacketReview || memoryComparisonPackets
-                    ? memoryDryRunPolicy.policy
-                    : dryRunPolicy.policy,
-          }
-        : {}),
-    qaContext: {
-      git: { commit: gitCommit, dirty: gitDirty },
-      environment: { identity: 'local-chamber' },
-    },
+const chamberHostOptions = {
+  databaseConfig: config,
+  identity: chamberIdentity,
+  documentStore,
+  defaultRules: {
+    ruleSetId: defaultRulePackage.manifest.ruleSetId,
+    rootHash: defaultRulePackage.rootHash,
+    revision: defaultRulePackage.manifest.revision,
+    engine: defaultRulePackage.manifest.engine,
   },
-);
+  ...(storyOpeningContent ? { openingContent: storyOpeningContent } : {}),
+  ...(storyMode ? { scriptedOpeningFallback: false } : {}),
+  ...(storyAuthority
+    ? {
+        storytellerExecution: storyAuthority.execution,
+        storytellerUsagePolicy: storyAuthority.usagePolicy,
+      }
+    : packetReview ||
+        memoryPacketReview ||
+        memoryComparisonPackets ||
+        memoryEvaluationPacket ||
+        memoryEvaluationRun ||
+        evaluationPacket ||
+        evaluationRun
+      ? {
+          storytellerExecution:
+            evaluationAuthority?.execution ??
+            memoryEvaluationAuthority?.execution ??
+            (memoryPacketReview || memoryComparisonPackets
+              ? memoryDryRunExecution
+              : dryRunExecution),
+          storytellerUsagePolicy:
+            evaluationPolicy?.kind === 'allowed'
+              ? evaluationPolicy.policy
+              : memoryEvaluationPolicy?.kind === 'allowed'
+                ? memoryEvaluationPolicy.policy
+                : memoryPacketReview || memoryComparisonPackets
+                  ? memoryDryRunPolicy.policy
+                  : dryRunPolicy.policy,
+        }
+      : {}),
+};
+const chamberAuth = createAuth(database, authConfig);
+const app = storyMode
+  ? await createApp(database, chamberAuth, origin, chamberHostOptions)
+  : await createLabApp(database, chamberAuth, origin, {
+      ...chamberHostOptions,
+      chamberStorytellerControl: storytellerControl,
+      qaContext: {
+        git: { commit: gitCommit, dirty: gitDirty },
+        environment: { identity: 'local-chamber' },
+      },
+    });
 let runtime: Awaited<ReturnType<typeof startRuntime>> | undefined;
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 let web: ReturnType<typeof spawn> | undefined;

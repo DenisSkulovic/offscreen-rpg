@@ -18,7 +18,7 @@
 | Draft saving, opening requests and profile selection | [draft controller](src/modules/drafts/controller.ts), [opening controller](src/modules/drafts/openings-controller.ts), [profile controller](src/modules/drafts/storytellers-controller.ts) | `@offscreen/application/drafts` and generation operations |
 | Story read, Start/fork, selected actions, controls | [stories controller](src/modules/stories/controller.ts) | `@offscreen/application/stories`, validated public contracts. With `GAME_AUTHORITY_MODE=distributed`, the snapshot GET and scripted resolution PUT call [Game Authority](../game-authority/README.md). Other story routes stay in-process |
 | Committed-view SSE hints | `GET /api/stories/:id/updates` + [story-update-hub](src/modules/stories/story-update-hub.ts) | PostgreSQL LISTEN/NOTIFY after `advanceStoryView` / `incrementStoryViewVersion`; no narrative |
-| Chamber/QA inspection | [Chamber tool controller](src/modules/stories/chamber-tools-controller.ts), [QA controller](src/modules/stories/qa-journeys-controller.ts) | Tool-enabled composition, not production player's default surface |
+| Chamber/QA inspection | [@offscreen/api-lab](../../tools/api-lab/src/create-lab-app.ts) | Outer Lab factory only; production `createApp` does not mount these routes |
 
 ## Debug without recreating policy
 

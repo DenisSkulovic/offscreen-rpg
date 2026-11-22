@@ -76,6 +76,8 @@ export type StorytellerTaskCustodySeam = {
   readValidatedResult(generationId: string): Promise<unknown>;
 };
 
+export type { WriterRoundPrivateSeam } from './writer-round-private-seam.js';
+
 /** Control identity publish bridge: adopts saved attempt output then publishes on GA. */
 export type StorytellerPublicationSeam = {
   publishSavedGeneration(

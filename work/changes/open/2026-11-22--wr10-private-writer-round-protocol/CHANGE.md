@@ -1,6 +1,6 @@
 # WR10 | Private split-custody Writer round: Game Authority owns money, execution Worker owns provider I/O
 
-**State: READY FOR CODE with a strict no-funded-send stop.** Source-inspected clean snapshot `d3ba291763de26a0135c1ad84b077bf4f1c153a8`; integration target `undertaking/storyteller-workshop` (latest HEAD must be rechecked). This is a **substantial first distributed Writer vertical**, not a claim that player Launch is now model-powered. No actual provider request, live key, paid grant, player enablement, database reset or production deployment is authorized.
+**State: IMPLEMENTED, awaiting the central `undertaking/storyteller-workshop` join.** Built from rechecked HEAD `bc562b77663472c8cccdd1bb68f79a00bddb619a`. Source-inspected planning snapshot was `d3ba291763de26a0135c1ad84b077bf4f1c153a8`; integration target remains `undertaking/storyteller-workshop`. This branch is not joined. This is a **substantial first distributed Writer vertical**, not a claim that player Launch is now model-powered. No actual provider request, live key, paid grant, player enablement, database reset or production deployment is authorized.
 
 ## Architectural decision
 

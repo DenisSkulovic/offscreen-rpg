@@ -17,7 +17,7 @@ import {
   startStorytellerDistributedLiveWorkers,
   type StorytellerDistributedLiveWorkers,
 } from './storyteller-distributed-live-workers.js';
-import { createApp } from '@offscreen/api/app';
+import { createLabApp } from '@offscreen/api-lab/create-lab-app';
 import type { ChamberStorytellerControl } from '@offscreen/lab-support';
 import type { StorytellerRuntimeOptions } from '@offscreen/story-engine/storyteller';
 import { authOptions } from '@offscreen/api/auth';
@@ -123,8 +123,7 @@ export async function withAppIntegration(
     }),
     plugins: [strictUtilities],
   });
-  const app = await createApp(database, auth, origin, {
-    developerTools: true,
+  const app = await createLabApp(database, auth, origin, {
     databaseConfig: config,
     ...(options.chamberStorytellerControl
       ? { chamberStorytellerControl: options.chamberStorytellerControl }
@@ -159,14 +158,11 @@ export async function withAppIntegration(
   const restartWorker = async () => {
     await stopWorker();
     if (options.storytellerDistributedLive) {
-      distributedLive = await startStorytellerDistributedLiveWorkers(
-        database,
-        {
-          ...(options.storytellerRuntime
-            ? { storytellerRuntime: options.storytellerRuntime }
-            : {}),
-        },
-      );
+      distributedLive = await startStorytellerDistributedLiveWorkers(database, {
+        ...(options.storytellerRuntime
+          ? { storytellerRuntime: options.storytellerRuntime }
+          : {}),
+      });
       return;
     }
     runtime = await startRuntime(

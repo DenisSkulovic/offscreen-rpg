@@ -18,7 +18,7 @@ import {
   type Database,
 } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
-import { createApp } from '@offscreen/api/app';
+import { createLabApp } from '@offscreen/api-lab/create-lab-app';
 import type { ChamberStorytellerControl } from '@offscreen/lab-support';
 import { authOptions } from '@offscreen/api/auth';
 import { LocalDocumentStore, type DocumentStore } from '@offscreen/documents';
@@ -60,7 +60,9 @@ export type Story03CausalMultiprocessContext = {
   defaultRules: RulePackageReference;
   gameAuthorityOrigin: string;
   killGameAuthority: () => Promise<void>;
-  restartDistributedWorkers: (options?: { spawnExecutor?: boolean }) => Promise<void>;
+  restartDistributedWorkers: (options?: {
+    spawnExecutor?: boolean;
+  }) => Promise<void>;
   stopExecutorOnly: () => Promise<void>;
   spawnExecutorOnly: () => Promise<void>;
   workerStderrTail: (role: 'relay' | 'control' | 'executor') => string;
@@ -139,8 +141,7 @@ function spawnPipedChild(
   });
   return {
     child,
-    tail: () =>
-      Buffer.concat(stderrChunks).toString('utf8').slice(-6000),
+    tail: () => Buffer.concat(stderrChunks).toString('utf8').slice(-6000),
   };
 }
 
@@ -161,7 +162,10 @@ async function release(steps: ReadonlyArray<() => void | Promise<void>>) {
   }
   if (failures.length === 0) return;
   if (failures.length === 1) throw failures[0];
-  throw new AggregateError(failures, 'STORY03 causal multiprocess cleanup failed');
+  throw new AggregateError(
+    failures,
+    'STORY03 causal multiprocess cleanup failed',
+  );
 }
 
 function temporalEnv(): { address: string; namespace: string } {
@@ -191,7 +195,9 @@ function isStorytellerGenerationResultPut(
   );
 }
 
-function storytellerSaveResultGenerationId(pathname: string): string | undefined {
+function storytellerSaveResultGenerationId(
+  pathname: string,
+): string | undefined {
   const match = pathname.match(
     /^\/internal\/v1\/storyteller-generations\/([^/]+)\/result$/,
   );
@@ -266,7 +272,9 @@ async function startControlGameAuthorityPublishProxy(options: {
               publishGenerationId &&
               !droppedGenerationIds.has(publishGenerationId) &&
               proxyResponse.statusCode === 200 &&
-              options.dropFirstCompletedPublishResponseWhen?.(publishGenerationId)
+              options.dropFirstCompletedPublishResponseWhen?.(
+                publishGenerationId,
+              )
             ) {
               try {
                 const payload = JSON.parse(body.toString('utf8')) as {
@@ -574,9 +582,8 @@ export async function withStory03CausalMultiprocessHarness(
       proxyOptions.dropFirstCompletedPublishResponseWhen =
         options.controlPublishProxy.dropFirstCompletedPublishResponseWhen;
     }
-    controlPublishProxy = await startControlGameAuthorityPublishProxy(
-      proxyOptions,
-    );
+    controlPublishProxy =
+      await startControlGameAuthorityPublishProxy(proxyOptions);
   }
   const controlGameAuthorityOrigin =
     controlPublishProxy?.origin ?? gameAuthorityOrigin;
@@ -590,9 +597,8 @@ export async function withStory03CausalMultiprocessHarness(
       proxyOptions.holdFirstCompletedSaveResponseWhen =
         options.executorResultProxy.holdFirstCompletedSaveResponseWhen;
     }
-    executorResultProxy = await startExecutorGameAuthorityResultProxy(
-      proxyOptions,
-    );
+    executorResultProxy =
+      await startExecutorGameAuthorityResultProxy(proxyOptions);
   }
   const executorGameAuthorityOrigin =
     executorResultProxy?.origin ?? gameAuthorityOrigin;
@@ -618,8 +624,7 @@ export async function withStory03CausalMultiprocessHarness(
     }),
     plugins: [strictUtilities],
   });
-  const app = await createApp(database, auth, apiOrigin, {
-    developerTools: true,
+  const app = await createLabApp(database, auth, apiOrigin, {
     databaseConfig: config,
     documentStore,
     defaultRules: options.defaultRules,
@@ -676,7 +681,9 @@ export async function withStory03CausalMultiprocessHarness(
     workerOptions: { spawnExecutor?: boolean } = {},
   ) => {
     await stopWorkers();
-    await spawnWorkers(workerOptions.spawnExecutor ?? options.spawnExecutor ?? true);
+    await spawnWorkers(
+      workerOptions.spawnExecutor ?? options.spawnExecutor ?? true,
+    );
   };
 
   const stopExecutorOnly = async () => {

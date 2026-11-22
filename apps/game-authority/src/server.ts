@@ -25,12 +25,26 @@ import {
 import {
   storytellerGenerationPublishResponseSchema,
 } from '@offscreen/contracts/storyteller-task-custody';
+import {
+  parseWriterRoundPrivatePrepareRequest,
+  parseWriterRoundPrivateSubmitOutcomeRequest,
+  routeWriterRoundPrivateCustody,
+  writerRoundPrivateCustodyContractVersion,
+  writerRoundPrivateCustodyVersionHeader,
+  writerRoundPrivateHttpErrorSchema,
+  writerRoundPrivatePrepareResponseSchema,
+  writerRoundPrivateStatusResponseSchema,
+  writerRoundPrivateSubmitOutcomeResponseSchema,
+} from '@offscreen/contracts/writer-round-private-custody';
+import { WriterRoundPrivateCustodyError } from '@offscreen/story-engine/storyteller/writer-round-private-custody';
+import { WriterMissionCustodyError } from '@offscreen/story-engine/storyteller/writer-mission-custody';
 import type { DocumentStore } from '@offscreen/documents';
 import { handleBranchEvidence } from './branch-evidence.js';
 import type {
   GameAuthoritySeam,
   StorytellerPublicationSeam,
   StorytellerTaskCustodySeam,
+  WriterRoundPrivateSeam,
 } from './application.js';
 import { LaunchLedgerError } from './launch-ledger.js';
 
@@ -49,6 +63,7 @@ export type GameAuthorityServerOptions = {
   executorToken?: string;
   controlToken?: string;
   custody?: StorytellerTaskCustodySeam;
+  writerRounds?: WriterRoundPrivateSeam;
   publication?: StorytellerPublicationSeam;
   documentStore?: DocumentStore;
   timeoutMs: number;
@@ -105,6 +120,33 @@ function sendCustody(response: ServerResponse, status: number, body: unknown) {
   send(response, status, body, {
     [storytellerTaskCustodyVersionHeader]: storytellerTaskCustodyContractVersion,
   });
+}
+
+function sendWriterRoundPrivate(
+  response: ServerResponse,
+  status: number,
+  body: unknown,
+) {
+  send(response, status, body, {
+    [writerRoundPrivateCustodyVersionHeader]:
+      writerRoundPrivateCustodyContractVersion,
+  });
+}
+
+function sendWriterRoundPrivateHttpError(
+  response: ServerResponse,
+  status: number,
+  code: 'invalid' | 'not_found' | 'conflict' | 'unavailable' | 'unauthorized',
+  reason?: string,
+) {
+  sendWriterRoundPrivate(
+    response,
+    status,
+    writerRoundPrivateHttpErrorSchema.parse({
+      code,
+      ...(reason ? { reason } : {}),
+    }),
+  );
 }
 
 function sendError(
@@ -353,6 +395,103 @@ async function handlePublish(
   }
 }
 
+async function handleWriterRoundPrivate(
+  request: IncomingMessage,
+  response: ServerResponse,
+  route: Exclude<
+    ReturnType<typeof routeWriterRoundPrivateCustody>,
+    { kind: 'absent' | 'invalid' }
+  >,
+  options: GameAuthorityServerOptions,
+) {
+  const writerRounds = options.writerRounds;
+  if (!writerRounds) {
+    sendWriterRoundPrivateHttpError(response, 503, 'unavailable');
+    return;
+  }
+  try {
+    if (route.kind === 'status') {
+      const outcome = await withTimeout(
+        writerRounds.getStatus({
+          missionId: route.missionId,
+          ordinal: route.ordinal,
+        }),
+        options.timeoutMs,
+      );
+      sendWriterRoundPrivate(
+        response,
+        200,
+        writerRoundPrivateStatusResponseSchema.parse(outcome),
+      );
+      return;
+    }
+    const raw = await readRawBody(request);
+    if (route.kind === 'prepare') {
+      const parsed = parseWriterRoundPrivatePrepareRequest(raw ?? '');
+      if (!parsed.ok) {
+        sendWriterRoundPrivateHttpError(response, 400, 'invalid', parsed.reason);
+        return;
+      }
+      const outcome = await withTimeout(
+        writerRounds.prepareRound({
+          missionId: route.missionId,
+          ordinal: route.ordinal,
+          contextId: parsed.value.contextId,
+          attemptId: parsed.value.attemptId,
+          expectedRevision: parsed.value.expectedRevision,
+        }),
+        options.timeoutMs,
+      );
+      sendWriterRoundPrivate(
+        response,
+        200,
+        writerRoundPrivatePrepareResponseSchema.parse(outcome),
+      );
+      return;
+    }
+    const parsed = parseWriterRoundPrivateSubmitOutcomeRequest(raw ?? '');
+    if (!parsed.ok) {
+      sendWriterRoundPrivateHttpError(response, 400, 'invalid', parsed.reason);
+      return;
+    }
+    const outcome = await withTimeout(
+      writerRounds.submitOutcome({
+        missionId: route.missionId,
+        ordinal: route.ordinal,
+        attemptId: route.attemptId,
+        body: parsed.value,
+      }),
+      options.timeoutMs,
+    );
+    sendWriterRoundPrivate(
+      response,
+      200,
+      writerRoundPrivateSubmitOutcomeResponseSchema.parse(outcome),
+    );
+  } catch (error) {
+    if (error instanceof WriterRoundPrivateCustodyError) {
+      sendWriterRoundPrivateHttpError(response, 409, 'conflict');
+      return;
+    }
+    if (error instanceof WriterMissionCustodyError) {
+      sendWriterRoundPrivateHttpError(response, 409, 'conflict', error.code);
+      return;
+    }
+    if (error instanceof StoryError) {
+      sendWriterRoundPrivateHttpError(
+        response,
+        { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+          error.code
+        ],
+        error.code,
+        error.reason,
+      );
+      return;
+    }
+    sendWriterRoundPrivateHttpError(response, 503, 'unavailable');
+  }
+}
+
 async function handleCustody(
   request: IncomingMessage,
   response: ServerResponse,
@@ -470,6 +609,21 @@ async function handle(
       ? {}
       : { control: options.controlToken }),
   };
+
+  const writerRoundRoute = routeWriterRoundPrivateCustody(method, url.pathname);
+  if (writerRoundRoute.kind !== 'absent') {
+    const role = authorizedRole(request, authTokens);
+    if (role !== 'executor') {
+      sendWriterRoundPrivateHttpError(response, 401, 'unauthorized');
+      return;
+    }
+    if (writerRoundRoute.kind === 'invalid') {
+      sendWriterRoundPrivateHttpError(response, 400, 'invalid');
+      return;
+    }
+    await handleWriterRoundPrivate(request, response, writerRoundRoute, options);
+    return;
+  }
 
   const custodyRoute = routeStorytellerTaskCustody(method, url.pathname);
   if (custodyRoute.kind === 'publish') {
