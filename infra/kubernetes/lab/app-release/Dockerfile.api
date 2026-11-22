@@ -10,7 +10,6 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY infra/kubernetes/lab/app-release/docker.npmrc .npmrc
 COPY infra/kubernetes/lab/app-release/prepare-runtime-tree.sh \
   infra/kubernetes/lab/app-release/release-process-env-shim.mjs \
-  infra/kubernetes/lab/app-release/production-workspace-closure.mjs \
   infra/kubernetes/lab/app-release/
 COPY apps apps
 COPY packages packages
