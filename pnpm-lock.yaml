@@ -77,6 +77,9 @@ importers:
       '@offscreen/game-authority':
         specifier: workspace:*
         version: link:../game-authority
+      '@offscreen/lab-support':
+        specifier: workspace:*
+        version: link:../../packages/lab-support
       '@offscreen/runtime-logging':
         specifier: workspace:*
         version: link:../../packages/runtime-logging
@@ -576,9 +579,6 @@ importers:
       '@offscreen/api':
         specifier: workspace:*
         version: link:../../apps/api
-      '@offscreen/api-lab':
-        specifier: workspace:*
-        version: link:../api-lab
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -632,54 +632,11 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  tools/api-lab:
-    dependencies:
-      '@nestjs/common':
-        specifier: 12.0.3
-        version: 12.0.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
-      '@offscreen/api':
-        specifier: workspace:*
-        version: link:../../apps/api
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@offscreen/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@offscreen/lab-support':
-        specifier: workspace:*
-        version: link:../../packages/lab-support
-      '@offscreen/story-engine':
-        specifier: workspace:*
-        version: link:../../packages/story-engine
-      reflect-metadata:
-        specifier: 0.2.2
-        version: 0.2.2
-      zod:
-        specifier: 4.6.5
-        version: 4.6.5
-    devDependencies:
-      '@offscreen/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@types/express':
-        specifier: 5.0.6
-        version: 5.0.6
-      '@types/node':
-        specifier: 22.20.3
-        version: 22.20.3
-      typescript:
-        specifier: 5.9.3
-        version: 5.9.3
-
   tools/chamber:
     dependencies:
       '@offscreen/api':
         specifier: workspace:*
         version: link:../../apps/api
-      '@offscreen/api-lab':
-        specifier: workspace:*
-        version: link:../api-lab
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
