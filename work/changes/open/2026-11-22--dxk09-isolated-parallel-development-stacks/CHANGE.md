@@ -40,6 +40,10 @@ The environment design has two independent dimensions: **purpose** (development,
 
 **Next Ready code stage: T03b-1** in TASKS.md is dev-only shared backing service bootstrap. The parent should dispatch small sequential service-owned slices, rather than a single unbounded infrastructure implementation. Live ensure of backing servers remains separately approval-gated. T03b-2 per-slot identities/credentials remains planner-held until backing services are proven. Do not use release-pinned installers on dev by changing their cluster context.
 
+## 2026-11-22 | SQL tenant design resolved, code-only next
+
+At integration HEAD `37749bbc`, shared dev CNPG, SeaweedFS and Temporal are live; Temporal schema ran once and both its persistence/server services became Available, but no dev workflow proof yet. T03b-2 was correctly refused by Cursor because SQL role and CONNECT privilege design were unfinished. Planner has now selected role/database names, Secrets, scoped migrator and runtime roles, CNPG closed-database creation, explicit SQL PUBLIC ACL fence and connection budget. See **TASKS.md T03b-2a** and **EXECUTION.md C1**. First dispatch is code/tests only, without live tenant creation or ACL mutation. S3/Temporal per-slot tenancy stays held.
+
 ## Next implementation slice and boundary
 
 **T04a is now integrated** at `undertaking/storyteller-workshop@6cc0ad7a`: optional validated Better Auth `advanced.cookiePrefix` with default release behavior unchanged; seven focused tests passed, no live two-port browser proof.
