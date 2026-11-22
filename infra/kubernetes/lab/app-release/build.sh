@@ -33,7 +33,7 @@ rsync -a \
   --exclude work \
   "$REPO_ROOT/" "$stage/"
 
-cp "$APP_RELEASE_DIR"/{Dockerfile.api,Dockerfile.game-authority,docker.npmrc,prepare-runtime-tree.sh,release-process-env-shim.mjs} \
+cp "$APP_RELEASE_DIR"/{Dockerfile.api,Dockerfile.game-authority,docker.npmrc,prepare-runtime-tree.sh,production-workspace-closure.mjs,release-process-env-shim.mjs} \
   "$stage/infra/kubernetes/lab/app-release/"
 
 echo "Building ${API_IMAGE}"

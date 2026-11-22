@@ -1,5 +1,13 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -72,6 +80,67 @@ test('devDependencies and unknown workspace specs are rejected', () => {
     () => productionWorkspaceClosure(root, 'apps/not-a-workspace'),
     /unknown workspace path/,
   );
+});
+
+test('prepared API runtime tree resolves @offscreen/db and omits Lab', () => {
+  const output = mkdtempSync(path.join(tmpdir(), 'ma12-runtime-'));
+  try {
+    const prepared = spawnSync(
+      'bash',
+      [
+        path.join(
+          repoRoot,
+          'infra/kubernetes/lab/app-release/prepare-runtime-tree.sh',
+        ),
+        'apps/api',
+        output,
+      ],
+      { cwd: repoRoot, encoding: 'utf8' },
+    );
+    assert.equal(prepared.status, 0, prepared.stderr || prepared.stdout);
+    assert.equal(
+      spawnSync('test', ['-d', path.join(output, 'packages/lab-support')])
+        .status,
+      1,
+    );
+    assert.equal(
+      spawnSync('test', ['-d', path.join(output, 'tools/api-lab')]).status,
+      1,
+    );
+    const resolved = createRequire(
+      path.join(output, 'apps/api/package.json'),
+    ).resolve('@offscreen/db');
+    assert.equal(resolved.startsWith(`${output}${path.sep}`), true);
+
+    rmSync(path.join(output, 'packages/db'), { recursive: true, force: true });
+    assert.throws(() =>
+      createRequire(path.join(output, 'apps/api/package.json')).resolve(
+        '@offscreen/db',
+      ),
+    );
+  } finally {
+    rmSync(output, { recursive: true, force: true });
+  }
+});
+
+test('release image builds copy the closure tool into the builder', () => {
+  const releaseDir = path.join(repoRoot, 'infra/kubernetes/lab/app-release');
+  for (const dockerfile of [
+    'Dockerfile.api',
+    'Dockerfile.game-authority',
+    'Dockerfile.worker',
+  ]) {
+    assert.match(
+      readFileSync(path.join(releaseDir, dockerfile), 'utf8'),
+      /production-workspace-closure\.mjs/,
+    );
+  }
+  for (const script of ['build.sh', 'build-worker.sh']) {
+    assert.match(
+      readFileSync(path.join(releaseDir, script), 'utf8'),
+      /production-workspace-closure\.mjs/,
+    );
+  }
 });
 
 function writeWorkspace(root, relative, manifest) {
