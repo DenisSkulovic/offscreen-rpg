@@ -71,7 +71,7 @@ The fixed ownership targets are [HR01](../../changes/open/2026-11-22--hr01-api-r
 
 ## Subsequent three-lane wave, designed in advance (2026-11-22; not implemented)
 
-**Dependency DAG:** current WR10 → future [WR11](../../changes/open/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md); current MA12 → integrated [CL01](../../changes/archive/2026-11/experience/2026-11-22--cl01-terminal-player-client/CHANGE.md); current TURN03 cold-kind PASS → existing [K8S10](../../changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/K8S10-CURRENT-EXECUTION.md). In next wave, CL01, WR11 and K8S10 source tasks have disjoint files. No current-wave Cursor should touch a successor while implementing the current three.
+**Dependency DAG:** current WR10 → integrated [WR11](../../changes/archive/2026-11/storyteller/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md); current MA12 → integrated [CL01](../../changes/archive/2026-11/experience/2026-11-22--cl01-terminal-player-client/CHANGE.md); current TURN03 cold-kind PASS → existing [K8S10](../../changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/K8S10-CURRENT-EXECUTION.md). K8S10 harness source is on this branch. Its live Pod mutation stays gated.
 
 **CL01** builds a secure, browser-approved terminal sign-in plus public player experience (launch, play, choice, history, fork, machine-readable public snapshots) via the same Nest story routes. Production-only player-story bearer cannot authorize Admin/Drafts/private GA. It owns terminal-auth tables/migration and API story identity; no Game Authority/Worker changes.
 

@@ -1109,7 +1109,9 @@ test('WR10 T04 negatives: auth, limits, policy, race, idempotence, uncertain', a
           apiKey: SAMPLE_PROVIDER_KEY,
           outputSchema,
           fetchImpl: fetch,
-          prepareTransport: (input): PreparedWriterRoundTransport => ({
+          prepareTransport: (input: {
+            capturedWire: { sha256: string };
+          }): PreparedWriterRoundTransport => ({
             preflight: () => ({
               kind: 'ready',
               wireSha256: input.capturedWire.sha256,

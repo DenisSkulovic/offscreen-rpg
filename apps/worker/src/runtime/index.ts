@@ -15,7 +15,10 @@ import { createStories } from '@offscreen/story-engine/stories';
 // in incremental/local builds, silently dropping newly registered activities.
 import { createWorkerActivities } from '../activities/index';
 import { closeWorkerConnections } from './connections';
-import type { WorkerConfig } from '../bootstrap/config';
+import {
+  WRITER_CONTINUATION_ADMISSION_SCRIPTED,
+  type WorkerConfig,
+} from '../bootstrap/config';
 import {
   deliverOutboxNotice,
   dispatchedNoticeTopics,
@@ -43,6 +46,9 @@ export async function startRuntime(
       ...(storytellerOptions.documentStore
         ? { documentStore: storytellerOptions.documentStore }
         : {}),
+      writerContinuationAdmission:
+        config.writerContinuationAdmission ??
+        WRITER_CONTINUATION_ADMISSION_SCRIPTED,
     });
     const resolvedStorytellerOptions: StorytellerRuntimeOptions =
       storytellerOptions.dispatchAuthority || !storytellerOptions.provider

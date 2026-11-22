@@ -40,10 +40,13 @@ import { createCampaignDocuments } from './documents';
 import { createStoryDelegationPolicy } from './delegation-policy';
 import { createDelegatedOfferControls } from '../campaign/delegated-offer';
 import { advanceDelegatedWithdrawal as advanceDelegatedWithdrawalFn } from '../campaign/delegated-expiry';
+import type { WriterContinuationAdmission } from '../storyteller/writer-continuation';
 
 export type StoryApplicationOptions = ReadCacheOptions & {
   documentStore?: DocumentStore;
   defaultRules?: RulePackageReference;
+  /** Trusted server-side writer continuation admission; never from player payloads. */
+  writerContinuationAdmission?: WriterContinuationAdmission;
   /**
    * Optional synthetic-fixture presentation eligibility. Ordinary callers omit
    * this; absence denies every non-playable source. Authorization stays with
@@ -107,6 +110,9 @@ export function createStories(
     advanceCampaignAction: createCampaignActionExecutions(
       database,
       options.documentStore,
+      options.writerContinuationAdmission === undefined
+        ? {}
+        : { writerContinuationAdmission: options.writerContinuationAdmission },
     ).advance,
     advanceDelegatedWithdrawal(wakeOperationId: string) {
       return advanceDelegatedWithdrawalFn(

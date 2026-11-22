@@ -4,7 +4,7 @@
  */
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   storytellerAttempt,
@@ -779,6 +779,55 @@ export async function readWriterMissionStepRow(
     throw new WriterMissionCustodyError('step_not_found');
   }
   return step;
+}
+
+export async function readLatestParentModelStepRow(
+  database: Database,
+  missionId: string,
+  contextId: string,
+) {
+  const [step] = await database.db
+    .select()
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, contextId),
+        isNull(storytellerWriterStep.toolCallId),
+      ),
+    )
+    .orderBy(desc(storytellerWriterStep.ordinal))
+    .limit(1);
+  return step ?? null;
+}
+
+const finalizableParentModelStepStates = [
+  'result-settled',
+  'tools-applied',
+  'proposal-ready',
+] as const;
+
+export async function readLatestFinalizableParentModelStepRow(
+  database: Database,
+  missionId: string,
+  contextId: string,
+) {
+  const [step] = await database.db
+    .select()
+    .from(storytellerWriterStep)
+    .where(
+      and(
+        eq(storytellerWriterStep.missionId, missionId),
+        eq(storytellerWriterStep.contextId, contextId),
+        isNull(storytellerWriterStep.toolCallId),
+        inArray(storytellerWriterStep.state, [
+          ...finalizableParentModelStepStates,
+        ]),
+      ),
+    )
+    .orderBy(desc(storytellerWriterStep.ordinal))
+    .limit(1);
+  return step ?? null;
 }
 
 function writerProviderPreflightReason(

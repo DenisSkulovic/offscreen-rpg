@@ -20,7 +20,10 @@ import { writerSceneProposalV3Schema } from '@offscreen/storyteller/tasks';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { admitCampaignActionInTransaction } from '../dist/campaign/actions.js';
-import { settleActionExecution } from '../dist/campaign/action-executions.js';
+import {
+  createCampaignActionExecutions,
+  settleActionExecution,
+} from '../dist/campaign/action-executions.js';
 import { campaignOffer, saveOfferPlans } from '../dist/campaign/persistence.js';
 import { initializeCampaign } from '../dist/campaign/settings.js';
 import { createStoryInitialization } from '../dist/stories/initialization.js';
@@ -34,7 +37,7 @@ import {
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
-} from '../../application/dist/developer-tools/index.js';
+} from '../../lab-support/dist/index.js';
 
 const profile = storytellerCatalogue.resolve({
   id: 'absurd-action-comedy',
@@ -320,7 +323,7 @@ async function missionCaptureBaseRootHash(database, missionId) {
   return generationRow.input.writerMissionCapture.sceneScope.baseRootHash;
 }
 
-async function settleExecution(database, storyId, operationId) {
+async function settleExecution(database, storyId, operationId, admission) {
   await database.db.transaction(async (tx) => {
     const current = await lockStoryById(tx, storyId);
     const [execution] = await tx
@@ -334,8 +337,15 @@ async function settleExecution(database, storyId, operationId) {
       .where(eq(campaign.storyId, storyId));
     assert.ok(state);
     const now = Date.now() + 60_000;
-    await settleActionExecution(tx, current, state, execution, now);
+    await settleActionExecution(tx, current, state, execution, now, undefined, admission);
   });
+}
+
+async function advanceExecution(database, operationId, admission) {
+  const executions = createCampaignActionExecutions(database, undefined, {
+    writerContinuationAdmission: admission,
+  });
+  await executions.advance(operationId);
 }
 
 async function markMissionReady(database, storyId) {
@@ -629,6 +639,122 @@ test('writer scene publication rolls back passage on stale canon adopt', async (
         error.reason === 'writer_scene_document_base_stale',
     );
     assert.deepEqual(await passageSequences(database, storyId), sequencesBefore);
+  });
+});
+
+test('provider continuation admission persists writer.scene.v1 and policy pin', async () => {
+  await withDisposable(async (database) => {
+    const ownerId = randomUUID();
+    await insertUser(database, ownerId);
+    await seedWriterGrant(database, ownerId);
+    const root = await mkdtemp(join(tmpdir(), 'writer-scene-provider-'));
+    const store = new LocalDocumentStore(root);
+    const { storyId, offerId } = await seedDocumentStory(database, store, ownerId);
+    const operationA = await admitChoice(database, storyId, offerId, planA.key);
+    const providerAdmission = {
+      mode: 'provider',
+      model: 'test/wr11-model',
+      policyVersion: 'writer-round-lab.v2',
+    };
+    await advanceExecution(database, operationA, providerAdmission);
+
+    const [mission] = await database.db
+      .select()
+      .from(storytellerWriterMission)
+      .where(eq(storytellerWriterMission.storyId, storyId));
+    assert.ok(mission);
+    const [notice] = await database.db
+      .select()
+      .from(outbox)
+      .where(eq(outbox.id, mission.id));
+    assert.equal(notice?.topic, WRITER_SCENE_WAKE_TOPIC);
+    const [generationRow] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, mission.generationId));
+    const capture = generationRow?.input?.writerMissionCapture;
+    assert.equal(capture?.modelSelection?.model, 'test/wr11-model');
+    assert.deepEqual(capture?.providerPolicy, {
+      version: 'writer-round-lab.v2',
+      model: 'test/wr11-model',
+    });
+  });
+});
+
+test('writer continuation replay keeps persisted capture after admission change', async () => {
+  await withDisposable(async (database) => {
+    const ownerId = randomUUID();
+    await insertUser(database, ownerId);
+    await seedWriterGrant(database, ownerId);
+    const root = await mkdtemp(join(tmpdir(), 'writer-scene-replay-admission-'));
+    const store = new LocalDocumentStore(root);
+    const { storyId, offerId } = await seedDocumentStory(database, store, ownerId);
+    const operationA = await admitChoice(database, storyId, offerId, planA.key);
+    await advanceExecution(database, operationA, {
+      mode: 'provider',
+      model: 'test/wr11-original',
+      policyVersion: 'writer-round-lab.v2',
+    });
+
+    const [mission] = await database.db
+      .select()
+      .from(storytellerWriterMission)
+      .where(eq(storytellerWriterMission.storyId, storyId));
+    const [generationBefore] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, mission.generationId));
+    const originalCapture = generationBefore?.input?.writerMissionCapture;
+
+    await database.db.transaction(async (tx) => {
+      const currentStory = await lockStoryById(tx, storyId);
+      const [state] = await tx
+        .select()
+        .from(campaign)
+        .where(eq(campaign.storyId, storyId));
+      const [checkpoint] = await tx
+        .select()
+        .from(storySceneCheckpoint)
+        .where(
+          and(
+            eq(storySceneCheckpoint.storyId, storyId),
+            eq(storySceneCheckpoint.sceneSequence, currentStory.revision),
+          ),
+        );
+      const replayed = await scheduleWriterContinuation(tx, {
+        storyId,
+        operationId: operationA,
+        ownerId,
+        basePassageId: checkpoint.passageId,
+        baseSceneSequence: checkpoint.sceneSequence,
+        baseCheckpointHash: checkpoint.checkpointHash,
+        baseRootHash: currentStory.documentRootHash,
+        baseRootRevision: currentStory.documentRootRevision,
+        baseNarrativeRevision: currentStory.revision,
+        baseCampaignStateRevision: state.settingsRevision,
+        controllingIntentOrReceiptId: operationA,
+        admission: {
+          mode: 'provider',
+          model: 'test/wr11-replacement',
+          policyVersion: 'writer-round-lab.v99',
+        },
+      });
+      assert.equal(replayed.replayed, true);
+      assert.equal(replayed.generationId, mission.generationId);
+    });
+
+    const [generationAfter] = await database.db
+      .select()
+      .from(generation)
+      .where(eq(generation.id, mission.generationId));
+    assert.deepEqual(
+      generationAfter?.input?.writerMissionCapture,
+      originalCapture,
+    );
+    assert.equal(
+      generationAfter?.input?.writerMissionCapture?.modelSelection?.model,
+      'test/wr11-original',
+    );
   });
 });
 

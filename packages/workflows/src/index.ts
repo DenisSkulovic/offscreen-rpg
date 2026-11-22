@@ -21,9 +21,8 @@ import type {
   WriterSceneActivities,
   WriterSceneDistributedControlActivities,
   WriterSceneDistributedExecutionActivities,
-  WriterSceneRoundFinalizeResult,
-  WriterSceneRoundMissionState,
 } from './contracts';
+import { runWriterSceneDistributedV2RoundLoop } from './writer-scene-distributed-v2-round-loop';
 import {
   storytellerControlTaskQueue,
   storytellerExecuteTaskQueue,
@@ -175,57 +174,22 @@ function uncertainWriterSceneRound(message: string): never {
   throw ApplicationFailure.nonRetryable(message, 'WriterSceneUncertain');
 }
 
-function requirePublishedOrReplayed(
-  state: WriterSceneRoundMissionState | WriterSceneRoundFinalizeResult,
-): void {
-  if (state.status === 'published' || state.status === 'replayed') {
-    return;
-  }
-  if (state.status === 'held') {
-    holdWriterSceneRound(state.reason ?? 'writer-scene-round-held');
-  }
-  uncertainWriterSceneRound(state.reason ?? 'writer-scene-round-uncertain');
-}
-
 /** Distributed writer scene: control plans/finalizes; executor runs one WR10 round. */
 export async function writerSceneDistributedV2(
   missionId: string,
 ): Promise<void> {
-  const plan = await planWriterSceneRound(missionId);
-  const attemptId = uuid4();
-  const executorResult = await executePreparedWriterRound({
-    missionId: plan.missionId,
-    contextId: plan.contextId,
-    ordinal: plan.ordinal,
-    expectedRevision: plan.expectedRevision,
-    attemptId,
+  await runWriterSceneDistributedV2RoundLoop(missionId, {
+    planWriterSceneRound,
+    readWriterSceneRoundMissionState,
+    executePreparedWriterRound,
+    finalizeWriterSceneRound,
+    nextAttemptId: uuid4,
+    holdWriterSceneRound,
+    uncertainWriterSceneRound,
+    failWriterSceneExecutor: (message) => {
+      throw ApplicationFailure.nonRetryable(message, 'WriterSceneExecutorFailed');
+    },
   });
-
-  if (executorResult.status === 'replayed') {
-    const missionState = await readWriterSceneRoundMissionState(missionId);
-    requirePublishedOrReplayed(missionState);
-    return;
-  }
-
-  if (executorResult.status === 'held') {
-    holdWriterSceneRound(executorResult.reason ?? 'writer-scene-executor-held');
-  }
-
-  if (executorResult.status === 'uncertain') {
-    uncertainWriterSceneRound(
-      executorResult.reason ?? 'writer-scene-executor-uncertain',
-    );
-  }
-
-  if (executorResult.status === 'failed') {
-    throw ApplicationFailure.nonRetryable(
-      executorResult.reason ?? 'writer-scene-executor-failed',
-      'WriterSceneExecutorFailed',
-    );
-  }
-
-  const finalized = await finalizeWriterSceneRound(missionId);
-  requirePublishedOrReplayed(finalized);
 }
 
 type WriterResearchActivities = import('./contracts').WriterResearchActivities;

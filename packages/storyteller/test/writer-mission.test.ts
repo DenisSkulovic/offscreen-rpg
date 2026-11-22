@@ -842,6 +842,13 @@ test('writer-mission.v3 continuation capture and v3 scene proposals bind narrati
   const v3Capture = writerMissionCaptureV3ContinuationSchema.parse(
     finiteWriterMissionV3ContinuationCapture(),
   );
+  writerMissionCaptureV3ContinuationSchema.parse({
+    ...finiteWriterMissionV3ContinuationCapture(),
+    providerPolicy: {
+      version: 'writer-round-lab.v2',
+      model: 'test/wr11-model',
+    },
+  });
   assert.equal(v3Capture.version, 'writer-mission.v3');
   assert.equal(v3Capture.sceneScope.kind, 'continuation');
   assert.equal(v3Capture.sceneScope.baseRootHash, v3Capture.libraryRootHash);

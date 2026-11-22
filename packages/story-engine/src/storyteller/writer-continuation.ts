@@ -47,6 +47,24 @@ export type WriterContinuationResearchGrant = Readonly<{
   maxMicrousdPerChild: number;
 }>;
 
+/** Server-owned continuation writer admission; never parsed from player request bodies. */
+export type WriterContinuationAdmission =
+  | Readonly<{ mode: 'scripted' }>
+  | Readonly<{
+      mode: 'provider';
+      model: string;
+      policyVersion: string;
+    }>;
+
+export const WRITER_CONTINUATION_ADMISSION_SCRIPTED: WriterContinuationAdmission =
+  { mode: 'scripted' };
+
+export function resolveWriterContinuationAdmission(
+  admission?: WriterContinuationAdmission,
+): WriterContinuationAdmission {
+  return admission ?? WRITER_CONTINUATION_ADMISSION_SCRIPTED;
+}
+
 export type ScheduleWriterContinuationInput = Readonly<{
   storyId: string;
   operationId: string;
@@ -60,6 +78,7 @@ export type ScheduleWriterContinuationInput = Readonly<{
   baseCampaignStateRevision: number;
   controllingIntentOrReceiptId: string;
   researchGrant?: WriterContinuationResearchGrant;
+  admission?: WriterContinuationAdmission;
 }>;
 
 export type ScheduleWriterContinuationResult = Readonly<{
@@ -115,7 +134,7 @@ async function loadAdmissibleGrant(
   return { accountId: grant.accountId, runId: grant.runId };
 }
 
-function buildWriterContinuationCapture(input: {
+export function buildWriterContinuationCapture(input: {
   generationId: string;
   ownerId: string;
   schedule: ScheduleWriterContinuationInput;
@@ -129,6 +148,23 @@ function buildWriterContinuationCapture(input: {
       researchGrant.maxMicrousdPerChild <= 0)
   ) {
     throw new Error('writer_research_grant_invalid');
+  }
+  const admission = resolveWriterContinuationAdmission(input.schedule.admission);
+  let modelSelection: { provider: 'openrouter'; model: string };
+  let providerPolicy: { version: string; model: string } | undefined;
+  if (admission.mode === 'scripted') {
+    modelSelection = { provider: 'openrouter', model: 'scripted-offline' };
+  } else {
+    const model = admission.model.trim();
+    const policyVersion = admission.policyVersion.trim();
+    if (model.length === 0) {
+      throw new Error('writer_continuation_provider_model_required');
+    }
+    if (policyVersion.length === 0) {
+      throw new Error('writer_continuation_provider_policy_version_required');
+    }
+    modelSelection = { provider: 'openrouter', model };
+    providerPolicy = { version: policyVersion, model };
   }
   const toolsAllowlist =
     researchGrant === undefined
@@ -158,10 +194,8 @@ function buildWriterContinuationCapture(input: {
         input.schedule.controllingIntentOrReceiptId,
       scenarioKind: 'narrative-only' as const,
     },
-    modelSelection: {
-      provider: 'openrouter' as const,
-      model: 'scripted-offline',
-    },
+    modelSelection,
+    ...(providerPolicy === undefined ? {} : { providerPolicy }),
     budgets: writerContinuationMissionBudgets,
   };
   const capturedRequestHash = hashCanonicalJson(captureBody);
