@@ -48,3 +48,6 @@ apps/web/src/features/play/
 **Done:** the path from Story library → Draft/Opening → Launch → Play has a readable source map and consistent HTTP/query/presentation boundaries; existing Play and Launch tests pass with preserved behavior; no accidental new hydration, auto-POST, stale revision, SSE coupling or owner disclosure. A moved file is not counted as extra functionality.
 
 [Source and import map](SOURCE-MAP.md) · [Composer route](TASKS.md) · [acceptance](PROOF.md).
+
+
+**Execution-wave coordination:** [HR01–HR03 post-CL01/WR11 wave](../../../undertakings/storyteller-workshop/NEXT-WAVE.md). This packet was promoted from backlog for the next execution window, not retrospectively implemented. Revalidate against the actual post-predecessor undertaking HEAD before starting a linked worktree.

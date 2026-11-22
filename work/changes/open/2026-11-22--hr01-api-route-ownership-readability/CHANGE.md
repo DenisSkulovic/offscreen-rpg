@@ -1,6 +1,6 @@
 # HR01 | A Nest API a human can read and navigate
 
-**Profile:** STRUCTURAL/REFACTOR · **Status: PREPARED, PLANNER-GATED until MA12 and CL01 are integrated and current controller/DI source is reconciled.** Source-inspected baseline: `d3ba291763de`; integration branch `undertaking/storyteller-workshop`, current packet commit does not alter production. **This is a future readability wave, not a parallel editor of ongoing MA12 or planned CL01.**
+**Profile:** STRUCTURAL/REFACTOR · **Status: NEAR-TERM, CONDITIONAL; dispatch after MA12 and CL01 integrate and the explicit post-merge contract check in NEXT-WAVE.md passes.** Source-inspected baseline: `d3ba291763de`; integration branch `undertaking/storyteller-workshop`, current packet commit does not alter production. **This is a future readability wave, not a parallel editor of ongoing MA12 or planned CL01.**
 
 ## Source diagnosis and desired outcome
 
@@ -44,3 +44,6 @@ These are **semantic groups, not mandatory per-route files**. Cursor may combine
 **Acceptance:** every original route accounted for in a readable `stories/README.md` and `admin/README.md`; API production build/typecheck; route inventory and at least existing auth/owner/revision/SSE negative tests retained; no extra route or changed JSON payload; source graph unchanged at package layer; no new hidden `StoryError`/AdminSessionError leakage. Behavior stays identical, including held/uncertain status. Keep existing tests; don't generate one test per controller.
 
 [Source/caller map](SOURCE-MAP.md) · [bounded refactor route](TASKS.md) · [proof/readability rubric](PROOF.md).
+
+
+**Execution-wave coordination:** [HR01–HR03 post-CL01/WR11 wave](../../../undertakings/storyteller-workshop/NEXT-WAVE.md). This packet was promoted from backlog for the next execution window, not retrospectively implemented. Revalidate against the actual post-predecessor undertaking HEAD before starting a linked worktree.

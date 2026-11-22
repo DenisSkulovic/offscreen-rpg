@@ -32,3 +32,6 @@ Add `packages/db/README.md`: `@offscreen/db` owns Pool/Drizzle connection, migra
 **Completion:** the public table export set remains 20 and names/types identical, Drizzle extracted schema metadata and migration snapshot equivalent to baseline, no generated migration difference, all package imports build, existing financial/fork/lease/custody tests remain intact. A developer can find the real operation and transaction owner from one SQL atlas; no claim that moving schema files improves SQL behavior or scale.
 
 [Exact table/coupling map](SOURCE-MAP.md) · [routine implementation tasks](TASKS.md) · [identity/failure proof](PROOF.md).
+
+
+**Execution-wave coordination:** [HR01–HR03 post-CL01/WR11 wave](../../../undertakings/storyteller-workshop/NEXT-WAVE.md). This packet was promoted from backlog for the next execution window, not retrospectively implemented. Revalidate against the actual post-predecessor undertaking HEAD before starting a linked worktree.

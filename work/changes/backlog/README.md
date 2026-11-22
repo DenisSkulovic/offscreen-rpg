@@ -9,7 +9,7 @@
 - [agent runtime](agent-runtime/README.md): 6 proposed Changes
 - [experience admin](experience-admin/README.md): 4 proposed Changes
 - [policy finance](policy-finance/README.md): 7 proposed Changes
-- [quality evaluation](quality-evaluation/README.md): 8 proposed Changes
+- [quality evaluation](quality-evaluation/README.md): 5 proposed Changes
 - [platform operations](platform-operations/README.md): 10 proposed Changes
 
 **Lifecycle:** A proposal may stay here indefinitely if genuinely deferred, but must retain a domain owner, next prerequisite, and recognizable outcome. When the owner selects work for the upcoming execution window, ChatGPT rechecks the latest integration HEAD and dependencies, promotes the packet into `work/changes/open/`, repairs its links, and only then turns it into source-grounded executable Cursor tasks. Closed work goes via the established archive/ledger process. Avoid indefinitely parking an actually active blocker here; `open/` is for current/near-term effort.
@@ -18,3 +18,5 @@
 
 
 **Deferred earlier packets (not counted among the 2026-11-22 gym proposals):** OBS04, TURN04, DXK08, DXK09, MA06 and MA09 were unselected/deferred as of this classification. They are preserved in the corresponding category index and must undergo source review before promotion. Partial/in-flight DIST03, live-edge K8S11, and old WR05/WR09 umbrella reconciliation remain in `open/` until their true disposition is decided.
+
+**2026-11-22 promotion:** HR01/HR02/HR03 were promoted together to the near-term Open set. Execution remains subject to the actual post-CL01/WR11 source gates in [the next-wave plan](../../undertakings/storyteller-workshop/NEXT-WAVE.md).
