@@ -1,6 +1,6 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
-**State: WR10 `f5c5fc04`, MA12 `5cf2e74a`, and TURN03 harness `c90c5a73` are joined on `undertaking/storyteller-workshop` at `e55829b4bd1b3e337ff68dba88c9bcb5975d8def`.** Real preflight at that SHA found context, cluster, four release images, gateway, Postgres secret, object store, Temporal, and OAuth env present. `runTurn03ColdTrace({ runDisposableKind: true })` has no live cross-pod client, so all eight gates stayed `NOT-RUN` and overall stayed `NOT-RUN`. Cold-kind POC is not complete. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
+**State: BLOCKED. Cold-kind POC is not complete.** Joined HEAD was rebuilt and loaded into `kind-offscreen-lab`. `game-api` on image `import-2026-11-22@sha256:85657a683927a1a7811f2ce90a5167674355a5c678b413c053806ecbb61c1c1a` still exits with `api.runtime.startup_failed` and `errorKind=Error`. The deployment exceeded its progress deadline, so no cross-pod gate can PASS. An in-cluster import from `/app` could not resolve `@offscreen/db`. The local Docker daemon then failed `UtilAcceptVsock` before a further image inspection. Overall remains `NOT-RUN`. Original TURN03 Change and prior lower-tier evidence remain historically valid. **Do not create another TURN change folder.** No paid provider, no protected DB mutation or destructive cluster reset.
 
 ## What actually exists now
 
