@@ -11,6 +11,8 @@
 The many dated catalog sections below are **historical planning coverage**, not the active queue. For future items, navigate by the [backlog index](backlog/README.md) rather than scanning this chronology.
 
 
+**2026-11-22 near-term permanent test infrastructure:** [TESTLAB01 repeatable provider-free game tests](open/2026-11-22--testlab01-repeatable-provider-free-game-tests/CHANGE.md) is an owner-commissioned implementation packet for transactional, idempotent test-user grants, zero-paid-transport proof and repeatable smoke configuration. It is **not** an implicit production entitlement or authorized live grant. Complementary deferred [SIM01](backlog/platform-operations/2026-11-22--sim01-realistic-zero-cost-provider-simulator/CHANGE.md) later adds scripted model/provider latency and fault behavior. TURN03's live state remains separate.
+
 ## External-provider usage, costs, reconciliation and reliability (4 more, 2026-11-22)
 
 The [owner's minutes](../sessions/2026-11-22.md#14-external-provider-economics-usage-delayed-reconciliation-model-outages-and-multi-product-financial-integrity) add four **PROPOSED / NOT CURSOR-READY** Changes, taking the 31 named brainstorm outcomes to **35**. The existing Writer reserve/settlement/usage-window SQL is not a provider billing reconciliation engine. These records separate provider-native money evidence, multi-provider metering, operational reliability and internal investigations.
