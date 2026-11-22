@@ -4,14 +4,14 @@
 
 **Invariant:** preserve existing DXK08 and release code paths until replacement is proven. No raw `tilt down`, `kind delete`, database reset, cluster-wide cleanup, paid provider calls or cross-worktree SIGTERM. Reconcile concurrent local work before commits.
 
-## T01 | Dev Docker context + compiler runtime foundation | READY
+## T01 | Dev Docker context + compiler runtime foundation | READY; dispatch T01a then T01b
 
-**Read (first):** `infra/kubernetes/lab/dev/Dockerfile`, `infra/kubernetes/lab/dev/Tiltfile`, `infra/kubernetes/lab/dev/tilt/load-dev-image.sh`, `infra/kubernetes/lab/dev/dev-sync-paths.mjs`, actual package scripts/test.
-**Edit ownership:** root `.dockerignore` or Dockerfile-specific ignore and dev Dockerfile/build-side focused tests; targeted watcher/runtime receipt only after build proof (may split child T01a/T01b, same file owner). No other cluster manifests.
+**Read (first):** `infra/kubernetes/lab/dev/Dockerfile`, `infra/kubernetes/lab/dev/Tiltfile`, `infra/kubernetes/lab/dev/tilt/load-dev-image.sh`, `infra/kubernetes/lab/dev/dev-sync-paths.mjs`, `apps/{api,game-authority,worker}/package.json` and focused tests. Source confirms API `tsc-watch --onSuccess node ... dist/src/main.js`, GA `tsc-watch --project tsconfig.dev.json --onSuccess node ... dist/src/bootstrap/main.js`, and three worker `tsc-watch` commands in `apps/worker/package.json`.
+**Edit ownership:** **T01a** root `.dockerignore` or Dockerfile-specific ignore and dev Dockerfile/build-side focused tests. **T01b** a small watched-compilation/loaded-runtime receipt at existing process/bootstrap owners, tests, and status integration; only after T01a proof. Keep changes to each actual bootstrap/process owner narrowly scoped, no other cluster manifests.
 **Algorithm:** exclude host `node_modules`, dist, Next/Turbo build caches, .git and secrets at Docker context boundary; ensure Dockerfile still receives all manifests and source; build npm packages reproducibly inside image; keep safe dependency caching. Compile/reload receipt must represent loaded compiled output, not source copy completion.
 **Positive:** fresh and dependency-populated worktree Docker context/build succeed, actual app imports `@better-auth/drizzle-adapter` from container install, edit shared TS dependency → correct runtime artifact/generation; measure context bytes/build time.
 **Negative:** introduced compile error yields desired-revision NOT READY, stale old runtime not misrepresented; host symlink paths never sent into context.
-**Stop:** clean build still fails for an unrelated non-pnpm dependency, provide stage/log/path, no speculative mass rebuild.
+**Stop:** clean build still fails for an unrelated non-pnpm dependency, provide stage/log/path, no speculative mass rebuild. If compiled-output fingerprint cannot be tied to the `tsc-watch` spawned Node process without changing fundamental app lifecycle, return exact process/entrypoint evidence to planner rather than invent a daemon.
 
 ## T02 | Dynamic worktree identity/port registry | READY
 
