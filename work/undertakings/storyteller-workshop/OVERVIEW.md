@@ -10,7 +10,7 @@
 
 **2026-11-22 TESTLAB02:** [Guarded kind operator adapter](../../changes/archive/2026-11/infrastructure/2026-11-22--testlab02-kind-operator-adapter/CHANGE.md) is integrated. Read-only kind `status` is usable. Live grant write and TURN03 acceptance are not done. The previous approximate progress percentages and uncertainty remain unchanged.
 
-**One-sentence verdict:** We have a substantial, carefully constrained **foundation** for a durable game/Writer, not yet a functioning, AI-driven Storyteller product on a demonstrated resilient Kubernetes system. Treat “implemented”, “focused-test passed”, “local connected proof”, “cold Kubernetes proof” and “user-experienced quality” as **five different claims**. The first is far ahead of the last two.
+**2026-11-22 TURN03 historical fork blocker:** [FORK01](../../changes/open/2026-11-22--fork01-historical-situation-authorization/CHANGE.md) is ready for separate Story Engine implementation after a captured ZodError on wrapped selected activity authorization in fork reconstruction. Scene1/scene2 and SSE/GET are observed via existing provider-free kind test, but historical fork and recovery matrix still block TURN03. This documentation planning adds no implementation or completion credit.\n\n**One-sentence verdict:** We have a substantial, carefully constrained **foundation** for a durable game/Writer, not yet a functioning, AI-driven Storyteller product on a demonstrated resilient Kubernetes system. Treat “implemented”, “focused-test passed”, “local connected proof”, “cold Kubernetes proof” and “user-experienced quality” as **five different claims**. The first is far ahead of the last two.
 
 ## Next three implementation Changes prepared (2026-11-22; NO COMPLETION CREDIT YET)
 
