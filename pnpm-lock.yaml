@@ -77,9 +77,6 @@ importers:
       '@offscreen/game-authority':
         specifier: workspace:*
         version: link:../game-authority
-      '@offscreen/lab-support':
-        specifier: workspace:*
-        version: link:../../packages/lab-support
       '@offscreen/runtime-logging':
         specifier: workspace:*
         version: link:../../packages/runtime-logging
