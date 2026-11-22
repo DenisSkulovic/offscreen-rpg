@@ -2,7 +2,7 @@
 
 **State:** Ready for dedicated Change commission after or in coordination with DXK08; not selected globally; not implemented; not Done.  
 **Kind:** implementation. **Date:** 2026-11-20.  
-**Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md).  
+**Program:** [Kubernetes-first developer experience](../../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md).  
 **Problem observed:** current dev/release tooling hard-pins one `offscreen-lab` / `kind-offscreen-lab` cluster, API server `127.0.0.1:6443`, game `:3000`, Tilt `:10350`, fixed namespaces and one PID file. Multiple isolated Cursor worktrees therefore cannot safely run independent environments.
 
 ## Goal

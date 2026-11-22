@@ -2,7 +2,7 @@
 
 **State:** Ready for dedicated Change commission; not selected globally; not implemented; not Done.  
 **Kind:** implementation. **Date:** 2026-11-20.  
-**Program:** [Kubernetes-first developer experience](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md).  
+**Program:** [Kubernetes-first developer experience](../../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md).  
 **Current source reality:** the root `Tiltfile` intentionally uses full release-image rebuilds, one broad `app-release-images` dependency over `apps/`, `packages/` and `tools/`, and tests explicitly forbid `live_update`. `Dockerfile.web` runs a production Next build. This is appropriate release verification and must remain available, but it is too slow/stale for ordinary interactive development.
 
 ## Goal
