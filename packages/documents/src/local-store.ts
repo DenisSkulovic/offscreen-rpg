@@ -1,14 +1,9 @@
-import { constants } from 'node:fs';
-import {
-  link,
-  mkdir,
-  open,
-  readFile,
-  unlink,
-  writeFile,
-} from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import {
+  LocalObjectStorage,
+  ObjectStorageError,
+} from '@offscreen/object-storage';
 import type { z } from 'zod';
 import { canonicalJson, sha256 } from './canonical-json.js';
 import {
@@ -50,50 +45,19 @@ export class DocumentStorageError extends Error {
   }
 }
 
-async function durableExclusiveWrite(path: string, bytes: string) {
-  await mkdir(dirname(path), { recursive: true });
-  const temporary = `${path}.${randomUUID()}.staged`;
-  let handle;
-  try {
-    handle = await open(
-      temporary,
-      constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY,
-    );
-    await handle.writeFile(bytes, 'utf8');
-    await handle.sync();
-    await handle.close();
-    handle = undefined;
-    try {
-      await link(temporary, path);
-      await unlink(temporary);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-      await unlink(temporary).catch(() => undefined);
-    }
-  } catch (error) {
-    await handle?.close().catch(() => undefined);
-    await unlink(temporary).catch(() => undefined);
-    throw error;
-  }
-}
-
 export class LocalDocumentStore {
   readonly root: string;
+  private readonly storage: LocalObjectStorage;
 
   constructor(root: string) {
     if (!root.trim()) throw new Error('Document storage root is required');
     this.root = resolve(root);
+    this.storage = new LocalObjectStorage(this.root);
   }
 
-  private objectPath(hash: string) {
+  private objectKey(hash: string) {
     const valid = contentHashSchema.parse(hash);
-    return join(
-      this.root,
-      'objects',
-      'sha256',
-      valid.slice(0, 2),
-      `${valid}.json`,
-    );
+    return `objects/sha256/${valid.slice(0, 2)}/${valid}.json`;
   }
 
   private async putValidated(value: unknown) {
@@ -102,17 +66,23 @@ export class LocalDocumentStore {
       throw new DocumentStorageError('too-large');
     }
     const hash = sha256(bytes);
-    const path = this.objectPath(hash);
+    const key = this.objectKey(hash);
     try {
-      await durableExclusiveWrite(path, bytes);
-      const stored = await readFile(path, 'utf8');
+      await this.storage.putIfAbsent(
+        key,
+        Buffer.from(bytes),
+        'application/json',
+      );
+      const stored = Buffer.from(
+        await this.storage.get(key, maximumStoredObjectBytes),
+      ).toString('utf8');
       if (sha256(stored) !== hash || stored !== bytes) {
         throw new DocumentStorageError('corrupt');
       }
       return hash;
     } catch (error) {
       if (error instanceof DocumentStorageError) throw error;
-      throw new DocumentStorageError('unavailable', { cause: error });
+      throw mapStorageError(error);
     }
   }
 
@@ -162,12 +132,11 @@ export class LocalDocumentStore {
   ): Promise<T> {
     let bytes: string;
     try {
-      bytes = await readFile(this.objectPath(hash), 'utf8');
+      bytes = Buffer.from(
+        await this.storage.get(this.objectKey(hash), maximumStoredObjectBytes),
+      ).toString('utf8');
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        throw new DocumentStorageError('missing', { cause: error });
-      }
-      throw new DocumentStorageError('unavailable', { cause: error });
+      throw mapStorageError(error);
     }
     if (Buffer.byteLength(bytes) > maximumStoredObjectBytes) {
       throw new DocumentStorageError('too-large');
@@ -274,6 +243,20 @@ export class LocalDocumentStore {
       documents: manifest.entries.length,
     };
   }
+}
+
+function mapStorageError(error: unknown): Error {
+  if (error instanceof DocumentStorageError) return error;
+  if (error instanceof ObjectStorageError) {
+    if (error.code === 'missing') {
+      return new DocumentStorageError('missing', { cause: error });
+    }
+    if (error.code === 'too-large') {
+      return new DocumentStorageError('too-large', { cause: error });
+    }
+    return new DocumentStorageError('unavailable', { cause: error });
+  }
+  return new DocumentStorageError('unavailable', { cause: error });
 }
 
 export type DocumentStore = Pick<

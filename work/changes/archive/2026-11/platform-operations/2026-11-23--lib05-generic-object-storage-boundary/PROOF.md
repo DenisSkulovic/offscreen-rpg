@@ -1,6 +1,6 @@
 # LIB05 | Zero-loss acceptance
 
-Planning-only, NO tests executed.
+Executed on `change/lib05-generic-object-storage` from baseline `7e2b554f`. Live bucket NOT RUN.
 
 | Guarantee | Required verification |
 | --- | --- |

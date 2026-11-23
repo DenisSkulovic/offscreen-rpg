@@ -445,9 +445,9 @@ importers:
 
   packages/documents:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: 3.922.0
-        version: 3.922.0
+      '@offscreen/object-storage':
+        specifier: workspace:*
+        version: link:../object-storage
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -501,6 +501,22 @@ importers:
       zod:
         specifier: 4.6.5
         version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/object-storage:
+    dependencies:
+      '@aws-sdk/client-s3':
+        specifier: 3.922.0
+        version: 3.922.0
     devDependencies:
       '@offscreen/config':
         specifier: workspace:*

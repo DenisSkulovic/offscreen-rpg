@@ -2,16 +2,12 @@
  * S3-compatible DocumentStore adapter. Same canonical JSON/SHA-256/1 MiB
  * contract as LocalDocumentStore. Object keys: objects/sha256/<ab>/<hash>.json
  */
-import {
-  CreateBucketCommand,
-  GetObjectCommand,
-  HeadBucketCommand,
-  HeadObjectCommand,
-  PutObjectCommand,
-  S3Client,
-  S3ServiceException,
-} from '@aws-sdk/client-s3';
 import type { z } from 'zod';
+import {
+  ObjectStorageError,
+  S3ObjectStorage,
+  type S3Client,
+} from '@offscreen/object-storage';
 import { canonicalJson, sha256 } from './canonical-json.js';
 import {
   DocumentStorageError,
@@ -42,6 +38,8 @@ import {
   type LibraryRootV2,
 } from './schema.js';
 
+export type { S3Client };
+
 export type S3DocumentStoreConfig = Readonly<{
   bucket: string;
   region: string;
@@ -58,59 +56,30 @@ function objectKey(prefix: string, hash: string) {
   return prefix ? `${prefix.replace(/\/+$/, '')}/${base}` : base;
 }
 
-async function readBodyString(body: unknown): Promise<string> {
-  if (body == null) throw new DocumentStorageError('corrupt');
-  if (typeof body === 'string') return body;
-  if (body instanceof Uint8Array) return Buffer.from(body).toString('utf8');
-  if (typeof (body as { transformToString?: unknown }).transformToString === 'function') {
-    return (body as { transformToString: () => Promise<string> }).transformToString();
-  }
-  throw new DocumentStorageError('corrupt');
-}
-
 export class S3DocumentStore implements DocumentStore {
-  private readonly client: S3Client;
-  private readonly bucket: string;
+  private readonly storage: S3ObjectStorage;
   private readonly prefix: string;
 
   constructor(config: S3DocumentStoreConfig) {
-    if (!config.bucket.trim()) {
-      throw new Error('S3 document store bucket is required');
-    }
-    this.bucket = config.bucket.trim();
     this.prefix = config.prefix?.trim() ?? '';
-    this.client =
-      config.client ??
-      new S3Client({
-        region: config.region,
-        ...(config.endpoint ? { endpoint: config.endpoint } : {}),
-        forcePathStyle: config.forcePathStyle ?? Boolean(config.endpoint),
-        ...(config.credentials
-          ? {
-              credentials: {
-                accessKeyId: config.credentials.accessKeyId,
-                secretAccessKey: config.credentials.secretAccessKey,
-              },
-            }
-          : {}),
-      });
+    this.storage = new S3ObjectStorage({
+      bucket: config.bucket,
+      region: config.region,
+      ...(config.endpoint ? { endpoint: config.endpoint } : {}),
+      ...(config.forcePathStyle === undefined
+        ? {}
+        : { forcePathStyle: config.forcePathStyle }),
+      ...(config.credentials ? { credentials: config.credentials } : {}),
+      ...(config.client ? { client: config.client } : {}),
+    });
   }
 
   /** Ensure the configured private bucket exists (lab/bootstrap only). */
   async ensureBucket() {
     try {
-      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
-      return;
+      await this.storage.ensureBucket();
     } catch (error) {
-      if (!isNotFound(error)) {
-        throw new DocumentStorageError('unavailable', { cause: error });
-      }
-    }
-    try {
-      await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
-    } catch (error) {
-      if (isAlreadyOwned(error)) return;
-      throw new DocumentStorageError('unavailable', { cause: error });
+      throw mapStorageError(error);
     }
   }
 
@@ -122,25 +91,13 @@ export class S3DocumentStore implements DocumentStore {
     const hash = sha256(bytes);
     const key = objectKey(this.prefix, hash);
     try {
-      await this.client.send(
-        new PutObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-          Body: bytes,
-          ContentType: 'application/json',
-          IfNoneMatch: '*',
-        }),
+      await this.storage.putIfAbsent(
+        key,
+        Buffer.from(bytes),
+        'application/json',
       );
     } catch (error) {
-      if (isPreconditionFailed(error)) {
-        const existing = await this.readRaw(hash);
-        if (existing !== bytes || sha256(existing) !== hash) {
-          throw new DocumentStorageError('corrupt');
-        }
-        return hash;
-      }
-      if (error instanceof DocumentStorageError) throw error;
-      throw new DocumentStorageError('unavailable', { cause: error });
+      throw mapStorageError(error);
     }
     const stored = await this.readRaw(hash);
     if (stored !== bytes || sha256(stored) !== hash) {
@@ -151,27 +108,20 @@ export class S3DocumentStore implements DocumentStore {
 
   private async readRaw(hash: string) {
     try {
-      const response = await this.client.send(
-        new GetObjectCommand({
-          Bucket: this.bucket,
-          Key: objectKey(this.prefix, hash),
-        }),
+      const raw = await this.storage.get(
+        objectKey(this.prefix, hash),
+        maximumStoredObjectBytes,
       );
-      const bytes = await readBodyString(response.Body);
-      if (Buffer.byteLength(bytes) > maximumStoredObjectBytes) {
-        throw new DocumentStorageError('too-large');
-      }
-      return bytes;
+      return Buffer.from(raw).toString('utf8');
     } catch (error) {
-      if (error instanceof DocumentStorageError) throw error;
-      if (isNotFound(error)) {
-        throw new DocumentStorageError('missing', { cause: error });
-      }
-      throw new DocumentStorageError('unavailable', { cause: error });
+      throw mapStorageError(error);
     }
   }
 
-  private async readValidated<T>(hash: string, schema: z.ZodType<T>): Promise<T> {
+  private async readValidated<T>(
+    hash: string,
+    schema: z.ZodType<T>,
+  ): Promise<T> {
     const bytes = await this.readRaw(hash);
     if (sha256(bytes) !== hash) throw new DocumentStorageError('corrupt');
     try {
@@ -263,73 +213,31 @@ export class S3DocumentStore implements DocumentStore {
 
   async objectExists(hash: string) {
     try {
-      await this.client.send(
-        new HeadObjectCommand({
-          Bucket: this.bucket,
-          Key: objectKey(this.prefix, hash),
-        }),
-      );
-      return true;
+      return await this.storage.exists(objectKey(this.prefix, hash));
     } catch (error) {
-      if (isNotFound(error)) return false;
-      throw new DocumentStorageError('unavailable', { cause: error });
+      throw mapStorageError(error);
     }
   }
 }
 
-function isS3Exception(error: unknown): error is S3ServiceException {
-  return error instanceof S3ServiceException;
-}
-
-function isNotFound(error: unknown) {
-  if (!isS3Exception(error)) {
-    const name = (error as { name?: string }).name;
-    const code = (error as { Code?: string; code?: string }).Code ??
-      (error as { code?: string }).code;
-    return (
-      name === 'NotFound' ||
-      name === 'NoSuchKey' ||
-      name === 'NoSuchBucket' ||
-      code === 'NotFound' ||
-      code === 'NoSuchKey' ||
-      code === 'NoSuchBucket' ||
-      (error as { $metadata?: { httpStatusCode?: number } }).$metadata
-        ?.httpStatusCode === 404
-    );
+function mapStorageError(error: unknown): Error {
+  if (error instanceof DocumentStorageError) return error;
+  if (error instanceof ObjectStorageError) {
+    if (error.code === 'missing') {
+      return new DocumentStorageError('missing', { cause: error });
+    }
+    if (error.code === 'too-large') {
+      return new DocumentStorageError('too-large', { cause: error });
+    }
+    const cause = error.cause;
+    if (
+      cause instanceof Error &&
+      (cause.message === 'empty-object-body' ||
+        cause.message === 'unreadable-object-body')
+    ) {
+      return new DocumentStorageError('corrupt', { cause: error });
+    }
+    return new DocumentStorageError('unavailable', { cause: error });
   }
-  return (
-    error.name === 'NotFound' ||
-    error.name === 'NoSuchKey' ||
-    error.name === 'NoSuchBucket' ||
-    error.$metadata.httpStatusCode === 404
-  );
-}
-
-function isPreconditionFailed(error: unknown) {
-  if (isS3Exception(error)) {
-    return (
-      error.name === 'PreconditionFailed' ||
-      error.$metadata.httpStatusCode === 412
-    );
-  }
-  const name = (error as { name?: string }).name;
-  const code = (error as { Code?: string }).Code;
-  return (
-    name === 'PreconditionFailed' ||
-    code === 'PreconditionFailed' ||
-    (error as { $metadata?: { httpStatusCode?: number } }).$metadata
-      ?.httpStatusCode === 412
-  );
-}
-
-function isAlreadyOwned(error: unknown) {
-  if (!isS3Exception(error)) {
-    const code = (error as { Code?: string; name?: string }).Code ??
-      (error as { name?: string }).name;
-    return code === 'BucketAlreadyOwnedByYou' || code === 'BucketAlreadyExists';
-  }
-  return (
-    error.name === 'BucketAlreadyOwnedByYou' ||
-    error.name === 'BucketAlreadyExists'
-  );
+  return new DocumentStorageError('unavailable', { cause: error });
 }
