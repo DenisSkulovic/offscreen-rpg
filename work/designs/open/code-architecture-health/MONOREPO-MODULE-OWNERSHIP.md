@@ -1,5 +1,7 @@
 # Monorepo domain and module ownership | architecture decision dossier
 
+**2026-11-24 scope supersession:** The generic shared contracts workspace in the historical target below is superseded by the owner-selected [complete domain ownership / contracts retirement program](DOMAIN-OWNERSHIP-RETIREMENT.md). Other MA architecture history and dependency laws remain intact. DO01–DO07 will establish the selected technical ownership law after the Documents predecessor settles; no execution authorization or implementation credit here.
+
 **Status:** Proposed target, not selected technical authority or Cursor authorization. **Owner:** ChatGPT architectural planning and project owner. **Decision/review trigger:** after Writer Workshop landing and before starting the Modular Monolith Undertaking. This is an open Design within the existing code-architecture-health lifecycle, not a parallel permanent handbook. Promote accepted package boundaries and dependency law into `docs/technical/platform/`, then retire this dossier using the Design ledger and exact source SHA.
 
 ## Inspected source facts (2026-11-21)

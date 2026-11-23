@@ -1,6 +1,22 @@
 # Open Changes | current and near-term
 
-**Purpose:** Keep this directory small. An entry is here only because it is being implemented, is intended for the next few days, or has already started and needs an honest completion/cancellation decision. **A folder in open is not necessarily Ready or automatically commissioned.** The one global default selector is [work/QUEUE.md](../../QUEUE.md), currently `none`; explicit owner commissions can exist separately.
+## Near-term domain ownership sequence (2026-11-24)
+
+Owner-selected open placement after Documents settles; **Proposed / not commissioned**. Start DO01 only after planner verifies the settled source and publishes the selected technical ownership law; then commission each successor individually. No change to the global queue.
+
+| Change | Prerequisite |
+| --- | --- |
+| [DO01 Cache port](2026-11-24--do01-cache-port/CHANGE.md) | Settled Documents and planner readiness |
+| [DO02 Admin, identity and usage](2026-11-24--do02-admin-identity-usage/CHANGE.md) | DO01 integrated and planner readiness |
+| [DO03 Story and campaign interface](2026-11-24--do03-story-interface/CHANGE.md) | DO02 integrated and planner readiness |
+| [DO04 Private Game Authority protocol](2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 integrated and planner readiness |
+| [DO05 Storyteller and engine ownership](2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO04 integrated and planner readiness |
+| [DO06 Lab and evaluation ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO05 integrated and planner readiness |
+| [DO07 Retire contracts](2026-11-24--do07-retire-contracts/CHANGE.md) | DO06 integrated and planner readiness |
+
+[Retirement program](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md).
+
+**Purpose:** Keep this directory small. An entry is here only because it is being implemented, is intended for the next few days, or has already started and needs an honest completion/cancellation decision. **A folder in open is not necessarily Ready or automatically commissioned.** The one global default selector is [work/QUEUE.md](../../QUEUE.md); explicit owner commissions can exist separately.
 
 [Backlog by domain](../backlog/README.md) · [Change catalog](../README.md) · [Terminal archive](../archive/README.md) · [Storyteller undertaking](../../undertakings/storyteller-workshop/OVERVIEW.md)
 
