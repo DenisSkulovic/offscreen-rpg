@@ -96,7 +96,7 @@ The current codebase includes a Next.js frontend, API and worker services, TypeS
 | **Exploring the game design** | [Product wiki](docs/product/README.md) and [architecture atlas](docs/architecture/README.md) |
 | **A new ChatGPT planner** | [AGENTS.md](AGENTS.md) → [CHATGPT.md](CHATGPT.md) → relevant source and planning standards |
 | **A Cursor or other coding agent** | [AGENTS.md](AGENTS.md) → commissioned Change → bounded task and worktree instructions |
-| **Running locally or checking proofs** | [Local development](docs/runbooks/local-development.md) → [STATUS.md](STATUS.md) → focused tests/evidence |
+| **Running locally or checking proofs** | [Choose a local test tier](docs/runbooks/local-development.md); for a Cursor worktree, [owned dev-stack runbook](docs/runbooks/dev-worktree-stacks.md) → focused tests/evidence |
 
 This project deliberately exposes its assumptions, gaps, unsuccessful experiments and development process. Its goal is not to appear finished, but to make both **the software and the way it gets built** understandable and testable.
 
