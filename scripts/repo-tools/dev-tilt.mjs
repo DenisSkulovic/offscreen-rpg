@@ -1012,7 +1012,10 @@ if (invokedAsScript) {
         environmentSessionRoot(devWorktreeRegistryRoot()),
         selection.record.slotId,
       );
-      const code = printDevStatus(selection.record.worktreePath, { session });
+      const code = printDevStatus(selection.record.worktreePath, {
+        session,
+        pullSlotReceipts: true,
+      });
       process.exit(code);
     } else if (selection.action === 'stop') {
       runDevStopCli(selection);
