@@ -1,10 +1,10 @@
-# Local development
+# Local development | choose the right test tier
 
-> **Two different purposes:** This page retains the established shared/release-lab development procedure (including the existing root `pnpm dev` behavior). **Do not follow it to start a worktree-owned Cursor Change.** For `kind-offscreen-dev` / `offscreen-dev-N`, use [Worktree-owned development stacks](dev-worktree-stacks.md). The T05 worktree-safe start/status/stop interface remains an acceptance gate until its real proof is integrated.
+**Start with the smallest valid test.** A component/unit test does not need Docker, a Kind cluster or an allocated dev environment. For an isolated Cursor Change that needs actual game services, use the [worktree dev-environment runbook](dev-worktree-stacks.md), not historical release-lab startup commands. A two-minute [illustrated explanation](../architecture/10-developer-environments.md) shows how environments relate.
 
-This page is the safe local boot route: install, loopback dependencies, `pnpm dev`, and ordinary checks. Disposable-database resets and live model commands are on other pages. An ordinary no-spend check stays here.
+**Important correction (2026-11-23):** root `pnpm dev` now routes through `scripts/repo-tools/dev-tilt.mjs` toward `kind-offscreen-dev` and an owned `dev-N` environment. It **does not mean 'start Tilt against the release lab'**. The command exists on the integration branch but its **unattended current-image acceptance is not complete**; see the runbook's [current commands](dev-worktree-stacks.md#what-works-on-the-integrated-branch). The existing `kind-offscreen-lab`/release procedures elsewhere on this page are retained for their historically distinct purpose, not as a worktree-development fallback.
 
-**Explore by question:** [requirements and startup](#requirements-and-startup) · [fast frontend workflow](#fast-frontend-workflow) · [dependencies](#local-dependencies) · [checks and boundaries](#checks-and-boundaries). Provider-free database and identity checks are [Local integration tests](local-integration-tests.md). Repeatable provider-free launch grants and TESTLAB01 proof commands are [Provider-free game tests](provider-free-game-tests.md). A provider-free Chamber demo is [Provider-free Chamber](local-storyteller-rehearsal.md#provider-free-chamber). The paid rehearsal is [Explicitly authorized paid rehearsal](local-storyteller-rehearsal.md#explicitly-authorized-paid-rehearsal); leave that heading closed during an ordinary no-spend check.
+**Explore by task:** [toolchain](#requirements-and-startup) · [source-only frontend](#fast-frontend-workflow) · [local dependencies](#local-dependencies) · [focused checks](#checks-and-boundaries) · [disposable integration](local-integration-tests.md) · [provider-free game tests](provider-free-game-tests.md). Paid model tests require separate explicit authorization; ordinary startup never grants it.
 
 ## What a command touches
 
@@ -26,40 +26,36 @@ To inspect just the public story prototype, run `pnpm --filter @offscreen/contra
 
 Use Node **24.19.0** (also recorded in `.node-version`) and pnpm **11.19.0**. The system's default Node must match before running package scripts. Install the pinned pnpm with `npm install --global pnpm@11.19.0` if necessary.
 
-Install Docker for the kind lab and start the stack below. Copy `.env.example` to `.env` in the repository root. Generate `BETTER_AUTH_SECRET` using the command in that file. The local GitHub OAuth app is `Offscreen RPG Local`: homepage `http://127.0.0.1:3000`, callback `http://127.0.0.1:3000/api/auth/callback/github`. Put the client ID, client secret, and `BETTER_AUTH_SECRET` only in that ignored `.env`. `infra/kubernetes/lab/app-release/install.sh` copies those three values into Secret `game-runtime` and refuses to start if any is missing. It does not print them. Open the app at `http://127.0.0.1:3000`, not `localhost`.
+**For source-only work**, after confirming Node/pnpm versions, run `pnpm install --frozen-lockfile` only when dependencies are missing/changed and choose the affected package's unit, typecheck or frontend commands below. Do **not** bootstrap SQL/S3/Temporal or Kubernetes merely to run tests that do not use them.
 
-From the repository root:
+**For a full isolated development session**, read the [dev-stack runbook](dev-worktree-stacks.md#what-works-on-the-integrated-branch) and check its live acceptance and resource status before running `pnpm dev`. Each environment has a dynamically assigned loopback port; **do not assume port 3000 or the `kind-offscreen-lab` context**. GitHub OAuth configuration and per-slot secrets are handled by the owned dev projection, not by copying release-lab Secrets into a dev namespace.
 
-```sh
-pnpm install --frozen-lockfile
-pnpm stack:up
-pnpm db:migrate
-pnpm dev
-```
+**For explicitly authorized release-lab work only**, the older `pnpm stack:up` / `stack:status`, pinned release images, `infra/kubernetes/lab/app-release/install.sh` and `pnpm stack:acceptance` remain separate procedures. The lab's historical local OAuth callback used `http://127.0.0.1:3000/api/auth/callback/github`, credentials in an ignored root `.env`, and a release Secret `game-runtime`. Those values must **never** be transplanted to another Cursor's dev slot. Use [release/restore readiness](release-restore-readiness.md) and the [Kubernetes lab runbook](kubernetes-lab.md) for that purpose. Neither `pnpm stack:up` nor `pnpm db:migrate` should be casually combined with `pnpm dev` as one universal bootstrap sequence.
 
-Repeated kind image builds can use the warm path in [FAST-PATH.md](../../infra/kubernetes/lab/app-release/FAST-PATH.md): affected images only, a shared pnpm store mount, and skipped kind loads when the image id is unchanged. `bash infra/kubernetes/lab/dev/tilt/build-release-images.sh` with no extra variables remains the clean four-image build.
+Repeated release-lab image builds have a separate documented [warm path](../../infra/kubernetes/lab/app-release/FAST-PATH.md); it is not the accepted dev-slot image-generation mechanism.
 
 `pnpm stack:acceptance` is the read-only clean-clone gate. It refuses a foreign kubectl context, a non-loopback API bind, a port held by something other than this cluster, a failed `game-migrate` Job, a missing game Pod, an active Compose boot path, and a green health check that never saw a signed-in player. It does not reset the cluster. `--execute` and `reset` are refused. On the existing `kind-offscreen-lab` the command exited 1 because it had no signed-in player, while anonymous `/api/me` was 401. A browser session on that origin could still read the saved story. That read is not a fresh-clone timing.
 
-Open http://127.0.0.1:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to sign-in and signed-in users to their saved drafts. Sign-in is Better Auth GitHub OAuth. Anonymous `/api/me` is unauthorized. There is no open-access player and no email/password sign-in. `pnpm dev` starts Tilt against the lab cluster. Ordinary `.ts` and `.tsx` edits sync into a dev workspace image and restart the affected watcher. Lockfile, package manifest, Dockerfile, and migration edits use the warm release image path instead. Release acceptance stays `infra/kubernetes/lab/app-release/Tiltfile`. No model credentials or paid calls are involved.
+**Historical release-lab origin:** `http://127.0.0.1:3000`, with API on `127.0.0.1:3001` and `/api` proxied through the web server. **The dev-slot ports differ and are allocated per environment.** Entering the application sends anonymous users to sign-in and signed-in users to their saved drafts. Sign-in is Better Auth GitHub OAuth. Anonymous `/api/me` is unauthorized. There is no open-access player and no email/password sign-in. The older shared/lab Tilt development instructions in historical receipts do not describe the current root `pnpm dev` contract. Dev-slot Tilt sync/image ownership is undergoing DXK09 acceptance; [technical contract](../technical/platform/developer-environments.md#one-owner-for-the-active-development-image). Release acceptance still owns `infra/kubernetes/lab/app-release/Tiltfile`; neither environment authorizes paid model calls.
 
-Status commands from the repository root:
+Inspection commands from the repository root:
 
 ```sh
 pnpm repo:brief
 pnpm repo:brief --json
-pnpm stack:status
+pnpm dev:status        # owned dev environment, read-only
+pnpm stack:status      # separate release/shared-stack status
 ```
 
 `pnpm db:baseline`, `pnpm db:reset:test`, and `pnpm test:focus` are not startup. They are [disposable database checks](local-integration-tests.md#disposable-database-checks). `pnpm db:baseline` rewrites migration files; it does not reset PostgreSQL.
 
 API, worker and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for authenticated page reads and must point to a trusted API. `API_PROXY_ORIGIN` is the optional Node-only Nest origin for Next's same-origin `/api` rewrite (defaults to the same loopback address); do not expose either via `NEXT_PUBLIC_*`. `OFFSCREEN_DOCUMENT_ROOT` enables the local immutable campaign-document store and should identify the same ignored private `data/` directory for every API instance that can serve a campaign. When enabled, `OFFSCREEN_DEFAULT_RULE_SOURCE` selects the checked-in/default rule-package source directory; startup validates and seeds its immutable objects before accepting stories. Without document storage, document operations return unavailable while existing SQL-owned stories continue to work. Deployment ingress/proxy configuration remains separate work.
 
-The worker uses `TEMPORAL_ADDRESS` (default `127.0.0.1:7233`), `TEMPORAL_NAMESPACE` (`default`) and `TEMPORAL_TASK_QUEUE` (`offscreen-local`). Run it separately with `pnpm --filter @offscreen/worker start` after building if not using `pnpm dev`. Requests remain saved while it is stopped. The preview page checks status briefly, then offers reloading; closing it does not cancel work. These plaintext local connection settings are not a hosted deployment configuration.
+In a manual **host-only** worker invocation, `TEMPORAL_ADDRESS` defaults to `127.0.0.1:7233`, `TEMPORAL_NAMESPACE` to `default`, and `TEMPORAL_TASK_QUEUE` to `offscreen-local`. This is **not** a dev-slot worker configuration: a slot is bound to its dedicated Temporal namespace and projected credentials. Run the worker separately only when a specific focused test requires it, not as a fallback after a failed owned `pnpm dev`. Requests remain saved while it is stopped. The preview page checks status briefly, then offers reloading; closing it does not cancel work. These plaintext local connection settings are not a hosted deployment configuration.
 
 ## Fast frontend workflow
 
-For React/Next portfolio work, use [.agents/skills/frontend-engineering/SKILL.md](../../.agents/skills/frontend-engineering/SKILL.md) and the [client architecture](../technical/client/architecture.md), plus the **one** selected Change. The [2026-11 frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md) is dated evidence, not the current executor. `pnpm dev` starts Tilt against the lab cluster. It is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
+For React/Next portfolio work, use [.agents/skills/frontend-engineering/SKILL.md](../../.agents/skills/frontend-engineering/SKILL.md) and the [client architecture](../technical/client/architecture.md), plus the **one** selected Change. The [2026-11 frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md) is dated evidence, not the current executor. Root `pnpm dev` starts the owned Kind development lifecycle, **not** the release lab. It is unnecessary for a pure selector, Query/RHF component, Vitest or Storybook state.
 
 Existing direct commands after dependency setup (use only when relevant):
 
