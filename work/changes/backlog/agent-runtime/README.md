@@ -1,5 +1,7 @@
 # agent runtime | proposed Changes
 
+**LIB04 design checkpoint (2026-11-23):** [pinned reference shelves](2026-11-23--lib04-mounted-reference-libraries/CHANGE.md) now has a selected target contract, code/authorization gaps, staged execution and proof matrix. Provider-neutral shelf navigation can be scoped as A; Writer capture/persistence B remains planner-held. No commission from backlog.
+
 - [LIB04 mounted reference libraries](2026-11-23--lib04-mounted-reference-libraries/CHANGE.md): future pin/grant-aware Storyteller reference shelves; planner-blocked.
 
 [Backlog index](../README.md) · [Open Changes](../../README.md)

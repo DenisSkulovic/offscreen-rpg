@@ -1,0 +1,24 @@
+# LIB04 | Decided algorithms and staged ownership
+
+## A. PinnedShelfSet read-only domain adapter (first slice)
+Input from trusted caller: `storyId`, captured `storyRootHash`+revision, `sourceReferences` (world refs with identity/mount/hash/revision, optional rule ref), `readers` (document store methods), and `authorize: (source, operation) => Promise<{privateDocuments:boolean}|null>`. The sourceReferences are **trusted resolved references**, not user/model input. Enforce stable unique mount aliases, max 8 worlds + 1 rules + story, hashes with exact schema, manifests `worldId/ruleSetId`, revision and engine match pinned references. A failed/missing/corrupt manifest rejects the source mount; no fallback to unrelated roots or implicit default visibility.
+
+Operations: `browse({mount, prefix?, after?, pageSize?})`, `read({mount,path,offset?,characters?})`, bounded `findPath` (literal query, not content-phrase search). Resolve mount alias to a validated pinned reference; authorize *before* accessing any object, filter entries by visibility before returning any path/title/count, verify fetched document envelope against exact manifest entry (ID, revision, kind, authority, visibility); enforce per-read char bound, per-call total bytes and hard page size <=128; maintain stable path order. `openByObjectHash` only after confirming membership in allowed pinned source; no raw S3 hash oracle. Duplicate paths across shelves are safe because every handle includes shelf ID. No cross-mount implicit shadow/precedence.
+
+Pagination: advance `after` across raw ordered paths, filter inaccessible records, fill a visible page until pageSize or end, cap inspected entries per call and return opaque continuation token when scan budget exhausted; a returned page with 0 visible results must still be able to continue. Cursor binds alias + immutable root + prefix + last scanned path + exact visibility grant/capability version and must fail on revoked grant or changed mount set. Source manifests max 256 entries, so bounded in-memory traversal is feasible; Story Library trie pages must be looped, not just first 128. No unauthenticated document metadata in error response.
+
+No caching in A. Reuse existing store errors, safely map corrupt/missing/unavailable. Do not allow provider/tool args to set authorize, actual root, source ID, or visibility.
+
+## B. Writer integration (separately commissioned after complete capture map)
+Define `writer-mission.v4` as new discriminator with current story-root fields unchanged plus `referenceMounts` (max 9, unique alias, kind/identity/hash/revision, grant fingerprint) and `captureAccessVersion`; preserve old captures byte-for-byte, including their request hashes. Add explicitly versioned `shelf.browse`, `shelf.find`, `shelf.read` capability and citation schema carrying `{mountAlias, libraryIdentity, rootHash, objectHash, documentId, revision, section}`. New tool allowlist remains host-issued, args supply alias/path/cursor only; no root selection. Input args 4 KiB existing ceiling, result bounded 16 KiB per call and global mission budget (specified by captured effective budgets); reject rather than truncate claimed complete source/evidence.
+
+A v4 task binds source refs to the same logical story and admission operation at capture; all reads recheck live authorization; replay decodes pinned versions and rechecks entitlement without silently upgrading source roots. Publication verifies that every shelf citation comes from the selected captured mount, matches manifest membership/visibility and exact section, and marks external source authority as source/evidence, **never** automatic campaign canon. Old v1-v3 requests run unchanged.
+
+## C. Future curated Library catalog
+Separate project. Catalog identity, licenses, version promotion, tenant grants, visibility, availability/deletion, source-type normalization, audit, permissions and UI. Do not introduce as a precondition for using already pinned world/rule sources. External web browsing and cross-tenant sharing absent unless separately designed and approved.
+
+## Fork/branch boundary
+Story fork reuses its historical Story Library root and source reference provenance; no mechanics-free fork repair in LIB04. A fork does not gain a grant to content that was revoked after the historical capture. History may retain redacted source identifiers for audit while fresh source reads fail. No mutation of parent root or mass-copy of source content.
+
+## Cache stance
+Object-addressed local byte-budgeted read-through can be added later after measuring S3 read hot spots; cache keys `(format,sha256)`, cached bytes verified. Avoid shared Redis until there is a dedicated memory budget/isolation; cache underlying immutable content only, not ACL decisions, search result counts, per-user snippets or revocation state.
