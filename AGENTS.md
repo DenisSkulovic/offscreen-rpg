@@ -4,6 +4,8 @@
 
 **Change folder lifecycle (2026-11-22):** [Backlog](work/changes/backlog/README.md) is for future/deferred Changes, grouped by domain; [open](work/changes/README.md) is current/near-term and unresolved partially executed Changes; [archive](work/changes/archive/README.md) is terminal reconciled work. Never treat a Proposed backlog packet as Cursor-ready or create every future idea in open. Recheck source at promotion and repair links.
 
+**Dev environment ownership correction (selected, not yet implemented):** A Git checkout is source binding, not the durable identity of a Kubernetes development environment. DXK09 T05-FU plans independent `dev-N` environments with explicit selector/session leases and backward-compatible default checkout selection. Do not use proposed `dev:new` or `--instance` commands until T05-FU live proof; follow the [canonical runbook](docs/runbooks/dev-worktree-stacks.md) and [bounded follow-up tasks](work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/TASKS.md#t05-fu--environment-identity-independent-of-source-checkout). Existing runtime rules remain in force.
+
 **Worktree developer environment:** [DXK09 worktree stack runbook](docs/runbooks/dev-worktree-stacks.md) is the current single owner of dev-only cluster/slot/reservation/freshness guidance and its honest T05 readiness gates. For an implementation Change, agents use the worktree-root development scripts **only after the current branch proves T05 commands available**; never silently fall back to the old shared `pnpm dev` / `pnpm stack:up` or release-lab cluster. Owner/lease records are machine-local, never Git-tracked. A stopped process does not release a slot's data or authorize tenant destruction.
 
 ## First reads, by role
