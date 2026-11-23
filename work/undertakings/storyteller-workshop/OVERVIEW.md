@@ -51,9 +51,9 @@ flowchart TD
 
 **Still not proven:** four simultaneous full stacks, browser OAuth, cold release-lab acceptance, completed provider-free story and ordinary provider-backed playable campaign. The `game-control` watcher has logged `RangeError: Invalid atomic access index` despite Kubernetes readiness. These are distinct gaps, not a reason to repeat already-accepted DXK09 work.
 
-**DXK10-A, 2026-11-23:** [reserve and explicit attach](../../changes/archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) are implemented as registry-only commands. Focused tests passed. No Kubernetes run and no transfer of an existing provisioned environment. DXK10-B profile activation and DXK10-C guarded retained-tenant handoff remain proposed. HR02 and HR03 remain separate source lanes; HR03's schema split is already archived.
+**DXK10-A, 2026-11-23:** [reserve and explicit attach](../../changes/archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) are implemented as registry-only commands. Focused tests passed. No Kubernetes run and no transfer of an existing provisioned environment. DXK10-B profile activation and DXK10-C guarded retained-tenant handoff remain proposed. HR01, HR02, and HR03 are Done as source-only readability work; they do not change these percentages.
 
-**Next decision:** DXK10-B still needs a source-grounded profile and dependency-closure design before implementation. DXK10-C still needs retained-tenant handoff rules. HR01 may proceed as a source-only lane where safe, without making three full-stack runtimes a prerequisite. [DXK10 proposal](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) · [HR wave](NEXT-WAVE.md) · [demonstrated status](../../../STATUS.md).
+**Next decision:** DXK10-B still needs a source-grounded profile and dependency-closure design before implementation. DXK10-C still needs retained-tenant handoff rules. The readability wave does not require three full-stack runtimes. [DXK10 proposal](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) · [HR wave](NEXT-WAVE.md) · [demonstrated status](../../../STATUS.md).
 
 ---
 ### Historical checkpoints (do not use as today's instructions)
