@@ -6,7 +6,7 @@
 
 ## Current / immediate work
 
-**2026-11-23 pending commission:** [TURN03-R2A secure HTTP source adapter](2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) and [TURN03-R2B pinned fixture source verifier](2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) are two disjoint, source-only supporting Changes. They do not authorize live access or a TURN03 PASS. Parent [TURN03 execution map](2026-11-19--turn03-full-distributed-forkable-turn-proof/NEXT-EXECUTION-2026-11-23.md) retains release-proof ownership.
+**2026-11-23:** [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. It is not a live S3 or cross-Pod PASS. [TURN03-R2A secure HTTP source adapter](2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) remains open and disjoint. Parent [TURN03](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) stays OPEN.
 
 
 | Change | Why it remains open |

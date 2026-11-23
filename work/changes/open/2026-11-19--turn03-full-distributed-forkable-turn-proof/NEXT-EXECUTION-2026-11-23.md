@@ -9,7 +9,7 @@
 | Supporting Change | Exclusive code write | Proof level |
 | --- | --- | --- |
 | [TURN03-R2A secure HTTP transport](../2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) | New `turn03/live-http.mjs` + its test | Injected fake-fetch and protected session-file tests only |
-| [TURN03-R2B pinned fixture verifier](../2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) | New `turn03/fixture-pins.mjs` + its test | Injected read-only DocumentStore, hash/identity negative tests only |
+| [TURN03-R2B pinned fixture verifier](../../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) | `turn03/fixture-pins.mjs` + test, source-only Done | Injected read-only DocumentStore. 7/7 PASS. Not a live or cross-Pod PASS. TURN03 stays OPEN |
 
 ```mermaid
 flowchart LR
