@@ -1,6 +1,6 @@
 # TURN03-R2B | Read-only pinned story fixture verifier
 
-**State:** READY WITH EXPLICIT LIMITS, source-only. **Parent:** [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) remains OPEN. **Inspected:** `undertaking/storyteller-workshop@4708408b`, 2026-11-23. **Scope:** a self-contained pinned-root read boundary, not S3 provisioning or live acceptance.
+**State:** Done, source-only injected-store proof. **Parent:** [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) remains OPEN. Live S3, cluster acceptance and cross-Pod PASS were not run. **Inspected:** `undertaking/storyteller-workshop@4708408b`, 2026-11-23. **Scope:** a self-contained pinned-root read boundary, not S3 provisioning or live acceptance.
 
 ## Source ownership and selected contract
 - `tools/api-integration/test/helpers/turn03-distributed-poc-fixture.ts::provisionTurn03DistributedPocFixture` returns `roots.rules:{ruleSetId,rootHash,revision,engine}`, `roots.start:{startPackageId,rootHash,revision}`, and `startPackageId`; importer writes arbitrary fresh IDs into a `DocumentStore`. That local harness is **not** a live S3 fixture.
@@ -21,6 +21,15 @@ No S3 client creation, no `ensureBucket`, PUT, import, console printing credenti
 T01 strict manifest schema and pinned reference validation. Positive with seeded valid manifest and document-store fake. Negative malformed SHA/UUID, wrong release/bucket, start/rule ID or engine mismatch, extra manifest keys.
 T02 read-only object validation. Positive matching manifest identities/orientation-only constraint; negatives no worlds, no executable obligations, missing hash, tampered data, delayed/unavailable read, never invoke mutating methods (fake `store.put*`/ensureBucket throwing). Don't classify a local fake as `kind-cross-pod` evidence.
 T03 `node --test infra/kubernetes/lab/app-release/turn03/fixture-pins.test.mjs`; `git diff --check`; focused relevant existing document store tests where accessible. Reconcile parent TURN03 status, integrate accepted source, archive **R2B** after true pure proof, leave parent TURN03 OPEN.
+
+## Reconciliation ledger
+
+| Claim / document | Delta or no-op | Source SHA and diff | Positive evidence | Negative evidence | Link/status |
+| --- | --- | --- | --- | --- | --- |
+| Product acceptance | unchanged because this adapter does not start or publish a story | `fixture-pins.mjs` on `change/turn03-r2b-pinned-fixture-verifier` | injected matching pin returns hashes only | worlds and executable obligations FAIL | TURN03 stays OPEN |
+| Technical document store | unchanged because existing start/rule schemas stay the owners | `packages/documents/dist/schema.js` imported, not edited | strict pin plus schema parse | malformed pin, corrupt object, unavailable read | no S3 client |
+| TURN03 execution map | changed: R2B source-only receipt, live gates still blocked | `NEXT-EXECUTION-2026-11-23.md` | 7/7 node tests | fake store evidence is `injected-readonly-store` | parent OPEN |
+| Live cluster / cross-Pod proof | unchanged because not authorized | NOT RUN | NOT RUN | a verified fake is not `kind-cross-pod` | R3 not started |
 
 **Stop:** if actual `readStartPackageManifest` output / schema differs from mapped source or the repo cannot import package `@offscreen/documents` from an .mjs operator without new tooling, report exact evidence and planner-block before changing package boundaries.
 
