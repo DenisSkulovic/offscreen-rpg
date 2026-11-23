@@ -4,7 +4,7 @@
 
 ## Cache platform redesign
 
-Owner-selected near-term serial sequence after Documents and DO01–DO07. DO01 owns dependency-free cache-port; CACHE01 does not relocate it twice. [Selected architecture](../../docs/technical/platform/persistence-and-caching.md). All Proposed / not commissioned; ChatGPT refreshes source/readiness at each handoff. No global queue change.
+Owner-selected near-term parallel program after Documents and DO01–DO07. [Frozen interfaces and three-lane DAG](../undertakings/storyteller-workshop/CACHE-PARALLEL.md): CACHE01 → {CACHE02, CACHE03, CACHE05} → joined wiring → {CACHE04, CACHE06A, CACHE06B} → CACHE07. One integration custodian serializes shared joins. DO01 owns dependency-free cache-port; CACHE01 does not relocate it twice. [Selected architecture](../../docs/technical/platform/persistence-and-caching.md). All Proposed / not commissioned; ChatGPT refreshes source/readiness at each handoff. No global queue change.
 
 [CACHE01 Typed cache foundation](open/2026-11-24--cache01-core/CHANGE.md) · [CACHE02 Recoverable bounded Redis runtime](open/2026-11-24--cache02-redis-runtime/CHANGE.md) · [CACHE03 Typed strategies and origin protection](open/2026-11-24--cache03-strategies/CHANGE.md) · [CACHE04 Story snapshot migration](open/2026-11-24--cache04-story-snapshot/CHANGE.md) · [CACHE05 Byte-bounded memory and tier composition](open/2026-11-24--cache05-memory-tiering/CHANGE.md) · [CACHE06A Immutable document read decorator](open/2026-11-24--cache06a-document-reads/CHANGE.md) · [CACHE06B Shared lexical-index primitives](open/2026-11-24--cache06b-lexical-index/CHANGE.md) · [CACHE07 Distributed reliability evidence](open/2026-11-24--cache07-distributed-proof/CHANGE.md)
 

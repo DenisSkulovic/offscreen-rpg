@@ -177,4 +177,4 @@ Target **long-lived** topology after Change integration: **two branches only**:
 
 ## 2026-11-24 | Cache platform design
 
-[Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B) staged open after Documents and Contracts. No code/runtime proof or selection change. Overview estimates unchanged.
+[Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B) staged open after Documents and Contracts. [Parallel DAG and frozen interfaces](CACHE-PARALLEL.md): CACHE01 → CACHE02/CACHE03/CACHE05 → CACHE04/CACHE06A/CACHE06B → CACHE07, with serialized shared joins. No code/runtime proof or selection change. Overview estimates unchanged.

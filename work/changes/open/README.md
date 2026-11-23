@@ -1,5 +1,9 @@
 # Open Changes | current and near-term
 
+## Cache platform parallel waves
+
+[Full catalog](../README.md#cache-platform-redesign) · [Frozen contracts and ownership](../../undertakings/storyteller-workshop/CACHE-PARALLEL.md). Proposed, not commissioned. After Documents and Contracts settle: CACHE01 foundation; CACHE02/CACHE03/CACHE05 concurrently; joined wiring; CACHE04/CACHE06A/CACHE06B concurrently; CACHE07. Single integration custodian. No queue change.
+
 ## Near-term domain ownership sequence (2026-11-24)
 
 Owner released wave A after LIB07. DO01–DO03 are concurrent; DO01 parent is integration custodian. No global queue change. Subsequent packets await actual dependencies, not Change-number ordering.
