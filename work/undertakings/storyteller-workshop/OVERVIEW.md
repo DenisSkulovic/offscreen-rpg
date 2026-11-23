@@ -4,6 +4,22 @@
 
 **Longer-term maintainability debt:** [SEM01 codebase semantic-debt inventory](../../changes/backlog/quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) captures a human-first audit of opaque historical Change IDs in reusable code, ambiguous `lab` boundaries, package ownership, unnecessary abstractions and stale scaffolding. This is a **deferred source inventory, not an implementation authorization**; finish current TURN03 source-only owners without overlapping code edits.
 
+## Current focus | first advancing story, then one safeguarded model turn
+
+**2026-11-23, baseline `4c9de22f`.** [The current player-to-LLM milestone ladder and blockers](../../IMPLEMENTATION-ROADMAP.md#current-decision--player-visible-scripted-flow--distributed-proof--one-guarded-llm-trial-2026-11-23) supersedes old "next HR wave" and DXK10-as-immediate-priority diagrams below. This is **a priority/status reconciliation from actual source and prior receipts, not a new live proof**.
+
+```mermaid
+flowchart LR
+  A["P0 · Source-only trace<br/>R1 + R2B DONE"] --> B["P1 · One real scripted<br/>scene 1 → scene 2"]
+  B --> C["P2 · TURN03 full<br/>fork + recovery PASS"]
+  C --> D["P3 · Paid custody<br/>fake transport PASS"]
+  D --> E["P4 · One separately approved<br/>real LLM continuation"]
+```
+
+**Actual immediate blocker:** secure R2A `live-http.mjs` adapter remains unimplemented at inspected HEAD, despite one Cursor chat mistakenly returning an old R1 receipt. The broader R2 operator needs real OAuth/browser session, pinned S3 fixture and minimally privileged SQL/Temporal evidence. R1's injected HTTP trace and R2B's read-only pin verifier are already integrated, **but neither provides kind-cross-pod PASS**. The distributed Worker intentionally refuses provider mode; TURN04 is not an authorized live-model experiment.
+
+**Prioritization decision:** do not make DXK10-B/C, K8S10 Pod deletion, INF restructuring or SEM01 semantic audit prerequisites for the first scripted scene2. Keep them discoverable and pending. Avoid broad coding-agent swarms until actual player-observable P1 is tested. Only P2 and a reviewed fake-transport paid custody path make P4 eligible for a separately approved exact provider/model/spend cap.
+
 ## At a glance
 
 | Track | Rough complete | Still remaining | Interpretation |
