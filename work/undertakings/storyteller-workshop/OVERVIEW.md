@@ -1,6 +1,6 @@
 # Storyteller Workshop | reality check and finish line
 
-**2026-11-23 documentation-first Library review:** LIB01 (library, shelf and workdesk vocabulary) and LIB02 (behavior-preserving scene-checkpoint schema decomposition) are planned for human-led package comprehension; LIB03 content-package ownership and LIB04 mounted reference libraries remain deferred planner-held. No implementation, runtime or proof credit; undertaking estimates stay unchanged. TURN03 remains open and fork repair is deliberately not on this sequence's critical path.
+**2026-11-23 documentation-first Library review:** LIB01 (library, shelf and workdesk vocabulary) is Done as target vocabulary in the canonical-documents owner; shelves are not implemented. LIB02 (behavior-preserving scene-checkpoint schema decomposition) remains open. LIB03 content-package ownership and LIB04 mounted reference libraries remain deferred planner-held. No implementation, runtime or proof credit; undertaking estimates stay unchanged. TURN03 remains open and fork repair is deliberately not on this sequence's critical path.
 
 **Human checkpoint · 2026-11-23.** Developer-environment correctness is demonstrably better, but this is **not yet a proven end-to-end AI Storyteller product**. DXK09's unattended new-worktree start/status/stop passed; DXK11's canonical-image reuse and timing improvements are integrated. DXK10-A reserve and attach are source-tested registry commands. Selective activation and provisioned-slot handoff remain **proposed**.
 
