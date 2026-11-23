@@ -13,12 +13,12 @@
 ## Transaction 2: explicit attach, only never-provisioned slots
 
 1. Parse `attach --instance dev-N`, canonicalize the calling checkout. Refuse no `--instance`.
-2. Hold the same registry lock; read current record and confirm it is **unattached** (or already exactly attached to caller, for idempotent read). Verify no active/unverified lease or recorded process, no retained resourceUids, no session identity, no occupied owned-port listener and no runtime namespace/tenant objects for the slot. Read-only external probes must be bounded; indeterminate/transport failure refuses.
+2. Hold the same registry lock; read current record and confirm it is **unattached** (or already exactly attached to caller, for idempotent read). Verify no active/unverified lease or recorded process, no retained resourceUids, no session identity, and no occupied owned-port listener. This binds only a new unprovisioned identity and does not require a live cluster. Existing provisioned/parked slots are **never** eligible. External namespace/tenant collision checks must occur at activation before mutation, fail closed if indeterminate.
 3. Ensure caller has no conflicting default mapping. Set `worktreePath` to canonical path and install its default mapping atomically in one registry write.
 4. Return `ATTACHED / UNPROVISIONED`; no workload, tenant, image or CLI launch. Recheck status is read-only.
 5. Ordinary `up/status/stop --instance` must require matching attached checkout and never make binding changes. A request from a different checkout is a refusal even if the slot's last process is parked.
 
-**Crash / concurrency:** under the existing registry lock only one attachment wins. Bound every read-only external probe; do not hold the lock through a lengthy Pod startup or mutation. Failed probes or default collision leave old record unchanged. Do not clear stale PID, kill a process or modify Kubernetes as part of attachment.
+**Crash / concurrency:** under the existing registry lock only one attachment wins. Keep attach as a short synchronous registry/session/port transaction; no network/Pod calls within the lock. Failed probes or default collision leave old record unchanged. Do not clear stale PID, kill a process or modify Kubernetes as part of attachment.
 
 ## Compatibility and testability
 
