@@ -346,3 +346,24 @@ Source SHA `e93f33c7` with uncommitted image-ownership edits on `change/dxk09-li
 All six Deployments were ready at 1 replica. Web returned HTTP 200. The API port accepted a connection and returned 404 for `/health`. Tilt synced `apps/web/app/layout.tsx` and `apps/api/src/main.ts`; both markers were in the containers and were reverted. A deliberate API syntax error produced `src/main.ts(4,21): error TS1109: Expression expected.` After the line was removed, the watcher reported `Found 0 errors`. `pnpm dev:stop` scaled all six `offscreen-dev-8` Deployments to 0. Secret UIDs stayed `dev-8-app` `a2063742-e7d7-40c1-a26c-1c875672fc4e`, `dev-8-run-auth` `48097ed4-5385-40f8-8ef8-d49fd92e41f9`, `dev-8-s3` `63b3298c-e452-482a-9a48-6a2c246debc7`. `offscreen-dev-1` stayed at 0 replicas on its previous image.
 
 `pnpm dev:status` was not captured while the pods were serving. No Temporal workflow task was executed. Four-stack capacity, browser OAuth, and release-lab acceptance were not run. HR01–HR03 stay blocked until a later receipt shows six truthful current-generation READY lines and one processed workflow task. DXK10 was not implemented.
+
+## Owned-slot acceptance at `d0e35b63` (2026-11-23) — functional gate passed
+
+`pnpm dev` on `change/dxk09-lifecycle-freshness` at `d0e35b63` selected `dev-8` and reached Tilt at `http://127.0.0.1:13130/`. All six Deployments used `offscreen-dev-workspace:union-21b8a1688220dcd5` and were ready at 1 replica. `pnpm dev:status` while they were serving:
+
+- `web READY dev_server_serving docker.io/library/offscreen-dev-workspace:union-21b8a1688220dcd5`
+- `api READY loaded_matches_desired f379a16f60e2f50991507708cc6daa9b9e5709ee3554f100760cb08af5f7967b`
+- `authority READY loaded_matches_desired 9c9d04db56f59fdac28e9ffba30b479557cc6820cde1c2773b7b644d0b93ed65`
+- `control READY loaded_matches_desired e06f92888247a8a25445835cda4fc3f0fb4064be9982de3eeb6bcb1a5b99cecd`
+- `executor READY loaded_matches_desired 7405205aa9731b6af83323b95d7985776ceee3048800fdf8840def2c3ebb4049`
+- `relay READY loaded_matches_desired 3d282a26b6d4897c51a7048e03303311436babbc655d42113a07337efd53802a`
+
+The pod status alias remained a sibling tag of that digest. Readiness accepted it only after the running container digest matched the selected image. `http://127.0.0.1:13128/sign-in` returned 200. `http://127.0.0.1:13128/api/health/ready` returned 200 `{"status":"ok"}`.
+
+A body marker `DXK09-LIVE-WEB` was served from `apps/web/app/layout.tsx`. `console.log('DXK09-LIVE-API')` was present in the API pod and printed `DXK09-LIVE-API`. Replacing that line with `const dxk09Broken = ;` made status report `api NOT READY compile_error` and the watcher logged `src/main.ts(19,21): error TS1109: Expression expected.` Restoring the file returned `api READY`. Both files were reverted.
+
+Relay namespace `offscreen-dev-8`, queue `offscreen-local`. Workflow `dxk09-relay-ping-1795454621418` of type `scriptedOpeningV1` was started with a missing opening id. The relay log recorded `Workflow failed` for that type after `Activity task failed`. History event types were `1,5,6,7,10,11,13,5,6,7,3` and status `FAILED`. That is workflow-task and activity processing, not a completed story. The dev relay still uses `debugMode` when `OFFSCREEN_DEV_WATCHED_COMPILATION=1`. `game-control` logged `RangeError: Invalid atomic access index` and restarted under its watcher; Kubernetes still reported it ready and status reported `loaded_matches_desired`.
+
+`pnpm dev:stop` exited 0. All six `offscreen-dev-8` desired replicas were 0. Listeners `13128` and `13130` were closed. Secret UIDs stayed `dev-8-app` `a2063742-e7d7-40c1-a26c-1c875672fc4e`, `dev-8-run-auth` `48097ed4-5385-40f8-8ef8-d49fd92e41f9`, `dev-8-s3` `63b3298c-e452-482a-9a48-6a2c246debc7`. `offscreen-dev-1` stayed desired 0 on its previous images, including `offscreen-dev-workspace:tilt-build-1795394042` for web.
+
+Four-stack capacity, browser OAuth, release-lab acceptance, a brand-new unattended worktree, and a completed provider-free story were not run. HR01–HR03 stay blocked on that new-worktree prerequisite. DXK09 is not archived. DXK10 was not implemented. Memory admission was not changed.
