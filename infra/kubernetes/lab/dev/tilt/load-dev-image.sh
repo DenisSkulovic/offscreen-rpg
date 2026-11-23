@@ -10,6 +10,8 @@ if [[ -n "${2:-}" ]]; then
 fi
 repo="$(cd "$(dirname "$0")/../../../../.." && pwd)"
 cd "$repo"
+# shellcheck source=../startup-timing.sh
+source "$repo/infra/kubernetes/lab/dev/startup-timing.sh"
 # Docker reads <Dockerfile>.dockerignore beside -f. Do not pass a custom ignore flag.
 # Patterns are relative to the repo-root context, not the Dockerfile directory.
 DEV_IGNORE="${repo}/infra/kubernetes/lab/dev/Dockerfile.dockerignore"
@@ -29,9 +31,11 @@ process.stdout.write(result.fingerprint);
 ")"
 canonical="offscreen-dev-workspace:union-${fingerprint:0:16}"
 recorded="$(docker image inspect "$canonical" --format '{{index .Config.Labels "offscreen.fingerprint"}}' 2>/dev/null || true)"
+image_started="$(startup_timing_begin)"
 if [[ "$recorded" == "$fingerprint" ]]; then
   echo "phase=alias-canonical ref=${EXPECTED_REF}" >&2
   docker tag "$canonical" "$EXPECTED_REF"
+  startup_timing_end tilt-image tilt-reconcile hit "$image_started"
 else
   echo "phase=docker-build ref=${EXPECTED_REF}" >&2
   docker build \
@@ -40,13 +44,16 @@ else
     --label "offscreen.fingerprint=${fingerprint}" \
     -t "$EXPECTED_REF" \
     .
+  startup_timing_end tilt-image tilt-reconcile miss "$image_started"
 fi
 load_node() {
   local cluster="$1"
   local node="$2"
   local attempt=0
   while [ "$attempt" -lt 5 ]; do
+    kind_started="$(startup_timing_begin)"
     if kind load docker-image "$EXPECTED_REF" --name "$cluster" --nodes "$node"; then
+      startup_timing_end "tilt-kind-load-${node}" tilt-reconcile miss "$kind_started"
       return 0
     fi
     attempt=$((attempt + 1))

@@ -29,6 +29,8 @@ import {
   writeEnvironmentSession,
 } from './dev-environment-session.mjs';
 import { reconcileOwnedDevSlot } from './dev-slot-startup.mjs';
+import { performance } from 'node:perf_hooks';
+import { beginStartupTiming, finishStartupTiming, recordPhase, timePhase } from './dev-startup-timing.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const LOOPBACK = '127.0.0.1';
@@ -818,6 +820,7 @@ function refuseAndExit(refusals, exitFn = (code) => process.exit(code)) {
   for (const refusal of refusals) {
     console.error(refusal.message);
   }
+  finishStartupTiming(`refused:${refusals.map((refusal) => refusal.id).join(',')}`);
   exitFn(1);
 }
 
@@ -863,7 +866,8 @@ export async function runDevTiltLaunch(deps = {}) {
 
   // Capacity is a host fact. Refuse before slot reconciliation or owned-Tilt
   // replacement so a low-memory start cannot scale workloads or signal a session.
-  const probes = await collectProbes();
+  beginStartupTiming(join(worktree, '.offscreen', 'dev-startup-timing.json'));
+  const probes = await timePhase('preflight', null, () => collectProbes());
   const preflight = runPreflight(probes);
   const capacityRefusals = (preflight.refusals ?? []).filter((refusal) =>
     refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
@@ -873,7 +877,7 @@ export async function runDevTiltLaunch(deps = {}) {
     return;
   }
 
-  const slot = await reconcile({ worktree, registryRoot, owner: deps.owner });
+  const slot = await timePhase('reconcile', null, () => reconcile({ worktree, registryRoot, owner: deps.owner }));
   if (!slot?.ok || slot.readyForWorkloads !== true) {
     refuseAndExit([{
       id: `slot-${slot?.phase ?? 'startup'}`,
@@ -975,6 +979,7 @@ export async function runDevTiltLaunch(deps = {}) {
         // ignore
       }
     }
+    finishStartupTiming(`signal:${signal}`);
     exitFn(signal === 'SIGTERM' ? 143 : 130);
   };
 
@@ -999,6 +1004,7 @@ export async function runDevTiltLaunch(deps = {}) {
 
   if (!child.pid) {
     console.error('Failed to start tilt.');
+    finishStartupTiming('tilt-spawn-failed');
     exitFn(1);
     return;
   }
@@ -1035,6 +1041,7 @@ export async function runDevTiltLaunch(deps = {}) {
   const pause = deps.sleep ?? sleep;
   const readStartup = deps.collectStartupReadiness
     ?? ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
+  const readinessStarted = performance.now();
   let startupFailure = null;
   for (let elapsed = 0; elapsed <= startupWindowMs; elapsed += startupPollMs) {
     const during = runPreflight(await collectProbes());
@@ -1061,6 +1068,8 @@ export async function runDevTiltLaunch(deps = {}) {
     });
     if (assessment.ok) {
       startupFailure = null;
+      recordPhase('readiness', null, performance.now() - readinessStarted);
+      finishStartupTiming('six-roles-ready');
       break;
     }
     if (elapsed === startupWindowMs) {
@@ -1083,6 +1092,7 @@ export async function runDevTiltLaunch(deps = {}) {
       readDesiredReplicas: deps.readDesiredReplicas,
       log: deps.log,
     });
+    finishStartupTiming('startup-failed');
     exitFn(1);
     return;
   }

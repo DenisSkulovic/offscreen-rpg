@@ -48,4 +48,6 @@ saves/
 # Local semantic-search trial index. Not a project dependency.
 .grepai/
 .offscreen/dev-session.json
+.offscreen/dev-startup-timing.json
+.offscreen/dev-startup-timing.json.phases.jsonl
 .offscreen-dev-runtime/

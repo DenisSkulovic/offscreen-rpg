@@ -7,6 +7,7 @@
 import { migrateOwnedDevSlot } from './dev-slot-migrate.mjs';
 export { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 import { fingerprintDevImageContext, UNION_ROLE_FILTER as UNION_FILTER } from './dev-slot-image-plan.mjs';
+import { timePhase } from './dev-startup-timing.mjs';
 import { selectColdStartDocuments } from '../../infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -144,20 +145,20 @@ export async function reconcileDevSlot(input, deps) {
   }
 
   const retained = [];
-  const sql = await deps.ensureSql(record);
+  const sql = await timePhase('sql', 'reconcile', () => deps.ensureSql(record));
   const sqlDetail = phaseResult(sql);
   if (sqlDetail) return stopped('sql', sqlDetail, sql.retained ?? []);
   retained.push(...(sql.retained ?? []));
 
-  const migration = await deps.ensureMigration(record);
+  const migration = await timePhase('migration', 'reconcile', () => deps.ensureMigration(record));
   const migrationDetail = phaseResult(migration);
   if (migrationDetail) return stopped('migration', migrationDetail, retained);
 
-  const s3 = await deps.ensureS3(record);
+  const s3 = await timePhase('s3', 'reconcile', () => deps.ensureS3(record));
   const s3Detail = phaseResult(s3);
   if (s3Detail) return stopped('s3', s3Detail, [...retained, ...(s3.retained ?? [])]);
 
-  const temporal = await deps.ensureTemporal(record);
+  const temporal = await timePhase('temporal', 'reconcile', () => deps.ensureTemporal(record));
   const temporalDetail = phaseResult(temporal);
   if (temporalDetail) return stopped('temporal', temporalDetail, retained);
 
@@ -171,12 +172,12 @@ export async function reconcileDevSlot(input, deps) {
     return stopped('project', phaseResult(projected) ?? 'project refused', retained);
   }
 
-  const images = await deps.ensureImages(record, projected);
+  const images = await timePhase('images', 'reconcile', () => deps.ensureImages(record, projected));
   const imageDetail = phaseResult(images);
   if (imageDetail) return stopped('images', imageDetail, retained);
 
   if (deps.applyWorkloads) {
-    const workloads = await deps.applyWorkloads(record, projected, images);
+    const workloads = await timePhase('workloads', 'reconcile', () => deps.applyWorkloads(record, projected, images));
     const workloadDetail = phaseResult(workloads);
     if (workloadDetail) return stopped('workloads', workloadDetail, retained);
   }
@@ -246,7 +247,7 @@ export async function reconcileOwnedDevSlot(input) {
           operation: 'database build',
           outputPath: 'packages/db/dist',
         });
-        const compiled = spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], { cwd: input.worktree, encoding: 'utf8' });
+        const compiled = await timePhase('database-build', 'reconcile', () => Promise.resolve(spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], { cwd: input.worktree, encoding: 'utf8' })));
         if (compiled.status !== 0 || !existsSync(built)) {
           return { ok: false, cluster: 'kind-offscreen-dev', memoryMiB, detail: 'packages/db build failed before tenant mutation' };
         }

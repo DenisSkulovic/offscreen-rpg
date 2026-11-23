@@ -27,6 +27,7 @@ evidence
 .cursor
 .github
 state
+.offscreen
 
 **/coverage
 **/.cache
