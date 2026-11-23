@@ -6,7 +6,7 @@
 
 import { migrateOwnedDevSlot } from './dev-slot-migrate.mjs';
 export { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
-import { UNION_ROLE_FILTER as UNION_FILTER } from './dev-slot-image-plan.mjs';
+import { fingerprintDevImageContext, UNION_ROLE_FILTER as UNION_FILTER } from './dev-slot-image-plan.mjs';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
