@@ -31,7 +31,7 @@ import {
   type SceneCheckpointWriterStore,
   type StagedSceneCheckpoint,
 } from './scene-checkpoint';
-import { lockedCheckpointMatches } from './continuation';
+import { committedCheckpointMatches } from './continuation';
 import type { InitialStory } from './command-policy';
 import { parseStoryIdentifier, StoryError } from './errors';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
@@ -496,7 +496,7 @@ export function createStoryStart(
             stagedOpeningCheckpoint,
           );
           if (
-            !(await lockedCheckpointMatches(
+            !(await committedCheckpointMatches(
               tx,
               stagedOpeningCheckpoint.checkpoint,
             ))

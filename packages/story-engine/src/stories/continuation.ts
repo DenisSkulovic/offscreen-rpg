@@ -248,6 +248,39 @@ export async function lockedCheckpointMatches(
 }
 
 /**
+ * Compare a staged checkpoint with the rows already locked in this transaction.
+ * v2 uses the post-state snapshot. v1 keeps the legacy mechanics comparison.
+ * A known mismatch returns false. Any other failure stays fail-closed.
+ */
+export async function committedCheckpointMatches(
+  tx: Transaction,
+  checkpoint: SceneCheckpoint,
+): Promise<boolean> {
+  if (checkpoint.format !== 'offscreen.scene-checkpoint.v2') {
+    return lockedCheckpointMatches(tx, checkpoint);
+  }
+  try {
+    const actual = await readSceneAfterState(tx, checkpoint.storyId);
+    assertV2PostStateMatches(
+      checkpoint.fictionalState,
+      toV2FictionalState(actual),
+    );
+    return true;
+  } catch (error) {
+    if (error instanceof SceneAfterStateError) {
+      return false;
+    }
+    if (
+      error instanceof Error &&
+      error.message.startsWith('v2_post_state_mismatch:')
+    ) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+/**
  * Stage a continuation checkpoint before the story lock using the predicted
  * post-commit fictional state, including continuity notes and active work.
  * A failed object write throws and must not open the SQL transaction.
@@ -386,25 +419,7 @@ export async function commitStoryContinuation(
   }
   if (stagedCheckpoint) {
     const checkpoint = stagedCheckpoint.checkpoint;
-    if (checkpoint.format === 'offscreen.scene-checkpoint.v2') {
-      let actual;
-      try {
-        actual = await readSceneAfterState(tx, args.storyId);
-      } catch (error) {
-        if (error instanceof SceneAfterStateError) {
-          throw new StoryError('conflict', 'stale_story_revision');
-        }
-        throw error;
-      }
-      try {
-        assertV2PostStateMatches(
-          checkpoint.fictionalState,
-          toV2FictionalState(actual),
-        );
-      } catch {
-        throw new StoryError('conflict', 'stale_story_revision');
-      }
-    } else if (!(await lockedCheckpointMatches(tx, checkpoint))) {
+    if (!(await committedCheckpointMatches(tx, checkpoint))) {
       throw new StoryError('conflict', 'stale_story_revision');
     }
     await insertStagedSceneCheckpointSelector(tx, {
