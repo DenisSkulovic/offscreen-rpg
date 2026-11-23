@@ -4,7 +4,7 @@
  * Pod compilation is unaffected. This is not a build scheduler.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { processStartTicksFromStat } from './dev-process-identity.mjs';
 import {
@@ -30,6 +30,28 @@ function sessionLiveness(pid, recorded, procRoot) {
 }
 
 /**
+ * The checkout's own legacy session. This does not search other processes
+ * or other checkouts. A missing file is not a consumer. A broken file refuses.
+ *
+ * @param {string} checkout
+ * @param {string} operation
+ */
+function readLegacyCheckoutSession(checkout, operation) {
+  const file = join(checkout, '.offscreen', 'dev-session.json');
+  if (!existsSync(file)) return null;
+  try {
+    const data = JSON.parse(readFileSync(file, 'utf8'));
+    if (!data || typeof data !== 'object' || typeof data.slotId !== 'string') {
+      throw refusal('ownership-unreadable', `Legacy session is incomplete before ${operation}.`);
+    }
+    return data;
+  } catch (error) {
+    if (error && /** @type {{ id?: string }} */ (error).id === 'ownership-unreadable') throw error;
+    throw refusal('ownership-unreadable', `Cannot read the legacy session before ${operation}.`);
+  }
+}
+
+/**
  * @param {{
  *   checkout: string,
  *   registryRoot: string,
@@ -42,12 +64,13 @@ function sessionLiveness(pid, recorded, procRoot) {
 export function assertExclusiveHostWrite(input) {
   const checkout = resolve(input.checkout);
   const sessionRoot = environmentSessionRoot(input.registryRoot);
-  let names;
+  let names = [];
   try {
     names = readdirSync(sessionRoot);
   } catch (error) {
-    if (error && /** @type {NodeJS.ErrnoException} */ (error).code === 'ENOENT') return { ok: true, conflicts: [] };
-    throw refusal('ownership-unreadable', `Cannot read environment sessions before ${input.operation}.`);
+    if (!(error && /** @type {NodeJS.ErrnoException} */ (error).code === 'ENOENT')) {
+      throw refusal('ownership-unreadable', `Cannot read environment sessions before ${input.operation}.`);
+    }
   }
   /** @type {string[]} */
   const conflicts = [];
@@ -74,6 +97,23 @@ export function assertExclusiveHostWrite(input) {
       throw refusal('ownership-unreadable', `Cannot confirm whether ${slotId} is active before ${input.operation}.`);
     }
     if (live === 'alive') conflicts.push(slotId);
+  }
+  const legacy = readLegacyCheckoutSession(checkout, input.operation);
+  if (legacy && (!input.selfSlotId || legacy.slotId !== input.selfSlotId) && !conflicts.includes(legacy.slotId)) {
+    const bound = resolve(String(legacy.worktreePath ?? legacy.checkoutPath ?? checkout));
+    if (bound !== checkout) {
+      throw refusal('ownership-unreadable', `Legacy session checkout does not match this checkout before ${input.operation}.`);
+    }
+    const pid = Number(legacy.pid);
+    const ticks = legacy.processStartTicks;
+    if (!Number.isInteger(pid) || pid <= 0 || typeof ticks !== 'string') {
+      throw refusal('ownership-unreadable', `Legacy session ${legacy.slotId} has no process identity before ${input.operation}.`);
+    }
+    const live = sessionLiveness(pid, ticks, input.procRoot ?? '/proc');
+    if (live === 'unreadable') {
+      throw refusal('ownership-unreadable', `Cannot confirm whether legacy ${legacy.slotId} is active before ${input.operation}.`);
+    }
+    if (live === 'alive') conflicts.push(legacy.slotId);
   }
   if (conflicts.length > 0) {
     throw refusal(

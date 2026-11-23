@@ -89,3 +89,66 @@ test('a failed ownership read refuses and a dead session is not a conflict', () 
     (error) => isAllocatorRefusal(error) && error.id === 'ownership-unreadable',
   );
 });
+
+test('an active legacy session conflicts when the v2 session directory is absent', () => {
+  const { checkout, registryRoot, proc } = layout();
+  mkdirSync(join(checkout, '.offscreen'), { recursive: true });
+  writeFileSync(join(checkout, '.offscreen', 'dev-session.json'), JSON.stringify({
+    slotId: 'dev-3',
+    worktreePath: checkout,
+    pid: 11,
+    processStartTicks: '100',
+  }));
+  assert.throws(
+    () => assertExclusiveHostWrite({
+      checkout,
+      registryRoot,
+      selfSlotId: 'dev-1',
+      operation: 'database build',
+      outputPath: 'packages/db/dist',
+      procRoot: proc,
+    }),
+    (error) => isAllocatorRefusal(error) && error.id === 'shared-host-output' && String(error.message).includes('dev-3'),
+  );
+});
+
+test('a dead or absent legacy session is not a consumer, and a broken one refuses', () => {
+  const { checkout, registryRoot, proc } = layout();
+  const clear = assertExclusiveHostWrite({
+    checkout,
+    registryRoot,
+    selfSlotId: 'dev-1',
+    operation: 'database build',
+    outputPath: 'packages/db/dist',
+    procRoot: proc,
+  });
+  assert.equal(clear.ok, true);
+  mkdirSync(join(checkout, '.offscreen'), { recursive: true });
+  writeFileSync(join(checkout, '.offscreen', 'dev-session.json'), JSON.stringify({
+    slotId: 'dev-3',
+    worktreePath: checkout,
+    pid: 99,
+    processStartTicks: '100',
+  }));
+  const dead = assertExclusiveHostWrite({
+    checkout,
+    registryRoot,
+    selfSlotId: 'dev-1',
+    operation: 'database build',
+    outputPath: 'packages/db/dist',
+    procRoot: proc,
+  });
+  assert.equal(dead.ok, true);
+  writeFileSync(join(checkout, '.offscreen', 'dev-session.json'), '{');
+  assert.throws(
+    () => assertExclusiveHostWrite({
+      checkout,
+      registryRoot,
+      selfSlotId: 'dev-1',
+      operation: 'database build',
+      outputPath: 'packages/db/dist',
+      procRoot: proc,
+    }),
+    (error) => isAllocatorRefusal(error) && error.id === 'ownership-unreadable',
+  );
+});
