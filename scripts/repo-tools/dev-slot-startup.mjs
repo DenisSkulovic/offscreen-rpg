@@ -192,6 +192,13 @@ export async function reconcileOwnedDevSlot(input) {
       } catch {
         memoryMiB = 0;
       }
+      const built = join(input.worktree, 'packages/db/dist/src/migrate.js');
+      if (!existsSync(built)) {
+        const compiled = spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], { cwd: input.worktree, encoding: 'utf8' });
+        if (compiled.status !== 0 || !existsSync(built)) {
+          return { ok: false, cluster: 'kind-offscreen-dev', memoryMiB, detail: 'packages/db build failed before tenant mutation' };
+        }
+      }
       return {
         ok: cluster.status === 0 && memoryMiB >= MIN_MEMORY_MIB && Boolean(oauthFileFor(input.worktree)),
         cluster: 'kind-offscreen-dev',
