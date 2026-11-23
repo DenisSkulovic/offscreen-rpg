@@ -382,7 +382,11 @@ export async function ensureOwnedSlotImages(owner, worktree, spawnImage = null) 
     'infra/kubernetes/lab/dev/load-dev-slot-image.sh',
     owner.slotId,
     'all',
-  ], { cwd: worktree, encoding: 'utf8' }));
+  ], {
+    cwd: worktree,
+    encoding: 'utf8',
+    env: { ...process.env, OFFSCREEN_IMAGE_FINGERPRINT: identity.fingerprint },
+  }));
   const built = run({ slotId: owner.slotId, fingerprint: identity.fingerprint, filter: UNION_FILTER });
   if (built.status !== 0) {
     return { ok: false, refusals: [describeImageLoadFailure({ role: 'union' }, built)], rebuilt: 0 };

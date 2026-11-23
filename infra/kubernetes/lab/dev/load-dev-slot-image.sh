@@ -15,9 +15,11 @@ test -f "$repo/package.json"
 cd "$repo"
 # shellcheck source=startup-timing.sh
 source "$repo/infra/kubernetes/lab/dev/startup-timing.sh"
+mkdir -p "${TMPDIR:-/tmp}/offscreen-dev-image-locks"
 fingerprint_started="$(startup_timing_begin)"
 if [[ -n "${OFFSCREEN_IMAGE_FINGERPRINT:-}" ]]; then
   fingerprint="$OFFSCREEN_IMAGE_FINGERPRINT"
+  fingerprint_cache="invocation"
 else
 fingerprint="$(node --input-type=module -e "
 import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './scripts/repo-tools/dev-slot-image-plan.mjs';
@@ -25,10 +27,10 @@ const result = fingerprintDevImageContext(process.cwd(), { roleFilter: UNION_ROL
 if (!result.ok) { console.error(result.reason); process.exit(2); }
 process.stdout.write(result.fingerprint);
 ")"
+  fingerprint_cache="miss"
 fi
-startup_timing_end fingerprint images hit "$fingerprint_started"
+startup_timing_end fingerprint images "$fingerprint_cache" "$fingerprint_started"
 canonical="offscreen-dev-workspace:union-${fingerprint:0:16}"
-mkdir -p "${TMPDIR:-/tmp}/offscreen-dev-image-locks"
 lock="${TMPDIR:-/tmp}/offscreen-dev-image-locks/${fingerprint}.lock"
 exec 9>"$lock"
 flock 9

@@ -122,6 +122,28 @@ export function fingerprintDevImageContext(root, input) {
   };
 }
 
+/**
+ * Image identity is the content hash from this call.
+ * A caller may pass `verifiedFingerprint` only after it hashed in the same
+ * startup. A cache file of sizes and mtimes is not identity: those fields
+ * can stay unchanged while bytes change, including across invocations.
+ * @param {string} root
+ * @param {{ roleFilter?: string, verifiedFingerprint?: string, cachePath?: string }} input
+ */
+export function fingerprintDevImageContextCached(root, input) {
+  const verified = input?.verifiedFingerprint;
+  if (typeof verified === 'string' && /^[a-f0-9]{64}$/.test(verified)) {
+    return {
+      ok: true,
+      fingerprint: verified,
+      roleFilter: input.roleFilter,
+      cache: 'invocation',
+    };
+  }
+  const fresh = fingerprintDevImageContext(root, input);
+  return { ...fresh, cache: fresh.ok ? 'miss' : undefined };
+}
+
 function listContextFiles(root, rules) {
   /** @type {{ path: string, bytes: Buffer }[]} */
   const files = [];

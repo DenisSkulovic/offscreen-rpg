@@ -4,7 +4,7 @@ startup_timing_begin() {
   date +%s%3N
 }
 startup_timing_end() {
-  local name="$1" parent="$2" cache="$3" started="$4"
+  local name="$1" parent="${OFFSCREEN_STARTUP_PHASE_PARENT:-$2}" cache="$3" started="$4"
   local file="${OFFSCREEN_STARTUP_TIMING:-}"
   if [[ -z "$file" || -z "$started" ]]; then
     return 0

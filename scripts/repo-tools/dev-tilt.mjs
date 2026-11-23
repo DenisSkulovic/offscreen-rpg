@@ -29,6 +29,7 @@ import {
   writeEnvironmentSession,
 } from './dev-environment-session.mjs';
 import { reconcileOwnedDevSlot } from './dev-slot-startup.mjs';
+import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 import { performance } from 'node:perf_hooks';
 import { beginStartupTiming, finishStartupTiming, recordPhase, timePhase } from './dev-startup-timing.mjs';
 
@@ -988,12 +989,24 @@ export async function runDevTiltLaunch(deps = {}) {
     process.once('SIGTERM', () => onSignal('SIGTERM'));
   }
 
+  const fingerprintStarted = performance.now();
+  const imageIdentity = fingerprintDevImageContext(worktree, { roleFilter: UNION_ROLE_FILTER });
+  recordPhase('fingerprint', null, performance.now() - fingerprintStarted, { cache: imageIdentity.ok ? 'miss' : 'fail' });
+  if (!imageIdentity.ok) {
+    console.error(`image fingerprint failed: ${imageIdentity.reason}`);
+    finishStartupTiming('fingerprint-failed');
+    exitFn(1);
+    return;
+  }
   const tiltEnv = {
     ...process.env,
     OFFSCREEN_DEV_SLOT: ownerRecord.slotId,
     OFFSCREEN_DEV_NAMESPACE: ownerRecord.namespace,
     OFFSCREEN_DEV_GAME_PORT: String(gamePort),
     OFFSCREEN_DEV_TILT_PORT: String(tiltPort),
+    OFFSCREEN_IMAGE_FINGERPRINT: imageIdentity.fingerprint,
+    // Tilt image checks run while readiness is the open parent phase.
+    OFFSCREEN_STARTUP_PHASE_PARENT: 'readiness',
   };
 
   const child = spawnFn(
@@ -1092,6 +1105,7 @@ export async function runDevTiltLaunch(deps = {}) {
       readDesiredReplicas: deps.readDesiredReplicas,
       log: deps.log,
     });
+    recordPhase('readiness', null, performance.now() - readinessStarted);
     finishStartupTiming('startup-failed');
     exitFn(1);
     return;

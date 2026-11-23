@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmLoadedAliasIdentity, contentDerivedImageRef, fingerprintDevImageContext, planAliasIdentityLoad, planContentImageSelection, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
+import { confirmLoadedAliasIdentity, contentDerivedImageRef, fingerprintDevImageContext, fingerprintDevImageContextCached, planAliasIdentityLoad, planContentImageSelection, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 
 const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
 ARG TURBO_FILTER=@offscreen/api^...
@@ -36,6 +36,33 @@ function fingerprint(root, roleFilter = '@offscreen/api^...') {
   assert.equal(result.ok, true, result.reason);
   return result;
 }
+
+test('size and mtime cannot stand in for image identity', () => {
+  const root = checkout('ctx-cache-');
+  const cachePath = join(tmpdir(), `fp-cache-${process.pid}.json`);
+  const filter = '@offscreen/api^...';
+  const source = join(root, 'packages/db/index.ts');
+  const first = fingerprintDevImageContextCached(root, { roleFilter: filter, cachePath });
+  assert.equal(first.cache, 'miss');
+  writeFileSync(cachePath, JSON.stringify({
+    fingerprint: first.fingerprint,
+    entries: [{ path: 'packages/db/index.ts', size: 1, mtimeMs: 1 }],
+  }));
+  const bytes = Buffer.from('export const value = 1;\n');
+  writeFileSync(source, 'export const value = 2;\n');
+  const stamped = fingerprintDevImageContext(root, { roleFilter: filter });
+  writeFileSync(source, bytes);
+  const restored = fingerprintDevImageContextCached(root, { roleFilter: filter, cachePath });
+  assert.equal(restored.cache, 'miss');
+  assert.equal(restored.fingerprint, first.fingerprint);
+  assert.notEqual(stamped.fingerprint, first.fingerprint);
+  const reused = fingerprintDevImageContextCached(root, {
+    roleFilter: filter,
+    verifiedFingerprint: first.fingerprint,
+  });
+  assert.equal(reused.cache, 'invocation');
+  assert.equal(reused.fingerprint, first.fingerprint);
+});
 
 test('identical contexts in different directories share one fingerprint', () => {
   const left = fingerprint(checkout('ctx-a-'));

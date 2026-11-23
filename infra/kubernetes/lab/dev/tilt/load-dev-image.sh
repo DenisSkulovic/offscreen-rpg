@@ -23,12 +23,16 @@ if [[ "${EXPECTED_REF:-}" == offscreen-dev-workspace:dev-* ]]; then
   # The slot loader returns the content tag. It does not patch Deployments.
   exec bash "$repo/infra/kubernetes/lab/dev/load-dev-slot-image.sh" "$slot" "$role"
 fi
+if [[ -n "${OFFSCREEN_IMAGE_FINGERPRINT:-}" ]]; then
+  fingerprint="$OFFSCREEN_IMAGE_FINGERPRINT"
+else
 fingerprint="$(node --input-type=module -e "
 import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './scripts/repo-tools/dev-slot-image-plan.mjs';
 const result = fingerprintDevImageContext(process.cwd(), { roleFilter: UNION_ROLE_FILTER });
 if (!result.ok) { console.error(result.reason); process.exit(2); }
 process.stdout.write(result.fingerprint);
 ")"
+fi
 canonical="offscreen-dev-workspace:union-${fingerprint:0:16}"
 recorded="$(docker image inspect "$canonical" --format '{{index .Config.Labels "offscreen.fingerprint"}}' 2>/dev/null || true)"
 image_started="$(startup_timing_begin)"
