@@ -221,7 +221,6 @@ export const LAB_RESOURCES = Object.freeze([
 
 export const DEV_RUNTIME_FRESHNESS_ROLES = Object.freeze(
   /** @type {const} */ ([
-    { role: 'web', receiptRole: 'web', compiledEntryPath: 'apps/web/.next/BUILD_ID' },
     { role: 'api', receiptRole: 'api', compiledEntryPath: 'apps/api/dist/src/main.js' },
     {
       role: 'authority',
@@ -251,6 +250,85 @@ export const DEV_RUNTIME_FRESHNESS_ROLES = Object.freeze(
  * @param {{ ready: boolean, reason: string, currentGeneration: string | null }} status
  * @returns {string}
  */
+/**
+ * Web READY means the selected slot's game-web pod is ready on the expected
+ * image and an HTTP request to that dev server succeeded. A Next.js build
+ * artifact is not loaded-generation proof.
+ * @param {{
+ *   namespace: string,
+ *   expectedImage: string | null,
+ *   pod?: { ready?: boolean, namespace?: string, image?: string | null } | null,
+ *   httpStatus?: number | null,
+ * }} input
+ */
+export function assessWebDevServerReadiness(input) {
+  const pod = input.pod ?? null;
+  if (!pod?.ready) {
+    return { ready: false, reason: 'web_pod_not_ready', currentGeneration: null };
+  }
+  if (pod.namespace !== input.namespace) {
+    return { ready: false, reason: 'namespace_mismatch', currentGeneration: null };
+  }
+  if (!input.expectedImage || pod.image !== input.expectedImage) {
+    return { ready: false, reason: 'image_mismatch', currentGeneration: null };
+  }
+  if (typeof input.httpStatus !== 'number' || input.httpStatus < 200 || input.httpStatus >= 300) {
+    return { ready: false, reason: 'http_unsuccessful', currentGeneration: null };
+  }
+  return { ready: true, reason: 'dev_server_serving', currentGeneration: input.expectedImage };
+}
+
+/**
+ * Start the owned game-web port-forward only after the backend is usable.
+ * Restart it while the Tilt session remains active. A foreign listener or a
+ * PID whose start time does not match the record stops the supervisor.
+ * @param {{
+ *   sessionActive: () => boolean,
+ *   backendReady: () => Promise<boolean> | boolean,
+ *   portOccupied: () => Promise<boolean> | boolean,
+ *   spawnForward: () => { pid: number | null, onExit: (cb: (code: number | null) => void) => void },
+ *   readStartTicks: (pid: number) => string | null,
+ *   recordForward: (record: { pid: number, processStartTicks: string | null }) => void,
+ *   sleep?: (ms: number) => Promise<void>,
+ *   maxAttempts?: number,
+ * }} input
+ */
+export async function superviseOwnedWebPortForward(input) {
+  const sleep = input.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+  const maxAttempts = input.maxAttempts ?? 8;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (!input.sessionActive()) {
+      return { ok: true, reason: 'cancelled', attempts: attempt };
+    }
+    if (!(await input.backendReady())) {
+      await sleep(Math.min(1_000, 50 * (attempt + 1)));
+      continue;
+    }
+    if (await input.portOccupied()) {
+      return { ok: false, reason: 'foreign_port', attempts: attempt };
+    }
+    const child = input.spawnForward();
+    if (!child.pid) {
+      await sleep(Math.min(1_000, 50 * (attempt + 1)));
+      continue;
+    }
+    const processStartTicks = input.readStartTicks(child.pid);
+    if (!processStartTicks) {
+      return { ok: false, reason: 'start_time_mismatch', attempts: attempt, pid: child.pid };
+    }
+    input.recordForward({ pid: child.pid, processStartTicks });
+    const code = await new Promise((resolve) => child.onExit(resolve));
+    if (!input.sessionActive()) {
+      return { ok: true, reason: 'session_stopped', attempts: attempt + 1, pid: child.pid, code };
+    }
+    await sleep(Math.min(1_000, 50 * (attempt + 1)));
+  }
+  if (!input.sessionActive()) {
+    return { ok: true, reason: 'cancelled', attempts: maxAttempts };
+  }
+  return { ok: false, reason: 'retries_exhausted', attempts: maxAttempts };
+}
+
 export function formatDevFreshnessStatusLine(displayRole, status) {
   if (status.ready) {
     return `${displayRole} READY ${status.reason} ${status.currentGeneration}`;
@@ -727,23 +805,12 @@ export async function runDevTiltLaunch(deps = {}) {
     return;
   }
 
-  let forwardPid = null;
-  let forwardStartTicks = null;
-  if (!deps.exitAfterSession) {
-    const forward = spawn('kubectl', [
-      '--context', 'kind-offscreen-dev', '-n', ownerRecord.namespace,
-      'port-forward', 'svc/game-web', `${gamePort}:3000`,
-    ], { stdio: 'ignore' });
-    forwardPid = forward.pid ?? null;
-    forwardStartTicks = forwardPid ? readProcessStartTicks(forwardPid) : null;
-  }
-
   const readStart = deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
   const sessionRecord = {
     pid: child.pid,
     processStartTicks: readStart(child.pid),
-    forwardPid,
-    forwardStartTicks,
+    forwardPid: null,
+    forwardStartTicks: null,
     slotId: ownerRecord.slotId,
     namespace: ownerRecord.namespace,
     gamePort,
@@ -764,6 +831,47 @@ export async function runDevTiltLaunch(deps = {}) {
   if (deps.exitAfterSession) {
     return;
   }
+
+  const persistForward = (record) => {
+    sessionRecord.forwardPid = record.pid;
+    sessionRecord.forwardStartTicks = record.processStartTicks;
+    if (deps.owner) {
+      writeEnvironmentSession(environmentSessionRoot(registryRoot), {
+        ...sessionRecord,
+        checkoutPath: worktree,
+        parked: false,
+        released: false,
+      });
+    } else {
+      writeDevSession(worktree, sessionRecord);
+    }
+  };
+  let sessionActive = true;
+  child.on('exit', () => {
+    sessionActive = false;
+  });
+  const supervise = deps.supervisePortForward ?? superviseOwnedWebPortForward;
+  void supervise({
+    sessionActive: () => sessionActive,
+    backendReady: deps.webBackendReady ?? (async () => {
+      const result = spawnSync('kubectl', [
+        '--context', 'kind-offscreen-dev', '-n', ownerRecord.namespace,
+        'get', 'pod', '-l', 'app=game-web',
+        '-o', 'jsonpath={.items[0].status.containerStatuses[0].ready}',
+      ], { encoding: 'utf8' });
+      return result.status === 0 && String(result.stdout).trim() === 'true';
+    }),
+    portOccupied: () => probeOccupied(LOOPBACK, gamePort),
+    spawnForward: deps.spawnPortForward ?? (() => {
+      const forward = spawn('kubectl', [
+        '--context', 'kind-offscreen-dev', '-n', ownerRecord.namespace,
+        'port-forward', 'svc/game-web', `${gamePort}:3000`,
+      ], { stdio: 'ignore' });
+      return { pid: forward.pid ?? null, onExit: (cb) => forward.on('exit', (code) => cb(code)) };
+    }),
+    readStartTicks: readStart,
+    recordForward: persistForward,
+  }).catch(() => {});
 
   pollTimer = setInterval(async () => {
     if (announced) return;
@@ -814,7 +922,6 @@ async function runDevTiltCli() {
  * @returns {number}
  */
 const POD_COMPILED_ENTRY = Object.freeze({
-  web: '/app/apps/web/.next/BUILD_ID',
   api: '/app/apps/api/dist/src/main.js',
   authority: '/app/apps/game-authority/dist/src/bootstrap/main.js',
   control: '/app/apps/worker/dist/src/bootstrap/control-main.js',
@@ -848,6 +955,42 @@ export function pullSelectedSlotReceipts(input) {
     }
   }
   return diskIdentities;
+}
+
+/**
+ * Read the selected slot's game-web pod image and one HTTP status from inside
+ * the cluster. A missing pod or a failed request stays unsuccessful.
+ * @param {{ namespace: string, run?: Function, httpStatus?: number | null }} input
+ */
+export function collectWebDevServerReadiness(input) {
+  const run = input.run ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' }));
+  const pod = run([
+    '--context', 'kind-offscreen-dev', '-n', input.namespace,
+    'get', 'pod', '-l', 'app=game-web',
+    '-o', 'jsonpath={.items[0].metadata.namespace}{" "}{.items[0].status.containerStatuses[0].ready}{" "}{.items[0].status.containerStatuses[0].image}',
+  ]);
+  const [namespace, ready, image] = String(pod.stdout ?? '').trim().split(/\s+/);
+  let httpStatus = input.httpStatus ?? null;
+  if (httpStatus === null && pod.status === 0 && ready === 'true') {
+    const http = run([
+      '--context', 'kind-offscreen-dev', '-n', input.namespace,
+      'exec', 'deploy/game-web', '--', 'node', '-e',
+      'fetch("http://127.0.0.1:3000/sign-in").then((r)=>process.stdout.write(String(r.status))).catch(()=>process.exit(1))',
+    ]);
+    httpStatus = http.status === 0 ? Number(String(http.stdout).trim()) : null;
+  }
+  const expected = run([
+    '--context', 'kind-offscreen-dev', '-n', input.namespace,
+    'get', 'deploy', 'game-web', '-o', 'jsonpath={.spec.template.spec.containers[0].image}',
+  ]);
+  return {
+    namespace: input.namespace,
+    expectedImage: expected.status === 0 ? String(expected.stdout).trim() : null,
+    pod: pod.status === 0 && namespace
+      ? { ready: ready === 'true', namespace, image: image || null }
+      : null,
+    httpStatus: Number.isFinite(httpStatus) ? httpStatus : null,
+  };
 }
 
 export function printDevStatus(worktree, deps = {}) {
@@ -898,6 +1041,19 @@ export function printDevStatus(worktree, deps = {}) {
     });
   }
   let everyRoleReady = true;
+  if (session.namespace) {
+    const webInput = deps.webReadiness ?? (
+      deps.pullSlotReceipts
+        ? collectWebDevServerReadiness({
+          namespace: session.namespace,
+          run: deps.execKubectl ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' })),
+        })
+        : { namespace: session.namespace, expectedImage: null, pod: null, httpStatus: null }
+    );
+    const web = (deps.assessWebDevServerReadiness ?? assessWebDevServerReadiness)(webInput);
+    log(formatDevFreshnessStatusLine('web', web));
+    if (!web.ready) everyRoleReady = false;
+  }
   for (const roleSpec of roles) {
     const status = evaluate({
       role: roleSpec.receiptRole,

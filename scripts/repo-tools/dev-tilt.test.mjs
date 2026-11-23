@@ -406,6 +406,12 @@ test('printDevStatus exits 0 when session and api runtime receipts match', () =>
   const lines = [];
   const code = printDevStatus(worktree, {
     roles: [API_FRESHNESS_ROLE],
+    webReadiness: {
+      namespace: 'offscreen-dev-3',
+      expectedImage: 'offscreen-dev:gen',
+      pod: { ready: true, namespace: 'offscreen-dev-3', image: 'offscreen-dev:gen' },
+      httpStatus: 200,
+    },
     log: (line) => lines.push(line),
   });
 
