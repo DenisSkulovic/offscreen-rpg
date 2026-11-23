@@ -37,7 +37,7 @@ test('a running pod manifest digest counts only when it is on the current CRI im
   assert.equal(ready.ready, true);
   const retagged = assessWebDevServerReadiness({
     ...healthy,
-    expectedImage: 'offscreen-dev-workspace:tilt-build-1',
+    expectedImage: 'offscreen-dev-workspace:union-aaaaaaaaaaaaaaaa',
     expectedConfigIds: accepted,
     pod: {
       ...healthy.pod,
@@ -46,6 +46,32 @@ test('a running pod manifest digest counts only when it is on the current CRI im
     },
   });
   assert.equal(retagged.ready, true);
+  assert.equal(retagged.reason, 'dev_server_serving');
+  const unverifiedAlias = assessWebDevServerReadiness({
+    ...healthy,
+    expectedImage: 'offscreen-dev-workspace:union-aaaaaaaaaaaaaaaa',
+    pod: {
+      ...healthy.pod,
+      image: 'offscreen-dev-workspace:dev-8-api',
+      imageId: `docker.io/library/import-2026-11-23@${current}`,
+    },
+  });
+  assert.equal(unverifiedAlias.ready, false);
+  assert.equal(unverifiedAlias.reason, 'image_mismatch');
+  const otherSlot = assessWebDevServerReadiness({
+    ...healthy,
+    namespace: 'offscreen-dev-8',
+    expectedImage: 'offscreen-dev-workspace:union-aaaaaaaaaaaaaaaa',
+    expectedConfigIds: accepted,
+    pod: {
+      ready: true,
+      namespace: 'offscreen-dev-1',
+      image: 'offscreen-dev-workspace:dev-8-api',
+      imageId: `docker.io/library/import-2026-11-23@${current}`,
+    },
+  });
+  assert.equal(otherSlot.ready, false);
+  assert.equal(otherSlot.reason, 'namespace_mismatch');
   assert.equal(old.ready, false);
   assert.equal(old.reason, 'image_mismatch');
 });

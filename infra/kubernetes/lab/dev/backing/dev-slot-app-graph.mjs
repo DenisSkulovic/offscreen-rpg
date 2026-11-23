@@ -42,14 +42,8 @@ function labels(slotId, app) {
   };
 }
 
-/** Pod-template annotation. Changing it rolls only that Deployment. */
-export const DEV_IMAGE_GENERATION_ANNOTATION = 'offscreen.dev/image-generation';
-
-function deployment(slotId, namespace, name, container, generation) {
+function deployment(slotId, namespace, name, container) {
   const owned = labels(slotId, name);
-  const templateMetadata = generation
-    ? { labels: owned, annotations: { [DEV_IMAGE_GENERATION_ANNOTATION]: generation } }
-    : { labels: owned };
   return {
     apiVersion: 'apps/v1',
     kind: 'Deployment',
@@ -58,7 +52,7 @@ function deployment(slotId, namespace, name, container, generation) {
       replicas: 1,
       selector: { matchLabels: { app: name, 'offscreen.dev/slot': slotId } },
       template: {
-        metadata: templateMetadata,
+        metadata: { labels: owned },
         spec: {
           automountServiceAccountToken: false,
           enableServiceLinks: false,
@@ -95,10 +89,6 @@ export function renderDevSlotAppGraph(slotId, input) {
   if (!Number.isInteger(input.ports?.game) || input.ports.game < 1) throw refusal('ports', 'game port is missing');
   const namespace = sql.appNamespace;
   const imageFor = (role) => `offscreen-dev-workspace:${sql.slotId}-${role}`;
-  const generationFor = (role) => {
-    const value = input.imageGenerations?.[role];
-    return typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value) ? value : null;
-  };
   const appSecret = `${sql.slotId}-app`;
   const dbSecret = sql.runtimeSecret;
   const origin = `http://${namespace}.svc.cluster.local`;
@@ -127,7 +117,7 @@ export function renderDevSlotAppGraph(slotId, input) {
       command: ['sh', '-c', 'node dev-pod-web-receipt.mjs & exec pnpm exec next dev --hostname 0.0.0.0 --port 3000'],
       ports: [{ name: 'http', containerPort: 3000 }],
       env: [slot, receiptDir, env('API_PROXY_ORIGIN', api), env('API_INTERNAL_ORIGIN', api)],
-    }, generationFor('web')),
+    }),
     deployment(sql.slotId, namespace, 'game-api', {
       name: 'api', image: imageFor('api'), imagePullPolicy: 'Never', workingDir: '/app/apps/api',
       command: ['node', 'dev-pod-compile-watch.mjs', 'api', 'dist/src/main.js'],
@@ -150,7 +140,7 @@ export function renderDevSlotAppGraph(slotId, input) {
         secretEnv('GITHUB_CLIENT_ID', appSecret, 'github-client-id'),
         secretEnv('GITHUB_CLIENT_SECRET', appSecret, 'github-client-secret'),
       ],
-    }, generationFor('api')),
+    }),
     deployment(sql.slotId, namespace, 'game-authority', {
       name: 'authority', image: imageFor('authority'), imagePullPolicy: 'Never', workingDir: '/app/apps/game-authority',
       command: ['node', 'dev-pod-compile-watch.mjs', 'game-authority', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
@@ -166,7 +156,7 @@ export function renderDevSlotAppGraph(slotId, input) {
         secretEnv('GAME_AUTHORITY_CONTROL_TOKEN', appSecret, 'game-authority-control-token'),
         secretEnv('GAME_AUTHORITY_EXECUTOR_TOKEN', appSecret, 'game-authority-executor-token'),
       ],
-    }, generationFor('authority')),
+    }),
     deployment(sql.slotId, namespace, 'game-control', {
       name: 'control', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
       command: ['node', 'dev-pod-compile-watch.mjs', 'worker-control', 'dist/src/bootstrap/control-main.js', 'tsconfig.dev.json'],
@@ -176,7 +166,7 @@ export function renderDevSlotAppGraph(slotId, input) {
         env('TEMPORAL_TASK_QUEUE', 'control'), env('GAME_AUTHORITY_ORIGIN', authority),
         secretEnv('GAME_AUTHORITY_CONTROL_TOKEN', appSecret, 'game-authority-control-token'),
       ],
-    }, generationFor('worker')),
+    }),
     deployment(sql.slotId, namespace, 'game-executor', {
       name: 'executor', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
       command: ['node', 'dev-pod-compile-watch.mjs', 'worker-executor', 'dist/src/bootstrap/executor-main.js', 'tsconfig.dev.json'],
@@ -186,7 +176,7 @@ export function renderDevSlotAppGraph(slotId, input) {
         env('TEMPORAL_TASK_QUEUE', 'storyteller-execute-v1'), env('GAME_AUTHORITY_ORIGIN', authority),
         secretEnv('GAME_AUTHORITY_EXECUTOR_TOKEN', appSecret, 'game-authority-executor-token'),
       ],
-    }, generationFor('worker')),
+    }),
     deployment(sql.slotId, namespace, 'game-relay', {
       name: 'relay', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
       command: ['node', 'dev-pod-compile-watch.mjs', 'worker-relay', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
@@ -198,7 +188,7 @@ export function renderDevSlotAppGraph(slotId, input) {
         secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY', s3.secret, 'secret-access-key'),
       ],
-    }, generationFor('worker')),
+    }),
   ];
   assertRenderedGraph(documents, sql.slotId);
   return { slotId: sql.slotId, namespace, images: { web: imageFor('web'), api: imageFor('api'), authority: imageFor('authority'), worker: imageFor('worker') }, cookiePrefix: prefix, appSecret, dbSecret, s3Secret: s3.secret, origin, documents };
@@ -244,17 +234,7 @@ export function renderTiltDeploymentDocuments(env = process.env) {
   const expected = deriveDevNamespace(slotId);
   if (namespace !== expected) throw refusal('namespace-mismatch', `${namespace} is not ${expected}`);
   if (!Number.isInteger(gamePort) || gamePort < 1) throw refusal('ports', 'OFFSCREEN_DEV_GAME_PORT is required');
-  let imageGenerations = null;
-  const rawGenerations = env.OFFSCREEN_DEV_IMAGE_GENERATIONS?.trim();
-  if (rawGenerations) {
-    try {
-      const parsed = JSON.parse(rawGenerations);
-      if (parsed && typeof parsed === 'object') imageGenerations = parsed;
-    } catch {
-      throw refusal('image-generation', 'OFFSCREEN_DEV_IMAGE_GENERATIONS is not JSON');
-    }
-  }
-  const graph = renderDevSlotAppGraph(slotId, { schemaReady: true, ports: { game: gamePort }, imageGenerations });
+  const graph = renderDevSlotAppGraph(slotId, { schemaReady: true, ports: { game: gamePort } });
   if (graph.namespace !== namespace) throw refusal('namespace-mismatch', graph.namespace);
   return graph.documents.filter((item) => item.kind === 'Deployment');
 }
@@ -295,6 +275,17 @@ export function renderTiltDeploymentYaml(env = process.env) {
     if (text.includes(`"${field}"`)) throw refusal('cluster-metadata', field);
   }
   return documents.map((document) => ['---', ...yamlLines(document, 0)]).flat().join('\n').concat('\n');
+}
+
+/**
+ * Cold start may create missing Deployments once. Names already present stay
+ * with Tilt; this pass does not rewrite their Pod templates.
+ * @param {Array<{ kind?: string, metadata?: { name?: string } }>} documents
+ * @param {string[]} existingDeploymentNames
+ */
+export function selectColdStartDocuments(documents, existingDeploymentNames = []) {
+  const existing = new Set(existingDeploymentNames);
+  return documents.filter((document) => document.kind !== 'Deployment' || !existing.has(document.metadata?.name ?? ''));
 }
 
 export function assertSlotOwnership(record, observed) {

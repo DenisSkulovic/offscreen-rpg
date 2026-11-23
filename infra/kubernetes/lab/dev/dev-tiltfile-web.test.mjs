@@ -21,6 +21,8 @@ const releaseTiltfile = readFileSync(releaseTiltfilePath, 'utf8');
  */
 export function assertDevWebLiveUpdateContract(tiltfile) {
   assert.match(tiltfile, /custom_build\s*\(/);
+  assert.match(tiltfile, /outputs_image_ref_to=ref_file/);
+  assert.doesNotMatch(tiltfile, /kubectl\s+(patch|apply|delete)/);
   assert.match(tiltfile, /skips_local_docker\s*=\s*True/);
   assert.match(tiltfile, /steps = dev_live_update\(image_key, watched\)/);
   assert.match(
@@ -68,7 +70,7 @@ test('dev Tiltfile live_update syncs apps/web with dependency fallbacks', () => 
   assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]web\.yaml['"]\s*\)/);
   assert.match(
     devTiltfile,
-    /k8s_resource\s*\(\s*['"]game-web['"][\s\S]*?port_forwards\s*=\s*\[[\s\S]*?['"]127\.0\.0\.1:3000:3000['"]/,
+    /k8s_resource\(\s*'game-web',\s*port_forwards=\['127\.0\.0\.1:' \+ OFFSCREEN_DEV_GAME_PORT \+ ':3000'\]/,
   );
 });
 

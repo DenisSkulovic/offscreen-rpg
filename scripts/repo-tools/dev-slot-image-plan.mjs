@@ -255,6 +255,26 @@ const GENERATION_ID = /^sha256:[a-f0-9]{64}$/;
  * It is not a CRI config id and must not be compared with one.
  * @param {{ currentGeneration?: string | null, expectedGeneration?: string | null }} input
  */
+/** Content tag Tilt selects. The slot alias is not Deployment authority. */
+export function contentDerivedImageRef(fingerprint) {
+  if (typeof fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(fingerprint)) return null;
+  return `offscreen-dev-workspace:union-${fingerprint.slice(0, 16)}`;
+}
+
+/**
+ * Selected Deployment image. A new fingerprint changes the ref and rolls.
+ * The same ref is a no-op. The ref is selected only when both Kind nodes have it.
+ * @param {{ fingerprint?: string | null, currentRef?: string | null, nodes?: Record<string, { tags?: string[] }> }} input
+ */
+export function planContentImageSelection(input) {
+  const ref = contentDerivedImageRef(input.fingerprint ?? '');
+  if (!ref) return { ref: null, roll: false, reason: 'unproven-context', missing: ['control-plane', 'worker'] };
+  const missing = ['control-plane', 'worker'].filter((node) => !(input.nodes?.[node]?.tags ?? []).includes(ref));
+  if (missing.length > 0) return { ref, roll: false, reason: 'missing-kind-node', missing };
+  const roll = input.currentRef !== ref;
+  return { ref, roll, reason: roll ? 'generation-changed' : 'generation-unchanged', missing: [] };
+}
+
 export function planImageGenerationRollout(input) {
   const expected = input.expectedGeneration ?? null;
   if (!GENERATION_ID.test(expected ?? '')) {

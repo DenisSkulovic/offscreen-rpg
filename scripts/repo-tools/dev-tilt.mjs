@@ -451,12 +451,13 @@ export function assessWebDevServerReadiness(input) {
     ? (pod.imageId.match(/sha256:[a-f0-9]{64}/) ?? [])[0] ?? null
     : null;
   const identityMatches = Boolean(accepted && runningConfig && accepted.includes(runningConfig));
-  if (accepted && !identityMatches) {
+  // Kind containerd can report a sibling tag of the same image. A matching
+  // verified digest is the artifact. A different tag without that digest,
+  // or a digest that is not on the selected image, stays a mismatch.
+  if (expectedImage && runningImage !== expectedImage && !identityMatches) {
     return { ready: false, reason: 'image_mismatch', currentGeneration: null };
   }
-  // Containerd may report another tag on the same image. A matching CRI
-  // digest is the identity. Without one, the tag strings still have to agree.
-  if (!identityMatches && (!expectedImage || expectedImage !== runningImage)) {
+  if (accepted && !identityMatches) {
     return { ready: false, reason: 'image_mismatch', currentGeneration: null };
   }
   if (typeof input.httpStatus !== 'number' || input.httpStatus < 200 || input.httpStatus >= 300) {

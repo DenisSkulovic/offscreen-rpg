@@ -7,6 +7,7 @@
 import { migrateOwnedDevSlot } from './dev-slot-migrate.mjs';
 export { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 import { fingerprintDevImageContext, UNION_ROLE_FILTER as UNION_FILTER } from './dev-slot-image-plan.mjs';
+import { selectColdStartDocuments } from '../../infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -392,7 +393,12 @@ export async function ensureOwnedSlotImages(owner, worktree, spawnImage = null) 
 
 async function applyOwnedSlotWorkloads(projected) {
   const { spawnSync } = await import('node:child_process');
-  const list = { apiVersion: 'v1', kind: 'List', items: projected.documents ?? [] };
+  const listed = spawnSync('kubectl', [
+    '--context', 'kind-offscreen-dev', '-n', projected.record.namespace,
+    'get', 'deployments', '-o', 'jsonpath={.items[*].metadata.name}',
+  ], { encoding: 'utf8' });
+  const existing = listed.status === 0 ? listed.stdout.split(/\s+/).filter(Boolean) : [];
+  const list = { apiVersion: 'v1', kind: 'List', items: selectColdStartDocuments(projected.documents ?? [], existing) };
   const applied = spawnSync('kubectl', ['--context', 'kind-offscreen-dev', 'apply', '-f', '-'], {
     input: JSON.stringify(list),
     encoding: 'utf8',

@@ -93,4 +93,21 @@ if (!result.ok) {
     "$(alias_index_digest "${cluster}-control-plane" "$ref")" \
     "$(alias_index_digest "${cluster}-worker" "$ref")")"
 done
-echo "builds=${builds} digest=${digest}"
+# Deployment authority is this content tag, loaded on both Kind nodes.
+for node_role in control-plane worker; do
+  node="${cluster}-${node_role}"
+  found="$(alias_index_digest "$node" "$canonical")"
+  if [[ "$found" != "$digest" ]]; then
+    echo "phase=kind-load role=content node=${node}" >&2
+    kind load docker-image "$canonical" --name "$cluster" --nodes "$node"
+    found="$(alias_index_digest "$node" "$canonical")"
+  fi
+  if [[ "$found" != "$digest" ]]; then
+    echo "post-load-mismatch node=${node_role} ref=${canonical}" >&2
+    exit 1
+  fi
+done
+if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
+  printf '%s\n' "$canonical" > "$OFFSCREEN_IMAGE_REF_FILE"
+fi
+echo "builds=${builds} digest=${digest} ref=${canonical}"

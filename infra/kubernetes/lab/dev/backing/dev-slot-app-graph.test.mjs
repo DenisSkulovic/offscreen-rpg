@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { spawnSync } from 'node:child_process';
-import { assertSlotOwnership, deriveSlotCookiePrefix, DEV_IMAGE_GENERATION_ANNOTATION, DEV_POD_RUNTIME_RECEIPT_DIR, renderDevSlotAppGraph, renderTiltDeploymentDocuments, renderTiltDeploymentYaml } from './dev-slot-app-graph.mjs';
+import { assertSlotOwnership, deriveSlotCookiePrefix, DEV_POD_RUNTIME_RECEIPT_DIR, renderDevSlotAppGraph, renderTiltDeploymentDocuments, renderTiltDeploymentYaml, selectColdStartDocuments } from './dev-slot-app-graph.mjs';
 
 const ports = { game: 3100 };
 
@@ -142,20 +142,17 @@ test('tilt deployment route does not invoke kubectl', () => {
   assert.equal(result.stdout.includes('/app/.offscreen-dev-runtime'), false);
 });
 
-test('a verified image generation is stamped on that role only', () => {
-  const generation = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-  const other = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-  const stamped = graph('dev-1', { imageGenerations: { web: generation, worker: other, api: 'nope' } });
-  const deployment = (documents, name) => documents.find((item) => item.kind === 'Deployment' && item.metadata.name === name);
-  const web = deployment(stamped.documents, 'game-web');
-  const api = deployment(stamped.documents, 'game-api');
-  const relay = deployment(stamped.documents, 'game-relay');
-  const foreign = graph('dev-2', { imageGenerations: { web: generation } });
-  assert.equal(web.spec.template.metadata.annotations[DEV_IMAGE_GENERATION_ANNOTATION], generation);
-  assert.equal(api.spec.template.metadata.annotations, undefined);
-  assert.equal(relay.spec.template.metadata.annotations[DEV_IMAGE_GENERATION_ANNOTATION], other);
+test('cold start leaves an existing Deployment for Tilt and still renders the other slot', () => {
+  const owned = graph('dev-1').documents;
+  const names = owned.filter((item) => item.kind === 'Deployment').map((item) => item.metadata.name);
+  const second = selectColdStartDocuments(owned, names);
+  assert.equal(second.some((item) => item.kind === 'Deployment'), false);
+  assert.equal(second.some((item) => item.kind === 'Service'), true);
+  const first = selectColdStartDocuments(owned, []);
+  assert.equal(first.filter((item) => item.kind === 'Deployment').length, 6);
+  const foreign = graph('dev-2');
   assert.equal(foreign.namespace, 'offscreen-dev-2');
-  assert.equal(deployment(foreign.documents, 'game-api').spec.template.metadata.annotations, undefined);
+  assert.equal(foreign.documents.some((item) => item.metadata.namespace === 'offscreen-dev-1'), false);
 });
 
 test('every workload writes receipts under the pod tmp root', () => {

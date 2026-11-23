@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmLoadedAliasIdentity, fingerprintDevImageContext, planAliasIdentityLoad, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
+import { confirmLoadedAliasIdentity, contentDerivedImageRef, fingerprintDevImageContext, planAliasIdentityLoad, planContentImageSelection, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 
 const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
 ARG TURBO_FILTER=@offscreen/api^...
@@ -299,4 +299,28 @@ test('alias identity loads only nodes whose config id is missing or stale', () =
   });
   assert.equal(refused.ok, false);
   assert.deepEqual(refused.nodes, ['worker']);
+});
+
+test('a new fingerprint selects a new image ref and an unchanged one does not roll', () => {
+  const first = 'a'.repeat(64);
+  const second = 'b'.repeat(64);
+  const ref = contentDerivedImageRef(first);
+  const present = { 'control-plane': { tags: [ref] }, worker: { tags: [ref] } };
+  const selected = planContentImageSelection({ fingerprint: first, currentRef: null, nodes: present });
+  assert.equal(selected.ref, 'offscreen-dev-workspace:union-aaaaaaaaaaaaaaaa');
+  assert.equal(selected.roll, true);
+  const same = planContentImageSelection({ fingerprint: first, currentRef: ref, nodes: present });
+  assert.equal(same.roll, false);
+  assert.equal(same.reason, 'generation-unchanged');
+  const next = contentDerivedImageRef(second);
+  const moved = planContentImageSelection({
+    fingerprint: second,
+    currentRef: ref,
+    nodes: { 'control-plane': { tags: [next] }, worker: { tags: [next] } },
+  });
+  assert.notEqual(moved.ref, ref);
+  assert.equal(moved.roll, true);
+  const missing = planContentImageSelection({ fingerprint: first, currentRef: ref, nodes: { 'control-plane': { tags: [ref] }, worker: { tags: [] } } });
+  assert.equal(missing.reason, 'missing-kind-node');
+  assert.equal(missing.roll, false);
 });
