@@ -1,0 +1,31 @@
+# Domain ownership | parallel release and join contract
+
+**Owner release:** DO01, DO02, DO03. Baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e` on `undertaking/storyteller-workshop`. Selected architecture: [technical topology](../../../../docs/technical/platform/topology.md#code-organization). This is a release of three Changes, not a second global queue. All other Changes remain uncommissioned.
+
+| Change | Dependency | Status |
+| --- | --- | --- |
+| [DO01 Cache port](../../../changes/open/2026-11-24--do01-cache-port/CHANGE.md) | None | Ready / commissioned |
+| [DO02 Admin / identity / usage](../../../changes/open/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Ready / commissioned |
+| [DO03 Story interface](../../../changes/open/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled; admitted | Ready / commissioned |
+| [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Dependency-gated |
+| [DO05 Storyteller / engine](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Dependency-gated |
+| [DO06 Lab ownership](../../../changes/open/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |
+| [DO07 Retire contracts](../../../changes/open/2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Dependency-gated |
+
+## Execution and serialized joins
+
+Three separate Cursor parents, three separate linked worktrees and Change branches, no shared working tree or Git index. DO01 parent is named integration custodian for wave A; join order DO01, DO02, DO03. DO01 may close its own Change immediately and remain the custodian to accept the other two local branch receipts. No sibling must wait for another Change to start its own code. If a parent finishes before its join window, keep the accepted clean branch/worktree and report its SHA and focused proof; do not push the undertaking independently. Custodian may integrate a completed branch when its join window opens without new owner approval. No automatic successor commission.
+
+- All three can edit their own clone of the residual contracts package, consumer manifests and local lockfile; their scopes are distinct subpaths/symbols, not whole-file replacement. DO01 owns read-cache, DO02 owns admin/terminal-auth/usage-policy and residual current-authority import, DO03 owns its story cohort plus residual chamber and game-authority imports. No child writes shared generated state concurrently in one checkout.
+- Known shared consumer files from exact source-map intersections: DO01/02 `apps/api/src/app.ts`; DO01/03 `tools/api-integration/test/stories-core.integration.ts`; DO02/03 `packages/admin/src/situation-reads.ts`, `tools/terminal/src/player.ts`, `tools/terminal/src/http.ts`, `packages/story-engine/src/storyteller/openings.ts`, `context-capture.ts`, `admission.ts`, `packages/story-engine/src/stories/command-policy.ts`, `packages/story-engine/src/generations/scripted-openings.ts`. Import-only edits by owning subpath. Do not change the other owner's code or revert LIB changes.
+- At serialized integration: refresh target; reconcile source conflicts by retaining both distinct import substitutions; merge manifest dependencies/exports key-by-key and remove old dependency only if no remaining actual import. Regenerate pnpm-lock.yaml using pnpm install --lockfile-only from the combined manifest set, then frozen install; never choose an entire sibling lockfile or hand-edit resolution data. Rebuild affected destinations and reverse consumers, rerun relevant focused negatives and graph checks, reconcile shared technical docs/catalogs/STATUS/undertaking and archive, verify push. Use current rules for dirty-worktree/refusal/branch guard. Escalate genuine semantic conflict, not ordinary additive imports.
+- DO02 owns focused-integration.mjs changes; DO03 owns additive story-interface assertion in production-workspace-closure.test.mjs; DO07 owns final old-name removal and final graph rule changes. DO04 owns private-protocol restrictions upon its admission; no overlapping rule edits in wave A.
+- No source writes under packages/documents or packages/object-storage, no CACHE Changes, no live DB reset, provider spend, Kubernetes or deployment. LIB08/09 may continue in their own packages. Shared manifests/lock and integration still go through a single custodian at a time; coordinate with any active external parent before joining.
+
+## Refresh / readiness evidence
+
+Snapshot baseline ed0837d0531b → current baseline f28085e3e5cb: comparison showed 142 changed paths, none in packages/contracts. All 4 DO01 and 72 DO02 mapped consumer paths unchanged. Of 171 unique DO03 consumer paths, five changed (start.ts, three integration files, Chamber main); all five current import sites rechecked and recorded in DO03 SOURCE-MAP. New LIB files inspected for imports do not add old-contract consumers among the inspected paths. Documents package and package-reference schema verified: original schema exports retained; byte transport now object-storage; no direct new storage edge. Original schema/test content retained, explicit test fixtures and exact split adjustments in packets. Remote branch list inspected; local worktree/dirty-path inspection and branch guard must occur before edits. No tests run by planner. This release does not claim implementation acceptance or a shipping milestone.
+
+## Successor gates
+
+DO04 may run after DO03 integration regardless of DO05. DO05 waits on DO02 and DO03 because the residual creative-evaluation import would otherwise invert contracts↔Storyteller. DO06 waits on DO03 and DO05, not DO04; may leave DO04-owned old files in place. DO07 waits on every extraction. Planner refreshes each newly admitted successor against integrated HEAD and coordinates its shared-file join.

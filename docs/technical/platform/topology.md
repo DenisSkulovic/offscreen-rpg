@@ -146,9 +146,9 @@ Negative: a replay cannot duplicate an admitted roll, a story-item transfer, or 
 
 ## Code organization
 
-For current entry points use [apps/api](../../../apps/api/README.md), [apps/game-authority](../../../apps/game-authority/README.md), [packages/application](../../../packages/application/README.md), and [packages/storyteller](../../../packages/storyteller/README.md). The [2026-11 code-navigation inspection](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md) is dated evidence, not the current owner. This document owns the architectural design.
+For current entry points use [apps/api](../../../apps/api/README.md), [apps/game-authority](../../../apps/game-authority/README.md), [packages/story-engine](../../../packages/story-engine/README.md), and [packages/storyteller](../../../packages/storyteller/README.md). The [2026-11 code-navigation inspection](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md) is dated evidence, not the current owner. This document owns the architectural design.
 
-Target layout. Create each package when its first implementation needs it:
+Selected target layout. Domain ownership retirement is ratified 2026-11-24; DO01–DO07 implement it in stages, not all these packages exist yet. Create each package when its first implementation needs it:
 
 ```text
 apps/
@@ -161,9 +161,21 @@ tools/
   api-integration/     PostgreSQL, Temporal and browser integration harness
 packages/
   game/                framework-free game state, checks, effects, offers and time
-  contracts/           Zod schemas, transport types, public error shapes
+  story-interface/     player/story/campaign wire shapes; schema-only document imports
+  admin-interface/     staff HTTP wire shapes
+  identity-interface/  terminal pairing/token wire shapes
+  usage-policy/        entitlement/limits vocabulary
+  cache-port/          neutral read-cache port
+  game-authority-protocol/  private service wire and custody
+  lab-interface/       Chamber and QA wire shapes
   workflows/           deterministic Temporal workflows and message contracts
-  application/         use cases, transactions and application adapters
+  story-engine/        story/campaign authority, durable generation and transactions
+  admin/               staff authorization and operations
+  lab-support/         developer fixtures and evaluation implementation
+  cache/               Redis adapter
+  documents/           document schemas and canonical content
+  object-storage/      byte transport
+  content-packages/    authored package import
   db/                  Drizzle schema, migrations, database access
   storyteller/         profiles, context, tasks, planning, providers and fixtures
   config/              validated environment and build configuration
@@ -171,9 +183,9 @@ packages/
 
 Keep UI components inside `web` until another application genuinely shares them. Keep server packages out of the browser dependency graph. Sharing TypeScript does not mean exporting database rows, secrets or hidden storyteller plans to clients. Runtime validation is necessary for HTTP, jobs, model output and stored versioned JSON; TypeScript types disappear at runtime.
 
-Keep dependencies directional: `game` depends on no application package, runtime framework or database; `contracts` projects game values into transport validation without application imports; `application` composes `game`, `contracts`, `db` and `storyteller`. `workflows` imports only deterministic helpers and type-only Activity contracts, never NestJS, database clients or provider SDKs. Activity implementations live outside the workflow bundle. The Storyteller package receives constrained context/tool adapters rather than importing the application orchestrator back. Enforce these boundaries through package exports and import checks instead of trusting folder names.
+Keep dependencies directional: `game` is pure; domain owners own canonical schemas. Public interface leaves depend only on necessary pure schemas and validation libraries. `story-interface` imports `@offscreen/documents/schema` and game, not document storage adapters or backend implementation. Documents currently has a transitive object-storage workspace dependency; schema-only source imports do not prove a storage-free manifest closure, and the retirement does not redesign Documents. Admin, identity, usage and cache-port leaves are independent. Game Authority protocol depends on story-interface and is private/server-only; browser and deterministic Workflow runtime must not import it. Storyteller owns retrieval and creative semantics; it never imports Story Engine. Story Engine owns its internal dispatch-authority, generation identity and notice semantics and consumes domain interfaces and ports; no reverse dependency from interface leaves to engine. Lab interface consumes story-interface/game; evaluation implementation stays in Lab Support. Preserve existing authority-to-writer and production-to-lab restrictions. No generic `contracts`, `shared` or `core` replacement; retire the old workspace after migration. During staged migration only, residual contracts may depend on already extracted leaves, with no cycles or compatibility aliases. All Zod semantics, authorization fences, hashes, financial constraints, persistence and wire behavior are preserved. No new service or database is introduced. `workflows` imports only deterministic helpers and type-only Activity contracts, never NestJS, database clients or provider SDKs. Activity implementations live outside the workflow bundle. Enforce the final architecture through package exports, lint, actual source/import graph and workspace closure tests. [Retirement implementation sequence](../../../work/designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md).
 
-Application capabilities cover drafts, outbox delivery, logging, the admin adapter, and developer tools. Story lifecycle, campaign mechanics, generation, and Storyteller execution are implemented in `@offscreen/story-engine`. The API, Game Authority, and worker source trees import those domains from `@offscreen/story-engine` directly. `@offscreen/application` keeps compatibility exports for tests, scripts, and other remaining callers. `@offscreen/application/stories` remains that compatibility facade; initialization, continuation, timing and snapshot/history reads are story-local modules behind the Story Engine owner. Authored Chamber fixtures are selected through one closed catalog exposed by the developer-tools facade. The worker maps outbox topics to workflow start or wake in one dispatch table. Modules expose application operations rather than letting every caller update arbitrary tables. A story transition can coordinate those operations in one database transaction. Do not introduce a repository interface for every table or an event bus for every local function call.
+Story lifecycle, campaign mechanics, generation, and Storyteller execution are implemented in `@offscreen/story-engine`; staff operations are Admin-owned and developer tools are Lab-owned. Outer API, Game Authority and Worker compose their authorized operations. The worker maps outbox topics to workflow start or wake in one dispatch table. Modules expose operations rather than letting callers update arbitrary tables. A story transition may coordinate operations in one database transaction. Do not introduce a repository interface for every table or an event bus for every local function call.
 
 ## Storage choices and alternatives
 

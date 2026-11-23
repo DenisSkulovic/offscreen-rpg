@@ -1,5 +1,7 @@
 # Storyteller Workshop
 
+**2026-11-24 domain ownership release:** owner commissioned DO01–DO03 at `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e` after LIB07, with distinct worktrees and DO01 parent integration custodian. [Selected topology](../../../docs/technical/platform/topology.md#code-organization) · [parallel plan](../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md). No implementation/tests or percentage credit. Remaining DO04–DO07 use actual DAG; global queue unchanged.
+
 **2026-11-24 domain ownership sequence, planning only:** Owner-selected [DO01–DO07](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) near-term open packets retire the horizontal contracts workspace after the Documents predecessor. Preserve schema/wire/authorization/financial invariants and existing domain dependency inversion. Each Change needs a fresh readiness check and individual commission; queue and completion evidence unchanged. [Open catalog](../../changes/open/README.md).
 
 **State:** Active  

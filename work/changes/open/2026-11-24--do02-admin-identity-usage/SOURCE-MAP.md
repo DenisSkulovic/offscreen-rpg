@@ -1,5 +1,5 @@
 # Source map
-Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD pending. Line anchors are snapshot observations, not current execution proof.
+Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; refreshed against `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e` after LIB07. No original contracts source changed in the baseline comparison. All listed consumer paths unchanged in baseline comparison. Line numbers are navigation anchors; use named imports for mechanical replacement after sibling joins.
 
 ## admin
 - Source: `packages/contracts/src/admin.ts` → `packages/admin-interface/src/admin.ts`

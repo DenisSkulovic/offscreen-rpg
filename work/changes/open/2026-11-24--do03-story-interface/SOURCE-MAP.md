@@ -1,5 +1,5 @@
 # Source map
-Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD pending. Line anchors are snapshot observations, not current execution proof.
+Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; refreshed against `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e` after LIB07. No original contracts source changed in the baseline comparison. Five consumer paths changed only in unrelated work; current contract imports checked and refreshed below. Line numbers are navigation anchors; use named imports for mechanical replacement after sibling joins.
 
 ## stories
 - Source: `packages/contracts/src/stories.ts` → `packages/story-interface/src/stories.ts`
@@ -329,3 +329,12 @@ Technical/related owners referencing old package in snapshot (refresh impacted s
 - `scripts/repo-tools/module-graph.mjs`
 - `scripts/repo-tools/focused-integration.mjs`
 - `scripts/repo-tools/ci-change-scope.test.mjs`
+
+## Current-baseline consumer refresh
+
+- `packages/story-engine/src/stories/start.ts`: campaign import ends at line 4.
+- `tools/api-integration/test/boot03-imported-start-distributed.integration.ts`: campaign line 10, stories line 12.
+- `tools/api-integration/test/start-package.integration.ts`: campaign line 6.
+- `tools/api-integration/test/storyteller-imported-start.integration.ts`: campaign line 10.
+- `tools/chamber/src/main.ts`: campaign line 31.
+- All retain the mapped contract imports. Preserve current LIB changes. `packages/documents/src/schema.ts` retains the three required exports; `packages/documents/src/package-reference-schema.ts` owns the reference validators. No Documents or object-storage edits.

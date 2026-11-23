@@ -2,19 +2,19 @@
 
 ## Near-term domain ownership sequence (2026-11-24)
 
-Owner-selected open placement after Documents settles; **Proposed / not commissioned**. Start DO01 only after planner verifies the settled source and publishes the selected technical ownership law; then commission each successor individually. No change to the global queue.
+Owner released wave A after LIB07. DO01–DO03 are concurrent; DO01 parent is integration custodian. No global queue change. Subsequent packets await actual dependencies, not Change-number ordering.
 
-| Change | Prerequisite |
-| --- | --- |
-| [DO01 Cache port](2026-11-24--do01-cache-port/CHANGE.md) | Settled Documents and planner readiness |
-| [DO02 Admin, identity and usage](2026-11-24--do02-admin-identity-usage/CHANGE.md) | DO01 integrated and planner readiness |
-| [DO03 Story and campaign interface](2026-11-24--do03-story-interface/CHANGE.md) | DO02 integrated and planner readiness |
-| [DO04 Private Game Authority protocol](2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 integrated and planner readiness |
-| [DO05 Storyteller and engine ownership](2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO04 integrated and planner readiness |
-| [DO06 Lab and evaluation ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO05 integrated and planner readiness |
-| [DO07 Retire contracts](2026-11-24--do07-retire-contracts/CHANGE.md) | DO06 integrated and planner readiness |
+| Change | Dependency | Status |
+| --- | --- | --- |
+| [DO01 Cache port](2026-11-24--do01-cache-port/CHANGE.md) | None | Ready / commissioned |
+| [DO02 Admin / identity / usage](2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Ready / commissioned |
+| [DO03 Story interface](2026-11-24--do03-story-interface/CHANGE.md) | Documents settled; admitted | Ready / commissioned |
+| [DO04 Authority protocol](2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Dependency-gated |
+| [DO05 Storyteller / engine](2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Dependency-gated |
+| [DO06 Lab ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |
+| [DO07 Retire contracts](2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Dependency-gated |
 
-[Retirement program](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md).
+[Retirement program](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [Parallel execution rules](../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md).
 
 **Purpose:** Keep this directory small. An entry is here only because it is being implemented, is intended for the next few days, or has already started and needs an honest completion/cancellation decision. **A folder in open is not necessarily Ready or automatically commissioned.** The one global default selector is [work/QUEUE.md](../../QUEUE.md); explicit owner commissions can exist separately.
 

@@ -1,23 +1,27 @@
 # Domain ownership | retirement of horizontal contracts
 
-Owner decision 2026-11-24: no `@offscreen/contracts` workspace in end state. Target integration `undertaking/storyteller-workshop`. Baseline archive `ed0837d0531be4050b40d9b2485b5759ef479fea`; no current Git checkout, no tests run. Documents redesign completes before execution readiness; no edits to Documents here. Existing Workshop overview ~40% overall / ~60% remaining, architecture/dev ~70% (subjective), no implementation credit. This program extends existing MONOREPO-MODULE-OWNERSHIP design, not MA06/MA09 runtime extraction. Existing queue unchanged. Owner explicitly placed DO01–DO07 in open as near-term work, not execution authorization. Live branch placement check at `7e2b554fbaaede28cbdbbf536c44c44a9ac511e5`; source maps retain their immutable inspected baseline.
+Owner decision 2026-11-24: no `@offscreen/contracts` workspace in end state. Target integration `undertaking/storyteller-workshop`. Baseline archive `ed0837d0531be4050b40d9b2485b5759ef479fea`; no current Git checkout, no tests run. LIB07 and LIB05 integrated; owner admitted DO01–DO03 after source refresh at `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`. No edits to Documents or object-storage here. Existing Workshop overview ~40% overall / ~60% remaining, architecture/dev ~70% (subjective), no implementation credit. This program extends existing MONOREPO-MODULE-OWNERSHIP design, not MA06/MA09 runtime extraction. Existing queue unchanged. Owner explicitly placed DO01–DO07 in open as near-term work, not execution authorization. Live branch placement check at `7e2b554fbaaede28cbdbbf536c44c44a9ac511e5`; source maps retain their immutable inspected baseline.
 
 ## Target dependency law
 
-- Player interface -> game and settled document model only, plus Zod. No storage/backend/provider. Admin, Identity, Usage and cache-port leaves independently owned; no cross-domain utility dependency.
+- Player interface -> game and `@offscreen/documents/schema`, plus Zod. No direct storage/backend/provider imports. Existing Documents→object-storage manifest edge is baseline, not a newly introduced dependency. Admin, Identity, Usage and cache-port leaves independently owned; no cross-domain utility dependency.
 - Authority protocol -> story-interface; server-only. Storyteller -> story-interface/usage-policy/game, never engine. Story Engine -> story-interface/usage-policy/cache-port/Storyteller/db/settled Documents. Admin implementation -> admin-interface and campaign hold model/db as currently required, not Story Engine for types. Lab interface -> story-interface/game; Lab support -> lab-interface/Story Engine/Storyteller as needed. Outer hosts compose. No new service or database.
 - Public wire leaf naming is domain-specific; do not make new generic shared package. Keep internal types local and enforce exact import boundaries, including type-only. Retain existing restrictions and no new cycles.
-- Documents contract: consume existing selected model, not AWS adapter. Post-Documents actual name is the single unresolved external input; ChatGPT maps imports before commission.
+- Documents contract: `@offscreen/documents/schema` still exports startPackageReferenceSchema, worldPackageReferenceSchema and StartPackageReference at the refreshed baseline. No document/storage scope.
 
-## Serial program
+## Parallel program
 
-- [DO01 cache-port](../../../changes/open/2026-11-24--do01-cache-port/CHANGE.md)
-- [DO02 admin-identity-usage](../../../changes/open/2026-11-24--do02-admin-identity-usage/CHANGE.md)
-- [DO03 story-interface](../../../changes/open/2026-11-24--do03-story-interface/CHANGE.md)
-- [DO04 authority-protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md)
-- [DO05 storyteller-engine-ownership](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md)
-- [DO06 lab-ownership](../../../changes/open/2026-11-24--do06-lab-ownership/CHANGE.md)
-- [DO07 retire-contracts](../../../changes/open/2026-11-24--do07-retire-contracts/CHANGE.md)
+| Change | Dependency | Status |
+| --- | --- | --- |
+| [DO01 Cache port](../../../changes/open/2026-11-24--do01-cache-port/CHANGE.md) | None | Ready / commissioned |
+| [DO02 Admin / identity / usage](../../../changes/open/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Ready / commissioned |
+| [DO03 Story interface](../../../changes/open/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled; admitted | Ready / commissioned |
+| [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Dependency-gated |
+| [DO05 Storyteller / engine](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Dependency-gated |
+| [DO06 Lab ownership](../../../changes/open/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |
+| [DO07 Retire contracts](../../../changes/open/2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Dependency-gated |
+
+[Coordination and serialized join rules](DO-PARALLEL-EXECUTION.md). Wave A runs three parents at once; DO04 follows DO03; DO05 follows DO02 and DO03 because residual evaluation imports would otherwise create a contracts↔Storyteller cycle. DO06 follows DO03 and DO05. DO07 is the final join. No automatic successor commission.
 
 ## Ownership map
 
@@ -53,4 +57,4 @@ Owner decision 2026-11-24: no `@offscreen/contracts` workspace in end state. Tar
 
 ## Admission review
 
-G0 UNVERIFIED post-Documents HEAD/branch and actual live worktrees; G1 baseline module/consumer/test inventory complete for current 27 sources, not latest successor; G2 selected structural mapping above, Documents export binding pending; G3 task cards and generated caller maps exist, final line drift unverified; G4 parent sequence explicit but no commission; G5 serial, one manifest/lock owner; G6 planned proof, none executed; G7 archive/integration boundary explicit. Verdict: Proposed until ChatGPT verifies actual post-Documents HEAD, canonical docs, scope and graph. No paid executor architectural discovery.
+At `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`, comparison from the inspected snapshot returned 142 changed paths; no original contracts module changed. DO01 and DO02 mapped consumers unchanged; DO03 five changed consumers rechecked, imports retained. Owner released DO01–DO03; target ownership law ratified in [technical topology](../../../../docs/technical/platform/topology.md#code-organization). Shared-file overlap is explicitly controlled by separate worktrees and serialized joins. Local branch guard and worktree inspection remain required; implementation tests NOT RUN. DO04–DO07 remain dependency-gated, not commissioned. See [parallel coordination](DO-PARALLEL-EXECUTION.md) for source-refresh receipt and exact merge ownership.
