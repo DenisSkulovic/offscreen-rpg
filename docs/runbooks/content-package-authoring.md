@@ -23,7 +23,7 @@ The checked-in sample is [content/worlds/vvardenfell-poc](../../content/worlds/v
 - `locations/census-and-excise-office.md`
 - `routes/seyda-neen-to-balmora.md`
 
-`WORLD.md` is the orientation. Every other `.md` file is lore. Directory import assigns authority `canon` and visibility `player-known`. Front matter in those files is body text; it does not set kind, authority or visibility. A `.txt` file is stored as `.md`. Dotfiles and other extensions are ignored. The importer limits are 256 files, 512 KiB each and 8 MiB total (`maximumWorldImportFiles`, `maximumWorldImportFileBytes`, `maximumWorldImportBytes` in [world-import.ts](../../packages/documents/src/world-import.ts)).
+`WORLD.md` is the orientation. Every other `.md` file is lore. Directory import assigns authority `canon` and visibility `player-known`. Front matter in those files is body text; it does not set kind, authority or visibility. A `.txt` file is stored as `.md`. Dotfiles and other extensions are ignored. The importer limits are 256 files, 512 KiB each and 8 MiB total (`maximumWorldImportFiles`, `maximumWorldImportFileBytes`, `maximumWorldImportBytes` in [world-import.ts](../../packages/content-packages/src/world-import.ts)).
 
 The sample's world id, revision and root hash are the pin in [start-package.json](../../content/starts/seyda-neen-prisoner/start-package.json) (`mount`: `vvardenfell`). [Chamber story startup](../../tools/chamber/src/main.ts) passes that same world id and refuses to continue when a fresh import hashes to something other than the checked-in root literal. At this revision that literal is the start descriptor's world root hash. The error tells the operator to update the start package. Campaign objects already stored under the previous hash stay on that hash.
 
@@ -153,5 +153,5 @@ These outcomes remain false. Do not describe them as success.
 | Which record kind owns a fact? | [One owner per kind of truth](../technical/storyteller/canonical-documents-and-packages.md#one-owner-per-kind-of-truth) |
 | How are immutable objects stored? | [Campaign documents](../../packages/documents/README.md) |
 | Which schema rejects a bad manifest? | [schema.ts](../../packages/documents/src/schema.ts) (`worldPackageManifestSchema`, `rulePackageManifestSchema`, `startPackageManifestSchema`) |
-| Which function admits a directory? | [world-import.ts](../../packages/documents/src/world-import.ts), [rule-import.ts](../../packages/documents/src/rule-import.ts), [start-import.ts](../../packages/documents/src/start-import.ts) |
-| Which function stages a campaign from a start root? | [start-instantiation.ts](../../packages/documents/src/start-instantiation.ts) |
+| Which function admits a directory? | [world-import.ts](../../packages/content-packages/src/world-import.ts), [rule-import.ts](../../packages/content-packages/src/rule-import.ts), [start-import.ts](../../packages/content-packages/src/start-import.ts) |
+| Which function stages a campaign from a start root? | [start-package-instantiation.ts](../../packages/story-engine/src/stories/start-package-instantiation.ts) |

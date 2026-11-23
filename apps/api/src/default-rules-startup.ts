@@ -1,8 +1,8 @@
 import { access } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { importRulePackageDirectory } from '@offscreen/content-packages';
 import {
   contentHashSchema,
-  importRulePackageDirectory,
   rulePackageReferenceSchema,
   type DocumentStore,
   type RulePackageReference,

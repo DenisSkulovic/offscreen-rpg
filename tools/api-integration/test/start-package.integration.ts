@@ -34,11 +34,13 @@ import {
 } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import {
-  canonicalDocumentSchema,
-  LocalDocumentStore,
   importRulePackageDirectory,
   importStartPackageDirectory,
   importWorldPackage,
+} from '@offscreen/content-packages';
+import {
+  canonicalDocumentSchema,
+  LocalDocumentStore,
   startPackageManifestSchema,
 } from '@offscreen/documents';
 import { attestedFake } from './helpers/attested-fake-provider.js';

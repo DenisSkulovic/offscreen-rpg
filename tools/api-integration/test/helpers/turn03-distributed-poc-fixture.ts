@@ -2,11 +2,14 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { RulePackageReference, StartPackageReference } from '@offscreen/documents';
 import {
   importRulePackageDirectory,
   importStartPackageDirectory,
-  type DocumentStore,
+} from '@offscreen/content-packages';
+import type {
+  DocumentStore,
+  RulePackageReference,
+  StartPackageReference,
 } from '@offscreen/documents';
 
 const rulesPackageSource = resolve(

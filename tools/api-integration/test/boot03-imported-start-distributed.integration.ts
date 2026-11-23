@@ -11,17 +11,35 @@ import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { gameAuthoritySeamVersion } from '@offscreen/contracts/game-authority';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { generation } from '@offscreen/db/generation-schema';
-import { story, storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
+import {
+  story,
+  storyPassage,
+  storySceneCheckpoint,
+} from '@offscreen/db/story-schema';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createChamberStorytellerControl } from '@offscreen/lab-support';
 import { createDrafts } from '@offscreen/story-engine/drafts';
-import { createStoryApplication, StoryError } from '@offscreen/story-engine/stories';
+import {
+  createStoryApplication,
+  StoryError,
+} from '@offscreen/story-engine/stories';
 import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
-import { DocumentStorageError, LocalDocumentStore, S3DocumentStore, importRulePackageDirectory, importStartPackageDirectory } from '@offscreen/documents';
+import {
+  importRulePackageDirectory,
+  importStartPackageDirectory,
+} from '@offscreen/content-packages';
+import {
+  DocumentStorageError,
+  LocalDocumentStore,
+  S3DocumentStore,
+} from '@offscreen/documents';
 import { createRequire } from 'node:module';
 import type { Database } from '@offscreen/db';
-import { BOOT03_GA_SERVICE_TOKEN, withBoot03DistributedAppIntegration } from './helpers/boot03-distributed-app-integration.js';
+import {
+  BOOT03_GA_SERVICE_TOKEN,
+  withBoot03DistributedAppIntegration,
+} from './helpers/boot03-distributed-app-integration.js';
 
 const rulesPackageSource = resolve(
   process.cwd(),
@@ -31,10 +49,7 @@ const rulesPackageSource = resolve(
 const orm = createRequire(import.meta.url)('drizzle-orm');
 const { eq } = orm;
 
-async function assertNoStoryRow(
-  database: Database,
-  storyId: string,
-) {
+async function assertNoStoryRow(database: Database, storyId: string) {
   const rows = await database.db
     .select({ id: story.id })
     .from(story)
@@ -42,9 +57,7 @@ async function assertNoStoryRow(
   assert.equal(rows.length, 0);
 }
 
-const moduleUrl = pathToFileURL(
-  process.argv[1] ?? import.meta.url,
-).href;
+const moduleUrl = pathToFileURL(process.argv[1] ?? import.meta.url).href;
 
 async function prepareImportedOpening(args: {
   database: Database;
@@ -69,7 +82,8 @@ async function prepareImportedOpening(args: {
     join(source, 'START.md'),
     '# Gradient life\n\nThere are no people here, only a living response to chemical gradients.',
   );
-  const packageObligationId = opening === 'mechanical' ? randomUUID() : undefined;
+  const packageObligationId =
+    opening === 'mechanical' ? randomUUID() : undefined;
   if (packageObligationId) {
     await writeFile(
       join(source, 'obligations', 'warming.json'),
@@ -144,12 +158,9 @@ async function prepareImportedOpening(args: {
     rootHash: imported.rootHash,
     revision: imported.manifest.revision,
   };
-  await createScriptedOpenings(
-    database,
-    offlineExecution,
-    undefined,
-    { documentStore: storage },
-  ).request(
+  await createScriptedOpenings(database, offlineExecution, undefined, {
+    documentStore: storage,
+  }).request(
     ownerId,
     draftId,
     generationId,
@@ -196,343 +207,344 @@ async function prepareImportedOpening(args: {
   };
 }
 
-const entry = process.argv[1]
-  ? pathToFileURL(process.argv[1]).href
-  : undefined;
+const entry = process.argv[1] ? pathToFileURL(process.argv[1]).href : undefined;
 if (entry === moduleUrl) {
   test(
     'BOOT03 imported start through private Game Authority (two-process)',
-  { timeout: 300000 },
-  async (t) => {
-    const documentRoot = await mkdtemp(
-      join(tmpdir(), 'offscreen-boot03-distributed-'),
-    );
-    const chamberStorytellerControl = createChamberStorytellerControl();
-    await withBoot03DistributedAppIntegration(
-      async (context) => {
-        await context.restartWorker();
-        const prepared = await prepareImportedOpening({
-          database: context.database,
-          ownerId: context.ownerId,
-          documentRoot: context.documentRoot,
-        });
-        const storyId = randomUUID();
-        const headers = {
-          cookie: context.cookie,
-          origin: context.origin,
-          'content-type': 'application/json',
-        };
-        await t.test(
-          'Nest PUT start admits imported Storyteller opening via private GA',
-          async () => {
-            const started = await fetch(
-              `${context.apiOrigin}/api/stories/${storyId}/start`,
-              {
-                method: 'PUT',
-                headers,
-                body: JSON.stringify({
-                  candidateId: prepared.generationId,
-                  expectedDraftRevision: 1,
-                  campaign: prepared.campaign,
-                }),
-              },
-            );
-            const startedBody = await started.json();
-            assert.equal(
-              started.status,
-              200,
-              JSON.stringify(startedBody),
-            );
-            const snapshot = storySnapshotSchema.parse(startedBody);
-            assert.equal(snapshot.id, storyId);
-            const [createdStory] = await context.database.db
-              .select({
-                rootHash: story.documentRootHash,
-                rootRevision: story.documentRootRevision,
-              })
-              .from(story)
-              .where(eq(story.id, storyId));
-            assert.ok(createdStory?.rootHash);
-            assert.equal(createdStory.rootRevision, 2);
-            const firstManifest = await prepared.storage.readManifest(
-              createdStory.rootHash,
-            );
-            assert.ok(
-              firstManifest.entries.some(
-                (entry) => entry.path === 'start/package.md',
-              ),
-            );
-            const obligationsAfterStart = await context.database.db
-              .select()
-              .from(worldObligation)
-              .where(eq(worldObligation.storyId, storyId));
-            assert.equal(obligationsAfterStart.length, 1);
-            assert.notEqual(
-              obligationsAfterStart[0]?.id,
-              prepared.packageObligationId,
-            );
-            const checkpoints = await context.database.db
-              .select({ storyId: storySceneCheckpoint.storyId })
-              .from(storySceneCheckpoint)
-              .where(eq(storySceneCheckpoint.storyId, storyId));
-            assert.equal(checkpoints.length, 0);
-            const [campaignRow] = await context.database.db
-              .select({
-                offer: campaign.offer,
-                holds: campaign.holds,
-              })
-              .from(campaign)
-              .where(eq(campaign.storyId, storyId));
-            assert.ok(campaignRow?.offer);
-            assert.ok(
-              Array.isArray(campaignRow.holds) && campaignRow.holds.length > 0,
-            );
+    { timeout: 300000 },
+    async (t) => {
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-distributed-'),
+      );
+      const chamberStorytellerControl = createChamberStorytellerControl();
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          await context.restartWorker();
+          const prepared = await prepareImportedOpening({
+            database: context.database,
+            ownerId: context.ownerId,
+            documentRoot: context.documentRoot,
+          });
+          const storyId = randomUUID();
+          const headers = {
+            cookie: context.cookie,
+            origin: context.origin,
+            'content-type': 'application/json',
+          };
+          await t.test(
+            'Nest PUT start admits imported Storyteller opening via private GA',
+            async () => {
+              const started = await fetch(
+                `${context.apiOrigin}/api/stories/${storyId}/start`,
+                {
+                  method: 'PUT',
+                  headers,
+                  body: JSON.stringify({
+                    candidateId: prepared.generationId,
+                    expectedDraftRevision: 1,
+                    campaign: prepared.campaign,
+                  }),
+                },
+              );
+              const startedBody = await started.json();
+              assert.equal(started.status, 200, JSON.stringify(startedBody));
+              const snapshot = storySnapshotSchema.parse(startedBody);
+              assert.equal(snapshot.id, storyId);
+              const [createdStory] = await context.database.db
+                .select({
+                  rootHash: story.documentRootHash,
+                  rootRevision: story.documentRootRevision,
+                })
+                .from(story)
+                .where(eq(story.id, storyId));
+              assert.ok(createdStory?.rootHash);
+              assert.equal(createdStory.rootRevision, 2);
+              const firstManifest = await prepared.storage.readManifest(
+                createdStory.rootHash,
+              );
+              assert.ok(
+                firstManifest.entries.some(
+                  (entry) => entry.path === 'start/package.md',
+                ),
+              );
+              const obligationsAfterStart = await context.database.db
+                .select()
+                .from(worldObligation)
+                .where(eq(worldObligation.storyId, storyId));
+              assert.equal(obligationsAfterStart.length, 1);
+              assert.notEqual(
+                obligationsAfterStart[0]?.id,
+                prepared.packageObligationId,
+              );
+              const checkpoints = await context.database.db
+                .select({ storyId: storySceneCheckpoint.storyId })
+                .from(storySceneCheckpoint)
+                .where(eq(storySceneCheckpoint.storyId, storyId));
+              assert.equal(checkpoints.length, 0);
+              const [campaignRow] = await context.database.db
+                .select({
+                  offer: campaign.offer,
+                  holds: campaign.holds,
+                })
+                .from(campaign)
+                .where(eq(campaign.storyId, storyId));
+              assert.ok(campaignRow?.offer);
+              assert.ok(
+                Array.isArray(campaignRow.holds) &&
+                  campaignRow.holds.length > 0,
+              );
 
-            const retry = await fetch(
-              `${context.apiOrigin}/api/stories/${storyId}/start`,
-              {
-                method: 'PUT',
-                headers,
-                body: JSON.stringify({
-                  candidateId: prepared.generationId,
-                  expectedDraftRevision: 1,
-                  campaign: prepared.campaign,
-                }),
-              },
-            );
-            assert.equal(retry.status, 200);
-            assert.deepEqual(await retry.json(), snapshot);
-          },
-        );
-      },
-      {
-        documentRoot,
-        chamberStorytellerControl,
-        storytellerRuntime: {
-          scriptedGate: chamberStorytellerControl.evaluate,
-          documentStore: new LocalDocumentStore(documentRoot),
+              const retry = await fetch(
+                `${context.apiOrigin}/api/stories/${storyId}/start`,
+                {
+                  method: 'PUT',
+                  headers,
+                  body: JSON.stringify({
+                    candidateId: prepared.generationId,
+                    expectedDraftRevision: 1,
+                    campaign: prepared.campaign,
+                  }),
+                },
+              );
+              assert.equal(retry.status, 200);
+              assert.deepEqual(await retry.json(), snapshot);
+            },
+          );
         },
-      },
-    );
-  },
+        {
+          documentRoot,
+          chamberStorytellerControl,
+          storytellerRuntime: {
+            scriptedGate: chamberStorytellerControl.evaluate,
+            documentStore: new LocalDocumentStore(documentRoot),
+          },
+        },
+      );
+    },
   );
 
   test(
     'BOOT03 distributed start fails closed when Game Authority is unavailable',
-  { timeout: 180000 },
-  async (t) => {
-    const documentRoot = await mkdtemp(
-      join(tmpdir(), 'offscreen-boot03-ga-down-'),
-    );
-    await withBoot03DistributedAppIntegration(
-      async (context) => {
-        await context.restartWorker();
-        const prepared = await prepareImportedOpening({
-          database: context.database,
-          ownerId: context.ownerId,
-          documentRoot: context.documentRoot,
-        });
-        const storyId = randomUUID();
-        const response = await fetch(
-          `${context.apiOrigin}/api/stories/${storyId}/start`,
-          {
-            method: 'PUT',
-            headers: {
-              cookie: context.cookie,
-              origin: context.origin,
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({
-              candidateId: prepared.generationId,
-              expectedDraftRevision: 1,
-              campaign: prepared.campaign,
-            }),
-          },
-        );
-        assert.equal(response.status, 503);
-        const rows = await context.database.db
-          .select({ id: story.id })
-          .from(story)
-          .where(eq(story.id, storyId));
-        assert.equal(rows.length, 0);
-      },
-      {
-        documentRoot,
-        skipGameAuthority: true,
-      },
-    );
-  },
-  );
-
-  test(
-    'BOOT03 distributed start fails closed with mismatched service token',
-  { timeout: 240000 },
-  async (t) => {
-    const documentRoot = await mkdtemp(
-      join(tmpdir(), 'offscreen-boot03-wrong-token-'),
-    );
-    await withBoot03DistributedAppIntegration(
-      async (context) => {
-        await context.restartWorker();
-        const prepared = await prepareImportedOpening({
-          database: context.database,
-          ownerId: context.ownerId,
-          documentRoot: context.documentRoot,
-        });
-        const storyId = randomUUID();
-        const response = await fetch(
-          `${context.apiOrigin}/api/stories/${storyId}/start`,
-          {
-            method: 'PUT',
-            headers: {
-              cookie: context.cookie,
-              origin: context.origin,
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({
-              candidateId: prepared.generationId,
-              expectedDraftRevision: 1,
-              campaign: prepared.campaign,
-            }),
-          },
-        );
-        assert.equal(response.status, 503);
-        const rows = await context.database.db
-          .select({ id: story.id })
-          .from(story)
-          .where(eq(story.id, storyId));
-        assert.equal(rows.length, 0);
-      },
-      {
-        documentRoot,
-        nestServiceTokenOverride: 'wrong-token-not-matching-ga-99',
-      },
-    );
-  },
-  );
-
-  test(
-    'BOOT03 distributed start rejects playable.scripted candidate with startPackage',
-  { timeout: 240000 },
-  async () => {
-    const documentRoot = await mkdtemp(
-      join(tmpdir(), 'offscreen-boot03-playable-start-pkg-'),
-    );
-    await withBoot03DistributedAppIntegration(
-      async (context) => {
-        await context.restartWorker();
-        const imported = await prepareImportedOpening({
-          database: context.database,
-          ownerId: context.ownerId,
-          documentRoot: context.documentRoot,
-        });
-        const drafts = createDrafts(context.database);
-        const draftId = randomUUID();
-        await drafts.save(context.ownerId, draftId, {
-          title: 'Playable negative',
-          premise: 'A traveller at a locked gate.',
-          storytellingDirection: 'Strange but gentle.',
-          expectedRevision: 0,
-        });
-        const candidateId = randomUUID();
-        const playableOpenings = createScriptedOpenings(context.database);
-        await playableOpenings.request(
-          context.ownerId,
-          draftId,
-          candidateId,
-          1,
-        );
-        await playableOpenings.complete(candidateId);
-        const [candidate] = await context.database.db
-          .select({ kind: generation.kind })
-          .from(generation)
-          .where(eq(generation.id, candidateId));
-        assert.equal(candidate?.kind, 'opening.playable.scripted.v1');
-        const storyId = randomUUID();
-        const response = await fetch(
-          `${context.apiOrigin}/api/stories/${storyId}/start`,
-          {
-            method: 'PUT',
-            headers: {
-              cookie: context.cookie,
-              origin: context.origin,
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({
-              candidateId,
-              expectedDraftRevision: 1,
-              campaign: imported.campaign,
-            }),
-          },
-        );
-        assert.equal(response.status, 400, await response.text());
-        await assertNoStoryRow(context.database, storyId);
-      },
-      { documentRoot },
-    );
-  },
-  );
-
-  test(
-    'BOOT03 distributed start rejects wrong owner and stale draft revision',
-  { timeout: 240000 },
-  async (t) => {
-    const documentRoot = await mkdtemp(
-      join(tmpdir(), 'offscreen-boot03-start-guards-'),
-    );
-    await withBoot03DistributedAppIntegration(
-      async (context) => {
-        await context.restartWorker();
-        const prepared = await prepareImportedOpening({
-          database: context.database,
-          ownerId: context.ownerId,
-          documentRoot: context.documentRoot,
-        });
-        const headers = {
-          origin: context.origin,
-          'content-type': 'application/json',
-        };
-        const body = JSON.stringify({
-          candidateId: prepared.generationId,
-          expectedDraftRevision: 1,
-          campaign: prepared.campaign,
-        });
-
-        await t.test('foreign owner cannot start with imported candidate', async () => {
+    { timeout: 180000 },
+    async (t) => {
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-ga-down-'),
+      );
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          await context.restartWorker();
+          const prepared = await prepareImportedOpening({
+            database: context.database,
+            ownerId: context.ownerId,
+            documentRoot: context.documentRoot,
+          });
           const storyId = randomUUID();
           const response = await fetch(
             `${context.apiOrigin}/api/stories/${storyId}/start`,
             {
               method: 'PUT',
-              headers: { ...headers, cookie: context.otherCookie },
-              body,
-            },
-          );
-          assert.equal(response.status, 404, await response.text());
-          await assertNoStoryRow(context.database, storyId);
-        });
-
-        await t.test('stale expectedDraftRevision cannot start imported opening', async () => {
-          const storyId = randomUUID();
-          const response = await fetch(
-            `${context.apiOrigin}/api/stories/${storyId}/start`,
-            {
-              method: 'PUT',
-              headers: { ...headers, cookie: context.cookie },
+              headers: {
+                cookie: context.cookie,
+                origin: context.origin,
+                'content-type': 'application/json',
+              },
               body: JSON.stringify({
                 candidateId: prepared.generationId,
-                expectedDraftRevision: 2,
+                expectedDraftRevision: 1,
                 campaign: prepared.campaign,
               }),
             },
           );
-          assert.equal(response.status, 409, await response.text());
+          assert.equal(response.status, 503);
+          const rows = await context.database.db
+            .select({ id: story.id })
+            .from(story)
+            .where(eq(story.id, storyId));
+          assert.equal(rows.length, 0);
+        },
+        {
+          documentRoot,
+          skipGameAuthority: true,
+        },
+      );
+    },
+  );
+
+  test(
+    'BOOT03 distributed start fails closed with mismatched service token',
+    { timeout: 240000 },
+    async (t) => {
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-wrong-token-'),
+      );
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          await context.restartWorker();
+          const prepared = await prepareImportedOpening({
+            database: context.database,
+            ownerId: context.ownerId,
+            documentRoot: context.documentRoot,
+          });
+          const storyId = randomUUID();
+          const response = await fetch(
+            `${context.apiOrigin}/api/stories/${storyId}/start`,
+            {
+              method: 'PUT',
+              headers: {
+                cookie: context.cookie,
+                origin: context.origin,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                candidateId: prepared.generationId,
+                expectedDraftRevision: 1,
+                campaign: prepared.campaign,
+              }),
+            },
+          );
+          assert.equal(response.status, 503);
+          const rows = await context.database.db
+            .select({ id: story.id })
+            .from(story)
+            .where(eq(story.id, storyId));
+          assert.equal(rows.length, 0);
+        },
+        {
+          documentRoot,
+          nestServiceTokenOverride: 'wrong-token-not-matching-ga-99',
+        },
+      );
+    },
+  );
+
+  test(
+    'BOOT03 distributed start rejects playable.scripted candidate with startPackage',
+    { timeout: 240000 },
+    async () => {
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-playable-start-pkg-'),
+      );
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          await context.restartWorker();
+          const imported = await prepareImportedOpening({
+            database: context.database,
+            ownerId: context.ownerId,
+            documentRoot: context.documentRoot,
+          });
+          const drafts = createDrafts(context.database);
+          const draftId = randomUUID();
+          await drafts.save(context.ownerId, draftId, {
+            title: 'Playable negative',
+            premise: 'A traveller at a locked gate.',
+            storytellingDirection: 'Strange but gentle.',
+            expectedRevision: 0,
+          });
+          const candidateId = randomUUID();
+          const playableOpenings = createScriptedOpenings(context.database);
+          await playableOpenings.request(
+            context.ownerId,
+            draftId,
+            candidateId,
+            1,
+          );
+          await playableOpenings.complete(candidateId);
+          const [candidate] = await context.database.db
+            .select({ kind: generation.kind })
+            .from(generation)
+            .where(eq(generation.id, candidateId));
+          assert.equal(candidate?.kind, 'opening.playable.scripted.v1');
+          const storyId = randomUUID();
+          const response = await fetch(
+            `${context.apiOrigin}/api/stories/${storyId}/start`,
+            {
+              method: 'PUT',
+              headers: {
+                cookie: context.cookie,
+                origin: context.origin,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                candidateId,
+                expectedDraftRevision: 1,
+                campaign: imported.campaign,
+              }),
+            },
+          );
+          assert.equal(response.status, 400, await response.text());
           await assertNoStoryRow(context.database, storyId);
-        });
-      },
-      { documentRoot },
-    );
-  },
+        },
+        { documentRoot },
+      );
+    },
+  );
+
+  test(
+    'BOOT03 distributed start rejects wrong owner and stale draft revision',
+    { timeout: 240000 },
+    async (t) => {
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-start-guards-'),
+      );
+      await withBoot03DistributedAppIntegration(
+        async (context) => {
+          await context.restartWorker();
+          const prepared = await prepareImportedOpening({
+            database: context.database,
+            ownerId: context.ownerId,
+            documentRoot: context.documentRoot,
+          });
+          const headers = {
+            origin: context.origin,
+            'content-type': 'application/json',
+          };
+          const body = JSON.stringify({
+            candidateId: prepared.generationId,
+            expectedDraftRevision: 1,
+            campaign: prepared.campaign,
+          });
+
+          await t.test(
+            'foreign owner cannot start with imported candidate',
+            async () => {
+              const storyId = randomUUID();
+              const response = await fetch(
+                `${context.apiOrigin}/api/stories/${storyId}/start`,
+                {
+                  method: 'PUT',
+                  headers: { ...headers, cookie: context.otherCookie },
+                  body,
+                },
+              );
+              assert.equal(response.status, 404, await response.text());
+              await assertNoStoryRow(context.database, storyId);
+            },
+          );
+
+          await t.test(
+            'stale expectedDraftRevision cannot start imported opening',
+            async () => {
+              const storyId = randomUUID();
+              const response = await fetch(
+                `${context.apiOrigin}/api/stories/${storyId}/start`,
+                {
+                  method: 'PUT',
+                  headers: { ...headers, cookie: context.cookie },
+                  body: JSON.stringify({
+                    candidateId: prepared.generationId,
+                    expectedDraftRevision: 2,
+                    campaign: prepared.campaign,
+                  }),
+                },
+              );
+              assert.equal(response.status, 409, await response.text());
+              await assertNoStoryRow(context.database, storyId);
+            },
+          );
+        },
+        { documentRoot },
+      );
+    },
   );
 
   test(
@@ -734,10 +746,7 @@ if (entry === moduleUrl) {
               });
               assert.ok(prepared.storage instanceof LocalDocumentStore);
               const stories = createStoryApplication(context.database, {
-                documentStore: checkpointReadFault(
-                  prepared.storage,
-                  fault,
-                ),
+                documentStore: checkpointReadFault(prepared.storage, fault),
                 defaultRules: prepared.defaultRules,
               });
               const storyId = randomUUID();
@@ -793,7 +802,10 @@ if (entry === moduleUrl) {
             '\nThis sentence is not the authority default.\n',
             { flag: 'a' },
           );
-          const alternate = await importRulePackageDirectory(storage, rulesCopy);
+          const alternate = await importRulePackageDirectory(
+            storage,
+            rulesCopy,
+          );
           const alternateRules = {
             ruleSetId: alternate.manifest.ruleSetId,
             rootHash: alternate.rootHash,
@@ -910,7 +922,9 @@ if (entry === moduleUrl) {
     'BOOT03 two Game Authority processes race one quiescent start',
     { timeout: 240000 },
     async () => {
-      const documentRoot = await mkdtemp(join(tmpdir(), 'offscreen-boot03-race-'));
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-race-'),
+      );
       await withBoot03DistributedAppIntegration(
         async (context) => {
           assert.ok(context.peerGameAuthorityOrigin);
@@ -986,7 +1000,9 @@ if (entry === moduleUrl) {
     'BOOT03 eligible start leaves no story when S3 becomes unreachable',
     { timeout: 240000 },
     async () => {
-      const documentRoot = await mkdtemp(join(tmpdir(), 'offscreen-boot03-s3-'));
+      const documentRoot = await mkdtemp(
+        join(tmpdir(), 'offscreen-boot03-s3-'),
+      );
       const proxy = createServer((client) => {
         const upstream = createConnection({ host: '127.0.0.1', port: 9090 });
         client.pipe(upstream);

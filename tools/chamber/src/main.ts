@@ -53,11 +53,11 @@ import {
   readMemoryEvaluationPacketConfig,
 } from './evaluation-config.js';
 import {
-  LocalDocumentStore,
   importRulePackageDirectory,
-  importWorldPackageDirectory,
   importStartPackageDirectory,
-} from '@offscreen/documents';
+  importWorldPackageDirectory,
+} from '@offscreen/content-packages';
+import { LocalDocumentStore } from '@offscreen/documents';
 import {
   captureHeldMemoryComparisonPackets,
   captureHeldMemoryPacket,

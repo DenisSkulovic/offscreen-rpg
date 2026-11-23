@@ -1,6 +1,6 @@
 # quality evaluation | proposed Changes
 
-**LIB03 promoted for bounded execution:** [LIB03](../../open/2026-11-23--lib03-content-package-ownership/CHANGE.md). No longer in backlog; one owner, no shared Documents edits with LIB05.
+**LIB03 is Done:** [LIB03](../../archive/2026-11/storyteller/2026-11-23--lib03-content-package-ownership/CHANGE.md). One owner; no shared Documents edits with LIB05.
 
 
 [Backlog index](../README.md) · [Open Changes](../../README.md)

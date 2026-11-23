@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
+import { importRulePackageDirectory } from '@offscreen/content-packages';
 import {
   canonicalDocumentSchema,
-  importRulePackageDirectory,
   LocalDocumentStore,
   rulePackageManifestSchema,
 } from '@offscreen/documents';
@@ -124,8 +124,7 @@ test('resolveStartupDefaultRules fails when pinned manifest is missing', async (
     await assert.rejects(
       () =>
         resolveStartupDefaultRules(store, {
-          OFFSCREEN_DEFAULT_RULE_ROOT_HASH:
-            'a'.repeat(64),
+          OFFSCREEN_DEFAULT_RULE_ROOT_HASH: 'a'.repeat(64),
         }),
       /not found|missing|ENOENT/i,
     );

@@ -35,10 +35,8 @@ import { committedCheckpointMatches } from './continuation';
 import type { InitialStory } from './command-policy';
 import { parseStoryIdentifier, StoryError } from './errors';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
-import {
-  instantiateStartPackage,
-  stableNamespacedDocumentId,
-} from '@offscreen/documents';
+import { stableNamespacedDocumentId } from '@offscreen/documents';
+import { instantiateStartPackage } from './start-package-instantiation.js';
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import {

@@ -8,13 +8,13 @@ import {
   logicalDocumentPathSchema,
   worldPackageDocumentKindSchema,
   worldPackageManifestSchema,
-} from './schema.js';
-import type { DocumentStore } from './local-store.js';
+} from '@offscreen/documents';
+import type { DocumentStore } from '@offscreen/documents';
 import {
   markdownSections,
   markdownTitle,
   stableNamespacedDocumentId,
-} from './markdown-metadata.js';
+} from '@offscreen/documents';
 
 export const maximumWorldImportFiles = 256;
 export const maximumWorldImportFileBytes = 512 * 1024;
@@ -38,7 +38,7 @@ export const worldPackageImportSchema = z.strictObject({
 
 function normalizeImportPath(path: string) {
   if (path.includes('\\'))
-    throw new Error('World import paths use forward slashes');
+    {throw new Error('World import paths use forward slashes');}
   const extension = extname(path).toLowerCase();
   const normalized = extension === '.txt' ? `${path.slice(0, -4)}.md` : path;
   if (!normalized.toLowerCase().endsWith('.md')) {
@@ -119,7 +119,7 @@ export async function importWorldPackage(
     });
   }
   const orientation = entries[orientationIndex];
-  if (!orientation) throw new Error('World orientation was not imported');
+  if (!orientation) {throw new Error('World orientation was not imported');}
   const manifest = worldPackageManifestSchema.parse({
     format: 'offscreen.world-package-manifest.v1',
     worldId: request.worldId,

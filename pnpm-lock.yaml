@@ -65,6 +65,9 @@ importers:
       '@offscreen/cache':
         specifier: workspace:*
         version: link:../../packages/cache
+      '@offscreen/content-packages':
+        specifier: workspace:*
+        version: link:../../packages/content-packages
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -126,6 +129,9 @@ importers:
 
   apps/game-authority:
     dependencies:
+      '@offscreen/content-packages':
+        specifier: workspace:*
+        version: link:../../packages/content-packages
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -368,6 +374,25 @@ importers:
 
   packages/config: {}
 
+  packages/content-packages:
+    dependencies:
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../documents
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   packages/contracts:
     dependencies:
       '@offscreen/documents':
@@ -579,6 +604,9 @@ importers:
       '@offscreen/api-lab':
         specifier: workspace:*
         version: link:../api-lab
+      '@offscreen/content-packages':
+        specifier: workspace:*
+        version: link:../../packages/content-packages
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -680,6 +708,9 @@ importers:
       '@offscreen/api-lab':
         specifier: workspace:*
         version: link:../api-lab
+      '@offscreen/content-packages':
+        specifier: workspace:*
+        version: link:../../packages/content-packages
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

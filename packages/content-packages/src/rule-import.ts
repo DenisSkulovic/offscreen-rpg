@@ -5,13 +5,13 @@ import {
   canonicalDocumentSchema,
   logicalDocumentPathSchema,
   rulePackageManifestSchema,
-} from './schema.js';
-import type { DocumentStore } from './local-store.js';
+} from '@offscreen/documents';
+import type { DocumentStore } from '@offscreen/documents';
 import {
   markdownSections,
   markdownTitle,
   stableNamespacedDocumentId,
-} from './markdown-metadata.js';
+} from '@offscreen/documents';
 
 export const maximumRuleImportFiles = 256;
 export const maximumRuleImportFileBytes = 512 * 1024;
@@ -87,7 +87,7 @@ export async function importRulePackage(
   const orientationIndex = request.files.findIndex(
     (file) => file.path.toLowerCase() === 'rules.md',
   );
-  if (orientationIndex < 0) throw new Error('Rule import requires RULES.md');
+  if (orientationIndex < 0) {throw new Error('Rule import requires RULES.md');}
 
   const entries = [];
   for (const [index, file] of request.files.entries()) {
@@ -131,7 +131,7 @@ export async function importRulePackage(
     });
   }
   const orientation = entries[orientationIndex];
-  if (!orientation) throw new Error('Rule orientation was not imported');
+  if (!orientation) {throw new Error('Rule orientation was not imported');}
   const manifest = rulePackageManifestSchema.parse({
     format: 'offscreen.rule-package-manifest.v1',
     ruleSetId: request.ruleSetId,

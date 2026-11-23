@@ -23,12 +23,14 @@ import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  LocalDocumentStore,
-  canonicalJson,
-  createDocumentStoreFromEnv,
   importRulePackageDirectory,
   importStartPackageDirectory,
   importWorldPackageDirectory,
+} from '../../packages/content-packages/dist/index.js';
+import {
+  LocalDocumentStore,
+  canonicalJson,
+  createDocumentStoreFromEnv,
 } from '../../packages/documents/dist/index.js';
 
 const PIN_NAME = 'fixture-pin.json';

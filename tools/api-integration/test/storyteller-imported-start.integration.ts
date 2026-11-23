@@ -3,14 +3,21 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { gameActionReceipt, worldObligation } from '@offscreen/db/campaign-schema';
+import {
+  gameActionReceipt,
+  worldObligation,
+} from '@offscreen/db/campaign-schema';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { story } from '@offscreen/db/story-schema';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createStories } from '@offscreen/story-engine/stories';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { requireDefined } from './helpers/require.js';
-import { LocalDocumentStore, importRulePackageDirectory, importStartPackageDirectory } from '@offscreen/documents';
+import {
+  importRulePackageDirectory,
+  importStartPackageDirectory,
+} from '@offscreen/content-packages';
+import { LocalDocumentStore } from '@offscreen/documents';
 import type { TestContext } from 'node:test';
 import { type ProfiledStoryteller, eq } from './storyteller-suite.js';
 import { registerProfiledStoryteller } from './storyteller-suite.js';
@@ -130,12 +137,9 @@ export async function checkImportedStart(
         rootHash: imported.rootHash,
         revision: imported.manifest.revision,
       };
-      await createScriptedOpenings(
-        database,
-        offlineExecution,
-        undefined,
-        { documentStore: storage },
-      ).request(
+      await createScriptedOpenings(database, offlineExecution, undefined, {
+        documentStore: storage,
+      }).request(
         ownerId,
         draftId,
         generationId,
@@ -344,10 +348,7 @@ export async function checkImportedStart(
           storyId: started.storyId,
         });
         assert.equal(committed.campaign?.actionExecution, null);
-        assert.equal(
-          committed.campaign?.actionReceipts[0]?.id,
-          operationId,
-        );
+        assert.equal(committed.campaign?.actionReceipts[0]?.id, operationId);
         // ENG03-narrow: the finite action reserved its narration G at
         // admission (preparationGenerationId); settlement links the
         // receipt to that exact G, so the required-turn hold is already
@@ -396,10 +397,7 @@ export async function checkImportedStart(
           },
         ]);
         assert.equal(snapshot.campaign?.actionReceipts.length, round + 1);
-        assert.equal(
-          snapshot.campaign?.actionReceipts[0]?.state,
-          'published',
-        );
+        assert.equal(snapshot.campaign?.actionReceipts[0]?.state, 'published');
         assert.ok(snapshot.campaign?.offer?.nodes.length);
         const offerIds = snapshot.campaign?.offer?.nodes.map((node) => node.id);
         if (round === 0) {
@@ -420,10 +418,7 @@ export async function checkImportedStart(
           if (publishedReceipt.outcome === 'success') {
             assert.deepEqual(offerIds, ['inspect-with-gary']);
           } else if (publishedReceipt.outcome === 'failure') {
-            assert.deepEqual(offerIds, [
-              'take-cover',
-              'observe-from-doorway',
-            ]);
+            assert.deepEqual(offerIds, ['take-cover', 'observe-from-doorway']);
           } else {
             assert.fail(
               `Unexpected calm-gary outcome ${publishedReceipt.outcome}`,
@@ -492,10 +487,7 @@ export async function checkImportedStart(
           storyId: started.storyId,
         });
         assert.equal(committed.campaign?.gameSecond, tickBefore + 5);
-        assert.equal(
-          committed.campaign?.actionReceipts.length,
-          round + 1,
-        );
+        assert.equal(committed.campaign?.actionReceipts.length, round + 1);
         const [receipt] = await database.db
           .select({ generationId: gameActionReceipt.generationId })
           .from(gameActionReceipt)
@@ -518,10 +510,7 @@ export async function checkImportedStart(
         });
         assert.equal(snapshot.revision, round + 2);
         assert.equal(snapshot.campaign?.actionReceipts.length, round + 1);
-        assert.equal(
-          snapshot.campaign?.actionReceipts[0]?.state,
-          'published',
-        );
+        assert.equal(snapshot.campaign?.actionReceipts[0]?.state, 'published');
         assert.deepEqual(snapshot.campaign?.holds, [
           {
             kind: 'decision',
@@ -534,4 +523,8 @@ export async function checkImportedStart(
   );
 }
 
-registerProfiledStoryteller(import.meta.url, 'imported start and mechanical opening', checkImportedStart);
+registerProfiledStoryteller(
+  import.meta.url,
+  'imported start and mechanical opening',
+  checkImportedStart,
+);

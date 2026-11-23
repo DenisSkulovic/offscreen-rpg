@@ -1,22 +1,20 @@
-import type { DocumentStore } from './local-store.js';
-import { stableNamespacedDocumentId } from './markdown-metadata.js';
 import { isDeepStrictEqual } from 'node:util';
 import {
   applyLibraryBatch,
-  collectLibraryManifestEntries,
-  loadLibraryIndex,
-  type LibraryBatchOperation,
-  type LibraryIndex,
-} from './library-index.js';
-import { DocumentStorageError } from './local-store.js';
-import {
   canonicalDocumentSchema,
   canonicalStructuredDocumentSchema,
+  collectLibraryManifestEntries,
+  DocumentStorageError,
   documentManifestSchema,
+  loadLibraryIndex,
+  stableNamespacedDocumentId,
   type DocumentManifest,
   type DocumentManifestEntry,
+  type DocumentStore,
+  type LibraryBatchOperation,
+  type LibraryIndex,
   type StartPackageManifest,
-} from './schema.js';
+} from '@offscreen/documents';
 
 function assertPackageEntry(
   entry: StartPackageManifest['entries'][number],
@@ -94,10 +92,7 @@ export async function instantiateStartPackage(
         base = await storage.readManifest(baseRootHash);
       }
     } catch (error) {
-      if (
-        error instanceof DocumentStorageError &&
-        error.code === 'corrupt'
-      ) {
+      if (error instanceof DocumentStorageError && error.code === 'corrupt') {
         base = await storage.readManifest(baseRootHash);
       } else {
         throw error;
@@ -327,7 +322,7 @@ export async function instantiateStartPackage(
     for (const entry of entries) {
       const prior = priorPaths.get(entry.path);
       if (prior) {
-        if (isDeepStrictEqual(prior, entry)) continue;
+        if (isDeepStrictEqual(prior, entry)) {continue;}
         throw new Error(
           `Start package path collides with campaign: ${entry.path}`,
         );

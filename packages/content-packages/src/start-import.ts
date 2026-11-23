@@ -1,11 +1,11 @@
 import { lstat, readFile, realpath } from 'node:fs/promises';
 import { extname, isAbsolute, relative, resolve } from 'node:path';
 import { z } from 'zod';
-import type { DocumentStore } from './local-store.js';
+import type { DocumentStore } from '@offscreen/documents';
 import {
   markdownTitle,
   stableNamespacedDocumentId,
-} from './markdown-metadata.js';
+} from '@offscreen/documents';
 import {
   canonicalDocumentSchema,
   canonicalStructuredDocumentSchema,
@@ -16,7 +16,7 @@ import {
   startPackageDocumentKindSchema,
   startPackageManifestSchema,
   worldPackageReferenceSchema,
-} from './schema.js';
+} from '@offscreen/documents';
 
 export const maximumStartImportFiles = 512;
 export const maximumStartImportFileBytes = 512 * 1024;
@@ -166,7 +166,7 @@ export async function importStartPackageDirectory(
   const orientation = entries.find(
     (entry) => entry.path.toLowerCase() === 'start.md',
   );
-  if (!orientation) throw new Error('Start orientation was not imported');
+  if (!orientation) {throw new Error('Start orientation was not imported');}
   const manifest = startPackageManifestSchema.parse({
     format: 'offscreen.start-package-manifest.v1',
     startPackageId: source.startPackageId,

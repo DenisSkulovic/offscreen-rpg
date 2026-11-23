@@ -1,6 +1,15 @@
 # LIB03 | Content package ingestion ownership, without a second canonical store
 
-**State:** READY FOR OWNER-COMMISSIONED SOURCE-ONLY EXECUTION (LIB01 + LIB02 integrated). **Reference baseline:** `undertaking/storyteller-workshop@abdce8d7457305baacd13971f116f343562999ff`. Cursor must recheck actual HEAD, uncommitted work and write ownership before editing. **No cluster, provider, DB or content mutation permission.** **Baseline:** source-inspected 484fd4a0; LIB01 remote integrated in the undertaking at the planning checkpoint. **Target:** undertaking/storyteller-workshop. **Scope:** source/package structure only; no real release run.
+**State:** Done (2026-11-24). Source-only ownership move. **Reference baseline:** `undertaking/storyteller-workshop@ed0837d0531be4050b40d9b2485b5759ef479fea` (packet recorded `abdce8d7457305baacd13971f116f343562999ff`; HEAD was ahead and an ancestor). **Integration:** `undertaking/storyteller-workshop`. **No cluster, provider, DB or content mutation.**
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Authored world/rule/start import | technical `docs/technical/storyteller/canonical-documents-and-packages.md#campaign-bootstrap` | changed: directory import owner is `@offscreen/content-packages`; manifest codecs stay in Documents | `packages/content-packages/src/*-import.ts` from pre-join `ed0837d0531be4050b40d9b2485b5759ef479fea` | fixture-tested | symlink, duplicate normalized path, missing WORLD.md, oversize file, path traversal, invalid license rejected; content-packages 6/6 | authoring runbook links updated |
+| Start instantiation | technical same heading | changed: `instantiateStartPackage` lives in Story Engine and still only stages objects | `packages/story-engine/src/stories/start-package-instantiation.ts` | fixture-tested | v2 path collision rejected; retry root equal; instantiation tests 3/3 | Documents barrel no longer exports it |
+| Manifest hashes, storage, SQL | technical / code | unchanged: schema, local store, S3 store, trie, and migrations were not edited | `packages/documents/src/schema.ts` and stores untouched | fixture-tested | documents unit tests passed after the export removal | N/A |
+| work/QUEUE.md | process | unchanged: LIB03 was an owner-commissioned parallel Change | same baseline | source-inspected | Current work line not rewritten | catalog link moves to archive |
 
 ## Decision and reason
 Content packages are **authored source bundles**, not general-purpose libraries or campaign canon. Their import rules (WORLD.md, RULES.md, START.md, license, path allowances, activation, author operation) must not live in a generic immutable-document/storage implementation. Define a new inward-facing `@offscreen/content-packages` workspace for world, rule, start import + filesystem discovery only; it depends one-way on `@offscreen/documents`. Keep the existing package-manifest codecs, immutable store typed methods, trie, hash serializer and historical root formats in Documents: moving those would change a widely shared persistence contract for no benefit.

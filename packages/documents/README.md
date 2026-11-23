@@ -26,5 +26,8 @@ are validated, relative navigation labels and are used only during bounded
 export. `exportPublishedRoot` writes into a caller-selected empty destination
 using exclusive creates, including `manifest.json` and `checksums.json`.
 
-Preparing a world, rule or start source directory for these importers is
+Authored world, rule, and start directories are imported by
+`@offscreen/content-packages`. Campaign instantiation of a start package is
+owned by `@offscreen/story-engine`. This package keeps the manifest codecs and
+the content-addressed store. Authoring steps are in
 [Content package authoring](../../docs/runbooks/content-package-authoring.md).

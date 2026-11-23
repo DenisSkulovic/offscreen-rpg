@@ -3,10 +3,10 @@ import { classifyRuntimeError } from '@offscreen/runtime-logging';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { access } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { importRulePackageDirectory } from '@offscreen/content-packages';
 import {
   contentHashSchema,
   createDocumentStoreFromEnv,
-  importRulePackageDirectory,
   rulePackageReferenceSchema,
   S3DocumentStore,
   type DocumentStore,
@@ -63,7 +63,9 @@ function readDistinctExecutorToken(
   env: Record<string, string | undefined>,
   forbidden: readonly string[],
 ) {
-  const parsed = executorTokenSchema.safeParse(env.GAME_AUTHORITY_EXECUTOR_TOKEN);
+  const parsed = executorTokenSchema.safeParse(
+    env.GAME_AUTHORITY_EXECUTOR_TOKEN,
+  );
   if (!parsed.success) {
     throw new Error('Invalid GAME_AUTHORITY_EXECUTOR_TOKEN');
   }
@@ -178,10 +180,7 @@ async function main() {
   const server = await startGameAuthorityServer({
     seam: createGameAuthoritySeam(database, seamOptions),
     custody: createStorytellerTaskCustodySeam(database, applicationOptions),
-    publication: createStorytellerPublicationSeam(
-      database,
-      applicationOptions,
-    ),
+    publication: createStorytellerPublicationSeam(database, applicationOptions),
     ...(writerRounds === undefined ? {} : { writerRounds }),
     ...(documentStore === undefined ? {} : { documentStore }),
     token: config.token,
@@ -191,7 +190,11 @@ async function main() {
     host: config.host,
     port: config.port,
   });
-  log('info', 'game-authority.listening', 'Game Authority story seam is listening.');
+  log(
+    'info',
+    'game-authority.listening',
+    'Game Authority story seam is listening.',
+  );
   const stop = () => {
     void server.close().finally(() => database.close());
   };
