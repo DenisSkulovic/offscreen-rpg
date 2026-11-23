@@ -163,12 +163,13 @@ test('toy breaker fixture matrix', () => {
 
   const victim = parallel[0];
   const signals = [];
+  const ticks = { 4100: '100', 4101: '101' };
   writeEnvironmentSession(environmentSessionRoot(raceDir), sessionFor(victim));
   const releases = [0, 1].map(() => parkSelectedEnvironment({
     owner: ownerOf(victim),
     sessionRoot: environmentSessionRoot(raceDir),
-    processDeps: alive(),
-    signal: (pid) => signals.push(pid),
+    processDeps: { pidAlive: (pid) => Object.hasOwn(ticks, pid), readStartTicks: (pid) => ticks[pid] ?? null },
+    signal: (pid) => { signals.push(pid); delete ticks[pid]; },
     readDesiredReplicas: () => zeros(),
     clearReservation: () => {},
   }));
