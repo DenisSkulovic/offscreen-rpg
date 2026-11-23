@@ -26,9 +26,9 @@ flowchart TD
 | Anonymous `/` | Public portal, no Nest session dependency in this component | [page](../../apps/web/app/page.tsx) → [PublicPortal](../../apps/web/src/features/public-portal/public-portal.tsx) |
 | Sign-in page | Continue with GitHub, optional safe return destination | [sign-in page](../../apps/web/app/sign-in/page.tsx) → [button](../../apps/web/src/features/session/sign-in-button.tsx) |
 | OAuth round-trip | GitHub redirects through Better Auth's `/api/auth` handler, with callback/error URL | [browser auth client](../../apps/web/src/lib/auth-client.ts) → [Better Auth setup](../../apps/api/src/modules/auth/auth.ts) |
-| Private layout | User must have a session | [authenticated layout](../../apps/web/app/(authenticated)/layout.tsx) → [requireViewer](../../apps/web/src/server/viewer.ts) |
+| Private layout | User must have a session | [authenticated layout](../../apps/web/app/%28authenticated%29/layout.tsx) → [requireViewer](../../apps/web/src/server/viewer.ts) |
 | Account check | Nest looks up session via Better Auth | [IdentityService + `GET /api/me`](../../apps/api/src/modules/auth/identity.ts) |
-| Owned story list | Two independent owned-resource reads, not only a login test | [stories page](../../apps/web/app/(authenticated)/stories/page.tsx) → [stories controller](../../apps/api/src/modules/stories/controllers/catalogue-and-launch.ts), [draft controller](../../apps/api/src/modules/drafts/controller.ts) |
+| Owned story list | Two independent owned-resource reads, not only a login test | [stories page](../../apps/web/app/%28authenticated%29/stories/page.tsx) → [stories controller](../../apps/api/src/modules/stories/controllers/catalogue-and-launch.ts), [draft controller](../../apps/api/src/modules/drafts/controller.ts) |
 
 **Registration:** The inspected web UI uses GitHub social sign-in, not a separate password-registration form. A first-time account is handled by Better Auth's user/session data. Do not invent an additional registration page or claim that OAuth succeeded in the real cluster without a browser proof.
 
