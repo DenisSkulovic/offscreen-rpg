@@ -1,6 +1,6 @@
 # HR01 | A Nest API a human can read and navigate
 
-**Profile:** STRUCTURAL/REFACTOR · **Status: NEAR-TERM, CONDITIONAL; dispatch after MA12 and CL01 integrate and the explicit post-merge contract check in NEXT-WAVE.md passes.** Source-inspected baseline: `d3ba291763de`; integration branch `undertaking/storyteller-workshop`, current packet commit does not alter production. **This is a future readability wave, not a parallel editor of ongoing MA12 or planned CL01.**
+**Profile:** STRUCTURAL/REFACTOR · **Status: READY WITH EXPLICIT LIMITS for owner-commissioned source-only execution after current host writer/branch check (source-reconciled 2026-11-23 at `1c68ade1`).** MA12 and CL01 are integrated. See the current-head overlay in SOURCE-MAP.md. Historical planning text below describes the earlier gated state. Source-inspected baseline: `d3ba291763de`; integration branch `undertaking/storyteller-workshop`, current packet commit does not alter production. **This is a future readability wave, not a parallel editor of ongoing MA12 or planned CL01.**
 
 ## Source diagnosis and desired outcome
 
