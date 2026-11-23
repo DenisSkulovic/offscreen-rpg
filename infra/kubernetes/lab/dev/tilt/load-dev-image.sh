@@ -9,6 +9,12 @@ cd "$repo"
 # Patterns are relative to the repo-root context, not the Dockerfile directory.
 DEV_IGNORE="${repo}/infra/kubernetes/lab/dev/Dockerfile.dockerignore"
 test -f "$DEV_IGNORE"
+if [[ "${EXPECTED_REF:-}" == offscreen-dev-workspace:dev-* ]]; then
+  ref="${EXPECTED_REF#offscreen-dev-workspace:}"
+  slot="${ref%-*}"
+  role="${ref##*-}"
+  exec bash "$repo/infra/kubernetes/lab/dev/load-dev-slot-image.sh" "$slot" "$role"
+fi
 docker build \
   -f infra/kubernetes/lab/dev/Dockerfile \
   --build-arg "TURBO_FILTER=${filter}" \

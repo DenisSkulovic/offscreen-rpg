@@ -20,8 +20,13 @@ RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --offline
 # Workspace packages export types from dist/. Watch mode cannot resolve them until this build.
 # The app itself is compiled by its watcher. ^... builds dependencies only, so web does not next-build.
-ARG TURBO_FILTER=@offscreen/api^...
-RUN pnpm exec turbo run build --filter="${TURBO_FILTER}"
+# One immutable image for every dev role. Containers still start their own command.
+# ^... builds workspace prerequisites only; application source stays on the Tilt watcher.
+RUN pnpm exec turbo run build \
+  --filter=@offscreen/web^... \
+  --filter=@offscreen/api^... \
+  --filter=@offscreen/game-authority^... \
+  --filter=@offscreen/worker^...
 
 FROM base AS runner
 WORKDIR /app

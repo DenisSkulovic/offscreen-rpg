@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fingerprintDevImageContext, planSlotImageArtifact } from './dev-slot-image-plan.mjs';
+import { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 
 const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
 ARG TURBO_FILTER=@offscreen/api^...
@@ -146,4 +146,36 @@ test('corrupt or conflicting artifact metadata fails closed', () => {
     nodes: {},
   });
   assert.equal(missing.reason, 'unproven-context');
+});
+
+test('one union snapshot is reused by a second slot and a source change misses', () => {
+  assert.match(UNION_ROLE_FILTER, /@offscreen\/web/);
+  assert.match(UNION_ROLE_FILTER, /@offscreen\/worker/);
+  const first = planUnionImageUse({ slotId: 'dev-3', fingerprint: 'fp-1', artifact: null, nodes: {} });
+  assert.equal(first.build, true);
+  assert.equal(first.aliases.length, 4);
+  const secondPlan = planUnionImageUse({
+    slotId: 'dev-4',
+    fingerprint: 'fp-1',
+    artifact: { digest: 'sha256:union', fingerprint: 'fp-1' },
+    nodes: {},
+  });
+  const loaded = { digests: ['sha256:union'], tags: secondPlan.aliases };
+  const second = planUnionImageUse({
+    slotId: 'dev-4',
+    fingerprint: 'fp-1',
+    artifact: { digest: 'sha256:union', fingerprint: 'fp-1' },
+    nodes: { 'control-plane': loaded, worker: { digests: ['sha256:union'], tags: [] } },
+  });
+  assert.equal(second.build, false);
+  assert.deepEqual(second.loadNodes, ['worker']);
+  assert.equal(second.ready, false);
+  const changed = planUnionImageUse({
+    slotId: 'dev-4',
+    fingerprint: 'fp-2',
+    artifact: { digest: 'sha256:union', fingerprint: 'fp-1' },
+    nodes: { 'control-plane': loaded, worker: loaded },
+  });
+  assert.equal(changed.build, true);
+  assert.equal(changed.ready, false);
 });

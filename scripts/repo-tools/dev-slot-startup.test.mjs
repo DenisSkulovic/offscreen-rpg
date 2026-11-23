@@ -1,9 +1,9 @@
-import { mkdtempSync, mkdirSync, writeFileSync, chmodSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, chmodSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { allocateDevWorktreeOwner } from './dev-worktree-allocator.mjs';
 import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure } from './dev-slot-startup.mjs';
 
@@ -166,7 +166,7 @@ test('slot image script reports build, control-plane and worker failures', () =>
   const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/kubernetes/lab/dev/load-dev-slot-image.sh';
   const run = (mode) => spawnSync('bash', [script, 'dev-3', 'authority', '@offscreen/game-authority'], {
     encoding: 'utf8',
-    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, IMG_MODE: mode },
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, IMG_MODE: mode, OFFSCREEN_IMAGE_FINGERPRINT: 'test-fingerprint' },
   });
   writeFileSync(join(bin, 'docker'), `#!/bin/bash
 if [[ "$1" == "image" ]]; then echo sha256:ok; exit 0; fi
@@ -194,4 +194,44 @@ exit 0
   const worker = describeImageLoadFailure({ role: 'authority' }, run('worker-fail'));
   assert.match(worker.detail, /node=offscreen-dev-worker/);
   assert.match(worker.detail, /exit=9/);
+});
+
+test('concurrent slot loads of one fingerprint build once', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'img-lock-'));
+  const bin = join(root, 'bin');
+  mkdirSync(bin);
+  const mark = join(root, 'marked');
+  const counter = join(root, 'builds');
+  writeFileSync(join(bin, 'docker'), `#!/bin/bash
+if [[ "$1" == "image" ]]; then
+  [[ -f "${mark}" ]] && cat "${mark}"
+  exit 0
+fi
+if [[ "$1" == "build" ]]; then
+  echo 1 >> "${counter}"
+  sleep 0.4
+  printf '%s' "$OFFSCREEN_IMAGE_FINGERPRINT" > "${mark}"
+fi
+exit 0
+`);
+  writeFileSync(join(bin, 'kind'), '#!/bin/bash\nexit 0\n');
+  chmodSync(join(bin, 'docker'), 0o755);
+  chmodSync(join(bin, 'kind'), 0o755);
+  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/kubernetes/lab/dev/load-dev-slot-image.sh';
+  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, OFFSCREEN_IMAGE_FINGERPRINT: 'same-fp', TMPDIR: root };
+  const run = (slot, role) => new Promise((resolve) => {
+    const child = spawn('bash', [script, slot, role], { env });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('close', (status) => resolve({ status, stdout, stderr }));
+  });
+  const [left, right] = await Promise.all([run('dev-3', 'all'), run('dev-4', 'web')]);
+  assert.equal(left.status, 0, left.stderr);
+  assert.equal(right.status, 0, right.stderr);
+  const builds = (left.stdout + right.stdout).match(/builds=1/g) ?? [];
+  assert.equal(builds.length, 1);
+  assert.match(left.stdout + right.stdout, /builds=0/);
+  assert.equal(readFileSync(counter, 'utf8').trim().split('\n').length, 1);
 });

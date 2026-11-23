@@ -5,7 +5,8 @@
  */
 
 import { migrateOwnedDevSlot } from './dev-slot-migrate.mjs';
-export { fingerprintDevImageContext, planSlotImageArtifact } from './dev-slot-image-plan.mjs';
+export { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
+import { UNION_ROLE_FILTER as UNION_FILTER } from './dev-slot-image-plan.mjs';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -322,20 +323,22 @@ export function describeImageLoadFailure(image, built) {
 
 export async function ensureOwnedSlotImages(owner, worktree, spawnImage = null) {
   const { spawnSync } = await import('node:child_process');
-  const run = spawnImage ?? ((image) => spawnSync('bash', [
+  const identity = fingerprintDevImageContext(worktree, { roleFilter: UNION_FILTER });
+  if (!identity.ok) {
+    return { ok: false, refusals: [{ id: 'image-build', detail: `role=union phase=fingerprint exit=1 ${identity.reason}` }], rebuilt: 0 };
+  }
+  const run = spawnImage ?? (() => spawnSync('bash', [
     'infra/kubernetes/lab/dev/load-dev-slot-image.sh',
     owner.slotId,
-    image.role,
-    image.filter,
+    'all',
   ], { cwd: worktree, encoding: 'utf8' }));
-  const plan = planSlotImageBuilds(owner.slotId, (ref) => spawnSync('docker', ['image', 'inspect', ref], { stdio: 'ignore' }).status === 0);
-  for (const image of plan.missing) {
-    const built = run(image);
-    if (built.status !== 0) {
-      return { ok: false, refusals: [describeImageLoadFailure(image, built)], rebuilt: plan.missing.length };
-    }
+  const built = run({ slotId: owner.slotId, fingerprint: identity.fingerprint, filter: UNION_FILTER });
+  if (built.status !== 0) {
+    return { ok: false, refusals: [describeImageLoadFailure({ role: 'union' }, built)], rebuilt: 0 };
   }
-  return { ok: true, refs: plan.refs, rebuilt: plan.missing.length };
+  const plan = planSlotImageBuilds(owner.slotId, () => true);
+  const builds = Number(built.stdout?.match(/builds=(\d+)/)?.[1] ?? '1');
+  return { ok: true, refs: plan.refs, fingerprint: identity.fingerprint, rebuilt: builds };
 }
 
 async function applyOwnedSlotWorkloads(projected) {

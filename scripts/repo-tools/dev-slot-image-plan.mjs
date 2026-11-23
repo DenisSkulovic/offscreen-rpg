@@ -9,6 +9,8 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, posix } from 'node:path';
 
+export const UNION_ROLE_FILTER = '@offscreen/web^... @offscreen/api^... @offscreen/game-authority^... @offscreen/worker^...';
+export const SLOT_ALIAS_ROLES = Object.freeze(['web', 'api', 'authority', 'worker']);
 export const DEV_DOCKERFILE = 'infra/kubernetes/lab/dev/Dockerfile';
 export const DEV_DOCKERIGNORE = 'infra/kubernetes/lab/dev/Dockerfile.dockerignore';
 const REQUIRED_NODES = ['control-plane', 'worker'];
@@ -191,5 +193,48 @@ export function planSlotImageArtifact(input) {
     reason: ready ? 'loaded-on-required-nodes' : 'missing-kind-node',
     build: false,
     loadNodes,
+  };
+}
+
+/**
+ * One union artifact for every slot alias. A hit still loads a node that
+ * has the digest but not this slot's tag.
+ * @param {{
+ *   slotId: string,
+ *   fingerprint: string | null,
+ *   artifact?: { digest?: string, fingerprint?: string } | null,
+ *   nodes?: Record<string, { digests?: string[], tags?: string[] }>,
+ * }} input
+ */
+export function planUnionImageUse(input) {
+  const aliases = SLOT_ALIAS_ROLES.map((role) => `offscreen-dev-workspace:${input.slotId}-${role}`);
+  const base = {
+    fingerprint: input.fingerprint,
+    digest: input.artifact?.digest ?? null,
+    aliases,
+    build: true,
+    loadNodes: [...REQUIRED_NODES],
+    ready: false,
+    reason: 'no-compatible-artifact',
+  };
+  if (!input.fingerprint) return { ...base, reason: 'unproven-context' };
+  const artifact = input.artifact;
+  if (!artifact?.digest?.startsWith('sha256:') || artifact.fingerprint !== input.fingerprint) {
+    return base;
+  }
+  const loadNodes = REQUIRED_NODES.filter((node) => {
+    const present = input.nodes?.[node] ?? {};
+    const hasDigest = (present.digests ?? []).includes(artifact.digest);
+    const hasAliases = aliases.every((tag) => (present.tags ?? []).includes(tag));
+    return !hasDigest || !hasAliases;
+  });
+  const ready = loadNodes.length === 0;
+  return {
+    ...base,
+    digest: artifact.digest,
+    build: false,
+    loadNodes,
+    ready,
+    reason: ready ? 'loaded-on-required-nodes' : 'missing-kind-node',
   };
 }
