@@ -42,7 +42,7 @@ This is the **distributed design represented by current components**. It is not 
 
 | Human moment | Current code | Why |
 | --- | --- | --- |
-| Browser renders `/play/:id` | [Next Play page](../../apps/web/app/(authenticated)/play/[id]/page.tsx) | Server authenticates, reads owner-scoped snapshot and seeds React Query |
+| Browser renders `/play/:id` | [Next Play page](../../apps/web/app/%28authenticated%29/play/[id]/page.tsx) | Server authenticates, reads owner-scoped snapshot and seeds React Query |
 | User chooses | [Play view](../../apps/web/src/features/play/view.tsx) → [useResolutionCommand](../../apps/web/src/features/play/use-resolution-command.ts) | Freeze operationId, expected revision, interaction and option |
 | Public HTTP admission | [Nest story commands](../../apps/api/src/modules/stories/controllers/story-commands.ts) `admitResolution` | Validates player identity, routes to Story Seam, returns HTTP 202 |
 | Private game operation | [StorySeam](../../apps/api/src/modules/stories/game-authority-client.ts) → [Game Authority server](../../apps/game-authority/src/server.ts) | In distributed mode, owner-scoped private resolution request |
