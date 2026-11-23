@@ -2,6 +2,26 @@
 
 **2026-11-23 · source baseline `a755b183` · Existing Change remains OPEN.** [Source map](SOURCE-ROUTE-MAP-2026-11-23.md) · [release audit](../../../undertakings/storyteller-workshop/RELEASE-PROOF-AUDIT-2026-11-23.md).
 
+## R2 source-only parallel implementation lanes (2026-11-23)
+
+**Parent TURN03 stays OPEN.** Two independently bounded supporting Changes are now ready for owner-commissioned source-only execution, after local writer/branch checks:
+
+| Supporting Change | Exclusive code write | Proof level |
+| --- | --- | --- |
+| [TURN03-R2A secure HTTP transport](../2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) | New `turn03/live-http.mjs` + its test | Injected fake-fetch and protected session-file tests only |
+| [TURN03-R2B pinned fixture verifier](../2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) | New `turn03/fixture-pins.mjs` + its test | Injected read-only DocumentStore, hash/identity negative tests only |
+
+```mermaid
+flowchart LR
+ A["R1: real public route mapper DONE"] --> B["R2A: secure HTTP boundary"]
+ A --> C["R2B: pinned source verifier"]
+ B --> D["Planner: read-only SQL/Temporal adapter + session authority"]
+ C --> D
+ D --> E["R3: owner-authorized cold-kind acceptance"]
+```
+
+**Integration policy:** Each supporting Change has its own linked worktree, change branch and closing receipt; merge serially into `undertaking/storyteller-workshop`; archive each accepted support Change separately. Neither can archive TURN03 or remove its live blockers. Auth/session handoff authority, live S3 access, read-only SQL/Temporal and actual cross-Pod evidence remain planner-held. No third chat should begin cluster mutation.
+
 ## Reconciliation of implemented versus missing
 
 **Already exists:** T01 read-only preflight, report schema/refusal tests; T02 synthetic injected-HTTP trace; T03 lower-tier adversarial/matrix harness, local fixture 4/4, local causal multiprocess 5/5. Source-only `node --test infra/kubernetes/lab/app-release/turn03/{preflight,run,adversarial}.test.mjs infra/kubernetes/lab/app-release/release-acceptance-preflight.test.mjs` passed **20/20** on the uploaded clean snapshot. This proves those tests only. Historical 2026-11-22 cold release stopped after scene1; Worker now has a retryable settlement status but no fresh cold retest.
