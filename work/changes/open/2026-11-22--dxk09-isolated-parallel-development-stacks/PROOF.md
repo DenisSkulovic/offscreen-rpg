@@ -74,3 +74,5 @@ Focused tests at this receipt: `dev-slot-app-graph.test.mjs` 3 pass, `dev-slot-p
 
 Unattended third-worktree acceptance: **NOT RUN**. `pnpm dev` still does not provision SQL, S3, Temporal, migrations, images or port-forwards. `dev:status` still reads local receipts, not the Pod-loaded generation. No third worktree was created for this receipt, and no live slot was restarted onto the new API command.
 
+**Cold-slot coordinator (2026-11-23):** `reconcileDevSlot` orders allocate, cluster health, SQL, migration, S3, Temporal, projection, then images, and it refuses workloads when an earlier phase fails. Unit tests cover a new slot, reentry, partial SQL/S3/Temporal failure, foreign cluster, secret refusal, occupied port, stale process, low memory, one-worktree concurrent allocation, and credential redaction. `pnpm dev` calls `reconcileOwnedDevSlot` before Tilt. That live binding refuses before tenant mutation because the Drizzle migration runner is not bound. Third-worktree acceptance was not started. dev-1 and dev-2 were not changed.
+

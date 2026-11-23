@@ -309,6 +309,7 @@ test('launcher writes allocator game and tilt ports to the worktree session', as
     spawnFn: spawn,
     collectLabReadiness: async () => ({}),
     exitAfterSession: true,
+    reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true }),
   });
 
   assert.equal(spawn.called(), true);
@@ -345,6 +346,7 @@ test('occupied allocator game port refuses before tilt spawn', async () => {
         exitCodes.push(code);
       },
       exitAfterSession: true,
+      reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true }),
     });
 
     assert.deepEqual(exitCodes, [1]);
