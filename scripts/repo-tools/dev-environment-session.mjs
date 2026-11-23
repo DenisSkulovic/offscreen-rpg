@@ -118,8 +118,17 @@ export function resolveDevEnvironmentSelection(input) {
   }
   if (input.instance) {
     const record = ownerFromEitherRegistry(input.registryRoot, input.instance);
-    if (input.command === 'up') return { action: 'startup-not-yet-bound', record, checkout };
-    return { action: input.command, record, checkout };
+    const bound = resolve(String(record.worktreePath ?? ''));
+    const activeElsewhere = bound !== checkout && Boolean(record.lease || record.processIdentity);
+    if (activeElsewhere) {
+      throw refusal('foreign-checkout', `${record.slotId} is active on another checkout.`);
+    }
+    return {
+      action: input.command,
+      record,
+      checkout,
+      rebindCheckout: bound !== checkout,
+    };
   }
   const record = defaultFromEitherRegistry(input.registryRoot, checkout);
   return { action: input.command, record, checkout };

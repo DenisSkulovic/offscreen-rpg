@@ -228,7 +228,7 @@ test('explicit startup resolves without allocating an unknown id', () => {
     worktree: '/canonical/a',
     registryRoot: root,
   });
-  assert.equal(selected.action, 'startup-not-yet-bound');
+  assert.equal(selected.action, 'up');
   assert.equal(selected.record.slotId, 'dev-2');
   const after = JSON.parse(readFileSync(join(root, 'owners.json'), 'utf8'));
   assert.equal(after.version, 1);

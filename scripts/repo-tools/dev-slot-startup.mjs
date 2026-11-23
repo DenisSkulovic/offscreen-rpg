@@ -68,6 +68,7 @@ function phaseResult(value) {
  *   memoryMiB?: number,
  *   portOccupied?: boolean,
  *   processOwned?: boolean,
+ *   owner?: object,
  * }} input
  * @param {{
  *   allocate: Function,
@@ -88,11 +89,13 @@ export async function reconcileDevSlot(input, deps) {
     return stopped('port', 'allocated loopback port is occupied');
   }
 
-  let record;
-  try {
-    record = deps.allocate(input.worktree, input.registryRoot);
-  } catch (error) {
-    return stopped('allocate', error instanceof Error ? error.message : 'allocate failed');
+  let record = input.owner ?? null;
+  if (!record) {
+    try {
+      record = deps.allocate(input.worktree, input.registryRoot);
+    } catch (error) {
+      return stopped('allocate', error instanceof Error ? error.message : 'allocate failed');
+    }
   }
   if (record.cluster !== DEV_CLUSTER) {
     return stopped('cluster', `refusing cluster ${record.cluster}`);
@@ -173,7 +176,7 @@ export async function reconcileOwnedDevSlot(input) {
   const { readFileSync } = await import('node:fs');
   const { spawnSync } = await import('node:child_process');
   const { allocateDevWorktreeOwner } = await import('./dev-worktree-allocator.mjs');
-  const { readRegistry } = await import('./dev-worktree-registry.mjs');
+  const { readRegistryJson } = await import('./dev-worktree-registry.mjs');
   const { executeDevSqlTenants } = await import('../../infra/kubernetes/lab/dev/backing/dev-sql-tenant-executor.mjs');
   const { createLiveDevSqlAdapter } = await import('../../infra/kubernetes/lab/dev/backing/dev-sql-tenant-live-adapter.mjs');
   const { ensureDevS3Tenant } = await import('../../infra/kubernetes/lab/dev/backing/dev-s3-tenant.mjs');
@@ -182,7 +185,7 @@ export async function reconcileOwnedDevSlot(input) {
   const { projectDevSlot } = await import('../../infra/kubernetes/lab/dev/backing/dev-slot-project.mjs');
   const temporal = await import('../../infra/kubernetes/lab/dev/backing/dev-temporal-bootstrap.mjs');
 
-  return reconcileDevSlot(input, {
+  return reconcileDevSlot({ ...input, owner: input.owner }, {
     allocate: allocateDevWorktreeOwner,
     probeCluster: async () => {
       const cluster = spawnSync('kubectl', ['--context', 'kind-offscreen-dev', 'get', 'namespace', 'offscreen-dev-postgres', '-o', 'name'], { encoding: 'utf8' });
@@ -211,7 +214,10 @@ export async function reconcileOwnedDevSlot(input) {
       };
     },
     ensureSql: (owner) => {
-      const known = Object.values(readRegistry(input.registryRoot).ownersByWorktree).map((item) => item.slotId);
+      const raw = readRegistryJson(input.registryRoot);
+      const known = raw?.version === 2
+        ? Object.keys(raw.environmentsById ?? {})
+        : Object.values(raw?.ownersByWorktree ?? {}).map((item) => item.slotId);
       const slots = [...new Set([owner.slotId, ...known])];
       return executeDevSqlTenants({
         slots,

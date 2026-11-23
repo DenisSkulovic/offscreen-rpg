@@ -23,6 +23,7 @@ import {
   readEnvironmentSession,
   resolveDevEnvironmentSelection,
   parkSelectedEnvironment,
+  writeEnvironmentSession,
 } from './dev-environment-session.mjs';
 import { reconcileOwnedDevSlot } from './dev-slot-startup.mjs';
 
@@ -429,6 +430,28 @@ function pidAlive(pid) {
  * @param {string} worktree
  * @returns {{ previousPid: number | null, killedPrevious: boolean }}
  */
+function replaceOwnedEnvironmentTilt(slotId, registryRoot, deps = {}) {
+  const session = readEnvironmentSession(environmentSessionRoot(registryRoot), slotId);
+  if (!session) return { previousPid: null, killedPrevious: false, reason: 'no_session' };
+  const ownership = assessOwnedProcess(session, {
+    pidAlive: deps.pidAlive ?? pidAlive,
+    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+  });
+  const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
+  if (ownership.owned) {
+    try {
+      signal(Number(session.pid), 'SIGTERM');
+    } catch {
+      // ignore
+    }
+  }
+  return {
+    previousPid: ownership.owned ? Number(session.pid) : null,
+    killedPrevious: ownership.owned,
+    reason: ownership.reason,
+  };
+}
+
 function replaceOwnedDevSessionTilt(worktree, deps = {}) {
   const session = readDevSession(worktree);
   if (!session) {
@@ -558,7 +581,7 @@ export async function runDevTiltLaunch(deps = {}) {
   const exitFn = deps.exit ?? ((code) => process.exit(code));
   const reconcile = deps.reconcileDevSlot ?? reconcileOwnedDevSlot;
 
-  const slot = await reconcile({ worktree, registryRoot });
+  const slot = await reconcile({ worktree, registryRoot, owner: deps.owner });
   if (!slot?.ok || slot.readyForWorkloads !== true) {
     refuseAndExit([{
       id: `slot-${slot?.phase ?? 'startup'}`,
@@ -568,11 +591,17 @@ export async function runDevTiltLaunch(deps = {}) {
   }
 
   // Drop a tilt this worktree started before deciding a listener is foreign.
-  const { previousPid, killedPrevious } = replaceOwnedDevSessionTilt(worktree, {
+  const { previousPid, killedPrevious } = (deps.owner
+    ? replaceOwnedEnvironmentTilt(deps.owner.slotId, registryRoot, {
     pidAlive: deps.pidAlive ?? pidAlive,
     readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
     signal: deps.signal,
-  });
+  })
+    : replaceOwnedDevSessionTilt(worktree, {
+      pidAlive: deps.pidAlive ?? pidAlive,
+      readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+      signal: deps.signal,
+    }));
   if (killedPrevious && previousPid !== null) {
     for (let attempt = 0; attempt < 10; attempt += 1) {
       if (!pidAlive(previousPid)) break;
@@ -581,15 +610,17 @@ export async function runDevTiltLaunch(deps = {}) {
   }
 
   /** @type {DevWorktreeOwnerRecord} */
-  let ownerRecord;
-  try {
-    ownerRecord = allocate(worktree, registryRoot);
-  } catch (error) {
-    if (isAllocatorRefusal(error)) {
-      refuseAndExit([{ id: error.id, message: error.message }], exitFn);
-      return;
+  let ownerRecord = deps.owner ?? slot.record;
+  if (!ownerRecord) {
+    try {
+      ownerRecord = allocate(worktree, registryRoot);
+    } catch (error) {
+      if (isAllocatorRefusal(error)) {
+        refuseAndExit([{ id: error.id, message: error.message }], exitFn);
+        return;
+      }
+      throw error;
     }
-    throw error;
   }
 
   const gamePort = ownerRecord.ports.game;
@@ -688,7 +719,7 @@ export async function runDevTiltLaunch(deps = {}) {
   }
 
   const readStart = deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
-  writeDevSession(worktree, {
+  const sessionRecord = {
     pid: child.pid,
     processStartTicks: readStart(child.pid),
     forwardPid,
@@ -698,7 +729,17 @@ export async function runDevTiltLaunch(deps = {}) {
     gamePort,
     tiltPort,
     startedAt: new Date().toISOString(),
-  });
+  };
+  if (deps.owner) {
+    writeEnvironmentSession(environmentSessionRoot(registryRoot), {
+      ...sessionRecord,
+      checkoutPath: worktree,
+      parked: false,
+      released: false,
+    });
+  } else {
+    writeDevSession(worktree, sessionRecord);
+  }
 
   if (deps.exitAfterSession) {
     return;
@@ -872,6 +913,12 @@ if (invokedAsScript) {
     }
     if (selection.action === 'startup-not-yet-bound') {
       refuseStartupNotBound(selection.record);
+    } else if (selection.action === 'up') {
+      await runDevTiltLaunch({
+        owner: selection.record,
+        worktree: REPO_ROOT,
+        registryRoot: devWorktreeRegistryRoot(),
+      });
     } else if (selection.action === 'status') {
       const session = readEnvironmentSession(
         environmentSessionRoot(devWorktreeRegistryRoot()),
