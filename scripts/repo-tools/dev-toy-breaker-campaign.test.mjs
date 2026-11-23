@@ -117,8 +117,14 @@ test('toy breaker fixture matrix', () => {
   let cycles = 0;
   for (let i = 0; i < 10; i += 1) {
     writeEnvironmentSession(sessionRoot, sessionFor(first));
+    const ticks = { 4100: '100', 4101: '101' };
     const parked = parkSelectedEnvironment({
-      owner: ownerOf(first), sessionRoot, processDeps: alive(), readDesiredReplicas: () => zeros(), clearReservation: () => {},
+      owner: ownerOf(first),
+      sessionRoot,
+      processDeps: { pidAlive: (pid) => Object.hasOwn(ticks, pid), readStartTicks: (pid) => ticks[pid] ?? null },
+      signal: (pid) => { delete ticks[pid]; },
+      readDesiredReplicas: () => zeros(),
+      clearReservation: () => {},
     });
     if (!parked.ok || parked.tenantIdentity.namespace !== first.namespace) break;
     cycles += 1;
@@ -135,10 +141,12 @@ test('toy breaker fixture matrix', () => {
 
   writeEnvironmentSession(sessionRoot, sessionFor(first, { parked: false }));
   let calls = 0;
+  const partialTicks = { 4100: '100', 4101: '101' };
   const partial = parkSelectedEnvironment({
     owner: ownerOf(first),
     sessionRoot,
-    processDeps: alive(),
+    processDeps: { pidAlive: (pid) => Object.hasOwn(partialTicks, pid), readStartTicks: (pid) => partialTicks[pid] ?? null },
+    signal: (pid) => { delete partialTicks[pid]; },
     scaleRole: () => { calls += 1; if (calls === 3) throw new Error('scale refused'); },
   });
   const retry = parkSelectedEnvironment({

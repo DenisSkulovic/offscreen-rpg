@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { deriveDevTemporalTenant, ensureDevTemporalTenant } from './dev-temporal-tenant.mjs';
+import { deriveDevTemporalTenant, ensureDevTemporalTenant, parseTemporalDescribe } from './dev-temporal-tenant.mjs';
 
 const TOKEN = 'kind-offscreen-dev-temporal-tenant-live';
 
@@ -50,4 +50,33 @@ test('wrong cluster, retention conflict and missing authorization stop', async (
   conflict.state.set('offscreen-dev-2', { id: 'kept', retentionSeconds: 3600 });
   assert.equal((await ensureDevTemporalTenant({ slotId: 'dev-2', authorizeLive: TOKEN, adapter: conflict })).refusals[0].id, 'retention-conflict');
   assert.equal((await ensureDevTemporalTenant({ slotId: 'dev-1', authorizeLive: 'no', adapter: adapter() })).refusals[0].id, 'ensure-not-authorized');
+});
+
+test('describe distinguishes json visibility, parse failure and a single create', async () => {
+  const parsed = parseTemporalDescribe('noise {"namespaceInfo":{"id":"d9f8f0d7-27e6-455c-b820-127cceab82ec","name":"offscreen-dev-6"},"config":{"workflowExecutionRetentionTtl":"86400s"}}\nextra', 0);
+  assert.equal(parsed.id, 'd9f8f0d7-27e6-455c-b820-127cceab82ec');
+  assert.equal(parsed.retentionSeconds, 86400);
+  assert.equal(parseTemporalDescribe('not found', 1).status, 'absent');
+  assert.equal(parseTemporalDescribe('boom', 1).status, 'command-failed');
+  assert.equal(parseTemporalDescribe('no id here', 0).status, 'malformed-output');
+  const store = adapter();
+  let describes = 0;
+  store.describe = async (name) => {
+    describes += 1;
+    if (describes < 3) return null;
+    return store.state.get(name) ?? null;
+  };
+  let creates = 0;
+  const original = store.create;
+  store.create = async (names) => { creates += 1; await original(names); };
+  store.wait = async () => {};
+  const result = await ensureDevTemporalTenant({ slotId: 'dev-6', authorizeLive: TOKEN, adapter: store });
+  assert.equal(result.ok, true);
+  assert.equal(creates, 1);
+  const broken = adapter();
+  broken.describe = async () => ({ failure: 'malformed-output', detail: 'namespace id missing' });
+  assert.equal((await ensureDevTemporalTenant({ slotId: 'dev-6', authorizeLive: TOKEN, adapter: broken })).refusals[0].id, 'malformed-output');
+  const failed = adapter();
+  failed.create = async () => { throw new Error('secret output'); };
+  assert.equal((await ensureDevTemporalTenant({ slotId: 'dev-3', authorizeLive: TOKEN, adapter: failed })).refusals[0].detail, 'temporal namespace create failed');
 });

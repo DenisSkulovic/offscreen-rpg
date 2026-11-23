@@ -81,7 +81,9 @@ function stopped(phase, detail, retained = []) {
 
 function phaseResult(value) {
   if (value && value.ok === false) {
-    return value.refusals?.[0]?.detail ?? value.refusals?.[0]?.id ?? 'refused';
+    const refusal = value.refusals?.[0];
+    if (!refusal) return 'refused';
+    return refusal.detail ? `${refusal.id}: ${refusal.detail}` : refusal.id;
   }
   return null;
 }
@@ -211,7 +213,8 @@ export async function reconcileOwnedDevSlot(input) {
   const { createLiveDevSqlAdapter } = await import('../../infra/kubernetes/lab/dev/backing/dev-sql-tenant-live-adapter.mjs');
   const { ensureDevS3Tenant } = await import('../../infra/kubernetes/lab/dev/backing/dev-s3-tenant.mjs');
   const { createDevS3LiveAdapter } = await import('../../infra/kubernetes/lab/dev/backing/dev-s3-tenant-live-adapter.mjs');
-  const { ensureDevTemporalTenant } = await import('../../infra/kubernetes/lab/dev/backing/dev-temporal-tenant.mjs');
+  const temporalTenant = await import('../../infra/kubernetes/lab/dev/backing/dev-temporal-tenant.mjs');
+  const { ensureDevTemporalTenant } = temporalTenant;
   const { projectDevSlot } = await import('../../infra/kubernetes/lab/dev/backing/dev-slot-project.mjs');
   const temporal = await import('../../infra/kubernetes/lab/dev/backing/dev-temporal-bootstrap.mjs');
 
@@ -297,14 +300,13 @@ export async function reconcileOwnedDevSlot(input) {
             '--rm', '-i', '--restart=Never',
             '--image', 'docker.io/temporalio/admin-tools:1.32.2',
             '--command', '--', 'temporal', 'operator', 'namespace', 'describe',
-            '--namespace', name, '--address', 'temporal-server:7233',
+            '--namespace', name, '--address', 'temporal-server:7233', '--output', 'json',
           ], { encoding: 'utf8', timeout: 60000 });
-          const text = `${described.stdout ?? ''}${described.stderr ?? ''}`;
-          if (described.status !== 0) return null;
-          return {
-            id: text.match(/Id\s+([0-9a-f-]{36})/i)?.[1] ?? null,
-            retentionSeconds: /24h0m0s|1d|86400/.test(text) ? 86400 : 0,
-          };
+          const text = `${described.stdout ?? ''}\n${described.stderr ?? ''}`;
+          const parsed = temporalTenant.parseTemporalDescribe(text, described.status ?? 1);
+          if (parsed.status === 'absent') return null;
+          if (parsed.status !== 'ready') return { failure: parsed.status, detail: parsed.detail };
+          return { id: parsed.id, retentionSeconds: parsed.retentionSeconds };
         },
         async create(names) {
           const created = spawnSync('kubectl', [
