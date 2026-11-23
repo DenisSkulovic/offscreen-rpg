@@ -131,6 +131,60 @@ test('negative: missing desired receipt is not ready', () => {
   assert.equal(status.reason, 'missing_receipt');
 });
 
+test('container identity is ready without a host dist file', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dev-runtime-container-'));
+  const receiptRoot = join(root, 'receipts');
+  mkdirSync(receiptRoot, { recursive: true });
+  const identity = 'abc123container';
+  writeFileSync(join(receiptRoot, 'worker-control.desired.json'), `${JSON.stringify({
+    schema: 'offscreen.dev-watched-compilation.v1',
+    role: 'worker-control',
+    phase: 'compile_success',
+    ready: true,
+    compiledEntryPath: '/app/apps/worker/dist/src/bootstrap/control-main.js',
+    compiledModuleIdentity: identity,
+  })}\n`);
+  writeFileSync(join(receiptRoot, 'worker-control.loaded.json'), `${JSON.stringify({
+    compiledModuleIdentity: identity,
+    environmentId: 'dev-5',
+  })}\n`);
+  const status = evaluateDevLoadedRuntimeReadiness({
+    role: 'worker-control',
+    compiledEntryPath: 'apps/worker/dist/src/bootstrap/control-main.js',
+    receiptRoot,
+    cwd: root,
+    environmentId: 'dev-5',
+    diskIdentity: identity,
+  });
+  assert.equal(status.ready, true);
+  assert.equal(status.reason, 'loaded_matches_desired');
+});
+
+test('negative: a missing artifact is not an uncaught error', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dev-runtime-missing-artifact-'));
+  const receiptRoot = join(root, 'receipts');
+  mkdirSync(receiptRoot, { recursive: true });
+  writeFileSync(join(receiptRoot, 'worker-control.desired.json'), `${JSON.stringify({
+    schema: 'offscreen.dev-watched-compilation.v1',
+    role: 'worker-control',
+    phase: 'compile_success',
+    ready: true,
+    compiledEntryPath: '/app/apps/worker/dist/src/bootstrap/control-main.js',
+    compiledModuleIdentity: 'present-in-receipt-only',
+  })}\n`);
+  writeFileSync(join(receiptRoot, 'worker-control.loaded.json'), `${JSON.stringify({
+    compiledModuleIdentity: 'older',
+  })}\n`);
+  const status = evaluateDevLoadedRuntimeReadiness({
+    role: 'worker-control',
+    compiledEntryPath: 'apps/worker/dist/src/bootstrap/control-main.js',
+    receiptRoot,
+    cwd: root,
+  });
+  assert.equal(status.ready, false);
+  assert.equal(status.reason, 'missing_artifact');
+});
+
 test('negative: another slot identity is not this environment', () => {
   const root = mkdtempSync(join(tmpdir(), 'dev-runtime-foreign-'));
   const receiptRoot = join(root, 'receipts');

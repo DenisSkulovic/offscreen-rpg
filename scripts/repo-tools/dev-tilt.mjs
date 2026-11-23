@@ -261,6 +261,45 @@ export const DEV_RUNTIME_FRESHNESS_ROLES = Object.freeze(
  *   httpStatus?: number | null,
  * }} input
  */
+/**
+ * Docker Hub's default registry and single-name library namespace are the
+ * same image. A different registry, repository, tag or digest stays different.
+ * @param {string | null | undefined} reference
+ * @returns {string | null}
+ */
+export function canonicalDockerImageReference(reference) {
+  if (!reference || typeof reference !== 'string') return null;
+  let digest = null;
+  const at = reference.lastIndexOf('@');
+  let rest = reference;
+  if (at > 0 && reference.slice(at + 1).startsWith('sha256:')) {
+    digest = reference.slice(at + 1);
+    rest = reference.slice(0, at);
+  }
+  let registry = 'docker.io';
+  let name = rest;
+  const firstSlash = rest.indexOf('/');
+  const firstSegment = firstSlash > 0 ? rest.slice(0, firstSlash) : '';
+  if (
+    firstSegment.includes('.')
+    || firstSegment.includes(':')
+    || firstSegment === 'localhost'
+  ) {
+    registry = firstSegment;
+    name = rest.slice(firstSlash + 1);
+  }
+  if (registry === 'docker.io' && !name.includes('/')) {
+    name = `library/${name}`;
+  }
+  const colon = name.lastIndexOf(':');
+  let tag = 'latest';
+  if (colon > 0) {
+    tag = name.slice(colon + 1);
+    name = name.slice(0, colon);
+  }
+  return `${registry}/${name}:${tag}${digest ? `@${digest}` : ''}`;
+}
+
 export function assessWebDevServerReadiness(input) {
   const pod = input.pod ?? null;
   if (!pod?.ready) {
@@ -269,13 +308,15 @@ export function assessWebDevServerReadiness(input) {
   if (pod.namespace !== input.namespace) {
     return { ready: false, reason: 'namespace_mismatch', currentGeneration: null };
   }
-  if (!input.expectedImage || pod.image !== input.expectedImage) {
+  const expectedImage = canonicalDockerImageReference(input.expectedImage);
+  const runningImage = canonicalDockerImageReference(pod.image);
+  if (!expectedImage || expectedImage !== runningImage) {
     return { ready: false, reason: 'image_mismatch', currentGeneration: null };
   }
   if (typeof input.httpStatus !== 'number' || input.httpStatus < 200 || input.httpStatus >= 300) {
     return { ready: false, reason: 'http_unsuccessful', currentGeneration: null };
   }
-  return { ready: true, reason: 'dev_server_serving', currentGeneration: input.expectedImage };
+  return { ready: true, reason: 'dev_server_serving', currentGeneration: expectedImage };
 }
 
 /**

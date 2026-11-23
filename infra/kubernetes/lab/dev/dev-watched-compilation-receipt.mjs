@@ -24,6 +24,20 @@ export function fingerprintCompiledEntryFile(absoluteEntryPath) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+function readCompiledArtifactIdentity(absoluteEntryPath) {
+  if (!existsSync(absoluteEntryPath)) {
+    return { ok: false, reason: 'missing_artifact' };
+  }
+  try {
+    return { ok: true, identity: fingerprintCompiledEntryFile(absoluteEntryPath) };
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
+      return { ok: false, reason: 'missing_artifact' };
+    }
+    throw error;
+  }
+}
+
 function desiredReceiptPath(receiptRoot, role) {
   return join(receiptRoot, `${role}.desired.json`);
 }
@@ -123,8 +137,23 @@ export function evaluateDevLoadedRuntimeReadiness(input) {
     };
   }
 
-  const absoluteEntryPath = resolve(cwd, input.compiledEntryPath);
-  const diskIdentity = input.diskIdentity ?? fingerprintCompiledEntryFile(absoluteEntryPath);
+  let diskIdentity = input.diskIdentity ?? null;
+  if (!diskIdentity) {
+    const recordedPath = typeof desired.compiledEntryPath === 'string' ? desired.compiledEntryPath : null;
+    const absoluteEntryPath = recordedPath && recordedPath.startsWith('/')
+      ? recordedPath
+      : resolve(cwd, input.compiledEntryPath);
+    const artifact = readCompiledArtifactIdentity(absoluteEntryPath);
+    if (!artifact.ok) {
+      return {
+        ready: false,
+        reason: artifact.reason,
+        currentGeneration: null,
+        staleLoadedGeneration: loaded.compiledModuleIdentity ?? null,
+      };
+    }
+    diskIdentity = artifact.identity;
+  }
   if (diskIdentity !== desired.compiledModuleIdentity) {
     return {
       ready: false,

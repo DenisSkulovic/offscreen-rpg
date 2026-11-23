@@ -235,3 +235,32 @@ Change branch `change/dxk09-lifecycle-freshness` commits `ee589b89`, `fac98e96`,
 Proof A `pnpm dev` reused dev-5. Web reached 1/1 and `http://127.0.0.1:13116/sign-in` returned 200. API, authority, control, executor, and relay stayed 0/1. The running API image was still Kind import `sha256:340822eb8c5556b9d81ffe4b8d44ab795d0e6e0b4a757fce34a659b22b5c5b14`. Its command was `node dev-pod-compile-watch.mjs`, and the container exited with `MODULE_NOT_FOUND` for `/app/apps/api/dev-pod-compile-watch.mjs`. Docker had built `sha256:a8940fb5adc7b0ce17ae0a27a281cbaf6fe58524c72ded68fdcb066e7059d8b1`, which does contain that file, but Tilt reported `the object has been modified` while applying `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay`, so the new digest never became the pod image. Receipt, compile-error, recovery, dev-6, and image-reuse checks were not run. HTTP 200 was not treated as freshness.
 
 `pnpm dev:stop` then exited 0 and left all six dev-5 desired replicas at 0. That stop was of a crash-looping stack, with dev-6 not running, so it is not the required first-stop proof. dev-6 was not started. HR01–HR03 stay BLOCKED.
+
+## Status repair and dev-5 acceptance (2026-11-23) — PASS for this stack
+
+Parent `f76e4132` on `change/dxk09-lifecycle-freshness`. Two status defects were repaired in the lifecycle worktree and the same file bytes were the copies exercised from proof A (`/home/dskul/projects/offscreen-rpg-dxk09-proof-a`, detached at `f76e4132` during the run). Proof-only source edits were reverted before this record. The two untracked infra watcher copies were not part of the repair.
+
+**Web image equivalence.** `canonicalDockerImageReference` treats `offscreen-dev-workspace:tilt-build-1795443662` and `docker.io/library/offscreen-dev-workspace:tilt-build-1795443662` as the same reference. A different repository, tag, digest, or registry stays unequal. Namespace, pod readiness, and HTTP status checks remain in `assessWebDevServerReadiness`.
+
+**Worker compiled artifacts.** `evaluateDevLoadedRuntimeReadiness` uses the container receipt `diskIdentity` when the status path already pulled it. A missing host `dist` file does not fail that case. A local read that finds no file returns `missing_artifact` instead of an uncaught `ENOENT`. Compile error, missing receipt, stale generation, and a foreign slot or runtime stay `NOT READY`.
+
+**Focused tests.** `node --test scripts/repo-tools/dev-web-readiness.test.mjs infra/kubernetes/lab/dev/dev-watched-compilation-receipt.test.mjs` — 36 pass, 0 fail.
+
+**Live dev-5, no restart before the recheck.** `pnpm dev:status` exited 0:
+
+- web READY `dev_server_serving` `docker.io/library/offscreen-dev-workspace:tilt-build-1795443662`
+- api READY `loaded_matches_desired` `f379a16f60e2f50991507708cc6daa9b9e5709ee3554f100760cb08af5f7967b`
+- authority READY `loaded_matches_desired` `9c9d04db56f59fdac28e9ffba30b479557cc6820cde1c2773b7b644d0b93ed65`
+- control READY `loaded_matches_desired` `e06f92888247a8a25445835cda4fc3f0fb4064be9982de3eeb6bcb1a5b99cecd`
+- executor READY `loaded_matches_desired` `7405205aa9731b6af83323b95d7985776ceee3048800fdf8840def2c3ebb4049`
+- relay READY `loaded_matches_desired` `3d282a26b6d4897c51a7048e03303311436babbc655d42113a07337efd53802a`
+
+`http://127.0.0.1:13116/sign-in` and `http://127.0.0.1:13116/api/health/ready` both returned 200.
+
+**Web edit.** A reversible marker in `apps/web/app/sign-in/page.tsx` was served on port 13116 on the first check, then the file was restored.
+
+**API compile error.** A syntax error in `apps/api/src/main.ts` made `pnpm dev:status` report `api NOT READY compile_error`. Restoring the file returned `api READY loaded_matches_desired`.
+
+**First stop.** One `pnpm dev:stop` exited 0. Tilt PID 740587 and kubectl PID 769312 were gone. Ports 13116 and 13118 were free. All six `offscreen-dev-5` Deployments were desired 0. Tenant Secret UIDs were unchanged: `dev-5-app` `cd146db7-c962-4bef-ad82-adad2c099c2f`, `dev-5-run-auth` `58ef4bac-0287-4ee8-af43-8571e26208ba`, `dev-5-s3` `ce1d32a5-751c-43e2-b9a2-ccf0ce6db179`.
+
+This receipt is one stack. The two-worktree gate, the unattended ordinary-worktree gate, and four-stack acceptance are not claimed here. HR01–HR03 stay BLOCKED.

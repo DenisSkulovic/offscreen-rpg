@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assessWebDevServerReadiness,
+  canonicalDockerImageReference,
   DEV_RUNTIME_FRESHNESS_ROLES,
   superviseOwnedWebPortForward,
 } from './dev-tilt.mjs';
@@ -18,6 +19,36 @@ test('web is ready only for the selected healthy pod, image and HTTP response', 
   assert.equal(status.ready, true);
   assert.equal(status.reason, 'dev_server_serving');
   assert.equal(DEV_RUNTIME_FRESHNESS_ROLES.some((role) => role.compiledEntryPath?.includes('.next')), false);
+});
+
+test('docker hub library prefix is the same image; repo tag and digest stay distinct', () => {
+  const bare = 'offscreen-dev-workspace:tilt-build-1795443662';
+  const prefixed = `docker.io/library/${bare}`;
+  assert.equal(canonicalDockerImageReference(bare), canonicalDockerImageReference(prefixed));
+  const status = assessWebDevServerReadiness({
+    ...healthy,
+    expectedImage: bare,
+    pod: { ...healthy.pod, image: prefixed },
+  });
+  assert.equal(status.ready, true);
+  assert.equal(status.reason, 'dev_server_serving');
+  assert.notEqual(
+    canonicalDockerImageReference(bare),
+    canonicalDockerImageReference('other-workspace:tilt-build-1795443662'),
+  );
+  assert.notEqual(
+    canonicalDockerImageReference(bare),
+    canonicalDockerImageReference('offscreen-dev-workspace:other-tag'),
+  );
+  assert.notEqual(
+    canonicalDockerImageReference(`${bare}@sha256:aaa`),
+    canonicalDockerImageReference(`${bare}@sha256:bbb`),
+  );
+  assert.equal(assessWebDevServerReadiness({
+    ...healthy,
+    expectedImage: bare,
+    pod: { ...healthy.pod, image: 'ghcr.io/offscreen-dev-workspace:tilt-build-1795443662' },
+  }).reason, 'image_mismatch');
 });
 
 test('web stays not ready when HTTP, pod or image checks fail', () => {
