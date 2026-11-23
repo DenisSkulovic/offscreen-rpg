@@ -1,5 +1,7 @@
 # TURN03 | 2026-11-22 source-rebased cold-kind executable acceptance
 
+> **2026-11-23 current-HEAD audit at `ade6cfbf`:** The blocked failure described below is a **historical 2026-11-22 release observation**. The integrated Worker now classifies `pending-consequence-not-settled` as **retryable** in `storyteller-distributed-control.ts`; narrative settlement calls `scheduleWriterContinuation`. Neither proves a live scene2 publication. Critically, `infra/kubernetes/lab/app-release/turn03/run.mjs` is still an injected/mock-trace mapper and marks cold-kind gates NOT-RUN, with no complete live operator entrypoint. **Do not spend a full release rebuild/test expecting this runner to PASS yet.** Finish the real cross-Pod/authenticated runner first, then perform read-only `kind-offscreen-lab` preflight and one guarded scripted acceptance. [Cross-packet audit](../../../undertakings/storyteller-workshop/RELEASE-PROOF-AUDIT-2026-11-23.md).
+
 **State: BLOCKED. TURN03 stays open. No gate is PASS.** Current HEAD includes the regenerated lockfile. The rebuilt API, Game Authority, and worker images are running, and the lab schema migration has been applied. The signed-in scripted opening was created and the story was started. The player command did not reach a published scene 2.
 
 - Gate: `ga-scene-publication` (and `command-temporal-executor`, because no `writer.scene.v1` wake exists).
