@@ -21,3 +21,13 @@ These are future work, not today's execution queue. Reconcile source/owner/accep
 
 - [2026-11-19--turn04-opt-in-real-provider-confirmation](../../backlog/platform-operations/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md): previous open packet, not selected; needs source/readiness reconciliation before promotion
 - [2026-11-15--obs04-finite-action-transition-evidence](../../backlog/platform-operations/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md): previous open packet, not selected; needs source/readiness reconciliation before promotion
+
+## Deferred INF architecture redesign (planned 2026-11-23)
+
+[Program, evidence, target ownership and dependency plan](INFRA-RESTRUCTURE-PLAN.md). Source snapshot `314f1ef1`; **all five Proposed and not executable**. Preserve DXK09 and HR-wave priority.
+
+- [INF01](2026-11-23--inf01-infra-ownership-map/CHANGE.md): Infrastructure ownership and operational entrypoint atlas
+- [INF02](2026-11-23--inf02-dev-environment-manager-boundary/CHANGE.md): One-way dev environment manager boundary
+- [INF03](2026-11-23--inf03-application-workload-layout/CHANGE.md): Workload definitions and environment overlay ownership
+- [INF04](2026-11-23--inf04-image-and-tilt-ownership/CHANGE.md): Image build and live-update ownership cleanup
+- [INF05](2026-11-23--inf05-platform-and-verification-separation/CHANGE.md): Shared platform services and verification tooling separation
