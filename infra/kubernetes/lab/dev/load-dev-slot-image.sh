@@ -40,13 +40,14 @@ if [[ "$recorded" != "$fingerprint" ]]; then
   builds=1
 fi
 digest="$(docker image inspect "$canonical" --format '{{.Id}}')"
-# CRI image ids are config digests. `ctr images ls` prints the manifest
-# digest, which is not comparable to Docker's image ID.
-alias_config_id() {
+# Docker image ID on this host is the OCI index digest. `ctr images ls`
+# prints that same digest. CRI status.id is the unpacked platform image
+# and is not comparable to either of those.
+alias_index_digest() {
   local node="$1"
   local ref="$2"
-  docker exec "$node" crictl inspecti "docker.io/library/${ref}" 2>/dev/null \
-    | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const j=JSON.parse(s);const id=j.status&&j.status.id;if(typeof id==="string")process.stdout.write(id)}catch{}})' \
+  docker exec "$node" ctr -n k8s.io images ls 2>/dev/null \
+    | awk -v ref="docker.io/library/${ref}" '$1 == ref { print $3; exit }' \
     || true
 }
 roles=(web api authority worker)
@@ -67,8 +68,8 @@ const plan = planAliasIdentityLoad({
 });
 process.stdout.write(plan.loadNodes.join(" "));
 ' "$ref" "$digest" \
-    "$(alias_config_id "${cluster}-control-plane" "$ref")" \
-    "$(alias_config_id "${cluster}-worker" "$ref")")"
+    "$(alias_index_digest "${cluster}-control-plane" "$ref")" \
+    "$(alias_index_digest "${cluster}-worker" "$ref")")"
   for node_role in $node_json; do
     node="${cluster}-${node_role}"
     echo "phase=kind-load role=${alias_role} node=${node}" >&2
@@ -89,7 +90,7 @@ if (!result.ok) {
   process.exit(1);
 }
 ' "$digest" \
-    "$(alias_config_id "${cluster}-control-plane" "$ref")" \
-    "$(alias_config_id "${cluster}-worker" "$ref")")"
+    "$(alias_index_digest "${cluster}-control-plane" "$ref")" \
+    "$(alias_index_digest "${cluster}-worker" "$ref")")"
 done
 echo "builds=${builds} digest=${digest}"

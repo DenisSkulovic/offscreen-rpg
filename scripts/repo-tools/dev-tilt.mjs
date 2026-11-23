@@ -424,11 +424,13 @@ export function assessWebDevServerReadiness(input) {
   if (!expectedImage || expectedImage !== runningImage) {
     return { ready: false, reason: 'image_mismatch', currentGeneration: null };
   }
-  if (input.expectedConfigId) {
-    const runningConfig = typeof pod.imageId === 'string' && pod.imageId.startsWith('sha256:')
-      ? pod.imageId.split('@').pop()
+  const accepted = input.expectedConfigIds
+    ?? (input.expectedConfigId ? [input.expectedConfigId] : null);
+  if (accepted) {
+    const runningConfig = typeof pod.imageId === 'string'
+      ? (pod.imageId.match(/sha256:[a-f0-9]{64}/) ?? [])[0] ?? null
       : null;
-    if (runningConfig !== input.expectedConfigId) {
+    if (!runningConfig || !accepted.includes(runningConfig)) {
       return { ready: false, reason: 'image_mismatch', currentGeneration: null };
     }
   }
@@ -1215,15 +1217,15 @@ export function collectWebDevServerReadiness(input) {
     'get', 'deploy', 'game-web', '-o', 'jsonpath={.spec.template.spec.containers[0].image}',
   ]);
   const expectedImage = expected.status === 0 ? String(expected.stdout).trim() : null;
-  let expectedConfigId = input.expectedConfigId ?? null;
-  if (!expectedConfigId && expectedImage) {
-    const inspected = spawnSync('docker', ['image', 'inspect', expectedImage, '--format', '{{.Id}}'], { encoding: 'utf8' });
-    if (inspected.status === 0) expectedConfigId = String(inspected.stdout).trim();
+  const expectedConfigIds = [...(input.expectedConfigIds ?? [])];
+  if (input.expectedConfigId) expectedConfigIds.push(input.expectedConfigId);
+  if (expectedConfigIds.length === 0 && expectedImage && input.resolveImageIds) {
+    expectedConfigIds.push(...input.resolveImageIds(expectedImage).filter(Boolean));
   }
   return {
     namespace: input.namespace,
     expectedImage,
-    expectedConfigId,
+    expectedConfigIds: expectedConfigIds.length > 0 ? expectedConfigIds : null,
     pod: pod.status === 0 && namespace
       ? { ready: ready === 'true', namespace, image: image || null, imageId: imageId || null }
       : null,
@@ -1285,6 +1287,17 @@ export function printDevStatus(worktree, deps = {}) {
         ? collectWebDevServerReadiness({
           namespace: session.namespace,
           run: deps.execKubectl ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' })),
+          resolveImageIds: (image) => {
+            const accepted = [];
+            const host = spawnSync('docker', ['image', 'inspect', image, '--format', '{{.Id}}'], { encoding: 'utf8' });
+            if (host.status === 0) accepted.push(String(host.stdout).trim());
+            for (const node of ['offscreen-dev-worker', 'offscreen-dev-control-plane']) {
+              const cri = spawnSync('docker', ['exec', node, 'crictl', 'inspecti', `docker.io/library/${image}`], { encoding: 'utf8' });
+              const match = String(cri.stdout ?? '').match(/"id":\s*"(sha256:[a-f0-9]{64})"/);
+              if (match) accepted.push(match[1]);
+            }
+            return accepted;
+          },
         })
         : { namespace: session.namespace, expectedImage: null, pod: null, httpStatus: null }
     );
