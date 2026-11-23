@@ -8,6 +8,8 @@ This harness governs **how** coding agents navigate the three authority layers: 
 
 **Planner/executor economics:** For a ChatGPT session **designing Changes**, [CHATGPT.md](../CHATGPT.md) and the [planner investigation standard](references/planner-investigation-standard.md) put broad source and architectural discovery upstream of lower-cost Cursor implementers. The selected Cursor child receives a short route card and only verifies the current source, implements and tests. This role distinction does **not** require every agent to preload the planner standard; see the table below for load triggers.
 
+**Development execution vs agent design:** a commissioned Cursor Change should use its own worktree-local self-service runtime without manually choosing Kubernetes assets, after [DXK09 T05's proven gate](../docs/runbooks/dev-worktree-stacks.md). The local lease registry is not tracked in Git. Do not confuse the legacy shared `pnpm dev` path with slot-aware automation until proven. Read the runbook only when a task requires a dev stack or its setup fails; do not preload it for every source-only refactor.
+
 ## What loads, and when?
 
 | Surface                          | Load trigger                                                      | Purpose                                                                          |
