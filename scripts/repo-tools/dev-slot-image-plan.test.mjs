@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fingerprintDevImageContext, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
+import { confirmLoadedAliasIdentity, contentDerivedImageRef, fingerprintDevImageContext, planAliasIdentityLoad, planContentImageSelection, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 
 const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
 ARG TURBO_FILTER=@offscreen/api^...
@@ -214,4 +214,113 @@ test('unchanged fingerprint reuses the canonical digest and stays unready while 
   });
   assert.equal(changed.dockerBuild, true);
   assert.equal(changed.applicationReady, false);
+  const staleNode = planRestartImageReuse({
+    expectedRef: 'offscreen-dev-workspace:tilt-build-1795404939',
+    fingerprint: 'fp-1',
+    canonical,
+    nodeHasRef: true,
+    nodeConfigId: 'sha256:stale',
+    podImage: 'offscreen-dev-workspace:tilt-build-1795404939',
+    podConfigId: 'sha256:stale',
+    podReady: true,
+  });
+  assert.equal(staleNode.dockerBuild, false);
+  assert.equal(staleNode.kindLoad, true);
+  assert.equal(staleNode.applicationReady, false);
+});
+
+const HOST = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const STALE = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const OTHER = 'sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+
+test('image generation rolls only when the verified id changes', () => {
+  const changed = planImageGenerationRollout({ currentGeneration: HOST, expectedGeneration: STALE });
+  assert.equal(changed.roll, true);
+  assert.equal(changed.generation, STALE);
+  const same = planImageGenerationRollout({ currentGeneration: HOST, expectedGeneration: HOST });
+  assert.equal(same.roll, false);
+  assert.equal(same.reason, 'generation-unchanged');
+  const missing = planImageGenerationRollout({ currentGeneration: null, expectedGeneration: 'not-a-digest' });
+  assert.equal(missing.roll, false);
+  assert.equal(missing.reason, 'unproven-generation');
+});
+
+test('alias identity loads only nodes whose config id is missing or stale', () => {
+  const absent = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {},
+  });
+  assert.deepEqual(absent.loadNodes, ['control-plane', 'worker']);
+  const reuse = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: HOST },
+      worker: { configId: HOST },
+    },
+  });
+  assert.deepEqual(reuse.loadNodes, []);
+  assert.equal(reuse.ready, true);
+  const stale = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: STALE },
+      worker: { configId: STALE },
+    },
+  });
+  assert.deepEqual(stale.loadNodes, ['control-plane', 'worker']);
+  const one = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: HOST },
+      worker: { configId: STALE },
+    },
+  });
+  assert.deepEqual(one.loadNodes, ['worker']);
+  assert.equal(one.ref, 'offscreen-dev-workspace:dev-7-web');
+  const untouched = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-6-api',
+    expectedConfigId: OTHER,
+    nodes: {
+      'control-plane': { configId: OTHER },
+      worker: { configId: OTHER },
+    },
+  });
+  assert.deepEqual(untouched.loadNodes, []);
+  const refused = confirmLoadedAliasIdentity({
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: HOST },
+      worker: { configId: STALE },
+    },
+  });
+  assert.equal(refused.ok, false);
+  assert.deepEqual(refused.nodes, ['worker']);
+});
+
+test('a new fingerprint selects a new image ref and an unchanged one does not roll', () => {
+  const first = 'a'.repeat(64);
+  const second = 'b'.repeat(64);
+  const ref = contentDerivedImageRef(first);
+  const present = { 'control-plane': { tags: [ref] }, worker: { tags: [ref] } };
+  const selected = planContentImageSelection({ fingerprint: first, currentRef: null, nodes: present });
+  assert.equal(selected.ref, 'offscreen-dev-workspace:union-aaaaaaaaaaaaaaaa');
+  assert.equal(selected.roll, true);
+  const same = planContentImageSelection({ fingerprint: first, currentRef: ref, nodes: present });
+  assert.equal(same.roll, false);
+  assert.equal(same.reason, 'generation-unchanged');
+  const next = contentDerivedImageRef(second);
+  const moved = planContentImageSelection({
+    fingerprint: second,
+    currentRef: ref,
+    nodes: { 'control-plane': { tags: [next] }, worker: { tags: [next] } },
+  });
+  assert.notEqual(moved.ref, ref);
+  assert.equal(moved.roll, true);
+  const missing = planContentImageSelection({ fingerprint: first, currentRef: ref, nodes: { 'control-plane': { tags: [ref] }, worker: { tags: [] } } });
+  assert.equal(missing.reason, 'missing-kind-node');
+  assert.equal(missing.roll, false);
 });

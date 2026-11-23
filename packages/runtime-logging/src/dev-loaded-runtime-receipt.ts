@@ -11,6 +11,7 @@ export type DevLoadedRuntimeReceipt = {
   startedAt: string;
   compiledModulePath: string;
   compiledModuleIdentity: string;
+  environmentId?: string;
 };
 
 /**
@@ -48,6 +49,10 @@ export function writeDevLoadedRuntimeReceipt(input: {
     compiledModulePath,
     compiledModuleIdentity,
   };
+  const environmentId = process.env.OFFSCREEN_DEV_SLOT?.trim();
+  if (environmentId) {
+    receipt.environmentId = environmentId;
+  }
   mkdirSync(receiptRoot, { recursive: true });
   writeFileSync(
     join(receiptRoot, `${input.role}.loaded.json`),

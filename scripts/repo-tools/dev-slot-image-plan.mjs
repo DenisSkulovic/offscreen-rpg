@@ -206,6 +206,98 @@ export function planSlotImageArtifact(input) {
  *   nodes?: Record<string, { digests?: string[], tags?: string[] }>,
  * }} input
  */
+/**
+ * Kind alias decision for one slot tag.
+ * `expectedConfigId` and each node's `configId` are image config digests
+ * (Docker image ID / CRI image id). A containerd manifest digest is a
+ * different value and must not be passed here. A missing or different
+ * config id reloads that node only. Other tags are not part of the plan.
+ * @param {{
+ *   ref: string,
+ *   expectedConfigId: string | null,
+ *   nodes?: Record<string, { configId?: string | null }>,
+ * }} input
+ */
+export function planAliasIdentityLoad(input) {
+  const expected = input.expectedConfigId;
+  const comparable = typeof expected === 'string' && /^sha256:[a-f0-9]{64}$/.test(expected);
+  const loadNodes = REQUIRED_NODES.filter((node) => {
+    if (!comparable) return true;
+    return input.nodes?.[node]?.configId !== expected;
+  });
+  return {
+    ref: input.ref,
+    expectedConfigId: comparable ? expected : null,
+    loadNodes,
+    ready: comparable && loadNodes.length === 0,
+    reason: !comparable
+      ? 'unproven-config-id'
+      : loadNodes.length === 0
+        ? 'alias-identity-matches'
+        : 'alias-identity-stale-or-absent',
+  };
+}
+
+/**
+ * Post-load check. Ready only when every required node alias resolves to
+ * the expected config id. A failed load leaves the previous id in place.
+ * @param {{
+ *   expectedConfigId: string | null,
+ *   nodes?: Record<string, { configId?: string | null }>,
+ * }} input
+ */
+const GENERATION_ID = /^sha256:[a-f0-9]{64}$/;
+
+/**
+ * Whether a Deployment must roll because its recorded image generation
+ * differs from the verified loaded identity. The same generation is a no-op.
+ * This token is the host image id already compared at Kind load time.
+ * It is not a CRI config id and must not be compared with one.
+ * @param {{ currentGeneration?: string | null, expectedGeneration?: string | null }} input
+ */
+/** Content tag Tilt selects. The slot alias is not Deployment authority. */
+export function contentDerivedImageRef(fingerprint) {
+  if (typeof fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(fingerprint)) return null;
+  return `offscreen-dev-workspace:union-${fingerprint.slice(0, 16)}`;
+}
+
+/**
+ * Selected Deployment image. A new fingerprint changes the ref and rolls.
+ * The same ref is a no-op. The ref is selected only when both Kind nodes have it.
+ * @param {{ fingerprint?: string | null, currentRef?: string | null, nodes?: Record<string, { tags?: string[] }> }} input
+ */
+export function planContentImageSelection(input) {
+  const ref = contentDerivedImageRef(input.fingerprint ?? '');
+  if (!ref) return { ref: null, roll: false, reason: 'unproven-context', missing: ['control-plane', 'worker'] };
+  const missing = ['control-plane', 'worker'].filter((node) => !(input.nodes?.[node]?.tags ?? []).includes(ref));
+  if (missing.length > 0) return { ref, roll: false, reason: 'missing-kind-node', missing };
+  const roll = input.currentRef !== ref;
+  return { ref, roll, reason: roll ? 'generation-changed' : 'generation-unchanged', missing: [] };
+}
+
+export function planImageGenerationRollout(input) {
+  const expected = input.expectedGeneration ?? null;
+  if (!GENERATION_ID.test(expected ?? '')) {
+    return { roll: false, generation: null, reason: 'unproven-generation' };
+  }
+  if (input.currentGeneration === expected) {
+    return { roll: false, generation: expected, reason: 'generation-unchanged' };
+  }
+  return { roll: true, generation: expected, reason: 'generation-changed' };
+}
+
+export function confirmLoadedAliasIdentity(input) {
+  const plan = planAliasIdentityLoad({
+    ref: input.ref ?? '',
+    expectedConfigId: input.expectedConfigId,
+    nodes: input.nodes,
+  });
+  if (!plan.ready) {
+    return { ok: false, reason: 'post-load-mismatch', nodes: plan.loadNodes };
+  }
+  return { ok: true, reason: 'alias-identity-matches', nodes: [] };
+}
+
 export function planUnionImageUse(input) {
   const aliases = SLOT_ALIAS_ROLES.map((role) => `offscreen-dev-workspace:${input.slotId}-${role}`);
   const base = {
@@ -263,10 +355,18 @@ export function planRestartImageReuse(input) {
   );
   const dockerBuild = !fingerprintMatches;
   const alias = fingerprintMatches && input.expectedRef !== canonical.ref;
-  const kindLoad = fingerprintMatches && input.nodeHasRef !== true;
+  const nodeIdentityMatches = input.nodeConfigId
+    ? input.nodeConfigId === canonical?.digest
+    : input.nodeHasRef === true;
+  const kindLoad = fingerprintMatches && !nodeIdentityMatches;
   const deploymentSelected = fingerprintMatches
     && (input.podImage === input.expectedRef || input.podImage === canonical.digest);
-  const applicationReady = deploymentSelected && input.podReady === true && !kindLoad && !dockerBuild;
+  const podConfigMatches = !input.podConfigId || input.podConfigId === canonical?.digest;
+  const applicationReady = deploymentSelected
+    && podConfigMatches
+    && input.podReady === true
+    && !kindLoad
+    && !dockerBuild;
   return {
     dockerBuild,
     canonicalDigest: fingerprintMatches ? canonical.digest : null,

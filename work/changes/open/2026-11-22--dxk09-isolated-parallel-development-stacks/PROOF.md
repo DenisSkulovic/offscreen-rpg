@@ -227,3 +227,143 @@ The 250ms wait is extended to 40 polls in the park loop, with a test that a forw
 Focused proof-A tests after `pnpm --filter @offscreen/runtime-logging build`: watched-receipt, session, tilt, and image-plan tests, 45 pass. The new slow-forwarder test passed in the lifecycle worktree, 12 session tests.
 
 HR01–HR03 stay BLOCKED. Pod receipt production and a first-try stop of a slow forwarder are not proven. No HR lane was started.
+
+## Live verification at 6af5ba73 (2026-11-23) — FAIL
+
+Change branch `change/dxk09-lifecycle-freshness` commits `ee589b89`, `fac98e96`, and `6af5ba73` point the six workloads at the existing receipt writers and make `pnpm dev:status` pull those files from the selected namespace. Focused tests on that branch: app-graph 3, receipt 5, tilt and session tests 42 pass, including the 40-poll park wait. Not integrated.
+
+Proof A `pnpm dev` reused dev-5. Web reached 1/1 and `http://127.0.0.1:13116/sign-in` returned 200. API, authority, control, executor, and relay stayed 0/1. The running API image was still Kind import `sha256:340822eb8c5556b9d81ffe4b8d44ab795d0e6e0b4a757fce34a659b22b5c5b14`. Its command was `node dev-pod-compile-watch.mjs`, and the container exited with `MODULE_NOT_FOUND` for `/app/apps/api/dev-pod-compile-watch.mjs`. Docker had built `sha256:a8940fb5adc7b0ce17ae0a27a281cbaf6fe58524c72ded68fdcb066e7059d8b1`, which does contain that file, but Tilt reported `the object has been modified` while applying `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay`, so the new digest never became the pod image. Receipt, compile-error, recovery, dev-6, and image-reuse checks were not run. HTTP 200 was not treated as freshness.
+
+`pnpm dev:stop` then exited 0 and left all six dev-5 desired replicas at 0. That stop was of a crash-looping stack, with dev-6 not running, so it is not the required first-stop proof. dev-6 was not started. HR01–HR03 stay BLOCKED.
+
+## Status repair and dev-5 acceptance (2026-11-23) — PASS for this stack
+
+Parent `f76e4132` on `change/dxk09-lifecycle-freshness`. Two status defects were repaired in the lifecycle worktree and the same file bytes were the copies exercised from proof A (`/home/dskul/projects/offscreen-rpg-dxk09-proof-a`, detached at `f76e4132` during the run). Proof-only source edits were reverted before this record. The two untracked infra watcher copies were not part of the repair.
+
+**Web image equivalence.** `canonicalDockerImageReference` treats `offscreen-dev-workspace:tilt-build-1795443662` and `docker.io/library/offscreen-dev-workspace:tilt-build-1795443662` as the same reference. A different repository, tag, digest, or registry stays unequal. Namespace, pod readiness, and HTTP status checks remain in `assessWebDevServerReadiness`.
+
+**Worker compiled artifacts.** `evaluateDevLoadedRuntimeReadiness` uses the container receipt `diskIdentity` when the status path already pulled it. A missing host `dist` file does not fail that case. A local read that finds no file returns `missing_artifact` instead of an uncaught `ENOENT`. Compile error, missing receipt, stale generation, and a foreign slot or runtime stay `NOT READY`.
+
+**Focused tests.** `node --test scripts/repo-tools/dev-web-readiness.test.mjs infra/kubernetes/lab/dev/dev-watched-compilation-receipt.test.mjs` — 36 pass, 0 fail.
+
+**Live dev-5, no restart before the recheck.** `pnpm dev:status` exited 0:
+
+- web READY `dev_server_serving` `docker.io/library/offscreen-dev-workspace:tilt-build-1795443662`
+- api READY `loaded_matches_desired` `f379a16f60e2f50991507708cc6daa9b9e5709ee3554f100760cb08af5f7967b`
+- authority READY `loaded_matches_desired` `9c9d04db56f59fdac28e9ffba30b479557cc6820cde1c2773b7b644d0b93ed65`
+- control READY `loaded_matches_desired` `e06f92888247a8a25445835cda4fc3f0fb4064be9982de3eeb6bcb1a5b99cecd`
+- executor READY `loaded_matches_desired` `7405205aa9731b6af83323b95d7985776ceee3048800fdf8840def2c3ebb4049`
+- relay READY `loaded_matches_desired` `3d282a26b6d4897c51a7048e03303311436babbc655d42113a07337efd53802a`
+
+`http://127.0.0.1:13116/sign-in` and `http://127.0.0.1:13116/api/health/ready` both returned 200.
+
+**Web edit.** A reversible marker in `apps/web/app/sign-in/page.tsx` was served on port 13116 on the first check, then the file was restored.
+
+**API compile error.** A syntax error in `apps/api/src/main.ts` made `pnpm dev:status` report `api NOT READY compile_error`. Restoring the file returned `api READY loaded_matches_desired`.
+
+**First stop.** One `pnpm dev:stop` exited 0. Tilt PID 740587 and kubectl PID 769312 were gone. Ports 13116 and 13118 were free. All six `offscreen-dev-5` Deployments were desired 0. Tenant Secret UIDs were unchanged: `dev-5-app` `cd146db7-c962-4bef-ad82-adad2c099c2f`, `dev-5-run-auth` `58ef4bac-0287-4ee8-af43-8571e26208ba`, `dev-5-s3` `ce1d32a5-751c-43e2-b9a2-ccf0ce6db179`.
+
+This receipt is one stack. The two-worktree gate, the unattended ordinary-worktree gate, and four-stack acceptance are not claimed here. HR01–HR03 stay BLOCKED.
+
+## Two-worktree gate at `9f1eab1c` (2026-11-23) — partial
+
+Proof A and proof B were detached at `9f1eab1c`. Each used `pnpm dev` with no manual Kubernetes repair. A reused `dev-5` / `offscreen-dev-5` / ports 13116 and 13118, Tilt PID 840443. B reused `dev-6` / `offscreen-dev-6` / ports 13120 and 13122, Tilt PID 940544. Web image tags differed: A `tilt-build-1795444429`, B `tilt-build-1795444759`. Compiled role hashes matched because the source was the same commit. Host `/sign-in` and `/api/health/ready` returned 200 on both 13116 and 13120. `pnpm dev:status` exited 0 in both checkouts.
+
+Secret UIDs stayed distinct: dev-5 `dev-5-app` `cd146db7-c962-4bef-ad82-adad2c099c2f`, `dev-5-run-auth` `58ef4bac-0287-4ee8-af43-8571e26208ba`, `dev-5-s3` `ce1d32a5-751c-43e2-b9a2-ccf0ce6db179`; dev-6 `dev-6-app` `b3dfd6c7-fd75-4e7c-8896-c5f10def0a93`, `dev-6-run-auth` `55536671-dd62-496f-9ac5-36226fe8931e`, `dev-6-s3` `c168ad8e-661c-4f11-9c2b-9d1407832a96`.
+
+A marker `DXK09-A-ONLY` in proof A's `apps/web/app/sign-in/page.tsx` appeared on port 13116 and did not appear on port 13120. The marker was removed.
+
+`pnpm dev:stop` in A exited 0. Ports 13116 and 13118 were free. dev-5 desired replicas were 0. B stayed on 13120 with HTTP 200, desired replicas 1, and the same Secret and Deployment UIDs. dev-5 Secret UIDs were unchanged.
+
+**Restart while B stayed up: capacity refusal, with a late scale.** Before the retry, MemAvailable was about 2.8 GiB and swap used about 2.6 GiB of 4.0 GiB. `pnpm dev` in A exited 1 with `MemAvailable is 2648324 KiB, below 4194304 KiB (4 GiB).` That check in `runDevTiltLaunch` runs after `reconcileOwnedDevSlot`. The refusal left dev-5 desired replicas at 1, status `PARKED`, `game-web` Running, and the other five pods `Error`, with no listener on 13116. A follow-up `pnpm dev:stop` returned those replicas to 0. B was still HTTP 200. This is host pressure plus admission ordered after workload reconcile, not a failed image build.
+
+A third ordinary worktree was not started. Two stacks already sat under the 4 GiB gate. Four-stack acceptance is not met. HR01–HR03 stay BLOCKED. DXK09 is not ready to archive.
+
+## Capacity refusal ordered before mutation (2026-11-23)
+
+`runDevTiltLaunch` now runs the existing stack preflight and exits on `memory-low` or `memory-unknown` before `reconcileOwnedDevSlot` and before `replaceOwnedDevSessionTilt` / `replaceOwnedEnvironmentTilt`. The 4 GiB threshold and refusal text are unchanged. Docker, port, and PID/start-time checks stay where they were. `node --test scripts/repo-tools/dev-tilt.test.mjs` — 27 pass, including low memory (no reconcile, no signal, no spawn, exit 1), sufficient memory (reconcile and spawn), unknown memory (exit 1 before reconcile), and an owned session that is not signalled.
+
+**Live refusal was not run.** At the measurement after the earlier stop, MemAvailable was 5976976 KiB, above 4194304 KiB. SwapTotal 4194304 KiB, SwapFree 2197092 KiB. dev-5 stayed desired replicas 0. Ports 13116 and 13118 were free. dev-6 stayed desired replicas 1 and `http://127.0.0.1:13120/sign-in` returned 200. Starting A would have passed the memory gate, so it was not started.
+
+The earlier live failure remains the evidence of the old order: MemAvailable 2648324 KiB refused only after dev-5 had already been scaled to 1. That scale is what this ordering change closes. A second `pnpm dev` under low memory was not repeated.
+
+**Capacity decision, separate from this fix.** The gate is still 4 GiB MemAvailable. One running stack plus a second start has already been refused at 2.65 GiB available, with about 2 GiB of swap in use. Four-stack acceptance stays open. HR01–HR03 stay BLOCKED. DXK09 is not archived.
+
+## Instrumented dev-5 restart beside dev-6 (2026-11-23) — not six READY
+
+The 4 GiB threshold was not changed. proof-A was detached at `6328a427` and started once with `pnpm dev`. dev-6 was left running.
+
+**Before launch.** MemAvailable 6063944 KiB, SwapFree 2224980 of 4194304 KiB. Docker: `offscreen-dev-worker` 4.893 GiB, `offscreen-dev-control-plane` 1.101 GiB, `offscreen-lab-worker` 4.751 GiB, `offscreen-lab-control-plane` 1.006 GiB. dev-5 desired replicas 0. dev-6 six ready, `http://127.0.0.1:13120/sign-in` and `/api/health/ready` 200.
+
+**During.** Preflight passed. Tilt listened on 13118. About 90 seconds in, MemAvailable 5510808 KiB, SwapFree 2241124 KiB, dev worker 5.447 GiB. Web became Running and `http://127.0.0.1:13116/sign-in` returned 200. API, authority, control, executor, and relay stayed `Error` with restart counts 4 and reason `Error` exit 1, not `OOMKilled`. The API log was `Cannot find module '/app/apps/api/dev-pod-compile-watch.mjs'`. After the image step, MemAvailable 5492032 KiB and SwapFree 2242144 KiB. dev-6 stayed 1/1 and HTTP 200.
+
+**Stop.** `pnpm dev:stop` in proof-A exited 0. dev-5 desired replicas returned to 0. Ports 13116 and 13118 were free. dev-6 stayed 1/1 and HTTP 200. MemAvailable after stop was 6166284 KiB. Swap did not grow during the attempt.
+
+**Footprint of this partial second stack.** Host MemAvailable fell by about 572 MiB (6063944 → 5492032). The dev worker cgroup rose by about 0.59 GiB (4.893 → 5.486). SwapFree rose slightly. That is not the cost of six healthy workloads. The lab Kind node, about 5.76 GiB combined, was resident the whole time and was not part of dev-5.
+
+Restart-isolation edits were not run because A never reached six READY. No third stack was started. DXK09 stays open.
+
+## Watcher packaging and two-stack restart (2026-11-23)
+
+The five Node commands are `node dev-pod-compile-watch.mjs` with working directories `apps/api`, `apps/game-authority`, and `apps/worker`, and `node dev-pod-web-receipt.mjs` under `apps/web`. Those four files are tracked application source. The untracked copies under `infra/kubernetes/lab/dev/` are not the command paths and were left untracked. `ac39ba78` copies the four entrypoints again in the runner stage and fails `docker build` when `dev-image-runtime-modules.mjs --check` finds one missing.
+
+A fresh image `offscreen-dev-workspace:watcher-proof` (`sha256:06441490a1911a8272420575abf29ae6b732d3234b7389567254e535287d2c37`) printed `present` for all four paths. `node --test` on the runtime-module and slot-graph tests passed, 8 tests.
+
+proof-A was detached at `ac39ba78`. Before `pnpm dev`, MemAvailable was 5983240 KiB and SwapFree 2372304 of 4194304 KiB. dev-5 desired replicas were 0. dev-6 was six ready and `http://127.0.0.1:13120/sign-in` returned 200. Preflight passed. Tilt aliased the canonical image `sha256:116b50756a08`, which contains both watcher files. The first pods still ran Kind import `sha256:340822eb8c55` and exited `MODULE_NOT_FOUND` until each Deployment rolled. All six dev-5 Deployments then reached 1/1. `http://127.0.0.1:13116/sign-in` and `http://127.0.0.1:13120/sign-in` returned 200. Peak observed pressure was MemAvailable 2763036 KiB and SwapFree 652996 KiB. dev-6 stayed 1/1 throughout.
+
+A marker `DXK09-A-WATCHER` in proof-A `apps/web/app/sign-in/page.tsx` was served on port 13116 and absent on port 13120. The marker was removed and the next read of port 13116 no longer contained it. `pnpm dev:stop` in proof-A returned dev-5 to 0 replicas and freed 13116 and 13118. dev-6 stayed 1/1 and HTTP 200.
+
+No third stack was started. Two healthy stacks already left MemAvailable below the 4 GiB gate and used most of the 4 GiB swap. The unattended ordinary-worktree gate and four-stack acceptance are not met. HR01–HR03 stay BLOCKED. DXK09 is not archived. DXK10 was not implemented.
+
+## Unattended ordinary worktree at `11d2e021` (2026-11-23) — not accepted
+
+dev-6 was parked first with its own `pnpm dev:stop` because a second full stack had already fallen under the 4 GiB gate. That stop exited 0 and left `offscreen-dev-6` desired replicas at 0. Before the new start, MemAvailable was 6892660 KiB and SwapFree 1623268 of 4194304 KiB. The 4 GiB threshold was not changed. A third simultaneous stack was not started.
+
+The checkout was a new detached worktree `/home/dskul/projects/offscreen-rpg-dxk09-ordinary` at `11d2e021`. `pnpm install --offline` and `pnpm dev` were the start path. No kubectl apply, image retag, or port assignment was done by hand. The launcher selected `dev-7` / `offscreen-dev-7`, game port 13124, Tilt port 13126, Tilt PID 1320939.
+
+**What passed.** All six Deployments reached desired 1 and ready 1. `http://127.0.0.1:13124/sign-in` and `/api/health/ready` returned 200. API, authority, control, executor, and relay reported `READY loaded_matches_desired`. A `console.log('DXK09-ORDINARY-API')` in `apps/api/src/main.ts` changed the API loaded hash to `59f6b1707ca303adb145318fae018916091e15adee01cdfbd1aa40b6c137fde5` and the log printed `DXK09-ORDINARY-API`. Replacing that line with `const = 'DXK09-ORDINARY-BROKEN'` made `pnpm dev:status` report `api NOT READY compile_error`. The file was restored. One `pnpm dev:stop` exited 0, status became `runtime PARKED`, desired replicas returned to 0, and ports 13124 and 13126 were free. dev-7 Secret UIDs were unchanged: `dev-7-app` `18a86f46-bd9c-4d35-a63d-7aa54120a43f`, `dev-7-run-auth` `38355106-af4b-460b-811e-f954cfe2b526`, `dev-7-s3` `80b6e862-eb8d-4fc2-8014-177e515a998d`. dev-6 stayed desired 0 with the same Secret UIDs: `dev-6-app` `b3dfd6c7-fd75-4e7c-8896-c5f10def0a93`, `dev-6-run-auth` `55536671-dd62-496f-9ac5-36226fe8931e`, `dev-6-s3` `c168ad8e-661c-4f11-9c2b-9d1407832a96`. `.offscreen/dev-session.json` remains gitignored.
+
+**What failed.** `pnpm dev:status` kept `web NOT READY image_mismatch` and exited 2. The game-web Deployment asked for `offscreen-dev-workspace:tilt-build-1795447256`. The running container reported `docker.io/library/offscreen-dev-workspace:dev-7-api`. On `offscreen-dev-worker`, `crictl` showed `dev-7-api`, `dev-7-web`, and the four `tilt-build-1795447*` tags sharing image id `6006f82bf68ae`. The host image `offscreen-dev-workspace:tilt-build-1795447256` was `sha256:02de705415e3e52e9e5e7374723633c6d58812438f885d8575bac44ba8269138`. Tilt logged that id as not yet present, then the pods ran the other id. Six truthful READY statuses were not reached. No manual image repair was applied.
+
+**HR gate.** The two-stack source-isolation and first-stop receipts stay as previously recorded. This ordinary-worktree attempt does not meet the NEXT-WAVE requirement of six truthful READY statuses and correct image convergence. HR01–HR03 stay BLOCKED. Four-stack capacity was not attempted and stays unproven. That capacity gap is separate from this narrower failure: even with one stack and MemAvailable still above 4 GiB (5189464 KiB while the stack was up), image convergence did not pass. DXK09 is not ready to integrate or archive.
+
+## Fail-closed partial startup (2026-11-23) — unit proof only
+
+`runDevTiltLaunch` still refuses memory before mutation. After Tilt is spawned, it now waits up to 15 minutes for the six Deployment readyReplicas. Success leaves the stack running. Memory exhaustion during that window, Tilt exiting early, or a partial set at the deadline calls `rollbackFailedOwnedStartup`, which parks only that slot's six workloads and its owned processes. Desired replicas must read back as zero. A failed park logs `rollback-incomplete` and does not claim `startup-parked`. Reservation and tenant UIDs are not cleared. `node --test scripts/repo-tools/dev-tilt.test.mjs` passed 32 tests. Those tests cover one-ready/five-failed, memory exhaustion after admission, full success, rollback failure, and a foreign namespace that is not scaled. Live rollback was not run. The unattended ordinary-worktree gate remains unproven.
+
+No live negative was run. dev-6 stayed parked. Host memory was not exhausted on purpose. The ordinary-worktree image-id mismatch from the `11d2e021` attempt is still unresolved, so a new full stack was not started and the unattended gate remains unmet. Four-stack capacity remains unproven. HR01–HR03 stay blocked. DXK10 was not implemented.
+
+## Kind alias identity at `c1fd73ea` (2026-11-23) — not accepted
+
+`load-dev-slot-image.sh` no longer treats a present slot tag as current. It compares Docker's image ID with the `ctr images ls` digest for that alias, reloads only the stale node, and exits on a post-load mismatch. Focused unit tests passed: `node --test scripts/repo-tools/dev-slot-image-plan.test.mjs scripts/repo-tools/dev-web-readiness.test.mjs scripts/repo-tools/dev-tilt.test.mjs` reported 45 passes before the live retry.
+
+`pnpm dev` in this worktree selected `dev-8`. The first attempt exited 1 during image load because the check compared the OCI index digest with the CRI config id (`post-load-mismatch`). After comparing index digests to each other, a second `pnpm dev` reached Tilt on port 13130. Node tags `dev-8-*` and `tilt-build-1795448824` shared `sha256:6fe018c2b81c5ec118e44ffa4efa400cd72b4ee3bdda3e1f91e417d31c290902`. The running game-web pod spec asked for that tilt tag, but its container image ID stayed `sha256:32c59a1de2ffac188ea1a1b07c783338c0c13e12f3e1bdc09e745cb7154fbc4e`. Six truthful READY lines were not observed. `pnpm dev:stop` exited 0 and returned `offscreen-dev-8` desired replicas to 0. HR01–HR03 stay blocked. Four-stack capacity was not attempted. DXK10 was not implemented.
+
+## Tilt-owned union image on `dev-8` (2026-11-23) — functional start, status and workflow still open
+
+Source SHA `e93f33c7` with uncommitted image-ownership edits on `change/dxk09-lifecycle-freshness`. Image preparation wrote the content tag and did not patch Deployments. Tilt selected `offscreen-dev-workspace:union-250f5d2592d600ce` on all six Deployments. The Kind worker recorded that tag at `sha256:b2399037617cd8c01d0bd6f83756d446c613f11a5679e2614b748a23a3f86a7b`. Pod status printed the sibling alias `offscreen-dev-workspace:dev-8-api` for every role; containerd held the slot aliases and the union tag on that same digest.
+
+All six Deployments were ready at 1 replica. Web returned HTTP 200. The API port accepted a connection and returned 404 for `/health`. Tilt synced `apps/web/app/layout.tsx` and `apps/api/src/main.ts`; both markers were in the containers and were reverted. A deliberate API syntax error produced `src/main.ts(4,21): error TS1109: Expression expected.` After the line was removed, the watcher reported `Found 0 errors`. `pnpm dev:stop` scaled all six `offscreen-dev-8` Deployments to 0. Secret UIDs stayed `dev-8-app` `a2063742-e7d7-40c1-a26c-1c875672fc4e`, `dev-8-run-auth` `48097ed4-5385-40f8-8ef8-d49fd92e41f9`, `dev-8-s3` `63b3298c-e452-482a-9a48-6a2c246debc7`. `offscreen-dev-1` stayed at 0 replicas on its previous image.
+
+`pnpm dev:status` was not captured while the pods were serving. No Temporal workflow task was executed. Four-stack capacity, browser OAuth, and release-lab acceptance were not run. HR01–HR03 stay blocked until a later receipt shows six truthful current-generation READY lines and one processed workflow task. DXK10 was not implemented.
+
+## Owned-slot acceptance at `d0e35b63` (2026-11-23) — functional gate passed
+
+`pnpm dev` on `change/dxk09-lifecycle-freshness` at `d0e35b63` selected `dev-8` and reached Tilt at `http://127.0.0.1:13130/`. All six Deployments used `offscreen-dev-workspace:union-21b8a1688220dcd5` and were ready at 1 replica. `pnpm dev:status` while they were serving:
+
+- `web READY dev_server_serving docker.io/library/offscreen-dev-workspace:union-21b8a1688220dcd5`
+- `api READY loaded_matches_desired f379a16f60e2f50991507708cc6daa9b9e5709ee3554f100760cb08af5f7967b`
+- `authority READY loaded_matches_desired 9c9d04db56f59fdac28e9ffba30b479557cc6820cde1c2773b7b644d0b93ed65`
+- `control READY loaded_matches_desired e06f92888247a8a25445835cda4fc3f0fb4064be9982de3eeb6bcb1a5b99cecd`
+- `executor READY loaded_matches_desired 7405205aa9731b6af83323b95d7985776ceee3048800fdf8840def2c3ebb4049`
+- `relay READY loaded_matches_desired 3d282a26b6d4897c51a7048e03303311436babbc655d42113a07337efd53802a`
+
+The pod status alias remained a sibling tag of that digest. Readiness accepted it only after the running container digest matched the selected image. `http://127.0.0.1:13128/sign-in` returned 200. `http://127.0.0.1:13128/api/health/ready` returned 200 `{"status":"ok"}`.
+
+A body marker `DXK09-LIVE-WEB` was served from `apps/web/app/layout.tsx`. `console.log('DXK09-LIVE-API')` was present in the API pod and printed `DXK09-LIVE-API`. Replacing that line with `const dxk09Broken = ;` made status report `api NOT READY compile_error` and the watcher logged `src/main.ts(19,21): error TS1109: Expression expected.` Restoring the file returned `api READY`. Both files were reverted.
+
+Relay namespace `offscreen-dev-8`, queue `offscreen-local`. Workflow `dxk09-relay-ping-1795454621418` of type `scriptedOpeningV1` was started with a missing opening id. The relay log recorded `Workflow failed` for that type after `Activity task failed`. History event types were `1,5,6,7,10,11,13,5,6,7,3` and status `FAILED`. That is workflow-task and activity processing, not a completed story. The dev relay still uses `debugMode` when `OFFSCREEN_DEV_WATCHED_COMPILATION=1`. `game-control` logged `RangeError: Invalid atomic access index` and restarted under its watcher; Kubernetes still reported it ready and status reported `loaded_matches_desired`.
+
+`pnpm dev:stop` exited 0. All six `offscreen-dev-8` desired replicas were 0. Listeners `13128` and `13130` were closed. Secret UIDs stayed `dev-8-app` `a2063742-e7d7-40c1-a26c-1c875672fc4e`, `dev-8-run-auth` `48097ed4-5385-40f8-8ef8-d49fd92e41f9`, `dev-8-s3` `63b3298c-e452-482a-9a48-6a2c246debc7`. `offscreen-dev-1` stayed desired 0 on its previous images, including `offscreen-dev-workspace:tilt-build-1795394042` for web.
+
+Four-stack capacity, browser OAuth, release-lab acceptance, a brand-new unattended worktree, and a completed provider-free story were not run. HR01–HR03 stay blocked on that new-worktree prerequisite. DXK09 is not archived. DXK10 was not implemented. Memory admission was not changed.

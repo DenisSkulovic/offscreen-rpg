@@ -40,17 +40,74 @@ if [[ "$recorded" != "$fingerprint" ]]; then
   builds=1
 fi
 digest="$(docker image inspect "$canonical" --format '{{.Id}}')"
+# Docker image ID on this host is the OCI index digest. `ctr images ls`
+# prints that same digest. CRI status.id is the unpacked platform image
+# and is not comparable to either of those.
+alias_index_digest() {
+  local node="$1"
+  local ref="$2"
+  docker exec "$node" ctr -n k8s.io images ls 2>/dev/null \
+    | awk -v ref="docker.io/library/${ref}" '$1 == ref { print $3; exit }' \
+    || true
+}
 roles=(web api authority worker)
 if [[ "$role" != "all" ]]; then roles=("$role"); fi
 for alias_role in "${roles[@]}"; do
   ref="offscreen-dev-workspace:${slot}-${alias_role}"
   docker tag "$canonical" "$ref"
-  for node in "${cluster}-control-plane" "${cluster}-worker"; do
-    if docker exec "$node" ctr -n k8s.io images ls 2>/dev/null | grep -F "$ref" >/dev/null; then
-      continue
-    fi
+  node_json="$(node --input-type=module -e '
+import { planAliasIdentityLoad } from "./scripts/repo-tools/dev-slot-image-plan.mjs";
+const [ref, expected, control, worker] = process.argv.slice(1);
+const plan = planAliasIdentityLoad({
+  ref,
+  expectedConfigId: expected,
+  nodes: {
+    "control-plane": { configId: control || null },
+    worker: { configId: worker || null },
+  },
+});
+process.stdout.write(plan.loadNodes.join(" "));
+' "$ref" "$digest" \
+    "$(alias_index_digest "${cluster}-control-plane" "$ref")" \
+    "$(alias_index_digest "${cluster}-worker" "$ref")")"
+  for node_role in $node_json; do
+    node="${cluster}-${node_role}"
     echo "phase=kind-load role=${alias_role} node=${node}" >&2
     kind load docker-image "$ref" --name "$cluster" --nodes "$node"
   done
+  confirmed="$(node --input-type=module -e '
+import { confirmLoadedAliasIdentity } from "./scripts/repo-tools/dev-slot-image-plan.mjs";
+const [expected, control, worker] = process.argv.slice(1);
+const result = confirmLoadedAliasIdentity({
+  expectedConfigId: expected,
+  nodes: {
+    "control-plane": { configId: control || null },
+    worker: { configId: worker || null },
+  },
+});
+if (!result.ok) {
+  console.error(`post-load-mismatch nodes=${result.nodes.join(",")}`);
+  process.exit(1);
+}
+' "$digest" \
+    "$(alias_index_digest "${cluster}-control-plane" "$ref")" \
+    "$(alias_index_digest "${cluster}-worker" "$ref")")"
 done
-echo "builds=${builds} digest=${digest}"
+# Deployment authority is this content tag, loaded on both Kind nodes.
+for node_role in control-plane worker; do
+  node="${cluster}-${node_role}"
+  found="$(alias_index_digest "$node" "$canonical")"
+  if [[ "$found" != "$digest" ]]; then
+    echo "phase=kind-load role=content node=${node}" >&2
+    kind load docker-image "$canonical" --name "$cluster" --nodes "$node"
+    found="$(alias_index_digest "$node" "$canonical")"
+  fi
+  if [[ "$found" != "$digest" ]]; then
+    echo "post-load-mismatch node=${node_role} ref=${canonical}" >&2
+    exit 1
+  fi
+done
+if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
+  printf '%s\n' "$canonical" > "$OFFSCREEN_IMAGE_REF_FILE"
+fi
+echo "builds=${builds} digest=${digest} ref=${canonical}"

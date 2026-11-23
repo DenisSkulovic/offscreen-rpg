@@ -1,6 +1,6 @@
 # Development environments | identity, image authority, activation and failure contracts
 
-**Owns:** the selected technical invariants for development environment identity, capacity admission, image/deployment authority and safe park/release. **Does not own:** player/game behavior, the release cluster's acceptance tests, executable commands, or empirical proof. **Status:** selected architecture; distinguish observed DXK09 implementation from unimplemented DXK10 target. **Reviewed against:** `undertaking/storyteller-workshop@d9a2c11e` (2026-11-23), plus explicitly attributed local Cursor receipts through `e93f33c7`. That local branch is **not integrated** here.
+**Owns:** the selected technical invariants for development environment identity, capacity admission, image/deployment authority and safe park/release. **Does not own:** player/game behavior, the release cluster's acceptance tests, executable commands, or empirical proof. **Status:** selected architecture; distinguish observed DXK09 implementation from unimplemented DXK10 target. **Reviewed against:** the owned-slot receipt at `d0e35b63` (2026-11-23). The earlier `e93f33c7` trial is failure evidence, not the current image path.
 
 Human explanation: [Developer environments, illustrated](../../architecture/10-developer-environments.md). Exact operational route: [Dev runbook](../../runbooks/dev-worktree-stacks.md). Evidence: [DXK09 PROOF](../../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md). Resource-lifecycle implementation proposal: [DXK10](../../../work/changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
 
@@ -29,7 +29,7 @@ flowchart TD
     Sync --> Check
 ```
 
-**Current conflict requiring implementation reconciliation:** in the local Cursor trial `e93f33c7`, Tilt's `renderTiltDeploymentDocuments` writes the Pod-template container image while `infra/kubernetes/lab/dev/tilt/load-dev-image.sh` separately patches `offscreen.dev/image-generation` after Kind loading. This produced Ready Pods that still used an old container generation. It is **observed failure evidence**, not accepted current architecture. The desired correction must remove the competing loader patch rather than add another post-load stamp.
+**Landed correction:** image preparation writes a content-derived ref and does not patch Deployments. Tilt selects that ref. Readiness accepts a sibling tag only when the running container digest is on the selected image. The `e93f33c7` trial, where the loader also patched `offscreen.dev/image-generation`, remains the failure that this correction replaced.
 
 **Selected image rules:**
 1. Artifact identity must be content-derived and correspond to bytes actually loaded into the relevant Kind nodes. A mutable alias being present in `ctr images ls` is insufficient. Docker image config digest, OCI index digest, manifest digest and CRI image ID are different representations; only compare identities that have a proven mapping.

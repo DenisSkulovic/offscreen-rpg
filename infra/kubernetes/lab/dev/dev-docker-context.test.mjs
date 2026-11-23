@@ -22,6 +22,11 @@ test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned con
   assert.equal(existsSync(ignoreFile), true);
   assert.match(readFileSync(ignoreFile, 'utf8'), /\*\*\/node_modules/);
   assert.match(script, /Dockerfile\.dockerignore/);
+  assert.doesNotMatch(script, /kubectl/);
+  const slotLoader = readFileSync(join(repoRoot, 'infra/kubernetes/lab/dev/load-dev-slot-image.sh'), 'utf8');
+  assert.match(slotLoader, /OFFSCREEN_IMAGE_REF_FILE/);
+  assert.doesNotMatch(slotLoader, /kubectl/);
+  assert.match(slotLoader, /post-load-mismatch/);
   const release = readFileSync(libBuild, 'utf8');
   assert.doesNotMatch(release, /docker build[^\n]*\s\.$/m);
   assert.match(release, /stage_pruned_context/);

@@ -3,6 +3,11 @@
 # drops the worker vsock. Load the control plane, then the worker.
 set -euo pipefail
 filter="$1"
+# Tilt's custom_build may omit EXPECTED_REF when outputs_image_ref_to is set.
+# The Tiltfile passes the selected image name as the second argument.
+if [[ -n "${2:-}" ]]; then
+  EXPECTED_REF="$2"
+fi
 repo="$(cd "$(dirname "$0")/../../../../.." && pwd)"
 cd "$repo"
 # Docker reads <Dockerfile>.dockerignore beside -f. Do not pass a custom ignore flag.
@@ -13,6 +18,7 @@ if [[ "${EXPECTED_REF:-}" == offscreen-dev-workspace:dev-* ]]; then
   ref="${EXPECTED_REF#offscreen-dev-workspace:}"
   slot="${ref%-*}"
   role="${ref##*-}"
+  # The slot loader returns the content tag. It does not patch Deployments.
   exec bash "$repo/infra/kubernetes/lab/dev/load-dev-slot-image.sh" "$slot" "$role"
 fi
 fingerprint="$(node --input-type=module -e "

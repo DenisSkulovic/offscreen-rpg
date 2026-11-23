@@ -10,6 +10,8 @@ const WORKLOADS = ['game-web', 'game-api', 'game-authority', 'game-control', 'ga
 const SERVICES = ['game-web', 'game-api', 'game-authority'];
 const LEGACY_NAMESPACES = ['lab-edge', 'lab-authority', 'lab-workers'];
 const FORBIDDEN_SECRET_NAMES = ['postgres-superuser', 'seaweed-admin'];
+/** Pod-local receipt root. /tmp is writable by the container user; /app is not. */
+export const DEV_POD_RUNTIME_RECEIPT_DIR = '/tmp/offscreen-dev-runtime';
 
 function refusal(id, detail) {
   const error = new Error(detail);
@@ -97,6 +99,13 @@ export function renderDevSlotAppGraph(slotId, input) {
   const temporalNamespace = namespace;
   const pool = env('DB_POOL_MAX', DEV_SQL_POOL_MAX);
   const slot = env('OFFSCREEN_DEV_SLOT', sql.slotId);
+  const receiptDir = env('OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR', DEV_POD_RUNTIME_RECEIPT_DIR);
+  const watched = (role, entry) => [
+    env('OFFSCREEN_DEV_WATCHED_COMPILATION', '1'),
+    env('OFFSCREEN_DEV_COMPILED_ENTRY', entry),
+    receiptDir,
+    env('OFFSCREEN_DEV_RECEIPT_ROLE', role),
+  ];
   const documentStore = env('OFFSCREEN_DOCUMENT_STORE', 's3');
   const documents = [
     { apiVersion: 'v1', kind: 'Namespace', metadata: { name: namespace, labels: labels(sql.slotId, 'slot') } },
@@ -104,17 +113,18 @@ export function renderDevSlotAppGraph(slotId, input) {
     service(sql.slotId, namespace, 'game-api', 3001),
     service(sql.slotId, namespace, 'game-authority', 3002),
     deployment(sql.slotId, namespace, 'game-web', {
-      name: 'web', image: imageFor('web'), imagePullPolicy: 'Never', workingDir: '/app',
-      command: ['pnpm', '--filter', '@offscreen/web', 'exec', 'next', 'dev', '--hostname', '0.0.0.0', '--port', '3000'],
+      name: 'web', image: imageFor('web'), imagePullPolicy: 'Never', workingDir: '/app/apps/web',
+      command: ['sh', '-c', 'node dev-pod-web-receipt.mjs & exec pnpm exec next dev --hostname 0.0.0.0 --port 3000'],
       ports: [{ name: 'http', containerPort: 3000 }],
-      env: [slot, env('API_PROXY_ORIGIN', api), env('API_INTERNAL_ORIGIN', api)],
+      env: [slot, receiptDir, env('API_PROXY_ORIGIN', api), env('API_INTERNAL_ORIGIN', api)],
     }),
     deployment(sql.slotId, namespace, 'game-api', {
       name: 'api', image: imageFor('api'), imagePullPolicy: 'Never', workingDir: '/app/apps/api',
-      command: ['sh', '-c', 'pnpm exec tsc --noEmitOnError && (pnpm exec tsc --watch --noEmitOnError --preserveWatchOutput --pretty false & exec node --watch-path=dist dist/src/main.js)'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'api', 'dist/src/main.js'],
       ports: [{ name: 'http', containerPort: 3001 }],
       env: [
-        slot, pool, env('APP_ORIGIN', `http://127.0.0.1:${input.ports.game}`),
+        slot, ...watched('api', '/app/apps/api/dist/src/main.js'),
+        pool, env('APP_ORIGIN', `http://127.0.0.1:${input.ports.game}`),
         env('BETTER_AUTH_COOKIE_PREFIX', prefix),
         env('GAME_AUTHORITY_ORIGIN', authority),
         env('GAME_AUTHORITY_MODE', 'distributed'),
@@ -133,10 +143,11 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-authority', {
       name: 'authority', image: imageFor('authority'), imagePullPolicy: 'Never', workingDir: '/app/apps/game-authority',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'game-authority', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
       ports: [{ name: 'http', containerPort: 3002 }],
       env: [
-        slot, pool, documentStore, env('GAME_AUTHORITY_HOST', '0.0.0.0'), env('GAME_AUTHORITY_PORT', '3002'),
+        slot, ...watched('game-authority', '/app/apps/game-authority/dist/src/bootstrap/main.js'),
+        pool, documentStore, env('GAME_AUTHORITY_HOST', '0.0.0.0'), env('GAME_AUTHORITY_PORT', '3002'),
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
@@ -148,27 +159,30 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-control', {
       name: 'control', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/control-main.js'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'worker-control', 'dist/src/bootstrap/control-main.js', 'tsconfig.dev.json'],
       env: [
-        slot, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
+        slot, ...watched('worker-control', '/app/apps/worker/dist/src/bootstrap/control-main.js'),
+        env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('TEMPORAL_TASK_QUEUE', 'control'), env('GAME_AUTHORITY_ORIGIN', authority),
         secretEnv('GAME_AUTHORITY_CONTROL_TOKEN', appSecret, 'game-authority-control-token'),
       ],
     }),
     deployment(sql.slotId, namespace, 'game-executor', {
       name: 'executor', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/executor-main.js'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'worker-executor', 'dist/src/bootstrap/executor-main.js', 'tsconfig.dev.json'],
       env: [
-        slot, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
+        slot, ...watched('worker-executor', '/app/apps/worker/dist/src/bootstrap/executor-main.js'),
+        env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('TEMPORAL_TASK_QUEUE', 'storyteller-execute-v1'), env('GAME_AUTHORITY_ORIGIN', authority),
         secretEnv('GAME_AUTHORITY_EXECUTOR_TOKEN', appSecret, 'game-authority-executor-token'),
       ],
     }),
     deployment(sql.slotId, namespace, 'game-relay', {
       name: 'relay', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'worker-relay', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
       env: [
-        slot, pool, documentStore, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
+        slot, ...watched('worker-relay', '/app/apps/worker/dist/src/bootstrap/main.js'),
+        pool, documentStore, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
@@ -205,6 +219,75 @@ export function assertRenderedGraph(documents, slotId) {
   return true;
 }
 
+const CLUSTER_METADATA = ['resourceVersion', 'uid', 'managedFields', 'status', 'generation'];
+
+/**
+ * Declarative Deployments for a slot Tilt session. Read-only: no tenants, secrets, or kubectl.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function renderTiltDeploymentDocuments(env = process.env) {
+  const slotId = env.OFFSCREEN_DEV_SLOT?.trim() ?? '';
+  const namespace = env.OFFSCREEN_DEV_NAMESPACE?.trim() ?? '';
+  const gamePort = Number(env.OFFSCREEN_DEV_GAME_PORT);
+  if (!slotId.startsWith('dev-')) throw refusal('slot', 'OFFSCREEN_DEV_SLOT must name a dev slot');
+  if (!namespace) throw refusal('namespace', 'OFFSCREEN_DEV_NAMESPACE is required');
+  const expected = deriveDevNamespace(slotId);
+  if (namespace !== expected) throw refusal('namespace-mismatch', `${namespace} is not ${expected}`);
+  if (!Number.isInteger(gamePort) || gamePort < 1) throw refusal('ports', 'OFFSCREEN_DEV_GAME_PORT is required');
+  const graph = renderDevSlotAppGraph(slotId, { schemaReady: true, ports: { game: gamePort } });
+  if (graph.namespace !== namespace) throw refusal('namespace-mismatch', graph.namespace);
+  return graph.documents.filter((item) => item.kind === 'Deployment');
+}
+
+function yamlScalar(value) {
+  if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+  if (value === null) return 'null';
+  return JSON.stringify(String(value));
+}
+
+function yamlLines(value, indent) {
+  const pad = '  '.repeat(indent);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return [`${pad}[]`];
+    return value.flatMap((item) => {
+      if (item && typeof item === 'object') {
+        const nested = yamlLines(item, indent + 1);
+        return [`${pad}- ${nested[0].trimStart()}`, ...nested.slice(1)];
+      }
+      return [`${pad}- ${yamlScalar(item)}`];
+    });
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, item]) => {
+      if (item && typeof item === 'object') {
+        return [`${pad}${key}:`, ...yamlLines(item, indent + 1)];
+      }
+      return [`${pad}${key}: ${yamlScalar(item)}`];
+    });
+  }
+  return [`${pad}${yamlScalar(value)}`];
+}
+
+export function renderTiltDeploymentYaml(env = process.env) {
+  const documents = renderTiltDeploymentDocuments(env);
+  const text = JSON.stringify(documents);
+  for (const field of CLUSTER_METADATA) {
+    if (text.includes(`"${field}"`)) throw refusal('cluster-metadata', field);
+  }
+  return documents.map((document) => ['---', ...yamlLines(document, 0)]).flat().join('\n').concat('\n');
+}
+
+/**
+ * Cold start may create missing Deployments once. Names already present stay
+ * with Tilt; this pass does not rewrite their Pod templates.
+ * @param {Array<{ kind?: string, metadata?: { name?: string } }>} documents
+ * @param {string[]} existingDeploymentNames
+ */
+export function selectColdStartDocuments(documents, existingDeploymentNames = []) {
+  const existing = new Set(existingDeploymentNames);
+  return documents.filter((document) => document.kind !== 'Deployment' || !existing.has(document.metadata?.name ?? ''));
+}
+
 export function assertSlotOwnership(record, observed) {
   const sql = deriveDevSqlTenant(record?.slotId);
   if (!record || record.namespace !== sql.appNamespace || record.cluster !== DEV_CLUSTER_NAME) {
@@ -222,4 +305,8 @@ export function assertSlotOwnership(record, observed) {
   if (!observed.schemaReady) throw refusal('stale-schema', `stale-schema ${sql.slotId}`);
   if (observed.cookiePrefix !== sql.slotId) throw refusal('cookie-prefix', `cookie-prefix ${observed.cookiePrefix ?? 'missing'}`);
   return { namespace: sql.appNamespace, postgresNamespace: DEV_CNPG_NAMESPACE };
+}
+
+if (process.argv.includes('--tilt-deployments')) {
+  process.stdout.write(renderTiltDeploymentYaml());
 }

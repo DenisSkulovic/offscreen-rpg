@@ -83,6 +83,13 @@ def dev_live_update(image_key, watched):
         steps.append(fall_back_on(fallbacks))
     for sub in SYNC_CONFIG['sync_dirs_by_image'][image_key]:
         steps.append(sync(REPO_ROOT + sub, '/app' + sub))
+    # App watchers import this module. It is outside each app sync closure.
+    for receipt in [
+        '/infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs',
+        '/infra/kubernetes/lab/dev/dev-watch-compilation.mjs',
+        '/infra/kubernetes/lab/dev/dev-image-runtime-modules.mjs',
+    ]:
+        steps.append(sync(REPO_ROOT + receipt, '/app' + receipt))
     return steps
 
 def image_inputs(image_key):
@@ -95,17 +102,25 @@ def image_inputs(image_key):
 
 def dev_workspace_docker_build(image, image_key):
     inputs = image_inputs(image_key)
+    for rel in [
+        'infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs',
+        'infra/kubernetes/lab/dev/dev-watch-compilation.mjs',
+        'infra/kubernetes/lab/dev/dev-image-runtime-modules.mjs',
+    ]:
+        inputs.append(rel)
     watched = [REPO_ROOT + '/' + rel for rel in inputs]
     steps = dev_live_update(image_key, watched)
     # skips_local_docker keeps Tilt from kind-loading in parallel after the build.
     # deps stay on image_inputs so an API .ts file is a sync input, not a web input.
+    ref_file = '/tmp/offscreen-tilt-image-ref-' + image_key
     custom_build(
         image,
-        'bash ' + REPO_ROOT + '/infra/kubernetes/lab/dev/tilt/load-dev-image.sh ' + TURBO_FILTER_BY_IMAGE[image_key],
+        'OFFSCREEN_IMAGE_REF_FILE=' + ref_file + ' bash ' + REPO_ROOT + '/infra/kubernetes/lab/dev/tilt/load-dev-image.sh ' + TURBO_FILTER_BY_IMAGE[image_key] + ' ' + image,
         deps=watched,
         ignore=['**/node_modules', '**/dist', '**/.next'],
         live_update=steps,
         skips_local_docker=True,
+        outputs_image_ref_to=ref_file,
     )
 
 dev_workspace_docker_build(DEV_WORKSPACE_IMAGE, 'web')
@@ -115,11 +130,14 @@ if os.getenv('OFFSCREEN_DEV_TILT_ROLE', '') != 'web':
     dev_workspace_docker_build(DEV_WORKSPACE_WORKER_IMAGE, 'worker')
 
 if SLOT_SESSION:
-    existing = local(
-        'kubectl --context kind-offscreen-dev -n ' + OFFSCREEN_DEV_NAMESPACE + ' get deploy -o yaml',
+    # Declarative slot Deployments. Live `kubectl get` copies resourceVersion and
+    # managedFields, and those collide with the next image roll.
+    rendered = local(
+        'node infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs --tilt-deployments',
+        dir=REPO_ROOT,
         quiet=True,
     )
-    k8s_yaml(existing)
+    k8s_yaml(rendered)
     for name in ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay']:
         k8s_resource(name)
 else:

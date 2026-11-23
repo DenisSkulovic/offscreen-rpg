@@ -76,6 +76,11 @@ export async function startRuntime(
       activities,
       shutdownGraceTime: '10 seconds',
       maxConcurrentActivityTaskExecutions: 4,
+      // Node 24.19 rejects the worker-thread patch-activation buffer
+      // (`RangeError: Invalid atomic access index`). The dev watcher runs
+      // workflow tasks on the main thread so the relay can start. Production
+      // does not set this variable.
+      ...(process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1' ? { debugMode: true } : {}),
     });
     const outbox = createOutbox(database);
     const controller = new AbortController();
