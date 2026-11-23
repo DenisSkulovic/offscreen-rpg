@@ -21,6 +21,8 @@ flowchart LR
   P --> R["RELEASE CONFIDENCE<br/>auth · failure · restore<br/>cold release lab"]
 ```
 
+**2026-11-23 product-proof planning checkpoint:** [TURN03 exact authenticated routes and evidence owners](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/SOURCE-ROUTE-MAP-2026-11-23.md) and [R1–R4 execution order](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/NEXT-EXECUTION-2026-11-23.md) are now source-grounded against `a755b183`. The existing lower-tier reporter tests passed 20/20 in the inspected snapshot. R1 is a source-only route correction; the full live operator still needs an authorized real browser actor, S3 pins, and read-only SQL/Temporal identity adapter. No new TURN03 release gate passed. HR01 is executing, HR02/HR03/DXK10-A Done.
+
 ## What the dev-loop measurements really say
 
 | Trial | Outcome | Evidence level |
