@@ -23,6 +23,8 @@ flowchart LR
 
 **2026-11-23 product-proof planning checkpoint:** [TURN03 exact authenticated routes and evidence owners](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/SOURCE-ROUTE-MAP-2026-11-23.md) and [R1–R4 execution order](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/NEXT-EXECUTION-2026-11-23.md) are now source-grounded against `a755b183`. The existing lower-tier reporter tests passed 20/20 in the inspected snapshot. R1 is a source-only route correction; the full live operator still needs an authorized real browser actor, S3 pins, and read-only SQL/Temporal identity adapter. No new TURN03 release gate passed. HR01 is executing, HR02/HR03/DXK10-A Done.
 
+**DXK10-B orientation:** [source-first profile and readiness ownership map](../../changes/backlog/platform-operations/DXK10-B-SOURCE-BOUNDARY-2026-11-23.md). Current startup and Tilt both render all six one-replica Deployments, so selective activation must share one desired-state decision; scaling replicas down alone would not be stable. Candidate `web` / `api` profiles are **read/debug capabilities**, not proof that a story can progress without workers. Still planner-held.
+
 ## What the dev-loop measurements really say
 
 | Trial | Outcome | Evidence level |
