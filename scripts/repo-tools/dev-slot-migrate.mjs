@@ -17,7 +17,10 @@ export async function migrateOwnedDevSlot(owner, worktree) {
   const names = deriveDevSqlTenant(owner.slotId);
   const built = resolve(worktree, 'packages/db/dist/src/migrate.js');
   if (!existsSync(built)) {
-    return { ok: false, refusals: [{ id: 'migrate-build', detail: 'packages/db build is missing' }] };
+    const compiled = spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], { cwd: worktree, encoding: 'utf8' });
+    if (compiled.status !== 0 || !existsSync(built)) {
+      return { ok: false, refusals: [{ id: 'migrate-build', detail: 'packages/db build is missing' }] };
+    }
   }
   const localPort = 16000 + Number(names.digits);
   const forward = spawn('kubectl', [
