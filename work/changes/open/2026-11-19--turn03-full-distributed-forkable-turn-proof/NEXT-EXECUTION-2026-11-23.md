@@ -2,6 +2,10 @@
 
 **2026-11-23 · source baseline `a755b183` · Existing Change remains OPEN.** [Source map](SOURCE-ROUTE-MAP-2026-11-23.md) · [release audit](../../../undertakings/storyteller-workshop/RELEASE-PROOF-AUDIT-2026-11-23.md).
 
+## Next R2 source-only lanes after R2A/R2B landed (2026-11-23)
+
+R2A secure HTTP and R2B pinned fixture verification are **Done at injected fake tier**, not a real login or S3 read. [R2C scripted player-smoke composition](../2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) and [R2D causal SQL observer](../2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) have source-bounded, **parallel-safe but fake-only** execution packets. R2C owns only `player-smoke.mjs` and tests; R2D only `causal-sql.mjs` and tests. Both maintain the source-only evidence tier and leave TURN03 OPEN. Shared docs are integrated serially by one owner; no live cluster, DB access, OAuth login, release install, paid send or Pod deletion is authorized.
+
 ## R2 source-only parallel implementation lanes (2026-11-23)
 
 **Parent TURN03 stays OPEN.** Two independently bounded supporting Changes are now ready for owner-commissioned source-only execution, after local writer/branch checks:
