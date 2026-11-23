@@ -1,16 +1,54 @@
 # Storyteller Workshop | reality check and finish line
 
+**Human checkpoint · 2026-11-23 · inspected integration HEAD `8a782ffd`.** Developer-environment correctness is demonstrably better, but this is **not yet a proven end-to-end AI Storyteller product**. DXK09's unattended new-worktree start/status/stop passed; DXK11's canonical-image reuse and timing improvements are integrated. The next architectural goal, DXK10's source attachment and selective activation, remains **proposed, not implemented**.
 
-**Human summary · 2026-11-23 · integration HEAD `e3fa10b7`.** The game has meaningful foundations, but is not yet a proven end-to-end Storyteller product. One new worktree can start, report six current roles, serve Web and API, and park without touching another slot. Four simultaneous stacks, browser sign-in, release-lab acceptance, and a completed story are still unproven. `game-control` can still crash with an atomic-access error while it looks ready.
+## At a glance
+
+| Track | Rough complete | Still remaining | Interpretation |
+| --- | ---: | ---: | --- |
+| Monorepo architecture + developer workflow | **~65%** | ~35% | Reproducible isolated dev lifecycle, but source readability, runtime demand and full checks remain |
+| Storyteller + playable experience | **~40%** | ~60% | Durable Writer/story foundations, not an ordinary provider-backed end-to-end player experience |
+| Distributed operations + reliability | **~25%** | ~75% | Dev isolation exists; cold release, restore, sustained scale and crash-free readiness remain open |
+| **Combined undertaking** | **~40%** | **~60%** | Judgment, not measured feature coverage or shipping readiness |
+
+**Uncertainty:** at least ±20 percentage points for these subjective estimates. DXK11 improved the developer workflow; it did not materially change the product-completion estimate.
 
 ```mermaid
 flowchart LR
-  A["Done or demonstrated · independent two-slot trials"] --> B["Now · one trustworthy image/deployment owner and unattended dev start"]
-  B --> C["Next · optional lightweight environments for several Cursor agents"]
-  C --> D["Use it · API, Web and DB refactors and actual Storyteller development"]
+  D["DONE / OBSERVED<br/>DXK09 cold worktree<br/>DXK11 image import fix"] --> N["NEXT / DESIGN<br/>DXK10 reserve · attach<br/>activate selected roles"]
+  N --> H["PARALLEL SOURCE WORK<br/>HR01 API · HR02 Web<br/>HR03 DB readability"]
+  H --> P["PRODUCT PROOF<br/>ordinary Writer flow<br/>real story · fork · recovery"]
+  P --> R["RELEASE CONFIDENCE<br/>auth · failure · restore<br/>cold release lab"]
 ```
 
-**Current bottleneck:** the developer loop is usable for one new worktree, and it is still slow and incomplete. **Near-term completion condition for the remaining DXK09 proofs:** four simultaneous full stacks, browser OAuth, release-lab acceptance, and a real end-to-end story. The single-worktree start/status/stop path is accepted and is not one of those proofs. [Actual gate](NEXT-WAVE.md) · [DXK09 proof](../../changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) · [DXK10 selected future](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
+## What the dev-loop measurements really say
+
+| Trial | Outcome | Evidence level |
+| --- | --- | --- |
+| Original parked warm activation | **376 s**, including 346.5 s image work and ten redundant Kind archive loads | Reported live timing |
+| DXK11 optimized image reuse | Zero archive imports when exact digest already present on both nodes; role aliases are local containerd tags | Reported live proof |
+| `8a782ffd` owned `dev-9` activation | **115.8 s** to six truthful READY roles; one new Docker artifact (4.0 s), two legitimate node imports (~63.6 s), readiness 23.8 s | Reported live timing; **not** a same-image warm-hit baseline |
+| Same-commit warm-image activation | Expected to omit Docker rebuild and both imports; timing **not measured** | Projection only; do not report as a pass |
+
+```mermaid
+flowchart TD
+  W["Cursor worktree: source-only edits and focused tests"] --> Q{"Runtime required?"}
+  Q -->|No| S["No Pods, no image loading"]
+  Q -->|Yes; CURRENT| F["DXK09: owned full six-role activation"]
+  Q -->|Yes; DXK10 TARGET| A["Reserve + attach source; explicit profile"]
+  A --> C["Compile/sync selected roles, verify actual generation"]
+  F --> C
+  C --> K["Park own workloads; preserve tenants and secrets"]
+```
+
+**Safety boundary:** one checkout's lease cannot be appropriated by another; no premature tenant reassignment, foreign-process stop or weakened digest check. A future reusable-slot handoff needs explicit fencing and retained-tenant safeguards. One agent working on source does **not** require one full running stack.
+
+**Still not proven:** four simultaneous full stacks, browser OAuth, cold release-lab acceptance, completed provider-free story and ordinary provider-backed playable campaign. The `game-control` watcher has logged `RangeError: Invalid atomic access index` despite Kubernetes readiness. These are distinct gaps, not a reason to repeat already-accepted DXK09 work.
+
+**Next decision:** source-ground DXK10 against `8a782ffd`, decide persistent tenant reservation/release semantics and profile dependency closure, then create small Cursor-ready implementation slices. HR01–HR03 should proceed as source-only lanes where safe, without making three full-stack runtimes a prerequisite. [DXK10 proposal](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) · [HR wave](NEXT-WAVE.md) · [demonstrated status](../../../STATUS.md).
+
+---
+### Historical checkpoints (do not use as today's instructions)
 
 ## Progress, recalibrated to the real end state
 
