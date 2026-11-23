@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+**2026-11-23 Library/Documents comprehension sequence:** [LIB01 Library / Shelf vocabulary](open/2026-11-23--lib01-library-shelf-vocabulary/CHANGE.md) is doc-only, preceding [LIB02 checkpoint schema decomposition](open/2026-11-23--lib02-documents-schema-decomposition/CHANGE.md). These are independent owner-selected near-term proposals, not a change to `work/QUEUE.md`. Larger [LIB03 content-package ownership](backlog/quality-evaluation/2026-11-23--lib03-content-package-ownership/CHANGE.md) and [LIB04 mounted reference libraries](backlog/agent-runtime/2026-11-23--lib04-mounted-reference-libraries/CHANGE.md) remain planner-held.
+
 ## Lifecycle at a glance (2026-11-22)
 
 **2026-11-23:** [DXK10-A registry-only reserve and explicit attach](archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is Done. No cluster startup or existing tenant takeover was performed. DXK10-B/C remain planner-held. HR02 independently owns Web source paths.
