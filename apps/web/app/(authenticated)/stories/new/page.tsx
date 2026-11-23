@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requireViewer } from '@/src/server/viewer';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
-import { StoryLaunchForm } from '@/src/features/stories/story-launch-form';
+import { StoryLaunchForm } from '@/src/features/stories/launch/story-launch-form';
 import '@/src/features/stories/story-launch.css';
 
 export default async function NewStoryPage() {

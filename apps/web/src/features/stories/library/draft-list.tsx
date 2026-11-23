@@ -6,7 +6,7 @@ import { draftsListInfiniteOptions } from '@/src/shared/api/drafts-list-query';
 import { flattenUniqueById } from '@/src/shared/api/list-page';
 import { Action } from '@/src/shared/ui/action';
 import { SystemNotice } from '@/src/shared/ui/system-notice';
-import './stories-library.css';
+import '../stories-library.css';
 
 export function DraftList({ viewerId }: { viewerId: string }) {
   const {

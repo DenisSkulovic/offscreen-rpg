@@ -4,7 +4,7 @@ import { useId, useState } from 'react';
 import { Action } from '@/src/shared/ui/action';
 import { useStoryLaunch } from './use-story-launch';
 import { StoryLaunchStatus } from './story-launch-status';
-import './story-launch.css';
+import '../story-launch.css';
 
 export type StoryLaunchPreset = {
   presetId: string;

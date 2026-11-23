@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 import { PublicPortal } from '@/src/features/public-portal/public-portal';
 import { StoryDemo } from '../../app/demo/story-demo';
 import { StoryFrame } from '@/src/features/play/ui/story-frame';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
-import { DraftList } from '@/src/features/stories/draft-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
+import { DraftList } from '@/src/features/stories/library/draft-list';
 import {
   emptyDraftsHandlers,
   failedStoriesHandlers,

@@ -12,8 +12,8 @@ import { paceOptions } from '@/src/features/play/model/pace-options';
 import { openingQueryOptions } from '@/src/shared/api/opening-query';
 import { useOpeningGenerate } from './use-opening-generate';
 import { useStartStory } from './use-start-story';
-import './stories-library.css';
-import '../play/ui/story-frame.css';
+import '../stories-library.css';
+import '../../play/ui/story-frame.css';
 
 export function OpeningPreviewPanel({
   viewerId,
@@ -160,14 +160,19 @@ export function OpeningPreviewPanel({
             </SystemNotice>
           )}
           {preview.candidate ? (
-            <div className="story-frame story-frame__stage" aria-label="Opening excerpt">
+            <div
+              className="story-frame story-frame__stage"
+              aria-label="Opening excerpt"
+            >
               <h2 className="story-frame__passage-title">
                 {preview.candidate.content.title}
               </h2>
               <div className="story-frame__passage">
-                {preview.candidate.content.paragraphs.map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
-                ))}
+                {preview.candidate.content.paragraphs.map(
+                  (paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ),
+                )}
               </div>
               <section
                 className="story-frame__threshold"

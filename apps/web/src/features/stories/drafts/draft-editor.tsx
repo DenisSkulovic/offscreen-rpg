@@ -21,7 +21,7 @@ import { StorytellerSelect } from './storyteller-select';
 import { useDraftSave } from './use-draft-save';
 import { Action } from '@/src/shared/ui/action';
 import { SystemNotice } from '@/src/shared/ui/system-notice';
-import './stories-library.css';
+import '../stories-library.css';
 
 type CreationStep = 'foundation' | 'role' | 'storyteller' | 'review';
 
@@ -220,9 +220,9 @@ export function DraftEditor({
             <section aria-labelledby="foundation-title">
               <h2 id="foundation-title">Choose a beginning</h2>
               <p className="creation-intro">
-                Pick a prepared situation, or invent your own premise. Saving and
-                reviewing come later — nothing is generated yet, and the clock
-                does not start.
+                Pick a prepared situation, or invent your own premise. Saving
+                and reviewing come later — nothing is generated yet, and the
+                clock does not start.
               </p>
               <div className="creation-paths">
                 {preparedStarts.map((entry) => (
@@ -230,10 +230,7 @@ export function DraftEditor({
                     <p className="eyebrow">Prepared experience</p>
                     <h3>{entry.name}</h3>
                     <p>{entry.description}</p>
-                    <Action
-                      kind="button"
-                      onClick={() => choosePrepared(entry)}
-                    >
+                    <Action kind="button" onClick={() => choosePrepared(entry)}>
                       Choose this beginning
                     </Action>
                   </article>

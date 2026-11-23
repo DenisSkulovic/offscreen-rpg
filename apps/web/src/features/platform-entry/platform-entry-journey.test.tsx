@@ -24,7 +24,7 @@ import {
   signInHrefFor,
 } from '@/src/features/session/safe-entry-destination';
 import { SignInButton } from '@/src/features/session/sign-in-button';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
 import { createBrowserQueryClient } from '@/src/shared/api/query-client';
 
 vi.mock('next/font/google', () => ({

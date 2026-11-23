@@ -7,7 +7,7 @@ import {
   emptyDraftContent,
   contentFromDraft,
   type DraftEditorFormValues,
-} from '@/src/features/stories/draft-content';
+} from '@/src/features/stories/drafts/draft-content';
 import type { Draft } from '@offscreen/contracts/drafts';
 
 /**

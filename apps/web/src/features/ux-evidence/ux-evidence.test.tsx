@@ -15,7 +15,7 @@ import { axe } from 'vitest-axe';
 import { StoryDemo } from '../../../app/demo/story-demo';
 import { PublicPortal } from '@/src/features/public-portal/public-portal';
 import { StoryFrame } from '@/src/features/play/ui/story-frame';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
 import { createBrowserQueryClient } from '@/src/shared/api/query-client';
 
 vi.mock('next/font/google', () => ({

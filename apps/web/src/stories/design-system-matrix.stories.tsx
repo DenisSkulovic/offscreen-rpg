@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { StoryFrame } from '@/src/features/play/ui/story-frame';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
 import {
   harborPresentation,
   harborScope,

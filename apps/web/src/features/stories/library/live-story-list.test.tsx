@@ -87,9 +87,10 @@ describe('LiveStoryList useInfiniteQuery', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Your story')).toBeInTheDocument();
     expect(screen.queryByText(/Return here/i)).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('link', { name: 'Enter story' }),
-    ).toHaveAttribute('href', `/play/${fixtureIds.storyId}`);
+    expect(screen.getByRole('link', { name: 'Enter story' })).toHaveAttribute(
+      'href',
+      `/play/${fixtureIds.storyId}`,
+    );
     expect(screen.queryByText(/Continuing/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Older stories' }));
     await waitFor(() => {
@@ -197,7 +198,7 @@ describe('LiveStoryList useInfiniteQuery', () => {
 
   it('wraps a long Unicode title instead of keeping it on one line', () => {
     const css = readFileSync(
-      path.join(__dirname, 'stories-library.css'),
+      path.join(__dirname, '../stories-library.css'),
       'utf8',
     );
     const titleRule = css.match(/\.stories-library__story-title\s*\{[^}]*\}/s);
@@ -229,9 +230,9 @@ describe('LiveStoryList useInfiniteQuery', () => {
         <LiveStoryList viewerId={viewerId} />
       </QueryClientProvider>,
     );
-    expect(
-      screen.getByRole('heading', { name: title }),
-    ).toHaveClass('stories-library__story-title');
+    expect(screen.getByRole('heading', { name: title })).toHaveClass(
+      'stories-library__story-title',
+    );
     expect(screen.getByRole('link', { name: 'Enter story' })).toHaveAttribute(
       'href',
       `/play/${fixtureIds.storyId}`,

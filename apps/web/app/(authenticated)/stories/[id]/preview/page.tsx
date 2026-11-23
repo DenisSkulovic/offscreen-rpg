@@ -13,7 +13,7 @@ import {
 import { requireViewer } from '@/src/server/viewer';
 import { nestFetch, parseNestJson } from '@/src/server/nest-reader';
 import { NestTransientError } from '@/src/server/nest-errors';
-import { OpeningPreviewPanel } from '@/src/features/stories/opening-preview';
+import { OpeningPreviewPanel } from '@/src/features/stories/opening/opening-preview';
 import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
 import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { openingQueryOptions } from '@/src/shared/api/opening-query';
@@ -39,9 +39,7 @@ export default async function Preview({
     catalogueResponse.status,
   ].map(classifyNestStatus);
   if (statuses.some((status) => status.kind === 'unauthorized')) {
-    redirect(
-      signInHrefFor((await headers()).get(PATHNAME_HEADER)),
-    );
+    redirect(signInHrefFor((await headers()).get(PATHNAME_HEADER)));
   }
   if (classifyNestStatus(draftResponse.status).kind === 'not_found') {
     notFound();

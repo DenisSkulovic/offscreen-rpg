@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
-import { DraftList } from '@/src/features/stories/draft-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
+import { DraftList } from '@/src/features/stories/library/draft-list';
 import {
   emptyDraftsHandlers,
   emptyStoriesHandlers,

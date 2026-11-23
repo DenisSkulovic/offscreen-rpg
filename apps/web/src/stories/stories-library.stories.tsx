@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { http, HttpResponse, delay } from 'msw';
-import { DraftList } from '@/src/features/stories/draft-list';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
+import { DraftList } from '@/src/features/stories/library/draft-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
 import { fixtureIds } from '@/src/test/story-fixtures';
 import {
   emptyDraftsHandlers,

@@ -10,11 +10,11 @@
 | --- | --- | --- | --- |
 | `/` | [home page](page.tsx) | none | public |
 | `/sign-in` | [sign-in page](sign-in/page.tsx) | `sign-in-button` + `safe-entry-destination` | public entry; optional `?next=` allowlisted return; Better Auth `callbackURL` |
-| `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `src/features/stories/{live-story-list,draft-list}.tsx` | parallel drafts+stories Nest reads |
-| `/stories/new` | [(authenticated)/stories/new/page.tsx]((authenticated)/stories/new/page.tsx) | `src/features/stories/story-launch-form.tsx` | authenticated StoryLaunchForm; optional server `presets` prop; no DraftEditor on this route |
+| `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `src/features/stories/library/{live-story-list,draft-list}.tsx` | parallel drafts+stories Nest reads |
+| `/stories/new` | [(authenticated)/stories/new/page.tsx]((authenticated)/stories/new/page.tsx) | `src/features/stories/launch/story-launch-form.tsx` | authenticated StoryLaunchForm; optional server `presets` prop; no DraftEditor on this route |
 | `/stories/launch` | [(authenticated)/stories/launch/page.tsx]((authenticated)/stories/launch/page.tsx) | none (redirect) | compatibility redirect to `/stories/new`; no feature gate |
 | `/stories/:id` | [(authenticated)/stories/[id]/page.tsx]((authenticated)/stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
-| `/stories/:id/preview` | [(authenticated)/stories/[id]/preview/page.tsx]((authenticated)/stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
+| `/stories/:id/preview` | [(authenticated)/stories/[id]/preview/page.tsx]((authenticated)/stories/[id]/preview/page.tsx) | `src/features/stories/opening/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
 | `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `PlayQueryBoundary` + `PlayScene` | Nest read first (401/404/503 propagate), then seed Query + hydrate; `loading`/`error`/`not-found` |
 | `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `LiveStoryList` / `DraftList` | SSR `prefetchInfiniteQuery` + hydrate; `loading`/`error` |
 | `/chamber` | [(authenticated)/chamber/page.tsx]((authenticated)/chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |

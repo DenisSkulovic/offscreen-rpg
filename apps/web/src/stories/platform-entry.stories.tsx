@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { PublicPortal } from '@/src/features/public-portal/public-portal';
 import { StoryDemo } from '../../app/demo/story-demo';
 import { SignInButton } from '@/src/features/session/sign-in-button';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
-import { DraftList } from '@/src/features/stories/draft-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
+import { DraftList } from '@/src/features/stories/library/draft-list';
 import {
   emptyDraftsHandlers,
   emptyStoriesHandlers,

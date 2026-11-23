@@ -1,54 +1,35 @@
-# Play | source ownership and lifecycle map
+# Play feature map
 
-**First look:** `PlayScene` reads one viewer/story-keyed TanStack Query snapshot (`playStorySnapshotQueryOptions`: SSE-aware pending `refetchInterval`, hidden-tab pause, W03 write gate) and submits **frozen** Play intents through `useMutation` (retry 0). Live committed-view hints arrive via `useStoryLiveUpdates` (one EventSource per viewed story → scoped `invalidateQueries` only). Campaign UI is composed under `model/` (pure pace + projections), `api/` (commands), and `ui/` (status/activity/offer/history/records). Resolution recovery uses sessionStorage + W19 receipt GET; never auto-POSTs on mount. Background GET failure shows Refresh, never a command.
-**Start:** [PlayScene](view.tsx) → [useStoryLiveUpdates](use-story-live-updates.ts) + [useResolutionCommand](use-resolution-command.ts) / [useControlCommand](use-control-command.ts) → [writeStorySnapshot](../../shared/api/story-snapshot-write.ts) → Nest stories endpoints. **Do not infer game mechanics or provider success in React.**
-**Source basis:** post-W17 `main`; recheck symbols before editing. **Execution:** selected W07/W11 Change governs future edits; this README is a code-navigation map, not permission.
+**Entry:** [`PlayScene`](view.tsx) — one viewer/story TanStack Query snapshot (`playStorySnapshotQueryOptions`), live hints via [`useStoryLiveUpdates`](use-story-live-updates.ts) (SSE → scoped invalidate → GET), frozen choice/control mutations (retry 0), sessionStorage resolution recovery, and composition into [`StoryFrame`](ui/story-frame.tsx).
 
-## Owner map: question → actual symbol
+## Layout
 
-| When changing… | Current source owner | Follow only if needed |
-| --- | --- | --- |
-| Play route, authenticated initial HTML | [server PlayPage](../../../app/(authenticated)/play/[id]/page.tsx) | `readNestJson` then [seedAuthorizedQuery](../../server/seed-authorized-query.ts) + `HydrationBoundary` + [PlayQueryBoundary](play-query-boundary.tsx); never Nest-read inside `prefetchQuery` queryFn |
-| Initial / thrown read recovery | [PlayScene](view.tsx) + [RouteRecoveryPanel](../recovery/route-recovery.tsx) | 401 sign-in, 404 unavailable, 503 retry; never auto-PUT |
-| Scene selection and status | [model/play-status](model/play-status.ts): `resolutionMessage` and `stageStatusLabel`; [PlayScene](view.tsx) only displays them | [story snapshot schema](../../../../../packages/contracts/src/stories.ts) distinguishes `revision`, `viewVersion`, `resolution.version`. Uncertain usage is never labeled settled |
-| Current snapshot refresh/merge | [playStorySnapshotQueryOptions](../../shared/api/story-snapshot-query.ts) + [storyNeedsPendingRefresh](../../shared/api/story-pending-refresh.ts) → `writeStorySnapshot` | [useStoryLiveUpdates](use-story-live-updates.ts) + [openStoryUpdateStream](../../shared/api/story-update-stream.ts): hint → invalidate → GET; 30s safety / 2s fallback |
-| Live SSE invalidation | [useStoryLiveUpdates](use-story-live-updates.ts) | Same-origin `/api/stories/:id/updates`; never writes hint fields as Query state |
-| Single choice / resolution recovery | [useResolutionCommand](use-resolution-command.ts) + [intent reducer](play-command-intent.ts) + [session envelope](../../shared/api/resolution-intent-store.ts) | Nest `PUT .../resolutions/:operationId` **202**; `GET .../receipt` (W19) before user retry |
-| Timed-wait control | [useControlCommand](use-control-command.ts) | Nest `PUT /:id/controls/:operationId` **200**. [JourneyTimingNotice](ui/journey-timing-notice.tsx) is text and a button only; PlayScene still captures `scene.current.id`, `controlRevision`, and `journeyAction` |
-| Campaign commands | [api/use-campaign-command](api/use-campaign-command.ts): frozen URL/body `useMutation` | [ui/CampaignPlay](ui/campaign-play.tsx); statuses vary |
-| Shared pace catalogue | [model/pace-options](model/pace-options.ts) | Opening Start imports this pure module, not Play UI |
-| Offer path local navigation | [model/use-offer-path](model/use-offer-path.ts) + [ui/campaign-offer](ui/campaign-offer.tsx) | Resets on offer id change; must not clear command retry |
-| Character, holds, receipts (UX08) | [ui/campaign-status](ui/campaign-status.tsx) / [activity](ui/campaign-activity.tsx) / [records](ui/campaign-records.tsx) | Conditional You/World; ability sheet only when scores exist; projections in [model/campaign-projections](model/campaign-projections.ts) |
-| Storyteller refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Distinct from Play choice envelope; no automatic charged retry |
-| Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | RHF edit session keyed by story; Query catalogue/presets/history; frozen preset save |
-| Read-only chronology (BOOK02) | [StoryHistoryView](history.tsx) + [storyHistoryInfiniteOptions](../../shared/api/story-history-query.ts); [CampaignHistory](ui/campaign-history.tsx) | Numeric `before`; viewer+story infinite key; explicit open/reset. Overview rows plus one original passage. Previous/next stay inside the loaded set. No “since you left” without a seen cursor |
-| Living Book shell (BOOK01) | [ui/story-frame](ui/story-frame.tsx) + scoped [ui/story-frame.css](ui/story-frame.css); composed by [PlayScene](view.tsx) | Presentation only. One flowing book leaf. Contents links switch `#story-frame-now` and `#story-journal`. Existing [StoryHistoryView](history.tsx) is the Journal body. Settings and technical details stay in the quiet Details disclosure. |
-| Book composition (UI03) | [book-surface.tsx](ui/book-surface.tsx), [narrative-flow.tsx](ui/narrative-flow.tsx), and [decision-group.tsx](ui/decision-group.tsx) inside [story-frame.tsx](ui/story-frame.tsx) | The leaf, the published passage, and the current options are separate. History does not receive a choice callback. PlayScene still owns the query and the command. |
-| Book contents (UI04) | [book-contents.tsx](ui/book-contents.tsx) in [story-frame.tsx](ui/story-frame.tsx) | Stories, Now, and Journal open from Contents. A closed menu is not a tab row. `#story-journal` still selects the journal leaf. Details stay in their own disclosure. |
-| Semantic tokens (UI01) | [tokens.css](../../shared/design/tokens.css) loaded by [app/style.css](../../../app/style.css); Play aliases in [ui/story-frame.css](ui/story-frame.css) | Scene inline style may set chrome, stage, option surface, vignette, and texture. It does not assign reader ink, focus, action, or system status. |
-| Shared refresh notice (UI02) | [system-notice.tsx](../../shared/ui/system-notice.tsx) and [action.tsx](../../shared/ui/action.tsx) in [view.tsx](view.tsx) | Snapshot refresh is a quiet platform action. It calls `refetchSnapshot` and does not submit a choice. Intention chips and frozen retry stay in PlayScene. Pause/Resume stay in [JourneyTimingNotice](ui/journey-timing-notice.tsx) and still call the parent control callback. |
-| Optional scene presentation (PX01–PX04) | [presentation/](presentation) resolver + [ui/intention-choice](ui/intention-choice.tsx), [ui/narrative-passage](ui/narrative-passage.tsx), [ui/scene-media](ui/scene-media.tsx) | Fixture/Storybook only. Live Play passes no document. Decoration cannot change commands. |
-| Intention grammar (UX03) | [ui/campaign-offer](ui/campaign-offer.tsx) + `story-frame__intention--explore` / `--commit` | Explore/Back/stage: no command; commit uses frozen `command.send('actions', …)`. Successor planner stays secondary until UX12. |
-| Commitment / hold truth (UX04) | [ui/campaign-activity](ui/campaign-activity.tsx), [ui/campaign-status](ui/campaign-status.tsx), `activityConditionLabel` | Contribution fractions and wait durations only; completion-pending ≠ finished; pause/resume only via admitted controls. |
+| Area | Role |
+| --- | --- |
+| **Top-level** | `view.tsx`, `play-query-boundary.tsx`, command hooks (`use-resolution-command`, `use-control-command`), `resolution-recovery.tsx`, `campaign-settings.tsx`, `history.tsx`, `play-command-intent.ts` |
+| [`api/`](api) | Campaign transport — [`use-campaign-command.ts`](api/use-campaign-command.ts), [`campaign-command.ts`](api/campaign-command.ts) |
+| [`model/`](model) | Pure projections and labels — `play-status`, `campaign-projections`, `pace-options`, `live-presentation`, `use-offer-path` |
+| [`presentation/`](presentation) | Appearance directive resolve/parse (live path: `model/live-presentation.ts` → `presentation/resolve.ts`) |
+| [`ui/`](ui) | Book shell (`story-frame`, book surface/contents), campaign panels, journey timing, intention/narrative/scene-media |
 
-## One useful command path
+**Route:** [`app/(authenticated)/play/[id]/page.tsx`](../../../app/(authenticated)/play/[id]/page.tsx) seeds Query; Play does not Nest-read inside `prefetchQuery` queryFn.
 
-```text
-URL /play/:id
-  -> PlayPage Nest read (route policy) + seedAuthorizedQuery + HydrationBoundary
-  -> PlayScene useQuery + useResolutionCommand
-  -> user chooses -> sync capture lock, then freeze envelope (UUID/body/digest) in sessionStorage
-  -> useMutation PUT /resolutions/:operationId (retry:0); writeStorySnapshot on 202
-  -> reload: load envelope -> GET receipt + story first; user may retry same frozen body only
-  -> useStoryLiveUpdates EventSource → invalidate scoped snapshot on open/hint (GET only)
-  -> Query pending refetchInterval (30s if SSE healthy, else 2s; not while hidden) → writeStorySnapshot until settlement
-  -> clear envelope when resolution leaves snapshot
-```
+## Data and commands (stay in owners)
 
-## Tests and exit gates
+- Snapshot merge: [`story-snapshot-query`](../../shared/api/story-snapshot-query.ts) + `writeStorySnapshot`; live stream in `use-story-live-updates`.
+- Choice envelope + receipt GET: `use-resolution-command` + `resolution-intent-store`; never auto-POST on remount.
+- Timed wait: `use-control-command`; [`JourneyTimingNotice`](ui/journey-timing-notice.tsx) is presentation + callback only.
+- Campaign UX: [`CampaignPlay`](ui/campaign-play.tsx) + `api/use-campaign-command`; offer path in `model/use-offer-path` + `ui/campaign-offer`.
+- Stage status strings: `model/play-status` (`resolutionMessage`, `stageStatusLabel`); `PlayScene` displays only.
 
-- **Fast proof:** `pnpm test:fast` — scene choice, stale poll, settlement/hide stop, 503 refresh-without-PUT, lost-ACK remount without auto-POST, SSE hint GET + foreign/dupe negatives, offer path staging, offer-change keeps command retry, preview pace import isolation.
-- **Real Nest receipt/idempotency:** W19 `pnpm test:focus -- story-resolution` when authorized; not an inner-loop check.
-- **Extend context only for:** client/identity contract; application story owner map for exactly-once; playbook for CI/perf.
+## `PlayScene` render order
 
-**Maintenance trigger:** if Change moves source owners, API status, snapshot identity/ordering or command recovery, update this map in that Change.
+1. Missing snapshot — route recovery or loading placeholder
+2. `SessionRefresh` + `StoryFrame` (passage, legacy intentions, presentation)
+3. `playJournalSection` — journal leaf
+4. `playStageExtras` — journey control, frozen retries, status line, snapshot refresh notice, resolution recovery, campaign surface
+5. `playFrameDetails` — settings + technical disclosure
+
+## Fast checks
+
+`pnpm test:fast` — scene choice, SSE/poll, recovery, offer path, story-frame book tests under `ui/`. Update this map when moving owners or recovery contracts.

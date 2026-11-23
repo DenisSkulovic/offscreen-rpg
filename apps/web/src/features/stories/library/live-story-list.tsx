@@ -6,7 +6,7 @@ import { flattenUniqueById } from '@/src/shared/api/list-page';
 import { storiesListInfiniteOptions } from '@/src/shared/api/stories-list-query';
 import { Action } from '@/src/shared/ui/action';
 import { SystemNotice } from '@/src/shared/ui/system-notice';
-import './stories-library.css';
+import '../stories-library.css';
 
 function featuredKicker(total: number): string {
   if (total === 1) return 'Your story';

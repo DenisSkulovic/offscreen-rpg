@@ -1,8 +1,8 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { storyListSchema } from '@offscreen/contracts/stories';
 import { draftListSchema } from '@offscreen/contracts/drafts';
-import { LiveStoryList } from '@/src/features/stories/live-story-list';
-import { DraftList } from '@/src/features/stories/draft-list';
+import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
+import { DraftList } from '@/src/features/stories/library/draft-list';
 import Link from 'next/link';
 import { requireViewer } from '@/src/server/viewer';
 import { readNestJson } from '@/src/server/nest-reader';
@@ -12,7 +12,7 @@ import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { storiesListInfiniteOptions } from '@/src/shared/api/stories-list-query';
 import { draftsListInfiniteOptions } from '@/src/shared/api/drafts-list-query';
 import '@/src/features/stories/stories-library.css';
-import { StoriesHomeActions } from '@/src/features/stories/stories-home-actions';
+import { StoriesHomeActions } from '@/src/features/stories/library/stories-home-actions';
 
 export default async function Stories() {
   const viewer = await requireViewer();

@@ -3,7 +3,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
 import { requireViewer } from '@/src/server/viewer';
 import { readNestJson } from '@/src/server/nest-reader';
-import { DraftEditor } from '@/src/features/stories/draft-editor';
+import { DraftEditor } from '@/src/features/stories/drafts/draft-editor';
 import { mechanicalContentCatalogueSchema } from '@offscreen/contracts/openings';
 import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { draftQueryOptions } from '@/src/shared/api/draft-query';
