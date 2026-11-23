@@ -1,6 +1,6 @@
 # DXK10 | Demand-driven development environment lifecycle
 
-**State:** PROPOSED BACKLOG, PLANNER-HELD; not Cursor-ready or commissioned. **Integration target:** `undertaking/storyteller-workshop`. **Owner:** developer infrastructure. **Dependency:** preserve current DXK09 implementation/proof; no concurrent edits to lifecycle tools. **Source basis:** inspected integration snapshot `955e904b26c9` on 2026-11-23; DXK09 implementation revisions `9f1eab1c` and `6328a427` and further local changes were described in Cursor receipts but were **not accessible in remote GitHub**, and must be reconciled on promotion.
+**State:** PROPOSED BACKLOG, PLANNER-HELD; not Cursor-ready or commissioned. **Selected technical contract:** [developer environments](../../../../docs/technical/platform/developer-environments.md) and [human-first view](../../../../docs/architecture/10-developer-environments.md). **Integration target:** `undertaking/storyteller-workshop`. **Owner:** developer infrastructure. **Dependency:** preserve current DXK09 implementation/proof; no concurrent edits to lifecycle tools. **Source basis:** inspected integration snapshot `955e904b26c9` on 2026-11-23; DXK09 implementation revisions `9f1eab1c` and `6328a427` and further local changes were described in Cursor receipts but were **not accessible in remote GitHub**, and must be reconciled on promotion.
 
 ## Owner decision / user experience
 
