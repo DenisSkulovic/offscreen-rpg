@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**2026-11-24 Library navigation:** [LIB06 bounded Story Library navigation](open/2026-11-24--lib06-story-library-navigation-correctness/CHANGE.md) is prepared for execution after integrated LIB04-A. [LIB07 bounded batch reads](backlog/agent-runtime/2026-11-24--lib07-bounded-library-batch-read/CHANGE.md) is queued after LIB06. [LIB05 byte storage](backlog/platform-operations/2026-11-23--lib05-generic-object-storage-boundary/CHANGE.md) remains after integrated LIB03. Nothing here authorizes launching them while predecessors own the source.
+**2026-11-24 Library navigation:** [LIB06 bounded Story Library navigation](archive/2026-11/storyteller/2026-11-24--lib06-story-library-navigation-correctness/CHANGE.md) is Done as a source-only scan correction. [LIB07 bounded batch reads](backlog/agent-runtime/2026-11-24--lib07-bounded-library-batch-read/CHANGE.md) is queued after LIB06. [LIB05 byte storage](backlog/platform-operations/2026-11-23--lib05-generic-object-storage-boundary/CHANGE.md) remains after integrated LIB03. Nothing here authorizes launching them while predecessors own the source.
 
 **2026-11-23 Library/Documents comprehension sequence:** [LIB01 Library / Shelf vocabulary](archive/2026-11/storyteller/2026-11-23--lib01-library-shelf-vocabulary/CHANGE.md) is Done as documentation only. Shelves remain target vocabulary. [LIB02 checkpoint schema decomposition](archive/2026-11/storyteller/2026-11-23--lib02-documents-schema-decomposition/CHANGE.md) is Done as an internal module split with the same public schema exports. This sequence does not change `work/QUEUE.md`. [LIB03 content-package ownership](archive/2026-11/storyteller/2026-11-23--lib03-content-package-ownership/CHANGE.md) is Done as a source-only package move. [LIB04-A pinned shelf navigation](archive/2026-11/storyteller/2026-11-23--lib04a-pinned-reference-shelf-navigation/CHANGE.md) is Done as a source-only helper. [LIB04-B/C](backlog/agent-runtime/2026-11-23--lib04-mounted-reference-libraries/CHANGE.md) remain planner-held. [LIB05 object storage](backlog/platform-operations/2026-11-23--lib05-generic-object-storage-boundary/CHANGE.md) follows integrated LIB03.
 
@@ -8,7 +8,7 @@
 
 **2026-11-23:** [DXK10-A registry-only reserve and explicit attach](archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is Done. No cluster startup or existing tenant takeover was performed. DXK10-B/C remain planner-held. HR02 independently owns Web source paths.
 
-**[Open](open/): 12 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
+**[Open](open/): 10 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
 
 **[Backlog](backlog/README.md): 32 deferred or future Changes in five domain groups.** DXK08 was promoted on 2026-11-22 after fresh source/readiness reconciliation. No backlog Change may be treated as Cursor-ready solely from a previous status label; promotion requires a fresh source/readiness check and explicit owner commission.
 

@@ -1,6 +1,27 @@
 # LIB06 | Complete and bounded Story Library navigation
 
-**State:** READY ON PREDECESSOR INTEGRATION, NOT YET COMMISSIONED. Baseline: `undertaking/storyteller-workshop@ed0837d0531be4050b40d9b2485b5759ef479fea`. Wait until LIB04-A integrates; then recheck current HEAD and avoid any overlapping source. Target: `undertaking/storyteller-workshop`. Source-only; no cluster, SQL, provider or release writes.
+**State: Done.** Source-only. LIB04-A was already integrated at `undertaking/storyteller-workshop@7e2b554fbaaede28cbdbbf536c44c44a9ac511e5` before this work. Planning baseline remains `ed0837d0531be4050b40d9b2485b5759ef479fea`. Target: `undertaking/storyteller-workshop`. No cluster, SQL, provider, or release writes.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta and reason | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| packages/story-engine/src/storyteller/library-navigation.ts | Code | changed: v2 browse and find walk raw trie pages with a 512-entry cap and keep the existing public signatures | createPinnedLibraryNavigation on change/lib06-story-library-navigation-correctness | source-only | A denied authorize performs zero root or node reads. A v2 root missing trie hashes is corrupt-source and does not fall through to a v1 manifest. The first 512 private paths are absent from the page text | packages/story-engine/README.md |
+| tools/api-integration/test/library-navigation-bounded.test.ts | Code | changed: injected trie and v1 manifest proof | node --test tools/api-integration/dist/test/library-navigation-bounded.test.js passed 5/5, with the existing navigation tests 13/13 | source-only | Continuation after 512 private entries reaches the later visible path. A stale v1 revision is stale-root | No Writer tool test was added |
+| packages/story-engine/README.md | Code | changed: the question table names the bounded library helper | packages/story-engine/README.md | reviewed | The row does not claim a new route or a Writer schema change | The existing storyteller wildcard export was reused |
+| docs/product | Product | unchanged because no player-facing behavior, route, or story rule changed | No product page was edited | reviewed | A library browse is not a play action | work/QUEUE.md was not the selector for this commission |
+| docs/technical/storyteller/operation-and-controller.md | Technical | unchanged because Writer mission schemas, tool grants, SQL, and Temporal were not edited | writer-library-tools.ts was not edited | reviewed | Full @offscreen/api-integration tsc is still blocked by missing sibling package outputs and was not used as acceptance | LIB07 stays backlog |
+
+Declared paths:
+
+- packages/story-engine/src/storyteller/library-navigation.ts because browse and find now share a bounded raw scan
+- packages/story-engine/README.md because discoverability names that helper
+- tools/api-integration/test/library-navigation-bounded.test.ts because the proof is injected
+- STATUS.md because demonstrated source now includes bounded v2 navigation and still excludes live authorization
+- work/changes/README.md because the catalog must point at the archive
+- work/undertakings/storyteller-workshop/OVERVIEW.md because the undertaking status names this slice as integrated source
+
+Receipt: the navigation file typechecked with the Story Engine strict compiler settings. `@offscreen/story-engine` full `tsc --noEmit` was not a clean acceptance: that project still fails on unrelated missing `@offscreen/db`, `@offscreen/game`, and `@offscreen/contracts` outputs. Changed-file ESLint quality passed. Focused tests 18/18. `pnpm --filter @offscreen/api-integration build` was not a clean acceptance for the same missing sibling outputs. The new test file was compiled alone with NodeNext settings and passed. No database, cluster, or provider call. A non-visible continuation is an opaque string so the private path is not in the response; a plain path continuation is still accepted.
 
 ## Why
 `packages/story-engine/src/storyteller/library-navigation.ts` currently pages only the first 128 entries in `entriesForCurrentAccess()` for v2, making its results silently incomplete. `find()` loops through `browse()` with no global page-scan budget. v2 `browse()` also filters an untrusted raw page after selecting `pageSize`, so pages may be sparse even when visible items follow. Source-root lookup and visibility are distinct concepts; fix navigation correctness without changing storage schema, Writer grants or any mission schema.
