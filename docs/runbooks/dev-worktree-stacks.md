@@ -2,7 +2,7 @@
 
 **Owns:** executable dev-slot commands, operational safety and failure diagnosis. **For a two-minute diagram**, read [developer environments explained](../architecture/10-developer-environments.md); **for technical guarantees**, read [developer environment contract](../technical/platform/developer-environments.md). Evidence lives in [DXK09 PROOF](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md), not in this runbook.
 
-**Current checkpoint: 2026-11-23.** `pnpm dev`, `dev:new`, `dev:status` and `dev:stop` are present in source. Tilt is the sole active Deployment image writer. One owned slot passed current-generation acceptance: six READY roles, Web and API live sync, a TypeScript error then recovery, one relay workflow task, and a park that kept tenant UIDs. **This is not unattended agent self-service yet.** A brand-new worktree, four simultaneous stacks, browser OAuth, and release-lab acceptance remain unproven.
+**Current checkpoint: 2026-11-23.** `pnpm dev`, `dev:new`, `dev:status` and `dev:stop` are present in source. Tilt is the sole active Deployment image writer. One owned slot passed current-generation acceptance: six READY roles, Web and API live sync, a TypeScript error then recovery, one relay workflow task, and a park that kept tenant UIDs. One brand-new worktree has now passed ordinary `pnpm dev` / `dev:status` / `dev:stop` on `dev-9` at `e3fa10b7`: six READY roles, Web and API HTTP 200, and a park that left foreign slots unchanged. Four simultaneous stacks, browser OAuth, release-lab acceptance, and a completed story remain unproven. `game-control` can still log `RangeError: Invalid atomic access index` while Kubernetes reports it ready.
 
 **Read only what you need:** [commands](#what-works-on-the-integrated-branch) · [safe admission](#resource-etiquette-and-failed-admission-effective-immediately) · [what belongs to which cluster](#actual-targets-not-interchangeable) · [ownership/leases](#local-ownership-and-lease-model) · [DXK10 target](#selected-next-ownership-contract-2026-11-23--not-yet-implemented).
 
@@ -32,7 +32,7 @@ Worktrees, Changes, environment identities and running application workloads are
 
 For a commissioned Change, first follow [AGENTS.md](../../AGENTS.md), its `CHANGE.md`/`TASKS.md`, and the linked-worktree branch rules. Use the **worktree-root developer command** when T05 has passed live proof and the command reports that it targets `kind-offscreen-dev`; use the scripts' normal `status` and `stop` commands instead of manually choosing Pods, ports, credentials or namespaces. If the command is absent or reports NOT READY, treat that as a platform gate: report the exact stage; do not silently fall back to the release lab, Compose, a global Tilt process, hard-coded dev-1 or destructive recreation.
 
-**Integrated implementation note:** the root CLI calls `scripts/repo-tools/dev-tilt.mjs`, backed by v2 environment records and slot-aware resources. Image preparation returns a content-derived ref and does not patch Deployments. One owned slot has passed current-generation readiness. A brand-new unattended worktree has not. Do not commission three blind HR agents from the owned-slot receipt alone.
+**Integrated implementation note:** the root CLI calls `scripts/repo-tools/dev-tilt.mjs`, backed by v2 environment records and slot-aware resources. Image preparation returns a content-derived ref and does not patch Deployments. One owned slot and one brand-new worktree have passed current-generation readiness. That does not by itself authorize HR01–HR03 or four-stack capacity.
 
 ## Actual targets, not interchangeable
 
@@ -68,7 +68,7 @@ The source for allocation/registration is `scripts/repo-tools/dev-worktree-{allo
 - **Retire:** separately review closed/archived Change, ownership, data retention and active dependents. Implemented retirement should be observable and idempotent, not a side effect of command failure.
 - **Concurrency:** four full stacks is the target host acceptance workload, **not** an allocator ceiling. Admit based on measured capacity, not a hardcoded slot count.
 
-**Gate before HR01–HR03:** owned-slot freshness is proven: `pnpm dev:status` reported six current-generation READY lines, a Web edit and an API edit reached the running processes, a TypeScript error became `api NOT READY compile_error` and recovered, and the relay executed one provider-free workflow task. HR01–HR03 stay blocked. The remaining dispatch prerequisite is one new worktree started only with `pnpm dev` / `dev:status` / `dev:stop`, with no manual SQL, S3, Temporal, or port-forward steps. Four full-stack acceptance, browser OAuth, release-lab acceptance, and a completed provider-free story remain separate and unproven.
+**Gate before HR01–HR03:** owned-slot freshness is proven: `pnpm dev:status` reported six current-generation READY lines, a Web edit and an API edit reached the running processes, a TypeScript error became `api NOT READY compile_error` and recovered, and the relay executed one provider-free workflow task. The new-worktree dispatch prerequisite passed on `dev-9` at `e3fa10b7`. HR01–HR03 were not started from that receipt. Four full-stack acceptance, browser OAuth, release-lab acceptance, and a completed provider-free story remain separate and unproven.
 
 ## Source navigation
 

@@ -367,3 +367,22 @@ Relay namespace `offscreen-dev-8`, queue `offscreen-local`. Workflow `dxk09-rela
 `pnpm dev:stop` exited 0. All six `offscreen-dev-8` desired replicas were 0. Listeners `13128` and `13130` were closed. Secret UIDs stayed `dev-8-app` `a2063742-e7d7-40c1-a26c-1c875672fc4e`, `dev-8-run-auth` `48097ed4-5385-40f8-8ef8-d49fd92e41f9`, `dev-8-s3` `63b3298c-e452-482a-9a48-6a2c246debc7`. `offscreen-dev-1` stayed desired 0 on its previous images, including `offscreen-dev-workspace:tilt-build-1795394042` for web.
 
 Four-stack capacity, browser OAuth, release-lab acceptance, a brand-new unattended worktree, and a completed provider-free story were not run. HR01–HR03 stay blocked on that new-worktree prerequisite. DXK09 is not archived. DXK10 was not implemented. Memory admission was not changed.
+
+## Unattended cold worktree at `e3fa10b7` (2026-11-23) — lifecycle gate passed
+
+Detached worktree `/home/dskul/projects/offscreen-rpg-dxk09-cold-gate` at `e3fa10b7`. No manual namespace, SQL, S3, Temporal, or port-forward setup. `pnpm dev` began `2026-11-23T17:29:33Z`, selected new slot `dev-9`, and recorded its Tilt session at `2026-11-23T17:35:57Z` (`http://127.0.0.1:13134/`). Reconciliation before Tilt was about 6 minutes 24 seconds. The union image `offscreen-dev-workspace:union-af00da505c96e8bc` already existed (`created 2026-11-23T16:25:11Z`, 1.81GB). Every Tilt custom build printed `builds=0` for that digest. Docker stage durations for a miss were not observed. Kind-load durations were not printed. Tilt's first four role steps took 6.73s, 6.67s, 5.35s, and 6.14s; executor and relay used cached images.
+
+`pnpm dev:status` while serving:
+
+- `web READY dev_server_serving docker.io/library/offscreen-dev-workspace:union-af00da505c96e8bc`
+- `api READY loaded_matches_desired f379a16f60e2f50991507708cc6daa9b9e5709ee3554f100760cb08af5f7967b`
+- `authority READY loaded_matches_desired 9c9d04db56f59fdac28e9ffba30b479557cc6820cde1c2773b7b644d0b93ed65`
+- `control READY loaded_matches_desired e06f92888247a8a25445835cda4fc3f0fb4064be9982de3eeb6bcb1a5b99cecd`
+- `executor READY loaded_matches_desired 7405205aa9731b6af83323b95d7985776ceee3048800fdf8840def2c3ebb4049`
+- `relay READY loaded_matches_desired 3d282a26b6d4897c51a7048e03303311436babbc655d42113a07337efd53802a`
+
+`http://127.0.0.1:13132/sign-in` returned 200. `http://127.0.0.1:13132/api/health/ready` returned 200 `{"status":"ok"}`. The prior `dev-8` live-edit, compile-error, and relay-task receipts were not repeated. `game-control` again logged `RangeError: Invalid atomic access index` while status stayed `loaded_matches_desired`. That crash remains an outstanding follow-up. It is not a Temporal redesign.
+
+`pnpm dev:stop` exited 0. No `offscreen-dev-1` through `offscreen-dev-9` deployment kept a desired replica above 0. `dev-8` web stayed `offscreen-dev-workspace:union-21b8a1688220dcd5` at 0 replicas. `dev-1` web stayed `offscreen-dev-workspace:tilt-build-1795394042` at 0. New tenant secrets remained: `dev-9-app` `28ea0a34-dd6b-4b9f-a060-5d4be8356c2c`, `dev-9-run-auth` `d9f93a66-9471-4212-a3be-059ea52bfef3`, `dev-9-s3` `096d99aa-2f3e-415d-8412-224a5f470d3c`.
+
+This accepts the ordinary unattended start/status/stop milestone. It does not accept four-stack capacity, browser OAuth, release-lab acceptance, or a completed provider-free story. Those stay open, so DXK09 is not archived. HR01–HR03 were not started. DXK10 was not implemented.

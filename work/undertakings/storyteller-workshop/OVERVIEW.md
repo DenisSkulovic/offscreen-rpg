@@ -1,7 +1,7 @@
 # Storyteller Workshop | reality check and finish line
 
 
-**Human summary · 2026-11-23 · integration HEAD `d9a2c11e`.** The game has meaningful foundations, but is not yet a proven end-to-end Storyteller product. We are improving a development platform so several Cursor coding agents can work without interfering. Two independent full developer stacks and isolated stopping have been observed; ordinary cold startup and current-image readiness are **not yet accepted**. The latest local DXK09 branch `e93f33c7` found competing Tilt and image-loader Deployment writes; **it is not integrated**. Read the [visual developer-environment guide](../../../docs/architecture/10-developer-environments.md) before the technical [runbook](../../../docs/runbooks/dev-worktree-stacks.md).
+**Human summary · 2026-11-23 · integration HEAD `e3fa10b7`.** The game has meaningful foundations, but is not yet a proven end-to-end Storyteller product. One new worktree can start, report six current roles, serve Web and API, and park without touching another slot. Four simultaneous stacks, browser sign-in, release-lab acceptance, and a completed story are still unproven. `game-control` can still crash with an atomic-access error while it looks ready.
 
 ```mermaid
 flowchart LR
@@ -10,7 +10,7 @@ flowchart LR
   C --> D["Use it · API, Web and DB refactors and actual Storyteller development"]
 ```
 
-**Current bottleneck:** developer-platform reliability, not a need for more speculative infrastructure. **Near-term completion condition:** an ordinary worktree can start the requested runtime, show current loaded code, make a Web/API edit, fail closed on bad compilation, and park cleanly without affecting another slot. Four simultaneous full stacks, browser OAuth, release-lab and a real end-to-end story remain separate unfinished proofs. [Actual gate](NEXT-WAVE.md) · [DXK09 proof](../../changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) · [DXK10 selected future](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
+**Current bottleneck:** the developer loop is usable for one new worktree, and it is still slow and incomplete. **Near-term completion condition for the remaining DXK09 proofs:** four simultaneous full stacks, browser OAuth, release-lab acceptance, and a real end-to-end story. The single-worktree start/status/stop path is accepted and is not one of those proofs. [Actual gate](NEXT-WAVE.md) · [DXK09 proof](../../changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) · [DXK10 selected future](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
 
 ## Progress, recalibrated to the real end state
 
