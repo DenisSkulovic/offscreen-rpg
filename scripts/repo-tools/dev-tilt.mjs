@@ -411,6 +411,30 @@ export function canonicalDockerImageReference(reference) {
   return `${registry}/${name}:${tag}${digest ? `@${digest}` : ''}`;
 }
 
+/**
+ * Digests that identify one CRI image record. `status.id` is the config id.
+ * `repoDigests` are the manifest ids Kubernetes stores on a running container.
+ * Callers may match either form. An OCI index digest is not included.
+ * @param {string} inspectText
+ * @returns {string[]}
+ */
+export function acceptedCriImageIds(inspectText) {
+  let parsed;
+  try {
+    parsed = JSON.parse(inspectText);
+  } catch {
+    return [];
+  }
+  const ids = [];
+  const statusId = parsed?.status?.id;
+  if (typeof statusId === 'string' && /^sha256:[a-f0-9]{64}$/.test(statusId)) ids.push(statusId);
+  for (const ref of parsed?.status?.repoDigests ?? []) {
+    const digest = String(ref).match(/sha256:[a-f0-9]{64}/)?.[0];
+    if (digest && !ids.includes(digest)) ids.push(digest);
+  }
+  return ids;
+}
+
 export function assessWebDevServerReadiness(input) {
   const pod = input.pod ?? null;
   if (!pod?.ready) {
@@ -421,18 +445,19 @@ export function assessWebDevServerReadiness(input) {
   }
   const expectedImage = canonicalDockerImageReference(input.expectedImage);
   const runningImage = canonicalDockerImageReference(pod.image);
-  if (!expectedImage || expectedImage !== runningImage) {
-    return { ready: false, reason: 'image_mismatch', currentGeneration: null };
-  }
   const accepted = input.expectedConfigIds
     ?? (input.expectedConfigId ? [input.expectedConfigId] : null);
-  if (accepted) {
-    const runningConfig = typeof pod.imageId === 'string'
-      ? (pod.imageId.match(/sha256:[a-f0-9]{64}/) ?? [])[0] ?? null
-      : null;
-    if (!runningConfig || !accepted.includes(runningConfig)) {
-      return { ready: false, reason: 'image_mismatch', currentGeneration: null };
-    }
+  const runningConfig = typeof pod.imageId === 'string'
+    ? (pod.imageId.match(/sha256:[a-f0-9]{64}/) ?? [])[0] ?? null
+    : null;
+  const identityMatches = Boolean(accepted && runningConfig && accepted.includes(runningConfig));
+  if (accepted && !identityMatches) {
+    return { ready: false, reason: 'image_mismatch', currentGeneration: null };
+  }
+  // Containerd may report another tag on the same image. A matching CRI
+  // digest is the identity. Without one, the tag strings still have to agree.
+  if (!identityMatches && (!expectedImage || expectedImage !== runningImage)) {
+    return { ready: false, reason: 'image_mismatch', currentGeneration: null };
   }
   if (typeof input.httpStatus !== 'number' || input.httpStatus < 200 || input.httpStatus >= 300) {
     return { ready: false, reason: 'http_unsuccessful', currentGeneration: null };
@@ -1289,12 +1314,12 @@ export function printDevStatus(worktree, deps = {}) {
           run: deps.execKubectl ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' })),
           resolveImageIds: (image) => {
             const accepted = [];
-            const host = spawnSync('docker', ['image', 'inspect', image, '--format', '{{.Id}}'], { encoding: 'utf8' });
-            if (host.status === 0) accepted.push(String(host.stdout).trim());
             for (const node of ['offscreen-dev-worker', 'offscreen-dev-control-plane']) {
               const cri = spawnSync('docker', ['exec', node, 'crictl', 'inspecti', `docker.io/library/${image}`], { encoding: 'utf8' });
-              const match = String(cri.stdout ?? '').match(/"id":\s*"(sha256:[a-f0-9]{64})"/);
-              if (match) accepted.push(match[1]);
+              if (cri.status !== 0) continue;
+              for (const id of acceptedCriImageIds(String(cri.stdout ?? ''))) {
+                if (!accepted.includes(id)) accepted.push(id);
+              }
             }
             return accepted;
           },

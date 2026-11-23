@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  acceptedCriImageIds,
   assessWebDevServerReadiness,
   canonicalDockerImageReference,
   DEV_RUNTIME_FRESHNESS_ROLES,
@@ -13,6 +14,41 @@ const healthy = {
   pod: { ready: true, namespace: 'dev-5', image: 'offscreen-dev:gen' },
   httpStatus: 200,
 };
+
+test('a running pod manifest digest counts only when it is on the current CRI image', () => {
+  const current = 'sha256:3288985929cc8d5ca522f8aeaa20d3f086f11013fb8536a0c63598e52c7fc361';
+  const config = 'sha256:c2a66f034e4780a00179ed92d8c9ab99488f65c3fe08b9f4455683bfd25a9fc7';
+  const stale = 'sha256:052ab7ff652ad53089566a4444fb61c08e2c2e60dabab6c300aa3f7707599dba';
+  const inspect = JSON.stringify({
+    status: { id: config, repoDigests: [`docker.io/library/import-2026-11-23@${current}`] },
+  });
+  const accepted = acceptedCriImageIds(inspect);
+  assert.deepEqual(accepted, [config, current]);
+  const ready = assessWebDevServerReadiness({
+    ...healthy,
+    expectedConfigIds: accepted,
+    pod: { ...healthy.pod, imageId: `docker.io/library/import-2026-11-23@${current}` },
+  });
+  const old = assessWebDevServerReadiness({
+    ...healthy,
+    expectedConfigIds: accepted,
+    pod: { ...healthy.pod, imageId: `docker.io/library/import-2026-11-23@${stale}` },
+  });
+  assert.equal(ready.ready, true);
+  const retagged = assessWebDevServerReadiness({
+    ...healthy,
+    expectedImage: 'offscreen-dev-workspace:tilt-build-1',
+    expectedConfigIds: accepted,
+    pod: {
+      ...healthy.pod,
+      image: 'offscreen-dev-workspace:dev-8-api',
+      imageId: `docker.io/library/import-2026-11-23@${current}`,
+    },
+  });
+  assert.equal(retagged.ready, true);
+  assert.equal(old.ready, false);
+  assert.equal(old.reason, 'image_mismatch');
+});
 
 test('web is ready only for the selected healthy pod, image and HTTP response', () => {
   const status = assessWebDevServerReadiness(healthy);
