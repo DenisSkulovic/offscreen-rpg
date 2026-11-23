@@ -15,6 +15,7 @@ import {
   CONTEXT_NAME,
 } from './stack-preflight.mjs';
 import { evaluateDevLoadedRuntimeReadiness } from '../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
+import { assessOwnedProcess, readProcessStartTicks } from './dev-process-identity.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const LOOPBACK = '127.0.0.1';
@@ -23,6 +24,7 @@ const TILT_PORT = 10350;
 
 /** @typedef {{
  *   pid: number | null,
+ *   processStartTicks?: string | null,
  *   slotId: string,
  *   namespace: string,
  *   gamePort: number,
@@ -70,10 +72,10 @@ export function writeDevSession(worktree, session) {
  * @param {string} worktree
  * @returns {{ hadSession: boolean, signalled: boolean }}
  */
-export function stopDevSession(worktree) {
+export function stopDevSession(worktree, deps = {}) {
   const file = devSessionPath(worktree);
   if (!existsSync(file)) {
-    return { hadSession: false, signalled: false };
+    return { hadSession: false, signalled: false, reason: 'no_session' };
   }
 
   const session = readDevSession(worktree);
@@ -83,14 +85,18 @@ export function stopDevSession(worktree) {
     } catch {
       // ignore
     }
-    return { hadSession: false, signalled: false };
+    return { hadSession: false, signalled: false, reason: 'unreadable_session' };
   }
 
+  const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
+  const ownership = assessOwnedProcess(session, {
+    pidAlive: deps.pidAlive ?? pidAlive,
+    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+  });
   let signalled = false;
-  const pid = Number(session.pid);
-  if (Number.isInteger(pid) && pid > 0 && pidAlive(pid)) {
+  if (ownership.owned) {
     try {
-      process.kill(pid, 'SIGTERM');
+      signal(Number(session.pid), 'SIGTERM');
       signalled = true;
     } catch {
       // ignore
@@ -103,7 +109,7 @@ export function stopDevSession(worktree) {
     // ignore
   }
 
-  return { hadSession: true, signalled };
+  return { hadSession: true, signalled, reason: ownership.reason };
 }
 
 const SLOT_NAMESPACE = /^offscreen-dev-[1-9][0-9]*$/;
@@ -368,23 +374,27 @@ function pidAlive(pid) {
  * @param {string} worktree
  * @returns {{ previousPid: number | null, killedPrevious: boolean }}
  */
-function replaceOwnedDevSessionTilt(worktree) {
+function replaceOwnedDevSessionTilt(worktree, deps = {}) {
   const session = readDevSession(worktree);
   if (!session) {
-    return { previousPid: null, killedPrevious: false };
+    return { previousPid: null, killedPrevious: false, reason: 'no_session' };
   }
-  const pid = Number(session.pid);
-  const killedPrevious = Number.isInteger(pid) && pid > 0 && pidAlive(pid);
-  if (killedPrevious) {
+  const ownership = assessOwnedProcess(session, {
+    pidAlive: deps.pidAlive ?? pidAlive,
+    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+  });
+  const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
+  if (ownership.owned) {
     try {
-      process.kill(pid, 'SIGTERM');
+      signal(Number(session.pid), 'SIGTERM');
     } catch {
       // ignore
     }
   }
   return {
-    previousPid: Number.isInteger(pid) && pid > 0 ? pid : null,
-    killedPrevious: Boolean(killedPrevious),
+    previousPid: ownership.owned ? Number(session.pid) : null,
+    killedPrevious: ownership.owned,
+    reason: ownership.reason,
   };
 }
 
@@ -493,7 +503,11 @@ export async function runDevTiltLaunch(deps = {}) {
   const exitFn = deps.exit ?? ((code) => process.exit(code));
 
   // Drop a tilt this worktree started before deciding a listener is foreign.
-  const { previousPid, killedPrevious } = replaceOwnedDevSessionTilt(worktree);
+  const { previousPid, killedPrevious } = replaceOwnedDevSessionTilt(worktree, {
+    pidAlive: deps.pidAlive ?? pidAlive,
+    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+    signal: deps.signal,
+  });
   if (killedPrevious && previousPid !== null) {
     for (let attempt = 0; attempt < 10; attempt += 1) {
       if (!pidAlive(previousPid)) break;
@@ -594,8 +608,10 @@ export async function runDevTiltLaunch(deps = {}) {
     return;
   }
 
+  const readStart = deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
   writeDevSession(worktree, {
     pid: child.pid,
+    processStartTicks: readStart(child.pid),
     slotId: ownerRecord.slotId,
     namespace: ownerRecord.namespace,
     gamePort,

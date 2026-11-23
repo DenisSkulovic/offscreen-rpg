@@ -511,3 +511,48 @@ test('printDevStatus reports compile_error and exits 2', () => {
   assert.equal(code, 2);
   assert.ok(lines.some((line) => line === 'api NOT READY compile_error'));
 });
+
+test('stop does not signal a reused pid whose start time differs', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-pid-'));
+  writeDevSession(worktree, {
+    pid: 4242,
+    processStartTicks: '100',
+    slotId: 'dev-3',
+    namespace: 'offscreen-dev-3',
+    gamePort: 13108,
+    tiltPort: 13109,
+    startedAt: '2026-11-23T00:00:00.000Z',
+  });
+  /** @type {number[]} */
+  const signalled = [];
+  const result = stopDevSession(worktree, {
+    pidAlive: () => true,
+    readStartTicks: () => '200',
+    signal: (pid) => signalled.push(pid),
+  });
+  assert.equal(result.signalled, false);
+  assert.equal(result.reason, 'start_time_mismatch');
+  assert.deepEqual(signalled, []);
+});
+
+test('stop signals only the process with the recorded start time', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-pid-ok-'));
+  writeDevSession(worktree, {
+    pid: 4242,
+    processStartTicks: '100',
+    slotId: 'dev-3',
+    namespace: 'offscreen-dev-3',
+    gamePort: 13108,
+    tiltPort: 13109,
+    startedAt: '2026-11-23T00:00:00.000Z',
+  });
+  /** @type {number[]} */
+  const signalled = [];
+  const result = stopDevSession(worktree, {
+    pidAlive: () => true,
+    readStartTicks: () => '100',
+    signal: (pid) => signalled.push(pid),
+  });
+  assert.equal(result.signalled, true);
+  assert.deepEqual(signalled, [4242]);
+});
