@@ -373,11 +373,6 @@ export function parkSelectedEnvironment(input) {
     resourceUids: input.owner.resourceUids ?? null,
     ports: input.owner.ports,
   };
-  if (session?.parked === true && !input.owner.lease && desiredAreZero(readDesired(input.owner.namespace))) {
-    return {
-      ok: true, idempotent: true, released: true, signalled: false, scaled: false, reason: 'already_parked', tenantIdentity,
-    };
-  }
   if (!session) {
     return { ok: false, released: false, signalled: false, scaled: false, reason: 'missing_session', tenantIdentity };
   }
@@ -393,20 +388,60 @@ export function parkSelectedEnvironment(input) {
   if (!reservationMatchesSession(input.owner, session)) {
     return { ok: false, released: false, signalled: false, scaled: false, reason: 'foreign_lease', tenantIdentity };
   }
+  if (session?.parked === true && input.portOccupied?.(input.owner.ports)) {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: 'conflicting_listener', tenantIdentity };
+  }
   const assess = assessOwnedProcess(session, input.processDeps);
   if (!assess.owned && assess.reason !== 'not_running' && assess.reason !== 'missing_pid') {
     return { ok: false, released: false, signalled: false, scaled: false, reason: assess.reason, tenantIdentity };
   }
+  if (session?.parked === true && !assess.owned && !input.owner.lease && desiredAreZero(readDesired(input.owner.namespace))) {
+    return {
+      ok: true, idempotent: true, released: true, signalled: false, scaled: false, reason: 'already_parked', tenantIdentity,
+    };
+  }
   const signal = input.signal ?? (() => {});
+  const stoppedProcess = (record) => {
+    const seen = assessOwnedProcess(record, input.processDeps);
+    return !seen.owned && (seen.reason === 'not_running' || seen.reason === 'missing_pid' || seen.reason === 'start_time_mismatch');
+  };
   let signalled = false;
-  if (assess.owned) {
-    signal(Number(session.pid), 'SIGTERM');
+  const targets = [];
+  if (assess.owned) targets.push({ pid: session.pid, processStartTicks: session.processStartTicks });
+  const forward = assessOwnedProcess({
+    pid: session.forwardPid,
+    processStartTicks: session.forwardStartTicks,
+  }, input.processDeps);
+  if (forward.owned) targets.push({ pid: session.forwardPid, processStartTicks: session.forwardStartTicks });
+  else if (forward.reason !== 'not_running' && forward.reason !== 'missing_pid' && session.forwardPid) {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: forward.reason, tenantIdentity };
+  }
+  for (const target of targets) {
+    const again = assessOwnedProcess(target, input.processDeps);
+    if (!again.owned) {
+      if (stoppedProcess(target)) continue;
+      return { ok: false, released: false, signalled, scaled: false, reason: again.reason, tenantIdentity };
+    }
+    signal(Number(target.pid), 'SIGTERM');
     signalled = true;
-    const forward = assessOwnedProcess({
-      pid: session.forwardPid,
-      processStartTicks: session.forwardStartTicks,
-    }, input.processDeps);
-    if (forward.owned) signal(Number(session.forwardPid), 'SIGTERM');
+    let gone = false;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      if (stoppedProcess(target)) {
+        gone = true;
+        break;
+      }
+      input.processDeps.sleep?.(attempt);
+    }
+    if (!gone) {
+      writeEnvironmentSession(input.sessionRoot, {
+        ...session,
+        processesStopped: false,
+        parkIncomplete: true,
+        released: false,
+        parked: false,
+      });
+      return { ok: false, released: false, signalled, scaled: false, reason: 'process-stop-incomplete', tenantIdentity };
+    }
   }
   const scaleRole = input.scaleRole ?? (() => {});
   const scaled = [];

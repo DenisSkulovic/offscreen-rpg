@@ -865,9 +865,11 @@ function runDevStopCli(selection) {
   const result = parkSelectedEnvironment({
     owner: selection.record,
     sessionRoot,
+    signal: (pid, sig) => process.kill(pid, sig),
     processDeps: {
       pidAlive,
       readStartTicks: (pid) => readProcessStartTicks(pid),
+      sleep: () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50),
     },
     scaleRole: (namespace, role) => scaleDevSlotWorkloads(namespace, spawnSync, [role]),
     readDesiredReplicas: (namespace) => readDevSlotDesiredReplicas(namespace),

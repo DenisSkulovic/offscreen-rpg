@@ -261,11 +261,16 @@ test('owned park scales six roles, clears the reservation, and repeats cleanly',
   const scaled = [];
   const desired = { 'game-web': 1, 'game-api': 1, 'game-authority': 1, 'game-control': 1, 'game-executor': 1, 'game-relay': 1 };
   let lease = record.lease;
+  const running = new Set([40, 41]);
+  const stopping = {
+    pidAlive: (pid) => running.has(pid),
+    readStartTicks: () => '100',
+  };
   const first = parkSelectedEnvironment({
     owner: record,
     sessionRoot: sessions,
-    processDeps: alive,
-    signal: () => {},
+    processDeps: stopping,
+    signal: (pid) => running.delete(pid),
     scaleRole: (_namespace, role) => { scaled.push(role); desired[role] = 0; },
     readDesiredReplicas: () => desired,
     clearReservation: () => { lease = null; record.lease = null; },
@@ -277,7 +282,7 @@ test('owned park scales six roles, clears the reservation, and repeats cleanly',
   const second = parkSelectedEnvironment({
     owner: record,
     sessionRoot: sessions,
-    processDeps: alive,
+    processDeps: stopping,
     signal: () => { throw new Error('repeat must not signal'); },
     scaleRole: () => { throw new Error('repeat must not scale'); },
     readDesiredReplicas: () => desired,
@@ -293,10 +298,12 @@ test('one failed deployment keeps the reservation and session for retry', () => 
   const record = { ...owner('dev-4', checkout), lease: { pid: 40, startTimeJiffies: '100' } };
   const sessions = environmentSessionRoot(root);
   writeEnvironmentSession(sessions, sessionFor(record));
+  const running = new Set([40, 41]);
   const result = parkSelectedEnvironment({
     owner: record,
     sessionRoot: sessions,
-    processDeps: alive,
+    processDeps: { pidAlive: (pid) => running.has(pid), readStartTicks: () => '100' },
+    signal: (pid) => running.delete(pid),
     scaleRole: (_namespace, role) => {
       if (role === 'game-executor') throw new Error('scale executor failed');
     },
@@ -340,6 +347,25 @@ test('stale process, foreign lease and foreign consumer do not scale', () => {
   });
   assert.equal(consumer.reason, 'foreign_consumer');
   assert.deepEqual(scaled, []);
+
+  const noopCheckout = mkdtempSync(join(tmpdir(), 'offscreen-park-noop-'));
+  const noopRoot = mkdtempSync(join(tmpdir(), 'offscreen-park-reg-'));
+  const noopRecord = { ...owner('dev-5', noopCheckout), lease: { pid: 40, startTimeJiffies: '100' } };
+  const noopSessions = environmentSessionRoot(noopRoot);
+  writeEnvironmentSession(noopSessions, sessionFor(noopRecord));
+  const noop = parkSelectedEnvironment({
+    owner: noopRecord,
+    sessionRoot: noopSessions,
+    processDeps: alive,
+    signal: () => {},
+    scaleRole: () => scaled.push('scaled'),
+    clearReservation: () => { throw new Error('reservation cleared'); },
+  });
+  assert.equal(noop.reason, 'process-stop-incomplete');
+  assert.equal(noop.released, false);
+  assert.equal(readEnvironmentSession(noopSessions, 'dev-5').parked, false);
+  rmSync(noopRoot, { recursive: true, force: true });
+  rmSync(noopCheckout, { recursive: true, force: true });
   rmSync(root, { recursive: true, force: true });
   rmSync(checkout, { recursive: true, force: true });
 });
