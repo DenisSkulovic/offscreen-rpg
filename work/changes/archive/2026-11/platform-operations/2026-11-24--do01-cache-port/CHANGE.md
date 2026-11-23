@@ -1,6 +1,6 @@
 # DO01 | cache port
 
-**Status: Ready / owner-commissioned for parallel wave A. Kind: implementation. Profile: CONTRACT.** Baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`. Integration target `undertaking/storyteller-workshop`. Prerequisite: None; Documents predecessor accepted; parallel wave A.
+**Status: Done (2026-11-24), source-only. Kind: implementation. Profile: CONTRACT.** Baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`. Integrated from `change/do01-cache-port` onto `undertaking/storyteller-workshop`. Prerequisite: None. Live Kubernetes and providers NOT RUN.
 
 [Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 
@@ -46,5 +46,6 @@ Start T01 now after local branch/worktree checks; continue through this Change o
 ## Reconciliation ledger (required before Done)
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
-|---|---|---|---|---|---|---|
-| To fill at close for every impacted claim | technical/product | pending | pending | not executed | pending | pending |
+| Package ownership and public API | docs/technical/platform/persistence-and-caching.md | unchanged: heading already named `@offscreen/cache-port` | `packages/cache-port/src/read-cache.ts` at integration HEAD | source-only; compiled test 1/1 | disabled cache miss; set requires ttlSeconds and maxBytes (`@ts-expect-error` preserved) | archive link |
+| Code organization | docs/technical/platform/topology.md#code-organization | unchanged: tree already lists `cache-port` | manifests at integration HEAD | source-only graph inspected | engine has no redis dep; cache depends on cache-port, not contracts | catalog and design tables |
+| Product behavior | product docs | unchanged because no player, staff, authorization or spending behavior changed | same three symbols | source-only | no live cluster | N/A |
