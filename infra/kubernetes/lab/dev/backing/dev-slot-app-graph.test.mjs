@@ -35,7 +35,11 @@ test('dev-1 and dev-2 graphs stay in their own namespaces with distinct images',
     assert.equal(selected.value, 's3');
     assert.equal(bucket.value, 'offscreen-dev-1');
     assert.equal(key.valueFrom.secretKeyRef.name, 'dev-1-s3');
-    if (name === 'game-api') assert.equal(mode.value, 'distributed');
+    if (name === 'game-api') {
+      assert.equal(mode.value, 'distributed');
+      const host = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'API_HOST');
+      assert.equal(host.value, '0.0.0.0');
+    }
     if (name === 'game-authority') {
       const host = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'GAME_AUTHORITY_HOST');
       assert.equal(host.value, '0.0.0.0');

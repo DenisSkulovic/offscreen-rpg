@@ -330,6 +330,30 @@ export function attachDevWorktreeProcess(input, deps = {}) {
 }
 
 /**
+ * Persist a process lease so a later allocation recognizes this worktree's listener.
+ *
+ * @param {string} worktreePath
+ * @param {string} registryRoot
+ * @param {number} pid
+ * @param {DevWorktreeAllocatorDeps} [deps]
+ */
+export function persistDevWorktreeLease(worktreePath, registryRoot, pid, deps = {}) {
+  const resolved = resolveAllocatorDeps(deps);
+  const canonical = resolved.canonicalizePath(worktreePath);
+  return mutateRegistry(
+    registryRoot,
+    (snapshot) => {
+      const owner = snapshot.ownersByWorktree[canonical];
+      if (!owner) {
+        throw refusal('missing-owner', `No dev owner is registered for ${canonical}.`);
+      }
+      return attachDevWorktreeProcess({ owner, pid }, deps);
+    },
+    { lockTimeoutMs: resolved.lockTimeoutMs },
+  );
+}
+
+/**
  * @param {{
  *   owner: DevWorktreeOwnerRecord,
  *   pid: number,

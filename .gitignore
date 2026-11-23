@@ -47,3 +47,5 @@ saves/
 *.log
 # Local semantic-search trial index. Not a project dependency.
 .grepai/
+.offscreen/dev-session.json
+.offscreen-dev-runtime/

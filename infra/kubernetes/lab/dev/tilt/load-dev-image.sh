@@ -15,17 +15,23 @@ docker build \
   -t "$EXPECTED_REF" \
   .
 load_node() {
-  local node="$1"
+  local cluster="$1"
+  local node="$2"
   local attempt=0
   while [ "$attempt" -lt 5 ]; do
-    if kind load docker-image "$EXPECTED_REF" --name offscreen-lab --nodes "$node"; then
+    if kind load docker-image "$EXPECTED_REF" --name "$cluster" --nodes "$node"; then
       return 0
     fi
     attempt=$((attempt + 1))
     sleep 2
   done
-  echo "kind load failed for ${node}" >&2
+  echo "kind load failed for ${cluster}/${node}" >&2
   return 1
 }
-load_node offscreen-lab-control-plane
-load_node offscreen-lab-worker
+if [[ "${EXPECTED_REF:-}" == offscreen-dev-workspace:* ]]; then
+  load_node offscreen-dev offscreen-dev-control-plane
+  load_node offscreen-dev offscreen-dev-worker
+else
+  load_node offscreen-lab offscreen-lab-control-plane
+  load_node offscreen-lab offscreen-lab-worker
+fi

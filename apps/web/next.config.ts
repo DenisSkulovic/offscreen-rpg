@@ -9,6 +9,8 @@ const apiProxyOrigin = process.env.API_PROXY_ORIGIN ?? 'http://127.0.0.1:3001';
 
 const config: NextConfig = {
   agentRules: false, // Repository instructions are maintained in the root AGENTS.md.
+  // Slot browsers use 127.0.0.1 while `next dev` treats localhost as its own origin.
+  allowedDevOrigins: ['127.0.0.1'],
   output: 'standalone',
   outputFileTracingRoot: repoRoot,
   poweredByHeader: false,
