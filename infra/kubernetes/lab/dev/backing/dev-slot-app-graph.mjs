@@ -111,14 +111,14 @@ export function renderDevSlotAppGraph(slotId, input) {
     service(sql.slotId, namespace, 'game-api', 3001),
     service(sql.slotId, namespace, 'game-authority', 3002),
     deployment(sql.slotId, namespace, 'game-web', {
-      name: 'web', image: imageFor('web'), imagePullPolicy: 'Never', workingDir: '/app',
-      command: ['sh', '-c', 'node /app/infra/kubernetes/lab/dev/dev-pod-web-receipt.mjs & exec pnpm --filter @offscreen/web exec next dev --hostname 0.0.0.0 --port 3000'],
+      name: 'web', image: imageFor('web'), imagePullPolicy: 'Never', workingDir: '/app/apps/web',
+      command: ['sh', '-c', 'node dev-pod-web-receipt.mjs & exec pnpm exec next dev --hostname 0.0.0.0 --port 3000'],
       ports: [{ name: 'http', containerPort: 3000 }],
       env: [slot, receiptDir, env('API_PROXY_ORIGIN', api), env('API_INTERNAL_ORIGIN', api)],
     }),
     deployment(sql.slotId, namespace, 'game-api', {
       name: 'api', image: imageFor('api'), imagePullPolicy: 'Never', workingDir: '/app/apps/api',
-      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'api', 'dist/src/main.js'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'api', 'dist/src/main.js'],
       ports: [{ name: 'http', containerPort: 3001 }],
       env: [
         slot, ...watched('api', '/app/apps/api/dist/src/main.js'),
@@ -141,7 +141,7 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-authority', {
       name: 'authority', image: imageFor('authority'), imagePullPolicy: 'Never', workingDir: '/app/apps/game-authority',
-      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'game-authority', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'game-authority', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
       ports: [{ name: 'http', containerPort: 3002 }],
       env: [
         slot, ...watched('game-authority', '/app/apps/game-authority/dist/src/bootstrap/main.js'),
@@ -157,7 +157,7 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-control', {
       name: 'control', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'worker-control', 'dist/src/bootstrap/control-main.js', 'tsconfig.dev.json'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'worker-control', 'dist/src/bootstrap/control-main.js', 'tsconfig.dev.json'],
       env: [
         slot, ...watched('worker-control', '/app/apps/worker/dist/src/bootstrap/control-main.js'),
         env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
@@ -167,7 +167,7 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-executor', {
       name: 'executor', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'worker-executor', 'dist/src/bootstrap/executor-main.js', 'tsconfig.dev.json'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'worker-executor', 'dist/src/bootstrap/executor-main.js', 'tsconfig.dev.json'],
       env: [
         slot, ...watched('worker-executor', '/app/apps/worker/dist/src/bootstrap/executor-main.js'),
         env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
@@ -177,7 +177,7 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-relay', {
       name: 'relay', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'worker-relay', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
+      command: ['node', 'dev-pod-compile-watch.mjs', 'worker-relay', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
       env: [
         slot, ...watched('worker-relay', '/app/apps/worker/dist/src/bootstrap/main.js'),
         pool, documentStore, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
