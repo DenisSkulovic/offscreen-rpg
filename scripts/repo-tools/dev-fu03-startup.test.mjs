@@ -171,10 +171,17 @@ test('unknown id and active foreign checkout refuse', () => {
     environmentsById: { 'dev-1': a },
     defaultEnvironmentByCheckout: { '/one': 'dev-1' },
   });
-  const rebound = resolveDevEnvironmentSelection({
-    command: 'up', instance: 'dev-1', worktree: '/other', registryRoot: root,
-  });
-  assert.equal(rebound.rebindCheckout, true);
-  assert.equal(rebound.record.resourceUids.database, 'db-dev-1');
+  assert.throws(
+    () => resolveDevEnvironmentSelection({
+      command: 'up', instance: 'dev-1', worktree: '/other', registryRoot: root,
+    }),
+    (error) => error.id === 'foreign-checkout',
+  );
+  assert.throws(
+    () => resolveDevEnvironmentSelection({
+      command: 'status', instance: 'dev-1', worktree: '/other', registryRoot: root,
+    }),
+    (error) => error.id === 'foreign-checkout',
+  );
   rmSync(root, { recursive: true, force: true });
 });

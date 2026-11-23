@@ -7,7 +7,10 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   allocateDevWorktreeOwner,
+  attachUnattachedEnvironment,
   isAllocatorRefusal,
+  probeLoopbackPortBindableSync,
+  reserveUnattachedEnvironment,
 } from './dev-worktree-allocator.mjs';
 import { readRegistryJson } from './dev-worktree-registry.mjs';
 import {
@@ -24,6 +27,7 @@ import {
   ownedEnvironmentSessionPid,
   parseDevCliArgs,
   readEnvironmentSession,
+  readLegacyDevSession,
   resolveDevEnvironmentSelection,
   parkSelectedEnvironment,
   writeEnvironmentSession,
@@ -1385,6 +1389,89 @@ function runDevStatusCli() {
   }
 }
 
+/**
+ * @param {{ slotId: string, ports: { game: number, control: number, tilt: number, spare: number } }} record
+ */
+export function formatReservedEnvironmentLine(record) {
+  const { game, control, tilt, spare } = record.ports;
+  return `${record.slotId} game=${game} control=${control} tilt=${tilt} spare=${spare} RESERVED / UNATTACHED / UNPROVISIONED`;
+}
+
+/**
+ * @param {{ slotId: string }} record
+ */
+export function formatAttachedEnvironmentLine(record) {
+  return `${record.slotId} ATTACHED / UNPROVISIONED`;
+}
+
+/**
+ * @param {{
+ *   registryRoot?: string,
+ *   reserve?: typeof reserveUnattachedEnvironment,
+ *   reserveDeps?: import('./dev-worktree-allocator.mjs').DevWorktreeAllocatorDeps,
+ *   log?: (line: string) => void,
+ *   exit?: (code: number) => void,
+ * }} [deps]
+ */
+export function runDevReserveCli(deps = {}) {
+  const registryRoot = deps.registryRoot ?? devWorktreeRegistryRoot();
+  const reserve = deps.reserve ?? reserveUnattachedEnvironment;
+  const log = deps.log ?? ((line) => console.log(line));
+  const exit = deps.exit ?? ((code) => process.exit(code));
+  try {
+    const record = reserve(registryRoot, deps.reserveDeps);
+    log(formatReservedEnvironmentLine(record));
+    exit(0);
+  } catch (error) {
+    if (isAllocatorRefusal(error)) {
+      console.error(`${error.id}: ${error.message}`);
+      exit(1);
+      return;
+    }
+    throw error;
+  }
+}
+
+/**
+ * @param {string} instance
+ * @param {{
+ *   worktree?: string,
+ *   registryRoot?: string,
+ *   attach?: typeof attachUnattachedEnvironment,
+ *   attachDeps?: import('./dev-worktree-allocator.mjs').AttachUnattachedEnvironmentDeps,
+ *   log?: (line: string) => void,
+ *   exit?: (code: number) => void,
+ * }} [deps]
+ */
+export function runDevAttachCli(instance, deps = {}) {
+  const registryRoot = deps.registryRoot ?? devWorktreeRegistryRoot();
+  const worktree = deps.worktree ?? REPO_ROOT;
+  const attach = deps.attach ?? attachUnattachedEnvironment;
+  const log = deps.log ?? ((line) => console.log(line));
+  const exit = deps.exit ?? ((code) => process.exit(code));
+  const attachDeps = {
+    isPortAvailable: probeLoopbackPortBindableSync,
+    processDeps: {
+      pidAlive,
+      readStartTicks: (pid) => readProcessStartTicks(pid),
+    },
+    readLegacySession: readLegacyDevSession,
+    ...deps.attachDeps,
+  };
+  try {
+    const record = attach(worktree, registryRoot, instance, attachDeps);
+    log(formatAttachedEnvironmentLine(record));
+    exit(0);
+  } catch (error) {
+    if (isAllocatorRefusal(error)) {
+      console.error(`${error.id}: ${error.message}`);
+      exit(1);
+      return;
+    }
+    throw error;
+  }
+}
+
 function runDevStopCli(selection) {
   const registryRoot = devWorktreeRegistryRoot();
   const sessionRoot = environmentSessionRoot(registryRoot);
@@ -1429,6 +1516,11 @@ if (invokedAsScript) {
     }
     throw error;
   }
+  if (parsed.command === 'reserve') {
+    runDevReserveCli();
+  } else if (parsed.command === 'attach') {
+    runDevAttachCli(parsed.instance);
+  } else {
   const registryRoot = devWorktreeRegistryRoot();
   const registry = readRegistryJson(registryRoot);
   const registryV2 = registry?.version === 2;
@@ -1477,5 +1569,6 @@ if (invokedAsScript) {
     } else if (selection.action === 'stop') {
       runDevStopCli(selection);
     }
+  }
   }
 }

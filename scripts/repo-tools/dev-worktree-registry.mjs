@@ -13,7 +13,7 @@ export const LOCK_FILENAME = 'owners.lock';
 
 /** @typedef {{
  *   slotId: string,
- *   worktreePath: string,
+ *   worktreePath: string | null,
  *   cluster: string,
  *   namespace: string,
  *   ports: { game: number, control: number, tilt: number, spare: number },
@@ -310,8 +310,9 @@ export function mutateRegistry(registryRoot, mutator, lockOptions = {}) {
 function isOwnerShape(value) {
   if (!value || typeof value !== 'object') return false;
   const record = /** @type {DevWorktreeOwnerRecord} */ (value);
+  const worktreeOk = record.worktreePath === null || typeof record.worktreePath === 'string';
   return typeof record.slotId === 'string'
-    && typeof record.worktreePath === 'string'
+    && worktreeOk
     && typeof record.cluster === 'string'
     && typeof record.namespace === 'string'
     && record.ports !== null
@@ -321,12 +322,9 @@ function isOwnerShape(value) {
 /**
  * @param {DevWorktreeOwnerRecord} record
  */
-function assertOwnerIdentity(record) {
+function assertCommonOwnerFields(record) {
   if (!isDnsSafeSlotId(record.slotId)) {
     throw refusal('invalid-slot-id', `Slot id is not DNS-safe: ${record.slotId}`);
-  }
-  if (!isAbsolute(record.worktreePath)) {
-    throw refusal('invalid-checkout', `Checkout path is not absolute: ${record.worktreePath}`);
   }
   if (record.cluster !== DEV_CLUSTER_NAME) {
     throw refusal('invalid-cluster', `Cluster is not the dev cluster: ${record.cluster}`);
@@ -338,6 +336,38 @@ function assertOwnerIdentity(record) {
     if (!Number.isInteger(port) || port < 1 || port > 65535) {
       throw refusal('invalid-port', `Port bundle contains an invalid port for ${record.slotId}.`);
     }
+  }
+}
+
+/**
+ * @param {DevWorktreeOwnerRecord} record
+ */
+export function assertUnattachedReservation(record) {
+  assertCommonOwnerFields(record);
+  if (record.worktreePath !== null) {
+    throw refusal('invalid-reservation', 'Unattached reservation must have null worktreePath.');
+  }
+  if (record.processIdentity !== null) {
+    throw refusal('invalid-reservation', 'Unattached reservation cannot store process identity.');
+  }
+  if (record.lease !== null) {
+    throw refusal('invalid-reservation', 'Unattached reservation cannot store a lease.');
+  }
+  if (record.resourceUids && Object.keys(record.resourceUids).length > 0) {
+    throw refusal('invalid-reservation', 'Unattached reservation cannot store resource UIDs.');
+  }
+}
+
+/**
+ * @param {DevWorktreeOwnerRecord} record
+ */
+function assertOwnerIdentity(record) {
+  assertCommonOwnerFields(record);
+  if (record.worktreePath === null || typeof record.worktreePath !== 'string') {
+    throw refusal('invalid-checkout', 'Attached environment requires an absolute checkout path.');
+  }
+  if (!isAbsolute(record.worktreePath)) {
+    throw refusal('invalid-checkout', `Checkout path is not absolute: ${record.worktreePath}`);
   }
 }
 
@@ -422,7 +452,18 @@ export function validateRegistryV2(raw) {
     if (id !== record.slotId) {
       throw refusal('duplicate-environment', `Environment key ${id} does not match slot ${record.slotId}.`);
     }
-    assertOwnerIdentity(record);
+    if (record.worktreePath === null) {
+      assertUnattachedReservation(record);
+    } else {
+      assertOwnerIdentity(record);
+    }
+    const sequence = Number(record.slotId.slice(4));
+    if (!Number.isInteger(sequence) || sequence < 1 || sequence >= snapshot.nextSequence) {
+      throw refusal(
+        'registry-corrupt',
+        `nextSequence ${snapshot.nextSequence} does not follow recorded slot ${record.slotId}.`,
+      );
+    }
     const unique = new Set(Object.values(record.ports));
     for (const port of unique) {
       if (ports.has(port)) throw refusal('duplicate-port', `Port ${port} is reserved by more than one environment.`);
@@ -435,6 +476,9 @@ export function validateRegistryV2(raw) {
     if (!isAbsolute(checkout)) throw refusal('invalid-checkout', `Default checkout is not absolute: ${checkout}`);
     const record = snapshot.environmentsById[slotId];
     if (!record) throw refusal('invalid-checkout', `Default ${slotId} is not an environment.`);
+    if (record.worktreePath === null) {
+      throw refusal('invalid-reservation', `Default mapping cannot target unattached reservation ${slotId}.`);
+    }
     if (record.worktreePath !== checkout) {
       throw refusal('invalid-checkout', `Default checkout ${checkout} does not match ${slotId}.`);
     }
@@ -442,6 +486,18 @@ export function validateRegistryV2(raw) {
     defaults.add(checkout);
   }
   return snapshot;
+}
+
+/**
+ * @param {string} registryRoot
+ * @returns {DevEnvironmentRegistryV2}
+ */
+export function readExistingRegistryV2(registryRoot) {
+  const parsed = readRegistryJson(registryRoot);
+  if (parsed === null) {
+    throw refusal('registry-missing', 'Dev environment registry does not exist; refusing to invent a counter.');
+  }
+  return validateRegistryV2(parsed);
 }
 
 /**

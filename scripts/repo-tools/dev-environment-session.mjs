@@ -36,7 +36,7 @@ export function environmentSessionPath(sessionRoot, slotId) {
  */
 export function parseDevCliArgs(argv) {
   const args = argv.slice(2);
-  /** @type {'up' | 'status' | 'stop' | 'new'} */
+  /** @type {'up' | 'status' | 'stop' | 'new' | 'reserve' | 'attach'} */
   let command = 'up';
   /** @type {string | null} */
   let instance = null;
@@ -57,7 +57,7 @@ export function parseDevCliArgs(argv) {
     if (arg.startsWith('-')) {
       throw refusal('invalid-arguments', `Unknown argument: ${arg}`);
     }
-    if (arg !== 'status' && arg !== 'stop' && arg !== 'new') {
+    if (arg !== 'status' && arg !== 'stop' && arg !== 'new' && arg !== 'reserve' && arg !== 'attach') {
       throw refusal('invalid-arguments', `Unknown command: ${arg}`);
     }
     if (sawCommand) throw refusal('conflicting-arguments', 'Only one dev command is allowed.');
@@ -66,6 +66,12 @@ export function parseDevCliArgs(argv) {
   }
   if (command === 'new' && instance) {
     throw refusal('conflicting-arguments', 'dev:new allocates an id; do not also pass --instance.');
+  }
+  if (command === 'reserve' && instance) {
+    throw refusal('conflicting-arguments', 'dev:reserve does not accept --instance.');
+  }
+  if (command === 'attach' && !instance) {
+    throw refusal('invalid-arguments', 'dev:attach requires --instance.');
   }
   return { command, instance };
 }
@@ -119,15 +125,17 @@ export function resolveDevEnvironmentSelection(input) {
   }
   if (input.instance) {
     const record = ownerFromEitherRegistry(input.registryRoot, input.instance);
-    const bound = resolve(String(record.worktreePath ?? ''));
-    if (bound !== checkout && reservationIsLive(record, input.processDeps)) {
-      throw refusal('foreign-checkout', `${record.slotId} is active on another checkout.`);
+    if (record.worktreePath === null) {
+      throw refusal('unattached-environment', `${record.slotId} is not attached to this checkout.`);
+    }
+    const bound = resolve(String(record.worktreePath));
+    if (bound !== checkout) {
+      throw refusal('foreign-checkout', `${record.slotId} belongs to another checkout.`);
     }
     return {
       action: input.command,
       record,
       checkout,
-      rebindCheckout: bound !== checkout,
     };
   }
   if (raw?.version === 2 && input.command === 'up') {
@@ -142,26 +150,6 @@ export function resolveDevEnvironmentSelection(input) {
     throw refusal('missing-default', 'This checkout has no v2 default environment.');
   }
   return { action: input.command, record, checkout };
-}
-
-/**
- * A stored PID is a live reservation only when process identity still matches.
- * A dead PID is not live. Missing start time or a mismatched start time stays
- * unverified and therefore live for refusal purposes. Absence of processDeps
- * also stays unverified.
- *
- * @param {{ lease?: { pid?: number, startTimeJiffies?: number } | null, processIdentity?: { pid?: number, startTimeJiffies?: number } | null }} record
- * @param {{ pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null } | undefined} processDeps
- */
-function reservationIsLive(record, processDeps) {
-  const identity = record.lease ?? record.processIdentity;
-  if (!identity) return false;
-  if (!processDeps) return true;
-  const assessed = assessOwnedProcess({
-    pid: identity.pid,
-    processStartTicks: identity.startTimeJiffies == null ? null : String(identity.startTimeJiffies),
-  }, processDeps);
-  return assessed.reason !== 'not_running' && assessed.reason !== 'missing_pid';
 }
 
 /**

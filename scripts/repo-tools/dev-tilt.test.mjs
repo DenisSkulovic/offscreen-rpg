@@ -17,10 +17,17 @@ import {
   printDevStatus,
   readDevSession,
   runDevTiltLaunch,
+  runDevAttachCli,
+  runDevReserveCli,
   stopDevSession,
   scaleDevSlotWorkloads,
   writeDevSession,
 } from './dev-tilt.mjs';
+import {
+  attachUnattachedEnvironment,
+  reserveUnattachedEnvironment,
+} from './dev-worktree-allocator.mjs';
+import { readRegistryJson, writeRegistry } from './dev-worktree-registry.mjs';
 import {
   fingerprintCompiledEntryFile,
   markDevWatchedCompilation,
@@ -840,6 +847,57 @@ test('a failed rollback reports rollback-incomplete and does not claim parked', 
   assert.equal(harness.lines.some((line) => line.startsWith('rollback-incomplete:')), true);
   assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), false);
   assert.match(harness.lines.find((line) => line.startsWith('rollback-incomplete:')) ?? '', /offscreen-dev-2/);
+});
+
+test('reserve and attach CLI handlers skip launch-side mutators', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-wt-reserve-'));
+  const sandbox = mkdtempSync(join(tmpdir(), 'offscreen-reg-reserve-'));
+  const registryRoot = join(sandbox, 'registry');
+  mkdirSync(registryRoot, { recursive: true });
+  writeRegistry(registryRoot, {
+    version: 2,
+    nextSequence: 1,
+    environmentsById: {},
+    defaultEnvironmentByCheckout: {},
+  });
+  const allocatorDeps = { canonicalizePath: (path) => path, isPortAvailable: () => true };
+  /** @type {string[]} */
+  const lines = [];
+  let spawnCalled = false;
+  let reconcileCalled = false;
+  let tenantWriteCalled = false;
+  runDevReserveCli({
+    registryRoot,
+    reserve: (root, deps) => {
+      const record = reserveUnattachedEnvironment(root, deps);
+      assert.equal(spawnCalled, false);
+      assert.equal(reconcileCalled, false);
+      assert.equal(tenantWriteCalled, false);
+      return record;
+    },
+    reserveDeps: allocatorDeps,
+    log: (line) => lines.push(line),
+    exit: () => {},
+  });
+  const reserved = Object.values(readRegistryJson(registryRoot).environmentsById)[0];
+  runDevAttachCli(reserved.slotId, {
+    worktree: checkout,
+    registryRoot,
+    attach: (path, root, slotId, deps) => {
+      assert.equal(spawnCalled, false);
+      assert.equal(reconcileCalled, false);
+      assert.equal(tenantWriteCalled, false);
+      return attachUnattachedEnvironment(path, root, slotId, deps);
+    },
+    attachDeps: allocatorDeps,
+    log: (line) => lines.push(line),
+    exit: () => {},
+  });
+  assert.match(lines[0] ?? '', /RESERVED \/ UNATTACHED \/ UNPROVISIONED/);
+  assert.match(lines[1] ?? '', /ATTACHED \/ UNPROVISIONED/);
+  assert.equal(spawnCalled, false);
+  assert.equal(reconcileCalled, false);
+  assert.equal(tenantWriteCalled, false);
 });
 
 test('replica readback keeps another environment out of the rollback report', async () => {

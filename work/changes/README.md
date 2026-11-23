@@ -2,7 +2,7 @@
 
 ## Lifecycle at a glance (2026-11-22)
 
-**2026-11-23 immediate candidate:** [DXK10-A registry-only reserve and explicit attach](open/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is a bounded next-days infrastructure Change; no cluster startup or existing tenant takeover is authorized. DXK10-B/C remain planner-held. HR02 independently owns Web source paths. The queue remains unchanged until owner dispatch selects a Change.
+**2026-11-23:** [DXK10-A registry-only reserve and explicit attach](archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is Done. No cluster startup or existing tenant takeover was performed. DXK10-B/C remain planner-held. HR02 independently owns Web source paths.
 
 **[Open](open/): 11 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
 

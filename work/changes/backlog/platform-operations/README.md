@@ -34,4 +34,4 @@ These are future work, not today's execution queue. Reconcile source/owner/accep
 
 ## Demand-driven development lifecycle (staged 2026-11-23)
 
-- [DXK10](2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md): separate Change/worktree, environment reservation/attachment, tenant provisioning, workload-profile activation, parking and safe release. DXK10-A reservation/attachment has been prepared in [open](../../open/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md); DXK10-B scoped activation and DXK10-C retained-tenant release remain planner-held. No collision with HR02 Web source changes. Not an automatic HR01–HR03 blocker.
+- [DXK10](2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md): separate Change/worktree, environment reservation/attachment, tenant provisioning, workload-profile activation, parking and safe release. DXK10-A reservation/attachment is Done in [archive](../../archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md); DXK10-B scoped activation and DXK10-C retained-tenant release remain planner-held. No collision with HR02 Web source changes. Not an automatic HR01–HR03 blocker.

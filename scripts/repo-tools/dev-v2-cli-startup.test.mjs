@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -9,6 +9,15 @@ import {
   resolveDevEnvironmentSelection,
   writeEnvironmentSession,
 } from './dev-environment-session.mjs';
+import {
+  formatAttachedEnvironmentLine,
+  runDevAttachCli,
+  runDevReserveCli,
+} from './dev-tilt.mjs';
+import {
+  attachUnattachedEnvironment,
+  reserveUnattachedEnvironment,
+} from './dev-worktree-allocator.mjs';
 import { readRegistryJson, writeRegistry } from './dev-worktree-registry.mjs';
 
 const dead = {
@@ -41,6 +50,13 @@ function emptyV2(root) {
     environmentsById: {},
     defaultEnvironmentByCheckout: {},
   });
+}
+
+function isolatedRegistryRoot(prefix) {
+  const root = mkdtempSync(join(tmpdir(), prefix));
+  const registryRoot = join(root, 'registry');
+  mkdirSync(registryRoot, { recursive: true });
+  return { root, registryRoot };
 }
 
 test('default start, status and stop stay on one allocated id', () => {
@@ -148,12 +164,92 @@ test('signal cleanup uses the selected environment and ignores a stale pid', () 
   assert.throws(() => resolveDevEnvironmentSelection({
     command: 'up', instance: 'dev-1', worktree: checkout, registryRoot: root, processDeps: alive,
   }));
-  const stale = resolveDevEnvironmentSelection({
+  assert.throws(() => resolveDevEnvironmentSelection({
     command: 'status', instance: 'dev-1', worktree: checkout, registryRoot: root, processDeps: dead,
+  }));
+  const stale = resolveDevEnvironmentSelection({
+    command: 'status', instance: 'dev-1', worktree: other, registryRoot: root, processDeps: dead,
   });
   assert.equal(stale.record.lease.pid, 201268);
   assert.equal(readRegistryJson(root).environmentsById['dev-1'].lease.pid, 201268);
   rmSync(root, { recursive: true, force: true });
   rmSync(checkout, { recursive: true, force: true });
   rmSync(other, { recursive: true, force: true });
+});
+
+test('reserve and attach CLI stay registry-only with bounded output', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-v2-reserve-'));
+  const { root, registryRoot } = isolatedRegistryRoot('offscreen-v2-reserve-reg-');
+  emptyV2(registryRoot);
+  /** @type {string[]} */
+  const lines = [];
+  let exitCode = -1;
+  const allocatorDeps = { canonicalizePath: (path) => path, isPortAvailable: () => true };
+  runDevReserveCli({
+    registryRoot,
+    reserveDeps: allocatorDeps,
+    log: (line) => lines.push(line),
+    exit: (code) => { exitCode = code; },
+  });
+  assert.equal(exitCode, 0);
+  assert.match(lines[0] ?? '', /RESERVED \/ UNATTACHED \/ UNPROVISIONED/);
+  const reserved = Object.values(readRegistryJson(registryRoot).environmentsById)[0];
+  assert.equal(reserved.worktreePath, null);
+  lines.length = 0;
+  exitCode = -1;
+  runDevAttachCli(reserved.slotId, {
+    worktree: checkout,
+    registryRoot,
+    attachDeps: allocatorDeps,
+    log: (line) => lines.push(line),
+    exit: (code) => { exitCode = code; },
+  });
+  assert.equal(exitCode, 0);
+  assert.equal(lines[0], formatAttachedEnvironmentLine({ slotId: reserved.slotId }));
+  const snapshot = readRegistryJson(registryRoot);
+  assert.equal(snapshot.environmentsById[reserved.slotId].worktreePath, checkout);
+  assert.equal(snapshot.defaultEnvironmentByCheckout[checkout], reserved.slotId);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('failed attach leaves registry byte-equivalent', () => {
+  const checkoutA = mkdtempSync(join(tmpdir(), 'offscreen-v2-attach-a-'));
+  const checkoutB = mkdtempSync(join(tmpdir(), 'offscreen-v2-attach-b-'));
+  const { root, registryRoot } = isolatedRegistryRoot('offscreen-v2-attach-reg-');
+  emptyV2(registryRoot);
+  const allocatorDeps = { canonicalizePath: (path) => path, isPortAvailable: () => true };
+  const reserved = reserveUnattachedEnvironment(registryRoot, allocatorDeps);
+  attachUnattachedEnvironment(checkoutA, registryRoot, reserved.slotId, allocatorDeps);
+  const before = readFileSync(join(registryRoot, 'owners.json'), 'utf8');
+  let exitCode = 0;
+  runDevAttachCli(reserved.slotId, {
+    worktree: checkoutB,
+    registryRoot,
+    attachDeps: allocatorDeps,
+    log: () => {},
+    exit: (code) => { exitCode = code; },
+  });
+  assert.equal(exitCode, 1);
+  assert.equal(readFileSync(join(registryRoot, 'owners.json'), 'utf8'), before);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkoutA, { recursive: true, force: true });
+  rmSync(checkoutB, { recursive: true, force: true });
+});
+
+test('bare status never reserves or attaches', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-v2-status-ro-'));
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-v2-status-reg-'));
+  emptyV2(root);
+  const before = readFileSync(join(root, 'owners.json'), 'utf8');
+  assert.throws(() => resolveDevEnvironmentSelection({
+    command: 'status',
+    instance: null,
+    worktree: checkout,
+    registryRoot: root,
+    allocate: () => { throw new Error('status must not allocate'); },
+  }), (error) => error.id === 'missing-default');
+  assert.equal(readFileSync(join(root, 'owners.json'), 'utf8'), before);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
 });

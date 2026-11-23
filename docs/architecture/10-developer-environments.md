@@ -2,7 +2,7 @@
 
 **Question:** How can several Cursor agents work on Offscreen RPG without overwriting each other's code, game data, running services or ports?
 
-**Audience:** humans first. **Observed state at integration `undertaking/storyteller-workshop@8a782ffd` (2026-11-23):** a fresh worktree started an owned full six-role dev environment unattended, reached current-generation readiness and parked with tenant state intact. DXK11 removed redundant Kind imports: where both nodes already contain the canonical image digest, aliases are created locally rather than reimporting the same image. DXK10's reservation-only / selective profiles / cross-checkout handoff remain **design, not commands**.
+**Audience:** humans first. **Observed state at integration `undertaking/storyteller-workshop@8a782ffd` (2026-11-23):** a fresh worktree started an owned full six-role dev environment unattended, reached current-generation readiness and parked with tenant state intact. DXK11 removed redundant Kind imports: where both nodes already contain the canonical image digest, aliases are created locally rather than reimporting the same image. `pnpm dev:reserve` and `pnpm dev:attach` are source-tested registry commands and do not start Pods. Selective profiles and cross-checkout handoff of a provisioned environment remain **design, not commands**. Cluster absence during reserve/attach was proven with an isolated temporary registry, not by inspecting a live cluster.
 
 **Performance reality:** original parked activation took 376 s with ten redundant Kind imports; the later DXK11 115.8 s run incurred a genuine new artifact plus two node imports, so it **does not** measure a pure same-image warm restart. Same-image restart performance is still to be established.
 
@@ -69,7 +69,7 @@ flowchart LR
     Park -.->|"explicit safe release"| Release["Release reservation"]
 ```
 
-This is the **DXK10 target lifecycle**, not today's complete CLI. The current DXK09 entrypoint `pnpm dev` still attempts a **full six-workload application stack**. Reservation-only and per-profile activation are **not yet accepted implementation**. Consult the [runbook's current commands](../runbooks/dev-worktree-stacks.md#what-works-on-the-integrated-branch) rather than guessing new flags.
+Reserve and attach are today's registry CLI. The rest of this diagram, especially per-profile activation and release, is still the DXK10 target. `pnpm dev` still attempts a **full six-workload application stack**. Consult the [runbook's current commands](../runbooks/dev-worktree-stacks.md#what-works-on-the-integrated-branch).
 
 ## What a full application stack contains
 
@@ -121,7 +121,8 @@ The selected correction is simple to state: **image preparation returns one veri
 | Separate SQL, object-storage and Temporal tenants | Live-observed in bounded earlier trials |
 | Fully unattended new-worktree startup and current-image readiness | **Not accepted**; in-flight image ownership correction |
 | Automatic partial-start rollback | Local Cursor tests reported; integrated acceptance pending |
-| Reserve without launching pods; activate Web-only/API/full profiles | **Selected DXK10 target, not implemented** |
+| Reserve and attach without launching pods | Source-tested CLI. No live cluster observation in this Change |
+| Activate Web-only/API/full profiles | **Selected DXK10-B target, not implemented** |
 | Three simultaneously productive Cursor agents | End-user goal; not yet demonstrated |
 | Four healthy full application stacks | Separate capacity target; unproven on this machine |
 | Real browser OAuth and complete game/release acceptance | Separate outstanding proofs |

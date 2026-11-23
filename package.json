@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "node scripts/repo-tools/dev-tilt.mjs",
     "dev:new": "node scripts/repo-tools/dev-tilt.mjs new",
+    "dev:reserve": "node scripts/repo-tools/dev-tilt.mjs reserve",
+    "dev:attach": "node scripts/repo-tools/dev-tilt.mjs attach",
     "dev:status": "node scripts/repo-tools/dev-tilt.mjs status",
     "dev:stop": "node scripts/repo-tools/dev-tilt.mjs stop",
     "build": "turbo run build",

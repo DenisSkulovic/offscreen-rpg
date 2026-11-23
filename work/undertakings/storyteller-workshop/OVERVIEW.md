@@ -1,21 +1,21 @@
 # Storyteller Workshop | reality check and finish line
 
-**Human checkpoint · 2026-11-23 · inspected integration HEAD `8a782ffd`.** Developer-environment correctness is demonstrably better, but this is **not yet a proven end-to-end AI Storyteller product**. DXK09's unattended new-worktree start/status/stop passed; DXK11's canonical-image reuse and timing improvements are integrated. The next architectural goal, DXK10's source attachment and selective activation, remains **proposed, not implemented**.
+**Human checkpoint · 2026-11-23.** Developer-environment correctness is demonstrably better, but this is **not yet a proven end-to-end AI Storyteller product**. DXK09's unattended new-worktree start/status/stop passed; DXK11's canonical-image reuse and timing improvements are integrated. DXK10-A reserve and attach are source-tested registry commands. Selective activation and provisioned-slot handoff remain **proposed**.
 
 ## At a glance
 
 | Track | Rough complete | Still remaining | Interpretation |
 | --- | ---: | ---: | --- |
-| Monorepo architecture + developer workflow | **~65%** | ~35% | Reproducible isolated dev lifecycle, but source readability, runtime demand and full checks remain |
+| Monorepo architecture + developer workflow | **~70%** | ~30% | Isolated dev lifecycle plus registry-only reserve/attach; selective activation, source readability and full checks remain |
 | Storyteller + playable experience | **~40%** | ~60% | Durable Writer/story foundations, not an ordinary provider-backed end-to-end player experience |
 | Distributed operations + reliability | **~25%** | ~75% | Dev isolation exists; cold release, restore, sustained scale and crash-free readiness remain open |
 | **Combined undertaking** | **~40%** | **~60%** | Judgment, not measured feature coverage or shipping readiness |
 
-**Uncertainty:** at least ±20 percentage points for these subjective estimates. DXK11 improved the developer workflow; it did not materially change the product-completion estimate.
+**Uncertainty:** at least ±20 percentage points for these subjective estimates. DXK10-A added idle reservation without changing the product-completion estimate.
 
 ```mermaid
 flowchart LR
-  D["DONE / OBSERVED<br/>DXK09 cold worktree<br/>DXK11 image import fix"] --> N["NEXT / DESIGN<br/>DXK10 reserve · attach<br/>activate selected roles"]
+  D["DONE / OBSERVED<br/>DXK09 cold worktree<br/>DXK11 image import fix<br/>DXK10-A reserve and attach"] --> N["NEXT / DESIGN<br/>DXK10-B activate selected roles"]
   N --> H["PARALLEL SOURCE WORK<br/>HR01 API · HR02 Web<br/>HR03 DB readability"]
   H --> P["PRODUCT PROOF<br/>ordinary Writer flow<br/>real story · fork · recovery"]
   P --> R["RELEASE CONFIDENCE<br/>auth · failure · restore<br/>cold release lab"]
@@ -47,7 +47,7 @@ flowchart TD
 
 **Still not proven:** four simultaneous full stacks, browser OAuth, cold release-lab acceptance, completed provider-free story and ordinary provider-backed playable campaign. The `game-control` watcher has logged `RangeError: Invalid atomic access index` despite Kubernetes readiness. These are distinct gaps, not a reason to repeat already-accepted DXK09 work.
 
-**Planning checkpoint, 2026-11-23:** DXK10-A is now a [bounded, source-grounded reserve/attach packet](../../changes/open/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) with negative proof and [G0–G7 readiness review](../../changes/open/2026-11-23--dxk10a-reserve-attach-foundation/READINESS.md). This is planning only: no new CLI has been implemented or tested. DXK10-B profile activation and DXK10-C guarded retained-tenant handoff remain proposed. The owner has started HR02 independently; no implementation outcome has yet been reported here. These lanes do not overlap source ownership.
+**DXK10-A, 2026-11-23:** [reserve and explicit attach](../../changes/archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) are implemented as registry-only commands. Focused tests passed. No Kubernetes run and no transfer of an existing provisioned environment. DXK10-B profile activation and DXK10-C guarded retained-tenant handoff remain proposed. HR02 and HR03 remain separate source lanes; HR03's schema split is already archived.
 
 **Next decision:** source-ground DXK10 against `8a782ffd`, decide persistent tenant reservation/release semantics and profile dependency closure, then create small Cursor-ready implementation slices. HR01–HR03 should proceed as source-only lanes where safe, without making three full-stack runtimes a prerequisite. [DXK10 proposal](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) · [HR wave](NEXT-WAVE.md) · [demonstrated status](../../../STATUS.md).
 

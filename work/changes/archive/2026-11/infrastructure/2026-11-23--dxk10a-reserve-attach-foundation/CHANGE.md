@@ -1,6 +1,6 @@
 # DXK10-A | Reserve an idle developer environment and explicitly attach a checkout
 
-**Profile:** STATE / local developer tooling · **State:** READY FOR BOUNDED CURSOR IMPLEMENTATION after mandatory branch/ownership guard · **Integration:** `undertaking/storyteller-workshop` · **Planner source baseline:** `fb5bf588`, 2026-11-23. **No Kubernetes runtime or tenant writes in this Change.**
+**Profile:** STATE / local developer tooling · **State:** Done (2026-11-23) · **Integration:** `undertaking/storyteller-workshop` · **Planner source baseline:** `fb5bf588`, 2026-11-23. **No Kubernetes runtime or tenant writes in this Change.**
 
 ## Why
 
@@ -32,4 +32,15 @@ flowchart LR
 - Existing `dev:new`, `dev`, `dev:status`, `dev:stop` fixture tests pass without semantic regression. No host live cluster test required; one local CLI smoke with temporary isolated registry may be used, never the live registry for this Change.
 - **Stop** if registry v2 cannot model null attachment without a wider migration, if acquiring a reliable no-resource guarantee requires mutating the cluster, or if current launch/session paths implicitly adopt an unattached record. Return exact evidence to ChatGPT rather than improvising release or tenant transfer.
 
-**Source map:** [SOURCE-MAP.md](SOURCE-MAP.md) · **Algorithm:** [EXECUTION.md](EXECUTION.md) · **Small tasks:** [TASKS.md](TASKS.md) · **Proof contract:** [PROOF.md](PROOF.md). DXK10-B/C stay future stages in [DXK10 parent proposal](../../backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
+**Source map:** [SOURCE-MAP.md](SOURCE-MAP.md) · **Algorithm:** [EXECUTION.md](EXECUTION.md) · **Small tasks:** [TASKS.md](TASKS.md) · **Proof contract:** [PROOF.md](PROOF.md). DXK10-B/C stay future stages in [DXK10 parent proposal](../../../../backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Idle reservation without a checkout | docs/runbooks/dev-worktree-stacks.md | changed: `pnpm dev:reserve` allocates `dev-N` and ports with `worktreePath: null` and no default | scripts/repo-tools/dev-worktree-allocator.mjs @ change branch before join | fixture-tested | missing/corrupt registry, counter rewind, port exhaustion, and malformed unattached records write nothing | runbook command table |
+| Explicit attach of a never-provisioned reservation | docs/technical/platform/developer-environments.md | changed: attach is registry/session only and idempotent for the same checkout | scripts/repo-tools/dev-worktree-allocator.mjs attachUnattachedEnvironment | fixture-tested | foreign checkout, default collision, lease, session, retained UID, occupied port leave the registry unchanged | technical lifecycle section |
+| No implicit foreign rebind | docs/runbooks/dev-worktree-stacks.md | changed: ordinary `--instance` requires the attached checkout | scripts/repo-tools/dev-environment-session.mjs resolveDevEnvironmentSelection | fixture-tested | unattached and foreign checkout selections refuse | runbook |
+| Existing full start | AGENTS.md | unchanged because `dev`, `dev:new`, `dev:status`, and `dev:stop` keep prior semantics | package.json and dev-tilt.mjs dispatch | fixture-tested | status does not reserve or attach; reserve/attach do not call launch mutators | AGENTS.md command list |
+| Profiles and provisioned handoff | docs/architecture/10-developer-environments.md | unchanged because DXK10-B/C were not commissioned | no profile or release source | not implemented | a provisioned or parked slot is not eligible for this attach | architecture status table |
+| Product play | none | unchanged because no player, story, or Web source was edited | no apps/web diff | source-observed | HR02 paths untouched | N/A |

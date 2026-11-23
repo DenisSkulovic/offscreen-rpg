@@ -59,7 +59,7 @@ These anchors describe the inspected integration baseline and the local conflict
 
 ## Distinct lifecycle operations
 
-The following operations are **selected DXK10 future behavior**, not current proven commands.
+Reserve and attach are implemented as registry-only commands with focused tests. Provision, profile activation, release, and destroy remain selected future behavior.
 
 | Operation | Permitted state change | Forbidden side effect |
 | --- | --- | --- |

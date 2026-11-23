@@ -1,10 +1,17 @@
 import { createServer } from 'node:net';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { assessOwnedProcess } from './dev-process-identity.mjs';
+import {
+  environmentSessionRoot,
+  readEnvironmentSession,
+  readLegacyDevSession,
+} from './dev-environment-session.mjs';
 import {
   REGISTRY_VERSION,
   REGISTRY_VERSION_V2,
   allocateNextSequence,
+  assertUnattachedReservation,
   collectReservedPorts,
   collectReservedPortsV2,
   deriveDevNamespace,
@@ -15,6 +22,7 @@ import {
   lookupDefaultEnvironment,
   lookupEnvironment,
   mutateRegistry,
+  readExistingRegistryV2,
   readRegistry,
   readRegistryV2,
   refusal,
@@ -24,6 +32,21 @@ import {
 
 /** @typedef {import('./dev-worktree-registry.mjs').DevWorktreeRegistrySnapshot} DevWorktreeRegistrySnapshot */
 /** @typedef {import('./dev-worktree-registry.mjs').DevWorktreeOwnerRecord} DevWorktreeOwnerRecord */
+/** @typedef {import('./dev-worktree-registry.mjs').DevEnvironmentRegistryV2} DevEnvironmentRegistryV2 */
+
+/**
+ * @param {DevEnvironmentRegistryV2} snapshot
+ * @returns {DevWorktreeRegistrySnapshot}
+ */
+function reservedPortViewFromV2(snapshot) {
+  return {
+    version: REGISTRY_VERSION,
+    nextSequence: snapshot.nextSequence,
+    ownersByWorktree: Object.fromEntries(
+      Object.values(snapshot.environmentsById).map((record) => [record.slotId, record]),
+    ),
+  };
+}
 
 export const DEV_CLUSTER_NAME = 'kind-offscreen-dev';
 export const DEFAULT_PORT_BUNDLE_SIZE = 4;
@@ -48,6 +71,12 @@ export const DEFAULT_PORT_RANGE = Object.freeze({
  *   bundleSize?: number,
  *   lockTimeoutMs?: number,
  * }} DevWorktreeAllocatorDeps */
+
+/** @typedef {DevWorktreeAllocatorDeps & {
+ *   readSlotSession?: (registryRoot: string, slotId: string) => Record<string, unknown> | null,
+ *   readLegacySession?: (checkoutPath: string) => Record<string, unknown> | null,
+ *   processDeps?: { pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null },
+ * }} AttachUnattachedEnvironmentDeps */
 
 /**
  * @returns {{ supported: boolean, api: string }}
@@ -441,6 +470,147 @@ export function listDevWorktreeOwners(registryRoot) {
 }
 
 /**
+ * @param {DevWorktreeOwnerRecord} record
+ * @param {ReturnType<typeof resolveAllocatorDeps> & {
+ *   readSlotSession: (registryRoot: string, slotId: string) => Record<string, unknown> | null,
+ *   readLegacySession: (checkoutPath: string) => Record<string, unknown> | null,
+ *   processDeps?: { pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null },
+ * }} resolved
+ * @param {string} registryRoot
+ * @param {string} canonical
+ */
+function assertAttachProbesAllowNeutralBinding(record, registryRoot, canonical, resolved) {
+  if (record.lease !== null) {
+    const live = resolved.readProcessIdentity(record.lease.pid);
+    if (live && live.startTimeJiffies === record.lease.startTimeJiffies) {
+      throw refusal('active-lease', `Environment ${record.slotId} has a live lease.`);
+    }
+    throw refusal('active-lease', `Environment ${record.slotId} retains an unverified or stale lease.`);
+  }
+  if (record.processIdentity !== null) {
+    throw refusal('active-process-identity', `Environment ${record.slotId} retains process identity.`);
+  }
+  if (Object.keys(record.resourceUids ?? {}).length > 0) {
+    throw refusal('retained-resources', `Environment ${record.slotId} retains provisioned resource UIDs.`);
+  }
+  ensurePortsStillOwned(record, resolved.isPortAvailable, resolved.readProcessIdentity);
+  const session = resolved.readSlotSession(registryRoot, record.slotId);
+  if (session) {
+    if (resolved.processDeps) {
+      const assessed = assessOwnedProcess(session, resolved.processDeps);
+      if (assessed.owned) {
+        throw refusal('local-session-present', `Environment ${record.slotId} has an active local session.`);
+      }
+      if (assessed.reason !== 'not_running' && assessed.reason !== 'missing_pid') {
+        throw refusal('process-ownership-unverified', `Environment ${record.slotId} session ownership is ${assessed.reason}.`);
+      }
+    }
+    throw refusal('local-session-present', `Environment ${record.slotId} already has a local session record.`);
+  }
+  const legacy = resolved.readLegacySession(canonical);
+  if (legacy) {
+    throw refusal('ambiguous-local-state', 'Legacy checkout session exists; refusing attach.');
+  }
+}
+
+/**
+ * Bind a never-provisioned unattached reservation to one canonical checkout.
+ *
+ * @param {string} checkoutPath
+ * @param {string} registryRoot
+ * @param {string} slotId
+ * @param {AttachUnattachedEnvironmentDeps} [deps]
+ */
+export function attachUnattachedEnvironment(checkoutPath, registryRoot, slotId, deps = {}) {
+  const resolved = resolveAllocatorDeps(deps);
+  const canonical = resolved.canonicalizePath(checkoutPath);
+  const readSlotSession = deps.readSlotSession
+    ?? ((root, id) => readEnvironmentSession(environmentSessionRoot(root), id));
+  const readLegacySession = deps.readLegacySession ?? readLegacyDevSession;
+  const probeResolved = {
+    ...resolved,
+    readSlotSession,
+    readLegacySession,
+    processDeps: deps.processDeps,
+  };
+  return withRegistryLock({ registryRoot, lockTimeoutMs: resolved.lockTimeoutMs }, () => {
+    const snapshot = readExistingRegistryV2(registryRoot);
+    const record = snapshot.environmentsById[slotId];
+    if (!record) {
+      throw refusal('unknown-environment', `Unknown environment id: ${slotId}`);
+    }
+    if (record.worktreePath !== null && record.worktreePath !== canonical) {
+      throw refusal('foreign-checkout', `${slotId} belongs to another checkout.`);
+    }
+    const existingDefault = snapshot.defaultEnvironmentByCheckout[canonical];
+    if (existingDefault && existingDefault !== slotId) {
+      throw refusal('conflicting-default', `Checkout already has default environment ${existingDefault}.`);
+    }
+    if (record.worktreePath === canonical) {
+      assertAttachProbesAllowNeutralBinding(record, registryRoot, canonical, probeResolved);
+      if (existingDefault !== slotId) {
+        snapshot.defaultEnvironmentByCheckout[canonical] = slotId;
+        writeRegistry(registryRoot, snapshot);
+      }
+      return { ...record, worktreePath: canonical };
+    }
+    assertUnattachedReservation(record);
+    assertAttachProbesAllowNeutralBinding(record, registryRoot, canonical, probeResolved);
+    const attached = {
+      ...record,
+      worktreePath: canonical,
+    };
+    snapshot.environmentsById[slotId] = attached;
+    snapshot.defaultEnvironmentByCheckout[canonical] = slotId;
+    writeRegistry(registryRoot, snapshot);
+    return attached;
+  });
+}
+
+/**
+ * Reserve a neutral unbound environment identity. Registry-only: no checkout binding,
+ * default mapping, process identity, lease, or resource UIDs.
+ *
+ * @param {string} registryRoot
+ * @param {DevWorktreeAllocatorDeps} [deps]
+ */
+export function reserveUnattachedEnvironment(registryRoot, deps = {}) {
+  const resolved = resolveAllocatorDeps(deps);
+  return withRegistryLock({ registryRoot, lockTimeoutMs: resolved.lockTimeoutMs }, () => {
+    const snapshot = readExistingRegistryV2(registryRoot);
+    if (snapshot.version !== REGISTRY_VERSION_V2) {
+      throw refusal('registry-version', `Unsupported registry version: ${snapshot.version}`);
+    }
+    const sequence = snapshot.nextSequence;
+    snapshot.nextSequence = sequence + 1;
+    const slotId = encodeDnsSafeSlotId(sequence);
+    if (snapshot.environmentsById[slotId]) {
+      throw refusal('slot-id-collision', `DNS-safe slot id collision: ${slotId}`);
+    }
+    const ports = selectPortBundle(
+      reservedPortViewFromV2(snapshot),
+      resolved.portRange,
+      resolved.bundleSize,
+      resolved.isPortAvailable,
+    );
+    /** @type {DevWorktreeOwnerRecord} */
+    const record = {
+      slotId,
+      worktreePath: null,
+      cluster: resolved.cluster,
+      namespace: deriveDevNamespace(slotId),
+      ports,
+      processIdentity: null,
+      resourceUids: {},
+      lease: null,
+    };
+    snapshot.environmentsById[slotId] = record;
+    writeRegistry(registryRoot, snapshot);
+    return record;
+  });
+}
+
+/**
  * Allocate another environment id. An existing checkout default stays unless
  * `setAsDefault` is true and no default exists, or `replaceDefault` is true.
  *
@@ -462,15 +632,8 @@ export function allocateIndependentEnvironment(checkoutPath, registryRoot, deps 
     if (snapshot.environmentsById[slotId]) {
       throw refusal('slot-id-collision', `DNS-safe slot id collision: ${slotId}`);
     }
-    const reservedView = {
-      version: REGISTRY_VERSION,
-      nextSequence: snapshot.nextSequence,
-      ownersByWorktree: Object.fromEntries(
-        Object.values(snapshot.environmentsById).map((record) => [record.slotId, record]),
-      ),
-    };
     const ports = selectPortBundle(
-      reservedView,
+      reservedPortViewFromV2(snapshot),
       resolved.portRange,
       resolved.bundleSize,
       resolved.isPortAvailable,

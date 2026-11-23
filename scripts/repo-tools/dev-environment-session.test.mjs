@@ -13,6 +13,7 @@ import {
   stopSelectedEnvironment,
   writeEnvironmentSession,
 } from './dev-environment-session.mjs';
+import { reserveUnattachedEnvironment } from './dev-worktree-allocator.mjs';
 import {
   cutoverAuthorizedLiveRegistry,
   migrateRegistryV1ToV2,
@@ -67,7 +68,7 @@ test('legacy four-slot selection keeps the checkout default', () => {
   assert.equal(resolveDevEnvironmentSelection({
     command: 'status',
     instance: 'dev-4',
-    worktree: '/canonical/a',
+    worktree: '/canonical/d',
     registryRoot: root,
   }).record.slotId, 'dev-4');
   rmSync(root, { recursive: true, force: true });
@@ -84,6 +85,10 @@ test('explicit unknown id and conflicting flags refuse', () => {
   }), (error) => error.id === 'unknown-environment');
   assert.throws(() => parseDevCliArgs(['node', 'dev-tilt.mjs', 'new', '--instance', 'dev-1']), (error) => error.id === 'conflicting-arguments');
   assert.throws(() => parseDevCliArgs(['node', 'dev-tilt.mjs', '--instance']), (error) => error.id === 'invalid-arguments');
+  assert.throws(() => parseDevCliArgs(['node', 'dev-tilt.mjs', 'reserve', '--instance', 'dev-1']), (error) => error.id === 'conflicting-arguments');
+  assert.throws(() => parseDevCliArgs(['node', 'dev-tilt.mjs', 'attach']), (error) => error.id === 'invalid-arguments');
+  assert.deepEqual(parseDevCliArgs(['node', 'dev-tilt.mjs', 'reserve']), { command: 'reserve', instance: null });
+  assert.deepEqual(parseDevCliArgs(['node', 'dev-tilt.mjs', 'attach', '--instance', 'dev-2']), { command: 'attach', instance: 'dev-2' });
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -219,20 +224,33 @@ test('authorized cutover preserves ids and a later edit blocks rollback', () => 
   }
 });
 
-test('explicit startup resolves without allocating an unknown id', () => {
+test('explicit instance on unattached reservation refuses', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-unattached-'));
+  writeRegistry(root, { version: 2, nextSequence: 2, environmentsById: {}, defaultEnvironmentByCheckout: {} });
+  const reserved = reserveUnattachedEnvironment(root, {
+    canonicalizePath: (path) => path,
+    isPortAvailable: () => true,
+  });
+  assert.throws(() => resolveDevEnvironmentSelection({
+    command: 'status',
+    instance: reserved.slotId,
+    worktree: '/canonical/a',
+    registryRoot: root,
+  }), (error) => error.id === 'unattached-environment');
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('explicit instance from a foreign checkout refuses without registry mutation', () => {
   const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-'));
   v1(root);
-  const selected = resolveDevEnvironmentSelection({
+  const before = readFileSync(join(root, 'owners.json'), 'utf8');
+  assert.throws(() => resolveDevEnvironmentSelection({
     command: 'up',
     instance: 'dev-2',
     worktree: '/canonical/a',
     registryRoot: root,
-  });
-  assert.equal(selected.action, 'up');
-  assert.equal(selected.record.slotId, 'dev-2');
-  const after = JSON.parse(readFileSync(join(root, 'owners.json'), 'utf8'));
-  assert.equal(after.version, 1);
-  assert.equal(after.nextSequence, 5);
+  }), (error) => error.id === 'foreign-checkout');
+  assert.equal(readFileSync(join(root, 'owners.json'), 'utf8'), before);
   rmSync(root, { recursive: true, force: true });
 });
 
