@@ -18,7 +18,7 @@ Use **exactly four small parameterized SELECTs** in stable order, no dynamic ide
 1. `SELECT id, topic, operation_id FROM outbox WHERE operation_id = $1 AND topic = $2`
 2. `SELECT id, generation_id, owner_id, story_id, state FROM storyteller_attempt WHERE generation_id = $1`
 3. `SELECT generation_id, state FROM storyteller_publication WHERE generation_id = $1`
-4. `SELECT sequence FROM story_passage WHERE story_id = $1 ORDER BY sequence ASC` (**verify actual table name in current schema first**).
+4. `SELECT sequence FROM story_passage WHERE story_id = $1 ORDER BY sequence ASC` (verified against `packages/db/src/schema/stories.ts::storyPassage` at inspected SHA).
 
 Validate UUID format for operationId/storyId and nonempty ownerId/topic before any query. Fixed topic passed by caller must equal actual `storytellerDistributedTopic` from appropriate source, not a guessed literal; if inaccessible from source-only .mjs use an explicit expected topic injection and test wrong topic as fail-closed. Reject any row with mismatched owner/story/generation/operation; even one unexpected duplicate row is FAIL. Only `publication.state==='published'`, exactly one matching notice, exactly one matching attempt, and exact passage sequences `[1,2]` qualify as `observed:true` **at injected-query tier**, never as a real release gate. Incomplete/pending rows are `BLOCKED`, contradictory rows `FAIL`; SQL transport errors `BLOCKED` sanitized, without leaking query error, row payload or DB details. Return only ids/counts/status and `evidence:'injected-readonly-query'`.
 
