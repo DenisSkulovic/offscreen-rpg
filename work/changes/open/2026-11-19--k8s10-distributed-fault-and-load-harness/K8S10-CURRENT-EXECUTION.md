@@ -1,5 +1,7 @@
 # K8S10 | Current post-TURN03 real-game fault and bounded load execution (2026-11-22)
 
+> **2026-11-23 current-HEAD audit at `ade6cfbf`:** T01–T04 source is present, including `controller.mjs::runExecuteChaos`, TURN03 proof adapter, live-game evidence adapter and report. Older text below saying execute mode is unimplemented refers to the **earlier baseline**, not current source. No real TURN03 PASS was found in the inspected packet; **T05 remains NOT RUN and unsafe to execute without explicit operator permission**. [Cross-packet audit](../../../undertakings/storyteller-workshop/RELEASE-PROOF-AUDIT-2026-11-23.md).
+
 **State: T01–T04 SOURCE LANDED; CHANGE OPEN. T05 LIVE MUTATION STILL REQUIRES a genuine cold-kind TURN03 PASS at the joined release AND explicit owner authorization naming the disposable cluster, release, runId and Pod UID.** Unit adapters use injected TURN03 reports. Missing a real TURN03 PASS makes live eligibility false and refuses `--execute`; it does not block the unit adapters. `--execute` is implemented as one confirmed `kubectl delete pod --wait=false` on `kind-offscreen-lab` only and is not authorized to run against the live kind cluster from this landing.
 
 ## Source truth, not reinvented pieces

@@ -1,6 +1,8 @@
 # FORK02 | Full-contract proof requirements
 
-Planning is source inspection, **no tests or kind calls performed**.
+**Current status correction (2026-11-23 source audit):** The sentence below was the *planning-time* evidence tier, not the final Change outcome. FORK02 is archived **Done**. Its CHANGE.md records real disposable-PostgreSQL proof (JSONB value null distinct from SQL NULL), 38 focused tests plus 4 fork-state tests PASS, strict full-field collector differences zero for selected fixtures, and wrong-owner/hash/malformed rollback. **Live kind fork remains NOT RUN and is TURN03's responsibility.** No tests were rerun during this status correction.
+
+Historical planning statement: planning authored this proof before tests; **no tests or kind calls performed by that planning step**.
 
 | Case | Expected success | Discriminating failure |
 | --- | --- | --- |
