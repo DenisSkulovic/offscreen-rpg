@@ -12,6 +12,40 @@
 4. **Comments explain intent/invariants, not syntax.** For a non-obvious operation, describe the authority boundary, ordering requirement, retry/idempotency invariant, security consequence or reason an apparently simpler alternative is wrong. Use short JSDoc for exported complex API contracts and non-obvious side effects. No mandated comment on every function, decorative banners or line-by-line English translations of TypeScript. A meaningful comment must remain true when the implementation changes.
 5. **Reviewable diffs.** Do not rewrite unrelated code for style. Format changed files with repository Prettier before handoff; preserve existing 2-space/space-indentation convention and avoid blanket tab-width changes. Favor visual structure via whitespace, headings at *semantic* boundaries, and small named helpers. No formatter suppression just to keep generated layout.
 
+## Scan-first narration for AI-authored algorithms
+
+**Selected human-reader preference (2026-11-23):** A developer arriving cold at an AI-authored orchestration function should be able to **skim its conceptual steps without decoding every expression**. Short, accurate phase narration is welcome even when names are good. This supplements the intent/invariant comment rule above; it does not require comments on every statement.
+
+- At meaningful phase transitions in a nontrivial function, add **one short comment in ordinary language**, optionally numbered when order matters: `// 1. Load the owned story and its current revision.`, `// 2. Reject stale submissions before any write.`, `// 3. Publish the event and preserve the original receipt.`. Prefer domain actions over mechanical narration like `// get data`, `// call API` or `// return result`.
+- Separate major algorithm phases with **one blank line**. Group 2–8 related statements under a comment when that makes the function faster to scan. If a phase spans 50+ lines or several independent responsibilities, reconsider a named helper; comments are not an excuse for a monolith.
+- **Narrate branching decisions and failure paths:** what happens when a dependency is absent, a lock cannot be acquired, the source root is stale or an attempt times out. Explain why an ordering constraint or irreversible boundary matters. Comments must not promise a result that the code does not ensure.
+- **Do not over-comment:** skip obvious expressions, getters, one-liner helpers, mechanical assignments and repetitive boilerplate. Existing short functions need no decorative numbered list. Do not add narration solely to make a file longer; the goal is a navigable algorithm outline.
+- **Update the narration in the same diff** when changing control flow, retries, permissions or transaction ordering. A stale algorithm comment is worse than none. Avoid pseudo-code duplicating full contracts or detailed documentation already owned by package READMEs.
+- During a bounded implementation task, apply this to **the meaningful functions actually touched**, not a repo-wide comment-only sweep. For future explicit readability work, human scanability is an acceptance criterion alongside tests, typecheck and security.
+
+Example for a long orchestration function:
+
+```ts
+// 1. Load the authoritative record and reject a stale revision.
+const current = await readOwnedStory(ownerId, storyId);
+assertExpectedRevision(current, expectedRevision);
+
+// 2. Prepare the command without touching persistent state.
+const command = validateAndPlanAction(current, input);
+
+// 3. Commit exactly once; a retry must preserve the operation ID.
+const receipt = await commitCommand(command, operationId);
+if (receipt.state === 'held') {
+  // Keep the reason visible and do not attempt a second dispatch.
+  return receipt;
+}
+
+// 4. Return the durable receipt, not a guessed completed scene.
+return receipt;
+```
+
+**Indentation decision boundary:** the current repository deliberately uses two-space indentation (`.editorconfig`, `.prettierrc.json` default, this rule's existing changed-file format checks). A request for **literal tabs** cannot be correctly implemented by changing Cursor's Tab key alone while Prettier still writes spaces. Until a formatter/EditorConfig migration is explicitly selected and its impact validated, preserve existing source indentation and avoid whole-repository whitespace churn. Editor visual preferences can be local; do not pretend visual tab width converts stored spaces to tabs.
+
 ## Human-ownership refactors: controlled mechanical freedom
 
 A package/module readability Change can prescribe **the destination ownership map, stable public contracts, route/table/command invariants, and evidence**, then allow Composer to perform the routine move/rename/import cleanup and choose small local helpers. A planner does **not** need to dictate every line of mechanical code motion. That freedom does **not** include deciding new package boundaries, SQL transaction behavior, credential/auth semantics, Zod acceptance policy, public API shape, migration contents or budget/retry behavior.
