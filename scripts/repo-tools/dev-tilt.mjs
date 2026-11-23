@@ -714,6 +714,18 @@ export async function runDevTiltLaunch(deps = {}) {
   const exitFn = deps.exit ?? ((code) => process.exit(code));
   const reconcile = deps.reconcileDevSlot ?? reconcileOwnedDevSlot;
 
+  // Capacity is a host fact. Refuse before slot reconciliation or owned-Tilt
+  // replacement so a low-memory start cannot scale workloads or signal a session.
+  const probes = await collectProbes();
+  const preflight = runPreflight(probes);
+  const capacityRefusals = (preflight.refusals ?? []).filter((refusal) =>
+    refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
+  );
+  if (capacityRefusals.length > 0) {
+    refuseAndExit(capacityRefusals, exitFn);
+    return;
+  }
+
   const slot = await reconcile({ worktree, registryRoot, owner: deps.owner });
   if (!slot?.ok || slot.readyForWorkloads !== true) {
     refuseAndExit([{
@@ -759,8 +771,6 @@ export async function runDevTiltLaunch(deps = {}) {
   const gamePort = ownerRecord.ports.game;
   const tiltPort = ownerRecord.ports.tilt;
 
-  const probes = await collectProbes();
-  const preflight = runPreflight(probes);
   const tiltOnPath = onPath('tilt');
 
   const gameOccupied = await probeOccupied(LOOPBACK, gamePort);

@@ -278,3 +278,13 @@ A marker `DXK09-A-ONLY` in proof A's `apps/web/app/sign-in/page.tsx` appeared on
 **Restart while B stayed up: capacity refusal, with a late scale.** Before the retry, MemAvailable was about 2.8 GiB and swap used about 2.6 GiB of 4.0 GiB. `pnpm dev` in A exited 1 with `MemAvailable is 2648324 KiB, below 4194304 KiB (4 GiB).` That check in `runDevTiltLaunch` runs after `reconcileOwnedDevSlot`. The refusal left dev-5 desired replicas at 1, status `PARKED`, `game-web` Running, and the other five pods `Error`, with no listener on 13116. A follow-up `pnpm dev:stop` returned those replicas to 0. B was still HTTP 200. This is host pressure plus admission ordered after workload reconcile, not a failed image build.
 
 A third ordinary worktree was not started. Two stacks already sat under the 4 GiB gate. Four-stack acceptance is not met. HR01–HR03 stay BLOCKED. DXK09 is not ready to archive.
+
+## Capacity refusal ordered before mutation (2026-11-23)
+
+`runDevTiltLaunch` now runs the existing stack preflight and exits on `memory-low` or `memory-unknown` before `reconcileOwnedDevSlot` and before `replaceOwnedDevSessionTilt` / `replaceOwnedEnvironmentTilt`. The 4 GiB threshold and refusal text are unchanged. Docker, port, and PID/start-time checks stay where they were. `node --test scripts/repo-tools/dev-tilt.test.mjs` — 27 pass, including low memory (no reconcile, no signal, no spawn, exit 1), sufficient memory (reconcile and spawn), unknown memory (exit 1 before reconcile), and an owned session that is not signalled.
+
+**Live refusal was not run.** At the measurement after the earlier stop, MemAvailable was 5976976 KiB, above 4194304 KiB. SwapTotal 4194304 KiB, SwapFree 2197092 KiB. dev-5 stayed desired replicas 0. Ports 13116 and 13118 were free. dev-6 stayed desired replicas 1 and `http://127.0.0.1:13120/sign-in` returned 200. Starting A would have passed the memory gate, so it was not started.
+
+The earlier live failure remains the evidence of the old order: MemAvailable 2648324 KiB refused only after dev-5 had already been scaled to 1. That scale is what this ordering change closes. A second `pnpm dev` under low memory was not repeated.
+
+**Capacity decision, separate from this fix.** The gate is still 4 GiB MemAvailable. One running stack plus a second start has already been refused at 2.65 GiB available, with about 2 GiB of swap in use. Four-stack acceptance stays open. HR01–HR03 stay BLOCKED. DXK09 is not archived.

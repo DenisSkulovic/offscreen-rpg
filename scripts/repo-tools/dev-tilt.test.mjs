@@ -346,6 +346,130 @@ test('occupied allocator game port refuses before tilt spawn', async () => {
   }
 });
 
+test('low memory refuses before reconciliation, Tilt replacement, or spawn', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-mem-low-'));
+  const spawn = fakeSpawn();
+  /** @type {number[]} */
+  const exitCodes = [];
+  let reconciled = false;
+  /** @type {string[]} */
+  const signals = [];
+  await runDevTiltLaunch({
+    worktree,
+    collectDefaultProbes: async () => ({ memAvailableKib: 1 }),
+    runStackPreflight: () => ({
+      ok: false,
+      refusals: [{ id: 'memory-low', message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).' }],
+    }),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    spawnFn: spawn,
+    exit: (code) => {
+      exitCodes.push(code);
+    },
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+    signal: (pid, sig) => {
+      signals.push(`${pid}:${sig}`);
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(reconciled, false);
+  assert.equal(spawn.called(), false);
+  assert.deepEqual(signals, []);
+});
+
+test('sufficient memory still reconciles and launches', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-mem-ok-'));
+  const spawn = fakeSpawn();
+  let reconciled = false;
+  await runDevTiltLaunch({
+    worktree,
+    allocateDevWorktreeOwner: fakeAllocator,
+    collectDefaultProbes: async () => ({ memAvailableKib: 8_000_000 }),
+    runStackPreflight: () => okPreflight(),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    spawnFn: spawn,
+    collectLabReadiness: async () => ({}),
+    exitAfterSession: true,
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+  });
+  assert.equal(reconciled, true);
+  assert.equal(spawn.called(), true);
+});
+
+test('missing memory reading fails closed before mutation', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-mem-unknown-'));
+  const spawn = fakeSpawn();
+  /** @type {number[]} */
+  const exitCodes = [];
+  let reconciled = false;
+  await runDevTiltLaunch({
+    worktree,
+    collectDefaultProbes: async () => ({ memAvailableKib: null }),
+    runStackPreflight: () => ({
+      ok: false,
+      refusals: [{ id: 'memory-unknown', message: 'MemAvailable KiB is unknown.' }],
+    }),
+    spawnFn: spawn,
+    exit: (code) => {
+      exitCodes.push(code);
+    },
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(reconciled, false);
+  assert.equal(spawn.called(), false);
+});
+
+test('memory refusal does not terminate an owned running session', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-mem-owned-'));
+  writeDevSession(worktree, {
+    pid: 4242,
+    processStartTicks: '99',
+    slotId: 'dev-5',
+    namespace: 'offscreen-dev-5',
+    gamePort: 13_116,
+    tiltPort: 13_117,
+    startedAt: '2026-11-23T00:00:00.000Z',
+  });
+  /** @type {string[]} */
+  const signals = [];
+  /** @type {number[]} */
+  const exitCodes = [];
+  await runDevTiltLaunch({
+    worktree,
+    collectDefaultProbes: async () => ({ memAvailableKib: 1 }),
+    runStackPreflight: () => ({
+      ok: false,
+      refusals: [{ id: 'memory-low', message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).' }],
+    }),
+    pidAlive: () => true,
+    readStartTicks: () => '99',
+    signal: (pid, sig) => {
+      signals.push(`${pid}:${sig}`);
+    },
+    exit: (code) => {
+      exitCodes.push(code);
+    },
+    reconcileDevSlot: async () => {
+      throw new Error('reconcile must not run');
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.deepEqual(signals, []);
+  assert.equal(readDevSession(worktree)?.pid, 4242);
+});
+
 test('dynamic ready URLs follow injected allocator ports', () => {
   assert.deepEqual(buildReadyUrls(13_110, 13_111), {
     game: 'http://127.0.0.1:13110/',
