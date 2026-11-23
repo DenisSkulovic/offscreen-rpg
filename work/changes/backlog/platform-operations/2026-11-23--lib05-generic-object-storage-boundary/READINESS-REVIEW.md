@@ -1,0 +1,5 @@
+# LIB05 | Adversarial readiness review
+
+**Status:** PLANNED, NOT YET RELEASED. G0 branch baseline verified. G1 source map for current S3/local/config read and package graph inspected at 484fd4a0, post-LIB02 schema updated. G2 decision selected: generic byte transport, typed Documents facade. G3 concrete T01–T03 and tests proposed; still need accurate current SDK stream limit proof and post-LIB03 package tests. G4 sequence after LIB03 to avoid Documents collisions. G5 no cluster/tenant needs; mock S3 only. G6 negative cases selected; live object store NOT RUN. G7 source-only, no credentials/provider money. **Outcome:** Do not dispatch until current source recheck and bounded S3 Get protocol verified.
+
+**Consciously not included:** image generation adapter, content safety, image variants, grants, signed URLs, media retention, GC and byte-stream uploads. They belong to a later Media capability once requirements exist.

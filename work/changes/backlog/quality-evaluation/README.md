@@ -1,8 +1,7 @@
 # quality evaluation | proposed Changes
 
-**LIB03 design checkpoint (2026-11-23):** [content-package boundary](2026-11-23--lib03-content-package-ownership/CHANGE.md) now has a source/caller migration map, small Composer task plan and proof matrix. Remains planner-gated until LIB02 integration and current-HEAD tests/consumer reconciliation; do not dispatch as Ready.
+**LIB03 promoted for bounded execution:** [LIB03](../../open/2026-11-23--lib03-content-package-ownership/CHANGE.md). No longer in backlog; one owner, no shared Documents edits with LIB05.
 
-- [LIB03 content-package ownership](2026-11-23--lib03-content-package-ownership/CHANGE.md): future source-grounded importer ownership move; planner-blocked.
 
 [Backlog index](../README.md) · [Open Changes](../../README.md)
 
