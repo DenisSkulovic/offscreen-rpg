@@ -31,3 +31,7 @@ These are future work, not today's execution queue. Reconcile source/owner/accep
 - [INF03](2026-11-23--inf03-application-workload-layout/CHANGE.md): Workload definitions and environment overlay ownership
 - [INF04](2026-11-23--inf04-image-and-tilt-ownership/CHANGE.md): Image build and live-update ownership cleanup
 - [INF05](2026-11-23--inf05-platform-and-verification-separation/CHANGE.md): Shared platform services and verification tooling separation
+
+## Demand-driven development lifecycle (proposed 2026-11-23)
+
+- [DXK10](2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md): separate Change/worktree, environment reservation/attachment, tenant provisioning, workload-profile activation, parking and safe release. Planner-held pending live DXK09 reconciliation; no concurrent lifecycle-code implementation while DXK09 is active. Not an automatic HR01–HR03 blocker.
