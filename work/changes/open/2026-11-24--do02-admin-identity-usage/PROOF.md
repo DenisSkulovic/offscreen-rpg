@@ -5,7 +5,7 @@ No proof executed by ChatGPT. Parent receipt on `change/do02-admin-identity-usag
 |---|---|
 | Emitted tests | `node --test` on the three `dist/test/*.js` files: 9/9 pass (extra key, uppercase digest, `'-1'`, numeric 0 rejected) |
 | Reverse build/typecheck | turbo build+typecheck for dependents of the three leaves: 39 successful, `@offscreen/api-integration#typecheck` failed in `test/library-batch-read.test.ts` TS2379 `corruptHash` exactOptionalPropertyTypes. That file is not in the DO02 diff. Recorded baseline-unrelated; not masked. |
-| Module graph command | Before commit, `pnpm repo:module-graph` ENOENT on indexed-but-deleted `packages/contracts/src/admin.ts` because `git ls-files` still lists the old path. Re-run after the Change commit. |
+| Module graph command | After commit `f37ef111`, `pnpm repo:module-graph` exits 1 with one error: pre-existing `forbidden-authority-writer-import` in `packages/story-engine/src/campaign/action-executions.ts`. No cycle, undeclared dependency, or missing export naming the three new leaves. `@offscreen/contracts` depends on `@offscreen/usage-policy`; the leaf does not depend back. |
 | Module graph unit tests | `pnpm repo:module-graph:test` 26/26 pass |
 | Live DB / cluster | not run |
 
