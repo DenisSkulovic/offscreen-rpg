@@ -53,6 +53,7 @@ The current method emphasizes:
 | [Agent entrypoint](AGENTS.md) · [ChatGPT planner](CHATGPT.md) | How a new coding agent or planner bootstraps repository-specific rules |
 | [Work selection](work/QUEUE.md) · [Change catalog](work/changes/README.md) | Current default assignment, proposed work and execution receipts |
 | [Evidence](evidence/README.md) · [realization status](STATUS.md) | What actually ran, what exists and what remains unproven |
+| [Developer environments, illustrated](docs/architecture/10-developer-environments.md) | How several Cursor agents share one workstation without sharing code, tenants or active processes; current vs planned capabilities |
 
 ### Try the repository navigation
 
