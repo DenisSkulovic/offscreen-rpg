@@ -19,11 +19,11 @@
 - `resolveDevEnvironmentSelection` uses `reservationIsLive`, which treats a dead PID as no longer live. **This is not enough authority to transfer attached source/tenant identity.** Do not reuse its permissive rebind test for new attach.
 - `runDevTiltLaunch` begins with preflight then `reconcileOwnedDevSlot`; `reconcileDevSlot` provisions SQL, migrations, S3, Temporal, image and workloads. DXK10-A must return before this side-effect path.
 - `renderDevSlotAppGraph::deployment` defaults `replicas:1` for six application roles. **Out of scope**; DXK10-B.
-- Existing session may be recorded as parked even if old process data remain. Treat contradictory session, occupied ports or observable cluster ownership as refusal, not automatic cleanup.
+- Existing session may be recorded as parked even if old process data remain. Treat contradictory session or occupied ports as refusal, not automatic cleanup. External cluster identity is a later activation gate, not required for a new unprovisioned source attachment.
 
 ## Focused existing tests to consult
 
-`scripts/repo-tools/dev-v2-cli-startup.test.mjs`, `scripts/repo-tools/dev-tilt.test.mjs`, `scripts/repo-tools/dev-worktree-registry.test.mjs` / allocator tests where present (verify names), `infra/kubernetes/lab/dev/backing/dev-slot-app-graph` tests. Do a one-time exact filename search on current branch rather than a broad architectural reconnaissance.
+`scripts/repo-tools/dev-v2-cli-startup.test.mjs`, `scripts/repo-tools/dev-tilt.test.mjs`, `scripts/repo-tools/dev-worktree-registry-v2.test.mjs`, `dev-worktree-allocator.test.mjs`, `infra/kubernetes/lab/dev/backing/dev-slot-app-graph` tests. Do a one-time exact filename search on current branch rather than a broad architectural reconnaissance.
 
 ## Safety boundary for later stages
 
