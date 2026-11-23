@@ -12,7 +12,7 @@ flowchart LR
 
 **Current bottleneck:** developer-platform reliability, not a need for more speculative infrastructure. **Near-term completion condition:** an ordinary worktree can start the requested runtime, show current loaded code, make a Web/API edit, fail closed on bad compilation, and park cleanly without affecting another slot. Four simultaneous full stacks, browser OAuth, release-lab and a real end-to-end story remain separate unfinished proofs. [Actual gate](NEXT-WAVE.md) · [DXK09 proof](../../changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) · [DXK10 selected future](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
 
-## Rough progress toward the whole undertaking
+## Progress, recalibrated to the real end state
 
 | Track | Rough complete | Rough remaining | Confidence / explanation |
 | --- | ---: | ---: | --- |
