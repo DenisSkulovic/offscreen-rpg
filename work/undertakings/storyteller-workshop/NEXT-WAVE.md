@@ -1,6 +1,20 @@
 # Next implementation wave | HR01 · HR02 · HR03
 
-**Current routing checkpoint (2026-11-23, integration `d9a2c11e`):** HR01–HR03 remain blocked for unattended full-stack use. Local DXK09 `e93f33c7` has unresolved Tilt versus post-load image-generation ownership and no accepted end-to-end start/edit/stop gate; that branch is not integrated. See the [selected dev-environment contract](../../../docs/technical/platform/developer-environments.md) and [operator runbook](../../../docs/runbooks/dev-worktree-stacks.md). **Original planner snapshot:** `ab76f6dd9f8efd9ec3aabbae064f55ab79021298`, `undertaking/storyteller-workshop`, 2026-11-22. **State:** three near-term *conditional* source-disjoint Changes. This file coordinates a one-off owner-authorized wave; it does not replace `work/QUEUE.md`, authorize spend, or claim the in-flight CL01/WR11/K8S10 results. The snapshot excluded in-progress uncommitted edits.
+**Current routing checkpoint (2026-11-23, integration `8a782ffd`):** DXK09's unattended fresh worktree start/status/stop now passed, including six truthful READY roles, Web/API HTTP 200 and safe park. DXK11's zero-redundant-import implementation and truthful startup timing are integrated. The older `d9a2c11e` / `e93f33c7` image-owner blocker below is historical, not an active gate. Four simultaneous full stacks, browser OAuth, release-lab acceptance and completed story remain separate unproven targets. **HR01–HR03 are not yet dispatched**. They may run source-only focused tests independently; do not require three concurrent full stacks. DXK10's lightweight profiles are future, not implemented. This file coordinates a possible owner-authorized wave; `work/QUEUE.md` remains the selected-work pointer.
+
+```mermaid
+flowchart LR
+  A["Accepted: unattended DXK09 + DXK11"] --> B{"Next independent lanes"}
+  B --> H1["HR01 API readability"]
+  B --> H2["HR02 Web readability"]
+  B --> H3["HR03 SQL schema/atlas"]
+  B --> D["DXK10: planner-held lifecycle design"]
+  H1 --> I["Serial integration custodian"]
+  H2 --> I
+  H3 --> I
+```
+
+**Dispatch note:** Each HR source lane still requires a current-HEAD source/overlap check and its own Change branch/worktree. Existing predecessor, auth, DB semantics, tests and serial integration contracts below remain binding. Live cluster acceptance should be staggered under the 20 GiB WSL budget.
 
 ## Why this wave, not another runtime layer
 
@@ -14,9 +28,9 @@ The immediate predecessor envelope is TURN03 (cold-kind), CL01 (terminal/auth), 
 
 All three have their existing `SOURCE-MAP.md`, `TASKS.md` and `PROOF.md` next to `CHANGE.md`. **Preserve behavioral contracts:** route paths/status/owner checks, command idempotency/session and SSE re-authorization; one TanStack Query cache and frozen request/receipt identities; Drizzle identical metadata including foreign keys/defaults/indexes with **zero migration**. These are structural refactors, not feature admission or a cure for the TURN03 checkpoint-store failure.
 
-## New DXK09 unattended-worktree gate (2026-11-23)
+## Historical DXK09 gate (accepted; retained as prior test definition)
 
-**The owner wants HR01, HR02 and HR03 to be the first three ordinary Cursor consumers of DXK09 without environment-specific instructions. Two-worktree T05 trial was partially successful at `5d8be46c`, including isolated web edits and stop/restart; however, before dispatch it still requires safe PID/start-time stop/reclaim, real API Tilt sync and no-emit-on-error freshness, accurate slot status, and a truly unattended third-worktree provision/start/stop. Do NOT commission all three until this full gate passes:** two independent repo worktrees/slot leases; both frontends responsive with distinct source markers; each automatically reloads its own edit without rebuilding/restarting the other; backend compiled/runtime freshness after edit; one negative compile marks only its owner NOT READY; stop/restart preserves SQL/S3/Temporal data; unchanged reattach avoids unnecessary builds; local registry is not tracked in Git. See [worktree stack runbook](../../../docs/runbooks/dev-worktree-stacks.md). One signed-in `dev-1` session or six Running Pods does not satisfy this gate. Full four-stack DXK09/T07 acceptance remains separate.
+**Historical gating text below is superseded by the current checkpoint at the top of this file; it does not re-block HR source-only execution.** The owner wants HR01, HR02 and HR03 to be the first three ordinary Cursor consumers of DXK09 without environment-specific instructions. Two-worktree T05 trial was partially successful at `5d8be46c`, including isolated web edits and stop/restart; however, before dispatch it still requires safe PID/start-time stop/reclaim, real API Tilt sync and no-emit-on-error freshness, accurate slot status, and a truly unattended third-worktree provision/start/stop. Do NOT commission all three until this full gate passes:** two independent repo worktrees/slot leases; both frontends responsive with distinct source markers; each automatically reloads its own edit without rebuilding/restarting the other; backend compiled/runtime freshness after edit; one negative compile marks only its owner NOT READY; stop/restart preserves SQL/S3/Temporal data; unchanged reattach avoids unnecessary builds; local registry is not tracked in Git. See [worktree stack runbook](../../../docs/runbooks/dev-worktree-stacks.md). One signed-in `dev-1` session or six Running Pods does not satisfy this gate. Full four-stack DXK09/T07 acceptance remains separate.
 
 **Observed 2026-11-23 at `d0e35b63`:** the existing owned `dev-8` slot reached six truthful READY lines, served Web HTTP 200 and API `{"status":"ok"}`, synced a Web edit and an API edit, reported `api NOT READY compile_error` then recovered, processed one relay workflow task (`scriptedOpeningV1` `dxk09-relay-ping-1795454621418`, status FAILED after the activity ran), and parked with the same tenant Secret UIDs. `offscreen-dev-1` stayed parked. That closes the image-mismatch failure from `11d2e021`. A later brand-new worktree at `e3fa10b7` passed `pnpm dev` / `dev:status` / `dev:stop` on `dev-9` with six READY roles and Web/API HTTP 200. HR01–HR03 were not started. Four full stacks, browser OAuth, and release-lab acceptance were not run. `game-control` still logs `RangeError: Invalid atomic access index` under an otherwise ready watcher.
 
