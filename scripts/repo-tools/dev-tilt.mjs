@@ -103,6 +103,20 @@ export function stopDevSession(worktree, deps = {}) {
       // ignore
     }
   }
+  const forwardOwnership = assessOwnedProcess({
+    pid: session.forwardPid,
+    processStartTicks: session.forwardStartTicks,
+  }, {
+    pidAlive: deps.pidAlive ?? pidAlive,
+    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+  });
+  if (forwardOwnership.owned) {
+    try {
+      signal(Number(session.forwardPid), 'SIGTERM');
+    } catch {
+      // ignore
+    }
+  }
 
   try {
     unlinkSync(file);
@@ -551,7 +565,10 @@ export async function runDevTiltLaunch(deps = {}) {
   /** @type {DevRefusal[]} */
   const launchRefusals = [];
   if (!preflight.ok) {
-    launchRefusals.push(...preflight.refusals);
+    const devSlotChecks = new Set([
+      'missing-docker', 'missing-kind', 'missing-kubectl', 'docker-daemon', 'memory-low', 'memory-unknown',
+    ]);
+    launchRefusals.push(...preflight.refusals.filter((refusal) => devSlotChecks.has(refusal.id)));
   }
   if (!tiltOnPath) {
     launchRefusals.push({ id: 'missing-tilt', message: 'Required command not found: tilt.' });
@@ -609,7 +626,7 @@ export async function runDevTiltLaunch(deps = {}) {
 
   const child = spawnFn(
     'tilt',
-    ['up', '--context', CONTEXT_NAME, '--host', LOOPBACK, '--port', String(tiltPort)],
+    ['up', '--context', 'kind-offscreen-dev', '--host', LOOPBACK, '--port', String(tiltPort)],
     { cwd: worktree, stdio: 'inherit', env: tiltEnv },
   );
 
@@ -619,10 +636,23 @@ export async function runDevTiltLaunch(deps = {}) {
     return;
   }
 
+  let forwardPid = null;
+  let forwardStartTicks = null;
+  if (!deps.exitAfterSession) {
+    const forward = spawn('kubectl', [
+      '--context', 'kind-offscreen-dev', '-n', ownerRecord.namespace,
+      'port-forward', 'svc/game-web', `${gamePort}:3000`,
+    ], { stdio: 'ignore' });
+    forwardPid = forward.pid ?? null;
+    forwardStartTicks = forwardPid ? readProcessStartTicks(forwardPid) : null;
+  }
+
   const readStart = deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
   writeDevSession(worktree, {
     pid: child.pid,
     processStartTicks: readStart(child.pid),
+    forwardPid,
+    forwardStartTicks,
     slotId: ownerRecord.slotId,
     namespace: ownerRecord.namespace,
     gamePort,

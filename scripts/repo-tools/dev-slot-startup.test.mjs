@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { allocateDevWorktreeOwner } from './dev-worktree-allocator.mjs';
-import { reconcileDevSlot } from './dev-slot-startup.mjs';
+import { reconcileDevSlot, planSlotImageBuilds } from './dev-slot-startup.mjs';
 
 const record = {
   slotId: 'dev-3',
@@ -114,6 +114,12 @@ test('two concurrent startups of one worktree keep a single slot', async () => {
     reconcileDevSlot({ worktree, registryRoot: root }, deps({ allocate })),
   ]);
   assert.equal(left.identities.slotId, right.identities.slotId);
+});
+
+test('missing slot images are rebuilt and present images are skipped', () => {
+  const plan = planSlotImageBuilds('dev-4', (ref) => ref.endsWith('-web'));
+  assert.equal(plan.missing.some((image) => image.role === 'web'), false);
+  assert.deepEqual(plan.missing.map((image) => image.role), ['api', 'authority', 'worker']);
 });
 
 test('reports omit credential material and local registry files stay untracked', async () => {

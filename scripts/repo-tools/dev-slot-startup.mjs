@@ -4,8 +4,44 @@
  * binds the existing provisioners; it does not call the proof trial scripts.
  */
 
+import { migrateOwnedDevSlot } from './dev-slot-migrate.mjs';
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+
 const DEV_CLUSTER = 'kind-offscreen-dev';
 const MIN_MEMORY_MIB = 1536;
+
+function oauthFileFor(worktree) {
+  const candidates = [
+    process.env.OFFSCREEN_DEV_OAUTH_FILE,
+    join(worktree, '.env'),
+    join(homedir(), '.local/state/offscreen-rpg/dev-oauth.env'),
+  ].filter(Boolean);
+  return candidates.find((path) => existsSync(path)) ?? null;
+}
+
+export const SLOT_IMAGE_ROLES = Object.freeze([
+  ['web', '@offscreen/web^...'],
+  ['api', '@offscreen/api^...'],
+  ['authority', '@offscreen/game-authority^...'],
+  ['worker', '@offscreen/worker^...'],
+]);
+
+/**
+ * @param {string} slotId
+ * @param {(ref: string) => boolean} imageExists
+ */
+export function planSlotImageBuilds(slotId, imageExists) {
+  const refs = {};
+  const missing = [];
+  for (const [role, filter] of SLOT_IMAGE_ROLES) {
+    const ref = `offscreen-dev-workspace:${slotId}-${role}`;
+    refs[role] = ref;
+    if (!imageExists(ref)) missing.push({ role, filter, ref });
+  }
+  return { refs, missing };
+}
 
 /**
  * @param {string} phase
@@ -101,6 +137,12 @@ export async function reconcileDevSlot(input, deps) {
   const imageDetail = phaseResult(images);
   if (imageDetail) return stopped('images', imageDetail, retained);
 
+  if (deps.applyWorkloads) {
+    const workloads = await deps.applyWorkloads(record, projected, images);
+    const workloadDetail = phaseResult(workloads);
+    if (workloadDetail) return stopped('workloads', workloadDetail, retained);
+  }
+
   const identities = {
     slotId: record.slotId,
     namespace: record.namespace,
@@ -151,12 +193,12 @@ export async function reconcileOwnedDevSlot(input) {
         memoryMiB = 0;
       }
       return {
-        ok: false,
+        ok: cluster.status === 0 && memoryMiB >= MIN_MEMORY_MIB && Boolean(oauthFileFor(input.worktree)),
         cluster: 'kind-offscreen-dev',
         memoryMiB,
-        detail: cluster.status === 0
-          ? 'Drizzle migration runner is not bound; refusing before tenant mutation'
-          : 'kind-offscreen-dev postgres namespace is missing',
+        detail: !oauthFileFor(input.worktree)
+          ? 'approved local OAuth file is missing'
+          : (cluster.status === 0 ? 'ready' : 'kind-offscreen-dev postgres namespace is missing'),
       };
     },
     ensureSql: (owner) => {
@@ -168,10 +210,7 @@ export async function reconcileOwnedDevSlot(input) {
         adapter: createLiveDevSqlAdapter(),
       });
     },
-    ensureMigration: async () => ({
-      ok: false,
-      refusals: [{ id: 'migration-runner-unbound', detail: 'Drizzle migration runner is not bound; tenant mutation stops before SQL' }],
-    }),
+    ensureMigration: (owner) => migrateOwnedDevSlot(owner, input.worktree),
     ensureS3: (owner) => ensureDevS3Tenant({
       slotId: owner.slotId,
       authorizeLive: 'kind-offscreen-dev-s3-tenant-live',
@@ -229,8 +268,44 @@ export async function reconcileOwnedDevSlot(input) {
         },
       },
     }),
-    project: (owner) => projectDevSlot({ record: owner, registryRoot: input.registryRoot, worktree: input.worktree }),
-    ensureImages: (owner) => ({ ok: true, refs: { slot: owner.slotId }, rebuilt: false }),
+    project: (owner) => projectDevSlot({
+      record: owner,
+      registryRoot: input.registryRoot,
+      worktree: input.worktree,
+      oauthFile: oauthFileFor(input.worktree),
+    }),
+    ensureImages: (owner) => ensureOwnedSlotImages(owner, input.worktree),
+    applyWorkloads: (_owner, projected) => applyOwnedSlotWorkloads(projected),
   });
+}
+
+export async function ensureOwnedSlotImages(owner, worktree) {
+  const { spawnSync } = await import('node:child_process');
+  const plan = planSlotImageBuilds(owner.slotId, (ref) => spawnSync('docker', ['image', 'inspect', ref], { stdio: 'ignore' }).status === 0);
+  for (const image of plan.missing) {
+    const built = spawnSync('bash', [
+      'infra/kubernetes/lab/dev/load-dev-slot-image.sh',
+      owner.slotId,
+      image.role,
+      image.filter,
+    ], { cwd: worktree, encoding: 'utf8' });
+    if (built.status !== 0) {
+      return { ok: false, refusals: [{ id: 'image-build', detail: image.role }], rebuilt: plan.missing.length };
+    }
+  }
+  return { ok: true, refs: plan.refs, rebuilt: plan.missing.length };
+}
+
+async function applyOwnedSlotWorkloads(projected) {
+  const { spawnSync } = await import('node:child_process');
+  const list = { apiVersion: 'v1', kind: 'List', items: projected.documents ?? [] };
+  const applied = spawnSync('kubectl', ['--context', 'kind-offscreen-dev', 'apply', '-f', '-'], {
+    input: JSON.stringify(list),
+    encoding: 'utf8',
+  });
+  if (applied.status !== 0) {
+    return { ok: false, refusals: [{ id: 'workload-apply', detail: 'owned workload apply failed' }] };
+  }
+  return { ok: true };
 }
 
