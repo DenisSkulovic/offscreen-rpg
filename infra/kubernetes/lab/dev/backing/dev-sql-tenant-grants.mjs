@@ -2,6 +2,7 @@ import { deriveDevSqlTenant } from './dev-sql-tenant-contract.mjs';
 import { quoteSqlIdent } from './dev-sql-tenant-reconciler.mjs';
 
 const GATE = 'offscreen_dev_schema_gate';
+export const DEV_SQL_MIGRATION_LIVE = 'kind-offscreen-dev-sql-migration-live';
 
 function refusal(id, detail) {
   return { ok: false, mutated: false, refusals: [{ id, detail }] };
@@ -43,7 +44,9 @@ export function assertDevRuntimeReady({ slotId, currentUser, gatePresent, schema
 }
 
 export async function applyDevTenantMigration({ slotId, currentUser, authorizeLive, applyMigrations, execSql, verify }) {
-  if (authorizeLive !== 'dev-1-migration-live') return refusal('migration-not-authorized', 'live tenant migration remains held');
+  if (authorizeLive !== DEV_SQL_MIGRATION_LIVE && authorizeLive !== 'dev-1-migration-live') {
+    return refusal('migration-not-authorized', 'live tenant migration remains held');
+  }
   const names = deriveDevSqlTenant(slotId);
   if (currentUser !== names.migrationRole) return refusal('migration-role', currentUser ?? 'missing');
   for (const sql of devTenantMigrationPrep(slotId)) await execSql(sql);

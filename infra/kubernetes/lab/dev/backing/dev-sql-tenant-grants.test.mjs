@@ -85,3 +85,16 @@ test('an allocated slot migrates under its own migration role', async () => {
   assert.equal(migrated, 1);
   assert.equal(result.appliedMigrations, 25);
 });
+
+test('a non-dev-1 slot uses the dev-cluster migration authorization', async () => {
+  const result = await applyDevTenantMigration({
+    slotId: 'dev-3',
+    currentUser: 'dev_3_mig',
+    authorizeLive: 'kind-offscreen-dev-sql-migration-live',
+    applyMigrations() {},
+    execSql() {},
+    verify: async () => ({ ok: true, appliedMigrations: 25 }),
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.owner, 'dev_3_mig');
+});
