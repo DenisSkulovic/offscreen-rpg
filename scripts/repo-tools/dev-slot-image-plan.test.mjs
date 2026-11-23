@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmLoadedAliasIdentity, fingerprintDevImageContext, planAliasIdentityLoad, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
+import { confirmLoadedAliasIdentity, fingerprintDevImageContext, planAliasIdentityLoad, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 
 const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
 ARG TURBO_FILTER=@offscreen/api^...
@@ -232,6 +232,18 @@ test('unchanged fingerprint reuses the canonical digest and stays unready while 
 const HOST = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const STALE = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const OTHER = 'sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+
+test('image generation rolls only when the verified id changes', () => {
+  const changed = planImageGenerationRollout({ currentGeneration: HOST, expectedGeneration: STALE });
+  assert.equal(changed.roll, true);
+  assert.equal(changed.generation, STALE);
+  const same = planImageGenerationRollout({ currentGeneration: HOST, expectedGeneration: HOST });
+  assert.equal(same.roll, false);
+  assert.equal(same.reason, 'generation-unchanged');
+  const missing = planImageGenerationRollout({ currentGeneration: null, expectedGeneration: 'not-a-digest' });
+  assert.equal(missing.roll, false);
+  assert.equal(missing.reason, 'unproven-generation');
+});
 
 test('alias identity loads only nodes whose config id is missing or stale', () => {
   const absent = planAliasIdentityLoad({

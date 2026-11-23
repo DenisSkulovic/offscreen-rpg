@@ -32,6 +32,26 @@ import { reconcileOwnedDevSlot } from './dev-slot-startup.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const LOOPBACK = '127.0.0.1';
+const IMAGE_GENERATION_ROLES = ['web', 'api', 'authority', 'worker'];
+const IMAGE_GENERATION_ID = /^sha256:[a-f0-9]{64}$/;
+
+/**
+ * Host image ids for the slot aliases Tilt will apply. Missing images are
+ * omitted so the Pod template is not stamped with an unproven generation.
+ * @param {string} slotId
+ */
+export function readSlotImageGenerations(slotId) {
+  /** @type {Record<string, string>} */
+  const generations = {};
+  for (const role of IMAGE_GENERATION_ROLES) {
+    const inspected = spawnSync('docker', [
+      'image', 'inspect', '--format', '{{.Id}}', `offscreen-dev-workspace:${slotId}-${role}`,
+    ], { encoding: 'utf8' });
+    const id = inspected.stdout?.trim() ?? '';
+    if (inspected.status === 0 && IMAGE_GENERATION_ID.test(id)) generations[role] = id;
+  }
+  return generations;
+}
 const GAME_PORT = 3000;
 const TILT_PORT = 10350;
 
@@ -963,6 +983,9 @@ export async function runDevTiltLaunch(deps = {}) {
     OFFSCREEN_DEV_NAMESPACE: ownerRecord.namespace,
     OFFSCREEN_DEV_GAME_PORT: String(gamePort),
     OFFSCREEN_DEV_TILT_PORT: String(tiltPort),
+    OFFSCREEN_DEV_IMAGE_GENERATIONS: JSON.stringify(
+      (deps.readImageGenerations ?? readSlotImageGenerations)(ownerRecord.slotId),
+    ),
   };
 
   const child = spawnFn(

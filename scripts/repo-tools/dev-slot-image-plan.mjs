@@ -246,6 +246,26 @@ export function planAliasIdentityLoad(input) {
  *   nodes?: Record<string, { configId?: string | null }>,
  * }} input
  */
+const GENERATION_ID = /^sha256:[a-f0-9]{64}$/;
+
+/**
+ * Whether a Deployment must roll because its recorded image generation
+ * differs from the verified loaded identity. The same generation is a no-op.
+ * This token is the host image id already compared at Kind load time.
+ * It is not a CRI config id and must not be compared with one.
+ * @param {{ currentGeneration?: string | null, expectedGeneration?: string | null }} input
+ */
+export function planImageGenerationRollout(input) {
+  const expected = input.expectedGeneration ?? null;
+  if (!GENERATION_ID.test(expected ?? '')) {
+    return { roll: false, generation: null, reason: 'unproven-generation' };
+  }
+  if (input.currentGeneration === expected) {
+    return { roll: false, generation: expected, reason: 'generation-unchanged' };
+  }
+  return { roll: true, generation: expected, reason: 'generation-changed' };
+}
+
 export function confirmLoadedAliasIdentity(input) {
   const plan = planAliasIdentityLoad({
     ref: input.ref ?? '',
