@@ -172,3 +172,7 @@ Target **long-lived** topology after Change integration: **two branches only**:
 - `undertaking/storyteller-workshop`
 
 **Every commissioned WR Change MUST use one short-lived Change branch** created from the then-current `undertaking/storyteller-workshop` HEAD before implementation. Branch names: `change/wr02-library`, `change/wr03-workdesk`, `change/wr04-research`, `change/wr05-publication`, `change/wr06-fork`, `change/wr07-launch`, `change/wr08-client`. Parent and its children work within that branch without per-T-ID branches. Each commissioned WR Change uses a separate linked Git worktree even if no other chat is active. Preserve the user's primary checkout on its existing branch. When accepted, squash-integrate into `undertaking/storyteller-workshop`, verify, and delete the temporary branch/worktree. `main` is reserved for the later Undertaking landing. These transient Change branches do not contradict the two-long-lived-branches policy.
+
+## 2026-11-24 | Cache platform design
+
+[Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B) staged open after Documents and Contracts. No code/runtime proof or selection change. Overview estimates unchanged.

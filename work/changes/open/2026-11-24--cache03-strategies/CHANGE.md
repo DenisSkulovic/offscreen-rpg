@@ -1,0 +1,36 @@
+# CACHE03 | Typed strategies and origin protection
+
+**Status: Proposed / not commissioned. Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; live planning parent 9d753b2cc2b9168b3144c4d0e0a5219e3d481693. Target undertaking/storyteller-workshop. Prerequisite: CACHE02. Owner-selected near-term open work, not execution permission.
+
+[Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md)
+
+## Cursor first-screen brief
+
+After ChatGPT confirms predecessor integration and current-source readiness, parent creates separate linked worktree and change branch; run node scripts/repo-tools/change-branch-guard.mjs --change CACHE03 --target undertaking/storyteller-workshop. Dispatch T01 then remaining tasks sequentially. No next Change authorization.
+
+## Planner source map and scope
+
+Anchors: packages/cache/src/core (new); packages/story-engine/src/stories/reads.ts; packages/story-engine/src/storyteller/lexical-story-index-cache.ts. Old adapter uses get/set JSON, Promise.race, disabled reconnect. DO01 owns port relocation. Story Engine owns SQL preflight and repeatable-read built identity; lexical reuse and immutable Documents bytes remain domain-owned. Canonical architecture defines algorithms, policy, authority and failure invariants. Exclusive write scope: Cache only; no leases, implicit negative caching or stale refresh.
+
+## Acceptance
+
+Every task positive and diagnostic negative passes; actual emitted tests run; root pnpm repo:module-graph and affected build/typecheck; changed-file quality/format reviewed. Record baseline failures without masking. No paid provider, destructive actions or unauthorized SQL/cluster. Source-only is not distributed acceptance. Missing fixture is NOT-RUN and keeps acceptance open.
+
+## planned-impact.v1
+
+| Plane | Disposition | Evidence |
+| --- | --- | --- |
+| Product | Unchanged: no game, authorization or spend change | Existing behavior and negatives |
+| Technical | Realize persistence-and-caching contract; update Current state only as proven | Source and receipt |
+| Code | Stage files/tests in TASKS | Focused normal/negative |
+| Related | Package README, graph, catalog/status and links reconciled at closure | Parent join |
+
+## Readiness and stop
+
+G0 branch and selected authority established; G1–G7 not certified on future source. ChatGPT must refresh predecessor source, exact task/fixture commands and readiness before Ready. Serial ownership deliberately avoids Documents/Contracts overlap. Stop on changed authority/identity, missing harness or source contradiction; return exact evidence to planner. No live stack for unit tests. Follow AGENTS, parent integration/archive policy.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| Pending closure | persistence-and-caching | Typed strategies and origin protection | pending | NOT-RUN | TASKS | pending |

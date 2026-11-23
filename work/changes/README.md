@@ -1,5 +1,13 @@
 # Changes | active catalog
 
+## Cache platform redesign
+
+Owner-selected near-term serial sequence after Documents and DO01–DO07. DO01 owns dependency-free cache-port; CACHE01 does not relocate it twice. [Selected architecture](../../docs/technical/platform/persistence-and-caching.md). All Proposed / not commissioned; ChatGPT refreshes source/readiness at each handoff. No global queue change.
+
+[CACHE01 Typed cache foundation](open/2026-11-24--cache01-core/CHANGE.md) · [CACHE02 Recoverable bounded Redis runtime](open/2026-11-24--cache02-redis-runtime/CHANGE.md) · [CACHE03 Typed strategies and origin protection](open/2026-11-24--cache03-strategies/CHANGE.md) · [CACHE04 Story snapshot migration](open/2026-11-24--cache04-story-snapshot/CHANGE.md) · [CACHE05 Byte-bounded memory and tier composition](open/2026-11-24--cache05-memory-tiering/CHANGE.md) · [CACHE06A Immutable document read decorator](open/2026-11-24--cache06a-document-reads/CHANGE.md) · [CACHE06B Shared lexical-index primitives](open/2026-11-24--cache06b-lexical-index/CHANGE.md) · [CACHE07 Distributed reliability evidence](open/2026-11-24--cache07-distributed-proof/CHANGE.md)
+
+
+
 **2026-11-24 domain ownership:** Owner placed DO01–DO07 in open as the near-term sequence after the Documents redesign. [DO01 Cache port](open/2026-11-24--do01-cache-port/CHANGE.md) · [DO02 Admin, identity and usage](open/2026-11-24--do02-admin-identity-usage/CHANGE.md) · [DO03 Story and campaign interface](open/2026-11-24--do03-story-interface/CHANGE.md) · [DO04 Private Game Authority protocol](open/2026-11-24--do04-authority-protocol/CHANGE.md) · [DO05 Storyteller and engine ownership](open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) · [DO06 Lab and evaluation ownership](open/2026-11-24--do06-lab-ownership/CHANGE.md) · [DO07 Retire contracts](open/2026-11-24--do07-retire-contracts/CHANGE.md). All remain Proposed / not commissioned until their respective predecessor and planner readiness gates clear. [Retirement program](../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md). No global queue change.
 
 **2026-11-24 Library navigation:** [LIB06 bounded Story Library navigation](archive/2026-11/storyteller/2026-11-24--lib06-story-library-navigation-correctness/CHANGE.md) is Done as a source-only scan correction. [LIB07 bounded batch reads](backlog/agent-runtime/2026-11-24--lib07-bounded-library-batch-read/CHANGE.md) is queued after LIB06. [LIB05 byte storage](archive/2026-11/platform-operations/2026-11-23--lib05-generic-object-storage-boundary/CHANGE.md) is Done as a source-only transport under Documents. Nothing here authorizes launching LIB07 while its predecessor owns the source.
