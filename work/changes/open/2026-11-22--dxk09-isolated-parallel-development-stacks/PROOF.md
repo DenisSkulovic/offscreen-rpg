@@ -68,3 +68,9 @@ Stop and restart: `pnpm dev:stop` in A killed Tilt pid `290803` and scaled the s
 
 Focused tests at this receipt: `dev-slot-app-graph.test.mjs` 3 pass, `dev-slot-project.test.mjs` included in the 6-test run, `dev-sql-tenant-grants.test.mjs` 5 pass, `dev-tilt.test.mjs` scale/stop cases pass. Whole DXK09 is not done: four-stack proof, two-browser OAuth, and a provider-free story saved through the executor remain open. Tilt API sync and `--noEmitOnError` on the live watcher remain open.
 
+**T05 hardening code receipt (2026-11-23, worktree `/home/dskul/projects/offscreen-rpg-dxk09-t05`, base `e7f9e1f7`):**
+
+`stopDevSession` and `replaceOwnedDevSessionTilt` call `assessOwnedProcess`. A SIGTERM is sent only when the PID is alive and `/proc/<pid>/stat` start ticks equal the ticks stored in `.offscreen/dev-session.json`. Missing ticks and a reused PID are not signalled. Tests: `dev-process-identity.test.mjs` 2 pass; `dev-tilt.test.mjs` includes both the mismatch and the matching-start cases; full file 21 pass. The rendered `game-api` command now uses `tsc --noEmitOnError` and `tsc --watch --noEmitOnError`. `dev-slot-app-graph.test.mjs` 3 pass. `.gitignore` already lists `.offscreen/dev-session.json`.
+
+Unattended third-worktree acceptance: **NOT RUN**. `pnpm dev` still does not provision SQL, S3, Temporal, migrations, images or port-forwards. `dev:status` still reads local receipts, not the Pod-loaded generation. No third worktree was created for this receipt, and no live slot was restarted onto the new API command.
+

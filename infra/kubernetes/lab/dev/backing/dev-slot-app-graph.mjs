@@ -111,7 +111,7 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-api', {
       name: 'api', image: imageFor('api'), imagePullPolicy: 'Never', workingDir: '/app/apps/api',
-      command: ['sh', '-c', 'pnpm exec tsc && (pnpm exec tsc --watch --preserveWatchOutput --pretty false & exec node --watch-path=dist dist/src/main.js)'],
+      command: ['sh', '-c', 'pnpm exec tsc --noEmitOnError && (pnpm exec tsc --watch --noEmitOnError --preserveWatchOutput --pretty false & exec node --watch-path=dist dist/src/main.js)'],
       ports: [{ name: 'http', containerPort: 3001 }],
       env: [
         slot, pool, env('APP_ORIGIN', `http://127.0.0.1:${input.ports.game}`),
