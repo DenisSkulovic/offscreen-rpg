@@ -389,6 +389,41 @@ test('stale process, foreign lease and foreign consumer do not scale', () => {
   rmSync(checkout, { recursive: true, force: true });
 });
 
+test('park waits through a slow forwarder exit before scaling', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-slow-'));
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-slow-src-'));
+  const sessions = environmentSessionRoot(root);
+  const record = { ...owner('dev-5', checkout), lease: { pid: 50, startTimeJiffies: '100' } };
+  writeEnvironmentSession(sessions, { ...sessionFor(record), pid: 50, forwardPid: 51 });
+  const alive = new Set([50, 51]);
+  let polls = 0;
+  const scaled = [];
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: (pid) => alive.has(pid),
+      readStartTicks: () => '100',
+      sleep: () => {
+        polls += 1;
+        if (polls >= 3) alive.delete(51);
+      },
+    },
+    signal: (pid) => {
+      if (pid === 50) alive.delete(50);
+    },
+    scaleRole: (_namespace, role) => scaled.push(role),
+    readDesiredReplicas: () => Object.fromEntries(scaled.map((role) => [role, 0])),
+    portOccupied: () => false,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.released, true);
+  assert.equal(alive.has(51), false);
+  assert.equal(scaled.length, 6);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
 test('park releases only after both processes exit and a free port, and never signals the other environment', () => {
   const root = mkdtempSync(join(tmpdir(), 'offscreen-park-pair-'));
   const checkoutA = mkdtempSync(join(tmpdir(), 'offscreen-park-a-'));

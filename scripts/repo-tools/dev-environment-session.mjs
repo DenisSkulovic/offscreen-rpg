@@ -426,7 +426,8 @@ export function parkSelectedEnvironment(input) {
     signal(Number(target.pid), 'SIGTERM');
     signalled = true;
     let gone = false;
-    for (let attempt = 0; attempt < 5; attempt += 1) {
+    // kubectl port-forward often exits after the first 250ms. Forty 50ms polls cover about two seconds.
+    for (let attempt = 0; attempt < 40; attempt += 1) {
       if (stoppedProcess(target)) {
         gone = true;
         break;
