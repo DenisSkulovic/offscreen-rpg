@@ -1,5 +1,34 @@
 # Storyteller Workshop | reality check and finish line
 
+
+**Human summary · 2026-11-23 · integration HEAD `d9a2c11e`.** The game has meaningful foundations, but is not yet a proven end-to-end Storyteller product. We are improving a development platform so several Cursor coding agents can work without interfering. Two independent full developer stacks and isolated stopping have been observed; ordinary cold startup and current-image readiness are **not yet accepted**. The latest local DXK09 branch `e93f33c7` found competing Tilt and image-loader Deployment writes; **it is not integrated**. Read the [visual developer-environment guide](../../../docs/architecture/10-developer-environments.md) before the technical [runbook](../../../docs/runbooks/dev-worktree-stacks.md).
+
+```mermaid
+flowchart LR
+  A["Done or demonstrated · independent two-slot trials"] --> B["Now · one trustworthy image/deployment owner and unattended dev start"]
+  B --> C["Next · optional lightweight environments for several Cursor agents"]
+  C --> D["Use it · API, Web and DB refactors and actual Storyteller development"]
+```
+
+**Current bottleneck:** developer-platform reliability, not a need for more speculative infrastructure. **Near-term completion condition:** an ordinary worktree can start the requested runtime, show current loaded code, make a Web/API edit, fail closed on bad compilation, and park cleanly without affecting another slot. Four simultaneous full stacks, browser OAuth, release-lab and a real end-to-end story remain separate unfinished proofs. [Actual gate](NEXT-WAVE.md) · [DXK09 proof](../../changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) · [DXK10 selected future](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
+
+## Rough progress toward the whole undertaking
+
+| Track | Rough complete | Rough remaining | Confidence / explanation |
+| --- | ---: | ---: | --- |
+| **Monorepo architecture and developer workflow** | **~65%** | **~35%** | Application retired; 18 workspace manifests, dependency tools and local affected planner exist. Authority/Writer separation, oversized module ownership, full builds, tooling health and measured cache correctness remain |
+| **Real Storyteller and playable product** | **~40%** | **~60%** | Durable Library, missions, Workdesk, checkpoint/forks and scripted game path exist. No ordinary player path executes the provider-backed Writer; no convincing live-agent/longform acceptance |
+| **Distributed reliability and Kubernetes operations** | **~25%** | **~75%** | Separate roles, outbox/Temporal, lab manifests and local process-kill tests exist. Cold-kind whole-game POC, sustained scale, end-to-end tracing and real restore are not proven |
+| **Combined undertaking** | **~40%** | **~60%** | Judgment weighted toward completing the usable Storyteller and proving the running platform, not counting finished packets |
+
+**Uncertainty: at least ±20 percentage points**, especially on Writer quality, provider behavior and operational readiness. These are estimates of *scope-adjusted remaining effort and risk*, not measured feature coverage. Earlier **85% monorepo / 60% Storyteller / 70% combined** was too optimistic for the full product + distributed Kubernetes + maintainability vision. The numbers fell because the audit **expanded the recognized finish line**, not because completed code vanished. They must be revised downward again if actual trials uncover deeper faults. There is **no defensible shipping percentage** yet.
+
+
+## Historical checkpoints and dated planning notes
+
+The entries below preserve earlier scope decisions and source/proof snapshots; **they are history, not a current startup or dispatch instruction**. Follow the current summary above and the current queue instead.
+
+
 **Current DXK09 checkpoint (2026-11-23; repository inspected at `ce8fc609`, live facts from Cursor receipts):** the separate `kind-offscreen-dev` cluster now has two independently proven PostgreSQL databases/roles, S3 bucket-scoped identities persistent across a SeaweedFS Pod restart, and two Temporal namespaces with isolated workflow routing. The first `offscreen-dev-1` application stack has run all six roles; SQL runtime DML/DDL fencing, scoped signed S3 calls, Game Authority reachability and executor activity claim have been exercised. A normal authenticated provider-free *completed story* and real browser OAuth across two slots are not yet established. **T05 two-slot partial proof is integrated at `5d8be46c`: root `dev`, `dev:status`, and `dev:stop` exist; two distinct frontends, one-sided web live updates, manual-copy API reload, compile-failure detection and isolated stop/restart are evidenced. Unattended third-worktree provisioning, API Tilt sync/no-emit-on-error, truthful runtime status and PID/start-time fenced lifecycle remain unproven. Four concurrent watched stacks and saved provider-free stories remain open.** See [the canonical worktree runbook](../../../docs/runbooks/dev-worktree-stacks.md) and [two-worktree gating for HR01–HR03](NEXT-WAVE.md). Rough overall program estimates below are historical, high-uncertainty judgments, not recalculated from the DXK09 progress; do not mistake infra maturity for Storyteller quality.
 
 
@@ -96,16 +125,6 @@ The owner envisions Chamber as a real, disposable **Scenario × Recipe × Experi
 
 
 
-## Progress, recalibrated to the real end state
-
-| Track | Rough complete | Rough remaining | Confidence / explanation |
-| --- | ---: | ---: | --- |
-| **Monorepo architecture and developer workflow** | **~65%** | **~35%** | Application retired; 18 workspace manifests, dependency tools and local affected planner exist. Authority/Writer separation, oversized module ownership, full builds, tooling health and measured cache correctness remain |
-| **Real Storyteller and playable product** | **~40%** | **~60%** | Durable Library, missions, Workdesk, checkpoint/forks and scripted game path exist. No ordinary player path executes the provider-backed Writer; no convincing live-agent/longform acceptance |
-| **Distributed reliability and Kubernetes operations** | **~25%** | **~75%** | Separate roles, outbox/Temporal, lab manifests and local process-kill tests exist. Cold-kind whole-game POC, sustained scale, end-to-end tracing and real restore are not proven |
-| **Combined undertaking** | **~40%** | **~60%** | Judgment weighted toward completing the usable Storyteller and proving the running platform, not counting finished packets |
-
-**Uncertainty: at least ±20 percentage points**, especially on Writer quality, provider behavior and operational readiness. These are estimates of *scope-adjusted remaining effort and risk*, not measured feature coverage. Earlier **85% monorepo / 60% Storyteller / 70% combined** was too optimistic for the full product + distributed Kubernetes + maintainability vision. The numbers fell because the audit **expanded the recognized finish line**, not because completed code vanished. They must be revised downward again if actual trials uncover deeper faults. There is **no defensible shipping percentage** yet.
 
 ## What definitely landed on the undertaking branch
 
