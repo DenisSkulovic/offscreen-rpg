@@ -1,0 +1,236 @@
+import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { test } from 'node:test';
+import {
+  adoptLegacyEnvironmentSession,
+  environmentSessionRoot,
+  parseDevCliArgs,
+  readEnvironmentSession,
+  resolveDevEnvironmentSelection,
+  stopSelectedEnvironment,
+  writeEnvironmentSession,
+} from './dev-environment-session.mjs';
+import {
+  cutoverAuthorizedLiveRegistry,
+  migrateRegistryV1ToV2,
+  rollbackLiveRegistryCutover,
+  writeRegistry,
+} from './dev-worktree-registry.mjs';
+
+const alive = {
+  pidAlive: () => true,
+  readStartTicks: () => '100',
+};
+
+function owner(slot, checkout) {
+  const n = Number(slot.slice(4));
+  return {
+    slotId: slot,
+    worktreePath: checkout,
+    cluster: 'kind-offscreen-dev',
+    namespace: `offscreen-${slot}`,
+    ports: { game: 13000 + n, control: 13000 + n, tilt: 14000 + n, spare: 15000 + n },
+    processIdentity: null,
+    resourceUids: { namespace: `uid-${slot}` },
+    lease: null,
+  };
+}
+
+function v1(root) {
+  const a = '/canonical/a';
+  const b = '/canonical/b';
+  writeRegistry(root, {
+    version: 1,
+    nextSequence: 5,
+    ownersByWorktree: {
+      [a]: owner('dev-1', a),
+      [b]: owner('dev-2', b),
+      '/canonical/c': owner('dev-3', '/canonical/c'),
+      '/canonical/d': owner('dev-4', '/canonical/d'),
+    },
+  });
+}
+
+test('legacy four-slot selection keeps the checkout default', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-'));
+  v1(root);
+  const selected = resolveDevEnvironmentSelection({
+    command: 'status',
+    instance: null,
+    worktree: '/canonical/a',
+    registryRoot: root,
+  });
+  assert.equal(selected.record.slotId, 'dev-1');
+  assert.equal(resolveDevEnvironmentSelection({
+    command: 'status',
+    instance: 'dev-4',
+    worktree: '/canonical/a',
+    registryRoot: root,
+  }).record.slotId, 'dev-4');
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('explicit unknown id and conflicting flags refuse', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-'));
+  v1(root);
+  assert.throws(() => resolveDevEnvironmentSelection({
+    command: 'status',
+    instance: 'dev-9',
+    worktree: '/canonical/a',
+    registryRoot: root,
+  }), (error) => error.id === 'unknown-environment');
+  assert.throws(() => parseDevCliArgs(['node', 'dev-tilt.mjs', 'new', '--instance', 'dev-1']), (error) => error.id === 'conflicting-arguments');
+  assert.throws(() => parseDevCliArgs(['node', 'dev-tilt.mjs', '--instance']), (error) => error.id === 'invalid-arguments');
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('two sessions share a checkout and stopping one leaves the other', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-'));
+  const checkout = '/canonical/shared';
+  writeRegistry(root, {
+    version: 2,
+    nextSequence: 3,
+    environmentsById: {
+      'dev-1': owner('dev-1', checkout),
+      'dev-2': owner('dev-2', checkout),
+    },
+    defaultEnvironmentByCheckout: { [checkout]: 'dev-1' },
+  });
+  const sessions = environmentSessionRoot(root);
+  const first = owner('dev-1', checkout);
+  const second = owner('dev-2', checkout);
+  writeEnvironmentSession(sessions, { ...first, checkoutPath: checkout, gamePort: first.ports.game, tiltPort: first.ports.tilt, pid: 11, processStartTicks: '100', forwardPid: 12, forwardStartTicks: '100' });
+  writeEnvironmentSession(sessions, { ...second, checkoutPath: checkout, gamePort: second.ports.game, tiltPort: second.ports.tilt, pid: 21, processStartTicks: '100', forwardPid: 22, forwardStartTicks: '100' });
+  /** @type {number[]} */
+  const signalled = [];
+  /** @type {string[]} */
+  const scaled = [];
+  const stopped = stopSelectedEnvironment({
+    owner: owner('dev-2', checkout),
+    sessionRoot: sessions,
+    processDeps: alive,
+    signal: (pid) => signalled.push(pid),
+    scale: (namespace) => scaled.push(namespace),
+  });
+  assert.equal(stopped.ok, true);
+  assert.deepEqual(signalled, [21, 22]);
+  assert.deepEqual(scaled, ['offscreen-dev-2']);
+  assert.equal(readEnvironmentSession(sessions, 'dev-1').pid, 11);
+  assert.equal(readEnvironmentSession(sessions, 'dev-1').stopped, undefined);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('stale pid, foreign namespace and corrupt legacy do not signal or scale', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-fu02-wt-'));
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-'));
+  const record = owner('dev-3', checkout);
+  const sessions = environmentSessionRoot(root);
+  writeEnvironmentSession(sessions, {
+    ...record,
+    checkoutPath: checkout,
+    gamePort: record.ports.game,
+    tiltPort: record.ports.tilt,
+    pid: 5,
+    processStartTicks: '100',
+  });
+  /** @type {number[]} */
+  const signalled = [];
+  const stale = stopSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: { pidAlive: () => true, readStartTicks: () => '999' },
+    signal: (pid) => signalled.push(pid),
+    scale: () => signalled.push(-1),
+  });
+  assert.equal(stale.ok, false);
+  assert.equal(stale.reason, 'start_time_mismatch');
+  assert.deepEqual(signalled, []);
+  const foreign = stopSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    session: { ...record, slotId: 'dev-3', namespace: 'offscreen-dev-9', checkoutPath: checkout, gamePort: record.ports.game, tiltPort: record.ports.tilt, pid: 5, processStartTicks: '100' },
+    processDeps: alive,
+    signal: (pid) => signalled.push(pid),
+    scale: () => signalled.push(-1),
+  });
+  assert.equal(foreign.reason, 'slot_or_namespace_mismatch');
+  mkdirSync(join(checkout, '.offscreen'), { recursive: true });
+  writeFileSync(join(checkout, '.offscreen', 'dev-session.json'), '{');
+  assert.throws(() => adoptLegacyEnvironmentSession({
+    worktree: checkout,
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: alive,
+  }), (error) => error.id === 'corrupt-session');
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('verified legacy session is copied and the original file stays', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-fu02-legacy-'));
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-'));
+  const record = owner('dev-1', checkout);
+  mkdirSync(join(checkout, '.offscreen'), { recursive: true });
+  const legacy = {
+    pid: 7,
+    processStartTicks: '100',
+    forwardPid: 8,
+    forwardStartTicks: '100',
+    slotId: 'dev-1',
+    namespace: record.namespace,
+    gamePort: record.ports.game,
+    tiltPort: record.ports.tilt,
+  };
+  writeFileSync(join(checkout, '.offscreen', 'dev-session.json'), JSON.stringify(legacy));
+  const adopted = adoptLegacyEnvironmentSession({
+    worktree: checkout,
+    owner: record,
+    sessionRoot: environmentSessionRoot(root),
+    processDeps: alive,
+  });
+  assert.equal(adopted.slotId, 'dev-1');
+  assert.equal(readFileSync(join(checkout, '.offscreen', 'dev-session.json'), 'utf8').includes('dev-1'), true);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('authorized cutover preserves ids and a later edit blocks rollback', () => {
+  const previous = process.env.OFFSCREEN_DEV_WORKTREE_REGISTRY;
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-live-'));
+  process.env.OFFSCREEN_DEV_WORKTREE_REGISTRY = root;
+  try {
+    v1(root);
+    assert.throws(() => cutoverAuthorizedLiveRegistry(root, { ok: true, sessionsVerified: true }, {}), (error) => error.id === 'migration-unauthorized');
+    assert.throws(() => migrateRegistryV1ToV2(root, { authorizeCutover: true }), (error) => error.id === 'live-migration-refused');
+    const v2 = cutoverAuthorizedLiveRegistry(root, { ok: true, sessionsVerified: true }, { authorizeLiveCutover: true });
+    assert.equal(v2.environmentsById['dev-1'].resourceUids.namespace, 'uid-dev-1');
+    assert.equal(v2.defaultEnvironmentByCheckout['/canonical/a'], 'dev-1');
+    writeRegistry(root, v2);
+    v2.nextSequence = 99;
+    writeRegistry(root, v2);
+    assert.throws(() => rollbackLiveRegistryCutover(root), (error) => error.id === 'rollback-refused');
+  } finally {
+    if (previous === undefined) delete process.env.OFFSCREEN_DEV_WORKTREE_REGISTRY;
+    else process.env.OFFSCREEN_DEV_WORKTREE_REGISTRY = previous;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('explicit startup resolves without allocating an unknown id', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu02-'));
+  v1(root);
+  const selected = resolveDevEnvironmentSelection({
+    command: 'up',
+    instance: 'dev-2',
+    worktree: '/canonical/a',
+    registryRoot: root,
+  });
+  assert.equal(selected.action, 'startup-not-yet-bound');
+  assert.equal(selected.record.slotId, 'dev-2');
+  const after = JSON.parse(readFileSync(join(root, 'owners.json'), 'utf8'));
+  assert.equal(after.version, 1);
+  assert.equal(after.nextSequence, 5);
+  rmSync(root, { recursive: true, force: true });
+});

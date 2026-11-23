@@ -16,6 +16,14 @@ import {
 } from './stack-preflight.mjs';
 import { evaluateDevLoadedRuntimeReadiness } from '../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
 import { assessOwnedProcess, readProcessStartTicks } from './dev-process-identity.mjs';
+import {
+  environmentSessionRoot,
+  isAllocatorRefusal as isSelectionRefusal,
+  parseDevCliArgs,
+  readEnvironmentSession,
+  resolveDevEnvironmentSelection,
+  stopSelectedEnvironment,
+} from './dev-environment-session.mjs';
 import { reconcileOwnedDevSlot } from './dev-slot-startup.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -118,13 +126,21 @@ export function stopDevSession(worktree, deps = {}) {
     }
   }
 
-  try {
-    unlinkSync(file);
-  } catch {
-    // ignore
+  if (ownership.owned) {
+    try {
+      unlinkSync(file);
+    } catch {
+      // ignore
+    }
   }
 
-  return { hadSession: true, signalled, reason: ownership.reason };
+  return {
+    hadSession: true,
+    signalled,
+    scaled: false,
+    reason: ownership.reason,
+    sessionRetained: !ownership.owned,
+  };
 }
 
 const SLOT_NAMESPACE = /^offscreen-dev-[1-9][0-9]*$/;
@@ -716,7 +732,7 @@ export function printDevStatus(worktree, deps = {}) {
   const log = deps.log ?? ((line) => console.log(line));
   const roles = deps.roles ?? DEV_RUNTIME_FRESHNESS_ROLES;
   const evaluate = deps.evaluateDevLoadedRuntimeReadiness ?? evaluateDevLoadedRuntimeReadiness;
-  const session = readDevSession(worktree);
+  const session = deps.session ?? readDevSession(worktree);
   if (!session) {
     return 2;
   }
@@ -761,23 +777,85 @@ function runDevStatusCli() {
   }
 }
 
-function runDevStopCli() {
-  const session = readDevSession(REPO_ROOT);
-  stopDevSession(REPO_ROOT);
-  if (session?.namespace) {
-    scaleDevSlotWorkloads(session.namespace);
+function runDevStopCli(selection) {
+  const registryRoot = devWorktreeRegistryRoot();
+  const sessionRoot = environmentSessionRoot(registryRoot);
+  if (!selection?.record) {
+    const legacy = readDevSession(REPO_ROOT);
+    const stopped = stopDevSession(REPO_ROOT);
+    if (stopped.signalled && stopped.reason === 'pid_and_start_time' && legacy?.namespace) {
+      scaleDevSlotWorkloads(legacy.namespace);
+    }
+    const quiet = stopped.signalled || stopped.reason === 'no_session' || stopped.reason === 'not_running';
+    process.exit(quiet ? 0 : 1);
+  }
+  const result = stopSelectedEnvironment({
+    owner: selection.record,
+    sessionRoot,
+    processDeps: {
+      pidAlive,
+      readStartTicks: (pid) => readProcessStartTicks(pid),
+    },
+    scale: (namespace) => scaleDevSlotWorkloads(namespace),
+  });
+  if (!result.ok) {
+    console.error(`Refusing to stop ${selection.record.slotId}: ${result.reason}`);
+    process.exit(1);
   }
   process.exit(0);
 }
 
+function refuseStartupNotBound(record) {
+  const id = record?.slotId ?? 'new';
+  console.error(`startup-not-yet-bound: ${id} cannot enter worktree-keyed startup until FU03 binds Tilt to that record.`);
+  process.exit(1);
+}
+
 const invokedAsScript = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
-  const command = process.argv[2];
-  if (command === 'status') {
-    runDevStatusCli();
-  } else if (command === 'stop') {
-    runDevStopCli();
-  } else {
+  let parsed;
+  try {
+    parsed = parseDevCliArgs(process.argv);
+  } catch (error) {
+    if (isSelectionRefusal(error)) {
+      console.error(`${error.id}: ${error.message}`);
+      process.exit(1);
+    }
+    throw error;
+  }
+  if (parsed.command === 'up' && !parsed.instance) {
     await runDevTiltCli();
+  } else if (parsed.command === 'status' && !parsed.instance) {
+    runDevStatusCli();
+  } else if (parsed.command === 'stop' && !parsed.instance) {
+    runDevStopCli(null);
+  } else {
+    let selection;
+    try {
+      selection = resolveDevEnvironmentSelection({
+        command: parsed.command,
+        instance: parsed.instance,
+        worktree: REPO_ROOT,
+        registryRoot: devWorktreeRegistryRoot(),
+      });
+    } catch (error) {
+      if (isSelectionRefusal(error)) {
+        console.error(`${error.id}: ${error.message}`);
+        process.exit(1);
+      }
+      throw error;
+    }
+    if (selection.action === 'startup-not-yet-bound') {
+      refuseStartupNotBound(selection.record);
+    } else if (selection.action === 'status') {
+      const session = readEnvironmentSession(
+        environmentSessionRoot(devWorktreeRegistryRoot()),
+        selection.record.slotId,
+      );
+      const code = printDevStatus(selection.record.worktreePath, { session });
+      process.exit(code);
+    } else if (selection.action === 'stop') {
+      runDevStopCli(selection);
+    }
   }
 }

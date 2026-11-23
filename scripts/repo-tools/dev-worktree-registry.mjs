@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { closeSync, copyFileSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
@@ -6,6 +7,7 @@ export const REGISTRY_VERSION = 1;
 export const REGISTRY_VERSION_V2 = 2;
 export const DEV_CLUSTER_NAME = 'kind-offscreen-dev';
 export const REGISTRY_V1_BACKUP = 'owners.json.v1-backup';
+export const REGISTRY_CUTOVER_RECEIPT = 'owners.json.v2-cutover.json';
 export const REGISTRY_FILENAME = 'owners.json';
 export const LOCK_FILENAME = 'owners.lock';
 
@@ -105,7 +107,7 @@ export function lockFilePath(registryRoot) {
  * @param {string} registryRoot
  * @returns {unknown}
  */
-function readRegistryJson(registryRoot) {
+export function readRegistryJson(registryRoot) {
   const file = registryFilePath(registryRoot);
   if (!existsSync(file)) return null;
   try {
@@ -535,6 +537,87 @@ export function migrateRegistryV1ToV2(registryRoot, options = {}) {
     }
     const written = readRegistryJson(registryRoot);
     return validateRegistryV2(written);
+  });
+}
+
+/**
+ * Live host cutover. Separate from migrateRegistryV1ToV2 so the FU01 live
+ * refusal stays intact. Requires an already-passing preflight and explicit
+ * authorization. Does not stop processes or change workload state.
+ *
+ * @param {string} registryRoot
+ * @param {{ ok?: boolean, sessionsVerified?: boolean }} preflight
+ * @param {{ authorizeLiveCutover?: boolean }} [options]
+ */
+export function cutoverAuthorizedLiveRegistry(registryRoot, preflight, options = {}) {
+  if (options.authorizeLiveCutover !== true) {
+    throw refusal('migration-unauthorized', 'Live registry cutover requires explicit authorization.');
+  }
+  if (!preflight || preflight.ok !== true || preflight.sessionsVerified !== true) {
+    throw refusal('cutover-preflight-failed', 'Live cutover requires a passing session preflight.');
+  }
+  const liveRoot = liveDevRegistryRoot();
+  const left = existsSync(registryRoot) ? realpathSync(registryRoot) : resolve(registryRoot);
+  const right = existsSync(liveRoot) ? realpathSync(liveRoot) : resolve(liveRoot);
+  if (left !== right) {
+    throw refusal('live-migration-refused', 'Authorized live cutover only applies to the real host registry.');
+  }
+  return withRegistryLock({ registryRoot }, () => {
+    const file = registryFilePath(registryRoot);
+    const original = readFileSync(file, 'utf8');
+    const raw = JSON.parse(original);
+    const v1 = validateRegistryV1(raw);
+    const v2 = convertRegistryV1ToV2(v1);
+    validateRegistryV2(v2);
+    const backup = join(registryRoot, REGISTRY_V1_BACKUP);
+    if (existsSync(backup)) {
+      throw refusal('backup-failed', 'A v1 backup already exists; refusing to overwrite it.');
+    }
+    try {
+      copyFileSync(file, backup);
+    } catch (error) {
+      throw refusal('backup-failed', `Registry backup failed: ${/** @type {Error} */ (error).message}`);
+    }
+    try {
+      writeRegistry(registryRoot, v2);
+    } catch (error) {
+      writeFileSync(file, original, 'utf8');
+      throw refusal('registry-write-failed', `Registry v2 write failed: ${/** @type {Error} */ (error).message}`);
+    }
+    const written = readFileSync(file, 'utf8');
+    const receipt = {
+      cutoverAt: new Date().toISOString(),
+      v2Sha256: createHash('sha256').update(written).digest('hex'),
+      backup,
+      slotIds: Object.keys(v2.environmentsById),
+      recovery: 'Restore owners.json.v1-backup only through rollbackLiveRegistryCutover while the v2 hash still matches this receipt.',
+    };
+    writeFileSync(join(registryRoot, REGISTRY_CUTOVER_RECEIPT), `${JSON.stringify(receipt)}\n`, 'utf8');
+    return validateRegistryV2(JSON.parse(written));
+  });
+}
+
+/**
+ * Restores the v1 backup only when the current file is still the cutover v2.
+ *
+ * @param {string} registryRoot
+ */
+export function rollbackLiveRegistryCutover(registryRoot) {
+  return withRegistryLock({ registryRoot }, () => {
+    const receiptPath = join(registryRoot, REGISTRY_CUTOVER_RECEIPT);
+    if (!existsSync(receiptPath)) {
+      throw refusal('cutover-receipt-missing', 'No cutover receipt; refusing to restore a backup.');
+    }
+    const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+    const file = registryFilePath(registryRoot);
+    const current = readFileSync(file, 'utf8');
+    const hash = createHash('sha256').update(current).digest('hex');
+    if (hash !== receipt.v2Sha256) {
+      throw refusal('rollback-refused', 'Registry changed after cutover; refusing to overwrite it with the v1 backup.');
+    }
+    const backup = join(registryRoot, REGISTRY_V1_BACKUP);
+    writeFileSync(file, readFileSync(backup, 'utf8'), 'utf8');
+    return validateRegistryV1(JSON.parse(readFileSync(file, 'utf8')));
   });
 }
 

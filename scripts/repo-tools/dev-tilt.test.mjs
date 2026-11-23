@@ -267,7 +267,7 @@ test('stop(A) does not delete or alter B session file', () => {
   stopDevSession(worktreeA);
   const afterB = readDevSession(worktreeB);
 
-  assert.equal(readDevSession(worktreeA), null);
+  assert.equal(readDevSession(worktreeA)?.slotId, 'dev-8');
   assert.deepEqual(afterB, beforeB);
 });
 
