@@ -1,5 +1,7 @@
 # quality evaluation | proposed Changes
 
+- [LIB03 content-package ownership](2026-11-23--lib03-content-package-ownership/CHANGE.md): future source-grounded importer ownership move; planner-blocked.
+
 [Backlog index](../README.md) · [Open Changes](../../README.md)
 
 | Change | Proposed outcome |
