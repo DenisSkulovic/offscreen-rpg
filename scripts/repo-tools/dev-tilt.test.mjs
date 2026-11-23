@@ -728,3 +728,128 @@ test('stop signals only the process with the recorded start time', () => {
   assert.equal(result.signalled, true);
   assert.deepEqual(signalled, [4242]);
 });
+
+function ownedLaunch(worktree, extra) {
+  const registryRoot = mkdtempSync(join(tmpdir(), 'offscreen-reg-'));
+  /** @type {string[]} */
+  const lines = [];
+  /** @type {{ namespace: string, role: string }[]} */
+  const scaled = [];
+  let alive = true;
+  return {
+    registryRoot,
+    lines,
+    scaled,
+    launch(overrides = {}) {
+      return runDevTiltLaunch({
+        worktree,
+        registryRoot,
+        owner: {
+          ...FAKE_OWNER,
+          worktreePath: worktree,
+        },
+        allocateDevWorktreeOwner: () => ({ ...FAKE_OWNER, worktreePath: worktree }),
+        collectDefaultProbes: async () => ({ memAvailableKib: 8_000_000 }),
+        runStackPreflight: () => okPreflight(),
+        commandOnPath: () => true,
+        probeLoopbackPortOccupied: alwaysFreeProbe,
+        spawnFn: fakeSpawn(),
+        reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true, record: { ...FAKE_OWNER, worktreePath: worktree } }),
+        startupWindowMs: 0,
+        startupPollMs: 1,
+        sleep: async () => {},
+        pidAlive: () => alive,
+        readStartTicks: () => '11',
+        signal: () => {
+          alive = false;
+        },
+        scaleRole: (namespace, role) => {
+          if (extra?.scaleError) throw new Error(extra.scaleError);
+          scaled.push({ namespace, role });
+        },
+        readDesiredReplicas: (namespace) => Object.fromEntries(LAB_RESOURCES.map((role) => [
+          role,
+          extra?.replicas?.(namespace, role) ?? 0,
+        ])),
+        log: (line) => lines.push(line),
+        supervisePortForward: async () => {},
+        exitAfterReady: true,
+        exit: (code) => {
+          lines.push(`exit:${code}`);
+        },
+        ...overrides,
+      });
+    },
+  };
+}
+
+test('partial startup parks all six owned workloads and leaves the other environment', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-partial-'));
+  const harness = ownedLaunch(worktree);
+  await harness.launch({
+    collectStartupReadiness: async () => fullReadiness({
+      'game-api': false,
+      'game-authority': false,
+      'game-control': false,
+      'game-executor': false,
+      'game-relay': false,
+    }),
+  });
+  assert.equal(harness.scaled.length, 6);
+  assert.equal(harness.scaled.every((call) => call.namespace === 'offscreen-dev-2'), true);
+  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), true);
+  assert.equal(harness.lines.some((line) => line.startsWith('rollback-incomplete:')), false);
+});
+
+test('memory exhaustion after admission parks the attempted slot', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-mem-after-'));
+  const harness = ownedLaunch(worktree);
+  let probes = 0;
+  await harness.launch({
+    collectDefaultProbes: async () => {
+      probes += 1;
+      return { memAvailableKib: probes === 1 ? 8_000_000 : 1 };
+    },
+    runStackPreflight: (probe) => (probe.memAvailableKib === 1
+      ? { ok: false, refusals: [{ id: 'memory-low', message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).' }] }
+      : okPreflight()),
+    collectStartupReadiness: async () => {
+      throw new Error('readiness must not be consulted after memory exhaustion');
+    },
+  });
+  assert.equal(harness.scaled.length, 6);
+  assert.match(harness.lines.find((line) => line.startsWith('startup-parked:')) ?? '', /4 GiB/);
+});
+
+test('a fully ready startup stays up and does not scale', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-all-ready-'));
+  const harness = ownedLaunch(worktree);
+  await harness.launch({
+    collectStartupReadiness: async () => fullReadiness(),
+  });
+  assert.deepEqual(harness.scaled, []);
+  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), false);
+});
+
+test('a failed rollback reports rollback-incomplete and does not claim parked', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-rollback-fail-'));
+  const harness = ownedLaunch(worktree, { scaleError: 'scale denied' });
+  await harness.launch({
+    collectStartupReadiness: async () => fullReadiness({ 'game-web': false }),
+  });
+  assert.equal(harness.lines.some((line) => line.startsWith('rollback-incomplete:')), true);
+  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), false);
+  assert.match(harness.lines.find((line) => line.startsWith('rollback-incomplete:')) ?? '', /offscreen-dev-2/);
+});
+
+test('replica readback keeps another environment out of the rollback report', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-foreign-'));
+  const harness = ownedLaunch(worktree, {
+    replicas: (namespace) => (namespace === 'offscreen-dev-6' ? 1 : 0),
+  });
+  await harness.launch({
+    collectStartupReadiness: async () => fullReadiness({ 'game-api': false }),
+  });
+  assert.equal(harness.scaled.some((call) => call.namespace === 'offscreen-dev-6'), false);
+  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), true);
+});

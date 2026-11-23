@@ -188,6 +188,116 @@ export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync, roles = SL
   return namespace;
 }
 
+const OWNED_STARTUP_WINDOW_MS = 900_000;
+
+/**
+ * Deployment readyReplicas for the six slot workloads. Missing output is not ready.
+ * @param {string} namespace
+ * @param {typeof spawnSync} [spawnFn]
+ */
+export function collectOwnedWorkloadReadiness(namespace, spawnFn = spawnSync) {
+  if (!SLOT_NAMESPACE.test(namespace)) {
+    throw new Error(`refusing to read readiness in ${namespace}`);
+  }
+  /** @type {Record<string, boolean>} */
+  const readiness = {};
+  for (const name of SLOT_WORKLOADS) {
+    const result = spawnFn('kubectl', [
+      '--context', 'kind-offscreen-dev',
+      '-n', namespace,
+      'get', 'deploy', name,
+      '-o', 'jsonpath={.status.readyReplicas}',
+    ], { encoding: 'utf8' });
+    readiness[name] = result.status === 0 && String(result.stdout).trim() === '1';
+  }
+  return readiness;
+}
+
+/**
+ * Park the attempted slot after a failed fresh start. Reservation and tenants stay.
+ * A failed park is rollback-incomplete and is not reported as parked.
+ * @param {{
+ *   worktree: string,
+ *   owner: { slotId: string, worktreePath: string, namespace: string, ports: { game: number, tilt: number }, resourceUids?: Record<string, string> | null },
+ *   registryRoot: string,
+ *   reason: string,
+ *   signal?: (pid: number, signal: string) => void,
+ *   pidAlive?: (pid: number) => boolean,
+ *   readStartTicks?: (pid: number) => string | null,
+ *   scaleRole?: (namespace: string, role: string) => void,
+ *   readDesiredReplicas?: (namespace: string) => Record<string, number>,
+ *   log?: (line: string) => void,
+ * }} input
+ */
+export function rollbackFailedOwnedStartup(input) {
+  const log = input.log ?? ((line) => console.error(line));
+  const namespace = input.owner.namespace;
+  const ownedResources = {
+    slotId: input.owner.slotId,
+    namespace,
+    workloads: [...SLOT_WORKLOADS],
+    resourceUids: input.owner.resourceUids ?? null,
+  };
+  const sessionRoot = environmentSessionRoot(input.registryRoot);
+  const environmentSession = readEnvironmentSession(sessionRoot, input.owner.slotId);
+  if (!environmentSession) {
+    try {
+      stopDevSession(input.worktree, {
+        signal: input.signal,
+        pidAlive: input.pidAlive,
+        readStartTicks: input.readStartTicks,
+      });
+      const scaleAll = input.scaleRole
+        ? SLOT_WORKLOADS.forEach((role) => input.scaleRole(namespace, role))
+        : scaleDevSlotWorkloads(namespace);
+      void scaleAll;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      log(`rollback-incomplete: ${input.reason}; ${message}; ${JSON.stringify(ownedResources)}`);
+      return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources };
+    }
+    const desired = (input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)))(namespace);
+    const leftover = SLOT_WORKLOADS.filter((role) => desired?.[role] !== 0);
+    if (leftover.length > 0) {
+      log(`rollback-incomplete: ${input.reason}; replicas still desired; ${JSON.stringify({ ...ownedResources, leftover })}`);
+      return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources: { ...ownedResources, leftover } };
+    }
+    log(`startup-parked: ${input.reason}; ${namespace}`);
+    return { ok: true, id: 'startup-parked', parked: true, ownedResources };
+  }
+  let park;
+  try {
+    park = parkSelectedEnvironment({
+      owner: input.owner,
+      sessionRoot: environmentSessionRoot(input.registryRoot),
+      signal: input.signal,
+      processDeps: {
+        pidAlive: input.pidAlive ?? pidAlive,
+        readStartTicks: input.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+        sleep: () => {},
+      },
+      scaleRole: input.scaleRole ?? ((ns, role) => scaleDevSlotWorkloads(ns, spawnSync, [role])),
+      readDesiredReplicas: input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    log(`rollback-incomplete: ${input.reason}; ${message}; ${JSON.stringify(ownedResources)}`);
+    return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources };
+  }
+  if (!park?.ok || park.released !== true) {
+    log(`rollback-incomplete: ${input.reason}; ${park?.reason ?? 'park failed'}; ${JSON.stringify({ ...ownedResources, scaledRoles: park?.scaledRoles ?? [] })}`);
+    return { ok: false, id: 'rollback-incomplete', parked: false, reason: park?.reason, ownedResources };
+  }
+  const desired = (input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)))(namespace);
+  const leftover = SLOT_WORKLOADS.filter((role) => desired?.[role] !== 0);
+  if (leftover.length > 0) {
+    log(`rollback-incomplete: ${input.reason}; replicas still desired; ${JSON.stringify({ ...ownedResources, leftover })}`);
+    return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources: { ...ownedResources, leftover } };
+  }
+  log(`startup-parked: ${input.reason}; ${namespace}`);
+  return { ok: true, id: 'startup-parked', parked: true, ownedResources };
+}
+
 export function readDevSlotDesiredReplicas(namespace, spawnFn = spawnSync) {
   if (!SLOT_NAMESPACE.test(namespace)) {
     throw new Error(`refusing to read workloads in ${namespace}`);
@@ -880,6 +990,67 @@ export async function runDevTiltLaunch(deps = {}) {
   }
 
   if (deps.exitAfterSession) {
+    return;
+  }
+
+  const startupWindowMs = deps.startupWindowMs ?? OWNED_STARTUP_WINDOW_MS;
+  const startupPollMs = deps.startupPollMs ?? 5_000;
+  const pause = deps.sleep ?? sleep;
+  const readStartup = deps.collectStartupReadiness
+    ?? ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
+  let startupFailure = null;
+  for (let elapsed = 0; elapsed <= startupWindowMs; elapsed += startupPollMs) {
+    const during = runPreflight(await collectProbes());
+    const exhausted = (during.refusals ?? []).filter((refusal) =>
+      refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
+    );
+    if (exhausted.length > 0) {
+      startupFailure = exhausted[0].message;
+      break;
+    }
+    if (child.exitCode !== null && child.exitCode !== undefined) {
+      startupFailure = `tilt exited ${child.exitCode} before the six workloads were ready`;
+      break;
+    }
+    const readiness = await readStartup(ownerRecord.namespace);
+    const assessment = assessDevLaunch({
+      preflightOk: true,
+      preflightRefusals: [],
+      tiltOnPath: true,
+      ports: { game: 'owned', tilt: 'owned' },
+      readiness,
+      gamePort,
+      tiltPort,
+    });
+    if (assessment.ok) {
+      startupFailure = null;
+      break;
+    }
+    if (elapsed === startupWindowMs) {
+      const missing = assessment.refusals.map((refusal) => refusal.id).join(',');
+      startupFailure = `startup window elapsed before six workloads were ready (${missing})`;
+      break;
+    }
+    await pause(startupPollMs);
+  }
+  if (startupFailure) {
+    rollbackFailedOwnedStartup({
+      worktree,
+      owner: { ...ownerRecord, worktreePath: worktree },
+      registryRoot,
+      reason: startupFailure,
+      signal: deps.signal,
+      pidAlive: deps.pidAlive ?? pidAlive,
+      readStartTicks: readStart,
+      scaleRole: deps.scaleRole,
+      readDesiredReplicas: deps.readDesiredReplicas,
+      log: deps.log,
+    });
+    exitFn(1);
+    return;
+  }
+
+  if (deps.exitAfterReady) {
     return;
   }
 
