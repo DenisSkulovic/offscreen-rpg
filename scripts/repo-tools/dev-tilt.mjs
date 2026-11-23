@@ -1,21 +1,147 @@
 #!/usr/bin/env node
 import { createConnection } from 'node:net';
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  allocateDevWorktreeOwner,
+  isAllocatorRefusal,
+} from './dev-worktree-allocator.mjs';
 import {
   collectDefaultProbes,
   runStackPreflight,
   CONTEXT_NAME,
 } from './stack-preflight.mjs';
+import { evaluateDevLoadedRuntimeReadiness } from '../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const LOOPBACK = '127.0.0.1';
 const GAME_PORT = 3000;
 const TILT_PORT = 10350;
-const PID_FILE = join(tmpdir(), 'offscreen-rpg-dev-tilt.json');
+
+/** @typedef {{
+ *   pid: number | null,
+ *   slotId: string,
+ *   namespace: string,
+ *   gamePort: number,
+ *   tiltPort: number,
+ *   startedAt: string,
+ *   stopped?: boolean,
+ *   stoppedAt?: string,
+ * }} DevSessionRecord */
+
+/**
+ * @param {string} worktree
+ * @returns {string}
+ */
+export function devSessionPath(worktree) {
+  return join(resolve(worktree), '.offscreen', 'dev-session.json');
+}
+
+/**
+ * @param {string} worktree
+ * @returns {DevSessionRecord | null}
+ */
+export function readDevSession(worktree) {
+  const file = devSessionPath(worktree);
+  if (!existsSync(file)) return null;
+  try {
+    const data = JSON.parse(readFileSync(file, 'utf8'));
+    if (!data || typeof data !== 'object') return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @param {string} worktree
+ * @param {DevSessionRecord} session
+ */
+export function writeDevSession(worktree, session) {
+  const file = devSessionPath(worktree);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, `${JSON.stringify(session)}\n`, 'utf8');
+}
+
+/**
+ * @param {string} worktree
+ * @returns {{ hadSession: boolean, signalled: boolean }}
+ */
+export function stopDevSession(worktree) {
+  const file = devSessionPath(worktree);
+  if (!existsSync(file)) {
+    return { hadSession: false, signalled: false };
+  }
+
+  const session = readDevSession(worktree);
+  if (!session) {
+    try {
+      unlinkSync(file);
+    } catch {
+      // ignore
+    }
+    return { hadSession: false, signalled: false };
+  }
+
+  let signalled = false;
+  const pid = Number(session.pid);
+  if (Number.isInteger(pid) && pid > 0 && pidAlive(pid)) {
+    try {
+      process.kill(pid, 'SIGTERM');
+      signalled = true;
+    } catch {
+      // ignore
+    }
+  }
+
+  try {
+    unlinkSync(file);
+  } catch {
+    // ignore
+  }
+
+  return { hadSession: true, signalled };
+}
+
+const SLOT_NAMESPACE = /^offscreen-dev-[1-9][0-9]*$/;
+const SLOT_WORKLOADS = [
+  'game-web',
+  'game-api',
+  'game-authority',
+  'game-control',
+  'game-executor',
+  'game-relay',
+];
+
+/**
+ * Scale only this slot's application deployments to zero. Tenants stay.
+ *
+ * @param {string} namespace
+ * @param {typeof spawnSync} [spawnFn]
+ */
+export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync) {
+  if (!SLOT_NAMESPACE.test(namespace)) {
+    throw new Error(`refusing to scale workloads in ${namespace}`);
+  }
+  const result = spawnFn(
+    'kubectl',
+    [
+      '--context', 'kind-offscreen-dev',
+      '-n', namespace,
+      'scale', 'deploy',
+      ...SLOT_WORKLOADS,
+      '--replicas=0',
+    ],
+    { encoding: 'utf8' },
+  );
+  if (result.status !== 0) {
+    throw new Error(result.stderr || `scale failed for ${namespace}`);
+  }
+  return namespace;
+}
 
 export const LAB_RESOURCES = Object.freeze([
   'game-web',
@@ -25,6 +151,47 @@ export const LAB_RESOURCES = Object.freeze([
   'game-executor',
   'game-relay',
 ]);
+
+/** @typedef {{ role: string, receiptRole: string, compiledEntryPath: string }} DevRuntimeFreshnessRole */
+
+export const DEV_RUNTIME_FRESHNESS_ROLES = Object.freeze(
+  /** @type {const} */ ([
+    { role: 'web', receiptRole: 'web', compiledEntryPath: 'apps/web/.next/BUILD_ID' },
+    { role: 'api', receiptRole: 'api', compiledEntryPath: 'apps/api/dist/src/main.js' },
+    {
+      role: 'authority',
+      receiptRole: 'game-authority',
+      compiledEntryPath: 'apps/game-authority/dist/src/bootstrap/main.js',
+    },
+    {
+      role: 'control',
+      receiptRole: 'worker-control',
+      compiledEntryPath: 'apps/worker/dist/src/bootstrap/control-main.js',
+    },
+    {
+      role: 'executor',
+      receiptRole: 'worker-executor',
+      compiledEntryPath: 'apps/worker/dist/src/bootstrap/executor-main.js',
+    },
+    {
+      role: 'relay',
+      receiptRole: 'worker-relay',
+      compiledEntryPath: 'apps/worker/dist/src/bootstrap/main.js',
+    },
+  ]),
+);
+
+/**
+ * @param {string} displayRole
+ * @param {{ ready: boolean, reason: string, currentGeneration: string | null }} status
+ * @returns {string}
+ */
+export function formatDevFreshnessStatusLine(displayRole, status) {
+  if (status.ready) {
+    return `${displayRole} READY ${status.reason} ${status.currentGeneration}`;
+  }
+  return `${displayRole} NOT READY ${status.reason}`;
+}
 
 /** @type {Record<string, string>} */
 export const DEPLOYMENT_NAMESPACE = Object.freeze({
@@ -40,11 +207,26 @@ export const DEPLOYMENT_NAMESPACE = Object.freeze({
 /** @typedef {{ game: 'free'|'owned'|'foreign', tilt: 'free'|'owned'|'foreign' }} DevPorts */
 /** @typedef {Record<string, boolean | undefined>} ReadinessMap */
 
-const READY_URLS = Object.freeze({
-  game: `http://${LOOPBACK}:${GAME_PORT}/`,
-  control: `http://${LOOPBACK}:${GAME_PORT}/control`,
-  tilt: `http://${LOOPBACK}:${TILT_PORT}/`,
-});
+/**
+ * @param {number} gamePort
+ * @param {number} tiltPort
+ */
+export function buildReadyUrls(gamePort, tiltPort) {
+  return {
+    game: `http://${LOOPBACK}:${gamePort}/`,
+    control: `http://${LOOPBACK}:${gamePort}/control`,
+    tilt: `http://${LOOPBACK}:${tiltPort}/`,
+  };
+}
+
+/**
+ * @returns {string}
+ */
+export function devWorktreeRegistryRoot() {
+  const fromEnv = process.env.OFFSCREEN_DEV_WORKTREE_REGISTRY?.trim();
+  if (fromEnv) return resolve(fromEnv);
+  return join(homedir(), '.local', 'state', 'offscreen-rpg', 'dev-worktree-registry');
+}
 
 /**
  * @param {{
@@ -53,10 +235,14 @@ const READY_URLS = Object.freeze({
  *   tiltOnPath: boolean,
  *   ports: DevPorts,
  *   readiness: ReadinessMap,
+ *   gamePort?: number,
+ *   tiltPort?: number,
  * }} input
- * @returns {{ ok: boolean, urls: typeof READY_URLS | null, refusals: DevRefusal[] }}
+ * @returns {{ ok: boolean, urls: ReturnType<typeof buildReadyUrls> | null, refusals: DevRefusal[] }}
  */
 export function assessDevLaunch(input) {
+  const gamePort = input.gamePort ?? GAME_PORT;
+  const tiltPort = input.tiltPort ?? TILT_PORT;
   /** @type {DevRefusal[]} */
   const refusals = [];
 
@@ -71,13 +257,13 @@ export function assessDevLaunch(input) {
   if (input.ports.game === 'foreign') {
     refusals.push({
       id: 'foreign-game-port',
-      message: `${LOOPBACK}:${GAME_PORT} is in use by a non-owned listener.`,
+      message: `${LOOPBACK}:${gamePort} is in use by a non-owned listener.`,
     });
   }
   if (input.ports.tilt === 'foreign') {
     refusals.push({
       id: 'foreign-tilt-port',
-      message: `${LOOPBACK}:${TILT_PORT} is in use by a non-owned listener.`,
+      message: `${LOOPBACK}:${tiltPort} is in use by a non-owned listener.`,
     });
   }
 
@@ -109,7 +295,7 @@ export function assessDevLaunch(input) {
 
   return {
     ok: launchOk,
-    urls: launchOk ? { ...READY_URLS } : null,
+    urls: launchOk ? buildReadyUrls(gamePort, tiltPort) : null,
     refusals,
   };
 }
@@ -178,30 +364,39 @@ function pidAlive(pid) {
   }
 }
 
-function readStoredTiltPid() {
-  if (!existsSync(PID_FILE)) return null;
-  try {
-    const data = JSON.parse(readFileSync(PID_FILE, 'utf8'));
-    const pid = Number(data?.pid);
-    return Number.isInteger(pid) ? pid : null;
-  } catch {
-    return null;
+/**
+ * @param {string} worktree
+ * @returns {{ previousPid: number | null, killedPrevious: boolean }}
+ */
+function replaceOwnedDevSessionTilt(worktree) {
+  const session = readDevSession(worktree);
+  if (!session) {
+    return { previousPid: null, killedPrevious: false };
   }
-}
-
-function writeStoredTiltPid(pid) {
-  writeFileSync(PID_FILE, `${JSON.stringify({ pid })}\n`, 'utf8');
-}
-
-function killStoredTiltIfAlive() {
-  const pid = readStoredTiltPid();
-  if (pid !== null && pidAlive(pid)) {
+  const pid = Number(session.pid);
+  const killedPrevious = Number.isInteger(pid) && pid > 0 && pidAlive(pid);
+  if (killedPrevious) {
     try {
       process.kill(pid, 'SIGTERM');
     } catch {
       // ignore
     }
   }
+  return {
+    previousPid: Number.isInteger(pid) && pid > 0 ? pid : null,
+    killedPrevious: Boolean(killedPrevious),
+  };
+}
+
+/**
+ * @param {string} worktree
+ * @returns {number | null}
+ */
+function readWorktreeSessionPid(worktree) {
+  const session = readDevSession(worktree);
+  if (!session) return null;
+  const pid = Number(session.pid);
+  return Number.isInteger(pid) && pid > 0 ? pid : null;
 }
 
 /**
@@ -247,11 +442,15 @@ export async function collectLabReadiness() {
   return readiness;
 }
 
-function refuseAndExit(refusals) {
+/**
+ * @param {DevRefusal[]} refusals
+ * @param {(code: number) => never | void} [exitFn]
+ */
+function refuseAndExit(refusals, exitFn = (code) => process.exit(code)) {
   for (const refusal of refusals) {
     console.error(refusal.message);
   }
-  process.exit(1);
+  exitFn(1);
 }
 
 function sleep(ms) {
@@ -260,24 +459,69 @@ function sleep(ms) {
   });
 }
 
-async function runDevTiltCli() {
-  const probes = await collectDefaultProbes();
-  const preflight = runStackPreflight(probes);
-  const tiltOnPath = commandOnPath('tilt');
+/** @typedef {import('./dev-worktree-registry.mjs').DevWorktreeOwnerRecord} DevWorktreeOwnerRecord */
 
-  // Drop a tilt this repo started before deciding a listener is foreign.
-  const previousPid = readStoredTiltPid();
-  const killedPrevious = previousPid !== null && pidAlive(previousPid);
-  killStoredTiltIfAlive();
-  if (killedPrevious) {
+/**
+ * @typedef {{
+ *   worktree?: string,
+ *   registryRoot?: string,
+ *   allocateDevWorktreeOwner?: (worktreePath: string, registryRoot: string) => DevWorktreeOwnerRecord,
+ *   collectDefaultProbes?: typeof collectDefaultProbes,
+ *   runStackPreflight?: typeof runStackPreflight,
+ *   commandOnPath?: (name: string) => boolean,
+ *   probeLoopbackPortOccupied?: typeof probeLoopbackPortOccupied,
+ *   spawnFn?: typeof spawn,
+ *   collectLabReadiness?: typeof collectLabReadiness,
+ *   exit?: (code: number) => never | void,
+ *   exitAfterSession?: boolean,
+ * }} RunDevTiltLaunchDeps */
+
+/**
+ * @param {RunDevTiltLaunchDeps} [deps]
+ * @returns {Promise<void>}
+ */
+export async function runDevTiltLaunch(deps = {}) {
+  const worktree = deps.worktree ?? REPO_ROOT;
+  const registryRoot = deps.registryRoot ?? devWorktreeRegistryRoot();
+  const allocate = deps.allocateDevWorktreeOwner ?? allocateDevWorktreeOwner;
+  const collectProbes = deps.collectDefaultProbes ?? collectDefaultProbes;
+  const runPreflight = deps.runStackPreflight ?? runStackPreflight;
+  const onPath = deps.commandOnPath ?? commandOnPath;
+  const probeOccupied = deps.probeLoopbackPortOccupied ?? probeLoopbackPortOccupied;
+  const spawnFn = deps.spawnFn ?? spawn;
+  const readinessPoll = deps.collectLabReadiness ?? collectLabReadiness;
+  const exitFn = deps.exit ?? ((code) => process.exit(code));
+
+  // Drop a tilt this worktree started before deciding a listener is foreign.
+  const { previousPid, killedPrevious } = replaceOwnedDevSessionTilt(worktree);
+  if (killedPrevious && previousPid !== null) {
     for (let attempt = 0; attempt < 10; attempt += 1) {
       if (!pidAlive(previousPid)) break;
       await sleep(100);
     }
   }
 
-  const gameOccupied = await probeLoopbackPortOccupied(LOOPBACK, GAME_PORT);
-  const tiltOccupied = await probeLoopbackPortOccupied(LOOPBACK, TILT_PORT);
+  /** @type {DevWorktreeOwnerRecord} */
+  let ownerRecord;
+  try {
+    ownerRecord = allocate(worktree, registryRoot);
+  } catch (error) {
+    if (isAllocatorRefusal(error)) {
+      refuseAndExit([{ id: error.id, message: error.message }], exitFn);
+      return;
+    }
+    throw error;
+  }
+
+  const gamePort = ownerRecord.ports.game;
+  const tiltPort = ownerRecord.ports.tilt;
+
+  const probes = await collectProbes();
+  const preflight = runPreflight(probes);
+  const tiltOnPath = onPath('tilt');
+
+  const gameOccupied = await probeOccupied(LOOPBACK, gamePort);
+  const tiltOccupied = await probeOccupied(LOOPBACK, tiltPort);
 
   /** @type {DevRefusal[]} */
   const launchRefusals = [];
@@ -290,18 +534,19 @@ async function runDevTiltCli() {
   if (gameOccupied) {
     launchRefusals.push({
       id: 'foreign-game-port',
-      message: `${LOOPBACK}:${GAME_PORT} is in use by a non-owned listener.`,
+      message: `${LOOPBACK}:${gamePort} is in use by a non-owned listener.`,
     });
   }
   if (tiltOccupied) {
     launchRefusals.push({
       id: 'foreign-tilt-port',
-      message: `${LOOPBACK}:${TILT_PORT} is in use by a non-owned listener.`,
+      message: `${LOOPBACK}:${tiltPort} is in use by a non-owned listener.`,
     });
   }
 
   if (launchRefusals.length > 0) {
-    refuseAndExit(launchRefusals);
+    refuseAndExit(launchRefusals, exitFn);
+    return;
   }
 
   let announced = false;
@@ -313,7 +558,7 @@ async function runDevTiltCli() {
 
   const onSignal = (signal) => {
     stopPolling();
-    const pid = readStoredTiltPid();
+    const pid = readWorktreeSessionPid(worktree);
     if (pid !== null && pidAlive(pid)) {
       try {
         process.kill(pid, signal === 'SIGINT' ? 'SIGTERM' : signal);
@@ -321,31 +566,52 @@ async function runDevTiltCli() {
         // ignore
       }
     }
-    process.exit(signal === 'SIGTERM' ? 143 : 130);
+    exitFn(signal === 'SIGTERM' ? 143 : 130);
   };
 
-  process.once('SIGINT', () => onSignal('SIGINT'));
-  process.once('SIGTERM', () => onSignal('SIGTERM'));
+  if (!deps.exitAfterSession) {
+    process.once('SIGINT', () => onSignal('SIGINT'));
+    process.once('SIGTERM', () => onSignal('SIGTERM'));
+  }
 
-  const child = spawn(
+  const tiltEnv = {
+    ...process.env,
+    OFFSCREEN_DEV_SLOT: ownerRecord.slotId,
+    OFFSCREEN_DEV_NAMESPACE: ownerRecord.namespace,
+    OFFSCREEN_DEV_GAME_PORT: String(gamePort),
+    OFFSCREEN_DEV_TILT_PORT: String(tiltPort),
+  };
+
+  const child = spawnFn(
     'tilt',
-    ['up', '--context', CONTEXT_NAME, '--host', LOOPBACK, '--port', String(TILT_PORT)],
-    { cwd: REPO_ROOT, stdio: 'inherit', env: process.env },
+    ['up', '--context', CONTEXT_NAME, '--host', LOOPBACK, '--port', String(tiltPort)],
+    { cwd: worktree, stdio: 'inherit', env: tiltEnv },
   );
 
   if (!child.pid) {
     console.error('Failed to start tilt.');
-    process.exitCode = 1;
+    exitFn(1);
     return;
   }
 
-  writeStoredTiltPid(child.pid);
+  writeDevSession(worktree, {
+    pid: child.pid,
+    slotId: ownerRecord.slotId,
+    namespace: ownerRecord.namespace,
+    gamePort,
+    tiltPort,
+    startedAt: new Date().toISOString(),
+  });
+
+  if (deps.exitAfterSession) {
+    return;
+  }
 
   pollTimer = setInterval(async () => {
     if (announced) return;
-    const readiness = await collectLabReadiness();
-    const gameOcc = await probeLoopbackPortOccupied(LOOPBACK, GAME_PORT);
-    const tiltOcc = await probeLoopbackPortOccupied(LOOPBACK, TILT_PORT);
+    const readiness = await readinessPoll();
+    const gameOcc = await probeOccupied(LOOPBACK, gamePort);
+    const tiltOcc = await probeOccupied(LOOPBACK, tiltPort);
     const assessment = assessDevLaunch({
       preflightOk: true,
       preflightRefusals: [],
@@ -355,6 +621,8 @@ async function runDevTiltCli() {
         tilt: tiltOcc ? 'owned' : 'free',
       },
       readiness,
+      gamePort,
+      tiltPort,
     });
     const lines = maybeAnnounce(assessment);
     if (lines.length > 0) {
@@ -367,11 +635,92 @@ async function runDevTiltCli() {
 
   child.on('exit', (code) => {
     stopPolling();
-    process.exit(code ?? 0);
+    exitFn(code ?? 0);
   });
+}
+
+async function runDevTiltCli() {
+  await runDevTiltLaunch();
+}
+
+/**
+ * @typedef {{
+ *   log?: (line: string) => void,
+ *   roles?: readonly DevRuntimeFreshnessRole[],
+ *   evaluateDevLoadedRuntimeReadiness?: typeof evaluateDevLoadedRuntimeReadiness,
+ * }} PrintDevStatusDeps */
+
+/**
+ * @param {string} worktree
+ * @param {PrintDevStatusDeps} [deps]
+ * @returns {number}
+ */
+export function printDevStatus(worktree, deps = {}) {
+  const log = deps.log ?? ((line) => console.log(line));
+  const roles = deps.roles ?? DEV_RUNTIME_FRESHNESS_ROLES;
+  const evaluate = deps.evaluateDevLoadedRuntimeReadiness ?? evaluateDevLoadedRuntimeReadiness;
+  const session = readDevSession(worktree);
+  if (!session) {
+    return 2;
+  }
+  const rows = [
+    ['pid', session.pid ?? 'stopped'],
+    ['slot', session.slotId],
+    ['namespace', session.namespace],
+    ['gameUrl', `http://${LOOPBACK}:${session.gamePort}/`],
+    ['tiltPort', session.tiltPort],
+    ['startedAt', session.startedAt],
+  ];
+  for (const [key, value] of rows) {
+    log(`${key}: ${value}`);
+  }
+
+  const cwd = resolve(worktree);
+  let everyRoleReady = true;
+  for (const roleSpec of roles) {
+    const status = evaluate({
+      role: roleSpec.receiptRole,
+      compiledEntryPath: roleSpec.compiledEntryPath,
+      cwd,
+    });
+    log(formatDevFreshnessStatusLine(roleSpec.role, status));
+    if (!status.ready) {
+      everyRoleReady = false;
+    }
+  }
+
+  return everyRoleReady ? 0 : 2;
+}
+
+function runDevStatusCli() {
+  const worktree = REPO_ROOT;
+  const session = readDevSession(worktree);
+  const code = printDevStatus(worktree);
+  if (code !== 0) {
+    if (!session) {
+      console.error('No dev session for this worktree. Start one with: pnpm dev');
+    }
+    process.exit(code);
+  }
+}
+
+function runDevStopCli() {
+  const session = readDevSession(REPO_ROOT);
+  stopDevSession(REPO_ROOT);
+  if (session?.namespace) {
+    scaleDevSlotWorkloads(session.namespace);
+  }
+  process.exit(0);
 }
 
 const invokedAsScript = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
-  await runDevTiltCli();
+  const command = process.argv[2];
+  if (command === 'status') {
+    runDevStatusCli();
+  } else if (command === 'stop') {
+    runDevStopCli();
+  } else {
+    await runDevTiltCli();
+  }
 }

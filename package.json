@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "node scripts/repo-tools/dev-tilt.mjs",
+    "dev:status": "node scripts/repo-tools/dev-tilt.mjs status",
+    "dev:stop": "node scripts/repo-tools/dev-tilt.mjs stop",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",

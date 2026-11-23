@@ -1,10 +1,24 @@
 # DXK08 developer lab graph (pnpm dev / root Tiltfile).
 # Release image builds and TURN02 overlays: infra/kubernetes/lab/app-release/Tiltfile.
 
-DEV_WORKSPACE_IMAGE = 'offscreen-lab-dev-workspace:dxk08'
-DEV_WORKSPACE_API_IMAGE = 'offscreen-lab-dev-workspace:dxk08-api'
-DEV_WORKSPACE_GA_IMAGE = 'offscreen-lab-dev-workspace:dxk08-game-authority'
-DEV_WORKSPACE_WORKER_IMAGE = 'offscreen-lab-dev-workspace:dxk08-worker'
+OFFSCREEN_DEV_SLOT = os.getenv('OFFSCREEN_DEV_SLOT', 'unassigned')
+OFFSCREEN_DEV_NAMESPACE = os.getenv('OFFSCREEN_DEV_NAMESPACE', 'unassigned')
+OFFSCREEN_DEV_GAME_PORT = os.getenv('OFFSCREEN_DEV_GAME_PORT', '3000')
+SLOT_SESSION = OFFSCREEN_DEV_SLOT.startswith('dev-')
+
+# A slot session syncs into the images already running in that slot.
+# The lab manifests stay on the unassigned DXK08 path so `tilt up` cannot
+# create lab-edge inside kind-offscreen-dev.
+if SLOT_SESSION:
+    DEV_WORKSPACE_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-web'
+    DEV_WORKSPACE_API_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-api'
+    DEV_WORKSPACE_GA_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-authority'
+    DEV_WORKSPACE_WORKER_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-worker'
+else:
+    DEV_WORKSPACE_IMAGE = 'offscreen-lab-dev-workspace:dxk08'
+    DEV_WORKSPACE_API_IMAGE = 'offscreen-lab-dev-workspace:dxk08-api'
+    DEV_WORKSPACE_GA_IMAGE = 'offscreen-lab-dev-workspace:dxk08-game-authority'
+    DEV_WORKSPACE_WORKER_IMAGE = 'offscreen-lab-dev-workspace:dxk08-worker'
 # config.main_dir is the root Tiltfile directory. Paths passed to docker_build(only=)
 # must sit inside that context; a relative climb made COPY tools fail checksum.
 REPO_ROOT = config.main_dir
@@ -95,30 +109,36 @@ def dev_workspace_docker_build(image, image_key):
     )
 
 dev_workspace_docker_build(DEV_WORKSPACE_IMAGE, 'web')
-dev_workspace_docker_build(DEV_WORKSPACE_API_IMAGE, 'api')
-dev_workspace_docker_build(DEV_WORKSPACE_GA_IMAGE, 'game-authority')
-dev_workspace_docker_build(DEV_WORKSPACE_WORKER_IMAGE, 'worker')
+if os.getenv('OFFSCREEN_DEV_TILT_ROLE', '') != 'web':
+    dev_workspace_docker_build(DEV_WORKSPACE_API_IMAGE, 'api')
+    dev_workspace_docker_build(DEV_WORKSPACE_GA_IMAGE, 'game-authority')
+    dev_workspace_docker_build(DEV_WORKSPACE_WORKER_IMAGE, 'worker')
 
-k8s_yaml('web.yaml')
-k8s_yaml('api.yaml')
-k8s_yaml('authority.yaml')
-k8s_yaml('workers.yaml')
-
-k8s_resource(
-    'game-web',
-    port_forwards=['127.0.0.1:3000:3000'],
-)
-
-k8s_resource(
-    'game-api',
-    port_forwards=['127.0.0.1:3001:3001'],
-)
-
-k8s_resource(
-    'game-authority',
-    port_forwards=['127.0.0.1:3002:3002'],
-)
-
-k8s_resource('game-control')
-k8s_resource('game-executor')
-k8s_resource('game-relay')
+if SLOT_SESSION:
+    existing = local(
+        'kubectl --context kind-offscreen-dev -n ' + OFFSCREEN_DEV_NAMESPACE + ' get deploy -o yaml',
+        quiet=True,
+    )
+    k8s_yaml(existing)
+    for name in ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay']:
+        k8s_resource(name)
+else:
+    k8s_yaml('web.yaml')
+    k8s_yaml('api.yaml')
+    k8s_yaml('authority.yaml')
+    k8s_yaml('workers.yaml')
+    k8s_resource(
+        'game-web',
+        port_forwards=['127.0.0.1:' + OFFSCREEN_DEV_GAME_PORT + ':3000'],
+    )
+    k8s_resource(
+        'game-api',
+        port_forwards=['127.0.0.1:3001:3001'],
+    )
+    k8s_resource(
+        'game-authority',
+        port_forwards=['127.0.0.1:3002:3002'],
+    )
+    k8s_resource('game-control')
+    k8s_resource('game-executor')
+    k8s_resource('game-relay')

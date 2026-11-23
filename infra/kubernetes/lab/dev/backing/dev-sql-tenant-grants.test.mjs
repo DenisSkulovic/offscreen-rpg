@@ -62,12 +62,26 @@ test('runtime startup waits for a complete gate and rejects DDL-capable or forei
   assert.equal(assertDevRuntimeReady({ slotId: 'dev-1', currentUser: 'dev_1_run', gatePresent: true, schemaCreate: false, appliedMigrations: 25, expectedMigrations: 25 }).ok, true);
 });
 
-test('superuser, runtime login, dev-2 and missing authorization do not migrate', async () => {
+test('superuser, runtime login, and missing authorization do not migrate', async () => {
   const calls = [];
   const exec = () => calls.push('sql');
   assert.equal((await applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'postgres', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec })).refusals[0].id, 'migration-role');
   assert.equal((await applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'dev_1_run', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec })).refusals[0].id, 'migration-role');
-  assert.equal((await applyDevTenantMigration({ slotId: 'dev-2', currentUser: 'dev_2_mig', authorizeLive: 'dev-1-migration-live', applyMigrations() {}, execSql: exec })).refusals[0].id, 'slot-not-in-scope');
   assert.equal((await applyDevTenantMigration({ slotId: 'dev-1', currentUser: 'dev_1_mig', authorizeLive: true, applyMigrations() {}, execSql: exec })).refusals[0].id, 'migration-not-authorized');
   assert.equal(calls.length, 0);
+});
+
+test('an allocated slot migrates under its own migration role', async () => {
+  let migrated = 0;
+  const result = await applyDevTenantMigration({
+    slotId: 'dev-2',
+    currentUser: 'dev_2_mig',
+    authorizeLive: 'dev-1-migration-live',
+    applyMigrations() { migrated += 1; },
+    execSql() {},
+    verify: async () => ({ ok: true, appliedMigrations: 25 }),
+  });
+  assert.equal(result.ok, true);
+  assert.equal(migrated, 1);
+  assert.equal(result.appliedMigrations, 25);
 });
