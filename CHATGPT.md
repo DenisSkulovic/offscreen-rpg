@@ -6,6 +6,8 @@
 
 **Method entry:** [WORKFLOW.md](WORKFLOW.md) is the shared human/agent lifecycle map, including decision diagrams, documentation-first rule, design/Change/Task taxonomy, Undertaking and per-Change branching, parallel planning and cheap Cursor execution. Read its relevant route after AGENTS; this file adds ChatGPT-specific planner obligations rather than duplicating the whole methodology.
 
+**Local developer reservations are not Git data.** For DXK09/HR-wave readiness use [worktree-stack runbook](docs/runbooks/dev-worktree-stacks.md). GitHub branch and Change ledgers cannot prove an OS process lease is live or idle; demand read-only host registry/process/port/Kubernetes UID evidence before reporting stale slots or recommending retirement. Never design a Git-tracked machine occupancy table or auto-retire tenant state because a Cursor chat ended. The three HR refactors become unattended dev-stack consumers only after T05's two-worktree live gate; do not burden their prompts with cluster mechanics.
+
 ## Mandatory cold-start contract for ChatGPT planning
 
 **This is an instruction to the ChatGPT assistant operating on the repository, not a claim of automatic loading.** A new chat does not see this document unless it deliberately retrieves it. **At the beginning of EACH Offscreen RPG planning/design/audit/handoff session, before drafting or editing any Change**, do the following. A remembered prior workflow, user summary, old ZIP, or previous ChatGPT response is not a substitute for the current branch's rules.

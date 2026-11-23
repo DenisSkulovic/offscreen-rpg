@@ -1,23 +1,14 @@
 ---
-description: Missing local disposable infra is work to do, not a blocker to report
+description: Unblock local dev infrastructure within the commissioned Change's exact environment and mutation scope
 alwaysApply: true
 ---
 
-# Local infrastructure is your job
+# Local developer infrastructure: self-service, scoped, fail-closed
 
-If a task needs local disposable infrastructure that is missing, stopped, unplugged, misconfigured, or cold — **fix it yourself and continue**. Do not stop and tell the owner you are “blocked” because Docker/Postgres/Temporal/Node/pnpm/build caches/browser deps are not ready.
+Read [worktree-owned dev stacks](../../docs/runbooks/dev-worktree-stacks.md) when a Change needs a live application runtime. For ordinary implementation, start/status/stop **your own canonical worktree** through its repository scripts once T05 has passed the documented live acceptance. Discover assigned slot, URLs, Pod names and backing resources through the script's status/runbook only if needed; do not require an owner to hand-select stacks.
 
-## Do this
+**Important rollout limitation:** At checked DXK09 snapshot `ce8fc609`, root `pnpm dev` is still the old shared lab launcher and `dev:status`/`dev:stop` are not established. Until T05 is proven and integrated, do not use that command as if it leases a worktree stack. Report the exact missing capability as a platform readiness gate; allow the separately commissioned DXK09 executor to repair it. Do not bypass it by manually deploying shared `lab-*` resources.
 
-- Start or repair the Kubernetes lab stack (`pnpm stack:up`, `pnpm dev`) or disposable Postgres/Temporal targets when a lab, Sandbox, Connected, or integration proof needs them.
-- Use the repo’s existing scripts (`stack:up`, migrations, disposable DB names, chamber guards). Prefer `offscreen_chamber_run_*` / other disposable targets; never ordinary user or production data.
-- Install/build/warm the packages the proof actually needs; re-run the check after infra is up.
-- Treat “kettle not plugged in” as an action item for you, not a status report.
+Local infrastructure problems are part of authorized work **within the selected target**, not permission for a global reset. Use explicit `kind-offscreen-dev` context for worktree apps, and preserve `kind-offscreen-lab` release acceptance, Compose, other slots, database/S3/Temporal tenants and credentials. Use focused test dependencies and package builds as needed. Never assume ambient kubectl context selects the correct purpose.
 
-## Still stop and ask
-
-- Paid model provider calls / live spend
-- Deploy, secrets exposure, non-disposable or remote DB reset
-- Material product/architecture authority changes
-
-Missing local infra ≠ permission denied. Unblock locally, then finish the authorized proof.
+Stop for foreign ownership/UID/port/process conflicts, unverified stale leases, unsafe resource admission, paid providers, credentials exposure, destructive data retirement, remote/non-disposable data mutation or an architectural contradiction. An abandoned Cursor chat is not proof a tenant can be deleted. No global `tilt down`, blanket `kind delete`, reset or PID-only kill. 
