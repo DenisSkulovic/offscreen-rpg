@@ -9,47 +9,12 @@ import {
   TURN03_MANDATORY_GATE_IDS,
   TURN03_NEGATIVE_MATRIX_CASE_IDS,
 } from './report.mjs';
-
-/**
- * @param {unknown} value
- * @returns {string | null}
- */
-function pickString(value) {
-  return typeof value === 'string' && value.length > 0 ? value : null;
-}
-
-/**
- * @param {unknown} body
- * @param {string[]} keys
- * @returns {string | null}
- */
-function pickFromBody(body, keys) {
-  if (body == null || typeof body !== 'object') {
-    return null;
-  }
-  /** @type {Record<string, unknown>} */
-  const record = /** @type {Record<string, unknown>} */ (body);
-  for (const key of keys) {
-    const direct = pickString(record[key]);
-    if (direct != null) {
-      return direct;
-    }
-  }
-  for (const key of keys) {
-    const nested = record[key];
-    if (nested != null && typeof nested === 'object') {
-      /** @type {Record<string, unknown>} */
-      const nestedRecord = /** @type {Record<string, unknown>} */ (nested);
-      for (const nestedKey of ['id', 'hash', 'rootHash', 'checkpointHash', 'checkpointId']) {
-        const found = pickString(nestedRecord[nestedKey]);
-        if (found != null) {
-          return found;
-        }
-      }
-    }
-  }
-  return null;
-}
+import {
+  assertFrozenIdentity,
+  normalizeHttpResult,
+  runPublicRouteTrace,
+  TraceAbort,
+} from './trace-route.mjs';
 
 /**
  * @param {{ method: string, path: string, body?: unknown }} call
@@ -138,6 +103,20 @@ function isPreflightBlocked(preflight) {
  *   ) =>
  *     | Record<string, 'PASS' | 'FAIL' | 'NOT-RUN'>
  *     | Promise<Record<string, 'PASS' | 'FAIL' | 'NOT-RUN'>>,
+ *   identity?: {
+ *     draftId: string,
+ *     generationId: string,
+ *     storyId: string,
+ *     operationId: string,
+ *     forkId: string,
+ *     sourcePins: Record<string, unknown>,
+ *     campaign: Record<string, unknown>,
+ *     draft: Record<string, unknown>,
+ *   },
+ *   poll?: {
+ *     maxAttempts?: number,
+ *     sleep?: (attempt: number) => Promise<void>,
+ *   },
  * }} options
  * @returns {Promise<import('./report.mjs').Turn03DistributedPocProofReport>}
  */
@@ -185,110 +164,68 @@ export async function runTurn03ColdTrace(options) {
     ...(options.imageDigests ?? {}),
   };
 
-  /** @type {Array<{ method: string, path: string, body?: unknown }>} */
-  const sequence = [];
+  /** @type {{ method: string, path: string } | null} */
+  let lastCall = null;
+  /** @type {boolean} */
+  let forkProofPresent = false;
 
-  /**
-   * @param {string} method
-   * @param {string} path
-   * @param {unknown} [body]
-   */
-  async function request(method, path, body) {
-    const call = body === undefined ? { method, path } : { method, path, body };
-    sequence.push(call);
-    return http(method, path, body);
-  }
-
-  const created = await request('POST', '/stories', {});
-  const storyId = pickFromBody(created, ['storyId', 'id']);
-  report.trace.storyId = storyId;
-
-  if (storyId == null) {
+  try {
+    const identity = assertFrozenIdentity(options.identity);
+    const maxAttempts = options.poll?.maxAttempts ?? 3;
+    const sleep = options.poll?.sleep ?? (async () => {});
+    const traced = await runPublicRouteTrace({
+      identity,
+      maxAttempts,
+      sleep,
+      request: async (method, path, body) => {
+        lastCall = { method, path };
+        return normalizeHttpResult(await http(method, path, body));
+      },
+    });
+    report.trace.storyId = identity.storyId;
+    report.trace.candidateId = identity.generationId;
+    report.trace.generationId = identity.generationId;
+    report.trace.passage1 = traced.scene1.passageId;
+    report.trace.scene1Checkpoint = traced.scene1.checkpointHash;
+    report.trace.scene1Root = traced.scene1.rootHash;
+    report.trace.passage2 = traced.scene2.passageId;
+    report.trace.scene2Checkpoint = traced.scene2Checkpoint?.checkpointHash ?? null;
+    report.trace.scene2Root = traced.scene2Checkpoint?.rootHash ?? null;
+    report.trace.forkRoot = traced.forkProved ? traced.scene1.checkpointHash : null;
+    forkProofPresent = traced.forkProved;
+  } catch (error) {
+    const abort =
+      error instanceof TraceAbort
+        ? error
+        : new TraceAbort('FAIL', error instanceof Error ? error.message : 'trace failed');
+    const evidence = mockGateEvidence(
+      lastCall ?? { method: 'SCRIPT', path: 'turn03-public-trace' },
+    );
+    for (const gateId of TURN03_MANDATORY_GATE_IDS) {
+      setGate(
+        report,
+        gateId,
+        gateId === abort.gateId ? abort.status : 'NOT-RUN',
+        { ...evidence, summary: abort.summary },
+      );
+    }
     applyNotRunNegativeMatrix(report);
     report.overall = computeTurn03DistributedPocProofOverall(report.gates);
     assertNoFakePass(report);
     return report;
   }
 
-  const started = await request('POST', `/stories/${storyId}/candidates/start`, {});
-  report.trace.candidateId = pickFromBody(started, ['candidateId', 'id']);
-  report.trace.generationId = pickFromBody(started, ['generationId']);
-
-  const scene1 = await request('GET', `/stories/${storyId}/scenes/1`);
-  report.trace.scene1Checkpoint = pickFromBody(scene1, [
-    'scene1Checkpoint',
-    'checkpointId',
-    'checkpointHash',
-    'checkpoint',
-  ]);
-  report.trace.passage1 = pickFromBody(scene1, ['passage1', 'passageId', 'passage']);
-  report.trace.scene1Root = pickFromBody(scene1, ['scene1Root', 'rootHash', 'canonRootHash', 'root']);
-
-  const command = await request('POST', `/stories/${storyId}/commands`, {});
-  const commandId = pickFromBody(command, ['commandId', 'id', 'operationId']);
-  report.trace.attemptId = pickFromBody(command, ['attemptId']);
-
-  if (commandId != null) {
-    const outbox = await request('GET', `/executor/outbox/${commandId}`);
-    report.trace.workflowId = pickFromBody(outbox, ['workflowId', 'id']);
-  }
-
-  await request('POST', '/game-authority/scenes/2/commit', { storyId });
-  await request('GET', `/stories/${storyId}/events`);
-  const scene2 = await request('GET', `/stories/${storyId}/scenes/2`);
-  report.trace.scene2Checkpoint = pickFromBody(scene2, [
-    'scene2Checkpoint',
-    'checkpointId',
-    'checkpointHash',
-    'checkpoint',
-  ]);
-  report.trace.passage2 = pickFromBody(scene2, ['passage2', 'passageId', 'passage']);
-  report.trace.scene2Root = pickFromBody(scene2, ['scene2Root', 'rootHash', 'canonRootHash', 'root']);
-
-  const forkBody = {
-    fromSceneSequence: 1,
-    scene1Checkpoint: report.trace.scene1Checkpoint,
-  };
-  const forked = await request('POST', `/stories/${storyId}/forks`, forkBody);
-  const forkStoryId = pickFromBody(forked, ['forkStoryId', 'storyId', 'id']);
-  report.trace.forkRoot = pickFromBody(forked, ['forkRoot', 'rootHash', 'branchRoot', 'root']);
-
-  let parentFuture = pickFromBody(scene2, ['future', 'futureRoot', 'continuationRoot']);
-  let forkFuture = null;
-  if (forkStoryId != null) {
-    const forkFutureResp = await request('GET', `/stories/${forkStoryId}/future`);
-    forkFuture = pickFromBody(forkFutureResp, ['future', 'futureRoot', 'continuationRoot']);
-  }
-  if (parentFuture == null) {
-    const parentFutureResp = await request('GET', `/stories/${storyId}/future`);
-    parentFuture = pickFromBody(parentFutureResp, ['future', 'futureRoot', 'continuationRoot']);
-  }
-
-  const forkProofPresent =
-    report.trace.scene1Checkpoint != null &&
-    report.trace.forkRoot != null &&
-    parentFuture != null &&
-    forkFuture != null &&
-    parentFuture !== forkFuture;
-
   for (const gateId of TURN03_MANDATORY_GATE_IDS) {
-    const call = sequence[Math.min(sequence.length - 1, 0)] ?? {
-      method: 'SCRIPT',
-      path: 'turn03-local-trace',
-    };
-    const evidence = mockGateEvidence(call);
+    const evidence = mockGateEvidence(
+      lastCall ?? { method: 'SCRIPT', path: 'turn03-public-trace' },
+    );
     if (gateId === 'historical-fork-independent-continuation') {
-      setGate(
-        report,
-        gateId,
-        forkProofPresent ? 'NOT-RUN' : 'FAIL',
-        {
-          ...evidence,
-          summary: forkProofPresent
-            ? 'Local mocked trace mapped fork fields; cross-pod proof not claimed'
-            : 'Historical fork proof absent or contradictory (checkpoint, fork root, or divergent future)',
-        },
-      );
+      setGate(report, gateId, forkProofPresent ? 'NOT-RUN' : 'FAIL', {
+        ...evidence,
+        summary: forkProofPresent
+          ? 'Local mocked public-route trace mapped the scene-1 fork; cross-pod proof is not claimed'
+          : 'Historical fork was not proved from the child lineage and the unchanged parent scene 2',
+      });
       continue;
     }
     setGate(report, gateId, 'NOT-RUN', evidence);

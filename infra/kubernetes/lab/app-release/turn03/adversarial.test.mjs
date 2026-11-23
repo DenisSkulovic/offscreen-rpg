@@ -46,41 +46,92 @@ function allPassMatrix(overrides = {}) {
   return matrix;
 }
 
+const adversarialIdentity = {
+  draftId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  generationId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+  storyId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+  operationId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  forkId: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+  sourcePins: { start: { rootHash: 'e'.repeat(64) } },
+  campaign: { campaignId: 'harbor-watch' },
+  draft: { title: 'Harbor watch' },
+};
+
 const minimalHttp = async (method, path) => {
-  if (method === 'POST' && path === '/stories') {
-    return { storyId: 'adv-story' };
+  const story = adversarialIdentity.storyId;
+  const passage = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
+  if (method === 'PUT' && path === `/api/drafts/${adversarialIdentity.draftId}`) {
+    return { status: 200, body: {} };
   }
-  if (method === 'POST' && path.endsWith('/candidates/start')) {
-    return { candidateId: 'c', generationId: 'g' };
+  if (method === 'PUT' && path.includes('/openings/')) {
+    return { status: 202, body: {} };
+  }
+  if (method === 'GET' && path.endsWith('/openings/latest')) {
+    return {
+      status: 200,
+      body: { preview: { id: adversarialIdentity.generationId, state: 'succeeded' } },
+    };
+  }
+  if (method === 'PUT' && path.endsWith('/start')) {
+    return {
+      status: 200,
+      body: {
+        id: story,
+        revision: 1,
+        current: {
+          id: passage,
+          interaction: { id: '99999999-9999-4999-8999-999999999999', specification: { options: [{ id: 'ask' }] } },
+        },
+      },
+    };
   }
   if (method === 'GET' && path.endsWith('/scenes/1')) {
-    return { checkpointId: 'cp1', passageId: 'p1', rootHash: 'r1' };
+    return {
+      status: 200,
+      body: {
+        revision: 1,
+        current: { id: passage, interaction: null },
+        checkpointHash: 'a'.repeat(64),
+        canon: { rootHash: 'b'.repeat(64) },
+      },
+    };
   }
-  if (method === 'POST' && path.endsWith('/commands')) {
-    return { commandId: 'cmd', attemptId: 'att' };
+  if (method === 'PUT' && path.includes('/resolutions/')) {
+    return { status: 202, body: {} };
   }
-  if (method === 'GET' && path.startsWith('/executor/outbox/')) {
-    return { workflowId: 'wf' };
+  if (path.endsWith('/receipt')) {
+    return { status: 200, body: { operationId: adversarialIdentity.operationId, state: 'settled' } };
   }
-  if (method === 'POST' && path === '/game-authority/scenes/2/commit') {
-    return { ok: true };
-  }
-  if (method === 'GET' && path.endsWith('/events')) {
-    return {};
+  if (method === 'GET' && path === `/api/stories/${story}`) {
+    return {
+      status: 200,
+      body: { id: story, revision: 2, current: { id: '12121212-1212-4121-8121-121212121212', interaction: null } },
+    };
   }
   if (method === 'GET' && path.endsWith('/scenes/2')) {
     return {
-      checkpointId: 'cp2',
-      passageId: 'p2',
-      rootHash: 'r2',
-      future: 'parent-future',
+      status: 200,
+      body: {
+        revision: 2,
+        current: { id: '12121212-1212-4121-8121-121212121212', interaction: null },
+        checkpointHash: 'c'.repeat(64),
+        canon: { rootHash: 'd'.repeat(64) },
+      },
     };
   }
-  if (method === 'POST' && path.endsWith('/forks')) {
-    return { forkStoryId: 'fork', forkRoot: 'fork-root' };
+  if (method === 'PUT' && path.includes('/forks/')) {
+    return { status: 200, body: {} };
   }
-  if (method === 'GET' && path.endsWith('/future')) {
-    return { future: path.includes('fork') ? 'child-future' : 'parent-future' };
+  if (method === 'GET' && path === `/api/stories/${adversarialIdentity.forkId}`) {
+    return {
+      status: 200,
+      body: {
+        id: adversarialIdentity.forkId,
+        revision: 1,
+        current: { id: passage, interaction: null },
+        lineage: { sourceStoryId: story, sourcePassageId: passage },
+      },
+    };
   }
   throw new Error(`unexpected: ${method} ${path}`);
 };
@@ -90,6 +141,7 @@ describe('TURN03 T03 adversarial negative matrix', () => {
     const report = await runTurn03ColdTrace({
       preflight: readyPreflight(),
       http: minimalHttp,
+      identity: adversarialIdentity,
       runDisposableKind: true,
       negativeMatrixProbe: () => allPassMatrix(),
     });
@@ -106,6 +158,7 @@ describe('TURN03 T03 adversarial negative matrix', () => {
     const report = await runTurn03ColdTrace({
       preflight: readyPreflight(),
       http: minimalHttp,
+      identity: adversarialIdentity,
       runDisposableKind: true,
       negativeMatrixProbe: () =>
         allPassMatrix({ 'stale-root-rejected': 'FAIL' }),
@@ -131,6 +184,7 @@ describe('TURN03 T03 adversarial negative matrix', () => {
     const report = await runTurn03ColdTrace({
       preflight: readyPreflight(),
       http: minimalHttp,
+      identity: adversarialIdentity,
       runDisposableKind: true,
       negativeMatrixProbe: () => allPassMatrix(),
     });
