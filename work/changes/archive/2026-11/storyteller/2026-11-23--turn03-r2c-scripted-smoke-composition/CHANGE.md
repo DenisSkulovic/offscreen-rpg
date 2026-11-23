@@ -1,6 +1,6 @@
 # TURN03-R2C | Compose one guarded scripted player smoke
 
-**State: READY WITH EXPLICIT LIMITS, SOURCE-ONLY.** **Parent:** [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md), remains OPEN. **Source baseline:** `undertaking/storyteller-workshop@3a3aa4d8` inspected 2026-11-23. R1 route, R2A HTTP adapter, R2B pinned verifier are already integrated. **This packet does not grant permission to run against live Kind or a real account.**
+**State:** Done, source-only injected-trace observation. **Parent:** [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md), remains OPEN. **Integrated from** `undertaking/storyteller-workshop@022385df`. R1 route, R2A HTTP adapter and R2B pinned verifier were already integrated. No live Kind run, real account, S3 read or cross-Pod PASS.
 
 ## Source map and constraints
 
@@ -31,4 +31,13 @@ T03 run `node --test infra/kubernetes/lab/app-release/turn03/player-smoke.test.m
 
 **Stop conditions:** Existing R1 return contract differs, input source roots cannot be matched structurally, or a real-run authorization protocol would require new privileged design. Stop with exact source evidence, not a shortcut to `fetch` or fabricated readiness.
 
-**Readiness G0–G7:** repository/branch/source anchors inspected; scope and algorithm fixed; positive/negative proofs explicit; write-set disjoint from R2D; tests **NOT RUN by planner**; actual local writer guard mandatory. Ready solely for source-only fake tests. No host/runtime permission inferred from a boolean.
+**Readiness G0–G7:** repository/branch/source anchors inspected; scope and algorithm fixed; positive/negative proofs explicit; write-set disjoint from R2D. Local writer guard passed on `change/turn03-r2c-scripted-smoke`. Source-only fake tests passed. No host/runtime permission inferred from a boolean.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Product story acceptance | product | unchanged because this composer does not start a live story or publish canon | `infra/kubernetes/lab/app-release/turn03/player-smoke.mjs` on `change/turn03-r2c-scripted-smoke` | source-tested | unauthorized, mismatched release and bad roots make zero requests | TURN03 stays OPEN |
+| Public route trace | technical | unchanged because `runPublicRouteTrace` remains the only route sequence | `infra/kubernetes/lab/app-release/turn03/trace-route.mjs` imported, not edited | source-tested | 401/403, pending opening, pending receipt, missing scene1 checkpoint, false fork | no second schema |
+| TURN03 execution map | technical | changed: R2C source-only receipt; live gates still blocked | `work/changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/NEXT-EXECUTION-2026-11-23.md` | source-tested | complete fake trace is `source-only-observation`, never `kind-cross-pod` | parent OPEN |
+| Live cluster / cross-Pod proof | none | unchanged because a cluster run was not authorized | NOT RUN | not run for live | a full injected trace has no PASS field | R3 not started |

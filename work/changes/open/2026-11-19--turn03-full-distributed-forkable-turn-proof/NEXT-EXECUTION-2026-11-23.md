@@ -4,7 +4,7 @@
 
 ## Next R2 source-only lanes after R2A/R2B landed (2026-11-23)
 
-R2A secure HTTP and R2B pinned fixture verification are **Done at injected fake tier**, not a real login or S3 read. [R2C scripted player-smoke composition](../2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) and [R2D causal SQL observer](../2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) have source-bounded, **parallel-safe but fake-only** execution packets. R2C owns only `player-smoke.mjs` and tests; R2D only `causal-sql.mjs` and tests. Both maintain the source-only evidence tier and leave TURN03 OPEN. Shared docs are integrated serially by one owner; no live cluster, DB access, OAuth login, release install, paid send or Pod deletion is authorized.
+R2A secure HTTP, R2B pinned fixture verification and [R2C scripted player-smoke composition](../../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) are **Done at injected fake tier**, not a real login, S3 read or cross-Pod PASS. [R2D causal SQL observer](../2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) remains a source-bounded fake-only packet. R2D owns only `causal-sql.mjs` and tests. TURN03 stays OPEN. Shared docs are integrated serially by one owner; no live cluster, DB access, OAuth login, release install, paid send or Pod deletion is authorized.
 
 ## R2 source-only parallel implementation lanes (2026-11-23)
 
@@ -14,6 +14,7 @@ R2A secure HTTP and R2B pinned fixture verification are **Done at injected fake 
 | --- | --- | --- |
 | [TURN03-R2A secure HTTP transport](../../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) | `turn03/live-http.mjs` + test, source-only Done | Injected fake fetch. 6/6 PASS. Not a live login or cross-Pod PASS. TURN03 stays OPEN |
 | [TURN03-R2B pinned fixture verifier](../../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) | `turn03/fixture-pins.mjs` + test, source-only Done | Injected read-only DocumentStore. 7/7 PASS. Not a live or cross-Pod PASS. TURN03 stays OPEN |
+| [TURN03-R2C scripted player smoke](../../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) | `turn03/player-smoke.mjs` + test, source-only Done | Injected route. 9/9 PASS. Not a live session or cross-Pod PASS. TURN03 stays OPEN |
 
 ```mermaid
 flowchart LR

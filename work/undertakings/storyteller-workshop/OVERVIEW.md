@@ -20,7 +20,7 @@ flowchart LR
 
 **Prioritization decision:** do not make DXK10-B/C, K8S10 Pod deletion, INF restructuring or SEM01 semantic audit prerequisites for the first scripted scene2. Keep them discoverable and pending. Avoid broad coding-agent swarms until actual player-observable P1 is tested. Only P2 and a reviewed fake-transport paid custody path make P4 eligible for a separately approved exact provider/model/spend cap.
 
-**Next bounded execution:** [R2C player-smoke composer](../../changes/open/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) + [R2D causal SQL injected reader](../../changes/open/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md), disjoint source-only Changes. They do not grant a real actor, database role, or cross-Pod PASS. Real player scene2 remains our immediate observable milestone.
+**Next bounded execution:** [R2C player-smoke composer](../../changes/archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) is source-only Done. [R2D causal SQL injected reader](../../changes/open/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) remains open. Neither grants a real actor, database role, or cross-Pod PASS. Real player scene2 remains our immediate observable milestone.
 
 ## At a glance
 
