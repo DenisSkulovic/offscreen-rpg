@@ -227,3 +227,11 @@ The 250ms wait is extended to 40 polls in the park loop, with a test that a forw
 Focused proof-A tests after `pnpm --filter @offscreen/runtime-logging build`: watched-receipt, session, tilt, and image-plan tests, 45 pass. The new slow-forwarder test passed in the lifecycle worktree, 12 session tests.
 
 HR01–HR03 stay BLOCKED. Pod receipt production and a first-try stop of a slow forwarder are not proven. No HR lane was started.
+
+## Live verification at 6af5ba73 (2026-11-23) — FAIL
+
+Change branch `change/dxk09-lifecycle-freshness` commits `ee589b89`, `fac98e96`, and `6af5ba73` point the six workloads at the existing receipt writers and make `pnpm dev:status` pull those files from the selected namespace. Focused tests on that branch: app-graph 3, receipt 5, tilt and session tests 42 pass, including the 40-poll park wait. Not integrated.
+
+Proof A `pnpm dev` reused dev-5. Web reached 1/1 and `http://127.0.0.1:13116/sign-in` returned 200. API, authority, control, executor, and relay stayed 0/1. The running API image was still Kind import `sha256:340822eb8c5556b9d81ffe4b8d44ab795d0e6e0b4a757fce34a659b22b5c5b14`. Its command was `node dev-pod-compile-watch.mjs`, and the container exited with `MODULE_NOT_FOUND` for `/app/apps/api/dev-pod-compile-watch.mjs`. Docker had built `sha256:a8940fb5adc7b0ce17ae0a27a281cbaf6fe58524c72ded68fdcb066e7059d8b1`, which does contain that file, but Tilt reported `the object has been modified` while applying `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay`, so the new digest never became the pod image. Receipt, compile-error, recovery, dev-6, and image-reuse checks were not run. HTTP 200 was not treated as freshness.
+
+`pnpm dev:stop` then exited 0 and left all six dev-5 desired replicas at 0. That stop was of a crash-looping stack, with dev-6 not running, so it is not the required first-stop proof. dev-6 was not started. HR01–HR03 stay BLOCKED.
