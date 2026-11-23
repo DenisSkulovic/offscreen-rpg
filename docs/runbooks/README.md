@@ -5,6 +5,7 @@ Source-adjacent package procedures may remain beside code.
 
 | Runbook | Question |
 | --- | --- |
+| [Worktree-owned dev stacks](dev-worktree-stacks.md) | Which cluster and tenant does a Cursor Change use, how do local assignment/lease/stop/retire and readiness work, and which T05 commands are not proven yet? |
 | [Local development](local-development.md) | How do I start the portfolio locally without a model call or a disposable-database reset? |
 | [Game Authority seam](local-development.md#game-authority-seam) | How does the optional private story process stay off the public API and off Compose? |
 | [Kubernetes lab](kubernetes-lab.md) | How do I create and delete the disposable kind cluster without touching Compose volumes? |
