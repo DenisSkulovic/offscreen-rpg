@@ -19,3 +19,5 @@ These are future work, not today's execution queue. Reconcile source/owner/accep
 ## Deferred earlier Changes (also in this category)
 
 - [2026-11-21--ma09-authority-writer-dependency-inversion](../../backlog/agent-runtime/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md): previous open packet, not selected; needs source/readiness reconciliation before promotion
+
+- [LIB07 bounded Story Library batch reads](2026-11-24--lib07-bounded-library-batch-read/CHANGE.md): source-only next-stage helper after LIB06; no Writer grant or runtime integration.
