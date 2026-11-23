@@ -4,7 +4,7 @@
 
 1. Parse `reserve` as a distinct top-level operation, incompatible with `--instance`; do not fall through to `runDevTiltLaunch`.
 2. Hold the existing registry lock; read/validate v2. Refuse missing/unsupported/corrupt registry rather than initialize a new identity counter against potentially persistent cluster tenants.
-3. Check `nextSequence` monotonicity against **all recorded** slot suffixes and ensure the candidate slot namespace is not already persisted externally; use a read-only guarded cluster existence probe or a proven durable high-watermark invariant, fail closed on indeterminate outcomes. Do not run any mutation.
+3. Check `nextSequence` monotonicity against **all recorded** slot suffixes. The existing durable v2 registry is the allocation authority; refuse a missing registry instead of rebuilding its counter. Do **not** contact the cluster during reserve. Unexpected external resources are a hard attach/activation refusal, never a reason to reuse the ID.
 4. Allocate disjoint available ports, construct a neutral unbound record with `worktreePath:null, processIdentity:null, lease:null, resourceUids:{}`, increment counter and atomically write registry. No checkout default entry.
 5. Return the ID and `reserved/unattached/unprovisioned`; no process, socket listener, image, pod or tenant write.
 
@@ -18,7 +18,7 @@
 4. Return `ATTACHED / UNPROVISIONED`; no workload, tenant, image or CLI launch. Recheck status is read-only.
 5. Ordinary `up/status/stop --instance` must require matching attached checkout and never make binding changes. A request from a different checkout is a refusal even if the slot's last process is parked.
 
-**Crash / concurrency:** under lock only one attachment wins. Failed probes or default collision leave old record unchanged. Do not clear stale PID, kill a process or modify Kubernetes as part of attachment.
+**Crash / concurrency:** under the existing registry lock only one attachment wins. Bound every read-only external probe; do not hold the lock through a lengthy Pod startup or mutation. Failed probes or default collision leave old record unchanged. Do not clear stale PID, kill a process or modify Kubernetes as part of attachment.
 
 ## Compatibility and testability
 
