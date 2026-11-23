@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+**2026-11-24 Library integrity successors:** [LIB08 bounded local object reads](open/2026-11-24--lib08-local-object-bounded-read/CHANGE.md) and [LIB09 verified Library-index node loads](open/2026-11-24--lib09-library-index-node-integrity/CHANGE.md) are separately owned, source-only Changes prepared for Cursor after current worktree/HEAD checks. They do not claim LIB07 completion, and they do not alter CACHE01–CACHE07 or DO01–DO07 ownership programs. No runtime or acceptance credit from planning.
+
 ## Cache platform redesign
 
 Owner-selected near-term serial sequence after Documents and DO01–DO07. DO01 owns dependency-free cache-port; CACHE01 does not relocate it twice. [Selected architecture](../../docs/technical/platform/persistence-and-caching.md). All Proposed / not commissioned; ChatGPT refreshes source/readiness at each handoff. No global queue change.
