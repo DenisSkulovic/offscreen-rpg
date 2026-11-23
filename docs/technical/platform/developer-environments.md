@@ -107,5 +107,5 @@ Current proof belongs in [DXK09 PROOF](../../../work/changes/open/2026-11-22--dx
 | --- | --- |
 | constrained-by | [Documentation and status distinctions](../../../.agents/rules/documentation.md#documentation-is-the-product-bible--non-negotiable) |
 | constrained-by | [DXK09 scope and real proof](../../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) |
-| depends-on | [DXK10 reserved/active/retained lifecycle proposal](../../../work/changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) |
+| informative implementation proposal (not authority over this selected contract) | [DXK10 reserved/active/retained lifecycle packet](../../../work/changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) |
 | co-change | [Operator runbook](../../runbooks/dev-worktree-stacks.md) and [human diagram](../../architecture/10-developer-environments.md) |
