@@ -103,24 +103,24 @@ function defaultFromEitherRegistry(registryRoot, checkout) {
  *   worktree: string,
  *   registryRoot: string,
  *   allocate?: typeof allocateIndependentEnvironment,
+ *   processDeps?: { pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null },
  * }} input
  */
 export function resolveDevEnvironmentSelection(input) {
   const checkout = resolve(input.worktree);
+  const raw = readRegistryJson(input.registryRoot);
   if (input.command === 'new') {
-    const raw = readRegistryJson(input.registryRoot);
     if (!raw || raw.version !== 2) {
       throw refusal('registry-version', 'dev:new requires registry v2 and does not migrate it.');
     }
     const allocate = input.allocate ?? allocateIndependentEnvironment;
     const record = allocate(checkout, input.registryRoot);
-    return { action: 'startup-not-yet-bound', record, checkout };
+    return { action: 'up', record, checkout, allocatedNew: true };
   }
   if (input.instance) {
     const record = ownerFromEitherRegistry(input.registryRoot, input.instance);
     const bound = resolve(String(record.worktreePath ?? ''));
-    const activeElsewhere = bound !== checkout && Boolean(record.lease || record.processIdentity);
-    if (activeElsewhere) {
+    if (bound !== checkout && reservationIsLive(record, input.processDeps)) {
       throw refusal('foreign-checkout', `${record.slotId} is active on another checkout.`);
     }
     return {
@@ -130,8 +130,52 @@ export function resolveDevEnvironmentSelection(input) {
       rebindCheckout: bound !== checkout,
     };
   }
+  if (raw?.version === 2 && input.command === 'up') {
+    const existing = getDefaultEnvironment(input.registryRoot, checkout);
+    if (existing) return { action: 'up', record: existing, checkout };
+    const allocate = input.allocate ?? allocateIndependentEnvironment;
+    const record = allocate(checkout, input.registryRoot, { setAsDefault: true });
+    return { action: 'up', record, checkout, allocatedDefault: true };
+  }
   const record = defaultFromEitherRegistry(input.registryRoot, checkout);
+  if (raw?.version === 2 && !record) {
+    throw refusal('missing-default', 'This checkout has no v2 default environment.');
+  }
   return { action: input.command, record, checkout };
+}
+
+/**
+ * A stored PID is a live reservation only when process identity still matches.
+ * A dead PID is not live. Missing start time or a mismatched start time stays
+ * unverified and therefore live for refusal purposes. Absence of processDeps
+ * also stays unverified.
+ *
+ * @param {{ lease?: { pid?: number, startTimeJiffies?: number } | null, processIdentity?: { pid?: number, startTimeJiffies?: number } | null }} record
+ * @param {{ pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null } | undefined} processDeps
+ */
+function reservationIsLive(record, processDeps) {
+  const identity = record.lease ?? record.processIdentity;
+  if (!identity) return false;
+  if (!processDeps) return true;
+  const assessed = assessOwnedProcess({
+    pid: identity.pid,
+    processStartTicks: identity.startTimeJiffies == null ? null : String(identity.startTimeJiffies),
+  }, processDeps);
+  return assessed.reason !== 'not_running' && assessed.reason !== 'missing_pid';
+}
+
+/**
+ * PID to signal for the selected environment. A stale or unverified PID is not returned.
+ *
+ * @param {string} registryRoot
+ * @param {{ slotId: string }} owner
+ * @param {{ pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null }} processDeps
+ */
+export function ownedEnvironmentSessionPid(registryRoot, owner, processDeps) {
+  const session = readEnvironmentSession(environmentSessionRoot(registryRoot), owner.slotId);
+  if (!session) return null;
+  const ownership = assessOwnedProcess(session, processDeps);
+  return ownership.owned ? Number(session.pid) : null;
 }
 
 /**

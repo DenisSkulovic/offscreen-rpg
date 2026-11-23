@@ -9,6 +9,7 @@ import {
   allocateDevWorktreeOwner,
   isAllocatorRefusal,
 } from './dev-worktree-allocator.mjs';
+import { readRegistryJson } from './dev-worktree-registry.mjs';
 import {
   collectDefaultProbes,
   runStackPreflight,
@@ -19,6 +20,7 @@ import { assessOwnedProcess, readProcessStartTicks } from './dev-process-identit
 import {
   environmentSessionRoot,
   isAllocatorRefusal as isSelectionRefusal,
+  ownedEnvironmentSessionPid,
   parseDevCliArgs,
   readEnvironmentSession,
   resolveDevEnvironmentSelection,
@@ -671,7 +673,13 @@ export async function runDevTiltLaunch(deps = {}) {
 
   const onSignal = (signal) => {
     stopPolling();
-    const pid = readWorktreeSessionPid(worktree);
+    const processDeps = {
+      pidAlive: deps.pidAlive ?? pidAlive,
+      readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+    };
+    const pid = deps.owner
+      ? ownedEnvironmentSessionPid(registryRoot, deps.owner, processDeps)
+      : readWorktreeSessionPid(worktree);
     if (pid !== null && pidAlive(pid)) {
       try {
         process.kill(pid, signal === 'SIGINT' ? 'SIGTERM' : signal);
@@ -871,12 +879,6 @@ function runDevStopCli(selection) {
   process.exit(0);
 }
 
-function refuseStartupNotBound(record) {
-  const id = record?.slotId ?? 'new';
-  console.error(`startup-not-yet-bound: ${id} cannot enter worktree-keyed startup until FU03 binds Tilt to that record.`);
-  process.exit(1);
-}
-
 const invokedAsScript = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
   let parsed;
@@ -889,11 +891,14 @@ if (invokedAsScript) {
     }
     throw error;
   }
-  if (parsed.command === 'up' && !parsed.instance) {
+  const registryRoot = devWorktreeRegistryRoot();
+  const registry = readRegistryJson(registryRoot);
+  const registryV2 = registry?.version === 2;
+  if (!registryV2 && parsed.command === 'up' && !parsed.instance) {
     await runDevTiltCli();
-  } else if (parsed.command === 'status' && !parsed.instance) {
+  } else if (!registryV2 && parsed.command === 'status' && !parsed.instance) {
     runDevStatusCli();
-  } else if (parsed.command === 'stop' && !parsed.instance) {
+  } else if (!registryV2 && parsed.command === 'stop' && !parsed.instance) {
     runDevStopCli(null);
   } else {
     let selection;
@@ -902,7 +907,11 @@ if (invokedAsScript) {
         command: parsed.command,
         instance: parsed.instance,
         worktree: REPO_ROOT,
-        registryRoot: devWorktreeRegistryRoot(),
+        registryRoot,
+        processDeps: {
+          pidAlive,
+          readStartTicks: (pid) => readProcessStartTicks(pid),
+        },
       });
     } catch (error) {
       if (isSelectionRefusal(error)) {
@@ -911,13 +920,11 @@ if (invokedAsScript) {
       }
       throw error;
     }
-    if (selection.action === 'startup-not-yet-bound') {
-      refuseStartupNotBound(selection.record);
-    } else if (selection.action === 'up') {
+    if (selection.action === 'up') {
       await runDevTiltLaunch({
         owner: selection.record,
         worktree: REPO_ROOT,
-        registryRoot: devWorktreeRegistryRoot(),
+        registryRoot,
       });
     } else if (selection.action === 'status') {
       const session = readEnvironmentSession(
