@@ -4,11 +4,24 @@
 
 **For humans first.** This is the visually navigable front door to the architecture, not an alternative source of truth. Product behavior remains under [product](../product/README.md), technical contracts under [technical](../technical/README.md), concrete capabilities under [STATUS](../../STATUS.md), and future implementation work under [Changes](../../work/changes/README.md). The diagrams describe connections, not authority to add mechanics or deploy services.
 
-**Inspection baseline:** code and documents from Git snapshot 584b594 (2026-11-19), supplemented by that day's planning handoffs. **Diagrams are intentionally labeled:**
+**Two reading layers and dates:** The human-first [Start Here tour](00-human-tour.md) and journeys 11–14 were source-inspected at `e2c0e751` (2026-11-23). Deeper chapters 01–10 originated at snapshot `584b594` (2026-11-19) and can contain historical observations; their specific dates and CURRENT/TARGET labels control. Where an old chapter contradicts the newer inspected route map, follow the newer source-grounded journey and actual code. Neither source inspection is a live release test. **Diagrams are intentionally labeled:**
 - **CURRENT SOURCE:** a path or constraint present in inspected code; not necessarily exercised end-to-end or deployed on Kubernetes.
 - **SELECTED TARGET:** an architectural behavior/design accepted as the direction, but not necessarily implemented.
 - **GAP / PROPOSED:** a known missing link or unresolved choice. No code or deployment is implied.
 - **PROOF:** a test or operational observation exists; distinguish unit/local integration from actual cross-Pod evidence.
+
+## New to the repository? Read this first
+
+**[Start Here: the human tour](00-human-tour.md)** is a five-minute map of the apps, packages, responsibilities, evidence levels and a simple method for following a user click into the backend. Then choose a real user journey:
+
+| Journey | What you will understand | Starting source |
+| --- | --- | --- |
+| [11. Visitor and session](11-visitor-and-session.md) | Anonymous landing, GitHub sign-in, session and private reads | `apps/web/app/page.tsx` |
+| [12. Creating a story](12-creating-a-story.md) | Direct prompt-first launch **versus** the draft/opening candidate path, Storyteller setup | `use-story-launch.ts`, `draft-editor.tsx` |
+| [13. Playing and forking](13-playing-and-forking.md) | HTTP 202 versus scene 2, outbox/Temporal/Worker, recovery and historical forks | `use-resolution-command.ts` |
+| [14. Admin tour](14-admin-tour.md) | Separate staff session, permissions, Player 360, support cases | `AdminActorService` |
+
+**Recommended learning order:** 00 → 11 → 12 → 13, then 14 or the deeper chapters below. These pages are **descriptive, dated source maps**. `docs/product` and `docs/technical` remain the owners of accepted behavior and correctness requirements; `STATUS.md` owns proof.
 
 ## The game in one picture
 
@@ -58,7 +71,7 @@ Do not infer CURRENT from a SELECTED design or PROOF from passing a fake fixture
 | Can we play a campaign while randomly killing Pods without any LLM calls? | [9. Chaos Lab and zero-token play](09-chaos-and-zero-token-play.md) | [K8S10](../../work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md), [lab protocol](../technical/lab/experiment-protocol.md) |
 | Where do our diagrams expose unanswered design questions? | [8. Assumptions and gaps](08-gaps-and-decisions.md) | [POC source audit](../../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) |
 
-**Jump into the actual source:** [API](../../apps/api/README.md), [Game Authority](../../apps/game-authority/README.md), [Worker](../../apps/worker/README.md), [application](../../packages/application/README.md), [workflows](../../packages/workflows/README.md), [DB](../../packages/db/README.md). The source links explain who *currently* implements a concept. The diagrams use shorter readable actor names, not invented package names.
+**Jump into the actual source:** [Web](../../apps/web/README.md), [API](../../apps/api/README.md), [Game Authority](../../apps/game-authority/README.md), [Worker](../../apps/worker/README.md), [Story Engine](../../packages/story-engine/README.md), [Storyteller](../../packages/storyteller/README.md), [workflows](../../packages/workflows/README.md), [DB](../../packages/db/README.md). Old references to `packages/application` describe historical compatibility, not the present top-level package tree. The diagrams use short actor names, not invented packages. The source links explain who *currently* implements a concept. The diagrams use shorter readable actor names, not invented package names.
 
 ## Diagrams as maintained architecture
 

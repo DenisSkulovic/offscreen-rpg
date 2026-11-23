@@ -4,6 +4,8 @@
 
 **How documentation enters the development lifecycle:** [How we work](../WORKFLOW.md) explains ratifying product and technical contracts *before* Cursor implementation, how authoritative documentation Changes work, and how verification/realized-state reconciliation returns here. This page remains the product/technical knowledge router.
 
+**New to the game itself and its code?** Begin with the [five-minute human architecture tour](architecture/00-human-tour.md), followed by [visitor/login](architecture/11-visitor-and-session.md), [story creation/Storyteller setup](architecture/12-creating-a-story.md), [Play/scene/fork](architecture/13-playing-and-forking.md), and [Admin](architecture/14-admin-tour.md). These are dated, source-grounded explainers, not a second product specification or evidence that the multi-Pod turn passed.
+
 **New to parallel Cursor development?** Begin with the [illustrated developer environments guide](architecture/10-developer-environments.md), then [the technical owner](technical/platform/developer-environments.md) or [safe operating commands](runbooks/dev-worktree-stacks.md). It distinguishes the proven two-slot foundation from the selected resource-on-demand future.
 
 Product behavior is the bible. Technical contracts say what the system must guarantee. Code and tests are artifacts of those contracts. A selected target is not a claim that it is implemented, and selection is not proof that the target is coherent, enjoyable, or affordable. A proposed design is not a norm. Deterministic selected invariants stay binding, including consent, no model-owned dice, and no duplicate effects. Naming shared play inside a selected ambition does not make that play deliverable or implemented. `pnpm wiki:find` labels each heading from that heading: a nested proposal stays out of the normative lane, and a status or uncertain hit is not a gameplay rule or a paid-production grant.
@@ -70,7 +72,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | Where do hydration, cache and commands live? | [State and server boundary](technical/client/state-and-server-boundary.md) |
 | How do I run a Chamber test without paying a model? | [Chamber fixtures](technical/lab/chamber-and-fixtures.md) · [local development](runbooks/local-development.md) |
 | How do I operate the portfolio locally? | [Runbooks](runbooks/README.md) |
-| Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Application operations](../packages/application/README.md#directory-index) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
+| Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Story Engine operations](../packages/story-engine/README.md) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
 | Is a selected product target already feasible? | [STATUS](../STATUS.md) · [product-reality claims](../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). Selection is not proof. The claim register adds no rule |
 | What is actually true this week, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [work selection](../work/QUEUE.md) · [Change catalog](../work/changes/README.md) · [Tasks](../work/tasks/README.md) |
 

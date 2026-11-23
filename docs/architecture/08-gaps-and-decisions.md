@@ -1,5 +1,8 @@
 # 8. Gaps found by drawing the architecture
 
+> **Historical gap ledger:** this page's snapshot is `584b594` (2026-11-19). Its earlier P0 rows about Nest start/fork still being local and the absence of separate distributed execution **do not describe current `e2c0e751` source**. Consult [current human tour](00-human-tour.md), [player flow](13-playing-and-forking.md), [STATUS](../../STATUS.md) and the [implementation roadmap](../../work/IMPLEMENTATION-ROADMAP.md) for up-to-date implementation/acceptance. Preserve old findings only as dated investigation evidence.
+
+
 **Storyteller evolution baseline:** the permanent docs now select the target architecture. Remaining gaps on this branch are implementation gaps unless explicitly named as policy choices. Do not list the legacy wizard, flat manifest, one-shot writer or quiescent-only fork limitation as desired end-state decisions.
 
 **Reader question:** which arrows are real, which are merely selected, and which architectural choices still need proof? **Inspection:** source snapshot 584b594 and current documentation handoff, 2026-11-19. This is a **diagnostic ledger**, not a new authoritative spec or an automatic Change selector. Canonical [source audit](../../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md), [queue](../../work/changes/README.md) and [STATUS](../../STATUS.md).
