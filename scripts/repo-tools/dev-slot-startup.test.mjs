@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { allocateDevWorktreeOwner } from './dev-worktree-allocator.mjs';
-import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure } from './dev-slot-startup.mjs';
+import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure, resolveOauthReadiness } from './dev-slot-startup.mjs';
 
 const record = {
   slotId: 'dev-3',
@@ -234,4 +234,56 @@ exit 0
   assert.equal(builds.length, 1);
   assert.match(left.stdout + right.stdout, /builds=0/);
   assert.equal(readFileSync(counter, 'utf8').trim().split('\n').length, 1);
+});
+
+test('oauth readiness refuses before sql for a missing, incomplete, short, or unreadable file', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'oauth-ready-'));
+  const worktree = join(root, 'wt');
+  mkdirSync(worktree);
+  const home = join(root, 'home');
+  const shared = join(home, '.local/state/offscreen-rpg/dev-oauth.env');
+  mkdirSync(join(home, '.local/state/offscreen-rpg'), { recursive: true });
+  const valid = 'GITHUB_CLIENT_ID=id\nGITHUB_CLIENT_SECRET=secret\nBETTER_AUTH_SECRET=12345678901234567890123456789012\n';
+  const previousHome = process.env.HOME;
+  process.env.HOME = home;
+  try {
+    const missing = await resolveOauthReadiness(worktree, {});
+    assert.equal(missing.ok, false);
+    assert.equal(missing.detail, 'approved local OAuth file is missing');
+
+    writeFileSync(shared, 'GITHUB_CLIENT_ID=id\n');
+    const incomplete = await resolveOauthReadiness(worktree, {});
+    assert.equal(incomplete.detail, 'approved local OAuth configuration is missing');
+
+    writeFileSync(shared, 'GITHUB_CLIENT_ID=id\nGITHUB_CLIENT_SECRET=secret\nBETTER_AUTH_SECRET=short\n');
+    const short = await resolveOauthReadiness(worktree, {});
+    assert.equal(short.detail, 'approved local OAuth configuration is missing');
+
+    writeFileSync(shared, valid);
+    chmodSync(shared, 0);
+    const unreadable = await resolveOauthReadiness(worktree, {});
+    assert.equal(unreadable.detail, 'approved local OAuth configuration is unreadable');
+    assert.equal(JSON.stringify(unreadable).includes('GITHUB'), false);
+
+    chmodSync(shared, 0o600);
+    const ready = await resolveOauthReadiness(worktree, {});
+    assert.equal(ready.ok, true);
+    assert.equal(ready.path, shared);
+
+    const override = join(root, 'override.env');
+    writeFileSync(override, 'GITHUB_CLIENT_ID=only\n');
+    const overridden = await resolveOauthReadiness(worktree, { OFFSCREEN_DEV_OAUTH_FILE: override });
+    assert.equal(overridden.ok, false);
+    assert.equal(overridden.detail, 'approved local OAuth configuration is missing');
+  } finally {
+    chmodSync(shared, 0o600);
+    process.env.HOME = previousHome;
+  }
+
+  const used = deps({
+    validateOauth: async () => ({ ok: false, detail: 'approved local OAuth configuration is missing' }),
+  });
+  const blocked = await reconcileDevSlot({ worktree, registryRoot: root }, used);
+  assert.equal(blocked.phase, 'oauth');
+  assert.equal(used.calls.includes('sql'), false);
 });
