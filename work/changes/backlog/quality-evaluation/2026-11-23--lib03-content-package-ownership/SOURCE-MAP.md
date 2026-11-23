@@ -8,7 +8,7 @@
 | `packages/documents/src/rule-import.ts`: `importRulePackage`, `importRulePackageDirectory`, `rulePackageImportSchema`, `rulePackageSourceSchema`, limits | `packages/content-packages/src/rule-import.ts` | RULES.md, adapter/engine/license/topic/file constraints are source-content policy |
 | `packages/documents/src/start-import.ts`: `importStartPackageDirectory`, `startPackageSourceSchema`, limits | `packages/content-packages/src/start-import.ts` | START.md, activation and declared schema rules are authoring policy |
 | `packages/documents/src/start-instantiation.ts`: `instantiateStartPackage` | `packages/story-engine/src/stories/start-package-instantiation.ts` | Campaign identity remap, verified reference pins, provenance, root delta and activation are game-domain behavior |
-| `packages/documents/src/schema.ts`: `worldPackageManifestSchema`, `rulePackageManifestSchema`, `startPackageManifestSchema`, ref schemas | **Remain Documents** | Stable on-disk storage wire codecs; LIB02 concurrently owns checkpoint extraction |
+| `packages/documents/src/schema.ts`: `worldPackageManifestSchema`, `rulePackageManifestSchema`, `startPackageManifestSchema`; **LIB02 landed** and split `worldPackageReferenceSchema` / rule / start refs into `package-reference-schema.ts` with re-exports through schema | **Remain Documents** | Stable on-disk storage wire codecs; LIB02 concurrently owns checkpoint extraction |
 | `packages/documents/src/local-store.ts`, `s3-store.ts`, `library-index.ts`, trie/page | **Remain Documents** | Content-addressed storage, generic Library roots and verified byte persistence |
 | `packages/documents/src/markdown-metadata.ts` | **Remain Documents** | Shared markdown orientation/section helper and stable ID source, no duplicate code |
 
