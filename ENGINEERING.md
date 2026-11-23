@@ -1,5 +1,7 @@
 # Engineering System Tour
 
+**For a picture of how independent Cursors share code, compute and persistent tenants:** [Developer environments explained](docs/architecture/10-developer-environments.md). [Operating commands](docs/runbooks/dev-worktree-stacks.md) and [developer-environment contract](docs/technical/platform/developer-environments.md) are separate because a human story, an operator procedure and a system invariant answer different questions.
+
 **Practical lifecycle and agent onboarding:** [WORKFLOW.md](WORKFLOW.md). This page is a public tour of *why* the method exists, not an alternate set of operating instructions.
 
 **A practical, inspectable approach to AI-assisted software engineering.**

@@ -1,6 +1,6 @@
 # Next implementation wave | HR01 · HR02 · HR03
 
-**Planner snapshot:** `ab76f6dd9f8efd9ec3aabbae064f55ab79021298`, `undertaking/storyteller-workshop`, 2026-11-22. **State:** three near-term *conditional* source-disjoint Changes. This file coordinates a one-off owner-authorized wave; it does not replace `work/QUEUE.md`, authorize spend, or claim the in-flight CL01/WR11/K8S10 results. The snapshot excluded in-progress uncommitted edits.
+**Current routing checkpoint (2026-11-23, integration `d9a2c11e`):** HR01–HR03 remain blocked for unattended full-stack use. Local DXK09 `e93f33c7` has unresolved Tilt versus post-load image-generation ownership and no accepted end-to-end start/edit/stop gate; that branch is not integrated. See the [selected dev-environment contract](../../../docs/technical/platform/developer-environments.md) and [operator runbook](../../../docs/runbooks/dev-worktree-stacks.md). **Original planner snapshot:** `ab76f6dd9f8efd9ec3aabbae064f55ab79021298`, `undertaking/storyteller-workshop`, 2026-11-22. **State:** three near-term *conditional* source-disjoint Changes. This file coordinates a one-off owner-authorized wave; it does not replace `work/QUEUE.md`, authorize spend, or claim the in-flight CL01/WR11/K8S10 results. The snapshot excluded in-progress uncommitted edits.
 
 ## Why this wave, not another runtime layer
 

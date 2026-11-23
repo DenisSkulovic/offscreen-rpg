@@ -64,7 +64,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-19--turn01-ratify-unified-poc-acceptance](../../../../work/changes/archive/2026-11/distributed/2026-11-19--turn01-ratify-unified-poc-acceptance/CHANGE.md)
 - [2026-11-19--turn02-compose-real-kubernetes-application-release](../../../../work/changes/archive/2026-11/distributed/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md)
 
-## documentation (62)
+## documentation (63)
+
+- [2026-11-23--doc-dev01-parallel-dev-documentation](../../../../work/changes/archive/2026-11/documentation/2026-11-23--doc-dev01-parallel-dev-documentation/CHANGE.md) (human-first dev platform map, canonical technical owner, repaired runbooks and honest status)
 
 - [2026-11-16--doc01-documentation-architecture](../../../../work/changes/archive/2026-11/documentation/2026-11-16--doc01-documentation-architecture/CHANGE.md)
 - [2026-11-16--doc02-knowledge-authority-reconstruction](../../../../work/changes/archive/2026-11/documentation/2026-11-16--doc02-knowledge-authority-reconstruction/CHANGE.md)
