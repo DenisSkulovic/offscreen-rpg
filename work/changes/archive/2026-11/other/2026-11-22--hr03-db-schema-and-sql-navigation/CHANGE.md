@@ -1,6 +1,17 @@
 # HR03 | Readable DB schemas and an honest SQL ownership map
 
-**Profile:** STRUCTURAL/REFACTOR · **Status: READY WITH STRICT ZERO-SCHEMA-DELTA PROOF on inspected `d3ba2917`; recheck current migrations before execution.** Integration `undertaking/storyteller-workshop`. No DB migration, SQL query rewrite, production data mutation or new npm package.
+**Profile:** STRUCTURAL/REFACTOR · **Status: Done (2026-11-23).** Integration `undertaking/storyteller-workshop`. No DB migration, SQL query rewrite, production data mutation or new npm package.
+
+Executed from `ade6cfbf`. The 20 Storyteller `pgTable` declarations moved into `packages/db/src/schema/storyteller/{capture,funding,execution,policy,writer}.ts`. `packages/db/src/schema/storyteller.ts` remains the `@offscreen/db/storyteller-schema` barrel. `getTableConfig` fingerprint hash `d6a9a98b262f8c31869e5ec75bc6f2fd14ac2a4f3c811a3cabfe52748759f3ba` matches the pre-move baseline. `packages/db/migrations` is unchanged. Story Engine SQL was not moved. Navigation is `packages/story-engine/SQL-OWNERSHIP.md`.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| packages/db storyteller table identity | code | unchanged: same 20 SQL names, columns, defaults, nullability, checks, indexes, unique constraints, and foreign keys | packages/db/src/schema/storyteller.ts barrel plus storyteller/*.ts @ ade6cfbf plus this Change | source-tested | schema-identity.test.ts drops storytellerFunding and the fingerprint hash no longer matches; migrations diff empty | packages/db/README.md points at the five modules and SQL-OWNERSHIP.md |
+| Story Engine transaction ownership | code | unchanged: forks, control receipts, budget advisory lock, and writer CAS stay in their current functions | packages/story-engine/src/stories/forks.ts createStoryForks; persistence.ts findControlReceipt; storyteller/budget.ts lockAllowance; writer-mission-custody.ts acquireGlobalBudgetAdvisoryLock @ ade6cfbf | source-observed | SQL-OWNERSHIP.md states this map is not an exactly-once, HA, or scale guarantee. Disposable SQL suites NOT RUN | packages/story-engine/SQL-OWNERSHIP.md |
+| product story and spending rules | product | unchanged because no player-visible or money behavior changed | no product page edited | source-observed | no migration and no query rewrite | N/A |
+
 
 ## Important finding
 

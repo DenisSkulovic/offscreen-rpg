@@ -189,7 +189,7 @@ The later-scene fence is `commitStoryContinuation` after `lockOwnedStory`. One S
 
 Handling is one of four classes for the v1 fork. **Copied** means the payload contains the validated value at the fence and the fork inserts its own row from that value. **Reference** means the payload stores an id or hash of an immutable earlier record and the fork reuses the bytes. **Rejected** means active or unsettled work is not cloned and is not marked complete; the v1 POC refuses that fork. **Excluded** means the column is not scene truth. v2 publication now stores notes, decision and wait plans, and active-work snapshots in the checkpoint. The fork does not apply this table to a v2 object; it refuses the object.
 
-Inspected modules, not modified here: `packages/db/src/schema/stories.ts`, `packages/db/src/schema/campaign.ts`, `packages/db/src/schema/storyteller.ts`, `packages/application/src/stories/initialization.ts`, `continuation.ts`, `forks.ts`, `reads.ts`, and `packages/documents/src/schema.ts`.
+Inspected modules, not modified here: `packages/db/src/schema/stories.ts`, `packages/db/src/schema/campaign.ts`, `packages/db/src/schema/storyteller.ts` (barrel; declarations live under `packages/db/src/schema/storyteller/`), `packages/application/src/stories/initialization.ts`, `continuation.ts`, `forks.ts`, `reads.ts`, and `packages/documents/src/schema.ts`.
 
 | Field | Class | Validator, version, stable id | Fork |
 | --- | --- | --- | --- |
@@ -269,7 +269,7 @@ Inspected modules, not modified here: `packages/db/src/schema/stories.ts`, `pack
 | `game_action_execution_event` | Reference, long-term, at or before the fence `gameSecond` | Append-only revision | POC does not clone them. |
 | `story_public_event` | Excluded | Projection. The schema comment says it is not game authority | Do not rebuild a checkpoint from it. A later king-death event is not an earlier scene. |
 | `storyteller_preset` | Excluded | Owner library | The captured profile on the story and on `campaign_settings` is the pin. |
-| Every table in `packages/db/src/schema/storyteller.ts` | Excluded | Publication, context capture, memory exploration, dispatch review, funding, run, operation, attempt, usage, retry, prompt provenance, execution stage | Provider and billing operations. A fork copies none of them and performs no inference. Do not snapshot payloads, keys, or balances. |
+| Every table exported by `packages/db/src/schema/storyteller.ts` | Excluded | Publication, context capture, memory exploration, dispatch review, funding, run, operation, attempt, usage, retry, prompt provenance, execution stage. Declarations are split under `schema/storyteller/` with the same SQL identity | Provider and billing operations. A fork copies none of them and performs no inference. Do not snapshot payloads, keys, or balances. |
 | `offscreen.document.v1`, `offscreen.structured-document.v1`, `offscreen.source-passage.v1`, `offscreen.manifest.v1`, world, rule, and start manifests | Reference | Existing document validators. This contract does not change those formats | A markdown body or a structured document is not `story_item` authority. |
 
 Pins on the payload are references, not new columns: the world-package roots, rule-package root, and start-package root already named by the ancestor manifest at the fence, plus the captured Storyteller profile. A library revision adopted after the fence is invisible. `outbox`, `generation`, and account tables are outside this inventory and stay excluded as delivery, provider, and account records.

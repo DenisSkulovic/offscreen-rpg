@@ -1,0 +1,25 @@
+# Story Engine SQL ownership
+
+Navigation map of the code that actually reads and writes SQL, inspected on `undertaking/storyteller-workshop` at `ade6cfbf`. This is not a claim that every query is exactly-once, highly available, or scalable. `@offscreen/db` defines tables and the connection; Story Engine functions own transactions, locks, and idempotency.
+
+Table declarations for the 20 Storyteller tables stay behind `@offscreen/db/storyteller-schema` ([barrel](../db/src/schema/storyteller.ts)).
+
+## Where a command starts a transaction
+
+| Concern                              | Owner                                                                                                                                                                           | What it preserves                                                                                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Story fork of the current checkpoint | `createStoryForks` in [stories/forks.ts](src/stories/forks.ts) opens `database.db.transaction` and `FOR UPDATE` on the source story                                             | Same owner, distinct fork id, checkpoint hash match before copy                                                                                         |
+| Story row lock and control receipt   | `lockOwnedStory` and `findControlReceipt` / `insertControlReceipt` in [stories/persistence.ts](src/stories/persistence.ts)                                                      | Receipt lookup is `(storyId, operationId)` inside the caller’s transaction                                                                              |
+| Scene checkpoint replay              | [stories/scene-checkpoint.ts](src/stories/scene-checkpoint.ts) returns `idempotent: true` when the stored hash already matches                                                  | Does not invent a second checkpoint for the same hash                                                                                                   |
+| Visit ACK                            | [stories/visit-checkpoint.ts](src/stories/visit-checkpoint.ts)                                                                                                                  | Mismatched ACK identity raises `ack_idempotency_mismatch`                                                                                               |
+| Document operation identity          | [stories/documents.ts](src/stories/documents.ts)                                                                                                                                | Conflicting operation identity raises `operation_identity`                                                                                              |
+| Campaign action settlement           | `settleActionExecution` in [campaign/action-executions.ts](src/campaign/action-executions.ts)                                                                                   | Caller holds the story lock; a retry sees the terminal execution row and does not roll or apply effects again                                           |
+| Writer attempt funding               | `createStorytellerBudget` and `lockAllowance` in [storyteller/budget.ts](src/storyteller/budget.ts)                                                                             | `pg_advisory_xact_lock(714092631)` then `FOR UPDATE` on funding and run. Accounting transactions do not take the story lock                             |
+| Writer mission lease / CAS           | `casWriterStep`, `reserveWriterMissionProviderAttempt`, `acquireGlobalBudgetAdvisoryLock` in [storyteller/writer-mission-custody.ts](src/storyteller/writer-mission-custody.ts) | Step compare-and-swap and the same budget advisory lock. `planWriterProviderStepInTransaction` does not take that lock; strict callers acquire it first |
+
+`apps/game-authority` and the SQL-capable worker compose these use cases. The no-SQL execution worker does not import the database package. Generic outbox insert/relay stays in `packages/db/src/outbox.ts` and `outbox-relay.ts`; domain code decides when a transaction calls them.
+
+## Two-hop examples
+
+- Idempotent story command: start at `findControlReceipt` (`stories/persistence.ts`), then the transaction that calls `insertControlReceipt` (fork and action settlement both run inside `database.db.transaction`).
+- Writer attempt funding: start at `createStorytellerBudget` (`storyteller/budget.ts` `reserve`), then `lockAllowance` for the advisory lock and funding/run rows. Mission spend that must share that lock calls `acquireGlobalBudgetAdvisoryLock` in `writer-mission-custody.ts` before planning the provider step.
