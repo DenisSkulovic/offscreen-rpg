@@ -44,9 +44,9 @@ function decode(data, key) {
   return Buffer.from(value, 'base64').toString();
 }
 
-function approvedOauth(path) {
+function approvedOauthFromText(text) {
   const found = {};
-  for (const line of readFileSync(path, 'utf8').split('\n')) {
+  for (const line of text.split('\n')) {
     const match = /^(GITHUB_CLIENT_ID|GITHUB_CLIENT_SECRET|BETTER_AUTH_SECRET)=(.*)$/.exec(line);
     if (match) found[match[1]] = match[2];
   }
@@ -54,6 +54,26 @@ function approvedOauth(path) {
     throw new Error('approved local OAuth configuration is missing');
   }
   return found;
+}
+
+/**
+ * Same key and length contract as projectDevSlot. Unreadable files and
+ * parser failures stay redacted: the thrown message never includes file text.
+ * @param {string} path
+ */
+export function assertApprovedOauthFile(path) {
+  let text;
+  try {
+    text = readFileSync(path, 'utf8');
+  } catch {
+    throw new Error('approved local OAuth configuration is unreadable');
+  }
+  try {
+    return approvedOauthFromText(text);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'approved local OAuth configuration is missing') throw error;
+    throw new Error('approved local OAuth configuration is missing');
+  }
 }
 
 /**
@@ -127,7 +147,7 @@ export function projectDevSlot(options) {
   const backingS3 = readOwnedBackingSecret(kubectlFn, DEV_S3_NAMESPACE, s3.secret, record.slotId);
   for (const key of ['access-key-id', 'secret-access-key']) if (!backingS3.data[key]) throw new Error(`s3 key ${key}`);
 
-  const oauth = options.oauth ?? approvedOauth(options.oauthFile);
+  const oauth = options.oauth ?? assertApprovedOauthFile(options.oauthFile);
   const graph = renderDevSlotAppGraph(record.slotId, { schemaReady: true, ports: record.ports });
   kubectlFn(['apply', '-f', '-'], JSON.stringify(graph.documents[0]));
 

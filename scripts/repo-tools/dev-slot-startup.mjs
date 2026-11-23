@@ -14,13 +14,38 @@ import { join } from 'node:path';
 const DEV_CLUSTER = 'kind-offscreen-dev';
 const MIN_MEMORY_MIB = 1536;
 
-function oauthFileFor(worktree) {
-  const candidates = [
-    process.env.OFFSCREEN_DEV_OAUTH_FILE,
+function oauthCandidates(worktree, env = process.env) {
+  return [
+    env.OFFSCREEN_DEV_OAUTH_FILE,
     join(worktree, '.env'),
     join(homedir(), '.local/state/offscreen-rpg/dev-oauth.env'),
   ].filter(Boolean);
-  return candidates.find((path) => existsSync(path)) ?? null;
+}
+
+function oauthFileFor(worktree, env = process.env) {
+  return oauthCandidates(worktree, env).find((path) => existsSync(path)) ?? null;
+}
+
+/**
+ * Content check used before SQL, S3, or Temporal mutation.
+ * File selection stays override, worktree .env, then the shared home file.
+ * @param {string} worktree
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export async function resolveOauthReadiness(worktree, env = process.env) {
+  const path = oauthFileFor(worktree, env);
+  if (!path) return { ok: false, detail: 'approved local OAuth file is missing' };
+  const { assertApprovedOauthFile } = await import('../../infra/kubernetes/lab/dev/backing/dev-slot-project.mjs');
+  try {
+    assertApprovedOauthFile(path);
+    return { ok: true, path };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : '';
+    if (detail === 'approved local OAuth configuration is missing' || detail === 'approved local OAuth configuration is unreadable') {
+      return { ok: false, detail };
+    }
+    return { ok: false, detail: 'approved local OAuth configuration is missing' };
+  }
 }
 
 export const SLOT_IMAGE_ROLES = Object.freeze([
@@ -110,6 +135,11 @@ export async function reconcileDevSlot(input, deps) {
     return stopped('capacity', `available memory ${memory}MiB is below ${MIN_MEMORY_MIB}MiB`);
   }
 
+  if (deps.validateOauth) {
+    const oauth = await deps.validateOauth(input.worktree);
+    if (!oauth?.ok) return stopped('oauth', oauth?.detail ?? 'approved local OAuth configuration is missing');
+  }
+
   const retained = [];
   const sql = await deps.ensureSql(record);
   const sqlDetail = phaseResult(sql);
@@ -187,6 +217,7 @@ export async function reconcileOwnedDevSlot(input) {
 
   return reconcileDevSlot({ ...input, owner: input.owner }, {
     allocate: allocateDevWorktreeOwner,
+    validateOauth: (worktree) => resolveOauthReadiness(worktree),
     probeCluster: async () => {
       const cluster = spawnSync('kubectl', ['--context', 'kind-offscreen-dev', 'get', 'namespace', 'offscreen-dev-postgres', '-o', 'name'], { encoding: 'utf8' });
       let memoryMiB = 0;
@@ -196,6 +227,10 @@ export async function reconcileOwnedDevSlot(input) {
         memoryMiB = available ? Math.floor(Number(available[1]) / 1024) : 0;
       } catch {
         memoryMiB = 0;
+      }
+      const oauth = await resolveOauthReadiness(input.worktree);
+      if (!oauth.ok) {
+        return { ok: false, cluster: 'kind-offscreen-dev', memoryMiB, detail: oauth.detail };
       }
       const built = join(input.worktree, 'packages/db/dist/src/migrate.js');
       if (!existsSync(built)) {
@@ -213,12 +248,10 @@ export async function reconcileOwnedDevSlot(input) {
         }
       }
       return {
-        ok: cluster.status === 0 && memoryMiB >= MIN_MEMORY_MIB && Boolean(oauthFileFor(input.worktree)),
+        ok: cluster.status === 0 && memoryMiB >= MIN_MEMORY_MIB,
         cluster: 'kind-offscreen-dev',
         memoryMiB,
-        detail: !oauthFileFor(input.worktree)
-          ? 'approved local OAuth file is missing'
-          : (cluster.status === 0 ? 'ready' : 'kind-offscreen-dev postgres namespace is missing'),
+        detail: cluster.status === 0 ? 'ready' : 'kind-offscreen-dev postgres namespace is missing',
       };
     },
     ensureSql: (owner) => {
