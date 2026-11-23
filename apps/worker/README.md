@@ -8,10 +8,10 @@
 | --- | --- | --- |
 | Who starts/stops Temporal connections and worker processes? | [bootstrap/main.ts](src/bootstrap/main.ts), [runtime/index.ts](src/runtime/index.ts) `startRuntime` | Connection/shutdown under [runtime/connections.ts](src/runtime/connections.ts) |
 | Which outbox notice maps to which workflow? | [outbox/dispatch.ts](src/outbox/dispatch.ts) `selectNoticeDispatch`, `deliverOutboxNotice` | [workflow type/ID contracts](../../packages/workflows/src/contracts.ts) |
-| What polls and relays committed notices? | [outbox/relay.ts](src/outbox/relay.ts) | `@offscreen/application/outbox` |
+| What polls and relays committed notices? | [outbox/relay.ts](src/outbox/relay.ts) | the Story Engine outbox owner |
 | Where are actual Temporal Activity callbacks? | [activities/index.ts](src/activities/index.ts) `createWorkerActivities` | Application stories/campaign/Storyteller use cases |
 | Which component owns timers and replay? | [Workflows package](../../packages/workflows/README.md) | Pure Temporal workflow coordination |
-| Why did a provider request not retry? | [Storyteller application](../../packages/application/README.md) | [Provider dispatch/review contract](../../docs/technical/storyteller/provider-boundary.md) |
+| Why did a provider request not retry? | [Story Engine Storyteller runtime](../../packages/story-engine/README.md) | [Provider dispatch/review contract](../../docs/technical/storyteller/provider-boundary.md) |
 
 ## Exact-once business effects vs repeatable delivery
 
