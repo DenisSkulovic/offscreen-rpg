@@ -1,6 +1,6 @@
 # LIB09 | Validate content-addressed trie nodes at Library-index load boundary
 
-**Status:** READY FOR OWNER COMMISSION, SOURCE-ONLY. **Baseline:** `undertaking/storyteller-workshop@6d0a1aaa3e42ebf0eeeca60ac34b341f087b1b73`; recheck actual current HEAD. **Owner:** `packages/documents`. Independent of LIB08 and in-flight LIB07, unless source overlap/active worktree arises. No SQL, Story Engine, contracts package, storage keys or data migrations.
+**Status:** READY FOR OWNER COMMISSION, SOURCE-ONLY. **Baseline:** `undertaking/storyteller-workshop@05b50418933c9a8dea6b7740222734a2729f9768`; recheck actual current HEAD. **Owner:** `packages/documents`. Independent of LIB08 and in-flight LIB07, unless source overlap/active worktree arises. No SQL, Story Engine, contracts package, storage keys or data migrations.
 
 ## Observed gap
 `loadLibraryIndex(readNode,root)` in `packages/documents/src/library-index.ts` walks `root.pathsRootHash` and `root.idsRootHash`; it accepts each reader-returned node without validating `hashCanonicalJson(node) === requested nodeHash`. Subsequent `assertLibraryIndexConsistent` checks path↔ID graph equivalence but not cryptographic content identity. Normal S3/local typed readers check hashes, yet this public injectable abstraction shouldn't silently assume that every caller is a verified store.
