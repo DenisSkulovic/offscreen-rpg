@@ -264,3 +264,17 @@ Parent `f76e4132` on `change/dxk09-lifecycle-freshness`. Two status defects were
 **First stop.** One `pnpm dev:stop` exited 0. Tilt PID 740587 and kubectl PID 769312 were gone. Ports 13116 and 13118 were free. All six `offscreen-dev-5` Deployments were desired 0. Tenant Secret UIDs were unchanged: `dev-5-app` `cd146db7-c962-4bef-ad82-adad2c099c2f`, `dev-5-run-auth` `58ef4bac-0287-4ee8-af43-8571e26208ba`, `dev-5-s3` `ce1d32a5-751c-43e2-b9a2-ccf0ce6db179`.
 
 This receipt is one stack. The two-worktree gate, the unattended ordinary-worktree gate, and four-stack acceptance are not claimed here. HR01–HR03 stay BLOCKED.
+
+## Two-worktree gate at `9f1eab1c` (2026-11-23) — partial
+
+Proof A and proof B were detached at `9f1eab1c`. Each used `pnpm dev` with no manual Kubernetes repair. A reused `dev-5` / `offscreen-dev-5` / ports 13116 and 13118, Tilt PID 840443. B reused `dev-6` / `offscreen-dev-6` / ports 13120 and 13122, Tilt PID 940544. Web image tags differed: A `tilt-build-1795444429`, B `tilt-build-1795444759`. Compiled role hashes matched because the source was the same commit. Host `/sign-in` and `/api/health/ready` returned 200 on both 13116 and 13120. `pnpm dev:status` exited 0 in both checkouts.
+
+Secret UIDs stayed distinct: dev-5 `dev-5-app` `cd146db7-c962-4bef-ad82-adad2c099c2f`, `dev-5-run-auth` `58ef4bac-0287-4ee8-af43-8571e26208ba`, `dev-5-s3` `ce1d32a5-751c-43e2-b9a2-ccf0ce6db179`; dev-6 `dev-6-app` `b3dfd6c7-fd75-4e7c-8896-c5f10def0a93`, `dev-6-run-auth` `55536671-dd62-496f-9ac5-36226fe8931e`, `dev-6-s3` `c168ad8e-661c-4f11-9c2b-9d1407832a96`.
+
+A marker `DXK09-A-ONLY` in proof A's `apps/web/app/sign-in/page.tsx` appeared on port 13116 and did not appear on port 13120. The marker was removed.
+
+`pnpm dev:stop` in A exited 0. Ports 13116 and 13118 were free. dev-5 desired replicas were 0. B stayed on 13120 with HTTP 200, desired replicas 1, and the same Secret and Deployment UIDs. dev-5 Secret UIDs were unchanged.
+
+**Restart while B stayed up: capacity refusal, with a late scale.** Before the retry, MemAvailable was about 2.8 GiB and swap used about 2.6 GiB of 4.0 GiB. `pnpm dev` in A exited 1 with `MemAvailable is 2648324 KiB, below 4194304 KiB (4 GiB).` That check in `runDevTiltLaunch` runs after `reconcileOwnedDevSlot`. The refusal left dev-5 desired replicas at 1, status `PARKED`, `game-web` Running, and the other five pods `Error`, with no listener on 13116. A follow-up `pnpm dev:stop` returned those replicas to 0. B was still HTTP 200. This is host pressure plus admission ordered after workload reconcile, not a failed image build.
+
+A third ordinary worktree was not started. Two stacks already sat under the 4 GiB gate. Four-stack acceptance is not met. HR01–HR03 stay BLOCKED. DXK09 is not ready to archive.
