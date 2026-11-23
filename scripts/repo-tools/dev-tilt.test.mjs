@@ -25,8 +25,6 @@ import {
   fingerprintCompiledEntryFile,
   markDevWatchedCompilation,
 } from '../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
-import { writeDevLoadedRuntimeReceipt } from '../../packages/runtime-logging/dist/dev-loaded-runtime-receipt.js';
-
 const API_FRESHNESS_ROLE = DEV_RUNTIME_FRESHNESS_ROLES.find((entry) => entry.role === 'api');
 assert.ok(API_FRESHNESS_ROLE);
 
@@ -39,17 +37,21 @@ function seedApiRuntimeFreshness(worktree, options = {}) {
   const entryAbs = join(worktree, entryRel);
   mkdirSync(dirname(entryAbs), { recursive: true });
   writeFileSync(entryAbs, 'export async function main() {}\n', 'utf8');
-
-  markDevWatchedCompilation({
-    phase: 'success',
-    role: API_FRESHNESS_ROLE.receiptRole,
-    compiledEntryPath: entryRel,
-    cwd: worktree,
-  });
-
-  const receiptRoot = join(worktree, '.offscreen-dev-runtime');
-  const identity = fingerprintCompiledEntryFile(entryAbs);
-  if (options.staleLoaded) {
+  const receiptRoot = options.slotId
+    ? join(worktree, '.offscreen-dev-runtime', options.slotId)
+    : join(worktree, '.offscreen-dev-runtime');
+  const previousReceiptDir = process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
+  try {
+    markDevWatchedCompilation({
+      phase: 'success',
+      role: API_FRESHNESS_ROLE.receiptRole,
+      compiledEntryPath: entryRel,
+      cwd: worktree,
+    });
+    const identity = options.staleLoaded
+      ? 'stale-generation-identity'
+      : fingerprintCompiledEntryFile(entryAbs);
     writeFileSync(
       join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.loaded.json`),
       `${JSON.stringify({
@@ -58,29 +60,14 @@ function seedApiRuntimeFreshness(worktree, options = {}) {
         pid: 4242,
         startedAt: new Date().toISOString(),
         compiledModulePath: entryAbs,
-        compiledModuleIdentity: 'stale-generation-identity',
+        compiledModuleIdentity: identity,
+        environmentId: options.environmentId ?? options.slotId ?? null,
       })}\n`,
       'utf8',
     );
-    return;
-  }
-
-  const previousCwd = process.cwd();
-  process.chdir(worktree);
-  const previousReceiptDir = process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
-  delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
-  try {
-    writeDevLoadedRuntimeReceipt({
-      role: API_FRESHNESS_ROLE.receiptRole,
-      compiledModulePath: entryAbs,
-    });
   } finally {
-    process.chdir(previousCwd);
-    if (previousReceiptDir === undefined) {
-      delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
-    } else {
-      process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = previousReceiptDir;
-    }
+    if (previousReceiptDir === undefined) delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
+    else process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = previousReceiptDir;
   }
 }
 
@@ -413,7 +400,7 @@ test('printDevStatus exits 0 when session and api runtime receipts match', () =>
     tiltPort: 13_121,
     startedAt: '2026-11-23T00:00:10.000Z',
   });
-  seedApiRuntimeFreshness(worktree);
+  seedApiRuntimeFreshness(worktree, { slotId: 'dev-3' });
 
   /** @type {string[]} */
   const lines = [];
@@ -452,7 +439,7 @@ test('printDevStatus reports stale_loaded_runtime and exits 2', () => {
     tiltPort: 13_127,
     startedAt: '2026-11-23T00:00:12.000Z',
   });
-  seedApiRuntimeFreshness(worktree, { staleLoaded: true });
+  seedApiRuntimeFreshness(worktree, { staleLoaded: true, slotId: 'dev-5' });
 
   /** @type {string[]} */
   const lines = [];
@@ -481,8 +468,9 @@ test('printDevStatus reports compile_error and exits 2', () => {
   });
 
   const staleIdentity = fingerprintCompiledEntryFile(entryAbs);
-  const receiptRoot = join(worktree, '.offscreen-dev-runtime');
+  const receiptRoot = join(worktree, '.offscreen-dev-runtime', 'dev-6');
   mkdirSync(receiptRoot, { recursive: true });
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
   writeFileSync(
     join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.loaded.json`),
     `${JSON.stringify({
@@ -512,6 +500,58 @@ test('printDevStatus reports compile_error and exits 2', () => {
 
   assert.equal(code, 2);
   assert.ok(lines.some((line) => line === 'api NOT READY compile_error'));
+});
+
+test('printDevStatus parks without reading another slot receipt', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-status-park-'));
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-6',
+    namespace: 'offscreen-dev-6',
+    gamePort: 13120,
+    tiltPort: 13121,
+    startedAt: '2026-11-23T00:00:14.000Z',
+    parked: true,
+  });
+  seedApiRuntimeFreshness(worktree, { slotId: 'dev-6' });
+  const lines = [];
+  const code = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    log: (line) => lines.push(line),
+  });
+  assert.equal(code, 2);
+  assert.deepEqual(lines, ['runtime PARKED']);
+});
+
+test('printDevStatus does not accept another environment receipt or a loading image', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-status-foreign-'));
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-6',
+    namespace: 'offscreen-dev-6',
+    gamePort: 13120,
+    tiltPort: 13121,
+    startedAt: '2026-11-23T00:00:15.000Z',
+    checkoutPath: worktree,
+  });
+  seedApiRuntimeFreshness(worktree, { slotId: 'dev-5', environmentId: 'dev-5' });
+  const missing = printDevStatus(worktree, { roles: [API_FRESHNESS_ROLE], log() {} });
+  assert.equal(missing, 2);
+  seedApiRuntimeFreshness(worktree, { slotId: 'dev-6', environmentId: 'dev-5' });
+  const lines = [];
+  const foreign = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    log: (line) => lines.push(line),
+  });
+  assert.equal(foreign, 2);
+  assert.ok(lines.some((line) => line === 'api NOT READY foreign_environment'));
+  const loading = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    imageReadiness: { applicationReady: false },
+    log: (line) => lines.push(line),
+  });
+  assert.equal(loading, 2);
+  assert.ok(lines.includes('runtime NOT READY image_loading'));
 });
 
 test('stop does not signal a reused pid whose start time differs', () => {

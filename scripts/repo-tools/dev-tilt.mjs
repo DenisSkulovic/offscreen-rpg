@@ -404,6 +404,17 @@ function commandOnPath(name) {
  * @param {number} port
  * @returns {Promise<boolean>}
  */
+function probeLoopbackPortOccupiedSync(port) {
+  const probe = spawnSync(process.execPath, ['-e', `
+    const net = require('node:net');
+    const socket = net.connect({ host: '127.0.0.1', port: ${Number(port)}, timeout: 200 });
+    socket.on('connect', () => { socket.destroy(); process.exit(0); });
+    socket.on('timeout', () => { socket.destroy(); process.exit(1); });
+    socket.on('error', () => process.exit(1));
+  `], { stdio: 'ignore' });
+  return probe.status === 0;
+}
+
 export function probeLoopbackPortOccupied(host, port) {
   return new Promise((resolve) => {
     const socket = createConnection({ host, port, timeout: 500 }, () => {
@@ -809,6 +820,14 @@ export function printDevStatus(worktree, deps = {}) {
   if (!session) {
     return 2;
   }
+  if (session.parked === true) {
+    log('runtime PARKED');
+    return 2;
+  }
+  if (session.checkoutPath && resolve(String(session.checkoutPath)) !== resolve(worktree)) {
+    log('runtime NOT READY checkout_mismatch');
+    return 2;
+  }
   const rows = [
     ['pid', session.pid ?? 'stopped'],
     ['slot', session.slotId],
@@ -822,12 +841,23 @@ export function printDevStatus(worktree, deps = {}) {
   }
 
   const cwd = resolve(worktree);
+  if (deps.imageReadiness && deps.imageReadiness.applicationReady !== true) {
+    log('runtime NOT READY image_loading');
+    return 2;
+  }
+  const receiptRoot = deps.receiptRoot ?? (
+    session.slotId
+      ? join(cwd, '.offscreen-dev-runtime', String(session.slotId))
+      : join(cwd, '.offscreen-dev-runtime')
+  );
   let everyRoleReady = true;
   for (const roleSpec of roles) {
     const status = evaluate({
       role: roleSpec.receiptRole,
       compiledEntryPath: roleSpec.compiledEntryPath,
       cwd,
+      receiptRoot,
+      environmentId: session.slotId ?? null,
     });
     log(formatDevFreshnessStatusLine(roleSpec.role, status));
     if (!status.ready) {
@@ -873,6 +903,7 @@ function runDevStopCli(selection) {
     },
     scaleRole: (namespace, role) => scaleDevSlotWorkloads(namespace, spawnSync, [role]),
     readDesiredReplicas: (namespace) => readDevSlotDesiredReplicas(namespace),
+    portOccupied: (ports) => [ports.game, ports.tilt].some((port) => probeLoopbackPortOccupiedSync(port)),
   });
   if (!result.ok || !result.released) {
     console.error(`Refusing to release ${selection.record.slotId}: ${result.reason}`);

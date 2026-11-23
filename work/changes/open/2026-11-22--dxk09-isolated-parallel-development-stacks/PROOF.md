@@ -162,3 +162,15 @@ Proof B allocated `dev-6` and stopped before workloads. Command `pnpm dev`, phas
 | 12 | FAIL | A replicas reached 0, but Tilt PID 990813 on port 13118 survived `pnpm dev:stop`; B had no workload |
 
 HR01, HR02, and HR03 remain BLOCKED. The NEXT-WAVE unattended two-worktree gate is not met. Predecessors MA12, CL01, and WR11 remain integrated. No HR Cursor was started.
+
+## Lifecycle repair receipt (code only)
+
+The live dev-5/dev-6 campaign was not repeated.
+
+Confirmed causes:
+
+- Park could treat process signals as complete while a listener remained. Release now waits until the owned Tilt process exits, then the owned forwarder exits, then the game and Tilt ports are free, then all six Deployments read desired 0. A surviving forwarder, a foreign listener, or a replaced PID is refused. Environment A does not signal environment B.
+- `pnpm dev:status` read the worktree receipt directory. The API, authority, and worker processes write loaded receipts in the Pod working directory, so the host reader reported `missing_receipt` for every role. Status now reads only the selected slot directory, reports `PARKED` for a parked session, rejects another slot's `environmentId`, and reports `image_loading` until the selected image generation is ready.
+- `tilt-build-1795404939` is a Tilt expected-ref alias. `load-dev-image.sh` was still running `docker build` for every non-slot ref. A matching canonical fingerprint is now retagged and may still be loaded into Kind. A new tag alone is not a cache miss. Status cannot be READY while that load or Pod generation is unfinished.
+
+Focused tests: `dev-environment-session.test.mjs`, `dev-tilt.test.mjs`, and `dev-slot-image-plan.test.mjs` — 41 pass. The watched-receipt package test was not rerun because this worktree has no installed `packages/runtime-logging` build. Live port-forward, Pod receipt, and Kind image proof remain NOT RUN.

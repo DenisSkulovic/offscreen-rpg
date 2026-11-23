@@ -364,8 +364,76 @@ test('stale process, foreign lease and foreign consumer do not scale', () => {
   assert.equal(noop.reason, 'process-stop-incomplete');
   assert.equal(noop.released, false);
   assert.equal(readEnvironmentSession(noopSessions, 'dev-5').parked, false);
+
+  const order = [];
+  const ordered = new Set([40, 41]);
+  const orderedResult = parkSelectedEnvironment({
+    owner: { ...record, lease: { pid: 40, startTimeJiffies: '100' } },
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: (pid) => ordered.has(pid),
+      readStartTicks: () => '100',
+    },
+    signal: (pid) => {
+      order.push(pid);
+      if (pid === 40) ordered.delete(40);
+    },
+    scaleRole: () => scaled.push('scaled'),
+  });
+  assert.deepEqual(order, [40, 41]);
+  assert.equal(orderedResult.reason, 'process-stop-incomplete');
+  assert.equal(ordered.has(41), true);
   rmSync(noopRoot, { recursive: true, force: true });
   rmSync(noopCheckout, { recursive: true, force: true });
   rmSync(root, { recursive: true, force: true });
   rmSync(checkout, { recursive: true, force: true });
+});
+
+test('park releases only after both processes exit and a free port, and never signals the other environment', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-pair-'));
+  const checkoutA = mkdtempSync(join(tmpdir(), 'offscreen-park-a-'));
+  const checkoutB = mkdtempSync(join(tmpdir(), 'offscreen-park-b-'));
+  const sessions = environmentSessionRoot(root);
+  const recordA = { ...owner('dev-5', checkoutA), lease: { pid: 50, startTimeJiffies: '100' } };
+  const recordB = { ...owner('dev-6', checkoutB), lease: { pid: 60, startTimeJiffies: '200' } };
+  writeEnvironmentSession(sessions, { ...sessionFor(recordA), pid: 50, forwardPid: 51 });
+  writeEnvironmentSession(sessions, {
+    ...sessionFor(recordB), pid: 60, processStartTicks: '200', forwardPid: 61, forwardStartTicks: '200',
+  });
+  const alive = new Set([50, 51, 60, 61]);
+  const signalled = [];
+  const listening = { current: true };
+  const desired = { 'game-web': 1, 'game-api': 1, 'game-authority': 1, 'game-control': 1, 'game-executor': 1, 'game-relay': 1 };
+  const deps = {
+    pidAlive: (pid) => alive.has(pid),
+    readStartTicks: (pid) => (pid === 60 || pid === 61 ? '200' : '100'),
+  };
+  const held = parkSelectedEnvironment({
+    owner: recordA,
+    sessionRoot: sessions,
+    processDeps: deps,
+    signal: (pid) => { signalled.push(pid); alive.delete(pid); },
+    portOccupied: () => listening.current,
+    scaleRole: () => { throw new Error('scaled while listening'); },
+  });
+  assert.deepEqual(signalled, [50, 51]);
+  assert.equal(held.reason, 'conflicting_listener');
+  assert.equal(held.released, false);
+  listening.current = false;
+  const released = parkSelectedEnvironment({
+    owner: recordA,
+    sessionRoot: sessions,
+    processDeps: deps,
+    signal: (pid) => signalled.push(pid),
+    portOccupied: () => false,
+    scaleRole: (_namespace, role) => { desired[role] = 0; },
+    readDesiredReplicas: () => desired,
+    clearReservation: () => { recordA.lease = null; },
+  });
+  assert.equal(released.reason, 'parked');
+  assert.deepEqual(signalled, [50, 51]);
+  assert.equal(alive.has(60) && alive.has(61), true);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkoutA, { recursive: true, force: true });
+  rmSync(checkoutB, { recursive: true, force: true });
 });

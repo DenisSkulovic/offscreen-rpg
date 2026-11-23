@@ -104,6 +104,19 @@ export function evaluateDevLoadedRuntimeReadiness(input) {
     };
   }
 
+  if (
+    input.environmentId
+    && loaded.environmentId
+    && loaded.environmentId !== input.environmentId
+  ) {
+    return {
+      ready: false,
+      reason: 'foreign_environment',
+      currentGeneration: null,
+      staleLoadedGeneration: loaded.compiledModuleIdentity ?? null,
+    };
+  }
+
   const absoluteEntryPath = resolve(cwd, input.compiledEntryPath);
   const diskIdentity = fingerprintCompiledEntryFile(absoluteEntryPath);
   if (diskIdentity !== desired.compiledModuleIdentity) {

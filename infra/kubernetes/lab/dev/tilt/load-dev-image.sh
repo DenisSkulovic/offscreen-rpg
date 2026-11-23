@@ -15,11 +15,26 @@ if [[ "${EXPECTED_REF:-}" == offscreen-dev-workspace:dev-* ]]; then
   role="${ref##*-}"
   exec bash "$repo/infra/kubernetes/lab/dev/load-dev-slot-image.sh" "$slot" "$role"
 fi
-docker build \
-  -f infra/kubernetes/lab/dev/Dockerfile \
-  --build-arg "TURBO_FILTER=${filter}" \
-  -t "$EXPECTED_REF" \
-  .
+fingerprint="$(node --input-type=module -e "
+import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './scripts/repo-tools/dev-slot-image-plan.mjs';
+const result = fingerprintDevImageContext(process.cwd(), { roleFilter: UNION_ROLE_FILTER });
+if (!result.ok) { console.error(result.reason); process.exit(2); }
+process.stdout.write(result.fingerprint);
+")"
+canonical="offscreen-dev-workspace:union-${fingerprint:0:16}"
+recorded="$(docker image inspect "$canonical" --format '{{index .Config.Labels "offscreen.fingerprint"}}' 2>/dev/null || true)"
+if [[ "$recorded" == "$fingerprint" ]]; then
+  echo "phase=alias-canonical ref=${EXPECTED_REF}" >&2
+  docker tag "$canonical" "$EXPECTED_REF"
+else
+  echo "phase=docker-build ref=${EXPECTED_REF}" >&2
+  docker build \
+    -f infra/kubernetes/lab/dev/Dockerfile \
+    --build-arg "TURBO_FILTER=${filter}" \
+    --label "offscreen.fingerprint=${fingerprint}" \
+    -t "$EXPECTED_REF" \
+    .
+fi
 load_node() {
   local cluster="$1"
   local node="$2"

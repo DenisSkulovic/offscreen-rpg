@@ -238,3 +238,48 @@ export function planUnionImageUse(input) {
     reason: ready ? 'loaded-on-required-nodes' : 'missing-kind-node',
   };
 }
+
+/**
+ * Restart identity for one Tilt expected ref.
+ * A matching canonical fingerprint reuses the digest. A new tag may still
+ * be an alias, and a missing node may still need a load. Neither is a Docker
+ * build. Application readiness waits until the pod is running that digest.
+ *
+ * @param {{
+ *   expectedRef: string,
+ *   fingerprint: string | null,
+ *   canonical?: { fingerprint?: string, digest?: string, ref?: string } | null,
+ *   nodeHasRef?: boolean,
+ *   podImage?: string | null,
+ *   podReady?: boolean,
+ * }} input
+ */
+export function planRestartImageReuse(input) {
+  const canonical = input.canonical ?? null;
+  const fingerprintMatches = Boolean(
+    input.fingerprint
+    && canonical?.fingerprint === input.fingerprint
+    && canonical.digest?.startsWith('sha256:'),
+  );
+  const dockerBuild = !fingerprintMatches;
+  const alias = fingerprintMatches && input.expectedRef !== canonical.ref;
+  const kindLoad = fingerprintMatches && input.nodeHasRef !== true;
+  const deploymentSelected = fingerprintMatches
+    && (input.podImage === input.expectedRef || input.podImage === canonical.digest);
+  const applicationReady = deploymentSelected && input.podReady === true && !kindLoad && !dockerBuild;
+  return {
+    dockerBuild,
+    canonicalDigest: fingerprintMatches ? canonical.digest : null,
+    alias,
+    kindLoad,
+    deploymentSelected,
+    applicationReady,
+    reason: applicationReady
+      ? 'generation-ready'
+      : dockerBuild
+        ? 'canonical-miss'
+        : kindLoad
+          ? 'image-loading'
+          : 'pod-not-on-generation',
+  };
+}

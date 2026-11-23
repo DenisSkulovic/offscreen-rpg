@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
+import { fingerprintDevImageContext, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 
 const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
 ARG TURBO_FILTER=@offscreen/api^...
@@ -178,4 +178,40 @@ test('one union snapshot is reused by a second slot and a source change misses',
   });
   assert.equal(changed.build, true);
   assert.equal(changed.ready, false);
+});
+
+test('unchanged fingerprint reuses the canonical digest and stays unready while loading', () => {
+  const canonical = { fingerprint: 'fp-1', digest: 'sha256:union', ref: 'offscreen-dev-workspace:union-fp' };
+  const loading = planRestartImageReuse({
+    expectedRef: 'offscreen-dev-workspace:tilt-build-1795404939',
+    fingerprint: 'fp-1',
+    canonical,
+    nodeHasRef: false,
+    podImage: 'offscreen-dev-workspace:tilt-build-1795404939',
+    podReady: true,
+  });
+  assert.equal(loading.dockerBuild, false);
+  assert.equal(loading.alias, true);
+  assert.equal(loading.kindLoad, true);
+  assert.equal(loading.applicationReady, false);
+  assert.equal(loading.reason, 'image-loading');
+  const ready = planRestartImageReuse({
+    expectedRef: 'offscreen-dev-workspace:tilt-build-1795404939',
+    fingerprint: 'fp-1',
+    canonical,
+    nodeHasRef: true,
+    podImage: 'sha256:union',
+    podReady: true,
+  });
+  assert.equal(ready.dockerBuild, false);
+  assert.equal(ready.applicationReady, true);
+  const changed = planRestartImageReuse({
+    expectedRef: 'offscreen-dev-workspace:tilt-build-new',
+    fingerprint: 'fp-2',
+    canonical,
+    nodeHasRef: true,
+    podReady: true,
+  });
+  assert.equal(changed.dockerBuild, true);
+  assert.equal(changed.applicationReady, false);
 });

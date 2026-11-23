@@ -416,6 +416,7 @@ export function parkSelectedEnvironment(input) {
   else if (forward.reason !== 'not_running' && forward.reason !== 'missing_pid' && session.forwardPid) {
     return { ok: false, released: false, signalled: false, scaled: false, reason: forward.reason, tenantIdentity };
   }
+  // Tilt is recorded first. Its exit is confirmed before the forwarder is signalled.
   for (const target of targets) {
     const again = assessOwnedProcess(target, input.processDeps);
     if (!again.owned) {
@@ -442,6 +443,16 @@ export function parkSelectedEnvironment(input) {
       });
       return { ok: false, released: false, signalled, scaled: false, reason: 'process-stop-incomplete', tenantIdentity };
     }
+  }
+  if (input.portOccupied?.(input.owner.ports)) {
+    writeEnvironmentSession(input.sessionRoot, {
+      ...session,
+      processesStopped: true,
+      parkIncomplete: true,
+      released: false,
+      parked: false,
+    });
+    return { ok: false, released: false, signalled, scaled: false, reason: 'conflicting_listener', tenantIdentity };
   }
   const scaleRole = input.scaleRole ?? (() => {});
   const scaled = [];
