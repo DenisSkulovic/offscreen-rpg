@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { assertSlotOwnership, deriveSlotCookiePrefix, renderDevSlotAppGraph } from './dev-slot-app-graph.mjs';
+import { spawnSync } from 'node:child_process';
+import { assertSlotOwnership, deriveSlotCookiePrefix, DEV_POD_RUNTIME_RECEIPT_DIR, renderDevSlotAppGraph, renderTiltDeploymentDocuments, renderTiltDeploymentYaml } from './dev-slot-app-graph.mjs';
 
 const ports = { game: 3100 };
 
@@ -97,4 +98,55 @@ test('closed schema gate and foreign ownership are refused', () => {
   assert.throws(() => assertSlotOwnership({ ...record, namespace: 'lab-edge' }, {
     context: 'kind-offscreen-dev', namespace: 'offscreen-dev-1', schemaReady: true, cookiePrefix: 'dev-1',
   }), /owner-binding/);
+});
+
+test('tilt deployments are declarative and match startup before image substitution', () => {
+  const env = { OFFSCREEN_DEV_SLOT: 'dev-5', OFFSCREEN_DEV_NAMESPACE: 'offscreen-dev-5', OFFSCREEN_DEV_GAME_PORT: '13116' };
+  const tilt = renderTiltDeploymentDocuments(env);
+  const startup = renderDevSlotAppGraph('dev-5', { schemaReady: true, ports: { game: 13116 } }).documents
+    .filter((item) => item.kind === 'Deployment');
+  assert.deepEqual(tilt, startup);
+  assert.equal(tilt.length, 6);
+  const yaml = renderTiltDeploymentYaml(env);
+  for (const field of ['resourceVersion', 'uid:', 'managedFields', 'status:', 'deployment.kubernetes.io/revision']) {
+    assert.equal(yaml.includes(field), false, field);
+  }
+  for (const document of tilt) {
+    assert.equal(document.metadata.namespace, 'offscreen-dev-5');
+    assert.equal(document.spec.template.spec.automountServiceAccountToken, false);
+    assert.match(document.spec.template.spec.containers[0].image, /^offscreen-dev-workspace:dev-5-/);
+  }
+  const api = tilt.find((item) => item.metadata.name === 'game-api');
+  const watched = api.spec.template.spec.containers[0].env.find((item) => item.name === 'OFFSCREEN_DEV_WATCHED_COMPILATION');
+  assert.equal(watched.value, '1');
+  assert.deepEqual(api.spec.template.spec.containers[0].command, ['node', 'dev-pod-compile-watch.mjs', 'api', 'dist/src/main.js']);
+  const other = renderTiltDeploymentDocuments({ ...env, OFFSCREEN_DEV_SLOT: 'dev-6', OFFSCREEN_DEV_NAMESPACE: 'offscreen-dev-6' });
+  assert.equal(other.some((item) => item.metadata.namespace !== 'offscreen-dev-6'), false);
+  assert.throws(() => renderTiltDeploymentDocuments({ ...env, OFFSCREEN_DEV_NAMESPACE: 'offscreen-dev-6' }), /offscreen-dev-6 is not offscreen-dev-5/);
+  assert.throws(() => renderTiltDeploymentDocuments({ OFFSCREEN_DEV_NAMESPACE: 'offscreen-dev-5', OFFSCREEN_DEV_GAME_PORT: '13116' }), /slot/);
+  assert.throws(() => renderTiltDeploymentDocuments({ ...env, OFFSCREEN_DEV_GAME_PORT: '' }), /OFFSCREEN_DEV_GAME_PORT is required/);
+});
+
+test('tilt deployment route does not invoke kubectl', () => {
+  const result = spawnSync(process.execPath, ['infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs', '--tilt-deployments'], {
+    cwd: new URL('../../../../../', import.meta.url),
+    env: { ...process.env, OFFSCREEN_DEV_SLOT: 'dev-5', OFFSCREEN_DEV_NAMESPACE: 'offscreen-dev-5', OFFSCREEN_DEV_GAME_PORT: '13116' },
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^---\napiVersion: "apps\/v1"/);
+  assert.equal(result.stdout.includes('resourceVersion'), false);
+  assert.equal(result.stdout.includes('kind: Namespace'), false);
+  assert.equal(result.stdout.includes('kind: Secret'), false);
+  assert.match(result.stdout, /\/tmp\/offscreen-dev-runtime/);
+  assert.equal(result.stdout.includes('/app/.offscreen-dev-runtime'), false);
+});
+
+test('every workload writes receipts under the pod tmp root', () => {
+  const documents = graph('dev-5').documents.filter((item) => item.kind === 'Deployment');
+  assert.equal(documents.length, 6);
+  for (const item of documents) {
+    const selected = item.spec.template.spec.containers[0].env.find((entry) => entry.name === 'OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR');
+    assert.equal(selected.value, DEV_POD_RUNTIME_RECEIPT_DIR);
+  }
 });

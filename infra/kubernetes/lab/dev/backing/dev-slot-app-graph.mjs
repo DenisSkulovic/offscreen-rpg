@@ -10,6 +10,8 @@ const WORKLOADS = ['game-web', 'game-api', 'game-authority', 'game-control', 'ga
 const SERVICES = ['game-web', 'game-api', 'game-authority'];
 const LEGACY_NAMESPACES = ['lab-edge', 'lab-authority', 'lab-workers'];
 const FORBIDDEN_SECRET_NAMES = ['postgres-superuser', 'seaweed-admin'];
+/** Pod-local receipt root. /tmp is writable by the container user; /app is not. */
+export const DEV_POD_RUNTIME_RECEIPT_DIR = '/tmp/offscreen-dev-runtime';
 
 function refusal(id, detail) {
   const error = new Error(detail);
@@ -97,7 +99,7 @@ export function renderDevSlotAppGraph(slotId, input) {
   const temporalNamespace = namespace;
   const pool = env('DB_POOL_MAX', DEV_SQL_POOL_MAX);
   const slot = env('OFFSCREEN_DEV_SLOT', sql.slotId);
-  const receiptDir = env('OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR', '/app/.offscreen-dev-runtime');
+  const receiptDir = env('OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR', DEV_POD_RUNTIME_RECEIPT_DIR);
   const watched = (role, entry) => [
     env('OFFSCREEN_DEV_WATCHED_COMPILATION', '1'),
     env('OFFSCREEN_DEV_COMPILED_ENTRY', entry),
@@ -217,6 +219,64 @@ export function assertRenderedGraph(documents, slotId) {
   return true;
 }
 
+const CLUSTER_METADATA = ['resourceVersion', 'uid', 'managedFields', 'status', 'generation'];
+
+/**
+ * Declarative Deployments for a slot Tilt session. Read-only: no tenants, secrets, or kubectl.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function renderTiltDeploymentDocuments(env = process.env) {
+  const slotId = env.OFFSCREEN_DEV_SLOT?.trim() ?? '';
+  const namespace = env.OFFSCREEN_DEV_NAMESPACE?.trim() ?? '';
+  const gamePort = Number(env.OFFSCREEN_DEV_GAME_PORT);
+  if (!slotId.startsWith('dev-')) throw refusal('slot', 'OFFSCREEN_DEV_SLOT must name a dev slot');
+  if (!namespace) throw refusal('namespace', 'OFFSCREEN_DEV_NAMESPACE is required');
+  const expected = deriveDevNamespace(slotId);
+  if (namespace !== expected) throw refusal('namespace-mismatch', `${namespace} is not ${expected}`);
+  if (!Number.isInteger(gamePort) || gamePort < 1) throw refusal('ports', 'OFFSCREEN_DEV_GAME_PORT is required');
+  const graph = renderDevSlotAppGraph(slotId, { schemaReady: true, ports: { game: gamePort } });
+  if (graph.namespace !== namespace) throw refusal('namespace-mismatch', graph.namespace);
+  return graph.documents.filter((item) => item.kind === 'Deployment');
+}
+
+function yamlScalar(value) {
+  if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+  if (value === null) return 'null';
+  return JSON.stringify(String(value));
+}
+
+function yamlLines(value, indent) {
+  const pad = '  '.repeat(indent);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return [`${pad}[]`];
+    return value.flatMap((item) => {
+      if (item && typeof item === 'object') {
+        const nested = yamlLines(item, indent + 1);
+        return [`${pad}- ${nested[0].trimStart()}`, ...nested.slice(1)];
+      }
+      return [`${pad}- ${yamlScalar(item)}`];
+    });
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, item]) => {
+      if (item && typeof item === 'object') {
+        return [`${pad}${key}:`, ...yamlLines(item, indent + 1)];
+      }
+      return [`${pad}${key}: ${yamlScalar(item)}`];
+    });
+  }
+  return [`${pad}${yamlScalar(value)}`];
+}
+
+export function renderTiltDeploymentYaml(env = process.env) {
+  const documents = renderTiltDeploymentDocuments(env);
+  const text = JSON.stringify(documents);
+  for (const field of CLUSTER_METADATA) {
+    if (text.includes(`"${field}"`)) throw refusal('cluster-metadata', field);
+  }
+  return documents.map((document) => ['---', ...yamlLines(document, 0)]).flat().join('\n').concat('\n');
+}
+
 export function assertSlotOwnership(record, observed) {
   const sql = deriveDevSqlTenant(record?.slotId);
   if (!record || record.namespace !== sql.appNamespace || record.cluster !== DEV_CLUSTER_NAME) {
@@ -234,4 +294,8 @@ export function assertSlotOwnership(record, observed) {
   if (!observed.schemaReady) throw refusal('stale-schema', `stale-schema ${sql.slotId}`);
   if (observed.cookiePrefix !== sql.slotId) throw refusal('cookie-prefix', `cookie-prefix ${observed.cookiePrefix ?? 'missing'}`);
   return { namespace: sql.appNamespace, postgresNamespace: DEV_CNPG_NAMESPACE };
+}
+
+if (process.argv.includes('--tilt-deployments')) {
+  process.stdout.write(renderTiltDeploymentYaml());
 }

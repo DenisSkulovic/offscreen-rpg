@@ -153,6 +153,20 @@ test('negative: another slot identity is not this environment', () => {
   assert.equal(status.reason, 'foreign_environment');
 });
 
+test('negative: an unwritable receipt root does not publish a success receipt', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dev-runtime-unwritable-'));
+  const blocked = join(root, 'not-a-directory');
+  writeFileSync(blocked, 'file');
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = join(blocked, 'receipts');
+  const entry = join(root, 'dist/src/main.js');
+  mkdirSync(dirname(entry), { recursive: true });
+  writeFileSync(entry, 'export {}\n', 'utf8');
+  assert.throws(() => markDevWatchedCompilation({
+    phase: 'success', role: 'api', compiledEntryPath: 'dist/src/main.js', cwd: root, environmentId: 'dev-5',
+  }));
+  delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
+});
+
 function dirnameLike(filePath) {
   return dirname(filePath);
 }

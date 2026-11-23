@@ -32,5 +32,11 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=development
 COPY --from=deps --chown=node:node /app/ ./
+# The slot watchers import this module. The rest of infra is not part of the dev image.
+# Slot watchers import these modules. The rest of infra is not part of the dev image.
+COPY --chown=node:node infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs
+COPY --chown=node:node infra/kubernetes/lab/dev/dev-watch-compilation.mjs infra/kubernetes/lab/dev/dev-watch-compilation.mjs
+COPY --chown=node:node infra/kubernetes/lab/dev/dev-image-runtime-modules.mjs infra/kubernetes/lab/dev/dev-image-runtime-modules.mjs
 USER node
+RUN node infra/kubernetes/lab/dev/dev-image-runtime-modules.mjs --check
 EXPOSE 3000

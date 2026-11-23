@@ -16,6 +16,7 @@ import {
   CONTEXT_NAME,
 } from './stack-preflight.mjs';
 import { evaluateDevLoadedRuntimeReadiness } from '../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
+import { DEV_POD_RUNTIME_RECEIPT_DIR } from '../../infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs';
 import { assessOwnedProcess, readProcessStartTicks } from './dev-process-identity.mjs';
 import {
   environmentSessionRoot,
@@ -831,7 +832,7 @@ export function pullSelectedSlotReceipts(input) {
   for (const roleSpec of input.roles) {
     const deploy = `deploy/game-${roleSpec.role}`;
     for (const kind of ['desired', 'loaded']) {
-      const remote = `/app/.offscreen-dev-runtime/${roleSpec.receiptRole}.${kind}.json`;
+      const remote = `${DEV_POD_RUNTIME_RECEIPT_DIR}/${roleSpec.receiptRole}.${kind}.json`;
       const result = input.run([
         '--context', 'kind-offscreen-dev', '-n', input.namespace, 'exec', deploy, '--', 'cat', remote,
       ]);
