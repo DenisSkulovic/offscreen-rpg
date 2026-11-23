@@ -1,0 +1,49 @@
+# DXK10 | Demand-driven development environment lifecycle
+
+**State:** PROPOSED BACKLOG, PLANNER-HELD; not Cursor-ready or commissioned. **Integration target:** `undertaking/storyteller-workshop`. **Owner:** developer infrastructure. **Dependency:** preserve current DXK09 implementation/proof; no concurrent edits to lifecycle tools. **Source basis:** inspected integration snapshot `955e904b26c9` on 2026-11-23; DXK09 implementation revisions `9f1eab1c` and `6328a427` and further local changes were described in Cursor receipts but were **not accessible in remote GitHub**, and must be reconciled on promotion.
+
+## Owner decision / user experience
+
+A Change, Git worktree, environment reservation, checkout attachment, tenant provisioning, application activation, and resource release are **distinct lifecycles**. Any Change may be completed without acquiring an environment. Agents reserve an environment *when they need one*, possibly well after Change start, then stop/release it whenever appropriate, independently of Change archive. Reserving an identity allocates **zero application pods** and performs no build, SQL/S3/Temporal provisioning or mutation of another environment. An environment can be reserved without a live checkout attachment, and a checkout can exist without any reservation.
+
+Application activation is demand-driven. A Cursor may activate a minimal, explicitly named capability/profile and later expand/shrink that selection, or request the full six workloads for integration proof. No silent fallthrough to another slot's API/Authority/worker. Shared backing services remain separate from per-slot application profiles; release lab stays independent and on-demand. Four fully healthy simultaneous stacks remain DXK09's **separate capacity acceptance target**, not a redefinition of reservation correctness.
+
+**Decisions:**
+- Preserve v2 registry environment IDs, dynamic port bundles, secrets, SQL/S3/Temporal identity, PID+start-ticks fencing, resource UID checks and local-only session records. No Git-tracked occupancy ledger.
+- Keep `pnpm dev` as a backward-compatible convenience for the existing full-stack workflow during migration; do not silently change its meaning before the new explicit commands are proven.
+- Add explicit *planned* operations `dev:reserve`, `dev:attach --instance <id>`, `dev:up --instance <id> --profile <name>`, `dev:stop --instance <id>` and `dev:release --instance <id>`; exact arguments and aliases are subject to current source reconciliation, not authorization for Cursor now.
+- Reservation is local registry-only and must reject conflicts atomically; attach changes only source binding subject to an existing live-session fence; start reconciles only requested tenant/runtime dependencies; stop parks owned runtime while preserving reservation, attached checkout and tenants; release frees an idle reservation only after verified process/port/workload ownership and must **not** delete data.
+- For retained tenant data: before allowing an environment ID or credential mapping to be reused, enforce an explicit non-reassignment rule or guarded reattachment to the same existing tenant identity. The exact tombstone/retention mechanism must be source-decided before implementation; **no implicit tenant wipe, tenant reassignment, secret rotation or ID reuse**.
+- Start with a tiny profile catalog (`web`, `api`, `full`) only where dependencies are demonstrated. SQL/schema-only work needs no application profile. A profile resolves a validated dependency closure, not raw arbitrary pod names. Model traffic crossing a missing service as NOT READY rather than silently borrowing another environment.
+- Read-only status never reserves, attaches, starts, provisions or releases. Separate `RESERVED`, `ATTACHED`, `PROVISIONED`, `ACTIVE(profile)`, `PARKED` and `RELEASED` dimensions; avoid treating these as one mutually exclusive state enum when they are independent facts.
+- All admission/preflight refusals occur before tenant, workload, session or process mutation. Memory safety and existing 4 GiB preflight stay as-is until measured capacity warrants an independent decision.
+- No automatic cleanup on Change completion, chat exit, or transient agent inactivity. No generic manager daemon, Kubernetes controller, Terraform/Helm/GitOps migration, or redesign of INF02 under this Change.
+
+## Source inspection and ownership seams
+
+Inspected `scripts/repo-tools/dev-environment-session.mjs::resolveDevEnvironmentSelection`: `new` allocates and returns `action:'up'`; `up` with no default allocates one. This currently couples reservation and activation. `scripts/repo-tools/dev-tilt.mjs::runDevTiltLaunch` invokes `reconcileOwnedDevSlot`, process replacement, runtime preflight and spawn; exact post-`6328a427` order must be verified before editing. `scripts/repo-tools/dev-slot-startup.mjs::reconcileOwnedDevSlot` calls `reconcileDevSlot` with SQL migration, S3/Temporal tenant and image/workload setup; these effects must become independently gated. `infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs::deployment` hardcodes `replicas:1` for all six; renderer needs desired-role selection that preserves Services/Secrets and safe inactive role behavior. `package.json` exposes `dev`, `dev:new`, `dev:status`, `dev:stop` and no separate reservation/activation/profile commands in inspected snapshot. Tests include `scripts/repo-tools/dev-v2-cli-startup.test.mjs`, `dev-tilt.test.mjs` and slot graph/startup tests.
+
+Dependency boundary: DXK10 changes **behavior**, not package ownership. INF02 is a deferred, separately authorized code-organization proposal and must not be merged into this implementation.
+
+## Planner tasks before promotion (not Cursor assignments)
+
+1. Re-read actual integrated DXK09 HEAD and any in-flight local branch diff; map registry v2 locks, allocation, default checkout mapping, sessions, stop/park behavior, workload application, Tilt resource selection, image and tenant lifecycle. Preserve all current DXK09 proofs.
+2. Decide the reservation/release data model under persistent tenants, including released/tombstoned IDs, uniqueness across registry resets, exact atomic mutation boundary, reattachment authorization and recovery after crash.
+3. Decide activation profiles from actual API/Web/Authority/worker dependency edges and test-only modes. Specify how selected replica counts and readiness are reconciled without deleting resource UID or restarting unrelated roles.
+4. Create source-grounded `SOURCE-MAP.md`, `EXECUTION.md`, `TASKS.md`, `PROOF.md` with small ordered code tasks and exact functions. Require current-HEAD regression contracts for `pnpm dev`.
+5. Perform the repo's adversarial G0–G7 readiness review; promote only when hard gates are resolved and implementation is explicitly commissioned.
+
+## Required future proof
+
+- Change/worktree with **no** environment works normally; status performs zero mutations.
+- Reserve allocates unique ID/ports but **no** Kubernetes Deployment, SQL/S3/Temporal tenant, image build, Tilt process or port listener; concurrent reservations are collision-free.
+- Attach/rebind refuse foreign live process or unverified PID/start-ticks; never signal another owner.
+- Start one minimal profile and verify only required roles run; expand to full, shrink safely, no cross-slot fallback or false READY for inactive roles.
+- Park A without impacting B; reattach/restart preserves A tenant and Kubernetes identity; release of truly idle A changes only appropriate reservations without deleting resources or freeing a still-live tenant identity to a different owner.
+- Negative: low RAM/missing OAuth, foreign ports, wrong context, stale session, partial provisioning, compile error, missing service, race of two reservers and process crash all fail closed with no cross-environment mutation.
+- Exact workload/host RAM and swap measured; no invented four-stack capacity PASS. Both one-stack and full-stack regression proof remain available.
+- Existing `pnpm dev` workflow works throughout transition, until any intentional deprecation is separately approved.
+
+## Dependency and dispatch policy
+
+**Do not add DXK10 tasks to active DXK09's current Cursor implementation branch.** DXK09 must first resolve its current watcher-image packaging error and continue its honest two-worktree/unattended tests. This proposal can be planned in parallel by ChatGPT, but implementation touching `dev-tilt.mjs`, `dev-environment-session.mjs`, registry/session, startup, Tilt or deployment renderer must not overlap DXK09's active writer. HR01–HR03 may use worktree/source-only tests or documented staggered full-stack runs under a separately verified DXK09 dispatch gate; DXK10 is **not** an automatic new HR blocker.
