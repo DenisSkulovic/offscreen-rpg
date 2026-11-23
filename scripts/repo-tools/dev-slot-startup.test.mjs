@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { allocateDevWorktreeOwner } from './dev-worktree-allocator.mjs';
-import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure, resolveOauthReadiness } from './dev-slot-startup.mjs';
+import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure, resolveOauthReadiness, ensureOwnedSlotImages } from './dev-slot-startup.mjs';
 
 const record = {
   slotId: 'dev-3',
@@ -283,6 +283,11 @@ test('oauth readiness refuses before sql for a missing, incomplete, short, or un
   const used = deps({
     validateOauth: async () => ({ ok: false, detail: 'approved local OAuth configuration is missing' }),
   });
+  const imageRoot = mkdtempSync(join(tmpdir(), 'oauth-image-'));
+  const images = await ensureOwnedSlotImages({ slotId: 'dev-9' }, imageRoot, () => ({ status: 0, stdout: 'builds=0' }));
+  assert.equal(images.ok, false);
+  assert.equal(images.refusals[0].detail.includes('unreadable-recipe'), true);
+
   const blocked = await reconcileDevSlot({ worktree, registryRoot: root }, used);
   assert.equal(blocked.phase, 'oauth');
   assert.equal(used.calls.includes('sql'), false);
