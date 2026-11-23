@@ -51,6 +51,9 @@ export function markDevWatchedCompilation(input) {
         phase: 'compile_error',
         ready: false,
         updatedAt,
+        ...(input.environmentId || process.env.OFFSCREEN_DEV_SLOT
+          ? { environmentId: input.environmentId || process.env.OFFSCREEN_DEV_SLOT }
+          : {}),
       })}\n`,
       'utf8',
     );
@@ -68,6 +71,9 @@ export function markDevWatchedCompilation(input) {
       compiledEntryPath: absoluteEntryPath,
       compiledModuleIdentity: fingerprintCompiledEntryFile(absoluteEntryPath),
       updatedAt,
+      ...(input.environmentId || process.env.OFFSCREEN_DEV_SLOT
+        ? { environmentId: input.environmentId || process.env.OFFSCREEN_DEV_SLOT }
+        : {}),
     })}\n`,
     'utf8',
   );
@@ -118,7 +124,7 @@ export function evaluateDevLoadedRuntimeReadiness(input) {
   }
 
   const absoluteEntryPath = resolve(cwd, input.compiledEntryPath);
-  const diskIdentity = fingerprintCompiledEntryFile(absoluteEntryPath);
+  const diskIdentity = input.diskIdentity ?? fingerprintCompiledEntryFile(absoluteEntryPath);
   if (diskIdentity !== desired.compiledModuleIdentity) {
     return {
       ready: false,

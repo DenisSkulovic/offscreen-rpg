@@ -812,6 +812,43 @@ async function runDevTiltCli() {
  * @param {PrintDevStatusDeps} [deps]
  * @returns {number}
  */
+const POD_COMPILED_ENTRY = Object.freeze({
+  web: '/app/apps/web/.next/BUILD_ID',
+  api: '/app/apps/api/dist/src/main.js',
+  authority: '/app/apps/game-authority/dist/src/bootstrap/main.js',
+  control: '/app/apps/worker/dist/src/bootstrap/control-main.js',
+  executor: '/app/apps/worker/dist/src/bootstrap/executor-main.js',
+  relay: '/app/apps/worker/dist/src/bootstrap/main.js',
+});
+
+/**
+ * Copy the selected namespace's real receipt files. A missing exec stays missing.
+ * @param {{ namespace: string, roles: readonly {role: string, receiptRole: string}[], receiptRoot: string, run: Function }} input
+ */
+export function pullSelectedSlotReceipts(input) {
+  mkdirSync(input.receiptRoot, { recursive: true });
+  const diskIdentities = {};
+  for (const roleSpec of input.roles) {
+    const deploy = `deploy/game-${roleSpec.role}`;
+    for (const kind of ['desired', 'loaded']) {
+      const remote = `/app/.offscreen-dev-runtime/${roleSpec.receiptRole}.${kind}.json`;
+      const result = input.run([
+        '--context', 'kind-offscreen-dev', '-n', input.namespace, 'exec', deploy, '--', 'cat', remote,
+      ]);
+      if (result.status !== 0 || !result.stdout) continue;
+      writeFileSync(join(input.receiptRoot, `${roleSpec.receiptRole}.${kind}.json`), result.stdout);
+    }
+    const entry = POD_COMPILED_ENTRY[roleSpec.role];
+    const hashed = input.run([
+      '--context', 'kind-offscreen-dev', '-n', input.namespace, 'exec', deploy, '--', 'sha256sum', entry,
+    ]);
+    if (hashed.status === 0) {
+      diskIdentities[roleSpec.role] = String(hashed.stdout).trim().split(/\s+/)[0];
+    }
+  }
+  return diskIdentities;
+}
+
 export function printDevStatus(worktree, deps = {}) {
   const log = deps.log ?? ((line) => console.log(line));
   const roles = deps.roles ?? DEV_RUNTIME_FRESHNESS_ROLES;
@@ -850,6 +887,15 @@ export function printDevStatus(worktree, deps = {}) {
       ? join(cwd, '.offscreen-dev-runtime', String(session.slotId))
       : join(cwd, '.offscreen-dev-runtime')
   );
+  let diskIdentities = deps.diskIdentities ?? {};
+  if (deps.pullSlotReceipts && session.namespace) {
+    diskIdentities = pullSelectedSlotReceipts({
+      namespace: session.namespace,
+      roles,
+      receiptRoot,
+      run: deps.execKubectl ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' })),
+    });
+  }
   let everyRoleReady = true;
   for (const roleSpec of roles) {
     const status = evaluate({
@@ -858,6 +904,7 @@ export function printDevStatus(worktree, deps = {}) {
       cwd,
       receiptRoot,
       environmentId: session.slotId ?? null,
+      diskIdentity: diskIdentities[roleSpec.role],
     });
     log(formatDevFreshnessStatusLine(roleSpec.role, status));
     if (!status.ready) {
@@ -871,7 +918,7 @@ export function printDevStatus(worktree, deps = {}) {
 function runDevStatusCli() {
   const worktree = REPO_ROOT;
   const session = readDevSession(worktree);
-  const code = printDevStatus(worktree);
+  const code = printDevStatus(worktree, { pullSlotReceipts: true });
   if (code !== 0) {
     if (!session) {
       console.error('No dev session for this worktree. Start one with: pnpm dev');

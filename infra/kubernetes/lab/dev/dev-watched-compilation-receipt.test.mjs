@@ -131,6 +131,28 @@ test('negative: missing desired receipt is not ready', () => {
   assert.equal(status.reason, 'missing_receipt');
 });
 
+test('negative: another slot identity is not this environment', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dev-runtime-foreign-'));
+  const receiptRoot = join(root, 'receipts');
+  mkdirSync(receiptRoot, { recursive: true });
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
+  const entry = join(root, 'dist/src/main.js');
+  mkdirSync(dirname(entry), { recursive: true });
+  writeFileSync(entry, 'export async function main() {}\n', 'utf8');
+  markDevWatchedCompilation({
+    phase: 'success', role: 'api', compiledEntryPath: 'dist/src/main.js', cwd: root, environmentId: 'dev-6',
+  });
+  writeFileSync(join(receiptRoot, 'api.loaded.json'), `${JSON.stringify({
+    schema: 'offscreen.dev-loaded-runtime.v1', role: 'api', pid: 1, startedAt: '2026-11-23T00:00:00.000Z',
+    compiledModulePath: entry, compiledModuleIdentity: fingerprintCompiledEntryFile(entry), environmentId: 'dev-6',
+  })}\n`);
+  const status = evaluateDevLoadedRuntimeReadiness({
+    role: 'api', compiledEntryPath: 'dist/src/main.js', receiptRoot, cwd: root, environmentId: 'dev-5',
+  });
+  assert.equal(status.ready, false);
+  assert.equal(status.reason, 'foreign_environment');
+});
+
 function dirnameLike(filePath) {
   return dirname(filePath);
 }

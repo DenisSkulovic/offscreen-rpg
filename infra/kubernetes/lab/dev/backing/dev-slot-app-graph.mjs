@@ -97,6 +97,13 @@ export function renderDevSlotAppGraph(slotId, input) {
   const temporalNamespace = namespace;
   const pool = env('DB_POOL_MAX', DEV_SQL_POOL_MAX);
   const slot = env('OFFSCREEN_DEV_SLOT', sql.slotId);
+  const receiptDir = env('OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR', '/app/.offscreen-dev-runtime');
+  const watched = (role, entry) => [
+    env('OFFSCREEN_DEV_WATCHED_COMPILATION', '1'),
+    env('OFFSCREEN_DEV_COMPILED_ENTRY', entry),
+    receiptDir,
+    env('OFFSCREEN_DEV_RECEIPT_ROLE', role),
+  ];
   const documentStore = env('OFFSCREEN_DOCUMENT_STORE', 's3');
   const documents = [
     { apiVersion: 'v1', kind: 'Namespace', metadata: { name: namespace, labels: labels(sql.slotId, 'slot') } },
@@ -105,16 +112,17 @@ export function renderDevSlotAppGraph(slotId, input) {
     service(sql.slotId, namespace, 'game-authority', 3002),
     deployment(sql.slotId, namespace, 'game-web', {
       name: 'web', image: imageFor('web'), imagePullPolicy: 'Never', workingDir: '/app',
-      command: ['pnpm', '--filter', '@offscreen/web', 'exec', 'next', 'dev', '--hostname', '0.0.0.0', '--port', '3000'],
+      command: ['sh', '-c', 'node /app/infra/kubernetes/lab/dev/dev-pod-web-receipt.mjs & exec pnpm --filter @offscreen/web exec next dev --hostname 0.0.0.0 --port 3000'],
       ports: [{ name: 'http', containerPort: 3000 }],
-      env: [slot, env('API_PROXY_ORIGIN', api), env('API_INTERNAL_ORIGIN', api)],
+      env: [slot, receiptDir, env('API_PROXY_ORIGIN', api), env('API_INTERNAL_ORIGIN', api)],
     }),
     deployment(sql.slotId, namespace, 'game-api', {
       name: 'api', image: imageFor('api'), imagePullPolicy: 'Never', workingDir: '/app/apps/api',
-      command: ['sh', '-c', 'pnpm exec tsc --noEmitOnError && (pnpm exec tsc --watch --noEmitOnError --preserveWatchOutput --pretty false & exec node --watch-path=dist dist/src/main.js)'],
+      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'api', 'dist/src/main.js'],
       ports: [{ name: 'http', containerPort: 3001 }],
       env: [
-        slot, pool, env('APP_ORIGIN', `http://127.0.0.1:${input.ports.game}`),
+        slot, ...watched('api', '/app/apps/api/dist/src/main.js'),
+        pool, env('APP_ORIGIN', `http://127.0.0.1:${input.ports.game}`),
         env('BETTER_AUTH_COOKIE_PREFIX', prefix),
         env('GAME_AUTHORITY_ORIGIN', authority),
         env('GAME_AUTHORITY_MODE', 'distributed'),
@@ -133,10 +141,11 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-authority', {
       name: 'authority', image: imageFor('authority'), imagePullPolicy: 'Never', workingDir: '/app/apps/game-authority',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
+      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'game-authority', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
       ports: [{ name: 'http', containerPort: 3002 }],
       env: [
-        slot, pool, documentStore, env('GAME_AUTHORITY_HOST', '0.0.0.0'), env('GAME_AUTHORITY_PORT', '3002'),
+        slot, ...watched('game-authority', '/app/apps/game-authority/dist/src/bootstrap/main.js'),
+        pool, documentStore, env('GAME_AUTHORITY_HOST', '0.0.0.0'), env('GAME_AUTHORITY_PORT', '3002'),
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),
@@ -148,27 +157,30 @@ export function renderDevSlotAppGraph(slotId, input) {
     }),
     deployment(sql.slotId, namespace, 'game-control', {
       name: 'control', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/control-main.js'],
+      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'worker-control', 'dist/src/bootstrap/control-main.js', 'tsconfig.dev.json'],
       env: [
-        slot, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
+        slot, ...watched('worker-control', '/app/apps/worker/dist/src/bootstrap/control-main.js'),
+        env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('TEMPORAL_TASK_QUEUE', 'control'), env('GAME_AUTHORITY_ORIGIN', authority),
         secretEnv('GAME_AUTHORITY_CONTROL_TOKEN', appSecret, 'game-authority-control-token'),
       ],
     }),
     deployment(sql.slotId, namespace, 'game-executor', {
       name: 'executor', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/executor-main.js'],
+      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'worker-executor', 'dist/src/bootstrap/executor-main.js', 'tsconfig.dev.json'],
       env: [
-        slot, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
+        slot, ...watched('worker-executor', '/app/apps/worker/dist/src/bootstrap/executor-main.js'),
+        env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('TEMPORAL_TASK_QUEUE', 'storyteller-execute-v1'), env('GAME_AUTHORITY_ORIGIN', authority),
         secretEnv('GAME_AUTHORITY_EXECUTOR_TOKEN', appSecret, 'game-authority-executor-token'),
       ],
     }),
     deployment(sql.slotId, namespace, 'game-relay', {
       name: 'relay', image: imageFor('worker'), imagePullPolicy: 'Never', workingDir: '/app/apps/worker',
-      command: ['sh', '-c', 'pnpm exec tsc -p tsconfig.dev.json && node dist/src/bootstrap/main.js'],
+      command: ['node', '/app/infra/kubernetes/lab/dev/dev-pod-compile-watch.mjs', 'worker-relay', 'dist/src/bootstrap/main.js', 'tsconfig.dev.json'],
       env: [
-        slot, pool, documentStore, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
+        slot, ...watched('worker-relay', '/app/apps/worker/dist/src/bootstrap/main.js'),
+        pool, documentStore, env('TEMPORAL_ADDRESS', temporal), env('TEMPORAL_NAMESPACE', temporalNamespace),
         env('OFFSCREEN_DOCUMENT_S3_BUCKET', s3.bucket), env('OFFSCREEN_DOCUMENT_S3_ENDPOINT', s3Endpoint),
         secretEnv('DATABASE_URL', dbSecret, 'uri'),
         secretEnv('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID', s3.secret, 'access-key-id'),

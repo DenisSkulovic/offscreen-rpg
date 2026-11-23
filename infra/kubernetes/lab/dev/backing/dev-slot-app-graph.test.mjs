@@ -40,8 +40,9 @@ test('dev-1 and dev-2 graphs stay in their own namespaces with distinct images',
       const host = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'API_HOST');
       assert.equal(host.value, '0.0.0.0');
       const command = deployment.spec.template.spec.containers[0].command.join(' ');
-      assert.match(command, /tsc --noEmitOnError/);
-      assert.match(command, /tsc --watch --noEmitOnError/);
+      assert.match(command, /dev-pod-compile-watch.mjs api/);
+      const watched = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'OFFSCREEN_DEV_WATCHED_COMPILATION');
+      assert.equal(watched.value, '1');
     }
     if (name === 'game-authority') {
       const host = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'GAME_AUTHORITY_HOST');
