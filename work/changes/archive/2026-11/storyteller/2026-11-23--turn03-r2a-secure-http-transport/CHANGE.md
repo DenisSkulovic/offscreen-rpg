@@ -1,6 +1,6 @@
 # TURN03-R2A | Secure, opt-in live HTTP transport
 
-**State:** READY WITH EXPLICIT LIMITS, source-only. **Parent:** [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) remains OPEN. **Inspected:** `undertaking/storyteller-workshop@4708408b`, 2026-11-23. **Scope:** distinct infrastructure test utility, not a standalone TURN03 live acceptance.
+**State:** Done, source-only injected-fetch proof. **Parent:** [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) remains OPEN. Live OAuth, cluster calls and cross-Pod PASS were not run. **Inspected:** `undertaking/storyteller-workshop@4708408b`, 2026-11-23. **Scope:** distinct infrastructure test utility, not a standalone TURN03 live acceptance.
 
 ## Precise source owners
 - `apps/api/src/modules/auth/{auth,config,identity}.ts`: Better Auth `baseURL=APP_ORIGIN`, `/api/auth`, trusted origin only; `IdentityService.requireUser` uses session header; cookie is **not** a terminal bearer. `config.ts` admits HTTPS or HTTP loopback origin only.
@@ -21,6 +21,15 @@ Allowed targets only relative `/api/drafts/... `, `/api/stories/...` (and option
 T01 implement safe session parser/origin/route policy in new module, unit-test regular 0600 file/valid loopback and HTTPS, refuse 0644, symlink, other owner (where testable), wrong origin, malformed cookie, cross-origin, encoded traversal.
 T02 implement injected `fetch` request with explicit GET-only default and opt-in PUT; fake-fetch prove exact Cookie+Origin use without token disclosure, no redirects, no raw error body, byte ceiling, one PUT on timeout (no replay), 401/403 preserved, unexpected status safely passed.
 T03 run `node --test infra/kubernetes/lab/app-release/turn03/live-http.test.mjs`; existing `node --test infra/kubernetes/lab/app-release/turn03/{run,adversarial}.test.mjs` if current; `git diff --check`; update parent TURN03 execution status without claiming live PASS. Commit/integrate/retire temporary Change branch; archive **R2A** only if pure tests pass. Parent TURN03 stays open.
+
+## Reconciliation ledger
+
+| Claim / document | Delta or no-op | Source SHA and diff | Positive evidence | Negative evidence | Link/status |
+| --- | --- | --- | --- | --- | --- |
+| Product acceptance | unchanged because this adapter does not start a story or mint a session | `live-http.mjs` on `change/turn03-r2a-secure-http-transport` | owner-only session and GET `/api/me` | 0644, symlink, wrong origin, unsafe cookie | TURN03 stays OPEN |
+| API auth contract | unchanged because Better Auth and identity owners were not edited | no auth source diff | Cookie header is manual; credentials omitted | redirect, malformed body and timeout stay sanitized | no login |
+| TURN03 execution map | changed: R2A source-only receipt, live gates still blocked | `NEXT-EXECUTION-2026-11-23.md` | 6/6 live-http tests; 12/12 existing route tests | PUT refused until opt-in; one PUT on timeout | parent OPEN |
+| Live cluster / cross-Pod proof | unchanged because not authorized | NOT RUN | NOT RUN | fake fetch is not a kind run | R3 not started |
 
 **Hard stop:** If current `runPublicRouteTrace` request contract needs different response data, if secure cookie session format conflicts with the operator handoff contract, or if real OAuth cookie is not valid against selected origin, report exact contradiction; do not add test auth backdoor, bypass redirects, invoke cluster, or implement R3.
 

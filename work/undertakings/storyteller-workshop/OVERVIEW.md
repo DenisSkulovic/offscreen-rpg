@@ -27,7 +27,7 @@ flowchart LR
 
 **TURN03 R2 planner checkpoint:** [real operator custody map](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/R2-OPERATOR-DESIGN-2026-11-23.md) distinguishes ordinary browser OAuth, pinned lab S3 source, read-only SQL/Temporal evidence and explicit release/fault permissions. A cookie or existence of Kubernetes Secrets does not establish a valid test actor or grant read-only evidence access. R1 source implementation is independently underway. R2/R3 are still not live-authorized.
 
-**Next source-only wave (2026-11-23):** TURN03-R2A ([protected session and HTTP adapter](../../changes/open/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md)) is still open. TURN03-R2B ([read-only pin verifier](../../changes/archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md)) is a source-only injected-store check and is not a live session, SQL/Temporal grant, or cross-Pod PASS. Parent TURN03 stays open.
+**Next source-only wave (2026-11-23):** TURN03-R2A ([protected session and HTTP adapter](../../changes/archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md)) is a source-only injected-fetch check and is not a live login. TURN03-R2B ([read-only pin verifier](../../changes/archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md)) is a source-only injected-store check and is not a live session, SQL/Temporal grant, or cross-Pod PASS. Parent TURN03 stays open. R3 has not started.
 
 ## What the dev-loop measurements really say
 

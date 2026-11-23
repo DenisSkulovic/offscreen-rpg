@@ -8,7 +8,7 @@
 
 | Supporting Change | Exclusive code write | Proof level |
 | --- | --- | --- |
-| [TURN03-R2A secure HTTP transport](../2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) | New `turn03/live-http.mjs` + its test | Injected fake-fetch and protected session-file tests only |
+| [TURN03-R2A secure HTTP transport](../../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) | `turn03/live-http.mjs` + test, source-only Done | Injected fake fetch. 6/6 PASS. Not a live login or cross-Pod PASS. TURN03 stays OPEN |
 | [TURN03-R2B pinned fixture verifier](../../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) | `turn03/fixture-pins.mjs` + test, source-only Done | Injected read-only DocumentStore. 7/7 PASS. Not a live or cross-Pod PASS. TURN03 stays OPEN |
 
 ```mermaid
@@ -30,7 +30,9 @@ flowchart LR
 
 ## Planner-decided task boundaries
 
-**R1 status (2026-11-23):** source-only public-route correction. The injected runner calls the real Nest draft, opening, start, resolution, receipt, historical-scene and fork methods, keeps frozen operation identities, bounds polls, and still marks every gate local/mocked. It is not live acceptance. TURN03 stays OPEN. R2 and R3 stay unstarted.
+**R1 status (2026-11-23):** source-only public-route correction. The injected runner calls the real Nest draft, opening, start, resolution, receipt, historical-scene and fork methods, keeps frozen operation identities, bounds polls, and still marks every gate local/mocked. It is not live acceptance. TURN03 stays OPEN.
+
+**R2A status (2026-11-23):** source-only secure HTTP adapter. `createLiveHttpRequest` reads an owner-only session file and calls an injected fetch. Tests passed 6/6. No OAuth login, cluster call, or write retry was run. R3 stays unstarted.
 
 **R1 / source-only route correction (eligible for separate bounded implementation commission after local branch guard).** Exclusive writes `infra/kubernetes/lab/app-release/turn03/run.mjs`, its `run.test.mjs` and `adversarial.test.mjs` (and narrowly necessary new helper under same directory). Use the existing injected `http` contract; make the scripted state machine take frozen `{draftId,generationId,storyId,operationId,sourcePins,campaign}`, then dynamically capture `interactionId`, `optionId`, `scene1PassageId` and checkpoint hash from validated responses/evidence. Implement real method/path/payload sequence A–G and I/J from SOURCE-ROUTE-MAP; do not attempt a fake private GA commit, fake future, browser UI, or direct SQL in this slice. Bound opening/scene2 polls by injected max-attempts and sleeper (test deterministic without real delays). Freeze operation IDs, never resend a different logical command after 202/timeout. Missing scene checkpoint, option, auth, receipt or stage transition produces deterministic BLOCKED/FAIL and never PASS. **Preserve current runner's default read-only / mocked evidence tier**; do not flip any cross-Pod gate to PASS. Negative test: route exactness; 202 still pending; missing scene1 checkpoint rejects fork; duplicate command not emitted by operator; wrong-owner 401/403 abort; no writes or calls when `runDisposableKind=false`; all gates never real-PASS under injected fake. Tests: same four source-only files, plus `git diff --check`. If live response contracts do not fit existing report schema, stop with exact mismatch rather than inventing new DTO.
 

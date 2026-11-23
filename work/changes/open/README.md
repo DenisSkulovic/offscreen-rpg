@@ -6,7 +6,7 @@
 
 ## Current / immediate work
 
-**2026-11-23:** [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. It is not a live S3 or cross-Pod PASS. [TURN03-R2A secure HTTP source adapter](2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) remains open and disjoint. Parent [TURN03](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) stays OPEN.
+**2026-11-23:** [TURN03-R2A secure HTTP transport](../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) is Done as an injected fake-fetch check. It is not a live login or cross-Pod PASS. [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. Parent [TURN03](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) stays OPEN.
 
 
 | Change | Why it remains open |
