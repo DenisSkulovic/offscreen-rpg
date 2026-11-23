@@ -52,6 +52,27 @@ load_node() {
 if [[ "${EXPECTED_REF:-}" == offscreen-dev-workspace:* ]]; then
   load_node offscreen-dev offscreen-dev-control-plane
   load_node offscreen-dev offscreen-dev-worker
+  # Kind load can retarget a tag onto a new containerd import. The host image
+  # id does not change, so stamp the node config id after the load. A matching
+  # annotation does not roll; a different one rolls only this slot.
+  if [[ -n "${OFFSCREEN_DEV_NAMESPACE:-}" ]]; then
+    cri_id="$(docker exec offscreen-dev-control-plane crictl inspecti "docker.io/library/${EXPECTED_REF}" | node -e "
+let text = '';
+process.stdin.on('data', (chunk) => { text += chunk; });
+process.stdin.on('end', () => {
+  const id = JSON.parse(text)?.status?.id ?? '';
+  if (!/^sha256:[a-f0-9]{64}$/.test(id)) process.exit(2);
+  process.stdout.write(id);
+});
+")"
+    for name in game-web game-api game-authority game-control game-executor game-relay; do
+      current="$(kubectl --context kind-offscreen-dev -n "$OFFSCREEN_DEV_NAMESPACE" get deployment "$name" -o "jsonpath={.spec.template.metadata.annotations.offscreen\.dev/image-generation}" 2>/dev/null || true)"
+      if [[ "$current" == "$cri_id" ]]; then
+        continue
+      fi
+      kubectl --context kind-offscreen-dev -n "$OFFSCREEN_DEV_NAMESPACE" patch deployment "$name" --type merge -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"offscreen.dev/image-generation\":\"${cri_id}\"}}}}}" >/dev/null
+    done
+  fi
 else
   load_node offscreen-lab offscreen-lab-control-plane
   load_node offscreen-lab offscreen-lab-worker
