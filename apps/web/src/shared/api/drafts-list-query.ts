@@ -1,6 +1,6 @@
 import { infiniteQueryOptions } from '@tanstack/react-query';
-import { draftListSchema } from '@offscreen/contracts/drafts';
-import type { Draft } from '@offscreen/contracts/drafts';
+import { draftListSchema } from '@offscreen/story-interface/drafts';
+import type { Draft } from '@offscreen/story-interface/drafts';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 

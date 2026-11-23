@@ -4,7 +4,7 @@ import {
   listChamberScenarios,
   type ChamberInspector,
 } from '@offscreen/contracts/chamber';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { StoryHistoryView } from './history';
 import { ChamberInspectorPanel } from './inspector';
 

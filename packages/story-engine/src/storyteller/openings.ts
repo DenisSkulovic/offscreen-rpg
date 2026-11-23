@@ -27,7 +27,7 @@ import {
 import {
   mechanicalContentCatalogueSchema,
   openingPreviewSchema,
-} from '@offscreen/contracts/openings';
+} from '@offscreen/story-interface/openings';
 import { GenerationError, validId } from '../generations/index';
 import { insertStorytellerTask, storytellerKind } from './records';
 import { storytellerNoticeTopicForWake } from './records';

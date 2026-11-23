@@ -3,26 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./interactions": {
-      "types": "./dist/src/interactions.d.ts",
-      "default": "./dist/src/interactions.js"
-    },
-    "./openings": {
-      "types": "./dist/src/openings.d.ts",
-      "default": "./dist/src/openings.js"
-    },
-    "./drafts": {
-      "types": "./dist/src/drafts.d.ts",
-      "default": "./dist/src/drafts.js"
-    },
-    "./stories": {
-      "types": "./dist/src/stories.d.ts",
-      "default": "./dist/src/stories.js"
-    },
-    "./story-launch": {
-      "types": "./dist/src/story-launch.d.ts",
-      "default": "./dist/src/story-launch.js"
-    },
     "./game-authority": {
       "types": "./dist/src/game-authority.d.ts",
       "default": "./dist/src/game-authority.js"
@@ -50,18 +30,6 @@
     "./qa": {
       "types": "./dist/src/qa.d.ts",
       "default": "./dist/src/qa.js"
-    },
-    "./storytellers": {
-      "types": "./dist/src/storytellers.d.ts",
-      "default": "./dist/src/storytellers.js"
-    },
-    "./campaign": {
-      "types": "./dist/src/campaign.d.ts",
-      "default": "./dist/src/campaign.js"
-    },
-    "./campaign-holds": {
-      "types": "./dist/src/campaign-holds.d.ts",
-      "default": "./dist/src/campaign-holds.js"
     },
     "./usage-policy": {
       "types": "./dist/src/usage-policy.d.ts",
@@ -118,8 +86,8 @@
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
-    "@offscreen/documents": "workspace:*",
     "@offscreen/game": "workspace:*",
+    "@offscreen/story-interface": "workspace:*",
     "zod": "4.6.5"
   },
   "devDependencies": {

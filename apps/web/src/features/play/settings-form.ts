@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {
   creativeSettingsSchema,
   type CreativeSettings,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 
 /** Lenient editor schema; submit still validates with creativeSettingsSchema. */
 export const settingsEditorFormSchema = z.strictObject({

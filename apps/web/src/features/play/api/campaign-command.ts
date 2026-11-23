@@ -1,4 +1,4 @@
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 
 /** Presentation-facing campaign command surface (frozen mutation lives in the hook). */
 export type CampaignCommandApi = {

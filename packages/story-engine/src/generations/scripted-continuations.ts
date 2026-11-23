@@ -3,7 +3,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
-import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
+import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import {
   validateContinuationResult,
   validatePlayableResult,

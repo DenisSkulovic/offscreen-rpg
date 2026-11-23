@@ -2,7 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 import {
   historicalSceneSchema,
   type HistoricalScene,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 

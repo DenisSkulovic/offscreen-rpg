@@ -8,13 +8,13 @@ import {
   interactionSchema,
   interactionSpecificationSchema,
   interactionSubmissionSchema,
-} from '@offscreen/contracts/interactions';
+} from '@offscreen/story-interface/interactions';
 import {
   controlIntervalSchema,
   passageContentSchema,
   storyItemEffectSchema,
   storyItemsSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import type { storyPassage } from '@offscreen/db/story-schema';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';

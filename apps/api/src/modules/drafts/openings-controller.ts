@@ -14,7 +14,7 @@ import type { Request } from 'express';
 import type { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { OpeningInputError } from '@offscreen/story-engine/generations';
 import { GenerationError } from '@offscreen/story-engine/generations';
-import { requestOpeningSchema } from '@offscreen/contracts/openings';
+import { requestOpeningSchema } from '@offscreen/story-interface/openings';
 import { IdentityService } from '../auth/identity.js';
 
 export const OPENINGS = Symbol('OPENINGS');

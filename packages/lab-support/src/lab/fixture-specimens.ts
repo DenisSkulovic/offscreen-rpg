@@ -8,11 +8,11 @@ import {
   type ChamberLabFixtureOverlay,
   type ChamberLabFixtureRecipe,
 } from '@offscreen/contracts/chamber-lab';
-import { interactionSchema } from '@offscreen/contracts/interactions';
+import { interactionSchema } from '@offscreen/story-interface/interactions';
 import {
   storyItemSchema,
   storyItemsSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import {
   actionDefinitionSchema,
   activityProgressSchema,

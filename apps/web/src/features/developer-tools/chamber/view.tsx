@@ -4,7 +4,7 @@ import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { ChamberScene, ChamberStart } from './scene';
 import { LabWorkbench } from './lab-workbench';
 import { useChamberPlay } from './use-chamber-play';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { QaWorkspace } from './qa-workspace';
 
 export function Chamber({

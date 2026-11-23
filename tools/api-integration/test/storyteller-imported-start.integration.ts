@@ -7,7 +7,7 @@ import {
   gameActionReceipt,
   worldObligation,
 } from '@offscreen/db/campaign-schema';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { story } from '@offscreen/db/story-schema';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createStories } from '@offscreen/story-engine/stories';

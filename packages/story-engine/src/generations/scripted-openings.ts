@@ -6,7 +6,7 @@ import {
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
-import type { OpeningPreview } from '@offscreen/contracts/openings';
+import type { OpeningPreview } from '@offscreen/story-interface/openings';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import { createOpenings } from './openings';
 import {

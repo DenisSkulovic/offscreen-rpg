@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
 import { makeCampaign } from '@/src/test/campaign-fixtures';
 import { makeStorySnapshot } from '@/src/test/story-fixtures';
 import { CampaignSettingsEditor } from '@/src/features/play/campaign-settings';

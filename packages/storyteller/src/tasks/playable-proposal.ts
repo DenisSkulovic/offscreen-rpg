@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 
 const meaningfulText = (
   minimum: number,

@@ -41,6 +41,7 @@ test('Game Authority, Worker and Web closures keep their runtime workspace depen
 
   const web = productionWorkspaceClosure(repoRoot, 'apps/web');
   assert.ok(web.includes('packages/contracts'));
+  assert.ok(web.includes('packages/story-interface'));
   assert.ok(web.includes('packages/game'));
   assert.equal(web.includes('packages/lab-support'), false);
 });

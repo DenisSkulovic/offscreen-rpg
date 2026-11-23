@@ -3,7 +3,7 @@ import { publishStorytellerNotes } from './continuity-notes';
 import {
   InteractionInputError,
   validateInteractionSubmission,
-} from '@offscreen/contracts/interactions';
+} from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
 import { campaign } from '@offscreen/db/campaign-schema';
 import type { Transaction } from '@offscreen/db/outbox';

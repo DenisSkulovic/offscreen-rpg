@@ -14,7 +14,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import {
   latestOpeningSchema,
   openingPreviewSchema,
-} from '@offscreen/contracts/openings';
+} from '@offscreen/story-interface/openings';
 import { requireDefined } from './helpers/require.js';
 
 export async function checkOpeningHTTP(

@@ -4,8 +4,8 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
-import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
 import { useCampaignCommand } from './api/use-campaign-command';
 import {
   creativeToFormValues,

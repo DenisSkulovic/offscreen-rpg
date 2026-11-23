@@ -72,7 +72,8 @@
   "dependencies": {
     "@offscreen/contracts": "workspace:*",
     "@offscreen/game": "workspace:*",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@offscreen/story-interface": "workspace:*"
   },
   "devDependencies": {
     "@offscreen/config": "workspace:*",

@@ -2,7 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 import {
   latestOpeningSchema,
   type OpeningPreview,
-} from '@offscreen/contracts/openings';
+} from '@offscreen/story-interface/openings';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 

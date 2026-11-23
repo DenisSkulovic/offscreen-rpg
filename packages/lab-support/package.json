@@ -32,7 +32,8 @@
     "@offscreen/story-engine": "workspace:*",
     "@offscreen/storyteller": "workspace:*",
     "drizzle-orm": "0.45.2",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@offscreen/story-interface": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.3",

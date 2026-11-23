@@ -1,6 +1,6 @@
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { chamberStorytellerControlRequestSchema } from '@offscreen/contracts/chamber';
-import { respondToStorySchema } from '@offscreen/contracts/stories';
+import { respondToStorySchema } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
 import { randomUUID } from 'node:crypto';
 import {

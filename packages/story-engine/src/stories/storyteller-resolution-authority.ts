@@ -13,7 +13,7 @@ import {
   storyItem,
   storyResolution,
 } from '@offscreen/db/story-schema';
-import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
+import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
 import type { Transaction } from '@offscreen/db/outbox';
 import { enqueue } from '@offscreen/db/outbox';
@@ -32,8 +32,8 @@ import { storytellerActivityContextFilter } from '../campaign/storyteller-activi
 import { storytellerNoticeTopicForWake } from '../campaign/storyteller-wake';
 import { insertStorytellerTask } from './storyteller-task-record';
 import { activeSceneAnchorSchema } from './active-scene-anchor';
-import { storyItemsSchema } from '@offscreen/contracts/stories';
-import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { storyItemsSchema } from '@offscreen/story-interface/stories';
+import { campaignSettingsSchema } from '@offscreen/story-interface/campaign';
 
 function normalizeActiveSceneScope(scope: unknown) {
   if (scope === null || scope === undefined) {return null;}

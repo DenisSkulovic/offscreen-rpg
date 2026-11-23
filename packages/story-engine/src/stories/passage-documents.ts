@@ -12,12 +12,12 @@ import {
   type DocumentManifestEntry,
   type DocumentStore,
 } from '@offscreen/documents';
-import { passageContentSchema } from '@offscreen/contracts/stories';
-import { campaignStartSchema } from '@offscreen/contracts/campaign';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
+import { campaignStartSchema } from '@offscreen/story-interface/campaign';
 import { StoryError } from './errors';
 import { createHash } from 'node:crypto';
 import { premiseContentSchema } from '@offscreen/storyteller/tasks';
-import { storyItemsSchema } from '@offscreen/contracts/stories';
+import { storyItemsSchema } from '@offscreen/story-interface/stories';
 import { characterSchema } from '@offscreen/game/state';
 import { worldTimeDefinitionSchema } from '@offscreen/game/calendar';
 import { z } from 'zod';

@@ -8,7 +8,7 @@ import {
   contentFromDraft,
   type DraftEditorFormValues,
 } from '@/src/features/stories/drafts/draft-content';
-import type { Draft } from '@offscreen/contracts/drafts';
+import type { Draft } from '@offscreen/story-interface/drafts';
 
 /**
  * RHF draft surface for Storybook pristine/dirty/409 states.

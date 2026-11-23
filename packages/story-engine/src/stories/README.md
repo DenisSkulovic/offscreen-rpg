@@ -42,7 +42,7 @@ GET /api/stories/:storyId/resolutions/:operationId/receipt
   -> Zod receipt with state, viewVersion, resolutionVersion, safe reason/recovery, requestDigest
 ```
 
-**Receipt recovery note:** a 404 before in-flight commit does not prove no effect will arrive; the browser must not auto-start a new UUID after a missing ACK. Wire schema: `@offscreen/contracts/stories` `resolutionOperationReceiptSchema` + `canonicalResolutionRequestJson`.
+**Receipt recovery note:** a 404 before in-flight commit does not prove no effect will arrive; the browser must not auto-start a new UUID after a missing ACK. Wire schema: `@offscreen/story-interface/stories` `resolutionOperationReceiptSchema` + `canonicalResolutionRequestJson`.
 
 ## SSE commit hint reasoning (W16)
 

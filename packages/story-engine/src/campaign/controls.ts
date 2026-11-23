@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
-import { activityControlSchema } from '@offscreen/contracts/campaign';
+import { activityControlSchema } from '@offscreen/story-interface/campaign';
 import {
   lockOwnedStory,
   readDatabaseClockMs,

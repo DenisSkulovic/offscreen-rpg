@@ -5,7 +5,7 @@ import type { TestContext } from 'node:test';
 import {
   resolutionOperationReceiptSchema,
   storySnapshotSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
 import { createChamber } from '@offscreen/lab-support';
 import {

@@ -1,4 +1,4 @@
-import type { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
+import type { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
 import type { DocumentStore } from '@offscreen/documents';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';

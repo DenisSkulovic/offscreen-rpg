@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { CreativeSettings } from '@offscreen/contracts/campaign';
+import type { CreativeSettings } from '@offscreen/story-interface/campaign';
 import { queryKeys } from '@/src/shared/api/query-keys';
 import {
   storytellerPresetSchema,

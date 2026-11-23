@@ -1,6 +1,6 @@
 'use client';
 
-import type { HistoricalScene } from '@offscreen/contracts/stories';
+import type { HistoricalScene } from '@offscreen/story-interface/stories';
 import { useForkHistoricalScene } from './use-fork-historical-scene';
 
 export function ForkHistoricalScene({

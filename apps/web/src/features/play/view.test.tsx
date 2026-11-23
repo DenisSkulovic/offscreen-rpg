@@ -12,8 +12,8 @@ import {
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { focusManager } from '@tanstack/react-query';
-import type { CampaignView } from '@offscreen/contracts/campaign';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { makeCampaign } from '@/src/test/campaign-fixtures';
 import { makeStorySnapshot, fixtureIds } from '@/src/test/story-fixtures';
 

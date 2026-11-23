@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {
   canonicalStoryLaunchRequestJson,
   type StoryLaunchRequest,
-} from '@offscreen/contracts/story-launch';
+} from '@offscreen/story-interface/story-launch';
 
 const TTL_MS = 24 * 60 * 60 * 1000;
 const storagePrefix = 'offscreen:story-launch-pointer:v1';

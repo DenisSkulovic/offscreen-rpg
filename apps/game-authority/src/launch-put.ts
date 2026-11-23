@@ -6,7 +6,7 @@ import {
   storyLaunchRequestSchema,
   type StoryLaunchRequest,
   type StoryLaunchStatus,
-} from '@offscreen/contracts/story-launch';
+} from '@offscreen/story-interface/story-launch';
 import type { Database } from '@offscreen/db';
 import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
 import type { DocumentStore } from '@offscreen/documents';

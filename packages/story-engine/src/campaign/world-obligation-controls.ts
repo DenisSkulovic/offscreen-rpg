@@ -7,7 +7,7 @@ import {
   worldObligation,
   worldObligationEvent,
 } from '@offscreen/db/campaign-schema';
-import { worldObligationControlSchema } from '@offscreen/contracts/campaign';
+import { worldObligationControlSchema } from '@offscreen/story-interface/campaign';
 import { compileWorldDate } from '@offscreen/game/calendar';
 import { worldObligationSchema } from '@offscreen/game/world-obligations';
 import {

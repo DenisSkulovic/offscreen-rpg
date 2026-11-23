@@ -1,4 +1,4 @@
-import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { campaignSettingsSchema } from '@offscreen/story-interface/campaign';
 import { worldTimeViewSchema } from '@offscreen/game/calendar';
 import { worldConditionSchema } from '@offscreen/game/world-obligations';
 import {
@@ -14,7 +14,7 @@ import { isDeepStrictEqual } from 'node:util';
 import {
   passageContentSchema,
   storyItemsSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 
 export const storytellerCampaignSettingsSchema = campaignSettingsSchema.omit({
   time: true,

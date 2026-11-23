@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
-import { draftListSchema, draftSchema } from '@offscreen/contracts/drafts';
+import { draftListSchema, draftSchema } from '@offscreen/story-interface/drafts';
 import { requireDefined } from './helpers/require.js';
 
 export async function checkDrafts(

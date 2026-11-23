@@ -1,6 +1,6 @@
 'use client';
 
-import type { StoryLaunchStatus as StoryLaunchStatusBody } from '@offscreen/contracts/story-launch';
+import type { StoryLaunchStatus as StoryLaunchStatusBody } from '@offscreen/story-interface/story-launch';
 import { Action } from '@/src/shared/ui/action';
 import { SystemNotice } from '@/src/shared/ui/system-notice';
 import type { StoryLaunchPhase } from './use-story-launch';

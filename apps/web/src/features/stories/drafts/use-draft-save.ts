@@ -3,7 +3,7 @@ import {
   draftSchema,
   type Draft,
   type DraftContent,
-} from '@offscreen/contracts/drafts';
+} from '@offscreen/story-interface/drafts';
 import { queryKeys } from '@/src/shared/api/query-keys';
 
 export type FrozenDraftSave = {

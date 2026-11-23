@@ -7,7 +7,7 @@ import {
   interactionSchema,
   interactionSubmissionSchema,
   validateInteractionSubmission,
-} from '@offscreen/contracts/interactions';
+} from '@offscreen/story-interface/interactions';
 import { playablePresentation } from '@offscreen/storyteller/tasks';
 import {
   publishedStorytellerSlice,

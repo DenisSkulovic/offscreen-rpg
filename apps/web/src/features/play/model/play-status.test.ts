@@ -1,5 +1,5 @@
-import type { CampaignView } from '@offscreen/contracts/campaign';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { describe, expect, it } from 'vitest';
 import { makeCampaign } from '@/src/test/campaign-fixtures';
 import { makeStorySnapshot } from '@/src/test/story-fixtures';

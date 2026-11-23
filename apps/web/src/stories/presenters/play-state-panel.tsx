@@ -1,6 +1,6 @@
 'use client';
 
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 
 /**
  * Presentational Play engineering states for Storybook.

@@ -1,11 +1,11 @@
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
+import { draftIdSchema, draftSchema } from '@offscreen/story-interface/drafts';
 import {
   latestOpeningSchema,
   mechanicalContentCatalogueSchema,
-} from '@offscreen/contracts/openings';
+} from '@offscreen/story-interface/openings';
 import {
   PATHNAME_HEADER,
   signInHrefFor,

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { makeValidatedAppearanceForPublication } from '@offscreen/contracts/stories';
+import { makeValidatedAppearanceForPublication } from '@offscreen/story-interface/scene-publication';
 import { scriptedStorytellerResult } from '../src/fixtures';
 import { createRequestAuditFixtureCases } from '../src/providers/request-audit-fixtures';
 import {

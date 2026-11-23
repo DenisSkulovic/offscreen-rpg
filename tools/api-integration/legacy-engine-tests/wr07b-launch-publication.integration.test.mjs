@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { and, eq, sql } from 'drizzle-orm';
-import { storyLaunchRequestSchema } from '@offscreen/contracts/story-launch';
+import { storyLaunchRequestSchema } from '@offscreen/story-interface/story-launch';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { hashCanonicalJson, LocalDocumentStore } from '@offscreen/documents';
 import { storyLaunch } from '@offscreen/db/launch-schema';

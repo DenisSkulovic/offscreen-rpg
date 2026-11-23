@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
-import type { CampaignActivityEventKind } from '@offscreen/contracts/campaign';
+import type { CampaignActivityEventKind } from '@offscreen/story-interface/campaign';
 import {
   campaign,
   gameOffer,

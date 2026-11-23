@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { paceSchema } from '@offscreen/game/time';
-import { startPackageReferenceSchema } from '@offscreen/contracts/campaign';
+import { startPackageReferenceSchema } from '@offscreen/story-interface/campaign';
 
 const TTL_MS = 24 * 60 * 60 * 1000;
 const storagePrefix = 'offscreen:start-intent:v1';

@@ -10,8 +10,8 @@ import {
   campaignConsequenceTopic,
   createConsequenceNarration,
 } from '../campaign/narration';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
-import { respondToStorySchema } from '@offscreen/contracts/stories';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
+import { respondToStorySchema } from '@offscreen/story-interface/stories';
 import { retryStoryteller } from './storyteller-retry';
 import type { Database } from '@offscreen/db';
 import { createStoryContinuation } from './continuation';

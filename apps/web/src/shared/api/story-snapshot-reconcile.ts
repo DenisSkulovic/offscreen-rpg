@@ -1,4 +1,4 @@
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 
 export type StorySnapshotReconcileInput = {
   viewerId: string;

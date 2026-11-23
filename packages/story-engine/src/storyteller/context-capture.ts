@@ -5,13 +5,13 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { and, desc, eq, gt, gte, inArray, lte } from 'drizzle-orm';
 import { z } from 'zod';
-import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { campaignSettingsSchema } from '@offscreen/story-interface/campaign';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import {
   passageContentSchema,
   storyItemsSchema,
-} from '@offscreen/contracts/stories';
-import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
+} from '@offscreen/story-interface/stories';
+import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { worldConditionsSchema } from '@offscreen/game/world-obligations';
 import { offerSchema } from '@offscreen/game/offers';

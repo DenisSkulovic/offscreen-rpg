@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { createDrafts } from '@offscreen/story-engine/drafts';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createStories } from '@offscreen/story-engine/stories';

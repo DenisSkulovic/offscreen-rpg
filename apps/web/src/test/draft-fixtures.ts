@@ -1,4 +1,4 @@
-import { draftSchema, type Draft } from '@offscreen/contracts/drafts';
+import { draftSchema, type Draft } from '@offscreen/story-interface/drafts';
 
 export const fixtureDraftId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 

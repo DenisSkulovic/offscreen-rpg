@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { resolveLivePresentation } from '@/src/features/play/model/live-presentation';
 import { fixtureIds, makeStorySnapshot } from '@/src/test/story-fixtures';

@@ -5,7 +5,7 @@ import {
   storyLaunchStatusSchema,
   type StoryLaunchRequest,
   type StoryLaunchStatus,
-} from '@offscreen/contracts/story-launch';
+} from '@offscreen/story-interface/story-launch';
 import type { Database } from '@offscreen/db';
 import { storyLaunch } from '@offscreen/db/launch-schema';
 import { hashCanonicalJson } from '@offscreen/documents';

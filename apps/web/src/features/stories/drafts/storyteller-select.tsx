@@ -4,7 +4,7 @@ import {
   storytellerCatalogueSchema,
   type StorytellerReference,
   type StorytellerSummary,
-} from '@offscreen/contracts/storytellers';
+} from '@offscreen/story-interface/storytellers';
 
 export function StorytellerSelect({
   value,

@@ -1,7 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
-import { validateInteractionSubmission } from '@offscreen/contracts/interactions';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
+import { validateInteractionSubmission } from '@offscreen/story-interface/interactions';
 import { capturedProviderRequestSchema, prepareOpening } from './opening';
 import { premiseContentSchema } from '../context/premise';
 import {

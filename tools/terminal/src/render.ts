@@ -1,4 +1,4 @@
-import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
 import {
   storyHistorySchema,
   storyListSchema,
@@ -6,11 +6,11 @@ import {
   type StoryHistory,
   type StoryList,
   type StorySnapshot,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import {
   storyLaunchStatusSchema,
   type StoryLaunchStatus,
-} from '@offscreen/contracts/story-launch';
+} from '@offscreen/story-interface/story-launch';
 import { offerChildren, offerNodes, pathKey } from './campaign-projections.js';
 
 /** Strip ANSI and other C0/C1 terminal control sequences from server text. */

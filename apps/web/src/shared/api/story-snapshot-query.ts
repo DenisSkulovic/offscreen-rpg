@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { readStorySnapshot } from '@/src/lib/story-transport';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';

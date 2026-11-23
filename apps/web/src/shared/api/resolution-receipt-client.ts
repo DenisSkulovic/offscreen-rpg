@@ -1,7 +1,7 @@
 import {
   resolutionOperationReceiptSchema,
   type ResolutionOperationReceipt,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 
 const requestTimeoutMs = 10000;
 

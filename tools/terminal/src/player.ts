@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
-import { actionCommandSchema } from '@offscreen/contracts/campaign';
+import { actionCommandSchema } from '@offscreen/story-interface/campaign';
 import {
   forkStorySchema,
   respondToStorySchema,
@@ -10,12 +10,12 @@ import {
   type StoryHistory,
   type StoryList,
   type StorySnapshot,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import {
   storyLaunchRequestSchema,
   type StoryLaunchRequest,
   type StoryLaunchStatus,
-} from '@offscreen/contracts/story-launch';
+} from '@offscreen/story-interface/story-launch';
 import type { TerminalTokenCurrent } from '@offscreen/contracts/terminal-auth';
 import {
   clearStoredAuth,

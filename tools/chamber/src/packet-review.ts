@@ -2,10 +2,10 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
-import type { StartPackageReference } from '@offscreen/contracts/campaign';
+import type { StartPackageReference } from '@offscreen/story-interface/campaign';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
 import type { DispatchReviewView } from '@offscreen/contracts/chamber';
-import { draftSchema } from '@offscreen/contracts/drafts';
+import { draftSchema } from '@offscreen/story-interface/drafts';
 import type { Database } from '@offscreen/db';
 
 /**

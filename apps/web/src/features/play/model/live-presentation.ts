@@ -1,4 +1,4 @@
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { allCampaignOfferPaths, offerNodes } from './campaign-projections';
 import { resolvePresentation } from '../presentation/resolve';
 import type {

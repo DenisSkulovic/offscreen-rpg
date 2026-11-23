@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { queryKeys } from '@/src/shared/api/query-keys';
 import { createBrowserQueryClient } from '@/src/shared/api/query-client';
 

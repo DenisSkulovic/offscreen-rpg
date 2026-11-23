@@ -10,7 +10,7 @@ import {
 import type { Request } from 'express';
 import type { createStoryApplication } from '@offscreen/story-engine/stories';
 import { StoryError } from '@offscreen/story-engine/stories';
-import { storyVisitAckBodySchema } from '@offscreen/contracts/stories';
+import { storyVisitAckBodySchema } from '@offscreen/story-interface/stories';
 import { StoryPlayerIdentity } from '../story-player-identity.js';
 import { runStoryRequest, STORIES } from '../story-http-context.js';
 

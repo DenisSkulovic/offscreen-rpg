@@ -1,5 +1,5 @@
 import { infiniteQueryOptions } from '@tanstack/react-query';
-import { storyListSchema, type StoryList } from '@offscreen/contracts/stories';
+import { storyListSchema, type StoryList } from '@offscreen/story-interface/stories';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 

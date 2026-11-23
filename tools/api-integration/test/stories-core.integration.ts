@@ -7,7 +7,7 @@ import type { TestContext } from 'node:test';
 import {
   storyHistorySchema,
   storySnapshotSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import { listChamberScenarios } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
 import type { ReadCache } from '@offscreen/contracts/read-cache';

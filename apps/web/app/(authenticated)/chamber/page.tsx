@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { requireViewer } from '@/src/server/viewer';
 import { readNestJson } from '@/src/server/nest-reader';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { Chamber } from '@/src/features/developer-tools/chamber/view';
 
 export default async function ChamberPage({

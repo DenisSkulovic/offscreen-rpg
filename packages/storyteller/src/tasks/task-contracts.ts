@@ -6,11 +6,9 @@
  */
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
-import {
-  passageContentSchema,
-  publicationSceneDirectiveV1Schema,
-} from '@offscreen/contracts/stories';
-import { startPackageReferenceSchema } from '@offscreen/contracts/campaign';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
+import { publicationSceneDirectiveV1Schema } from '@offscreen/story-interface/scene-publication';
+import { startPackageReferenceSchema } from '@offscreen/story-interface/campaign';
 import { capturedProviderRequestSchema } from './opening';
 import { storytellerProfileSchema } from '../profiles';
 import { executionPolicySchema } from './policy';

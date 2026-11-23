@@ -18,13 +18,13 @@ import {
   type StoryHistory,
   type StoryList,
   type StorySnapshot,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import {
   storyLaunchRequestSchema,
   storyLaunchStatusSchema,
   type StoryLaunchRequest,
   type StoryLaunchStatus,
-} from '@offscreen/contracts/story-launch';
+} from '@offscreen/story-interface/story-launch';
 import { assertAllowedApiOrigin, normalizeApiOrigin } from './config.js';
 
 const REQUEST_TIMEOUT_MS = 10_000;

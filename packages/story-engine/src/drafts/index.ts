@@ -1,11 +1,11 @@
 import { isDeepStrictEqual } from 'node:util';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
-import { storytellerReferenceSchema } from '@offscreen/contracts/storytellers';
+import { storytellerReferenceSchema } from '@offscreen/story-interface/storytellers';
 import { and, desc, eq, lt, or, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { storyDraft } from '@offscreen/db/draft-schema';
-import { draftIdSchema, saveDraftSchema } from '@offscreen/contracts/drafts';
-import type { Draft, DraftContent } from '@offscreen/contracts/drafts';
+import { draftIdSchema, saveDraftSchema } from '@offscreen/story-interface/drafts';
+import type { Draft, DraftContent } from '@offscreen/story-interface/drafts';
 
 export class DraftError extends Error {
   constructor(public readonly code: 'not_found' | 'conflict' | 'invalid') {

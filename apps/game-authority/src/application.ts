@@ -4,12 +4,12 @@ import { lockOwnedStory } from '@offscreen/story-engine/stories/persistence';
 import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
 import { createStorytellerSavedGenerationPublish } from '@offscreen/story-engine/storyteller/saved-generation-publish';
 import type { StorytellerGenerationPublishResponse } from '@offscreen/contracts/storyteller-task-custody';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
-import { forkStorySchema } from '@offscreen/contracts/stories';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
+import { forkStorySchema } from '@offscreen/story-interface/stories';
 import { StoryError } from '@offscreen/story-engine/stories';
 import type { Database } from '@offscreen/db';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
-import type { StoryLaunchStatus } from '@offscreen/contracts/story-launch';
+import type { StoryLaunchStatus } from '@offscreen/story-interface/story-launch';
 import { createLaunchPutService } from './launch-put.js';
 
 /**

@@ -1,6 +1,6 @@
 # DO03 | story interface
 
-**Status: Ready / owner-commissioned for parallel wave A. Kind: implementation. Profile: CONTRACT.** Baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`. Integration target `undertaking/storyteller-workshop`. Prerequisite: Documents schema export verified at baseline; parallel wave A.
+**Status: Locally accepted on `change/do03-story-interface`; awaiting DO01 integration custodian join. Kind: implementation. Profile: CONTRACT.** Worktree base `c7f19e07b38d289659350768d81ba3f1c3813d81` (packet baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`). Integration target `undertaking/storyteller-workshop`. Prerequisite: Documents schema export verified at baseline; parallel wave A.
 
 [Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 

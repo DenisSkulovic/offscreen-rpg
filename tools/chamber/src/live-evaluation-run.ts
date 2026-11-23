@@ -8,8 +8,8 @@ import type {
 } from '@offscreen/contracts/live-evaluation';
 import type { DispatchReviewView } from '@offscreen/contracts/chamber';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
-import { openingPreviewSchema } from '@offscreen/contracts/openings';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import { openingPreviewSchema } from '@offscreen/story-interface/openings';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { diagnoseOpenRouterResponse } from '@offscreen/storyteller/providers/openrouter';
 import { setTimeout as delay } from 'node:timers/promises';

@@ -12,7 +12,7 @@ import {
   storyDelegationPolicy,
 } from '@offscreen/db/campaign-schema';
 import { isDeclineHarmlessInvitation } from '@offscreen/game/delegation-eligibility';
-import { actionCommandSchema } from '@offscreen/contracts/campaign';
+import { actionCommandSchema } from '@offscreen/story-interface/campaign';
 import {
   actionOverlapEligibility,
   consumePreparedActivityPlan,

@@ -1,8 +1,8 @@
 import {
   interactionSpecificationSchema,
   type InteractionSpecification,
-} from '@offscreen/contracts/interactions';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/interactions';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import { z } from 'zod';
 

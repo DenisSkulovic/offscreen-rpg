@@ -4,7 +4,7 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { createDrafts } from '@offscreen/story-engine/drafts';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createChamberStorytellerControl } from '@offscreen/lab-support';
