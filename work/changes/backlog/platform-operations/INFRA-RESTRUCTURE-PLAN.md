@@ -81,6 +81,18 @@ tools/
 - After each step: compare source behavior and generated manifests, run focused positive/negative tests; do not automatically run destructive live tests. Separate authorized dev-only integration acceptance from any release proof.
 - No `git mv` wave until dependencies, generated imports and existing in-flight Changes have been fenced. Avoid altering the active DXK09 worktree or the two unrelated primary checkout edits.
 
+## Practical parallel-Cursor boundary (owner decision, 2026-11-23)
+
+**Goal:** Make ordinary application coding boringly independent, not support parallel infrastructure surgery or create a perfect multi-tenant DevOps platform.
+
+- **Parallel routine work is intended:** separate Git worktrees + owned `dev-N` application namespaces/ports/sessions/receipts/SQL-S3-Temporal tenants. Normal `pnpm dev`, focused build/test, watched compilation, image reuse/load, status and park should not mutate another active slot. Shared Docker/Kind cache is permitted where image identity and per-slot tags remain correct. Generated host output must stay checkout/slot-scoped or safely fenced. **DXK09 live acceptance, not these words, decides whether this is proven.**
+- **One infrastructure operator for disruptive work:** if a Change alters the shared Kind cluster/nodes, PostgreSQL/SeaweedFS/Temporal server, common image-build or Tilt controller semantics, or materially restructures infra, pause other Cursor live activity and do it as a single coordinated maintenance change. Do not engineer concurrent shared-platform upgrades.
+- **Source-only infra planning can coexist:** read-only inspections, documentation, and pure deterministic tests in separate worktrees are fine. Separate code branches are not a guarantee against shared runtime operations. Run tests that create resources only in an expressly owned test scope.
+- **Keep the execution rule lightweight:** each infra Change handoff should state in one sentence whether its proof is source-only, own-slot runtime, or shared-platform maintenance. Reuse existing branch integration custodian and DXK09 process/ownership guards. No new reservation service, global distributed mutex, generic lock framework, or automatic extra Kind cluster.
+- **Optional future correction, only if incidents justify it:** add a narrowly scoped fail-closed guard to the specific routine command shown to mutate a foreign slot or shared backing service. Require one concrete collision reproducer and focused negative test before implementing it. Do not preemptively produce an INF06 or a parallel-infra platform.
+
+**Scheduling implication:** INF01 read-only planning may proceed alongside coding; INF02–INF05 implementation is normally one active infrastructure Change at a time, while other live development agents are paused for high-impact runtime tests. The existing INF packet DAG remains a planning sequence, not a request to run five infrastructure agents.
+
 ## Planned Change DAG and scheduling
 
 | Order | Packet | Outcome | Earliest promotion |
