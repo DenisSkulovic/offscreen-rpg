@@ -6,7 +6,7 @@ Source-adjacent package procedures may remain beside code.
 | Runbook | Question |
 | --- | --- |
 | [Owned developer environments](dev-worktree-stacks.md) | Which commands exist, how do I start/status/park my dev slot, and how do I react to image or memory failures without affecting other Cursors? Start with the [human diagram](../architecture/10-developer-environments.md) if unfamiliar. |
-| [Local development](local-development.md) | How do I start the portfolio locally without a model call or a disposable-database reset? |
+| [Local development](local-development.md) | Which tests require zero infrastructure, and how do I distinguish source-only work, owned dev slots and historical release-lab procedures? |
 | [Game Authority seam](local-development.md#game-authority-seam) | How does the optional private story process stay off the public API and off Compose? |
 | [Kubernetes lab](kubernetes-lab.md) | How do I create and delete the disposable kind cluster without touching Compose volumes? |
 | [Kubernetes developer UI](kubernetes-developer-ui.md) | How do I open Tilt and a Headlamp kubeconfig for `kind-offscreen-lab` on loopback? |
