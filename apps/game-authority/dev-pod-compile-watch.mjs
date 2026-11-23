@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { markDevWatchedCompilation } from '../../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
+import { markDevWatchedCompilation } from '../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
 
 const [role, entry, project] = process.argv.slice(2);
 if (!role || !entry) {
