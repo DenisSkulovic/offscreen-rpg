@@ -25,6 +25,8 @@ flowchart LR
 
 **DXK10-B orientation:** [source-first profile and readiness ownership map](../../changes/backlog/platform-operations/DXK10-B-SOURCE-BOUNDARY-2026-11-23.md). Current startup and Tilt both render all six one-replica Deployments, so selective activation must share one desired-state decision; scaling replicas down alone would not be stable. Candidate `web` / `api` profiles are **read/debug capabilities**, not proof that a story can progress without workers. Still planner-held.
 
+**TURN03 R2 planner checkpoint:** [real operator custody map](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/R2-OPERATOR-DESIGN-2026-11-23.md) distinguishes ordinary browser OAuth, pinned lab S3 source, read-only SQL/Temporal evidence and explicit release/fault permissions. A cookie or existence of Kubernetes Secrets does not establish a valid test actor or grant read-only evidence access. R1 source implementation is independently underway. R2/R3 are still not live-authorized.
+
 ## What the dev-loop measurements really say
 
 | Trial | Outcome | Evidence level |
