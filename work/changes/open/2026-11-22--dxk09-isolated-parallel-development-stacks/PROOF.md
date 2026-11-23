@@ -137,3 +137,28 @@ Residual: registry `nextSequence` is 6. `dev-5` is the default for proof A, name
 | 12 | BLOCKED | B was never live; A had no workload to park |
 
 HR01, HR02, and HR03 stay blocked by this failed gate. MA12 (`e55829b4`), CL01 (`8452f0b4`), and WR11 (`c78a20a5`) are ancestors of this integration HEAD. No HR Cursor was started.
+
+**Shared OAuth and continued proof (2026-11-23, integration `f78b4862`):** The machine-local file `/home/dskul/.local/state/offscreen-rpg/dev-oauth.env` was created from the primary checkout's gitignored `.env` with mode `0600` and directory mode `0700`. The existing parser accepted the three required keys. Values were not printed, copied into a worktree, or committed. The primary `.env` was not modified. A second run validates that file instead of overwriting it. `resolveOauthReadiness` now uses `assertApprovedOauthFile` before the database build and again before SQL. Focused test: `node --test scripts/repo-tools/dev-slot-startup.test.mjs` — 11 pass.
+
+Proof A was reused as `dev-5` (`nextSequence` stayed 6 until B). Its namespace did not exist before the restart. `pnpm dev` at `f78b4862` provisioned `offscreen-dev-5` and reached six Deployments at 1/1. `http://127.0.0.1:13116/sign-in` and `/api/health/ready` returned 200. Available memory before B was about 5815 MiB. The first image context observed in the Tilt log was 88.27 kB for the API image `sha256:0fb2685a7afc1766b2f1cfcf78f253e4357a95db4066f316722a84f1ac446876` (`tilt-build-1795403160`). An earlier attempt at `9e01d223` died in `ensureOwnedSlotImages` with `ReferenceError: fingerprintDevImageContext is not defined` after tenant work; the re-export did not create a local binding. That binding is fixed at `f78b4862`.
+
+Proof B allocated `dev-6` and stopped before workloads. Command `pnpm dev`, phase `temporal`, detail `offscreen-dev-6`. Source: `ensureDevTemporalTenant` returns `namespace-not-ready` with that namespace as the detail when describe yields no id (`infra/kubernetes/lab/dev/backing/dev-temporal-tenant.mjs`). `offscreen-dev-6` has no Deployments. dev-1 through dev-4 stayed desired 0. Ambient context stayed `kind-offscreen-lab`. No manual SQL, S3, Temporal, image, or port-forward repair was applied. Dependent edit, fault, and persistence cases were not run.
+
+`pnpm dev:stop` in A exited 0 twice and scaled all six `offscreen-dev-5` Deployments to 0. Tilt PID 990813 remained: `tilt up --context kind-offscreen-dev --host 127.0.0.1 --port 13118`. That process is a residual owned by this proof. It was not killed outside the CLI.
+
+| # | Result | Evidence |
+| --- | --- | --- |
+| 1 | PASS | proof A `pnpm dev` reused `dev-5`; six roles ready; Web and API health 200 |
+| 2 | FAIL | proof B `pnpm dev` exited 1 at phase `temporal`, detail `offscreen-dev-6` |
+| 3 | FAIL | `dev-6` was allocated, but its Temporal namespace was not confirmed and no app namespace workloads exist |
+| 4 | FAIL | B never started the six roles |
+| 5 | BLOCKED | B served no Web URL, so independent markers were not compared |
+| 6 | FAIL | A became ready only after the fingerprint binding fix; B still needs a manual-equivalent Temporal diagnosis |
+| 7 | BLOCKED | both environments were not running |
+| 8 | BLOCKED | API edit not attempted |
+| 9 | BLOCKED | compile fault not attempted |
+| 10 | BLOCKED | no test edit to revert |
+| 11 | BLOCKED | restart persistence needs a healthy pair |
+| 12 | FAIL | A replicas reached 0, but Tilt PID 990813 on port 13118 survived `pnpm dev:stop`; B had no workload |
+
+HR01, HR02, and HR03 remain BLOCKED. The NEXT-WAVE unattended two-worktree gate is not met. Predecessors MA12, CL01, and WR11 remain integrated. No HR Cursor was started.
