@@ -54,3 +54,12 @@ The source for assignment is `scripts/repo-tools/dev-worktree-{allocator,registr
 - HR01–HR03 gated wave: [NEXT-WAVE](../../work/undertakings/storyteller-workshop/NEXT-WAVE.md).
 
 This page is the worktree-dev authority. [Local development](local-development.md) documents the existing shared/release-lab route and does not override this one.
+
+
+## Selected next ownership contract (2026-11-23) | NOT YET IMPLEMENTED
+
+**Correction to the worktree-owned model above:** A developer environment is a durable, independently identified \`dev-N\` resource; a Git checkout or worktree is only its current source binding, and a process is its separately fenced active session. The implemented v1 registry and current commands still enforce one default slot per checkout. **Do not advertise the following as working before T05-FU acceptance.** The authoritative small executor plan is [DXK09 T05-FU](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/TASKS.md#t05-fu--environment-identity-independent-of-source-checkout).
+
+The selected CLI target keeps \`pnpm dev\`, \`pnpm dev:status\` and \`pnpm dev:stop\` for the checkout's *default* environment; adds \`pnpm dev:new\` to allocate a fresh environment and \`--instance dev-N\` on start/status/stop to select another one. Environments retain their slot ID and SQL/S3/Temporal/Kubernetes identity when source checkout changes after a verified stop. One checkout may be watched by multiple isolated live environments, but an edit to that shared checkout intentionally affects every watching environment; independent edit streams require separate checkouts. Never infer a slot from Git branch name or number of \`pnpm dev\` invocations.
+
+Registry migration must preserve existing dev-1/dev-2 assignments, UIDs, ports, credentials and leases under a lock, refusing ambiguity without destruction. Active slot takeovers and unmatched PIDs/ports/UIDs refuse. Every environment gets its own session record, process, Tilt port, runtime/compiled generation and Pod-local outputs. Reuse shared backing servers with independent tenants. Five live environments are a **capacity-admitted experiment**, not a hardcoded minimum or promise that this workstation has adequate memory. Current cold-start/migration/image-load completion still precedes this follow-up. The earlier implementation/evidence sections remain valid historical descriptions of v1 until FU passes.
