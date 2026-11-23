@@ -114,3 +114,26 @@ Cutover blockers: registry is still v1; `resourceUids` is `{}` on all four; dev-
 **Toy-breaker campaign (2026-11-23, fixtures only):** Live Phase B was blocked because the registry was still v1 and the orphan park had been refused. The first fixture run was 39 pass, 2 fail, 7 not implemented. The bounded repair then made L01 and S06 pass. The revised fixture run is 38 PASS, 3 PARTIAL, 0 FAIL, 7 NOT IMPLEMENTED. R01, W05, and I06 are narrower coverage results. No live namespace, registry, Tilt process, or release context was changed. Report: `evidence/runs/2026-11-23--dxk09-toy-breaker/REPORT.md`.
 
 **Maintenance park (2026-11-23, owner-authorized, dev-1 through dev-4 only):** Before any signal, registry SHA-256 was `c1336c67e093e5504c72b5cc8a01f4dc6e8760314a123a22ab2a03535399a5b8` (v1, `nextSequence` 5). Namespace UIDs matched the prior inventory. Each environment had six Deployments at desired 1 / ready 1. Verified and stopped, after re-reading `/proc/<pid>/stat` start ticks: dev-1 game forward 342587/1875382; dev-2 Tilt 290871/1795552 then forward 340819/1820195; dev-3 Tilt 441971/2095190 then forward 762125/2207340; dev-4 Tilt 646970/2158365 then replacement forward 757135/2192096. Recorded dev-4 forward 646971 was already absent and was not replaced by a search. The six application Deployments in each verified namespace were scaled to 0. Deployment UIDs were unchanged. Application Pods reached zero. Ports 13100, 13104, 13105, 13108, 13109, 13112 and 13113 had no remaining listeners from those processes. Shared Postgres, Temporal and object-store pods stayed Running; their namespace UIDs were unchanged. `kind-offscreen-lab` was not used. Registry file was not rewritten. `preflightLiveCutover` against live kubectl observation returned `ok: true`, `sessionsVerified: true`, and `parked_verified` / `parked-ownership` for all four. `reusableSlotIds` stayed empty because that field is hardcoded false in the classifier. RAM moved from about 3.6 GiB available / 15 GiB used / 2.8 GiB swap to about 9.0 GiB available / 10 GiB used / 2.6 GiB swap. v2 migration was not run.
+
+**Two-worktree unattended proof (2026-11-23, source `22bf2569c433566b17a86e6abc1cea33ca853471`):** FAIL at startup. Clean detached worktrees: `/home/dskul/projects/offscreen-rpg-dxk09-proof-a` and `...-proof-b`. Registry was v2, hash `4773a8a3617acd2d05126a0f5e007dda8e85fd9f99fe380739f8073966220ed0`, and dev-1 through dev-4 were desired 0. Host had about 8.3 GiB available and 2.0 GiB swap free. `kind-offscreen-dev` nodes were Ready. Ambient context stayed `kind-offscreen-lab`.
+
+`pnpm dev` in proof A ran 10 seconds and exited 1. The only diagnostic was `Dev slot reconciliation stopped at cluster: approved local OAuth file is missing`. The candidates are `OFFSCREEN_DEV_OAUTH_FILE`, `<worktree>/.env`, and `~/.local/state/offscreen-rpg/dev-oauth.env`. The home file is absent. The primary checkout has a gitignored `.env`; the clean worktree does not. No database, S3, Temporal, image, Deployment, or port-forward was created by hand, and none was created by the CLI. No image build ran. B was not started.
+
+Residual: registry `nextSequence` is 6. `dev-5` is the default for proof A, namespace `offscreen-dev-5`, ports 13116–13119, empty `resourceUids`, no lease. That namespace does not exist. dev-1 through dev-4 remain desired 0. The dev-1 lease PID 201268 is still dead and was not erased. The registry hash changed because allocation wrote `dev-5` before the OAuth refusal. It was not rolled back.
+
+| # | Result | Evidence |
+| --- | --- | --- |
+| 1 | FAIL | `pnpm dev` in proof A, phase `cluster`, environment `dev-5`, 10s, OAuth file missing |
+| 2 | BLOCKED | B was not started after A failed |
+| 3 | BLOCKED | no session, namespace, or tenant for a second environment |
+| 4 | BLOCKED | no application Pods were started |
+| 5 | BLOCKED | no Web URL was served |
+| 6 | FAIL | unattended start cannot pass while the required OAuth file is absent from a clean worktree |
+| 7 | BLOCKED | Web edit was not attempted |
+| 8 | BLOCKED | API edit was not attempted |
+| 9 | BLOCKED | compile-fault case was not attempted |
+| 10 | BLOCKED | no source edit to revert |
+| 11 | BLOCKED | A never became ready, so park/restart persistence was not run |
+| 12 | BLOCKED | B was never live; A had no workload to park |
+
+HR01, HR02, and HR03 stay blocked by this failed gate. MA12 (`e55829b4`), CL01 (`8452f0b4`), and WR11 (`c78a20a5`) are ancestors of this integration HEAD. No HR Cursor was started.
