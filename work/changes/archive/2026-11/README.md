@@ -273,10 +273,11 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-17--har09-architectural-memory-pilot](../../../../work/changes/archive/2026-11/retrieval/2026-11-17--har09-architectural-memory-pilot/CHANGE.md)
 - [2026-11-17--har10-retire-retrieval-experiments](../../../../work/changes/archive/2026-11/retrieval/2026-11-17--har10-retire-retrieval-experiments/CHANGE.md)
 
-## storyteller (21)
+## storyteller (22)
 
 - [2026-11-23--turn03-r2a-secure-http-transport](../../../../work/changes/archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md)
 - [2026-11-23--turn03-r2b-pinned-fixture-verifier](../../../../work/changes/archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md)
+- [2026-11-23--turn03-r2d-causal-sql-observer](../../../../work/changes/archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md)
 
 - [2026-11-22--wr11-authorized-provider-continuation](../../../../work/changes/archive/2026-11/storyteller/2026-11-22--wr11-authorized-provider-continuation/CHANGE.md)
 - [2026-11-22--story03r-pending-consequence-publication-retry](../../../../work/changes/archive/2026-11/storyteller/2026-11-22--story03r-pending-consequence-publication-retry/CHANGE.md)

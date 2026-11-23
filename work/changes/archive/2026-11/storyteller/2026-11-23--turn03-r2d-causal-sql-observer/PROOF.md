@@ -1,6 +1,6 @@
 # R2D verification | injected SQL only
 
-**Planner test status: NOT RUN.** Baseline `3a3aa4d8`; table `story_passage` verified at `packages/db/src/schema/stories.ts`, topic `storyteller.distributed.v1` verified at `packages/contracts/src/storyteller-notices.ts`.
+**Executor test status: PASS, fake reader only.** Baseline `undertaking/storyteller-workshop@022385df`. `node --test infra/kubernetes/lab/app-release/turn03/causal-sql.test.mjs` reported 6 pass, 0 fail. Focused Prettier and ESLint on `causal-sql.mjs` and `causal-sql.test.mjs` passed. `git diff --check` passed. No PostgreSQL connection, Kubernetes Secret, Pod, migration, or provider call was made. A fake PASS is not a TURN03 gate.
 
 | Contract | Normal | Negative |
 | --- | --- | --- |

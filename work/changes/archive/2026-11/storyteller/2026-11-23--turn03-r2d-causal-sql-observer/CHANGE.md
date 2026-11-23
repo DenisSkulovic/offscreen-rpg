@@ -1,6 +1,15 @@
 # TURN03-R2D | Narrow read-only causal SQL observation
 
-**State: READY WITH EXPLICIT LIMITS, SOURCE-ONLY.** **Parent:** [TURN03](../2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md), stays OPEN. **Source baseline:** `undertaking/storyteller-workshop@3a3aa4d8` inspected 2026-11-23. No real DB credentials, role, cluster permission or SQL execution is provided by this packet.
+**State: Done, source-only injected-query proof.** **Parent:** [TURN03](../../../../open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md), stays OPEN. **Source baseline:** `undertaking/storyteller-workshop@022385df` inspected 2026-11-23. No real DB credentials, role, cluster permission or SQL execution was used. Live eight-gate scorecards remain NOT-RUN.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Scripted continuation SQL shape | `tools/api-integration/test/story03-causal-multiprocess.integration.ts` `assertContinuationSql` | unchanged because the four projections stay the accepted read; this Change only observes them through an injected reader | `causal-sql.mjs` on `change/turn03-r2d-causal-sql`; schema inspected at `022385df` | injected-readonly-query; node tests 6/6 | duplicate notice, foreign owner, stale publication and sequence `[1,3]` FAIL | parent TURN03 stays OPEN |
+| Distributed topic and passage table | `packages/contracts/src/storyteller-notices.ts` and `packages/db/src/schema/stories.ts` | unchanged because topic remains `storyteller.distributed.v1` and passages remain `story_passage.sequence` | inspected, not edited, at `022385df` | source-inspected | a different caller topic issues zero queries | N/A |
+| Product story acceptance | TURN03 eight-gate scorecard | unchanged because a fake reader cannot publish or prove a player story | NOT RUN against PostgreSQL or kind | no cluster proof | secret-bearing query errors return BLOCKED without the error text | live gates remain NOT-RUN |
+| Release evidence tier | `infra/kubernetes/lab/app-release/turn03/report.mjs` | unchanged because this module never emits `kind-cross-pod` | `causal-sql.mjs` receipt field `evidence` | injected-readonly-query | success JSON does not contain `kind-cross-pod` or the owner id | N/A |
 
 ## Actual source authority
 
