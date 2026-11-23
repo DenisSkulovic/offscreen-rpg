@@ -3,15 +3,23 @@ import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   REGISTRY_VERSION,
+  REGISTRY_VERSION_V2,
   allocateNextSequence,
   collectReservedPorts,
+  collectReservedPortsV2,
   deriveDevNamespace,
   encodeDnsSafeSlotId,
   isAllocatorRefusal,
   isDnsSafeSlotId,
+  listEnvironments,
+  lookupDefaultEnvironment,
+  lookupEnvironment,
   mutateRegistry,
   readRegistry,
+  readRegistryV2,
   refusal,
+  withRegistryLock,
+  writeRegistry,
 } from './dev-worktree-registry.mjs';
 
 /** @typedef {import('./dev-worktree-registry.mjs').DevWorktreeRegistrySnapshot} DevWorktreeRegistrySnapshot */
@@ -423,5 +431,90 @@ export function listDevWorktreeOwners(registryRoot) {
   const snapshot = readRegistry(registryRoot);
   return Object.values(snapshot.ownersByWorktree);
 }
+
+/**
+ * Allocate another environment id. An existing checkout default stays unless
+ * `setAsDefault` is true and no default exists, or `replaceDefault` is true.
+ *
+ * @param {string} checkoutPath
+ * @param {string} registryRoot
+ * @param {DevWorktreeAllocatorDeps & { setAsDefault?: boolean, replaceDefault?: boolean }} [deps]
+ */
+export function allocateIndependentEnvironment(checkoutPath, registryRoot, deps = {}) {
+  const resolved = resolveAllocatorDeps(deps);
+  const canonical = resolved.canonicalizePath(checkoutPath);
+  return withRegistryLock({ registryRoot, lockTimeoutMs: resolved.lockTimeoutMs }, () => {
+    const snapshot = readRegistryV2(registryRoot);
+    if (snapshot.version !== REGISTRY_VERSION_V2) {
+      throw refusal('registry-version', `Unsupported registry version: ${snapshot.version}`);
+    }
+    const sequence = snapshot.nextSequence;
+    snapshot.nextSequence = sequence + 1;
+    const slotId = encodeDnsSafeSlotId(sequence);
+    if (snapshot.environmentsById[slotId]) {
+      throw refusal('slot-id-collision', `DNS-safe slot id collision: ${slotId}`);
+    }
+    const reservedView = {
+      version: REGISTRY_VERSION,
+      nextSequence: snapshot.nextSequence,
+      ownersByWorktree: Object.fromEntries(
+        Object.values(snapshot.environmentsById).map((record) => [record.slotId, record]),
+      ),
+    };
+    const ports = selectPortBundle(
+      reservedView,
+      resolved.portRange,
+      resolved.bundleSize,
+      resolved.isPortAvailable,
+    );
+    /** @type {DevWorktreeOwnerRecord} */
+    const record = {
+      slotId,
+      worktreePath: canonical,
+      cluster: resolved.cluster,
+      namespace: deriveDevNamespace(slotId),
+      ports,
+      processIdentity: null,
+      resourceUids: {},
+      lease: null,
+    };
+    snapshot.environmentsById[slotId] = record;
+    const currentDefault = snapshot.defaultEnvironmentByCheckout[canonical];
+    if (!currentDefault && deps.setAsDefault === true) {
+      snapshot.defaultEnvironmentByCheckout[canonical] = slotId;
+    } else if (currentDefault && deps.replaceDefault === true) {
+      snapshot.defaultEnvironmentByCheckout[canonical] = slotId;
+    }
+    writeRegistry(registryRoot, snapshot);
+    return record;
+  });
+}
+
+/**
+ * @param {string} registryRoot
+ * @param {string} slotId
+ */
+export function getEnvironment(registryRoot, slotId) {
+  return lookupEnvironment(readRegistryV2(registryRoot), slotId);
+}
+
+/**
+ * @param {string} registryRoot
+ * @param {string} checkoutPath
+ * @param {DevWorktreeAllocatorDeps} [deps]
+ */
+export function getDefaultEnvironment(registryRoot, checkoutPath, deps = {}) {
+  const canonical = resolveAllocatorDeps(deps).canonicalizePath(checkoutPath);
+  return lookupDefaultEnvironment(readRegistryV2(registryRoot), canonical);
+}
+
+/**
+ * @param {string} registryRoot
+ */
+export function listIndependentEnvironments(registryRoot) {
+  return listEnvironments(readRegistryV2(registryRoot));
+}
+
+export { collectReservedPortsV2 };
 
 export { isAllocatorRefusal, encodeDnsSafeSlotId, isDnsSafeSlotId, deriveDevNamespace };
