@@ -4,7 +4,7 @@
 
 | Change | Dependency | Status |
 | --- | --- | --- |
-| [DO01 Cache port](../../../changes/open/2026-11-24--do01-cache-port/CHANGE.md) | None | Ready / commissioned |
+| [DO01 Cache port](../../../changes/archive/2026-11/platform-operations/2026-11-24--do01-cache-port/CHANGE.md) | None | Done, source-only |
 | [DO02 Admin / identity / usage](../../../changes/open/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Ready / commissioned |
 | [DO03 Story interface](../../../changes/open/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled; admitted | Ready / commissioned |
 | [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Dependency-gated |

@@ -1,0 +1,21 @@
+{
+  "name": "@offscreen/cache-port",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./read-cache": {
+      "types": "./dist/src/read-cache.d.ts",
+      "default": "./dist/src/read-cache.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

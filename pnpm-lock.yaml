@@ -65,6 +65,9 @@ importers:
       '@offscreen/cache':
         specifier: workspace:*
         version: link:../../packages/cache
+      '@offscreen/cache-port':
+        specifier: workspace:*
+        version: link:../../packages/cache-port
       '@offscreen/content-packages':
         specifier: workspace:*
         version: link:../../packages/content-packages
@@ -352,15 +355,27 @@ importers:
 
   packages/cache:
     dependencies:
-      '@offscreen/contracts':
+      '@offscreen/cache-port':
         specifier: workspace:*
-        version: link:../contracts
+        version: link:../cache-port
       redis:
         specifier: 5.8.2
         version: 5.8.2
       zod:
         specifier: 4.6.5
         version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/cache-port:
     devDependencies:
       '@offscreen/config':
         specifier: workspace:*
@@ -542,6 +557,9 @@ importers:
 
   packages/story-engine:
     dependencies:
+      '@offscreen/cache-port':
+        specifier: workspace:*
+        version: link:../cache-port
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -666,6 +684,9 @@ importers:
         specifier: 4.6.5
         version: 4.6.5
     devDependencies:
+      '@offscreen/cache-port':
+        specifier: workspace:*
+        version: link:../../packages/cache-port
       '@offscreen/config':
         specifier: workspace:*
         version: link:../../packages/config

@@ -10,7 +10,7 @@ import {
 } from '@offscreen/contracts/stories';
 import { listChamberScenarios } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
-import type { ReadCache } from '@offscreen/contracts/read-cache';
+import type { ReadCache } from '@offscreen/cache-port/read-cache';
 import {
   createStories,
   StoryError,
