@@ -6,6 +6,9 @@
 
 ## Current / immediate work
 
+**2026-11-23 pending commission:** [TURN03-R2A secure HTTP source adapter](2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) and [TURN03-R2B pinned fixture source verifier](2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) are two disjoint, source-only supporting Changes. They do not authorize live access or a TURN03 PASS. Parent [TURN03 execution map](2026-11-19--turn03-full-distributed-forkable-turn-proof/NEXT-EXECUTION-2026-11-23.md) retains release-proof ownership.
+
+
 | Change | Why it remains open |
 | --- | --- |
 | [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
