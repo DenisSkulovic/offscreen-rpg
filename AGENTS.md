@@ -4,6 +4,8 @@
 
 **Change folder lifecycle (2026-11-22):** [Backlog](work/changes/backlog/README.md) is for future/deferred Changes, grouped by domain; [open](work/changes/README.md) is current/near-term and unresolved partially executed Changes; [archive](work/changes/archive/README.md) is terminal reconciled work. Never treat a Proposed backlog packet as Cursor-ready or create every future idea in open. Recheck source at promotion and repair links.
 
+**Worktree developer environment:** [DXK09 worktree stack runbook](docs/runbooks/dev-worktree-stacks.md) is the current single owner of dev-only cluster/slot/reservation/freshness guidance and its honest T05 readiness gates. For an implementation Change, agents use the worktree-root development scripts **only after the current branch proves T05 commands available**; never silently fall back to the old shared `pnpm dev` / `pnpm stack:up` or release-lab cluster. Owner/lease records are machine-local, never Git-tracked. A stopped process does not release a slot's data or authorize tenant destruction.
+
 ## First reads, by role
 
 - **Everyone:** [WORKFLOW.md](WORKFLOW.md) is the lifecycle map; [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) routes new/moved/retired artifacts. [STATUS.md](STATUS.md) shows demonstrated reality; [work/QUEUE.md](work/QUEUE.md) is the only global current-work selector. The owner may explicitly commission a different independent Change without updating that selector.
