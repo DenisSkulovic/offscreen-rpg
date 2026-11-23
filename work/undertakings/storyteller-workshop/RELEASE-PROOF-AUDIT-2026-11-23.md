@@ -26,6 +26,8 @@ flowchart LR
   T -->|blocked/fails| B["Precise owner fix<br/>keep TURN03 open"]
 ```
 
+**2026-11-23 subsequent source inspection:** the integrated local multiprocess test provides the actual public API methods, payloads, and scene1/scene2 SQL expectations. [TURN03 source-exact route map](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/SOURCE-ROUTE-MAP-2026-11-23.md) and [staged execution](../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/NEXT-EXECUTION-2026-11-23.md) split a source-only R1 route correction from the still-unsettled authenticated live operator R2. Source-only TURN03/report planning tests: 20/20 PASS on uploaded `a755b183` snapshot. No live tests or new cluster preflight run.
+
 ## Efficient next execution
 
 1. **Source-only TURN03 runner completion**, in the existing TURN03 Change: review current `infra/kubernetes/lab/app-release/turn03/{preflight,run,report}.mjs`, `tools/api-integration/test/helpers/turn03-distributed-poc-fixture.ts`, real public API/GA routes and app-release launcher. Make one real authenticated operator-controlled release runner consuming actual HTTP+S3+SQL+Temporal evidence; do not invoke in-process game methods as purported Pod evidence. Preserve current mocked report tests as lower-tier. This is **not** permission for a full cluster run or new package/Change.
