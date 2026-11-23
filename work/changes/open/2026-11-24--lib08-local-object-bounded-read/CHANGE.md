@@ -1,6 +1,6 @@
 # LIB08 | Bounded local-object reads without stat/readFile race
 
-**Status:** READY FOR OWNER COMMISSION, SOURCE-ONLY. **Baseline:** `undertaking/storyteller-workshop@6d0a1aaa3e42ebf0eeeca60ac34b341f087b1b73` plus six integrated source Changes already on HEAD (verify exact current SHA). **Owner:** `packages/object-storage`. May start after LIB07's integration or concurrently in its own worktree; no overlap with LIB07's Story Engine module or DO01–DO07's planned contracts refactor. No Pods, database, provider, live S3 or user data mutation.
+**Status:** READY FOR OWNER COMMISSION, SOURCE-ONLY. **Baseline:** `undertaking/storyteller-workshop@05b50418933c9a8dea6b7740222734a2729f9768` plus six integrated source Changes already on HEAD (verify exact current SHA). **Owner:** `packages/object-storage`. May start after LIB07's integration or concurrently in its own worktree; no overlap with LIB07's Story Engine module or DO01–DO07's planned contracts refactor. No Pods, database, provider, live S3 or user data mutation.
 
 ## Observed defect
 `LocalObjectStorage.get()` in `packages/object-storage/src/local-object-storage.ts` calls `stat(path)` and then `readFile(path)`. A file changed/grown between those calls can cause allocation of an unbounded buffer before the post-read maxBytes check. `exists` uses `stat`. The package promises bounded bytes for `get(key,maxBytes)`; its local implementation does not enforce the bound *while reading*.
