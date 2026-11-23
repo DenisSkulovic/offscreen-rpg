@@ -163,6 +163,39 @@ Proof B allocated `dev-6` and stopped before workloads. Command `pnpm dev`, phas
 
 HR01, HR02, and HR03 remain BLOCKED. The NEXT-WAVE unattended two-worktree gate is not met. Predecessors MA12, CL01, and WR11 remain integrated. No HR Cursor was started.
 
+**Retry at integration `c9689d507` (2026-11-23).** The earlier `f78b4862` rows stay historical. Clean proof worktrees were moved to that SHA. Registry `nextSequence` stayed 7. Defaults remained proof A `dev-5` and proof B `dev-6`. dev-1 through dev-4 stayed desired 0. Shared OAuth file remained mode `0600` and was not rewritten. Ambient context stayed `kind-offscreen-lab`; mutations used `kind-offscreen-dev`.
+
+Available memory was 8133 MiB before A and 6165 MiB before B. With both stacks up, available memory was about 4891–5039 MiB and swap free fell to about 1497–1749 MiB. No third stack was started.
+
+A reused `dev-5` / `offscreen-dev-5` / ports 13116–13119. Six Deployments reached 1/1. In-cluster Web and API returned 200. The dedicated forward PID 1092983 exited before `svc/game-web` was reachable, so `http://127.0.0.1:13116` stayed connection-refused. Tilt PID 1092982 stayed up. No manual port-forward was added.
+
+B reused `dev-6`. SQL database `dev_6`, bucket `offscreen-dev-6`, and Temporal namespace `offscreen-dev-6` id `d9f8f0d7-27e6-455c-b820-127cceab82ec` retention `86400s` were still present. Six Deployments reached 1/1. Host Web and API on port 13120 returned 200, then that forward exited while Tilt PID 1279475 remained. In-cluster B Web and API stayed 200.
+
+A sign-in edit `DXK09-PROOF-A-MARKER` appeared in A's pod and not in B. An API health edit `DXK09-PROOF-A-API` was served by the existing API pod (`game-api-657bcdc788-8xfvt`, start `2026-11-23T03:21:32Z`, restart count 0) after `Found 0 errors` at 03:34. A following type error was logged as `error TS`. `pnpm dev:status` then reported `NOT READY missing_receipt` for every role in both A and B, so it did not isolate the compiler fault. The two test files were restored with `git checkout` before parking. READY after restore was not rechecked.
+
+The first `pnpm dev:stop` in A exited 0, Tilt 1092982 was gone, all six `offscreen-dev-5` Deployments were desired 0, and the session was `released: true`. B stayed in-cluster 200. No `the object has been modified` line was present in the captured A or B logs.
+
+Restarting A attached to the same `dev-5` and brought six Deployments back to 1/1. Docker reported cached Dockerfile steps, then still named a new tag `offscreen-dev-workspace:tilt-build-1795404939` and logged `ERROR: image: ... not present locally` before loading it into Kind. The first stop of that restart exited 1 with `process-stop-incomplete`: Tilt was gone, forward PID 1385069 still listened on 13116, replicas stayed 1, and the session stayed `released: false`. A second ordinary `pnpm dev:stop` exited 0, the forward exited, replicas reached 0, and the session was released. B's single `pnpm dev:stop` exited 0 with Tilt and forward gone and replicas 0.
+
+Final inventory: no owned `tilt up` or `game-web` forward; ports 13116–13123 free; dev-1 through dev-6 desired 0; `nextSequence` 7; `kind-offscreen-lab` untouched.
+
+| # | Result | This retry |
+| --- | --- | --- |
+| 1 | FAIL | A reused dev-5 and six Deployments were ready in-cluster, but the host forward died and host HTTP was not 200 |
+| 2 | PASS | B reused dev-6, including Temporal id `d9f8f0d7-27e6-455c-b820-127cceab82ec`, and reached six ready Deployments |
+| 3 | PASS | Separate namespaces, ports, sessions, SQL databases, and buckets |
+| 4 | PASS | A's marker rendered in A and was absent from B; A's own host URL was down |
+| 5 | PASS | The Web edit updated only A |
+| 6 | PASS | API marker was served by the already running pod with restart count 0 |
+| 7 | FAIL | The type error was logged, but status said `missing_receipt` for A and B alike |
+| 8 | BLOCKED | Test edits were reverted; READY after recovery was not observed |
+| 9 | PASS | First A park exited 0, Tilt was gone, six replicas were 0, and B stayed healthy |
+| 10 | PASS | Restart reused dev-5; no new environment id |
+| 11 | FAIL | Restart still published a new `tilt-build-1795404939` tag after cached layers |
+| 12 | FAIL | Restarted A's first stop left the forward and desired replicas; the second stop and B's stop then cleared both |
+
+HR01, HR02, and HR03 stay BLOCKED. The unattended host path, status receipt, and single-stop park are not proven. No HR lane was started.
+
 ## Lifecycle repair receipt (code only)
 
 The live dev-5/dev-6 campaign was not repeated.
