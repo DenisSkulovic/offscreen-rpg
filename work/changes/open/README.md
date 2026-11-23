@@ -6,6 +6,9 @@
 
 ## Current / immediate work
 
+**2026-11-23 next source-only commissions:** [TURN03-R2C scripted player-smoke composition](2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) and [TURN03-R2D read-only causal SQL observation](2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) are distinct, narrowly bounded code/test changes with independent write sets. Both use fake injected readers and must not produce cross-Pod PASS. R2A and R2B remain archived Done at source-only tier, while the parent TURN03 and its real operator stay OPEN.
+
+
 **2026-11-23:** [TURN03-R2A secure HTTP transport](../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) is Done as an injected fake-fetch check. It is not a live login or cross-Pod PASS. [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. Parent [TURN03](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) stays OPEN.
 
 

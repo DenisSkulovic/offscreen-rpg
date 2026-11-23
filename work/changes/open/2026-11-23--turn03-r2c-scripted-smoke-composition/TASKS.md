@@ -1,0 +1,11 @@
+# R2C execution card | bounded source-only composition
+
+**Prerequisite:** verify actual `undertaking/storyteller-workshop` HEAD, `AGENTS.md`, linked Change, and run `node scripts/repo-tools/change-branch-guard.mjs --change TURN03-R2C --target undertaking/storyteller-workshop` in its dedicated linked Change worktree before edits. The source baseline is `3a3aa4d8`; later doc-only commits are not a source contradiction. Preserve dirty primary checkout.
+
+- **T01: implementation.** Read only `turn03/{trace-route,live-http,fixture-pins}.mjs`, this CHANGE and `.agents/rules/code-quality.md`. Write `turn03/player-smoke.mjs`. Use the exact injected `runScriptedPlayerSmoke` contract in CHANGE: prevalidate consent, release/session readiness, verified start/rule roots and frozen identity **before** any request, execute R1 once, sanitize success/failure, preserve false fork as FAIL. No network client, source pin import, live report PASS or callback retries.
+- **T02: focused proof.** Write `turn03/player-smoke.test.mjs`. Positive full mocked R1 sequence and negative no-consent, release/tenant mismatch, bad roots, missing scene1 checkpoint, pending receipt, 401/403, false fork, no duplicate resolution, injected error redaction. No real cookies or external target.
+- **T03: join.** Run from repo root `node --test infra/kubernetes/lab/app-release/turn03/player-smoke.test.mjs`; `node --test infra/kubernetes/lab/app-release/turn03/run.test.mjs` and existing other named source tests where relevant, `git diff --check`; focused Prettier/eslint for changed executable files. Record commands and test counts. Commit to Change branch; integrate into current undertaking, archive this supporting Change and retire its temporary branch. TURN03 remains open.
+
+**Parallel matrix:** R2C writes only `player-smoke.mjs`, its test and own Change documents; R2D writes only `causal-sql.mjs`, its test and own Change documents. Do not both edit parent TURN03 runner or Workshop shared catalogs concurrently; final integration custodian merges and reconciles shared navigation **serially**.
+
+**Stop:** If R1 return shape differs or source pin structure cannot be determined from existing code, report exact source anchors instead of redesign. One bounded implementation task at a time; no costly research swarm.

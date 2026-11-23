@@ -1,0 +1,11 @@
+# R2D execution card | injected query evidence only
+
+**Prerequisite:** identify actual repo and HEAD, read root agent rules, the CHANGE packet; run `node scripts/repo-tools/change-branch-guard.mjs --change TURN03-R2D --target undertaking/storyteller-workshop` from a dedicated linked Change worktree. Preserve dirty primary checkout.
+
+- **T01: fixed read-only projection.** Read `packages/db/src/schema/{outbox,stories}.ts`, `packages/db/src/schema/storyteller/{funding,capture}.ts`, `packages/contracts/src/storyteller-notices.ts`, local `story03-causal-multiprocess.integration.ts::assertContinuationSql`. Write `infra/kubernetes/lab/app-release/turn03/causal-sql.mjs`. Four exact parameterized SELECTs in CHANGE, no external DB creation, secrets or dynamic SQL. Enforce `topic==='storyteller.distributed.v1'`, UUID parsing, row identity and owner/story correlation, deterministic sanitized outcomes. Unavailable result is BLOCKED, contradicting row FAIL; null owner/story fields must not qualify as observed.
+- **T02: fake reader proofs.** Write `causal-sql.test.mjs`. Verify query text/params exactly, positive single correlated notice/attempt/published/[1,2]; wrong owner/story/topic, duplicates, missing rows, pending publication, partial scene, weird SQL error containing fake secret, bad UUID and injection attempts. Assert zero mutating queries, zero real DB calls, no automatic retry.
+- **T03: integration.** From root run `node --test infra/kubernetes/lab/app-release/turn03/causal-sql.test.mjs`, focused Prettier and ESLint on changed code, `git diff --check`. Record exact proof. Commit, integrate, archive R2D supporting Change. Parent TURN03 remains OPEN.
+
+**Parallel matrix:** R2D has new `causal-sql*` files only, no overlap with R2C `player-smoke*`. Do not run shared DB tests or edit shared parent docs concurrently. Integration custodian serializes shared doc/archive joins.
+
+**Stop:** Source schema/topic identity contradiction, actual row shape cannot support story ownership or read-only SQL interface would need privileged access. Report source evidence; do not invent a DB role or pass credentials from `game-db`.
