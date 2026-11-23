@@ -1,6 +1,6 @@
 # Storyteller Workshop | reality check and finish line
 
-**2026-11-24 source-only Library successors:** LIB08 (local ObjectStorage bounded-read correctness) and LIB09 (Library trie node hash verification) are prepared as disjoint package changes. LIB07 was owner-launched; no merged LIB07 receipt asserted here. Concurrent DO01–DO07 and CACHE01–CACHE07 plans remain separate, unchanged. This planning contributes no acceptance credit; overall estimate remains about 40% complete / 60% remaining (±20 percentage points).
+**2026-11-24 source-only Library successors:** LIB08 (local ObjectStorage bounded-read correctness) and LIB09 (Library trie node hash verification) are prepared as disjoint package changes. LIB07 is integrated as a source-only batch read and is not a prerequisite for these two packages. Concurrent DO01–DO07 and CACHE01–CACHE07 plans remain separate, unchanged. This planning contributes no acceptance credit; overall estimate remains about 40% complete / 60% remaining (±20 percentage points).
 
 
 **2026-11-24 Cache design:** Selected [architecture](../../../docs/technical/platform/persistence-and-caching.md) and [serial Changes](../../changes/README.md#cache-platform-redesign) follow Documents and Contracts. No code/proof credit. Combined ~40% complete / 60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed operations ~25% unchanged.
