@@ -1,11 +1,11 @@
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, chmodSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { allocateDevWorktreeOwner } from './dev-worktree-allocator.mjs';
-import { reconcileDevSlot, planSlotImageBuilds } from './dev-slot-startup.mjs';
+import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure } from './dev-slot-startup.mjs';
 
 const record = {
   slotId: 'dev-3',
@@ -136,4 +136,62 @@ test('reports omit credential material and local registry files stay untracked',
   assert.equal(JSON.stringify(result.identities).includes('should-not-be-copied'), false);
   const ignored = spawnSync('git', ['check-ignore', '-q', '.offscreen/dev-session.json'], { encoding: 'utf8' });
   assert.equal(ignored.status, 0);
+});
+
+test('image load failure names role, phase, node, exit and redacts secrets', () => {
+  const secret = 'super-secret-value';
+  const failure = describeImageLoadFailure({ role: 'authority' }, {
+    status: 1,
+    stderr: [
+      'phase=docker-build role=authority',
+      'phase=kind-load role=authority node=offscreen-dev-control-plane',
+      `postgres://dev_3_run:${secret}@postgres/dev_3 password=${secret}`,
+      'AKIAIOSFODNN7EXAMPLE',
+      'accept4 failed 110',
+    ].join('\n'),
+  });
+  assert.match(failure.detail, /role=authority/);
+  assert.match(failure.detail, /phase=kind-load/);
+  assert.match(failure.detail, /node=offscreen-dev-control-plane/);
+  assert.match(failure.detail, /exit=1/);
+  assert.match(failure.detail, /accept4 failed 110/);
+  assert.equal(failure.detail.includes(secret), false);
+  assert.equal(failure.detail.includes('AKIAIOSFODNN7EXAMPLE'), false);
+});
+
+test('slot image script reports build, control-plane and worker failures', () => {
+  const root = mkdtempSync(join(tmpdir(), 'img-load-'));
+  const bin = join(root, 'bin');
+  mkdirSync(bin);
+  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/kubernetes/lab/dev/load-dev-slot-image.sh';
+  const run = (mode) => spawnSync('bash', [script, 'dev-3', 'authority', '@offscreen/game-authority'], {
+    encoding: 'utf8',
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, IMG_MODE: mode },
+  });
+  writeFileSync(join(bin, 'docker'), `#!/bin/bash
+if [[ "$1" == "image" ]]; then echo sha256:ok; exit 0; fi
+if [[ "$IMG_MODE" == "build-fail" ]]; then echo "build exploded password=hidden-secret" >&2; exit 7; fi
+exit 0
+`);
+  writeFileSync(join(bin, 'kind'), `#!/bin/bash
+node=""; while [[ $# -gt 0 ]]; do [[ "$1" == "--nodes" ]] && node="$2"; shift; done
+if [[ "$IMG_MODE" == "control-fail" && "$node" == *control-plane ]]; then echo "control load failed" >&2; exit 8; fi
+if [[ "$IMG_MODE" == "worker-fail" && "$node" == *worker ]]; then echo "worker load failed" >&2; exit 9; fi
+exit 0
+`);
+  chmodSync(join(bin, 'docker'), 0o755);
+  chmodSync(join(bin, 'kind'), 0o755);
+  const ok = run('ok');
+  assert.equal(ok.status, 0, ok.stderr);
+  const build = describeImageLoadFailure({ role: 'authority' }, run('build-fail'));
+  assert.match(build.detail, /phase=docker-build/);
+  assert.match(build.detail, /exit=7/);
+  assert.equal(build.detail.includes('hidden-secret'), false);
+  const control = describeImageLoadFailure({ role: 'authority' }, run('control-fail'));
+  assert.match(control.detail, /phase=kind-load/);
+  assert.match(control.detail, /node=offscreen-dev-control-plane/);
+  assert.match(control.detail, /exit=8/);
+  const worker = describeImageLoadFailure({ role: 'authority' }, run('worker-fail'));
+  assert.match(worker.detail, /node=offscreen-dev-worker/);
+  assert.match(worker.detail, /exit=9/);
 });

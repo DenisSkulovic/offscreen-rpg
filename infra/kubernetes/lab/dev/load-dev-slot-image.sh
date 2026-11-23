@@ -13,11 +13,14 @@ repo="$(cd "$(dirname "$0")/../../../.." && pwd)"
 test -f "$repo/package.json"
 cd "$repo"
 ref="offscreen-dev-workspace:${slot}-${role}"
+echo "phase=docker-build role=${role}" >&2
 docker build \
   -f infra/kubernetes/lab/dev/Dockerfile \
   --build-arg "TURBO_FILTER=${filter}" \
   -t "$ref" \
   .
+echo "phase=kind-load role=${role} node=${cluster}-control-plane" >&2
 kind load docker-image "$ref" --name "$cluster" --nodes "${cluster}-control-plane"
+echo "phase=kind-load role=${role} node=${cluster}-worker" >&2
 kind load docker-image "$ref" --name "$cluster" --nodes "${cluster}-worker"
 docker image inspect --format '{{.Id}}' "$ref"

@@ -286,18 +286,52 @@ export async function reconcileOwnedDevSlot(input) {
   });
 }
 
-export async function ensureOwnedSlotImages(owner, worktree) {
+const IMAGE_DIAGNOSTIC_LIMIT = 1200;
+
+/**
+ * Turn a slot image subprocess result into a bounded refusal.
+ * Phase lines are emitted by load-dev-slot-image.sh.
+ * @param {{ role: string }} image
+ * @param {{ status: number | null, stdout?: string, stderr?: string }} built
+ */
+export function describeImageLoadFailure(image, built) {
+  const combined = `${built.stderr ?? ''}\n${built.stdout ?? ''}`;
+  const phases = [...combined.matchAll(/^phase=(\S+) role=(\S+)(?: node=(\S+))?$/gm)];
+  const last = phases.at(-1);
+  const phase = last?.[1] ?? 'unknown';
+  const node = last?.[3] ?? null;
+  const redacted = combined
+    .replace(/postgres(?:ql)?:\/\/[^\s]+/gi, '[redacted-url]')
+    .replace(/\b(password|secret|token|api[_-]?key)\s*[=:]\s*\S+/gi, '$1=[redacted]')
+    .replace(/\bAKIA[0-9A-Z]{16}\b/g, '[redacted-key]');
+  const diagnostic = redacted
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('phase='))
+    .slice(-8)
+    .join(' | ')
+    .slice(-IMAGE_DIAGNOSTIC_LIMIT);
+  const status = built.status ?? 'null';
+  const where = node ? ` node=${node}` : '';
+  return {
+    id: 'image-build',
+    detail: `role=${image.role} phase=${phase}${where} exit=${status} ${diagnostic}`.trim(),
+  };
+}
+
+export async function ensureOwnedSlotImages(owner, worktree, spawnImage = null) {
   const { spawnSync } = await import('node:child_process');
+  const run = spawnImage ?? ((image) => spawnSync('bash', [
+    'infra/kubernetes/lab/dev/load-dev-slot-image.sh',
+    owner.slotId,
+    image.role,
+    image.filter,
+  ], { cwd: worktree, encoding: 'utf8' }));
   const plan = planSlotImageBuilds(owner.slotId, (ref) => spawnSync('docker', ['image', 'inspect', ref], { stdio: 'ignore' }).status === 0);
   for (const image of plan.missing) {
-    const built = spawnSync('bash', [
-      'infra/kubernetes/lab/dev/load-dev-slot-image.sh',
-      owner.slotId,
-      image.role,
-      image.filter,
-    ], { cwd: worktree, encoding: 'utf8' });
+    const built = run(image);
     if (built.status !== 0) {
-      return { ok: false, refusals: [{ id: 'image-build', detail: image.role }], rebuilt: plan.missing.length };
+      return { ok: false, refusals: [describeImageLoadFailure(image, built)], rebuilt: plan.missing.length };
     }
   }
   return { ok: true, refs: plan.refs, rebuilt: plan.missing.length };
