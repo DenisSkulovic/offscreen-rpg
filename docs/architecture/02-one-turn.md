@@ -1,5 +1,8 @@
 # 2. One turn: from player click to a committed second scene
 
+> **Current-source reconciliation (2026-11-23):** the “Current source: one combined Storyteller Activity” section below is a **historical path at baseline `584b594`**, not the only current implementation. At inspected `e2c0e751`, the separate distributed executor and control Activities exist, the private Game Authority start/fork/launch seam is present, and the provider-free real-route tracer plus fake-only adapters are integrated. What remains missing is full authenticated cold-Kind, cross-Pod scene 2 / independent fork acceptance. For a newcomer, begin with [Playing and forking](13-playing-and-forking.md) before the deep coordination diagrams.
+
+
 **Storyteller evolution turn:** the target sequence is captured scene/root → adaptive writer mission (Library/skills/Workdesk/optional assistants) → structured proposal → Game Authority validation → coherent post-publication scene boundary. Old one-shot or preview/Start paths are current/legacy realization, not the target sequence.
 
 **Reader question:** where is the long-running operation, when is the player's choice accepted, and who declares a scene real? [Execution contract](../technical/platform/execution-and-delivery.md), [generation/publication](../technical/storyteller/generation-and-publication.md), [response contracts](../technical/platform/http-api-and-client-contracts.md). **Baseline:** 584b594; CURRENT and TARGET are intentionally separate.
