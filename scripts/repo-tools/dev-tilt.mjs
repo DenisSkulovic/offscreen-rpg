@@ -16,6 +16,7 @@ import {
 } from './stack-preflight.mjs';
 import { evaluateDevLoadedRuntimeReadiness } from '../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
 import { assessOwnedProcess, readProcessStartTicks } from './dev-process-identity.mjs';
+import { reconcileOwnedDevSlot } from './dev-slot-startup.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const LOOPBACK = '127.0.0.1';
@@ -501,6 +502,16 @@ export async function runDevTiltLaunch(deps = {}) {
   const spawnFn = deps.spawnFn ?? spawn;
   const readinessPoll = deps.collectLabReadiness ?? collectLabReadiness;
   const exitFn = deps.exit ?? ((code) => process.exit(code));
+  const reconcile = deps.reconcileDevSlot ?? reconcileOwnedDevSlot;
+
+  const slot = await reconcile({ worktree, registryRoot });
+  if (!slot?.ok || slot.readyForWorkloads !== true) {
+    refuseAndExit([{
+      id: `slot-${slot?.phase ?? 'startup'}`,
+      message: `Dev slot reconciliation stopped at ${slot?.phase ?? 'startup'}: ${slot?.detail ?? 'not ready'}`,
+    }], exitFn);
+    return;
+  }
 
   // Drop a tilt this worktree started before deciding a listener is foreign.
   const { previousPid, killedPrevious } = replaceOwnedDevSessionTilt(worktree, {
