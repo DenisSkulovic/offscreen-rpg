@@ -288,3 +288,29 @@ A third ordinary worktree was not started. Two stacks already sat under the 4 Gi
 The earlier live failure remains the evidence of the old order: MemAvailable 2648324 KiB refused only after dev-5 had already been scaled to 1. That scale is what this ordering change closes. A second `pnpm dev` under low memory was not repeated.
 
 **Capacity decision, separate from this fix.** The gate is still 4 GiB MemAvailable. One running stack plus a second start has already been refused at 2.65 GiB available, with about 2 GiB of swap in use. Four-stack acceptance stays open. HR01–HR03 stay BLOCKED. DXK09 is not archived.
+
+## Instrumented dev-5 restart beside dev-6 (2026-11-23) — not six READY
+
+The 4 GiB threshold was not changed. proof-A was detached at `6328a427` and started once with `pnpm dev`. dev-6 was left running.
+
+**Before launch.** MemAvailable 6063944 KiB, SwapFree 2224980 of 4194304 KiB. Docker: `offscreen-dev-worker` 4.893 GiB, `offscreen-dev-control-plane` 1.101 GiB, `offscreen-lab-worker` 4.751 GiB, `offscreen-lab-control-plane` 1.006 GiB. dev-5 desired replicas 0. dev-6 six ready, `http://127.0.0.1:13120/sign-in` and `/api/health/ready` 200.
+
+**During.** Preflight passed. Tilt listened on 13118. About 90 seconds in, MemAvailable 5510808 KiB, SwapFree 2241124 KiB, dev worker 5.447 GiB. Web became Running and `http://127.0.0.1:13116/sign-in` returned 200. API, authority, control, executor, and relay stayed `Error` with restart counts 4 and reason `Error` exit 1, not `OOMKilled`. The API log was `Cannot find module '/app/apps/api/dev-pod-compile-watch.mjs'`. After the image step, MemAvailable 5492032 KiB and SwapFree 2242144 KiB. dev-6 stayed 1/1 and HTTP 200.
+
+**Stop.** `pnpm dev:stop` in proof-A exited 0. dev-5 desired replicas returned to 0. Ports 13116 and 13118 were free. dev-6 stayed 1/1 and HTTP 200. MemAvailable after stop was 6166284 KiB. Swap did not grow during the attempt.
+
+**Footprint of this partial second stack.** Host MemAvailable fell by about 572 MiB (6063944 → 5492032). The dev worker cgroup rose by about 0.59 GiB (4.893 → 5.486). SwapFree rose slightly. That is not the cost of six healthy workloads. The lab Kind node, about 5.76 GiB combined, was resident the whole time and was not part of dev-5.
+
+Restart-isolation edits were not run because A never reached six READY. No third stack was started. DXK09 stays open.
+
+## Watcher packaging and two-stack restart (2026-11-23)
+
+The five Node commands are `node dev-pod-compile-watch.mjs` with working directories `apps/api`, `apps/game-authority`, and `apps/worker`, and `node dev-pod-web-receipt.mjs` under `apps/web`. Those four files are tracked application source. The untracked copies under `infra/kubernetes/lab/dev/` are not the command paths and were left untracked. `ac39ba78` copies the four entrypoints again in the runner stage and fails `docker build` when `dev-image-runtime-modules.mjs --check` finds one missing.
+
+A fresh image `offscreen-dev-workspace:watcher-proof` (`sha256:06441490a1911a8272420575abf29ae6b732d3234b7389567254e535287d2c37`) printed `present` for all four paths. `node --test` on the runtime-module and slot-graph tests passed, 8 tests.
+
+proof-A was detached at `ac39ba78`. Before `pnpm dev`, MemAvailable was 5983240 KiB and SwapFree 2372304 of 4194304 KiB. dev-5 desired replicas were 0. dev-6 was six ready and `http://127.0.0.1:13120/sign-in` returned 200. Preflight passed. Tilt aliased the canonical image `sha256:116b50756a08`, which contains both watcher files. The first pods still ran Kind import `sha256:340822eb8c55` and exited `MODULE_NOT_FOUND` until each Deployment rolled. All six dev-5 Deployments then reached 1/1. `http://127.0.0.1:13116/sign-in` and `http://127.0.0.1:13120/sign-in` returned 200. Peak observed pressure was MemAvailable 2763036 KiB and SwapFree 652996 KiB. dev-6 stayed 1/1 throughout.
+
+A marker `DXK09-A-WATCHER` in proof-A `apps/web/app/sign-in/page.tsx` was served on port 13116 and absent on port 13120. The marker was removed and the next read of port 13116 no longer contained it. `pnpm dev:stop` in proof-A returned dev-5 to 0 replicas and freed 13116 and 13118. dev-6 stayed 1/1 and HTTP 200.
+
+No third stack was started. Two healthy stacks already left MemAvailable below the 4 GiB gate and used most of the 4 GiB swap. The unattended ordinary-worktree gate and four-stack acceptance are not met. HR01–HR03 stay BLOCKED. DXK09 is not archived. DXK10 was not implemented.
