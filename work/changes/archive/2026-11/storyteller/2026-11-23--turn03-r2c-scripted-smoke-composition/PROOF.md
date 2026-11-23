@@ -1,6 +1,19 @@
 # R2C verification | no live run
 
-**Planner test status: NOT RUN.** Only source and existing source-only receipts inspected at `3a3aa4d8`.
+**Planner test status: NOT RUN** at authoring. **Executor status:** source-only tests run on `change/turn03-r2c-scripted-smoke` from `022385df`. No cluster, account, S3, LLM or live HTTP.
+
+Commands and counts:
+
+- `node --test infra/kubernetes/lab/app-release/turn03/player-smoke.test.mjs` — 9 pass
+- `node --test infra/kubernetes/lab/app-release/turn03/run.test.mjs` — 7 pass
+- `node --test infra/kubernetes/lab/app-release/turn03/live-http.test.mjs` — 6 pass
+- `node --test infra/kubernetes/lab/app-release/turn03/adversarial.test.mjs` — 5 pass
+- `node --test infra/kubernetes/lab/app-release/turn03/preflight.test.mjs` — 3 pass
+- `node --test infra/kubernetes/lab/app-release/turn03/fixture-pins.test.mjs` — 7 pass, after a local `@offscreen/documents` `tsc` because this worktree had no `dist/`
+- `pnpm exec prettier --write` and `pnpm exec eslint --config eslint.quality.config.mjs` on the two new files — pass
+- `git diff --check` — pass
+
+There is no `trace-route.test.mjs`. Route behavior is covered by `run.test.mjs` and `player-smoke.test.mjs`.
 
 | Contract | Expected positive | Diagnostic negative |
 | --- | --- | --- |
