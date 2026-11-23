@@ -8,6 +8,7 @@ import {
   environmentSessionRoot,
   parseDevCliArgs,
   readEnvironmentSession,
+  parkSelectedEnvironment,
   resolveDevEnvironmentSelection,
   stopSelectedEnvironment,
   writeEnvironmentSession,
@@ -233,4 +234,112 @@ test('explicit startup resolves without allocating an unknown id', () => {
   assert.equal(after.version, 1);
   assert.equal(after.nextSequence, 5);
   rmSync(root, { recursive: true, force: true });
+});
+
+function sessionFor(record, extra = {}) {
+  return {
+    slotId: record.slotId,
+    namespace: record.namespace,
+    checkoutPath: record.worktreePath,
+    gamePort: record.ports.game,
+    tiltPort: record.ports.tilt,
+    pid: 40,
+    processStartTicks: '100',
+    forwardPid: 41,
+    forwardStartTicks: '100',
+    consumerId: 'cursor-a',
+    ...extra,
+  };
+}
+
+test('owned park scales six roles, clears the reservation, and repeats cleanly', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-'));
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-reg-'));
+  const record = { ...owner('dev-3', checkout), lease: { pid: 40, startTimeJiffies: '100', acquiredAt: 't' } };
+  const sessions = environmentSessionRoot(root);
+  writeEnvironmentSession(sessions, sessionFor(record));
+  const scaled = [];
+  const desired = { 'game-web': 1, 'game-api': 1, 'game-authority': 1, 'game-control': 1, 'game-executor': 1, 'game-relay': 1 };
+  let lease = record.lease;
+  const first = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: alive,
+    signal: () => {},
+    scaleRole: (_namespace, role) => { scaled.push(role); desired[role] = 0; },
+    readDesiredReplicas: () => desired,
+    clearReservation: () => { lease = null; record.lease = null; },
+  });
+  assert.equal(first.released, true);
+  assert.equal(scaled.length, 6);
+  assert.equal(lease, null);
+  assert.equal(first.tenantIdentity.resourceUids.namespace, 'uid-dev-3');
+  const second = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: alive,
+    signal: () => { throw new Error('repeat must not signal'); },
+    scaleRole: () => { throw new Error('repeat must not scale'); },
+    readDesiredReplicas: () => desired,
+  });
+  assert.equal(second.reason, 'already_parked');
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('one failed deployment keeps the reservation and session for retry', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-fail-'));
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-reg-'));
+  const record = { ...owner('dev-4', checkout), lease: { pid: 40, startTimeJiffies: '100' } };
+  const sessions = environmentSessionRoot(root);
+  writeEnvironmentSession(sessions, sessionFor(record));
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: alive,
+    scaleRole: (_namespace, role) => {
+      if (role === 'game-executor') throw new Error('scale executor failed');
+    },
+    clearReservation: () => { throw new Error('reservation cleared'); },
+  });
+  assert.equal(result.released, false);
+  assert.equal(result.reason, 'scale_incomplete');
+  assert.equal(readEnvironmentSession(sessions, 'dev-4').released, false);
+  assert.equal(record.lease.pid, 40);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('stale process, foreign lease and foreign consumer do not scale', () => {
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-refuse-'));
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-reg-'));
+  const record = { ...owner('dev-2', checkout), lease: { pid: 99, startTimeJiffies: '100' } };
+  const sessions = environmentSessionRoot(root);
+  writeEnvironmentSession(sessions, sessionFor(record));
+  const scaled = [];
+  const stale = parkSelectedEnvironment({
+    owner: { ...record, lease: { pid: 40, startTimeJiffies: '100' } },
+    sessionRoot: sessions,
+    processDeps: { pidAlive: () => true, readStartTicks: () => '404' },
+    scaleRole: () => scaled.push('scaled'),
+  });
+  assert.equal(stale.reason, 'start_time_mismatch');
+  const foreign = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: alive,
+    scaleRole: () => scaled.push('scaled'),
+  });
+  assert.equal(foreign.reason, 'foreign_lease');
+  const consumer = parkSelectedEnvironment({
+    owner: { ...record, lease: { pid: 40, startTimeJiffies: '100' } },
+    sessionRoot: sessions,
+    processDeps: alive,
+    activeConsumer: 'cursor-b',
+    scaleRole: () => scaled.push('scaled'),
+  });
+  assert.equal(consumer.reason, 'foreign_consumer');
+  assert.deepEqual(scaled, []);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
 });

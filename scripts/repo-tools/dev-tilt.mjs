@@ -22,7 +22,7 @@ import {
   parseDevCliArgs,
   readEnvironmentSession,
   resolveDevEnvironmentSelection,
-  stopSelectedEnvironment,
+  parkSelectedEnvironment,
 } from './dev-environment-session.mjs';
 import { reconcileOwnedDevSlot } from './dev-slot-startup.mjs';
 
@@ -159,9 +159,13 @@ const SLOT_WORKLOADS = [
  * @param {string} namespace
  * @param {typeof spawnSync} [spawnFn]
  */
-export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync) {
+export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync, roles = SLOT_WORKLOADS) {
   if (!SLOT_NAMESPACE.test(namespace)) {
     throw new Error(`refusing to scale workloads in ${namespace}`);
+  }
+  const selected = roles.filter((role) => SLOT_WORKLOADS.includes(role));
+  if (selected.length !== roles.length) {
+    throw new Error(`refusing to scale unknown workloads in ${namespace}`);
   }
   const result = spawnFn(
     'kubectl',
@@ -169,7 +173,7 @@ export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync) {
       '--context', 'kind-offscreen-dev',
       '-n', namespace,
       'scale', 'deploy',
-      ...SLOT_WORKLOADS,
+      ...selected,
       '--replicas=0',
     ],
     { encoding: 'utf8' },
@@ -178,6 +182,26 @@ export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync) {
     throw new Error(result.stderr || `scale failed for ${namespace}`);
   }
   return namespace;
+}
+
+export function readDevSlotDesiredReplicas(namespace, spawnFn = spawnSync) {
+  if (!SLOT_NAMESPACE.test(namespace)) {
+    throw new Error(`refusing to read workloads in ${namespace}`);
+  }
+  const desired = {};
+  for (const role of SLOT_WORKLOADS) {
+    const result = spawnFn('kubectl', [
+      '--context', 'kind-offscreen-dev',
+      '-n', namespace,
+      'get', 'deploy', role,
+      '-o', 'jsonpath={.spec.replicas}',
+    ], { encoding: 'utf8' });
+    if (result.status !== 0) {
+      throw new Error(result.stderr || `replica read failed for ${namespace}/${role}`);
+    }
+    desired[role] = Number(String(result.stdout).trim());
+  }
+  return desired;
 }
 
 export const LAB_RESOURCES = Object.freeze([
@@ -789,17 +813,18 @@ function runDevStopCli(selection) {
     const quiet = stopped.signalled || stopped.reason === 'no_session' || stopped.reason === 'not_running';
     process.exit(quiet ? 0 : 1);
   }
-  const result = stopSelectedEnvironment({
+  const result = parkSelectedEnvironment({
     owner: selection.record,
     sessionRoot,
     processDeps: {
       pidAlive,
       readStartTicks: (pid) => readProcessStartTicks(pid),
     },
-    scale: (namespace) => scaleDevSlotWorkloads(namespace),
+    scaleRole: (namespace, role) => scaleDevSlotWorkloads(namespace, spawnSync, [role]),
+    readDesiredReplicas: (namespace) => readDevSlotDesiredReplicas(namespace),
   });
-  if (!result.ok) {
-    console.error(`Refusing to stop ${selection.record.slotId}: ${result.reason}`);
+  if (!result.ok || !result.released) {
+    console.error(`Refusing to release ${selection.record.slotId}: ${result.reason}`);
     process.exit(1);
   }
   process.exit(0);

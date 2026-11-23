@@ -274,3 +274,126 @@ export function stopSelectedEnvironment(input) {
   });
   return { ok: true, idempotent: false, signalled: true, scaled: Boolean(input.scale), reason: 'owned' };
 }
+
+export const PARKED_APPLICATION_ROLES = Object.freeze([
+  'game-web',
+  'game-api',
+  'game-authority',
+  'game-control',
+  'game-executor',
+  'game-relay',
+]);
+
+function reservationMatchesSession(owner, session) {
+  if (!owner.lease) return true;
+  return owner.lease.pid === Number(session.pid)
+    && String(owner.lease.startTimeJiffies) === String(session.processStartTicks);
+}
+
+function desiredAreZero(desired) {
+  return PARKED_APPLICATION_ROLES.every((role) => desired?.[role] === 0);
+}
+
+/**
+ * Park one owned environment: stop its fenced processes, scale its six
+ * application Deployments to zero, and clear the active reservation only
+ * after desired replicas read back as zero. Tenants, namespace, ports and
+ * image artifacts stay. A failed check or partial scale keeps the session.
+ *
+ * @param {{
+ *   owner: { slotId: string, worktreePath: string, namespace: string, ports: { game: number, tilt: number }, lease?: { pid: number, startTimeJiffies: number } | null, resourceUids?: Record<string, string> },
+ *   sessionRoot: string,
+ *   session?: Record<string, unknown> | null,
+ *   signal?: (pid: number, signal: string) => void,
+ *   scaleRole?: (namespace: string, role: string) => void,
+ *   readDesiredReplicas?: (namespace: string) => Record<string, number>,
+ *   clearReservation?: (owner: object) => void,
+ *   activeConsumer?: string | null,
+ *   processDeps: { pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null },
+ * }} input
+ */
+export function parkSelectedEnvironment(input) {
+  const session = input.session ?? readEnvironmentSession(input.sessionRoot, input.owner.slotId);
+  const readDesired = input.readDesiredReplicas ?? (() => Object.fromEntries(PARKED_APPLICATION_ROLES.map((role) => [role, 0])));
+  const tenantIdentity = {
+    namespace: input.owner.namespace,
+    resourceUids: input.owner.resourceUids ?? null,
+    ports: input.owner.ports,
+  };
+  if (session?.parked === true && !input.owner.lease && desiredAreZero(readDesired(input.owner.namespace))) {
+    return {
+      ok: true, idempotent: true, released: true, signalled: false, scaled: false, reason: 'already_parked', tenantIdentity,
+    };
+  }
+  if (!session) {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: 'missing_session', tenantIdentity };
+  }
+  if (session.slotId !== input.owner.slotId || session.namespace !== input.owner.namespace) {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: 'slot_or_namespace_mismatch', tenantIdentity };
+  }
+  if (resolve(String(session.checkoutPath ?? '')) !== resolve(input.owner.worktreePath)) {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: 'checkout_mismatch', tenantIdentity };
+  }
+  if (input.activeConsumer && session.consumerId && input.activeConsumer !== session.consumerId) {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: 'foreign_consumer', tenantIdentity };
+  }
+  if (!reservationMatchesSession(input.owner, session)) {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: 'foreign_lease', tenantIdentity };
+  }
+  const assess = assessOwnedProcess(session, input.processDeps);
+  if (!assess.owned && assess.reason !== 'not_running' && assess.reason !== 'missing_pid') {
+    return { ok: false, released: false, signalled: false, scaled: false, reason: assess.reason, tenantIdentity };
+  }
+  const signal = input.signal ?? (() => {});
+  let signalled = false;
+  if (assess.owned) {
+    signal(Number(session.pid), 'SIGTERM');
+    signalled = true;
+    const forward = assessOwnedProcess({
+      pid: session.forwardPid,
+      processStartTicks: session.forwardStartTicks,
+    }, input.processDeps);
+    if (forward.owned) signal(Number(session.forwardPid), 'SIGTERM');
+  }
+  const scaleRole = input.scaleRole ?? (() => {});
+  const scaled = [];
+  try {
+    for (const role of PARKED_APPLICATION_ROLES) {
+      scaleRole(input.owner.namespace, role);
+      scaled.push(role);
+    }
+  } catch (error) {
+    writeEnvironmentSession(input.sessionRoot, {
+      ...session,
+      processesStopped: signalled || session.processesStopped === true,
+      parkIncomplete: true,
+      released: false,
+      scaledRoles: scaled,
+      parkError: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      ok: false, released: false, signalled, scaled: false, reason: 'scale_incomplete', tenantIdentity, scaledRoles: scaled,
+    };
+  }
+  const desired = readDesired(input.owner.namespace);
+  if (!desiredAreZero(desired)) {
+    writeEnvironmentSession(input.sessionRoot, {
+      ...session,
+      processesStopped: signalled || session.processesStopped === true,
+      parkIncomplete: true,
+      released: false,
+      scaledRoles: scaled,
+    });
+    return { ok: false, released: false, signalled, scaled: true, reason: 'replicas_not_zero', tenantIdentity };
+  }
+  if (input.clearReservation) input.clearReservation(input.owner);
+  writeEnvironmentSession(input.sessionRoot, {
+    ...session,
+    stopped: true,
+    parked: true,
+    released: true,
+    parkIncomplete: false,
+    stoppedAt: new Date().toISOString(),
+  });
+  return { ok: true, idempotent: false, released: true, signalled, scaled: true, reason: 'parked', tenantIdentity };
+}
