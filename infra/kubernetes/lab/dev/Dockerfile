@@ -32,7 +32,12 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=development
 COPY --from=deps --chown=node:node /app/ ./
-# The slot watchers import this module. The rest of infra is not part of the dev image.
+# Commands run inside each app directory. Copy the entrypoints again so a
+# reused dependency layer cannot omit a watcher that the deployment invokes.
+COPY --chown=node:node apps/api/dev-pod-compile-watch.mjs apps/api/dev-pod-compile-watch.mjs
+COPY --chown=node:node apps/game-authority/dev-pod-compile-watch.mjs apps/game-authority/dev-pod-compile-watch.mjs
+COPY --chown=node:node apps/worker/dev-pod-compile-watch.mjs apps/worker/dev-pod-compile-watch.mjs
+COPY --chown=node:node apps/web/dev-pod-web-receipt.mjs apps/web/dev-pod-web-receipt.mjs
 # Slot watchers import these modules. The rest of infra is not part of the dev image.
 COPY --chown=node:node infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs
 COPY --chown=node:node infra/kubernetes/lab/dev/dev-watch-compilation.mjs infra/kubernetes/lab/dev/dev-watch-compilation.mjs
