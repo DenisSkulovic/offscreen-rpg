@@ -2,27 +2,29 @@
 
 `@offscreen/api` composes HTTP routes using NestJS, Better Auth and application operations. Controllers handle request/identity/response mapping; they do **not** become another source of game rules, campaign scheduling or Storyteller admission. [Client/identity](../../docs/technical/platform/identities-and-access.md) and [story lifecycle](../../docs/technical/engine/lifecycle-and-compatibility.md) own the intended API behavior. Cross-route actor, operation-id, 202, GET, error, and projection rules live in [HTTP and client contracts](../../docs/technical/platform/http-api-and-client-contracts.md). Which actor may cross from this API into identity, admission, documents, the worker, or a provider is [Platform trust boundaries](../../docs/technical/platform/security-and-trust-boundaries.md). This file stays the route inventory.
 
+**Source-current route note (2026-11-23, `e2c0e751`):** HR01 split the former large Stories/Admin controllers into separate controllers under `src/modules/{stories,admin}/controllers/`. The files `controller.ts` are registries/re-exports, not the place to add 500 new lines. The distributed Story Seam now carries **launch, start, fork, snapshot read and resolution admission** to private Game Authority. Other story settings/history/documents/controls can still use application operations in Nest. The [human source journey](../../docs/architecture/00-human-tour.md) shows the caller flow.
+
 **One-hop context:** [stories/controller and developer-mode map](src/modules/stories/README.md) for W04/W16/W19, [draft/openings map](src/modules/drafts/README.md) for W08/W09. These are **current source guides**; read only the owner relevant to the Change. The [frontend target](../../docs/technical/client/architecture.md) is future design, not installed API code.
 
 ## Find the request route
 
 | Concern | Actual entry | Responsible next layer |
 | --- | --- | --- |
-| Nest application wiring, optional developer routes | [src/app.ts](src/app.ts) `createApp` | [Application guide](../../packages/application/README.md) |
+| Nest application wiring, optional developer routes | [src/app.ts](src/app.ts) `createApp` | [Story Engine guide](../../packages/story-engine/README.md) |
 | Config, DB/auth, process startup | [src/main.ts](src/main.ts), [src/config.ts](src/config.ts) | Database and runtime dependencies |
 | Sessions and owner identity | [auth.ts](src/modules/auth/auth.ts), [identity.ts](src/modules/auth/identity.ts) | `IdentityService` and application ownership guards |
-| Admin staff session (AD01) | [admin route map](src/modules/admin/README.md); [actor service](src/modules/admin/admin-actor-service.ts) `requireStaffActor` | `@offscreen/admin` + `admin_*` tables; `@offscreen/application/admin` re-exports the same modules; player `/api/me` is never Admin authority |
+| Admin staff session (AD01) | [admin route map](src/modules/admin/README.md); [actor service](src/modules/admin/admin-actor-service.ts) `requireStaffActor` | `@offscreen/admin` + `admin_*` tables; player `/api/me` is never Admin authority |
 | Admin grant policy (AD02) | [actor service](src/modules/admin/admin-actor-service.ts) `requireCapability`; controller `access/check` | Closed package registry + complete-grant evaluator; customer denials are privacy 404 |
 | Admin player reads (AD03) | `GET /api/admin/players` + `GET /api/admin/players/:id` | Exact-ref finder + redacted `PlayerSummaryV1`; no email/tokens/passages |
 | Admin case-scoped Support Situation (OBS06) | `GET /api/admin/cases/:caseId/campaigns/:campaignId/situation` | Body-free `SupportSituationV1`; needs assigned case + exact campaign link + steward-issued `support-investigator` grant (`scope.campaignIds` + `provenance.authorizedCaseIds`, kind `steward-case-binding`); [evidence](../../evidence/runs/obs06-case-scoped-situation/obs06-case-scoped-situation-read-2026-11-15.md) |
-| Draft saving, opening requests and profile selection | [draft controller](src/modules/drafts/controller.ts), [opening controller](src/modules/drafts/openings-controller.ts), [profile controller](src/modules/drafts/storytellers-controller.ts) | `@offscreen/application/drafts` and generation operations |
-| Story read, Start/fork, selected actions, controls | [stories controller](src/modules/stories/controller.ts) | `@offscreen/application/stories`, validated public contracts. With `GAME_AUTHORITY_MODE=distributed`, the snapshot GET and scripted resolution PUT call [Game Authority](../game-authority/README.md). Other story routes stay in-process |
+| Draft saving, opening requests and profile selection | [draft controller](src/modules/drafts/controller.ts), [opening controller](src/modules/drafts/openings-controller.ts), [profile controller](src/modules/drafts/storytellers-controller.ts) | `@offscreen/story-engine/drafts` and generation operations |
+| Story read, Start/fork, selected actions, controls | [stories route registry](src/modules/stories/controllers/registry.ts) and [story commands](src/modules/stories/controllers/story-commands.ts) | `@offscreen/story-engine/stories` and `StorySeam` (launch, start, fork, read and resolution go to [private Game Authority](../game-authority/README.md) in distributed mode; other routes use locally composed story operations) |
 | Committed-view SSE hints | `GET /api/stories/:id/updates` + [story-update-hub](src/modules/stories/story-update-hub.ts) | PostgreSQL LISTEN/NOTIFY after `advanceStoryView` / `incrementStoryViewVersion`; no narrative |
 | Chamber/QA inspection | [@offscreen/api-lab](../../tools/api-lab/src/create-lab-app.ts) | Outer Lab factory only; production `createApp` does not mount these routes |
 
 ## Debug without recreating policy
 
-Trace **controller → owning application use case → transaction/retry path**. A valid DTO or successful HTTP route does not prove the caller owns the story or that a command settled. Application failures are mapped to HTTP responses; do not "fix" business state by adding a second controller-side transaction.
+Trace **controller → Story Seam or owning Story Engine use case → transaction/retry path**. A valid DTO or successful HTTP route does not prove the caller owns the story or that a command settled. Application failures are mapped to HTTP responses; do not "fix" business state by adding a second controller-side transaction.
 
 [Web](../web/README.md) renders; [worker](../worker/README.md) runs durable Activities. They share application operations rather than importing each other's service logic. `createApp` is an explicitly composable entrypoint; [main.ts](src/main.ts) starts the process and dependencies.
 
