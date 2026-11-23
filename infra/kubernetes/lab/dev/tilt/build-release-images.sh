@@ -11,6 +11,27 @@ fi
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_RELEASE="$(cd "$HERE/../../app-release" && pwd)"
+REPO="$(cd "$HERE/../../../../.." && pwd)"
+# Dev Tilt sets OFFSCREEN_DEV_SLOT. Release builds leave it unset and skip this guard.
+if [[ "${OFFSCREEN_DEV_SLOT:-}" == dev-* ]]; then
+  (
+    cd "$REPO"
+    node --input-type=module -e '
+    import { assertExclusiveHostWrite } from "./scripts/repo-tools/dev-host-output-guard.mjs";
+    import { homedir } from "node:os";
+    import { join } from "node:path";
+    const registryRoot = process.env.OFFSCREEN_DEV_REGISTRY_ROOT
+      ?? join(homedir(), ".local/state/offscreen-rpg/dev-worktree-registry");
+    assertExclusiveHostWrite({
+      checkout: process.cwd(),
+      registryRoot,
+      selfSlotId: process.env.OFFSCREEN_DEV_SLOT,
+      operation: "release image fallback",
+      outputPath: "apps/web/.next",
+    });
+  '
+  )
+fi
 CONCURRENCY="${OFFSCREEN_IMAGE_BUILD_CONCURRENCY:-3}"
 if ! [[ "$CONCURRENCY" =~ ^[1-9][0-9]*$ ]]; then
   echo "OFFSCREEN_IMAGE_BUILD_CONCURRENCY must be a positive integer." >&2

@@ -199,6 +199,14 @@ export async function reconcileOwnedDevSlot(input) {
       }
       const built = join(input.worktree, 'packages/db/dist/src/migrate.js');
       if (!existsSync(built)) {
+        const { assertExclusiveHostWrite } = await import('./dev-host-output-guard.mjs');
+        assertExclusiveHostWrite({
+          checkout: input.worktree,
+          registryRoot: input.registryRoot,
+          selfSlotId: input.owner?.slotId,
+          operation: 'database build',
+          outputPath: 'packages/db/dist',
+        });
         const compiled = spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], { cwd: input.worktree, encoding: 'utf8' });
         if (compiled.status !== 0 || !existsSync(built)) {
           return { ok: false, cluster: 'kind-offscreen-dev', memoryMiB, detail: 'packages/db build failed before tenant mutation' };
