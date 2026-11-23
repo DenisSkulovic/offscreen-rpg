@@ -5,6 +5,8 @@ alwaysApply: true
 
 # Cursor execution: thin adapter
 
+**Development resource courtesy:** Treat the active dev cluster as shared scarce compute. Change execution does not imply reserving or starting a stack. Follow [the dev runbook](../../docs/runbooks/dev-worktree-stacks.md): use cheap source-only tests when valid; do not speculatively start six pods; on partially healthy or capacity-failed startup, park **all your own attempted workloads** and confirm no own processes/ports remain, leaving every other agent, reservation and persistent tenant untouched. Never repeatedly retry without changed capacity. Demand-driven `dev:reserve` / profiles are planned DXK10 interfaces, not currently proven commands.
+
 Read root [AGENTS.md](../../AGENTS.md), the commissioned Change's `CHANGE.md`/`TASKS.md`, and the [canonical parent policy](../../.agents/references/bounded-parent-orchestration.md); **those own the rules**. Do not duplicate lifecycle/branch/batch policy here.
 
 **Before first implementation edit:** on a dedicated `change/<id>-<slug>` branch based on the packet's real integration target, run `node scripts/repo-tools/change-branch-guard.mjs --change <ID> --target <reference-branch>`. If the target moved, reconcile it rather than resetting. A **separate linked worktree is mandatory per commissioned Change**, even if no other chat is active. Never switch the user's primary checkout. No worktree per T-ID. Run the branch guard inside the dedicated worktree.
