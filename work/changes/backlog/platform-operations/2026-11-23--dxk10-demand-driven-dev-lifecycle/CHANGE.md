@@ -1,6 +1,6 @@
 # DXK10 | Demand-driven development environment lifecycle
 
-**State:** PROPOSED BACKLOG, PLANNER-HELD; not Cursor-ready or commissioned. **Selected technical contract:** [developer environments](../../../../../docs/technical/platform/developer-environments.md) and [human-first view](../../../../../docs/architecture/10-developer-environments.md). **Integration target:** `undertaking/storyteller-workshop`. **Owner:** developer infrastructure. **Dependency:** preserve current DXK09 implementation/proof; no concurrent edits to lifecycle tools. **Source basis:** inspected integration snapshot `955e904b26c9` on 2026-11-23; DXK09 implementation revisions `9f1eab1c` and `6328a427` and further local changes were described in Cursor receipts but were **not accessible in remote GitHub**, and must be reconciled on promotion.
+**State:** PROPOSED BACKLOG, PLANNER-HELD; not Cursor-ready or commissioned. **Selected technical contract:** [developer environments](../../../../../docs/technical/platform/developer-environments.md) and [human-first view](../../../../../docs/architecture/10-developer-environments.md). **Integration target:** `undertaking/storyteller-workshop`. **Owner:** developer infrastructure. **Dependency:** preserve current DXK09 implementation/proof; no concurrent edits to lifecycle tools. **Source basis:** originally `955e904b`; updated source inspection of integrated `fb5bf588` (DXK11 included) on 2026-11-23. **Execution decomposition:** [DXK10-A reserve/attach packet](../../../open/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is prepared and separately bounded; DXK10-B selective profiles and DXK10-C guarded retained-tenant release remain planner-held, not automatically commissioned.
 
 ## Owner decision / user experience
 
@@ -39,7 +39,20 @@ Inspected `scripts/repo-tools/dev-environment-session.mjs::resolveDevEnvironment
 
 Dependency boundary: DXK10 changes **behavior**, not package ownership. INF02 is a deferred, separately authorized code-organization proposal and must not be merged into this implementation.
 
-## Planner tasks before promotion (not Cursor assignments)
+## Planner decisions after DXK10-A (not Cursor assignments)
+
+**DXK10-B (selective activation):** source inspect `renderDevSlotAppGraph::deployment`, `renderTiltDeploymentDocuments`, Tilt image registrations and `runDevTiltLaunch` readiness. The current graph hardcodes six `replicas:1` deployments. Product-facing browser uses `API_PROXY_ORIGIN` / `API_INTERNAL_ORIGIN`; API calls Game Authority, so a `web` profile may not consist of just the Web Pod. Conservative proposed closures are `api = API + Authority`, `web = Web + API + Authority`, `full = all six`, but exact health and auth dependency tests must prove them before Cursor-ready promotion. Inactive roles must show INACTIVE, not healthy or failed. Tilt must not reconcile unrequested roles back to one replica. Preserve cache/image generation and rollback correctness; record scoped resource budgets.
+
+**DXK10-C (retained tenant / guarded release):** never recycle `dev-N` IDs or credentials. Treat release of an unprovisioned reservation as a registry state transition and port reclamation only after read-only proof of zero external resources. A provisioned slot must retain a durable tombstone/tenant binding and cannot be implicitly reassigned; explicit later reattachment must check session PID/start ticks, all Pod desired replicas, listeners, resource UIDs, tenant identity and source generation, with fail-closed unknown states. Source ownership cannot be swapped by merely rewriting `worktreePath`. Port reclamation for tombstones requires a separate validity invariant and live listener check. No destructive tenant cleanup in DXK10.
+
+```mermaid
+flowchart LR
+  A["DXK10-A · Registry-only reserve and explicit attach"] --> B["DXK10-B · Proven profile activation and rollback"]
+  B --> C["DXK10-C · Guarded release / retained tenant reattachment"]
+  C --> D["Later · fast reusable-slot handoff proof"]
+```
+
+## Original planner checklist for the entire DXK10 program
 
 1. Re-read actual integrated DXK09 HEAD and any in-flight local branch diff; map registry v2 locks, allocation, default checkout mapping, sessions, stop/park behavior, workload application, Tilt resource selection, image and tenant lifecycle. Preserve all current DXK09 proofs.
 2. Decide the reservation/release data model under persistent tenants, including released/tombstoned IDs, uniqueness across registry resets, exact atomic mutation boundary, reattachment authorization and recovery after crash.
