@@ -1,5 +1,8 @@
 # 1. System map and decision ownership
 
+> **Historical-source caution (2026-11-23):** this chapter's first “Current source” diagram describes the 2026-11-19 `584b594` snapshot, not all capabilities at current `e2c0e751`. Current distributed `StorySeam` routes **launch, start, read, resolution and fork** through the private Game Authority server, and `apps/worker` has separate distributed control/execution Activities. The previous statement that Nest start/fork remained local or that the worker was exclusively combined is **historical**. Read [human map](00-human-tour.md), [creation](12-creating-a-story.md) and [playing](13-playing-and-forking.md) for current source; keep the older diagram only as baseline context, not runtime proof.
+
+
 **Storyteller evolution:** the Storyteller is a writer over a rooted Library and Workdesk, while Game Authority remains the sole publisher of authoritative scene state. Treat service/process boxes as deployment choices, not permission to move world authority into the model.
 
 **Reader question:** what parts exist today, what do we want to separate, and who gets to decide the game? **Baseline:** 584b594, 2026-11-19. This map describes inspected source and a **selected target**, not a successful multi-Pod test. Canonical [topology](../technical/platform/topology.md), [engine](../technical/engine/selected-architecture.md).
