@@ -2,7 +2,21 @@
 
 **Question:** How can several Cursor agents work on Offscreen RPG without overwriting each other's code, game data, running services or ports?
 
-**Audience:** humans first. No Kubernetes knowledge required. **Status:** the isolation architecture is partially implemented and live-observed; demand-driven activation is a **selected future design**, not a working command. **Source checkpoint:** integrated `undertaking/storyteller-workshop@d9a2c11e`, 2026-11-23. Later DXK09 results in local Cursor branches are reported but **not integrated**, so they are not implementation facts on this branch.
+**Audience:** humans first. **Observed state at integration `undertaking/storyteller-workshop@8a782ffd` (2026-11-23):** a fresh worktree started an owned full six-role dev environment unattended, reached current-generation readiness and parked with tenant state intact. DXK11 removed redundant Kind imports: where both nodes already contain the canonical image digest, aliases are created locally rather than reimporting the same image. DXK10's reservation-only / selective profiles / cross-checkout handoff remain **design, not commands**.
+
+**Performance reality:** original parked activation took 376 s with ten redundant Kind imports; the later DXK11 115.8 s run incurred a genuine new artifact plus two node imports, so it **does not** measure a pure same-image warm restart. Same-image restart performance is still to be established.
+
+```mermaid
+flowchart LR
+  S["Checkout source"] --> Q{"Need runtime?"}
+  Q -->|No| T["Edit + focused tests"]
+  Q -->|Yes; today| F["Owned full six-role slot"]
+  Q -->|Yes; DXK10 target| P["Reserve + attach + selected profile"]
+  F --> V["Verified image / synced generation / readiness"]
+  P --> V
+  V --> K["Park own workloads; keep tenant data"]
+```
+
 
 **If you need to operate it:** [dev runbook](../runbooks/dev-worktree-stacks.md). **If you need the exact engineering guarantees:** [developer environment contract](../technical/platform/developer-environments.md). **If you need the latest proof:** [DXK09](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md). Do not use this picture as execution permission.
 
