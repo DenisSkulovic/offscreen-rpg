@@ -18,7 +18,7 @@ flowchart TD
   I -->|allowed| K["Return narrow authorized projection"]
 ```
 
-The [Admin enter page](../../apps/web/app/(control)/control/enter/page.tsx) explicitly says the visitor is already a *player identity* but must separately enter staff mode. The [EnterAdminSessionButton](../../apps/web/src/features/admin/enter-admin-session.tsx) requests a separate Admin session. [Nest AdminSessionController](../../apps/api/src/modules/admin/controllers/admin-session.ts) handles `POST /api/admin/session/enter`, `GET /api/admin/me`, and `POST /api/admin/session/exit`. The [AdminActorService](../../apps/api/src/modules/admin/admin-actor-service.ts) checks the underlying Better Auth session **and** resolves the separate staff session. Missing fresh identity, enrollment or authority does not grant access.
+The [Admin enter page](../../apps/web/app/%28control%29/control/enter/page.tsx) explicitly says the visitor is already a *player identity* but must separately enter staff mode. The [EnterAdminSessionButton](../../apps/web/src/features/admin/enter-admin-session.tsx) requests a separate Admin session. [Nest AdminSessionController](../../apps/api/src/modules/admin/controllers/admin-session.ts) handles `POST /api/admin/session/enter`, `GET /api/admin/me`, and `POST /api/admin/session/exit`. The [AdminActorService](../../apps/api/src/modules/admin/admin-actor-service.ts) checks the underlying Better Auth session **and** resolves the separate staff session. Missing fresh identity, enrollment or authority does not grant access.
 
 ## A support lookup is not unrestricted database browsing
 
@@ -51,7 +51,7 @@ Admin reads use their own resource-specific permissions. A valid staff session i
 | Human task | Page / API owner | Important restriction |
 | --- | --- | --- |
 | Enter/exit staff mode | `/control/enter` → `AdminSessionController` | Needs player identity, recent session and enrolled staff |
-| Open staff dashboard | [control page](../../apps/web/app/(control)/control/(staff)/page.tsx) | `requireAdminActor` checks staff mode |
+| Open staff dashboard | [control page](../../apps/web/app/%28control%29/control/%28staff%29/page.tsx) | `requireAdminActor` checks staff mode |
 | Find a player | [AdminPlayersController](../../apps/api/src/modules/admin/controllers/admin-players.ts), `GET /api/admin/players` | Exact-ref lookup, permission-gated, privacy-safe output |
 | View Player 360 | `GET /api/admin/players/:playerId` | `player.summary.read` for specific target |
 | Create / read support cases | [AdminCasesController](../../apps/api/src/modules/admin/controllers/admin-cases.ts) | Capabilities such as `case.create` and `case.summary.read`; linked resources get extra checks |
