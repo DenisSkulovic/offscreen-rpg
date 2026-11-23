@@ -72,7 +72,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | Where do hydration, cache and commands live? | [State and server boundary](technical/client/state-and-server-boundary.md) |
 | How do I run a Chamber test without paying a model? | [Chamber fixtures](technical/lab/chamber-and-fixtures.md) · [local development](runbooks/local-development.md) |
 | How do I operate the portfolio locally? | [Runbooks](runbooks/README.md) |
-| Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Application operations](../packages/application/README.md#directory-index) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
+| Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Story Engine operations](../packages/story-engine/README.md) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
 | Is a selected product target already feasible? | [STATUS](../STATUS.md) · [product-reality claims](../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). Selection is not proof. The claim register adds no rule |
 | What is actually true this week, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [work selection](../work/QUEUE.md) · [Change catalog](../work/changes/README.md) · [Tasks](../work/tasks/README.md) |
 
