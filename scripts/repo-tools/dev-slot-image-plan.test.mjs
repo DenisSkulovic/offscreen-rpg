@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fingerprintDevImageContext, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
+import { confirmLoadedAliasIdentity, fingerprintDevImageContext, planAliasIdentityLoad, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from './dev-slot-image-plan.mjs';
 
 const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
 ARG TURBO_FILTER=@offscreen/api^...
@@ -214,4 +214,77 @@ test('unchanged fingerprint reuses the canonical digest and stays unready while 
   });
   assert.equal(changed.dockerBuild, true);
   assert.equal(changed.applicationReady, false);
+  const staleNode = planRestartImageReuse({
+    expectedRef: 'offscreen-dev-workspace:tilt-build-1795404939',
+    fingerprint: 'fp-1',
+    canonical,
+    nodeHasRef: true,
+    nodeConfigId: 'sha256:stale',
+    podImage: 'offscreen-dev-workspace:tilt-build-1795404939',
+    podConfigId: 'sha256:stale',
+    podReady: true,
+  });
+  assert.equal(staleNode.dockerBuild, false);
+  assert.equal(staleNode.kindLoad, true);
+  assert.equal(staleNode.applicationReady, false);
+});
+
+const HOST = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const STALE = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const OTHER = 'sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+
+test('alias identity loads only nodes whose config id is missing or stale', () => {
+  const absent = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {},
+  });
+  assert.deepEqual(absent.loadNodes, ['control-plane', 'worker']);
+  const reuse = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: HOST },
+      worker: { configId: HOST },
+    },
+  });
+  assert.deepEqual(reuse.loadNodes, []);
+  assert.equal(reuse.ready, true);
+  const stale = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: STALE },
+      worker: { configId: STALE },
+    },
+  });
+  assert.deepEqual(stale.loadNodes, ['control-plane', 'worker']);
+  const one = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: HOST },
+      worker: { configId: STALE },
+    },
+  });
+  assert.deepEqual(one.loadNodes, ['worker']);
+  assert.equal(one.ref, 'offscreen-dev-workspace:dev-7-web');
+  const untouched = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-6-api',
+    expectedConfigId: OTHER,
+    nodes: {
+      'control-plane': { configId: OTHER },
+      worker: { configId: OTHER },
+    },
+  });
+  assert.deepEqual(untouched.loadNodes, []);
+  const refused = confirmLoadedAliasIdentity({
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': { configId: HOST },
+      worker: { configId: STALE },
+    },
+  });
+  assert.equal(refused.ok, false);
+  assert.deepEqual(refused.nodes, ['worker']);
 });

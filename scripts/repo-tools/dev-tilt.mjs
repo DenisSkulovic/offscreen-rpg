@@ -367,7 +367,8 @@ export const DEV_RUNTIME_FRESHNESS_ROLES = Object.freeze(
  * @param {{
  *   namespace: string,
  *   expectedImage: string | null,
- *   pod?: { ready?: boolean, namespace?: string, image?: string | null } | null,
+ *   expectedConfigId?: string | null,
+ *   pod?: { ready?: boolean, namespace?: string, image?: string | null, imageId?: string | null } | null,
  *   httpStatus?: number | null,
  * }} input
  */
@@ -422,6 +423,14 @@ export function assessWebDevServerReadiness(input) {
   const runningImage = canonicalDockerImageReference(pod.image);
   if (!expectedImage || expectedImage !== runningImage) {
     return { ready: false, reason: 'image_mismatch', currentGeneration: null };
+  }
+  if (input.expectedConfigId) {
+    const runningConfig = typeof pod.imageId === 'string' && pod.imageId.startsWith('sha256:')
+      ? pod.imageId.split('@').pop()
+      : null;
+    if (runningConfig !== input.expectedConfigId) {
+      return { ready: false, reason: 'image_mismatch', currentGeneration: null };
+    }
   }
   if (typeof input.httpStatus !== 'number' || input.httpStatus < 200 || input.httpStatus >= 300) {
     return { ready: false, reason: 'http_unsuccessful', currentGeneration: null };
@@ -1189,9 +1198,9 @@ export function collectWebDevServerReadiness(input) {
   const pod = run([
     '--context', 'kind-offscreen-dev', '-n', input.namespace,
     'get', 'pod', '-l', 'app=game-web',
-    '-o', 'jsonpath={.items[0].metadata.namespace}{" "}{.items[0].status.containerStatuses[0].ready}{" "}{.items[0].status.containerStatuses[0].image}',
+    '-o', 'jsonpath={.items[0].metadata.namespace}{" "}{.items[0].status.containerStatuses[0].ready}{" "}{.items[0].status.containerStatuses[0].image}{" "}{.items[0].status.containerStatuses[0].imageID}',
   ]);
-  const [namespace, ready, image] = String(pod.stdout ?? '').trim().split(/\s+/);
+  const [namespace, ready, image, imageId] = String(pod.stdout ?? '').trim().split(/\s+/);
   let httpStatus = input.httpStatus ?? null;
   if (httpStatus === null && pod.status === 0 && ready === 'true') {
     const http = run([
@@ -1205,11 +1214,18 @@ export function collectWebDevServerReadiness(input) {
     '--context', 'kind-offscreen-dev', '-n', input.namespace,
     'get', 'deploy', 'game-web', '-o', 'jsonpath={.spec.template.spec.containers[0].image}',
   ]);
+  const expectedImage = expected.status === 0 ? String(expected.stdout).trim() : null;
+  let expectedConfigId = input.expectedConfigId ?? null;
+  if (!expectedConfigId && expectedImage) {
+    const inspected = spawnSync('docker', ['image', 'inspect', expectedImage, '--format', '{{.Id}}'], { encoding: 'utf8' });
+    if (inspected.status === 0) expectedConfigId = String(inspected.stdout).trim();
+  }
   return {
     namespace: input.namespace,
-    expectedImage: expected.status === 0 ? String(expected.stdout).trim() : null,
+    expectedImage,
+    expectedConfigId,
     pod: pod.status === 0 && namespace
-      ? { ready: ready === 'true', namespace, image: image || null }
+      ? { ready: ready === 'true', namespace, image: image || null, imageId: imageId || null }
       : null,
     httpStatus: Number.isFinite(httpStatus) ? httpStatus : null,
   };

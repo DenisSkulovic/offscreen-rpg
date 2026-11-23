@@ -62,6 +62,20 @@ test('web stays not ready when HTTP, pod or image checks fail', () => {
     ...healthy,
     pod: { ...healthy.pod, namespace: 'dev-4' },
   }).reason, 'namespace_mismatch');
+  const expectedConfigId = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  assert.equal(assessWebDevServerReadiness({
+    ...healthy,
+    expectedConfigId,
+    pod: {
+      ...healthy.pod,
+      imageId: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    },
+  }).reason, 'image_mismatch');
+  assert.equal(assessWebDevServerReadiness({
+    ...healthy,
+    expectedConfigId,
+    pod: { ...healthy.pod, imageId: expectedConfigId },
+  }).ready, true);
 });
 
 test('forwarder waits for the backend, records a replacement, and refuses a foreign port', async () => {

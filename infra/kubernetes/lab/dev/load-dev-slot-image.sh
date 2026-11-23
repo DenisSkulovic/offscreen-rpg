@@ -40,17 +40,56 @@ if [[ "$recorded" != "$fingerprint" ]]; then
   builds=1
 fi
 digest="$(docker image inspect "$canonical" --format '{{.Id}}')"
+# CRI image ids are config digests. `ctr images ls` prints the manifest
+# digest, which is not comparable to Docker's image ID.
+alias_config_id() {
+  local node="$1"
+  local ref="$2"
+  docker exec "$node" crictl inspecti "docker.io/library/${ref}" 2>/dev/null \
+    | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const j=JSON.parse(s);const id=j.status&&j.status.id;if(typeof id==="string")process.stdout.write(id)}catch{}})' \
+    || true
+}
 roles=(web api authority worker)
 if [[ "$role" != "all" ]]; then roles=("$role"); fi
 for alias_role in "${roles[@]}"; do
   ref="offscreen-dev-workspace:${slot}-${alias_role}"
   docker tag "$canonical" "$ref"
-  for node in "${cluster}-control-plane" "${cluster}-worker"; do
-    if docker exec "$node" ctr -n k8s.io images ls 2>/dev/null | grep -F "$ref" >/dev/null; then
-      continue
-    fi
+  node_json="$(node --input-type=module -e '
+import { planAliasIdentityLoad } from "./scripts/repo-tools/dev-slot-image-plan.mjs";
+const [ref, expected, control, worker] = process.argv.slice(1);
+const plan = planAliasIdentityLoad({
+  ref,
+  expectedConfigId: expected,
+  nodes: {
+    "control-plane": { configId: control || null },
+    worker: { configId: worker || null },
+  },
+});
+process.stdout.write(plan.loadNodes.join(" "));
+' "$ref" "$digest" \
+    "$(alias_config_id "${cluster}-control-plane" "$ref")" \
+    "$(alias_config_id "${cluster}-worker" "$ref")")"
+  for node_role in $node_json; do
+    node="${cluster}-${node_role}"
     echo "phase=kind-load role=${alias_role} node=${node}" >&2
     kind load docker-image "$ref" --name "$cluster" --nodes "$node"
   done
+  confirmed="$(node --input-type=module -e '
+import { confirmLoadedAliasIdentity } from "./scripts/repo-tools/dev-slot-image-plan.mjs";
+const [expected, control, worker] = process.argv.slice(1);
+const result = confirmLoadedAliasIdentity({
+  expectedConfigId: expected,
+  nodes: {
+    "control-plane": { configId: control || null },
+    worker: { configId: worker || null },
+  },
+});
+if (!result.ok) {
+  console.error(`post-load-mismatch nodes=${result.nodes.join(",")}`);
+  process.exit(1);
+}
+' "$digest" \
+    "$(alias_config_id "${cluster}-control-plane" "$ref")" \
+    "$(alias_config_id "${cluster}-worker" "$ref")")"
 done
 echo "builds=${builds} digest=${digest}"
