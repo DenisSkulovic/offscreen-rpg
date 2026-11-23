@@ -63,10 +63,6 @@
       "types": "./dist/src/campaign-holds.d.ts",
       "default": "./dist/src/campaign-holds.js"
     },
-    "./usage-policy": {
-      "types": "./dist/src/usage-policy.d.ts",
-      "default": "./dist/src/usage-policy.js"
-    },
     "./current-authority": {
       "types": "./dist/src/current-authority.d.ts",
       "default": "./dist/src/current-authority.js"
@@ -91,10 +87,6 @@
       "types": "./dist/src/story-retrieval.d.ts",
       "default": "./dist/src/story-retrieval.js"
     },
-    "./admin": {
-      "types": "./dist/src/admin.d.ts",
-      "default": "./dist/src/admin.js"
-    },
     "./read-cache": {
       "types": "./dist/src/read-cache.d.ts",
       "default": "./dist/src/read-cache.js"
@@ -106,10 +98,6 @@
     "./storyteller-notices": {
       "types": "./dist/src/storyteller-notices.d.ts",
       "default": "./dist/src/storyteller-notices.js"
-    },
-    "./terminal-auth": {
-      "types": "./dist/src/terminal-auth.d.ts",
-      "default": "./dist/src/terminal-auth.js"
     }
   },
   "scripts": {
@@ -120,6 +108,7 @@
   "dependencies": {
     "@offscreen/documents": "workspace:*",
     "@offscreen/game": "workspace:*",
+    "@offscreen/usage-policy": "workspace:*",
     "zod": "4.6.5"
   },
   "devDependencies": {

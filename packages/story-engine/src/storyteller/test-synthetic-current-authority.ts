@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import {
   storytellerCurrentOwnerGrant,
   storytellerCurrentPlatformPolicy,

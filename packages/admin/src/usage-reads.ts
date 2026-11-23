@@ -8,7 +8,7 @@ import {
 import type {
   UsageStatusEnvelopeV1,
   UsageStatusV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import type { AdminEnvironment } from './registry.js';
 import { AdminSessionError } from './session.js';
 

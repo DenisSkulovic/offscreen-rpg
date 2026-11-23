@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import {
   type ProviderOutcome,
   type StorytellerProvider,

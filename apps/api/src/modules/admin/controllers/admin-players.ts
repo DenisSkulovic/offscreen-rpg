@@ -16,7 +16,7 @@ import {
   type CampaignMetadataPageV1,
   type PlayerSearchPageV1,
   type PlayerSummaryEnvelopeV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import {
   AdminSessionError,
   type AdminAccess,

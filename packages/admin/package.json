@@ -14,6 +14,7 @@
     "test": "node --test test/admin-*.test.mjs"
   },
   "dependencies": {
+    "@offscreen/admin-interface": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/contracts": "workspace:*",
     "drizzle-orm": "0.45.2"

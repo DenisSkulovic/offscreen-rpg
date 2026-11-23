@@ -15,8 +15,10 @@
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
+    "@offscreen/admin-interface": "workspace:*",
     "@offscreen/contracts": "workspace:*",
     "@offscreen/game": "workspace:*",
+    "@offscreen/identity-interface": "workspace:*",
     "@tanstack/react-query": "5.107.1",
     "better-auth": "1.7.5",
     "next": "16.3.5",

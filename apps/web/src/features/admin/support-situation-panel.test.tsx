@@ -9,12 +9,12 @@ import type {
   AdminSelfV1,
   CaseSummaryV1,
   SupportSituationV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { createBrowserQueryClient } from '@/src/shared/api/query-client';
 import { AdminCaseQueue, investigableCampaignId } from './case-queue';
 import { adminQueryKeys } from './admin-query-keys';
 import { buildSafeReferral, WHY_TEMPLATES } from './support-situation-copy';
-import { SUPPORT_REASON_CODES } from '@offscreen/contracts/admin';
+import { SUPPORT_REASON_CODES } from '@offscreen/admin-interface/admin';
 
 const STAFF = '11111111-1111-4111-8111-111111111111';
 const OTHER_STAFF = '22222222-2222-4222-8222-222222222222';

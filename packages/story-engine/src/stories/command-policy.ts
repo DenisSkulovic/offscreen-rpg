@@ -18,7 +18,7 @@ import {
 import type { storyPassage } from '@offscreen/db/story-schema';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
-import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
+import { effectiveUsagePolicySchema } from '@offscreen/usage-policy/usage-policy';
 import { decisionPlanSchema, waitPlanSchema } from './plans';
 
 const hasCompleteGenerationProvenance = (value: {

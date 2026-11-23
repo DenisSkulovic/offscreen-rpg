@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { projectUsageStatus } from '../dist/index.js';
-import { usageStatusV1Schema } from '@offscreen/contracts/admin';
+import { usageStatusV1Schema } from '@offscreen/admin-interface/admin';
 
 test('usage projection never invents free-tier or zero-cost authority', () => {
   const empty = usageStatusV1Schema.parse(

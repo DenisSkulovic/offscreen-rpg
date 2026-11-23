@@ -6,7 +6,7 @@ import {
   type EvaluationPacketConfig,
   type MemoryEvaluationPacketConfig,
 } from '@offscreen/contracts/live-evaluation';
-import type { UsageEntitlementProfile } from '@offscreen/contracts/usage-policy';
+import type { UsageEntitlementProfile } from '@offscreen/usage-policy/usage-policy';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 
 export { evaluationPacketInspectionSchema };

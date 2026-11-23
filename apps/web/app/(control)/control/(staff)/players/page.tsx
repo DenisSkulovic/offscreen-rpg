@@ -2,7 +2,7 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 import {
   playerSummaryEnvelopeV1Schema,
   type PlayerSummaryEnvelopeV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { requireAdminActor } from '@/src/server/admin-actor';
 import { nestFetch } from '@/src/server/nest-reader';
 import { createServerQueryClient } from '@/src/shared/api/query-client';

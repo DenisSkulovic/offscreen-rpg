@@ -1,0 +1,24 @@
+{
+  "name": "@offscreen/identity-interface",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./terminal-auth": {
+      "types": "./dist/src/terminal-auth.d.ts",
+      "default": "./dist/src/terminal-auth.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

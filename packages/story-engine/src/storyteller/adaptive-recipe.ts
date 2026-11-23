@@ -2,7 +2,7 @@
  * SA06: intersect TaskEvidenceNeed with effective usage policy to pick a recipe.
  * Premium allowance alone never selects memory exploration.
  */
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import type {
   CreativeExplorationLimits,
   CreativeExplorationPosture,

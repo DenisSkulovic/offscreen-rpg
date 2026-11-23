@@ -8,7 +8,7 @@
  * only decides whether the local launcher may start provider-capable Story mode.
  */
 
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 
 export type SqlClient = {
   query(

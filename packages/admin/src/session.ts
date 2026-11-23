@@ -10,7 +10,7 @@ import {
   ADMIN_BOOTSTRAP_PACKAGE_ID,
   ADMIN_BOOTSTRAP_PACKAGE_VERSION,
   type AdminSelfV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { mintAdminToken, digestAdminToken } from './token.js';
 
 export const ADMIN_LOGIN_FRESHNESS_MS = 15 * 60 * 1000;

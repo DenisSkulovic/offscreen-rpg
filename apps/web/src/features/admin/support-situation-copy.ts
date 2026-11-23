@@ -3,7 +3,7 @@ import type {
   SupportReasonCode,
   SupportSafeRefV1,
   SupportSituationV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 
 /**
  * OBS07 reviewed deterministic Support copy. Every sentence is keyed by a

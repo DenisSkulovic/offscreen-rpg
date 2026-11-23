@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@offscreen/admin": "workspace:*",
+    "@offscreen/admin-interface": "workspace:*",
     "@offscreen/api": "workspace:*",
     "@offscreen/api-lab": "workspace:*",
     "@offscreen/content-packages": "workspace:*",
@@ -60,6 +61,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@offscreen/usage-policy": "workspace:*",
     "@offscreen/config": "workspace:*",
     "@types/node": "22.20.3",
     "typescript": "5.9.3"

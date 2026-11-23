@@ -18,7 +18,7 @@ import type {
   RedactedOperationEnvelopeV1,
   RedactedOperationPageV1,
   RedactedOperationV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import type { AdminEnvironment } from './registry.js';
 import { AdminSessionError } from './session.js';
 

@@ -1,6 +1,6 @@
 import { and, desc, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import {
   storytellerAttempt,
   storytellerOperation,

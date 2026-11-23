@@ -35,7 +35,7 @@ import { DRAFTS } from '../modules/drafts/controller.js';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { OPENINGS } from '../modules/drafts/openings-controller.js';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import type { OpeningContentEntry } from '@offscreen/story-engine/storyteller/openings';
 import type { DocumentStore } from '@offscreen/documents';
 import {

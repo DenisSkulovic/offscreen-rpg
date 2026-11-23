@@ -1,7 +1,7 @@
 import {
   effectiveUsagePolicySchema,
   type EffectiveUsagePolicy,
-} from '@offscreen/contracts/usage-policy';
+} from '@offscreen/usage-policy/usage-policy';
 import {
   prepareStorytellerTask,
   maximumProviderCharge,

@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import {
   adminSelfV1Schema,
   type AdminSelfV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { PATHNAME_HEADER } from '@/src/features/session/safe-entry-destination';
 import { signInHrefForControl } from '@/src/features/admin/safe-control-destination';
 import { nestFetch, type ServerRequestContext } from './nest-reader';

@@ -17,7 +17,7 @@ import {
   approveTerminalPairingSchema,
   createTerminalPairingSchema,
   exchangeTerminalPairingSchema,
-} from '@offscreen/contracts/terminal-auth';
+} from '@offscreen/identity-interface/terminal-auth';
 import { IdentityService } from '../auth/identity.js';
 import { TerminalAuthService } from './service.js';
 import { digestAccessToken } from './crypto.js';

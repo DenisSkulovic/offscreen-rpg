@@ -5,7 +5,7 @@ import { bootstrapAdminStaff } from '@offscreen/admin';
 import {
   adminAuditPageV1Schema,
   adminStaffAccessV1Schema,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { withApiOnlyAuth } from './helpers/api-only-auth.js';
 
 function combineCookies(...parts: Array<string | null | undefined>) {

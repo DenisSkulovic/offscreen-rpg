@@ -22,7 +22,7 @@ import {
   type RedactedOperationEnvelopeV1,
   type RedactedOperationPageV1,
   type UsageStatusEnvelopeV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import {
   AdminSessionError,
   type AdminAccess,

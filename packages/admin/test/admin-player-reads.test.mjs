@@ -4,7 +4,7 @@ import {
   playerSearchPageV1Schema,
   playerSummaryEnvelopeV1Schema,
   playerSummaryV1Schema,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import {
   projectPlayerSummary,
   wrapPlayerSummaryEnvelope,

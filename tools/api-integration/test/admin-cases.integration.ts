@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import { bootstrapAdminStaff } from '@offscreen/admin';
-import { caseSummaryV1Schema } from '@offscreen/contracts/admin';
+import { caseSummaryV1Schema } from '@offscreen/admin-interface/admin';
 import { withApiOnlyAuth } from './helpers/api-only-auth.js';
 
 function combineCookies(...parts: Array<string | null | undefined>) {

@@ -1,5 +1,14 @@
 # Proof matrix
-No proof executed by ChatGPT. Run from repo root after install; report actual exit code and counts.
+No proof executed by ChatGPT. Parent receipt on `change/do02-admin-identity-usage` (base `c7f19e07`), worktree `/home/dskul/projects/offscreen-rpg-do02`. Not joined to `undertaking/storyteller-workshop`; DO01 is integration custodian.
+
+| Check | Result |
+|---|---|
+| Emitted tests | `node --test` on the three `dist/test/*.js` files: 9/9 pass (extra key, uppercase digest, `'-1'`, numeric 0 rejected) |
+| Reverse build/typecheck | turbo build+typecheck for dependents of the three leaves: 39 successful, `@offscreen/api-integration#typecheck` failed in `test/library-batch-read.test.ts` TS2379 `corruptHash` exactOptionalPropertyTypes. That file is not in the DO02 diff. Recorded baseline-unrelated; not masked. |
+| Module graph command | Before commit, `pnpm repo:module-graph` ENOENT on indexed-but-deleted `packages/contracts/src/admin.ts` because `git ls-files` still lists the old path. Re-run after the Change commit. |
+| Module graph unit tests | `pnpm repo:module-graph:test` 26/26 pass |
+| Live DB / cluster | not run |
+
 
 | Check | Positive | Negative |
 |---|---|---|

@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import {
   effectiveUsagePolicySchema,
   type EffectiveUsagePolicy,
-} from '@offscreen/contracts/usage-policy';
+} from '@offscreen/usage-policy/usage-policy';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import type { UsagePolicyResolution } from './usage-policy-resolution';
 

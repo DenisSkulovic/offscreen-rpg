@@ -11,7 +11,7 @@ import {
 import {
   campaignMetadataV1Schema,
   redactedOperationV1Schema,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 
 test('campaign metadata uses legacy-owner and never embeds passages', () => {
   const row = projectCampaignMetadata({

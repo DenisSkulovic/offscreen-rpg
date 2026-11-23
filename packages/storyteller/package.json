@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "@offscreen/contracts": "workspace:*",
+    "@offscreen/usage-policy": "workspace:*",
     "@offscreen/game": "workspace:*",
     "zod": "4.6.5"
   },

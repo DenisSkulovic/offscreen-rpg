@@ -8,7 +8,7 @@ import {
 import {
   adminAuditEventV1Schema,
   adminStaffAccessV1Schema,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 
 test('staff access summarizes scope without listing private resource ids', () => {
   const access = adminStaffAccessV1Schema.parse(

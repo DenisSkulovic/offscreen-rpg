@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { fromNodeHeaders } from 'better-auth/node';
-import type { AdminSelfV1 } from '@offscreen/contracts/admin';
+import type { AdminSelfV1 } from '@offscreen/admin-interface/admin';
 import {
   AdminSessionError,
   readAdminTokenFromCookieHeader,

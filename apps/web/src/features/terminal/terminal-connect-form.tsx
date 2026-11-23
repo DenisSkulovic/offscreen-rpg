@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
-import type { TerminalPairingConsent } from '@offscreen/contracts/terminal-auth';
+import type { TerminalPairingConsent } from '@offscreen/identity-interface/terminal-auth';
 import { Action } from '@/src/shared/ui/action';
 
 type SubmitState =
