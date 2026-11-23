@@ -107,7 +107,8 @@ test('toy breaker fixture matrix', () => {
   const checkout = join(dir, 'checkout');
   mkdirSync(checkout, { recursive: true });
   const first = allocateIndependentEnvironment(checkout, dir, deps());
-  record('L01', first.slotId === 'dev-1' && first.namespace === 'offscreen-dev-1' && first.ports.game !== first.ports.control ? 'PASS' : 'FAIL', 'one dev-N with distinct ports', `${first.slotId} game=${first.ports.game} control=${first.ports.control}`);
+  const firstPorts = [first.ports.game, first.ports.control, first.ports.tilt, first.ports.spare];
+  record('L01', first.slotId === 'dev-1' && first.namespace === 'offscreen-dev-1' && new Set(firstPorts).size === 4 ? 'PASS' : 'FAIL', 'one dev-N with four distinct ports', `${first.slotId} ${firstPorts.join(',')}`);
 
   const again = readRegistryV2(dir).environmentsById['dev-1'];
   record('L02', again.slotId === first.slotId && Object.keys(readRegistryV2(dir).environmentsById).length === 1 ? 'PASS' : 'FAIL', 'repeat keeps one identity', again.slotId);
@@ -150,7 +151,7 @@ test('toy breaker fixture matrix', () => {
   const used = new Set();
   const parallel = Array.from({ length: 8 }, () => allocateIndependentEnvironment(join(raceDir, 'one'), raceDir, deps(used)));
   const ids = new Set(parallel.map((item) => item.slotId));
-  record('R01', ids.size === 8 ? 'PASS' : 'FAIL', 'serialized lock yields distinct ids', String(ids.size));
+  record('R01', ids.size === 8 ? 'PARTIAL' : 'FAIL', 'eight sequential allocations produced distinct ids; one shared reservation was not contended', String(ids.size));
 
   const victim = parallel[0];
   const signals = [];
@@ -231,7 +232,7 @@ test('toy breaker fixture matrix', () => {
     sessionRoot: environmentSessionRoot(shared),
     processDeps: alive({}),
   });
-  record('W05', rebound.ok === false && rebound.reason === 'checkout_mismatch' ? 'PASS' : 'FAIL', 'reattach to another checkout refused', rebound.reason);
+  record('W05', rebound.ok === false && rebound.reason === 'checkout_mismatch' ? 'PARTIAL' : 'FAIL', 'park refused checkout_mismatch; successful reattachment was not exercised', rebound.reason);
 
   record('W06', 'NOT IMPLEMENTED', 'missing checkout discovered on a live session', 'no live session watcher in this fixture');
 
@@ -334,7 +335,7 @@ test('toy breaker fixture matrix', () => {
   record('I05', 'NOT IMPLEMENTED', 'compile error blocks freshness success', 'fixture has no compiler runner');
   const one = planUnionImageUse({ slotId: 'dev-1', fingerprint: 'abc', artifact: { digest: 'sha256:abc', fingerprint: 'abc' }, nodes: {} });
   const two = planUnionImageUse({ slotId: 'dev-2', fingerprint: 'abc', artifact: { digest: 'sha256:abc', fingerprint: 'abc' }, nodes: {} });
-  record('I06', one.digest === two.digest && one.build === false && two.build === false ? 'PASS' : 'FAIL', 'same union digest is reused', one.digest);
+  record('I06', one.digest === two.digest && one.build === false && two.build === false ? 'PARTIAL' : 'FAIL', 'two plans reused a supplied digest; concurrent single-build was not exercised', one.digest);
 
   let duplicate = 'accepted';
   const duplicateRoot = root();
@@ -379,7 +380,7 @@ test('toy breaker fixture matrix', () => {
   } catch (error) {
     lab = error.id ?? 'refused';
   }
-  record('S06', lab === 'accepted' ? 'FAIL' : 'PASS', 'release cluster name refused', lab);
+  record('S06', lab === 'invalid-cluster' ? 'PASS' : 'FAIL', 'kind-offscreen-lab refused before registry mutation', lab);
 
   record('C01', refused ? 'PASS' : 'FAIL', 'capacity refusal stops allocation', String(refused));
   const parkedAll = [left, right].every((item) => {

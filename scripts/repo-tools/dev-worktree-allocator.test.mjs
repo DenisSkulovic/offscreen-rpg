@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import {
   allocateDevWorktreeOwner,
+  allocateIndependentEnvironment,
   attachDevWorktreeProcess,
   getProcessIdentitySupport,
   isAllocatorRefusal,
@@ -19,7 +20,16 @@ import {
   DEV_CLUSTER_NAME,
   DEFAULT_PORT_RANGE,
 } from './dev-worktree-allocator.mjs';
-import { encodeDnsSafeSlotId, withRegistryLock } from './dev-worktree-registry.mjs';
+import {
+  encodeDnsSafeSlotId,
+  migrateRegistryV1ToV2,
+  readRegistryV2,
+  registryFilePath,
+  REGISTRY_VERSION,
+  REGISTRY_VERSION_V2,
+  withRegistryLock,
+  writeRegistry,
+} from './dev-worktree-registry.mjs';
 
 const IDENTITY_COUNTS = [1, 4, 5, 10, 100];
 
@@ -106,8 +116,25 @@ test('dynamic port bundle planning is not a fixed four-slot table', () => {
   const tenth = planPortBundleForSlotIndex(9, DEFAULT_PORT_RANGE);
   assert.ok(fifth);
   assert.ok(tenth);
+  assert.deepEqual(portBundleValues(fifth), [fifth.game, fifth.game + 1, fifth.game + 2, fifth.game + 3]);
+  assert.equal(new Set(portBundleValues(fifth)).size, 4);
   assert.ok(portBundlesDisjoint(fifth, tenth));
   assert.ok(fifth.tilt < tenth.game);
+});
+
+test('a range that cannot hold four distinct ports refuses a new bundle', () => {
+  assert.equal(planPortBundleForSlotIndex(0, { start: 20000, end: 20002 }, 4), null);
+  assert.equal(planPortBundleForSlotIndex(0, { start: 20000, end: 20003 }, 3), null);
+  withTempRegistry((registryRoot) => {
+    assert.throws(
+      () => allocateDevWorktreeOwner('/tmp/too-small', registryRoot, {
+        canonicalizePath: (p) => p,
+        isPortAvailable: () => true,
+        portRange: { start: 20000, end: 20002 },
+      }),
+      (error) => isAllocatorRefusal(error) && error.id === 'exhausted-port-range',
+    );
+  });
 });
 
 test('concurrent allocation race: lock holder times out second caller without mutation', () => {
@@ -314,4 +341,79 @@ test('process identity support is reported for platform stop semantics', () => {
     assert.equal(support.supported, true);
     assert.match(support.api, /\/proc/);
   }
+});
+
+test('historical three-port records migrate unchanged and new bundles avoid them', () => {
+  withTempRegistry((registryRoot) => {
+    const historical = {
+      game: 13100,
+      control: 13100,
+      tilt: 13101,
+      spare: 13102,
+    };
+    writeRegistry(registryRoot, {
+      version: REGISTRY_VERSION,
+      nextSequence: 2,
+      ownersByWorktree: {
+        '/tmp/legacy': {
+          slotId: 'dev-1',
+          worktreePath: '/tmp/legacy',
+          cluster: DEV_CLUSTER_NAME,
+          namespace: 'offscreen-dev-1',
+          ports: historical,
+          processIdentity: null,
+          resourceUids: {},
+          lease: null,
+        },
+      },
+    });
+    const migrated = migrateRegistryV1ToV2(registryRoot, { authorizeCutover: true, liveRoot: '/not-live' });
+    assert.deepEqual(migrated.environmentsById['dev-1'].ports, historical);
+    const created = allocateIndependentEnvironment('/tmp/fresh', registryRoot, {
+      canonicalizePath: (path) => path,
+      isPortAvailable: () => true,
+    });
+    const reserved = new Set([13100, 13101, 13102]);
+    for (const port of portBundleValues(created.ports)) {
+      assert.equal(reserved.has(port), false);
+    }
+    assert.equal(new Set(portBundleValues(created.ports)).size, 4);
+    assert.deepEqual(readRegistryV2(registryRoot).environmentsById['dev-1'].ports, historical);
+  });
+});
+
+test('an invalid cluster writes nothing on either allocation path', () => {
+  const deps = {
+    canonicalizePath: (path) => path,
+    isPortAvailable: () => true,
+    cluster: 'kind-offscreen-lab',
+  };
+  withTempRegistry((registryRoot) => {
+    writeRegistry(registryRoot, {
+      version: REGISTRY_VERSION,
+      nextSequence: 4,
+      ownersByWorktree: {},
+    });
+    const before = readFileSync(registryFilePath(registryRoot));
+    assert.throws(
+      () => allocateDevWorktreeOwner('/tmp/lab-v1', registryRoot, deps),
+      (error) => isAllocatorRefusal(error) && error.id === 'invalid-cluster',
+    );
+    assert.deepEqual(readFileSync(registryFilePath(registryRoot)), before);
+  });
+  withTempRegistry((registryRoot) => {
+    writeRegistry(registryRoot, {
+      version: REGISTRY_VERSION_V2,
+      nextSequence: 7,
+      environmentsById: {},
+      defaultEnvironmentByCheckout: {},
+    });
+    const before = readFileSync(registryFilePath(registryRoot));
+    assert.throws(
+      () => allocateIndependentEnvironment('/tmp/lab-v2', registryRoot, deps),
+      (error) => isAllocatorRefusal(error) && error.id === 'invalid-cluster',
+    );
+    assert.deepEqual(readFileSync(registryFilePath(registryRoot)), before);
+    assert.equal(readRegistryV2(registryRoot).nextSequence, 7);
+  });
 });

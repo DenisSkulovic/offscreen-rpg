@@ -131,15 +131,20 @@ export function probeLoopbackPortBindableSync(port) {
  */
 export function planPortBundleForSlotIndex(slotIndex, range, bundleSize = DEFAULT_PORT_BUNDLE_SIZE) {
   if (!Number.isInteger(slotIndex) || slotIndex < 0) return null;
+  if (!Number.isInteger(bundleSize) || bundleSize < 4) return null;
+  if (!Number.isInteger(range.start) || !Number.isInteger(range.end) || range.end < range.start) return null;
   const base = range.start + slotIndex * bundleSize;
-  const last = base + bundleSize - 1;
-  if (last > range.end) return null;
-  return {
+  const bundle = {
     game: base,
-    control: base,
-    tilt: base + 1,
-    spare: base + 2,
+    control: base + 1,
+    tilt: base + 2,
+    spare: base + 3,
   };
+  const last = base + bundleSize - 1;
+  if (last > range.end || bundle.spare > range.end) return null;
+  const distinct = new Set(portBundleValues(bundle));
+  if (distinct.size !== 4) return null;
+  return bundle;
 }
 
 /**
@@ -180,6 +185,9 @@ export function portBundlesDisjoint(left, right) {
  *   & Pick<DevWorktreeAllocatorDeps, 'lockTimeoutMs'>
  */
 export function resolveAllocatorDeps(deps = {}) {
+  if (deps.cluster !== undefined && deps.cluster !== DEV_CLUSTER_NAME) {
+    throw refusal('invalid-cluster', `Cluster is not the dev cluster: ${deps.cluster}`);
+  }
   const identity = deps.readProcessIdentity ?? readLinuxProcessStartTime;
   return {
     canonicalizePath: deps.canonicalizePath ?? ((worktreePath) => {
