@@ -1,30 +1,49 @@
 # Nest stories / Chamber routes | API ownership map
 
-**First look:** `StoriesController` is a thin authenticated Nest API facade. It calls application operations using `ownerId` and maps `StoryError` to HTTP; it does **not** decide game rules, effects or private narrative. **Current:** resolution-receipt GET (W19) and story SSE updates (W16) are implemented.
-**Start:** [StoriesController](controller.ts) → [createStoryApplication](../../../../../packages/application/src/stories/index.ts) → [story application map](../../../../../packages/story-engine/src/stories/README.md). For private browser reads see [web transport map](../../../../web/src/lib/README.md).
+**First look:** Stories HTTP routes are thin authenticated Nest facades under `controllers/`. They call application operations using `ownerId` and map `StoryError` to HTTP; they do **not** decide game rules, effects or private narrative. **Current:** resolution-receipt GET (W19) and story SSE updates (W16) are implemented.
+**Start:** [route registry](controllers/registry.ts) → handler group (`catalogue-and-launch`, `story-reads`, `story-commands`, `story-events`, `story-documents`) → [story HTTP context](story-http-context.ts) → [createStoryApplication](../../../../../packages/application/src/stories/index.ts) → [story application map](../../../../../packages/story-engine/src/stories/README.md). For private browser reads see [web transport map](../../../../web/src/lib/README.md).
 **Source basis:** post-W16; recheck symbols before editing. **Never call provider from a GET, retry after ambiguous charged work automatically, or expose internal workflow rows as public DTOs.** Cross-route status and identity rules shared with drafts and openings: [HTTP and client contracts](../../../../../docs/technical/platform/http-api-and-client-contracts.md).
 
-## Route contract map (selected relevant endpoints)
+## Identity and error mapping
 
-| HTTP endpoint under `/api/stories` | Method/status in current controller | Application responsibility |
+`StoryPlayerIdentity.requireStoryPlayer` is the sole Stories HTTP identity entry (cookie session or story-only bearer; cookie + bearer is rejected). Shared helpers in [story-http-context.ts](story-http-context.ts) map `StoryError` codes `invalid→400`, `not_found→404`, `conflict→409`, `unavailable→503`; launch admission uses `not-admitted→403`. Non-`StoryError` becomes service unavailable.
+
+## Route contract map
+
+| HTTP endpoint under `/api/stories` | Controller group | Method/status |
 | --- | --- | --- |
-| `/` and `/:id` | GET 200 | owner-scoped list/snapshot; full public snapshot parsed by Zod web client. Distributed mode reads `/:id` from Game Authority. The list stays in-process |
-| `/:id/history` | GET 200 | owner-scoped chronology, numeric `before` cursor |
-| `/:id/events` | GET 200 | GM05 owner-scoped public committed-event page (`before`/`limit`); coverage `since-enabled`; no seen-cursor mutation |
-| `/:id/updates` | **SSE** | authenticated committed-view hints via [story-update-hub](story-update-hub.ts); no narrative |
-| `/presets/catalogue`, `/presets` | GET | public catalogue vs private owned preset list |
-| `/presets/:presetId` | PUT | captured preset revision/save; distinguish validation/conflict |
-| `/:id/settings` | GET | settings history, not editable local form state |
-| `/:id/settings/:operationId` | PUT | owned settings command; expected revision fence |
-| `/:id/actions/:operationId` | PUT | campaign action admission; result is current public view |
-| `/:id/activity-controls/:operationId`, `/:id/action-execution-controls/:operationId` | PUT | activity or action pause/resume/speed; real domain state from application |
-| `/:id/resolutions/:operationId` | **PUT 202** | admits intent; returned snapshot can still be `pending`/`running`. Distributed mode sends this command to Game Authority and does not also write the receipt here |
-| `/:id/controls/:operationId` | **PUT 200** | timed interval control, current snapshot |
-| `/:id/retries/:retryId` | PUT | specifically allowed recovery; **not** a duplicate paid request by inference |
-| `/:id/start` | **PUT 200** | starts from reviewed opening; story ID provides GET recovery anchor |
-| `/:id/resolutions/:operationId/receipt` | **GET** | read-only owner-scoped durable receipt, never enqueues/retries |
-
-**Error mapping:** `StoriesController.run` invokes `IdentityService.requireUser`; `StoryError` codes `invalid→400`, `not_found→404`, `conflict→409`, `unavailable→503`. Non-StoryError becomes service unavailable. Don't turn an unavailable server into “story deleted,” and don't disclose hidden other-owner existence.
+| `/` | catalogue-and-launch | GET 200 |
+| `/launch/:operationId` | catalogue-and-launch | PUT 200, GET 200 |
+| `/presets/catalogue`, `/presets` | catalogue-and-launch | GET 200 |
+| `/presets/:presetId` | catalogue-and-launch | PUT 200 |
+| `/:id/settings` | story-reads | GET 200 |
+| `/:id/settings/:operationId` | story-commands | PUT 200 |
+| `/:id/delegation-policy/:operationId` | story-commands | PUT 200 |
+| `/:id/delegated-offers/:operationId` | story-commands | PUT 200 |
+| `/:id/actions/:operationId` | story-commands | PUT 200 |
+| `/:id/activity-controls/:operationId` | story-commands | PUT 200 |
+| `/:id/action-execution-controls/:operationId` | story-commands | PUT 200 |
+| `/:id/accepted-plan-controls/:operationId` | story-commands | PUT 200 |
+| `/:id/world-obligation-controls/:operationId` | story-commands | PUT 200 |
+| `/:id/retries/:retryId` | story-commands | PUT 200 |
+| `/:id/updates` | story-events | **SSE** |
+| `/:id` | story-reads | GET 200 |
+| `/:id/scenes/:sequence` | story-reads | GET 200 |
+| `/:id/history` | story-reads | GET 200 |
+| `/:id/events` | story-reads | GET 200 |
+| `/:id/custom-intents/:interpretOperationId` | story-documents | PUT 200 |
+| `/:id/custom-intent-accepts/:operationId` | story-documents | PUT 200 |
+| `/:id/visit` | story-reads | GET 200 |
+| `/:id/visit/acks/:ackId` | story-documents | PUT 200 |
+| `/:id/documents` | story-reads | GET 200 |
+| `/:id/documents/projected-passages` | story-reads | GET 200 |
+| `/:id/documents/:documentId` | story-reads | GET 200 |
+| `/:id/documents/:operationId` | story-documents | PUT 200 |
+| `/:id/forks/:forkId` | story-commands | PUT 200 |
+| `/:id/start` | story-commands | PUT 200 |
+| `/:id/resolutions/:operationId/receipt` | story-reads | GET 200 |
+| `/:id/resolutions/:operationId` | story-commands | **PUT 202** |
+| `/:id/controls/:operationId` | story-commands | PUT 200 |
 
 ## SSE commit path (W16)
 
@@ -38,11 +57,11 @@ advanceStoryView / incrementStoryViewVersion (same DB transaction)
 
 LISTEN `error`/`end` marks the hub unhealthy, reconnects with backoff, and emits SSE `listener-recovered` so open clients refresh via GET. Heartbeats may continue while LISTEN is down; do not treat heartbeat as proof of NOTIFY health.
 
-Proxy note: responses set `Cache-Control: no-store, no-transform` and `X-Accel-Buffering: no`. Heartbeat ≈15s; reconnect re-authorizes.
+Proxy note: responses set `Cache-Control: no-store, no-transform` and `X-Accel-Buffering: no`. Heartbeat ≈15s; reconnect re-authorizes via `StoryPlayerIdentity` on [story-events](controllers/story-events.ts).
 
 ## Developer routes are conditional, not globally public
 
-Production [createApp](../../app.ts) does not register Chamber or QA controllers. Those four controllers live in `@offscreen/api-lab` and are mounted only by [createLabApp](../../../../../tools/api-lab/src/create-lab-app.ts). Ordinary [main](../../main.ts) does not use that factory; the loopback [Chamber launcher](../../../../../tools/chamber/src/main.ts) does when it is not in story mode.
+Production [createApp](../../app.ts) (`buildApiControllers` in [bootstrap/api-controllers.ts](../../bootstrap/api-controllers.ts)) does not register Chamber or QA controllers. Those four controllers live in `@offscreen/api-lab` and are mounted only by [createLabApp](../../../../../tools/api-lab/src/create-lab-app.ts). Ordinary [main](../../main.ts) does not use that factory; the loopback [Chamber launcher](../../../../../tools/chamber/src/main.ts) does when it is not in story mode.
 
 ## Targeted tests / extend only when needed
 

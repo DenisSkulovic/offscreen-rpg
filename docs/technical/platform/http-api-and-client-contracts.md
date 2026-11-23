@@ -20,7 +20,7 @@
 
 **Owner:** this heading, for the rule that every player handler shares. Each controller remains the route facade.
 
-`StoriesController.run`, `DraftsController.run`, and `OpeningsController.run` call `IdentityService.requireUser` and pass that session user id in as `ownerId` before the application operation. No session throws Nest `UnauthorizedException` (HTTP 401) and the operation is not called. A driver failure while reading the session throws HTTP 503 `Identity service unavailable`, which is also before the operation.
+Stories HTTP handlers call `StoryPlayerIdentity.requireStoryPlayer` through `runStoryRequest` in `apps/api/src/modules/stories/story-http-context.ts` (cookie session or story-only bearer). `DraftsController.run` and `OpeningsController.run` still call `IdentityService.requireUser`. Each path passes that user id in as `ownerId` before the application operation. No session throws Nest `UnauthorizedException` (HTTP 401) and the operation is not called. A driver failure while reading the session throws HTTP 503 `Identity service unavailable`, which is also before the operation.
 
 Story snapshot and resolution-receipt reads require `story.ownerId` to equal that session id. A miss throws `StoryError('not_found')`, which the controller maps to HTTP 404 `{ code: 'not_found' }`. Draft reads and saves use `DraftError('not_found')` and the same status and code. The other-session cases in the resolution, SSE, and draft integration tests assert 404. An empty cookie asserts 401. An unknown resolution id for the owner also asserts 404.
 
@@ -215,7 +215,7 @@ These were not established in the files read for this page.
 Read at `b3113814`, and not re-executed:
 
 - [identity.ts](../../../apps/api/src/modules/auth/identity.ts)
-- [stories controller](../../../apps/api/src/modules/stories/controller.ts)
+- [stories route map](../../../apps/api/src/modules/stories/README.md)
 - [drafts controller](../../../apps/api/src/modules/drafts/controller.ts)
 - [openings controller](../../../apps/api/src/modules/drafts/openings-controller.ts)
 - [story-update hub](../../../apps/api/src/modules/stories/story-update-hub.ts)

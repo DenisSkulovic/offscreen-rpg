@@ -2,7 +2,7 @@
 
 # Next implementation wave | HR01 · HR02 · HR03
 
-**Current routing checkpoint (2026-11-23, integration `8a782ffd`):** DXK09's unattended fresh worktree start/status/stop now passed, including six truthful READY roles, Web/API HTTP 200 and safe park. DXK11's zero-redundant-import implementation and truthful startup timing are integrated. The older `d9a2c11e` / `e93f33c7` image-owner blocker below is historical, not an active gate. Four simultaneous full stacks, browser OAuth, release-lab acceptance and completed story remain separate unproven targets. **HR01–HR03 are not yet dispatched**. They may run source-only focused tests independently; do not require three concurrent full stacks. DXK10's lightweight profiles are future, not implemented. This file coordinates a possible owner-authorized wave; `work/QUEUE.md` remains the selected-work pointer.
+**Current routing checkpoint (2026-11-23, integration `8a782ffd`):** DXK09's unattended fresh worktree start/status/stop now passed, including six truthful READY roles, Web/API HTTP 200 and safe park. DXK11's zero-redundant-import implementation and truthful startup timing are integrated. The older `d9a2c11e` / `e93f33c7` image-owner blocker below is historical, not an active gate. Four simultaneous full stacks, browser OAuth, release-lab acceptance and completed story remain separate unproven targets. **HR01, HR02, and HR03 are Done** on the undertaking branch as source-only readability work. They may run source-only focused tests independently; do not require three concurrent full stacks. DXK10's lightweight profiles are future, not implemented. This file coordinates a possible owner-authorized wave; `work/QUEUE.md` remains the selected-work pointer.
 
 ```mermaid
 flowchart LR
@@ -24,7 +24,7 @@ The immediate predecessor envelope is TURN03 (cold-kind), CL01 (terminal/auth), 
 
 | Lane | Full Change | Exclusive executable write surface | Prerequisite and gate |
 | --- | --- | --- | --- |
-| A | [HR01 API route/readability](../../changes/open/2026-11-22--hr01-api-route-ownership-readability/CHANGE.md) | `apps/api/src/app.ts`, `apps/api/src/modules/{stories,admin}/**`, narrowly named `bootstrap/` files | **MA12 + CL01 integrated**, re-inventory all new story-scoped terminal auth routes, identity, controller injection and SSE denial on actual HEAD |
+| A | [HR01 API route/readability](../../changes/archive/2026-11/other/2026-11-22--hr01-api-route-ownership-readability/CHANGE.md) | `apps/api/src/app.ts`, `apps/api/src/modules/{stories,admin}/**`, narrowly named `bootstrap/` files | Done from `a755b183`. Route sets equal. Disposable SQL integration NOT RUN |
 | B | [HR02 Next stories/play readability](../../changes/archive/2026-11/other/2026-11-22--hr02-web-player-feature-readability/CHANGE.md) | `apps/web/src/features/{stories,play}/**`, mechanical importers in `apps/web/app/**` and Storybook/tests | **Done 2026-11-23.** Terminal connect and auth adapters were not edited. |
 | C | [HR03 Drizzle schema/SQL atlas](../../changes/archive/2026-11/other/2026-11-22--hr03-db-schema-and-sql-navigation/CHANGE.md) | `packages/db/src/schema/storyteller{.ts,/**}`, DB README and Story Engine `SQL-OWNERSHIP.md` | **Done** on the undertaking branch. Fingerprint matched the pre-move baseline. No migration |
 

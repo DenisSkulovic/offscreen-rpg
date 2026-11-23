@@ -1,6 +1,31 @@
 # HR01 | A Nest API a human can read and navigate
 
-**Profile:** STRUCTURAL/REFACTOR · **Status: READY WITH EXPLICIT LIMITS for owner-commissioned source-only execution after current host writer/branch check (source-reconciled 2026-11-23 at `1c68ade1`).** MA12 and CL01 are integrated. See the current-head overlay in SOURCE-MAP.md. Historical planning text below describes the earlier gated state. Source-inspected baseline: `d3ba291763de`; integration branch `undertaking/storyteller-workshop`, current packet commit does not alter production. **This is a future readability wave, not a parallel editor of ongoing MA12 or planned CL01.**
+**State: Done (2026-11-23).** Stories and Admin HTTP handlers live in semantic controllers. `app.ts` composes through `apps/api/src/bootstrap/`. Joined on `undertaking/storyteller-workshop` from base `a755b183`. Not on `main`. Route methods, paths, and decorated statuses are unchanged. No new product contract.
+
+**Profile:** STRUCTURAL/REFACTOR. Historical planning text below describes the pre-execution gated state.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Stories HTTP identity and error mapping | `docs/technical/platform/http-api-and-client-contracts.md` Authenticated actor scope | changed path only: stories handlers use `StoryPlayerIdentity.requireStoryPlayer` via `runStoryRequest`; drafts and openings still use `IdentityService.requireUser` | `apps/api/src/modules/stories/story-http-context.ts` at base `a755b183405bec3d5c8edba850a5e48799b78ff1` | `@offscreen/api` test 27/27 PASS; route set equal 34 stories + 18 admin | wrong-owner, malformed UUID, stale revision, and revoked-bearer SSE integration NOT RUN (no disposable Postgres) | stories README identity section; HTTP contract paragraph |
+| Story-only bearer scope | `docs/technical/platform/identities-and-access.md` | unchanged scope because the bearer still enters only through stories HTTP controllers and SSE recheck | `apps/api/src/modules/stories/controllers/story-events.ts` at base `a755b183405bec3d5c8edba850a5e48799b78ff1` | source-inspected | SSE handler calls `requireStoryPlayer` on connect and on the recurring recheck | identities sentence names controllers, not `StoriesController` |
+| Admin staff permission facade | `docs/technical/platform/security-and-trust-boundaries.md` Staff control plane | unchanged permissions because `AdminActorService` and `admin-http-errors.ts` stayed the owners | `apps/api/src/modules/admin/controllers/` at base `a755b183405bec3d5c8edba850a5e48799b78ff1` | source-inspected; API unit tests 27/27 | capability, privacy 404, and malformed id checks remain in the moved handlers; disposable admin integration NOT RUN | admin README and security table path |
+| Player-visible contracts | `docs/product/README.md` | unchanged because methods, paths, statuses, revision, and idempotency were not selected to change | no product behavior changed; base `a755b183405bec3d5c8edba850a5e48799b78ff1` | route snapshot set equality | sorted before/after decorator inventories match | N/A |
+| Nest composition | `apps/api/src/app.ts` | changed structure only: controller and provider lists moved to `bootstrap/` | `apps/api/src/bootstrap/api-controllers.ts` at base `a755b183405bec3d5c8edba850a5e48799b78ff1` | API build/typecheck via package test PASS | optional lab extension still appended last; terminal auth controller unchanged | `apps/api/README.md` admin route link |
+
+Declared diff paths, each a move or navigation update because the HTTP facade was regrouped without a new contract:
+
+exception: `apps/api/src/app.ts` because composition now calls the bootstrap builders.
+exception: `apps/api/src/bootstrap/api-controllers.ts` because controller registration moved here.
+exception: `apps/api/src/bootstrap/api-providers.ts` because named providers moved here.
+exception: `apps/api/src/modules/stories/**` because route handlers moved into semantic controllers.
+exception: `apps/api/src/modules/admin/**` because route handlers moved into semantic controllers.
+exception: `apps/api/test/game-authority-seam.test.mjs` because an import path followed the stories split.
+exception: `apps/api/README.md` because the admin route link now points at the module README.
+exception: `docs/technical/platform/http-api-and-client-contracts.md` because the stories identity sentence named a removed `StoriesController.run`.
+exception: `docs/technical/platform/identities-and-access.md` because the bearer sentence named `StoriesController`.
+exception: `docs/technical/platform/security-and-trust-boundaries.md` because the staff-handler path named the old admin controller file.
 
 ## Source diagnosis and desired outcome
 

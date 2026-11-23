@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import { HttpException } from '@nestjs/common';
 import { StoryError } from '@offscreen/story-engine/stories';
 import { startGameAuthorityServer } from '@offscreen/game-authority/server';
-import { StoriesController } from '../dist/src/modules/stories/controller.js';
+import { StoriesCommandsController } from '../dist/src/modules/stories/controllers/story-commands.js';
+import { StoriesReadsController } from '../dist/src/modules/stories/controllers/story-reads.js';
 import {
   readStoryAuthorityConfig,
   storySeamFor,
@@ -34,10 +35,16 @@ const resolutionBody = {
 };
 
 const identity = {
-  async requireUser() {
+  async requireStoryPlayer() {
     return { id: ownerId, name: 'Ada', email: 'ada@example.com' };
   },
 };
+
+function storyControllers(local, seam) {
+  const commands = new StoriesCommandsController(identity, local, seam);
+  const reads = new StoriesReadsController(identity, local, seam);
+  return { commands, reads };
+}
 
 function receiptSeam() {
   const receipts = new Map();
@@ -130,10 +137,8 @@ test('distributed mode calls Game Authority and leaves the Nest writer idle', as
     timeoutMs: 1000,
   });
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands, reads } = storyControllers(
     local,
-    null,
     storySeamFor(local, {
       mode: 'distributed',
       origin: server.origin,
@@ -142,15 +147,15 @@ test('distributed mode calls Game Authority and leaves the Nest writer idle', as
     }),
   );
   try {
-    const snapshot = await controller.read(request, storyId);
+    const snapshot = await reads.read(request, storyId);
     assert.deepEqual(snapshot, { storyId, view: 'snapshot' });
-    const first = await controller.admitResolution(
+    const first = await commands.admitResolution(
       request,
       storyId,
       operationId,
       resolutionBody,
     );
-    const replay = await controller.admitResolution(
+    const replay = await commands.admitResolution(
       request,
       storyId,
       operationId,
@@ -165,7 +170,7 @@ test('distributed mode calls Game Authority and leaves the Nest writer idle', as
 
     await assert.rejects(
       () =>
-        controller.admitResolution(request, storyId, operationId, {
+        commands.admitResolution(request, storyId, operationId, {
           ...resolutionBody,
           submission: {
             ...resolutionBody.submission,
@@ -206,14 +211,12 @@ test('embedded mode keeps the in-process writer and does not call Game Authority
     },
   });
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, { mode: 'embedded' }),
   );
   try {
-    const admitted = await controller.admitResolution(
+    const admitted = await commands.admitResolution(
       request,
       storyId,
       operationId,
@@ -267,10 +270,8 @@ test('distributed mode routes start to Game Authority and leaves the Nest writer
     timeoutMs: 1000,
   });
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, {
       mode: 'distributed',
       origin: server.origin,
@@ -279,7 +280,7 @@ test('distributed mode routes start to Game Authority and leaves the Nest writer
     }),
   );
   try {
-    const started = await controller.startFromCandidate(
+    const started = await commands.startFromCandidate(
       request,
       storyId,
       startBody,
@@ -318,14 +319,12 @@ test('embedded mode keeps in-process start and does not call Game Authority', as
     },
   });
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, { mode: 'embedded' }),
   );
   try {
-    const started = await controller.startFromCandidate(
+    const started = await commands.startFromCandidate(
       request,
       storyId,
       startBody,
@@ -344,10 +343,8 @@ test('embedded mode keeps in-process start and does not call Game Authority', as
 
 test('distributed start does not fall back to local stories when Game Authority is down', async () => {
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, {
       mode: 'distributed',
       origin: 'http://127.0.0.1:1',
@@ -356,7 +353,7 @@ test('distributed start does not fall back to local stories when Game Authority 
     }),
   );
   await assert.rejects(
-    () => controller.startFromCandidate(request, storyId, startBody),
+    () => commands.startFromCandidate(request, storyId, startBody),
     (error) => error instanceof HttpException && error.getStatus() === 503,
   );
   assert.equal(local.calls.start, 0);
@@ -364,10 +361,8 @@ test('distributed start does not fall back to local stories when Game Authority 
 
 test('distributed admitResolution does not fall back to local stories when Game Authority is down', async () => {
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, {
       mode: 'distributed',
       origin: 'http://127.0.0.1:1',
@@ -377,7 +372,7 @@ test('distributed admitResolution does not fall back to local stories when Game 
   );
   await assert.rejects(
     () =>
-      controller.admitResolution(
+      commands.admitResolution(
         request,
         storyId,
         operationId,
@@ -405,10 +400,8 @@ test('distributed mode routes fork to Game Authority and leaves the Nest writer 
     timeoutMs: 1000,
   });
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, {
       mode: 'distributed',
       origin: server.origin,
@@ -417,7 +410,7 @@ test('distributed mode routes fork to Game Authority and leaves the Nest writer 
     }),
   );
   try {
-    const forked = await controller.fork(
+    const forked = await commands.fork(
       request,
       storyId,
       forkStoryId,
@@ -457,14 +450,12 @@ test('embedded mode keeps in-process fork and does not call Game Authority', asy
     },
   });
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, { mode: 'embedded' }),
   );
   try {
-    const forked = await controller.fork(
+    const forked = await commands.fork(
       request,
       storyId,
       forkStoryId,
@@ -484,10 +475,8 @@ test('embedded mode keeps in-process fork and does not call Game Authority', asy
 
 test('distributed fork does not fall back to local stories when Game Authority is down', async () => {
   const local = localStories();
-  const controller = new StoriesController(
-    identity,
+  const { commands } = storyControllers(
     local,
-    null,
     storySeamFor(local, {
       mode: 'distributed',
       origin: 'http://127.0.0.1:1',
@@ -496,7 +485,7 @@ test('distributed fork does not fall back to local stories when Game Authority i
     }),
   );
   await assert.rejects(
-    () => controller.fork(request, storyId, forkStoryId, forkBody),
+    () => commands.fork(request, storyId, forkStoryId, forkBody),
     (error) => error instanceof HttpException && error.getStatus() === 503,
   );
   assert.equal(local.calls.fork, 0);
