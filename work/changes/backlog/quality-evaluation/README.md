@@ -6,6 +6,7 @@
 | --- | --- |
 | [DX13](2026-11-22--dx13-measured-monorepo-build-cache/CHANGE.md) | measured monorepo build cache |
 | [EV01](2026-11-22--ev01-centwise-agent-evaluation/CHANGE.md) | centwise agent evaluation |
+| [SEM01](2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) | whole-repository semantic-debt, naming, ownership and abstraction inventory, with evidence-based prioritization; planner-held |
 
 These are future work, not today's execution queue. Reconcile source/owner/acceptance before moving any proposal to `open/`.
 

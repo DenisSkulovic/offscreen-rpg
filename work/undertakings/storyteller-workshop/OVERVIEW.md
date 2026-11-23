@@ -2,6 +2,8 @@
 
 **Human checkpoint · 2026-11-23.** Developer-environment correctness is demonstrably better, but this is **not yet a proven end-to-end AI Storyteller product**. DXK09's unattended new-worktree start/status/stop passed; DXK11's canonical-image reuse and timing improvements are integrated. DXK10-A reserve and attach are source-tested registry commands. Selective activation and provisioned-slot handoff remain **proposed**.
 
+**Longer-term maintainability debt:** [SEM01 codebase semantic-debt inventory](../../changes/backlog/quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) captures a human-first audit of opaque historical Change IDs in reusable code, ambiguous `lab` boundaries, package ownership, unnecessary abstractions and stale scaffolding. This is a **deferred source inventory, not an implementation authorization**; finish current TURN03 source-only owners without overlapping code edits.
+
 ## At a glance
 
 | Track | Rough complete | Still remaining | Interpretation |

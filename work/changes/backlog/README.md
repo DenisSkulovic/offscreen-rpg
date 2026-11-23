@@ -4,6 +4,8 @@
 
 [Open / near-term Changes](../README.md) · [Completed archive](../archive/README.md) · [Owner minutes](../../sessions/2026-11-22.md) · [Undertaking overview](../../undertakings/storyteller-workshop/OVERVIEW.md)
 
+**2026-11-23 newly recorded:** [SEM01 semantic-debt and architectural comprehensibility inventory](quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) is proposed and **not** a Cursor refactor commission. Inspect current source and de-duplicate against existing code-health and INF plans before promotion.
+
 ## Domains
 
 - [agent runtime](agent-runtime/README.md): 6 proposed Changes
