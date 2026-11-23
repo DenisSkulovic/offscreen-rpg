@@ -14,5 +14,6 @@
 | Campaign narration and capture | [src/campaign/narration.ts](src/campaign/narration.ts) |
 | Context capture and materialization | [src/storyteller/context-capture.ts](src/storyteller/context-capture.ts), [src/storyteller/capture-materialization.ts](src/storyteller/capture-materialization.ts) |
 | Scripted openings | [src/generations/scripted-openings.ts](src/generations/scripted-openings.ts) |
+| Pinned world/rule shelf reads | [src/storyteller/pinned-reference-shelf-navigation.ts](src/storyteller/pinned-reference-shelf-navigation.ts) `createPinnedReferenceShelfNavigation` |
 
 Moving a module here did not change owner checks, lock order, capture hashes, or provider budget. A green package build is not evidence that a foreign owner or a stale revision can write.

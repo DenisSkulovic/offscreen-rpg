@@ -1,6 +1,6 @@
 # agent runtime | proposed Changes
 
-**LIB04 design checkpoint (2026-11-23):** [pinned reference shelves](2026-11-23--lib04-mounted-reference-libraries/CHANGE.md) now has a selected target contract, code/authorization gaps, staged execution and proof matrix. Provider-neutral shelf navigation can be scoped as A; Writer capture/persistence B remains planner-held. [LIB04-A read-only adapter](../../open/2026-11-23--lib04a-pinned-reference-shelf-navigation/CHANGE.md) is owner-commissioned and source-only; runtime Writer integration B/C remains planner-blocked.
+**LIB04 design checkpoint (2026-11-23):** [pinned reference shelves](2026-11-23--lib04-mounted-reference-libraries/CHANGE.md) now has a selected target contract, code/authorization gaps, staged execution and proof matrix. Provider-neutral shelf navigation can be scoped as A; Writer capture/persistence B remains planner-held. [LIB04-A read-only adapter](../../archive/2026-11/storyteller/2026-11-23--lib04a-pinned-reference-shelf-navigation/CHANGE.md) is Done as source-only; runtime Writer integration B/C remains planner-blocked.
 
 - [LIB04 mounted reference libraries](2026-11-23--lib04-mounted-reference-libraries/CHANGE.md): future pin/grant-aware Storyteller reference shelves; planner-blocked.
 
