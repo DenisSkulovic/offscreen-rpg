@@ -5,7 +5,9 @@
 ## Actual source authority
 
 - `tools/api-integration/test/story03-causal-multiprocess.integration.ts::assertContinuationSql` reads `outbox` by `operationId + storytellerDistributedTopic` (one row), `storytellerAttempt` by `generationId===operationId` (one row), `storytellerPublication` by same generation (state `published`) and `storyPassage` ordered by storyId (`[1,2]`).
-- `packages/contracts/src/storyteller-notices.ts::storytellerDistributedTopic` is exactly `storyteller.distributed.v1`, reexported via Story Engine runtime.\n- `packages/db/src/schema/stories.ts::storyPassage` owns table `story_passage` and `sequence`.\n- `packages/db/src/schema/outbox.ts::outbox` columns `id`, `topic`, `operation_id`, `available_at`, `lease_id`, `delivered_at`.
+- `packages/contracts/src/storyteller-notices.ts::storytellerDistributedTopic` is exactly `storyteller.distributed.v1`, reexported via Story Engine runtime.
+- `packages/db/src/schema/stories.ts::storyPassage` owns table `story_passage` and `sequence`.
+- `packages/db/src/schema/outbox.ts::outbox` columns `id`, `topic`, `operation_id`, `available_at`, `lease_id`, `delivered_at`.
 - `packages/db/src/schema/storyteller/funding.ts::storytellerAttempt` table `storyteller_attempt`, columns `id`, `generation_id`, `owner_id`, `story_id`, `state`, etc. **Owner/story scope exists**; use it to reject a foreign attempt.
 - `packages/db/src/schema/storyteller/capture.ts::storytellerPublication` table `storyteller_publication`, `generation_id` and `state`.
 - `infra/kubernetes/lab/app-release/turn03/report.mjs` accepts only genuine `kind-cross-pod` evidence for certain gates. This new module **never** emits that evidence tier. Temporal workflow IDs cannot be inferred merely from an outbox row.
