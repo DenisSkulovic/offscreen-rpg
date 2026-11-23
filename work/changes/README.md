@@ -2,6 +2,8 @@
 
 ## Lifecycle at a glance (2026-11-22)
 
+**2026-11-23 immediate candidate:** [DXK10-A registry-only reserve and explicit attach](open/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is a bounded next-days infrastructure Change; no cluster startup or existing tenant takeover is authorized. DXK10-B/C remain planner-held. HR02 independently owns Web source paths. The queue remains unchanged until owner dispatch selects a Change.
+
 **[Open](open/): 11 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
 
 **[Backlog](backlog/README.md): 32 deferred or future Changes in five domain groups.** DXK08 was promoted on 2026-11-22 after fresh source/readiness reconciliation. No backlog Change may be treated as Cursor-ready solely from a previous status label; promotion requires a fresh source/readiness check and explicit owner commission.

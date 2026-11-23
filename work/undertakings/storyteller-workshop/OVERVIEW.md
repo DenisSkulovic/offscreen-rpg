@@ -45,6 +45,8 @@ flowchart TD
 
 **Still not proven:** four simultaneous full stacks, browser OAuth, cold release-lab acceptance, completed provider-free story and ordinary provider-backed playable campaign. The `game-control` watcher has logged `RangeError: Invalid atomic access index` despite Kubernetes readiness. These are distinct gaps, not a reason to repeat already-accepted DXK09 work.
 
+**Planning checkpoint, 2026-11-23:** DXK10-A is now a [bounded, source-grounded reserve/attach packet](../../changes/open/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) with negative proof and [G0–G7 readiness review](../../changes/open/2026-11-23--dxk10a-reserve-attach-foundation/READINESS.md). This is planning only: no new CLI has been implemented or tested. DXK10-B profile activation and DXK10-C guarded retained-tenant handoff remain proposed. The owner has started HR02 independently; no implementation outcome has yet been reported here. These lanes do not overlap source ownership.
+
 **Next decision:** source-ground DXK10 against `8a782ffd`, decide persistent tenant reservation/release semantics and profile dependency closure, then create small Cursor-ready implementation slices. HR01–HR03 should proceed as source-only lanes where safe, without making three full-stack runtimes a prerequisite. [DXK10 proposal](../../changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) · [HR wave](NEXT-WAVE.md) · [demonstrated status](../../../STATUS.md).
 
 ---
