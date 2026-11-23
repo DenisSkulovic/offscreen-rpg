@@ -1,0 +1,13 @@
+# LIB04 | Pinned multi-library reference mounts and scoped retrieval
+
+**State: PROPOSED BACKLOG, PLANNER-BLOCKED. DO NOT COMMISSION CURSOR.** Baseline `484fd4a0`. Requires LIB01, independent decision on reference-library catalog ownership, actor/tenant permissions and root persistence. Does not repair TURN03 fork mechanics.
+
+**Product outcome:** one writable authoritative Story Library, zero or more explicitly attached/pinned reference Libraries exposed to Storyteller as named read-only shelves. A shelf is a *view/mount* of a collection, never another physical container. Documents can be Markdown/structured/passage objects, optionally later grouped as books. No open web search, no default LLM-trained-memory canon, no MCP server and no new Pod.
+
+**Core contract for future design:** authoritative story root remains transactionally selected; mounts carry library identity + immutable root hash + grant/visibility scope + optional namespace alias; model-supplied tool args cannot choose a foreign root or widen grants. All reads pass authenticated authorization; private/developer-only content remains protected; cite source library/root/document hash/revision. Reference text is evidentiary material, **not** automatically authoritative campaign canon. Workdesk writes stage only to Story Library, admitted by Game Authority. Forks preserve historical mount/root provenance without magically allowing a previously valid mount after grant revocation (decide appropriate replay semantics).
+
+**Current anchors:** `packages/story-engine/src/storyteller/library-navigation.ts` `createPinnedLibraryNavigation`; `writer-library-tools.ts` `assertToolGranted` and `assertNoCapabilityElevation`; `lexical-story-index.ts` and cache; `packages/storyteller/src/tasks/writer-mission*`; `packages/documents/src/library-{index,trie,page}.ts`; `docs/technical/storyteller/canonical-documents-and-packages.md`.
+
+**Planner blockers:** map SQL root selectors/mount persistence, grant lifecycle, tenant origin, snapshot and revocation behavior, collection identity, search pagination/scoped index, bulk byte budgets, cursor binding and ACL-correct caching. Decide API and transaction owner before code. Existing `entriesForCurrentAccess()` pages only the first up-to-128 v2 entries; do not build mounts on an unbounded or incomplete listing assumption.
+
+**Future acceptance:** two pinned reference libraries plus one story root; wrong-tenant/foreign-root/stale-cursor/private-content negatives; bounded path/content search; unchanged story root when reading references; fork lineage and revocation cases; cross-Pod proof only when explicitly commissioned. No runtime action authorized by this proposal.

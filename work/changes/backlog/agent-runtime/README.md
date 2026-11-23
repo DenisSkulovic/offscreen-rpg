@@ -1,5 +1,7 @@
 # agent runtime | proposed Changes
 
+- [LIB04 mounted reference libraries](2026-11-23--lib04-mounted-reference-libraries/CHANGE.md): future pin/grant-aware Storyteller reference shelves; planner-blocked.
+
 [Backlog index](../README.md) · [Open Changes](../../README.md)
 
 | Change | Proposed outcome |

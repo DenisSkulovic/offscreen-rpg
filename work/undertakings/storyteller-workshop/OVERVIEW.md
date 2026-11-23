@@ -1,5 +1,7 @@
 # Storyteller Workshop | reality check and finish line
 
+**2026-11-23 documentation-first Library review:** LIB01 (library, shelf and workdesk vocabulary) and LIB02 (behavior-preserving scene-checkpoint schema decomposition) are planned for human-led package comprehension; LIB03 content-package ownership and LIB04 mounted reference libraries remain deferred planner-held. No implementation, runtime or proof credit; undertaking estimates stay unchanged. TURN03 remains open and fork repair is deliberately not on this sequence's critical path.
+
 **Human checkpoint · 2026-11-23.** Developer-environment correctness is demonstrably better, but this is **not yet a proven end-to-end AI Storyteller product**. DXK09's unattended new-worktree start/status/stop passed; DXK11's canonical-image reuse and timing improvements are integrated. DXK10-A reserve and attach are source-tested registry commands. Selective activation and provisioned-slot handoff remain **proposed**.
 
 **Longer-term maintainability debt:** [SEM01 codebase semantic-debt inventory](../../changes/backlog/quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) captures a human-first audit of opaque historical Change IDs in reusable code, ambiguous `lab` boundaries, package ownership, unnecessary abstractions and stale scaffolding. This is a **deferred source inventory, not an implementation authorization**; finish current TURN03 source-only owners without overlapping code edits.
