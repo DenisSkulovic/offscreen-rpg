@@ -1,3 +1,5 @@
 # INF43 proof
 
+Recorded 2026-11-24 on change/inf43-source-baseline-repair. Four catalog commands: platform/image/sync 40 pass; tools/dev-environments/test 337 pass; infra/workloads/tests 24 pass; infra/environments/release/test 44 pass. Total 445 pass / 0 fail. Live cluster NOT-RUN.
+
 Use task-specific positive/negative tests in EXECUTION; record real commands and counts, no live mutation. Join all four exact catalog source commands: node --test infra/environments/platform-plan.test.mjs infra/images/distribution/kind-image-loader.test.mjs infra/images/development/sync-plan.test.mjs; node --test tools/dev-environments/test/*.test.mjs; node --test infra/workloads/tests/*.test.mjs; node --test infra/environments/release/test/*.test.mjs. Baseline receipt 430 pass /4 fail, two import failures and two stale fingerprint fixtures; no test deletion or suppression, exact count may increase. No skipped test counted as passed. Source Done only; integrated live proof NOT-RUN. Reconcile current docs/ledger and preserve historical evidence.

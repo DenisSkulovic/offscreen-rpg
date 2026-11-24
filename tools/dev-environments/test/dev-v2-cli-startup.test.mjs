@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -18,6 +19,7 @@ import {
   formatDevOperatorSummaryLine,
   maybeAnnounce,
   resolveDevOperatorNextAction,
+  runDevTiltLaunch,
 } from '../src/application/dev-lifecycle.mjs';
 import {
   attachUnattachedEnvironment,
@@ -344,6 +346,44 @@ test('failed attach leaves registry byte-equivalent', () => {
   rmSync(root, { recursive: true, force: true });
   rmSync(checkoutA, { recursive: true, force: true });
   rmSync(checkoutB, { recursive: true, force: true });
+});
+
+test('injected launch refusal restores process signal listener counts', async () => {
+  const beforeSigint = process.listenerCount('SIGINT');
+  const beforeSigterm = process.listenerCount('SIGTERM');
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-v2-launch-refuse-'));
+  const registryRoot = join(
+    mkdtempSync(join(tmpdir(), 'offscreen-v2-launch-reg-')),
+    'registry',
+  );
+  mkdirSync(registryRoot, { recursive: true });
+  /** @type {import('node:child_process').ChildProcess} */
+  const child = new EventEmitter();
+  // @ts-expect-error test stub
+  child.pid = 42_001;
+  await runDevTiltLaunch({
+    worktree,
+    registryRoot,
+    fingerprintDevImageContext: () => ({
+      ok: true,
+      fingerprint: 'ab'.repeat(32),
+    }),
+    owner: owner('dev-2', worktree),
+    allocateDevWorktreeOwner: () => owner('dev-2', worktree),
+    collectDefaultProbes: async () => ({}),
+    runStackPreflight: () => ({ ok: true, refusals: [] }),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: async () => false,
+    spawnFn: () => child,
+    exit: () => {},
+    reconcileDevSlot: async () => ({
+      ok: false,
+      phase: 'injected',
+      detail: 'refuse',
+    }),
+  });
+  assert.equal(process.listenerCount('SIGINT'), beforeSigint);
+  assert.equal(process.listenerCount('SIGTERM'), beforeSigterm);
 });
 
 test('operator summary maps refusal ids to busy-retry, stop, or missing-platform', () => {

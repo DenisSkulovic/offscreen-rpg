@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { runDevTiltLaunch } from '../src/cli/dev-tilt.mjs';
+import { runDevTiltLaunch } from '../src/application/dev-lifecycle.mjs';
 import {
   acquireSlotOperationLock,
   isAllocatorRefusal,

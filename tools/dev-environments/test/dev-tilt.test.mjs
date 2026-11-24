@@ -1064,6 +1064,41 @@ test('stop signals only the process with the recorded start time', () => {
   assert.deepEqual(signalled, [4242]);
 });
 
+test('repeated owned launches do not leak SIGINT or SIGTERM listeners', async () => {
+  const beforeSigint = process.listenerCount('SIGINT');
+  const beforeSigterm = process.listenerCount('SIGTERM');
+  for (let round = 0; round < 5; round += 1) {
+    const worktree = mkdtempSync(
+      join(tmpdir(), `offscreen-wt-listener-round-${round}-`),
+    );
+    const harness = ownedLaunch(worktree);
+    await harness.launch({
+      collectStartupReadiness: async () => fullReadiness(),
+    });
+  }
+  const refuseWorktree = mkdtempSync(
+    join(tmpdir(), 'offscreen-wt-listener-refuse-'),
+  );
+  await runDevTiltLaunch({
+    worktree: refuseWorktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
+    allocateDevWorktreeOwner: fakeAllocator,
+    collectDefaultProbes: async () => ({}),
+    runStackPreflight: () => okPreflight(),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    spawnFn: fakeSpawn(),
+    exit: () => {},
+    reconcileDevSlot: async () => ({
+      ok: false,
+      phase: 'injected',
+      detail: 'refuse',
+    }),
+  });
+  assert.equal(process.listenerCount('SIGINT'), beforeSigint);
+  assert.equal(process.listenerCount('SIGTERM'), beforeSigterm);
+});
+
 function ownedLaunch(worktree, extra) {
   const sandbox = mkdtempSync(join(tmpdir(), 'offscreen-reg-'));
   const registryRoot = join(sandbox, 'registry');

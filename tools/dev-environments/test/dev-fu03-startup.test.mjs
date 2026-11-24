@@ -11,7 +11,7 @@ import {
   environmentSessionRoot,
 } from '../src/domain/dev-environment-session.mjs';
 import { writeRegistry } from '../src/domain/dev-worktree-registry.mjs';
-import { runDevTiltLaunch } from '../src/cli/dev-tilt.mjs';
+import { runDevTiltLaunch } from '../src/application/dev-lifecycle.mjs';
 
 function owner(slot, checkout) {
   const n = Number(slot.slice(4));

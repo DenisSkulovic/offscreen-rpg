@@ -1,14 +1,14 @@
 # Local developer platform | composition implementation
 
-Baseline 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. INF36 source Done; INF29 live verification in progress, independent checkout. Source verifier reports 430 pass / 4 fail. INF43 repairs two retired imports, two stale loader fixtures and any actual signal listener leak. No live acceptance credit.
+Baseline 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. INF36 source Done; INF43 source Done (445 pass / 0 fail on the four catalog commands). INF29 live verification in progress, independent checkout. No live acceptance credit.
 
 | Change | Dependency | Status |
 | --- | --- | --- |
-| [INF43](../../changes/open/2026-11-24--inf43-source-baseline-repair/CHANGE.md) Repair integrated source verification | INF36 Done | Ready |
+| [INF43](../../changes/archive/2026-11/platform-operations/2026-11-24--inf43-source-baseline-repair/CHANGE.md) Repair integrated source verification | INF36 Done | Done |
 | [INF37](../../changes/archive/2026-11/platform-operations/2026-11-24--inf37-platform-composition/CHANGE.md) Convenient cluster and service selection | INF36 Done | Done (source) |
 | [INF39](../../changes/archive/2026-11/platform-operations/2026-11-24--inf39-helm-workload-overrides/CHANGE.md) Standard workload values overrides | INF36 Done | Done (source; live NOT-RUN) |
-| [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) Selective developer application activation | INF43, INF37, INF39; INF29 live verifier no active writer to same paths | Ready (dependency-gated) |
-| [INF42](../../changes/open/2026-11-24--inf42-verification-source-runner/CHANGE.md) Repeatable source verification entrypoint | INF43 | Ready (dependency-gated) |
+| [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) Selective developer application activation | INF43 Done, INF37 Done, INF39 Done; INF29 live verifier no active writer to same paths | Ready (dependency-gated) |
+| [INF42](../../changes/open/2026-11-24--inf42-verification-source-runner/CHANGE.md) Repeatable source verification entrypoint | INF43 Done | Ready (dependency-gated) |
 
 Parallel first wave INF43 + INF37 + INF39, separate source worktrees. INF37 package.json and INF42 package.json serialize; INF38 after INF43/37/39 and no active overlapping writer. INF42 source runner after INF43; may run while INF38 implements provided package/docs joins serialized. Live INF29 agent is verification only, no code writes in shared integration branch. INF40 partial release and replica CLI integration follows INF38 profile contract and INF39; INF41 external data and macOS separate later slices. Live smoke/full verification runner deferred until selected workflows implemented and scope explicit. Dev optional RabbitMQ/observability/gateway deferred; INF37 supports release all and dev core + Redis. No new queue selection. Measured small preset deferred until actual resource data. DXK10-B selective activation implementation superseded by INF38; DXK10-C retained backlog, not commissioned.
 

@@ -1213,9 +1213,22 @@ export async function runDevTiltLaunch(deps = {}) {
       deps,
     });
 
+    /** @type {(() => void) | undefined} */
+    let onSigint;
+    /** @type {(() => void) | undefined} */
+    let onSigterm;
+    let launchSignalsInstalled = false;
+    const removeLaunchSignalHandlers = () => {
+      if (!launchSignalsInstalled) return;
+      launchSignalsInstalled = false;
+      if (onSigint) process.removeListener('SIGINT', onSigint);
+      if (onSigterm) process.removeListener('SIGTERM', onSigterm);
+    };
+
     const settleLaunchCleanup = async (reason, exitCode) => {
       if (launchCleanupSettled) return;
       launchCleanupSettled = true;
+      removeLaunchSignalHandlers();
       await settleOwnedEnvironmentPark(parkInput(reason), {
         launcherHoldsOperationLock: Boolean(slotOperationLock),
       });
@@ -1238,12 +1251,20 @@ export async function runDevTiltLaunch(deps = {}) {
         signal === 'SIGTERM' ? 143 : 130,
       );
     };
+    const installLaunchSignalHandlers = () => {
+      if (deps.exitAfterSession || launchSignalsInstalled) return;
+      onSigint = () => {
+        onSignal('SIGINT');
+      };
+      onSigterm = () => {
+        onSignal('SIGTERM');
+      };
+      launchSignalsInstalled = true;
+      process.on('SIGINT', onSigint);
+      process.on('SIGTERM', onSigterm);
+    };
     deps.exposeLaunchCancellation?.(onSignal);
-
-    if (!deps.exitAfterSession) {
-      process.once('SIGINT', () => onSignal('SIGINT'));
-      process.once('SIGTERM', () => onSignal('SIGTERM'));
-    }
+    installLaunchSignalHandlers();
 
     const slot = await timePhase('reconcile', null, () =>
       reconcile({
@@ -1271,6 +1292,7 @@ export async function runDevTiltLaunch(deps = {}) {
         );
       }
       releaseSlotOperationLock();
+      removeLaunchSignalHandlers();
       refuseAndExit(
         [
           {
@@ -1387,6 +1409,7 @@ export async function runDevTiltLaunch(deps = {}) {
     }
 
     if (deps.exitAfterSession) {
+      removeLaunchSignalHandlers();
       releaseSlotOperationLock();
       return;
     }
@@ -1476,6 +1499,7 @@ export async function runDevTiltLaunch(deps = {}) {
     releaseSlotOperationLock();
 
     if (deps.exitAfterReady) {
+      removeLaunchSignalHandlers();
       return;
     }
 
