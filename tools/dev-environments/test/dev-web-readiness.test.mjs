@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { superviseOwnedWebPortForward } from '../src/application/dev-lifecycle.mjs';
 import {
   acceptedCriImageIds,
   assessWebDevServerReadiness,
@@ -7,8 +8,7 @@ import {
   DEV_RUNTIME_FRESHNESS_ROLES,
   KIND_DEV_IMAGE_NODES,
   resolveDevImageConfigIds,
-  superviseOwnedWebPortForward,
-} from '../src/cli/dev-tilt.mjs';
+} from '../src/application/dev-status.mjs';
 
 const healthy = {
   namespace: 'dev-5',

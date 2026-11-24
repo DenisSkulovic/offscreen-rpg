@@ -11,7 +11,7 @@
 | [INF30](../../changes/archive/2026-11/platform-operations/2026-11-24--inf30-dev-lifecycle/CHANGE.md) Predictable developer lifecycle | INF23, INF35 | Done (source) |
 | [INF32](../../changes/archive/2026-11/platform-operations/2026-11-24--inf32-release-config-reconcile/CHANGE.md) Release configuration reconciliation | INF31 | Done (source) |
 | [INF34](../../changes/archive/2026-11/platform-operations/2026-11-24--inf34-runtime-readiness/CHANGE.md) Reliable compiler and startup readiness | INF30, INF31 | Done (source) |
-| [INF36](../../changes/open/2026-11-24--inf36-dev-cli-simplification/CHANGE.md) Thin developer CLI | INF30, INF34 | Ready (dependency-gated) |
+| [INF36](../../changes/archive/2026-11/platform-operations/2026-11-24--inf36-dev-cli-simplification/CHANGE.md) Thin developer CLI | INF30, INF34 | Done (source) |
 | [INF29](../../changes/open/2026-11-24--inf29-infra-reconciliation/CHANGE.md) | INF23 + INF30–36 | Planner-blocked |
 
 First wave INF23, INF31, INF33, INF35; INF23 and INF35 join before INF30. INF31 then INF32; INF30 and INF31 then INF34; INF34 then INF36. Serialize INF31 release tests with INF32; INF23 CLI legacy writer edit before INF30; INF35 startup before INF30; INF33 adapter independent. Shared docs/catalog human custodian. INF29 planner review after all source joins. No queue selection change. Legacy v1 deletion and more elaborate security/UID deletion hardening deferred; no automatic credential rotation or cross-tenant destructive operations.

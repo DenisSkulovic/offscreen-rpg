@@ -11,12 +11,14 @@ import {
 } from '../src/domain/dev-environment-session.mjs';
 import {
   formatAttachedEnvironmentLine,
-  formatDevOperatorSummaryLine,
-  maybeAnnounce,
-  resolveDevOperatorNextAction,
   runDevAttachCli,
   runDevReserveCli,
 } from '../src/cli/dev-tilt.mjs';
+import {
+  formatDevOperatorSummaryLine,
+  maybeAnnounce,
+  resolveDevOperatorNextAction,
+} from '../src/application/dev-lifecycle.mjs';
 import {
   attachUnattachedEnvironment,
   reserveUnattachedEnvironment,

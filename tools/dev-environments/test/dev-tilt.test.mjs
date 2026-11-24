@@ -5,28 +5,29 @@ import { dirname, join } from 'node:path';
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { runDevAttachCli, runDevReserveCli } from '../src/cli/dev-tilt.mjs';
 import {
-  applySelectedSlotHostReadiness,
   assessDevLaunch,
-  buildReadyUrls,
-  collectSelectedSlotReadiness,
   devSessionPath,
-  DEV_RUNTIME_FRESHNESS_ROLES,
-  formatDevFreshnessStatusLine,
   formatReadyLines,
   maybeAnnounce,
+  readDevSession,
+  runDevTiltLaunch,
+  stopDevSession,
+  scaleDevSlotWorkloads,
+  writeDevSession,
+} from '../src/application/dev-lifecycle.mjs';
+import {
+  applySelectedSlotHostReadiness,
+  buildReadyUrls,
+  collectSelectedSlotReadiness,
+  DEV_RUNTIME_FRESHNESS_ROLES,
+  formatDevFreshnessStatusLine,
   LAB_RESOURCES,
   observeSelectedSlotRuntimeRoles,
   printDevStatus,
   readinessFromRemoteObservation,
-  readDevSession,
-  runDevTiltLaunch,
-  runDevAttachCli,
-  runDevReserveCli,
-  stopDevSession,
-  scaleDevSlotWorkloads,
-  writeDevSession,
-} from '../src/cli/dev-tilt.mjs';
+} from '../src/application/dev-status.mjs';
 import { observeDevRuntimeRoleInPod } from '../runtime/status.mjs';
 import {
   attachUnattachedEnvironment,

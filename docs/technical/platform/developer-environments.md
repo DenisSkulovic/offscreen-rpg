@@ -47,14 +47,14 @@ flowchart TD
 
 | Concern | Current source anchor | Selected owner contract |
 | --- | --- | --- |
-| Runtime orchestration, status, process fencing | `tools/dev-environments/src/cli/dev-tilt.mjs::runDevTiltLaunch` | Lifecycle coordinator; cannot be a second live image writer |
+| Runtime orchestration, status, process fencing | `tools/dev-environments/src/application/dev-lifecycle.mjs::runDevTiltLaunch` and `dev-status.mjs::printDevStatus`; `src/cli/dev-tilt.mjs` parses and dispatches | Lifecycle coordinator; cannot be a second live image writer |
 | Reservation/session identity | `tools/dev-environments/src/domain/dev-environment-session.mjs` and `dev-worktree-{allocator,registry}.mjs` | Local atomic registry, owned sessions, not Git state |
 | Cold slot reconciliation | `tools/dev-environments/src/application/dev-slot-startup.mjs::reconcileOwnedDevSlot` | Provision/bind initial slot resources; hand off active Deployments |
 | Graph and initial Kubernetes objects | `tools/dev-environments/src/rendering/dev-slot-app-graph.mjs::renderDevSlotAppGraph` | Consistent renderer and initially parked/bootstrapped objects |
 | Tilt graph and application live sync | root `Tiltfile` with `infra/images/development/sync-plan.mjs` | Sole active deployment writer and source-update controller |
 | Build and node imports | `infra/images/development/load-dev-slot-image.sh` (`--tilt-ref` for Tilt) | Consolidated preparation contract; no Kubernetes Deployment patch |
 | Image fingerprint and reuse | `infra/images/development/image-plan.mjs` | Pure image planning; no hidden Kubernetes mutation |
-| Current-generation verification | `tools/dev-environments/runtime/generation.mjs`, `status.mjs`, and `dev-tilt.mjs` | Read-only verifier, fail closed; one compile supervisor per compiled role |
+| Current-generation verification | `tools/dev-environments/runtime/generation.mjs`, `status.mjs`, and `src/application/dev-status.mjs` | Read-only verifier, fail closed; one compile supervisor per compiled role |
 | Worker runtime | `apps/worker/src/runtime/index.ts` | Temporal SDK and source/watch compatibility belong to worker runtime, not the image loader |
 
 These anchors describe the inspected integration baseline and the local conflict, **not** a promise that the unintegrated image-refactor branch already follows the target.
