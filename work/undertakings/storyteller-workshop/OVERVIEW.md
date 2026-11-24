@@ -2,7 +2,7 @@
 
 **Database architecture planning (2026-11-24):** [Selected technical owner](../../../docs/technical/platform/database-infrastructure.md) and [three-lane DB program](DB-PARALLEL.md) remove domain schemas from DB infra, preserve one SQL migration history, and stage bounded runtime/transaction/telemetry improvements. Ten packets Proposed. No code or runtime proof; overall ~40% complete / ~60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed ~25% unchanged.
 
-**Cache wave 2 source join (2026-11-24):** CACHE04, CACHE06A, and CACHE06B are joined. CACHE06A and CACHE06B are Done source-only. CACHE04 SQL proof is still NOT-RUN. CACHE07 still needs disposable resource authorization. Overall ~40% complete / ~60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed ~25% unchanged.
+**Cache wave 2 source join (2026-11-24):** CACHE04, CACHE06A, and CACHE06B are joined. CACHE06A and CACHE06B are Done source-only. CACHE04 SQL proof is still NOT-RUN. CACHE07 source harness is Ready; only live execution needs disposable local Docker Redis authorization. Overall ~40% complete / ~60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed ~25% unchanged.
 
 **Cache program release (2026-11-24):** DO07 verified integrated, all eight Cache Changes commissioned with dependency gates. CACHE01 starts now; three infrastructure lanes, then three adoption lanes, then proof. [Execution contract](CACHE-PARALLEL.md). No new acceptance credit; overall ~40% complete / ~60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed ~25% unchanged.
 

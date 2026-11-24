@@ -1,6 +1,6 @@
 # CACHE07 | Distributed reliability evidence
 
-**Status: Owner-commissioned / dependency-gated; not yet Ready. Kind: implementation. Profile: PROOF.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE04/CACHE06A/CACHE06B; disposable runtime authorization. Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
+**Status: Owner-commissioned / Ready for source harness implementation; live execution separately gated. Kind: implementation. Profile: PROOF.** Current baseline c0d3c283e60e1c06d627f9a9b96603f7294d5202; target undertaking/storyteller-workshop. Wave 2 source joined. [Exact fixture and commands](PLAN.md). No further commission needed for source. Actual local disposable Docker Redis run requires explicit owner permission; CACHE04 SQL proof remains independent.
 
 [Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
@@ -10,7 +10,7 @@ After the dependency/export/ownership gates in CACHE-PARALLEL.md pass on latest 
 
 ## Planner source map and scope
 
-Anchors: infra/kubernetes/lab/redis/redis.yaml; work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md; packages/cache/src/adapters/redis-store.ts. Old adapter uses get/set JSON, Promise.race, disabled reconnect. DO01 owns port relocation. Story Engine owns SQL preflight and repeatable-read built identity; lexical reuse and immutable Documents bytes remain domain-owned. Canonical architecture defines algorithms, policy, authority and failure invariants. Exclusive write scope: Planner pins exact harness and authorized resource before commission. No full stack for unit tests.
+Anchors: infra/kubernetes/lab/redis/redis.yaml; work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md; packages/cache/src/adapters/redis-store.ts. Old adapter uses get/set JSON, Promise.race, disabled reconnect. DO01 owns port relocation. Story Engine owns SQL preflight and repeatable-read built identity; lexical reuse and immutable Documents bytes remain domain-owned. Canonical architecture defines algorithms, policy, authority and failure invariants. Exclusive write scope: new packages/cache/test/distributed files and proof/reconciliation; PLAN.md pins the new fixture and exact commands. Source implementation starts now. No full stack for unit tests.
 
 ## Acceptance
 
@@ -27,7 +27,7 @@ Every task positive and diagnostic negative passes; actual emitted tests run; ro
 
 ## Readiness and stop
 
-Owner release is conditional, not blanket readiness certification. Parent verifies exact predecessor exports and source anchors against latest integrated HEAD; mechanical drift is allowed, contract/fixture/design contradictions stop for planner. No additional release message needed when gates pass. Live resource permission remains separate. Parallel wave ownership is mandatory; do not edit another lane, core contracts, shared manifests/lockfile or shared documentation. The named integration custodian alone serializes joins, exports, dependency wiring and shared reconciliation; no independent push to undertaking while peers are active. See frozen interface/ownership contract. Stop on changed authority/identity, missing harness or source contradiction; return exact evidence to planner. No live stack for unit tests. Follow AGENTS, parent integration/archive policy.
+Owner release is conditional, not blanket readiness certification. Parent verifies exact predecessor exports and source anchors against latest integrated HEAD; mechanical drift is allowed, contract/fixture/design contradictions stop for planner. No additional release message needed when gates pass. Live resource permission remains separate. Parallel wave ownership is mandatory; do not edit another lane, core contracts, shared manifests/lockfile or shared documentation. The named integration custodian alone serializes joins, exports, dependency wiring and shared reconciliation; no independent push to undertaking while peers are active. See frozen interface/ownership contract. Stop on changed authority/identity or actual source contradiction; absence of new harness is the implementation task, not a blocker; return exact evidence to planner. No live stack for unit tests. Follow AGENTS, parent integration/archive policy.
 
 ## Reconciliation ledger
 

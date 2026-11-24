@@ -1,21 +1,12 @@
 # CACHE07 | bounded Composer tasks
 
-Frozen interfaces, ownership and wave gates: [CACHE-PARALLEL](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md). Lane-specific source and tests only; no shared-file changes during parallel dispatch. One child at a time, DEPTH=PATCH, Composer Standard. Receipt: paths, command/cwd, positive and negative result, limitations. Stop on exact contradiction; no research swarm.
+[Exact fixture and commands](PLAN.md). Source Ready at c0d3c283e60e1c06d627f9a9b96603f7294d5202. One child at a time, Composer Standard, isolated Change worktree. No live permission required for T01/T02 source implementation. No other production code edits without planner decision.
 
-## T01 | Two-consumer harness
+## T01 | Harness implementation
+Read PLAN.md, packages/cache/src/index.ts, core/index.ts, strategies/index.ts and package.json. Create test/distributed/worker.mjs, harness.mjs and harness.test.mjs exactly as PLAN. Implement owned local Docker fixture, refusal/cleanup, IPC and T01 scenarios. Run source commands in PLAN; no Docker launch without owner opt-in. Receipt files, exact commands, tests and SHA.
 
-- Initial anchors: packages/cache/src/adapters/redis-store.ts; infra/kubernetes/lab/redis/redis.yaml; existing K8S10 harness.
-- Decided edit and proof: Two independent processes, isolated Redis and counting fake origin; warm shared hit, disabled parity, eviction and malformed bytes. No shared flush.
-- Verification (root): `pnpm --filter @offscreen/cache build`, `pnpm --filter @offscreen/cache test` (CACHE01 adds script); affected workspace build/typecheck; named focused domain test after planner pins fixture command. Shared manifests/lock and exports belong exclusively to the integration custodian; no lane edits them. Stop on missing prerequisite, fixture, authority or source contradiction; report exact symbol.
+## T02 | Fault scenarios
+Read PLAN.md, existing harness and runtime/redis-connection.ts. Add startup outage/restart/pause/burst/overload/failure/shutdown scenarios and metrics; extend fake executor and assertion tests. Run same source commands. If owner explicitly approves disposable local Docker fixture, run exact live command in PLAN (both T01/T02), record results. Otherwise source implementation proceeds and live proof NOT-RUN. Stop on actual invariant failure, not absence of pre-existing harness.
 
-## T02 | Fault proof
-
-- Initial anchors: packages/cache/src/runtime/redis-connection.ts; packages/cache/src/resilience; existing owned fault harness.
-- Decided edit and proof: Startup outage, restart, slow commands, burst cold reads, origin overload/failure, shutdown. Record p95/p99, max pending/queue, origin amplification/recovery; reconnect without restart. No lease claim.
-- Verification (root): `pnpm --filter @offscreen/cache build`, `pnpm --filter @offscreen/cache test` (CACHE01 adds script); affected workspace build/typecheck; named focused domain test after planner pins fixture command. Shared manifests/lock and exports belong exclusively to the integration custodian; no lane edits them. Stop on missing prerequisite, fixture, authority or source contradiction; report exact symbol.
-
-## T03 | Evidence
-
-- Initial anchors: packages/cache/README.md; docs/technical/platform/persistence-and-caching.md; K8S10 evidence route.
-- Decided edit and proof: Record measured tier and failures; planner decides if measured cross-process duplication merits future lease Change. No synthetic cross-Pod claims.
-- Verification (root): `pnpm --filter @offscreen/cache build`, `pnpm --filter @offscreen/cache test` (CACHE01 adds script); affected workspace build/typecheck; named focused domain test after planner pins fixture command. Shared manifests/lock and exports belong exclusively to the integration custodian; no lane edits them. Stop on missing prerequisite, fixture, authority or source contradiction; report exact symbol.
+## T03 | Evidence and integration
+Write PROOF.md, reconcile canonical realization, README and catalog with actual tier. Source-only partial join allowed; retain open until live evidence passes. CACHE04 SQL proof independent. No cross-Pod claim, no distributed lease implementation. Parent owns serialized join and closure.
