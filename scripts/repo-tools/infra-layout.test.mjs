@@ -131,6 +131,75 @@ export const INF08_RETIRED_WORKLOAD_PATHS = [
   'infra/workloads/release/migrate.yaml',
 ];
 
+/** INF15 successor relocations: INF01–05 platform YAML → Helm chart homes. */
+export const INF15_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/platform/postgres/cluster.yaml',
+    to: 'infra/platform/postgres/chart/templates/cluster.yaml',
+  },
+  {
+    from: 'infra/platform/postgres/namespace.yaml',
+    to: 'infra/platform/postgres/chart/templates/namespace.yaml',
+  },
+  {
+    from: 'infra/platform/temporal/admin.yaml',
+    to: 'infra/platform/temporal/chart/templates/admin.yaml',
+  },
+  {
+    from: 'infra/platform/temporal/namespace-job.yaml',
+    to: 'infra/platform/temporal/chart/templates/namespace-job.yaml',
+  },
+  {
+    from: 'infra/platform/temporal/namespace.yaml',
+    to: 'infra/platform/temporal/chart/templates/namespace.yaml',
+  },
+  {
+    from: 'infra/platform/temporal/postgres.yaml',
+    to: 'infra/platform/temporal/chart/templates/postgres.yaml',
+  },
+  {
+    from: 'infra/platform/temporal/schema-job.yaml',
+    to: 'infra/platform/temporal/chart/templates/schema-job.yaml',
+  },
+  {
+    from: 'infra/platform/temporal/server.yaml',
+    to: 'infra/platform/temporal/chart/templates/server.yaml',
+  },
+  {
+    from: 'infra/platform/object-storage/store.yaml',
+    to: 'infra/platform/object-storage/chart/templates/store.yaml',
+  },
+  {
+    from: 'infra/platform/redis/redis.yaml',
+    to: 'infra/platform/redis/chart/templates/redis.yaml',
+  },
+  {
+    from: 'infra/platform/rabbitmq/broker.yaml',
+    to: 'infra/platform/rabbitmq/chart/templates/broker.yaml',
+  },
+  {
+    from: 'infra/platform/rabbitmq/namespace.yaml',
+    to: 'infra/platform/rabbitmq/chart/templates/namespace.yaml',
+  },
+  {
+    from: 'infra/platform/observability/collector.yaml',
+    to: 'infra/platform/observability/chart/templates/collector.yaml',
+  },
+  {
+    from: 'infra/platform/observability/collector-config.yaml',
+    to: 'infra/platform/observability/chart/files/collector-config.yaml',
+  },
+  {
+    from: 'infra/platform/gateway/routes.yaml',
+    to: 'infra/platform/gateway/gateway.yaml',
+  },
+];
+
+/** Staging-only: document-access smoke still applies store.yaml. */
+export const INF15_STAGING_PREDECESSOR_PATHS = [
+  'infra/platform/object-storage/store.yaml',
+];
+
 /** INF08 successor relocations for historical move-map destination rows. */
 export const INF08_SUCCESSOR_RELOCATIONS = [
   {
@@ -173,6 +242,7 @@ function effectiveMoveDestination(destination) {
     INF06_SUCCESSOR_RELOCATIONS,
     INF07_EFFECTIVE_DESTINATION_SUCCESSORS,
     INF08_SUCCESSOR_RELOCATIONS,
+    INF15_SUCCESSOR_RELOCATIONS,
   ]) {
     const successor = table.find((row) => row.from === current);
     if (successor) {
@@ -225,6 +295,34 @@ export function assertInf06SuccessorRelocations(root) {
     if (oldExists) {
       throw new Error(`INF06 predecessor must be retired: ${row.from}`);
     }
+  }
+}
+
+export function assertInf15PlatformChartSuccessors(root) {
+  for (const row of INF15_SUCCESSOR_RELOCATIONS) {
+    const oldExists = existsSync(join(root, row.from));
+    const newExists = existsSync(join(root, row.to));
+    if (INF15_STAGING_PREDECESSOR_PATHS.includes(row.from)) {
+      if (!newExists) {
+        throw new Error(`INF15 successor destination missing: ${row.to}`);
+      }
+      continue;
+    }
+    if (oldExists && newExists) {
+      throw new Error(
+        `INF15 successor violation (both paths present): ${row.from} and ${row.to}`,
+      );
+    }
+    if (!newExists) {
+      throw new Error(`INF15 successor destination missing: ${row.to}`);
+    }
+    if (oldExists) {
+      throw new Error(`INF15 predecessor must be retired: ${row.from}`);
+    }
+  }
+  const verificationRoute = 'infra/verification/smoke/gateway/routes.yaml';
+  if (!existsSync(join(root, verificationRoute))) {
+    throw new Error(`INF15 gateway verification successor missing: ${verificationRoute}`);
   }
 }
 
@@ -482,6 +580,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   assertInf06SuccessorRelocations(repoRoot);
   assertInf07SuccessorRelocations(repoRoot);
   assertInf08WorkloadRetirement(repoRoot);
+  assertInf15PlatformChartSuccessors(repoRoot);
   assertTrackedModes(map.rows);
 
   const byChange = Object.create(null);

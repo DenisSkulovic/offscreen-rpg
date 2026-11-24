@@ -60,7 +60,11 @@ test('raw yaml scan skips platform chart templates and offline fixtures', () => 
     'postgres/chart/templates/cluster.yaml',
   );
   assert.equal(isPlatformServiceTemplatePath(postgresTemplate), true);
-  assert.equal(isExcludedFromRawYamlScan(postgresTemplate), false);
+  assert.equal(
+    isExcludedFromRawYamlScan(postgresTemplate),
+    true,
+    'platform chart templates are validated via Helm lint/template',
+  );
 
   const fixtureTemplate = join(
     platformRoot,
@@ -73,7 +77,14 @@ test('implemented platform charts are discovered without requiring future servic
   const charts = discoverImplementedPlatformCharts();
   assert.deepEqual(
     charts.map((chart) => chart.service),
-    [],
+    [
+      'object-storage',
+      'observability',
+      'postgres',
+      'rabbitmq',
+      'redis',
+      'temporal',
+    ],
   );
 });
 
