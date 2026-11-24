@@ -1,6 +1,6 @@
 # Storyteller Workshop | reality check and finish line
 
-**Workstation observability (2026-11-24):** [INF44–47 source implementation wave](WORKSTATION-OBSERVABILITY.md) selected after INF29 capacity abort. Native persistent host metrics, subsecond memory envelopes, nested workload attribution, operation correlation and incident queries. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new live acceptance credit.
+**Workstation observability (2026-11-24):** [INF44–47 source implementation wave](WORKSTATION-OBSERVABILITY.md) selected after INF29 capacity abort. INF44–45 source Done (host recorder + nested Docker/Kind attribution fixtures); INF46–47 open; live install/visibility still NOT RUN. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new live acceptance credit.
 
 **Local developer composition (2026-11-24):** [implementation wave](LOCAL-DEV-PLATFORM.md) commissioned INF43, INF37, INF39, INF38 and INF42 source runner. INF43 source verification 445 pass / 0 fail. INF42 source Done: `pnpm infra:verify --suite source`. Focused tests 13/13. Live cluster NOT RUN. INF37 source Done: `pnpm infra:plan|up|status` select dev core plus Redis or the full release catalog. Focused tests 48/48. INF39 source Done. Live cluster NOT RUN. INF29 live in progress separately. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new live acceptance credit.
 

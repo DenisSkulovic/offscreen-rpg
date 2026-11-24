@@ -2,7 +2,7 @@
 
 [Technical contract](../technical/platform/workstation-observability.md). Workstation collector independent of Kubernetes and game. No cloud connection, no raw process argv exports.
 
-**Source acceptance (INF44 T01):** tracked install assets exist under `infra/monitoring/`. They do **not** claim a live collector is running until an operator completes native package install and authorized activation.
+**Source acceptance (INF44–45):** tracked install assets and nested runtime modules exist under `infra/monitoring/` (`runtime.py`, `kube.py`, `cgroup_probe.sh`). They do **not** claim a live collector or live Docker/Kind/cgroup visibility until an operator completes native package install and authorized activation.
 
 ## Prerequisites (operator)
 

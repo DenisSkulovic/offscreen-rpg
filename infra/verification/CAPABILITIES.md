@@ -82,7 +82,7 @@ Measure cold/warm wall time and source-edit latency; report actual seconds, not 
 | MON-01 | Independent persistent collectors | Service restart preserves retained history; WSL down gap visible; no game/cluster dependency | source fixtures for install plan and collector stop; live service restart NOT RUN |
 | MON-02 | Sub-second memory evidence | 200ms sample offsets; observed min/max/sum/count/coverage, short pulse test, kernel peak scope separate | source fixtures PASS; live host sampling NOT RUN |
 | MON-03 | Safe process history | PID/start identity, CPU/RSS/HWM, missing exited process coverage, no argv/env export | source fixtures PASS; live /proc NOT RUN |
-| MON-04 | Nested runtime attribution | Docker/Kind pod UID+container identity, source timestamps, cgroup scope, absent runtime gap, no double-count | target-only (INF45) |
+| MON-04 | Nested runtime attribution | Docker/Kind pod UID+container identity, source timestamps, cgroup scope, absent runtime gap, no double-count | source fixtures PASS (runtime/kube/cgroup); live Docker/Kind/cgroup visibility NOT RUN |
 | MON-05 | Resource failure evidence | OOM/restart/event/counter reset; no inferred OOM from capacity guard | source counter-reset and coverage fixtures PASS; live OOM NOT RUN |
 | MON-06 | Retention and fidelity | Min/max/sum/count rollups, partial coverage, cap/rotation, restart gap, actual oldest retained | source retention and rollup fixtures PASS; live disk span NOT RUN |
 | MON-07 | Operation correlation | Unique attempt/phase spans, overlaps, incomplete crash, rollback events, no secret fields | target-only |
