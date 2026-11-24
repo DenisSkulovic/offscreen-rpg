@@ -1,8 +1,8 @@
 # DB02 | bounded Composer tasks
 
-Base SHA fa77f2d3614ee821b8e4ad849a46a66342000132; state Proposed / planner-gated. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base SHA 2fb3f056; Ready / commissioned; DB01 joined. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
 
-## T01 | Move declarations | PLANNER-BLOCKED until promotion
+## T01 | Move declarations | READY
 
 Requires: DB01; no overlapping API identity/terminal files.
 Read: packages/db/src/schema/auth.ts; packages/db/src/schema/terminal-auth.ts; apps/api/src/modules/auth/auth.ts.
@@ -11,7 +11,7 @@ Algorithm: Move exact declarations to packages/identity-persistence/src/auth.ts 
 Verification (root): `pnpm --filter @offscreen/identity-persistence build; pnpm --filter @offscreen/db-migrations test`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
 Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
 
-## T02 | Move terminal SQL operations | PLANNER-BLOCKED until promotion
+## T02 | Move terminal SQL operations | READY
 
 Requires: previous task accepted.
 Read: packages/db/src/terminal-auth-store.ts; apps/api/src/modules/terminal-auth/service.ts; apps/api/src/modules/stories/story-player-identity.ts.
@@ -19,3 +19,5 @@ May write: exact source/test destinations in algorithm, no peer ownership.
 Algorithm: Move entire store to apps/api/src/modules/terminal-auth/store.ts, import DB type from root, identity tables from new leaf; update service relative import and story-player-identity relative import, no behavior change. Delete old DB exports/files; preserve constant-time comparison, token expiry, locked one-time exchange and revoke predicates.
 Verification (root): `pnpm exec turbo run build typecheck --filter=@offscreen/api; pnpm --filter @offscreen/db-migrations check:schema`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
 Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+
+Read [SOURCE-MAP.md](SOURCE-MAP.md) before dispatch. No further planner approval.

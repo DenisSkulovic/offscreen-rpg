@@ -1,13 +1,13 @@
 # DB07 | Managed SQL transaction execution
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: STATE.** Baseline fa77f2d3614ee821b8e4ad849a46a66342000132; target undertaking/storyteller-workshop. Prerequisite: DB06 plus DB01 policies; no domain adoption. Owner-selected near-term planning, not execution permission.
+**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: STATE.** Baseline 2fb3f056; target undertaking/storyteller-workshop. DB01 and DB06 joined. Executable now; no further promotion. Live SQL separately gated.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
 ## Outcome and scope
 
 - Classify failures and retry policy: Implement bounded cause walk SQLSTATE classification; preserve internal cause, closed category; default no retry; only 40001/40P01 known rollback with sql-only-conflicts policy; <=3 attempts, jitter25–200ms remaining budget. Explicit unknown commit class never retry; constraints/lock/timeouts/auth/application errors never retry. Deterministic fake tests for wrapped errors, callback attempt count, budget and no retry on connection loss.
-- Managed transaction runner: Implement transaction/execute.ts against withClient: BEGIN/SET TRANSACTION chosen enum, set_config local statement/lock/idle, Drizzle transaction callback on same checked-out client; track commit phase; do not promise-race release; rollback on callback/deadline, destroy tainted client; retry only after known rollback. Exact Drizzle transaction API/commit phase proof must be pinned by planner (do not use nested transaction or invent fake Tx); if pinned API cannot expose commit phase safely, stop. Preserve existing caller transaction type. Fake test commit-unknown, timeout before commit, callback rejection, rollback failure, local timeout reset.
+- Managed transaction runner: Implement transaction/execute.ts against withClient: BEGIN/SET TRANSACTION chosen enum, set_config local statement/lock/idle, Drizzle transaction callback on same checked-out client; track commit phase; do not promise-race release; rollback on callback/deadline, destroy tainted client; retry only after known rollback. Use pinned implementation seam in EXECUTION.md; no nested transaction or fake Tx. Preserve existing caller transaction type. Fake test commit-unknown, timeout before commit, callback rejection, rollback failure, local timeout reset.
 
 ## Execution and ownership
 
@@ -15,7 +15,7 @@ Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guar
 
 ## Acceptance and stop
 
-Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing fixture, unresolved interface, new dependency cycle or semantic mismatch is planner stop, not executor investigation. **Readiness:** G0 target confirmed, remaining G1–G7 need current-source audit and exact fixture/consumer mapping at promotion; no Ready claim. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
+Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Actual semantic or safety contradiction stops; missing live fixture only gates live proof. **Readiness:** Ready, dependencies joined. See selected implementation details below. Only actual semantic/safety contradictions stop. Record exact accepted proof and baseline limitations.
 
 ## planned-impact.v1
 
@@ -32,3 +32,5 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
 | Managed SQL transaction execution | database-infrastructure | pending | NOT RUN | TASKS | pending |
+
+Read [EXECUTION.md](EXECUTION.md) before dispatch. No further planner approval.

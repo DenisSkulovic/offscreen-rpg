@@ -1,6 +1,6 @@
 # DB02 | Identity declaration and credential-store ownership
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: CONTRACT.** Baseline fa77f2d3614ee821b8e4ad849a46a66342000132; target undertaking/storyteller-workshop. Prerequisite: DB01; no overlapping API identity/terminal files. Owner-selected near-term planning, not execution permission.
+**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: CONTRACT.** Baseline 2fb3f056; target undertaking/storyteller-workshop. DB01 joined. Executable now; no further promotion. Live SQL separately gated.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -15,7 +15,7 @@ Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guar
 
 ## Acceptance and stop
 
-Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing fixture, unresolved interface, new dependency cycle or semantic mismatch is planner stop, not executor investigation. **Readiness:** G0 target confirmed, remaining G1–G7 need current-source audit and exact fixture/consumer mapping at promotion; no Ready claim. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
+Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Actual semantic or safety contradiction stops; missing live fixture only gates live proof. **Readiness:** Ready, dependencies joined. See selected implementation details below. Only actual semantic/safety contradictions stop. Record exact accepted proof and baseline limitations.
 
 ## planned-impact.v1
 
@@ -32,3 +32,5 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
 | Identity declaration and credential-store ownership | database-infrastructure | pending | NOT RUN | TASKS | pending |
+
+Read [SOURCE-MAP.md](SOURCE-MAP.md) before dispatch. No further planner approval.
