@@ -2,6 +2,8 @@
 
 **State: PROPOSED / NOT CURSOR-READY.** Owner request in the [2026-11-22 minutes](../../../../sessions/2026-11-22.md). This Change owns schema evolution, not PostgreSQL replica failover or per-query domain correctness.
 
+**Coordination:** [DB redesign](../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) owns schema composition and basic migration runner integrity (DB01/DB08). This backlog Change retains mixed-version release/backfill, nontransactional operator path, risk review and real interruption proof; do not duplicate those source changes.
+
 ## Current foundation and gap
 `packages/db/src/migrate.ts:applyMigrations` uses a database-scoped advisory lock and the Drizzle migrator, `packages/db/package.json` has generate/migrate commands, and the Kubernetes app release has one controlled `game-migrate` Job. [Deployment and compatibility](../../../../../docs/technical/platform/deployment-and-compatibility.md) already selects once-per-release migrations, expand/contract changes and cross-version Temporal/Activity compatibility. That is a sound beginning. It is **not** a tested rolling schema-evolution contract covering long-running backfills, locks, old/new app compatibility or interruption.
 

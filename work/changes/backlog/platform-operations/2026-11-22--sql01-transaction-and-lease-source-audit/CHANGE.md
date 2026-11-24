@@ -2,6 +2,8 @@
 
 **State: PROPOSED / review-first Change; no executable data mutation.** Owner intends to personally understand SQL semantics, locks, fault safety and scaling. [HR03](../../../archive/2026-11/other/2026-11-22--hr03-db-schema-and-sql-navigation/CHANGE.md) creates the initial query-owner atlas and reorganizes **table declarations**, but deliberately does **not** assess whether transactional code is correct. SQL01 records that separate, harder task rather than bury it inside a cosmetic refactor.
 
+**Coordination:** [DB redesign](../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) supplies domain-owned schema and generic primitives. SQL01 retains human source audit and identifies separately planned domain adoption; no blanket transaction wrapper migration or automatic retry.
+
 ## End state
 
 A maintained, source-grounded **transaction and recovery atlas** covering the most important Story Engine and platform flows, navigable by a human reviewer:
