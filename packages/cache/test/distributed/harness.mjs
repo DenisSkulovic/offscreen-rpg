@@ -441,8 +441,10 @@ export function verifyContainerOwnership(inspect, expected) {
  * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
  * @param {string} runId
  */
-export function buildOwnedContainerCreateArgs(runId) {
+export function buildOwnedContainerCreateArgs(runId, hostPort) {
   const name = `cache07-${runId}`;
+  const publish =
+    typeof hostPort === 'number' ? `127.0.0.1:${hostPort}:6379` : '127.0.0.1::6379';
   return {
     name,
     args: [
@@ -455,7 +457,7 @@ export function buildOwnedContainerCreateArgs(runId) {
       '--network',
       'bridge',
       '-p',
-      '127.0.0.1::6379',
+      publish,
       '--memory',
       '128m',
       '--cpus',
@@ -728,14 +730,14 @@ export const T01_SCENARIO_RUNNERS = {
     for (let i = 0; i < 64; i += 1) {
       const identity = /** @type {const} */ ([`evict-${i}`, '1']);
       keyToIdentity.set(proofCacheKey(ctx.environment, identity), identity);
-      await rpc(worker, { type: 'read', identity });
+      await rpc(worker, { type: 'read', identity, padBytes: 200_000 });
     }
     let evictedKeys = await parseEvictedKeys(ctx.admin);
     let writeCount = 64;
     while (evictedKeys <= baselineEvicted && writeCount < 128) {
       const identity = /** @type {const} */ ([`evict-${writeCount}`, '1']);
       keyToIdentity.set(proofCacheKey(ctx.environment, identity), identity);
-      await rpc(worker, { type: 'read', identity });
+      await rpc(worker, { type: 'read', identity, padBytes: 200_000 });
       writeCount += 1;
       evictedKeys = await parseEvictedKeys(ctx.admin);
     }
@@ -859,11 +861,30 @@ export const T02_SCENARIO_RUNNERS = {
     samples.push(Number(warm.durationMs));
     parseSyntheticValue(warm.value);
 
-    await restartOwnedContainer(ctx.dockerExec, ctx.containerId);
+    await stopOwnedContainer(ctx.dockerExec, ctx.containerId);
+    await startOwnedContainer(ctx.dockerExec, ctx.containerId);
     if (!ctx.admin.isOpen) {
       await ctx.admin.connect();
     }
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    const restartReadyAt = Date.now();
+    while (Date.now() - restartReadyAt < T02_RECOVERY_BUDGET_MS) {
+      try {
+        await Promise.race([
+          ctx.admin.ping(),
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('ping-timeout')), 200);
+          }),
+        ]);
+        break;
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+    // Reconnect delay is at least 250ms after the socket drops.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    // The first command after the socket drop is what schedules reconnect.
+    await rpc(workerA, { type: 'read', identity: ['restart-probe', '1'] });
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await rpc(workerA, { type: 'reset-stats' });
     const afterRestart = await rpc(workerA, { type: 'read', identity });
@@ -1219,13 +1240,13 @@ export async function provisionOwnedRedis(dockerExec, signal) {
     return imageVerdict;
   }
   const runId = randomUUID();
-  const { name, args } = buildOwnedContainerCreateArgs(runId);
+  let hostPort = await reserveLoopbackPort();
+  const { name, args } = buildOwnedContainerCreateArgs(runId, hostPort);
   const started = Date.now();
   let containerId = '';
-  let hostPort = 0;
   try {
     const { stdout } = await dockerExec('docker', args, { signal });
-    containerId = stdout.trim();
+    containerId = stdout.trim().split('\n').at(-1)?.trim() ?? '';
     const { stdout: portRaw } = await dockerExec('docker', [
       'port',
       containerId,
@@ -1346,6 +1367,19 @@ export function redactLiveResult(payload) {
   );
 }
 
+async function reserveLoopbackPort() {
+  const net = await import('node:net');
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+      server.close(() => resolve(port));
+    });
+  });
+}
+
 async function runLiveCli() {
   const refusal = validateLiveOptIn(process.argv, process.env);
   if (refusal) {
@@ -1364,6 +1398,7 @@ async function runLiveCli() {
   suiteTimer.unref?.();
 
   const started = Date.now();
+  let exitCode = 1;
   const workers = [];
   /** @type {import('redis').RedisClientType | null} */
   let admin = null;
@@ -1380,7 +1415,8 @@ async function runLiveCli() {
         cleanup: { containerRemoved: false },
       });
       console.log(JSON.stringify(payload));
-      process.exit(owned.status === 'FAIL' ? 1 : 2);
+      exitCode = owned.status === 'FAIL' ? 1 : 2;
+      return;
     }
 
     admin = createAdminClient(owned.redisEnv.REDIS_URL);
@@ -1421,21 +1457,16 @@ async function runLiveCli() {
     });
 
     console.log(JSON.stringify(payload));
-    process.exit(fail ? 1 : 0);
+    exitCode = fail ? 1 : 0;
   } finally {
     clearTimeout(suiteTimer);
     await closeWorkers(workers);
     await disconnectAdminClient(admin);
     if (owned?.containerId) {
-      const removed = await forceRemoveOwnedContainer(
-        dockerExec,
-        owned.containerId,
-      );
-      if (typeof owned === 'object' && owned !== null) {
-        owned.cleanup = removed;
-      }
+      await forceRemoveOwnedContainer(dockerExec, owned.containerId);
     }
   }
+  return exitCode;
 }
 
 const modulePath = fileURLToPath(import.meta.url);
@@ -1445,13 +1476,17 @@ const invokedPath = process.argv[1]
 const isMain = invokedPath.length > 0 && modulePath === invokedPath;
 
 if (isMain) {
-  runLiveCli().catch((error) => {
-    console.error(
-      JSON.stringify({
-        status: 'FAIL',
-        reason: error instanceof Error ? error.message : String(error),
-      }),
-    );
-    process.exit(1);
-  });
+  runLiveCli()
+    .then((code) => {
+      process.exit(code ?? 1);
+    })
+    .catch((error) => {
+      console.error(
+        JSON.stringify({
+          status: 'FAIL',
+          reason: error instanceof Error ? error.message : String(error),
+        }),
+      );
+      process.exit(1);
+    });
 }

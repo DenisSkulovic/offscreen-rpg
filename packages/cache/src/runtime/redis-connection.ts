@@ -226,10 +226,14 @@ export function createRedisConnection(
       throw new Error('RedisConnectionClosed');
     }
     void attemptConnect();
+    // setImmediate yields to I/O and the connect deadline. A microtask spin
+    // never lets the socket or the timeout timer run.
     await Promise.race([
       (async () => {
         while (!closed && state !== 'ready' && state !== 'degraded') {
-          await Promise.resolve();
+          await new Promise<void>((resolve) => {
+            setImmediate(resolve);
+          });
         }
       })(),
       new Promise<void>((resolve) => {

@@ -70,7 +70,7 @@ function resetOriginStats() {
 
 /**
  * @param {readonly string[]} identity
- * @param {{ delayMs?: number; failWith?: string }} opts
+ * @param {{ delayMs?: number; failWith?: string; padBytes?: number }} opts
  */
 async function runOrigin(identity, opts = {}) {
   activeOrigin += 1;
@@ -88,8 +88,13 @@ async function runOrigin(identity, opts = {}) {
   }
   const [id, revision] = identity;
   activeOrigin -= 1;
+  const padBytes = Math.min(262_144, Math.max(0, opts.padBytes ?? 0));
   return {
-    value: { id, revision },
+    value: {
+      id,
+      revision,
+      ...(padBytes > 0 ? { pad: 'x'.repeat(padBytes) } : {}),
+    },
     identity,
     observedAtMs: Date.now(),
   };
@@ -198,6 +203,7 @@ async function dispatch(msg) {
         const value = await bound.getOrLoad(identity, () =>
           runOrigin(identity, {
             delayMs: Number(msg.delayMs ?? 0),
+            padBytes: Number(msg.padBytes ?? 0),
             failWith:
               typeof msg.failWith === 'string' ? msg.failWith : undefined,
           }),
