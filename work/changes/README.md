@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+**INF08:** [Helm application workload normalization](open/2026-11-24--inf08-helm-workload-normalization/CHANGE.md) commissioned after INF07; no global queue change.
+
 **INF07:** [Image architecture normalization](open/2026-11-24--inf07-image-architecture-normalization/CHANGE.md) commissioned source-only after INF06; no global queue change.
 
 ## Database platform redesign

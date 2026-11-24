@@ -1,5 +1,7 @@
 # Storyteller Workshop | reality check and finish line
 
+**INF08 (2026-11-24):** Owner commissioned [Helm workload normalization](../../changes/open/2026-11-24--inf08-helm-workload-normalization/CHANGE.md), dependency-gated after INF07. One application chart, slot-only dev and stable release, explicit resource/security policy. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.
+
 **INF07 (2026-11-24):** Owner commissioned [image architecture normalization](../../changes/open/2026-11-24--inf07-image-architecture-normalization/CHANGE.md), source-only after INF06. Shared toolchain, build graph and verified distribution; distinct dev/release artifacts retained. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new acceptance credit.
 
 **INF06 (2026-11-24):** Cluster foundation source landed. [INF06](../../changes/archive/2026-11/platform-operations/2026-11-24--inf06-cluster-foundation-normalization/CHANGE.md) is Done, source-only, live cluster NOT-RUN, no new acceptance credit. Existing overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged.
