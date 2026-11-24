@@ -183,12 +183,6 @@ export function buildFilteredApplyManifest(input) {
         `rendered Deployment ${name} image does not match loader receipt for ${family}`,
       );
     }
-    const key = `${doc.metadata?.namespace ?? '-'}/${name}`;
-    const existing = input.existingDeployments?.[key] ?? null;
-    const existingAnnotation = deploymentPodTemplateImageIdAnnotation(existing);
-    if (!deploymentRolloutRequired(existingAnnotation, receipt.digest)) {
-      continue;
-    }
     output.push(annotateDeploymentPodTemplate(doc, receipt.digest));
   }
   return output;
@@ -321,6 +315,86 @@ function waitDeploymentRollout(run, contextName, namespace, name) {
 }
 
 /**
+ * @param {object | null | undefined} pod
+ */
+function isPodTerminating(pod) {
+  return typeof pod?.metadata?.deletionTimestamp === 'string';
+}
+
+/**
+ * @param {object[]} items
+ * @param {string} deploymentUid
+ * @returns {Map<string, object>}
+ */
+function replicaSetsOwnedByDeployment(items, deploymentUid) {
+  /** @type {Map<string, object>} */
+  const index = new Map();
+  for (const rs of items ?? []) {
+    const owner = (rs?.metadata?.ownerReferences ?? []).find(
+      (ref) => ref.kind === 'Deployment' && ref.controller === true,
+    );
+    if (!owner || owner.uid !== deploymentUid) {
+      continue;
+    }
+    const name = rs?.metadata?.name;
+    const uid = rs?.metadata?.uid;
+    if (typeof name !== 'string' || typeof uid !== 'string') {
+      continue;
+    }
+    index.set(name, rs);
+  }
+  return index;
+}
+
+/**
+ * @param {object} pod
+ * @param {Map<string, object>} replicaSets
+ * @returns {object | null}
+ */
+function resolvePodReplicaSet(pod, replicaSets) {
+  const rsRef = (pod?.metadata?.ownerReferences ?? []).find(
+    (ref) => ref.kind === 'ReplicaSet' && ref.controller === true,
+  );
+  if (!rsRef || typeof rsRef.name !== 'string' || typeof rsRef.uid !== 'string') {
+    return null;
+  }
+  const match = replicaSets.get(rsRef.name);
+  if (!match || match.metadata?.uid !== rsRef.uid) {
+    return null;
+  }
+  return match;
+}
+
+/**
+ * @param {object} replicaSet
+ * @param {string} expectedDigest
+ */
+function replicaSetMatchesRolloutDigest(replicaSet, expectedDigest) {
+  const annotated =
+    replicaSet?.spec?.template?.metadata?.annotations?.[
+      DEPLOYMENT_IMAGE_ID_ANNOTATION
+    ];
+  return annotated === expectedDigest;
+}
+
+/**
+ * @param {object} pod
+ * @param {string} containerName
+ * @returns {{ ready: boolean, imageID: string } | null}
+ */
+function mainContainerStatus(pod, containerName) {
+  const statuses = pod?.status?.containerStatuses ?? [];
+  const match = statuses.find((entry) => entry?.name === containerName);
+  if (!match) {
+    return null;
+  }
+  return {
+    ready: match.ready === true,
+    imageID: typeof match.imageID === 'string' ? match.imageID : '',
+  };
+}
+
+/**
  * @param {typeof runPlatformCommand} run
  * @param {string} contextName
  * @param {string} namespace
@@ -350,8 +424,9 @@ export function verifyDeploymentRolloutExecution(
       `deployment ${namespace}/${deploymentName} unreadable after rollout`,
     );
   }
+  const deployment = deploymentRead.object;
   const annotated =
-    deploymentRead.object.spec?.template?.metadata?.annotations?.[
+    deployment.spec?.template?.metadata?.annotations?.[
       DEPLOYMENT_IMAGE_ID_ANNOTATION
     ];
   if (annotated !== expectedDigest) {
@@ -359,6 +434,79 @@ export function verifyDeploymentRolloutExecution(
       `deployment ${namespace}/${deploymentName} pod template annotation digest mismatch`,
     );
   }
+  const deploymentUid = deployment.metadata?.uid;
+  const generation = deployment.metadata?.generation;
+  const observedGeneration = deployment.status?.observedGeneration;
+  const specReplicas = deployment.spec?.replicas;
+  const readyReplicas = deployment.status?.readyReplicas;
+  const updatedReplicas = deployment.status?.updatedReplicas;
+  const mainContainerName =
+    deployment.spec?.template?.spec?.containers?.[0]?.name;
+  if (typeof deploymentUid !== 'string' || deploymentUid.length === 0) {
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} uid missing after rollout`,
+    );
+  }
+  if (
+    typeof mainContainerName !== 'string' ||
+    mainContainerName.length === 0
+  ) {
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} main container name missing`,
+    );
+  }
+  if (
+    typeof generation !== 'number' ||
+    typeof observedGeneration !== 'number' ||
+    observedGeneration < generation
+  ) {
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} generation has not been observed`,
+    );
+  }
+  if (
+    typeof specReplicas !== 'number' ||
+    typeof readyReplicas !== 'number' ||
+    typeof updatedReplicas !== 'number' ||
+    readyReplicas !== specReplicas ||
+    updatedReplicas !== specReplicas
+  ) {
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} replica status is incomplete`,
+    );
+  }
+
+  const replicaSetList = run('kubectl', [
+    '--context',
+    contextName,
+    '-n',
+    namespace,
+    'get',
+    'replicasets',
+    '-l',
+    `app=${deploymentName}`,
+    '-o',
+    'json',
+  ]);
+  if (!replicaSetList.ok) {
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} ReplicaSet list unreadable`,
+    );
+  }
+  /** @type {{ items?: object[] }} */
+  let replicaSetBody;
+  try {
+    replicaSetBody = JSON.parse(replicaSetList.stdout);
+  } catch {
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} ReplicaSet list malformed`,
+    );
+  }
+  const ownedReplicaSets = replicaSetsOwnedByDeployment(
+    replicaSetBody.items ?? [],
+    deploymentUid,
+  );
+
   const pods = run('kubectl', [
     '--context',
     contextName,
@@ -376,23 +524,67 @@ export function verifyDeploymentRolloutExecution(
       `deployment ${namespace}/${deploymentName} pod list unreadable`,
     );
   }
-  /** @type {{ items?: Array<{ status?: { containerStatuses?: Array<{ imageID?: string }> } }> }} */
-  let body;
+  /** @type {{ items?: object[] }} */
+  let podBody;
   try {
-    body = JSON.parse(pods.stdout);
+    podBody = JSON.parse(pods.stdout);
   } catch {
     throw rolloutRefusal(
       `deployment ${namespace}/${deploymentName} pod list malformed`,
     );
   }
-  const readyPod = (body.items ?? []).find(
-    (item) => item?.status?.containerStatuses?.[0]?.ready === true,
+
+  /** @type {object[]} */
+  const nonTerminatingPods = (podBody.items ?? []).filter(
+    (pod) => !isPodTerminating(pod),
   );
-  const imageId = readyPod?.status?.containerStatuses?.[0]?.imageID ?? '';
-  const podDigest = digestFromPodImageId(imageId);
-  if (!podDigest || !acceptedIds.includes(podDigest)) {
+
+  if (nonTerminatingPods.length !== specReplicas) {
     throw rolloutRefusal(
-      `deployment ${namespace}/${deploymentName} pod image identity is unknown`,
+      `deployment ${namespace}/${deploymentName} has unexpected nonterminating replicas`,
+    );
+  }
+
+  for (const replicaSet of ownedReplicaSets.values()) {
+    if (replicaSetMatchesRolloutDigest(replicaSet, expectedDigest)) {
+      continue;
+    }
+    const stalePods = nonTerminatingPods.filter(
+      (pod) => resolvePodReplicaSet(pod, ownedReplicaSets) === replicaSet,
+    );
+    if (stalePods.length > 0) {
+      throw rolloutRefusal(
+        `deployment ${namespace}/${deploymentName} has nonterminating pods from an old ReplicaSet`,
+      );
+    }
+  }
+
+  let verifiedReplicas = 0;
+  for (const pod of nonTerminatingPods) {
+    const replicaSet = resolvePodReplicaSet(pod, ownedReplicaSets);
+    if (!replicaSet) {
+      throw rolloutRefusal(
+        `deployment ${namespace}/${deploymentName} has a foreign pod for app=${deploymentName}`,
+      );
+    }
+    const container = mainContainerStatus(pod, mainContainerName);
+    if (!container || !container.ready) {
+      throw rolloutRefusal(
+        `deployment ${namespace}/${deploymentName} main container ${mainContainerName} is not ready`,
+      );
+    }
+    const podDigest = digestFromPodImageId(container.imageID);
+    if (!podDigest || !acceptedIds.includes(podDigest)) {
+      throw rolloutRefusal(
+        `deployment ${namespace}/${deploymentName} pod image identity is unknown`,
+      );
+    }
+    verifiedReplicas += 1;
+  }
+
+  if (verifiedReplicas !== specReplicas) {
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} verified replica count mismatch`,
     );
   }
 }
@@ -491,11 +683,11 @@ function main() {
       });
       if (receipt.applyCount === 0) {
         process.stderr.write(
-          `Release ${section} overlay unchanged (${receipt.applyCount} Deployment updates).\n`,
+          `Release ${section} overlay prepared selected (${receipt.applyCount} Deployment updates).\n`,
         );
       } else {
         process.stderr.write(
-          `Release ${section} overlay prepared (${receipt.applyCount} Deployment update(s)).\n`,
+          `Release ${section} overlay prepared selected (${receipt.applyCount} Deployment update(s)).\n`,
         );
       }
       process.exitCode = 0;
