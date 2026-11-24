@@ -82,9 +82,9 @@ function assertResourceType(value, field) {
 /**
  * @param {string} resource
  */
-function isClusterNamespaceRead(resource) {
+function isClusterScopedRead(resource) {
   const lower = resource.toLowerCase();
-  return lower === 'namespace' || lower === 'namespaces' || lower === 'ns';
+  return ['namespace', 'namespaces', 'ns', 'customresourcedefinition', 'customresourcedefinitions', 'crd', 'crds'].includes(lower);
 }
 
 /**
@@ -99,14 +99,14 @@ export function readPlatformObject(
   assertResourceType(resource, 'resource');
   assertIdentifier(name, 'name');
 
-  const clusterScoped = isClusterNamespaceRead(resource);
+  const clusterScoped = isClusterScopedRead(resource);
   if (!clusterScoped) {
     if (typeof namespace !== 'string') {
       throw new Error('namespace is required for namespaced resources');
     }
     assertIdentifier(namespace, 'namespace');
   } else if (namespace != null && namespace !== '') {
-    throw new Error('namespace must not be set for cluster namespace reads');
+    throw new Error('namespace must not be set for cluster-scoped reads');
   }
 
   /** @type {string[]} */

@@ -12,6 +12,7 @@ import { observeDevObjectStoreReady } from '../platform/object-storage/readiness
 import { observeDevPostgresReady } from '../platform/postgres/readiness.mjs';
 import { RELEASE_CNPG_CLUSTER } from '../platform/postgres/dev-bootstrap.mjs';
 import { observeDevTemporalReady } from '../platform/temporal/readiness.mjs';
+import { TEMPORAL_SQL_SCHEMA_VERSION_QUERY } from '../platform/temporal/schema-policy.mjs';
 import { observeDevRedisReady } from '../platform/redis/dev-install.mjs';
 import {
   BROKER_NAME,
@@ -330,10 +331,56 @@ function observeReleaseServiceState(serviceId, deps = {}) {
       postgres.state === 'present' && deploymentIsReady(postgres.object);
     const serverReady =
       server.state === 'present' && deploymentIsReady(server.object);
-    if (postgresReady && serverReady && schemaComplete) {
-      return { state: 'installed' };
+    if (!postgresReady || !serverReady) {
+      return { state: 'not-ready', detail: 'Temporal postgres or server Deployment not ready' };
     }
-    return { state: 'not-ready' };
+    if (schemaJob.state === 'present' && !schemaComplete) {
+      return { state: 'not-ready', detail: 'Temporal schema Job has not completed' };
+    }
+    if (schemaJob.state === 'present' && schemaConditions.some(
+      (item) => item?.type === 'Failed' && item?.status === 'True',
+    )) {
+      return { state: 'not-ready', detail: 'Temporal schema Job failed' };
+    }
+
+    // Existing releases can outlive their bootstrap Job. Read-only SQL and
+    // the actual server health establish readiness without recreating schema.
+    const admin = read('deployment', 'temporal-admin', namespace);
+    if (admin.state === 'unreadable') {
+      return { state: 'unreadable', detail: 'Temporal admin observation failed' };
+    }
+    if (admin.state !== 'present' || !deploymentIsReady(admin.object)) {
+      return { state: 'not-ready', detail: 'Temporal admin Deployment not ready' };
+    }
+    const owned = [postgres, server, admin, ...(schemaJob.state === 'present' ? [schemaJob] : [])].every(
+      (item) => item.object?.metadata?.labels?.['offscreen.rpg/lab'] === profile.ownerValue,
+    );
+    if (!owned) {
+      return { state: 'unreadable', detail: 'Temporal resource ownership mismatch' };
+    }
+    for (const database of ['temporal', 'temporal_visibility']) {
+      const sql = run('kubectl', [
+        '--context', profile.contextName, '-n', namespace, 'exec',
+        'deploy/temporal-postgres', '--', 'sh', '-c',
+        'PGPASSWORD="$POSTGRES_PASSWORD" PGOPTIONS="-c default_transaction_read_only=on" psql -X -w -h 127.0.0.1 -U temporal -d "$1" -Atq -v ON_ERROR_STOP=1 -c "$2"',
+        'schema-check', database, TEMPORAL_SQL_SCHEMA_VERSION_QUERY,
+      ], { timeoutMs: 15000 });
+      if (!sql.ok) {
+        return { state: 'unreadable', detail: `Temporal ${database} schema probe failed` };
+      }
+      if (sql.stdout.trim() !== 't') {
+        return { state: 'not-ready', detail: `Temporal ${database} schema_version not verified` };
+      }
+    }
+    const health = run('kubectl', [
+      '--context', profile.contextName, '-n', namespace, 'exec',
+      'deploy/temporal-admin', '--', 'temporal', 'operator', 'cluster',
+      'health', '--address', 'temporal-server:7233',
+    ], { timeoutMs: 15000 });
+    if (!health.ok || health.stdout.trim() !== 'SERVING') {
+      return { state: 'not-ready', detail: 'Temporal cluster health is not SERVING' };
+    }
+    return { state: 'installed', detail: 'Both schema tables verified; Temporal SERVING' };
   }
 
   if (serviceId === 'gateway') {
@@ -376,6 +423,13 @@ function observeReleaseServiceState(serviceId, deps = {}) {
   }
 
   if (serviceId === 'rabbitmq') {
+    const crd = read('customresourcedefinition', 'rabbitmqclusters.rabbitmq.com');
+    if (crd.state === 'unreadable') {
+      return { state: 'unreadable', detail: 'RabbitMQ CRD observation failed' };
+    }
+    if (crd.state === 'absent') {
+      return { state: 'not-installed', detail: 'RabbitMQ CRD absent' };
+    }
     const broker = read('rabbitmqcluster', BROKER_NAME, RABBITMQ_NAMESPACE);
     if (broker.state === 'unreadable') {
       return { state: 'unreadable', detail: broker.reason };

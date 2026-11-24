@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync, renameSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
+import { OPTIONAL_EXCLUDED_SERVICES } from '../environments/platform-plan.mjs';
 import { runCommand, commandOutcome, diagnosticExcerpt, executeChecks } from './diagnostic-engine.mjs';
 
 const SERVICES = { dev: ['postgres', 'object-storage', 'temporal', 'redis'], release: ['postgres', 'object-storage', 'temporal', 'gateway', 'redis', 'rabbitmq', 'observability'] };
@@ -68,7 +69,8 @@ export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, par
         capability: service === 'cluster' ? profile === 'dev' ? 'CL-01' : 'CL-02' : SERVICE_IDS[service],
         timeoutMs: 180000, evaluate: result => {
           const observation = JSON.parse(result.stdout);
-          return { status: observation.status, reason: diagnosticExcerpt(observation.reason), detail: diagnosticExcerpt(observation.detail) };
+          const optional = OPTIONAL_EXCLUDED_SERVICES.includes(service);
+          return { status: observation.status, reason: diagnosticExcerpt(observation.reason), detail: diagnosticExcerpt(observation.detail), optional };
         }
       });
     }
