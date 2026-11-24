@@ -100,7 +100,7 @@ export function classifyTemporalResource(observation, ownerValue) {
  * @param {SqlObservation | undefined} sql
  * @returns {boolean | null}
  */
-function bothDatabasesExist(sql) {
+export function bothDatabasesExist(sql) {
   if (!sql || sql.state !== 'readable' || !sql.databases) return null;
   return (
     sql.databases.temporal === true &&
@@ -112,7 +112,7 @@ function bothDatabasesExist(sql) {
  * @param {SqlObservation | undefined} sql
  * @returns {boolean | null}
  */
-function anyDatabaseExists(sql) {
+export function anyDatabaseExists(sql) {
   if (!sql || sql.state !== 'readable' || !sql.databases) return null;
   return (
     sql.databases.temporal === true ||
@@ -124,7 +124,7 @@ function anyDatabaseExists(sql) {
  * @param {SqlObservation | undefined} sql
  * @returns {boolean | null}
  */
-function bothSchemaTablesNonempty(sql) {
+export function bothSchemaTablesNonempty(sql) {
   if (!sql || sql.state !== 'readable' || !sql.schemaTables) return null;
   return (
     sql.schemaTables.temporal === true &&

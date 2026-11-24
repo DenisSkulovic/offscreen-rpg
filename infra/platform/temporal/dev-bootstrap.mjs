@@ -419,6 +419,32 @@ export function planDevTemporalPolicy(input) {
 }
 
 /**
+ * @param {{
+ *   postgresReady?: string | number,
+ *   schemaSucceeded?: string | number,
+ *   schemaFailed?: string | number,
+ *   serverReady?: string | number,
+ *   jobAbsent?: boolean,
+ *   legacySchemaReady?: boolean,
+ * }} sample
+ */
+export function temporalReadinessMet(sample) {
+  if (Number(sample.schemaFailed ?? 0) > 0) return false;
+  if (Number(sample.postgresReady ?? 0) < 1) return false;
+  if (Number(sample.serverReady ?? 0) < 1) return false;
+  if (
+    Number(sample.schemaSucceeded ?? 0) >= 1 ||
+    sample.schemaSucceeded === '1'
+  ) {
+    return true;
+  }
+  if (sample.jobAbsent === true && sample.legacySchemaReady === true) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * @param {object} deps
  */
 function kubectlSample(deps, args) {
