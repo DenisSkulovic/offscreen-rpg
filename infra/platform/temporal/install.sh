@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install a pinned Temporal server with its own PostgreSQL claim on local-path.
 # Does not delete the cluster, Docker volumes, or foreign kubectl contexts.
-# Does not print Secret values. Does not run a game workflow.
+# Does not print Secret values. Does not run a game workflow or smoke.
 
 set -euo pipefail
 
@@ -12,10 +12,9 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../clusters/kind/release/lib.sh"
 TEMPORAL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPORAL_WORKER_DIR="$TEMPORAL_DIR/../../verification/smoke/temporal/worker"
 
 command -v docker >/dev/null
-command -v openssl >/dev/null
+command -v node >/dev/null
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
@@ -40,28 +39,6 @@ ADMIN_IMAGE="$(read_pin ADMIN_IMAGE)"
 ADMIN_DIGEST="$(read_pin ADMIN_DIGEST)"
 POSTGRES_IMAGE="$(read_pin POSTGRES_IMAGE)"
 POSTGRES_DIGEST="$(read_pin POSTGRES_DIGEST)"
-WORKER_IMAGE="$(read_pin WORKER_IMAGE)"
-
-if ! grep -q "image: ${SERVER_IMAGE}" "$TEMPORAL_DIR/server.yaml"; then
-  echo "server.yaml image does not match images.pin." >&2
-  exit 1
-fi
-if ! grep -q "image: ${ADMIN_IMAGE}" "$TEMPORAL_DIR/admin.yaml"; then
-  echo "admin.yaml image does not match images.pin." >&2
-  exit 1
-fi
-if ! grep -q "image: ${POSTGRES_IMAGE}" "$TEMPORAL_DIR/postgres.yaml"; then
-  echo "postgres.yaml image does not match images.pin." >&2
-  exit 1
-fi
-if ! grep -q 'storageClassName: local-path' "$TEMPORAL_DIR/postgres.yaml"; then
-  echo "postgres.yaml must request local-path." >&2
-  exit 1
-fi
-if grep -R -n 'start-dev' "$TEMPORAL_DIR" --include='*.yaml' --include='*.mjs' --include='*.pin' >/dev/null; then
-  echo "Refusing to install: a lab manifest names start-dev." >&2
-  exit 1
-fi
 
 assert_digest() {
   local ref="$1"
@@ -80,6 +57,20 @@ assert_digest() {
 assert_digest "$SERVER_IMAGE" "$SERVER_DIGEST"
 assert_digest "$ADMIN_IMAGE" "$ADMIN_DIGEST"
 assert_digest "$POSTGRES_IMAGE" "$POSTGRES_DIGEST"
+
+(
+  cd "$TEMPORAL_DIR"
+  SERVER_IMAGE="$SERVER_IMAGE" ADMIN_IMAGE="$ADMIN_IMAGE" POSTGRES_IMAGE="$POSTGRES_IMAGE" node --input-type=module -e "
+import { verifyReleaseRenderedPins } from './release-install.mjs';
+verifyReleaseRenderedPins({
+  images: {
+    server: process.env.SERVER_IMAGE,
+    admin: process.env.ADMIN_IMAGE,
+    postgres: process.env.POSTGRES_IMAGE,
+  },
+});
+"
+)
 
 require_memory
 
@@ -112,73 +103,23 @@ import_image() {
   done < <(kind get nodes --name "$CLUSTER_NAME")
 }
 
-if ! docker image inspect "$WORKER_IMAGE" >/dev/null 2>&1; then
-  echo "Building ${WORKER_IMAGE}"
-  docker build -t "$WORKER_IMAGE" "$TEMPORAL_WORKER_DIR"
-fi
-
 import_image "$POSTGRES_IMAGE" no
 import_image "$SERVER_IMAGE" no
 import_image "$ADMIN_IMAGE" no
-import_image "$WORKER_IMAGE" yes
 
-"${KUBECTL[@]}" apply -f "$TEMPORAL_DIR/namespace.yaml"
-
-password="$(openssl rand -hex 24)"
-if [[ ! "$password" =~ ^[0-9a-f]{48}$ ]]; then
-  echo "Generated password was not 48 hex characters." >&2
-  exit 1
-fi
-passfile="$(mktemp)"
-chmod 600 "$passfile"
-printf '%s' "$password" >"$passfile"
-if grep -R -F -f "$passfile" "$TEMPORAL_DIR" >/dev/null; then
-  rm -f "$passfile"
-  unset password
-  echo "Refusing to continue: the generated password was written under the lab tree." >&2
-  exit 1
-fi
-rm -f "$passfile"
-
-"${KUBECTL[@]}" -n lab-temporal create secret generic temporal-db \
-  --from-literal=password="$password" \
-  --dry-run=client -o yaml | "${KUBECTL[@]}" apply -f -
-unset password
-
-"${KUBECTL[@]}" apply -f "$TEMPORAL_DIR/postgres.yaml"
-if ! "${KUBECTL[@]}" -n lab-temporal rollout status deployment/temporal-postgres --timeout=300s; then
-  echo "PostgreSQL did not become ready." >&2
-  "${KUBECTL[@]}" -n lab-temporal get pods -o wide >&2 || true
-  "${KUBECTL[@]}" -n lab-temporal describe pod -l app=temporal-postgres >&2 || true
-  "${KUBECTL[@]}" -n lab-temporal logs -l app=temporal-postgres --tail=80 >&2 || true
-  exit 1
-fi
-
-"${KUBECTL[@]}" -n lab-temporal delete job temporal-schema --ignore-not-found >/dev/null
-"${KUBECTL[@]}" apply -f "$TEMPORAL_DIR/schema-job.yaml"
-if ! "${KUBECTL[@]}" -n lab-temporal wait --for=condition=complete job/temporal-schema --timeout=240s; then
-  echo "Temporal schema job did not complete." >&2
-  "${KUBECTL[@]}" -n lab-temporal logs job/temporal-schema --tail=80 >&2 || true
-  exit 1
-fi
-
-"${KUBECTL[@]}" apply -f "$TEMPORAL_DIR/server.yaml"
-"${KUBECTL[@]}" apply -f "$TEMPORAL_DIR/admin.yaml"
-if ! "${KUBECTL[@]}" -n lab-temporal rollout status deployment/temporal-server --timeout=300s; then
-  echo "Temporal server did not become ready." >&2
-  "${KUBECTL[@]}" -n lab-temporal get pods -o wide >&2 || true
-  "${KUBECTL[@]}" -n lab-temporal describe deploy/temporal-server >&2 || true
-  exit 1
-fi
-"${KUBECTL[@]}" -n lab-temporal rollout status deployment/temporal-admin --timeout=180s
-
-"${KUBECTL[@]}" -n lab-temporal delete job temporal-namespace --ignore-not-found >/dev/null
-"${KUBECTL[@]}" apply -f "$TEMPORAL_DIR/namespace-job.yaml"
-if ! "${KUBECTL[@]}" -n lab-temporal wait --for=condition=complete job/temporal-namespace --timeout=240s; then
-  echo "Temporal namespace job did not complete." >&2
-  "${KUBECTL[@]}" -n lab-temporal logs job/temporal-namespace --tail=80 >&2 || true
-  exit 1
-fi
+KUBECTL_JSON="$(node -e 'console.log(JSON.stringify(process.argv.slice(1)))' -- "${KUBECTL[@]}")"
+(
+  cd "$TEMPORAL_DIR"
+  KUBECTL_JSON="$KUBECTL_JSON" node --input-type=module -e "
+import { runLiveReleaseInstall } from './release-install.mjs';
+const kubectlBase = JSON.parse(process.env.KUBECTL_JSON ?? '[]');
+const result = runLiveReleaseInstall(kubectlBase);
+if (!result.ok) {
+  console.error(JSON.stringify(result.refusals));
+  process.exit(1);
+}
+"
+)
 
 cmdline="$("${KUBECTL[@]}" -n lab-temporal exec deploy/temporal-server -- sh -c 'tr "\0" " " < /proc/1/cmdline')"
 echo "Server command: ${cmdline}"

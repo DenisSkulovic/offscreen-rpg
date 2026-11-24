@@ -1,0 +1,5 @@
+mode: release
+namespace: lab-temporal
+storageClass: local-path
+ownerLabelKey: offscreen.rpg/lab
+ownerValue: disposable

@@ -1,0 +1,5 @@
+{{- include "platform-temporal.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- if or (eq $section "all") (eq $section "namespace") -}}
+{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.namespace" "ctx" .) -}}
+{{- end -}}

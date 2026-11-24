@@ -39,19 +39,19 @@ test('the rendered Temporal stack uses the pinned images and dev storage class',
   assert.match(manifest, new RegExp(DEV_TEMPORAL_SERVER_IMAGE));
   assert.match(manifest, new RegExp(DEV_TEMPORAL_ADMIN_IMAGE));
   assert.match(manifest, new RegExp(DEV_TEMPORAL_POSTGRES_IMAGE));
-  assert.match(manifest, new RegExp(`storageClassName: ${DEV_TEMPORAL_STORAGE_CLASS}`));
-  assert.match(manifest, /type: ClusterIP/);
-  assert.match(manifest, /command: \["\/bin\/sh", "\/etc\/temporal\/lab\/start\.sh"\]/);
-  assert.match(manifest, /databaseName: "temporal"/);
-  assert.match(manifest, /databaseName: "temporal_visibility"/);
+  assert.match(manifest, new RegExp(`"storageClassName":"${DEV_TEMPORAL_STORAGE_CLASS}"`));
+  assert.match(manifest, /"type":"ClusterIP"/);
+  assert.match(manifest, /\/etc\/temporal\/lab\/start\.sh/);
+  assert.match(manifest, /databaseName: \\"temporal\\"/);
+  assert.match(manifest, /databaseName: \\"temporal_visibility\\"/);
   assert.match(manifest, /grpcPort: 7233/);
   assert.match(manifest, /httpPort: 7243/);
-  assert.match(manifest, /name: temporal-server-scripts/);
-  assert.match(manifest, /name: temporal-dynamic/);
+  assert.match(manifest, /"name":"temporal-server-scripts"/);
+  assert.match(manifest, /"name":"temporal-dynamic"/);
   assert.match(manifest, /POSTGRES_SEEDS/);
   assert.match(manifest, /setup-schema -v 0\.0/);
-  assert.match(manifest, /nc -z "\$POSTGRES_SEEDS" 5432/);
-  assert.doesNotMatch(manifest, /args: \["start"/);
+  assert.match(manifest, /nc -z \\"\$POSTGRES_SEEDS\\" 5432/);
+  assert.doesNotMatch(manifest, /"args":\["start"/);
   assert.doesNotMatch(manifest, /ttlSecondsAfterFinished/);
   assert.doesNotMatch(manifest, /local-path/);
   assert.doesNotMatch(manifest, new RegExp(RELEASE_TEMPORAL_NAMESPACE));
@@ -73,6 +73,7 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
       { kind: 'Namespace', name: DEV_TEMPORAL_NAMESPACE, owner: 'offscreen-dev', uid: 'ns' },
       { kind: 'Secret', name: 'temporal-db', owner: 'offscreen-dev', uid: 'sec' },
       { kind: 'PersistentVolumeClaim', name: 'temporal-postgres', owner: 'offscreen-dev', uid: 'pvc' },
+      { kind: 'Deployment', name: 'temporal-postgres', owner: 'offscreen-dev', uid: 'dep-pg' },
       { kind: 'Job', name: DEV_TEMPORAL_SCHEMA_JOB, owner: 'offscreen-dev', uid: 'job', succeeded: true },
       { kind: 'Deployment', name: 'temporal-server', owner: 'offscreen-dev', uid: 'dep', image: DEV_TEMPORAL_SERVER_IMAGE },
     ],
@@ -90,7 +91,11 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
   });
   assert.equal(result.ok, true);
   assert.equal(result.actions.some((action) => action.op === 'reuse-schema-job'), true);
-  assert.equal(result.actions.findIndex((action) => action.op === 'verify-schema') < result.actions.findIndex((action) => action.op === 'apply-server'), true);
+  const verifyIdx = result.actions.findIndex((action) => action.op === 'verify-schema');
+  const serverIdx = result.actions.findIndex(
+    (action) => action.op === 'apply-server' || action.op === 'reuse-server',
+  );
+  assert.equal(verifyIdx >= 0 && serverIdx >= 0 && verifyIdx < serverIdx, true);
   assert.equal(calls.some((line) => line.includes(' create ')), false);
   const failed = ensureDevTemporal({ ...ready, resources: [{ kind: 'Job', name: DEV_TEMPORAL_SCHEMA_JOB, owner: 'offscreen-dev', uid: 'job', failed: true }] }, { authorize: true });
   assert.equal(failed.refusals.some((item) => item.id === 'schema-job-failed'), true);
@@ -103,7 +108,9 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
   const blocked = executeAuthorizedDevTemporal({
     collect: () => ready,
     generatePassword: () => 'temporal-password-value',
-    run() {
+    run(_command, args) {
+      const joined = args.join(' ');
+      if (joined.includes('availableReplicas')) return { ok: true, stdout: '1' };
       return { ok: true, stdout: '0' };
     },
   });

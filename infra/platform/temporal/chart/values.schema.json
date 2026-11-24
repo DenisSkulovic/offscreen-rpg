@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["mode", "namespace", "section", "storageClass", "ownerLabelKey", "ownerValue"],
+  "properties": {
+    "mode": { "enum": ["development", "release"] },
+    "namespace": { "type": "string", "minLength": 1 },
+    "section": { "type": "string", "minLength": 1 },
+    "storageClass": { "type": "string", "minLength": 1 },
+    "ownerLabelKey": { "type": "string", "minLength": 1 },
+    "ownerValue": { "type": "string", "minLength": 1 },
+    "images": {
+      "type": "object",
+      "required": ["server", "admin", "postgres"],
+      "properties": {
+        "server": { "type": "string", "minLength": 1 },
+        "admin": { "type": "string", "minLength": 1 },
+        "postgres": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

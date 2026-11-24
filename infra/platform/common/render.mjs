@@ -54,6 +54,7 @@ const ALLOWED_KINDS = new Set([
   'Job',
   'ConfigMap',
   'Cluster',
+  'PersistentVolumeClaim',
   'RabbitmqCluster',
 ]);
 
@@ -308,6 +309,37 @@ function helmPlatformArgs(service, profile, section, deps = {}) {
     ],
     stdin: helmPlatformStdin(service, profile, section, deps),
   };
+}
+
+/**
+ * @param {{ service: string, profile: 'dev' | 'release', section?: string }} input
+ * @param {{ run?: typeof runPlatformCommand, chartRoot?: string, stdinOverlay?: Record<string, unknown> }} [deps]
+ */
+/**
+ * @param {{ service: string, profile: 'dev' | 'release', section?: string }} input
+ * @param {{ run?: typeof runPlatformCommand, chartRoot?: string, stdinOverlay?: Record<string, unknown> }} [deps]
+ */
+export function renderPlatformManifestText(
+  { service, profile, section = 'all' },
+  { run = runPlatformCommand, chartRoot, stdinOverlay } = {},
+) {
+  assertPlatformRenderRequest(service, profile, section);
+  const helm = helmPlatformArgs(service, profile, section, {
+    chartRoot,
+    stdinOverlay,
+  });
+  const result = run('helm', helm.args, {
+    input: helm.stdin,
+    timeoutMs: HELM_TIMEOUT_MS,
+  });
+  if (!result.ok || result.timedOut || result.missing) {
+    throw new Error(`helm template failed: ${boundedHelmDiagnostic(result)}`);
+  }
+  const output = result.stdout ?? '';
+  if (!output.trim()) {
+    throw new Error('helm template failed: empty output');
+  }
+  return output;
 }
 
 /**

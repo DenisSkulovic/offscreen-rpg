@@ -1,0 +1,11 @@
+{{- include "platform-temporal.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $ctx := . -}}
+{{- if or (eq $section "all") (eq $section "postgres") -}}
+{{- if eq .Values.mode "release" -}}
+{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.postgres-init" "ctx" $ctx) -}}
+{{- end -}}
+{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.postgres-pvc" "ctx" $ctx) -}}
+{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.postgres-deployment" "ctx" $ctx) -}}
+{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.postgres-service" "ctx" $ctx) -}}
+{{- end -}}

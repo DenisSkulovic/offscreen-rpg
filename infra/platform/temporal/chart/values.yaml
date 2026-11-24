@@ -1,0 +1,10 @@
+section: all
+mode: placeholder-mode
+namespace: placeholder-ns
+storageClass: placeholder-sc
+ownerLabelKey: placeholder-label-key
+ownerValue: placeholder-owner
+images:
+  server: placeholder-server
+  admin: placeholder-admin
+  postgres: placeholder-postgres

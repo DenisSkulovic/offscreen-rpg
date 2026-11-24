@@ -13,6 +13,24 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
 TEMPORAL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPORAL_WORKER_DIR="$TEMPORAL_DIR/worker"
+PLATFORM_DIR="$(cd "$TEMPORAL_DIR/../../platform/temporal" && pwd)"
+
+command -v docker >/dev/null
+
+pin="$PLATFORM_DIR/images.pin"
+read_pin() {
+  local key="$1"
+  local value
+  value="$(awk -F= -v key="$key" '$1 == key { print substr($0, index($0, "=") + 1) }' "$pin")"
+  if [[ -z "$value" ]]; then
+    echo "images.pin is missing ${key}." >&2
+    exit 1
+  fi
+  printf '%s' "$value"
+}
+
+WORKER_IMAGE="$(read_pin WORKER_IMAGE)"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
@@ -24,6 +42,21 @@ if ! "${KUBECTL[@]}" -n lab-temporal get deploy temporal-server >/dev/null 2>&1;
 fi
 
 require_memory
+
+if ! docker image inspect "$WORKER_IMAGE" >/dev/null 2>&1; then
+  echo "Building ${WORKER_IMAGE}"
+  docker build -t "$WORKER_IMAGE" "$TEMPORAL_WORKER_DIR"
+fi
+
+while read -r node; do
+  [[ -z "$node" ]] && continue
+  if docker image inspect "$WORKER_IMAGE" >/dev/null 2>&1; then
+    echo "Importing ${WORKER_IMAGE} into ${node}"
+    docker save "$WORKER_IMAGE" | docker exec -i "$node" ctr --namespace=k8s.io images import - || {
+      echo "Import into ${node} failed. The kubelet may still pull ${WORKER_IMAGE}."
+    }
+  fi
+done < <(kind get nodes --name "$CLUSTER_NAME")
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
