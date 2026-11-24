@@ -1,6 +1,6 @@
 # DB02 | bounded Composer tasks
 
-Base SHA 2fb3f056; Ready / commissioned; DB01 joined. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base SHA 2fb3f056; Ready / commissioned; DB01 joined. [Program and frozen contracts](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
 
 ## T01 | Move declarations | READY
 

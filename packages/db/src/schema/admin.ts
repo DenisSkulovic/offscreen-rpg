@@ -14,7 +14,7 @@ import {
   uniqueIndex,
   check,
 } from 'drizzle-orm/pg-core';
-import { user, session } from './auth';
+import { user, session } from '@offscreen/identity-persistence/auth';
 
 export const adminStaffPrincipal = pgTable(
   'admin_staff_principal',

@@ -1,19 +1,28 @@
 import { timingSafeEqual } from 'node:crypto';
-import { and, count, eq, gt, inArray, isNull } from 'drizzle-orm';
+import { createRequire } from 'node:module';
+import type * as Drizzle from 'drizzle-orm' with { 'resolution-mode': 'require' };
+import type { Database } from '@offscreen/db' with { 'resolution-mode': 'require' };
 
-function equalSha256Hex(left: string, right: string): boolean {
-  const a = Buffer.from(left, 'utf8');
-  const b = Buffer.from(right, 'utf8');
-  if (a.length !== b.length) {return false;}
-  return timingSafeEqual(a, b);
-}
-import type { Database } from './database';
-import { user } from './schema/auth';
+// API is ESM; identity-persistence and @offscreen/db are CommonJS. Load drizzle operators
+// through require so column types stay on one drizzle-orm instance.
+const require = createRequire(import.meta.url);
+const { and, count, eq, gt, inArray, isNull } =
+  require('drizzle-orm') as typeof Drizzle;
+import { user } from '@offscreen/identity-persistence/auth';
 import {
   terminalAccessToken,
   terminalDevicePairing,
   type TerminalPairingState,
-} from './schema/terminal-auth';
+} from '@offscreen/identity-persistence/terminal-auth';
+
+function equalSha256Hex(left: string, right: string): boolean {
+  const a = Buffer.from(left, 'utf8');
+  const b = Buffer.from(right, 'utf8');
+  if (a.length !== b.length) {
+    return false;
+  }
+  return timingSafeEqual(a, b);
+}
 
 export type TerminalPairingRow = typeof terminalDevicePairing.$inferSelect;
 export type TerminalAccessTokenRow = typeof terminalAccessToken.$inferSelect;

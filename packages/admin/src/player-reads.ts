@@ -1,6 +1,6 @@
 import { count, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { user } from '@offscreen/db/schema';
+import { user } from '@offscreen/identity-persistence/auth';
 import { story } from '@offscreen/db/story-schema';
 import type {
   AdminReadEnvelopeV1,

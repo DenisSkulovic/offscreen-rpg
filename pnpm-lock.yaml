@@ -89,6 +89,9 @@ importers:
       '@offscreen/identity-interface':
         specifier: workspace:*
         version: link:../../packages/identity-interface
+      '@offscreen/identity-persistence':
+        specifier: workspace:*
+        version: link:../../packages/identity-persistence
       '@offscreen/runtime-logging':
         specifier: workspace:*
         version: link:../../packages/runtime-logging
@@ -107,6 +110,9 @@ importers:
       better-auth:
         specifier: 1.7.5
         version: 1.7.5(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0))(next@16.3.5(@babel/core@7.29.7(supports-color@8.1.1))(@types/node@22.20.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@3.2.7(@types/debug@4.1.13)(@types/node@22.20.3)(happy-dom@18.0.1)(jiti@2.7.0)(jsdom@26.1.0(supports-color@8.1.1))(msw@2.11.3(@types/node@22.20.3)(typescript@5.9.3))(supports-color@8.1.1)(terser@5.51.2)(tsx@4.23.13))
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
       pg:
         specifier: 8.23.0
         version: 8.23.0
@@ -366,6 +372,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../db
+      '@offscreen/identity-persistence':
+        specifier: workspace:*
+        version: link:../identity-persistence
       '@offscreen/story-interface':
         specifier: workspace:*
         version: link:../story-interface
@@ -456,6 +465,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@offscreen/identity-persistence':
+        specifier: workspace:*
+        version: link:../identity-persistence
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
@@ -538,6 +550,22 @@ importers:
       zod:
         specifier: 4.6.5
         version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/identity-persistence:
+    dependencies:
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
     devDependencies:
       '@offscreen/config':
         specifier: workspace:*
@@ -659,6 +687,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/identity-persistence':
+        specifier: workspace:*
+        version: link:../identity-persistence
       '@offscreen/story-interface':
         specifier: workspace:*
         version: link:../story-interface
@@ -790,6 +821,9 @@ importers:
       '@offscreen/game-authority-protocol':
         specifier: workspace:*
         version: link:../../packages/game-authority-protocol
+      '@offscreen/identity-persistence':
+        specifier: workspace:*
+        version: link:../../packages/identity-persistence
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
@@ -952,6 +986,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@offscreen/identity-persistence':
+        specifier: workspace:*
+        version: link:../../packages/identity-persistence
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)

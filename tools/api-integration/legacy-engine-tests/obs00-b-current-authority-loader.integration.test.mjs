@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { generation } from '@offscreen/db/generation-schema';
-import { user } from '@offscreen/db/schema';
+import { user } from '@offscreen/identity-persistence/auth';
 import { storyDraft } from '@offscreen/db/draft-schema';
 import {
   storytellerAttempt,

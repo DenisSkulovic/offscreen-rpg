@@ -1,0 +1,27 @@
+{
+  "name": "@offscreen/identity-persistence",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./auth": {
+      "types": "./dist/src/auth.d.ts",
+      "default": "./dist/src/auth.js"
+    },
+    "./terminal-auth": {
+      "types": "./dist/src/terminal-auth.d.ts",
+      "default": "./dist/src/terminal-auth.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

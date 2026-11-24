@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { campaign } from '@offscreen/db/campaign-schema';
-import { user } from '@offscreen/db/schema';
+import { user } from '@offscreen/identity-persistence/auth';
 import { story } from '@offscreen/db/story-schema';
 import type { Transaction } from '@offscreen/db/outbox';
 import {

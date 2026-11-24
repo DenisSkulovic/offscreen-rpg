@@ -10,7 +10,7 @@ import {
   unique,
   primaryKey,
 } from 'drizzle-orm/pg-core';
-import { user } from './auth';
+import { user } from '@offscreen/identity-persistence/auth';
 import { generation } from './generations';
 
 export const storyLaunch = pgTable(

@@ -7,9 +7,9 @@ export {
   userRelations,
   sessionRelations,
   accountRelations,
-} from '@offscreen/db/schema';
+} from '@offscreen/identity-persistence/auth';
 
 export {
   terminalDevicePairing,
   terminalAccessToken,
-} from '@offscreen/db/terminal-auth-schema';
+} from '@offscreen/identity-persistence/terminal-auth';

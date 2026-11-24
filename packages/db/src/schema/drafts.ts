@@ -9,7 +9,7 @@ import {
   index,
   check,
 } from 'drizzle-orm/pg-core';
-import { user } from './auth';
+import { user } from '@offscreen/identity-persistence/auth';
 
 export const storyDraft = pgTable(
   'story_draft',

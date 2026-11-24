@@ -47,6 +47,7 @@
     "@offscreen/content-packages": "workspace:*",
     "@offscreen/game-authority-protocol": "workspace:*",
     "@offscreen/db": "workspace:*",
+    "@offscreen/identity-persistence": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/game": "workspace:*",
     "@offscreen/lab-support": "workspace:*",
