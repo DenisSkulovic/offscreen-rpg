@@ -31,6 +31,8 @@ function stubPlatformRun(options) {
     gatewayLabel = 'disposable',
     namespaceLabels = {},
     backingPgUri = 'postgresql://lab/app',
+    backingPgOwnerUid = 'pg-cluster-uid',
+    backingPgClusterLabel = 'lab-pg',
     backingS3 = { 'access-key-id': 'key', 'secret-access-key': 'sek' },
     secrets = {},
     denyReads = [],
@@ -166,6 +168,10 @@ function stubPlatformRun(options) {
       };
     }
 
+    if (args.includes('cluster.postgresql.cnpg.io') && args.includes('lab-pg')) {
+      return { ok: true, stdout: JSON.stringify({ metadata: { name: 'lab-pg', namespace: 'lab-postgres', uid: 'pg-cluster-uid' } }) };
+    }
+
     if (
       args.includes('lab-postgres') &&
       args.includes('lab-pg-app') &&
@@ -178,7 +184,9 @@ function stubPlatformRun(options) {
           metadata: {
             name: 'lab-pg-app',
             namespace: 'lab-postgres',
-            labels: { 'offscreen.rpg/lab': 'disposable' },
+            labels: { 'cnpg.io/cluster': backingPgClusterLabel },
+            ownerReferences: [{ apiVersion: 'postgresql.cnpg.io/v1', kind: 'Cluster',
+              name: 'lab-pg', uid: backingPgOwnerUid, controller: true }],
           },
           data: { uri: Buffer.from(backingPgUri).toString('base64') },
         }),
@@ -460,4 +468,13 @@ test('mismatchedFieldNames reports oauth drift without values', () => {
     ['github-client-id'],
   );
   assert.deepEqual(names, ['github-client-id']);
+});
+test('CNPG app Secret with stale controller UID refuses before credential projection', () => {
+  const root = mkdtempSync(join(tmpdir(), 'release-owner-'));
+  writeEnv(root, ['GITHUB_CLIENT_ID=id', 'GITHUB_CLIENT_SECRET=sec', 'BETTER_AUTH_SECRET=' + 'a'.repeat(32)]);
+  for (const options of [{ backingPgOwnerUid: 'stale-cluster-uid' }, { backingPgClusterLabel: 'foreign' }, { namespaceLabels: { 'lab-postgres': 'foreign' } }]) {
+    const { run, invocations } = stubPlatformRun(options);
+    assert.throws(() => ensureReleaseCredentials({ repoRoot: root, run }), /ownership mismatch/);
+    assert.ok(!invocations.some(item => item.args.includes('create') && item.args.includes('-f')));
+  }
 });

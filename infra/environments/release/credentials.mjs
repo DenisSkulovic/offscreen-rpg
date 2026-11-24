@@ -9,6 +9,7 @@ import {
   runPlatformCommand,
 } from '../../platform/common/commands.mjs';
 import { readPlatformProfile } from '../../platform/common/profile.mjs';
+import { RELEASE_CNPG_CLUSTER } from '../../platform/postgres/dev-bootstrap.mjs';
 
 const PROFILE_ID = 'release';
 const LAB_LABEL_KEY = 'offscreen.rpg/lab';
@@ -323,7 +324,31 @@ export function ensureReleaseCredentials(input) {
   if (pgBacking.state === 'absent') {
     throw credentialRefusal('Secret lab-pg-app is missing in lab-postgres.');
   }
-  assertDisposableLabLabel(pgBacking.object?.metadata);
+  // The database operator, not our release installer, owns this generated Secret.
+  const pgNamespace = readPlatformObject(
+    { profileId: PROFILE_ID, resource: 'namespace', name: profile.namespaces.postgres },
+    { run },
+  );
+  if (pgNamespace.state !== 'present' ||
+      pgNamespace.object.metadata?.labels?.[LAB_LABEL_KEY] !== LAB_LABEL_VALUE) {
+    throw credentialRefusal('release PostgreSQL namespace ownership mismatch');
+  }
+  const pgCluster = readPlatformObject(
+    { profileId: PROFILE_ID, resource: 'cluster.postgresql.cnpg.io',
+      name: RELEASE_CNPG_CLUSTER, namespace: profile.namespaces.postgres },
+    { run },
+  );
+  const clusterUid = pgCluster.state === 'present' ? pgCluster.object.metadata?.uid : null;
+  const pgMetadata = pgBacking.object.metadata;
+  const owner = pgMetadata?.ownerReferences;
+  if (typeof clusterUid !== 'string' || !clusterUid ||
+      pgMetadata?.labels?.['cnpg.io/cluster'] !== RELEASE_CNPG_CLUSTER ||
+      !Array.isArray(owner) || !owner.some(ref =>
+        ref.apiVersion === 'postgresql.cnpg.io/v1' &&
+        ref.kind === 'Cluster' && ref.name === RELEASE_CNPG_CLUSTER &&
+        ref.uid === clusterUid && ref.controller === true)) {
+    throw credentialRefusal('lab-postgres/lab-pg-app CNPG controller ownership mismatch');
+  }
   const backingUri = decodeSecretStringData(pgBacking.object).uri;
   if (!backingUri) {
     throw credentialRefusal('lab-pg-app has no uri.');
@@ -344,7 +369,9 @@ export function ensureReleaseCredentials(input) {
   if (s3Backing.state === 'absent') {
     throw credentialRefusal('object-store-s3 is missing access keys.');
   }
-  assertDisposableLabLabel(s3Backing.object?.metadata);
+  if (s3Backing.object.metadata?.labels?.[LAB_LABEL_KEY] !== LAB_LABEL_VALUE) {
+    throw credentialRefusal('lab-objects/object-store-s3 ownership mismatch');
+  }
   const backingS3 = decodeSecretStringData(s3Backing.object);
   if (!backingS3['access-key-id'] || !backingS3['secret-access-key']) {
     throw credentialRefusal('object-store-s3 is missing access keys.');
