@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { readPlatformObject } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
 import {
   DEV_S3_CONTEXT,
@@ -111,40 +112,17 @@ export function collectDevObjectStoreProbe(deps = {}) {
   ];
   const resources = [];
   for (const [kind, name, namespaced] of names) {
-    const args = ['--context', DEV_S3_CONTEXT, '--ignore-not-found'];
-    if (namespaced) args.push('-n', DEV_S3_NAMESPACE);
-    args.push('get', kind, name, '-o', 'json');
-    const listed = note(run('kubectl', args, 15000));
-    if (!listed.ok) {
-      unreadables.push({
-        kind:
-          kind === 'namespace'
-            ? 'Namespace'
-            : kind === 'secret'
-              ? 'Secret'
-              : kind === 'pvc'
-                ? 'PersistentVolumeClaim'
-                : kind === 'deploy'
-                  ? 'Deployment'
-                  : 'Service',
-        name,
-        reason: 'kubectl get failed',
-      });
+    const resourceKind = { namespace: 'Namespace', secret: 'Secret', pvc: 'PersistentVolumeClaim', deploy: 'Deployment', svc: 'Service' }[kind];
+    const observation = readPlatformObject({
+      profileId: 'dev', resource: kind, name,
+      ...(namespaced ? { namespace: DEV_S3_NAMESPACE } : {}),
+    }, { run: (command, args) => note(run(command, args, 15000)) });
+    if (observation.state === 'unreadable') {
+      unreadables.push({ kind: resourceKind, name, reason: observation.reason });
       continue;
     }
-    const body = parseJson(listed.stdout);
-    const resource = resourceFrom(
-      body,
-      kind === 'namespace'
-        ? 'Namespace'
-        : kind === 'secret'
-          ? 'Secret'
-          : kind === 'pvc'
-            ? 'PersistentVolumeClaim'
-            : kind === 'deploy'
-              ? 'Deployment'
-              : 'Service',
-    );
+    if (observation.state === 'absent') continue;
+    const resource = resourceFrom(observation.object, resourceKind);
     if (resource) resources.push(resource);
   }
   let memoryMiB;

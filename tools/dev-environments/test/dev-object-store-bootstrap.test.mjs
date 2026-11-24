@@ -360,3 +360,26 @@ test('a successful kubectl get is not readiness', () => {
     true,
   );
 });
+
+import { collectDevObjectStoreProbe } from '../../../infra/platform/object-storage/dev-host-probe.mjs';
+
+test('host inventory uses get-scoped ignore-not-found and refuses malformed responses', () => {
+  const observed = [];
+  const probe = collectDevObjectStoreProbe({
+    readMeminfo: () => 'MemAvailable: 8192000 kB',
+    run(command, args) {
+      if (args.includes('--ignore-not-found')) {
+        observed.push(args);
+        assert.ok(args.indexOf('get') < args.indexOf('--ignore-not-found'));
+        if (args.includes('object-store-data')) return { ok: true, stdout: 'invalid JSON' };
+        if (args.includes('object-store-s3')) return { ok: true, stdout: JSON.stringify({ metadata: { name: 'object-store-s3', namespace: DEV_S3_NAMESPACE, labels: { 'offscreen.dev/owner': 'offscreen-dev' }, uid: 'sec' }, data: { password: 'fixture-private' } }) };
+      }
+      return { ok: true, stdout: '' };
+    },
+  });
+  assert.equal(observed.length, 5);
+  assert.equal(probe.unreadables.length, 1);
+  assert.equal(probe.unreadables[0].reason, 'malformed json');
+  assert.equal(probe.resources[0].uid, 'sec');
+  assert.ok(!JSON.stringify(probe).includes('fixture-private'));
+});
