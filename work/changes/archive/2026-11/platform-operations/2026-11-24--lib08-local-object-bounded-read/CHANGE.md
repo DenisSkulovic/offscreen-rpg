@@ -1,6 +1,17 @@
 # LIB08 | Bounded local-object reads without stat/readFile race
 
-**Status:** READY FOR OWNER COMMISSION, SOURCE-ONLY. **Baseline:** `undertaking/storyteller-workshop@05b50418933c9a8dea6b7740222734a2729f9768` plus six integrated source Changes already on HEAD (verify exact current SHA). **Owner:** `packages/object-storage`. May start after LIB07's integration or concurrently in its own worktree; no overlap with LIB07's Story Engine module or DO01–DO07's planned contracts refactor. No Pods, database, provider, live S3 or user data mutation.
+**State: Done.** Source-only. Integration target: `undertaking/storyteller-workshop`. Worktree baseline `28f1439c96b7e94eee1e458395b158f245102994`. **Owner:** `packages/object-storage`. No Pods, database, provider, live S3, or user data mutation. CACHE01–CACHE07 files were not edited. No CACHE06A worktree was present.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta and reason | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| LocalObjectStorage.get bounded read | Code | changed: local get enforces maxBytes while reading a regular file | packages/object-storage/src/local-object-storage.ts on change/lib08-local-object-bounded-read | source-only | 70 KiB fixture with maxBytes 4 returns too-large; get no longer calls readFile; symlink and directory return unavailable | packages/object-storage/README.md already required a bounded get |
+| ObjectStorage port and S3 get | Code | unchanged because the public signature, error codes, and S3 adapter stay | object-storage.ts and S3 tests inspected | source-inspected | Existing S3 conditional-put and oversize-stream tests passed | No port export added |
+| Documents consumers | Code | unchanged because Documents still maps the same storage errors | pnpm --filter @offscreen/documents test | source-only | 42 pass, 2 live S3 skips, 0 fail; no Documents source edit | No document schema change |
+| docs/product and docs/technical | Product / technical | unchanged because this is a local filesystem enforcement of an existing byte ceiling | No product or technical page edited | reviewed | Parent-directory symlink races are not claimed closed | work/QUEUE.md was not the selector |
+
+Receipt: `@offscreen/object-storage` test 5/5 and typecheck PASS. Documents test 42 pass, 2 skipped, 0 fail. Changed files formatted with Prettier. No database, cluster, or provider call. Permission-denied mapping is implemented for non-root; this process did not assert it when uid is 0.
 
 ## Observed defect
 `LocalObjectStorage.get()` in `packages/object-storage/src/local-object-storage.ts` calls `stat(path)` and then `readFile(path)`. A file changed/grown between those calls can cause allocation of an unbounded buffer before the post-read maxBytes check. `exists` uses `stat`. The package promises bounded bytes for `get(key,maxBytes)`; its local implementation does not enforce the bound *while reading*.

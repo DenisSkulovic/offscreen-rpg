@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  symlink,
+  writeFile,
+  chmod,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -68,6 +75,75 @@ test('local put is exclusive and rejects traversal before disk access', async ()
       error instanceof ObjectStorageError && error.code === 'too-large',
   );
   assert.equal(await readFile(big, 'utf8'), '0123456789');
+});
+
+test('local get returns exact bounds and refuses symlink, directory, and unread oversize', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-object-bounds-'));
+  const storage = new LocalObjectStorage(root);
+  await storage.putIfAbsent(
+    'objects/empty.bin',
+    Buffer.alloc(0),
+    'application/octet-stream',
+  );
+  assert.deepEqual(await storage.get('objects/empty.bin', 1), new Uint8Array());
+  const exact = Buffer.from('abcd');
+  await storage.putIfAbsent(
+    'objects/exact.bin',
+    exact,
+    'application/octet-stream',
+  );
+  assert.deepEqual(
+    Buffer.from(await storage.get('objects/exact.bin', 4)),
+    exact,
+  );
+
+  const oversized = Buffer.alloc(70 * 1024, 7);
+  await storage.putIfAbsent(
+    'objects/over.bin',
+    oversized,
+    'application/octet-stream',
+  );
+  await assert.rejects(
+    () => storage.get('objects/over.bin', 4),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'too-large',
+  );
+
+  await writeFile(join(root, 'secret.bin'), Buffer.from('secret-bytes'));
+  await symlink(join(root, 'secret.bin'), join(root, 'link.bin'));
+  await assert.rejects(
+    () => storage.get('link.bin', 64),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'unavailable',
+  );
+
+  await mkdir(join(root, 'objects', 'dir.bin'));
+  await assert.rejects(
+    () => storage.get('objects/dir.bin', 64),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'unavailable',
+  );
+
+  if (process.getuid() !== 0) {
+    await chmod(join(root, 'objects', 'exact.bin'), 0o000);
+    await assert.rejects(
+      () => storage.get('objects/exact.bin', 4),
+      (error) =>
+        error instanceof ObjectStorageError && error.code === 'unavailable',
+    );
+  }
+
+  const source = await readFile(
+    new URL('../src/local-object-storage.ts', import.meta.url),
+    'utf8',
+  );
+  const getSource = source.slice(
+    source.indexOf('async get('),
+    source.indexOf('async exists('),
+  );
+  assert.equal(getSource.includes('readFile'), false);
+  assert.match(source, /maxBytes \+ 1 - total/);
+  assert.match(source, /readChunkBytes = 64 \* 1024/);
 });
 
 test('bounded body stops a chunked stream without transformToString', async () => {

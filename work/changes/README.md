@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**2026-11-24 Library integrity successors:** [LIB08 bounded local object reads](open/2026-11-24--lib08-local-object-bounded-read/CHANGE.md) and [LIB09 verified Library-index node loads](open/2026-11-24--lib09-library-index-node-integrity/CHANGE.md) are separately owned, source-only Changes prepared for Cursor after current worktree/HEAD checks. They do not claim LIB07 completion, and they do not alter CACHE01–CACHE07 or DO01–DO07 ownership programs. No runtime or acceptance credit from planning.
+**2026-11-24 Library integrity successors:** [LIB08 bounded local object reads](archive/2026-11/platform-operations/2026-11-24--lib08-local-object-bounded-read/CHANGE.md) is Done as a source-only local read bound. [LIB09 verified Library-index node loads](open/2026-11-24--lib09-library-index-node-integrity/CHANGE.md) remains a separate source-only Change. They do not alter CACHE01–CACHE07 or DO01–DO07 ownership programs.
 
 ## Cache platform redesign
 
