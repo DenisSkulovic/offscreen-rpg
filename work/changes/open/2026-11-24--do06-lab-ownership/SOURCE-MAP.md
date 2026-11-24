@@ -1,11 +1,11 @@
 # Source map
-Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD pending. Line anchors are snapshot observations, not current execution proof.
+Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; conditional commission baseline 032f00700eb13cad0d3115d9f5d91c5f16feeb10. The final predecessor HEAD is not yet available. Verify the exact expected changes in CHANGE.md on that HEAD; narrow import/line-anchor updates do not require another planner commission.
 
 ## chamber
 - Source: `packages/contracts/src/chamber.ts` → `packages/lab-interface/src/chamber.ts`
 - Import: `@offscreen/lab-interface/chamber`
-- Current imports: `zod`, `@offscreen/game/immediate-actions`, `./campaign`, `./interactions`, `./stories`
-- Exports: `ChamberScenario`, `chamberScenarioMetadataSchema`, `ChamberScenarioMetadata`, `chamberScenarioCatalog`, `listChamberScenarios`, `dispatchReviewViewSchema`, `dispatchReviewResponseSchema`, `dispatchReviewDecisionRequestSchema`, `DispatchReviewView`, `chamberStorytellerControlViewSchema`, `chamberStorytellerControlRequestSchema`, `chamberInspectorHistoryLimit`, `chamberInspectorSchema`, `ChamberInspector`
+- Current imports: `zod`, `@offscreen/game/immediate-actions`, `@offscreen/story-interface/campaign`, `@offscreen/story-interface/interactions`, `@offscreen/story-interface/stories`
+- Exports: `startChamberSchema`, `ChamberScenario`, `chamberScenarioMetadataSchema`, `ChamberScenarioMetadata`, `chamberScenarioCatalog`, `listChamberScenarios`, `dispatchReviewViewSchema`, `dispatchReviewResponseSchema`, `dispatchReviewDecisionRequestSchema`, `DispatchReviewView`, `chamberStorytellerControlViewSchema`, `chamberStorytellerControlRequestSchema`, `chamberInspectorHistoryLimit`, `chamberInspectorSchema`, `ChamberInspector`
 - Existing tests: `packages/contracts/test/chamber.test.ts`
 
 | Consumer | Lines |
@@ -24,7 +24,7 @@ Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD 
 | `tools/chamber/src/live-evaluation-run.ts` | 9,10 |
 | `tools/chamber/src/memory-packet-review.ts` | 19 |
 | `tools/chamber/src/packet-review.ts` | 6,7 |
-| `tools/api-lab/src/chamber-tools-controller.ts` | 18 |
+| `tools/api-lab/src/chamber-tools-controller.ts` | 21 (includes startChamberSchema) |
 
 ## qa
 - Source: `packages/contracts/src/qa.ts` → `packages/lab-interface/src/qa.ts`
@@ -100,7 +100,7 @@ Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD 
 ## creative-exploration-evaluation
 - Source: `packages/contracts/src/creative-exploration-evaluation.ts` → `packages/lab-support/src/interfaces/creative-exploration-evaluation.ts`
 - Import: `relative internal`
-- Current imports: `zod`, `./creative-exploration.js`
+- Current imports: `zod`, `./creative-exploration.js` at commission baseline; after DO05 `@offscreen/storyteller/context/creative-exploration`
 - Exports: `creativeExplorationBenchmarkCaseSchema`, `creativeExplorationObservationSchema`, `creativeExplorationEvaluationReportSchema`, `CreativeExplorationBenchmarkCase`, `CreativeExplorationObservation`, `CreativeExplorationEvaluationReport`
 - Existing tests: no dedicated test file in old package
 
