@@ -21,7 +21,7 @@ const REQUIRED_DEPLOYMENTS = Object.freeze([
  *   nodesReady: boolean,
  *   memAvailableKib: number | null,
  *   durations?: { coldMs?: number, warmMs?: number },
- *   migration: 'absent' | 'running' | 'complete' | 'failed',
+ *   migration: 'absent' | 'running' | 'complete' | 'failed' | 'unreadable',
  *   deployments: Array<{ namespace: string, name: string, ready: boolean }>,
  *   pinnedObjectPresent: boolean,
  *   importRoots: { world: string, rule: string, start: string } | null,
@@ -112,6 +112,10 @@ export function assessStackHealth(observation) {
   if (cluster.ready) {
     if (migration === 'failed') {
       service.diagnostics.push('Migration Job game-migrate in namespace lab-edge failed.');
+    } else if (migration === 'unreadable') {
+      service.diagnostics.push(
+        'Migration Job game-migrate in namespace lab-edge is unreadable.',
+      );
     } else if (migration !== 'complete') {
       service.diagnostics.push(
         `Migration Job game-migrate in namespace lab-edge is not complete (status: ${migration}).`,

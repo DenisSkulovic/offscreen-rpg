@@ -14,6 +14,7 @@ fi
 RELEASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${RELEASE_DIR}/../../.." && pwd)"
 RENDER_MJS="${REPO_ROOT}/infra/workloads/render.mjs"
+ROLLOUT_MJS="${RELEASE_DIR}/rollout.mjs"
 EDGE_ROUTE_YAML="${RELEASE_DIR}/game-edge-route.yaml"
 APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../images/release" && pwd)"
 KIND_IMAGE_LOADER="$(cd "${RELEASE_DIR}/../../images/distribution" && pwd)/kind-image-loader.mjs"
@@ -119,9 +120,7 @@ render_release_section() {
 }
 
 verify_helm
-if image_selected api; then
-  render_release_section migration "${RENDER_WORK}/migration.yaml"
-fi
+render_release_section migration "${RENDER_WORK}/migration.yaml"
 if image_selected game-authority; then
   render_release_section authority "${RENDER_WORK}/authority.yaml"
 fi
@@ -132,16 +131,30 @@ if image_selected web || image_selected api; then
   render_release_section edge "${RENDER_WORK}/edge.yaml"
 fi
 
+LOADER_RECEIPTS_FILE="${RENDER_WORK}/loader-receipts.json"
+echo '{}' >"${LOADER_RECEIPTS_FILE}"
+
 echo "Loading selected release images into ${CLUSTER_NAME}…"
+API_LOADER_RECEIPT=""
 load_image_if_changed() {
   local name="$1"
   local image="$2"
   if ! image_selected "$name"; then
     return 0
   fi
-  if ! node "$KIND_IMAGE_LOADER" release "$image"; then
+  local receipt
+  if ! receipt="$(node "$KIND_IMAGE_LOADER" release "$image")"; then
     echo "Refusing install: could not verify/load ${image} into ${CLUSTER_NAME}." >&2
     exit 1
+  fi
+  RECEIPT_LINE="$receipt" node --input-type=module -e "
+import fs from 'node:fs';
+const map = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+map[process.argv[2]] = process.env.RECEIPT_LINE.trim();
+fs.writeFileSync(process.argv[1], JSON.stringify(map));
+" "${LOADER_RECEIPTS_FILE}" "${name}"
+  if [[ "$name" == "api" ]]; then
+    API_LOADER_RECEIPT="$receipt"
   fi
 }
 load_image_if_changed web "$WEB_IMAGE"
@@ -149,154 +162,63 @@ load_image_if_changed api "$API_IMAGE"
 load_image_if_changed game-authority "$GA_IMAGE"
 load_image_if_changed worker "$WORKER_IMAGE"
 
+prepare_release_apply() {
+  local section="$1"
+  local rendered="$2"
+  local apply_out="$3"
+  export OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE="${LOADER_RECEIPTS_FILE}"
+  if ! node "${ROLLOUT_MJS}" prepare "${section}" "${rendered}" "${apply_out}"; then
+    echo "Refusing install: could not prepare release ${section} apply manifest." >&2
+    exit 1
+  fi
+}
+
 echo "Preparing release Secrets from the lab database, object store, and root .env…"
 export OFFSCREEN_REPO_ROOT="${REPO_ROOT}"
-python3 - "$CONTEXT_NAME" <<'PY'
-import base64, json, os, secrets, subprocess, sys
+if ! node "${RELEASE_DIR}/credentials.mjs"; then
+  echo "Refusing install: release credential preparation failed." >&2
+  exit 1
+fi
 
-context = sys.argv[1]
-kubectl = ["kubectl", "--context", context]
-
-def run(args, data=None):
-    result = subprocess.run(
-        kubectl + args,
-        input=data,
-        capture_output=True,
-    )
-    if result.returncode != 0:
-        sys.stderr.buffer.write(result.stderr[:800])
-        raise SystemExit(result.returncode)
-    return result.stdout
-
-def ensure_namespace(name):
-    manifest = run(["create", "namespace", name, "--dry-run=client", "-o", "yaml"])
-    run(["apply", "-f", "-"], manifest)
-
-def read_secret(namespace, name):
-    try:
-        raw = subprocess.run(
-            kubectl + ["-n", namespace, "get", "secret", name, "-o", "json"],
-            capture_output=True,
-            check=True,
-        ).stdout
-    except subprocess.CalledProcessError:
-        return None
-    encoded = json.loads(raw)["data"]
-    return {key: base64.b64decode(value).decode() for key, value in encoded.items()}
-
-def apply_secret(namespace, name, values):
-    manifest = {
-        "apiVersion": "v1",
-        "kind": "Secret",
-        "metadata": {
-            "name": name,
-            "namespace": namespace,
-            "labels": {"offscreen.rpg/lab": "disposable"},
-        },
-        "type": "Opaque",
-        "stringData": values,
-    }
-    run(["apply", "-f", "-"], json.dumps(manifest).encode())
-
-for namespace in ("lab-edge", "lab-authority", "lab-workers"):
-    ensure_namespace(namespace)
-
-def read_local_env(path):
-    values = {}
-    if not os.path.isfile(path):
-        return values
-    with open(path, encoding="utf-8") as handle:
-        for raw in handle:
-            line = raw.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            values[key.strip()] = value.strip().strip('"').strip("'")
-    return values
-
-local_env = read_local_env(os.environ["OFFSCREEN_REPO_ROOT"] + "/.env")
-required = ("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "BETTER_AUTH_SECRET")
-missing = [key for key in required if not local_env.get(key)]
-if missing:
-    sys.stderr.write(
-        "Refusing install: root .env is missing "
-        + ", ".join(missing)
-        + ". Copy .env.example and set the local GitHub OAuth app values. Do not commit .env.\n"
-    )
-    raise SystemExit(1)
-if len(local_env["BETTER_AUTH_SECRET"]) < 32:
-    sys.stderr.write(
-        "Refusing install: BETTER_AUTH_SECRET in .env must be at least 32 characters.\n"
-    )
-    raise SystemExit(1)
-
-database = read_secret("lab-edge", "game-db")
-if database is None:
-    source = read_secret("lab-postgres", "lab-pg-app")
-    if source is None or not source.get("uri"):
-        sys.stderr.write("Refusing install: lab-pg-app has no uri.\n")
-        raise SystemExit(1)
-    database = {"uri": source["uri"]}
-runtime = read_secret("lab-edge", "game-runtime")
-if runtime is None:
-    store = read_secret("lab-objects", "object-store-s3")
-    if store is None or not store.get("access-key-id") or not store.get("secret-access-key"):
-        sys.stderr.write("Refusing install: object-store-s3 is missing access keys.\n")
-        raise SystemExit(1)
-    tokens = [secrets.token_hex(24) for _ in range(3)]
-    runtime = {
-        "access-key-id": store["access-key-id"],
-        "secret-access-key": store["secret-access-key"],
-        "better-auth-secret": local_env["BETTER_AUTH_SECRET"],
-        "game-authority-service-token": tokens[0],
-        "game-authority-control-token": tokens[1],
-        "game-authority-executor-token": tokens[2],
-        "github-client-id": local_env["GITHUB_CLIENT_ID"],
-        "github-client-secret": local_env["GITHUB_CLIENT_SECRET"],
-    }
-else:
-    runtime["better-auth-secret"] = local_env["BETTER_AUTH_SECRET"]
-    runtime["github-client-id"] = local_env["GITHUB_CLIENT_ID"]
-    runtime["github-client-secret"] = local_env["GITHUB_CLIENT_SECRET"]
-for namespace in ("lab-edge", "lab-authority", "lab-workers"):
-    if read_secret(namespace, "game-db") is None:
-        apply_secret(namespace, "game-db", database)
-    apply_secret(namespace, "game-runtime", runtime)
-PY
-
-# Schema migrations travel with the API image. A worker-only or web-only warm install leaves the Job alone.
+# Schema migrations travel with the API image. A worker-only or web-only warm install observes the Job only.
 if image_selected api; then
-  echo "Applying migration Job from rendered manifests and waiting for completion…"
-  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/migration.yaml"
-  "${KUBECTL[@]}" -n lab-edge wait --for=condition=complete "job/game-migrate" --timeout=300s
+  echo "Reconciling migration Job from rendered manifests and waiting for completion…"
+  export OFFSCREEN_MIGRATION_LOADER_RECEIPT="${API_LOADER_RECEIPT}"
+  if ! node "${RELEASE_DIR}/migration.mjs" "${RENDER_WORK}/migration.yaml"; then
+    echo "Refusing install: release migration reconciliation failed." >&2
+    exit 1
+  fi
+elif image_selected web || image_selected game-authority || image_selected worker; then
+  echo "Observing existing migration Job without mutation…"
+  if ! node "${RELEASE_DIR}/migration.mjs" "${RENDER_WORK}/migration.yaml"; then
+    echo "Refusing install: existing migration Job is not successful." >&2
+    exit 1
+  fi
 fi
 
 if image_selected game-authority; then
   echo "Applying authority overlay…"
-  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/authority.yaml"
+  prepare_release_apply authority "${RENDER_WORK}/authority.yaml" "${RENDER_WORK}/authority.apply.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/authority.apply.yaml"
 fi
 if image_selected worker; then
   echo "Applying workers overlay…"
-  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/workers.yaml"
+  prepare_release_apply workers "${RENDER_WORK}/workers.yaml" "${RENDER_WORK}/workers.apply.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/workers.apply.yaml"
 fi
 if image_selected web || image_selected api; then
   echo "Applying edge overlay and HTTPRoute…"
-  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/edge.yaml" -f "${EDGE_ROUTE_YAML}"
+  prepare_release_apply edge "${RENDER_WORK}/edge.yaml" "${RENDER_WORK}/edge.apply.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/edge.apply.yaml" -f "${EDGE_ROUTE_YAML}"
 fi
 
-if image_selected api; then
-  "${KUBECTL[@]}" -n lab-edge rollout status deployment/game-api --timeout=300s
-fi
-if image_selected web; then
-  "${KUBECTL[@]}" -n lab-edge rollout status deployment/game-web --timeout=300s
-fi
-if image_selected game-authority; then
-  "${KUBECTL[@]}" -n lab-authority rollout status deployment/game-authority --timeout=300s
-fi
-if image_selected worker; then
-  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-control --timeout=300s
-  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-executor --timeout=300s
-  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-relay --timeout=300s
+echo "Verifying selected release rollouts and running pod image identities…"
+export OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE="${LOADER_RECEIPTS_FILE}"
+if image_selected web || image_selected api || image_selected game-authority || image_selected worker; then
+  if ! node "${ROLLOUT_MJS}" verify; then
+    echo "Refusing install: release rollout verification failed." >&2
+    exit 1
+  fi
 fi
 
 echo "App release overlay applied."
