@@ -1,5 +1,7 @@
 # Runbooks
 
+[Local developer platform quick reference](local-development-platform.md) and [permanent capability catalog](../../infra/verification/CAPABILITIES.md) route ordinary infrastructure use and repeatable verification.
+
 Human-executable operating procedures (commands, prerequisites, safety).  
 Source-adjacent package procedures may remain beside code.
 

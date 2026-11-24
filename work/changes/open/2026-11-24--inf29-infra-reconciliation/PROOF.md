@@ -1,3 +1,3 @@
 # INF29 proof
 
-Not yet specified against final integrated source. Live proof NOT-RUN.
+Current integrated live NOT-RUN. Catalog defines observable oracles. No acceptance based on historical DXK09 run or source-only receipts. One owned-slot live scope must be explicitly authorized; blocked cases remain BLOCKED/NOT-RUN.

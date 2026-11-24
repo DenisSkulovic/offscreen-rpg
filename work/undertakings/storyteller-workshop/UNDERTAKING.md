@@ -1,5 +1,7 @@
 # Storyteller Workshop
 
+**Local developer platform direction (2026-11-24):** INF36 Done at 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. [Next sequence](LOCAL-DEV-PLATFORM.md) and permanent capability catalog now define practical composition, configuration and repeatable verification. INF29 current-flow live proof separately gated. INF37–42 candidate slices, not executable. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged; no new live acceptance credit.
+
 **INF23/INF30–INF36 (2026-11-24):** [Practical medium-grained follow-up](INF-MEDIUM.md) commissioned at 54f9261d699097835e6c97ad55612a02ae49e59c; INF20–28 source Done, INF29 final join blocked. INF23 source Done (registry flock and atomic session write). INF36 source Done (status and lifecycle extracted from the developer CLI). Focus developer usability, preserve data and isolation, defer enterprise hardening. No live acceptance credit.
 
 **INF20–INF29 (2026-11-24):** Owner commissioned [medium-grained infrastructure reconciliation](INF-MEDIUM.md). INF18 and INF20 source Done. Admission, selected tenancy, credentials, release integrity, readiness, chart and retirement. INF23/29 planner-blocked. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.

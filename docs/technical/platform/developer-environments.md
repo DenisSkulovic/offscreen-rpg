@@ -1,5 +1,7 @@
 # Development environments | identity, image authority, activation and failure contracts
 
+**Local developer platform direction:** [composition and capability contract](local-developer-platform.md) and [permanent acceptance catalog](../../../infra/verification/CAPABILITIES.md). This document retains environment identity/lifecycle authority. Profile selection remains target-only until implementation and proof.
+
 **Source ownership:** [infrastructure atlas](../../../infra/README.md) owns selected directory layout and release/development terminology. INF01–INF05 relocate source without changing current context, tenant or runtime identities. Existing paths below are observed baseline until corresponding Change integrates.
 
 **Owns:** the selected technical invariants for development environment identity, capacity admission, image/deployment authority and safe park/release. **Does not own:** player/game behavior, the release cluster's acceptance tests, executable commands, or empirical proof. **Status:** selected architecture; distinguish observed DXK09 implementation from unimplemented DXK10 target. **Reviewed against:** the owned-slot receipt at `d0e35b63` (2026-11-23). The earlier `e93f33c7` trial is failure evidence, not the current image path.

@@ -1,5 +1,7 @@
 # Infrastructure ownership and navigation
 
+**Developer platform:** [selected direction](../docs/technical/platform/local-developer-platform.md), [operator quick reference](../docs/runbooks/local-development-platform.md), [permanent capability acceptance catalog](verification/CAPABILITIES.md). INF01–INF28 and INF30–INF36 source Done; live integrated proof outstanding. The historical sections below describe staged implementation, not all current paths.
+
 Selected source layout, 2026-11-24. Implementation is staged by INF01–INF05; paths in the target tree become real only as their changes integrate. The existing release environment is a local production-style acceptance environment, not a deployed production service. Use **release** and **development** for source ownership and human-facing terms. Do not introduce a catch-all lab directory or new lab-prefixed source names. Historical proof names and existing runtime identity strings remain compatibility contracts, not naming precedent.
 
 ## Selected layout
