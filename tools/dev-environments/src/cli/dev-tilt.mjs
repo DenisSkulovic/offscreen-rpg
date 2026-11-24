@@ -50,7 +50,7 @@ import { reconcileOwnedDevSlot } from '../application/dev-slot-startup.mjs';
 import {
   fingerprintDevImageContext,
   UNION_ROLE_FILTER,
-} from '../image-cache/dev-slot-image-plan.mjs';
+} from '../../../../infra/images/development/image-plan.mjs';
 import { performance } from 'node:perf_hooks';
 import {
   beginStartupTiming,

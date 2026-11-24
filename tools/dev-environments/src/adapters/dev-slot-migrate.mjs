@@ -2,7 +2,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from './dev-cnpg-bootstrap.mjs';
+import { DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
 import {
   applyDevTenantMigration,
   DEV_SQL_MIGRATION_LIVE,

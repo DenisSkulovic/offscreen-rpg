@@ -1,5 +1,5 @@
 import { deriveDevSqlTenant } from '../rendering/dev-sql-tenant-contract.mjs';
-import { DEV_TEMPORAL_CONTEXT, DEV_TEMPORAL_NAMESPACE, DEV_TEMPORAL_OWNER, DEV_TEMPORAL_SERVER_IMAGE } from './dev-temporal-bootstrap.mjs';
+import { DEV_TEMPORAL_CONTEXT, DEV_TEMPORAL_NAMESPACE, DEV_TEMPORAL_OWNER, DEV_TEMPORAL_SERVER_IMAGE } from '../../../../infra/platform/temporal/dev-bootstrap.mjs';
 
 const LIVE_TOKEN = 'kind-offscreen-dev-temporal-tenant-live';
 export const DEV_TEMPORAL_RETENTION_SECONDS = 24 * 60 * 60;

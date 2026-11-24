@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from './dev-cnpg-bootstrap.mjs';
+import { DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
 
 export function runSqlTenantReadOnly(command, args, timeoutMs = 15000) {
   const result = spawnSync(command, args, { encoding: 'utf8', timeout: timeoutMs });

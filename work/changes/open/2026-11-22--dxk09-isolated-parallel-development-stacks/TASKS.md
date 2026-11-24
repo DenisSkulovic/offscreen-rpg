@@ -53,7 +53,7 @@
 
 ## T03b-1 | Dev-only backing services bootstrap (CNPG, Temporal, S3) | READY FOR CODE, LIVE INSTALL SEPARATELY AUTHORIZED
 
-**Source baseline:** `undertaking/storyteller-workshop@c760cbd8`. Read `tools/dev-environments/src/adapters/dev-cluster-bootstrap.mjs`, `tools/dev-environments/src/adapters/dev-cluster-host-probe.mjs`, `infra/kubernetes/lab/cnpg/{install.sh,cluster.yaml,operator.pin}`, `infra/kubernetes/lab/object-storage/{store.yaml,smoke.sh}`, `infra/kubernetes/lab/temporal/{install.sh,images.pin,postgres.yaml,schema-job.yaml,server.yaml,namespace-job.yaml}`, `infra/clusters/kind/release/lib.sh`. Do not reuse release scripts by overriding KUBECONFIG.
+**Source baseline:** `undertaking/storyteller-workshop@c760cbd8`. Read `infra/clusters/kind/manager/dev-bootstrap.mjs`, `infra/clusters/kind/manager/dev-host-probe.mjs`, `infra/kubernetes/lab/cnpg/{install.sh,cluster.yaml,operator.pin}`, `infra/kubernetes/lab/object-storage/{store.yaml,smoke.sh}`, `infra/kubernetes/lab/temporal/{install.sh,images.pin,postgres.yaml,schema-job.yaml,server.yaml,namespace-job.yaml}`, `infra/clusters/kind/release/lib.sh`. Do not reuse release scripts by overriding KUBECONFIG.
 
 **Ownership:** new dev-only manifests and bounded `plan/status/ensure` under `infra/kubernetes/lab/dev/backing/`, plus focused tests. This stage installs one shared backing-service set **inside `kind-offscreen-dev` only** (app CNPG, Temporal with own persistence database, SeaweedFS), not any per-worktree applications, databases, buckets or namespaces. `kind-offscreen-lab` must not be modified, nor require a restart.
 

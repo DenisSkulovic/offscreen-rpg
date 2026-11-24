@@ -3,7 +3,19 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { confirmLoadedAliasIdentity, contentDerivedImageRef, fingerprintDevImageContext, fingerprintDevImageContextCached, planAliasIdentityLoad, planContentImageSelection, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from '../src/image-cache/dev-slot-image-plan.mjs';
+import {
+  confirmLoadedAliasIdentity,
+  contentDerivedImageRef,
+  fingerprintDevImageContext,
+  fingerprintDevImageContextCached,
+  planAliasIdentityLoad,
+  planContentImageSelection,
+  planImageGenerationRollout,
+  planRestartImageReuse,
+  planSlotImageArtifact,
+  planUnionImageUse,
+  UNION_ROLE_FILTER,
+} from '../image-plan.mjs';
 
 const TOOLCHAIN = `NODE_IMAGE=docker.io/library/node:24.19.0-bookworm-slim
 NODE_DIGEST=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -33,9 +45,15 @@ function checkout(name) {
   mkdirSync(join(root, 'packages/db'), { recursive: true });
   writeFileSync(join(root, 'infra/images/common/toolchain.pin'), TOOLCHAIN);
   writeFileSync(join(root, 'infra/images/development/Dockerfile'), RECIPE);
-  writeFileSync(join(root, 'infra/images/development/Dockerfile.dockerignore'), IGNORE);
+  writeFileSync(
+    join(root, 'infra/images/development/Dockerfile.dockerignore'),
+    IGNORE,
+  );
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v1\n');
-  writeFileSync(join(root, 'packages/db/index.ts'), 'export const value = 1;\n');
+  writeFileSync(
+    join(root, 'packages/db/index.ts'),
+    'export const value = 1;\n',
+  );
   return root;
 }
 
@@ -50,17 +68,26 @@ test('size and mtime cannot stand in for image identity', () => {
   const cachePath = join(tmpdir(), `fp-cache-${process.pid}.json`);
   const filter = '@offscreen/api^...';
   const source = join(root, 'packages/db/index.ts');
-  const first = fingerprintDevImageContextCached(root, { roleFilter: filter, cachePath });
+  const first = fingerprintDevImageContextCached(root, {
+    roleFilter: filter,
+    cachePath,
+  });
   assert.equal(first.cache, 'miss');
-  writeFileSync(cachePath, JSON.stringify({
-    fingerprint: first.fingerprint,
-    entries: [{ path: 'packages/db/index.ts', size: 1, mtimeMs: 1 }],
-  }));
+  writeFileSync(
+    cachePath,
+    JSON.stringify({
+      fingerprint: first.fingerprint,
+      entries: [{ path: 'packages/db/index.ts', size: 1, mtimeMs: 1 }],
+    }),
+  );
   const bytes = Buffer.from('export const value = 1;\n');
   writeFileSync(source, 'export const value = 2;\n');
   const stamped = fingerprintDevImageContext(root, { roleFilter: filter });
   writeFileSync(source, bytes);
-  const restored = fingerprintDevImageContextCached(root, { roleFilter: filter, cachePath });
+  const restored = fingerprintDevImageContextCached(root, {
+    roleFilter: filter,
+    cachePath,
+  });
   assert.equal(restored.cache, 'miss');
   assert.equal(restored.fingerprint, first.fingerprint);
   assert.notEqual(stamped.fingerprint, first.fingerprint);
@@ -93,13 +120,25 @@ test('two slots can reuse one artifact only when both Kind nodes have its digest
     fingerprint: identity.fingerprint,
     artifacts: [artifact],
   };
-  const dev2 = planSlotImageArtifact({ ...shared, slotId: 'dev-2', nodes: { controlPlane: ['sha256:abc'], worker: ['sha256:abc'] } });
-  const dev5 = planSlotImageArtifact({ ...shared, slotId: 'dev-5', nodes: { controlPlane: ['sha256:abc'], worker: ['sha256:abc'] } });
+  const dev2 = planSlotImageArtifact({
+    ...shared,
+    slotId: 'dev-2',
+    nodes: { controlPlane: ['sha256:abc'], worker: ['sha256:abc'] },
+  });
+  const dev5 = planSlotImageArtifact({
+    ...shared,
+    slotId: 'dev-5',
+    nodes: { controlPlane: ['sha256:abc'], worker: ['sha256:abc'] },
+  });
   assert.equal(dev2.decision, 'hit');
   assert.equal(dev5.decision, 'hit');
   assert.equal(dev2.digest, dev5.digest);
   assert.equal(dev2.build, false);
-  const localTagOnly = planSlotImageArtifact({ ...shared, slotId: 'dev-4', nodes: { controlPlane: ['sha256:abc'], worker: [] } });
+  const localTagOnly = planSlotImageArtifact({
+    ...shared,
+    slotId: 'dev-4',
+    nodes: { controlPlane: ['sha256:abc'], worker: [] },
+  });
   assert.equal(localTagOnly.decision, 'miss');
   assert.equal(localTagOnly.reason, 'missing-kind-node');
   assert.deepEqual(localTagOnly.loadNodes, ['worker']);
@@ -109,9 +148,15 @@ test('two slots can reuse one artifact only when both Kind nodes have its digest
 test('included source, lockfile, Dockerfile and role argument change the fingerprint', () => {
   const root = checkout('ctx-edit-');
   const original = fingerprint(root).fingerprint;
-  writeFileSync(join(root, 'packages/db/index.ts'), 'export const value = 2;\n');
+  writeFileSync(
+    join(root, 'packages/db/index.ts'),
+    'export const value = 2;\n',
+  );
   assert.notEqual(fingerprint(root).fingerprint, original);
-  writeFileSync(join(root, 'packages/db/index.ts'), 'export const value = 1;\n');
+  writeFileSync(
+    join(root, 'packages/db/index.ts'),
+    'export const value = 1;\n',
+  );
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v2\n');
   assert.notEqual(fingerprint(root).fingerprint, original);
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v1\n');
@@ -120,13 +165,19 @@ test('included source, lockfile, Dockerfile and role argument change the fingerp
     TOOLCHAIN.replace('node:24', 'node:25'),
   );
   assert.notEqual(fingerprint(root).fingerprint, original);
-  assert.notEqual(fingerprint(checkout('ctx-role-'), '@offscreen/web^...').fingerprint, original);
+  assert.notEqual(
+    fingerprint(checkout('ctx-role-'), '@offscreen/web^...').fingerprint,
+    original,
+  );
 });
 
 test('a dirty untracked included file changes the fingerprint and ignored files do not', () => {
   const root = checkout('ctx-dirty-');
   const original = fingerprint(root).fingerprint;
-  writeFileSync(join(root, 'packages/db/untracked.ts'), 'export const extra = true;\n');
+  writeFileSync(
+    join(root, 'packages/db/untracked.ts'),
+    'export const extra = true;\n',
+  );
   const dirty = fingerprint(root).fingerprint;
   assert.notEqual(dirty, original);
   mkdirSync(join(root, 'docs'), { recursive: true });
@@ -150,13 +201,15 @@ test('corrupt or conflicting artifact metadata fails closed', () => {
     role: 'authority',
     filter: '@offscreen/game-authority^...',
     fingerprint: 'abc',
-    artifacts: [{
-      digest: 'sha256:bad',
-      fingerprint: 'recorded',
-      declaredFingerprint: 'different',
-      role: 'authority',
-      filter: '@offscreen/game-authority^...',
-    }],
+    artifacts: [
+      {
+        digest: 'sha256:bad',
+        fingerprint: 'recorded',
+        declaredFingerprint: 'different',
+        role: 'authority',
+        filter: '@offscreen/game-authority^...',
+      },
+    ],
     nodes: { controlPlane: ['sha256:bad'], worker: ['sha256:bad'] },
   });
   assert.equal(plan.decision, 'miss');
@@ -168,8 +221,18 @@ test('corrupt or conflicting artifact metadata fails closed', () => {
     filter: '@offscreen/game-authority^...',
     fingerprint: 'abc',
     artifacts: [
-      { digest: 'sha256:one', fingerprint: 'abc', role: 'authority', filter: '@offscreen/game-authority^...' },
-      { digest: 'sha256:two', fingerprint: 'abc', role: 'authority', filter: '@offscreen/game-authority^...' },
+      {
+        digest: 'sha256:one',
+        fingerprint: 'abc',
+        role: 'authority',
+        filter: '@offscreen/game-authority^...',
+      },
+      {
+        digest: 'sha256:two',
+        fingerprint: 'abc',
+        role: 'authority',
+        filter: '@offscreen/game-authority^...',
+      },
     ],
     nodes: { controlPlane: ['sha256:one'], worker: ['sha256:one'] },
   });
@@ -189,7 +252,12 @@ test('corrupt or conflicting artifact metadata fails closed', () => {
 test('one union snapshot is reused by a second slot and a source change misses', () => {
   assert.match(UNION_ROLE_FILTER, /@offscreen\/web/);
   assert.match(UNION_ROLE_FILTER, /@offscreen\/worker/);
-  const first = planUnionImageUse({ slotId: 'dev-3', fingerprint: 'fp-1', artifact: null, nodes: {} });
+  const first = planUnionImageUse({
+    slotId: 'dev-3',
+    fingerprint: 'fp-1',
+    artifact: null,
+    nodes: {},
+  });
   assert.equal(first.build, true);
   assert.equal(first.aliases.length, 4);
   const secondPlan = planUnionImageUse({
@@ -203,7 +271,10 @@ test('one union snapshot is reused by a second slot and a source change misses',
     slotId: 'dev-4',
     fingerprint: 'fp-1',
     artifact: { digest: 'sha256:union', fingerprint: 'fp-1' },
-    nodes: { 'control-plane': loaded, worker: { digests: ['sha256:union'], tags: [] } },
+    nodes: {
+      'control-plane': loaded,
+      worker: { digests: ['sha256:union'], tags: [] },
+    },
   });
   assert.equal(second.build, false);
   assert.deepEqual(second.loadNodes, ['worker']);
@@ -219,7 +290,11 @@ test('one union snapshot is reused by a second slot and a source change misses',
 });
 
 test('unchanged fingerprint reuses the canonical digest and stays unready while loading', () => {
-  const canonical = { fingerprint: 'fp-1', digest: 'sha256:union', ref: 'offscreen-dev-workspace:union-fp' };
+  const canonical = {
+    fingerprint: 'fp-1',
+    digest: 'sha256:union',
+    ref: 'offscreen-dev-workspace:union-fp',
+  };
   const loading = planRestartImageReuse({
     expectedRef: 'offscreen-dev-workspace:tilt-build-1795404939',
     fingerprint: 'fp-1',
@@ -267,18 +342,30 @@ test('unchanged fingerprint reuses the canonical digest and stays unready while 
   assert.equal(staleNode.applicationReady, false);
 });
 
-const HOST = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-const STALE = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-const OTHER = 'sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+const HOST =
+  'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const STALE =
+  'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const OTHER =
+  'sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
 
 test('image generation rolls only when the verified id changes', () => {
-  const changed = planImageGenerationRollout({ currentGeneration: HOST, expectedGeneration: STALE });
+  const changed = planImageGenerationRollout({
+    currentGeneration: HOST,
+    expectedGeneration: STALE,
+  });
   assert.equal(changed.roll, true);
   assert.equal(changed.generation, STALE);
-  const same = planImageGenerationRollout({ currentGeneration: HOST, expectedGeneration: HOST });
+  const same = planImageGenerationRollout({
+    currentGeneration: HOST,
+    expectedGeneration: HOST,
+  });
   assert.equal(same.roll, false);
   assert.equal(same.reason, 'generation-unchanged');
-  const missing = planImageGenerationRollout({ currentGeneration: null, expectedGeneration: 'not-a-digest' });
+  const missing = planImageGenerationRollout({
+    currentGeneration: null,
+    expectedGeneration: 'not-a-digest',
+  });
   assert.equal(missing.roll, false);
   assert.equal(missing.reason, 'unproven-generation');
 });
@@ -344,10 +431,18 @@ test('a new fingerprint selects a new image ref and an unchanged one does not ro
   const second = 'b'.repeat(64);
   const ref = contentDerivedImageRef(first);
   const present = { 'control-plane': { tags: [ref] }, worker: { tags: [ref] } };
-  const selected = planContentImageSelection({ fingerprint: first, currentRef: null, nodes: present });
+  const selected = planContentImageSelection({
+    fingerprint: first,
+    currentRef: null,
+    nodes: present,
+  });
   assert.equal(selected.ref, 'offscreen-dev-workspace:union-aaaaaaaaaaaaaaaa');
   assert.equal(selected.roll, true);
-  const same = planContentImageSelection({ fingerprint: first, currentRef: ref, nodes: present });
+  const same = planContentImageSelection({
+    fingerprint: first,
+    currentRef: ref,
+    nodes: present,
+  });
   assert.equal(same.roll, false);
   assert.equal(same.reason, 'generation-unchanged');
   const next = contentDerivedImageRef(second);
@@ -358,14 +453,20 @@ test('a new fingerprint selects a new image ref and an unchanged one does not ro
   });
   assert.notEqual(moved.ref, ref);
   assert.equal(moved.roll, true);
-  const missing = planContentImageSelection({ fingerprint: first, currentRef: ref, nodes: { 'control-plane': { tags: [ref] }, worker: { tags: [] } } });
+  const missing = planContentImageSelection({
+    fingerprint: first,
+    currentRef: ref,
+    nodes: { 'control-plane': { tags: [ref] }, worker: { tags: [] } },
+  });
   assert.equal(missing.reason, 'missing-kind-node');
   assert.equal(missing.roll, false);
 });
 
 test('empty tree with missing toolchain pin is unreadable-recipe', () => {
   const root = mkdtempSync(join(tmpdir(), 'ctx-empty-'));
-  const result = fingerprintDevImageContext(root, { roleFilter: UNION_ROLE_FILTER });
+  const result = fingerprintDevImageContext(root, {
+    roleFilter: UNION_ROLE_FILTER,
+  });
   assert.equal(result.ok, false);
   assert.equal(result.reason, 'unreadable-recipe');
 });

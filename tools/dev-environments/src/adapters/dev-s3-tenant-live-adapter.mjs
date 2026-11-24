@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { DEV_S3_CONTEXT, DEV_S3_IMAGE, DEV_S3_NAMESPACE, DEV_S3_OWNER, DEV_S3_PVC, DEV_S3_SECRET } from './dev-object-store-bootstrap.mjs';
+import { DEV_S3_CONTEXT, DEV_S3_IMAGE, DEV_S3_NAMESPACE, DEV_S3_OWNER, DEV_S3_PVC, DEV_S3_SECRET } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
 
 function run(command, args, input) {
   const result = spawnSync(command, args, { input, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });

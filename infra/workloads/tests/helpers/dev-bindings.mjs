@@ -1,5 +1,5 @@
 import { DEV_POD_RUNTIME_RECEIPT_DIR, deriveSlotCookiePrefix } from '../../../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
-import { DEV_S3_NAMESPACE } from '../../../../tools/dev-environments/src/adapters/dev-object-store-bootstrap.mjs';
+import { DEV_S3_NAMESPACE } from '../../../platform/object-storage/dev-bootstrap.mjs';
 import { DEV_SQL_POOL_MAX, deriveDevSqlTenant } from '../../../../tools/dev-environments/src/rendering/dev-sql-tenant-contract.mjs';
 import { deriveDevS3Tenant } from '../../../../tools/dev-environments/src/adapters/dev-s3-tenant.mjs';
 

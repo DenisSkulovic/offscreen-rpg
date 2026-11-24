@@ -15,7 +15,7 @@ import {
   objectStoreReadinessMet,
   planDevObjectStore,
   renderDevObjectStore,
-} from '../src/adapters/dev-object-store-bootstrap.mjs';
+} from '../../../infra/platform/object-storage/dev-bootstrap.mjs';
 
 function readinessStdout(args) {
   const text = args.join(' ');

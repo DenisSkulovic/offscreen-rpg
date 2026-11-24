@@ -8,7 +8,7 @@ import {
   DEV_S3_IMAGE,
   DEV_S3_NAMESPACE,
   DEV_S3_STORAGE_CLASS,
-} from '../../../../tools/dev-environments/src/adapters/dev-object-store-bootstrap.mjs';
+} from '../dev-bootstrap.mjs';
 import { runPlatformCommand } from '../../common/commands.mjs';
 import {
   assertPlatformRenderRequest,
