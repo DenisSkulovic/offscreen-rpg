@@ -137,3 +137,74 @@ test('parsed documents use unique kind/namespace/name keys', () => {
   const keys = docs.map(documentKey);
   assert.equal(new Set(keys).size, keys.length);
 });
+
+test('nondefault replicas and imagePullPolicy change rendered deployment fields', () => {
+  const rendered = render('release', { section: 'edge', replicas: 2, imagePullPolicy: 'IfNotPresent' });
+  const web = rendered.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-web');
+  assert.ok(web);
+  assert.equal(web.spec.replicas, 2);
+  assert.equal(web.spec.template.spec.containers[0].imagePullPolicy, 'IfNotPresent');
+});
+
+test('negative: schema rejects invalid replicas', () => {
+  const result = helmTemplate({ profile: 'release', overlay: { section: 'edge', replicas: 0 } });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /replicas|minimum|schema/i);
+});
+
+const SIX_ROLES = ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay'];
+
+function deploymentContainer(doc) {
+  assert.equal(doc.kind, 'Deployment');
+  return doc.spec.template.spec.containers[0];
+}
+
+function secretEnvNames(doc) {
+  const container = deploymentContainer(doc);
+  return (container.env ?? [])
+    .filter((item) => item.valueFrom?.secretKeyRef)
+    .map((item) => `${item.valueFrom.secretKeyRef.name}/${item.valueFrom.secretKeyRef.key}`)
+    .sort();
+}
+
+test('trimmed profiles: six roles, migration, identities unchanged', () => {
+  const releaseAll = render('release', { section: 'all' });
+  const releaseDeployments = releaseAll.filter((doc) => doc.kind === 'Deployment');
+  assert.deepEqual(releaseDeployments.map((doc) => doc.metadata.name).sort(), [...SIX_ROLES].sort());
+
+  const migrateOnly = render('release', { section: 'migration' });
+  assert.equal(migrateOnly.length, 1);
+  assert.equal(migrateOnly[0].kind, 'Job');
+  assert.equal(migrateOnly[0].metadata.name, 'game-migrate');
+  assert.equal(migrateOnly[0].metadata.namespace, 'lab-edge');
+
+  const releaseNamespaces = new Set(
+    releaseAll.filter((doc) => doc.metadata?.namespace).map((doc) => doc.metadata.namespace),
+  );
+  assert.deepEqual([...releaseNamespaces].sort(), ['lab-authority', 'lab-edge', 'lab-workers']);
+
+  const web = releaseAll.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-web');
+  const api = releaseAll.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api');
+  assert.equal(deploymentContainer(web).image, 'offscreen-lab-game-web:turn02');
+  assert.equal(deploymentContainer(api).image, 'offscreen-lab-app-release-api:turn02');
+  assert.equal(deploymentContainer(web).ports[0].containerPort, 3000);
+  assert.equal(deploymentContainer(api).ports[0].containerPort, 3001);
+  assert.equal(web.spec.template.spec.securityContext.runAsUser, 1001);
+  assert.equal(api.spec.template.spec.securityContext.runAsUser, 1000);
+  assert.deepEqual(secretEnvNames(api), ['game-db/uri', 'game-runtime/access-key-id', 'game-runtime/better-auth-secret', 'game-runtime/game-authority-service-token', 'game-runtime/github-client-id', 'game-runtime/github-client-secret', 'game-runtime/secret-access-key']);
+
+  const devOverlay = deriveDevWorkloadBindings('dev-1', 3100);
+  const devAll = render('development', { section: 'all', ...devOverlay });
+  const devDeployments = devAll.filter((doc) => doc.kind === 'Deployment');
+  assert.deepEqual(devDeployments.map((doc) => doc.metadata.name).sort(), [...SIX_ROLES].sort());
+  assert.ok(devAll.every((doc) => !doc.metadata?.namespace || doc.metadata.namespace === 'offscreen-dev-1'));
+  assert.ok(
+    devDeployments.every(
+      (doc) => doc.metadata.labels['offscreen.dev/slot'] === 'dev-1' && doc.spec.template.metadata.labels['offscreen.dev/slot'] === 'dev-1',
+    ),
+  );
+
+  const devApi = devAll.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api');
+  assert.equal(deploymentContainer(devApi).image, 'offscreen-dev-workspace:dev-1-api');
+  assert.deepEqual(secretEnvNames(devApi), ['dev-1-app/better-auth-secret', 'dev-1-app/game-authority-service-token', 'dev-1-app/github-client-id', 'dev-1-app/github-client-secret', 'dev-1-run-auth/uri', 'dev-1-s3/access-key-id', 'dev-1-s3/secret-access-key']);
+});

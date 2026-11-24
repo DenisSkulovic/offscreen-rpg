@@ -68,15 +68,33 @@ capabilities:
     - ALL
 {{- end -}}
 
-{{- define "offscreen-app.dev.readiness" -}}
-readinessProbe:
-  tcpSocket:
-    port: http
-  periodSeconds: {{ .Values.readiness.periodSeconds }}
-  timeoutSeconds: {{ .Values.readiness.timeoutSeconds }}
-  failureThreshold: {{ .failureThreshold }}
+{{- define "offscreen-app.release.security.pod" -}}
+runAsNonRoot: {{ .Values.podSecurity.runAsNonRoot }}
+runAsUser: {{ .Values.podSecurity.runAsUser }}
+runAsGroup: {{ .Values.podSecurity.runAsGroup }}
+seccompProfile:
+  type: {{ .Values.podSecurity.seccompProfile.type | quote }}
 {{- end -}}
 
+{{- define "offscreen-app.release.security.pod.web" -}}
+runAsNonRoot: {{ .Values.podSecurity.runAsNonRoot }}
+runAsUser: {{ .Values.release.webRunAsUser }}
+runAsGroup: {{ .Values.release.webRunAsGroup }}
+seccompProfile:
+  type: {{ .Values.podSecurity.seccompProfile.type | quote }}
+{{- end -}}
+
+{{- define "offscreen-app.release.security.container" -}}
+allowPrivilegeEscalation: {{ .Values.podSecurity.allowPrivilegeEscalation }}
+capabilities:
+  drop:
+    - ALL
+{{- end -}}
+
+{{- define "offscreen-app.podSpecFlags" -}}
+automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+enableServiceLinks: {{ .Values.enableServiceLinks }}
+{{- end -}}
 
 {{- define "offscreen-app.doc.namespace.dev" -}}
 apiVersion: v1
@@ -92,9 +110,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: lab-edge
+  name: {{ .Values.namespaces.edge | quote }}
   labels:
-    offscreen.rpg/lab: disposable
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 {{- end -}}
 
 
@@ -102,9 +120,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: lab-authority
+  name: {{ .Values.namespaces.authority | quote }}
   labels:
-    offscreen.rpg/lab: disposable
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 {{- end -}}
 
 
@@ -112,30 +130,30 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: lab-workers
+  name: {{ .Values.namespaces.workers | quote }}
   labels:
-    offscreen.rpg/lab: disposable
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 {{- end -}}
 
 {{- define "offscreen-app.doc.service.game-web.dev" -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: game-web
+  name: {{ .Values.catalog.deployments.web | quote }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-web
+    app: {{ .Values.catalog.deployments.web | quote }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
   type: ClusterIP
   selector:
-    app: game-web
+    app: {{ .Values.catalog.deployments.web | quote }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   ports:
     - name: http
-      port: 3000
+      port: {{ .Values.catalog.httpPorts.web }}
       targetPort: http
 {{- end -}}
 
@@ -143,21 +161,21 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: game-api
+  name: {{ .Values.catalog.deployments.api | quote }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-api
+    app: {{ .Values.catalog.deployments.api | quote }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
   type: ClusterIP
   selector:
-    app: game-api
+    app: {{ .Values.catalog.deployments.api | quote }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   ports:
     - name: http
-      port: 3001
+      port: {{ .Values.catalog.httpPorts.api }}
       targetPort: http
 {{- end -}}
 
@@ -165,21 +183,21 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: game-authority
+  name: {{ .Values.catalog.deployments.authority | quote }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-authority
+    app: {{ .Values.catalog.deployments.authority | quote }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
   type: ClusterIP
   selector:
-    app: game-authority
+    app: {{ .Values.catalog.deployments.authority | quote }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   ports:
     - name: http
-      port: 3002
+      port: {{ .Values.catalog.httpPorts.authority }}
       targetPort: http
 {{- end -}}
 
@@ -187,19 +205,19 @@ spec:
 apiVersion: "v1"
 kind: "Service"
 metadata:
-  name: "game-web"
-  namespace: "lab-edge"
+  name: {{ .Values.catalog.deployments.web | quote }}
+  namespace: {{ .Values.namespaces.edge | quote }}
   labels:
-    app: "game-web"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.web | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
   type: "ClusterIP"
   selector:
-    app: "game-web"
+    app: {{ .Values.catalog.deployments.web | quote }}
   ports:
     -
       name: "http"
-      port: 3000
+      port: {{ .Values.catalog.httpPorts.web }}
       targetPort: "http"
 {{- end -}}
 
@@ -207,19 +225,19 @@ spec:
 apiVersion: "v1"
 kind: "Service"
 metadata:
-  name: "game-api"
-  namespace: "lab-edge"
+  name: {{ .Values.catalog.deployments.api | quote }}
+  namespace: {{ .Values.namespaces.edge | quote }}
   labels:
-    app: "game-api"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.api | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
   type: "ClusterIP"
   selector:
-    app: "game-api"
+    app: {{ .Values.catalog.deployments.api | quote }}
   ports:
     -
       name: "http"
-      port: 3001
+      port: {{ .Values.catalog.httpPorts.api }}
       targetPort: "http"
 {{- end -}}
 
@@ -227,19 +245,19 @@ spec:
 apiVersion: "v1"
 kind: "Service"
 metadata:
-  name: "game-authority"
-  namespace: "lab-authority"
+  name: {{ .Values.catalog.deployments.authority | quote }}
+  namespace: {{ .Values.namespaces.authority | quote }}
   labels:
-    app: "game-authority"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.authority | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
   type: "ClusterIP"
   selector:
-    app: "game-authority"
+    app: {{ .Values.catalog.deployments.authority | quote }}
   ports:
     -
       name: "http"
-      port: 3002
+      port: {{ .Values.catalog.httpPorts.authority }}
       targetPort: "http"
 {{- end -}}
 
@@ -248,53 +266,44 @@ apiVersion: "batch/v1"
 kind: "Job"
 metadata:
   name: "game-migrate"
-  namespace: "lab-edge"
+  namespace: {{ .Values.namespaces.edge | quote }}
   labels:
     app: "game-migrate"
-    offscreen.rpg/lab: "disposable"
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
   backoffLimit: 0
   template:
     metadata:
       labels:
         app: "game-migrate"
-        offscreen.rpg/lab: "disposable"
+        offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
     spec:
       restartPolicy: "Never"
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        seccompProfile:
-          type: "RuntimeDefault"
+        {{- include "offscreen-app.release.security.pod" . | nindent 8 }}
       containers:
         -
           name: "migrate"
-          image: "offscreen-lab-app-release-api:turn02"
-          imagePullPolicy: "Never"
+          image: {{ .Values.images.migrate | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           command:
-            - "node"
-            - "packages/db/dist/src/migrate-cli.js"
+{{- toYaml .Values.release.migrateCommand | nindent 12 }}
           env:
             -
               name: "DATABASE_URL"
               valueFrom:
                 secretKeyRef:
-                  name: "game-db"
+                  name: {{ .Values.release.dbSecret | quote }}
                   key: "uri"
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
+            {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
             requests:
-              cpu: "50m"
-              memory: "128Mi"
+              cpu: {{ .Values.release.migrateResources.requests.cpu | quote }}
+              memory: {{ .Values.release.migrateResources.requests.memory | quote }}
             limits:
-              memory: "512Mi"
+              memory: {{ .Values.release.migrateResources.limits.memory | quote }}
 {{- end -}}
 
 
@@ -313,546 +322,495 @@ spec:
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
-  name: "game-web"
-  namespace: "lab-edge"
+  name: {{ .Values.catalog.deployments.web | quote }}
+  namespace: {{ .Values.namespaces.edge | quote }}
   labels:
-    app: "game-web"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.web | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: "game-web"
+      app: {{ .Values.catalog.deployments.web | quote }}
   template:
     metadata:
       labels:
-        app: "game-web"
-        offscreen.rpg/lab: "disposable"
+        app: {{ .Values.catalog.deployments.web | quote }}
+        offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
         offscreen.rpg/chaos-eligible: "true"
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1001
-        runAsGroup: 1001
-        seccompProfile:
-          type: "RuntimeDefault"
+        {{- include "offscreen-app.release.security.pod.web" . | nindent 8 }}
       containers:
         -
-          name: "web"
-          image: "offscreen-lab-game-web:turn02"
-          imagePullPolicy: "Never"
+          name: {{ .Values.catalog.containers.web | quote }}
+          image: {{ .Values.images.web | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           ports:
             -
               name: "http"
-              containerPort: 3000
+              containerPort: {{ .Values.catalog.httpPorts.web }}
           env:
             -
               name: "HOSTNAME"
               value: "0.0.0.0"
             -
               name: "API_PROXY_ORIGIN"
-              value: "http://game-api.lab-edge.svc.cluster.local:3001"
+              value: {{ .Values.release.apiProxyOrigin | quote }}
             -
               name: "API_INTERNAL_ORIGIN"
-              value: "http://game-api.lab-edge.svc.cluster.local:3001"
+              value: {{ .Values.release.apiProxyOrigin | quote }}
           readinessProbe:
             tcpSocket:
               port: "http"
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 12
+            periodSeconds: {{ .Values.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.readiness.web.failureThreshold }}
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
+            {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
             requests:
-              cpu: "50m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.web.memory | quote }}
             limits:
-              memory: "768Mi"
+              memory: {{ .Values.resources.limits.web.memory | quote }}
 {{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-api.release" -}}
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
-  name: "game-api"
-  namespace: "lab-edge"
+  name: {{ .Values.catalog.deployments.api | quote }}
+  namespace: {{ .Values.namespaces.edge | quote }}
   labels:
-    app: "game-api"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.api | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: "game-api"
+      app: {{ .Values.catalog.deployments.api | quote }}
   template:
     metadata:
       labels:
-        app: "game-api"
-        offscreen.rpg/lab: "disposable"
+        app: {{ .Values.catalog.deployments.api | quote }}
+        offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
         offscreen.rpg/chaos-eligible: "true"
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        seccompProfile:
-          type: "RuntimeDefault"
+        {{- include "offscreen-app.release.security.pod" . | nindent 8 }}
       containers:
         -
-          name: "api"
-          image: "offscreen-lab-app-release-api:turn02"
-          imagePullPolicy: "Never"
+          name: {{ .Values.catalog.containers.api | quote }}
+          image: {{ .Values.images.api | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           ports:
             -
               name: "http"
-              containerPort: 3001
+              containerPort: {{ .Values.catalog.httpPorts.api }}
           env:
             -
               name: "API_HOST"
               value: "0.0.0.0"
             -
               name: "API_PORT"
-              value: "3001"
+              value: {{ .Values.catalog.httpPorts.api | quote }}
             -
               name: "APP_ORIGIN"
-              value: "http://127.0.0.1:3000"
+              value: {{ .Values.release.appOrigin | quote }}
             -
               name: "GAME_AUTHORITY_MODE"
               value: "distributed"
             -
               name: "GAME_AUTHORITY_ORIGIN"
-              value: "http://game-authority.lab-authority.svc.cluster.local:3002"
+              value: {{ .Values.release.authorityOrigin | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_STORE"
               value: "s3"
             -
               name: "OFFSCREEN_DOCUMENT_S3_BUCKET"
-              value: "lab-objects"
+              value: {{ .Values.release.s3Bucket | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_ENDPOINT"
-              value: "http://object-store.lab-objects.svc.cluster.local:8333"
+              value: {{ .Values.release.s3Endpoint | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE"
-              value: "true"
+              value: {{ .Values.release.s3ForcePathStyle | quote }}
             -
               name: "OFFSCREEN_DEFAULT_RULE_ROOT_HASH"
-              value: "d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab"
+              value: {{ .Values.release.ruleRootHash | quote }}
             -
               name: "DATABASE_URL"
               valueFrom:
                 secretKeyRef:
-                  name: "game-db"
+                  name: {{ .Values.release.dbSecret | quote }}
                   key: "uri"
             -
               name: "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "access-key-id"
             -
               name: "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "secret-access-key"
             -
               name: "GAME_AUTHORITY_SERVICE_TOKEN"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "game-authority-service-token"
             -
               name: "BETTER_AUTH_SECRET"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "better-auth-secret"
             -
               name: "GITHUB_CLIENT_ID"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "github-client-id"
             -
               name: "GITHUB_CLIENT_SECRET"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "github-client-secret"
           readinessProbe:
             tcpSocket:
               port: "http"
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 24
+            periodSeconds: {{ .Values.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.readiness.api.failureThreshold }}
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
+            {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
             requests:
-              cpu: "50m"
-              memory: "384Mi"
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.api.memory | quote }}
             limits:
-              memory: "1024Mi"
+              memory: {{ .Values.resources.limits.api.memory | quote }}
 {{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-authority.release" -}}
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
-  name: "game-authority"
-  namespace: "lab-authority"
+  name: {{ .Values.catalog.deployments.authority | quote }}
+  namespace: {{ .Values.namespaces.authority | quote }}
   labels:
-    app: "game-authority"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.authority | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: "game-authority"
+      app: {{ .Values.catalog.deployments.authority | quote }}
   template:
     metadata:
       labels:
-        app: "game-authority"
-        offscreen.rpg/lab: "disposable"
+        app: {{ .Values.catalog.deployments.authority | quote }}
+        offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
         offscreen.rpg/chaos-eligible: "true"
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        seccompProfile:
-          type: "RuntimeDefault"
+        {{- include "offscreen-app.release.security.pod" . | nindent 8 }}
       containers:
         -
-          name: "authority"
-          image: "offscreen-lab-app-release-ga:turn02"
-          imagePullPolicy: "Never"
+          name: {{ .Values.catalog.containers.authority | quote }}
+          image: {{ .Values.images.authority | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           ports:
             -
               name: "http"
-              containerPort: 3002
+              containerPort: {{ .Values.catalog.httpPorts.authority }}
           env:
             -
               name: "GAME_AUTHORITY_HOST"
               value: "0.0.0.0"
             -
               name: "GAME_AUTHORITY_PORT"
-              value: "3002"
+              value: {{ .Values.catalog.httpPorts.authority | quote }}
             -
               name: "DATABASE_URL"
               valueFrom:
                 secretKeyRef:
-                  name: "game-db"
+                  name: {{ .Values.release.dbSecret | quote }}
                   key: "uri"
             -
               name: "OFFSCREEN_WRITER_EXECUTION_MODE"
-              value: "scripted-offline-lab"
+              value: {{ .Values.release.writerExecutionMode | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_STORE"
               value: "s3"
             -
               name: "OFFSCREEN_DOCUMENT_S3_BUCKET"
-              value: "lab-objects"
+              value: {{ .Values.release.s3Bucket | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_ENDPOINT"
-              value: "http://object-store.lab-objects.svc.cluster.local:8333"
+              value: {{ .Values.release.s3Endpoint | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE"
-              value: "true"
+              value: {{ .Values.release.s3ForcePathStyle | quote }}
             -
               name: "OFFSCREEN_DEFAULT_RULE_ROOT_HASH"
-              value: "d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab"
+              value: {{ .Values.release.ruleRootHash | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "access-key-id"
             -
               name: "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "secret-access-key"
             -
               name: "GAME_AUTHORITY_SERVICE_TOKEN"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "game-authority-service-token"
             -
               name: "GAME_AUTHORITY_CONTROL_TOKEN"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "game-authority-control-token"
             -
               name: "GAME_AUTHORITY_EXECUTOR_TOKEN"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "game-authority-executor-token"
           readinessProbe:
             tcpSocket:
               port: "http"
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 24
+            periodSeconds: {{ .Values.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.readiness.authority.failureThreshold }}
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
+            {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
             requests:
-              cpu: "50m"
-              memory: "384Mi"
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.authority.memory | quote }}
             limits:
-              memory: "1024Mi"
+              memory: {{ .Values.resources.limits.authority.memory | quote }}
 {{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-control.release" -}}
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
-  name: "game-control"
-  namespace: "lab-workers"
+  name: {{ .Values.catalog.deployments.control | quote }}
+  namespace: {{ .Values.namespaces.workers | quote }}
   labels:
-    app: "game-control"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.control | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: "game-control"
+      app: {{ .Values.catalog.deployments.control | quote }}
   template:
     metadata:
       labels:
-        app: "game-control"
-        offscreen.rpg/lab: "disposable"
+        app: {{ .Values.catalog.deployments.control | quote }}
+        offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
         offscreen.rpg/chaos-eligible: "true"
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        seccompProfile:
-          type: "RuntimeDefault"
+        {{- include "offscreen-app.release.security.pod" . | nindent 8 }}
       containers:
         -
-          name: "control"
-          image: "offscreen-lab-app-release-worker:turn02"
-          imagePullPolicy: "Never"
+          name: {{ .Values.catalog.containers.control | quote }}
+          image: {{ .Values.images.worker | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           command:
-            - "node"
-            - "apps/worker/dist/src/bootstrap/control-main.js"
+{{- toYaml .Values.workerCommands.control | nindent 12 }}
           env:
             -
               name: "TEMPORAL_ADDRESS"
-              value: "temporal-server.lab-temporal.svc.cluster.local:7233"
+              value: {{ .Values.release.temporalAddress | quote }}
             -
               name: "TEMPORAL_NAMESPACE"
-              value: "default"
+              value: {{ .Values.release.temporalNamespace | quote }}
             -
               name: "TEMPORAL_TASK_QUEUE"
               value: "control"
             -
               name: "GAME_AUTHORITY_ORIGIN"
-              value: "http://game-authority.lab-authority.svc.cluster.local:3002"
+              value: {{ .Values.release.authorityOrigin | quote }}
             -
               name: "GAME_AUTHORITY_CONTROL_TOKEN"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "game-authority-control-token"
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
+            {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
             requests:
-              cpu: "50m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.control.memory | quote }}
             limits:
-              memory: "768Mi"
+              memory: {{ .Values.resources.limits.control.memory | quote }}
 {{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-executor.release" -}}
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
-  name: "game-executor"
-  namespace: "lab-workers"
+  name: {{ .Values.catalog.deployments.executor | quote }}
+  namespace: {{ .Values.namespaces.workers | quote }}
   labels:
-    app: "game-executor"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.executor | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: "game-executor"
+      app: {{ .Values.catalog.deployments.executor | quote }}
   template:
     metadata:
       labels:
-        app: "game-executor"
-        offscreen.rpg/lab: "disposable"
+        app: {{ .Values.catalog.deployments.executor | quote }}
+        offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
         offscreen.rpg/chaos-eligible: "true"
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        seccompProfile:
-          type: "RuntimeDefault"
+        {{- include "offscreen-app.release.security.pod" . | nindent 8 }}
       containers:
         -
-          name: "executor"
-          image: "offscreen-lab-app-release-worker:turn02"
-          imagePullPolicy: "Never"
+          name: {{ .Values.catalog.containers.executor | quote }}
+          image: {{ .Values.images.worker | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           command:
-            - "node"
-            - "apps/worker/dist/src/bootstrap/executor-main.js"
+{{- toYaml .Values.workerCommands.executor | nindent 12 }}
           env:
             -
               name: "TEMPORAL_ADDRESS"
-              value: "temporal-server.lab-temporal.svc.cluster.local:7233"
+              value: {{ .Values.release.temporalAddress | quote }}
             -
               name: "TEMPORAL_NAMESPACE"
-              value: "default"
+              value: {{ .Values.release.temporalNamespace | quote }}
             -
               name: "TEMPORAL_TASK_QUEUE"
               value: "storyteller-execute-v1"
             -
               name: "GAME_AUTHORITY_ORIGIN"
-              value: "http://game-authority.lab-authority.svc.cluster.local:3002"
+              value: {{ .Values.release.authorityOrigin | quote }}
             -
               name: "GAME_AUTHORITY_EXECUTOR_TOKEN"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "game-authority-executor-token"
             -
               name: "OFFSCREEN_WRITER_EXECUTION_MODE"
-              value: "scripted-offline-lab"
+              value: {{ .Values.release.writerExecutionMode | quote }}
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
+            {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
             requests:
-              cpu: "50m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.executor.memory | quote }}
             limits:
-              memory: "768Mi"
+              memory: {{ .Values.resources.limits.executor.memory | quote }}
 {{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-relay.release" -}}
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
-  name: "game-relay"
-  namespace: "lab-workers"
+  name: {{ .Values.catalog.deployments.relay | quote }}
+  namespace: {{ .Values.namespaces.workers | quote }}
   labels:
-    app: "game-relay"
-    offscreen.rpg/lab: "disposable"
+    app: {{ .Values.catalog.deployments.relay | quote }}
+    offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: "game-relay"
+      app: {{ .Values.catalog.deployments.relay | quote }}
   template:
     metadata:
       labels:
-        app: "game-relay"
-        offscreen.rpg/lab: "disposable"
+        app: {{ .Values.catalog.deployments.relay | quote }}
+        offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
         offscreen.rpg/chaos-eligible: "true"
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        seccompProfile:
-          type: "RuntimeDefault"
+        {{- include "offscreen-app.release.security.pod" . | nindent 8 }}
       containers:
         -
-          name: "relay"
-          image: "offscreen-lab-app-release-worker:turn02"
-          imagePullPolicy: "Never"
+          name: {{ .Values.catalog.containers.relay | quote }}
+          image: {{ .Values.images.worker | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           command:
-            - "node"
-            - "apps/worker/dist/src/bootstrap/main.js"
+{{- toYaml .Values.workerCommands.relay | nindent 12 }}
           env:
             -
               name: "DATABASE_URL"
               valueFrom:
                 secretKeyRef:
-                  name: "game-db"
+                  name: {{ .Values.release.dbSecret | quote }}
                   key: "uri"
             -
               name: "TEMPORAL_ADDRESS"
-              value: "temporal-server.lab-temporal.svc.cluster.local:7233"
+              value: {{ .Values.release.temporalAddress | quote }}
             -
               name: "TEMPORAL_NAMESPACE"
-              value: "default"
+              value: {{ .Values.release.temporalNamespace | quote }}
             -
               name: "STORYTELLER_DISTRIBUTED_V1"
-              value: "true"
+              value: {{ .Values.release.relayDistributed | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_STORE"
               value: "s3"
             -
               name: "OFFSCREEN_DOCUMENT_S3_BUCKET"
-              value: "lab-objects"
+              value: {{ .Values.release.s3Bucket | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_ENDPOINT"
-              value: "http://object-store.lab-objects.svc.cluster.local:8333"
+              value: {{ .Values.release.s3Endpoint | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE"
-              value: "true"
+              value: {{ .Values.release.s3ForcePathStyle | quote }}
             -
               name: "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "access-key-id"
             -
               name: "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY"
               valueFrom:
                 secretKeyRef:
-                  name: "game-runtime"
+                  name: {{ .Values.release.runtimeSecret | quote }}
                   key: "secret-access-key"
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - "ALL"
+            {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
             requests:
-              cpu: "50m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.relay.memory | quote }}
             limits:
-              memory: "768Mi"
+              memory: {{ .Values.resources.limits.relay.memory | quote }}
 {{- end -}}
 
 {{- define "offscreen-app.dev.env.web" -}}
@@ -864,48 +822,47 @@ spec:
   value: {{ .Values.bindings.apiOrigin | quote }}
 - name: API_INTERNAL_ORIGIN
   value: {{ .Values.bindings.apiOrigin | quote }}
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-web.dev" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-web
+  name: {{ .Values.catalog.deployments.web }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-web
+    app: {{ .Values.catalog.deployments.web }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: game-web
+      app: {{ .Values.catalog.deployments.web }}
       offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   template:
     metadata:
       labels:
-        app: game-web
+        app: {{ .Values.catalog.deployments.web }}
         offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
         offscreen.dev/owner: offscreen-dev
         offscreen.rpg/profile: dev-slot
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
         {{- include "offscreen-app.dev.security.pod" . | nindent 8 }}
       containers:
-      - name: web
+      - name: {{ .Values.catalog.containers.web }}
         image: {{ .Values.bindings.images.web | quote }}
-        imagePullPolicy: Never
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         workingDir: {{ .Values.workingDirs.web | quote }}
         {{/* Host web READY: pod image + HTTP /sign-in — not compiled-generation proof. */}}
         command:
 {{- toYaml .Values.commands.web | nindent 10 }}
         ports:
           - name: http
-            containerPort: 3000
+            containerPort: {{ .Values.catalog.httpPorts.web }}
         env:
           {{- include "offscreen-app.dev.env.web" . | nindent 10 }}
         readinessProbe:
@@ -918,9 +875,9 @@ spec:
           {{- include "offscreen-app.dev.security.container" . | nindent 10 }}
         resources:
           requests:
-            cpu: 50m
+            cpu: {{ .Values.resources.requests.cpu | quote }}
             memory: {{ .Values.resources.requests.web.memory | quote }}
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.dev.env.api" -}}
 - name: OFFSCREEN_DEV_SLOT
@@ -938,13 +895,13 @@ spec:
 - name: GAME_AUTHORITY_ORIGIN
   value: {{ .Values.bindings.authorityOrigin | quote }}
 - name: GAME_AUTHORITY_MODE
-  value: "distributed"
+  value: {{ .Values.dev.authorityMode | quote }}
 - name: API_HOST
   value: "0.0.0.0"
 - name: API_PORT
-  value: "3001"
+  value: {{ .Values.catalog.httpPorts.api | quote }}
 - name: OFFSCREEN_DOCUMENT_STORE
-  value: "s3"
+  value: {{ .Values.dev.documentStore | quote }}
 - name: OFFSCREEN_DOCUMENT_S3_BUCKET
   value: {{ .Values.bindings.s3Bucket | quote }}
 - name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
@@ -984,47 +941,46 @@ spec:
     secretKeyRef:
       name: {{ .Values.bindings.appSecret }}
       key: github-client-secret
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-api.dev" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-api
+  name: {{ .Values.catalog.deployments.api }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-api
+    app: {{ .Values.catalog.deployments.api }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: game-api
+      app: {{ .Values.catalog.deployments.api }}
       offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   template:
     metadata:
       labels:
-        app: game-api
+        app: {{ .Values.catalog.deployments.api }}
         offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
         offscreen.dev/owner: offscreen-dev
         offscreen.rpg/profile: dev-slot
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
         {{- include "offscreen-app.dev.security.pod" . | nindent 8 }}
       containers:
-      - name: api
+      - name: {{ .Values.catalog.containers.api }}
         image: {{ .Values.bindings.images.api | quote }}
-        imagePullPolicy: Never
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         workingDir: {{ .Values.workingDirs.api | quote }}
         command:
 {{- toYaml .Values.commands.api | nindent 10 }}
         ports:
           - name: http
-            containerPort: 3001
+            containerPort: {{ .Values.catalog.httpPorts.api }}
         env:
           {{- include "offscreen-app.dev.env.api" . | nindent 10 }}
         readinessProbe:
@@ -1037,9 +993,9 @@ spec:
           {{- include "offscreen-app.dev.security.container" . | nindent 10 }}
         resources:
           requests:
-            cpu: 50m
+            cpu: {{ .Values.resources.requests.cpu | quote }}
             memory: {{ .Values.resources.requests.api.memory | quote }}
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.dev.env.authority" -}}
 - name: OFFSCREEN_DEV_SLOT
@@ -1051,11 +1007,11 @@ spec:
 - name: DB_POOL_MAX
   value: {{ .Values.bindings.dbPoolMax | quote }}
 - name: OFFSCREEN_DOCUMENT_STORE
-  value: "s3"
+  value: {{ .Values.dev.documentStore | quote }}
 - name: GAME_AUTHORITY_HOST
   value: "0.0.0.0"
 - name: GAME_AUTHORITY_PORT
-  value: "3002"
+  value: {{ .Values.catalog.httpPorts.authority | quote }}
 - name: OFFSCREEN_DOCUMENT_S3_BUCKET
   value: {{ .Values.bindings.s3Bucket | quote }}
 - name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
@@ -1090,47 +1046,46 @@ spec:
     secretKeyRef:
       name: {{ .Values.bindings.appSecret }}
       key: game-authority-executor-token
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-authority.dev" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-authority
+  name: {{ .Values.catalog.deployments.authority }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-authority
+    app: {{ .Values.catalog.deployments.authority }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: game-authority
+      app: {{ .Values.catalog.deployments.authority }}
       offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   template:
     metadata:
       labels:
-        app: game-authority
+        app: {{ .Values.catalog.deployments.authority }}
         offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
         offscreen.dev/owner: offscreen-dev
         offscreen.rpg/profile: dev-slot
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
         {{- include "offscreen-app.dev.security.pod" . | nindent 8 }}
       containers:
-      - name: authority
+      - name: {{ .Values.catalog.containers.authority }}
         image: {{ .Values.bindings.images.authority | quote }}
-        imagePullPolicy: Never
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         workingDir: {{ .Values.workingDirs.authority | quote }}
         command:
 {{- toYaml .Values.commands.authority | nindent 10 }}
         ports:
           - name: http
-            containerPort: 3002
+            containerPort: {{ .Values.catalog.httpPorts.authority }}
         env:
           {{- include "offscreen-app.dev.env.authority" . | nindent 10 }}
         readinessProbe:
@@ -1143,9 +1098,9 @@ spec:
           {{- include "offscreen-app.dev.security.container" . | nindent 10 }}
         resources:
           requests:
-            cpu: 50m
+            cpu: {{ .Values.resources.requests.cpu | quote }}
             memory: {{ .Values.resources.requests.authority.memory | quote }}
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.dev.env.control" -}}
 - name: OFFSCREEN_DEV_SLOT
@@ -1159,7 +1114,7 @@ spec:
 - name: TEMPORAL_NAMESPACE
   value: {{ .Values.bindings.temporalNamespace | quote }}
 - name: TEMPORAL_TASK_QUEUE
-  value: "control"
+  value: {{ .Values.dev.temporalTaskQueues.control | quote }}
 - name: GAME_AUTHORITY_ORIGIN
   value: {{ .Values.bindings.authorityOrigin | quote }}
 - name: GAME_AUTHORITY_CONTROL_TOKEN
@@ -1167,41 +1122,40 @@ spec:
     secretKeyRef:
       name: {{ .Values.bindings.appSecret }}
       key: game-authority-control-token
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-control.dev" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-control
+  name: {{ .Values.catalog.deployments.control }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-control
+    app: {{ .Values.catalog.deployments.control }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: game-control
+      app: {{ .Values.catalog.deployments.control }}
       offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   template:
     metadata:
       labels:
-        app: game-control
+        app: {{ .Values.catalog.deployments.control }}
         offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
         offscreen.dev/owner: offscreen-dev
         offscreen.rpg/profile: dev-slot
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
         {{- include "offscreen-app.dev.security.pod" . | nindent 8 }}
       containers:
-      - name: control
+      - name: {{ .Values.catalog.containers.control }}
         image: {{ .Values.bindings.images.worker | quote }}
-        imagePullPolicy: Never
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         workingDir: {{ .Values.workingDirs.control | quote }}
         command:
 {{- toYaml .Values.commands.control | nindent 10 }}
@@ -1211,9 +1165,9 @@ spec:
           {{- include "offscreen-app.dev.security.container" . | nindent 10 }}
         resources:
           requests:
-            cpu: 50m
+            cpu: {{ .Values.resources.requests.cpu | quote }}
             memory: {{ .Values.resources.requests.control.memory | quote }}
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.dev.env.executor" -}}
 - name: OFFSCREEN_DEV_SLOT
@@ -1227,7 +1181,7 @@ spec:
 - name: TEMPORAL_NAMESPACE
   value: {{ .Values.bindings.temporalNamespace | quote }}
 - name: TEMPORAL_TASK_QUEUE
-  value: "storyteller-execute-v1"
+  value: {{ .Values.dev.temporalTaskQueues.executor | quote }}
 - name: GAME_AUTHORITY_ORIGIN
   value: {{ .Values.bindings.authorityOrigin | quote }}
 - name: GAME_AUTHORITY_EXECUTOR_TOKEN
@@ -1235,41 +1189,40 @@ spec:
     secretKeyRef:
       name: {{ .Values.bindings.appSecret }}
       key: game-authority-executor-token
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-executor.dev" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-executor
+  name: {{ .Values.catalog.deployments.executor }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-executor
+    app: {{ .Values.catalog.deployments.executor }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: game-executor
+      app: {{ .Values.catalog.deployments.executor }}
       offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   template:
     metadata:
       labels:
-        app: game-executor
+        app: {{ .Values.catalog.deployments.executor }}
         offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
         offscreen.dev/owner: offscreen-dev
         offscreen.rpg/profile: dev-slot
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
         {{- include "offscreen-app.dev.security.pod" . | nindent 8 }}
       containers:
-      - name: executor
+      - name: {{ .Values.catalog.containers.executor }}
         image: {{ .Values.bindings.images.worker | quote }}
-        imagePullPolicy: Never
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         workingDir: {{ .Values.workingDirs.executor | quote }}
         command:
 {{- toYaml .Values.commands.executor | nindent 10 }}
@@ -1279,9 +1232,9 @@ spec:
           {{- include "offscreen-app.dev.security.container" . | nindent 10 }}
         resources:
           requests:
-            cpu: 50m
+            cpu: {{ .Values.resources.requests.cpu | quote }}
             memory: {{ .Values.resources.requests.executor.memory | quote }}
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.dev.env.relay" -}}
 - name: OFFSCREEN_DEV_SLOT
@@ -1293,7 +1246,7 @@ spec:
 - name: DB_POOL_MAX
   value: {{ .Values.bindings.dbPoolMax | quote }}
 - name: OFFSCREEN_DOCUMENT_STORE
-  value: "s3"
+  value: {{ .Values.dev.documentStore | quote }}
 - name: TEMPORAL_ADDRESS
   value: {{ .Values.bindings.temporalAddress | quote }}
 - name: TEMPORAL_NAMESPACE
@@ -1317,41 +1270,40 @@ spec:
     secretKeyRef:
       name: {{ .Values.bindings.s3Secret }}
       key: secret-access-key
-{{- end -}}}
+{{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-relay.dev" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game-relay
+  name: {{ .Values.catalog.deployments.relay }}
   namespace: {{ .Values.bindings.namespace }}
   labels:
-    app: game-relay
+    app: {{ .Values.catalog.deployments.relay }}
     offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      app: game-relay
+      app: {{ .Values.catalog.deployments.relay }}
       offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
   template:
     metadata:
       labels:
-        app: game-relay
+        app: {{ .Values.catalog.deployments.relay }}
         offscreen.dev/slot: {{ .Values.bindings.slotId | quote }}
         offscreen.dev/owner: offscreen-dev
         offscreen.rpg/profile: dev-slot
     spec:
-      automountServiceAccountToken: false
-      enableServiceLinks: false
+      {{- include "offscreen-app.podSpecFlags" . | nindent 6 }}
       securityContext:
         {{- include "offscreen-app.dev.security.pod" . | nindent 8 }}
       containers:
-      - name: relay
+      - name: {{ .Values.catalog.containers.relay }}
         image: {{ .Values.bindings.images.worker | quote }}
-        imagePullPolicy: Never
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         workingDir: {{ .Values.workingDirs.relay | quote }}
         command:
 {{- toYaml .Values.commands.relay | nindent 10 }}
@@ -1361,6 +1313,6 @@ spec:
           {{- include "offscreen-app.dev.security.container" . | nindent 10 }}
         resources:
           requests:
-            cpu: 50m
+            cpu: {{ .Values.resources.requests.cpu | quote }}
             memory: {{ .Values.resources.requests.relay.memory | quote }}
-{{- end -}}}
+{{- end -}}

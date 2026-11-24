@@ -19,7 +19,6 @@
     "resources": { "type": "object" },
     "workingDirs": { "type": "object" },
     "commands": { "type": "object" },
-    "watched": { "type": "object" },
     "dev": { "type": "object" },
     "namespaces": { "type": "object" },
     "images": { "type": "object" },
@@ -63,7 +62,7 @@
     {
       "if": { "properties": { "mode": { "const": "development" } }, "required": ["mode"] },
       "then": {
-        "required": ["bindings", "commands", "workingDirs", "watched", "dev"],
+        "required": ["bindings", "commands", "workingDirs", "dev"],
         "properties": {
           "bindings": {
             "required": [
