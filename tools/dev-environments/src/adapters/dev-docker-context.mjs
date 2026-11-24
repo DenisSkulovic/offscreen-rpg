@@ -25,7 +25,7 @@ const ROOT_MANIFESTS = new Set([
   'turbo.json',
 ]);
 
-const REQUIRED_NPMRC = 'infra/images/release/docker.npmrc';
+const REQUIRED_NPMRC = 'infra/images/common/docker.npmrc';
 
 /**
  * @param {string} filePath

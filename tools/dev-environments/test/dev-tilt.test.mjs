@@ -32,6 +32,15 @@ import {
   fingerprintCompiledEntryFile,
   markDevWatchedCompilation,
 } from '../../../infra/dev/dev-watched-compilation-receipt.mjs';
+import { UNION_ROLE_FILTER } from '../src/image-cache/dev-slot-image-plan.mjs';
+
+function okLaunchFingerprint() {
+  return () => ({
+    ok: true,
+    fingerprint: 'ab'.repeat(32),
+    roleFilter: UNION_ROLE_FILTER,
+  });
+}
 const API_FRESHNESS_ROLE = DEV_RUNTIME_FRESHNESS_ROLES.find((entry) => entry.role === 'api');
 assert.ok(API_FRESHNESS_ROLE);
 
@@ -295,6 +304,7 @@ test('launcher writes allocator game and tilt ports to the worktree session', as
   const spawn = fakeSpawn();
   await runDevTiltLaunch({
     worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
     allocateDevWorktreeOwner: fakeAllocator,
     collectDefaultProbes: async () => ({}),
     runStackPreflight: () => okPreflight(),
@@ -330,6 +340,7 @@ test('occupied allocator game port refuses before tilt spawn', async () => {
     const exitCodes = [];
     await runDevTiltLaunch({
       worktree,
+      fingerprintDevImageContext: okLaunchFingerprint(),
       allocateDevWorktreeOwner: fakeAllocator,
       collectDefaultProbes: async () => ({}),
       runStackPreflight: () => okPreflight(),
@@ -363,6 +374,7 @@ test('low memory refuses before reconciliation, Tilt replacement, or spawn', asy
   const signals = [];
   await runDevTiltLaunch({
     worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
     collectDefaultProbes: async () => ({ memAvailableKib: 1 }),
     runStackPreflight: () => ({
       ok: false,
@@ -394,6 +406,7 @@ test('sufficient memory still reconciles and launches', async () => {
   let reconciled = false;
   await runDevTiltLaunch({
     worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
     allocateDevWorktreeOwner: fakeAllocator,
     collectDefaultProbes: async () => ({ memAvailableKib: 8_000_000 }),
     runStackPreflight: () => okPreflight(),
@@ -419,6 +432,7 @@ test('missing memory reading fails closed before mutation', async () => {
   let reconciled = false;
   await runDevTiltLaunch({
     worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
     collectDefaultProbes: async () => ({ memAvailableKib: null }),
     runStackPreflight: () => ({
       ok: false,
@@ -455,6 +469,7 @@ test('memory refusal does not terminate an owned running session', async () => {
   const exitCodes = [];
   await runDevTiltLaunch({
     worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
     collectDefaultProbes: async () => ({ memAvailableKib: 1 }),
     runStackPreflight: () => ({
       ok: false,
@@ -475,6 +490,29 @@ test('memory refusal does not terminate an owned running session', async () => {
   assert.deepEqual(exitCodes, [1]);
   assert.deepEqual(signals, []);
   assert.equal(readDevSession(worktree)?.pid, 4242);
+});
+
+test('launcher refuses unreadable recipe before tilt spawn', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-fp-fail-'));
+  const spawn = fakeSpawn();
+  const exitCodes = [];
+  await runDevTiltLaunch({
+    worktree,
+    allocateDevWorktreeOwner: fakeAllocator,
+    collectDefaultProbes: async () => ({ memAvailableKib: 8_000_000 }),
+    runStackPreflight: () => okPreflight(),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    spawnFn: spawn,
+    exit: (code) => {
+      exitCodes.push(code);
+    },
+    exitAfterSession: true,
+    reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true }),
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(spawn.called(), false);
+  assert.equal(readDevSession(worktree), null);
 });
 
 test('dynamic ready URLs follow injected allocator ports', () => {
@@ -750,6 +788,7 @@ function ownedLaunch(worktree, extra) {
     launch(overrides = {}) {
       return runDevTiltLaunch({
         worktree,
+        fingerprintDevImageContext: okLaunchFingerprint(),
         registryRoot,
         owner: {
           ...FAKE_OWNER,

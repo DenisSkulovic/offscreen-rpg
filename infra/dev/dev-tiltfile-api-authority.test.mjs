@@ -15,17 +15,14 @@ const authorityYaml = readFileSync(authorityYamlPath, 'utf8');
 
 /**
  * @param {string} tiltfile
- * @param {string} marker
+ * @param {string} resourceName
  */
-function dockerBuildSlice(tiltfile, marker) {
-  const start = tiltfile.indexOf(marker);
-  assert.notEqual(start, -1, `expected Tiltfile marker ${marker}`);
-  const rest = tiltfile.slice(start);
-  const next = rest.indexOf(
-    'dev_workspace_docker_build(',
-    marker.length,
+function dockerBuildSlice(tiltfile, resourceName) {
+  const match = tiltfile.match(
+    new RegExp(`k8s_resource\\([\\s\\S]*?['"]${resourceName}['"][\\s\\S]*?\\)`),
   );
-  return next === -1 ? rest : rest.slice(0, next);
+  assert.ok(match, `expected k8s_resource for ${resourceName}`);
+  return match[0];
 }
 
 /**
@@ -80,7 +77,7 @@ export function assertDevGaTiltContract(tiltfile) {
  */
 export function assertDevTiltReadinessNotBlind(tiltfile) {
   for (const name of ['game-api', 'game-authority']) {
-    const slice = dockerBuildSlice(tiltfile, `k8s_resource(\n    '${name}'`);
+    const slice = dockerBuildSlice(tiltfile, name);
     assert.doesNotMatch(
       slice,
       /trigger_mode\s*=\s*TRIGGER_MODE_MANUAL/,

@@ -30,6 +30,8 @@ export const ALLOWED_DESTINATION_ROOTS = [
   'infra/workloads/release/',
   'infra/environments/dev/',
   'infra/environments/release/',
+  'infra/images/common/',
+  'infra/images/distribution/',
   'infra/images/development/',
   'infra/images/release/',
   'infra/dev/',
@@ -80,9 +82,48 @@ export const INF06_SUCCESSOR_RELOCATIONS = [
   },
 ];
 
+/** INF07 successor relocations: INF04 mapped destination → current home. */
+export const INF07_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/images/release/docker.npmrc',
+    to: 'infra/images/common/docker.npmrc',
+  },
+  {
+    from: 'infra/images/release/Dockerfile.api',
+    to: 'infra/images/release/Dockerfile.services',
+  },
+  {
+    from: 'infra/images/release/Dockerfile.game-authority',
+    to: 'infra/images/release/Dockerfile.services',
+  },
+  {
+    from: 'infra/images/release/Dockerfile.worker',
+    to: 'infra/images/release/Dockerfile.services',
+  },
+  {
+    from: 'infra/images/development/tilt/load-dev-image.sh',
+    to: 'infra/dev/load-dev-image.sh',
+  },
+];
+
+/** Staging-only successor: compat shim may remain at the predecessor path. */
+export const INF07_EFFECTIVE_DESTINATION_SUCCESSORS = [
+  ...INF07_SUCCESSOR_RELOCATIONS,
+  {
+    from: 'infra/images/development/tilt/build-release-images.sh',
+    to: 'infra/images/release/build-release-images.sh',
+  },
+];
+
 function effectiveMoveDestination(destination) {
-  const successor = INF06_SUCCESSOR_RELOCATIONS.find((row) => row.from === destination);
-  return successor ? successor.to : destination;
+  let current = destination;
+  for (const table of [INF06_SUCCESSOR_RELOCATIONS, INF07_EFFECTIVE_DESTINATION_SUCCESSORS]) {
+    const successor = table.find((row) => row.from === current);
+    if (successor) {
+      current = successor.to;
+    }
+  }
+  return current;
 }
 
 export function assertInf06SuccessorRelocations(root) {
@@ -100,6 +141,28 @@ export function assertInf06SuccessorRelocations(root) {
     if (oldExists) {
       throw new Error(`INF06 predecessor must be retired: ${row.from}`);
     }
+  }
+}
+
+export function assertInf07SuccessorRelocations(root) {
+  for (const row of INF07_SUCCESSOR_RELOCATIONS) {
+    const oldExists = existsSync(join(root, row.from));
+    const newExists = existsSync(join(root, row.to));
+    if (oldExists && newExists) {
+      throw new Error(
+        `INF07 successor violation (both paths present): ${row.from} and ${row.to}`,
+      );
+    }
+    if (!newExists) {
+      throw new Error(`INF07 successor destination missing: ${row.to}`);
+    }
+    if (oldExists) {
+      throw new Error(`INF07 predecessor must be retired: ${row.from}`);
+    }
+  }
+  const releaseBuild = 'infra/images/release/build-release-images.sh';
+  if (!existsSync(join(root, releaseBuild))) {
+    throw new Error(`INF07 successor destination missing: ${releaseBuild}`);
   }
 }
 
@@ -124,6 +187,10 @@ function gitTrackedMode(relativePath) {
     return null;
   }
   return out.split(/\s+/)[0];
+}
+
+function relocatedDestinationPresent(root, destination) {
+  return Boolean(gitTrackedMode(destination) || existsSync(join(root, destination)));
 }
 
 export function destinationRoot(destination) {
@@ -188,7 +255,9 @@ export function assertLabInventoryCoverage(rows, trackedLabPaths) {
   for (const path of mapped) {
     if (tracked.has(path)) continue;
     const row = labRows.find((entry) => entry.from === path);
-    if (row?.to && gitTrackedMode(row.to)) continue;
+    if (row?.to && relocatedDestinationPresent(repoRoot, effectiveMoveDestination(row.to))) {
+      continue;
+    }
     extra.push(path);
   }
   if (extra.length > 0) {
@@ -202,8 +271,15 @@ export function assertTrackedModes(rows) {
   for (const row of rows) {
     const trackedMode = gitTrackedMode(row.from);
     if (!trackedMode) {
-      const relocatedMode = gitTrackedMode(row.to);
-      assert.ok(relocatedMode, `expected relocated destination ${row.to}`);
+      const destination = effectiveMoveDestination(row.to);
+      const relocatedMode = gitTrackedMode(destination);
+      if (!relocatedMode) {
+        assert.ok(
+          existsSync(join(repoRoot, destination)),
+          `expected relocated destination ${destination}`,
+        );
+        continue;
+      }
       assert.equal(
         relocatedMode,
         row.mode,
@@ -315,6 +391,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
     requireInitialOldPaths: false,
   });
   assertInf06SuccessorRelocations(repoRoot);
+  assertInf07SuccessorRelocations(repoRoot);
   assertTrackedModes(map.rows);
 
   const byChange = Object.create(null);

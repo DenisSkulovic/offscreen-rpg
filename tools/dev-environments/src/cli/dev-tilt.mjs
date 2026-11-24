@@ -850,6 +850,7 @@ function sleep(ms) {
  *   collectLabReadiness?: typeof collectLabReadiness,
  *   exit?: (code: number) => never | void,
  *   exitAfterSession?: boolean,
+ *   fingerprintDevImageContext?: typeof fingerprintDevImageContext,
  * }} RunDevTiltLaunchDeps */
 
 /**
@@ -993,8 +994,9 @@ export async function runDevTiltLaunch(deps = {}) {
     process.once('SIGTERM', () => onSignal('SIGTERM'));
   }
 
+  const fingerprint = deps.fingerprintDevImageContext ?? fingerprintDevImageContext;
   const fingerprintStarted = performance.now();
-  const imageIdentity = fingerprintDevImageContext(worktree, { roleFilter: UNION_ROLE_FILTER });
+  const imageIdentity = fingerprint(worktree, { roleFilter: UNION_ROLE_FILTER });
   recordPhase('fingerprint', null, performance.now() - fingerprintStarted, { cache: imageIdentity.ok ? 'miss' : 'fail' });
   if (!imageIdentity.ok) {
     console.error(`image fingerprint failed: ${imageIdentity.reason}`);

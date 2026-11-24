@@ -11,12 +11,13 @@ import {
 } from '../src/adapters/dev-docker-context.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-const loadScript = join(repoRoot, 'infra/images/development/tilt/load-dev-image.sh');
+const loadScript = join(repoRoot, 'infra/dev/load-dev-image.sh');
 const libBuild = join(repoRoot, 'infra/images/release/lib-build.sh');
 
 test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned context not repo root', () => {
   const script = readFileSync(loadScript, 'utf8');
-  const build = script.slice(script.indexOf('docker build'));
+  const buildHelper = readFileSync(join(repoRoot, 'infra/images/development/build.sh'), 'utf8');
+  const build = buildHelper.slice(buildHelper.indexOf('docker build'));
   assert.doesNotMatch(build, /ignorefile/);
   const ignoreFile = join(repoRoot, 'infra/images/development/Dockerfile.dockerignore');
   assert.equal(existsSync(ignoreFile), true);
@@ -28,7 +29,9 @@ test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned con
   assert.match(slotLoader, /OFFSCREEN_IMAGE_REF_FILE/);
   assert.doesNotMatch(slotLoader, /kubectl/);
   assert.match(slotLoader, /post-load-mismatch/);
-  assert.match(slotLoader, /kind load docker-image "\$canonical"/);
+  assert.match(slotLoader, /distribution\/kind-image-loader\.mjs/);
+  const adapter = readFileSync(loadScript, 'utf8');
+  assert.match(adapter, /kind-image-loader\.mjs" release/);
   assert.doesNotMatch(slotLoader, /kind load docker-image "\$ref"/);
   assert.match(slotLoader, /ctr -n k8s.io images tag/);
   const release = readFileSync(libBuild, 'utf8');

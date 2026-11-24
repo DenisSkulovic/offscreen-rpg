@@ -1,9 +1,13 @@
 import { mkdtempSync, mkdirSync, writeFileSync, chmodSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
+import { execPath } from 'node:process';
 import { allocateDevWorktreeOwner } from '../src/domain/dev-worktree-allocator.mjs';
 import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure, resolveOauthReadiness, ensureOwnedSlotImages } from '../src/application/dev-slot-startup.mjs';
 
@@ -163,22 +167,51 @@ test('slot image script reports build, control-plane and worker failures', () =>
   const root = mkdtempSync(join(tmpdir(), 'img-load-'));
   const bin = join(root, 'bin');
   mkdirSync(bin);
-  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/images/development/load-dev-slot-image.sh';
+  const script = join(repoRoot, 'infra/images/development/load-dev-slot-image.sh');
+  const mark = join(root, 'fingerprint.mark');
   const run = (mode) => spawnSync('bash', [script, 'dev-3', 'authority', '@offscreen/game-authority'], {
+    cwd: repoRoot,
     encoding: 'utf8',
-    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, IMG_MODE: mode, OFFSCREEN_IMAGE_FINGERPRINT: 'test-fingerprint' },
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, OFFSCREEN_REAL_NODE: execPath, IMG_MODE: mode, OFFSCREEN_IMAGE_FINGERPRINT: 'test-fingerprint' },
   });
+  writeFileSync(join(bin, 'node'), `#!/bin/bash
+if [[ "\${1:-}" == *kind-image-loader.mjs ]]; then
+  if [[ "$IMG_MODE" == "control-fail" ]]; then echo "control load failed" >&2; exit 8; fi
+  if [[ "$IMG_MODE" == "worker-fail" ]]; then echo "worker load failed" >&2; exit 9; fi
+  ref="\$3"
+  echo "{\\"ref\\":\\"\$ref\\",\\"digest\\":\\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\",\\"loadedNodes\\":[\\"offscreen-dev-control-plane\\"],\\"reusedNodes\\":[]}"
+  exit 0
+fi
+exec "\${OFFSCREEN_REAL_NODE}" "$@"
+`);
   writeFileSync(join(bin, 'docker'), `#!/bin/bash
-if [[ "$1" == "image" ]]; then echo sha256:ok; exit 0; fi
-if [[ "$IMG_MODE" == "build-fail" ]]; then echo "build exploded password=hidden-secret" >&2; exit 7; fi
+if [[ "$1" == "image" && "$2" == "inspect" ]]; then
+  if [[ "$*" == *offscreen.fingerprint* ]]; then
+    if [[ "$IMG_MODE" == "build-fail" ]]; then exit 0; fi
+    if [[ -f "${mark}" ]]; then cat "${mark}"; else printf 'test-fingerprint'; fi
+    exit 0
+  fi
+  echo sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  exit 0
+fi
+if [[ "$1" == "build" ]]; then
+  if [[ "$IMG_MODE" == "build-fail" ]]; then echo "build exploded password=hidden-secret" >&2; exit 7; fi
+  printf 'test-fingerprint' > "${mark}"
+  exit 0
+fi
+if [[ "$1" == "tag" ]]; then exit 0; fi
+if [[ "$1" == "exec" && "$*" == *"images ls"* ]]; then
+  for r in \\
+    offscreen-dev-workspace:union-test-fingerpri \\
+    offscreen-dev-workspace:dev-3-authority; do
+    printf 'docker.io/library/%s application/vnd.oci.image.index.v1+json sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\n' "$r"
+  done
+  exit 0
+fi
 exit 0
 `);
-  writeFileSync(join(bin, 'kind'), `#!/bin/bash
-node=""; while [[ $# -gt 0 ]]; do [[ "$1" == "--nodes" ]] && node="$2"; shift; done
-if [[ "$IMG_MODE" == "control-fail" && "$node" == *control-plane ]]; then echo "control load failed" >&2; exit 8; fi
-if [[ "$IMG_MODE" == "worker-fail" && "$node" == *worker ]]; then echo "worker load failed" >&2; exit 9; fi
-exit 0
-`);
+  writeFileSync(join(bin, 'kind'), '#!/bin/bash\nexit 0\n');
+  chmodSync(join(bin, 'node'), 0o755);
   chmodSync(join(bin, 'docker'), 0o755);
   chmodSync(join(bin, 'kind'), 0o755);
   const ok = run('ok');
@@ -188,11 +221,8 @@ exit 0
   assert.match(build.detail, /exit=7/);
   assert.equal(build.detail.includes('hidden-secret'), false);
   const control = describeImageLoadFailure({ role: 'authority' }, run('control-fail'));
-  assert.match(control.detail, /phase=kind-load/);
-  assert.match(control.detail, /node=offscreen-dev-control-plane/);
   assert.match(control.detail, /exit=8/);
   const worker = describeImageLoadFailure({ role: 'authority' }, run('worker-fail'));
-  assert.match(worker.detail, /node=offscreen-dev-worker/);
   assert.match(worker.detail, /exit=9/);
 });
 
@@ -202,25 +232,52 @@ test('concurrent slot loads of one fingerprint build once', async () => {
   mkdirSync(bin);
   const mark = join(root, 'marked');
   const counter = join(root, 'builds');
+  writeFileSync(join(bin, 'node'), `#!/bin/bash
+if [[ "\${1:-}" == *kind-image-loader.mjs ]]; then
+  ref="\$3"
+  echo "{\\"ref\\":\\"\$ref\\",\\"digest\\":\\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\",\\"loadedNodes\\":[],\\"reusedNodes\\":[]}"
+  exit 0
+fi
+exec "\${OFFSCREEN_REAL_NODE}" "$@"
+`);
   writeFileSync(join(bin, 'docker'), `#!/bin/bash
-if [[ "$1" == "image" ]]; then
-  [[ -f "${mark}" ]] && cat "${mark}"
+if [[ "$1" == "image" && "$2" == "inspect" ]]; then
+  if [[ "$*" == *offscreen.fingerprint* ]]; then
+    if [[ -f "${mark}" ]]; then cat "${mark}"; fi
+    exit 0
+  fi
+  echo sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   exit 0
 fi
 if [[ "$1" == "build" ]]; then
   echo 1 >> "${counter}"
   sleep 0.4
   printf '%s' "$OFFSCREEN_IMAGE_FINGERPRINT" > "${mark}"
+  exit 0
+fi
+if [[ "$1" == "tag" ]]; then exit 0; fi
+if [[ "$1" == "exec" && "$*" == *"images ls"* ]]; then
+  for r in \\
+    offscreen-dev-workspace:union-same-fp \\
+    offscreen-dev-workspace:dev-3-web \\
+    offscreen-dev-workspace:dev-3-api \\
+    offscreen-dev-workspace:dev-3-authority \\
+    offscreen-dev-workspace:dev-3-worker \\
+    offscreen-dev-workspace:dev-4-web; do
+    printf 'docker.io/library/%s application/vnd.oci.image.index.v1+json sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\n' "$r"
+  done
+  exit 0
 fi
 exit 0
 `);
   writeFileSync(join(bin, 'kind'), '#!/bin/bash\nexit 0\n');
+  chmodSync(join(bin, 'node'), 0o755);
   chmodSync(join(bin, 'docker'), 0o755);
   chmodSync(join(bin, 'kind'), 0o755);
-  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/images/development/load-dev-slot-image.sh';
-  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, OFFSCREEN_IMAGE_FINGERPRINT: 'same-fp', TMPDIR: root };
+  const script = join(repoRoot, 'infra/images/development/load-dev-slot-image.sh');
+  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, OFFSCREEN_REAL_NODE: execPath, OFFSCREEN_IMAGE_FINGERPRINT: 'same-fp', TMPDIR: root };
   const run = (slot, role) => new Promise((resolve) => {
-    const child = spawn('bash', [script, slot, role], { env });
+    const child = spawn('bash', [script, slot, role], { env, cwd: repoRoot });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (chunk) => { stdout += chunk; });

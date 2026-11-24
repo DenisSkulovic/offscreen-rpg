@@ -13,6 +13,7 @@ export const UNION_ROLE_FILTER = '@offscreen/web^... @offscreen/api^... @offscre
 export const SLOT_ALIAS_ROLES = Object.freeze(['web', 'api', 'authority', 'worker']);
 export const DEV_DOCKERFILE = 'infra/images/development/Dockerfile';
 export const DEV_DOCKERIGNORE = 'infra/images/development/Dockerfile.dockerignore';
+export const TOOLCHAIN_PIN = 'infra/images/common/toolchain.pin';
 const REQUIRED_NODES = ['control-plane', 'worker'];
 
 /**
@@ -68,11 +69,35 @@ function sha256(bytes) {
 }
 
 /**
- * @param {string} dockerfile
+ * @param {string} text full toolchain.pin bytes
+ * @returns {{ ok: true, pinBytes: string, resolvedImage: string, pnpmVersion: string } | { ok: false, reason: string }}
  */
-export function readPinnedBaseImage(dockerfile) {
-  const from = dockerfile.match(/^FROM\s+(\S+)/m);
-  return from?.[1] ?? null;
+export function parseToolchainPin(text) {
+  if (typeof text !== 'string' || text.trim().length === 0) {
+    return { ok: false, reason: 'malformed-toolchain-pin' };
+  }
+  /** @type {Record<string, string>} */
+  const values = {};
+  for (const line of text.split('\n')) {
+    const trimmed = line.replace(/\r$/, '').trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const index = trimmed.indexOf('=');
+    if (index <= 0) return { ok: false, reason: 'malformed-toolchain-pin' };
+    values[trimmed.slice(0, index)] = trimmed.slice(index + 1);
+  }
+  const { NODE_IMAGE, NODE_DIGEST, PNPM_VERSION } = values;
+  if (!NODE_IMAGE || !NODE_DIGEST || !PNPM_VERSION) {
+    return { ok: false, reason: 'malformed-toolchain-pin' };
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(NODE_DIGEST)) {
+    return { ok: false, reason: 'malformed-toolchain-pin' };
+  }
+  return {
+    ok: true,
+    pinBytes: text,
+    resolvedImage: `${NODE_IMAGE}@${NODE_DIGEST}`,
+    pnpmVersion: PNPM_VERSION,
+  };
 }
 
 /**
@@ -85,16 +110,17 @@ export function fingerprintDevImageContext(root, input) {
   const readText = input.readText ?? ((path) => readFileSync(path, 'utf8'));
   let dockerfile;
   let ignoreText;
+  let toolchainText;
   try {
     dockerfile = readText(join(root, DEV_DOCKERFILE));
     ignoreText = readText(join(root, DEV_DOCKERIGNORE));
+    toolchainText = readText(join(root, TOOLCHAIN_PIN));
   } catch {
     return { ok: false, reason: 'unreadable-recipe' };
   }
-  const baseImage = readPinnedBaseImage(dockerfile);
-  if (!baseImage || !baseImage.includes('@sha256:')) {
-    return { ok: false, reason: 'unpinned-base-image' };
-  }
+  const toolchain = parseToolchainPin(toolchainText);
+  if (!toolchain.ok) return toolchain;
+  const baseImage = toolchain.resolvedImage;
   const rules = parseDockerignore(ignoreText);
   let files;
   try {
@@ -107,6 +133,7 @@ export function fingerprintDevImageContext(root, input) {
   const hash = createHash('sha256');
   hash.update(`dockerfile ${sha256(dockerfile)}\n`);
   hash.update(`dockerignore ${sha256(ignoreText)}\n`);
+  hash.update(`toolchain ${sha256(toolchain.pinBytes)}\n`);
   hash.update(`base ${baseImage}\n`);
   hash.update(`turbo-filter ${input.roleFilter}\n`);
   const ordered = [...files].sort((left, right) => left.path.localeCompare(right.path));

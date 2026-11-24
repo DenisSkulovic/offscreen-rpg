@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**INF07:** [Image architecture normalization](open/2026-11-24--inf07-image-architecture-normalization/CHANGE.md) commissioned source-only after INF06; no global queue change.
+**INF07:** [Image architecture normalization](archive/2026-11/platform-operations/2026-11-24--inf07-image-architecture-normalization/CHANGE.md) is Done source-only after INF06. Live Docker/Kind/Tilt NOT-RUN. No global queue change.
 
 ## Database platform redesign
 

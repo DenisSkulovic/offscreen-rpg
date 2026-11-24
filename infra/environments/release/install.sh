@@ -14,6 +14,7 @@ fi
 RELEASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OVERLAY_DIR="$(cd "${RELEASE_DIR}/../../workloads/release" && pwd)"
 APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../images/release" && pwd)"
+KIND_IMAGE_LOADER="$(cd "${RELEASE_DIR}/../../images/distribution" && pwd)/kind-image-loader.mjs"
 CONTEXT_NAME="kind-offscreen-lab"
 CLUSTER_NAME="offscreen-lab"
 KUBECTL=(kubectl --context "$CONTEXT_NAME")
@@ -95,18 +96,8 @@ load_image_if_changed() {
   if ! image_selected "$name"; then
     return 0
   fi
-  local local_id node_id
-  local_id="$(docker image inspect --format '{{.Id}}' "$image")"
-  # awk exits at the first match and closes the pipe. Under pipefail that SIGPIPE (141)
-  # aborts install before any image load. Other docker/ctr failures still abort.
-  node_id="$(docker exec "${CLUSTER_NAME}-control-plane" ctr -n k8s.io images ls 2>/dev/null \
-    | awk -v name="docker.io/library/${image}" '$1 == name { print $3; exit }')" || [[ $? -eq 141 ]]
-  if node "$APP_RELEASE_IMAGE_DIR/kind-image-match.mjs" "$local_id" ${node_id:-}; then
-    echo "SKIP unchanged ${image}"
-    return 0
-  fi
-  if ! kind load docker-image "$image" --name "$CLUSTER_NAME"; then
-    echo "Refusing install: could not load ${image} into ${CLUSTER_NAME}." >&2
+  if ! node "$KIND_IMAGE_LOADER" release "$image"; then
+    echo "Refusing install: could not verify/load ${image} into ${CLUSTER_NAME}." >&2
     exit 1
   fi
 }

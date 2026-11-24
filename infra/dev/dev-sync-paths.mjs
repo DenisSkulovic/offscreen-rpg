@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// Maps a changed repo path to dev Tilt workloads using the release image selector.
-// Do not maintain a second package graph.
+// Maps a changed repo path to dev Tilt workloads using the shared workspace graph.
+// Direct/unsafe classification is owned here; closure traversal is shared with release.
 import { readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   RUNTIME_IMAGES,
   isNonRuntimePath,
-  selectImagesFromPaths,
-  workspaceGraph,
-} from '../images/release/select-affected-images.mjs';
+  workspaceGraph as closureGraph,
+} from '../images/common/workspace-graph.mjs';
+import { selectImagesFromPaths } from '../images/release/select-affected-images.mjs';
 
 export const IMAGE_TO_DEV_WORKLOADS = Object.freeze({
   web: ['game-web'],
@@ -23,12 +23,15 @@ const ROOT_REBUILD_FILES = new Set([
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
   'turbo.json',
-  'infra/images/release/docker.npmrc',
+  'infra/images/common/docker.npmrc',
+  'infra/images/common/toolchain.pin',
+  'infra/images/common/workspace-graph.mjs',
   'infra/images/release/images.pin',
   'infra/images/release/prepare-runtime-tree.sh',
   'infra/images/release/production-workspace-closure.mjs',
   'infra/images/release/release-process-env-shim.mjs',
   'infra/images/release/lib-build.sh',
+  'infra/images/release/build-release-images.sh',
   'infra/images/development/tilt/build-release-images.sh',
   'infra/images/development/Dockerfile.dockerignore',
 ]);
@@ -47,6 +50,20 @@ const RELEASE_BUILD_INPUTS = new Set([
  */
 export function normalizeChangedPath(filePath) {
   return filePath.replaceAll('\\', '/').replace(/^\.\//, '');
+}
+
+/**
+ * @param {string} root
+ */
+function buildWorkspaceGraph(root) {
+  return closureGraph(root, 'build');
+}
+
+/**
+ * @param {string} root
+ */
+function runtimeWorkspaceGraph(root) {
+  return closureGraph(root, 'runtime');
 }
 
 /**
@@ -92,9 +109,16 @@ export function imagesToDevWorkloads(images) {
  */
 export function resolveDevSync(changedPath, root) {
   const file = normalizeChangedPath(changedPath);
-  const graph = workspaceGraph(root);
+  const buildGraph = buildWorkspaceGraph(root);
   if (isUnsafeDevSyncPath(file)) {
-    const images = selectImagesFromPaths([file], graph);
+    const images =
+      ROOT_REBUILD_FILES.has(file) ||
+      file === 'package.json' ||
+      file === 'pnpm-workspace.yaml' ||
+      file === 'pnpm-lock.yaml' ||
+      file === 'turbo.json'
+        ? [...RUNTIME_IMAGES]
+        : selectImagesFromPaths([file], buildGraph);
     return {
       mode: 'warm',
       images,
@@ -104,7 +128,7 @@ export function resolveDevSync(changedPath, root) {
   if (file.length === 0 || isNonRuntimePath(file)) {
     return { mode: 'none', images: [], workloads: [] };
   }
-  const images = selectImagesFromPaths([file], graph);
+  const images = selectImagesFromPaths([file], buildGraph);
   if (images.length === 0) {
     return { mode: 'none', images: [], workloads: [] };
   }
@@ -121,7 +145,7 @@ export function resolveDevSync(changedPath, root) {
  * @returns {string[]}
  */
 export function syncSubpathsForImage(image, root) {
-  const graph = workspaceGraph(root);
+  const graph = runtimeWorkspaceGraph(root);
   const dirs = graph[image] ?? [];
   return dirs.map((dir) => `/${dir}`).sort((left, right) => left.localeCompare(right));
 }
@@ -163,9 +187,12 @@ export function unsafeWarmWatchPaths(root) {
     'turbo.json',
     'infra/images/development/Dockerfile',
     'infra/images/development/Dockerfile.dockerignore',
+    'infra/images/release/build-release-images.sh',
     'infra/images/development/tilt/build-release-images.sh',
     'tools/db-migrations/drizzle.config.ts',
-    'infra/images/release/docker.npmrc',
+    'infra/images/common/docker.npmrc',
+    'infra/images/common/toolchain.pin',
+    'infra/images/common/workspace-graph.mjs',
     'infra/images/release/images.pin',
     'infra/images/release/prepare-runtime-tree.sh',
     'infra/images/release/lib-build.sh',
@@ -173,9 +200,8 @@ export function unsafeWarmWatchPaths(root) {
     'infra/images/release/build.sh',
     'infra/images/release/build-worker.sh',
   ]);
-  for (const name of RUNTIME_IMAGES) {
-    paths.add(`infra/images/release/Dockerfile.${name}`);
-  }
+  paths.add('infra/images/release/Dockerfile.services');
+  paths.add('infra/images/release/Dockerfile.web');
   for (const manifest of workspacePackageManifestPaths(root)) {
     paths.add(manifest);
   }
@@ -215,7 +241,7 @@ export function tiltDevSyncConfig(root) {
     unsafe_watch_paths: unsafeWarmWatchPaths(root),
     sync_dirs_by_image: syncDirsByImage(root),
     warm_release_cmd:
-      'OFFSCREEN_AFFECTED_BASE=HEAD bash infra/images/development/tilt/build-release-images.sh',
+      'OFFSCREEN_AFFECTED_BASE=HEAD bash infra/images/release/build-release-images.sh',
   };
 }
 

@@ -18,8 +18,7 @@ export const INSTALL_SCRIPT = 'install.sh';
 export const BUILD_RELEASE_IMAGES_SCRIPT = join(
   'infra',
   'images',
-  'development',
-  'tilt',
+  'release',
   'build-release-images.sh',
 );
 

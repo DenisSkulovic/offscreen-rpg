@@ -6,81 +6,86 @@ allow_k8s_contexts('kind-offscreen-lab')
 
 # Image builds call the release scripts and can exceed the 5 minute CI default.
 ci_settings(timeout='45m', readiness_timeout='45m')
+update_settings(max_parallel_updates=1)
+
+REPO_ROOT = config.main_dir
 
 WEB_IMAGE = 'offscreen-lab-game-web:turn02'
 API_IMAGE = 'offscreen-lab-app-release-api:turn02'
 GA_IMAGE = 'offscreen-lab-app-release-ga:turn02'
 WORKER_IMAGE = 'offscreen-lab-app-release-worker:turn02'
 
-# Full image rebuild only: no live_update and no docker_build of the raw repo.
-# Dockerfile.web needs the prune output from build-web.sh. API, Game Authority,
-# and worker images need the staged context from build.sh and build-worker.sh.
+RELEASE_BUILD_DEPS = [
+    REPO_ROOT + '/apps',
+    REPO_ROOT + '/packages',
+    REPO_ROOT + '/tools',
+    REPO_ROOT + '/package.json',
+    REPO_ROOT + '/pnpm-lock.yaml',
+    REPO_ROOT + '/pnpm-workspace.yaml',
+    REPO_ROOT + '/turbo.json',
+    REPO_ROOT + '/infra/images/common',
+    REPO_ROOT + '/infra/images/release',
+    REPO_ROOT + '/infra/images/release/build-release-images.sh',
+    REPO_ROOT + '/infra/images/distribution/kind-image-loader.mjs',
+]
+
+RELEASE_BUILD_IGNORE = [
+    '**/node_modules',
+    '**/dist',
+    '**/.next',
+    'out',
+]
+
+# Operator convenience: build every release image in one command.
 local_resource(
     'app-release-images',
-    cmd='cd ../../.. && bash infra/images/development/tilt/build-release-images.sh',
-    deps=[
-        '../../../apps',
-        '../../../packages',
-        '../../../tools',
-        '../../../package.json',
-        '../../../pnpm-lock.yaml',
-        '../../../pnpm-workspace.yaml',
-        '../../../turbo.json',
-        '../../images/release',
-        '../../images/development/tilt/build-release-images.sh',
-    ],
-    ignore=[
-        '**/node_modules',
-        '**/dist',
-        '**/.next',
-        'out',
-    ],
+    cmd='cd ' + REPO_ROOT + ' && bash infra/images/release/build-release-images.sh',
+    deps=RELEASE_BUILD_DEPS,
+    ignore=RELEASE_BUILD_IGNORE,
 )
 
-def load_built_image(ref):
-    # Tilt looks up $EXPECTED_REF, not the stable tag the release scripts produce.
+def release_image_build(ref, image_key, stable_ref):
     custom_build(
         ref,
-        'docker tag ' + ref + ' "$EXPECTED_REF"',
-        deps=['../../images/development/tilt/build-release-images.sh'],
+        'cd ' + REPO_ROOT + ' && env -u OFFSCREEN_AFFECTED_BASE OFFSCREEN_RELEASE_IMAGES=' + image_key + ' bash infra/images/release/build-release-images.sh && docker tag ' + stable_ref + ' "$EXPECTED_REF" && node infra/images/distribution/kind-image-loader.mjs release "$EXPECTED_REF"',
+        deps=RELEASE_BUILD_DEPS,
+        ignore=RELEASE_BUILD_IGNORE,
+        skips_local_docker=True,
     )
 
-load_built_image(WEB_IMAGE)
-load_built_image(API_IMAGE)
-load_built_image(GA_IMAGE)
-load_built_image(WORKER_IMAGE)
+release_image_build(WEB_IMAGE, 'web', WEB_IMAGE)
+release_image_build(API_IMAGE, 'api', API_IMAGE)
+release_image_build(GA_IMAGE, 'game-authority', GA_IMAGE)
+release_image_build(WORKER_IMAGE, 'worker', WORKER_IMAGE)
 
-k8s_yaml('../../workloads/release/authority.yaml')
-k8s_yaml('../../workloads/release/workers.yaml')
-k8s_yaml('../../workloads/release/edge.yaml')
+k8s_yaml(REPO_ROOT + '/infra/workloads/release/authority.yaml')
+k8s_yaml(REPO_ROOT + '/infra/workloads/release/workers.yaml')
+k8s_yaml(REPO_ROOT + '/infra/workloads/release/edge.yaml')
 
-k8s_resource(
-    'game-authority',
-    resource_deps=['app-release-images'],
-)
+k8s_resource('game-authority')
 
 k8s_resource(
     'game-api',
-    resource_deps=['app-release-images', 'game-authority'],
+    resource_deps=['game-authority'],
 )
 
 k8s_resource(
     'game-web',
-    resource_deps=['app-release-images', 'game-api'],
+    resource_deps=['game-api'],
     port_forwards=['127.0.0.1:3000:3000'],
 )
 
 k8s_resource(
     'game-control',
-    resource_deps=['app-release-images', 'game-authority'],
+    resource_deps=['game-authority'],
 )
 
 k8s_resource(
     'game-executor',
-    resource_deps=['app-release-images', 'game-authority'],
+    resource_deps=['game-authority'],
 )
 
 k8s_resource(
     'game-relay',
-    resource_deps=['app-release-images', 'game-authority'],
+    resource_deps=['game-authority'],
 )

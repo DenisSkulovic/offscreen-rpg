@@ -18,13 +18,13 @@ export function assertDevWebLiveUpdateContract(tiltfile) {
   assert.match(tiltfile, /outputs_image_ref_to=ref_file/);
   assert.doesNotMatch(tiltfile, /kubectl\s+(patch|apply|delete)/);
   assert.match(tiltfile, /skips_local_docker\s*=\s*True/);
-  assert.match(tiltfile, /steps = dev_live_update\(image_key, watched\)/);
+  assert.match(tiltfile, /steps = dev_live_update\(image_key, sync_watched\)/);
   assert.match(
     tiltfile,
     /dev_workspace_docker_build\(DEV_WORKSPACE_IMAGE,\s*'web'\)/,
     'expected game-web build to use production-closure sync dirs',
   );
-  assert.match(tiltfile, /deps=watched/);
+  assert.match(tiltfile, /deps=rebuild_deps/);
   assert.doesNotMatch(
     tiltfile,
     /only=\[[\s\S]*?'apps'/,

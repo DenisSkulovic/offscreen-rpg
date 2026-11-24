@@ -38,7 +38,7 @@ test('interface packages or lockfile changes are never docs-only and force integ
     'packages/story-interface/src/stories.ts',
     'pnpm-lock.yaml',
     'Tiltfile',
-    'infra/images/release/Dockerfile.api',
+    'infra/images/release/Dockerfile.services',
     'infra/dev/stack.yaml',
     'infra/environments/release/namespaces.yaml',
     'apps/api/src/main.ts',

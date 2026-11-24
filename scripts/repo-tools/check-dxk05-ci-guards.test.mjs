@@ -5,9 +5,13 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
+  assertArtifactPin,
   assertImagePin,
   assertLabContext,
   assertNoStaleComposeCommand,
+  assertRecipeUsesToolchainArgs,
+  assertServicesTargets,
+  assertToolchainPin,
   checkDxk05CiGuards,
 } from './check-dxk05-ci-guards.mjs';
 
@@ -20,7 +24,7 @@ const scriptPath = join(repoRoot, 'scripts/repo-tools/check-dxk05-ci-guards.mjs'
 test('current repo passes DXK05 CI guards', () => {
   const result = checkDxk05CiGuards(repoRoot);
   assert.ok(result.composeScanCount >= 1);
-  assert.ok(result.dockerfileCount === 4);
+  assert.equal(result.dockerfileCount, 3);
 
   const spawned = spawnSync(process.execPath, [scriptPath], {
     cwd: repoRoot,
@@ -37,10 +41,20 @@ test('assertNoStaleComposeCommand rejects docker compose text', () => {
   );
 });
 
-test('assertImagePin rejects pin missing NODE_DIGEST', () => {
+test('assertToolchainPin rejects pin missing NODE_DIGEST', () => {
   assert.throws(
-    () => assertImagePin('NODE_IMAGE=docker.io/library/node:24\n'),
+    () => assertToolchainPin('NODE_IMAGE=docker.io/library/node:24\n'),
     /NODE_DIGEST/,
+  );
+});
+
+test('assertArtifactPin rejects toolchain fields in release images.pin', () => {
+  assert.throws(
+  () =>
+    assertArtifactPin(
+      'NODE_DIGEST=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nWEB_IMAGE=tag\n',
+    ),
+    /must not contain NODE_DIGEST/,
   );
 });
 
@@ -48,14 +62,24 @@ test('assertLabContext rejects non-lab context', () => {
   assert.throws(() => assertLabContext('minikube'), /kind-offscreen-lab/);
 });
 
-test('assertImagePin accepts real pin and dockerfiles from repo', () => {
+test('assertRecipeUsesToolchainArgs rejects literal node FROM lines', () => {
+  const literal = `FROM docker.io/library/node:24@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base`;
+  assert.throws(
+    () => assertRecipeUsesToolchainArgs(literal, 'fixture'),
+    /literal node FROM/i,
+  );
+});
+
+test('assertImagePin accepts toolchain pin and current release recipes', () => {
+  const commonDir = join(repoRoot, 'infra/images/common');
   const releaseDir = join(repoRoot, 'infra/images/release');
-  const pinText = readFileSync(join(releaseDir, 'images.pin'), 'utf8');
+  const pinText = readFileSync(join(commonDir, 'toolchain.pin'), 'utf8');
   const dockerTexts = [
-    'Dockerfile.api',
-    'Dockerfile.web',
-    'Dockerfile.worker',
-    'Dockerfile.game-authority',
-  ].map((name) => readFileSync(join(releaseDir, name), 'utf8'));
+    readFileSync(join(releaseDir, 'Dockerfile.services'), 'utf8'),
+    readFileSync(join(releaseDir, 'Dockerfile.web'), 'utf8'),
+    readFileSync(join(repoRoot, 'infra/images/development/Dockerfile'), 'utf8'),
+  ];
   assert.doesNotThrow(() => assertImagePin(pinText, dockerTexts));
+  assert.doesNotThrow(() => assertServicesTargets(dockerTexts[0]));
+  assert.throws(() => assertArtifactPin(pinText), /must not contain NODE_DIGEST/);
 });

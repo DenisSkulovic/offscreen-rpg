@@ -2,14 +2,18 @@
 # Build context: repository root (pnpm monorepo). Dev-only: not used for release acceptance.
 # Installs workspace dependencies once; source edits sync via Tilt live_update.
 
-FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS base
+ARG NODE_IMAGE
+ARG PNPM_VERSION
+
+FROM ${NODE_IMAGE} AS base
+ARG PNPM_VERSION
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 FROM base AS deps
 WORKDIR /app
-COPY infra/images/release/docker.npmrc .npmrc
+COPY infra/images/common/docker.npmrc .npmrc
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps ./apps
 COPY packages ./packages

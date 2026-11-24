@@ -3,22 +3,18 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { shouldSkipKindLoad } from '../kind-image-match.mjs';
+import { allNodesMatchDigest } from '../kind-image-match.mjs';
 import {
   isNonRuntimePath,
+  requiresFullImageRebuild,
   selectImagesFromPaths,
+  workspaceGraph,
 } from '../select-affected-images.mjs';
-import { productionWorkspaceClosure } from '../production-workspace-closure.mjs';
 
 const appReleaseDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = join(appReleaseDir, '../../..');
 
-const graph = {
-  web: productionWorkspaceClosure(repoRoot, 'apps/web'),
-  api: productionWorkspaceClosure(repoRoot, 'apps/api'),
-  'game-authority': productionWorkspaceClosure(repoRoot, 'apps/game-authority'),
-  worker: productionWorkspaceClosure(repoRoot, 'apps/worker'),
-};
+const graph = workspaceGraph(repoRoot);
 
 test('docs and tests select no runtime image', () => {
   assert.equal(isNonRuntimePath('docs/runbooks/local-development.md'), true);
@@ -44,6 +40,26 @@ test('story-engine source selects its production dependents', () => {
   assert.equal(selected.includes('web'), false);
 });
 
+test('build-only workspace dependency change selects owning image', () => {
+  const buildOnlyGraph = {
+    web: ['apps/web'],
+    api: ['apps/api', 'packages/build-only-tool'],
+    'game-authority': ['apps/game-authority'],
+    worker: ['apps/worker'],
+  };
+  assert.deepEqual(
+    selectImagesFromPaths(['packages/build-only-tool/tsconfig.json'], buildOnlyGraph),
+    ['api'],
+  );
+  assert.deepEqual(
+    selectImagesFromPaths(['packages/build-only-tool/tsconfig.json'], {
+      ...buildOnlyGraph,
+      api: ['apps/api'],
+    }),
+    [],
+  );
+});
+
 test('worker source selects only the worker image', () => {
   assert.deepEqual(
     selectImagesFromPaths(['apps/worker/src/bootstrap/main.ts'], graph),
@@ -58,6 +74,15 @@ test('web source selects only web', () => {
   );
 });
 
+test('workspace manifest edits require rebuilding every image', () => {
+  assert.equal(requiresFullImageRebuild(['packages/story-engine/package.json']), true);
+  assert.equal(requiresFullImageRebuild(['pnpm-workspace.yaml']), true);
+  assert.equal(
+    requiresFullImageRebuild(['packages/story-engine/src/index.ts']),
+    false,
+  );
+});
+
 test('lockfile selects every runtime image', () => {
   assert.deepEqual(selectImagesFromPaths(['pnpm-lock.yaml'], graph), [
     'web',
@@ -67,32 +92,29 @@ test('lockfile selects every runtime image', () => {
   ]);
 });
 
-test('kind load is skipped only when the node already has the same image id', () => {
-  assert.equal(shouldSkipKindLoad('sha256:abc', ['sha256:abc']), true);
-  assert.equal(shouldSkipKindLoad('sha256:abc', ['sha256:def']), false);
-  assert.equal(shouldSkipKindLoad('sha256:abc', []), false);
-  assert.equal(shouldSkipKindLoad('', ['sha256:abc']), false);
+test('kind load is required unless every node already has the same image id', () => {
+  const digest = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  assert.equal(allNodesMatchDigest(digest, [digest, digest]), true);
+  assert.equal(allNodesMatchDigest(digest, [digest, 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']), false);
+  assert.equal(allNodesMatchDigest(digest, []), false);
+  assert.equal(allNodesMatchDigest('', [digest]), false);
 });
 
-test('node release Dockerfiles install from the lockfile before copying source', () => {
-  for (const name of [
-    'Dockerfile.api',
-    'Dockerfile.game-authority',
-    'Dockerfile.worker',
-  ]) {
-    const text = readFileSync(join(appReleaseDir, name), 'utf8');
-    const fetchAt = text.indexOf('pnpm fetch --frozen-lockfile');
-    const installAt = text.indexOf('pnpm install --frozen-lockfile --offline');
-    const sourceAt = text.indexOf('COPY full/');
-    assert.ok(fetchAt > 0 && installAt > fetchAt && sourceAt > installAt);
-    assert.doesNotMatch(text, /COPY apps apps/);
-    assert.match(text, /type=cache,id=offscreen-pnpm-store/);
-  }
+test('release service Dockerfile installs from the lockfile before copying source', () => {
+  const text = readFileSync(join(appReleaseDir, 'Dockerfile.services'), 'utf8');
+  const fetchAt = text.indexOf('pnpm fetch --frozen-lockfile');
+  const installAt = text.indexOf('pnpm install --frozen-lockfile --offline');
+  const sourceAt = text.indexOf('COPY full/');
+  assert.ok(fetchAt > 0 && installAt > fetchAt && sourceAt > installAt);
+  assert.doesNotMatch(text, /COPY apps apps/);
+  assert.match(text, /type=cache,id=offscreen-pnpm-store/);
+  assert.match(text, /FROM runtime-base AS api/);
+  assert.match(text, /FROM runtime-base AS worker/);
 });
 
 test('warm build helper bounds concurrency and still has a clean all-image path', () => {
   const text = readFileSync(
-    join(repoRoot, 'infra/images/development/tilt/build-release-images.sh'),
+    join(repoRoot, 'infra/images/release/build-release-images.sh'),
     'utf8',
   );
   assert.match(text, /OFFSCREEN_IMAGE_BUILD_CONCURRENCY:-3/);
@@ -102,6 +124,15 @@ test('warm build helper bounds concurrency and still has a clean all-image path'
     join(repoRoot, 'infra/environments/release/install.sh'),
     'utf8',
   );
-  assert.match(install, /SKIP unchanged/);
+  assert.match(install, /node "\$KIND_IMAGE_LOADER" release/);
+  assert.doesNotMatch(install, /SKIP unchanged/);
   assert.match(install, /OFFSCREEN_RELEASE_IMAGES:-web,api,game-authority,worker/);
+  const releaseTilt = readFileSync(
+    join(repoRoot, 'infra/environments/release/Tiltfile'),
+    'utf8',
+  );
+  assert.match(releaseTilt, /max_parallel_updates=1/);
+  assert.match(releaseTilt, /kind-image-loader\.mjs release "\$EXPECTED_REF"/);
+  assert.match(releaseTilt, /skips_local_docker=True/);
+  assert.doesNotMatch(releaseTilt, /resource_deps=\['app-release-images'\]/);
 });

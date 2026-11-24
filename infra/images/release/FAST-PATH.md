@@ -7,7 +7,7 @@ Clean acceptance and warm iteration use the same Dockerfiles. The clean path reb
 From the repository root, with no extra environment variables:
 
 ```sh
-bash infra/images/development/tilt/build-release-images.sh
+bash infra/images/release/build-release-images.sh
 bash infra/environments/release/install.sh
 ```
 
@@ -19,7 +19,7 @@ That builds web, API, Game Authority, and worker (at most 3 at once), loads each
 
 ```sh
 export OFFSCREEN_AFFECTED_BASE=HEAD
-bash infra/images/development/tilt/build-release-images.sh
+bash infra/images/release/build-release-images.sh
 export OFFSCREEN_RELEASE_IMAGES="$(node infra/images/release/select-affected-images.mjs --base HEAD)"
 bash infra/environments/release/install.sh
 ```
@@ -27,7 +27,7 @@ bash infra/environments/release/install.sh
 Or name images directly:
 
 ```sh
-OFFSCREEN_RELEASE_IMAGES=worker bash infra/images/development/tilt/build-release-images.sh
+OFFSCREEN_RELEASE_IMAGES=worker bash infra/images/release/build-release-images.sh
 OFFSCREEN_RELEASE_IMAGES=worker bash infra/environments/release/install.sh
 ```
 

@@ -5,14 +5,14 @@
  * Usage:
  *   node scripts/repo-tools/check-dxk05-ci-guards.mjs
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const STALE_COMPOSE = /docker(?:\s+|-)compose\b/;
 const NODE_DIGEST_LINE =
   /^NODE_DIGEST=sha256:[a-f0-9]{64}$/m;
-const NODE_FROM =
+const LITERAL_NODE_FROM =
   /^FROM\s+docker\.io\/library\/node\b/im;
 
 const repoRoot = path.join(
@@ -34,38 +34,83 @@ export function assertNoStaleComposeCommand(label, text) {
 
 /**
  * @param {string} pinText
- * @param {string[]} [dockerfileTexts]
  */
-export function assertImagePin(pinText, dockerfileTexts = []) {
+export function assertToolchainPin(pinText) {
   if (!NODE_DIGEST_LINE.test(pinText)) {
     throw new Error(
-      'images.pin must contain NODE_DIGEST=sha256:<64 lowercase hex>',
+      'toolchain.pin must contain NODE_DIGEST=sha256:<64 lowercase hex>',
     );
   }
   const digestMatch = pinText.match(/^NODE_DIGEST=(sha256:[a-f0-9]{64})$/m);
-  const expectedDigest = digestMatch?.[1];
-  if (!expectedDigest) {
+  if (!digestMatch) {
     throw new Error(
-      'images.pin must contain NODE_DIGEST=sha256:<64 lowercase hex>',
+      'toolchain.pin must contain NODE_DIGEST=sha256:<64 lowercase hex>',
     );
   }
+  if (!/^NODE_IMAGE=/m.test(pinText)) {
+    throw new Error('toolchain.pin must contain NODE_IMAGE=');
+  }
+  if (!/^PNPM_VERSION=/m.test(pinText)) {
+    throw new Error('toolchain.pin must contain PNPM_VERSION=');
+  }
+}
 
+/**
+ * @param {string} dockerText
+ * @param {string} label
+ */
+export function assertRecipeUsesToolchainArgs(dockerText, label) {
+  if (LITERAL_NODE_FROM.test(dockerText)) {
+    throw new Error(
+      `${label}: literal node FROM line must not appear (use ARG NODE_IMAGE)`,
+    );
+  }
+  if (!/^ARG NODE_IMAGE$/m.test(dockerText)) {
+    throw new Error(`${label}: missing ARG NODE_IMAGE`);
+  }
+  if (!/^ARG PNPM_VERSION$/m.test(dockerText)) {
+    throw new Error(`${label}: missing ARG PNPM_VERSION`);
+  }
+  if (!/^FROM \$\{NODE_IMAGE\}/m.test(dockerText)) {
+    throw new Error(`${label}: missing FROM \${NODE_IMAGE}`);
+  }
+  if (!/corepack prepare pnpm@\$\{PNPM_VERSION\}/.test(dockerText)) {
+    throw new Error(`${label}: missing pnpm@\${PNPM_VERSION} corepack prepare`);
+  }
+}
+
+/**
+ * @param {string} pinText toolchain.pin bytes
+ * @param {string[]} [dockerfileTexts]
+ */
+export function assertImagePin(pinText, dockerfileTexts = []) {
+  assertToolchainPin(pinText);
   for (const [index, dockerText] of dockerfileTexts.entries()) {
-    const lines = dockerText.split(/\r?\n/);
-    for (const line of lines) {
-      if (!NODE_FROM.test(line)) continue;
-      const digestInFrom = line.match(/@sha256:[a-f0-9]{64}/i);
-      if (!digestInFrom) {
-        throw new Error(
-          `Dockerfile #${index + 1}: docker.io/library/node FROM line missing @sha256 digest`,
-        );
-      }
-      const digest = digestInFrom[0].slice(1).toLowerCase();
-      if (digest !== expectedDigest) {
-        throw new Error(
-          `Dockerfile #${index + 1}: node digest ${digest} does not match images.pin ${expectedDigest}`,
-        );
-      }
+    assertRecipeUsesToolchainArgs(dockerText, `Dockerfile #${index + 1}`);
+  }
+}
+
+/**
+ * @param {string} artifactPinText release/images.pin bytes
+ */
+export function assertArtifactPin(artifactPinText) {
+  if (NODE_DIGEST_LINE.test(artifactPinText)) {
+    throw new Error(
+      'release/images.pin must not contain NODE_DIGEST (use common/toolchain.pin)',
+    );
+  }
+  if (!/^WEB_IMAGE=/m.test(artifactPinText)) {
+    throw new Error('release/images.pin must contain WEB_IMAGE=');
+  }
+}
+
+/**
+ * @param {string} servicesText
+ */
+export function assertServicesTargets(servicesText) {
+  for (const target of ['api', 'game-authority', 'worker']) {
+    if (!new RegExp(`FROM runtime-base AS ${target}`).test(servicesText)) {
+      throw new Error(`Dockerfile.services missing target ${target}`);
     }
   }
 }
@@ -126,19 +171,36 @@ export function checkDxk05CiGuards(root = repoRoot) {
     composeScanCount += 1;
   }
 
+  const commonDir = path.join(resolved, 'infra/images/common');
   const releaseDir = path.join(resolved, 'infra/images/release');
-  const pinPath = path.join(releaseDir, 'images.pin');
-  const pinText = readFileSync(pinPath, 'utf8');
-  const dockerNames = [
-    'Dockerfile.api',
-    'Dockerfile.web',
-    'Dockerfile.worker',
-    'Dockerfile.game-authority',
+  const toolchainPath = path.join(commonDir, 'toolchain.pin');
+  const npmrcPath = path.join(commonDir, 'docker.npmrc');
+  const buildReleasePath = path.join(releaseDir, 'build-release-images.sh');
+  for (const required of [toolchainPath, npmrcPath, buildReleasePath]) {
+    if (!existsSync(required)) {
+      throw new Error(`missing required lab image input: ${required}`);
+    }
+  }
+
+  const toolchainText = readFileSync(toolchainPath, 'utf8');
+  const artifactPinText = readFileSync(path.join(releaseDir, 'images.pin'), 'utf8');
+  assertArtifactPin(artifactPinText);
+
+  const recipePaths = [
+    path.join(releaseDir, 'Dockerfile.services'),
+    path.join(releaseDir, 'Dockerfile.web'),
+    path.join(resolved, 'infra/images/development/Dockerfile'),
   ];
-  const dockerfileTexts = dockerNames.map((name) =>
-    readFileSync(path.join(releaseDir, name), 'utf8'),
+  const dockerfileTexts = recipePaths.map((filePath) =>
+    readFileSync(filePath, 'utf8'),
   );
-  assertImagePin(pinText, dockerfileTexts);
+  assertImagePin(toolchainText, dockerfileTexts);
+  assertServicesTargets(dockerfileTexts[0]);
+
+  const libBuildText = readFileSync(path.join(releaseDir, 'lib-build.sh'), 'utf8');
+  if (!/--build-arg "NODE_IMAGE=\$\{TOOLCHAIN_NODE_IMAGE\}"/.test(libBuildText)) {
+    throw new Error('lib-build.sh must pass NODE_IMAGE from toolchain.pin before docker build');
+  }
 
   const libPath = path.join(resolved, 'infra/clusters/kind/release/lib.sh');
   const libText = readFileSync(libPath, 'utf8');
@@ -151,7 +213,7 @@ export function checkDxk05CiGuards(root = repoRoot) {
   return {
     composeScanCount,
     shellCount: shellFiles.length,
-    dockerfileCount: dockerNames.length,
+    dockerfileCount: recipePaths.length,
   };
 }
 

@@ -1,0 +1,63 @@
+# syntax=docker/dockerfile:1
+# Build context: `turbo prune @offscreen/<app> --docker` (json/ + full/) plus app-release helpers.
+# Manifests and the lockfile are installed before source so a TypeScript edit reuses pnpm fetch.
+ARG NODE_IMAGE
+ARG PNPM_VERSION
+ARG APP_WORKSPACE
+ARG APP_PATH
+
+FROM ${NODE_IMAGE} AS builder
+ARG PNPM_VERSION
+WORKDIR /app
+ENV PNPM_HOME=/pnpm
+ENV PATH=/pnpm:$PATH
+ENV CI=true
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+COPY docker.npmrc .npmrc
+COPY json/ ./
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm fetch --frozen-lockfile
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --offline
+COPY full/ ./
+COPY infra/images/common/workspace-graph.mjs infra/images/common/
+COPY infra/images/release/prepare-runtime-tree.sh \
+  infra/images/release/production-workspace-closure.mjs \
+  infra/images/release/release-process-env-shim.mjs \
+  infra/images/release/
+ARG APP_WORKSPACE
+ARG APP_PATH
+RUN pnpm --filter ${APP_WORKSPACE}... build
+RUN bash infra/images/release/prepare-runtime-tree.sh ${APP_PATH} /runtime
+
+FROM ${NODE_IMAGE} AS runtime-base
+WORKDIR /app
+# Pod release binds all interfaces; do not mount source content at runtime.
+ENV NODE_ENV=production
+RUN chown -R node:node /app
+USER node
+COPY --from=builder --chown=node:node /runtime /app
+
+FROM runtime-base AS api
+ENV API_HOST=0.0.0.0
+ENV API_PORT=3001
+USER node
+EXPOSE 3001
+CMD ["node", "--import", "./release-process-env-shim.mjs", "apps/api/dist/src/main.js"]
+
+FROM runtime-base AS game-authority
+ENV GAME_AUTHORITY_HOST=0.0.0.0
+ENV GAME_AUTHORITY_PORT=3002
+USER node
+EXPOSE 3002
+CMD ["node", "--import", "./release-process-env-shim.mjs", "apps/game-authority/dist/src/bootstrap/main.js"]
+
+# One image, three commands: control-main, executor-main, and relay main.js. Deployments override CMD.
+FROM runtime-base AS worker
+# Temporal workers are not HTTP servers and must not receive a database URL.
+RUN test -f apps/worker/dist/src/bootstrap/control-main.js \
+  && test -f apps/worker/dist/src/bootstrap/executor-main.js \
+  && test -f apps/worker/dist/src/bootstrap/main.js \
+  && test ! -e content
+USER node
+CMD ["node", "apps/worker/dist/src/bootstrap/control-main.js"]

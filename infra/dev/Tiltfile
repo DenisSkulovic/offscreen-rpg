@@ -32,18 +32,20 @@ BUILD_ROOTS = [
     'pnpm-lock.yaml',
     'pnpm-workspace.yaml',
     'turbo.json',
-    'infra/images/release/docker.npmrc',
+    'infra/images/common/docker.npmrc',
+    'infra/images/common/toolchain.pin',
     'infra/images/development/Dockerfile',
+    'infra/images/development/build.sh',
+    'tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs',
+    'infra/images/distribution/kind-image-loader.mjs',
     # tsconfig extends this package. It is not a production runtime closure entry.
     'packages/config',
 ]
 
-TURBO_FILTER_BY_IMAGE = {
-    'web': '@offscreen/web^...',
-    'api': '@offscreen/api^...',
-    'game-authority': '@offscreen/game-authority^...',
-    'worker': '@offscreen/worker^...',
-}
+def image_ref_scope():
+    if SLOT_SESSION:
+        return OFFSCREEN_DEV_SLOT
+    return 'legacy'
 
 SYNC_CONFIG = decode_json(str(local(
     'node infra/dev/dev-sync-paths.mjs --tilt',
@@ -108,15 +110,15 @@ def dev_workspace_docker_build(image, image_key):
         'infra/dev/dev-image-runtime-modules.mjs',
     ]:
         inputs.append(rel)
-    watched = [REPO_ROOT + '/' + rel for rel in inputs]
-    steps = dev_live_update(image_key, watched)
-    # skips_local_docker keeps Tilt from kind-loading in parallel after the build.
-    # deps stay on image_inputs so an API .ts file is a sync input, not a web input.
-    ref_file = '/tmp/offscreen-tilt-image-ref-' + image_key
+    sync_watched = [REPO_ROOT + '/' + rel for rel in inputs]
+    rebuild_deps = [repo_path(rel) for rel in BUILD_ROOTS] + [REPO_ROOT + '/infra/dev/load-dev-image.sh']
+    steps = dev_live_update(image_key, sync_watched)
+    scope = image_ref_scope()
+    ref_file = REPO_ROOT + '/.offscreen/tilt-image-refs/' + scope + '/' + image_key + '.ref'
     custom_build(
         image,
-        'OFFSCREEN_IMAGE_REF_FILE=' + ref_file + ' bash ' + REPO_ROOT + '/infra/images/development/tilt/load-dev-image.sh ' + TURBO_FILTER_BY_IMAGE[image_key] + ' ' + image,
-        deps=watched,
+        'OFFSCREEN_IMAGE_REF_FILE=' + ref_file + ' OFFSCREEN_DEV_SLOT=' + OFFSCREEN_DEV_SLOT + ' bash ' + REPO_ROOT + '/infra/dev/load-dev-image.sh ' + image,
+        deps=rebuild_deps,
         ignore=['**/node_modules', '**/dist', '**/.next'],
         live_update=steps,
         skips_local_docker=True,

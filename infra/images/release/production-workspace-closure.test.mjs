@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -45,6 +46,8 @@ test('Game Authority, Worker and Web closures keep their runtime workspace depen
   assert.deepEqual(web, [
     'apps/web',
     'packages/admin-interface',
+    'packages/cache',
+    'packages/cache-port',
     'packages/documents',
     'packages/game',
     'packages/identity-interface',
@@ -58,8 +61,6 @@ test('Game Authority, Worker and Web closures keep their runtime workspace depen
     'packages/admin',
     'packages/lab-support',
     'packages/game-authority-protocol',
-    'packages/cache',
-    'packages/cache-port',
   ]) {
     assert.equal(web.includes(forbidden), false, forbidden);
   }
@@ -102,7 +103,9 @@ test('devDependencies and unknown workspace specs are rejected', () => {
   );
 });
 
-test('prepared API runtime tree resolves @offscreen/db and omits Lab', () => {
+test('prepared API runtime tree resolves @offscreen/db and omits Lab', {
+  skip: !existsSync(path.join(repoRoot, 'apps/api/dist')),
+}, () => {
   const output = mkdtempSync(path.join(tmpdir(), 'ma12-runtime-'));
   try {
     const prepared = spawnSync(
@@ -143,24 +146,26 @@ test('prepared API runtime tree resolves @offscreen/db and omits Lab', () => {
   }
 });
 
-test('release image builds copy the closure tool into the builder', () => {
+test('release image builds copy the closure helpers into the builder', () => {
   const releaseDir = path.join(repoRoot, 'infra/images/release');
-  for (const dockerfile of [
-    'Dockerfile.api',
-    'Dockerfile.game-authority',
-    'Dockerfile.worker',
-  ]) {
-    assert.match(
-      readFileSync(path.join(releaseDir, dockerfile), 'utf8'),
-      /production-workspace-closure\.mjs/,
-    );
-  }
+  const servicesDockerfile = readFileSync(
+    path.join(releaseDir, 'Dockerfile.services'),
+    'utf8',
+  );
+  assert.match(servicesDockerfile, /production-workspace-closure\.mjs/);
+  assert.match(servicesDockerfile, /infra\/images\/common\/workspace-graph\.mjs/);
+  assert.doesNotMatch(
+    readFileSync(path.join(releaseDir, 'Dockerfile.web'), 'utf8'),
+    /workspace-graph\.mjs/,
+  );
   for (const script of ['build.sh', 'build-worker.sh']) {
     assert.match(
       readFileSync(path.join(releaseDir, script), 'utf8'),
       /production-workspace-closure\.mjs/,
     );
   }
+  const libBuild = readFileSync(path.join(releaseDir, 'lib-build.sh'), 'utf8');
+  assert.match(libBuild, /COMMON_DIR\/workspace-graph\.mjs/);
 });
 
 function writeWorkspace(root, relative, manifest) {

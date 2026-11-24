@@ -13,6 +13,7 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
 const workersYamlPath = join(repoRoot, 'infra/workloads/dev/workers.yaml');
 const workerPackagePath = join(repoRoot, 'apps/worker/package.json');
+const devWatchCompilationPath = join(repoRoot, 'infra/dev/dev-watch-compilation.mjs');
 const releaseWorkersPath = join(
   repoRoot,
   'infra/workloads/release/workers.yaml',
@@ -106,11 +107,17 @@ export function assertWorkerDevBootstrapScripts(scripts) {
     /dist\/src\/bootstrap\/executor-main\.js/,
     'dev:executor must run bootstrap/executor-main.js',
   );
+  const watchCompilation = readFileSync(devWatchCompilationPath, 'utf8');
+  assert.match(
+    watchCompilation,
+    /--env-file-if-exists=\.\.\/\.\.\/\.env/,
+    'dev-watch-compilation must keep optional repo-root .env loading',
+  );
   for (const name of ['dev:relay', 'dev:control', 'dev:executor']) {
     assert.match(
       scripts[name],
-      /--env-file-if-exists=\.\.\/\.\.\/\.env/,
-      `${name} must keep optional repo-root .env loading`,
+      /dev-watch-compilation\.mjs/,
+      `${name} must route process start through dev-watch-compilation`,
     );
   }
 }

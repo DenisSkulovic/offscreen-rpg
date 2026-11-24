@@ -1,27 +1,25 @@
 #!/usr/bin/env node
-// Maps changed paths to lab runtime images using the production workspace closure.
-// Docs, Markdown, and test files do not select an image.
+// Maps changed paths to lab runtime images using the workspace build closure.
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { productionWorkspaceClosure } from './production-workspace-closure.mjs';
+import {
+  IMAGE_APP,
+  RUNTIME_IMAGES,
+  isNonRuntimePath,
+  selectWorkspaceImages,
+  workspaceGraph as buildWorkspaceGraph,
+} from '../common/workspace-graph.mjs';
 
-export const RUNTIME_IMAGES = ['web', 'api', 'game-authority', 'worker'];
-
-const IMAGE_APP = {
-  web: 'apps/web',
-  api: 'apps/api',
-  'game-authority': 'apps/game-authority',
-  worker: 'apps/worker',
-};
+export { RUNTIME_IMAGES, isNonRuntimePath } from '../common/workspace-graph.mjs';
 
 const FILE_IMAGES = {
   'infra/images/release/Dockerfile.web': ['web'],
-  'infra/images/release/Dockerfile.api': ['api'],
-  'infra/images/release/Dockerfile.game-authority': [
+  'infra/images/release/Dockerfile.services': [
+    'api',
     'game-authority',
+    'worker',
   ],
-  'infra/images/release/Dockerfile.worker': ['worker'],
   'infra/images/release/build-web.sh': ['web'],
   'infra/images/release/build.sh': ['api', 'game-authority'],
   'infra/images/release/build-worker.sh': ['worker'],
@@ -34,28 +32,19 @@ const ALL_IMAGE_FILES = new Set([
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
   'turbo.json',
-  'infra/images/release/docker.npmrc',
+  'infra/images/common/docker.npmrc',
+  'infra/images/common/toolchain.pin',
+  'infra/images/common/workspace-graph.mjs',
   'infra/images/release/images.pin',
   'infra/images/release/prepare-runtime-tree.sh',
   'infra/images/release/production-workspace-closure.mjs',
   'infra/images/release/release-process-env-shim.mjs',
   'infra/images/release/lib-build.sh',
+  'infra/images/release/build-release-images.sh',
   'infra/images/development/tilt/build-release-images.sh',
 ]);
 
-export function isNonRuntimePath(file) {
-  const normalized = file.replaceAll('\\', '/');
-  if (
-    normalized.startsWith('docs/') ||
-    normalized.startsWith('work/') ||
-    normalized.startsWith('evidence/') ||
-    normalized.startsWith('research/')
-  ) {
-    return true;
-  }
-  if (normalized.endsWith('.md')) return true;
-  return /\.(test|spec)\.(ts|tsx|js|mjs|cjs)$/.test(normalized);
-}
+const WORKSPACE_MANIFEST_RE = /^(apps|packages|tools)\/[^/]+\/package\.json$/;
 
 export function selectImagesFromPaths(paths, workspacesByImage) {
   const selected = new Set();
@@ -71,22 +60,30 @@ export function selectImagesFromPaths(paths, workspacesByImage) {
       for (const image of direct) selected.add(image);
       continue;
     }
-    for (const image of RUNTIME_IMAGES) {
-      const dirs = workspacesByImage[image] ?? [];
-      for (const dir of dirs) {
-        if (file === dir || file.startsWith(`${dir}/`)) selected.add(image);
-      }
-    }
+  }
+  for (const image of selectWorkspaceImages(paths, workspacesByImage)) {
+    selected.add(image);
   }
   return RUNTIME_IMAGES.filter((image) => selected.has(image));
 }
 
 export function workspaceGraph(root) {
-  const graph = {};
-  for (const image of RUNTIME_IMAGES) {
-    graph[image] = productionWorkspaceClosure(root, IMAGE_APP[image]);
+  return buildWorkspaceGraph(root, 'build');
+}
+
+export function requiresFullImageRebuild(paths) {
+  for (const raw of paths) {
+    const file = raw.replaceAll('\\', '/').replace(/^\.\//, '');
+    if (file.length === 0) continue;
+    if (
+      file === 'package.json' ||
+      file === 'pnpm-workspace.yaml' ||
+      WORKSPACE_MANIFEST_RE.test(file)
+    ) {
+      return true;
+    }
   }
-  return graph;
+  return false;
 }
 
 function repoRoot() {
@@ -97,24 +94,38 @@ function repoRoot() {
 }
 
 function gitPaths(root, base) {
-  const result = spawnSync(
+  const relative = spawnSync(
     'git',
     ['diff', '--name-only', '--relative', base],
     { cwd: root, encoding: 'utf8' },
   );
-  if (result.status !== 0) {
-    throw new Error(result.stderr || `git diff ${base} failed`);
+  if (relative.status !== 0) {
+    throw new Error(relative.stderr || `git diff ${base} failed`);
   }
   const unstaged = spawnSync('git', ['diff', '--name-only', '--relative'], {
     cwd: root,
     encoding: 'utf8',
   });
+  if (unstaged.status !== 0) {
+    throw new Error(unstaged.stderr || 'git diff failed');
+  }
   const staged = spawnSync(
     'git',
     ['diff', '--name-only', '--relative', '--cached'],
     { cwd: root, encoding: 'utf8' },
   );
-  const names = `${result.stdout}\n${unstaged.stdout ?? ''}\n${staged.stdout ?? ''}`;
+  if (staged.status !== 0) {
+    throw new Error(staged.stderr || 'git diff --cached failed');
+  }
+  const untracked = spawnSync(
+    'git',
+    ['ls-files', '--others', '--exclude-standard'],
+    { cwd: root, encoding: 'utf8' },
+  );
+  if (untracked.status !== 0) {
+    throw new Error(untracked.stderr || 'git ls-files failed');
+  }
+  const names = `${relative.stdout}\n${unstaged.stdout ?? ''}\n${staged.stdout ?? ''}\n${untracked.stdout ?? ''}`;
   return [...new Set(names.split('\n').filter((line) => line.length > 0))];
 }
 
@@ -138,7 +149,17 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     }
   } else if (args.length === 2 && args[0] === '--base') {
     const root = repoRoot();
-    images = selectImagesFromPaths(gitPaths(root, args[1]), workspaceGraph(root));
+    try {
+      const paths = gitPaths(root, args[1]);
+      if (requiresFullImageRebuild(paths)) {
+        images = [...RUNTIME_IMAGES];
+      } else {
+        images = selectImagesFromPaths(paths, workspaceGraph(root));
+      }
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
   } else {
     printUsage();
     process.exit(2);
@@ -149,3 +170,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     console.log(images.join(','));
   }
 }
+
+export { IMAGE_APP };

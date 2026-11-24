@@ -5,7 +5,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { confirmLoadedAliasIdentity, contentDerivedImageRef, fingerprintDevImageContext, fingerprintDevImageContextCached, planAliasIdentityLoad, planContentImageSelection, planImageGenerationRollout, planRestartImageReuse, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from '../src/image-cache/dev-slot-image-plan.mjs';
 
-const RECIPE = `FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa AS base
+const TOOLCHAIN = `NODE_IMAGE=docker.io/library/node:24.19.0-bookworm-slim
+NODE_DIGEST=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+PNPM_VERSION=11.19.0
+`;
+const RECIPE = `ARG NODE_IMAGE
+ARG PNPM_VERSION
+FROM \${NODE_IMAGE} AS base
 ARG TURBO_FILTER=@offscreen/api^...
 `;
 const IGNORE = `
@@ -23,7 +29,9 @@ work
 function checkout(name) {
   const root = mkdtempSync(join(tmpdir(), name));
   mkdirSync(join(root, 'infra/images/development'), { recursive: true });
+  mkdirSync(join(root, 'infra/images/common'), { recursive: true });
   mkdirSync(join(root, 'packages/db'), { recursive: true });
+  writeFileSync(join(root, 'infra/images/common/toolchain.pin'), TOOLCHAIN);
   writeFileSync(join(root, 'infra/images/development/Dockerfile'), RECIPE);
   writeFileSync(join(root, 'infra/images/development/Dockerfile.dockerignore'), IGNORE);
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v1\n');
@@ -107,7 +115,10 @@ test('included source, lockfile, Dockerfile and role argument change the fingerp
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v2\n');
   assert.notEqual(fingerprint(root).fingerprint, original);
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v1\n');
-  writeFileSync(join(root, 'infra/images/development/Dockerfile'), RECIPE.replace('node:24', 'node:25'));
+  writeFileSync(
+    join(root, 'infra/images/common/toolchain.pin'),
+    TOOLCHAIN.replace('node:24', 'node:25'),
+  );
   assert.notEqual(fingerprint(root).fingerprint, original);
   assert.notEqual(fingerprint(checkout('ctx-role-'), '@offscreen/web^...').fingerprint, original);
 });
@@ -350,4 +361,11 @@ test('a new fingerprint selects a new image ref and an unchanged one does not ro
   const missing = planContentImageSelection({ fingerprint: first, currentRef: ref, nodes: { 'control-plane': { tags: [ref] }, worker: { tags: [] } } });
   assert.equal(missing.reason, 'missing-kind-node');
   assert.equal(missing.roll, false);
+});
+
+test('empty tree with missing toolchain pin is unreadable-recipe', () => {
+  const root = mkdtempSync(join(tmpdir(), 'ctx-empty-'));
+  const result = fingerprintDevImageContext(root, { roleFilter: UNION_ROLE_FILTER });
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'unreadable-recipe');
 });
