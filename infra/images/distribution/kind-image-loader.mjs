@@ -250,11 +250,16 @@ export function resolveManifestDigestFromIndex(stdout, os, architecture) {
  * @param {CommandRunner} run
  */
 function inspectNodePlatform(node, run) {
-  const osResult = run('docker', ['inspect', '--format', '{{.Os}}', node]);
+  const osResult = run('docker', [
+    'inspect',
+    '--format',
+    '{{.ImageManifestDescriptor.platform.os}}',
+    node,
+  ]);
   const archResult = run('docker', [
     'inspect',
     '--format',
-    '{{.Architecture}}',
+    '{{.ImageManifestDescriptor.platform.architecture}}',
     node,
   ]);
   if (osResult.status !== 0 || archResult.status !== 0) {
@@ -426,14 +431,7 @@ export function sortKindNodes(names, clusterName) {
  * @param {CommandRunner} run
  */
 export function discoverKindNodes(profile, run) {
-  const result = run('kind', [
-    'get',
-    'nodes',
-    '--name',
-    profile.clusterName,
-    '-o',
-    'name',
-  ]);
+  const result = run('kind', ['get', 'nodes', '--name', profile.clusterName]);
   if (result.status !== 0) {
     throw new Error(`kind get nodes failed for ${profile.clusterName}`);
   }
@@ -550,8 +548,10 @@ export function ensureKindImage(opts) {
 
   for (const node of nodes) {
     const identity = snapshot.get(node) ?? null;
-    const nodeConfigId = identity?.configId ?? null;
-    if (nodeConfigId === hostDigest) {
+    // Docker 29 reports image Id as the OCI index or manifest digest, which is
+    // the containerd target. The platform config blob is a different digest.
+    const nodeTarget = identity?.targetDigest ?? null;
+    if (nodeTarget === hostDigest) {
       logKindLoad(node, 'reused');
       reusedNodes.push(node);
       continue;
@@ -568,7 +568,7 @@ export function ensureKindImage(opts) {
     logKindLoad(node, 'loaded');
 
     const afterLoad = readKindImageIdentity({ node, ref: validatedRef, run });
-    if (!afterLoad || afterLoad.configId !== hostDigest) {
+    if (!afterLoad || afterLoad.targetDigest !== hostDigest) {
       throw new Error(`post-load-mismatch node=${node}`);
     }
     snapshot.set(node, afterLoad);
@@ -584,7 +584,7 @@ export function ensureKindImage(opts) {
   const receiptNodes = {};
   for (const node of nodes) {
     const identity = readKindImageIdentity({ node, ref: validatedRef, run });
-    if (!identity || identity.configId !== hostDigest) {
+    if (!identity || identity.targetDigest !== hostDigest) {
       throw new Error(`final-verify-mismatch node=${node}`);
     }
     receiptNodes[node] = identity;

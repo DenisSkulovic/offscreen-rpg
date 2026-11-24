@@ -106,6 +106,7 @@ function makeRunner(scripts) {
  *   controlTarget?: string | null,
  *   workerTarget?: string | null,
  *   configId?: string,
+ *   hostId?: string,
  *   indexTarget?: string,
  *   indexManifest?: string,
  * }} opts
@@ -118,13 +119,14 @@ function releaseNodeScripts(opts = {}) {
   const workerTarget = Object.hasOwn(opts, 'workerTarget')
     ? opts.workerTarget
     : TARGET_T;
+  const hostId = opts.hostId ?? opts.indexTarget ?? TARGET_T;
   const ctrLine = (target) =>
     target ? `${RELEASE_CTR} ${RELEASE_CTR} ${target} \n` : '';
 
   /** @type {Record<string, RunScript>} */
   const docker = {
     [`image\0inspect\0--format\0{{.Id}}\0${RELEASE_REF}`]: {
-      stdout: `${CONFIG_A}\n`,
+      stdout: `${hostId}\n`,
     },
     [`inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0${NODE_CP}`]:
       {
@@ -134,12 +136,12 @@ function releaseNodeScripts(opts = {}) {
       {
         stdout: 'offscreen-lab\n',
       },
-    [`inspect\0--format\0{{.Os}}\0${NODE_CP}`]: { stdout: 'linux\n' },
-    [`inspect\0--format\0{{.Architecture}}\0${NODE_CP}`]: {
+    [`inspect\0--format\0{{.ImageManifestDescriptor.platform.os}}\0${NODE_CP}`]: { stdout: 'linux\n' },
+    [`inspect\0--format\0{{.ImageManifestDescriptor.platform.architecture}}\0${NODE_CP}`]: {
       stdout: 'x86_64\n',
     },
-    [`inspect\0--format\0{{.Os}}\0${NODE_WORKER}`]: { stdout: 'linux\n' },
-    [`inspect\0--format\0{{.Architecture}}\0${NODE_WORKER}`]: {
+    [`inspect\0--format\0{{.ImageManifestDescriptor.platform.os}}\0${NODE_WORKER}`]: { stdout: 'linux\n' },
+    [`inspect\0--format\0{{.ImageManifestDescriptor.platform.architecture}}\0${NODE_WORKER}`]: {
       stdout: 'x86_64\n',
     },
     [`exec\0${NODE_CP}\0ctr\0-n\0k8s.io\0images\0ls`]: {
@@ -200,7 +202,7 @@ function releaseNodeScripts(opts = {}) {
 
   return {
     kind: {
-      'get\0nodes\0--name\0offscreen-lab\0-o\0name': {
+      'get\0nodes\0--name\0offscreen-lab': {
         stdout: `node/${NODE_CP}\nnode/${NODE_WORKER}\n`,
       },
       load: { status: 0, stdout: '', stderr: '' },
@@ -357,12 +359,13 @@ test('validateRefForProfile rejects retired legacy dev workspace tags', () => {
   );
 });
 
-test('all nodes hit reuses without kind load when config matches but target differs', () => {
+test('Docker 29 index id matches containerd target and differs from config digest', () => {
   const { run, calls } = makeRunner(
     releaseNodeScripts({
-      controlTarget: TARGET_T,
-      workerTarget: TARGET_U,
+      indexTarget: INDEX_I,
+      indexManifest: MANIFEST_M,
       configId: CONFIG_A,
+      hostId: INDEX_I,
     }),
   );
   const receipt = ensureKindImage({
@@ -370,9 +373,11 @@ test('all nodes hit reuses without kind load when config matches but target diff
     ref: RELEASE_REF,
     run,
   });
-  assert.equal(receipt.digest, CONFIG_A);
-  assert.notEqual(receipt.nodes[NODE_CP].targetDigest, receipt.digest);
+  assert.equal(receipt.digest, INDEX_I);
+  assert.equal(receipt.nodes[NODE_CP].targetDigest, INDEX_I);
+  assert.equal(receipt.nodes[NODE_CP].manifestDigest, MANIFEST_M);
   assert.equal(receipt.nodes[NODE_CP].configId, CONFIG_A);
+  assert.notEqual(receipt.nodes[NODE_CP].configId, receipt.digest);
   assert.deepEqual(receipt.loadedNodes, []);
   assert.deepEqual(receipt.reusedNodes, [NODE_CP, NODE_WORKER]);
   assert.equal(
@@ -408,7 +413,9 @@ test('one stale worker loads only that node', () => {
   });
   assert.deepEqual(receipt.loadedNodes, [NODE_WORKER]);
   assert.deepEqual(receipt.reusedNodes, [NODE_CP]);
+  assert.equal(receipt.nodes[NODE_WORKER].targetDigest, TARGET_T);
   assert.equal(receipt.nodes[NODE_WORKER].configId, CONFIG_A);
+  assert.notEqual(receipt.digest, CONFIG_A);
   assert.equal(
     calls.filter((call) => call.command === 'kind' && call.args[0] === 'load')
       .length,
@@ -419,14 +426,14 @@ test('one stale worker loads only that node', () => {
 test('missing worker in inventory refuses before mutation', () => {
   const { run, calls } = makeRunner({
     kind: {
-      'get\0nodes\0--name\0offscreen-lab\0-o\0name': {
+      'get\0nodes\0--name\0offscreen-lab': {
         stdout: `node/${NODE_CP}\n`,
       },
       load: { status: 0 },
     },
     docker: {
       [`image\0inspect\0--format\0{{.Id}}\0${RELEASE_REF}`]: {
-        stdout: `${CONFIG_A}\n`,
+        stdout: `${TARGET_T}\n`,
       },
     },
   });
@@ -445,22 +452,23 @@ test('missing worker in inventory refuses before mutation', () => {
   );
 });
 
-test('post-load mismatch refuses when node config id is wrong', () => {
+test('post-load mismatch refuses when node target digest is wrong', () => {
   const scripts = releaseNodeScripts({
     controlTarget: TARGET_T,
     workerTarget: null,
+    hostId: TARGET_T,
   });
   const { run, calls } = makeRunner(scripts);
   const trackingRun = (command, args) => {
     const result = run(command, args);
     if (command === 'kind' && args[0] === 'load') {
       scripts.docker[`exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0images\0ls`] = {
-        stdout: `${RELEASE_CTR} ${RELEASE_CTR} ${TARGET_T} \n`,
+        stdout: `${RELEASE_CTR} ${RELEASE_CTR} ${TARGET_U} \n`,
       };
       scripts.docker[
-        `exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0content\0get\0${TARGET_T}`
+        `exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0content\0get\0${TARGET_U}`
       ] = {
-        stdout: ociManifestJson(CONFIG_B),
+        stdout: ociManifestJson(CONFIG_A),
       };
     }
     return result;

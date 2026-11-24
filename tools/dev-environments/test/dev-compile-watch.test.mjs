@@ -145,6 +145,10 @@ function compileSuccessLine() {
   return 'Found 0 errors. Watching for file changes.\n';
 }
 
+function compileSuccessLineWithTscStamp() {
+  return '8:00:05 PM - Found 0 errors. Watching for file changes.\n';
+}
+
 test('line buffer handles CRLF and split compiler completion chunks', () => {
   const lines = [];
   const buffer = createLineBuffer((line) => lines.push(line));
@@ -278,6 +282,35 @@ test('supervisor starts runtime once after successful compile', async () => {
   if (existsSync(join(receiptRoot, 'api.loaded.json'))) {
     assert.equal(status.ready, true);
   }
+  await supervisor.dispose(0);
+  delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
+});
+
+test('supervisor accepts tsc watch timestamp prefix', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'dev-compile-stamp-'));
+  const receiptRoot = join(root, 'receipts');
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
+  const entryRel = 'dist/src/main.js';
+  seedWorkspace(root, entryRel);
+  const fake = createFakeCompilerProcess();
+  const runtimeStarts = [];
+  const supervisor = createCompileWatchSupervisor({
+    role: 'api',
+    entry: entryRel,
+    cwd: root,
+    environmentId: 'dev-3',
+    launchLoadedPath: LAUNCH_LOADED_PATH,
+    spawnCompiler: () => fake.child,
+    spawnRuntime: (argv) => {
+      runtimeStarts.push(argv);
+      return createFakeRuntimeProcess().child;
+    },
+  });
+  supervisor.start();
+  fake.pushStdout('8:00:03 PM - Starting compilation in watch mode...\n');
+  fake.pushStdout(compileSuccessLineWithTscStamp());
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
+  assert.equal(runtimeStarts.length, 1);
   await supervisor.dispose(0);
   delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
 });

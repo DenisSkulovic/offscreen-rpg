@@ -110,26 +110,28 @@ export function waitForPortForwardReady(child, port, timeoutMs = FORWARD_READY_M
  * @param {number} port
  * @param {(port: number) => Promise<import('node:child_process').ChildProcess>} [spawnForward]
  */
+export function pgPortForwardArgs(localPort) {
+  return [
+    '--context',
+    DEV_CNPG_CONTEXT,
+    '-n',
+    DEV_CNPG_NAMESPACE,
+    'port-forward',
+    '--address',
+    LOOPBACK,
+    PG_SERVICE,
+    `${localPort}:${PG_FORWARD_TARGET_PORT}`,
+  ];
+}
+
 export async function startOwnedPgPortForward(port, spawnForward) {
-  const spawn =
+  const openForward =
     spawnForward ??
     ((localPort) =>
-      spawn(
-        'kubectl',
-        [
-          '--context',
-          DEV_CNPG_CONTEXT,
-          '-n',
-          DEV_CNPG_NAMESPACE,
-          'port-forward',
-          '--address',
-          LOOPBACK,
-          PG_SERVICE,
-          `${localPort}:${PG_FORWARD_TARGET_PORT}`,
-        ],
-        { stdio: ['ignore', 'pipe', 'pipe'] },
-      ));
-  const child = await spawn(port);
+      spawn('kubectl', pgPortForwardArgs(localPort), {
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }));
+  const child = await openForward(port);
   const ready = await waitForPortForwardReady(child, port);
   if (!ready.ok) {
     child.kill('SIGTERM');
@@ -156,7 +158,7 @@ export async function startOwnedPgPortForward(port, spawnForward) {
 export function buildMigrationPackage(worktree, deps = {}) {
   const run = deps.spawnSync ?? spawnSync;
   const built = resolve(worktree, 'packages/db/dist/src/migrate.js');
-  const compiled = run('pnpm', ['--filter', '@offscreen/db', 'build'], {
+  const compiled = run('pnpm', ['--filter', '@offscreen/db...', 'build'], {
     cwd: worktree,
     encoding: 'utf8',
   });

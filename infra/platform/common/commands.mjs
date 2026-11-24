@@ -159,10 +159,19 @@ export function readPlatformObject(
 }
 
 /**
- * @param {object} configView
- * @param {string} expectedClusterName
+ * Kind writes the kubeconfig cluster entry as `kind-<cluster name>`.
+ * That entry name is not the `kind get clusters` name.
+ * @param {string} kindClusterName
  */
-function readExplicitContextCluster(configView, expectedClusterName) {
+export function kindKubeconfigClusterName(kindClusterName) {
+  return `kind-${kindClusterName}`;
+}
+
+/**
+ * @param {object} configView
+ * @param {string} expectedKubeconfigClusterName
+ */
+function readExplicitContextCluster(configView, expectedKubeconfigClusterName) {
   const contexts = Array.isArray(configView.contexts)
     ? configView.contexts
     : [];
@@ -174,7 +183,10 @@ function readExplicitContextCluster(configView, expectedClusterName) {
   }
   const selected = contexts[0];
   const clusterRef = selected?.context?.cluster;
-  if (typeof clusterRef !== 'string' || clusterRef !== expectedClusterName) {
+  if (
+    typeof clusterRef !== 'string' ||
+    clusterRef !== expectedKubeconfigClusterName
+  ) {
     throw new Error('selected context cluster mismatch');
   }
   const clusterEntry = clusters.find((entry) => entry?.name === clusterRef);
@@ -262,7 +274,10 @@ export function assertPlatformTarget(
     throw new Error('kubectl config view malformed');
   }
 
-  const port = readExplicitContextCluster(configBody, profile.clusterName);
+  const port = readExplicitContextCluster(
+    configBody,
+    kindKubeconfigClusterName(profile.clusterName),
+  );
   assertLoopbackPort(port, profileId);
 
   if (profileId === 'dev') {

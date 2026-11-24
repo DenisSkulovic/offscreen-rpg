@@ -659,12 +659,42 @@ export function parkSelectedEnvironment(input) {
     signalled = true;
     let gone = false;
     // kubectl port-forward often exits after the first 250ms. Forty 50ms polls cover about two seconds.
-    for (let attempt = 0; attempt < 40; attempt += 1) {
-      if (stoppedProcess(target)) {
-        gone = true;
-        break;
+    const waitForExit = (attempts) => {
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        if (stoppedProcess(target)) return true;
+        input.processDeps.sleep?.(attempt);
       }
-      input.processDeps.sleep?.(attempt);
+      return stoppedProcess(target);
+    };
+    gone = waitForExit(40);
+    if (!gone) {
+      // Re-check PID and start time. A reused PID must not receive SIGKILL.
+      const stillOwned = assessOwnedProcess(target, input.processDeps);
+      if (!stillOwned.owned) {
+        if (stoppedProcess(target)) {
+          gone = true;
+        } else {
+          writeEnvironmentSession(input.sessionRoot, {
+            ...session,
+            processesStopped: false,
+            parkIncomplete: true,
+            released: false,
+            parked: false,
+          });
+          return {
+            ok: false,
+            released: false,
+            signalled,
+            scaled: false,
+            reason: stillOwned.reason,
+            tenantIdentity,
+          };
+        }
+      } else {
+        // Under memory pressure Tilt can ignore SIGTERM for the whole polite wait.
+        signal(Number(target.pid), 'SIGKILL');
+        gone = waitForExit(10);
+      }
     }
     if (!gone) {
       writeEnvironmentSession(input.sessionRoot, {

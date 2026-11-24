@@ -79,10 +79,11 @@ function makeRunner(script) {
  */
 function kubectlConfigJson(profileId, port) {
   const kind = readKindProfile(profileId);
+  const kubeconfigCluster = `kind-${kind.clusterName}`;
   return JSON.stringify({
     clusters: [
       {
-        name: kind.clusterName,
+        name: kubeconfigCluster,
         cluster: { server: `https://127.0.0.1:${port}` },
       },
     ],
@@ -90,12 +91,12 @@ function kubectlConfigJson(profileId, port) {
       {
         name: kind.contextName,
         context: {
-          cluster: kind.clusterName,
-          user: `kind-${kind.clusterName}`,
+          cluster: kubeconfigCluster,
+          user: kubeconfigCluster,
         },
       },
     ],
-    users: [{ name: `kind-${kind.clusterName}`, user: {} }],
+    users: [{ name: kubeconfigCluster, user: {} }],
   });
 }
 
@@ -504,6 +505,139 @@ test('assertPlatformTarget accepts healthy dev and release targets', () => {
   const release = assertPlatformTarget('release', { run: releaseRunner.run });
   assert.equal(release.ok, true);
   assert.equal(release.port, RELEASE_API_PORT);
+});
+
+test('assertPlatformTarget expects Kind kubeconfig cluster entries, not Kind cluster names', () => {
+  for (const profileId of ['dev', 'release']) {
+    const kind = readKindProfile(profileId);
+    const port = profileId === 'dev' ? devPort : RELEASE_API_PORT;
+    const runner = makeRunner(
+      profileId === 'dev'
+        ? devTargetScript(port)
+        : [
+            {
+              command: 'kind',
+              args: ['get', 'clusters'],
+              result: {
+                ok: true,
+                status: 0,
+                stdout: `${kind.clusterName}\n`,
+                stderr: '',
+                timedOut: false,
+                missing: false,
+              },
+            },
+            {
+              command: 'kubectl',
+              args: [
+                '--context',
+                kind.contextName,
+                'config',
+                'view',
+                '--minify',
+                '-o',
+                'json',
+              ],
+              result: {
+                ok: true,
+                status: 0,
+                stdout: kubectlConfigJson(profileId, port),
+                stderr: '',
+                timedOut: false,
+                missing: false,
+              },
+            },
+            {
+              command: 'kubectl',
+              args: [
+                '--context',
+                kind.contextName,
+                'get',
+                'namespace',
+                'lab-postgres',
+                '--ignore-not-found',
+                '-o',
+                'json',
+              ],
+              result: {
+                ok: true,
+                status: 0,
+                stdout: JSON.stringify({
+                  metadata: {
+                    name: 'lab-postgres',
+                    labels: { 'offscreen.rpg/lab': 'disposable' },
+                  },
+                }),
+                stderr: '',
+                timedOut: false,
+                missing: false,
+              },
+            },
+          ],
+    );
+    const target = assertPlatformTarget(profileId, { run: runner.run });
+    assert.equal(target.ok, true);
+    assert.equal(target.clusterName, kind.clusterName);
+    assert.equal(target.contextName, `kind-${kind.clusterName}`);
+    const viewed = JSON.parse(kubectlConfigJson(profileId, port));
+    assert.equal(viewed.contexts[0].context.cluster, `kind-${kind.clusterName}`);
+    assert.notEqual(viewed.contexts[0].context.cluster, kind.clusterName);
+  }
+
+  const bareName = makeRunner([
+    {
+      command: 'kind',
+      args: ['get', 'clusters'],
+      result: {
+        ok: true,
+        status: 0,
+        stdout: `${devKind.clusterName}\n`,
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      },
+    },
+    {
+      command: 'kubectl',
+      args: [
+        '--context',
+        devKind.contextName,
+        'config',
+        'view',
+        '--minify',
+        '-o',
+        'json',
+      ],
+      result: {
+        ok: true,
+        status: 0,
+        stdout: JSON.stringify({
+          clusters: [
+            {
+              name: devKind.clusterName,
+              cluster: { server: `https://127.0.0.1:${devPort}` },
+            },
+          ],
+          contexts: [
+            {
+              name: devKind.contextName,
+              context: {
+                cluster: devKind.clusterName,
+                user: `kind-${devKind.clusterName}`,
+              },
+            },
+          ],
+        }),
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      },
+    },
+  ]);
+  assert.throws(
+    () => assertPlatformTarget('dev', { run: bareName.run }),
+    /cluster mismatch/,
+  );
 });
 
 test('assertPlatformTarget rejects wrong profile context loopback port and missing dev owner', () => {

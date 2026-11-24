@@ -4,11 +4,26 @@ import test from 'node:test';
 import {
   connectPgWithFreshAttempts,
   migrateOwnedDevSlot,
+  pgPortForwardArgs,
   redactMigrationFailure,
   validateDevMigrationSecret,
   waitForPortForwardReady,
 } from '../src/adapters/dev-slot-migrate.mjs';
 import { deriveDevSqlTenant } from '../src/rendering/dev-sql-tenant-contract.mjs';
+
+test('pg port-forward args name the Kind context without shadowing spawn', () => {
+  assert.deepEqual(pgPortForwardArgs(13136), [
+    '--context',
+    'kind-offscreen-dev',
+    '-n',
+    'offscreen-dev-postgres',
+    'port-forward',
+    '--address',
+    '127.0.0.1',
+    'service/dev-pg-rw',
+    '13136:5432',
+  ]);
+});
 
 const OWNER = {
   slotId: 'dev-1',

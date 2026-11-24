@@ -1371,6 +1371,66 @@ test('partial startup parks all six owned workloads and leaves the other environ
   );
 });
 
+test('readiness memory drop waits out tilt exit then parks six workloads', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-mem-readiness-'));
+  const harness = ownedLaunch(worktree);
+  let probes = 0;
+  let alive = true;
+  let polls = 0;
+  const tenantMarks = [];
+  await harness.launch({
+    collectDefaultProbes: async () => {
+      probes += 1;
+      return { memAvailableKib: probes === 1 ? 8_000_000 : 1 };
+    },
+    runStackPreflight: (probe) =>
+      probe.memAvailableKib === 1
+        ? {
+            ok: false,
+            refusals: [
+              {
+                id: 'memory-low',
+                message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).',
+              },
+            ],
+          }
+        : okPreflight(),
+    pidAlive: () => alive,
+    signal: () => {
+      tenantMarks.push('signalled');
+    },
+    ownedProcessPoll: () => {
+      polls += 1;
+      if (polls >= 3) alive = false;
+    },
+    clearReservation: () => {
+      tenantMarks.push('reservation-cleared');
+    },
+    collectStartupReadiness: async () => {
+      throw new Error('readiness must not run after the memory gate fails');
+    },
+  });
+  assert.equal(polls >= 3, true);
+  assert.equal(alive, false);
+  assert.equal(harness.scaled.length, 6);
+  assert.deepEqual(
+    harness.scaled.map((call) => call.role).sort(),
+    [
+      'game-api',
+      'game-authority',
+      'game-control',
+      'game-executor',
+      'game-relay',
+      'game-web',
+    ],
+  );
+  assert.equal(tenantMarks.includes('reservation-cleared'), false);
+  assert.match(
+    harness.lines.find((line) => line.startsWith('startup-parked:')) ?? '',
+    /4 GiB/,
+  );
+});
+
 test('memory exhaustion after admission parks the attempted slot', async () => {
   const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-mem-after-'));
   const harness = ownedLaunch(worktree);

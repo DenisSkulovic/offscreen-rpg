@@ -557,17 +557,99 @@ test('stale process, foreign lease and foreign consumer do not scale', () => {
       pidAlive: (pid) => ordered.has(pid),
       readStartTicks: () => '100',
     },
-    signal: (pid) => {
+    signal: (pid, sig) => {
       order.push(pid);
-      if (pid === 40) ordered.delete(40);
+      if (sig === 'SIGTERM' && pid === 40) ordered.delete(40);
     },
     scaleRole: () => scaled.push('scaled'),
   });
-  assert.deepEqual(order, [40, 41]);
+  assert.deepEqual(order, [40, 41, 41]);
   assert.equal(orderedResult.reason, 'process-stop-incomplete');
   assert.equal(ordered.has(41), true);
   rmSync(noopRoot, { recursive: true, force: true });
   rmSync(noopCheckout, { recursive: true, force: true });
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('park kills a tilt process that ignores SIGTERM and then scales six roles', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-kill-'));
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-kill-src-'));
+  const sessions = environmentSessionRoot(root);
+  const record = {
+    ...owner('dev-5', checkout),
+    lease: { pid: 50, startTimeJiffies: '100' },
+  };
+  writeEnvironmentSession(sessions, {
+    ...sessionFor(record),
+    pid: 50,
+  });
+  const alive = new Set([50]);
+  const signals = [];
+  const scaled = [];
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: (pid) => alive.has(pid),
+      readStartTicks: () => '100',
+      sleep: () => {},
+    },
+    signal: (pid, sig) => {
+      signals.push(sig);
+      if (sig === 'SIGKILL') alive.delete(pid);
+    },
+    scaleRole: (_namespace, role) => scaled.push(role),
+    readDesiredReplicas: () =>
+      Object.fromEntries(scaled.map((role) => [role, 0])),
+    portOccupied: () => false,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.released, true);
+  assert.deepEqual(signals, ['SIGTERM', 'SIGKILL']);
+  assert.equal(scaled.length, 6);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('park does not SIGKILL a reused PID after the polite wait', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-reuse-'));
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-reuse-src-'));
+  const sessions = environmentSessionRoot(root);
+  const record = {
+    ...owner('dev-5', checkout),
+    lease: { pid: 50, startTimeJiffies: '100' },
+  };
+  writeEnvironmentSession(sessions, {
+    ...sessionFor(record),
+    pid: 50,
+    forwardPid: null,
+    forwardStartTicks: null,
+  });
+  let reads = 0;
+  const signals = [];
+  const scaled = [];
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: () => true,
+      readStartTicks: () => {
+        reads += 1;
+        // The polite wait still sees the owned start time. The next read is a reused PID.
+        return reads > 43 ? '999' : '100';
+      },
+      sleep: () => {},
+    },
+    signal: (_pid, sig) => signals.push(sig),
+    scaleRole: (_namespace, role) => scaled.push(role),
+    readDesiredReplicas: () =>
+      Object.fromEntries(scaled.map((role) => [role, 0])),
+    portOccupied: () => false,
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(signals, ['SIGTERM']);
+  assert.equal(scaled.length, 6);
   rmSync(root, { recursive: true, force: true });
   rmSync(checkout, { recursive: true, force: true });
 });

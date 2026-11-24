@@ -29,6 +29,13 @@ import { join } from 'node:path';
 const DEV_CLUSTER = 'kind-offscreen-dev';
 const MIN_MEMORY_MIB = 1536;
 
+/** Include workspace dependencies so a clean checkout can compile @offscreen/db. */
+export const MIGRATION_PACKAGE_BUILD_ARGS = [
+  '--filter',
+  '@offscreen/db...',
+  'build',
+];
+
 function oauthCandidates(worktree, env = process.env) {
   return [
     env.OFFSCREEN_DEV_OAUTH_FILE,
@@ -325,7 +332,7 @@ export async function prepareMigrationArtifact(input, record) {
     });
     const compiled = await timePhase('database-build', 'reconcile', () =>
       Promise.resolve(
-        spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], {
+        spawnSync('pnpm', MIGRATION_PACKAGE_BUILD_ARGS, {
           cwd: input.worktree,
           encoding: 'utf8',
         }),

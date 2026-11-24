@@ -10,6 +10,23 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
+
+function devImageFingerprint() {
+  const result = spawnSync(
+    execPath,
+    [
+      '--input-type=module',
+      '-e',
+      `import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './infra/images/development/image-plan.mjs';
+const result = fingerprintDevImageContext(process.cwd(), { roleFilter: UNION_ROLE_FILTER });
+if (!result.ok) { console.error(result.reason); process.exit(2); }
+process.stdout.write(result.fingerprint);`,
+    ],
+    { cwd: repoRoot, encoding: 'utf8' },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
+}
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
@@ -22,6 +39,7 @@ import {
   describeImageLoadFailure,
   resolveOauthReadiness,
   ensureOwnedSlotImages,
+  MIGRATION_PACKAGE_BUILD_ARGS,
 } from '../src/application/dev-slot-startup.mjs';
 import { renderDevSlotAppGraph } from '../src/rendering/dev-slot-app-graph.mjs';
 import {
@@ -144,6 +162,14 @@ exit 0
   chmodSync(join(bin, 'kind'), 0o755);
   return { bin, counter, mark };
 }
+
+test('migration artifact build includes workspace dependencies', () => {
+  assert.deepEqual(MIGRATION_PACKAGE_BUILD_ARGS, [
+    '--filter',
+    '@offscreen/db...',
+    'build',
+  ]);
+});
 
 const record = {
   slotId: 'dev-3',

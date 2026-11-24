@@ -304,6 +304,11 @@ export async function collectDevLaunchPortRefusals(input) {
   return refusals;
 }
 
+/** Same 50ms poll explicit `pnpm dev:stop` uses while an owned process exits. */
+function waitOwnedProcessExitPoll() {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+}
+
 /**
  * Park the attempted slot after a failed fresh start. Reservation and tenants stay.
  * A failed park is rollback-incomplete and is not reported as parked.
@@ -317,6 +322,7 @@ export async function collectDevLaunchPortRefusals(input) {
  *   readStartTicks?: (pid: number) => string | null,
  *   scaleRole?: (namespace: string, role: string) => void,
  *   readDesiredReplicas?: (namespace: string) => Record<string, number>,
+ *   ownedProcessPoll?: () => void,
  *   log?: (line: string) => void,
  *   workloadsTouched?: boolean,
  *   ephemeralChildren?: ReadonlyArray<{
@@ -411,7 +417,7 @@ export function rollbackFailedOwnedStartup(input) {
         pidAlive: input.pidAlive ?? pidAlive,
         readStartTicks:
           input.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-        sleep: () => {},
+        sleep: input.ownedProcessPoll ?? waitOwnedProcessExitPoll,
       },
       scaleRole:
         input.scaleRole ??
@@ -904,7 +910,7 @@ function runOwnedEnvironmentParkOperation(input) {
       processDeps: {
         pidAlive: deps.pidAlive ?? pidAlive,
         readStartTicks: readStart,
-        sleep: () => {},
+        sleep: deps.ownedProcessPoll ?? waitOwnedProcessExitPoll,
       },
       scaleRole:
         deps.scaleRole ??
@@ -1689,13 +1695,7 @@ export async function runDevEnvironmentStop(selection, deps = {}) {
               processDeps: {
                 pidAlive,
                 readStartTicks: (pid) => readProcessStartTicks(pid),
-                sleep: () =>
-                  Atomics.wait(
-                    new Int32Array(new SharedArrayBuffer(4)),
-                    0,
-                    0,
-                    50,
-                  ),
+                sleep: waitOwnedProcessExitPoll,
               },
               scaleRole: (namespace, role) =>
                 scaleDevSlotWorkloads(namespace, spawnSync, [role]),

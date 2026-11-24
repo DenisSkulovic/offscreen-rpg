@@ -16,11 +16,18 @@ const LAUNCH_LOADED_PATH = join(
   'launch-loaded.mjs',
 );
 
-const COMPILER_START_RE = /^Starting compilation in watch mode/;
-const COMPILER_INCREMENTAL_RE =
-  /^File change detected\. Starting incremental compilation/;
-const COMPILER_COMPLETE_RE =
-  /^Found (\d+) errors?\. Watching for file changes\./;
+const TSC_WATCH_STAMP = /^(?:\d{1,2}:\d{2}:\d{2} [AP]M - )?/;
+const COMPILER_START_RE = new RegExp(
+  TSC_WATCH_STAMP.source + 'Starting compilation in watch mode',
+);
+const COMPILER_INCREMENTAL_RE = new RegExp(
+  TSC_WATCH_STAMP.source +
+    'File change detected\\. Starting incremental compilation',
+);
+const COMPILER_COMPLETE_RE = new RegExp(
+  TSC_WATCH_STAMP.source +
+    'Found (\\d+) errors?\\. Watching for file changes\\.',
+);
 
 const CHILD_STOP_TIMEOUT_MS = 10_000;
 
