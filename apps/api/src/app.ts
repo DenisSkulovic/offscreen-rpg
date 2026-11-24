@@ -1,5 +1,5 @@
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import 'reflect-metadata';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';

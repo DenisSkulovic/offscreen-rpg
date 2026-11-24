@@ -3,7 +3,7 @@ import {
   fundingModeSchema,
   usageEntitlementProfileSchema,
   type UsageEntitlementProfile,
-} from '@offscreen/contracts/usage-policy';
+} from '@offscreen/usage-policy/usage-policy';
 import { baselineUsageLimits } from '@offscreen/story-engine/storyteller/usage-policy-defaults';
 
 function syntheticProfile(input: {

@@ -9,7 +9,7 @@ import {
   parseStorytellerCurrentOwnerGrantRow,
   parseStorytellerCurrentPlatformPolicyRow,
 } from '../src/current-authority';
-import { usageEntitlementProfileSchema } from '../src/usage-policy';
+import { usageEntitlementProfileSchema } from '@offscreen/usage-policy/usage-policy';
 
 const digest = 'ab'.repeat(32);
 

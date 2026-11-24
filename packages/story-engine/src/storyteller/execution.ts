@@ -20,7 +20,7 @@ import type {
   StorytellerProvider,
   StorytellerProviderDispatch,
 } from '@offscreen/storyteller/providers/openrouter';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import { prepareReviewedDispatch } from './dispatch-review';
 import { retainsCapturedAuthority } from './dispatch-authority';

@@ -10,7 +10,7 @@ import type {
   CaseCreateRequestV1,
   CaseSummaryPageV1,
   CaseSummaryV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { AdminSessionError } from './session.js';
 
 const PAGE_SIZE = 20;

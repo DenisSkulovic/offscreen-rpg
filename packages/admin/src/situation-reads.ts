@@ -35,7 +35,7 @@ import {
   supportSituationV1Schema,
   type SupportSafeRefV1,
   type SupportSituationV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { campaignHoldsSchema } from '@offscreen/contracts/campaign-holds';
 import { AdminSessionError } from './session.js';
 

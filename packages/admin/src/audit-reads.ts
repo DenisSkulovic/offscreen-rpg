@@ -6,7 +6,7 @@ import type {
   AdminAuditPageV1,
   AdminGrantScopeSummaryV1,
   AdminStaffAccessV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { getAdminPackage, type AdminGrantScope } from './registry.js';
 import type { IntactGrantAssignment } from './policy.js';
 

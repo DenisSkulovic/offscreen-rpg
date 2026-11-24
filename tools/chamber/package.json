@@ -32,6 +32,7 @@
     "@offscreen/api-lab": "workspace:*",
     "@offscreen/content-packages": "workspace:*",
     "@offscreen/contracts": "workspace:*",
+    "@offscreen/usage-policy": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/game": "workspace:*",

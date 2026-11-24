@@ -17,7 +17,7 @@ import {
   resolveStoryRetrievalRecipe,
 } from '@offscreen/story-engine/storyteller';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';

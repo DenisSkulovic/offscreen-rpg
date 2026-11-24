@@ -13,7 +13,7 @@ import type { Request, Response } from 'express';
 import {
   adminStaffAccessV1Schema,
   type AdminStaffAccessV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import {
   clearAdminCookie,
   projectStaffAccess,

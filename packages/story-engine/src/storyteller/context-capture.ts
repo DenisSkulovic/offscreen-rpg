@@ -6,7 +6,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { and, desc, eq, gt, gte, inArray, lte } from 'drizzle-orm';
 import { z } from 'zod';
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
-import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
+import { effectiveUsagePolicySchema } from '@offscreen/usage-policy/usage-policy';
 import {
   passageContentSchema,
   storyItemsSchema,

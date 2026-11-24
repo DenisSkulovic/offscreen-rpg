@@ -37,7 +37,7 @@ import {
   mechanicalContentCatalogue,
   mechanicalOpening,
 } from '../campaign/fixtures/mechanical-content';
-import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import { prepareAdmittedStorytellerTask } from './task-admission';
 import type {
   DocumentStore,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { AdminSelfV1 } from '@offscreen/contracts/admin';
+import type { AdminSelfV1 } from '@offscreen/admin-interface/admin';
 import {
   listAdminAuditEvents,
   readAdminStaffAccess,

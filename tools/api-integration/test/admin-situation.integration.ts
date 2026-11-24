@@ -6,7 +6,7 @@ import { bootstrapAdminStaff } from '@offscreen/admin';
 import {
   supportSituationV1Schema,
   type SupportSituationV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import { withApiOnlyAuth, type ApiOnlyAuth } from './helpers/api-only-auth.js';
 
 const SENTINEL = 'SENTINEL-OBS06-PRIVATE-9f3c';

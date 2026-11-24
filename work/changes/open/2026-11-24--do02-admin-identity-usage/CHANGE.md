@@ -47,4 +47,5 @@ Start T01 now after local branch/worktree checks; continue through this Change o
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 |---|---|---|---|---|---|---|
-| To fill at close for every impacted claim | technical/product | pending | pending | not executed | pending | pending |
+| Code organization | docs/technical/platform/topology.md#code-organization | changed: three leaves realized; contracts keeps current-authority and depends on usage-policy | packages/admin-interface, identity-interface, usage-policy; contracts/src/current-authority.ts; branch change/do02-admin-identity-usage from c7f19e07 | source-only; see PROOF.md | old subpaths absent; strict extra/digest/numeric negatives | topology paragraph updated on this branch; catalog/archive owned by DO01 custodian |
+| Product behavior | product promises | unchanged because validators and authorization fences were not widened | same schemas, new package paths | source-only fixtures | extra key, uppercase digest, '-1' and numeric 0 rejected | N/A |

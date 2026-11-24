@@ -5,7 +5,7 @@ import {
   createTerminalPairingSchema,
   type TerminalAccessTokenIssued,
   type TerminalPairingCreated,
-} from '@offscreen/contracts/terminal-auth';
+} from '@offscreen/identity-interface/terminal-auth';
 import { defaultAuthFilePath } from './config.js';
 import { writeStoredAuth, type StoredTerminalAuth } from './auth-store.js';
 import type { TerminalHttpClient } from './http.js';

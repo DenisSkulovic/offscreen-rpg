@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AdminSelfV1, CaseSummaryV1 } from '@offscreen/contracts/admin';
+import type { AdminSelfV1, CaseSummaryV1 } from '@offscreen/admin-interface/admin';
 import { createAdminCase, listAdminCases } from '@/src/lib/admin-transport';
 import { adminQueryKeys } from './admin-query-keys';
 import {

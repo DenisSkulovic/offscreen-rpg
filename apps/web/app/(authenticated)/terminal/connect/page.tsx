@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { notFound } from 'next/navigation';
-import { terminalPairingConsentSchema } from '@offscreen/contracts/terminal-auth';
+import { terminalPairingConsentSchema } from '@offscreen/identity-interface/terminal-auth';
 import { TerminalConnectForm } from '@/src/features/terminal/terminal-connect-form';
 import { requireViewer } from '@/src/server/viewer';
 import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';

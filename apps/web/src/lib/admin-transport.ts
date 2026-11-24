@@ -24,7 +24,7 @@ import {
   type RedactedOperationPageV1,
   type RedactedOperationEnvelopeV1,
   type UsageStatusEnvelopeV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 
 async function readJson(response: Response): Promise<unknown> {
   return response.json();

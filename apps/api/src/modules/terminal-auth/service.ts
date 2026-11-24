@@ -30,7 +30,7 @@ import type {
   TerminalPairingCreated,
   TerminalPairingConsent,
   TerminalTokenCurrent,
-} from '@offscreen/contracts/terminal-auth';
+} from '@offscreen/identity-interface/terminal-auth';
 import {
   challengeFromVerifierBase64url,
   digestAccessToken,

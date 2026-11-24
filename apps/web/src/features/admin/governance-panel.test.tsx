@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { AdminSelfV1 } from '@offscreen/contracts/admin';
+import type { AdminSelfV1 } from '@offscreen/admin-interface/admin';
 import { AdminGovernancePanel } from './governance-panel';
 
 const self: AdminSelfV1 = {

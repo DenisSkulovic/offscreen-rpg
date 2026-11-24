@@ -16,7 +16,7 @@ import {
   type StoryLaunchRequest,
   type StoryLaunchStatus,
 } from '@offscreen/contracts/story-launch';
-import type { TerminalTokenCurrent } from '@offscreen/contracts/terminal-auth';
+import type { TerminalTokenCurrent } from '@offscreen/identity-interface/terminal-auth';
 import {
   clearStoredAuth,
   readStoredAuth,

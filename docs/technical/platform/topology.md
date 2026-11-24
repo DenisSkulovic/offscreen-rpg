@@ -148,7 +148,7 @@ Negative: a replay cannot duplicate an admitted roll, a story-item transfer, or 
 
 For current entry points use [apps/api](../../../apps/api/README.md), [apps/game-authority](../../../apps/game-authority/README.md), [packages/story-engine](../../../packages/story-engine/README.md), and [packages/storyteller](../../../packages/storyteller/README.md). The [2026-11 code-navigation inspection](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md) is dated evidence, not the current owner. This document owns the architectural design.
 
-Selected target layout. Domain ownership retirement is ratified 2026-11-24; DO01–DO07 implement it in stages, not all these packages exist yet. Create each package when its first implementation needs it:
+Selected target layout. Domain ownership retirement is ratified 2026-11-24; DO01–DO07 implement it in stages. DO02 realizes `@offscreen/admin-interface`, `@offscreen/identity-interface`, and `@offscreen/usage-policy`. Residual `@offscreen/contracts` still owns `current-authority` and may depend on `@offscreen/usage-policy` until DO05. Other listed leaves are created when their Change lands.
 
 ```text
 apps/

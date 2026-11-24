@@ -7,7 +7,7 @@ import {
   signInHrefForControl,
 } from '@/src/features/admin/safe-control-destination';
 import { nestFetch } from '@/src/server/nest-reader';
-import { adminSelfV1Schema } from '@offscreen/contracts/admin';
+import { adminSelfV1Schema } from '@offscreen/admin-interface/admin';
 
 /**
  * Deliberate Admin enter surface. Requires a player session; never grants

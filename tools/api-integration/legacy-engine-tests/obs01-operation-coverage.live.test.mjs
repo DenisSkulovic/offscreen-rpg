@@ -15,7 +15,7 @@ import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
 } from '../../../packages/lab-support/dist/index.js';
-import { redactedOperationPageV1Schema } from '@offscreen/contracts/admin';
+import { redactedOperationPageV1Schema } from '@offscreen/admin-interface/admin';
 
 const profile = storytellerCatalogue.resolve({
   id: 'absurd-action-comedy',

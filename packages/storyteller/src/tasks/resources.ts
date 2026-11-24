@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
+import { effectiveUsagePolicySchema } from '@offscreen/usage-policy/usage-policy';
 import {
   creativeExplorationRecipeSchema,
   disabledCreativeExplorationRecipe,

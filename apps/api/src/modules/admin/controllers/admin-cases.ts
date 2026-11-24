@@ -23,7 +23,7 @@ import {
   type CaseSummaryPageV1,
   type CaseSummaryV1,
   type SupportSituationV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import {
   AdminSessionError,
   type AdminCaseStore,

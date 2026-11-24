@@ -32,7 +32,7 @@ import {
 } from './canonical-knowledge';
 import { requireCurrentPassage } from '../stories/persistence';
 import { StoryError } from '../stories/errors';
-import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
+import { effectiveUsagePolicySchema } from '@offscreen/usage-policy/usage-policy';
 import { prepareAdmittedStorytellerTask } from './task-admission';
 import type { DocumentStore } from '@offscreen/documents';
 import {

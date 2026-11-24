@@ -65,17 +65,17 @@ try {
     suite === 'admin-situation'
   ) {
     const env = providerFreeEnvironment();
-    for (const filter of [
-      '@offscreen/contracts',
-      '@offscreen/db',
-      '@offscreen/story-engine',
-      '@offscreen/lab-support',
-      '@offscreen/runtime-logging',
-      '@offscreen/api',
-      '@offscreen/api-integration',
-    ]) {
-      runPnpm(['--filter', filter, 'build'], { env });
-    }
+    runPnpm(
+      [
+        'turbo',
+        'run',
+        'build',
+        '--filter=@offscreen/api',
+        '--filter=@offscreen/lab-support',
+      ],
+      { env },
+    );
+    runPnpm(['--filter', '@offscreen/api-integration', 'build'], { env });
   } else {
     runPnpm(['turbo', 'run', 'build', '--filter=@offscreen/api-integration'], {
       env: providerFreeEnvironment(),

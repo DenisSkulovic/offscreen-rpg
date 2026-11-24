@@ -1,4 +1,4 @@
-import type { UsageLimits } from '@offscreen/contracts/usage-policy';
+import type { UsageLimits } from '@offscreen/usage-policy/usage-policy';
 import { resolveEffectiveUsagePolicy } from '@offscreen/story-engine/storyteller';
 
 type TestUsageWindow = Readonly<{

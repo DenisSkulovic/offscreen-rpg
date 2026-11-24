@@ -4,7 +4,7 @@ import { storytellerUsageAllocation as allocation } from '@offscreen/db/storytel
 import type {
   EffectiveUsagePolicy,
   UsageWindowDefinition,
-} from '@offscreen/contracts/usage-policy';
+} from '@offscreen/usage-policy/usage-policy';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import type { ProviderUsage } from '@offscreen/storyteller/providers/openrouter';
 import type { Transaction } from '@offscreen/db/outbox';

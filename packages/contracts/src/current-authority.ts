@@ -4,7 +4,7 @@ import {
   policyIdSchema,
   usageEntitlementProfileSchema,
   usagePolicyRestrictionSchema,
-} from './usage-policy';
+} from '@offscreen/usage-policy/usage-policy';
 
 const positiveRevision = z.number().int().positive().max(1_000_000);
 const sha256Schema = z.string().regex(/^[0-9a-f]{64}$/);

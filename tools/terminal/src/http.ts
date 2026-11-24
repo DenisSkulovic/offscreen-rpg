@@ -6,7 +6,7 @@ import {
   type TerminalAccessTokenIssued,
   type TerminalPairingCreated,
   type TerminalTokenCurrent,
-} from '@offscreen/contracts/terminal-auth';
+} from '@offscreen/identity-interface/terminal-auth';
 import {
   historicalSceneSchema,
   resolutionOperationReceiptSchema,

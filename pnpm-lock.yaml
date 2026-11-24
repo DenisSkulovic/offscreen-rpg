@@ -62,6 +62,9 @@ importers:
       '@offscreen/admin':
         specifier: workspace:*
         version: link:../../packages/admin
+      '@offscreen/admin-interface':
+        specifier: workspace:*
+        version: link:../../packages/admin-interface
       '@offscreen/cache':
         specifier: workspace:*
         version: link:../../packages/cache
@@ -83,6 +86,9 @@ importers:
       '@offscreen/game-authority':
         specifier: workspace:*
         version: link:../game-authority
+      '@offscreen/identity-interface':
+        specifier: workspace:*
+        version: link:../../packages/identity-interface
       '@offscreen/runtime-logging':
         specifier: workspace:*
         version: link:../../packages/runtime-logging
@@ -92,6 +98,9 @@ importers:
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
+      '@offscreen/usage-policy':
+        specifier: workspace:*
+        version: link:../../packages/usage-policy
       better-auth:
         specifier: 1.7.5
         version: 1.7.5(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0))(next@16.3.5(@babel/core@7.29.7(supports-color@8.1.1))(@types/node@22.20.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@3.2.7(@types/debug@4.1.13)(@types/node@22.20.3)(happy-dom@18.0.1)(jiti@2.7.0)(jsdom@26.1.0(supports-color@8.1.1))(msw@2.11.3(@types/node@22.20.3)(typescript@5.9.3))(supports-color@8.1.1)(terser@5.51.2)(tsx@4.23.13))
@@ -178,12 +187,18 @@ importers:
       '@hookform/resolvers':
         specifier: 5.2.2
         version: 5.2.2(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.0))
+      '@offscreen/admin-interface':
+        specifier: workspace:*
+        version: link:../../packages/admin-interface
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
       '@offscreen/game':
         specifier: workspace:*
         version: link:../../packages/game
+      '@offscreen/identity-interface':
+        specifier: workspace:*
+        version: link:../../packages/identity-interface
       '@tanstack/react-query':
         specifier: 5.107.1
         version: 5.107.1(@types/react@19.3.0)(react@19.3.0)
@@ -333,6 +348,9 @@ importers:
 
   packages/admin:
     dependencies:
+      '@offscreen/admin-interface':
+        specifier: workspace:*
+        version: link:../admin-interface
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -342,6 +360,22 @@ importers:
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/admin-interface:
+    dependencies:
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
     devDependencies:
       '@offscreen/config':
         specifier: workspace:*
@@ -416,6 +450,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/usage-policy':
+        specifier: workspace:*
+        version: link:../usage-policy
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -490,6 +527,22 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/identity-interface:
+    dependencies:
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   packages/lab-support:
     dependencies:
       '@offscreen/contracts':
@@ -510,6 +563,9 @@ importers:
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../storyteller
+      '@offscreen/usage-policy':
+        specifier: workspace:*
+        version: link:../usage-policy
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
@@ -575,6 +631,9 @@ importers:
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../storyteller
+      '@offscreen/usage-policy':
+        specifier: workspace:*
+        version: link:../usage-policy
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
@@ -600,6 +659,25 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/usage-policy':
+        specifier: workspace:*
+        version: link:../usage-policy
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/usage-policy:
+    dependencies:
       zod:
         specifier: 4.6.5
         version: 4.6.5
@@ -632,6 +710,9 @@ importers:
       '@offscreen/admin':
         specifier: workspace:*
         version: link:../../packages/admin
+      '@offscreen/admin-interface':
+        specifier: workspace:*
+        version: link:../../packages/admin-interface
       '@offscreen/api':
         specifier: workspace:*
         version: link:../../apps/api
@@ -690,6 +771,9 @@ importers:
       '@offscreen/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@offscreen/usage-policy':
+        specifier: workspace:*
+        version: link:../../packages/usage-policy
       '@types/node':
         specifier: 22.20.3
         version: 22.20.3
@@ -769,6 +853,9 @@ importers:
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
+      '@offscreen/usage-policy':
+        specifier: workspace:*
+        version: link:../../packages/usage-policy
       '@offscreen/web':
         specifier: workspace:*
         version: link:../../apps/web
@@ -797,6 +884,9 @@ importers:
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@offscreen/identity-interface':
+        specifier: workspace:*
+        version: link:../../packages/identity-interface
       zod:
         specifier: 4.6.5
         version: 4.6.5

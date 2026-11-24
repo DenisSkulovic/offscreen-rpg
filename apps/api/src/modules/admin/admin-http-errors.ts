@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { AdminErrorV1 } from '@offscreen/contracts/admin';
+import type { AdminErrorV1 } from '@offscreen/admin-interface/admin';
 import { AdminSessionError } from '@offscreen/admin';
 
 export function adminError(code: AdminErrorV1['code']): AdminErrorV1 {

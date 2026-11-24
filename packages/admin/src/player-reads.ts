@@ -6,7 +6,7 @@ import type {
   AdminReadEnvelopeV1,
   PlayerSearchPageV1,
   PlayerSummaryV1,
-} from '@offscreen/contracts/admin';
+} from '@offscreen/admin-interface/admin';
 import type { AdminEnvironment } from './registry.js';
 import { AdminSessionError } from './session.js';
 
