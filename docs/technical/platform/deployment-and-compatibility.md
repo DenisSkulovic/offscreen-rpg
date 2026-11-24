@@ -1,5 +1,9 @@
 # Delivery, operations and validation
 
+## Environment execution (INF16–INF19 selected)
+
+Release has one explicit install authority; retire release Tilt. Development uses one root Tilt graph and one slot loader. Application source live update remains fast; workspace dependency changes that export compiled artifacts rebuild dev image. One supervisor serializes compile and process replacement, receipts bind compiled tree identity, slot and generation; web readiness remains image/HTTP not full source freshness. Failed remote evidence never reuses cached success. Fixture namespaces/import and acceptance belong to verification, not ordinary cluster startup. Preserve explicit down allowlist and data identities. [Program](../../../work/undertakings/storyteller-workshop/ENVIRONMENT-PARALLEL.md).
+
 ## Backing platform (INF09–INF15 selected)
 
 Local per-service Helm charts and explicit environment profiles; no application Helm lifecycle or platform hooks. Keep pinned versions, resource identities, storage classes and existing credentials; distinguish absent from unreadable, no destructive automatic adoption, password rotation or Temporal schema replay. Preserve dedicated Temporal database and dev tenant allocation. SeaweedFS installation independent from verification and content import; Gateway/collector no synthetic applications. Optional Redis/RabbitMQ/OTel not default. Release platform ensures core before app installer, content fixture remains explicit. [Program](../../../work/undertakings/storyteller-workshop/PLATFORM-PARALLEL.md). No new live proof.

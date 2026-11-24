@@ -1,5 +1,7 @@
 # Storyteller Workshop
 
+**INF16–INF19 (2026-11-24):** Owner commissioned [environment and development normalization](ENVIRONMENT-PARALLEL.md). Remove release Tilt, consolidate dev graph and image loader, normalize freshness supervision, eliminate infra/dev and separate fixture composition. INF16/17 ready; INF18 after INF17; INF19 after INF15/16. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.
+
 **INF09–INF15 (2026-11-24):** Owner commissioned [platform normalization program](PLATFORM-PARALLEL.md). INF08, INF09, INF13, and INF14 are source Done (live NOT-RUN). Shared primitives, five independently owned service Changes and final environment assembly. No live proof/acceptance credit; overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged.
 
 **INF08 (2026-11-24):** Done: [Helm workload normalization](../../changes/archive/2026-11/platform-operations/2026-11-24--inf08-helm-workload-normalization/CHANGE.md), dependency-gated after INF07. One application chart, slot-only dev and stable release, explicit resource/security policy. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.

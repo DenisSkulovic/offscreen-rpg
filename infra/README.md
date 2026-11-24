@@ -38,3 +38,7 @@ One local Helm chart under workloads/chart with development and release values; 
 ## Platform architecture (INF09–INF15 selected)
 
 Per-service local Helm charts render pinned declarations, keep upstream CNPG/RabbitMQ manifests and Traefik Helm lifecycle. Common profile/target/pin/read/render primitives distinguish confirmed absence from unknown; explicit guarded create-once/reuse/verify, no automatic credential rotation or schema replay. Separate installation, verification fixtures and slot tenancy. Core dev PostgreSQL/Temporal/S3; release plus Gateway. Optional Redis/RabbitMQ/OTel not automatically activated. [Platform program](../work/undertakings/storyteller-workshop/PLATFORM-PARALLEL.md). Live proof not authorized.
+
+## Environment normalization (INF16–INF19 selected)
+
+One root Tiltfile for development only, explicit release build/install authority, no warm release build fallback. Application source sync; compiled workspace dependencies rebuild development artifact. Shared compiler supervisor and truthful generation receipts in tools/dev-environments/runtime; remove infra/dev. Environment composition is small, verification fixtures explicit, persistent identities and narrow release teardown allowlist preserved. [Program](../work/undertakings/storyteller-workshop/ENVIRONMENT-PARALLEL.md). Source-only; live proof deferred.
