@@ -33,7 +33,7 @@ export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, par
     }
   });
   function addNodeTest(file, requires = []) {
-    add('source:' + file, 'SOURCE', node, ['--test', '--test-concurrency=1', file], {
+    add('source:' + file, 'SOURCE', node, ['--test', '--test-reporter=tap', '--test-concurrency=1', file], {
       requires, isNodeTest: true, timeoutMs: 120000, evaluate: result => {
         const counts = parseCounts(result.stdout);
         if (!counts.complete || counts.fail !== 0 || counts.tests <= 0 || counts.pass !== counts.tests || counts.skipped !== 0) return { status: 'FAIL', reason: 'incomplete, failed or skipped TAP', counts, detail: diagnosticExcerpt(result.stdout) };

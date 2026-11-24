@@ -358,7 +358,7 @@ export function runSourceVerification(options = {}) {
 
   for (const definition of SOURCE_SUITE_DEFINITIONS) {
     const files = resolveSuiteFiles(repoRoot, definition);
-    const command = [process.execPath, '--test', ...files];
+    const command = [process.execPath, '--test', '--test-reporter=tap', ...files];
     const started = now();
 
     if (files.length === 0) {
@@ -401,7 +401,7 @@ export function runSourceVerification(options = {}) {
       continue;
     }
 
-    const result = run(process.execPath, ['--test', ...files], {
+    const result = run(process.execPath, ['--test', '--test-reporter=tap', ...files], {
       cwd: repoRoot,
       encoding: 'utf8',
       timeout: timeoutMs,

@@ -187,14 +187,14 @@ test('ensure preflight skips unselected chart services', () => {
         stdout: JSON.stringify({
           clusters: [
             {
-              name: 'offscreen-lab',
+              name: 'kind-offscreen-lab',
               cluster: { server: 'https://127.0.0.1:6443' },
             },
           ],
           contexts: [
             {
               name: 'kind-offscreen-lab',
-              context: { cluster: 'offscreen-lab' },
+              context: { cluster: 'kind-offscreen-lab' },
             },
           ],
           'current-context': 'kind-offscreen-lab',

@@ -21,7 +21,7 @@ import { allowedNamespacesForService } from '../platform/common/render.mjs';
 const DEV_PORT = DEV_API_PORT_RANGE.start;
 
 function kubectlConfigJson(profile, port) {
-  const clusterName = profile === 'dev' ? 'offscreen-dev' : 'offscreen-lab';
+  const clusterName = profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-lab';
   const contextName =
     profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-lab';
   return JSON.stringify({

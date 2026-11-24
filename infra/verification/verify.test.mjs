@@ -51,7 +51,8 @@ function mockRunBySuite(resultsByPrefix) {
   return (command, args) => {
     assert.equal(command, process.execPath);
     assert.equal(args[0], '--test');
-    const files = args.slice(1);
+    assert.equal(args[1], '--test-reporter=tap');
+    const files = args.slice(2);
     const key = suiteKeyFromFiles(files);
     const template = resultsByPrefix[key] ?? {
       status: 0,
@@ -210,7 +211,7 @@ test('empty glob suite fails without invoking node for that suite', () => {
   const spawnedSuiteIds = [];
   const report = runSourceVerification({
     run: (command, args) => {
-      spawnedSuiteIds.push(suiteKeyFromFiles(args.slice(1)));
+      spawnedSuiteIds.push(suiteKeyFromFiles(args.slice(2)));
       return { status: 0, signal: null, stdout: TAP_OK, stderr: '' };
     },
     assertHelmAvailable: () => 'v3.14.0',
