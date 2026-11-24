@@ -1,4 +1,4 @@
-import type { QaJourneyCase } from '@offscreen/contracts/qa';
+import type { QaJourneyCase } from '@offscreen/lab-interface/qa';
 import { activityLifecycleCases } from './qa-catalog/activity-lifecycle';
 import { calendarAndLiveEvaluationCases } from './qa-catalog/calendar-and-live-evaluation';
 import { playerEntryCases } from './qa-catalog/player-entry';

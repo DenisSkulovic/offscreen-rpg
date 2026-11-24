@@ -15,7 +15,7 @@ import {
 import {
   chamberInspectorHistoryLimit,
   chamberInspectorSchema,
-} from '@offscreen/contracts/chamber';
+} from '@offscreen/lab-interface/chamber';
 import { passageContentSchema } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
@@ -32,8 +32,14 @@ import {
 } from '@offscreen/db/story-schema';
 import { and, desc, eq, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { parseStoryIdentifier, StoryError } from '@offscreen/story-engine/stories/errors';
-import { decisionPlanSchema, waitPlanSchema } from '@offscreen/story-engine/stories/plans';
+import {
+  parseStoryIdentifier,
+  StoryError,
+} from '@offscreen/story-engine/stories/errors';
+import {
+  decisionPlanSchema,
+  waitPlanSchema,
+} from '@offscreen/story-engine/stories/plans';
 import { createStories } from '@offscreen/story-engine/stories';
 import { campaignReportSourceSchema } from '@offscreen/story-engine/campaign/report-source';
 import type { DocumentStore } from '@offscreen/documents';

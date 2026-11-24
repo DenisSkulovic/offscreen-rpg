@@ -3,7 +3,7 @@
 import {
   listChamberScenarios,
   type ChamberInspector,
-} from '@offscreen/contracts/chamber';
+} from '@offscreen/lab-interface/chamber';
 import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { StoryHistoryView } from './history';
 import { ChamberInspectorPanel } from './inspector';

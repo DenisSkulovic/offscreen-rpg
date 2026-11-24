@@ -45,7 +45,6 @@
     "@offscreen/api": "workspace:*",
     "@offscreen/api-lab": "workspace:*",
     "@offscreen/content-packages": "workspace:*",
-    "@offscreen/contracts": "workspace:*",
     "@offscreen/game-authority-protocol": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",
@@ -63,6 +62,7 @@
     "@offscreen/story-interface": "workspace:*"
   },
   "devDependencies": {
+    "@offscreen/lab-interface": "workspace:*",
     "@offscreen/cache-port": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/config": "workspace:*",

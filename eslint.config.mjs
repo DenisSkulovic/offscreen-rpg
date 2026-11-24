@@ -108,7 +108,6 @@ export default ts.config(
   },
   {
     files: ['packages/contracts/src/**/*.ts'],
-    ignores: ['packages/contracts/src/creative-exploration-evaluation.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -137,7 +136,9 @@ export default ts.config(
     },
   },
   {
-    files: ['packages/contracts/src/creative-exploration-evaluation.ts'],
+    files: [
+      'packages/lab-support/src/interfaces/creative-exploration-evaluation.ts',
+    ],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -207,6 +208,39 @@ export default ts.config(
                 '**/packages/**',
               ],
               'Story interface must stay free of backend packages.',
+            ],
+          ]),
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/lab-interface/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: banGroups([
+            [
+              [
+                '@offscreen/db',
+                '@offscreen/db/*',
+                '@offscreen/object-storage',
+                '@offscreen/object-storage/*',
+                '@offscreen/application',
+                '@offscreen/application/*',
+                '@offscreen/story-engine',
+                '@offscreen/story-engine/*',
+                '@offscreen/storyteller',
+                '@offscreen/storyteller/*',
+                '@offscreen/workflows',
+                '@offscreen/workflows/*',
+                '@offscreen/worker',
+                '@offscreen/worker/*',
+                '**/apps/**',
+                '**/packages/**',
+              ],
+              'Lab interface must stay free of backend packages.',
             ],
           ]),
         },

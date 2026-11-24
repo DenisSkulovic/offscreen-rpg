@@ -1,7 +1,7 @@
 import {
   qaJourneyCaseSchema,
   type QaJourneyCase,
-} from '@offscreen/contracts/qa';
+} from '@offscreen/lab-interface/qa';
 type StageInput = Omit<
   QaJourneyCase['stages'][number],
   'evidence' | 'assessment' | 'rubricDimensions'

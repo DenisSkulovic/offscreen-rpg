@@ -7,7 +7,7 @@ import {
   parseChamberLabFixtureRecipe,
   parseChamberLabScenario,
   scenarioKey,
-} from '../src/chamber-lab';
+} from './chamber-lab.js';
 
 const validOfflineBench = {
   id: 'calendar-named-year-projection',

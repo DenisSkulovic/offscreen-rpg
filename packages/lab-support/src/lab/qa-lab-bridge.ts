@@ -8,7 +8,7 @@ import {
   type LabRunEvidenceCapsule,
   type QaLabCatalogueEntry,
   type QaLabStageBinding,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 import { findQaJourneyCase, listQaJourneyCases } from '../qa-catalog.js';
 import {
   findChamberLabScenario,
@@ -226,7 +226,8 @@ export function searchQaLabCatalogue(term: string): QaLabCatalogueEntry[] {
           name: scenario.name,
           lane,
           costClass: scenario.costClass,
-          availability: availability.state as 'available' | 'blocked' | 'planned',
+          availability: availability.state as
+            'available' | 'blocked' | 'planned',
         });
       }
     }
@@ -258,10 +259,7 @@ export function openLabRunForQaStage(args: {
     );
   }
   if (!binding.scenarioId || !binding.scenarioVersion || !binding.lane) {
-    throw new QaLabBridgeError(
-      'not-executable',
-      'Binding lacks scenario/lane',
-    );
+    throw new QaLabBridgeError('not-executable', 'Binding lacks scenario/lane');
   }
   const opened = openChamberLabScenario({
     id: binding.scenarioId,
@@ -332,10 +330,7 @@ export function claimStructuralMachinePass(args: {
       `Capsule scenario ${args.capsule.scenarioId} does not match binding ${args.binding.scenarioId}`,
     );
   }
-  if (
-    args.capsule.status !== 'completed' &&
-    args.capsule.status !== 'paused'
-  ) {
+  if (args.capsule.status !== 'completed' && args.capsule.status !== 'paused') {
     throw new QaLabBridgeError(
       'evidence-mismatch',
       `Capsule status ${args.capsule.status} is not a successful machine pass`,

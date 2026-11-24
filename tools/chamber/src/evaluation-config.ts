@@ -5,7 +5,7 @@ import {
   memoryEvaluationPacketConfigSchema,
   type EvaluationPacketConfig,
   type MemoryEvaluationPacketConfig,
-} from '@offscreen/contracts/live-evaluation';
+} from '@offscreen/lab-support/interfaces/live-evaluation';
 import type { UsageEntitlementProfile } from '@offscreen/usage-policy/usage-policy';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 

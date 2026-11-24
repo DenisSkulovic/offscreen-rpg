@@ -12,7 +12,7 @@ import {
   type LabAssertionResult,
   type ChamberLabLane,
   type LabRunLifecycle,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 
 export class LabEvidenceError extends Error {
   constructor(
@@ -163,9 +163,7 @@ export type FinalizeLabEvidenceInput = {
   providerMode?: 'offline' | 'held' | 'forbidden';
 };
 
-export function finalizeLabRunEvidence(
-  input: FinalizeLabEvidenceInput,
-): {
+export function finalizeLabRunEvidence(input: FinalizeLabEvidenceInput): {
   capsule: LabRunEvidenceCapsule;
   markdown: string;
   store: MemoryArtifactStore;
@@ -201,9 +199,7 @@ export function finalizeLabRunEvidence(
     artifacts.push(
       store.put({
         kind: 'provider-packet',
-        body: includePrivate
-          ? input.providerPacket
-          : { redacted: true },
+        body: includePrivate ? input.providerPacket : { redacted: true },
         redactedFromDefault: !includePrivate,
       }),
     );
@@ -242,16 +238,18 @@ export function finalizeLabRunEvidence(
     scenarioId: input.scenarioId ?? null,
     scenarioVersion: input.scenarioVersion ?? null,
     fixtureHash: input.fixtureHash,
-    commandHash: hashJson(input.steps.map((step) => {
-      if (
-        step &&
-        typeof step === 'object' &&
-        'commandKind' in (step as object)
-      ) {
-        return (step as { commandKind: unknown }).commandKind;
-      }
-      return step;
-    })),
+    commandHash: hashJson(
+      input.steps.map((step) => {
+        if (
+          step &&
+          typeof step === 'object' &&
+          'commandKind' in (step as object)
+        ) {
+          return (step as { commandKind: unknown }).commandKind;
+        }
+        return step;
+      }),
+    ),
     faultHash:
       input.faultPlans && input.faultPlans.length > 0
         ? hashJson(input.faultPlans)

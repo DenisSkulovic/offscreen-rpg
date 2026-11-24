@@ -16,7 +16,7 @@ import {
   prepareAdmittedStorytellerTask,
   resolveStoryRetrievalRecipe,
 } from '@offscreen/story-engine/storyteller';
-import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
+import { dispatchReviewResponseSchema } from '@offscreen/lab-interface/chamber';
 import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';

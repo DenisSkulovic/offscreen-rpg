@@ -2,7 +2,7 @@ import {
   longStoryMemoryCorpusSchema,
   type LongStoryMemoryCorpus,
   type MemoryOracleQuery,
-} from '@offscreen/contracts/memory-evaluation';
+} from './interfaces/memory-evaluation.js';
 import type { DocumentStore } from '@offscreen/documents';
 import { createHash } from 'node:crypto';
 

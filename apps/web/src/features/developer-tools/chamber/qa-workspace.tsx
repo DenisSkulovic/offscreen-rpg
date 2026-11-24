@@ -6,11 +6,11 @@ import type {
   QaJourneyCase,
   QaRun,
   QaRunSummary,
-} from '@offscreen/contracts/qa';
+} from '@offscreen/lab-interface/qa';
 import {
   qaQualityRubric,
   type QaRubricDimensionId,
-} from '@offscreen/contracts/qa';
+} from '@offscreen/lab-interface/qa';
 import {
   finalizeQaRun,
   openQaRun,

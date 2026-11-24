@@ -10,7 +10,7 @@ import {
   type LabObservation,
   type LabObservationDomain,
   type LabSemanticDelta,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 import type { FixtureSpecimenState } from './fixture-specimens.js';
 
 export type FacetSource = {

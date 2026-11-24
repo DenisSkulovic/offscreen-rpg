@@ -5,9 +5,9 @@ import { preflightLiveEvaluation } from '@offscreen/lab-support';
 import type {
   EvaluationPacketConfig,
   MemoryEvaluationPacketConfig,
-} from '@offscreen/contracts/live-evaluation';
-import type { DispatchReviewView } from '@offscreen/contracts/chamber';
-import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
+} from '@offscreen/lab-support/interfaces/live-evaluation';
+import type { DispatchReviewView } from '@offscreen/lab-interface/chamber';
+import { dispatchReviewResponseSchema } from '@offscreen/lab-interface/chamber';
 import { openingPreviewSchema } from '@offscreen/story-interface/openings';
 import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';

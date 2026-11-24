@@ -553,9 +553,15 @@ export const labRunEvidenceCapsuleSchema = z.strictObject({
   runId: z.uuid(),
   scenarioId: identifierSchema.nullable(),
   scenarioVersion: z.number().int().positive().nullable(),
-  fixtureHash: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
+  fixtureHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .nullable(),
   commandHash: z.string().regex(/^[a-f0-9]{64}$/),
-  faultHash: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
+  faultHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .nullable(),
   seed: z.number().int().nonnegative(),
   gitCommit: z.string().min(7).max(64),
   dirty: z.boolean(),

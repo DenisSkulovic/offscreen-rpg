@@ -1,4 +1,4 @@
-import { chamberInspectorSchema } from '@offscreen/contracts/chamber';
+import { chamberInspectorSchema } from '@offscreen/lab-interface/chamber';
 import {
   qaEvidenceBundleSchema,
   qaJourneyCaseSchema,
@@ -7,7 +7,7 @@ import {
   type FinalizeQaRun,
   type OpenQaRun,
   type RecordQaStage,
-} from '@offscreen/contracts/qa';
+} from '@offscreen/lab-interface/qa';
 import { z } from 'zod';
 import {
   preferNewerSnapshot,

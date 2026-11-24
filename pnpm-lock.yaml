@@ -196,15 +196,15 @@ importers:
       '@offscreen/admin-interface':
         specifier: workspace:*
         version: link:../../packages/admin-interface
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@offscreen/game':
         specifier: workspace:*
         version: link:../../packages/game
       '@offscreen/identity-interface':
         specifier: workspace:*
         version: link:../../packages/identity-interface
+      '@offscreen/lab-interface':
+        specifier: workspace:*
+        version: link:../../packages/lab-interface
       '@offscreen/story-interface':
         specifier: workspace:*
         version: link:../../packages/story-interface
@@ -363,9 +363,6 @@ importers:
       '@offscreen/admin-interface':
         specifier: workspace:*
         version: link:../admin-interface
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../contracts
       '@offscreen/db':
         specifier: workspace:*
         version: link:../db
@@ -458,22 +455,6 @@ importers:
         version: 5.9.3
 
   packages/contracts:
-    dependencies:
-      '@offscreen/game':
-        specifier: workspace:*
-        version: link:../game
-      '@offscreen/story-interface':
-        specifier: workspace:*
-        version: link:../story-interface
-      '@offscreen/storyteller':
-        specifier: workspace:*
-        version: link:../storyteller
-      '@offscreen/usage-policy':
-        specifier: workspace:*
-        version: link:../usage-policy
-      zod:
-        specifier: 4.6.5
-        version: 4.6.5
     devDependencies:
       '@offscreen/config':
         specifier: workspace:*
@@ -580,11 +561,30 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/lab-interface:
+    dependencies:
+      '@offscreen/game':
+        specifier: workspace:*
+        version: link:../game
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../story-interface
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   packages/lab-support:
     dependencies:
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../contracts
       '@offscreen/db':
         specifier: workspace:*
         version: link:../db
@@ -594,6 +594,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/lab-interface':
+        specifier: workspace:*
+        version: link:../lab-interface
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../story-engine
@@ -656,9 +659,6 @@ importers:
       '@offscreen/cache-port':
         specifier: workspace:*
         version: link:../cache-port
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../contracts
       '@offscreen/db':
         specifier: workspace:*
         version: link:../db
@@ -787,9 +787,6 @@ importers:
       '@offscreen/content-packages':
         specifier: workspace:*
         version: link:../../packages/content-packages
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -842,6 +839,9 @@ importers:
       '@offscreen/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@offscreen/lab-interface':
+        specifier: workspace:*
+        version: link:../../packages/lab-interface
       '@offscreen/usage-policy':
         specifier: workspace:*
         version: link:../../packages/usage-policy
@@ -860,12 +860,12 @@ importers:
       '@offscreen/api':
         specifier: workspace:*
         version: link:../../apps/api
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@offscreen/lab-interface':
+        specifier: workspace:*
+        version: link:../../packages/lab-interface
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
@@ -906,9 +906,6 @@ importers:
       '@offscreen/content-packages':
         specifier: workspace:*
         version: link:../../packages/content-packages
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -918,6 +915,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../../packages/game
+      '@offscreen/lab-interface':
+        specifier: workspace:*
+        version: link:../../packages/lab-interface
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
@@ -958,9 +958,6 @@ importers:
 
   tools/terminal:
     dependencies:
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@offscreen/identity-interface':
         specifier: workspace:*
         version: link:../../packages/identity-interface

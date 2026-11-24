@@ -16,7 +16,7 @@
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
     "@offscreen/admin-interface": "workspace:*",
-    "@offscreen/contracts": "workspace:*",
+    "@offscreen/lab-interface": "workspace:*",
     "@offscreen/game": "workspace:*",
     "@offscreen/identity-interface": "workspace:*",
     "@tanstack/react-query": "5.107.1",

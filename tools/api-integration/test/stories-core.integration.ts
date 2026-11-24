@@ -8,7 +8,7 @@ import {
   storyHistorySchema,
   storySnapshotSchema,
 } from '@offscreen/story-interface/stories';
-import { listChamberScenarios } from '@offscreen/contracts/chamber';
+import { listChamberScenarios } from '@offscreen/lab-interface/chamber';
 import type { Database } from '@offscreen/db';
 import type { ReadCache } from '@offscreen/cache-port/read-cache';
 import {

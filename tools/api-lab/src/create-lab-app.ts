@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import type {
   qaEnvironmentSchema,
   qaGitStateSchema,
-} from '@offscreen/contracts/qa';
+} from '@offscreen/lab-interface/qa';
 import type { Database } from '@offscreen/db';
 import {
   chamberAllowsResponse,

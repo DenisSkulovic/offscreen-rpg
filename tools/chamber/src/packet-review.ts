@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { StartPackageReference } from '@offscreen/story-interface/campaign';
-import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
-import type { DispatchReviewView } from '@offscreen/contracts/chamber';
+import { dispatchReviewResponseSchema } from '@offscreen/lab-interface/chamber';
+import type { DispatchReviewView } from '@offscreen/lab-interface/chamber';
 import { draftSchema } from '@offscreen/story-interface/drafts';
 import type { Database } from '@offscreen/db';
 

@@ -362,14 +362,22 @@ export const humanReviewWorksheetSchema = z.strictObject({
   version: z.literal('human-review-worksheet.v1'),
   comparisonId: z.uuid(),
   dimensions: z.strictObject({
-    profileFaithfulness: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
-    narrativeOriginality: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
-    oldPromiseRecall: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
+    profileFaithfulness: z
+      .enum(['unobserved', 'pass', 'fail'])
+      .default('unobserved'),
+    narrativeOriginality: z
+      .enum(['unobserved', 'pass', 'fail'])
+      .default('unobserved'),
+    oldPromiseRecall: z
+      .enum(['unobserved', 'pass', 'fail'])
+      .default('unobserved'),
     mechanicallyEarnedConsequence: z
       .enum(['unobserved', 'pass', 'fail'])
       .default('unobserved'),
     quietness: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
-    nextChoiceAppeal: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
+    nextChoiceAppeal: z
+      .enum(['unobserved', 'pass', 'fail'])
+      .default('unobserved'),
   }),
   notes: z.string().max(4000).default(''),
   completedAt: z.iso.datetime().nullable().default(null),
@@ -450,4 +458,3 @@ export const liveComparisonTrialManifestSchema = z
 export type LiveComparisonTrialManifest = z.infer<
   typeof liveComparisonTrialManifestSchema
 >;
-

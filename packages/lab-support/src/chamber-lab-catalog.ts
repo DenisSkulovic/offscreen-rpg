@@ -5,8 +5,8 @@ import {
   scenarioKey,
   type ChamberLabLane,
   type ChamberLabScenarioDefinition,
-} from '@offscreen/contracts/chamber-lab';
-import { listChamberScenarios } from '@offscreen/contracts/chamber';
+} from './interfaces/chamber-lab.js';
+import { listChamberScenarios } from '@offscreen/lab-interface/chamber';
 import { listQaJourneyCases } from './qa-catalog';
 
 /**

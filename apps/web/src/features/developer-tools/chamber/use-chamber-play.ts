@@ -9,7 +9,7 @@ import {
   readStorySnapshot,
   submitStoryJson,
 } from './transport';
-import type { ChamberInspector } from '@offscreen/contracts/chamber';
+import type { ChamberInspector } from '@offscreen/lab-interface/chamber';
 
 type PendingCommand = { id: string; body: unknown };
 

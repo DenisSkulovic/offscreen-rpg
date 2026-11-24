@@ -9,11 +9,11 @@ import {
   evaluationPacketInspectionSchema,
   type MemoryEvaluationManifest,
   type MemoryEvaluationPacketConfig,
-} from '@offscreen/contracts/live-evaluation';
+} from '@offscreen/lab-support/interfaces/live-evaluation';
 import {
   dispatchReviewResponseSchema,
   type DispatchReviewView,
-} from '@offscreen/contracts/chamber';
+} from '@offscreen/lab-interface/chamber';
 import { setTimeout as delay } from 'node:timers/promises';
 import {
   closeSingleLiveAttempt,

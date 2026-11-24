@@ -701,6 +701,7 @@ function classifySpecifier(input) {
     if (
       (owner.name === '@offscreen/contracts' ||
         owner.name === '@offscreen/story-interface' ||
+        owner.name === '@offscreen/lab-interface' ||
         owner.name === '@offscreen/game') &&
       (target.name === '@offscreen/story-engine' ||
         target.name === '@offscreen/lab-support')

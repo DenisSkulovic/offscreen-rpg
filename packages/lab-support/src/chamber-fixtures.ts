@@ -1,7 +1,7 @@
 import {
   listChamberScenarios as listCatalogScenarios,
   type ChamberScenario,
-} from '@offscreen/contracts/chamber';
+} from '@offscreen/lab-interface/chamber';
 import { StoryError } from '@offscreen/story-engine/stories/errors';
 
 export type { ChamberScenario };
