@@ -1,5 +1,5 @@
 # Proof matrix
-Local source-only receipt on `change/do05-storyteller-engine-ownership` from `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Not a custodian join and not live acceptance.
+Joined source-only on `undertaking/storyteller-workshop` after merging DO04. Not live acceptance.
 
 | Check | Result |
 |---|---|

@@ -1,14 +1,14 @@
 # DO05 | storyteller engine ownership
 
-**Status: Locally accepted, awaiting DO04 custodian join. Kind: implementation. Profile: CONTRACT.** Baseline `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Integration target `undertaking/storyteller-workshop`. Prerequisite: DO02 + DO03 integrated; satisfied. Branch `change/do05-storyteller-engine-ownership` in worktree `offscreen-rpg-do05`. Not pushed. Not archived.
+**Status: Done (2026-11-24), source-only, joined to `undertaking/storyteller-workshop`. Kind: implementation. Profile: CONTRACT.** Baseline `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Live Kubernetes and providers NOT RUN. Prerequisite: DO02 + DO03 integrated; satisfied.
 
-[Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
+[Program](../../../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 
 ## Cursor first-screen brief
 
 > Current-source map: SOURCE-MAP.md; frozen snapshot. Governing technical owner: `docs/technical/platform/topology.md#code-organization` (must be reconciled by ChatGPT at promotion). Known trap: do not add an inverse dependency or old-package alias. Scope: exact source migration and tests, no behavior change. Route: TASKS.md, one T-ID at a time, parent joins.
 
-**Parallel execution authority (2026-11-24):** [coordination and join rules](../../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md). This replaces any earlier serial program or generic post-Documents gate. Each Change has its own isolated linked worktree and branch; one child at a time within each parent. DO04 parent is the integration custodian for wave B. Other parents deliver locally accepted branch receipts to that custodian, do not independently push the undertaking, and do not require another human approval for a safe serialized join. Shared files are edited in isolated branches by owned import/key only; merge against the latest integration base, regenerate lockfile from merged manifests, rerun required proof. Do not overwrite siblings' edits. Local worktree/dirty-path and branch guard checks remain mandatory.
+**Parallel execution authority (2026-11-24):** [coordination and join rules](../../../../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md). This replaces any earlier serial program or generic post-Documents gate. Each Change has its own isolated linked worktree and branch; one child at a time within each parent. DO04 parent is the integration custodian for wave B. Other parents deliver locally accepted branch receipts to that custodian, do not independently push the undertaking, and do not require another human approval for a safe serialized join. Shared files are edited in isolated branches by owned import/key only; merge against the latest integration base, regenerate lockfile from merged manifests, rerun required proof. Do not overwrite siblings' edits. Local worktree/dirty-path and branch guard checks remain mandatory.
 
 **Dependency correction:** wait for BOTH DO02 and DO03, not DO04. The residual evaluation→Storyteller edge must not close a contracts↔Storyteller cycle. Refresh all Storyteller old imports before admission; no speculative dependency inversion.
 
@@ -49,5 +49,5 @@ Start T01 after local branch/worktree checks, finish this Change and join throug
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 |---|---|---|---|---|---|---|
-| `docs/technical/platform/topology.md#code-organization` | technical | retrieval and creative exploration live in Storyteller context; dispatch policy, kinds, and notices live in story-engine | source move on `032f0070`; topology heading not edited (custodian) | source-only PASS | balance/captured policy are not entitlement; strict parse rejects extra fields and disabled maxReads 1 | shared topology/catalog left for DO04 join |
+| `docs/technical/platform/topology.md#code-organization` | technical | retrieval and creative exploration live in Storyteller context; dispatch policy, kinds, and notices live in story-engine | joined with DO04 protocol package | source-only; relocated tests 10/10 after merge; module-graph tests 27/27; turbo 15/15 | strict parse rejects extra fields and disabled maxReads 1; no Storyteller→contracts dependency | catalog and parallel plan |
 | Product behavior | product | no player or spend change | validators preserved | source-only | no provider, SQL, or cluster | none |
