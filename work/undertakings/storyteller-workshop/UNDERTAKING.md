@@ -1,6 +1,6 @@
 # Storyteller Workshop
 
-**Cache release (2026-11-24):** owner commissioned all eight Changes at f26ce36dcee1bda6e9eee4d305ec6200ef924b44. [Execution DAG and gates](CACHE-PARALLEL.md). CACHE01 and CACHE02 are joined source-only. CACHE02 parent still coordinates the remaining waves. Future gates are conditional, no further owner release needed; semantic contradictions stop. No global selection or live resource authorization change.
+**Cache release (2026-11-24):** owner commissioned all eight Changes at f26ce36dcee1bda6e9eee4d305ec6200ef924b44. [Execution DAG and gates](CACHE-PARALLEL.md). CACHE01, CACHE02, CACHE03, and CACHE05 are joined source-only. CACHE02 parent still coordinates wave 2. Future gates are conditional, no further owner release needed; semantic contradictions stop. No global selection or live resource authorization change.
 
 **Final-wave conditional commission (2026-11-24):** Owner commissioned DO06 and DO07 now. DO06 may execute after DO05 integrates (DO03 already integrated); DO04 need not land first. DO07 may execute only after all six extractions integrate and no live residual module remains. Each assigned parent checks predecessor receipts and exact source/export postconditions on latest undertaking HEAD before editing; if they pass, no further ChatGPT release or approval is needed. Genuine semantic contradictions remain stop conditions. Coordinate joins with DO04 wave B custodian while active; otherwise the sole remaining parent owns its join. No global queue change, no new proof or completion credit.
 
@@ -183,4 +183,4 @@ Target **long-lived** topology after Change integration: **two branches only**:
 
 ## 2026-11-24 | Cache platform design
 
-[Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B). [Parallel DAG and frozen interfaces](CACHE-PARALLEL.md): CACHE01 Done; CACHE02 Done as source-only Redis runtime; CACHE03/CACHE05 remain the rest of wave 1; then CACHE04/CACHE06A/CACHE06B; then CACHE07. Serialized shared joins stay with the CACHE02 parent. No live Redis proof and no queue change. Overview estimates unchanged.
+[Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B). [Parallel DAG and frozen interfaces](CACHE-PARALLEL.md): CACHE01–CACHE03 and CACHE05 are Done source-only. Next are CACHE04/CACHE06A/CACHE06B, then CACHE07. Serialized shared joins stay with the CACHE02 parent. No live Redis proof and no queue change. Overview estimates unchanged.

@@ -19,6 +19,14 @@
     "./redis": {
       "types": "./dist/redis/index.d.ts",
       "default": "./dist/redis/index.js"
+    },
+    "./strategies": {
+      "types": "./dist/strategies/index.d.ts",
+      "default": "./dist/strategies/index.js"
+    },
+    "./memory": {
+      "types": "./dist/memory/index.d.ts",
+      "default": "./dist/memory/index.js"
     }
   },
   "scripts": {

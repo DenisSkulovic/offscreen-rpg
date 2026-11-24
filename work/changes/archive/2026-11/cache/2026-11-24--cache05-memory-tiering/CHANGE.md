@@ -1,8 +1,8 @@
 # CACHE05 | Byte-bounded memory and tier composition
 
-**Status: Owner-commissioned / dependency-gated; not yet Ready. Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: CACHE01 integrated (wave 1 lane C; independent of CACHE02/CACHE03). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
+**Status: Done (2026-11-24). Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: CACHE01 integrated (wave 1 lane C; independent of CACHE02/CACHE03). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
-[Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
+[Selected architecture](../../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
 ## Cursor first-screen brief
 
@@ -33,4 +33,6 @@ Owner release is conditional, not blanket readiness certification. Parent verifi
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending closure | persistence-and-caching | Byte-bounded memory and tier composition | pending | NOT-RUN | TASKS | pending |
+| Weighted memory store and tier composition | docs/technical/platform/persistence-and-caching.md Current state | Byte-bounded L1 and generic tiered store exist | packages/cache/src/memory; SHA at integration | source-tested with the joined cache package tests | oversize rejection, expired skip, L2 failure still allows L1 | ./memory export, catalog |
+| Game, authorization, spend | product docs | unchanged because no player or permission behavior moved | story-engine and documents not edited | source-inspected | no product page edit | N/A |
+| Redis and strategies | CACHE02 and CACHE03 | unchanged by this lane; memory does not import them | source-inspected | separate Changes | no Redis import in memory | contract left in place |

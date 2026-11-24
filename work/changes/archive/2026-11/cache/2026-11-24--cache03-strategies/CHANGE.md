@@ -1,8 +1,8 @@
 # CACHE03 | Typed strategies and origin protection
 
-**Status: Owner-commissioned / dependency-gated; not yet Ready. Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: CACHE01 integrated (wave 1 lane B; independent of CACHE02/CACHE05). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
+**Status: Done (2026-11-24). Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: CACHE01 integrated (wave 1 lane B; independent of CACHE02/CACHE05). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
-[Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
+[Selected architecture](../../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
 ## Cursor first-screen brief
 
@@ -33,4 +33,6 @@ Owner release is conditional, not blanket readiness certification. Parent verifi
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending closure | persistence-and-caching | Typed strategies and origin protection | pending | NOT-RUN | TASKS | pending |
+| Typed strategies, single-flight, origin bulkhead | docs/technical/platform/persistence-and-caching.md Current state | bindCache and origin protection exist in @offscreen/cache | packages/cache/src/strategies and resilience; SHA at integration | source-tested with the joined cache package tests | overload, cancellation detach, throwing telemetry | ./strategies export, catalog |
+| Game, authorization, spend | product docs | unchanged because no player or permission behavior moved | story-engine and documents not edited | source-inspected | no product page edit | N/A |
+| Redis runtime and memory tiers | CACHE02 and CACHE05 | unchanged by this lane; joined beside it | not owned by CACHE03 | separate Changes | no Redis process | contract left in place |
