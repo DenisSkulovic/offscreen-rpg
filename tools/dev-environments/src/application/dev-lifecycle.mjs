@@ -42,8 +42,14 @@ import {
   UNION_ROLE_FILTER,
 } from '../../../../infra/images/development/image-plan.mjs';
 import {
+  beginMonitorOperation,
+  beginRollbackMonitorSpan,
   beginStartupTiming,
+  childOperationEnv,
+  emitStartupOutcomeBeforeCleanup,
+  endRollbackMonitorSpan,
   finishStartupTiming,
+  getStartupOperationId,
   recordPhase,
   timePhase,
 } from '../application/dev-startup-timing.mjs';
@@ -1235,9 +1241,12 @@ export async function runDevTiltLaunch(deps = {}) {
       if (launchCleanupSettled) return;
       launchCleanupSettled = true;
       removeLaunchSignalHandlers();
-      await settleOwnedEnvironmentPark(parkInput(reason), {
+      emitStartupOutcomeBeforeCleanup(reason);
+      beginRollbackMonitorSpan(getStartupOperationId());
+      const parkResult = await settleOwnedEnvironmentPark(parkInput(reason), {
         launcherHoldsOperationLock: Boolean(slotOperationLock),
       });
+      endRollbackMonitorSpan(parkResult?.ok ? 'success' : 'rollback');
       releaseSlotOperationLock();
       finishStartupTiming(reason);
       exitFn(exitCode);
@@ -1327,12 +1336,21 @@ export async function runDevTiltLaunch(deps = {}) {
     const fingerprint =
       deps.fingerprintDevImageContext ?? fingerprintDevImageContext;
     const fingerprintStarted = performance.now();
+    const imageDistribution =
+      beginMonitorOperation('dev.images.distribute', {
+        parentOperationId: getStartupOperationId(),
+      }) ?? null;
     const imageIdentity = fingerprint(worktree, {
       roleFilter: UNION_ROLE_FILTER,
     });
     recordPhase('fingerprint', null, performance.now() - fingerprintStarted, {
       cache: imageIdentity.ok ? 'miss' : 'fail',
     });
+    if (imageIdentity.ok) {
+      imageDistribution?.finish('success');
+    } else {
+      imageDistribution?.fail('failure');
+    }
     if (launchCancelled) {
       await settleLaunchCleanup(cancelReason ?? 'cancelled', 130);
       return;
@@ -1347,6 +1365,7 @@ export async function runDevTiltLaunch(deps = {}) {
     }
     const tiltEnv = {
       ...process.env,
+      ...childOperationEnv(getStartupOperationId()),
       OFFSCREEN_DEV_SLOT: ownerRecord.slotId,
       OFFSCREEN_DEV_NAMESPACE: ownerRecord.namespace,
       OFFSCREEN_DEV_GAME_PORT: String(gamePort),
@@ -1639,6 +1658,7 @@ export async function runDevTiltLaunch(deps = {}) {
 }
 
 export async function runDevEnvironmentStop(selection, deps = {}) {
+  const stopOperation = beginMonitorOperation('dev.stop');
   const registryRoot = deps.registryRoot ?? devWorktreeRegistryRoot();
   const sessionRoot = environmentSessionRoot(registryRoot);
   const stopRefusal = (error) => {
@@ -1665,6 +1685,8 @@ export async function runDevEnvironmentStop(selection, deps = {}) {
         stopped.signalled ||
         stopped.reason === 'no_session' ||
         stopped.reason === 'not_running';
+      if (quiet) stopOperation?.finish('success');
+      else stopOperation?.fail('failure');
       (deps.exit ?? ((code) => process.exit(code)))(quiet ? 0 : 1);
     };
     if (slotId) {
@@ -1673,6 +1695,7 @@ export async function runDevEnvironmentStop(selection, deps = {}) {
           withSlotEnvironmentOperationLock(registryRoot, slotId, parkLegacy),
         );
       } catch (error) {
+        stopOperation?.fail('failure');
         stopRefusal(error);
       }
       return;
@@ -1709,13 +1732,16 @@ export async function runDevEnvironmentStop(selection, deps = {}) {
         ),
     );
     if (!result.ok || !result.released) {
+      stopOperation?.fail('failure');
       (deps.logError ?? console.error)(
         `Refusing to release ${selection.record.slotId}: ${result.reason}`,
       );
       (deps.exit ?? ((code) => process.exit(code)))(1);
     }
+    stopOperation?.finish('success');
     (deps.exit ?? ((code) => process.exit(code)))(0);
   } catch (error) {
+    stopOperation?.fail('failure');
     stopRefusal(error);
   }
 }

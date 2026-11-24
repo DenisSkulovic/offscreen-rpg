@@ -13,6 +13,9 @@ fi
 
 RELEASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${RELEASE_DIR}/../../.." && pwd)"
+OPERATION_ENTRYPOINT="${REPO_ROOT}/infra/monitoring/operation-entrypoint.mjs"
+OFFSCREEN_SHELL_OPERATION_ID=""
+OFFSCREEN_SHELL_OPERATION_NAME=""
 RENDER_MJS="${REPO_ROOT}/infra/workloads/render.mjs"
 ROLLOUT_MJS="${RELEASE_DIR}/rollout.mjs"
 EDGE_ROUTE_YAML="${RELEASE_DIR}/game-edge-route.yaml"
@@ -48,6 +51,52 @@ for item in "${SELECTED_IMAGES[@]}"; do
       ;;
   esac
 done
+
+begin_release_install_operation() {
+  if [[ "${OFFSCREEN_MONITOR_DISABLED:-}" == "1" ]]; then
+    return 0
+  fi
+  if [[ ! -f "${OPERATION_ENTRYPOINT}" ]]; then
+    return 0
+  fi
+  local line
+  while IFS= read -r line; do
+  case "$line" in
+    OFFSCREEN_SHELL_OPERATION_ID=*)
+      OFFSCREEN_SHELL_OPERATION_ID="${line#OFFSCREEN_SHELL_OPERATION_ID=}"
+      ;;
+    OFFSCREEN_SHELL_OPERATION_NAME=*)
+      OFFSCREEN_SHELL_OPERATION_NAME="${line#OFFSCREEN_SHELL_OPERATION_NAME=}"
+      ;;
+  esac
+  done < <(
+    OFFSCREEN_REPO_ROOT="${REPO_ROOT}" node "${OPERATION_ENTRYPOINT}" begin release.install 2>/dev/null || true
+  )
+  if [[ -n "${OFFSCREEN_SHELL_OPERATION_ID}" ]]; then
+    export OFFSCREEN_MONITOR_OPERATION_ID="${OFFSCREEN_SHELL_OPERATION_ID}"
+  fi
+}
+
+finish_release_install_operation() {
+  local exit_code="$1"
+  if [[ -z "${OFFSCREEN_SHELL_OPERATION_ID}" || -z "${OFFSCREEN_SHELL_OPERATION_NAME}" ]]; then
+    return 0
+  fi
+  if [[ ! -f "${OPERATION_ENTRYPOINT}" ]]; then
+    return 0
+  fi
+  if [[ "${exit_code}" == "2" ]]; then
+    export OFFSCREEN_SHELL_OPERATION_REFUSED=1
+  else
+    unset OFFSCREEN_SHELL_OPERATION_REFUSED
+  fi
+  OFFSCREEN_REPO_ROOT="${REPO_ROOT}" node "${OPERATION_ENTRYPOINT}" end \
+    "${OFFSCREEN_SHELL_OPERATION_NAME}" \
+    "${OFFSCREEN_SHELL_OPERATION_ID}" \
+    "${exit_code}" >/dev/null 2>&1 || true
+}
+
+begin_release_install_operation
 
 if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME"; then
   echo "Refusing install: kubectl context ${CONTEXT_NAME} is absent. Not switching contexts." >&2
@@ -96,7 +145,12 @@ RENDER_WORK="$(mktemp -d)"
 cleanup_render_work() {
   rm -rf "${RENDER_WORK}"
 }
-trap cleanup_render_work EXIT
+on_release_install_exit() {
+  local exit_code="$1"
+  finish_release_install_operation "${exit_code}"
+  cleanup_render_work
+}
+trap 'on_release_install_exit $?' EXIT
 
 verify_helm() {
   local short

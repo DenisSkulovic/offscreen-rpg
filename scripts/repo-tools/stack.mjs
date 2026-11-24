@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import process from 'node:process';
 import { readPlatformObject } from '../../infra/platform/common/commands.mjs';
+import { runTrackedEntrypoint } from '../../infra/monitoring/operation-entrypoint.mjs';
 import { collectDefaultProbes, CONTEXT_NAME } from './stack-preflight.mjs';
 import { buildStackPlan } from './stack-lifecycle.mjs';
 import { assessStackHealth, EXPECTED_IMPORT_ROOTS } from './stack-health.mjs';
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 /**
  * @param {'up' | 'down' | 'reset'} command
@@ -248,6 +254,7 @@ function defaultRunner(argv) {
   const result = spawnSync(argv[0], argv.slice(1), {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    env: process.env,
   });
   return {
     status: result.status,
@@ -256,45 +263,80 @@ function defaultRunner(argv) {
   };
 }
 
-const invokedAsScript = process.argv[1] && process.argv[1].endsWith('stack.mjs');
-if (invokedAsScript) {
-  const command = process.argv[2];
+/**
+ * @param {string[]} argv
+ * @param {{
+ *   runner?: typeof defaultRunner,
+ *   collectProbes?: typeof collectDefaultProbes,
+ *   operationDeps?: object,
+ * }} [deps]
+ */
+export async function runStackCliArgv(argv, deps = {}) {
+  const runner = deps.runner ?? defaultRunner;
+  const collectProbes = deps.collectProbes ?? collectDefaultProbes;
+  const command = argv[0];
   if (command === 'status') {
-    const observation = readLiveStatusObservation(defaultRunner);
-    const report = reportStackStatus(observation, { fixtureChecked: observation.fixtureChecked === true });
+    const observation = readLiveStatusObservation(runner);
+    const report = reportStackStatus(observation, {
+      fixtureChecked: observation.fixtureChecked === true,
+    });
     console.log(JSON.stringify(report, null, 2));
-    process.exitCode = 0;
-  } else if (command === 'up' || command === 'down' || command === 'reset') {
-    const probes = await collectDefaultProbes();
+    return { exitCode: 0 };
+  }
+  if (command === 'up' || command === 'down' || command === 'reset') {
+    const probes = await collectProbes();
     const clusterPresent = probes.ownedClusterExists === true;
-  const observation =
-    clusterPresent && command === 'up'
-      ? readWarmStackObservation(defaultRunner)
-      : {
-          clusterPresent,
-          migration: /** @type {'absent'} */ ('absent'),
-          importRoots: null,
-        };
-    const result = runPlannedCommand(
-      command,
-      {
-        probes,
-        observation,
-        confirmation: process.argv[3],
-      },
-      defaultRunner,
-    );
-    for (const message of result.messages) {
+    const observation =
+      clusterPresent && command === 'up'
+        ? readWarmStackObservation(runner)
+        : {
+            clusterPresent,
+            migration: /** @type {'absent'} */ ('absent'),
+            importRoots: null,
+          };
+    const runBody = () =>
+      runPlannedCommand(
+        command,
+        {
+          probes,
+          observation,
+          confirmation: argv[1],
+        },
+        runner,
+      );
+    const result =
+      command === 'up' || command === 'down'
+        ? runTrackedEntrypoint(
+            `stack.${command}`,
+            () => {
+              const planned = runBody();
+              return {
+                exitCode: planned.exitCode ?? (planned.ok ? 0 : 1),
+                refused: planned.exitCode === 2,
+                planned,
+              };
+            },
+            { repoRoot: REPO_ROOT, ...deps.operationDeps },
+          ).planned
+        : runBody();
+    for (const message of result.messages ?? []) {
       console.error(message);
     }
     if (result.ok) {
-      for (const argv of result.ran) {
-        console.log(argv.join(' '));
+      for (const ranArgv of result.ran ?? []) {
+        console.log(ranArgv.join(' '));
       }
     }
-    process.exitCode = result.exitCode;
-  } else {
-    console.error('Usage: stack.mjs up|status|down|reset [confirmation]');
-    process.exitCode = 2;
+    return { exitCode: result.exitCode ?? (result.ok ? 0 : 1) };
   }
+  console.error('Usage: stack.mjs up|status|down|reset [confirmation]');
+  return { exitCode: 2 };
+}
+
+const modulePath = fileURLToPath(import.meta.url);
+const invokedAsScript =
+  process.argv[1] !== undefined && resolve(process.argv[1]) === modulePath;
+if (invokedAsScript) {
+  const result = await runStackCliArgv(process.argv.slice(2));
+  process.exitCode = result.exitCode;
 }

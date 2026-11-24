@@ -161,6 +161,8 @@ test('two environments keep separate sessions and starting B does not signal A',
   assert.equal(selected.record.slotId, 'dev-2');
   assert.equal(selected.action, 'up');
   const signalled = [];
+  /** @type {Record<string, string | undefined>} */
+  let capturedTiltEnv = {};
   await runDevTiltLaunch({
     owner: selected.record,
     worktree: checkout,
@@ -174,7 +176,10 @@ test('two environments keep separate sessions and starting B does not signal A',
     commandOnPath: () => true,
     probeLoopbackPortOccupied: async () => false,
     fingerprintDevImageContext: () => ({ ok: true, fingerprint: 'test-fp' }),
-    spawnFn: () => ({ pid: 22, on() {} }),
+    spawnFn: (_cmd, _args, options) => {
+      capturedTiltEnv = { ...options?.env };
+      return { pid: 22, on() {} };
+    },
     exitAfterSession: true,
     pidAlive: (pid) => pid === 11,
     readStartTicks: () => '100',
@@ -184,6 +189,7 @@ test('two environments keep separate sessions and starting B does not signal A',
     },
   });
   assert.deepEqual(signalled, []);
+  assert.match(capturedTiltEnv.OFFSCREEN_MONITOR_OPERATION_ID ?? '', /^[0-9a-f-]{36}$/i);
   assert.equal(
     readEnvironmentSession(environmentSessionRoot(root), 'dev-1').pid,
     11,

@@ -24,6 +24,7 @@ import {
   runPlatformPlan,
   REPO_ROOT,
 } from './platform-plan.mjs';
+import { runTrackedEntrypoint } from '../monitoring/operation-entrypoint.mjs';
 
 /** @typedef {'plan' | 'up' | 'status'} InfraCommand */
 /** @typedef {'dev' | 'release'} InfraProfileId */
@@ -734,22 +735,51 @@ function usage() {
   );
 }
 
+/**
+ * @param {string[]} argv
+ * @param {{ run?: typeof runPlatformCommand, runner?: typeof defaultPlatformRunner, memoryMiB?: number | null, operationDeps?: object }} [deps]
+ */
+export function runInfraCliArgv(argv, deps = {}) {
+  const parsed = parseInfraCliArgs(argv);
+  if (!parsed.ok) {
+    usage();
+    process.stderr.write(`${parsed.message}\n`);
+    return { exitCode: parsed.exitCode, wroteUsage: true };
+  }
+
+  const writeDispatch = (result) => {
+    process.stdout.write(`${JSON.stringify(result.payload)}\n`);
+    if (result.stderr) {
+      process.stderr.write(result.stderr);
+    }
+    return result.exitCode;
+  };
+
+  if (parsed.command === 'up') {
+    let dispatchResult;
+    runTrackedEntrypoint(
+      `infra.up.${parsed.profileId}`,
+      () => {
+        dispatchResult = dispatchInfraCli(parsed, deps);
+        return {
+          exitCode: dispatchResult.exitCode,
+          refused: dispatchResult.exitCode === 2,
+        };
+      },
+      { repoRoot: REPO_ROOT, ...deps.operationDeps },
+    );
+    return { exitCode: writeDispatch(dispatchResult) };
+  }
+
+  const dispatchResult = dispatchInfraCli(parsed, deps);
+  return { exitCode: writeDispatch(dispatchResult) };
+}
+
 const modulePath = fileURLToPath(import.meta.url);
 const isMain =
   process.argv[1] === modulePath ||
   process.argv[1] === join(dirname(modulePath), 'infra-cli.mjs');
 if (isMain) {
-  const parsed = parseInfraCliArgs(process.argv.slice(2));
-  if (!parsed.ok) {
-    usage();
-    process.stderr.write(`${parsed.message}\n`);
-    process.exitCode = parsed.exitCode;
-  } else {
-    const result = dispatchInfraCli(parsed);
-    process.stdout.write(`${JSON.stringify(result.payload)}\n`);
-    if (result.stderr) {
-      process.stderr.write(result.stderr);
-    }
-    process.exitCode = result.exitCode;
-  }
+  const result = runInfraCliArgv(process.argv.slice(2));
+  process.exitCode = result.exitCode;
 }

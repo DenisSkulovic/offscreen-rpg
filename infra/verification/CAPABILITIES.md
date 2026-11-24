@@ -85,6 +85,6 @@ Measure cold/warm wall time and source-edit latency; report actual seconds, not 
 | MON-04 | Nested runtime attribution | Docker/Kind pod UID+container identity, source timestamps, cgroup scope, absent runtime gap, no double-count | source fixtures PASS (runtime/kube/cgroup); live Docker/Kind/cgroup visibility NOT RUN |
 | MON-05 | Resource failure evidence | OOM/restart/event/counter reset; no inferred OOM from capacity guard | source counter-reset and coverage fixtures PASS; live OOM NOT RUN |
 | MON-06 | Retention and fidelity | Min/max/sum/count rollups, partial coverage, cap/rotation, restart gap, actual oldest retained | source retention and rollup fixtures PASS; live disk span NOT RUN |
-| MON-07 | Operation correlation | Unique attempt/phase spans, overlaps, incomplete crash, rollback events, no secret fields | target-only |
+| MON-07 | Operation correlation | Unique attempt/phase spans, overlaps, incomplete crash, rollback events, no secret fields | source fixtures PASS (operation writer, startup timing, infra/stack/verify entrypoints); live host correlation NOT RUN |
 | MON-08 | Historical queries/export | Time/slot report with explicit coverage, bounded sanitized export, no raw argv | target-only |
 | MON-09 | Observer overhead | Comparable measured idle before/after, private memory/CPU/disk budget; reduced cadence reported | target-only |

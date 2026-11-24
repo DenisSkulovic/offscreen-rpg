@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import { assertHelmAvailable as defaultAssertHelmAvailable } from '../workloads/render.mjs';
+import { runTrackedEntrypoint } from '../monitoring/operation-entrypoint.mjs';
 
 export const REPO_ROOT = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -484,13 +485,25 @@ export function formatVerificationReport(report, options = {}) {
 export function runVerifyCli(argv, io = {}) {
   const write = io.write ?? ((chunk) => process.stdout.write(chunk));
   const runVerification = io.runVerification ?? runSourceVerification;
+  const operationDeps = io.operationDeps ?? {};
   const parsed = parseVerifyArgs(argv);
   if (!parsed.ok) {
     process.stderr.write(`${parsed.message}\n`);
     return parsed.exitCode;
   }
 
-  const report = runVerification();
+  let report;
+  runTrackedEntrypoint(
+    'infra.verify.source',
+    () => {
+      report = runVerification();
+      return {
+        exitCode: report.exitCode,
+        refused: report.exitCode === 2,
+      };
+    },
+    { repoRoot: REPO_ROOT, ...operationDeps },
+  );
   write(formatVerificationReport(report, { json: parsed.json }));
   return report.exitCode;
 }
