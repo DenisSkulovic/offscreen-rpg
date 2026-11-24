@@ -33,4 +33,4 @@ Owner release is conditional, not blanket readiness certification. Parent verifi
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Story snapshot cache | persistence-and-caching Current state | Versioned bindCache on byte store; SQL proof still open | reads.ts, read-cache-options.ts, api main/app; branch change/cache04-story-snapshot | source-only PASS; stories-core NOT-RUN | read-snapshot-cache.test.ts 6/6 (malformed, failure, revision, disabled, owner-order contract) | Current state updated on this branch; not joined |
+| Story snapshot cache | persistence-and-caching Current state | Versioned bindCache on byte store; SQL proof still open | reads.ts, read-cache-options.ts, api main/app; joined 83746d67 | source-only PASS; stories-core NOT-RUN | read-snapshot-cache.test.ts 6/6 (malformed, failure, revision, disabled, owner-order contract) | Current state updated; packet stays open |

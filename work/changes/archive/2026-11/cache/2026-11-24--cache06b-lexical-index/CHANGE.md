@@ -1,8 +1,8 @@
 # CACHE06B | Shared lexical-index primitives
 
-**Status: Owner-commissioned / dependency-gated; not yet Ready. Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE02/CACHE03/CACHE05 plus wave-2 wiring; no overlapping lexical-index owner (lane C). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
+**Status: Done (2026-11-24). Kind: implementation. Profile: PATCH.** Source-only. Live Redis and SQL NOT-RUN. Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE02/CACHE03/CACHE05 plus wave-2 wiring; no overlapping lexical-index owner (lane C). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
-[Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
+[Selected architecture](../../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
 ## Cursor first-screen brief
 
@@ -33,4 +33,4 @@ Owner release is conditional, not blanket readiness certification. Parent verifi
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending closure | persistence-and-caching | Shared lexical-index primitives | pending | NOT-RUN | TASKS | pending |
+| Shared lexical-index primitives | persistence-and-caching Current state | Weighted LRU and single-flight reuse | lexical-story-index-cache.ts; joined 80d3b033 | source-only PASS: lexical-story-index-cache.test.mjs 4/4 | write failure keeps build; invalidate fences late publish; stale schema rebuilds | catalog and Current state updated |

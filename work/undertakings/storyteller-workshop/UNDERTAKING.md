@@ -185,4 +185,4 @@ Target **long-lived** topology after Change integration: **two branches only**:
 
 ## 2026-11-24 | Cache platform design
 
-[Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B). [Parallel DAG and frozen interfaces](CACHE-PARALLEL.md): CACHE01–CACHE03 and CACHE05 are Done source-only. Next are CACHE04/CACHE06A/CACHE06B, then CACHE07. Serialized shared joins stay with the CACHE02 parent. No live Redis proof and no queue change. Overview estimates unchanged.
+[Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B). [Parallel DAG and frozen interfaces](CACHE-PARALLEL.md): CACHE01–CACHE03, CACHE05, CACHE06A, and CACHE06B are Done source-only. CACHE04 source is joined and its SQL suite remains NOT-RUN. Next is CACHE07 after disposable resource authorization. No live Redis proof and no queue change. Overview estimates unchanged.
