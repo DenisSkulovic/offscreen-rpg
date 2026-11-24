@@ -3,8 +3,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const CONTEXT_NAME = 'kind-offscreen-lab';
-export const CLUSTER_NAME = 'offscreen-lab';
+export const CONTEXT_NAME = 'kind-offscreen-release';
+export const CLUSTER_NAME = 'offscreen-release';
 
 export const WEB_IMAGE = 'offscreen-lab-game-web:turn02';
 export const API_IMAGE = 'offscreen-lab-app-release-api:turn02';

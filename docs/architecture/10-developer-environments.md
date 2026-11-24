@@ -51,7 +51,7 @@ flowchart TB
     E3 -.-> DB
     E3 -.-> Obj
     E3 -.-> T
-    L["Release acceptance cluster · kind-offscreen-lab"] -.- H
+    L["Release acceptance cluster · kind-offscreen-release"] -.- H
 ```
 
 **Important distinction:** the small environment boxes are **not** separate Kubernetes clusters. The release lab is a different cluster with a different purpose; it must not be repurposed as an extra Cursor stack.

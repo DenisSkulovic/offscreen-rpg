@@ -69,7 +69,7 @@ test('none selection yields empty phases and no ensure preflight', () => {
     profileId: 'release',
     command: 'ensure',
     services: 'none',
-    confirmation: 'kind-offscreen-lab',
+    confirmation: 'kind-offscreen-release',
   });
   assert.equal(ensure.ok, true);
   assert.deepEqual(ensure.preflight, []);
@@ -180,7 +180,7 @@ test('ensure preflight skips unselected chart services', () => {
   const helmLintTargets = [];
   const run = (command, args) => {
     if (command === 'kind' && args[0] === 'get') {
-      return { ok: true, stdout: 'offscreen-lab\n' };
+      return { ok: true, stdout: 'offscreen-release\n' };
     }
     if (command === 'kubectl' && args.includes('config')) {
       return {
@@ -188,17 +188,17 @@ test('ensure preflight skips unselected chart services', () => {
         stdout: JSON.stringify({
           clusters: [
             {
-              name: 'kind-offscreen-lab',
+              name: 'kind-offscreen-release',
               cluster: { server: 'https://127.0.0.1:6443' },
             },
           ],
           contexts: [
             {
-              name: 'kind-offscreen-lab',
-              context: { cluster: 'kind-offscreen-lab' },
+              name: 'kind-offscreen-release',
+              context: { cluster: 'kind-offscreen-release' },
             },
           ],
-          'current-context': 'kind-offscreen-lab',
+          'current-context': 'kind-offscreen-release',
         }),
       };
     }

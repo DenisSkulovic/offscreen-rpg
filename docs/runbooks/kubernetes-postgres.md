@@ -4,7 +4,7 @@ Disposable CloudNativePG primary on the [kind lab](kubernetes-lab.md). This is n
 
 ## What this procedure is
 
-Install CloudNativePG 1.30.2 into the existing `offscreen-lab` cluster, then create one PostgreSQL primary named `lab-pg` in namespace `lab-postgres`. The data volume uses the lab `local-path` storage class. Requests are 100m CPU and 256Mi memory. Limits are 500m CPU and 768Mi memory. The operand image is `ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie`.
+Install CloudNativePG 1.30.2 into the existing `offscreen-release` cluster, then create one PostgreSQL primary named `lab-pg` in namespace `lab-postgres`. The data volume uses the lab `local-path` storage class. Requests are 100m CPU and 256Mi memory. Limits are 500m CPU and 768Mi memory. The operand image is `ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie`.
 
 The operator manifest is downloaded from the pinned GitHub release and checked with SHA-256 `ea4cc355b394e10661d30c6b409cefb19029dd973bccb76b1ed8c789985bc68c` before apply. The operator Deployment image is `ghcr.io/cloudnative-pg/cloudnative-pg:1.30.2`. Release 1.30.2 lists Kubernetes 1.34, 1.35, and 1.36. This lab's node image is Kubernetes 1.37.0. The pin is the current operator release; the run below records whether that release became ready on this node.
 
@@ -15,7 +15,7 @@ Scripts live in `infra/platform/postgres/`. The workload manifests are no longer
 - Do not put a password, a client certificate, or a generated Secret in Git. The operator creates credentials when the primary starts. The smoke uses local peer authentication inside the Pod and does not print Secret values.
 - Do not set `instances` above 1. One replacement Pod is not a replica, and it is not a highly available cluster.
 - Do not point Compose, the game, or Temporal at `lab-pg`.
-- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
+- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-release` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not publish a workload on `0.0.0.0` or `[::]`. A NodePort or LoadBalancer Service fails the check.
 - Do not treat this primary as a backup or a restore of the game database.
 
@@ -31,7 +31,7 @@ Deleting the kind cluster does not preserve local-path volumes. The provisioner 
 infra/clusters/kind/release/up.sh
 infra/platform/postgres/install.sh
 infra/verification/smoke/postgres/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the operator, the primary, and the local-path files on the node.
@@ -57,10 +57,10 @@ If a check says a Docker volume outside the cluster disappeared, stop and do not
 
 ## Observed local run
 
-On 2026-11-19, from branch `change/k8s02-cnpg` at baseline `4962e373`, the scripts created `offscreen-lab`, installed CloudNativePG 1.30.2, and reached `Cluster in healthy state` for `lab-pg` with `instances: 1`. The claim `lab-pg-1` was Bound on `local-path`. Postgres reported `18.7 (Debian 18.7-1.pgdg13+2)`. The primary container limits were 500m CPU and 768Mi memory. Services `lab-pg-rw`, `lab-pg-ro`, and `lab-pg-r` were ClusterIP. The API container published `127.0.0.1:6443` only.
+On 2026-11-19, from branch `change/k8s02-cnpg` at baseline `4962e373`, the scripts created `offscreen-release`, installed CloudNativePG 1.30.2, and reached `Cluster in healthy state` for `lab-pg` with `instances: 1`. The claim `lab-pg-1` was Bound on `local-path`. Postgres reported `18.7 (Debian 18.7-1.pgdg13+2)`. The primary container limits were 500m CPU and 768Mi memory. Services `lab-pg-rw`, `lab-pg-ro`, and `lab-pg-r` were ClusterIP. The API container published `127.0.0.1:6443` only.
 
 The smoke inserted `pod-replace-ok`, deleted Pod `lab-pg-1`, and read `pod-replace-ok` from the replacement Pod. The Pod uid changed from `53f42a09-0b94-4156-b8bf-53dff7984370` to `89f7ea2f-2fe6-431a-8ee2-103368c9954e`. The PVC uid stayed `e9db926f-d183-476e-b714-906503d9d3a0`.
 
-`down.sh` then removed `offscreen-lab`. No kind cluster and no kubectl context remained. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were still present, along with anonymous volume `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`. MemTotal stayed 12249872 kB. MemAvailable was 9795972 kB before create, 8893884 kB during the smoke, and 9963180 kB after delete.
+`down.sh` then removed `offscreen-release`. No kind cluster and no kubectl context remained. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were still present, along with anonymous volume `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`. MemTotal stayed 12249872 kB. MemAvailable was 9795972 kB before create, 8893884 kB during the smoke, and 9963180 kB after delete.
 
 Release 1.30.2 lists Kubernetes 1.34 through 1.36. This node was Kubernetes v1.37.0, and the operator still became ready here. That run does not add 1.37 to the project's supported list. No Secret value was printed, and no credential was written under `infra/kubernetes/lab/cnpg/`. No model call was made. The game was not pointed at this primary.

@@ -1,11 +1,11 @@
-# Shared guards for the disposable offscreen-lab cluster.
+# Shared guards for the disposable offscreen-release cluster.
 # A script that sources this file must not delete Docker volumes or foreign kubectl contexts.
 
 set -euo pipefail
 
 LAB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLUSTER_NAME="offscreen-lab"
-CONTEXT_NAME="kind-offscreen-lab"
+CLUSTER_NAME="offscreen-release"
+CONTEXT_NAME="kind-offscreen-release"
 KUBECTL=(kubectl --context "$CONTEXT_NAME")
 
 snapshot_file() {

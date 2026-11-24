@@ -177,7 +177,7 @@ describe('DXK09 T06a release acceptance preflight smoke (read-only)', () => {
     assert.equal(harness.spawns.length, 0);
   });
 
-  it('plan names kind-offscreen-lab and never references stopping dev Tilt', async () => {
+  it('plan names kind-offscreen-release and never references stopping dev Tilt', async () => {
     const harness = makeHarness();
 
     const result = await runReleaseAcceptancePreflightSmoke({
@@ -188,7 +188,7 @@ describe('DXK09 T06a release acceptance preflight smoke (read-only)', () => {
     });
 
     const serialized = JSON.stringify(result);
-    assert.ok(serialized.includes('kind-offscreen-lab'));
+    assert.ok(serialized.includes('kind-offscreen-release'));
     assert.equal(result.mentionsDevTilt, false);
     assert.ok(!/stop\s+dev\s+tilt/i.test(serialized));
     assert.equal(result.devContextExcluded, DEV_CONTEXT_NAME);

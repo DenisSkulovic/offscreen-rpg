@@ -1,5 +1,5 @@
 # Disposable educational cluster for kind v0.33.0.
-# The cluster name is the CLI flag --name offscreen-lab, not this file.
+# The cluster name is the CLI flag --name offscreen-release, not this file.
 # The API server listens on loopback only. No host port is published for workloads.
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4

@@ -11,7 +11,7 @@ bash infra/images/release/build-release-images.sh
 bash infra/environments/release/install.sh
 ```
 
-That builds web, API, Game Authority, and worker (at most 3 at once), loads each image into `kind-offscreen-lab`, applies every overlay, and waits for every rollout. `install.sh` with no `OFFSCREEN_RELEASE_IMAGES` is the full path. `pnpm install --frozen-lockfile` stays inside the image build. `pnpm fetch` runs before source is copied, with a BuildKit cache mount on `/pnpm/store`.
+That builds web, API, Game Authority, and worker (at most 3 at once), loads each image into `kind-offscreen-release`, applies every overlay, and waits for every rollout. `install.sh` with no `OFFSCREEN_RELEASE_IMAGES` is the full path. `pnpm install --frozen-lockfile` stays inside the image build. `pnpm fetch` runs before source is copied, with a BuildKit cache mount on `/pnpm/store`.
 
 `build.sh`, `build-web.sh`, and `build-worker.sh` remain the single-purpose clean builders.
 

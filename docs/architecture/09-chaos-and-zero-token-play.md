@@ -83,7 +83,7 @@ stateDiagram-v2
     [*] --> DryRun
     DryRun --> Preflight: explicit select and execution approval
     Preflight --> Refused: wrong cluster, wrong namespace, missing labels or credentials
-    Preflight --> Baseline: only offscreen-lab and owned disposable story
+    Preflight --> Baseline: only offscreen-release and owned disposable story
     Baseline --> Refused: already unhealthy or not quiescent
     Baseline --> Injecting: one allowlisted target selected
     Injecting --> Observing: one fault recorded
@@ -96,7 +96,7 @@ stateDiagram-v2
     Refused --> [*]
 ```
 
-**Never inject by default.** Explicit `--execute`, current cluster `kind-offscreen-lab`, cluster name `offscreen-lab`, owner-known run and namespace/Deployment allowlist, baseline READY, budget limit, current context/UID recheck immediately before deletion, one fault in flight, no wildcard labels, and a local mutual-exclusion lock are mandatory. Exclude database Pods/PVCs, Temporal persistence, content store, control plane, nodes, migration Jobs, other namespaces and personal campaign resources from the initial random pool. **Do not create/delete the cluster as part of the chaos loop.** Stop injection on unhealthy baseline, first data invariant failure, missing owner match, cleanup failure or maximum recovery deadline.
+**Never inject by default.** Explicit `--execute`, current cluster `kind-offscreen-release`, cluster name `offscreen-release`, owner-known run and namespace/Deployment allowlist, baseline READY, budget limit, current context/UID recheck immediately before deletion, one fault in flight, no wildcard labels, and a local mutual-exclusion lock are mandatory. Exclude database Pods/PVCs, Temporal persistence, content store, control plane, nodes, migration Jobs, other namespaces and personal campaign resources from the initial random pool. **Do not create/delete the cluster as part of the chaos loop.** Stop injection on unhealthy baseline, first data invariant failure, missing owner match, cleanup failure or maximum recovery deadline.
 
 Randomness uses a recorded seed and produces a sequence of **eligible target choices** with each chosen UID and event timestamp. Seeds improve replayability, but timing/race interleavings are not perfectly deterministic; record actual start/end timestamps and observed worker histories. No infinite unattended job; set a short duration/event cap, evidence TTL and disk limit. The first engineering default should be **one fault, wait until health returns, then a cooldown**, not a Pod kill every 3 seconds. Fast 3–5-second kill loops are a separately approved saturation profile **after** non-overlapping recovery tests pass and sufficient replica/capacity exist.
 

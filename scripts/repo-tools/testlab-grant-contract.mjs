@@ -10,7 +10,7 @@ export const TESTLAB_ENTITLEMENT_PROFILE_ID = 'p3c-launch-entitlement.v1';
 export const TESTLAB_GRANT_REVISION = 1;
 export const TESTLAB_ALLOWED_TARGETS = Object.freeze([
   'disposable',
-  'kind-offscreen-lab',
+  'kind-offscreen-release',
 ]);
 
 /**

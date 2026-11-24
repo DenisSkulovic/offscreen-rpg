@@ -119,7 +119,7 @@ test('warm up runs platform ensure then install.sh and stops when install fails'
     },
   );
   assert.deepEqual(ran, [
-    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-lab'],
+    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-release'],
     ['bash', 'infra/environments/release/install.sh'],
   ]);
   assert.equal(result.ok, false);
@@ -141,7 +141,7 @@ test('reset without confirmation does not call down.sh', () => {
     },
   );
   assert.equal(calls, 0);
-  assert.match(result.messages[0], /kind-offscreen-lab/);
+  assert.match(result.messages[0], /kind-offscreen-release/);
 });
 
 test('unchecked fixture does not claim the pinned object is missing', () => {

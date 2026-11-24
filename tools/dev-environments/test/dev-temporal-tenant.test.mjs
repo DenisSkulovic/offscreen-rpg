@@ -44,7 +44,7 @@ test('ensure creates once and leaves default untouched', async () => {
 
 test('wrong cluster, retention conflict and missing authorization stop', async () => {
   const foreign = adapter();
-  foreign.identity = () => ({ context: 'kind-offscreen-lab', namespace: 'offscreen-dev-temporal', owner: 'offscreen-dev', image: 'docker.io/temporalio/server:1.32.2' });
+  foreign.identity = () => ({ context: 'kind-offscreen-release', namespace: 'offscreen-dev-temporal', owner: 'offscreen-dev', image: 'docker.io/temporalio/server:1.32.2' });
   assert.equal((await ensureDevTemporalTenant({ slotId: 'dev-1', authorizeLive: TOKEN, adapter: foreign })).refusals[0].id, 'wrong-binding');
   const conflict = adapter();
   conflict.state.set('offscreen-dev-2', { id: 'kept', retentionSeconds: 3600 });

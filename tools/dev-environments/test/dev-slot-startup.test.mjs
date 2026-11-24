@@ -311,7 +311,7 @@ test('a foreign cluster, secret uid, occupied port, stale process, and low memor
   const foreign = await reconcileDevSlot(
     { worktree: '/tmp/a', registryRoot: '/tmp/reg' },
     deps({
-      allocate: () => ({ ...record, cluster: 'kind-offscreen-lab' }),
+      allocate: () => ({ ...record, cluster: 'kind-offscreen-release' }),
     }),
   );
   assert.equal(foreign.phase, 'cluster');

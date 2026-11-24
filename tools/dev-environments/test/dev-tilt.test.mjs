@@ -225,7 +225,7 @@ test('foreign context preflight refusal yields null urls', () => {
     {
       id: 'foreign-context',
       message:
-        'Refusing: current kubectl context is "minikube", not kind-offscreen-lab.',
+        'Refusing: current kubectl context is "minikube", not kind-offscreen-release.',
     },
   ];
   const result = assessDevLaunch({

@@ -30,11 +30,11 @@ function stubBinDir({
     `#!/usr/bin/env bash
 set -euo pipefail
 if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-lab
+  echo offscreen-release
   exit 0
 fi
 if [[ "\${1:-}" == "get" && "\${2:-}" == "nodes" ]]; then
-  echo offscreen-lab-control-plane
+  echo offscreen-release-control-plane
   exit 0
 fi
 echo "unexpected kind: $*" >&2
@@ -63,7 +63,7 @@ exit 2
       : contextMode === 'foreign'
         ? `echo kind-other-cluster
   exit 0`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`;
 
   const collectorExit = collectorPresent ? 0 : 1;

@@ -1,5 +1,5 @@
 /**
- * Bare CLI binding for kind-offscreen-lab status and ensure.
+ * Bare CLI binding for kind-offscreen-release status and ensure.
  * plan stays on the pure funding command and does not open this module.
  */
 
@@ -29,7 +29,7 @@ export function kindTargetFingerprint(observation) {
 function blocked(id, message) {
   return {
     outcome: 'blocked',
-    targetIdentity: 'kind-offscreen-lab',
+    targetIdentity: 'kind-offscreen-release',
     refusals: [{ id, message }],
   };
 }
@@ -68,7 +68,7 @@ export async function runBareKindFunding(command, flags, injected = {}) {
   if (!verified.ok) {
     return {
       outcome: 'blocked',
-      targetIdentity: 'kind-offscreen-lab',
+      targetIdentity: 'kind-offscreen-release',
       refusals: verified.refusals,
     };
   }
@@ -98,7 +98,7 @@ export async function runBareKindFunding(command, flags, injected = {}) {
     };
     const pinned = verifyTestlabTarget(rechecked, { intent: 'write' });
     if (!pinned.ok) {
-      return { outcome: 'blocked', targetIdentity: 'kind-offscreen-lab', refusals: pinned.refusals };
+      return { outcome: 'blocked', targetIdentity: 'kind-offscreen-release', refusals: pinned.refusals };
     }
     return await funding.runTestlabFundingEnsure(flags, {
       observeKindTarget: async () => rechecked,

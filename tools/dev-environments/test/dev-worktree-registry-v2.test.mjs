@@ -156,7 +156,7 @@ test('malformed v1 snapshots are refused without a converted default', () => {
     { version: 1, nextSequence: 5, ownersByWorktree: { '/canonical/checkout-1': { ...base.ownersByWorktree['/canonical/checkout-1'], slotId: 'dev-1' }, '/other': { ...base.ownersByWorktree['/canonical/checkout-2'], slotId: 'dev-1', worktreePath: '/other' } } },
     { version: 1, nextSequence: 3, ownersByWorktree: { '/canonical/checkout-1': { ...base.ownersByWorktree['/canonical/checkout-1'], ports: base.ownersByWorktree['/canonical/checkout-2'].ports }, '/canonical/checkout-2': base.ownersByWorktree['/canonical/checkout-2'] } },
     { version: 1, nextSequence: 2, ownersByWorktree: { '/canonical/checkout-1': { ...base.ownersByWorktree['/canonical/checkout-1'], namespace: 'foreign' } } },
-    { version: 1, nextSequence: 2, ownersByWorktree: { '/canonical/checkout-1': { ...base.ownersByWorktree['/canonical/checkout-1'], cluster: 'kind-offscreen-lab' } } },
+    { version: 1, nextSequence: 2, ownersByWorktree: { '/canonical/checkout-1': { ...base.ownersByWorktree['/canonical/checkout-1'], cluster: 'kind-offscreen-release' } } },
     { version: 1, nextSequence: 2, ownersByWorktree: { '/not-the-record': base.ownersByWorktree['/canonical/checkout-1'] } },
   ];
   for (const raw of cases) {

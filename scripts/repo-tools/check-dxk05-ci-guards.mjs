@@ -119,9 +119,9 @@ export function assertServicesTargets(servicesText) {
  * @param {string} contextName
  */
 export function assertLabContext(contextName) {
-  if (contextName !== 'kind-offscreen-lab') {
+  if (contextName !== 'kind-offscreen-release') {
     throw new Error(
-      `lab context must be kind-offscreen-lab, got: ${contextName}`,
+      `lab context must be kind-offscreen-release, got: ${contextName}`,
     );
   }
 }

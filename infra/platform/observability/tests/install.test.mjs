@@ -39,7 +39,7 @@ if [[ "\${1:-}" == "run" ]]; then
 fi
 if [[ "\${1:-}" == "save" ]]; then exit 0; fi
 if [[ "\${1:-}" == "ps" ]]; then
-  echo "offscreen-lab-control-plane 127.0.0.1:6443->6443/tcp"
+  echo "offscreen-release-control-plane 127.0.0.1:6443->6443/tcp"
   exit 0
 fi
 if [[ "\${1:-}" == "exec" ]]; then exit 0; fi
@@ -53,11 +53,11 @@ exit 2
     `#!/usr/bin/env bash
 set -euo pipefail
 if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-lab
+  echo offscreen-release
   exit 0
 fi
 if [[ "\${1:-}" == "get" && "\${2:-}" == "nodes" ]]; then
-  echo offscreen-lab-control-plane
+  echo offscreen-release-control-plane
   exit 0
 fi
 if [[ "\${1:-}" == "version" ]]; then
@@ -76,12 +76,12 @@ exit 2
     contextMode === 'unreadable' || contextMode === 'foreign-ns'
       ? contextMode === 'unreadable'
         ? `exit 1`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`
       : contextMode === 'foreign'
         ? `echo kind-other-cluster
   exit 0`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`;
 
   const applyLog = join(binDir, 'apply-log');
@@ -108,7 +108,7 @@ if [[ "$joined" == *"version --client=true -o json"* ]]; then
 fi
 if [[ "$joined" == *"config view --minify -o json"* ]]; then
   cat <<'JSON'
-{"contexts":[{"context":{"cluster":"offscreen-lab","user":"kind-offscreen-lab"}}],"clusters":[{"name":"offscreen-lab","cluster":{"server":"https://127.0.0.1:6443"}}]}
+{"contexts":[{"context":{"cluster":"offscreen-release","user":"kind-offscreen-release"}}],"clusters":[{"name":"offscreen-release","cluster":{"server":"https://127.0.0.1:6443"}}]}
 JSON
   exit 0
 fi

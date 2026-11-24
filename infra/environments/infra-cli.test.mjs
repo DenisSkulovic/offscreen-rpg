@@ -22,9 +22,9 @@ import { allowedNamespacesForService } from '../platform/common/render.mjs';
 const DEV_PORT = DEV_API_PORT_RANGE.start;
 
 function kubectlConfigJson(profile, port) {
-  const clusterName = profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-lab';
+  const clusterName = profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
   const contextName =
-    profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-lab';
+    profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
   return JSON.stringify({
     clusters: [
       { name: clusterName, cluster: { server: `https://127.0.0.1:${port}` } },
@@ -127,7 +127,7 @@ function releaseWarmRun(clusterPresent = true) {
     if (command === 'kind' && args[0] === 'get') {
       return {
         ok: true,
-        stdout: clusterPresent ? 'offscreen-lab\n' : '',
+        stdout: clusterPresent ? 'offscreen-release\n' : '',
       };
     }
     if (command === 'kubectl' && args.includes('config')) {
@@ -429,7 +429,7 @@ test('release Temporal readiness verifies persisted schema and health when boots
   const run = (command, args) => {
     calls.push(args);
     assert.equal(command, 'kubectl');
-    assert.equal(args[1], 'kind-offscreen-lab');
+    assert.equal(args[1], 'kind-offscreen-release');
     if (args.includes('exec')) {
       if (args.includes('deploy/temporal-admin')) return { ok: true, stdout: 'SERVING\n' };
       assert.ok(args.some(arg => arg.includes('default_transaction_read_only=on')));
@@ -464,7 +464,7 @@ test('release Temporal readiness verifies persisted schema and health when boots
 test('release RabbitMQ absent CRD is not-installed, permission failure remains unreadable', () => {
   const run = (command, args) => {
     assert.equal(command, 'kubectl');
-    assert.deepEqual(args, ['--context', 'kind-offscreen-lab', 'get', 'customresourcedefinition', 'rabbitmqclusters.rabbitmq.com', '--ignore-not-found', '-o', 'json']);
+    assert.deepEqual(args, ['--context', 'kind-offscreen-release', 'get', 'customresourcedefinition', 'rabbitmqclusters.rabbitmq.com', '--ignore-not-found', '-o', 'json']);
     return { ok: true, stdout: '' };
   };
   assert.equal(observeSelectedServiceState('release', 'rabbitmq', { run }).state, 'not-installed');

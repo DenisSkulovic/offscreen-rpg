@@ -27,8 +27,8 @@ const INDEX_I =
   'sha256:1111111111111111111111111111111111111111111111111111111111111111';
 const RELEASE_REF = 'offscreen-lab-app-release-api:turn02';
 const RELEASE_CTR = 'docker.io/library/offscreen-lab-app-release-api:turn02';
-const NODE_CP = 'offscreen-lab-control-plane';
-const NODE_WORKER = 'offscreen-lab-worker';
+const NODE_CP = 'offscreen-release-control-plane';
+const NODE_WORKER = 'offscreen-release-worker';
 
 /**
  * @param {string} configDigest
@@ -130,11 +130,11 @@ function releaseNodeScripts(opts = {}) {
     },
     [`inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0${NODE_CP}`]:
       {
-        stdout: 'offscreen-lab\n',
+        stdout: 'offscreen-release\n',
       },
     [`inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0${NODE_WORKER}`]:
       {
-        stdout: 'offscreen-lab\n',
+        stdout: 'offscreen-release\n',
       },
     [`inspect\0--format\0{{.ImageManifestDescriptor.platform.os}}\0${NODE_CP}`]: { stdout: 'linux\n' },
     [`inspect\0--format\0{{.ImageManifestDescriptor.platform.architecture}}\0${NODE_CP}`]: {
@@ -202,7 +202,7 @@ function releaseNodeScripts(opts = {}) {
 
   return {
     kind: {
-      'get\0nodes\0--name\0offscreen-lab': {
+      'get\0nodes\0--name\0offscreen-release': {
         stdout: `node/${NODE_CP}\nnode/${NODE_WORKER}\n`,
       },
       load: { status: 0, stdout: '', stderr: '' },
@@ -215,16 +215,16 @@ test('sortKindNodes orders control-plane before worker then lexical', () => {
   assert.deepEqual(
     sortKindNodes(
       [
-        'offscreen-lab-worker',
-        'offscreen-lab-control-plane',
-        'offscreen-lab-worker-b',
+        'offscreen-release-worker',
+        'offscreen-release-control-plane',
+        'offscreen-release-worker-b',
       ],
-      'offscreen-lab',
+      'offscreen-release',
     ),
     [
-      'offscreen-lab-control-plane',
-      'offscreen-lab-worker',
-      'offscreen-lab-worker-b',
+      'offscreen-release-control-plane',
+      'offscreen-release-worker',
+      'offscreen-release-worker-b',
     ],
   );
 });
@@ -426,7 +426,7 @@ test('one stale worker loads only that node', () => {
 test('missing worker in inventory refuses before mutation', () => {
   const { run, calls } = makeRunner({
     kind: {
-      'get\0nodes\0--name\0offscreen-lab': {
+      'get\0nodes\0--name\0offscreen-release': {
         stdout: `node/${NODE_CP}\n`,
       },
       load: { status: 0 },

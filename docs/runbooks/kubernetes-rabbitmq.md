@@ -42,7 +42,7 @@ From the repository root, after `infra/clusters/kind/release/up.sh`:
 ```bash
 infra/platform/rabbitmq/install.sh
 infra/verification/smoke/rabbitmq/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` removes its client pods and script ConfigMap when it exits. It leaves the broker in place until `down.sh` deletes the cluster. `down.sh` does not delete Compose volumes.
@@ -59,10 +59,10 @@ If `up.sh` was not run in this same locked shell, do not delete a cluster this p
 
 ## Observed local run
 
-2026-11-19, on this worktree, under `flock` of `/tmp/offscreen-k8s-cluster.lock`. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/smoke/rabbitmq/smoke.sh`, `infra/clusters/kind/release/destroy.sh kind-offscreen-lab`.
+2026-11-19, on this worktree, under `flock` of `/tmp/offscreen-k8s-cluster.lock`. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/smoke/rabbitmq/smoke.sh`, `infra/clusters/kind/release/destroy.sh kind-offscreen-release`.
 
 Versions printed by the smoke: Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, server v1.37.0. Operator image `ghcr.io/rabbitmq/cluster-operator:2.23.3`. Broker image `docker.io/library/rabbitmq:4.3.4-management`, image ID `docker.io/library/rabbitmq@sha256:eb5295d083325da5929a5ade766684d4019ffd2bce8bc7e43d6f9a05cafc8646`, `rabbitmqctl` version 4.3.4. Replicas 1. Service ClusterIP. The only user was `lab-client` with tag administrator. Client image `docker.io/library/python:3.12-alpine`, image ID `docker.io/library/python@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89`.
 
 The smoke printed `PUBLISHED 1`, `PUBLISHED 2`, and `PUBLISHED 3`. After the broker pod was deleted and became Ready again, `lab.durable` was durable, classic, and held 3 messages. It printed `ACK 1 redelivered=0`. The hold wait matched `HOLD 2 redelivered=0` before the consumer pod was force-deleted. The queue then returned to 2 messages and 0 unacknowledged. The drain printed `DRAIN 2 redelivered=1` and `DRAIN 3 redelivered=0`. Guest from the client pod printed `GUEST-DENIED reset`: RabbitMQ closed the TCP connection instead of sending an AMQP close code. The smoke ended with its at-least-once, one-replica line.
 
-`down.sh` deleted cluster `offscreen-lab`. `kind get clusters` then printed `No kind clusters found.` The volume list after teardown matched the list from before `up.sh`, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`. No paid provider call was made.
+`down.sh` deleted cluster `offscreen-release`. `kind get clusters` then printed `No kind clusters found.` The volume list after teardown matched the list from before `up.sh`, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`. No paid provider call was made.

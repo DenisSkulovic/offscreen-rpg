@@ -18,22 +18,22 @@ clusters:
 - cluster:
     certificate-authority-data: ZmFrZS1jYQ==
     server: https://127.0.0.1:6443
-  name: kind-offscreen-lab
+  name: kind-offscreen-release
 - cluster:
     server: https://foreign.example:6443
   name: kind-foreign
 contexts:
 - context:
-    cluster: kind-offscreen-lab
-    user: kind-offscreen-lab
-  name: kind-offscreen-lab
+    cluster: kind-offscreen-release
+    user: kind-offscreen-release
+  name: kind-offscreen-release
 - context:
     cluster: kind-foreign
     user: kind-foreign-user
   name: kind-foreign
 current-context: kind-foreign
 users:
-- name: kind-offscreen-lab
+- name: kind-offscreen-release
   user:
     token: fake-lab-token-do-not-log
 - name: kind-foreign-user
@@ -42,10 +42,10 @@ users:
 `;
 
 test('selectContext keeps only the lab context, cluster, and user', () => {
-  const result = selectContext(FIXTURE, 'kind-offscreen-lab');
-  assert.match(result, /name: kind-offscreen-lab/);
-  assert.match(result, /current-context: kind-offscreen-lab/);
-  assert.match(result, /user: kind-offscreen-lab/);
+  const result = selectContext(FIXTURE, 'kind-offscreen-release');
+  assert.match(result, /name: kind-offscreen-release/);
+  assert.match(result, /current-context: kind-offscreen-release/);
+  assert.match(result, /user: kind-offscreen-release/);
   assert.doesNotMatch(result, /kind-foreign/);
   assert.doesNotMatch(result, /kind-foreign-user/);
   assert.doesNotMatch(result, /foreign-secret-token/);
@@ -60,24 +60,24 @@ kind: Config
 clusters:
 - cluster:
     server: https://127.0.0.1:6443
-  name: kind-offscreen-lab
+  name: kind-offscreen-release
 contexts:
 - context:
-    cluster: kind-offscreen-lab
-    user: kind-offscreen-lab
-  name: kind-offscreen-lab
-current-context: kind-offscreen-lab
+    cluster: kind-offscreen-release
+    user: kind-offscreen-release
+  name: kind-offscreen-release
+current-context: kind-offscreen-release
 users:
-- name: kind-offscreen-lab
+- name: kind-offscreen-release
   user:
     client-certificate-data: Y2VydA==
     client-key-data: a2V5
 `;
-  const result = selectContext(fixture, 'kind-offscreen-lab');
+  const result = selectContext(fixture, 'kind-offscreen-release');
   assert.match(result, /client-certificate-data: Y2VydA==/);
   assert.match(result, /client-key-data: a2V5/);
   assert.match(result, /- cluster:\n {4}server: /);
-  assert.match(result, /- context:\n {4}cluster: kind-offscreen-lab/);
+  assert.match(result, /- context:\n {4}cluster: kind-offscreen-release/);
   assert.doesNotMatch(result, /\[object Object\]/);
 });
 

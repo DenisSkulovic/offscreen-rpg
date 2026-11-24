@@ -254,9 +254,9 @@ test('host probe reports unreachable docker, missing kind, foreign ownership, an
       if (command === 'docker') return commandResult({ command, ok: false, timedOut: true });
       if (command === 'kind') return commandResult({ command, ok: false, missing: true });
       if (command === 'kubectl' && args[0] === 'config' && args[1] === 'current-context') {
-        return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+        return commandResult({ command, stdout: 'kind-offscreen-release\n' });
       }
-      if (command === 'kubectl') return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+      if (command === 'kubectl') return commandResult({ command, stdout: 'kind-offscreen-release\n' });
       return commandResult({ command, ok: false });
     },
   });
@@ -265,7 +265,7 @@ test('host probe reports unreachable docker, missing kind, foreign ownership, an
   assert.deepEqual(probe.timedOutCommands, ['docker']);
   assert.equal(probe.capacity.memAvailableMiB, 1024);
   assert.equal(probe.listeningPorts.includes(8080), true);
-  assert.equal(probe.currentContext, 'kind-offscreen-lab');
+  assert.equal(probe.currentContext, 'kind-offscreen-release');
   assert.equal(calls.some((call) => call.includes('use-context')), false);
   const plan = planDevCluster(probe);
   assert.ok(plan.refusals.some((refusal) => refusal.id === 'command-timeout'));
@@ -282,12 +282,12 @@ test('a same-name cluster without a verified label is unknown, and a foreign lab
     readTcp: () => '',
     run(command, args) {
       if (command === 'docker') return commandResult({ command, stdout: '29.9.3\n' });
-      if (command === 'kind') return commandResult({ command, stdout: 'offscreen-dev\noffscreen-lab\n' });
+      if (command === 'kind') return commandResult({ command, stdout: 'offscreen-dev\noffscreen-release\n' });
       if (command === 'kubectl' && args.includes('current-context')) {
-        return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+        return commandResult({ command, stdout: 'kind-offscreen-release\n' });
       }
       if (command === 'kubectl' && args[0] === 'config') {
-        return commandResult({ command, stdout: 'kind-offscreen-lab\n' });
+        return commandResult({ command, stdout: 'kind-offscreen-release\n' });
       }
       return commandResult({ command, ok: false });
     },
@@ -365,7 +365,7 @@ test('authorized execution rechecks, creates only the owned baseline, and restor
   assert.equal(checks, 2);
   assert.equal(calls[0].command, 'kind');
   assert.match(calls[0].input, /apiServerAddress: "127.0.0.1"/);
-  assert.deepEqual(calls[1].args, ['config', 'use-context', 'kind-offscreen-lab']);
+  assert.deepEqual(calls[1].args, ['config', 'use-context', 'kind-offscreen-release']);
   assert.match(calls[2].input, new RegExp(`name: ${DEV_BASELINE_NAMESPACE}`));
   assert.match(renderBaselineNamespace(), /offscreen.dev\/owner: offscreen-dev/);
   assert.equal(calls.filter((call) => call.command === 'kubectl' && call.args[0] === 'config').length, 1);

@@ -58,12 +58,12 @@ infra/clusters/kind/release/up.sh
 infra/platform/observability/install.sh
 infra/verification/smoke/observability/setup.sh
 infra/verification/smoke/observability/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 `install.sh` readiness is collector Deployment Available on OTLP HTTP 4318 and health 13133. Smoke readiness also needs `setup.sh`: synthetic hop Deployments Available and `synthetic-hop` ConfigMap present.
 
-`install.sh`, `setup.sh`, and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `install.sh` renders the platform observability chart and does not import the synthetic hop image or apply `hops.yaml`. `setup.sh` refuses when `otel-collector` is absent. `smoke.sh` scales only owned synthetic hops `hop-a` and `hop-b` during the missing-second-hop proof. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
+`install.sh`, `setup.sh`, and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-release`. `install.sh` renders the platform observability chart and does not import the synthetic hop image or apply `hops.yaml`. `setup.sh` refuses when `otel-collector` is absent. `smoke.sh` scales only owned synthetic hops `hop-a` and `hop-b` during the missing-second-hop proof. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
 
 ## Failure
 
@@ -75,7 +75,7 @@ If a check says a Docker volume outside the cluster disappeared, stop and do not
 
 ## Observed local run
 
-On 2026-11-19 two locked shells each created `offscreen-lab` and deleted it. Host tools were Docker 29.9.3, kind v0.33.0, and kubectl client v1.37.2. The node image was `kindest/node:v1.37.0` (Kubernetes v1.37.0, containerd 2.3.4). MemTotal was 12249872 kB. No paid provider call was made.
+On 2026-11-19 two locked shells each created `offscreen-release` and deleted it. Host tools were Docker 29.9.3, kind v0.33.0, and kubectl client v1.37.2. The node image was `kindest/node:v1.37.0` (Kubernetes v1.37.0, containerd 2.3.4). MemTotal was 12249872 kB. No paid provider call was made.
 
 The first shell installed the collector and recorded one two-hop trace, `a22a50083d043cc913e7973cf19b7cf9`, with hop-a span `6588436e2638dc87` parenting hop-b span `93a9b03a0e5315c2` and operation id `lab-op-9556b04ddc5d2f44`. The missing-hop call was made while the hop-b pod was still terminating. That call still returned `two-hop` for trace `b6527be7912c7861c7e56cd6e6404ed3`. The failure metric was absent, the smoke exited 1, and `down.sh` deleted that cluster. An endpoints list that is already empty is not proof that the second process is gone.
 
@@ -88,4 +88,4 @@ The second shell is the proof. `install.sh` printed `otelcol version 0.165.0`. T
 
 Those two calls are the exported calls. This does not mean any other request was traced, and it does not mean the game was traced.
 
-MemAvailable was 9036868 kB before the proof create, 8777056 kB after the nodes were ready, 8671788 kB during the smoke, and 9397328 kB after delete. `docker stats` showed the control plane at 695.8MiB and the worker at 273MiB. `down.sh` removed `offscreen-lab`. `kind get clusters` then listed none. These volumes were present before and after: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`.
+MemAvailable was 9036868 kB before the proof create, 8777056 kB after the nodes were ready, 8671788 kB during the smoke, and 9397328 kB after delete. `docker stats` showed the control plane at 695.8MiB and the worker at 273MiB. `down.sh` removed `offscreen-release`. `kind get clusters` then listed none. These volumes were present before and after: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`.

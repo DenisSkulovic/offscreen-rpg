@@ -134,7 +134,7 @@ function labExecFixture(opts = {}) {
     if (file === 'kind' && args[0] === 'get' && args[1] === 'clusters') {
       return {
         argv: [file, ...args],
-        stdout: 'offscreen-lab\n',
+        stdout: 'offscreen-release\n',
         stderr: '',
         status: 0,
       };

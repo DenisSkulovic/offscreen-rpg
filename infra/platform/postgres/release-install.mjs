@@ -25,7 +25,7 @@ export const RELEASE_CNPG_CLUSTER_NAME = releaseProfile.clusterName;
 export const RELEASE_LAB_LABEL_KEY = 'offscreen.rpg/lab';
 export const RELEASE_LAB_LABEL_VALUE = 'disposable';
 export const RELEASE_CNPG_MIN_MEMORY_MIB = 4096;
-export const RELEASE_OPERATOR_FIELD_MANAGER = 'offscreen-lab-cnpg';
+export const RELEASE_OPERATOR_FIELD_MANAGER = 'offscreen-release-cnpg';
 
 export function assertReleaseClusterPin(documents, pin) {
   if (documents.length !== 1 || documents[0]?.kind !== 'Cluster' ||

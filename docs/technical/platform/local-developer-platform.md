@@ -19,7 +19,7 @@ A developer with limited DevOps knowledge or a cheap coding agent can run a clus
 | Data | local retained, imported sanitized snapshot, isolated external staging test binding, production read-only diagnostic | explicit connection configuration and existing tenant authorities |
 | Parallelism | independent dev-N slots; release replicas by role | existing slot registry and Kubernetes Deployments |
 
-Cluster IDs remain offscreen-dev and offscreen-lab. The release environment is local production-style acceptance, not actual production. Platform ensure is additive: omission never deletes services; app profile selection is explicit desired active roles for that one owned slot or release environment. Stop preserves tenants. Destructive cluster or tenant operations remain separate. Do not introduce arbitrary cluster names or automatic data cleanup in this milestone.
+Cluster IDs remain offscreen-dev and offscreen-release. The release environment is local production-style acceptance, not actual production. Platform ensure is additive: omission never deletes services; app profile selection is explicit desired active roles for that one owned slot or release environment. Stop preserves tenants. Destructive cluster or tenant operations remain separate. Do not introduce arbitrary cluster names or automatic data cleanup in this milestone.
 
 ## Developer commands (target, not present yet)
 

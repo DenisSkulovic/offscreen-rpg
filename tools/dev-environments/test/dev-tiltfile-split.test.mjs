@@ -34,7 +34,7 @@ test('root Tiltfile is the dev profile without release image builds', () => {
     /allow_k8s_contexts\s*\(\s*['"]kind-offscreen-dev['"]\s*\)/,
   );
   assert.match(rootTiltfile, /assert_dev_slot_env/);
-  assert.doesNotMatch(rootTiltfile, /kind-offscreen-lab/);
+  assert.doesNotMatch(rootTiltfile, /kind-offscreen-release/);
   assert.doesNotMatch(rootTiltfile, /include\s*\(/);
   assert.match(rootTiltfile, /sync-plan\.mjs --tilt/);
   assert.match(rootTiltfile, /k8s_yaml\(rendered\)/);

@@ -29,7 +29,7 @@ function stubBinDir({ contextMode = 'ok', namespacesAbsent = true } = {}) {
     `#!/usr/bin/env bash
 set -euo pipefail
 if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-lab
+  echo offscreen-release
   exit 0
 fi
 echo "unexpected kind: $*" >&2
@@ -42,7 +42,7 @@ exit 2
     `#!/usr/bin/env bash
 set -euo pipefail
 if [[ "\${1:-}" == "ps" ]]; then
-  echo "offscreen-lab-control-plane 127.0.0.1:6443->6443/tcp"
+  echo "offscreen-release-control-plane 127.0.0.1:6443->6443/tcp"
   exit 0
 fi
 if [[ "\${1:-}" == "volume" && "\${2:-}" == "ls" ]]; then exit 0; fi
@@ -55,12 +55,12 @@ exit 2
     contextMode === 'unreadable' || contextMode === 'foreign-ns'
       ? contextMode === 'unreadable'
         ? `exit 1`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`
       : contextMode === 'foreign'
         ? `echo kind-other-cluster
   exit 0`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`;
 
   const mutateLog = join(binDir, 'mutate-log');

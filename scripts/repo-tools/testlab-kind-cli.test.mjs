@@ -9,7 +9,7 @@ function observation(overrides = {}) {
   return {
     ok: true,
     observation: {
-      target: 'kind-offscreen-lab',
+      target: 'kind-offscreen-release',
       cluster: { contextName: id.contextName, clusterName: id.clusterName, uid: 'cluster-uid' },
       dbInstance: {
         namespace: id.postgresNamespace,
@@ -44,7 +44,7 @@ test('status returns missing-active-grant without a write flag', async () => {
   let closed = 0;
   const receipt = await runBareKindFunding(
     'status',
-    { target: 'kind-offscreen-lab', owner: 'owner-1', suite: 'turn03' },
+    { target: 'kind-offscreen-release', owner: 'owner-1', suite: 'turn03' },
     {
       observe: async () => observation(),
       openDatabase: async () => {
@@ -67,7 +67,7 @@ test('ensure without pins does not open the database', async () => {
   let opened = 0;
   const receipt = await runBareKindFunding(
     'ensure',
-    { target: 'kind-offscreen-lab', owner: 'owner-1', suite: 'turn03', approval: 'testlab:suite:turn03', operatorGrantAuthorized: true },
+    { target: 'kind-offscreen-release', owner: 'owner-1', suite: 'turn03', approval: 'testlab:suite:turn03', operatorGrantAuthorized: true },
     {
       observe: async () => observation(),
       openDatabase: async () => { opened += 1; return { ok: false, id: 'should-not-open', message: 'no' }; },
@@ -83,7 +83,7 @@ test('ensure blocks when the target drifts before mutation', async () => {
   const receipt = await runBareKindFunding(
     'ensure',
     {
-      target: 'kind-offscreen-lab',
+      target: 'kind-offscreen-release',
       owner: 'owner-1',
       suite: 'turn03',
       approval: 'testlab:suite:turn03',

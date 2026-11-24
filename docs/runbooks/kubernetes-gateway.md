@@ -4,11 +4,11 @@ Disposable Gateway API edge for the [educational laboratory](../technical/platfo
 
 ## What this procedure is
 
-Install one maintained Gateway API controller on the existing `offscreen-lab` cluster, then route two synthetic HTTP backends through one Gateway. Traefik Proxy is the controller. `/` and `/events` go to a synthetic web process. `/api` goes to a synthetic API process. `/api/absent` goes to a Service that has no pods. These routes stand in for the selected Next page and Nest API, including a long-lived `/api` event stream. They are not that deployment. The synthetic events are a timing probe, not the story SSE hint.
+Install one maintained Gateway API controller on the existing `offscreen-release` cluster, then route two synthetic HTTP backends through one Gateway. Traefik Proxy is the controller. `/` and `/events` go to a synthetic web process. `/api` goes to a synthetic API process. `/api/absent` goes to a Service that has no pods. These routes stand in for the selected Next page and Nest API, including a long-lived `/api` event stream. They are not that deployment. The synthetic events are a timing probe, not the story SSE hint.
 
 The shared kind configuration does not publish a workload port. This procedure does not change that file. The host reaches the Gateway only by `kubectl port-forward` bound to `127.0.0.1`.
 
-Platform install manifests live in `infra/platform/gateway/` (`gateway.yaml` is only the `lab-edge` Gateway). Synthetic HTTPRoute, backends, and smoke scripts live in `infra/verification/smoke/gateway/`. Run them from the repository root, after `infra/clusters/kind/release/up.sh`, and before `infra/clusters/kind/release/destroy.sh kind-offscreen-lab`.
+Platform install manifests live in `infra/platform/gateway/` (`gateway.yaml` is only the `lab-edge` Gateway). Synthetic HTTPRoute, backends, and smoke scripts live in `infra/verification/smoke/gateway/`. Run them from the repository root, after `infra/clusters/kind/release/up.sh`, and before `infra/clusters/kind/release/destroy.sh kind-offscreen-release`.
 
 ## Plain loopback exception
 
@@ -72,23 +72,23 @@ infra/clusters/kind/release/up.sh
 infra/platform/gateway/install.sh
 infra/verification/smoke/gateway/setup.sh
 infra/verification/smoke/gateway/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
-`install.sh`, `setup.sh`, and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `setup.sh` refuses when `game-edge-routes` is already present (release overlap). `install.sh` does not apply synthetic backends, routes, or configmaps. `smoke.sh` opens `127.0.0.1:18080` only for the probe and closes that port-forward when it exits. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
+`install.sh`, `setup.sh`, and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-release`. `setup.sh` refuses when `game-edge-routes` is already present (release overlap). `install.sh` does not apply synthetic backends, routes, or configmaps. `smoke.sh` opens `127.0.0.1:18080` only for the probe and closes that port-forward when it exits. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
 
 ## Debugging
 
-- `kubectl --context kind-offscreen-lab -n lab-edge describe gateway lab-edge` shows `Accepted` and `Programmed`. A false `Programmed` condition usually means Traefik cannot see the GatewayClass or the listener port does not match entrypoint `web` port 8000.
-- `kubectl --context kind-offscreen-lab -n lab-edge describe httproute lab-edge-routes` shows whether each backend Service resolved. `absent-backend` is supposed to exist as a Service and have no endpoints.
-- `kubectl --context kind-offscreen-lab -n gateway-system logs deployment/lab-gateway-traefik --tail=120` is the controller log. The dashboard is off.
-- `kubectl --context kind-offscreen-lab get svc -A` must show no `NodePort` or `LoadBalancer`. The published host port is the port-forward, and `ss` should show `127.0.0.1:18080` while the smoke is running.
+- `kubectl --context kind-offscreen-release -n lab-edge describe gateway lab-edge` shows `Accepted` and `Programmed`. A false `Programmed` condition usually means Traefik cannot see the GatewayClass or the listener port does not match entrypoint `web` port 8000.
+- `kubectl --context kind-offscreen-release -n lab-edge describe httproute lab-edge-routes` shows whether each backend Service resolved. `absent-backend` is supposed to exist as a Service and have no endpoints.
+- `kubectl --context kind-offscreen-release -n gateway-system logs deployment/lab-gateway-traefik --tail=120` is the controller log. The dashboard is off.
+- `kubectl --context kind-offscreen-release get svc -A` must show no `NodePort` or `LoadBalancer`. The published host port is the port-forward, and `ss` should show `127.0.0.1:18080` while the smoke is running.
 - A `503` on `/` or `/api` means the synthetic Deployment is not ready. A `503` on `/api/absent` is the missing-backend proof.
 - A stream that arrives as one burst failed the buffering check. The responding timeouts above are long enough for the three-event probe and short enough to show that the lab is not an unbounded player connection.
 
 ## Observed local run
 
-On 2026-11-19 the locked sequence created `offscreen-lab`, installed this gateway, passed the smoke, and deleted the cluster. Host tools were Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, and Helm v3.22.1. MemTotal was 12249872 kB. MemAvailable was 9816316 kB before create, 8940520 kB during the smoke, and 9620064 kB after delete. While the cluster was up, `docker stats` showed the worker near 236 MiB and the control plane near 669 MiB.
+On 2026-11-19 the locked sequence created `offscreen-release`, installed this gateway, passed the smoke, and deleted the cluster. Host tools were Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, and Helm v3.22.1. MemTotal was 12249872 kB. MemAvailable was 9816316 kB before create, 8940520 kB during the smoke, and 9620064 kB after delete. While the cluster was up, `docker stats` showed the worker near 236 MiB and the control plane near 669 MiB.
 
 `install.sh` checked the Traefik image digest, applied Gateway API v1.6.3 (`sha256sum` matched), and installed chart 42.4.1. Traefik became Available and Gateway `lab-edge` reported `Programmed=True` before smoke setup. `setup.sh` checked the synthetic Python digest, applied backends and `lab-edge-routes`, and waited until both synthetic Deployments were Available and HTTPRoute `Accepted=True`. `absent-backend` had no endpoints. Every Service in the probe was `ClusterIP`.
 
@@ -105,4 +105,4 @@ On 2026-11-19 the locked sequence created `offscreen-lab`, installed this gatewa
 
 The hostname lookup used by the extra connect probe had no non-loopback address, so that probe did not dial the WSL `eth0` address. The published socket was still bound to `127.0.0.1` only.
 
-`down.sh` removed `offscreen-lab`. `kind get clusters` then listed none. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were present before and after. An earlier attempt in the same session failed while `kind load` imported the multi-platform images, and that attempt also deleted the cluster before this successful run. The install script no longer uses `kind load`; the nodes pull the pinned digests.
+`down.sh` removed `offscreen-release`. `kind get clusters` then listed none. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were present before and after. An earlier attempt in the same session failed while `kind load` imported the multi-platform images, and that attempt also deleted the cluster before this successful run. The install script no longer uses `kind load`; the nodes pull the pinned digests.

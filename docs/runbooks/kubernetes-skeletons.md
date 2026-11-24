@@ -55,10 +55,10 @@ flock 9
 infra/clusters/kind/release/up.sh
 infra/verification/fixtures/skeletons/install.sh
 infra/verification/fixtures/skeletons/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
-`install.sh` and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
+`install.sh` and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-release`. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
 
 ## Failure
 
@@ -70,7 +70,7 @@ If a check says a Docker volume outside the cluster disappeared, stop and do not
 
 ## Observed local run
 
-On 2026-11-19 one locked shell created `offscreen-lab`, installed the four placeholders, passed the smoke, and deleted the cluster. Host tools were Docker 29.9.3, kind v0.33.0, and kubectl client v1.37.2. The node image was `kindest/node:v1.37.0` (Kubernetes v1.37.0). No paid provider call was made. `kind load docker-image` was not used. The node pulled `python:3.12-alpine` at digest `sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89`.
+On 2026-11-19 one locked shell created `offscreen-release`, installed the four placeholders, passed the smoke, and deleted the cluster. Host tools were Docker 29.9.3, kind v0.33.0, and kubectl client v1.37.2. The node image was `kindest/node:v1.37.0` (Kubernetes v1.37.0). No paid provider call was made. `kind load docker-image` was not used. The node pulled `python:3.12-alpine` at digest `sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89`.
 
 All four pods were `1/1` Running: `web-api`, `engine`, `storyteller`, and `notifications`. Each Service was `ClusterIP`. No Ingress and no volume claim were present. The kind containers published `127.0.0.1:6443` only.
 
@@ -83,4 +83,4 @@ All four pods were `1/1` Running: `web-api`, `engine`, `storyteller`, and `notif
 
 A ready pod is not a game service. This run did not deploy Next, Nest, a model, a payment call, or the game database.
 
-MemAvailable was 7447084 kB before create, 7409092 kB after the nodes were ready, and 7310936 kB during the smoke. `down.sh` removed `offscreen-lab`. `kind get clusters` then listed none. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were present after delete.
+MemAvailable was 7447084 kB before create, 7409092 kB after the nodes were ready, and 7310936 kB during the smoke. `down.sh` removed `offscreen-release`. `kind get clusters` then listed none. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were present after delete.

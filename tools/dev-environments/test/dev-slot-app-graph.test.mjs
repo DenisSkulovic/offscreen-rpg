@@ -76,7 +76,7 @@ test('closed schema gate and foreign ownership are refused', () => {
   assert.throws(() => renderDevSlotAppGraph('slot-a', { schemaReady: true, ports }), /dev-<positive integer>/);
   const record = { slotId: 'dev-1', namespace: 'offscreen-dev-1', cluster: 'kind-offscreen-dev', resourceUids: { 'dev-1-s3': 'uid-1' } };
   assert.throws(() => assertSlotOwnership(record, {
-    context: 'kind-offscreen-lab', namespace: 'offscreen-dev-1', schemaReady: true, cookiePrefix: 'dev-1',
+    context: 'kind-offscreen-release', namespace: 'offscreen-dev-1', schemaReady: true, cookiePrefix: 'dev-1',
   }), /context/);
   assert.throws(() => assertSlotOwnership(record, {
     context: 'kind-offscreen-dev', namespace: 'offscreen-dev-2', schemaReady: true, cookiePrefix: 'dev-1',

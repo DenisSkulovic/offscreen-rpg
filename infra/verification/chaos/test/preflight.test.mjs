@@ -105,7 +105,7 @@ function labExecFixture(opts = {}) {
     if (file === 'kind' && args[0] === 'get' && args[1] === 'clusters') {
       return {
         argv: [file, ...args],
-        stdout: 'offscreen-lab\n',
+        stdout: 'offscreen-release\n',
         stderr: '',
         status: 0,
       };
@@ -587,7 +587,7 @@ describe('buildChaosPlan direct', () => {
       releaseRefPath: 'x.json',
       releaseRef: RELEASE_REF,
       kubectl,
-      kindClusters: ['offscreen-lab'],
+      kindClusters: ['offscreen-release'],
       currentContext: LAB_CONTEXT_NAME,
       clusterUid: null,
       memAvailableKib: MIN_MEM_AVAILABLE_KIB + 1,

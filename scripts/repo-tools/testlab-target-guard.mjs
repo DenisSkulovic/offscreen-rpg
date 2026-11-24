@@ -19,8 +19,8 @@ export const OPENROUTER_API_KEY_ENV = 'OPENROUTER_API_KEY';
 
 /** Mirrors stack-preflight / owned-app-resources.json lab identity (read-only facts). */
 export const LAB_OWNED_APP_IDENTITY = Object.freeze({
-  clusterName: 'offscreen-lab',
-  contextName: 'kind-offscreen-lab',
+  clusterName: 'offscreen-release',
+  contextName: 'kind-offscreen-release',
   authorityNamespace: 'lab-authority',
   workersNamespace: 'lab-workers',
   gameAuthorityDeployment: 'game-authority',
@@ -250,7 +250,7 @@ export function verifyTestlabTarget(observation, options = {}) {
   if (!target) {
     refusals.push({
       id: TESTLAB_TARGET_REFUSAL_CODES.UNKNOWN_TARGET,
-      message: 'target must be explicitly disposable or kind-offscreen-lab.',
+      message: 'target must be explicitly disposable or kind-offscreen-release.',
     });
     return Object.freeze({ ok: false, refusals: Object.freeze([...refusals]) });
   }
@@ -292,7 +292,7 @@ export function verifyTestlabTarget(observation, options = {}) {
     return Object.freeze({ ok: true, target });
   }
 
-  // kind-offscreen-lab
+  // kind-offscreen-release
   const identity = LAB_OWNED_APP_IDENTITY;
   const cluster = observation?.cluster ?? {};
   const contextName = nonEmptyString(cluster.contextName);
@@ -315,7 +315,7 @@ export function verifyTestlabTarget(observation, options = {}) {
   if (!clusterUid) {
     refusals.push({
       id: TESTLAB_TARGET_REFUSAL_CODES.MISSING_CLUSTER_UID,
-      message: 'Observed cluster UID is required for kind-offscreen-lab.',
+      message: 'Observed cluster UID is required for kind-offscreen-release.',
     });
   } else if (intent === 'write' && !expectedClusterUid) {
     refusals.push({
@@ -333,7 +333,7 @@ export function verifyTestlabTarget(observation, options = {}) {
   if (intent === 'write' && observation?.operatorGrantAuthorized !== true) {
     refusals.push({
       id: TESTLAB_TARGET_REFUSAL_CODES.OPERATOR_GRANT_REQUIRED,
-      message: 'operatorGrantAuthorized must be true for kind-offscreen-lab writes.',
+      message: 'operatorGrantAuthorized must be true for kind-offscreen-release writes.',
     });
   }
 
@@ -359,7 +359,7 @@ export function verifyTestlabTarget(observation, options = {}) {
     refusals.push({
       id: TESTLAB_TARGET_REFUSAL_CODES.AMBIGUOUS_DB,
       message:
-        'dbInstance namespace and name are required for kind-offscreen-lab.',
+        'dbInstance namespace and name are required for kind-offscreen-release.',
     });
   } else {
     const ns = nonEmptyString(dbInstance.namespace);

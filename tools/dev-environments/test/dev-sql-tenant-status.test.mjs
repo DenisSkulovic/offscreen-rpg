@@ -8,7 +8,7 @@ import { collectDevSqlTenantInventory, statusDevSqlTenants } from '../src/adapte
 test('inventory omits secret data and status refuses a foreign tenant resource', () => {
   const probe = collectDevSqlTenantInventory({
     run(_command, args) {
-      if (args.includes('current-context')) return { ok: true, stdout: 'kind-offscreen-lab\n' };
+      if (args.includes('current-context')) return { ok: true, stdout: 'kind-offscreen-release\n' };
       return {
         ok: true,
         stdout: JSON.stringify({
@@ -27,7 +27,7 @@ test('inventory omits secret data and status refuses a foreign tenant resource',
   });
   assert.equal(JSON.stringify(probe).includes('c2VjcmV0'), false);
   assert.equal(probe.sqlCatalog, 'not-authorized');
-  assert.equal(probe.currentContext, 'kind-offscreen-lab');
+  assert.equal(probe.currentContext, 'kind-offscreen-release');
   const status = statusDevSqlTenants(probe);
   assert.equal(status.readOnly, true);
   assert.equal(status.refusals.some((item) => item.id === 'foreign-resource'), true);

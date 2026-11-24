@@ -546,7 +546,7 @@ test('an invalid cluster writes nothing on either allocation path', () => {
   const deps = {
     canonicalizePath: (path) => path,
     isPortAvailable: () => true,
-    cluster: 'kind-offscreen-lab',
+    cluster: 'kind-offscreen-release',
   };
   withTempRegistry((registryRoot) => {
     writeRegistry(registryRoot, {

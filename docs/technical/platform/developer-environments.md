@@ -10,7 +10,7 @@ Human explanation: [Developer environments, illustrated](../../architecture/10-d
 
 ## Boundary and topology
 
-- One physical workstation can host two **different purposes**: `kind-offscreen-dev` for disposable developer application runtimes with durable tenant state, and `kind-offscreen-lab` for cold/release/fault acceptance. They are not interchangeable; starting dev never silently mutates the release lab.
+- One physical workstation can host two **different purposes**: `kind-offscreen-dev` for disposable developer application runtimes with durable tenant state, and `kind-offscreen-release` for cold/release/fault acceptance. They are not interchangeable; starting dev never silently mutates the release lab.
 - Within the dev cluster, each `dev-N` identity has one Kubernetes application namespace, dynamic local port bundle, own process/session fences, distinct SQL database/login, scoped S3 identity/bucket, Temporal namespace/queues and auth secrets.
 - The shared SQL/S3/Temporal **servers** are not duplicated for every Cursor. A tenant is durable, but application Pods need not remain running.
 - A Git worktree owns **source files**, not the durable identity of the environment. Explicit source attachment, reservation and active process lease are separate concepts. Current v2 implementation/acceptance details must be read from DXK09's active receipts; the fully decoupled commands remain selected DXK10 behavior.

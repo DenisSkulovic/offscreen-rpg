@@ -762,7 +762,7 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
     false,
   );
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-dev'\)/);
-  assert.doesNotMatch(tiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
+  assert.doesNotMatch(tiltfile, /allow_k8s_contexts\('kind-offscreen-release'\)/);
   assert.doesNotMatch(tiltfile, /infra\/dev\/Tiltfile/);
   assert.match(tiltfile, /sync-plan\.mjs --tilt/);
   assertInf16ReleaseTiltRetirement(repoRoot);
@@ -771,8 +771,8 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
     join(repoRoot, 'infra/clusters/kind/release/lib.sh'),
     'utf8',
   );
-  assert.match(libSh, /CLUSTER_NAME="offscreen-lab"/);
-  assert.match(libSh, /CONTEXT_NAME="kind-offscreen-lab"/);
+  assert.match(libSh, /CLUSTER_NAME="offscreen-release"/);
+  assert.match(libSh, /CONTEXT_NAME="kind-offscreen-release"/);
 });
 
 test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {

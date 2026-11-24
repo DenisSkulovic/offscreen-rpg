@@ -59,7 +59,7 @@ test('assertArtifactPin rejects toolchain fields in release images.pin', () => {
 });
 
 test('assertLabContext rejects non-lab context', () => {
-  assert.throws(() => assertLabContext('minikube'), /kind-offscreen-lab/);
+  assert.throws(() => assertLabContext('minikube'), /kind-offscreen-release/);
 });
 
 test('assertRecipeUsesToolchainArgs rejects literal node FROM lines', () => {

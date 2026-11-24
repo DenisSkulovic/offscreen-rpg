@@ -7,8 +7,8 @@ import fs from 'node:fs';
 
 import { normalizeImageDigest, selectTarget } from './selector.mjs';
 
-export const LAB_CLUSTER_NAME = 'offscreen-lab';
-export const LAB_CONTEXT_NAME = 'kind-offscreen-lab';
+export const LAB_CLUSTER_NAME = 'offscreen-release';
+export const LAB_CONTEXT_NAME = 'kind-offscreen-release';
 export const CLUSTER_LOCK_PATH = '/tmp/offscreen-k8s-cluster.lock';
 export const MIN_MEM_AVAILABLE_KIB = 4 * 1024 * 1024;
 export const APP_NAMESPACES = new Set(['lab-edge', 'lab-workers', 'lab-authority']);

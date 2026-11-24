@@ -369,7 +369,7 @@ test('verifyDeploymentRolloutExecution rejects unknown pod image identity', () =
     () =>
       verifyDeploymentRolloutExecution(
         run,
-        'kind-offscreen-lab',
+        'kind-offscreen-release',
         'lab-edge',
         'game-api',
         CONFIG_DIGEST,
@@ -392,7 +392,7 @@ test('verifyDeploymentRolloutExecution rejects two replicas when one pod image i
     () =>
       verifyDeploymentRolloutExecution(
         run,
-        'kind-offscreen-lab',
+        'kind-offscreen-release',
         'lab-edge',
         'game-api',
         CONFIG_DIGEST,
@@ -415,7 +415,7 @@ test('verifyDeploymentRolloutExecution rejects nonterminating pods from an old R
     () =>
       verifyDeploymentRolloutExecution(
         run,
-        'kind-offscreen-lab',
+        'kind-offscreen-release',
         'lab-edge',
         'game-api',
         CONFIG_DIGEST,
@@ -439,7 +439,7 @@ test('verifyDeploymentRolloutExecution ignores terminating pods from an old Repl
   assert.doesNotThrow(() =>
     verifyDeploymentRolloutExecution(
       run,
-      'kind-offscreen-lab',
+      'kind-offscreen-release',
       'lab-edge',
       'game-api',
       CONFIG_DIGEST,
@@ -472,7 +472,7 @@ test('verifyDeploymentRolloutExecution rejects a foreign pod with the app select
     () =>
       verifyDeploymentRolloutExecution(
         run,
-        'kind-offscreen-lab',
+        'kind-offscreen-release',
         'lab-edge',
         'game-api',
         CONFIG_DIGEST,
@@ -494,7 +494,7 @@ test('verifyDeploymentRolloutExecution rejects missing deployment replica status
     () =>
       verifyDeploymentRolloutExecution(
         run,
-        'kind-offscreen-lab',
+        'kind-offscreen-release',
         'lab-edge',
         'game-api',
         CONFIG_DIGEST,
@@ -517,7 +517,7 @@ test('verifyDeploymentRolloutExecution accepts multiple ready replicas', () => {
   assert.doesNotThrow(() =>
     verifyDeploymentRolloutExecution(
       run,
-      'kind-offscreen-lab',
+      'kind-offscreen-release',
       'lab-edge',
       'game-api',
       CONFIG_DIGEST,

@@ -651,11 +651,11 @@ class CrossTargetRefusalTest(unittest.TestCase):
         kube_path = str(self.tmp.resolve())
         runner = RecordingRunner(
             {
-                _config_view_args(kube_path, "kind-offscreen-lab"): CommandOutcome(
+                _config_view_args(kube_path, "kind-offscreen-release"): CommandOutcome(
                     ok=True,
                     status=0,
                     stdout=_kubeconfig_view(
-                        "kind-offscreen-lab", "kind-offscreen-lab", DEV_API_PORT_RANGE[0]
+                        "kind-offscreen-release", "kind-offscreen-release", DEV_API_PORT_RANGE[0]
                     ),
                     stderr="",
                 ),
@@ -664,7 +664,7 @@ class CrossTargetRefusalTest(unittest.TestCase):
         config = RuntimeConfig(
             docker_context="default",
             kubeconfig_path=str(self.tmp),
-            kube_context="kind-offscreen-lab",
+            kube_context="kind-offscreen-release",
             installation_id=INSTALLATION_ID,
         )
         ok, gap = refuse_cross_target(config, runner)

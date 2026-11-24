@@ -21,8 +21,8 @@ const PROFILE_HOME = Object.freeze({
   }),
   release: Object.freeze({
     id: 'release',
-    clusterName: 'offscreen-lab',
-    contextName: 'kind-offscreen-lab',
+    clusterName: 'offscreen-release',
+    contextName: 'kind-offscreen-release',
     kindYamlRel: 'release/kind.yaml',
     requireApiServerPort: true,
   }),

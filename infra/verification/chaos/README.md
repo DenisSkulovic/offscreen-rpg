@@ -1,10 +1,10 @@
 # Chaos lab (K8S10) — plan-only controller
 
-Read-only preflight and deterministic target planning for the disposable `offscreen-lab` kind cluster. **Plan mode is the default**; the CLI does not create, delete, or mutate cluster resources.
+Read-only preflight and deterministic target planning for the disposable `offscreen-release` kind cluster. **Plan mode is the default**; the CLI does not create, delete, or mutate cluster resources.
 
 ## Safety
 
-- Kubectl always uses `--context kind-offscreen-lab` (see `infra/clusters/kind/release/lib.sh`).
+- Kubectl always uses `--context kind-offscreen-release` (see `infra/clusters/kind/release/lib.sh`).
 - Plan mode forbids `delete`, `exec`, `apply`, `scale`, and related mutating verbs.
 - `--execute` is **rejected** until T04 implements controlled fault injection.
 - The runner never auto-switches kubectl context or creates/deletes a kind cluster.
@@ -59,8 +59,8 @@ Flags:
 1. Safe `runId`, seed, and `max-events`
 2. No conflicting operator at `/tmp/offscreen-k8s-cluster.lock`
 3. `MemAvailable` ≥ 4 GiB (mirrors `lib.sh`)
-4. Current kubectl context is exactly `kind-offscreen-lab`
-5. `kind get clusters` lists `offscreen-lab`
+4. Current kubectl context is exactly `kind-offscreen-release`
+5. `kind get clusters` lists `offscreen-release`
 6. Cluster UID from `kube-system` metadata
 7. Release ref owners match live Deployment UID, exact image tag and template eligibility label
 8. Pod→ReplicaSet→Deployment ownership resolves against live UIDs, and Pod imageID matches pinned digest

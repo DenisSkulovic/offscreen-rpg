@@ -32,7 +32,7 @@ function validDisposable(overrides = {}) {
 function validKind(overrides = {}) {
   const id = LAB_OWNED_APP_IDENTITY;
   return {
-    target: 'kind-offscreen-lab',
+    target: 'kind-offscreen-release',
     operatorGrantAuthorized: true,
     cluster: {
       contextName: id.contextName,
@@ -69,10 +69,10 @@ test('positive: disposable scripted test-container passes', () => {
   assert.equal(result.target, 'disposable');
 });
 
-test('positive: kind-offscreen-lab with exact cluster and db UIDs passes', () => {
+test('positive: kind-offscreen-release with exact cluster and db UIDs passes', () => {
   const result = verifyTestlabTarget(validKind());
   assert.equal(result.ok, true);
-  assert.equal(result.target, 'kind-offscreen-lab');
+  assert.equal(result.target, 'kind-offscreen-release');
 });
 
 test('negative: db connection handle is refused before acceptance', () => {

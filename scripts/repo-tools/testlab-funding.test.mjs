@@ -235,13 +235,13 @@ test('negative: kind ensure without approval is blocked with zero writes', async
   const deps = {
     ...fundingDeps(store),
     observeKindTarget: async () => ({
-      target: 'kind-offscreen-lab',
+      target: 'kind-offscreen-release',
       operatorGrantAuthorized: true,
     }),
   };
   const receipt = await runTestlabFundingEnsure(
     {
-      target: 'kind-offscreen-lab',
+      target: 'kind-offscreen-release',
       owner: OWNER,
       suite: SUITE,
       operatorGrantAuthorized: true,
@@ -297,7 +297,7 @@ test('negative: kind ensure requires explicit operator grant CLI flag', async ()
   const store = createFakeStore();
   const receipt = await runTestlabFundingEnsure(
     {
-      target: 'kind-offscreen-lab',
+      target: 'kind-offscreen-release',
       owner: OWNER,
       suite: SUITE,
       approval: buildTestlabSuiteApprovalIdentity(SUITE),
@@ -305,7 +305,7 @@ test('negative: kind ensure requires explicit operator grant CLI flag', async ()
     },
     {
       grantStore: store.grantStore,
-      observeKindTarget: async () => ({ target: 'kind-offscreen-lab' }),
+      observeKindTarget: async () => ({ target: 'kind-offscreen-release' }),
       now: () => BASE_NOW,
     },
   );
@@ -403,7 +403,7 @@ test('runTestlabFundingCommand blocks foreign suite for same owner', async () =>
 
 test('negative: kind status without an observer is missing-kind-observer', async () => {
   const receipt = await runTestlabFundingStatus(
-    { target: 'kind-offscreen-lab', owner: OWNER, suite: SUITE },
+    { target: 'kind-offscreen-release', owner: OWNER, suite: SUITE },
     {},
   );
   assert.equal(receipt.outcome, 'blocked');
@@ -421,7 +421,7 @@ test('plan CLI prints JSON with decimal 250000', () => {
       'scripts/repo-tools/testlab-funding.mjs',
       'plan',
       '--target',
-      'kind-offscreen-lab',
+      'kind-offscreen-release',
       '--owner',
       'test',
       '--suite',

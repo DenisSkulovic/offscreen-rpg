@@ -6,7 +6,7 @@ Compose still runs Temporal's development server for the game. This procedure do
 
 ## What this procedure is
 
-Install Temporal server 1.32.2 into the existing `offscreen-lab` cluster, with PostgreSQL 17.11 on a `local-path` claim in namespace `lab-temporal`. The server process is `temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start`. It listens inside the pod and is reached through a ClusterIP Service. History and visibility use databases `temporal` and `temporal_visibility` on that claim. Four history shards are set in the rendered config.
+Install Temporal server 1.32.2 into the existing `offscreen-release` cluster, with PostgreSQL 17.11 on a `local-path` claim in namespace `lab-temporal`. The server process is `temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start`. It listens inside the pod and is reached through a ClusterIP Service. History and visibility use databases `temporal` and `temporal_visibility` on that claim. Four history shards are set in the rendered config.
 
 The database password is created in memory at install time and stored only in Secret `temporal-db`. The server script writes it into `/tmp/temporal-config.yaml` inside the container. No password is committed.
 
@@ -23,7 +23,7 @@ Platform install is `infra/platform/temporal/install.sh`, which renders the Helm
 - Do not point Compose, the game worker, or the game database at `lab-temporal`.
 - Do not put a password or a rendered server config in Git.
 - Do not publish a workload on `0.0.0.0` or `[::]`. `bindOnIP` is inside the pod network. A NodePort or LoadBalancer Service fails the check. The API server stays on `127.0.0.1`.
-- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-lab` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
+- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-release` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not treat deletion of the kind cluster as a backup of workflow history.
 
 ## Recovery limit
@@ -38,7 +38,7 @@ Deleting the kind cluster does not preserve local-path volumes. The provisioner 
 infra/clusters/kind/release/up.sh
 infra/platform/temporal/install.sh
 infra/verification/smoke/temporal/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the server, the worker, PostgreSQL, and the local-path files on the node.
@@ -55,7 +55,7 @@ If a check says a Docker volume outside the cluster disappeared, stop and do not
 
 ## Observed local run
 
-On 2026-11-19, from branch `change/k8s06-temporal` at baseline `66f82cac`, one shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-lab` only after that name was absent, and deleted that same cluster before it released the lock.
+On 2026-11-19, from branch `change/k8s06-temporal` at baseline `66f82cac`, one shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-release` only after that name was absent, and deleted that same cluster before it released the lock.
 
 Machine: MemTotal 12249872 kB. MemAvailable was 8443232 KiB before create, 7302676 KiB at the start of the smoke, and 8052748 KiB after delete. Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, node image `kindest/node:v1.37.0`.
 
@@ -67,11 +67,11 @@ Commands, from the repository root:
 infra/clusters/kind/release/up.sh
 infra/platform/temporal/install.sh
 infra/verification/smoke/temporal/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 The server command was `temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start`. `temporal-server --version` printed `temporal version 1.32.2`. The admin CLI printed `temporal version 1.10.0 (Server 1.32.2, UI 2.56.1)`. Postgres printed `postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)`. Cluster health was `SERVING`. Claim `temporal-postgres` was Bound on `local-path`. Both Services were ClusterIP. The API container published `127.0.0.1:6443` only.
 
 `labOnce` run `01a1f508-38d1-7089-b20e-5ae1ca74a044` on task queue `lab-once` completed its activity and started its timer while the status was still `RUNNING`. `lab_effect` had one row. The worker was scaled to zero. The server pod uid changed from `23b8fa1e-77b5-43ce-a604-1baf606537c9` to `f992a343-45f8-4181-9378-687e3902b31a`. The claim uid stayed `c72d384b-11c3-42a3-b8f0-4276962f1653`. After the new server was `SERVING`, the same run id was still `RUNNING` and the history still had one `TimerStarted`. `lab_effect` was still one row. The worker was scaled back to one. The same run completed. The history had one `ActivityTaskCompleted`, one `TimerFired`, and one `WorkflowExecutionCompleted`. The result text was `finished-once`. The workflow list contained one execution. `lab_effect` stayed one row.
 
-`down.sh` then removed `offscreen-lab`. No kind cluster remained. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were still present. No Secret value was printed, and no password was written under `infra/kubernetes/lab/temporal/`. No model call was made. The game was not pointed at this server. This run is a disposable lab, not the Compose development server, and not a production cluster. Deleting the kind cluster did not keep the workflow history.
+`down.sh` then removed `offscreen-release`. No kind cluster remained. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were still present. No Secret value was printed, and no password was written under `infra/kubernetes/lab/temporal/`. No model call was made. The game was not pointed at this server. This run is a disposable lab, not the Compose development server, and not a production cluster. Deleting the kind cluster did not keep the workflow history.

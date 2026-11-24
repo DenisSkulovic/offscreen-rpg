@@ -40,7 +40,7 @@ export const RELEASE_ACCEPTANCE_PLAN_STAGES = Object.freeze([
   {
     id: 'pin-release-identity',
     mode: 'read-only',
-    summary: 'Pin git HEAD, dirty tree state, and release image tags for kind-offscreen-lab',
+    summary: 'Pin git HEAD, dirty tree state, and release image tags for kind-offscreen-release',
   },
   {
     id: 'turn03-lab-preflight',

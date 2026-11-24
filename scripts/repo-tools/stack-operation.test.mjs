@@ -22,7 +22,7 @@ function probesOk() {
   return {
     commandsPresent: { docker: true, kind: true, kubectl: true },
     dockerDaemonOk: true,
-    currentContext: 'kind-offscreen-lab',
+    currentContext: 'kind-offscreen-release',
     ownedClusterExists: false,
     memAvailableKib: 4_194_304,
     apiPort: { occupied: false, ownedByCluster: false },
@@ -93,7 +93,7 @@ test('disabled monitor leaves stack planned command outcome unchanged', () => {
     {
       probes: probesOk(),
       observation: { clusterPresent: false, migration: 'absent', importRoots: null },
-      confirmation: 'kind-offscreen-lab',
+      confirmation: 'kind-offscreen-release',
     },
     () => ({ status: 0, stdout: '', stderr: '' }),
   );

@@ -41,7 +41,7 @@ The container runs as uid 999 and gid 1000, which is the `redis` account in that
 
 ## Create, smoke, and delete
 
-Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
+Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-release`:
 
 ```bash
 OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed infra/verification/smoke/redis/smoke.sh
@@ -55,7 +55,7 @@ infra/platform/redis/install.sh
 
 When local Docker already has `docker.io/library/redis:8.2.1-alpine`, the smoke saves that image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used: on this machine it stops with `content digest sha256:8ddf542da70dec1f3b0f91fde22f8cd4b9c816627dc39323416b295b278c010c: not found`. If the import fails, the kubelet may still pull the same pin. The smoke renders `infra/platform/redis/chart` through `node infra/platform/common/cli.mjs render redis release all`, refuses when redis Deployment, Service, ConfigMap, or client already exist, creates the fixture and `infra/verification/smoke/redis/client.yaml`, requires `OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed` before `FLUSHALL` or scale, and deletes only UID-matched objects when it exits, including after a failure. It does not delete the cluster or activate application cache wiring.
 
-Delete the cluster with `infra/clusters/kind/release/destroy.sh kind-offscreen-lab` when the lab work is finished. Hold the shared cluster lock from `up.sh` through `down.sh`. If `up.sh` says the cluster already exists, stop. Do not delete a cluster this shell did not create.
+Delete the cluster with `infra/clusters/kind/release/destroy.sh kind-offscreen-release` when the lab work is finished. Hold the shared cluster lock from `up.sh` through `down.sh`. If `up.sh` says the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
 ## Failure
 
@@ -76,7 +76,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 ```bash
 infra/clusters/kind/release/up.sh
 OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed infra/verification/smoke/redis/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 The first attempt on 2026-11-19 created the cluster, then `kind load docker-image` failed before any Redis pod existed:
@@ -97,4 +97,4 @@ The smoke then imported the saved image with `ctr images import` and was run aga
 - the only `lab-a` pods were the Redis pod and `redis-client`
 - the API container published `127.0.0.1:6443` only
 
-The smoke deleted its Redis objects. `down.sh` then removed `offscreen-lab`. `kind get clusters` reported no clusters. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`. No model call was made.
+The smoke deleted its Redis objects. `down.sh` then removed `offscreen-release`. `kind get clusters` reported no clusters. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`. No model call was made.

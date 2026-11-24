@@ -107,7 +107,7 @@ describe('volume guard', () => {
   });
 
   test('unchanged unrelated volume list passes assert_no_volume_loss', () => {
-    const listing = 'kind-offscreen-lab-control-plane\nsome-other-volume\n';
+    const listing = 'kind-offscreen-release-control-plane\nsome-other-volume\n';
     const result = runAssertNoVolumeLoss(
       'assert_no_volume_loss',
       listing,
@@ -117,8 +117,8 @@ describe('volume guard', () => {
   });
 
   test('disappearing unrelated volume fails assert_no_volume_loss', () => {
-    const before = 'kind-offscreen-lab-control-plane\nsome-other-volume\n';
-    const after = 'kind-offscreen-lab-control-plane\n';
+    const before = 'kind-offscreen-release-control-plane\nsome-other-volume\n';
+    const after = 'kind-offscreen-release-control-plane\n';
     const result = runAssertNoVolumeLoss(
       'assert_no_volume_loss',
       before,
@@ -133,7 +133,7 @@ describe('volume guard', () => {
   });
 
   test('cold clone volume_guard_begin/end cycle passes without legacy Compose names', () => {
-    const result = runVolumeGuardCycle([], ['kind-offscreen-lab', 'minikube']);
+    const result = runVolumeGuardCycle([], ['kind-offscreen-release', 'minikube']);
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   });
 
@@ -180,7 +180,7 @@ exit 0
     assert.match(missing.stderr, /exactly one confirmation/);
     assert.throws(() => readFileSync(logPath, 'utf8'), /ENOENT/);
 
-    const wrong = spawnSync('bash', [destroySh, 'offscreen-lab'], {
+    const wrong = spawnSync('bash', [destroySh, 'offscreen-release'], {
       encoding: 'utf8',
       env,
     });
@@ -205,7 +205,7 @@ fi
 if [[ "\${1:-}" == volume && "\${2:-}" == inspect ]]; then
   vol="\${5:-\${3:-}}"
   if [[ "$vol" == kind-owned-volume ]]; then
-    echo offscreen-lab
+    echo offscreen-release
     exit 0
   fi
   echo ""
@@ -266,7 +266,7 @@ cluster_volume_names "${outFile}"
     writeFileSync(
       join(fakeBin, 'kind'),
       `#!/usr/bin/env bash
-if [[ "\${1:-}" == get && "\${2:-}" == clusters ]]; then echo offscreen-lab; exit 0; fi
+if [[ "\${1:-}" == get && "\${2:-}" == clusters ]]; then echo offscreen-release; exit 0; fi
 exit 2
 `,
       'utf8',
@@ -275,7 +275,7 @@ exit 2
       join(fakeBin, 'docker'),
       `#!/usr/bin/env bash
 if [[ "\${1:-}" == volume && "\${2:-}" == ls ]]; then exit 0; fi
-if [[ "\${1:-}" == ps ]]; then echo "offscreen-lab-control-plane 127.0.0.1:6443->6443/tcp"; exit 0; fi
+if [[ "\${1:-}" == ps ]]; then echo "offscreen-release-control-plane 127.0.0.1:6443->6443/tcp"; exit 0; fi
 exit 2
 `,
       'utf8',
@@ -284,8 +284,8 @@ exit 2
       join(fakeBin, 'kubectl'),
       `#!/usr/bin/env bash
 set -euo pipefail
-if [[ "\${1:-}" == config && "\${2:-}" == get-contexts ]]; then echo kind-offscreen-lab; exit 0; fi
-if [[ "\${1:-}" == --context && "\${4:-}" == config ]]; then echo kind-offscreen-lab; exit 0; fi
+if [[ "\${1:-}" == config && "\${2:-}" == get-contexts ]]; then echo kind-offscreen-release; exit 0; fi
+if [[ "\${1:-}" == --context && "\${4:-}" == config ]]; then echo kind-offscreen-release; exit 0; fi
 joined="$*"
 if [[ "$joined" == *"delete "* ]]; then
   echo "delete $*" >>"${deleteLog}"
@@ -327,7 +327,7 @@ exit 2
     writeFileSync(
       join(fakeBin, 'kind'),
       `#!/usr/bin/env bash
-if [[ "\${1:-}" == get && "\${2:-}" == clusters ]]; then echo offscreen-lab; exit 0; fi
+if [[ "\${1:-}" == get && "\${2:-}" == clusters ]]; then echo offscreen-release; exit 0; fi
 exit 2
 `,
       'utf8',
@@ -336,7 +336,7 @@ exit 2
       join(fakeBin, 'docker'),
       `#!/usr/bin/env bash
 if [[ "\${1:-}" == volume && "\${2:-}" == ls ]]; then exit 0; fi
-if [[ "\${1:-}" == ps ]]; then echo "offscreen-lab-control-plane 127.0.0.1:6443->6443/tcp"; exit 0; fi
+if [[ "\${1:-}" == ps ]]; then echo "offscreen-release-control-plane 127.0.0.1:6443->6443/tcp"; exit 0; fi
 exit 2
 `,
       'utf8',
@@ -345,8 +345,8 @@ exit 2
       join(fakeBin, 'kubectl'),
       `#!/usr/bin/env bash
 set -euo pipefail
-if [[ "\${1:-}" == config && "\${2:-}" == get-contexts ]]; then echo kind-offscreen-lab; exit 0; fi
-if [[ "\${1:-}" == --context && "\${4:-}" == config ]]; then echo kind-offscreen-lab; exit 0; fi
+if [[ "\${1:-}" == config && "\${2:-}" == get-contexts ]]; then echo kind-offscreen-release; exit 0; fi
+if [[ "\${1:-}" == --context && "\${4:-}" == config ]]; then echo kind-offscreen-release; exit 0; fi
 joined="$*"
 if [[ "$joined" == *"delete "* ]]; then
   echo "delete $*" >>"${deleteLog}"

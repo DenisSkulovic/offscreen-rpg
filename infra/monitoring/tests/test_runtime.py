@@ -189,13 +189,13 @@ class VerifyKubeconfigTest(unittest.TestCase):
         runner = _kind_bootstrap_runner(
             self.tmp,
             port=RELEASE_API_PORT,
-            context="kind-offscreen-lab",
-            cluster_name="offscreen-lab",
+            context="kind-offscreen-release",
+            cluster_name="offscreen-release",
         )
         config = RuntimeConfig(
             docker_context="default",
             kubeconfig_path=str(self.tmp),
-            kube_context="kind-offscreen-lab",
+            kube_context="kind-offscreen-release",
             installation_id=INSTALLATION_ID,
         )
         ok, port, _ = verify_kubeconfig_identity(config, runner)
@@ -486,7 +486,7 @@ class VerifyLocalRuntimeTest(unittest.TestCase):
     def test_allowlist_exact_contexts(self) -> None:
         self.assertEqual(
             ALLOWED_KUBE_CONTEXTS,
-            frozenset({"kind-offscreen-dev", "kind-offscreen-lab"}),
+            frozenset({"kind-offscreen-dev", "kind-offscreen-release"}),
         )
 
 

@@ -40,7 +40,7 @@ test('shared create uses exact cluster names for both profiles', () => {
     {
       profile: 'dev',
       port: devPort,
-      previousContext: 'kind-offscreen-lab',
+      previousContext: 'kind-offscreen-release',
       config: renderKindConfig(devProfile, devPort),
     },
     {

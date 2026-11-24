@@ -17,7 +17,7 @@ RELEASE_API_PORT = 6443
 DEV_API_PORT_RANGE = (24_443, 24_543)
 KIND_CLUSTER_LABEL = "io.x-k8s.kind.cluster"
 
-ALLOWED_KUBE_CONTEXTS = frozenset({"kind-offscreen-dev", "kind-offscreen-lab"})
+ALLOWED_KUBE_CONTEXTS = frozenset({"kind-offscreen-dev", "kind-offscreen-release"})
 
 COMMAND_TIMEOUT_S = 2.5
 STATS_COMMAND_TIMEOUT_S = 2.0
@@ -92,10 +92,10 @@ KIND_PROFILE_BY_CONTEXT: dict[str, KindProfile] = {
         node_roles=("control-plane", "worker"),
         node_count=2,
     ),
-    "kind-offscreen-lab": KindProfile(
+    "kind-offscreen-release": KindProfile(
         profile_id="release",
-        cluster_name="offscreen-lab",
-        context_name="kind-offscreen-lab",
+        cluster_name="offscreen-release",
+        context_name="kind-offscreen-release",
         node_roles=("control-plane", "worker"),
         node_count=2,
     ),

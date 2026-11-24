@@ -56,18 +56,18 @@ The cluster comes from [Kubernetes lab](kubernetes-lab.md). The store pin is the
 
 ## Create, smoke, and delete
 
-Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
+Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-release`:
 
 ```bash
 infra/clusters/kind/release/up.sh
 infra/platform/object-storage/install.sh
 infra/verification/release-acceptance/content-bootstrap/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
-When local Docker already has SeaweedFS and the bootstrap image, the smoke loads each image onto every kind node with `kind load docker-image`. A `docker save | docker exec -i ctr import` loop is not used: that loop can consume the node list and leave the worker without the image. On 2026-11-20 that loop left `offscreen-lab-content-bootstrap:boot02` off `offscreen-lab-worker`, and the importer stayed `ErrImageNeverPull` until `kind load` put the image on both nodes.
+When local Docker already has SeaweedFS and the bootstrap image, the smoke loads each image onto every kind node with `kind load docker-image`. A `docker save | docker exec -i ctr import` loop is not used: that loop can consume the node list and leave the worker without the image. On 2026-11-20 that loop left `offscreen-lab-content-bootstrap:boot02` off `offscreen-release-worker`, and the importer stayed `ErrImageNeverPull` until `kind load` put the image on both nodes.
 
 ## Failure
 
@@ -91,7 +91,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 infra/clusters/kind/release/up.sh
 infra/platform/object-storage/install.sh
 infra/verification/release-acceptance/content-bootstrap/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 Results from that run on 2026-11-19, branch `change/boot02-cluster-pin`, baseline `93d57ca6`:
@@ -108,7 +108,7 @@ Results from that run on 2026-11-19, branch `change/boot02-cluster-pin`, baselin
 - importer reported `pinPath=null` and `campaignCreated=false`
 - reader reported `match=yes` and `campaignCreated=false`
 
-`down.sh` then removed `offscreen-lab`. `kind get clusters` reported no clusters. These volumes were still present: `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`. No Secret value was printed, and no credential was written under `infra/kubernetes/lab/content-bootstrap/`. No model call was made. The Nest API and the worker were not applied.
+`down.sh` then removed `offscreen-release`. `kind get clusters` reported no clusters. These volumes were still present: `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`. No Secret value was printed, and no credential was written under `infra/kubernetes/lab/content-bootstrap/`. No model call was made. The Nest API and the worker were not applied.
 
 Deleting that kind cluster does not preserve the local-path files and is not a backup. The objects survived an importer Pod deletion only. They did not survive the cluster deletion.
 

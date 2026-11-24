@@ -60,12 +60,12 @@ The cluster comes from [Kubernetes lab](kubernetes-lab.md). The store pin is the
 
 ## Create, smoke, and delete
 
-Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
+Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-release`:
 
 ```bash
 infra/clusters/kind/release/up.sh
 infra/verification/fixtures/document-access/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
@@ -91,7 +91,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 ```bash
 infra/clusters/kind/release/up.sh
 infra/verification/fixtures/document-access/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 Results from that run on 2026-11-19, branch `change/data05-shared-object`, baseline `25d75a9a`:
@@ -109,7 +109,7 @@ Results from that run on 2026-11-19, branch `change/data05-shared-object`, basel
 - the writer reported `failed-s3=fail-closed` and `pod-local=absent`
 - the reader reported `pod-local=rejected`, `missing-key=fail-closed`, `denied-read=fail-closed`, and `second-write=denied`
 
-`down.sh` then removed `offscreen-lab`. `kind get clusters` reported no clusters. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`. No Secret value was printed, and no credential was written under `infra/kubernetes/lab/document-access/`. No model call was made. The Nest API and the worker were not applied.
+`down.sh` then removed `offscreen-release`. `kind get clusters` reported no clusters. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`. No Secret value was printed, and no credential was written under `infra/kubernetes/lab/document-access/`. No model call was made. The Nest API and the worker were not applied.
 
 Deleting that kind cluster does not preserve the local-path files and is not a backup. The object survived a writer Pod deletion only. It did not survive the cluster deletion, and this run did not try to read it back after `down.sh`.
 

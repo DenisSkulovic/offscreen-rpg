@@ -147,7 +147,7 @@ test('owned reentry reuses the secret and does not generate a new one', () => {
 test('foreign resources, wrong context, low memory, and a copied admin secret refuse', () => {
   const cases = [
     { ...ready, resources: [{ kind: 'Namespace', name: DEV_S3_NAMESPACE }] },
-    { ...ready, context: 'kind-offscreen-lab' },
+    { ...ready, context: 'kind-offscreen-release' },
     { ...ready, memoryMiB: 100 },
     {
       ...ready,

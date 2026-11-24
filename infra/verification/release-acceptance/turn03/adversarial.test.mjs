@@ -13,8 +13,8 @@ import { runTurn03ColdTrace } from './run.mjs';
 /** @returns {import('./preflight.mjs').runTurn03Preflight extends (...args: any) => Promise<infer R> ? R : never} */
 function readyPreflight() {
   return {
-    contextName: 'kind-offscreen-lab',
-    clusterName: 'offscreen-lab',
+    contextName: 'kind-offscreen-release',
+    clusterName: 'offscreen-release',
     images: {},
     checks: {
       contextPresent: true,

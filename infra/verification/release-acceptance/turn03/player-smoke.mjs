@@ -10,7 +10,7 @@ import {
   TraceAbort,
 } from './trace-route.mjs';
 
-const LAB_CONTEXT = 'kind-offscreen-lab';
+const LAB_CONTEXT = 'kind-offscreen-release';
 const SOURCE_ONLY = 'source-only-observation';
 const MAX_ATTEMPTS = 50;
 

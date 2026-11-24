@@ -47,8 +47,8 @@ function happyExec(overrides = {}) {
   };
   return async (argv) => {
     const joined = argv.join(' ');
-    if (joined === 'kind get clusters') return { code: 0, stdout: 'offscreen-lab\n' };
-    if (joined === 'kubectl config current-context') return { code: 0, stdout: 'kind-offscreen-lab\n' };
+    if (joined === 'kind get clusters') return { code: 0, stdout: 'offscreen-release\n' };
+    if (joined === 'kubectl config current-context') return { code: 0, stdout: 'kind-offscreen-release\n' };
     if (joined.includes('pods')) {
       const namespace = argv[argv.indexOf('-n') + 1];
       const name = namespace === id.authorityNamespace ? id.gameAuthorityDeployment : id.gameExecutorDeployment;
@@ -62,7 +62,7 @@ function happyExec(overrides = {}) {
 }
 
 test('refuses mutating kubectl verbs', () => {
-  assert.ok(refusedKindReadArgv(['kubectl', '--context', 'kind-offscreen-lab', 'delete', 'pod', 'x']));
+  assert.ok(refusedKindReadArgv(['kubectl', '--context', 'kind-offscreen-release', 'delete', 'pod', 'x']));
 });
 
 test('positive observation reads the pinned lab', async () => {

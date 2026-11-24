@@ -151,7 +151,7 @@ test('owned reentry is a no-op and foreign or release resources refuse', () => {
 
 test('wrong context, low memory, timeout, bad pin, and missing authorization refuse', () => {
   for (const probe of [
-    { ...ready, context: 'kind-offscreen-lab' },
+    { ...ready, context: 'kind-offscreen-release' },
     { ...ready, memoryMiB: 100 },
     { ...ready, timedOutCommands: ['docker'] },
     { ...ready, pin: { ...pin, sha256: 'abcd' } },
@@ -191,7 +191,7 @@ test('the CLI plans from an injected probe and refuses an injected live ensure',
 
 test('wrong target, unreadable reads, storage drift, digest, and operator waits refuse cluster apply', () => {
   const wrongTarget = ensureDevCnpg(
-    { ...ready, context: 'kind-offscreen-lab' },
+    { ...ready, context: 'kind-offscreen-release' },
     { authorize: true },
   );
   assert.equal(

@@ -13,7 +13,7 @@ import {
 
 const releaseReadyProbe = {
   context: RELEASE_S3_CONTEXT,
-  clusterName: 'offscreen-lab',
+  clusterName: 'offscreen-release',
   baselineOwner: RELEASE_S3_OWNER,
   storageClass: 'local-path',
   unreadables: [],

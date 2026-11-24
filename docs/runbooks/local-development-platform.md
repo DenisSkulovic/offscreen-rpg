@@ -14,7 +14,7 @@ Current baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. See [selected target]
 | Development platform plan | `node infra/environments/dev/platform.mjs plan` |
 | Ensure dev core on existing cluster | `node infra/environments/dev/platform.mjs ensure kind-offscreen-dev` |
 | Release core plan | `node infra/environments/release/platform.mjs plan` |
-| Release platform ensure | `node infra/environments/release/platform.mjs ensure kind-offscreen-lab` |
+| Release platform ensure | `node infra/environments/release/platform.mjs ensure kind-offscreen-release` |
 | Release application | explicit image build then `pnpm stack:up`; [release runbook](kubernetes-lab.md) |
 | Release observation / application stop | `pnpm stack:status`, `pnpm stack:down` |
 | Optional release services | individual [Redis](kubernetes-redis.md), [RabbitMQ](kubernetes-rabbitmq.md), [observability](kubernetes-observability.md) runbooks |

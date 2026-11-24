@@ -54,13 +54,13 @@ The store container runs as uid 1000 and gid 1000, which is the `seaweed` accoun
 
 ## Create, smoke, and delete
 
-Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
+Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-release`:
 
 ```bash
 infra/clusters/kind/release/up.sh
 infra/platform/object-storage/install.sh
 infra/verification/smoke/object-storage/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
@@ -89,7 +89,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 infra/clusters/kind/release/up.sh
 infra/platform/object-storage/install.sh
 infra/verification/smoke/object-storage/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 Results from that run on 2026-11-19, branch `change/k8s05-object-storage`, baseline `66f82cac`:
@@ -106,6 +106,6 @@ Results from that run on 2026-11-19, branch `change/k8s05-object-storage`, basel
 - `HEAD lifecycle.txt` after the replacement still exited 254
 - the API container published `127.0.0.1:6443` only
 
-`down.sh` then removed `offscreen-lab`. `kind get clusters` reported no clusters. No kubectl context remained. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`. No Secret value was printed, and no credential was written under `infra/kubernetes/lab/object-storage/`. No model call was made. The game was not pointed at this store.
+`down.sh` then removed `offscreen-release`. `kind get clusters` reported no clusters. No kubectl context remained. These volumes were still present: `offscreen-rpg_postgres-data`, `offscreen-rpg_temporal-data`, `4a4eb6ed5b672961f32560c6b1bd2de67acdf2102c4a168371b003aa3917b3ae`, and `d153382368c28ea4cedc4d528099bddd86a7b3f6d9297722ad7775b58d7f3ae2`. No Secret value was printed, and no credential was written under `infra/kubernetes/lab/object-storage/`. No model call was made. The game was not pointed at this store.
 
 Deleting that kind cluster does not preserve the local-path files and is not a backup. The object survived a Pod deletion only. It did not survive the cluster deletion, and this run did not try to read it back after `down.sh`.

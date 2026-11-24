@@ -200,7 +200,7 @@ const kubectlLabPrecheckStub = `#!/usr/bin/env bash
 set -euo pipefail
 joined="$*"
 if [[ "\${1:-}" == "config" && "\${2:-}" == "get-contexts" ]]; then
-  echo kind-offscreen-lab
+  echo kind-offscreen-release
   exit 0
 fi
 if [[ "$joined" == *"get gateway lab-edge"* ]]; then exit 0; fi
@@ -236,7 +236,7 @@ exit 2
       `#!/usr/bin/env bash
 set -euo pipefail
 if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-lab
+  echo offscreen-release
   exit 0
 fi
 echo "unexpected kind invocation: $*" >&2
@@ -332,7 +332,7 @@ test('install.sh does not apply authority after migration wait fails', () => {
 set -euo pipefail
 joined="$*"
 if [[ "\${1:-}" == "config" && "\${2:-}" == "get-contexts" ]]; then
-  echo kind-offscreen-lab
+  echo kind-offscreen-release
   exit 0
 fi
 if [[ "$joined" == *"get gateway lab-edge"* ]]; then exit 0; fi

@@ -13,7 +13,7 @@ import {
   OFFSCREEN_WRITER_EXECUTION_MODE_ENV,
 } from './testlab-target-guard.mjs';
 
-/** CLI flag separate from packet approval identity; required for kind-offscreen-lab ensure. */
+/** CLI flag separate from packet approval identity; required for kind-offscreen-release ensure. */
 export const TESTLAB_OPERATOR_GRANT_CLI_FLAG = '--operator-grant-authorized';
 
 const GRANTS_FOR_OWNER_SQL = `
@@ -273,13 +273,13 @@ async function buildTargetObservation(flags, deps, command) {
     };
   }
 
-  if (target === 'kind-offscreen-lab') {
+  if (target === 'kind-offscreen-release') {
     if (command === 'ensure' && flags.operatorGrantAuthorized !== true) {
       return {
         observation: null,
         refusal: {
           id: 'operator-grant-cli-missing',
-          message: `${TESTLAB_OPERATOR_GRANT_CLI_FLAG} is required for kind-offscreen-lab ensure.`,
+          message: `${TESTLAB_OPERATOR_GRANT_CLI_FLAG} is required for kind-offscreen-release ensure.`,
         },
       };
     }
@@ -289,7 +289,7 @@ async function buildTargetObservation(flags, deps, command) {
         refusal: {
           id: 'missing-kind-observer',
           message:
-            'kind-offscreen-lab requires an injected or CLI kind observer; refusing an empty cluster observation.',
+            'kind-offscreen-release requires an injected or CLI kind observer; refusing an empty cluster observation.',
         },
       };
     }
@@ -299,7 +299,7 @@ async function buildTargetObservation(flags, deps, command) {
     return {
       observation: {
         ...observation,
-        target: 'kind-offscreen-lab',
+        target: 'kind-offscreen-release',
         operatorGrantAuthorized: flags.operatorGrantAuthorized === true,
         ...(expectClusterUid ? { expectedClusterUid: expectClusterUid } : {}),
         ...(expectDbUid ? { expectedDbInstanceUid: expectDbUid } : {}),
@@ -311,7 +311,7 @@ async function buildTargetObservation(flags, deps, command) {
     observation: target ? { target } : null,
     refusal: {
       id: 'unknown-target',
-      message: 'target must be disposable or kind-offscreen-lab.',
+      message: 'target must be disposable or kind-offscreen-release.',
     },
   };
 }
@@ -456,14 +456,14 @@ export async function runTestlabFundingEnsure(flags, deps = {}) {
   const now = resolveNow(flags, deps);
 
   try {
-    if (targetIdentity === 'kind-offscreen-lab') {
+    if (targetIdentity === 'kind-offscreen-release') {
       if (!ownerId || !suiteId || !approvalIdentity) {
         return blockedReceipt(
           [
             {
               id: 'missing-kind-fields',
               message:
-                'kind-offscreen-lab ensure requires --owner, --suite, and --approval.',
+                'kind-offscreen-release ensure requires --owner, --suite, and --approval.',
             },
           ],
           targetIdentity,
@@ -584,7 +584,7 @@ export async function runTestlabFundingCommand(command, flags, deps = {}) {
       return runTestlabFundingEnsure(flags, deps);
     }
     logError(
-      'Usage: testlab-funding.mjs plan|status|ensure --target <disposable|kind-offscreen-lab> [flags]',
+      'Usage: testlab-funding.mjs plan|status|ensure --target <disposable|kind-offscreen-release> [flags]',
     );
     return blockedReceipt(
       [
@@ -631,7 +631,7 @@ if (invokedAsScript) {
   const { command, flags } = parseTestlabFundingArgv(process.argv.slice(2));
   const kindOperator =
     (command === 'status' || command === 'ensure') &&
-    flags.target === 'kind-offscreen-lab';
+    flags.target === 'kind-offscreen-release';
   const receipt = kindOperator
     ? await import('./testlab-kind-cli.mjs').then((mod) =>
         mod.runBareKindFunding(command, flags, {

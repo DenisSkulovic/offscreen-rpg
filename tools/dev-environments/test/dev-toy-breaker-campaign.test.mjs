@@ -805,7 +805,7 @@ test('toy breaker fixture matrix', () => {
   try {
     allocateIndependentEnvironment(checkout, root(), {
       ...deps(),
-      cluster: 'kind-offscreen-lab',
+      cluster: 'kind-offscreen-release',
     });
   } catch (error) {
     lab = error.id ?? 'refused';
@@ -813,7 +813,7 @@ test('toy breaker fixture matrix', () => {
   record(
     'S06',
     lab === 'invalid-cluster' ? 'PASS' : 'FAIL',
-    'kind-offscreen-lab refused before registry mutation',
+    'kind-offscreen-release refused before registry mutation',
     lab,
   );
 

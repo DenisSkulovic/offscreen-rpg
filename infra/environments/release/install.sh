@@ -21,8 +21,8 @@ ROLLOUT_MJS="${RELEASE_DIR}/rollout.mjs"
 EDGE_ROUTE_YAML="${RELEASE_DIR}/game-edge-route.yaml"
 APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../images/release" && pwd)"
 KIND_IMAGE_LOADER="$(cd "${RELEASE_DIR}/../../images/distribution" && pwd)/kind-image-loader.mjs"
-CONTEXT_NAME="kind-offscreen-lab"
-CLUSTER_NAME="offscreen-lab"
+CONTEXT_NAME="kind-offscreen-release"
+CLUSTER_NAME="offscreen-release"
 KUBECTL=(kubectl --context "$CONTEXT_NAME")
 
 WEB_IMAGE="offscreen-lab-game-web:turn02"

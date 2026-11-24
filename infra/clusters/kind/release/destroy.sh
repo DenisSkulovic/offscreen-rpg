@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Delete only the disposable offscreen-lab kind cluster.
+# Delete only the disposable offscreen-release kind cluster.
 # This script does not run docker volume rm, docker system prune, or kubectl delete on another context.
 
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
-  echo "destroy.sh requires exactly one confirmation argument: kind-offscreen-lab" >&2
+  echo "destroy.sh requires exactly one confirmation argument: kind-offscreen-release" >&2
   exit 2
 fi
 
-if [[ "$1" != "kind-offscreen-lab" ]]; then
-  echo "destroy.sh refused: confirmation must be exactly kind-offscreen-lab." >&2
+if [[ "$1" != "kind-offscreen-release" ]]; then
+  echo "destroy.sh refused: confirmation must be exactly kind-offscreen-release." >&2
   exit 2
 fi
 

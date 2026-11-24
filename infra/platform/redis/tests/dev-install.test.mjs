@@ -181,7 +181,7 @@ test('executeAuthorizedDevRedis ensures dev namespace then applies rendered redi
     .map(([cmd, args]) => `${cmd} ${args.join(' ')}`)
     .join('\n');
   assert.match(joined, /--context kind-offscreen-dev/);
-  assert.doesNotMatch(joined, /kind-offscreen-lab/);
+  assert.doesNotMatch(joined, /kind-offscreen-release/);
   assert.doesNotMatch(joined, /install\.sh/);
   assert.match(joined, /offscreen-dev-redis/);
   assert.match(joined, /helm template/);

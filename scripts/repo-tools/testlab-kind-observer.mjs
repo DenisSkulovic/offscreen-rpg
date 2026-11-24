@@ -39,7 +39,7 @@ export function refusedKindReadArgv(argv) {
   }
   const contextAt = argv.indexOf('--context');
   if (contextAt < 0 || argv[contextAt + 1] !== CONTEXT) {
-    return 'kubectl reads must pin --context kind-offscreen-lab';
+    return 'kubectl reads must pin --context kind-offscreen-release';
   }
   if (!argv.includes('get') || argv.includes('delete') || argv.includes('apply') || argv.includes('patch') || argv.includes('exec')) {
     return 'kubectl verb must be get';
@@ -271,7 +271,7 @@ export async function createTestlabKindObservation(deps = {}) {
   return {
     ok: true,
     observation: {
-      target: 'kind-offscreen-lab',
+      target: 'kind-offscreen-release',
       cluster: {
         contextName: CONTEXT,
         clusterName: id.clusterName,

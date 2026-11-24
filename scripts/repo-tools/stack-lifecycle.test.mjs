@@ -74,7 +74,7 @@ test('foreign context probes refuse up/down/reset with empty commands', () => {
       command,
       probes,
       observation,
-      confirmation: command === 'reset' ? 'kind-offscreen-lab' : undefined,
+      confirmation: command === 'reset' ? 'kind-offscreen-release' : undefined,
     });
     assert.equal(plan.ok, false);
     assert.deepEqual(plan.commands, []);
@@ -92,7 +92,7 @@ test('up cold path: cluster absent => up.sh, platform ensure, install.sh', () =>
   assert.equal(plan.ok, true);
   assert.deepEqual(plan.commands, [
     ['bash', 'infra/clusters/kind/release/up.sh'],
-    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-lab'],
+    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-release'],
     ['bash', 'infra/environments/release/install.sh'],
   ]);
   assert.deepEqual(plan.urls, []);
@@ -106,7 +106,7 @@ test('up warm path: cluster present => platform ensure then install.sh', () => {
   });
   assert.equal(plan.ok, true);
   assert.deepEqual(plan.commands, [
-    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-lab'],
+    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-release'],
     ['bash', 'infra/environments/release/install.sh'],
   ]);
   const flat = plan.commands.flat().join(' ');
@@ -177,19 +177,19 @@ test('reset without confirmation => empty commands and refusal', () => {
   assert.equal(plan.ok, false);
   assert.equal(plan.exitCode, 1);
   assert.deepEqual(plan.commands, []);
-  assert.ok(plan.messages.some((m) => /confirmation/i.test(m) && m.includes('kind-offscreen-lab')));
+  assert.ok(plan.messages.some((m) => /confirmation/i.test(m) && m.includes('kind-offscreen-release')));
 });
 
 test('reset with exact confirmation => destroy.sh with confirmation arg', () => {
   const plan = buildStackPlan({
     command: 'reset',
     probes: healthyProbes({ currentContext: null }),
-    confirmation: 'kind-offscreen-lab',
+    confirmation: 'kind-offscreen-release',
     observation: defaultObservation(),
   });
   assert.equal(plan.ok, true);
   assert.deepEqual(plan.commands, [
-    ['bash', 'infra/clusters/kind/release/destroy.sh', 'kind-offscreen-lab'],
+    ['bash', 'infra/clusters/kind/release/destroy.sh', 'kind-offscreen-release'],
   ]);
   assert.deepEqual(plan.urls, []);
 });
@@ -203,7 +203,7 @@ test('down and reset plans do not mutate cluster or platform backing', () => {
   const reset = buildStackPlan({
     command: 'reset',
     probes: healthyProbes({ currentContext: null }),
-    confirmation: 'kind-offscreen-lab',
+    confirmation: 'kind-offscreen-release',
     observation: defaultObservation(),
   });
   const flat = [...down.commands, ...reset.commands]
@@ -217,7 +217,7 @@ test('reset with cluster name missing kind- prefix => empty commands', () => {
   const plan = buildStackPlan({
     command: 'reset',
     probes: healthyProbes({ currentContext: null }),
-    confirmation: 'offscreen-lab',
+    confirmation: 'offscreen-release',
     observation: defaultObservation(),
   });
   assert.equal(plan.ok, false);

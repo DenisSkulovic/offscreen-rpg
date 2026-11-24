@@ -68,7 +68,7 @@ test('health-only green cluster is not acceptance', () => {
 test('wrong context fails and issues no command', () => {
   const result = assessAcceptance(passing({ context: 'kind-other', mode: 'cold', execute: true }));
   assert.equal(result.ok, false);
-  assert.ok(result.diagnostics.some((line) => line.includes('kind-offscreen-lab')));
+  assert.ok(result.diagnostics.some((line) => line.includes('kind-offscreen-release')));
   assert.deepEqual(result.commands, []);
   assert.equal(result.dataReset, false);
 });

@@ -39,7 +39,7 @@ test('root Tiltfile pins kubectl context kind-offscreen-dev', () => {
     /allow_k8s_contexts\s*\(\s*['"]kind-offscreen-dev['"]\s*\)/,
   );
   assert.match(rootTiltfile, /assert_dev_slot_env/);
-  assert.doesNotMatch(rootTiltfile, /kind-offscreen-lab/);
+  assert.doesNotMatch(rootTiltfile, /kind-offscreen-release/);
 });
 
 test('root Tiltfile owns the consolidated dev graph', () => {

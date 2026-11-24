@@ -121,7 +121,7 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
 
 test('wrong context, low memory, and the release namespace refuse without mutation', () => {
   for (const probe of [
-    { ...ready, context: 'kind-offscreen-lab' },
+    { ...ready, context: 'kind-offscreen-release' },
     { ...ready, memoryMiB: 100 },
     { ...ready, resources: [{ kind: 'Namespace', name: RELEASE_TEMPORAL_NAMESPACE }] },
   ]) {
@@ -168,7 +168,7 @@ test('the host probe drops secret data and records a foreign config map', () => 
       const joined = args.join(' ');
       if (command === 'docker') return { ok: true, stdout: '28\n', timedOut: false };
       if (command === 'kind') return { ok: true, stdout: 'offscreen-dev\n', timedOut: false };
-      if (joined.includes('current-context')) return { ok: true, stdout: 'kind-offscreen-lab\n', timedOut: false };
+      if (joined.includes('current-context')) return { ok: true, stdout: 'kind-offscreen-release\n', timedOut: false };
       if (joined.includes('cluster-info')) return { ok: true, stdout: 'https://127.0.0.1:24443\n', timedOut: false };
       if (joined.includes('offscreen-dev-system')) return { ok: true, stdout: JSON.stringify({ metadata: { labels: { 'offscreen.dev/owner': 'offscreen-dev' } } }), timedOut: false };
       if (joined.includes('storageclass')) return { ok: true, stdout: 'standard', timedOut: false };
@@ -182,6 +182,6 @@ test('the host probe drops secret data and records a foreign config map', () => 
     },
   });
   assert.equal(JSON.stringify(probe).includes('c2VjcmV0'), false);
-  assert.equal(probe.currentContext, 'kind-offscreen-lab');
+  assert.equal(probe.currentContext, 'kind-offscreen-release');
   assert.equal(probe.resources.find((item) => item.name === 'temporal-dynamic').owner, null);
 });

@@ -26,13 +26,13 @@ The second label is the difference between a dead consumer and a lost message. T
 - Do not extract a game service. The clients are `python:3.12-alpine` pods. They load `infra/verification/smoke/rabbitmq/amqp_smoke.py`.
 - Do not publish a Service as NodePort or LoadBalancer. Do not raise the WSL memory cap.
 - Do not delete Docker volumes. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, stay outside this procedure.
-- Do not run this against a shared or paid cluster. The only cluster name is `offscreen-lab`.
+- Do not run this against a shared or paid cluster. The only cluster name is `offscreen-release`.
 
 ## Requirements
 
 | Piece | Pin |
 | --- | --- |
-| Cluster | `offscreen-lab`, created by [Kubernetes lab](kubernetes-lab.md) |
+| Cluster | `offscreen-release`, created by [Kubernetes lab](kubernetes-lab.md) |
 | Broker | the one-replica broker from [Kubernetes RabbitMQ](kubernetes-rabbitmq.md) |
 | Queue | `lab.durable`, durable classic |
 | Client image | `docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89` |
@@ -62,7 +62,7 @@ The first command exits 0. The second exits 1. Those files are not a cluster run
 
 ## Create, smoke, and delete
 
-Hold `/tmp/offscreen-k8s-cluster.lock` for the whole sequence. If `offscreen-lab` already exists, stop. Do not delete a cluster this shell did not create.
+Hold `/tmp/offscreen-k8s-cluster.lock` for the whole sequence. If `offscreen-release` already exists, stop. Do not delete a cluster this shell did not create.
 
 ```bash
 exec 9>/tmp/offscreen-k8s-cluster.lock
@@ -70,7 +70,7 @@ flock 9
 infra/clusters/kind/release/up.sh
 infra/platform/rabbitmq/install.sh
 infra/verification/faults/run.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-lab
+infra/clusters/kind/release/destroy.sh kind-offscreen-release
 ```
 
 `run.sh` takes no arguments. It does not create or delete the cluster. It removes its client pods and script ConfigMap when it exits. The broker stays until `down.sh` deletes the cluster. `down.sh` does not delete Compose volumes.
@@ -89,7 +89,7 @@ If a check says a Docker volume outside the cluster disappeared, stop and do not
 
 ## Observed local run
 
-2026-11-19, on this worktree, branch `change/k8s10-fault-harness`. One shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-lab` only after that name was absent, and deleted that same cluster before it released the lock. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/faults/run.sh`, `infra/clusters/kind/release/destroy.sh kind-offscreen-lab`.
+2026-11-19, on this worktree, branch `change/k8s10-fault-harness`. One shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-release` only after that name was absent, and deleted that same cluster before it released the lock. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/faults/run.sh`, `infra/clusters/kind/release/destroy.sh kind-offscreen-release`.
 
 Versions printed by `run.sh`: Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, server v1.37.0. Broker replicas were 1. Broker pod uid `a96963db-6624-4f0a-ab16-63aa05d5c24e` was the same after the worker pod was deleted. Client image and image ID were `docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89`. No paid provider call was made. No plot image was written. The memory samples below are the hardware record.
 
@@ -115,7 +115,7 @@ Run id `fault-ed09a6e1b8b5c5f5`:
 - The two apply lines were `redelivered=0` and `redelivered=1` for the same run id. `assert_exactly_once.py` exited 1 with `ASSERTION-FAILED duplicated side effect: expected 1 APPLY, saw 2 for fault-ed09a6e1b8b5c5f5`. The runner printed `NEGATIVE-FAILED-AS-REQUIRED`.
 - The queue was then 0 messages and 0 unacknowledged. The API containers published `127.0.0.1:6443` only.
 
-`down.sh` deleted `offscreen-lab`. `kind get clusters` then printed `No kind clusters found.` `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were still present.
+`down.sh` deleted `offscreen-release`. `kind get clusters` then printed `No kind clusters found.` `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were still present.
 
 The same day, before the cluster run, the one-apply fixture exited 0 and the two-apply fixture exited 1. That fixture pair is the assertion's local negative case. The cluster result above is the live one.
 

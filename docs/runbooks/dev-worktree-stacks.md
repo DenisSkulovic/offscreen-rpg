@@ -22,7 +22,7 @@
 | Park a specifically owned environment | `pnpm dev:stop --instance dev-N` | Explicit ID; verify exact owner and namespace; never substitute foreign ID |
 | No Kubernetes required | Package-specific unit/type checks | Preferred for source-only Changes; zero slot cost |
 
-Commands must be run from the **intended worktree root**, using that branch's actual `package.json`. They can refuse on missing memory, wrong context, occupied ports, stale process identity or image mismatch. Do not bypass a refusal, assume a returned process exit means complete readiness, or use `kind-offscreen-lab` as a fallback.
+Commands must be run from the **intended worktree root**, using that branch's actual `package.json`. They can refuse on missing memory, wrong context, occupied ports, stale process identity or image mismatch. Do not bypass a refusal, assume a returned process exit means complete readiness, or use `kind-offscreen-release` as a fallback.
 
 **Not yet current commands:** `dev:up --profile web|api|full` and `dev:release` remain selected [DXK10-B/C targets](../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md). `dev:reserve` and `dev:attach` exist and stay registry-only; they do not start Pods. Do not treat an attached reservation as a running stack.
 
@@ -46,10 +46,10 @@ For a commissioned Change, first follow [AGENTS.md](../../AGENTS.md), its `CHANG
 | Shared dev PostgreSQL | `offscreen-dev-postgres` / CNPG `dev-pg`, database `dev_N` | One migration role and separate DML-only runtime role; preserve on stop |
 | Shared dev S3 | `offscreen-dev-objects` / SeaweedFS, bucket `offscreen-dev-N` | Bucket-scoped user/Secret; admin key must never reach application Pods |
 | Shared dev Temporal | `offscreen-dev-temporal` server, Temporal namespace `offscreen-dev-N` | Same queue names per namespace; trusted-local routing isolation, not an auth boundary |
-| Release acceptance | **`kind-offscreen-lab`** | Separate purpose; do not direct dev Tilt, image loads or worktree tests here |
-| Release lab app namespaces | `lab-edge`, `lab-authority`, `lab-workers` on **`kind-offscreen-lab`** | Release acceptance only; never use as a worktree dev slot or substitute for `pnpm dev` |
+| Release acceptance | **`kind-offscreen-release`** | Separate purpose; do not direct dev Tilt, image loads or worktree tests here |
+| Release lab app namespaces | `lab-edge`, `lab-authority`, `lab-workers` on **`kind-offscreen-release`** | Release acceptance only; never use as a worktree dev slot or substitute for `pnpm dev` |
 
-Always pass explicit Kubernetes context; the ambient context may remain `kind-offscreen-lab`. Headlamp/Tilt are inspection tools, not ownership authorities.
+Always pass explicit Kubernetes context; the ambient context may remain `kind-offscreen-release`. Headlamp/Tilt are inspection tools, not ownership authorities.
 
 ## Local ownership and lease model
 

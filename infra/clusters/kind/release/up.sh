@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Create the disposable offscreen-lab kind cluster. Does not delete volumes or foreign contexts.
+# Create the disposable offscreen-release kind cluster. Does not delete volumes or foreign contexts.
 
 set -euo pipefail
 
 if [[ $# -ne 0 ]]; then
-  echo "up.sh takes no arguments. It only creates kind cluster offscreen-lab." >&2
+  echo "up.sh takes no arguments. It only creates kind cluster offscreen-release." >&2
   exit 2
 fi
 

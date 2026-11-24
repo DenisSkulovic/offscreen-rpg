@@ -27,7 +27,7 @@ const IDENTITY = Object.freeze({
 const READINESS = Object.freeze({
   releaseSha: RELEASE,
   bucket: 'lab-objects',
-  contextName: 'kind-offscreen-lab',
+  contextName: 'kind-offscreen-release',
   imagesCurrent: true,
   sessionVerified: true,
 });

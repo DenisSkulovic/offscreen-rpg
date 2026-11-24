@@ -274,9 +274,9 @@ const loaderReceipt = JSON.stringify({
   ref: 'offscreen-lab-app-release-api:turn02',
   digest: CONFIG_DIGEST,
   loadedNodes: [],
-  reusedNodes: ['offscreen-lab-control-plane'],
+  reusedNodes: ['offscreen-release-control-plane'],
   nodes: {
-    'offscreen-lab-control-plane': {
+    'offscreen-release-control-plane': {
       configId: CONFIG_DIGEST,
       manifestDigest: MANIFEST_DIGEST,
       targetDigest: TARGET_DIGEST,
@@ -290,7 +290,7 @@ test('parseLoaderReceipt and digest helpers', () => {
   const receipt = parseLoaderReceipt(loaderReceipt);
   assert.equal(receipt.digest, CONFIG_DIGEST);
   assert.equal(
-    receipt.nodes?.['offscreen-lab-control-plane']?.targetDigest,
+    receipt.nodes?.['offscreen-release-control-plane']?.targetDigest,
     TARGET_DIGEST,
   );
   assert.throws(() => parseLoaderReceipt(''), /missing/);
@@ -343,7 +343,7 @@ test('collectAcceptedMigrationImageIds uses verified kind identities', () => {
       return {
         ok: true,
         status: 0,
-        stdout: 'node/offscreen-lab-control-plane\nnode/offscreen-lab-worker\n',
+        stdout: 'node/offscreen-release-control-plane\nnode/offscreen-release-worker\n',
         stderr: '',
         timedOut: false,
         missing: false,
@@ -353,7 +353,7 @@ test('collectAcceptedMigrationImageIds uses verified kind identities', () => {
       return {
         ok: true,
         status: 0,
-        stdout: 'offscreen-lab\n',
+        stdout: 'offscreen-release\n',
         stderr: '',
         timedOut: false,
         missing: false,
@@ -786,7 +786,7 @@ test('deleteMigrationJobWithUidPrecondition uses raw delete body', () => {
       missing: false,
     };
   };
-  deleteMigrationJobWithUidPrecondition(run, 'kind-offscreen-lab', 'uid-xyz');
+  deleteMigrationJobWithUidPrecondition(run, 'kind-offscreen-release', 'uid-xyz');
   const deleteCall = invocations[0];
   assert.match(deleteCall.args.join(' '), /delete --raw/);
   assert.match(deleteCall.input ?? '', /uid-xyz/);

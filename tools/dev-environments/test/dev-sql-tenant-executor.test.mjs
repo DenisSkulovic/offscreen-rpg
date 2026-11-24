@@ -58,7 +58,7 @@ function adapterFor(catalog, options = {}) {
       owner: options.owner ?? 'offscreen-dev',
       ready: options.ready !== false,
       changedContext: false,
-      ambientContext: 'kind-offscreen-lab',
+      ambientContext: 'kind-offscreen-release',
     }),
     readCatalog: () => catalog,
     execSql: (statement) => {
@@ -204,7 +204,7 @@ test('selected slot fences baseline, reuses secrets, and denies cross-tenant acc
   });
   assert.equal(result.ok, true);
   assert.equal(result.devLogin, true);
-  assert.equal(result.ambientContext, 'kind-offscreen-lab');
+  assert.equal(result.ambientContext, 'kind-offscreen-release');
   assert.equal(JSON.stringify(result).includes('password'), false);
   const second = executeDevSqlTenants({
     knownSlots: ['dev-1', 'dev-2'],

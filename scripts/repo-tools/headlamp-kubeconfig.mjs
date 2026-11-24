@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { CONTEXT_NAME } from './stack-preflight.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const DEFAULT_OUT = resolve(homedir(), '.kube/offscreen-lab-headlamp.config');
+const DEFAULT_OUT = resolve(homedir(), '.kube/offscreen-release-headlamp.config');
 
 /**
  * @param {string[]} lines

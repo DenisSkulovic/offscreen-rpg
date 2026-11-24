@@ -26,7 +26,7 @@ function stubBinDir({ gameEdgePresent = false, contextMode = 'ok' } = {}) {
     `#!/usr/bin/env bash
 set -euo pipefail
 if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-lab
+  echo offscreen-release
   exit 0
 fi
 echo "unexpected kind: $*" >&2
@@ -53,7 +53,7 @@ exit 2
       : contextMode === 'foreign'
         ? `echo kind-other-cluster
   exit 0`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`;
 
   const gameEdgeExit = gameEdgePresent ? 0 : 1;

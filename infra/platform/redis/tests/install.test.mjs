@@ -29,7 +29,7 @@ function stubBinDir({ contextMode = 'ok', labAAbsent = true } = {}) {
     `#!/usr/bin/env bash
 set -euo pipefail
 if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-lab
+  echo offscreen-release
   exit 0
 fi
 echo "unexpected kind: $*" >&2
@@ -51,12 +51,12 @@ exit 2
     contextMode === 'unreadable' || contextMode === 'foreign-ns'
       ? contextMode === 'unreadable'
         ? `exit 1`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`
       : contextMode === 'foreign'
         ? `echo kind-other-cluster
   exit 0`
-        : `echo kind-offscreen-lab
+        : `echo kind-offscreen-release
   exit 0`;
 
   const applyLog = join(binDir, 'apply-log');
@@ -72,7 +72,7 @@ if [[ "\${1:-}" == "config" && "\${2:-}" == "get-contexts" ]]; then
 fi
 if [[ "$joined" == *"config view --minify -o json"* ]]; then
   cat <<'JSON'
-{"contexts":[{"context":{"cluster":"offscreen-lab","user":"kind-offscreen-lab"}}],"clusters":[{"name":"offscreen-lab","cluster":{"server":"https://127.0.0.1:6443"}}]}
+{"contexts":[{"context":{"cluster":"offscreen-release","user":"kind-offscreen-release"}}],"clusters":[{"name":"offscreen-release","cluster":{"server":"https://127.0.0.1:6443"}}]}
 JSON
   exit 0
 fi

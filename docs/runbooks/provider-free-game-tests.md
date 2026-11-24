@@ -4,7 +4,7 @@ Operator runbook for **repeatable, finite, auditable** per-owner launch grants i
 
 Ordinary local boot stays on [Local development](local-development.md). Disposable-database integration checks stay on [Local integration tests](local-integration-tests.md).
 
-**Authorization boundary:** Change **TESTLAB01** documents and tests this tooling. It does **not** authorize a live `kind-offscreen-lab` database write. Running `ensure` against the real lab cluster still needs separate operator approval, a complete kind target observation, and the explicit CLI grant flag below.
+**Authorization boundary:** Change **TESTLAB01** documents and tests this tooling. It does **not** authorize a live `kind-offscreen-release` database write. Running `ensure` against the real lab cluster still needs separate operator approval, a complete kind target observation, and the explicit CLI grant flag below.
 
 ## What these commands touch
 
@@ -14,7 +14,7 @@ Ordinary local boot stays on [Local development](local-development.md). Disposab
 | `status` | Read-only SQL when a query hook is supplied | No |
 | `ensure` | May insert storyteller funding/run/grant rows when hooks pass guards | No provider calls; not production entitlement |
 | Provider-free launch integration test | Disposable sandbox Postgres only | No; tripwire fails if a provider path is invoked |
-| Bare CLI `node scripts/repo-tools/testlab-funding.mjs …` | `plan` is pure JSON. `status`/`ensure --target kind-offscreen-lab` use the kind observer and an ephemeral `lab-pg-rw` port-forward. Disposable status/ensure still need injected hooks. | No |
+| Bare CLI `node scripts/repo-tools/testlab-funding.mjs …` | `plan` is pure JSON. `status`/`ensure --target kind-offscreen-release` use the kind observer and an ephemeral `lab-pg-rw` port-forward. Disposable status/ensure still need injected hooks. | No |
 
 `pnpm dev`, sign-in, and ordinary startup **do not** create or refresh testlab grants. There is **no** automatic first-user or login entitlement and **no** production entitlement profile in this path—the canonical testlab profile is `p3c-launch-entitlement.v1` with route `writer:launch` only.
 
@@ -25,7 +25,7 @@ Targets must run the writer in **scripted offline lab** mode:
 - Env: `OFFSCREEN_WRITER_EXECUTION_MODE=scripted-offline-lab`
 - Refused: `provider-authorized` mode, `OPENROUTER_API_KEY`, and provider pin env vars (`OFFSCREEN_WRITER_PROVIDER_MODEL`, `OFFSCREEN_WRITER_PROVIDER_POLICY_VERSION`)
 
-For `kind-offscreen-lab`, verification also requires the observed cluster and Postgres instance identities to match the lab fixture (`kind-offscreen-lab` / `offscreen-lab`, CNPG `lab-postgres/lab-pg`), plus game-authority and game-executor deployments with provider-free env. Guards run **before** any grant mutation; a failed guard yields `outcome: "blocked"` and **no** SQL inserts.
+For `kind-offscreen-release`, verification also requires the observed cluster and Postgres instance identities to match the lab fixture (`kind-offscreen-release` / `offscreen-release`, CNPG `lab-postgres/lab-pg`), plus game-authority and game-executor deployments with provider-free env. Guards run **before** any grant mutation; a failed guard yields `outcome: "blocked"` and **no** SQL inserts.
 
 ## Grant contract (plan output)
 
@@ -41,7 +41,7 @@ When inputs are valid, `plan` describes a single launch grant with:
 | Default approval identity | `testlab:suite:<suiteId>` when `--approval` is omitted in ensure paths that derive it |
 | Default operator for ensure | `testlab:provisioner` when `--operator` is omitted |
 
-`plan` requires non-empty `--owner`, `--suite`, `--operator`, `--approval`, and `--target` (`disposable` or `kind-offscreen-lab`). Optional `--now <epoch-ms>` fixes time for deterministic tests.
+`plan` requires non-empty `--owner`, `--suite`, `--operator`, `--approval`, and `--target` (`disposable` or `kind-offscreen-release`). Optional `--now <epoch-ms>` fixes time for deterministic tests.
 
 ## CLI: `testlab-funding.mjs`
 
@@ -51,19 +51,19 @@ Usage (from script help text):
 
 ```sh
 node scripts/repo-tools/testlab-funding.mjs plan|status|ensure \
-  --target <disposable|kind-offscreen-lab> [flags]
+  --target <disposable|kind-offscreen-release> [flags]
 ```
 
 Common flags (parsed from argv):
 
 | Flag | Commands | Meaning |
 | --- | --- | --- |
-| `--target disposable` \| `kind-offscreen-lab` | all | Selects target policy in `testlab-target-guard.mjs` |
+| `--target disposable` \| `kind-offscreen-release` | all | Selects target policy in `testlab-target-guard.mjs` |
 | `--owner <userId>` | plan, status, ensure | Better Auth user id that owns the grant |
 | `--suite <suiteId>` | plan, status, ensure | Test suite id; ties to approval identity |
 | `--approval <identity>` | plan, ensure; optional on status | Must match stored grant; defaults to `testlab:suite:<suite>` where applicable |
 | `--operator <id>` | plan; optional on ensure | Required on `plan`; ensure defaults to `testlab:provisioner` |
-| `--operator-grant-authorized` | ensure (`kind-offscreen-lab` only) | Boolean flag; **required** for kind ensure (no value) |
+| `--operator-grant-authorized` | ensure (`kind-offscreen-release` only) | Boolean flag; **required** for kind ensure (no value) |
 | `--now <epoch-ms>` | all | Optional clock override |
 
 The CLI prints one JSON receipt to stdout and sets exit code `1` when `outcome` is `blocked` (or `ok === false` on plan).
@@ -102,22 +102,22 @@ Provisions or reuses a grant when target guards pass and the grant store is wire
 
 **Disposable:** `--owner` and `--suite` are required. For mutation, callers must inject `grantStore`, `observeDisposableTarget`, and related hooks (see `tools/api-integration/test/helpers/testlab-disposable-grant-deps.ts`). The bare CLI blocks with `missing-disposable-runner` before writes.
 
-**kind-offscreen-lab status** (read-only; no grant flag):
+**kind-offscreen-release status** (read-only; no grant flag):
 
 ```sh
 node scripts/repo-tools/testlab-funding.mjs status \
-  --target kind-offscreen-lab \
+  --target kind-offscreen-release \
   --owner <existing-auth-user> \
   --suite turn03
 ```
 
-The command reads the pinned kind context, CNPG `lab-postgres/lab-pg`, Ready game-authority and game-executor pods, then opens a short-lived `kubectl --context kind-offscreen-lab -n lab-postgres port-forward service/lab-pg-rw` to loopback and runs `BEGIN READ ONLY`. No grant: `missing-active-grant`. A failed observation names that failure (`missing-kind-observer` only when no observer is injected). It does not change kube context.
+The command reads the pinned kind context, CNPG `lab-postgres/lab-pg`, Ready game-authority and game-executor pods, then opens a short-lived `kubectl --context kind-offscreen-release -n lab-postgres port-forward service/lab-pg-rw` to loopback and runs `BEGIN READ ONLY`. No grant: `missing-active-grant`. A failed observation names that failure (`missing-kind-observer` only when no observer is injected). It does not change kube context.
 
-**kind-offscreen-lab ensure** requires `--owner`, `--suite`, `--approval`, `--operator`, `--operator-grant-authorized`, and independently copied `--expect-cluster-uid` / `--expect-db-uid` from a prior status. The CLI rechecks cluster, database, pod image, and scripted-offline mode immediately before the existing grant transaction. Drift blocks with `target-drift` and does not retry. **TESTLAB02 does not authorize a live ensure.** That still needs a separate owner approval naming the target, owner, and suite. The flag is the operator's assertion of that approval; it is not approval by itself.
+**kind-offscreen-release ensure** requires `--owner`, `--suite`, `--approval`, `--operator`, `--operator-grant-authorized`, and independently copied `--expect-cluster-uid` / `--expect-db-uid` from a prior status. The CLI rechecks cluster, database, pod image, and scripted-offline mode immediately before the existing grant transaction. Drift blocks with `target-drift` and does not retry. **TESTLAB02 does not authorize a live ensure.** That still needs a separate owner approval naming the target, owner, and suite. The flag is the operator's assertion of that approval; it is not approval by itself.
 
 ```sh
 node scripts/repo-tools/testlab-funding.mjs ensure \
-  --target kind-offscreen-lab \
+  --target kind-offscreen-release \
   --owner <existing-auth-user> \
   --suite turn03 \
   --approval testlab:suite:turn03 \
@@ -141,11 +141,11 @@ node scripts/repo-tools/testlab-funding.mjs ensure \
 
 Fingerprint matching includes suite approval identity, `writer:launch`, prepaid mode, revision, 250000 microUSD limits, `maxAttempts` 4, non-exhausted attempts, and the canonical entitlement profile.
 
-## Targets: `disposable` vs `kind-offscreen-lab`
+## Targets: `disposable` vs `kind-offscreen-release`
 
-| | `disposable` | `kind-offscreen-lab` |
+| | `disposable` | `kind-offscreen-release` |
 | --- | --- | --- |
-| Use | Sandbox Postgres (test containers / disposable DB packages) | Local kind lab `kind-offscreen-lab` |
+| Use | Sandbox Postgres (test containers / disposable DB packages) | Local kind lab `kind-offscreen-release` |
 | Runtime | `runtimeMode: test-container` | Cluster UID, db instance UID, workload env observation |
 | Operator CLI grant | Not used | `--operator-grant-authorized` required for ensure |
 | Production | Refused if marked production | Refused; must match lab ownership map |
