@@ -10,8 +10,11 @@ function observe() {
   if (!['dev', 'release'].includes(profile)) throw new Error('invalid profile');
   const kind = readKindProfile(profile);
   // Never contact an ambient remote Docker daemon. Do not use kubeconfig auth plugins.
-  if (process.env.DOCKER_HOST || process.env.DOCKER_TLS_VERIFY) throw new Error('Docker endpoint override is not allowed');
-  const context = runPlatformCommand('docker', ['context', 'inspect', '--format', '{{json .Endpoints.docker.Host}}']);
+  if (process.env.DOCKER_HOST || process.env.DOCKER_TLS_VERIFY || process.env.DOCKER_CONTEXT) throw new Error('Docker endpoint override is not allowed');
+  const active = runPlatformCommand('docker', ['context', 'show']);
+  const contextName = active.stdout.trim();
+  if (!active.ok || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(contextName)) throw new Error('Docker context unavailable');
+  const context = runPlatformCommand('docker', ['context', 'inspect', contextName, '--format', '{{json .Endpoints.docker.Host}}']);
   const endpoint = context.ok ? JSON.parse(context.stdout) : null;
   if (typeof endpoint !== 'string' || !/^(unix:\/\/\/|npipe:\/\/\/\/\.\/pipe\/)/.test(endpoint)) throw new Error('Docker context is not local');
   const config = runPlatformCommand('kubectl', ['--context', kind.contextName, 'config', 'view', '--minify', '-o', 'json']);

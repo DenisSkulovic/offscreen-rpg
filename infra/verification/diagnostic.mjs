@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, writeFileSync, renameSync, mkdtempSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { mkdirSync, writeFileSync, renameSync, mkdtempSync } from 'node:fs';
+import { join } from 'node:path';
 import process from 'node:process';
 import { runCommand, commandOutcome, diagnosticExcerpt, executeChecks } from './diagnostic-engine.mjs';
 
@@ -10,11 +10,11 @@ const SERVICE_IDS = { postgres: 'PL-01', 'object-storage': 'PL-02', temporal: 'P
 export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, parseCounts, run = runCommand }) {
   const checks = [];
   const add = (id, tier, command, args, options = {}) => checks.push({
-    id, tier, requires: options.requires, capability: options.capability,
+    id, tier, command: [command, ...args], requires: options.requires, capability: options.capability,
     async run() {
       const result = await run(command, args, { cwd: repoRoot, timeoutMs: options.timeoutMs ?? 15000 });
       const outcome = commandOutcome(result);
-      if (outcome.status !== 'PASS') return outcome;
+      if (outcome.status !== 'PASS') return { ...outcome, ...(options.isNodeTest ? { counts: parseCounts(result.stdout ?? '') } : {}) };
       if (options.evaluate) return options.evaluate(result);
       return outcome;
     }
@@ -34,7 +34,7 @@ export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, par
   });
   function addNodeTest(file, requires = []) {
     add('source:' + file, 'SOURCE', node, ['--test', '--test-concurrency=1', file], {
-      requires, timeoutMs: 120000, evaluate: result => {
+      requires, isNodeTest: true, timeoutMs: 120000, evaluate: result => {
         const counts = parseCounts(result.stdout);
         if (!counts.complete || counts.fail !== 0 || counts.tests <= 0 || counts.pass !== counts.tests || counts.skipped !== 0) return { status: 'FAIL', reason: 'incomplete, failed or skipped TAP', counts, detail: diagnosticExcerpt(result.stdout) };
         return { status: 'PASS', counts };
@@ -90,7 +90,7 @@ export async function runDiagnostic({ repoRoot, definitions, resolveFiles, parse
     dirty: dirty.code === 0 ? Boolean(dirty.stdout.trim()) : null,
     scope: 'source and existing local read-only observations; not full lifecycle acceptance',
     complete: false, checks: [],
-    capabilities: catalogIds.map(id => ({ id, liveAcceptance: 'NOT-RUN' })),
+    capabilities: catalogIds.map(id => ({ id, liveAcceptance: 'NOT-RUN', observations: [] })),
     cleanup: 'no application, cluster or tenant mutations requested',
   };
   function persist() {
@@ -103,6 +103,8 @@ export async function runDiagnostic({ repoRoot, definitions, resolveFiles, parse
   const checks = buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, parseCounts, run });
   await executeChecks(checks, { onResult(row) {
     report.checks.push(row);
+    const capability = report.capabilities.find(item => item.id === row.capability);
+    if (capability) capability.observations.push({ checkId: row.id, status: row.status, tier: row.tier });
     persist();
     progress(row.status + ' ' + row.id + ' (' + row.durationMs + 'ms)\n');
   }});

@@ -88,7 +88,7 @@ export async function executeChecks(checks, { onResult = () => {}, now = () => p
         result = { status: 'FAIL', reason: 'check threw', detail: diagnosticExcerpt(error instanceof Error ? error.message : 'unknown error') };
       }
     }
-    const row = { ...result, id: check.id, tier: check.tier, capability: check.capability ?? null, durationMs: Math.max(0, Math.round(now() - start)) };
+    const row = { ...result, id: check.id, tier: check.tier, capability: check.capability ?? null, command: check.command ?? null, durationMs: Math.max(0, Math.round(now() - start)) };
     rows.push(row);
     prior.set(check.id, row);
     await onResult(row);
