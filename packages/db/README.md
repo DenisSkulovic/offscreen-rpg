@@ -20,4 +20,4 @@ The named public exports are in [package.json](package.json). `./storyteller-sch
 
 ## Side effects and verification
 
-`build` and `typecheck` don't require a running DB. `generate`, `migrate` and `test:integration` have materially different effects. Read [development](../../docs/runbooks/local-development.md) and [verification policy](../../.agents/rules/verification.md) before invoking them. Never reset or migrate an arbitrary database for routine checking. SQL constraints are not proof of correct concurrent application commands; follow the transaction owner and one genuine failure/retry case.
+`build` and `typecheck` don't require a running DB. Schema generation lives in `@offscreen/db-migrations` (`check:schema`, guarded `generate`); `migrate` and `test:integration` still have materially different effects. Read [development](../../docs/runbooks/local-development.md) and [verification policy](../../.agents/rules/verification.md) before invoking them. Never reset or migrate an arbitrary database for routine checking. SQL constraints are not proof of correct concurrent application commands; follow the transaction owner and one genuine failure/retry case.

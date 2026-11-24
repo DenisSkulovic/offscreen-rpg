@@ -1,0 +1,23 @@
+{
+  "name": "@offscreen/db-migrations",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js",
+    "check:schema": "pnpm -w exec turbo run build --filter=@offscreen/db-migrations... && node scripts/check-schema.mjs",
+    "check:history": "node scripts/check-history.mjs",
+    "generate": "node scripts/check-history.mjs && drizzle-kit generate"
+  },
+  "dependencies": {
+    "@offscreen/db": "workspace:*",
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "@types/node": "22.20.3",
+    "drizzle-kit": "0.31.10",
+    "typescript": "5.9.3"
+  }
+}

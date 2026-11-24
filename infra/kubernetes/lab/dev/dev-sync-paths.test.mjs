@@ -63,6 +63,14 @@ test('db migration path is unsafe', () => {
   assert.equal(resolveDevSync(migrationSample, repoRoot).mode, 'warm');
 });
 
+test('db-migrations generator config is unsafe warm rebuild', () => {
+  const generatorConfig = 'tools/db-migrations/drizzle.config.ts';
+  assert.equal(isUnsafeDevSyncPath(generatorConfig), true);
+  assert.equal(resolveDevSync(generatorConfig, repoRoot).mode, 'warm');
+  const config = tiltDevSyncConfig(repoRoot);
+  assert.ok(config.unsafe_watch_paths.includes(generatorConfig));
+});
+
 test('dev Dockerfile is unsafe', () => {
   assert.equal(
     isUnsafeDevSyncPath('infra/kubernetes/lab/dev/Dockerfile'),

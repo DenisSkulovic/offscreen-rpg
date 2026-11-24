@@ -1,0 +1,1 @@
+export { outbox } from '@offscreen/db/outbox-schema';

@@ -1,8 +1,8 @@
 # DB01 | Schema composition and identity baseline
 
-**Status: Ready / owner-commissioned for source implementation. Kind: implementation. Profile: CONTRACT.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact source map and proof](SOURCE-MAP.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
+**Status: Done / source-only. Kind: implementation. Profile: CONTRACT.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact source map and proof](SOURCE-MAP.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
 
-[Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
+[Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
 ## Outcome and scope
 
@@ -32,4 +32,4 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Schema composition and identity baseline | database-infrastructure | pending | NOT RUN | TASKS | pending |
+| Schema composition and identity baseline | database-infrastructure realization record | tools/db-migrations registry and packages/db transaction types; migrations tree byte-identical | source-tested | check:history refuses missing 0024 snapshot; mutated table/default/FK digest mismatch | DB-PARALLEL unchanged sequencing |

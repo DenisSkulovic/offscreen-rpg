@@ -64,7 +64,7 @@ export function isUnsafeDevSyncPath(filePath) {
   if (/^(apps|packages|tools)\/[^/]+\/package\.json$/.test(file)) return true;
   if (
     file.startsWith('packages/db/migrations/') ||
-    file === 'packages/db/drizzle.config.ts'
+    file === 'tools/db-migrations/drizzle.config.ts'
   ) {
     return true;
   }
@@ -164,7 +164,7 @@ export function unsafeWarmWatchPaths(root) {
     'infra/kubernetes/lab/dev/Dockerfile',
     'infra/kubernetes/lab/dev/Dockerfile.dockerignore',
     'infra/kubernetes/lab/dev/tilt/build-release-images.sh',
-    'packages/db/drizzle.config.ts',
+    'tools/db-migrations/drizzle.config.ts',
     'infra/kubernetes/lab/app-release/docker.npmrc',
     'infra/kubernetes/lab/app-release/images.pin',
     'infra/kubernetes/lab/app-release/prepare-runtime-tree.sh',

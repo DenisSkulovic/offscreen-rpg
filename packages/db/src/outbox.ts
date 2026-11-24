@@ -1,10 +1,8 @@
 import { eq } from 'drizzle-orm';
-import type { Database } from './database';
+import type { Transaction } from './transaction/types';
 import { outbox } from './schema/outbox';
 
-export type Transaction = Parameters<
-  Parameters<Database['db']['transaction']>[0]
->[0];
+export type { Transaction } from './transaction/types';
 export type Notice = {
   id: string;
   topic: string;

@@ -45,7 +45,7 @@ try {
     ]
       .filter(Boolean)
       .join(' ');
-    runPnpm(['--filter', '@offscreen/db', 'generate'], {
+    runPnpm(['--filter', '@offscreen/db-migrations', 'generate'], {
       env: { ...process.env, NODE_OPTIONS: nodeOptions },
     });
     const generatedSql = generatedEntries().filter((entry) =>

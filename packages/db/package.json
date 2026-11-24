@@ -69,7 +69,6 @@
     }
   },
   "scripts": {
-    "generate": "drizzle-kit generate",
     "migrate": "node --env-file-if-exists=../../.env dist/src/migrate-cli.js",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
@@ -85,7 +84,6 @@
     "@offscreen/config": "workspace:*",
     "@types/node": "22.20.3",
     "@types/pg": "8.23.1",
-    "drizzle-kit": "0.31.10",
     "typescript": "5.9.3"
   }
 }

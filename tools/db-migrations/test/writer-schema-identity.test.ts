@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import test from 'node:test';
 import { is } from 'drizzle-orm';
 import { getTableConfig, PgTable } from 'drizzle-orm/pg-core';
-import * as storyteller from '../src/schema/storyteller';
+import * as story from '../src/registry/story.js';
 
 const EXPECTED_EXPORTS = [
   'storytellerAttempt',
@@ -56,7 +56,8 @@ function sqlText(value: unknown): unknown {
 
 function fingerprint() {
   const out: Record<string, unknown> = {};
-  for (const [exportName, table] of Object.entries(storyteller)) {
+  for (const exportName of EXPECTED_EXPORTS) {
+    const table = story[exportName as keyof typeof story];
     if (!is(table, PgTable)) {
       continue;
     }
