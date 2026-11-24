@@ -15,6 +15,9 @@ const workerPath = fileURLToPath(new URL('./worker.mjs', import.meta.url));
 
 export const COMMAND_TIMEOUT_MS = 10_000;
 export const SUITE_TIMEOUT_MS = 180_000;
+export const SCENARIO_BUDGET_MS = 60_000;
+export const RECOVERY_PROBE_RPC_MS = 2_000;
+export const MAX_CONCURRENT_WORKERS = 2;
 export const REDIS_IMAGE_PIN = 'redis:8.2.1-alpine';
 export const REDIS_IMAGE_ALIASES = [
   REDIS_IMAGE_PIN,
@@ -368,11 +371,92 @@ export function buildT02ScenarioMetrics(fields) {
  * @param {typeof execFile} runner
  * @param {{ timeoutMs?: number }} [options]
  */
+export function monotonicNow() {
+  return performance.now();
+}
+
+/**
+ * Duration a nested operation may use. It cannot exceed the remaining
+ * enclosing deadline.
+ *
+ * @param {number | null | undefined} deadlineMs
+ * @param {number} requestedMs
+ */
+export function operationTimeoutMs(deadlineMs, requestedMs, now = monotonicNow()) {
+  if (deadlineMs == null) {
+    return requestedMs;
+  }
+  return Math.min(requestedMs, Math.max(0, deadlineMs - now));
+}
+
+/**
+ * @param {number | null | undefined} deadlineMs
+ * @param {number} requestedMs
+ */
+export function requireOperationTimeout(deadlineMs, requestedMs, now = monotonicNow()) {
+  const timeoutMs = operationTimeoutMs(deadlineMs, requestedMs, now);
+  if (timeoutMs <= 0) {
+    throw new Error('ScenarioDeadlineExpired');
+  }
+  return timeoutMs;
+}
+
 export function createDockerExecutor(runner, options = {}) {
   const timeoutMs = options.timeoutMs ?? COMMAND_TIMEOUT_MS;
   return async function dockerExec(file, args, opts = {}) {
-    return runner(file, args, { ...opts, timeout: timeoutMs });
+    const requested = typeof opts.timeout === 'number' ? opts.timeout : timeoutMs;
+    const timeout = requireOperationTimeout(opts.deadlineMs, requested);
+    const { deadlineMs: _deadline, ...rest } = opts;
+    return runner(file, args, { ...rest, timeout });
   };
+}
+
+/**
+ * @param {string[]} argv
+ */
+export function parseScenarioSelection(argv) {
+  const index = argv.indexOf('--scenario');
+  if (index === -1) {
+    return { scenario: null, wave: null };
+  }
+  const name = argv[index + 1];
+  if (!name || name.startsWith('--')) {
+    return { error: 'Missing scenario name' };
+  }
+  if (Object.hasOwn(T02_SCENARIO_RUNNERS, name)) {
+    return { scenario: name, wave: /** @type {const} */ ('t02') };
+  }
+  if (Object.hasOwn(T01_SCENARIO_RUNNERS, name)) {
+    return { scenario: name, wave: /** @type {const} */ ('t01') };
+  }
+  return { error: `Unknown scenario: ${name}` };
+}
+
+/**
+ * @param {string} status
+ * @param {{ workers: { errors: string[] }, admin: { closed?: boolean }, container: { removed?: boolean } }} cleanup
+ */
+export function liveExitCode(status, cleanup) {
+  if (status === 'NOT-RUN') {
+    return 2;
+  }
+  const dirty =
+    cleanup.workers.errors.length > 0 ||
+    cleanup.admin.closed === false ||
+    cleanup.container.removed !== true;
+  if (dirty || status !== 'PASS') {
+    return 1;
+  }
+  return 0;
+}
+
+/**
+ * @param {string} phase
+ * @param {string} [detail]
+ */
+export function writeProgress(phase, detail = '') {
+  const suffix = detail.length > 0 ? ` ${detail}` : '';
+  console.error(`cache07 ${phase}${suffix}`);
 }
 
 function shortRunId(runId) {
@@ -431,7 +515,7 @@ export function verifyContainerOwnership(inspect, expected) {
   if (!mapped?.HostPort || Number(mapped.HostPort) !== expected.hostPort) {
     return { ok: false, reason: 'Published loopback port mismatch' };
   }
-  if (mapped.HostIp && mapped.HostIp !== '127.0.0.1' && mapped.HostIp !== '0.0.0.0') {
+  if (mapped.HostIp !== '127.0.0.1' && mapped.HostIp !== '::1') {
     return { ok: false, reason: 'Published bind address is not loopback' };
   }
   return { ok: true };
@@ -561,13 +645,15 @@ export async function assertLocalImagePresent(dockerExec) {
  * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
  * @param {string} containerId
  */
-export async function inspectOwnedContainer(dockerExec, containerId) {
-  const { stdout } = await dockerExec('docker', [
-    'inspect',
-    '--format',
-    '{{json .}}',
-    containerId,
-  ]);
+export async function inspectOwnedContainer(dockerExec, containerId, deadlineMs) {
+  const { stdout } = await dockerExec(
+    'docker',
+    ['inspect', '--format', '{{json .}}', containerId],
+    {
+      deadlineMs,
+      timeout: requireOperationTimeout(deadlineMs, COMMAND_TIMEOUT_MS),
+    },
+  );
   return JSON.parse(stdout.trim());
 }
 
@@ -575,37 +661,174 @@ export async function inspectOwnedContainer(dockerExec, containerId) {
  * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
  * @param {string} containerId
  */
-export async function forceRemoveOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['rm', '-f', containerId]);
+export async function forceRemoveOwnedContainer(dockerExec, containerId, expected) {
+  let inspect;
   try {
-    await dockerExec('docker', [
-      'inspect',
-      '--format',
-      '{{.Id}}',
+    inspect = await inspectOwnedContainer(dockerExec, containerId);
+  } catch (error) {
+    return {
+      removed: false,
+      reason: `Ownership inspect failed: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+  if (expected) {
+    const ownership = verifyContainerOwnership(inspect, {
+      runId: expected.runId,
       containerId,
-    ]);
-    return { removed: false };
-  } catch {
-    return { removed: true };
+      hostPort: expected.hostPort,
+    });
+    if (!ownership.ok) {
+      return { removed: false, reason: ownership.reason };
+    }
+  }
+  try {
+    await dockerExec('docker', ['rm', '-f', containerId]);
+  } catch (error) {
+    return {
+      removed: false,
+      reason: error instanceof Error ? error.message : String(error),
+    };
+  }
+  try {
+    await dockerExec('docker', ['inspect', '--format', '{{.Id}}', containerId]);
+    return { removed: false, reason: 'Container still present after removal' };
+  } catch (error) {
+    const text = `${error instanceof Error ? error.message : String(error)}`;
+    if (/no such|not found/i.test(text)) {
+      return { removed: true };
+    }
+    return {
+      removed: false,
+      reason: `Removal was not verified: ${text}`,
+    };
   }
 }
 
 /**
  * @param {import('node:child_process').ChildProcess[]} workers
  */
-export async function closeWorkers(workers) {
-  const closes = workers.map(async (worker) => {
-    if (!worker.connected) {
-      return;
+export function liveWorkerCount(workers) {
+  return workers.filter((worker) => worker.exitCode === null && !worker.killed).length;
+}
+
+/**
+ * @param {{ workers: import('node:child_process').ChildProcess[] }} ctx
+ */
+export function openWorker(ctx) {
+  if (liveWorkerCount(ctx.workers) >= MAX_CONCURRENT_WORKERS) {
+    throw new Error('WorkerConcurrencyExceeded');
+  }
+  const worker = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
+  ctx.workers.push(worker);
+  return worker;
+}
+
+/**
+ * @param {object} ctx
+ * @param {import('node:child_process').ChildProcess} worker
+ * @param {Record<string, unknown>} message
+ * @param {number} [capMs]
+ */
+function activeDeadline(ctx) {
+  if (ctx.recoveryDeadlineMs == null) {
+    return ctx.deadlineMs;
+  }
+  if (ctx.deadlineMs == null) {
+    return ctx.recoveryDeadlineMs;
+  }
+  return Math.min(ctx.deadlineMs, ctx.recoveryDeadlineMs);
+}
+
+function callWorker(ctx, worker, message, capMs = 15_000) {
+  return rpc(
+    worker,
+    message,
+    requireOperationTimeout(activeDeadline(ctx), capMs),
+  );
+}
+
+function beginRecovery(ctx) {
+  const now = monotonicNow();
+  ctx.recoveryDeadlineMs =
+    now + requireOperationTimeout(ctx.deadlineMs, T02_RECOVERY_BUDGET_MS, now);
+  writeProgress('recovery-start', ctx.scenarioId ?? '');
+  return ctx.recoveryDeadlineMs;
+}
+
+/**
+ * Scenario-owned workers are closed before the caller continues, including
+ * when the scenario throws.
+ *
+ * @param {object} ctx
+ * @param {(ctx: object) => Promise<object>} fn
+ */
+export async function withScenarioIsolation(ctx, fn) {
+  const previous = ctx.workers;
+  const owned = [];
+  const savedDeadline = ctx.deadlineMs;
+  const now = monotonicNow();
+  const parentRemain =
+    savedDeadline == null ? SCENARIO_BUDGET_MS : Math.max(0, savedDeadline - now);
+  ctx.workers = owned;
+  ctx.deadlineMs = now + Math.min(parentRemain, SCENARIO_BUDGET_MS);
+  try {
+    return await fn(ctx);
+  } finally {
+    await closeWorkers(owned);
+    ctx.workers = previous ?? [];
+    ctx.deadlineMs = savedDeadline;
+  }
+}
+
+/**
+ * Resolves even when the child already exited before the listener was attached.
+ *
+ * @param {import('node:child_process').ChildProcess} worker
+ * @param {number} timeoutMs
+ */
+function waitForWorkerExit(worker, timeoutMs) {
+  return new Promise((resolve) => {
+    const finish = (value) => {
+      clearTimeout(timer);
+      worker.off('exit', onExit);
+      resolve(value);
+    };
+    const onExit = () => finish(true);
+    const timer = setTimeout(() => finish(worker.exitCode !== null), timeoutMs);
+    worker.on('exit', onExit);
+    if (worker.exitCode !== null) {
+      finish(true);
     }
-    try {
-      await rpc(worker, { type: 'close' });
-    } catch {
-      // ignore close errors during cleanup
-    }
-    worker.kill();
   });
-  await Promise.all(closes);
+}
+
+/**
+ * @param {import('node:child_process').ChildProcess[]} workers
+ */
+export async function closeWorkers(workers) {
+  /** @type {string[]} */
+  const errors = [];
+  for (const worker of workers) {
+    try {
+      if (worker.connected && worker.exitCode === null) {
+        await rpc(worker, { type: 'close' }, 2_000);
+      }
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : String(error));
+      if (worker.exitCode === null) {
+        worker.kill('SIGTERM');
+      }
+    }
+    if (worker.exitCode === null) {
+      const exited = await waitForWorkerExit(worker, 2_000);
+      if (!exited) {
+        worker.kill('SIGKILL');
+        errors.push('WorkerForcedKill');
+        await waitForWorkerExit(worker, 500);
+      }
+    }
+  }
+  return { errors };
 }
 
 /**
@@ -613,8 +836,8 @@ export async function closeWorkers(workers) {
  * @param {Record<string, string | undefined>} env
  * @param {string} environment
  */
-async function initWorker(worker, env, environment, disabled = false) {
-  return rpc(worker, {
+async function initWorker(ctx, worker, env, environment, disabled = false) {
+  return callWorker(ctx, worker, {
     type: 'init',
     env,
     environment,
@@ -625,16 +848,15 @@ async function initWorker(worker, env, environment, disabled = false) {
 /** @type {Record<string, (ctx: object) => Promise<object>>} */
 export const T01_SCENARIO_RUNNERS = {
   async 'shared-hit'(ctx) {
-    const workerA = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    const workerB = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-  ctx.workers.push(workerA, workerB);
+    const workerA = openWorker(ctx);
+    const workerB = openWorker(ctx);
     await Promise.all([
-      initWorker(workerA, ctx.redisEnv, ctx.environment),
-      initWorker(workerB, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerA, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerB, ctx.redisEnv, ctx.environment),
     ]);
     const identity = ['shared-hit', '1'];
-    const readA = await rpc(workerA, { type: 'read', identity });
-    const readB = await rpc(workerB, { type: 'read', identity });
+    const readA = await callWorker(ctx, workerA, { type: 'read', identity });
+    const readB = await callWorker(ctx, workerB, { type: 'read', identity });
     const verdict = assertSharedHitScenario({
       valueA: readA.value,
       valueB: readB.value,
@@ -651,11 +873,10 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'disabled-parity'(ctx) {
-    const worker = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(worker);
-    const init = await initWorker(worker, {}, ctx.environment, true);
+    const worker = openWorker(ctx);
+    const init = await initWorker(ctx, worker, {}, ctx.environment, true);
     const identity = ['disabled-parity', '1'];
-    const read = await rpc(worker, { type: 'read', identity });
+    const read = await callWorker(ctx, worker, { type: 'read', identity });
     const l2Hits = Number(read.telemetry?.['l2:get:hit'] ?? 0);
     const verdict = assertDisabledParityScenario({
       value: read.value,
@@ -671,18 +892,17 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'distinct-revision'(ctx) {
-    const workerA = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    const workerB = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(workerA, workerB);
+    const workerA = openWorker(ctx);
+    const workerB = openWorker(ctx);
     await Promise.all([
-      initWorker(workerA, ctx.redisEnv, ctx.environment),
-      initWorker(workerB, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerA, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerB, ctx.redisEnv, ctx.environment),
     ]);
-    const readA = await rpc(workerA, {
+    const readA = await callWorker(ctx, workerA, {
       type: 'read',
       identity: ['distinct', 'rev-a'],
     });
-    const readB = await rpc(workerB, {
+    const readB = await callWorker(ctx, workerB, {
       type: 'read',
       identity: ['distinct', 'rev-b'],
     });
@@ -699,14 +919,13 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'malformed-envelope'(ctx) {
-    const worker = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(worker);
-    await initWorker(worker, ctx.redisEnv, ctx.environment);
+    const worker = openWorker(ctx);
+    await initWorker(ctx, worker, ctx.redisEnv, ctx.environment);
     const identity = ['malformed', '1'];
     const key = proofCacheKey(ctx.environment, identity);
     await ctx.admin.set(key, '{not-a-valid-envelope');
-    await rpc(worker, { type: 'reset-stats' });
-    const read = await rpc(worker, { type: 'read', identity });
+    await callWorker(ctx, worker, { type: 'reset-stats' });
+    const read = await callWorker(ctx, worker, { type: 'read', identity });
     const verdict = assertMalformedEnvelopeScenario({
       value: read.value,
       originLoads: Number(read.originLoads),
@@ -721,23 +940,22 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'eviction-via-info'(ctx) {
-    const worker = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(worker);
-    await initWorker(worker, ctx.redisEnv, ctx.environment);
+    const worker = openWorker(ctx);
+    await initWorker(ctx, worker, ctx.redisEnv, ctx.environment);
     const baselineEvicted = await parseEvictedKeys(ctx.admin);
     /** @type {Map<string, readonly string[]>} */
     const keyToIdentity = new Map();
     for (let i = 0; i < 64; i += 1) {
       const identity = /** @type {const} */ ([`evict-${i}`, '1']);
       keyToIdentity.set(proofCacheKey(ctx.environment, identity), identity);
-      await rpc(worker, { type: 'read', identity, padBytes: 200_000 });
+      await callWorker(ctx, worker, { type: 'read', identity, padBytes: 200_000 });
     }
     let evictedKeys = await parseEvictedKeys(ctx.admin);
     let writeCount = 64;
     while (evictedKeys <= baselineEvicted && writeCount < 128) {
       const identity = /** @type {const} */ ([`evict-${writeCount}`, '1']);
       keyToIdentity.set(proofCacheKey(ctx.environment, identity), identity);
-      await rpc(worker, { type: 'read', identity, padBytes: 200_000 });
+      await callWorker(ctx, worker, { type: 'read', identity, padBytes: 200_000 });
       writeCount += 1;
       evictedKeys = await parseEvictedKeys(ctx.admin);
     }
@@ -753,8 +971,8 @@ export const T01_SCENARIO_RUNNERS = {
     }
     let recoveryValue = null;
     if (trackedIdentity) {
-      await rpc(worker, { type: 'reset-stats' });
-      const read = await rpc(worker, {
+      await callWorker(ctx, worker, { type: 'reset-stats' });
+      const read = await callWorker(ctx, worker, {
         type: 'read',
         identity: trackedIdentity,
       });
@@ -780,38 +998,29 @@ export const T01_SCENARIO_RUNNERS = {
 export const T02_SCENARIO_RUNNERS = {
   async 'startup-outage'(ctx) {
     const samples = [];
-    await stopOwnedContainer(ctx.dockerExec, ctx.containerId);
-    const workerA = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerA);
-    await initWorker(workerA, ctx.redisEnv, ctx.environment);
+    await stopOwnedContainer(ctx.dockerExec, ctx.containerId, activeDeadline(ctx));
+    const workerA = openWorker(ctx);
+    await initWorker(ctx, workerA, ctx.redisEnv, ctx.environment);
     const identity = ['startup-outage', '1'];
-    const outageRead = await rpc(workerA, { type: 'read', identity });
+    const outageRead = await callWorker(ctx, workerA, { type: 'read', identity });
     samples.push(Number(outageRead.durationMs));
     const originFallbackDuringOutage = Number(outageRead.originLoads) >= 1;
     parseSyntheticValue(outageRead.value);
 
-    await startOwnedContainer(ctx.dockerExec, ctx.containerId);
-    if (!ctx.admin.isOpen) {
-      await ctx.admin.connect();
-    }
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await startOwnedContainer(ctx.dockerExec, ctx.containerId, activeDeadline(ctx));
 
-    const workerB = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerB);
-    await initWorker(workerB, ctx.redisEnv, ctx.environment);
+    const workerB = openWorker(ctx);
+    await initWorker(ctx, workerB, ctx.redisEnv, ctx.environment);
 
+    const recoveryDeadlineMs = beginRecovery(ctx);
     const recoveryStarted = Date.now();
     let crossProcessHit = false;
     let recoveryTimeMs = null;
-    while (Date.now() - recoveryStarted < T02_RECOVERY_BUDGET_MS) {
-      const warm = await rpc(workerA, { type: 'read', identity });
+    while (monotonicNow() < recoveryDeadlineMs) {
+      const warm = await callWorker(ctx, workerA, { type: 'read', identity }, RECOVERY_PROBE_RPC_MS);
       samples.push(Number(warm.durationMs));
-      await rpc(workerB, { type: 'reset-stats' });
-      const remoteRead = await rpc(workerB, { type: 'read', identity });
+      await callWorker(ctx, workerB, { type: 'reset-stats' }, RECOVERY_PROBE_RPC_MS);
+      const remoteRead = await callWorker(ctx, workerB, { type: 'read', identity }, RECOVERY_PROBE_RPC_MS);
       samples.push(Number(remoteRead.durationMs));
       const l2Hits = Number(remoteRead.telemetry?.['l2:get:hit'] ?? 0);
       if (l2Hits > 0 && Number(remoteRead.originLoads) === 0) {
@@ -823,6 +1032,8 @@ export const T02_SCENARIO_RUNNERS = {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
+    ctx.recoveryDeadlineMs = null;
+    writeProgress('recovery-end', 'startup-outage');
     const verdict = assertStartupOutageScenario({
       originFallbackDuringOutage,
       crossProcessHit,
@@ -845,101 +1056,185 @@ export const T02_SCENARIO_RUNNERS = {
 
   async restart(ctx) {
     const samples = [];
-    const workerA = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    const workerB = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerA, workerB);
+    const workerA = openWorker(ctx);
+    const workerB = openWorker(ctx);
     await Promise.all([
-      initWorker(workerA, ctx.redisEnv, ctx.environment),
-      initWorker(workerB, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerA, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerB, ctx.redisEnv, ctx.environment),
     ]);
     const identity = ['restart', '1'];
-    const warm = await rpc(workerA, { type: 'read', identity });
+    const warm = await callWorker(ctx, workerA, { type: 'read', identity });
     samples.push(Number(warm.durationMs));
     parseSyntheticValue(warm.value);
 
-    await stopOwnedContainer(ctx.dockerExec, ctx.containerId);
-    await startOwnedContainer(ctx.dockerExec, ctx.containerId);
-    if (!ctx.admin.isOpen) {
-      await ctx.admin.connect();
-    }
-    const restartReadyAt = Date.now();
-    while (Date.now() - restartReadyAt < T02_RECOVERY_BUDGET_MS) {
+    await stopOwnedContainer(ctx.dockerExec, ctx.containerId, activeDeadline(ctx));
+    await startOwnedContainer(ctx.dockerExec, ctx.containerId, activeDeadline(ctx));
+    const recoveryDeadlineMs = beginRecovery(ctx);
+    const recoveryStarted = Date.now();
+    let reason = 'Recovery budget exhausted';
+    /** @type {Record<string, unknown> | null} */
+    let forward = null;
+    /** @type {Record<string, unknown> | null} */
+    let reverse = null;
+    /** @type {Record<string, unknown> | null} */
+    let rebuilt = null;
+
+    while (monotonicNow() < recoveryDeadlineMs && !forward) {
       try {
-        await Promise.race([
-          ctx.admin.ping(),
-          new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('ping-timeout')), 200);
-          }),
-        ]);
-        break;
+        const inspect = await inspectOwnedContainer(
+          ctx.dockerExec,
+          ctx.containerId,
+          activeDeadline(ctx),
+        );
+        const ownership = verifyContainerOwnership(inspect, {
+          runId: ctx.runId,
+          containerId: ctx.containerId,
+          hostPort: ctx.hostPort,
+        });
+        if (!ownership.ok) {
+          reason = ownership.reason ?? 'Ownership check failed';
+          break;
+        }
       } catch {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      const probe = [`restart-forward-${Date.now()}`, '1'];
+      await callWorker(ctx, workerA, { type: 'reset-stats' }, RECOVERY_PROBE_RPC_MS);
+      let warm;
+      try {
+        warm = await callWorker(
+          ctx,
+          workerA,
+          { type: 'read', identity: probe },
+          RECOVERY_PROBE_RPC_MS,
+        );
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      samples.push(Number(warm.durationMs));
+      const stored = Number(warm.telemetry?.['l2:set:stored'] ?? 0);
+      if (Number(warm.originLoads) !== 1 || stored < 1) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      await callWorker(ctx, workerB, { type: 'reset-stats' }, RECOVERY_PROBE_RPC_MS);
+      try {
+        const shared = await callWorker(
+          ctx,
+          workerB,
+          {
+            type: 'read',
+            identity: probe,
+            failWith: 'OriginMustNotRun',
+          },
+          RECOVERY_PROBE_RPC_MS,
+        );
+        samples.push(Number(shared.durationMs));
+        const hit = Number(shared.telemetry?.['l2:get:hit'] ?? 0) > 0;
+        const same =
+          parseSyntheticValue(shared.value).id === probe[0] &&
+          Number(shared.originLoads) === 0;
+        if (hit && same) {
+          forward = shared;
+        }
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
     }
-    // Reconnect delay is at least 250ms after the socket drops.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // The first command after the socket drop is what schedules reconnect.
-    await rpc(workerA, { type: 'read', identity: ['restart-probe', '1'] });
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    await rpc(workerA, { type: 'reset-stats' });
-    const afterRestart = await rpc(workerA, { type: 'read', identity });
-    samples.push(Number(afterRestart.durationMs));
-    await rpc(workerB, { type: 'reset-stats' });
-    const shared = await rpc(workerB, { type: 'read', identity });
-    samples.push(Number(shared.durationMs));
-    const l2Hits = Number(shared.telemetry?.['l2:get:hit'] ?? 0);
-    const verdict = assertRestartScenario({
-      valueAfterRestart: afterRestart.value,
-      originLoadsAfterRestart: Number(afterRestart.originLoads),
-      sharedHitAfterWarm: l2Hits > 0 && Number(shared.originLoads) === 0,
-    });
-    const peak = Math.max(
-      Number(afterRestart.peakOrigin),
-      Number(shared.peakOrigin),
-    );
-    /** @type {Record<string, number>} */
-    const telemetry = {
-      .../** @type {Record<string, number>} */ (afterRestart.telemetry ?? {}),
-    };
-    for (const [key, count] of Object.entries(shared.telemetry ?? {})) {
-      telemetry[key] = (telemetry[key] ?? 0) + count;
+    while (forward && monotonicNow() < recoveryDeadlineMs && !reverse) {
+      const probe = [`restart-reverse-${Date.now()}`, '1'];
+      await callWorker(ctx, workerB, { type: 'reset-stats' }, RECOVERY_PROBE_RPC_MS);
+      let warm;
+      try {
+        warm = await callWorker(
+          ctx,
+          workerB,
+          { type: 'read', identity: probe },
+          RECOVERY_PROBE_RPC_MS,
+        );
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      if (
+        Number(warm.originLoads) !== 1 ||
+        Number(warm.telemetry?.['l2:set:stored'] ?? 0) < 1
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      await callWorker(ctx, workerA, { type: 'reset-stats' }, RECOVERY_PROBE_RPC_MS);
+      try {
+        const shared = await callWorker(
+          ctx,
+          workerA,
+          {
+            type: 'read',
+            identity: probe,
+            failWith: 'OriginMustNotRun',
+          },
+          RECOVERY_PROBE_RPC_MS,
+        );
+        if (
+          Number(shared.telemetry?.['l2:get:hit'] ?? 0) > 0 &&
+          Number(shared.originLoads) === 0
+        ) {
+          reverse = shared;
+        }
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
     }
+
+    ctx.recoveryDeadlineMs = null;
+    writeProgress('recovery-end', 'restart');
+    if (forward && reverse) {
+      await callWorker(ctx, workerA, { type: 'reset-stats' });
+      rebuilt = await callWorker(ctx, workerA, { type: 'read', identity });
+      samples.push(Number(rebuilt.durationMs));
+    }
+
+    const recoveryTimeMs = forward && reverse ? Date.now() - recoveryStarted : null;
+    const verdict =
+      forward && reverse && rebuilt && Number(rebuilt.originLoads) === 1
+        ? assertRestartScenario({
+            valueAfterRestart: rebuilt.value,
+            originLoadsAfterRestart: 1,
+            sharedHitAfterWarm: true,
+          })
+        : { ok: false, reason };
     return {
       id: 'restart',
       status: verdict.ok ? 'PASS' : 'FAIL',
       ...(verdict.ok ? {} : { reason: verdict.reason }),
       ...buildT02ScenarioMetrics({
         samples,
-        originLoads: Number(afterRestart.originLoads),
-        peakOriginConcurrency: peak,
-        telemetry,
+        originLoads: Number(rebuilt?.originLoads ?? 0),
+        peakOriginConcurrency: Number(rebuilt?.peakOrigin ?? 0),
+        telemetry: /** @type {Record<string, number>} */ (rebuilt?.telemetry ?? {}),
+        recoveryTimeMs,
       }),
     };
   },
 
   async pause(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
-    await initWorker(worker, ctx.redisEnv, ctx.environment);
+    const worker = openWorker(ctx);
+    await initWorker(ctx, worker, ctx.redisEnv, ctx.environment);
     const identity = ['pause', '1'];
-    const warm = await rpc(worker, { type: 'read', identity });
+    const warm = await callWorker(ctx, worker, { type: 'read', identity });
     samples.push(Number(warm.durationMs));
-    await rpc(worker, { type: 'reset-stats' });
-    await pauseOwnedRedisClients(ctx.dockerExec, ctx.containerId, 350);
-    const duringPause = await rpc(worker, { type: 'read', identity });
+    await callWorker(ctx, worker, { type: 'reset-stats' });
+    await pauseOwnedRedisClients(ctx.dockerExec, ctx.containerId, 350, activeDeadline(ctx));
+    const duringPause = await callWorker(ctx, worker, { type: 'read', identity });
     samples.push(Number(duringPause.durationMs));
     parseSyntheticValue(duringPause.value);
     await new Promise((resolve) => setTimeout(resolve, 450));
-    await rpc(worker, { type: 'reset-stats' });
-    const afterPause = await rpc(worker, { type: 'read', identity });
+    await callWorker(ctx, worker, { type: 'reset-stats' });
+    const afterPause = await callWorker(ctx, worker, { type: 'read', identity });
     samples.push(Number(afterPause.durationMs));
     const l2Hits = Number(afterPause.telemetry?.['l2:get:hit'] ?? 0);
     const verdict = assertPauseScenario({
@@ -967,14 +1262,11 @@ export const T02_SCENARIO_RUNNERS = {
 
   async 'burst-same-key'(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
-    await initWorker(worker, ctx.redisEnv, ctx.environment);
+    const worker = openWorker(ctx);
+    await initWorker(ctx, worker, ctx.redisEnv, ctx.environment);
     const singleIdentity = ['burst-same', '1'];
-    await rpc(worker, { type: 'reset-stats' });
-    const singleBurst = await rpc(worker, {
+    await callWorker(ctx, worker, { type: 'reset-stats' });
+    const singleBurst = await callWorker(ctx, worker, {
       type: 'burst',
       count: 32,
       sameKey: true,
@@ -983,32 +1275,32 @@ export const T02_SCENARIO_RUNNERS = {
     });
     samples.push(Number(singleBurst.durationMs));
     const singleProcessOriginLoads = Number(singleBurst.originLoads);
+    await closeWorkers([worker]);
+    const closedIndex = ctx.workers.indexOf(worker);
+    if (closedIndex >= 0) {
+      ctx.workers.splice(closedIndex, 1);
+    }
 
-    const workerA = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    const workerB = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerA, workerB);
+    const workerA = openWorker(ctx);
+    const workerB = openWorker(ctx);
     await Promise.all([
-      initWorker(workerA, ctx.redisEnv, ctx.environment),
-      initWorker(workerB, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerA, ctx.redisEnv, ctx.environment),
+      initWorker(ctx, workerB, ctx.redisEnv, ctx.environment),
     ]);
     const dualIdentity = ['burst-same-2p', '1'];
     await Promise.all([
-      rpc(workerA, { type: 'reset-stats' }),
-      rpc(workerB, { type: 'reset-stats' }),
+      callWorker(ctx, workerA, { type: 'reset-stats' }),
+      callWorker(ctx, workerB, { type: 'reset-stats' }),
     ]);
     const [burstA, burstB] = await Promise.all([
-      rpc(workerA, {
+      callWorker(ctx, workerA, {
         type: 'burst',
         count: 16,
         sameKey: true,
         identity: dualIdentity,
         delayMs: 20,
       }),
-      rpc(workerB, {
+      callWorker(ctx, workerB, {
         type: 'burst',
         count: 16,
         sameKey: true,
@@ -1055,16 +1347,13 @@ export const T02_SCENARIO_RUNNERS = {
 
   async 'burst-distinct-keys'(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
-    await initWorker(worker, ctx.redisEnv, ctx.environment);
-    await rpc(worker, { type: 'reset-stats' });
+    const worker = openWorker(ctx);
+    await initWorker(ctx, worker, ctx.redisEnv, ctx.environment);
+    await callWorker(ctx, worker, { type: 'reset-stats' });
     const delayMs = 40;
     const settled = await Promise.allSettled(
       Array.from({ length: 64 }, (_unused, index) =>
-        rpc(worker, {
+        callWorker(ctx, worker, {
           type: 'read',
           identity: [`distinct-burst-${index}`, '1'],
           delayMs,
@@ -1115,16 +1404,13 @@ export const T02_SCENARIO_RUNNERS = {
 
   async 'synthetic-failure'(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
-    await initWorker(worker, ctx.redisEnv, ctx.environment);
+    const worker = openWorker(ctx);
+    await initWorker(ctx, worker, ctx.redisEnv, ctx.environment);
     const identity = ['synthetic-failure', '1'];
-    await rpc(worker, { type: 'reset-stats' });
+    await callWorker(ctx, worker, { type: 'reset-stats' });
     let firstAttemptFailed = false;
     try {
-      await rpc(worker, {
+      await callWorker(ctx, worker, {
         type: 'read',
         identity,
         failWith: 'SyntheticOriginFailure',
@@ -1132,7 +1418,7 @@ export const T02_SCENARIO_RUNNERS = {
     } catch {
       firstAttemptFailed = true;
     }
-    const retry = await rpc(worker, { type: 'read', identity });
+    const retry = await callWorker(ctx, worker, { type: 'read', identity });
     samples.push(Number(retry.durationMs));
     const verdict = assertSyntheticFailureScenario({
       firstAttemptFailed,
@@ -1154,14 +1440,11 @@ export const T02_SCENARIO_RUNNERS = {
 
   async shutdown(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
-    await initWorker(worker, ctx.redisEnv, ctx.environment);
-    await rpc(worker, { type: 'read', identity: ['shutdown', '1'] });
+    const worker = openWorker(ctx);
+    await initWorker(ctx, worker, ctx.redisEnv, ctx.environment);
+    await callWorker(ctx, worker, { type: 'read', identity: ['shutdown', '1'] });
     const closeStarted = Date.now();
-    await rpc(worker, { type: 'close' });
+    await callWorker(ctx, worker, { type: 'close' });
     const closeDurationMs = Date.now() - closeStarted;
     samples.push(closeDurationMs);
     const exited = await new Promise((resolve) => {
@@ -1200,7 +1483,15 @@ export async function runScenario(scenarioId, ctx, wave = 't01') {
   if (!runner) {
     return { id: scenarioId, status: 'FAIL', reason: 'Unknown scenario' };
   }
-  return runner(ctx);
+  writeProgress('scenario-start', scenarioId);
+  try {
+    return await withScenarioIsolation(ctx, async (isolated) => {
+      isolated.scenarioId = scenarioId;
+      return runner(isolated);
+    });
+  } finally {
+    writeProgress('scenario-end', scenarioId);
+  }
 }
 
 /**
@@ -1302,8 +1593,19 @@ export async function provisionOwnedRedis(dockerExec, signal) {
  * @param {import('redis').RedisClientType | null} client
  */
 export async function disconnectAdminClient(client) {
-  if (client?.isOpen) {
-    await client.close();
+  if (!client) {
+    return;
+  }
+  try {
+    if (client.isOpen) {
+      await client.close();
+    }
+  } finally {
+    try {
+      client.destroy?.();
+    } catch {
+      // The failed client must not stay open for a later replacement.
+    }
   }
 }
 
@@ -1319,38 +1621,51 @@ export function createAdminClient(url) {
 /**
  * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
  */
-export async function stopOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['stop', containerId]);
+export async function stopOwnedContainer(dockerExec, containerId, deadlineMs) {
+  await dockerExec('docker', ['stop', containerId], {
+    deadlineMs,
+    timeout: requireOperationTimeout(deadlineMs, COMMAND_TIMEOUT_MS),
+  });
 }
 
 /**
  * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
  */
-export async function startOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['start', containerId]);
+export async function startOwnedContainer(dockerExec, containerId, deadlineMs) {
+  await dockerExec('docker', ['start', containerId], {
+    deadlineMs,
+    timeout: requireOperationTimeout(deadlineMs, COMMAND_TIMEOUT_MS),
+  });
 }
 
 /**
  * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
  * @param {string} containerId
  */
-export async function restartOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['restart', containerId]);
+export async function restartOwnedContainer(dockerExec, containerId, deadlineMs) {
+  await dockerExec('docker', ['restart', containerId], {
+    deadlineMs,
+    timeout: requireOperationTimeout(deadlineMs, COMMAND_TIMEOUT_MS),
+  });
 }
 
 /**
  * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
  */
-export async function pauseOwnedRedisClients(dockerExec, containerId, pauseMs = 350) {
-  await dockerExec('docker', [
-    'exec',
-    containerId,
-    'redis-cli',
-    'CLIENT',
-    'PAUSE',
-    String(pauseMs),
-    'ALL',
-  ]);
+export async function pauseOwnedRedisClients(
+  dockerExec,
+  containerId,
+  pauseMs = 350,
+  deadlineMs,
+) {
+  await dockerExec(
+    'docker',
+    ['exec', containerId, 'redis-cli', 'CLIENT', 'PAUSE', String(pauseMs), 'ALL'],
+    {
+      deadlineMs,
+      timeout: requireOperationTimeout(deadlineMs, COMMAND_TIMEOUT_MS),
+    },
+  );
 }
 
 /**
@@ -1384,15 +1699,26 @@ async function runLiveCli() {
   const refusal = validateLiveOptIn(process.argv, process.env);
   if (refusal) {
     console.log(JSON.stringify(refusal));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
   const redisRefusal = rejectSuppliedRedisUrl(process.env);
   if (redisRefusal) {
     console.log(JSON.stringify(redisRefusal));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
-  const dockerExec = createDockerExecutor(execFile);
+  const suiteDeadlineMs = monotonicNow() + SUITE_TIMEOUT_MS;
+  const rawDockerExec = createDockerExecutor(execFile);
+  const dockerExec = (file, args, opts = {}) =>
+    rawDockerExec(file, args, { deadlineMs: suiteDeadlineMs, ...opts });
+  const selection = parseScenarioSelection(process.argv);
+  if (selection.error) {
+    console.log(JSON.stringify({ status: 'FAIL', reason: selection.error }));
+    process.exitCode = 1;
+    return;
+  }
   const abort = new AbortController();
   const suiteTimer = setTimeout(() => abort.abort(), SUITE_TIMEOUT_MS);
   suiteTimer.unref?.();
@@ -1403,21 +1729,24 @@ async function runLiveCli() {
   /** @type {import('redis').RedisClientType | null} */
   let admin = null;
   let owned = null;
+  /** @type {Record<string, unknown>} */
+  let liveBody = {
+    tier: 'live',
+    status: 'FAIL',
+    elapsedMs: 0,
+  };
 
   try {
     owned = await provisionOwnedRedis(dockerExec, abort.signal);
     if (owned.status !== 'READY') {
-      const payload = redactLiveResult({
+      exitCode = owned.status === 'FAIL' ? 1 : 2;
+      liveBody = {
         tier: 'live',
         status: owned.status,
         reason: owned.reason,
         elapsedMs: Date.now() - started,
-        cleanup: { containerRemoved: false },
-      });
-      console.log(JSON.stringify(payload));
-      exitCode = owned.status === 'FAIL' ? 1 : 2;
-      return;
-    }
+      };
+    } else {
 
     admin = createAdminClient(owned.redisEnv.REDIS_URL);
     await admin.connect();
@@ -1430,22 +1759,34 @@ async function runLiveCli() {
       dockerExec,
       containerId: owned.containerId,
       runId: owned.runId,
+      hostPort: owned.hostPort,
+      deadlineMs: suiteDeadlineMs,
     };
 
-    const t01 = await runT01Suite(ctx);
-    const t02 = await runT02Suite(ctx);
+    const t01 = selection.scenario
+      ? selection.wave === 't01'
+        ? [await runScenario(selection.scenario, ctx, 't01')]
+        : []
+      : await runT01Suite(ctx);
+    const t02 = selection.scenario
+      ? selection.wave === 't02'
+        ? [await runScenario(selection.scenario, ctx, 't02')]
+        : []
+      : await runT02Suite(ctx);
     const sorted = [...t01, ...t02]
       .flatMap((item) => item.samples ?? [])
       .sort((a, b) => a - b);
 
     const fail = [...t01, ...t02].some((item) => item.status === 'FAIL');
-    const payload = redactLiveResult({
+    exitCode = fail ? 1 : 0;
+    liveBody = {
       tier: 'live',
       status: fail ? 'FAIL' : 'PASS',
       runId: owned.runId,
       containerId: owned.containerId,
       hostPort: owned.hostPort,
       elapsedMs: Date.now() - started,
+      ...(selection.scenario ? { scenario: selection.scenario } : {}),
       t01,
       t02,
       percentiles: {
@@ -1453,20 +1794,55 @@ async function runLiveCli() {
         p99: computeNearestRankPercentile(sorted, 0.99),
         sampleCount: sorted.length,
       },
-      cleanup: {},
-    });
-
-    console.log(JSON.stringify(payload));
-    exitCode = fail ? 1 : 0;
+    };
+    }
+  } catch (error) {
+    exitCode = 1;
+    liveBody = {
+      tier: 'live',
+      status: 'FAIL',
+      reason: error instanceof Error ? error.message : String(error),
+      elapsedMs: Date.now() - started,
+    };
   } finally {
     clearTimeout(suiteTimer);
-    await closeWorkers(workers);
-    await disconnectAdminClient(admin);
-    if (owned?.containerId) {
-      await forceRemoveOwnedContainer(dockerExec, owned.containerId);
+    const workerCleanup = await closeWorkers(workers).catch((error) => ({
+      errors: [error instanceof Error ? error.message : String(error)],
+    }));
+    const adminCleanup = await disconnectAdminClient(admin)
+      .then(() => ({ closed: true }))
+      .catch((error) => ({
+        closed: false,
+        reason: error instanceof Error ? error.message : String(error),
+      }));
+    const containerCleanup = owned?.containerId
+      ? await forceRemoveOwnedContainer(dockerExec, owned.containerId, {
+          runId: owned.runId,
+          hostPort: owned.hostPort,
+        }).catch((error) => ({
+          removed: false,
+          reason: error instanceof Error ? error.message : String(error),
+        }))
+      : { removed: true };
+    if (
+      workerCleanup.errors.length > 0 ||
+      adminCleanup.closed === false ||
+      containerCleanup.removed !== true
+    ) {
+      exitCode = exitCode === 2 ? 2 : 1;
     }
+    const payload = redactLiveResult({
+      ...liveBody,
+      elapsedMs: Date.now() - started,
+      cleanup: {
+        workers: workerCleanup,
+        admin: adminCleanup,
+        container: containerCleanup,
+      },
+    });
+    console.log(JSON.stringify(payload));
+    process.exitCode = exitCode;
   }
-  return exitCode;
 }
 
 const modulePath = fileURLToPath(import.meta.url);
@@ -1476,17 +1852,13 @@ const invokedPath = process.argv[1]
 const isMain = invokedPath.length > 0 && modulePath === invokedPath;
 
 if (isMain) {
-  runLiveCli()
-    .then((code) => {
-      process.exit(code ?? 1);
-    })
-    .catch((error) => {
-      console.error(
-        JSON.stringify({
-          status: 'FAIL',
-          reason: error instanceof Error ? error.message : String(error),
-        }),
-      );
-      process.exit(1);
-    });
+  runLiveCli().catch((error) => {
+    console.error(
+      JSON.stringify({
+        status: 'FAIL',
+        reason: error instanceof Error ? error.message : String(error),
+      }),
+    );
+    process.exitCode = 1;
+  });
 }

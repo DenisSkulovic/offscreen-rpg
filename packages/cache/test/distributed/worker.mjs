@@ -144,30 +144,133 @@ async function handleInit(env, envName, disabled) {
 }
 
 /**
+ * One dispatcher per child. Pending RPCs share that listener so request
+ * volume cannot accumulate process listeners.
+ *
+ * @typedef {{
+ *   pending: Map<string, { timer: ReturnType<typeof setTimeout>, resolve: (value: Record<string, unknown>) => void, reject: (error: Error) => void }>,
+ *   terminal: boolean,
+ * }} WorkerSession
+ */
+
+/** @type {WeakMap<object, WorkerSession>} */
+const workerSessions = new WeakMap();
+
+/**
+ * @param {import('node:child_process').ChildProcess} proc
+ */
+export function pendingRequestCount(proc) {
+  return workerSessions.get(proc)?.pending.size ?? 0;
+}
+
+/**
+ * @param {import('node:child_process').ChildProcess} proc
+ * @param {WorkerSession} session
+ * @param {string} requestId
+ * @param {Error | null} error
+ * @param {Record<string, unknown> | null} value
+ */
+function settleRequest(proc, session, requestId, error, value) {
+  const entry = session.pending.get(requestId);
+  if (!entry) {
+    return false;
+  }
+  clearTimeout(entry.timer);
+  session.pending.delete(requestId);
+  if (error) {
+    entry.reject(error);
+  } else {
+    entry.resolve(/** @type {Record<string, unknown>} */ (value));
+  }
+  return true;
+}
+
+/**
+ * @param {WorkerSession} session
+ * @param {Error} error
+ */
+function rejectOutstanding(session, error) {
+  if (session.terminal) {
+    return;
+  }
+  session.terminal = true;
+  for (const requestId of [...session.pending.keys()]) {
+    settleRequest(/** @type {import('node:child_process').ChildProcess} */ ({}), session, requestId, error, null);
+  }
+}
+
+/**
+ * @param {import('node:child_process').ChildProcess} proc
+ * @returns {WorkerSession}
+ */
+function sessionFor(proc) {
+  const existing = workerSessions.get(proc);
+  if (existing) {
+    return existing;
+  }
+  /** @type {WorkerSession} */
+  const session = { pending: new Map(), terminal: false };
+  proc.on('message', (raw) => {
+    const response = /** @type {Record<string, unknown>} */ (raw);
+    const requestId = response?.requestId;
+    if (typeof requestId !== 'string') {
+      return;
+    }
+    const entry = session.pending.get(requestId);
+    if (!entry) {
+      return;
+    }
+    if (response.ok === false) {
+      settleRequest(
+        proc,
+        session,
+        requestId,
+        new Error(String(response.error ?? 'WorkerRequestFailed')),
+        null,
+      );
+      return;
+    }
+    settleRequest(proc, session, requestId, null, response);
+  });
+  const fail = (code) => {
+    rejectOutstanding(session, new Error(code));
+  };
+  proc.once('exit', () => fail('WorkerExited'));
+  proc.once('disconnect', () => fail('WorkerDisconnected'));
+  workerSessions.set(proc, session);
+  return session;
+}
+
+/**
  * @param {import('node:child_process').ChildProcess} proc
  * @param {Record<string, unknown>} message
  * @returns {Promise<Record<string, unknown>>}
  */
-export function rpc(proc, message) {
+export function rpc(proc, message, timeoutMs = 15_000) {
+  const session = sessionFor(proc);
   const requestId =
     typeof message.requestId === 'string'
       ? message.requestId
       : crypto.randomUUID();
+  if (session.terminal || proc.connected === false) {
+    return Promise.reject(new Error('WorkerExited'));
+  }
   return new Promise((resolve, reject) => {
-    /** @param {Record<string, unknown>} response */
-    function onMessage(response) {
-      if (response.requestId !== requestId) {
-        return;
-      }
-      proc.off('message', onMessage);
-      if (response.ok === false) {
-        reject(new Error(String(response.error ?? 'WorkerRequestFailed')));
-        return;
-      }
-      resolve(response);
+    const timer = setTimeout(() => {
+      settleRequest(proc, session, requestId, new Error('WorkerRequestTimeout'), null);
+    }, timeoutMs);
+    session.pending.set(requestId, { timer, resolve, reject });
+    try {
+      proc.send({ ...message, requestId });
+    } catch (error) {
+      settleRequest(
+        proc,
+        session,
+        requestId,
+        error instanceof Error ? error : new Error(String(error)),
+        null,
+      );
     }
-    proc.on('message', onMessage);
-    proc.send({ ...message, requestId });
   });
 }
 

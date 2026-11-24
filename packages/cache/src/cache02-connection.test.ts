@@ -156,11 +156,17 @@ test('reconnect delay stays within the documented 250ms–15s jittered band', ()
 test('fake client: initial connection failure then automatic recovery', async () => {
   const timers = createControllableTimers();
   const holder: { current: FakeClient | null } = { current: null };
+  let created = 0;
   const connection = createRedisConnection(configuredEnv, {
-    clientFactory: fakeFactory(
-      { shouldFailConnect: (attempt) => attempt === 1 },
-      holder,
-    ),
+    clientFactory: () => {
+      created += 1;
+      const generation = created;
+      const client = createFakeClient({
+        shouldFailConnect: () => generation === 1,
+      });
+      holder.current = client;
+      return client;
+    },
     random: () => 0,
     setTimer: timers.setTimer,
     clearTimer: timers.clearTimer,
@@ -173,7 +179,7 @@ test('fake client: initial connection failure then automatic recovery', async ()
   await timers.runAll();
   await new Promise<void>((resolve) => setImmediate(resolve));
   assert.equal(connection.state, 'ready');
-  assert.equal(holder.current?.connectAttempts, 2);
+  assert.equal(holder.current?.connectAttempts, 1);
   assert.equal(connection.admitsTraffic(), true);
 
   await connection.close();
@@ -204,4 +210,92 @@ test('terminal close: no further reconnect attempts after shutdown', async () =>
 
   assert.equal(holder.current?.connectAttempts, connectsBeforeClose);
   assert.equal(connection.state, 'closed');
+});
+
+test('listeners registered before SDK connect survive a fresh generation', async () => {
+  const events: string[] = [];
+  const connection = createRedisConnection(configuredEnv, {
+    clientFactory: () => {
+      let ready = false;
+      const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
+      return {
+        get isOpen() {
+          return ready;
+        },
+        get isReady() {
+          return ready;
+        },
+        on(event: string, listener: (...args: unknown[]) => void) {
+          events.push(`on:${event}`);
+          const bucket = listeners.get(event) ?? new Set();
+          bucket.add(listener);
+          listeners.set(event, bucket);
+        },
+        async connect() {
+          events.push('connect');
+          ready = true;
+          for (const listener of listeners.get('ready') ?? []) {
+            listener();
+          }
+        },
+        async close() {
+          ready = false;
+        },
+      };
+    },
+  });
+  await connection.start();
+  assert.equal(connection.admitsTraffic(), true);
+  assert.ok(events.indexOf('on:ready') < events.indexOf('connect'));
+  await connection.close();
+});
+
+test('stale generation ready does not admit traffic after socket loss', async () => {
+  const timers = createControllableTimers();
+  const clients: FakeClient[] = [];
+  const connection = createRedisConnection(configuredEnv, {
+    clientFactory: () => {
+      const generation = clients.length;
+      const client = createFakeClient({
+        shouldFailConnect: () => generation > 0,
+      });
+      clients.push(client);
+      return client;
+    },
+    random: () => 0,
+    setTimer: timers.setTimer,
+    clearTimer: timers.clearTimer,
+  });
+  await connection.start();
+  assert.equal(connection.state, 'ready');
+  clients[0]?.simulateEnd();
+  await timers.runNext();
+  clients[0]?.simulateError();
+  assert.equal(connection.state, 'degraded');
+  assert.equal(connection.admitsTraffic(), false);
+  await connection.close();
+});
+
+test('shutdown during connect is not resurrected by late completion', async () => {
+  let release: (() => void) | undefined;
+  const connection = createRedisConnection(configuredEnv, {
+    clientFactory: () => ({
+      isOpen: false,
+      isReady: false,
+      on() {},
+      async connect() {
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+      },
+      async close() {},
+    }),
+  });
+  const starting = connection.start();
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  await connection.close();
+  release?.();
+  await starting;
+  assert.equal(connection.state, 'closed');
+  assert.equal(connection.admitsTraffic(), false);
 });

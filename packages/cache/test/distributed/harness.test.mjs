@@ -197,18 +197,66 @@ test('createDockerExecutor bounds command duration', async () => {
   assert.equal(observedTimeout, 2500);
 });
 
-test('forceRemoveOwnedContainer treats inspect failure as successful cleanup', async () => {
+test('forceRemoveOwnedContainer requires ownership and verified absence', async () => {
   const calls = [];
+  let inspects = 0;
   const fakeRunner = async (file, args) => {
     calls.push([file, ...args]);
     if (args[0] === 'inspect') {
+      inspects += 1;
+      if (inspects === 1) {
+        return {
+          stdout: JSON.stringify({
+            Id: 'abcd1234',
+            Config: {
+              Image: 'redis:8.2.1-alpine',
+              Labels: { 'offscreen.cache07.run': 'run-1' },
+            },
+            NetworkSettings: {
+              Ports: { '6379/tcp': [{ HostIp: '127.0.0.1', HostPort: '63791' }] },
+            },
+          }),
+          stderr: '',
+        };
+      }
       throw new Error('No such object');
     }
     return { stdout: '', stderr: '' };
   };
-  const result = await forceRemoveOwnedContainer(fakeRunner, 'abcd');
+  const result = await forceRemoveOwnedContainer(fakeRunner, 'abcd1234', {
+    runId: 'run-1',
+    hostPort: 63791,
+  });
   assert.equal(result.removed, true);
-  assert.deepEqual(calls[0], ['docker', 'rm', '-f', 'abcd']);
+  assert.equal(calls[1][1], 'rm');
+});
+
+test('docker communication errors are not treated as container absence', async () => {
+  const fakeRunner = async (_file, args) => {
+    if (args[0] === 'inspect') {
+      throw new Error('connect ENOENT docker.sock');
+    }
+    return { stdout: '', stderr: '' };
+  };
+  const result = await forceRemoveOwnedContainer(fakeRunner, 'abcd1234');
+  assert.equal(result.removed, false);
+});
+
+test('published 0.0.0.0 bindings are rejected', () => {
+  const verdict = verifyContainerOwnership(
+    {
+      Id: 'abcd1234',
+      Config: {
+        Image: 'redis:8.2.1-alpine',
+        Labels: { 'offscreen.cache07.run': 'run-1' },
+      },
+      NetworkSettings: {
+        Ports: { '6379/tcp': [{ HostIp: '0.0.0.0', HostPort: '63791' }] },
+      },
+    },
+    { runId: 'run-1', containerId: 'abcd1234', hostPort: 63791 },
+  );
+  assert.equal(verdict.ok, false);
 });
 
 test('parseDockerPort rejects malformed values', () => {

@@ -12,6 +12,7 @@ import {
   resolveRedisConnectionSettings,
 } from './runtime/redis-config.js';
 import {
+  createBufferedRedisLifecycleClient,
   createRedisConnectionFromRedisEnv,
   type RedisClientFactory,
   type RedisConnection,
@@ -88,53 +89,46 @@ function createCommandCapturingClientFactory(): Readonly<{
   factory: RedisClientFactory;
   getCommands: () => CacheAdapterRedisCommands | null;
 }> {
-  let commands: CacheAdapterRedisCommands | null = null;
+  let generation = 0;
+  let published: {
+    id: number;
+    commands: CacheAdapterRedisCommands;
+  } | null = null;
   const factory: RedisClientFactory = (settings) => {
-    let client: RedisClientType | undefined;
+    const id = ++generation;
+    let sdk: RedisClientType | undefined;
+    const lifecycle = createBufferedRedisLifecycleClient(settings, (client) => {
+      sdk = client;
+      published = {
+        id,
+        commands: {
+          get: (key) => client.get(key),
+          set: (key, value, options) => client.set(key, value, options),
+        },
+      };
+    });
     return {
       get isOpen() {
-        return client?.isOpen ?? false;
+        return lifecycle.isOpen;
       },
       get isReady() {
-        return client?.isReady ?? false;
+        return lifecycle.isReady;
       },
-      async connect() {
-        if (!client) {
-          const { createClient } = await import('redis');
-          client = createClient({
-            url: settings.url,
-            disableOfflineQueue: true,
-            socket: {
-              connectTimeout: settings.connectTimeoutMs,
-              reconnectStrategy: false,
-            },
-          });
-          client.on('error', () => {});
-          const active = client;
-          commands = {
-            get: (key) => active.get(key),
-            set: (key, value, options) => active.set(key, value, options),
-          };
-        }
-        await client.connect();
-      },
+      connect: () => lifecycle.connect(),
       async close() {
-        commands = null;
-        if (client?.isOpen) {
-          await client.close();
+        if (published?.id === id) {
+          published = null;
         }
+        await lifecycle.close();
+        void sdk;
       },
-      on(event, listener) {
-        client?.on(event, listener as never);
-      },
-      off(event, listener) {
-        client?.off(event, listener as never);
-      },
+      on: (event, listener) => lifecycle.on(event, listener),
+      off: (event, listener) => lifecycle.off?.(event, listener),
     };
   };
   return {
     factory,
-    getCommands: () => commands,
+    getCommands: () => published?.commands ?? null,
   };
 }
 

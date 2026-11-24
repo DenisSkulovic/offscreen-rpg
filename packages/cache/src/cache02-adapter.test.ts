@@ -230,8 +230,12 @@ test('ready adapter enables legacy JSON wire with qualified prefix keys', async 
 
 test('store follows live readiness while enabled stays at startup snapshot', async () => {
   const timers = createControllableTimers();
+  let generations = 0;
   const harness = createHarnessFactory({
-    shouldFailConnect: (attempt) => attempt === 1,
+    shouldFailConnect: () => {
+      generations += 1;
+      return generations === 1;
+    },
   });
   const connection = createRedisConnection(configuredEnv, {
     clientFactory: harness.factory,
