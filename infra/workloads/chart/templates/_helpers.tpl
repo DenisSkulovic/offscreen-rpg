@@ -28,11 +28,27 @@
 {{- if not $b.dbSecret -}}{{- fail "missing bindings.dbSecret" -}}{{- end -}}
 {{- if not $b.appSecret -}}{{- fail "missing bindings.appSecret" -}}{{- end -}}
 {{- if not $b.s3Secret -}}{{- fail "missing bindings.s3Secret" -}}{{- end -}}
+{{- if ne (int .Values.replicas) 1 -}}{{- fail "development requires replicas=1" -}}{{- end -}}
+{{- if .Values.replicasByRole -}}
+{{- range $role, $count := .Values.replicasByRole -}}
+{{- if ne (int $count) 1 -}}{{- fail (printf "development requires one replica per role; %s=%v" $role $count) -}}{{- end -}}
+{{- end -}}
+{{- end -}}
 {{- else if eq $mode "release" -}}
 {{- if .Values.bindings -}}
 {{- if gt (len .Values.bindings) 0 -}}{{- fail "release profile does not accept bindings" -}}{{- end -}}
 {{- end -}}
 {{- else -}}{{- fail "invalid mode" -}}{{- end -}}
+{{- end -}}
+
+{{- define "offscreen-app.roleReplicas" -}}
+{{- $ctx := .ctx -}}
+{{- $role := .role -}}
+{{- if and $ctx.Values.replicasByRole (hasKey $ctx.Values.replicasByRole $role) -}}
+{{- index $ctx.Values.replicasByRole $role -}}
+{{- else -}}
+{{- $ctx.Values.replicas -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "offscreen-app.dev.labels" -}}
@@ -328,7 +344,7 @@ metadata:
     app: {{ .Values.catalog.deployments.web | quote }}
     offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "web") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.web | quote }}
@@ -387,7 +403,7 @@ metadata:
     app: {{ .Values.catalog.deployments.api | quote }}
     offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "api") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.api | quote }}
@@ -509,7 +525,7 @@ metadata:
     app: {{ .Values.catalog.deployments.authority | quote }}
     offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "authority") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.authority | quote }}
@@ -619,7 +635,7 @@ metadata:
     app: {{ .Values.catalog.deployments.control | quote }}
     offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "control") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.control | quote }}
@@ -679,7 +695,7 @@ metadata:
     app: {{ .Values.catalog.deployments.executor | quote }}
     offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "executor") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.executor | quote }}
@@ -742,7 +758,7 @@ metadata:
     app: {{ .Values.catalog.deployments.relay | quote }}
     offscreen.rpg/lab: {{ .Values.release.labLabel | quote }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "relay") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.relay | quote }}
@@ -836,7 +852,7 @@ metadata:
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "web") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.web }}
@@ -955,7 +971,7 @@ metadata:
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "api") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.api }}
@@ -1060,7 +1076,7 @@ metadata:
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "authority") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.authority }}
@@ -1136,7 +1152,7 @@ metadata:
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "control") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.control }}
@@ -1203,7 +1219,7 @@ metadata:
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "executor") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.executor }}
@@ -1284,7 +1300,7 @@ metadata:
     offscreen.dev/owner: offscreen-dev
     offscreen.rpg/profile: dev-slot
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ include "offscreen-app.roleReplicas" (dict "ctx" . "role" "relay") }}
   selector:
     matchLabels:
       app: {{ .Values.catalog.deployments.relay }}

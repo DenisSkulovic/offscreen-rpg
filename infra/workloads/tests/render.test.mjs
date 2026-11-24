@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -11,6 +13,13 @@ import {
   renderWorkloadDocuments,
   renderWorkloadYaml,
 } from '../render.mjs';
+
+function writeValuesFile(contents) {
+  const dir = mkdtempSync(join(tmpdir(), 'offscreen-values-'));
+  const file = join(dir, 'values.yaml');
+  writeFileSync(file, contents, 'utf8');
+  return { file, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
+}
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 const renderCli = join(repoRoot, 'infra/workloads/render.mjs');
@@ -80,4 +89,176 @@ test('renderWorkloadDocuments does not invoke kubectl', () => {
   renderWorkloadDocuments({ profile: 'development', section: 'all', bindings }, { run: fakeRun });
   assert.equal(calls.some((line) => line.startsWith('kubectl')), false);
   assert.ok(calls.some((line) => line.startsWith('helm template')));
+});
+
+test('release values override: custom resources and replicas succeed', () => {
+  const values = writeValuesFile(`replicasByRole:
+  api: 2
+  executor: 3
+resources:
+  requests:
+    cpu: 100m
+    api:
+      memory: 512Mi
+  limits:
+    api:
+      memory: 768Mi
+`);
+  try {
+    const docs = renderWorkloadDocuments({
+      profile: 'release',
+      section: 'all',
+      valuesPath: values.file,
+    });
+    const api = docs.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api');
+    const executor = docs.find(
+      (doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-executor',
+    );
+    assert.ok(api);
+    assert.equal(api.spec.replicas, 2);
+    assert.equal(api.spec.template.spec.containers[0].resources.requests.cpu, '100m');
+    assert.equal(api.spec.template.spec.containers[0].resources.requests.memory, '512Mi');
+    assert.equal(executor?.spec.replicas, 3);
+  } finally {
+    values.cleanup();
+  }
+});
+
+test('release values override: invalid replica count refused', () => {
+  const values = writeValuesFile('replicasByRole:\n  api: 0\n');
+  try {
+    assert.throws(
+      () =>
+        renderWorkloadDocuments({
+          profile: 'release',
+          section: 'edge',
+          valuesPath: values.file,
+        }),
+      /invalid replica count/,
+    );
+  } finally {
+    values.cleanup();
+  }
+});
+
+test('release values override: forbidden keys refused', () => {
+  for (const snippet of [
+    'images:\n  web: evil:tag\n',
+    'namespaces:\n  edge: evil-ns\n',
+    'section: migration\n',
+    'commands:\n  web: [echo, hi]\n',
+    'workerCommands:\n  control: [echo, hi]\n',
+  ]) {
+    const values = writeValuesFile(snippet);
+    try {
+      assert.throws(
+        () =>
+          renderWorkloadDocuments({
+            profile: 'release',
+            section: 'all',
+            valuesPath: values.file,
+          }),
+        /values override not permitted/,
+      );
+    } finally {
+      values.cleanup();
+    }
+  }
+});
+
+test('release values override: secret and port changes refused', () => {
+  const values = writeValuesFile(`resources:
+  requests:
+    cpu: 50m
+release:
+  dbSecret: evil-secret
+`);
+  const values2 = writeValuesFile(`catalog:
+  httpPorts:
+    api: 3999
+`);
+  try {
+    assert.throws(
+      () =>
+        renderWorkloadDocuments({
+          profile: 'release',
+          section: 'edge',
+          valuesPath: values.file,
+        }),
+      /values override not permitted: release/,
+    );
+    assert.throws(
+      () =>
+        renderWorkloadDocuments({
+          profile: 'release',
+          section: 'all',
+          valuesPath: values2.file,
+        }),
+      /values override not permitted:/,
+    );
+  } finally {
+    values.cleanup();
+    values2.cleanup();
+  }
+});
+
+test('development values override: resource override works', () => {
+  const values = writeValuesFile(`resources:
+  requests:
+    cpu: 75m
+    web:
+      memory: 256Mi
+`);
+  try {
+    const { bindings } = deriveDevWorkloadBindings('dev-1', 3100);
+    const docs = renderWorkloadDocuments({
+      profile: 'development',
+      section: 'all',
+      bindings,
+      valuesPath: values.file,
+    });
+    const web = docs.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-web');
+    assert.ok(web);
+    assert.equal(web.spec.template.spec.containers[0].resources.requests.cpu, '75m');
+    assert.equal(web.spec.template.spec.containers[0].resources.requests.memory, '256Mi');
+  } finally {
+    values.cleanup();
+  }
+});
+
+test('development values override: replicas 2 refused', () => {
+  const values = writeValuesFile('replicas: 2\n');
+  try {
+    const { bindings } = deriveDevWorkloadBindings('dev-1', 3100);
+    assert.throws(
+      () =>
+        renderWorkloadDocuments({
+          profile: 'development',
+          section: 'all',
+          bindings,
+          valuesPath: values.file,
+        }),
+      /development requires replicas=1/,
+    );
+  } finally {
+    values.cleanup();
+  }
+});
+
+test('release CLI accepts --values path', () => {
+  const values = writeValuesFile('replicasByRole:\n  api: 2\n');
+  try {
+    const result = spawnSync(process.execPath, [renderCli, 'release', 'edge', '--values', values.file], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const api = parseWorkloadDocuments(result.stdout).find(
+      (doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api',
+    );
+    assert.equal(api?.spec.replicas, 2);
+    assert.doesNotMatch(result.stderr, /replicasByRole|memory:|cpu:/);
+  } finally {
+    values.cleanup();
+  }
 });

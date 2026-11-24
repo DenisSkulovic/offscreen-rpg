@@ -22,6 +22,10 @@ readiness:
   periodSeconds: 5
   timeoutSeconds: 2
 
+# Values override file may change only replicas/replicasByRole and:
+#   resources.requests.cpu (shared)
+#   resources.requests.<role>.memory and resources.limits.<role>.memory
+#   roles: web, api, authority, control, executor, relay
 resources:
   requests:
     cpu: 50m

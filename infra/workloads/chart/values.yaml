@@ -22,6 +22,10 @@ catalog:
     authority: 3002
 
 replicas: 1
+# Optional per-role overrides (release); keys: web, api, authority, control, executor, relay
+# replicasByRole:
+#   api: 2
+#   executor: 3
 imagePullPolicy: Never
 automountServiceAccountToken: false
 enableServiceLinks: false

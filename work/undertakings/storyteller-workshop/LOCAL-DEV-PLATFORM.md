@@ -6,7 +6,7 @@ Baseline 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. INF36 source Done; INF29 live
 | --- | --- | --- |
 | [INF43](../../changes/open/2026-11-24--inf43-source-baseline-repair/CHANGE.md) Repair integrated source verification | INF36 Done | Ready |
 | [INF37](../../changes/open/2026-11-24--inf37-platform-composition/CHANGE.md) Convenient cluster and service selection | INF36 Done | Ready |
-| [INF39](../../changes/open/2026-11-24--inf39-helm-workload-overrides/CHANGE.md) Standard workload values overrides | INF36 Done | Ready |
+| [INF39](../../changes/archive/2026-11/platform-operations/2026-11-24--inf39-helm-workload-overrides/CHANGE.md) Standard workload values overrides | INF36 Done | Done (source; live NOT-RUN) |
 | [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) Selective developer application activation | INF43, INF37, INF39; INF29 live verifier no active writer to same paths | Ready (dependency-gated) |
 | [INF42](../../changes/open/2026-11-24--inf42-verification-source-runner/CHANGE.md) Repeatable source verification entrypoint | INF43 | Ready (dependency-gated) |
 

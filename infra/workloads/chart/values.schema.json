@@ -11,6 +11,18 @@
     },
     "catalog": { "type": "object" },
     "replicas": { "type": "integer", "minimum": 1 },
+    "replicasByRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "web": { "type": "integer", "minimum": 1 },
+        "api": { "type": "integer", "minimum": 1 },
+        "authority": { "type": "integer", "minimum": 1 },
+        "control": { "type": "integer", "minimum": 1 },
+        "executor": { "type": "integer", "minimum": 1 },
+        "relay": { "type": "integer", "minimum": 1 }
+      }
+    },
     "imagePullPolicy": { "type": "string" },
     "automountServiceAccountToken": { "type": "boolean" },
     "enableServiceLinks": { "type": "boolean" },

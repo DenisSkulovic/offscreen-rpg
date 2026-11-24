@@ -10,6 +10,9 @@ readiness:
   periodSeconds: 5
   timeoutSeconds: 2
 
+# Values override file may change only replicas (must stay 1) and:
+#   resources.requests.cpu (shared)
+#   resources.requests.<role>.memory (per-role CPU overrides are not supported)
 resources:
   requests:
     cpu: 50m

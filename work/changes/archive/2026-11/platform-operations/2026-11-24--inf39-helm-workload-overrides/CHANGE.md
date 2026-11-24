@@ -1,0 +1,15 @@
+# INF39 | Standard workload values overrides
+
+**Status: Done (2026-11-24). Kind: implementation. Profile: CONTRACT.** Integrated on undertaking/storyteller-workshop from change/inf39-helm-workload-overrides. Worktree start c26945f32f9c. Dependency INF36 Done. Source-only. Live cluster NOT-RUN. Goal: Standard workload values overrides. [Program](../../../../../undertakings/storyteller-workshop/LOCAL-DEV-PLATFORM.md) · [Tasks](TASKS.md) · [Execution](EXECUTION.md) · [Source map](SOURCE-MAP.md) · [Proof](PROOF.md).
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Workload replica and values override contract | docs/runbooks/local-development-platform.md Workload chart defaults and local values overrides | changed: optional replicasByRole and a local Helm values file may change replicas and documented resource quantities only | infra/workloads/chart and infra/workloads/render.mjs on change/inf39-helm-workload-overrides | fixture-tested | invalid role/count, dev replicas other than 1, and non-resource field overrides refused; 36 workload tests pass | runbook section added; example profile is not the default |
+| Default resource limits and admission memory floor | profiles and RES-01 | unchanged: defaults and admission floors were not edited; RES-01 stays target-only until live measurement | no default limit or floor edit | reviewed | example file is render-only | N/A |
+| Product player-facing claims | product | unchanged: no product heading describes workload Helm values | no product source behavior changed | reviewed | live cluster, Docker, Tilt, and tenant mutation stayed out of this source proof | N/A |
+
+Target undertaking/storyteller-workshop, inspected source snapshot 91bc2af40a94 matches current documentation-only HEAD 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. Owner commissioned source implementation 2026-11-24. No live cluster/Docker/Tilt/tenant/production/remote data mutation by these packets. INF29 live proof remains independent; no edits in its checkout. Preserve existing defaults, isolation and data. No new orchestration framework, daemon, scheduler, custom YAML language or security expansion. Separate Change worktree, node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop; one bounded child per task, parent integrates and archives; no automatic successor dispatch. Shared package.json/docs/catalog edits serialized by human integration custodian. Mechanical predecessor path joins allowed; material source contradiction returns to planner with exact evidence. Focused tests at repo root; changed-file quality/docs health; report actual commands/counts, source vs live NOT-RUN.
+
+First dispatch T01 after dependency gate. No live acceptance credit. Archive after source acceptance and reconciliation.

@@ -1,0 +1,6 @@
+# Example only — not wired as a default profile or stack preset.
+# Use with: node infra/workloads/render.mjs release all --values PATH
+replicasByRole:
+  api: 2
+  authority: 2
+  executor: 3

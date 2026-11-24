@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { renderWorkloadDocuments } from '../render.mjs';
 import { deriveDevWorkloadBindings } from './helpers/dev-bindings.mjs';
 import { documentKey, helmTemplate, parseHelmJsonDocuments } from './helpers/helm-render.mjs';
 import {
@@ -150,6 +151,78 @@ test('negative: schema rejects invalid replicas', () => {
   const result = helmTemplate({ profile: 'release', overlay: { section: 'edge', replicas: 0 } });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /replicas|minimum|schema/i);
+});
+
+test('replicasByRole: release executor 3 and api 2 change only those deployments', () => {
+  const rendered = render('release', {
+    section: 'all',
+    replicasByRole: { executor: 3, api: 2 },
+  });
+  const deployments = rendered.filter((doc) => doc.kind === 'Deployment');
+  for (const doc of deployments) {
+    const name = doc.metadata.name;
+    const expected = name === 'game-executor' ? 3 : name === 'game-api' ? 2 : 1;
+    assert.equal(doc.spec.replicas, expected, name);
+  }
+});
+
+test('experiments/release-replicas.yaml: api/authority 2, executor 3, other roles default 1', () => {
+  const examplePath = join(workloadsRoot, 'profiles/experiments/release-replicas.yaml');
+  const docs = renderWorkloadDocuments({
+    profile: 'release',
+    section: 'all',
+    valuesPath: examplePath,
+  });
+  const expectedByDeployment = {
+    'game-api': 2,
+    'game-authority': 2,
+    'game-executor': 3,
+    'game-web': 1,
+    'game-control': 1,
+    'game-relay': 1,
+  };
+  const deployments = docs.filter((doc) => doc.kind === 'Deployment');
+  assert.equal(deployments.length, 6);
+  for (const doc of deployments) {
+    const name = doc.metadata.name;
+    assert.ok(name in expectedByDeployment, `unexpected deployment ${name}`);
+    assert.equal(doc.spec.replicas, expectedByDeployment[name], name);
+  }
+});
+
+test('negative: replicasByRole rejects unknown role key', () => {
+  const result = helmTemplate({
+    profile: 'release',
+    overlay: { section: 'edge', replicasByRole: { worker: 2 } },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /replicasByRole|additionalProperties|schema/i);
+});
+
+test('negative: replicasByRole rejects zero count', () => {
+  const result = helmTemplate({
+    profile: 'release',
+    overlay: { section: 'edge', replicasByRole: { api: 0 } },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /replicasByRole|minimum|schema/i);
+});
+
+test('negative: development refuses multi-replica global or per-role', () => {
+  expectHelmFails(
+    'development',
+    { section: 'all', replicas: 2, ...deriveDevWorkloadBindings('dev-1', 3100) },
+    /development requires replicas=1/,
+  );
+  expectHelmFails(
+    'development',
+    {
+      section: 'all',
+      replicasByRole: { api: 2 },
+      ...deriveDevWorkloadBindings('dev-1', 3100),
+    },
+    /development requires one replica per role/,
+  );
 });
 
 const SIX_ROLES = ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay'];
