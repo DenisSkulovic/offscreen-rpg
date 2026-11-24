@@ -8,7 +8,7 @@
 
 ## Near-term domain ownership sequence (2026-11-24)
 
-**Wave B release (2026-11-24):** DO01–DO04 integrated source-only. DO05 remains concurrent from `372df9646108f0442dcca4f1dcc992fddfe50511`. DO04 parent is integration custodian and joins DO05 when that branch is accepted. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 and DO07 are conditionally commissioned; their execution gates are DO05 and all six respectively. No cluster, provider, DB mutation, Documents or CACHE scope.
+**Wave B release (2026-11-24):** DO01–DO05 integrated source-only. DO04 was the wave B custodian. Wave B is joined. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 and DO07 are conditionally commissioned; their execution gates are DO05 and all six respectively. No cluster, provider, DB mutation, Documents or CACHE scope.
 
 | Change | Dependency | Status |
 | --- | --- | --- |
@@ -16,8 +16,8 @@
 | [DO02 Admin / identity / usage](../archive/2026-11/platform-operations/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Done, source-only |
 | [DO03 Story interface](../archive/2026-11/platform-operations/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled | Done, source-only |
 | [DO04 Authority protocol](../archive/2026-11/platform-operations/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Done, source-only |
-| [DO05 Storyteller / engine](2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Ready / commissioned |
-| [DO06 Lab ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Commissioned / Ready after DO05 |
+| [DO05 Storyteller / engine](../archive/2026-11/platform-operations/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Done, source-only |
+| [DO06 Lab ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Commissioned / DO05 joined |
 | [DO07 Retire contracts](2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Commissioned / Ready after all six |
 
 [Retirement program](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [Parallel execution rules](../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md).
