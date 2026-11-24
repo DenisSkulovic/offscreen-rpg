@@ -12,7 +12,7 @@ if [[ $# -ne 0 ]]; then
   exit 2
 fi
 
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../../clusters/kind/release/lib.sh"
 BOOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NS=lab-content-bootstrap
 BOOTSTRAP_IMAGE=offscreen-lab-content-bootstrap:boot02

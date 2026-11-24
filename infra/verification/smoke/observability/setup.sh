@@ -11,6 +11,7 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
 VERIFICATION_OBS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../fixtures/probes/ensure-namespaces.sh"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
@@ -65,6 +66,8 @@ if grep -REi 'password:|api[_-]?key|bearer |player-id|player_id' \
 fi
 
 import_image "$PYTHON_IMAGE"
+
+ensure_probe_namespaces
 
 "${KUBECTL[@]}" -n lab-a create configmap synthetic-hop \
   --from-file=hop.py="$VERIFICATION_OBS_ROOT/hop.py" \

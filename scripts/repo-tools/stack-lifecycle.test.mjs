@@ -15,13 +15,9 @@ import {
   CONTEXT_NAME,
   MIN_MEM_AVAILABLE_KIB,
 } from './stack-preflight.mjs';
-import { buildStackPlan } from './stack-lifecycle.mjs';
-
-const PINNED_ROOTS = {
-  world: '5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9',
-  rule: 'd643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab',
-  start: 'e30eaa27407abe8a015b21cad62f30b81b07ee7af3b89634501fe3787d8d2813',
-};
+import { assertReleaseDownAllowlist, buildStackPlan } from './stack-lifecycle.mjs';
+import { EXPECTED_IMPORT_ROOTS } from '../../infra/verification/release-acceptance/turn03/fixture-import-roots.mjs';
+import { readFileSync } from 'node:fs';
 
 const PRESERVE_NAMESPACES = ['lab-postgres', 'lab-objects', 'lab-temporal', 'lab-content-bootstrap'];
 
@@ -44,7 +40,7 @@ function defaultObservation(overrides = {}) {
   return {
     clusterPresent: false,
     migration: 'complete',
-    importRoots: { ...PINNED_ROOTS },
+    importRoots: { ...EXPECTED_IMPORT_ROOTS },
     ...overrides,
   };
 }
@@ -150,7 +146,7 @@ test('up wrong import world hash => exitCode 1 and empty commands', () => {
     probes: healthyProbes({ ownedClusterExists: true }),
     observation: defaultObservation({
       clusterPresent: true,
-      importRoots: { ...PINNED_ROOTS, world: '0'.repeat(64) },
+      importRoots: { ...EXPECTED_IMPORT_ROOTS, world: '0'.repeat(64) },
     }),
   });
   assert.equal(plan.ok, false);
@@ -226,4 +222,30 @@ test('reset with cluster name missing kind- prefix => empty commands', () => {
   });
   assert.equal(plan.ok, false);
   assert.deepEqual(plan.commands, []);
+});
+
+test('owned downAllowlist matches eleven release workloads and fixture import roots stay canonical', () => {
+  const ownedPath = join(REPO_ROOT, 'infra/environments/release/owned-app-resources.json');
+  const owned = JSON.parse(readFileSync(ownedPath, 'utf8'));
+  assertReleaseDownAllowlist(owned.downAllowlist);
+  assert.deepEqual(owned.preserveNamespaces, PRESERVE_NAMESPACES);
+  assert.equal(owned.downAllowlist.length, 11);
+  assert.ok(owned.downAllowlist.some((e) => e.kind === 'Job' && e.name === 'game-migrate'));
+  assert.ok(owned.downAllowlist.some((e) => e.kind === 'HTTPRoute' && e.name === 'game-edge-routes'));
+  assert.ok(!('clusterName' in owned));
+  assert.ok(!('contextName' in owned));
+  assert.ok(!('resetConfirmation' in owned));
+  assert.ok(!('expectedImportRoots' in owned));
+});
+
+test('assertReleaseDownAllowlist refuses extra resources and forbidden kinds', () => {
+  const ownedPath = join(REPO_ROOT, 'infra/environments/release/owned-app-resources.json');
+  const owned = JSON.parse(readFileSync(ownedPath, 'utf8'));
+  const extra = [...owned.downAllowlist, { namespace: 'lab-edge', kind: 'Secret', name: 'leak' }];
+  assert.throws(() => assertReleaseDownAllowlist(extra), /exactly 11 entries/);
+  assert.throws(() => assertReleaseDownAllowlist(null), /must be an array/);
+  const forbiddenKind = owned.downAllowlist.map((entry, index) =>
+    index === 0 ? { ...entry, kind: 'Namespace' } : entry,
+  );
+  assert.throws(() => assertReleaseDownAllowlist(forbiddenKind), /forbids kind/);
 });

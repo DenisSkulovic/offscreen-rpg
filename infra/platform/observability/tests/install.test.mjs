@@ -13,10 +13,10 @@ const smokeHops = join(
   '../../verification/smoke/observability/hops.yaml',
 );
 
-/** @typedef {'ok' | 'unreadable' | 'foreign'} ContextMode */
+/** @typedef {'ok' | 'unreadable' | 'foreign' | 'foreign-ns'} ContextMode */
 
-/** @param {{ contextMode?: ContextMode }} [options] */
-function stubBinDir({ contextMode = 'ok' } = {}) {
+/** @param {{ contextMode?: ContextMode, labAAbsent?: boolean }} [options] */
+function stubBinDir({ contextMode = 'ok', labAAbsent = true } = {}) {
   const binDir = mkdtempSync(join(tmpdir(), 'observability-install-guard-'));
   const writeStub = (name, body) => {
     const path = join(binDir, name);
@@ -69,9 +69,15 @@ exit 2
 `,
   );
 
+  const nsAbsentFlag = labAAbsent ? '1' : '0';
+  const nsLabel = contextMode === 'foreign-ns' ? 'foreign' : 'disposable';
+
   const contextBlock =
-    contextMode === 'unreadable'
-      ? `exit 1`
+    contextMode === 'unreadable' || contextMode === 'foreign-ns'
+      ? contextMode === 'unreadable'
+        ? `exit 1`
+        : `echo kind-offscreen-lab
+  exit 0`
       : contextMode === 'foreign'
         ? `echo kind-other-cluster
   exit 0`
@@ -104,6 +110,17 @@ if [[ "$joined" == *"config view --minify -o json"* ]]; then
   cat <<'JSON'
 {"contexts":[{"context":{"cluster":"offscreen-lab","user":"kind-offscreen-lab"}}],"clusters":[{"name":"offscreen-lab","cluster":{"server":"https://127.0.0.1:6443"}}]}
 JSON
+  exit 0
+fi
+if [[ "$joined" == *"get namespace lab-a"* ]]; then
+  if [[ "${nsAbsentFlag}" == "1" ]]; then
+    exit 0
+  fi
+  echo "namespace/lab-a"
+  exit 0
+fi
+if [[ "$joined" == *"jsonpath={.metadata.labels.offscreen\\\\.rpg/lab}"* ]]; then
+  echo "${nsLabel}"
   exit 0
 fi
 if [[ "$joined" == *"get namespace lab-postgres"* ]]; then
@@ -144,6 +161,37 @@ test('verification hops.yaml keeps synthetic hop deployments', () => {
   assert.match(text, /name:\s*hop-a/);
   assert.match(text, /name:\s*hop-b/);
   assert.doesNotMatch(text, /kind:\s*ConfigMap/);
+});
+
+test('install.sh ensures lab-a before rendered collector manifest', () => {
+  const text = readFileSync(installPath, 'utf8');
+  assert.match(text, /ensure-lab-namespace\.sh/);
+  assert.match(text, /ensure_lab_namespace lab-a/);
+});
+
+test('install.sh stub run applies lab-a namespace manifest before collector', () => {
+  const { binDir, applyLog } = stubBinDir({ labAAbsent: true });
+  const result = spawnSync('bash', [installPath], {
+    encoding: 'utf8',
+    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const applied = readFileSync(applyLog, 'utf8');
+  assert.match(applied, /lab-a-namespace\.yaml/);
+});
+
+test('install.sh refuses foreign lab-a namespace label', () => {
+  const { binDir, applyLog } = stubBinDir({
+    contextMode: 'foreign-ns',
+    labAAbsent: false,
+  });
+  const result = spawnSync('bash', [installPath], {
+    encoding: 'utf8',
+    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /foreign or missing lab label/);
+  assert.equal(readFileSync(applyLog, 'utf8').trim(), '');
 });
 
 test('install.sh does not reference synthetic smoke fixtures', () => {

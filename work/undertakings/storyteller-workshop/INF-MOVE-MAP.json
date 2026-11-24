@@ -1800,5 +1800,67 @@
       "sha": "acc219feee3a5d669c711f0912a2fa7e038ccef1",
       "mode": "100644"
     }
+  ],
+  "successorRelocations": [
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/namespaces.yaml",
+      "to": "infra/verification/fixtures/probes/namespaces.yaml"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/release-acceptance-preflight.mjs",
+      "to": "infra/verification/release-acceptance/release-acceptance-preflight.mjs"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/release-acceptance-preflight.test.mjs",
+      "to": "infra/verification/release-acceptance/release-acceptance-preflight.test.mjs"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/Dockerfile",
+      "to": "infra/verification/release-acceptance/content-bootstrap/Dockerfile"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/build.sh",
+      "to": "infra/verification/release-acceptance/content-bootstrap/build.sh"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/images.pin",
+      "to": "infra/verification/release-acceptance/content-bootstrap/images.pin"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/importer-job.yaml",
+      "to": "infra/verification/release-acceptance/content-bootstrap/importer-job.yaml"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/namespace.yaml",
+      "to": "infra/verification/release-acceptance/content-bootstrap/namespace.yaml"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/package-lock.json",
+      "to": "infra/verification/release-acceptance/content-bootstrap/package-lock.json"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/package.json",
+      "to": "infra/verification/release-acceptance/content-bootstrap/package.json"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/reader-job.yaml",
+      "to": "infra/verification/release-acceptance/content-bootstrap/reader-job.yaml"
+    },
+    {
+      "change": "INF19",
+      "from": "infra/environments/release/content-bootstrap/smoke.sh",
+      "to": "infra/verification/release-acceptance/content-bootstrap/smoke.sh"
+    }
   ]
 }

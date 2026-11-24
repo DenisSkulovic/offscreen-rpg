@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { execPath } from 'node:process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runStackPreflight } from './stack-preflight.mjs';
+import { runStackPreflight, CONTEXT_NAME } from './stack-preflight.mjs';
+import { EXPECTED_IMPORT_ROOTS } from '../../infra/verification/release-acceptance/turn03/fixture-import-roots.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OWNED_RESOURCES_PATH = join(REPO_ROOT, 'infra/environments/release/owned-app-resources.json');
@@ -39,8 +40,44 @@ const OWNED_RESOURCES_PATH = join(REPO_ROOT, 'infra/environments/release/owned-a
  * }} StackPlanResult
  */
 
+const RELEASE_DOWN_ALLOWLIST_COUNT = 11;
+const ALLOWED_DOWN_KINDS = new Set(['Job', 'Deployment', 'Service', 'HTTPRoute']);
+
+/**
+ * @param {unknown} allowlist
+ */
+export function assertReleaseDownAllowlist(allowlist) {
+  if (!Array.isArray(allowlist)) {
+    throw new Error('downAllowlist must be an array');
+  }
+  if (allowlist.length !== RELEASE_DOWN_ALLOWLIST_COUNT) {
+    throw new Error(
+      `downAllowlist must contain exactly ${RELEASE_DOWN_ALLOWLIST_COUNT} entries, got ${allowlist.length}`,
+    );
+  }
+  for (const entry of allowlist) {
+    if (!entry || typeof entry !== 'object') {
+      throw new Error('downAllowlist entry must be an object with namespace, kind, and name');
+    }
+    const { namespace, kind, name } = /** @type {{ namespace?: unknown, kind?: unknown, name?: unknown }} */ (
+      entry
+    );
+    if (typeof namespace !== 'string' || !namespace) {
+      throw new Error('downAllowlist entry namespace must be a non-empty string');
+    }
+    if (typeof name !== 'string' || !name) {
+      throw new Error('downAllowlist entry name must be a non-empty string');
+    }
+    if (typeof kind !== 'string' || !ALLOWED_DOWN_KINDS.has(kind)) {
+      throw new Error(`downAllowlist forbids kind ${String(kind)}`);
+    }
+  }
+}
+
 function loadOwnedResources() {
-  return JSON.parse(readFileSync(OWNED_RESOURCES_PATH, 'utf8'));
+  const owned = JSON.parse(readFileSync(OWNED_RESOURCES_PATH, 'utf8'));
+  assertReleaseDownAllowlist(owned.downAllowlist);
+  return owned;
 }
 
 /**
@@ -111,10 +148,7 @@ export function buildStackPlan(input) {
         };
       }
       if (observation.importRoots !== null) {
-        const bad = mismatchedImportRoots(
-          observation.importRoots,
-          owned.expectedImportRoots,
-        );
+        const bad = mismatchedImportRoots(observation.importRoots, EXPECTED_IMPORT_ROOTS);
         if (bad.length > 0) {
           return {
             ok: false,
@@ -144,12 +178,7 @@ export function buildStackPlan(input) {
     if (!observation.clusterPresent) {
       commands.push(['bash', owned.clusterUp]);
     }
-    commands.push([
-      execPath,
-      join(REPO_ROOT, owned.releasePlatformEnsure),
-      'ensure',
-      owned.contextName,
-    ]);
+    commands.push([execPath, join(REPO_ROOT, owned.releasePlatformEnsure), 'ensure', CONTEXT_NAME]);
     commands.push(['bash', owned.releaseInstall]);
 
     return { ok: true, exitCode: 0, commands, messages: [], urls };
@@ -159,7 +188,7 @@ export function buildStackPlan(input) {
     const commands = owned.downAllowlist.map((entry) => [
       'kubectl',
       '--context',
-      owned.contextName,
+      CONTEXT_NAME,
       '-n',
       entry.namespace,
       'delete',
@@ -171,11 +200,11 @@ export function buildStackPlan(input) {
   }
 
   if (command === 'reset') {
-    if (confirmation === owned.resetConfirmation) {
+    if (confirmation === CONTEXT_NAME) {
       return {
         ok: true,
         exitCode: 0,
-        commands: [['bash', owned.clusterReset, owned.resetConfirmation]],
+        commands: [['bash', owned.clusterReset, CONTEXT_NAME]],
         messages: [],
         urls,
       };
@@ -184,7 +213,7 @@ export function buildStackPlan(input) {
       ok: false,
       exitCode: 1,
       commands: [],
-      messages: [`Refusing stack reset: type exact confirmation "${owned.resetConfirmation}".`],
+      messages: [`Refusing stack reset: type exact confirmation "${CONTEXT_NAME}".`],
       urls,
     };
   }

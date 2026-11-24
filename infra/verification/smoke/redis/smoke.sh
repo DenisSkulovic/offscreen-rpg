@@ -14,11 +14,19 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/rel
 REDIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMON_CLI="$REDIS_DIR/../../../platform/common/cli.mjs"
 PREFLIGHT="$REDIS_DIR/smoke-preflight.mjs"
+ENSURE_NS="$REDIS_DIR/../../fixtures/probes/ensure-namespaces.sh"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
   exit 1
 fi
+
+if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME"; then
+  echo "Refusing smoke: kubectl context ${CONTEXT_NAME} is unreadable or absent." >&2
+  exit 1
+fi
+
+source "$ENSURE_NS"
 
 CREATED_DEPLOY_UID=""
 CREATED_SVC_UID=""
@@ -88,6 +96,8 @@ fi
 work="$(mktemp -d)"
 snapshot_volumes "$work/volumes-before"
 snapshot_foreign_contexts "$work/contexts-before"
+
+ensure_probe_namespaces
 
 # kind load docker-image uses ctr import --all-platforms, which rejects this
 # single-platform image with "content digest ... not found". Import the saved

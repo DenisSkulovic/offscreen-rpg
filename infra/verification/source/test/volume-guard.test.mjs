@@ -23,7 +23,7 @@ const GUARDED_SCRIPTS = [
   join(REPO_ROOT, 'infra/platform/temporal/install.sh'),
   join(VERIFY_ROOT, 'smoke/temporal/smoke.sh'),
   join(VERIFY_ROOT, 'smoke/object-storage/smoke.sh'),
-  join(REPO_ROOT, 'infra/environments/release/content-bootstrap/smoke.sh'),
+  join(REPO_ROOT, 'infra/verification/release-acceptance/content-bootstrap/smoke.sh'),
   join(VERIFY_ROOT, 'fixtures/document-access/smoke.sh'),
 ];
 

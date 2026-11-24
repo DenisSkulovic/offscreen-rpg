@@ -12,6 +12,7 @@ fi
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../clusters/kind/release/lib.sh"
 REDIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMON_CLI="$REDIS_DIR/../common/cli.mjs"
+source "$REDIS_DIR/../common/ensure-lab-namespace.sh"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
@@ -29,6 +30,7 @@ if grep -Ei 'requirepass|REDIS_PASSWORD|password:' "$rendered" >/dev/null; then
   exit 1
 fi
 
+ensure_lab_namespace lab-a
 "${KUBECTL[@]}" apply -f "$rendered"
 "${KUBECTL[@]}" -n lab-a rollout status deployment/redis --timeout=180s
 

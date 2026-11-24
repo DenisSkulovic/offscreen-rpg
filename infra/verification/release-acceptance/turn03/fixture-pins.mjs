@@ -1,3 +1,4 @@
+export { EXPECTED_IMPORT_ROOTS } from './fixture-import-roots.mjs';
 import { createRequire } from 'node:module';
 import {
   rulePackageManifestSchema,

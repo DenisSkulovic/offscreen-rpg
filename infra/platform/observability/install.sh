@@ -13,6 +13,7 @@ fi
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../clusters/kind/release/lib.sh"
 OBS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMON_CLI="$OBS_DIR/../common/cli.mjs"
+source "$OBS_DIR/../common/ensure-lab-namespace.sh"
 COLLECTOR_CONFIG="$OBS_DIR/chart/files/collector-config.yaml"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
@@ -73,6 +74,7 @@ trap 'rm -f "$rendered"' EXIT
 
 node "$COMMON_CLI" target release
 node "$COMMON_CLI" render observability release all >"$rendered"
+ensure_lab_namespace lab-a
 "${KUBECTL[@]}" apply -f "$rendered"
 
 if ! "${KUBECTL[@]}" -n lab-a rollout status deployment/otel-collector --timeout=240s; then

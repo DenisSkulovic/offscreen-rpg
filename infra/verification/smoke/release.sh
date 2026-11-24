@@ -11,9 +11,15 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../clusters/kind/release/lib.sh"
 VERIFY_FIXTURES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../fixtures"
+source "$VERIFY_FIXTURES/probes/ensure-namespaces.sh"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
+  exit 1
+fi
+
+if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME"; then
+  echo "Refusing smoke: kubectl context ${CONTEXT_NAME} is unreadable or absent." >&2
   exit 1
 fi
 
@@ -30,6 +36,8 @@ trap cleanup EXIT
 work="$(mktemp -d)"
 snapshot_volumes "$work/volumes-before"
 snapshot_foreign_contexts "$work/contexts-before"
+
+ensure_probe_namespaces
 
 "${KUBECTL[@]}" apply -f "$VERIFY_FIXTURES/probes/cross-namespace.yaml"
 "${KUBECTL[@]}" -n lab-b wait --for=condition=Ready pod/probe-server --timeout=180s

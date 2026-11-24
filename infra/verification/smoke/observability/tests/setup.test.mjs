@@ -11,8 +11,12 @@ const setupPath = join(smokeDir, 'setup.sh');
 
 /** @typedef {'ok' | 'unreadable' | 'foreign'} ContextMode */
 
-/** @param {{ contextMode?: ContextMode, collectorPresent?: boolean }} [options] */
-function stubBinDir({ contextMode = 'ok', collectorPresent = true } = {}) {
+/** @param {{ contextMode?: ContextMode, collectorPresent?: boolean, namespacesAbsent?: boolean }} [options] */
+function stubBinDir({
+  contextMode = 'ok',
+  collectorPresent = true,
+  namespacesAbsent = true,
+} = {}) {
   const binDir = mkdtempSync(join(tmpdir(), 'observability-setup-guard-'));
   const writeStub = (name, body) => {
     const path = join(binDir, name);
@@ -63,6 +67,7 @@ exit 2
   exit 0`;
 
   const collectorExit = collectorPresent ? 0 : 1;
+  const nsAbsentFlag = namespacesAbsent ? '1' : '0';
   const applyLog = join(binDir, 'apply-log');
   writeFileSync(applyLog, '', 'utf8');
 
@@ -78,6 +83,21 @@ if [[ "\${1:-}" == "config" && "\${2:-}" == "get-contexts" ]]; then
   ${contextBlock}
 fi
 if [[ "$joined" == *"get deployment otel-collector"* ]]; then exit ${collectorExit}; fi
+if [[ "$joined" == *"get namespace lab-a"* || "$joined" == *"get namespace lab-b"* ]]; then
+  if [[ "${nsAbsentFlag}" == "1" ]]; then
+    exit 0
+  fi
+  if [[ "$joined" == *"get namespace lab-b"* ]]; then
+    echo "namespace/lab-b"
+  else
+    echo "namespace/lab-a"
+  fi
+  exit 0
+fi
+if [[ "$joined" == *"jsonpath={.metadata.labels.offscreen\\\\.rpg/lab}"* ]]; then
+  echo disposable
+  exit 0
+fi
 if [[ "$joined" == *" apply "* || "$joined" == *" apply -f"* ]]; then
   for arg in "$@"; do
     echo "$arg" >> "${applyLog}"
@@ -144,6 +164,15 @@ test('setup.sh stub run applies smoke hops only, not platform collector render',
   assert.match(applied, /hops\.yaml/);
   assert.doesNotMatch(applied, /platform\/observability/);
   assert.doesNotMatch(applied, /render observability/);
+});
+
+test('setup.sh ensures probe namespaces before smoke hops', () => {
+  const text = readFileSync(setupPath, 'utf8');
+  assert.match(text, /ensure-namespaces\.sh/);
+  assert.match(text, /ensure_probe_namespaces/);
+  const ensureIndex = text.indexOf('ensure_probe_namespaces');
+  const hopsIndex = text.indexOf('apply -f "$VERIFICATION_OBS_ROOT/hops.yaml"');
+  assert.ok(ensureIndex > 0 && hopsIndex > ensureIndex);
 });
 
 test('setup.sh applies only verification smoke manifests', () => {

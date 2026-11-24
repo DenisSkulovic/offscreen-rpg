@@ -171,6 +171,58 @@ export const INF16_SUCCESSOR_RELOCATIONS = [
   },
 ];
 
+/** INF19 verification ownership: environments/release fixture homes → release-acceptance. */
+export const INF19_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/environments/release/namespaces.yaml',
+    to: 'infra/verification/fixtures/probes/namespaces.yaml',
+  },
+  {
+    from: 'infra/environments/release/release-acceptance-preflight.mjs',
+    to: 'infra/verification/release-acceptance/release-acceptance-preflight.mjs',
+  },
+  {
+    from: 'infra/environments/release/release-acceptance-preflight.test.mjs',
+    to: 'infra/verification/release-acceptance/release-acceptance-preflight.test.mjs',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/Dockerfile',
+    to: 'infra/verification/release-acceptance/content-bootstrap/Dockerfile',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/build.sh',
+    to: 'infra/verification/release-acceptance/content-bootstrap/build.sh',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/images.pin',
+    to: 'infra/verification/release-acceptance/content-bootstrap/images.pin',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/importer-job.yaml',
+    to: 'infra/verification/release-acceptance/content-bootstrap/importer-job.yaml',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/namespace.yaml',
+    to: 'infra/verification/release-acceptance/content-bootstrap/namespace.yaml',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/package-lock.json',
+    to: 'infra/verification/release-acceptance/content-bootstrap/package-lock.json',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/package.json',
+    to: 'infra/verification/release-acceptance/content-bootstrap/package.json',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/reader-job.yaml',
+    to: 'infra/verification/release-acceptance/content-bootstrap/reader-job.yaml',
+  },
+  {
+    from: 'infra/environments/release/content-bootstrap/smoke.sh',
+    to: 'infra/verification/release-acceptance/content-bootstrap/smoke.sh',
+  },
+];
+
 /** INF15 successor relocations: INF01–05 platform YAML → Helm chart homes. */
 export const INF15_SUCCESSOR_RELOCATIONS = [
   {
@@ -284,6 +336,7 @@ function effectiveMoveDestination(destination) {
     INF08_SUCCESSOR_RELOCATIONS,
     INF15_SUCCESSOR_RELOCATIONS,
     INF17_SUCCESSOR_RELOCATIONS,
+    INF19_SUCCESSOR_RELOCATIONS,
   ]) {
     const successor = table.find((row) => row.from === current);
     if (successor) {
@@ -326,15 +379,16 @@ export function assertInf08WorkloadRetirement(root) {
 
 export function assertInf06SuccessorRelocations(root) {
   for (const row of INF06_SUCCESSOR_RELOCATIONS) {
+    const destination = effectiveMoveDestination(row.to);
     const oldExists = existsSync(join(root, row.from));
-    const newExists = existsSync(join(root, row.to));
+    const newExists = existsSync(join(root, destination));
     if (oldExists && newExists) {
       throw new Error(
-        `INF06 successor violation (both paths present): ${row.from} and ${row.to}`,
+        `INF06 successor violation (both paths present): ${row.from} and ${destination}`,
       );
     }
     if (!newExists) {
-      throw new Error(`INF06 successor destination missing: ${row.to}`);
+      throw new Error(`INF06 successor destination missing: ${destination}`);
     }
     if (oldExists) {
       throw new Error(`INF06 predecessor must be retired: ${row.from}`);
@@ -367,6 +421,24 @@ export function assertInf15PlatformChartSuccessors(root) {
   const verificationRoute = 'infra/verification/smoke/gateway/routes.yaml';
   if (!existsSync(join(root, verificationRoute))) {
     throw new Error(`INF15 gateway verification successor missing: ${verificationRoute}`);
+  }
+}
+
+export function assertInf19VerificationFixtureOwnership(root) {
+  for (const row of INF19_SUCCESSOR_RELOCATIONS) {
+    const oldExists = existsSync(join(root, row.from));
+    const newExists = existsSync(join(root, row.to));
+    if (oldExists && newExists) {
+      throw new Error(
+        `INF19 successor violation (both paths present): ${row.from} and ${row.to}`,
+      );
+    }
+    if (!newExists) {
+      throw new Error(`INF19 successor destination missing: ${row.to}`);
+    }
+    if (oldExists) {
+      throw new Error(`INF19 predecessor must be retired: ${row.from}`);
+    }
   }
 }
 
@@ -671,6 +743,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   assertInf08WorkloadRetirement(repoRoot);
   assertInf15PlatformChartSuccessors(repoRoot);
   assertInf16ReleaseTiltRetirement(repoRoot);
+  assertInf19VerificationFixtureOwnership(repoRoot);
   assertTrackedModes(map.rows);
 
   const byChange = Object.create(null);

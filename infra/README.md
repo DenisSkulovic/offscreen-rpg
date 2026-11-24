@@ -25,7 +25,7 @@ Exact baseline move inventory and gates: work/undertakings/storyteller-workshop/
 
 ## Cluster foundation (INF06)
 
-`infra/clusters/kind/{dev,release}/kind.yaml` are the topology sources. `infra/clusters/kind/manager/` owns profile parsing, host probes, and the only `kind create cluster` primitive. `infra/clusters/kind/common/local-path-storage.yaml` is the release storage manifest. `infra/environments/release/namespaces.yaml` and `owned-app-resources.json` belong to the release environment. `infra/clusters/kind/release/up.sh` creates through the manager CLI, then applies that environment. `destroy.sh` deletes the release cluster only with confirmation `kind-offscreen-lab`. `stack:down` still removes only the owned app allowlist. Live cluster behavior was not re-proven.
+`infra/clusters/kind/{dev,release}/kind.yaml` are the topology sources. `infra/clusters/kind/manager/` owns profile parsing, host probes, and the only `kind create cluster` primitive. `infra/clusters/kind/common/local-path-storage.yaml` is the release storage manifest. `infra/environments/release/owned-app-resources.json` belongs to the release environment. Lab fixture namespaces live at `infra/verification/fixtures/probes/namespaces.yaml` and are applied by verification and optional platform installers, not by cluster create. `infra/clusters/kind/release/up.sh` creates through the manager CLI, then applies release storage. `destroy.sh` deletes the release cluster only with confirmation `kind-offscreen-lab`. `stack:down` still removes only the owned app allowlist. Live cluster behavior was not re-proven.
 
 ## Image architecture (INF07, selected 2026-11-24)
 

@@ -1,6 +1,6 @@
 FROM docker.io/library/node:22-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee
 WORKDIR /app
-COPY infra/environments/release/content-bootstrap/package.json infra/environments/release/content-bootstrap/package-lock.json ./
+COPY infra/verification/release-acceptance/content-bootstrap/package.json infra/verification/release-acceptance/content-bootstrap/package-lock.json ./
 RUN npm ci --omit=dev
 COPY packages/documents/dist ./packages/documents/dist
 COPY scripts/repo-tools/import-pinned-fixture.mjs scripts/repo-tools/read-pinned-fixture.mjs ./scripts/repo-tools/

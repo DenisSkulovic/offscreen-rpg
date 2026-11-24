@@ -6,7 +6,7 @@ A local `fixture-pin.json` from [Content package authoring](content-package-auth
 
 ## What this procedure is
 
-`infra/environments/release/content-bootstrap/smoke.sh` requires an installed store from [Kubernetes object storage](kubernetes-object-storage.md). It does not apply store manifests or create `object-store-s3`. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
+`infra/verification/release-acceptance/content-bootstrap/smoke.sh` requires an installed store from [Kubernetes object storage](kubernetes-object-storage.md). It does not apply store manifests or create `object-store-s3`. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
 
 The smoke then runs two Jobs in `lab-content-bootstrap`:
 
@@ -61,7 +61,7 @@ Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from th
 ```bash
 infra/clusters/kind/release/up.sh
 infra/platform/object-storage/install.sh
-infra/environments/release/content-bootstrap/smoke.sh
+infra/verification/release-acceptance/content-bootstrap/smoke.sh
 infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
@@ -90,7 +90,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 ```bash
 infra/clusters/kind/release/up.sh
 infra/platform/object-storage/install.sh
-infra/environments/release/content-bootstrap/smoke.sh
+infra/verification/release-acceptance/content-bootstrap/smoke.sh
 infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
@@ -120,16 +120,16 @@ BOOT02 stops after immutable package objects exist in the shared lab store and a
 
 | Artifact | Path or value |
 | --- | --- |
-| Bootstrap namespace | `lab-content-bootstrap` — `infra/environments/release/content-bootstrap/namespace.yaml` |
+| Bootstrap namespace | `lab-content-bootstrap` — `infra/verification/release-acceptance/content-bootstrap/namespace.yaml` |
 | Object-store namespace | `lab-objects` — installed by `infra/platform/object-storage/install.sh` before this smoke runs |
-| Importer Job | `fixture-importer` — `infra/environments/release/content-bootstrap/importer-job.yaml` |
-| Reader Job | `fixture-reader` — `infra/environments/release/content-bootstrap/reader-job.yaml` |
-| Orchestration | `infra/environments/release/content-bootstrap/smoke.sh` |
+| Importer Job | `fixture-importer` — `infra/verification/release-acceptance/content-bootstrap/importer-job.yaml` |
+| Reader Job | `fixture-reader` — `infra/verification/release-acceptance/content-bootstrap/reader-job.yaml` |
+| Orchestration | `infra/verification/release-acceptance/content-bootstrap/smoke.sh` |
 | S3 endpoint | `http://object-store.lab-objects.svc.cluster.local:8333` |
 | Bucket | `lab-objects` |
 | Importer entrypoint | `scripts/repo-tools/import-pinned-fixture.mjs --s3` (writer credentials: Secret `content-importer-s3`) |
 | Reader entrypoint | `scripts/repo-tools/read-pinned-fixture.mjs --s3` (read-only credentials: Secret `content-reader-s3`) |
-| Job image pin | `offscreen-lab-content-bootstrap:boot02` — built from `infra/environments/release/content-bootstrap/Dockerfile`, digest recorded in [Observed local run](#observed-local-run) |
+| Job image pin | `offscreen-lab-content-bootstrap:boot02` — built from `infra/verification/release-acceptance/content-bootstrap/Dockerfile`, digest recorded in [Observed local run](#observed-local-run) |
 
 Pinned content-addressed roots (package manifests), identical on import and read:
 

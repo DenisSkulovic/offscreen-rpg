@@ -15,7 +15,7 @@ import {
   CONTEXT_NAME,
   WEB_IMAGE,
   WORKER_IMAGE,
-} from '../../verification/release-acceptance/turn03/preflight.mjs';
+} from './turn03/preflight.mjs';
 
 const PINNED_SHA = 'bc562b77663472c8cccdd1bb68f79a00bddb619a';
 
@@ -97,7 +97,7 @@ function makeHarness(opts = {}) {
 
   const runPreflight = async (preflightOptions) => {
     const { runTurn03Preflight } = await import(
-      '../../verification/release-acceptance/turn03/preflight.mjs'
+      './turn03/preflight.mjs'
     );
     return runTurn03Preflight({
       ...preflightOptions,

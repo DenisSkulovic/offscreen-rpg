@@ -15,14 +15,25 @@ import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '../..');
 const releaseEnvRoot = join(repoRoot, 'infra/environments/release');
+const probeFixturesRoot = join(
+  repoRoot,
+  'infra/verification/fixtures/probes',
+);
 
 test('infra tree contains Kubernetes YAML manifests', () => {
   const files = collectLabYamlFiles(releaseEnvRoot);
   assert.ok(files.length > 0, 'expected release environment yaml files');
   assert.ok(
-    files.some((file) => file.endsWith('namespaces.yaml')),
-    'namespaces.yaml is included under infra/environments/release',
+    !files.some((file) => file.endsWith('namespaces.yaml')),
+    'release environment must not bootstrap verification probe namespaces',
   );
+  const probeNamespaces = join(probeFixturesRoot, 'namespaces.yaml');
+  const probeFiles = collectLabYamlFiles(probeFixturesRoot);
+  assert.ok(
+    probeFiles.some((file) => file.endsWith('namespaces.yaml')),
+    'probe namespaces live under infra/verification/fixtures/probes',
+  );
+  assert.doesNotThrow(() => parseLabYamlFile(probeNamespaces));
 });
 
 test('all lab Kubernetes YAML parses', () => {

@@ -29,11 +29,9 @@ snapshot_foreign_contexts "$work/contexts-before"
 
 node "$LAB_ROOT/../manager/cli.mjs" create release
 
-RELEASE_ENV_ROOT="$(cd "$LAB_ROOT/../../../environments/release" && pwd)"
 COMMON_ROOT="$(cd "$LAB_ROOT/../common" && pwd)"
 
 "${KUBECTL[@]}" wait --for=condition=Ready nodes --all --timeout=180s
-"${KUBECTL[@]}" apply -f "$RELEASE_ENV_ROOT/namespaces.yaml"
 "${KUBECTL[@]}" apply -f "$COMMON_ROOT/local-path-storage.yaml"
 "${KUBECTL[@]}" -n local-path-storage wait --for=condition=Available deployment/local-path-provisioner --timeout=180s
 assert_loopback_only

@@ -7,7 +7,7 @@ import {
   compareImporterSecretBytes,
   decideImporterSecret,
   decideReaderBootstrap,
-} from '../../../environments/release/content-bootstrap/credentials.mjs';
+} from '../../release-acceptance/content-bootstrap/credentials.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, '../../../..');
@@ -17,7 +17,7 @@ const OBJECT_SMOKE = join(
 );
 const BOOTSTRAP_SMOKE = join(
   REPO_ROOT,
-  'infra/environments/release/content-bootstrap/smoke.sh',
+  'infra/verification/release-acceptance/content-bootstrap/smoke.sh',
 );
 const INSTALL_SH = join(REPO_ROOT, 'infra/platform/object-storage/install.sh');
 const OBJECT_RUNBOOK = join(

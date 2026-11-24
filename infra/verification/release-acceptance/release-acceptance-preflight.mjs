@@ -8,9 +8,9 @@ import {
   CONTEXT_NAME,
   RELEASE_IMAGES,
   runTurn03Preflight,
-} from '../../verification/release-acceptance/turn03/preflight.mjs';
-import { TURN03_MANDATORY_GATE_IDS } from '../../verification/release-acceptance/turn03/report.mjs';
-import { runTurn03ColdTrace } from '../../verification/release-acceptance/turn03/run.mjs';
+} from './turn03/preflight.mjs';
+import { TURN03_MANDATORY_GATE_IDS } from './turn03/report.mjs';
+import { runTurn03ColdTrace } from './turn03/run.mjs';
 
 export const DEV_CONTEXT_NAME = 'kind-offscreen-dev';
 export const KNOWN_MIGRATION_JOB = 'game-migrate';
@@ -207,7 +207,7 @@ export function classifyForeignKubeContext(contextName) {
 
 /**
  * @param {readonly ReleaseAcceptancePlanStage[]} template
- * @param {import('../../verification/release-acceptance/turn03/report.mjs').Turn03DistributedPocProofReport} turn03Report
+ * @param {import('./turn03/report.mjs').Turn03DistributedPocProofReport} turn03Report
  */
 export function classifyReleasePlanStages(template, turn03Report) {
   /** @type {Record<string, string>} */
@@ -409,7 +409,7 @@ export async function runReleaseAcceptancePreflightSmoke(options = {}) {
 
   let installSpawned = false;
   if (authorizeMutating && !readOnlyRefusal) {
-    const installPath = join(MODULE_DIR, INSTALL_SCRIPT);
+    const installPath = join(repoRoot, 'infra/environments/release/install.sh');
     const child = spawn('bash', [installPath], {
       encoding: 'utf8',
       env: {
