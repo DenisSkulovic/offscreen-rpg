@@ -4,6 +4,8 @@
 
 **Current checkpoint: 2026-11-23.** `pnpm dev`, `dev:new`, `dev:status` and `dev:stop` are present in source. Tilt is the sole active Deployment image writer. One owned slot passed current-generation acceptance: six READY roles, Web and API live sync, a TypeScript error then recovery, one relay workflow task, and a park that kept tenant UIDs. One brand-new worktree has now passed ordinary `pnpm dev` / `dev:status` / `dev:stop` on `dev-9` at `e3fa10b7`: six READY roles, Web and API HTTP 200, and a park that left foreign slots unchanged. Four simultaneous stacks, browser OAuth, release-lab acceptance, and a completed story remain unproven. `game-control` can still log `RangeError: Invalid atomic access index` while Kubernetes reports it ready.
 
+**INF30 source-only lifecycle (2026-11-24):** Slot operation locks, unified park/cleanup, and bounded operator output (`slot`, `phase`, `next` once per refusal or status) are integrated in source with focused unit tests only. Historical live DXK09 acceptance claims in this runbook and in [PROOF](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) are unchanged; this note is not new live acceptance.
+
 **Read only what you need:** [commands](#what-works-on-the-integrated-branch) · [safe admission](#resource-etiquette-and-failed-admission-effective-immediately) · [what belongs to which cluster](#actual-targets-not-interchangeable) · [ownership/leases](#local-ownership-and-lease-model) · [DXK10 remainder](#selected-next-ownership-contract-2026-11-23--not-yet-implemented).
 
 ## What works on the integrated branch

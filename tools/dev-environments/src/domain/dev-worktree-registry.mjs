@@ -12,7 +12,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
-import { isAbsolute, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 
 export const REGISTRY_VERSION = 1;
 export const REGISTRY_VERSION_V2 = 2;
@@ -123,6 +123,129 @@ export function lockFilePath(registryRoot) {
  */
 export function flockLockFilePath(registryRoot) {
   return join(registryRoot, FLOCK_LOCK_FILENAME);
+}
+
+/**
+ * Per-slot dev start/stop operation lock (kernel flock), separate from registry mutation.
+ *
+ * @param {string} registryRoot
+ * @param {string} slotId
+ * @returns {string}
+ */
+export function slotOperationLockFilePath(registryRoot, slotId) {
+  return join(resolve(registryRoot), 'operations', `${slotId}.lock`);
+}
+
+function assertKernelFlockReady() {
+  const flockProbe = spawnSync('flock', ['--version'], { encoding: 'utf8' });
+  if (flockProbe.error || flockProbe.status !== 0) {
+    throw refusal(
+      'flock-unavailable',
+      'The util-linux flock command is required for dev worktree registry locking.',
+    );
+  }
+}
+
+/**
+ * @template T
+ * @param {string} lockPath
+ * @param {number} waitSeconds
+ * @param {() => T} fn
+ * @returns {T}
+ */
+function withExclusiveFlockLockFile(lockPath, waitSeconds, fn) {
+  mkdirSync(dirname(lockPath), { recursive: true });
+  const fd = openSync(lockPath, 'a+');
+  try {
+    const acquired = spawnSync(
+      'flock',
+      ['-w', String(waitSeconds), '-x', '3'],
+      {
+        stdio: ['ignore', 'ignore', 'pipe', fd],
+        timeout: waitSeconds > 0 ? waitSeconds * 1_000 + 1_000 : 2_000,
+      },
+    );
+    if (acquired.error) {
+      throw acquired.error;
+    }
+    if (acquired.status !== 0) {
+      throw refusal(
+        'flock-exclusive-timeout',
+        `Timed out waiting for lock: ${lockPath}`,
+      );
+    }
+    return fn();
+  } finally {
+    closeSync(fd);
+  }
+}
+
+/**
+ * Hold an exclusive slot operation lock until {@link release} is called.
+ * Caller must call release in a finally path (including injected errors).
+ *
+ * @param {{
+ *   registryRoot: string,
+ *   slotId: string,
+ *   lockTimeoutMs?: number,
+ *   tryOnly?: boolean,
+ * }} options
+ * @returns {{ release: () => void }}
+ */
+export function acquireSlotOperationLock(options) {
+  assertKernelFlockReady();
+  const lockTimeoutMs = options.lockTimeoutMs ?? 5_000;
+  const waitSeconds = options.tryOnly
+    ? 0
+    : Math.max(1, Math.ceil(lockTimeoutMs / 1000));
+  const lockPath = slotOperationLockFilePath(
+    options.registryRoot,
+    options.slotId,
+  );
+  mkdirSync(dirname(lockPath), { recursive: true });
+  const fd = openSync(lockPath, 'a+');
+  const acquired = spawnSync('flock', ['-w', String(waitSeconds), '-x', '3'], {
+    stdio: ['ignore', 'ignore', 'pipe', fd],
+    timeout: waitSeconds > 0 ? waitSeconds * 1_000 + 1_000 : 2_000,
+  });
+  if (acquired.error) {
+    closeSync(fd);
+    throw acquired.error;
+  }
+  if (acquired.status !== 0) {
+    closeSync(fd);
+    throw refusal(
+      'slot-operation-busy',
+      `${options.slotId} has a dev start or stop in progress. Wait for it to finish, then retry.`,
+    );
+  }
+  let released = false;
+  return {
+    release() {
+      if (!released) {
+        released = true;
+        closeSync(fd);
+      }
+    },
+  };
+}
+
+/**
+ * @param {{
+ *   registryRoot: string,
+ *   slotId: string,
+ *   lockTimeoutMs?: number,
+ *   tryOnly?: boolean,
+ * }} options
+ * @param {() => void} fn
+ */
+export function withSlotOperationLock(options, fn) {
+  const handle = acquireSlotOperationLock(options);
+  try {
+    return fn();
+  } finally {
+    handle.release();
+  }
 }
 
 /**
@@ -280,37 +403,21 @@ export function withRegistryLock(options, fn) {
     );
   }
 
-  const flockProbe = spawnSync('flock', ['--version'], { encoding: 'utf8' });
-  if (flockProbe.error || flockProbe.status !== 0) {
-    throw refusal(
-      'flock-unavailable',
-      'The util-linux flock command is required for dev worktree registry locking.',
-    );
-  }
-
+  assertKernelFlockReady();
   const lockPath = flockLockFilePath(options.registryRoot);
-  const fd = openSync(lockPath, 'a+');
   try {
-    const acquired = spawnSync(
-      'flock',
-      ['-w', String(waitSeconds), '-x', '3'],
-      {
-        stdio: ['ignore', 'ignore', 'pipe', fd],
-        timeout: lockTimeoutMs + 1_000,
-      },
-    );
-    if (acquired.error) {
-      throw acquired.error;
-    }
-    if (acquired.status !== 0) {
+    return withExclusiveFlockLockFile(lockPath, waitSeconds, fn);
+  } catch (error) {
+    if (
+      isAllocatorRefusal(error) &&
+      /** @type {{ id: string }} */ (error).id === 'flock-exclusive-timeout'
+    ) {
       throw refusal(
         'registry-lock-timeout',
         'Timed out waiting for the dev worktree registry lock.',
       );
     }
-    return fn();
-  } finally {
-    closeSync(fd);
+    throw error;
   }
 }
 

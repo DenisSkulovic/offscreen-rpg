@@ -973,7 +973,7 @@ test('printDevStatus parks without reading another slot receipt', () => {
     log: (line) => lines.push(line),
   });
   assert.equal(code, 2);
-  assert.deepEqual(lines, ['runtime PARKED']);
+  assert.deepEqual(lines, ['slot dev-6 phase=parked']);
 });
 
 test('printDevStatus does not accept another environment receipt or a loading image', () => {
@@ -1210,6 +1210,99 @@ test('startup timeout parks without scaling a foreign namespace', async () => {
     harness.lines.some((line) => line.startsWith('startup-parked:')),
     true,
   );
+});
+
+test('reconcile partial failure with workloadsTouched parks the slot', async () => {
+  const worktree = mkdtempSync(
+    join(tmpdir(), 'offscreen-wt-reconcile-partial-'),
+  );
+  const harness = ownedLaunch(worktree);
+  await harness.launch({
+    reconcileDevSlot: async () => ({
+      ok: false,
+      phase: 'workloads',
+      detail: 'partial apply',
+      workloadsTouched: true,
+    }),
+  });
+  assert.equal(harness.scaled.length, 6);
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
+});
+
+test('launch cancellation handler parks once when workloads were touched', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-signal-cancel-'));
+  const harness = ownedLaunch(worktree);
+  /** @type {((signal: 'SIGINT' | 'SIGTERM') => void) | null} */
+  let cancel = null;
+  await harness.launch({
+    exposeLaunchCancellation: (handler) => {
+      cancel = handler;
+    },
+    reconcileDevSlot: async () => ({
+      ok: true,
+      readyForWorkloads: true,
+      workloadsTouched: true,
+      record: { ...FAKE_OWNER, worktreePath: worktree },
+    }),
+    fingerprintDevImageContext: () => {
+      cancel?.('SIGINT');
+      return okLaunchFingerprint()();
+    },
+  });
+  assert.equal(harness.scaled.length, 6);
+  assert.equal(
+    harness.lines.filter((line) => line.startsWith('startup-parked:')).length,
+    1,
+  );
+});
+
+test('launch cancellation without workloads touched aborts without scaling', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-signal-abort-'));
+  const harness = ownedLaunch(worktree);
+  /** @type {((signal: 'SIGINT' | 'SIGTERM') => void) | null} */
+  let cancel = null;
+  await harness.launch({
+    exposeLaunchCancellation: (handler) => {
+      cancel = handler;
+    },
+    reconcileDevSlot: async () => ({
+      ok: true,
+      readyForWorkloads: true,
+      workloadsTouched: false,
+      record: { ...FAKE_OWNER, worktreePath: worktree },
+    }),
+    fingerprintDevImageContext: () => {
+      cancel?.('SIGINT');
+      return okLaunchFingerprint()();
+    },
+  });
+  assert.equal(harness.scaled.length, 0);
+  assert.match(
+    harness.lines.find((line) => line.startsWith('exit:')) ?? '',
+    /exit:130/,
+  );
+});
+
+test('duplicate tilt exit callback does not double-scale during startup', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-dup-exit-'));
+  const harness = ownedLaunch(worktree);
+  const spawn = fakeSpawn();
+  await harness.launch({
+    spawnFn: () => {
+      const child = spawn();
+      child.exitCode = 9;
+      queueMicrotask(() => {
+        child.emit('exit', 9);
+        child.emit('exit', 9);
+      });
+      return child;
+    },
+    collectStartupReadiness: async () => fullReadiness({ 'game-web': false }),
+  });
+  assert.equal(harness.scaled.length, 6);
 });
 
 test('partial startup parks all six owned workloads and leaves the other environment', async () => {

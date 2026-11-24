@@ -19,7 +19,10 @@ import {
   probeLoopbackPortBindableSync,
   reserveUnattachedEnvironment,
 } from '../domain/dev-worktree-allocator.mjs';
-import { readRegistryJson } from '../domain/dev-worktree-registry.mjs';
+import {
+  acquireSlotOperationLock,
+  readRegistryJson,
+} from '../domain/dev-worktree-registry.mjs';
 import {
   collectDefaultProbes,
   runStackPreflight,
@@ -36,12 +39,12 @@ import {
 import {
   environmentSessionRoot,
   isAllocatorRefusal as isSelectionRefusal,
-  ownedEnvironmentSessionPid,
   parseDevCliArgs,
   readEnvironmentSession,
   readLegacyDevSession,
   resolveDevEnvironmentSelection,
   parkSelectedEnvironment,
+  withSlotEnvironmentOperationLock,
   writeEnvironmentSession,
 } from '../domain/dev-environment-session.mjs';
 import { writeDevSessionJsonAtomically } from '../domain/dev-session-json.mjs';
@@ -359,6 +362,11 @@ export function collectOwnedWorkloadReadiness(namespace, spawnFn = spawnSync) {
  *   scaleRole?: (namespace: string, role: string) => void,
  *   readDesiredReplicas?: (namespace: string) => Record<string, number>,
  *   log?: (line: string) => void,
+ *   workloadsTouched?: boolean,
+ *   ephemeralChildren?: ReadonlyArray<{
+ *     pid: number,
+ *     processStartTicks?: string | null,
+ *   }>,
  * }} input
  */
 export function rollbackFailedOwnedStartup(input) {
@@ -375,13 +383,34 @@ export function rollbackFailedOwnedStartup(input) {
     sessionRoot,
     input.owner.slotId,
   );
+  const signal =
+    input.signal ?? ((childPid, sig) => process.kill(childPid, sig));
+  const workloadsTouched = input.workloadsTouched !== false;
   if (!environmentSession) {
     try {
+      for (const child of input.ephemeralChildren ?? []) {
+        if (Number.isInteger(child?.pid) && child.pid > 0) {
+          try {
+            signal(child.pid, 'SIGTERM');
+          } catch {
+            // ignore
+          }
+        }
+      }
       stopDevSession(input.worktree, {
         signal: input.signal,
         pidAlive: input.pidAlive,
         readStartTicks: input.readStartTicks,
       });
+      if (!workloadsTouched) {
+        log(`startup-aborted: ${input.reason}; ${namespace}`);
+        return {
+          ok: true,
+          id: 'startup-aborted',
+          parked: false,
+          ownedResources,
+        };
+      }
       const scaleAll = input.scaleRole
         ? SLOT_WORKLOADS.forEach((role) => input.scaleRole(namespace, role))
         : scaleDevSlotWorkloads(namespace);
@@ -755,6 +784,58 @@ export function formatDevFreshnessStatusLine(displayRole, status) {
   return `${displayRole} NOT READY ${status.reason}`;
 }
 
+/** @typedef {'busy-retry' | 'stop' | 'missing-platform'} DevOperatorNextAction */
+
+const DEV_OPERATOR_BUSY_RETRY_IDS = Object.freeze(
+  new Set(['slot-operation-busy']),
+);
+const DEV_OPERATOR_STOP_IDS = Object.freeze(
+  new Set(['session-active', 'foreign-game-port', 'foreign-tilt-port']),
+);
+const DEV_OPERATOR_MISSING_PLATFORM_IDS = Object.freeze(
+  new Set([...DEV_LAUNCH_HOST_REFUSAL_IDS, 'missing-tilt', 'helm-missing']),
+);
+
+/**
+ * @param {string | null | undefined} refusalId
+ * @returns {DevOperatorNextAction}
+ */
+export function resolveDevOperatorNextAction(refusalId) {
+  if (refusalId && DEV_OPERATOR_BUSY_RETRY_IDS.has(refusalId)) {
+    return 'busy-retry';
+  }
+  if (refusalId && DEV_OPERATOR_STOP_IDS.has(refusalId)) {
+    return 'stop';
+  }
+  if (refusalId && DEV_OPERATOR_MISSING_PLATFORM_IDS.has(refusalId)) {
+    return 'missing-platform';
+  }
+  if (refusalId?.startsWith('slot-')) {
+    return 'missing-platform';
+  }
+  if (refusalId?.startsWith('resource-')) {
+    return 'stop';
+  }
+  return 'missing-platform';
+}
+
+/**
+ * One bounded operator line: selected slot, failing phase, and next action.
+ *
+ * @param {{
+ *   slotId: string,
+ *   phase: string,
+ *   nextAction?: DevOperatorNextAction | null,
+ * }} input
+ */
+export function formatDevOperatorSummaryLine(input) {
+  const parts = [`slot ${input.slotId}`, `phase=${input.phase}`];
+  if (input.nextAction) {
+    parts.push(`next=${input.nextAction}`);
+  }
+  return parts.join(' ');
+}
+
 /** @typedef {{ id: string, message: string }} DevRefusal */
 /** @typedef {{ game: 'free'|'owned'|'foreign', tilt: 'free'|'owned'|'foreign' }} DevPorts */
 /** @typedef {Record<string, boolean | undefined>} ReadinessMap */
@@ -883,9 +964,10 @@ export function formatReadyLines(urls) {
  * and only prints lines when assessDevLaunch returns non-null urls.
  *
  * @param {{ urls?: { game: string, control: string, tilt: string } | null } | unknown} assessment
+ * @param {string | null} [slotId]
  * @returns {string[]}
  */
-export function maybeAnnounce(assessment) {
+export function maybeAnnounce(assessment, slotId = null) {
   if (
     !assessment ||
     typeof assessment !== 'object' ||
@@ -896,7 +978,18 @@ export function maybeAnnounce(assessment) {
   if (!('urls' in assessment) || assessment.urls == null) {
     return [];
   }
-  return formatReadyLines(assessment.urls);
+  const urlLines = formatReadyLines(assessment.urls);
+  if (!slotId) {
+    return urlLines;
+  }
+  return [
+    formatDevOperatorSummaryLine({
+      slotId,
+      phase: 'ready',
+      nextAction: null,
+    }),
+    ...urlLines,
+  ];
 }
 
 function commandOnPath(name) {
@@ -953,26 +1046,25 @@ function pidAlive(pid) {
 }
 
 /**
- * @param {string} worktree
- * @returns {number | null}
- */
-function readWorktreeSessionPid(worktree) {
-  const session = readDevSession(worktree);
-  if (!session) return null;
-  const pid = Number(session.pid);
-  return Number.isInteger(pid) && pid > 0 ? pid : null;
-}
-
-/**
- * @param {string} namespace
- * @param {string} deployment
- * @returns {boolean}
- */
-/**
  * @param {DevRefusal[]} refusals
  * @param {(code: number) => never | void} [exitFn]
+ * @param {{ slotId?: string | null, phase?: string | null }} [operator]
  */
-function refuseAndExit(refusals, exitFn = (code) => process.exit(code)) {
+function refuseAndExit(
+  refusals,
+  exitFn = (code) => process.exit(code),
+  operator = null,
+) {
+  if (operator?.slotId) {
+    const primary = refusals[0];
+    console.error(
+      formatDevOperatorSummaryLine({
+        slotId: operator.slotId,
+        phase: operator.phase ?? primary?.id ?? 'refused',
+        nextAction: resolveDevOperatorNextAction(primary?.id),
+      }),
+    );
+  }
   for (const refusal of refusals) {
     console.error(refusal.message);
   }
@@ -990,29 +1082,120 @@ function sleep(ms) {
 
 /** @typedef {import('../domain/dev-worktree-registry.mjs').DevWorktreeOwnerRecord} DevWorktreeOwnerRecord */
 
+/** @type {Map<string, Promise<ReturnType<typeof rollbackFailedOwnedStartup>>>} */
+const slotOwnedCleanupInFlight = new Map();
+
 /**
- * Park the attempted slot after reconcile succeeded and a later owned step failed.
+ * One idempotent park/rollback per slot while stop and launcher races.
  *
- * @param {string} worktree
- * @param {DevWorktreeOwnerRecord} ownerRecord
- * @param {string} registryRoot
- * @param {string} reason
- * @param {RunDevTiltLaunchDeps} deps
+ * @template T
+ * @param {string} slotId
+ * @param {() => T | Promise<T>} run
+ * @returns {Promise<T>}
  */
-function rollbackPostReconcileOwnedStartup(
-  worktree,
-  ownerRecord,
-  registryRoot,
-  reason,
-  deps,
-) {
+function ensureSerializedSlotOwnedCleanup(slotId, run) {
+  const existing = slotOwnedCleanupInFlight.get(slotId);
+  if (existing) return /** @type {Promise<T>} */ (existing);
+  const promise = Promise.resolve()
+    .then(run)
+    .finally(() => {
+      if (slotOwnedCleanupInFlight.get(slotId) === promise) {
+        slotOwnedCleanupInFlight.delete(slotId);
+      }
+    });
+  slotOwnedCleanupInFlight.set(slotId, promise);
+  return promise;
+}
+
+/**
+ * @param {{
+ *   worktree: string,
+ *   owner: DevWorktreeOwnerRecord,
+ *   registryRoot: string,
+ *   reason: string,
+ *   workloadsTouched: boolean,
+ *   sessionRecord?: Record<string, unknown> | null,
+ *   ephemeralChildren?: ReadonlyArray<{
+ *     pid: number,
+ *     processStartTicks?: string | null,
+ *   }>,
+ *   deps?: RunDevTiltLaunchDeps,
+ * }} input
+ */
+function runOwnedEnvironmentParkOperation(input) {
+  const deps = input.deps ?? {};
   const readStart =
     deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
+  const sessionRoot = environmentSessionRoot(input.registryRoot);
+  const environmentSession = deps.owner
+    ? (input.sessionRecord ??
+      readEnvironmentSession(sessionRoot, input.owner.slotId))
+    : null;
+  if (
+    deps.owner &&
+    environmentSession &&
+    environmentSession.slotId === input.owner.slotId
+  ) {
+    const park = parkSelectedEnvironment({
+      owner: { ...input.owner, worktreePath: input.worktree },
+      sessionRoot,
+      session: environmentSession,
+      signal: deps.signal,
+      processDeps: {
+        pidAlive: deps.pidAlive ?? pidAlive,
+        readStartTicks: readStart,
+        sleep: () => {},
+      },
+      scaleRole:
+        deps.scaleRole ??
+        ((namespace, role) =>
+          scaleDevSlotWorkloads(namespace, spawnSync, [role])),
+      readDesiredReplicas:
+        deps.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)),
+      portOccupied: deps.portOccupied,
+    });
+    const log = deps.log ?? ((line) => console.error(line));
+    if (!park?.ok || park.released !== true) {
+      log(
+        `rollback-incomplete: ${input.reason}; ${park?.reason ?? 'park failed'}; ${JSON.stringify(
+          {
+            slotId: input.owner.slotId,
+            namespace: input.owner.namespace,
+            scaledRoles: park?.scaledRoles ?? [],
+          },
+        )}`,
+      );
+      return {
+        ok: false,
+        id: 'rollback-incomplete',
+        parked: false,
+        reason: park?.reason,
+      };
+    }
+    const desired = (
+      deps.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns))
+    )(input.owner.namespace);
+    const leftover = SLOT_WORKLOADS.filter((role) => desired?.[role] !== 0);
+    if (leftover.length > 0) {
+      log(
+        `rollback-incomplete: ${input.reason}; replicas still desired; ${JSON.stringify({ leftover })}`,
+      );
+      return {
+        ok: false,
+        id: 'rollback-incomplete',
+        parked: false,
+      };
+    }
+    log(`startup-parked: ${input.reason}; ${input.owner.namespace}`);
+    return { ok: true, id: 'startup-parked', parked: true };
+  }
   return rollbackFailedOwnedStartup({
-    worktree,
-    owner: { ...ownerRecord, worktreePath: worktree },
-    registryRoot,
-    reason,
+    worktree: input.worktree,
+    owner: { ...input.owner, worktreePath: input.worktree },
+    registryRoot: input.registryRoot,
+    reason: input.reason,
+    workloadsTouched: input.workloadsTouched,
+    ephemeralChildren: input.ephemeralChildren,
     signal: deps.signal,
     pidAlive: deps.pidAlive ?? pidAlive,
     readStartTicks: readStart,
@@ -1023,19 +1206,36 @@ function rollbackPostReconcileOwnedStartup(
 }
 
 /**
- * @param {RunDevTiltLaunchDeps} deps
- * @param {number | null | undefined} pid
+ * @param {Parameters<typeof runOwnedEnvironmentParkOperation>[0]} input
+ * @param {{ launcherHoldsOperationLock?: boolean }} [options]
  */
-function signalEphemeralOwnedChild(deps, pid) {
-  if (!Number.isInteger(pid) || pid <= 0) return;
-  try {
-    (deps.signal ?? ((childPid, sig) => process.kill(childPid, sig)))(
-      pid,
-      'SIGTERM',
-    );
-  } catch {
-    // ignore
+async function settleOwnedEnvironmentPark(input, options = {}) {
+  if (!input.workloadsTouched) {
+    return { ok: true, id: 'startup-aborted', parked: false };
   }
+  return ensureSerializedSlotOwnedCleanup(input.owner.slotId, async () => {
+    const runPark = () => runOwnedEnvironmentParkOperation(input);
+    if (options.launcherHoldsOperationLock === true) {
+      return runPark();
+    }
+    try {
+      return withSlotEnvironmentOperationLock(
+        input.registryRoot,
+        input.owner.slotId,
+        runPark,
+        {
+          tryOnly: true,
+          lockTimeoutMs: input.deps?.slotOperationLockTimeoutMs ?? 0,
+        },
+      );
+    } catch (error) {
+      if (isAllocatorRefusal(error) && error.id === 'slot-operation-busy') {
+        const inflight = slotOwnedCleanupInFlight.get(input.owner.slotId);
+        if (inflight) return inflight;
+      }
+      throw error;
+    }
+  });
 }
 
 /**
@@ -1052,6 +1252,10 @@ function signalEphemeralOwnedChild(deps, pid) {
  *   exit?: (code: number) => never | void,
  *   exitAfterSession?: boolean,
  *   fingerprintDevImageContext?: typeof fingerprintDevImageContext,
+ *   acquireSlotOperationLock?: typeof acquireSlotOperationLock,
+ *   slotOperationLockTimeoutMs?: number,
+ *   slotOperationLockTryOnly?: boolean,
+ *   exposeLaunchCancellation?: (handler: (signal: 'SIGINT' | 'SIGTERM') => void) => void,
  * }} RunDevTiltLaunchDeps */
 
 /**
@@ -1126,365 +1330,497 @@ export async function runDevTiltLaunch(deps = {}) {
     }
   }
 
-  const session = deps.owner
-    ? readEnvironmentSession(
-        environmentSessionRoot(registryRoot),
-        ownerRecord.slotId,
-      )
-    : readDevSession(worktree);
-
-  const activeOwnership = session
-    ? assessOwnedProcess(session, processDeps)
-    : { owned: false };
-  if (activeOwnership.owned) {
-    admissionRefusals.push({
-      id: 'session-active',
-      message:
-        'An owned dev session is already running. Stop it with pnpm dev:stop, then run pnpm dev again.',
+  if (admissionRefusals.length > 0) {
+    refuseAndExit(admissionRefusals, exitFn, {
+      slotId: ownerRecord.slotId,
+      phase: 'admission',
     });
+    return;
   }
 
-  admissionRefusals.push(
-    ...(await collectDevLaunchPortRefusals({
+  const acquireSlotLock =
+    deps.acquireSlotOperationLock ?? acquireSlotOperationLock;
+  /** @type {{ release: () => void } | null} */
+  let slotOperationLock = null;
+  const releaseSlotOperationLock = () => {
+    if (slotOperationLock) {
+      slotOperationLock.release();
+      slotOperationLock = null;
+    }
+  };
+  try {
+    slotOperationLock = acquireSlotLock({
+      registryRoot,
+      slotId: ownerRecord.slotId,
+      lockTimeoutMs: deps.slotOperationLockTimeoutMs ?? 0,
+      tryOnly: deps.slotOperationLockTryOnly ?? true,
+    });
+  } catch (error) {
+    if (isAllocatorRefusal(error)) {
+      refuseAndExit([{ id: error.id, message: error.message }], exitFn, {
+        slotId: ownerRecord.slotId,
+        phase: 'lock',
+      });
+      return;
+    }
+    throw error;
+  }
+
+  try {
+    const session = deps.owner
+      ? readEnvironmentSession(
+          environmentSessionRoot(registryRoot),
+          ownerRecord.slotId,
+        )
+      : readDevSession(worktree);
+
+    const activeOwnership = session
+      ? assessOwnedProcess(session, processDeps)
+      : { owned: false };
+    if (activeOwnership.owned) {
+      refuseAndExit(
+        [
+          {
+            id: 'session-active',
+            message:
+              'An owned dev session is already running. Stop it with pnpm dev:stop, then run pnpm dev again.',
+          },
+        ],
+        exitFn,
+        { slotId: ownerRecord.slotId, phase: 'session' },
+      );
+      return;
+    }
+
+    const portRefusals = await collectDevLaunchPortRefusals({
       gamePort: ownerRecord.ports.game,
       tiltPort: ownerRecord.ports.tilt,
       session,
       probeOccupied,
       processDeps,
-    })),
-  );
-
-  if (admissionRefusals.length > 0) {
-    refuseAndExit(admissionRefusals, exitFn);
-    return;
-  }
-
-  const gamePort = ownerRecord.ports.game;
-  const tiltPort = ownerRecord.ports.tilt;
-
-  const slot = await timePhase('reconcile', null, () =>
-    reconcile({
-      worktree,
-      registryRoot,
-      owner: ownerRecord,
-      launchAdmissionProved: true,
-    }),
-  );
-  if (!slot?.ok || slot.readyForWorkloads !== true) {
-    refuseAndExit(
-      [
-        {
-          id: `slot-${slot?.phase ?? 'startup'}`,
-          message: `Dev slot reconciliation stopped at ${slot?.phase ?? 'startup'}: ${slot?.detail ?? 'not ready'}`,
-        },
-      ],
-      exitFn,
-    );
-    return;
-  }
-
-  ownerRecord = deps.owner ?? slot.record ?? ownerRecord;
-
-  let announced = false;
-  let pollTimer;
-
-  const stopPolling = () => {
-    if (pollTimer) clearInterval(pollTimer);
-  };
-
-  const onSignal = (signal) => {
-    stopPolling();
-    const processDeps = {
-      pidAlive: deps.pidAlive ?? pidAlive,
-      readStartTicks:
-        deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-    };
-    const pid = deps.owner
-      ? ownedEnvironmentSessionPid(registryRoot, deps.owner, processDeps)
-      : readWorktreeSessionPid(worktree);
-    if (pid !== null && pidAlive(pid)) {
-      try {
-        process.kill(pid, signal === 'SIGINT' ? 'SIGTERM' : signal);
-      } catch {
-        // ignore
-      }
-    }
-    finishStartupTiming(`signal:${signal}`);
-    exitFn(signal === 'SIGTERM' ? 143 : 130);
-  };
-
-  if (!deps.exitAfterSession) {
-    process.once('SIGINT', () => onSignal('SIGINT'));
-    process.once('SIGTERM', () => onSignal('SIGTERM'));
-  }
-
-  const fingerprint =
-    deps.fingerprintDevImageContext ?? fingerprintDevImageContext;
-  const fingerprintStarted = performance.now();
-  const imageIdentity = fingerprint(worktree, {
-    roleFilter: UNION_ROLE_FILTER,
-  });
-  recordPhase('fingerprint', null, performance.now() - fingerprintStarted, {
-    cache: imageIdentity.ok ? 'miss' : 'fail',
-  });
-  if (!imageIdentity.ok) {
-    console.error(`image fingerprint failed: ${imageIdentity.reason}`);
-    rollbackPostReconcileOwnedStartup(
-      worktree,
-      ownerRecord,
-      registryRoot,
-      `image fingerprint failed: ${imageIdentity.reason}`,
-      deps,
-    );
-    finishStartupTiming('fingerprint-failed');
-    exitFn(1);
-    return;
-  }
-  const tiltEnv = {
-    ...process.env,
-    OFFSCREEN_DEV_SLOT: ownerRecord.slotId,
-    OFFSCREEN_DEV_NAMESPACE: ownerRecord.namespace,
-    OFFSCREEN_DEV_GAME_PORT: String(gamePort),
-    OFFSCREEN_DEV_TILT_PORT: String(tiltPort),
-    OFFSCREEN_IMAGE_FINGERPRINT: imageIdentity.fingerprint,
-    // Tilt image checks run while readiness is the open parent phase.
-    OFFSCREEN_STARTUP_PHASE_PARENT: 'readiness',
-  };
-
-  const child = spawnFn(
-    'tilt',
-    [
-      'up',
-      '--context',
-      'kind-offscreen-dev',
-      '--host',
-      LOOPBACK,
-      '--port',
-      String(tiltPort),
-    ],
-    { cwd: worktree, stdio: 'inherit', env: tiltEnv },
-  );
-
-  if (!child.pid) {
-    console.error('Failed to start tilt.');
-    rollbackPostReconcileOwnedStartup(
-      worktree,
-      ownerRecord,
-      registryRoot,
-      'Failed to start tilt.',
-      deps,
-    );
-    finishStartupTiming('tilt-spawn-failed');
-    exitFn(1);
-    return;
-  }
-
-  const readStart =
-    deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
-  const processStartTicks = readStart(child.pid);
-  if (!processStartTicks) {
-    console.error('Failed to read owned tilt process identity.');
-    signalEphemeralOwnedChild(deps, child.pid);
-    rollbackPostReconcileOwnedStartup(
-      worktree,
-      ownerRecord,
-      registryRoot,
-      'missing tilt process start ticks',
-      deps,
-    );
-    finishStartupTiming('tilt-identity-failed');
-    exitFn(1);
-    return;
-  }
-  const sessionRecord = {
-    pid: child.pid,
-    processStartTicks,
-    forwardPid: null,
-    forwardStartTicks: null,
-    slotId: ownerRecord.slotId,
-    namespace: ownerRecord.namespace,
-    gamePort,
-    tiltPort,
-    startedAt: new Date().toISOString(),
-  };
-  if (deps.owner) {
-    writeEnvironmentSession(environmentSessionRoot(registryRoot), {
-      ...sessionRecord,
-      checkoutPath: worktree,
-      parked: false,
-      released: false,
     });
-  } else {
-    writeDevSession(worktree, sessionRecord);
-  }
+    if (portRefusals.length > 0) {
+      refuseAndExit(portRefusals, exitFn, {
+        slotId: ownerRecord.slotId,
+        phase: 'ports',
+      });
+      return;
+    }
 
-  if (deps.exitAfterSession) {
-    return;
-  }
+    const gamePort = ownerRecord.ports.game;
+    const tiltPort = ownerRecord.ports.tilt;
+    let workloadsTouched = false;
+    let launchCancelled = false;
+    /** @type {string | null} */
+    let cancelReason = null;
+    /** @type {import('node:child_process').ChildProcess | null} */
+    let tiltChild = null;
+    /** @type {Record<string, unknown> | null} */
+    let activeSessionRecord = null;
+    let launchCleanupSettled = false;
+    let tiltExitHandled = false;
+    let announced = false;
+    /** @type {ReturnType<typeof setInterval> | undefined} */
+    let pollTimer;
 
-  const startupWindowMs = deps.startupWindowMs ?? OWNED_STARTUP_WINDOW_MS;
-  const startupPollMs = deps.startupPollMs ?? 5_000;
-  const pause = deps.sleep ?? sleep;
-  const readStartup =
-    deps.collectStartupReadiness ??
-    ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
-  const readinessStarted = performance.now();
-  let startupFailure = null;
-  for (let elapsed = 0; elapsed <= startupWindowMs; elapsed += startupPollMs) {
-    const during = runPreflight(await collectProbes());
-    const exhausted = (during.refusals ?? []).filter(
-      (refusal) =>
-        refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
+    const stopPolling = () => {
+      if (pollTimer) clearInterval(pollTimer);
+    };
+
+    const readStart =
+      deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
+
+    const ephemeralLaunchChildren = () => {
+      if (!tiltChild?.pid) return [];
+      return [
+        {
+          pid: tiltChild.pid,
+          processStartTicks: readStart(tiltChild.pid),
+        },
+      ];
+    };
+
+    const parkInput = (reason) => ({
+      worktree,
+      owner: ownerRecord,
+      registryRoot,
+      reason,
+      workloadsTouched,
+      sessionRecord: activeSessionRecord,
+      ephemeralChildren: ephemeralLaunchChildren(),
+      deps,
+    });
+
+    const settleLaunchCleanup = async (reason, exitCode) => {
+      if (launchCleanupSettled) return;
+      launchCleanupSettled = true;
+      await settleOwnedEnvironmentPark(parkInput(reason), {
+        launcherHoldsOperationLock: Boolean(slotOperationLock),
+      });
+      releaseSlotOperationLock();
+      finishStartupTiming(reason);
+      exitFn(exitCode);
+    };
+
+    const cancelLaunch = (reason) => {
+      if (launchCancelled) return;
+      launchCancelled = true;
+      cancelReason = reason;
+      stopPolling();
+    };
+
+    const onSignal = (signal) => {
+      cancelLaunch(`signal:${signal}`);
+      void settleLaunchCleanup(
+        `signal:${signal}`,
+        signal === 'SIGTERM' ? 143 : 130,
+      );
+    };
+    deps.exposeLaunchCancellation?.(onSignal);
+
+    if (!deps.exitAfterSession) {
+      process.once('SIGINT', () => onSignal('SIGINT'));
+      process.once('SIGTERM', () => onSignal('SIGTERM'));
+    }
+
+    const slot = await timePhase('reconcile', null, () =>
+      reconcile({
+        worktree,
+        registryRoot,
+        owner: ownerRecord,
+        launchAdmissionProved: true,
+      }),
     );
-    if (exhausted.length > 0) {
-      startupFailure = exhausted[0].message;
-      break;
+    workloadsTouched = Boolean(slot?.workloadsTouched);
+    if (launchCancelled) {
+      await settleLaunchCleanup(
+        cancelReason ?? 'cancelled',
+        cancelReason?.startsWith('signal:') ? 130 : 1,
+      );
+      return;
     }
-    if (child.exitCode !== null && child.exitCode !== undefined) {
-      startupFailure = `tilt exited ${child.exitCode} before the six workloads were ready`;
-      break;
+    if (!slot?.ok || slot.readyForWorkloads !== true) {
+      if (workloadsTouched) {
+        await settleOwnedEnvironmentPark(
+          parkInput(
+            `Dev slot reconciliation stopped at ${slot?.phase ?? 'startup'}: ${slot?.detail ?? 'not ready'}`,
+          ),
+          { launcherHoldsOperationLock: Boolean(slotOperationLock) },
+        );
+      }
+      releaseSlotOperationLock();
+      refuseAndExit(
+        [
+          {
+            id: `slot-${slot?.phase ?? 'startup'}`,
+            message: `Dev slot reconciliation stopped at ${slot?.phase ?? 'startup'}: ${slot?.detail ?? 'not ready'}`,
+          },
+        ],
+        exitFn,
+        {
+          slotId: ownerRecord.slotId,
+          phase: slot?.phase ?? 'startup',
+        },
+      );
+      return;
     }
-    const readiness = await readStartup(ownerRecord.namespace);
-    const assessment = assessDevLaunch({
-      preflightOk: true,
-      preflightRefusals: [],
-      tiltOnPath: true,
-      ports: { game: 'owned', tilt: 'owned' },
-      readiness,
+
+    ownerRecord = deps.owner ?? slot.record ?? ownerRecord;
+    if (slot?.workloadsTouched === false) {
+      workloadsTouched = false;
+    } else if (slot?.workloadsTouched === true) {
+      workloadsTouched = true;
+    } else if (slot?.ok && slot?.readyForWorkloads === true) {
+      workloadsTouched = true;
+    }
+
+    const fingerprint =
+      deps.fingerprintDevImageContext ?? fingerprintDevImageContext;
+    const fingerprintStarted = performance.now();
+    const imageIdentity = fingerprint(worktree, {
+      roleFilter: UNION_ROLE_FILTER,
+    });
+    recordPhase('fingerprint', null, performance.now() - fingerprintStarted, {
+      cache: imageIdentity.ok ? 'miss' : 'fail',
+    });
+    if (launchCancelled) {
+      await settleLaunchCleanup(cancelReason ?? 'cancelled', 130);
+      return;
+    }
+    if (!imageIdentity.ok) {
+      console.error(`image fingerprint failed: ${imageIdentity.reason}`);
+      await settleLaunchCleanup(
+        `image fingerprint failed: ${imageIdentity.reason}`,
+        1,
+      );
+      return;
+    }
+    const tiltEnv = {
+      ...process.env,
+      OFFSCREEN_DEV_SLOT: ownerRecord.slotId,
+      OFFSCREEN_DEV_NAMESPACE: ownerRecord.namespace,
+      OFFSCREEN_DEV_GAME_PORT: String(gamePort),
+      OFFSCREEN_DEV_TILT_PORT: String(tiltPort),
+      OFFSCREEN_IMAGE_FINGERPRINT: imageIdentity.fingerprint,
+      // Tilt image checks run while readiness is the open parent phase.
+      OFFSCREEN_STARTUP_PHASE_PARENT: 'readiness',
+    };
+
+    if (launchCancelled) {
+      await settleLaunchCleanup(cancelReason ?? 'cancelled', 130);
+      return;
+    }
+    const child = spawnFn(
+      'tilt',
+      [
+        'up',
+        '--context',
+        'kind-offscreen-dev',
+        '--host',
+        LOOPBACK,
+        '--port',
+        String(tiltPort),
+      ],
+      { cwd: worktree, stdio: 'inherit', env: tiltEnv },
+    );
+    tiltChild = child;
+
+    if (!child.pid) {
+      console.error('Failed to start tilt.');
+      await settleLaunchCleanup('Failed to start tilt.', 1);
+      return;
+    }
+
+    const processStartTicks = readStart(child.pid);
+    if (!processStartTicks) {
+      console.error('Failed to read owned tilt process identity.');
+      await settleLaunchCleanup('missing tilt process start ticks', 1);
+      return;
+    }
+    const sessionRecord = {
+      pid: child.pid,
+      processStartTicks,
+      forwardPid: null,
+      forwardStartTicks: null,
+      slotId: ownerRecord.slotId,
+      namespace: ownerRecord.namespace,
       gamePort,
       tiltPort,
-    });
-    if (assessment.ok) {
-      startupFailure = null;
-      recordPhase('readiness', null, performance.now() - readinessStarted);
-      finishStartupTiming('six-roles-ready');
-      break;
-    }
-    if (elapsed === startupWindowMs) {
-      const missing = assessment.refusals
-        .map((refusal) => refusal.id)
-        .join(',');
-      startupFailure = `startup window elapsed before six workloads were ready (${missing})`;
-      break;
-    }
-    await pause(startupPollMs);
-  }
-  if (startupFailure) {
-    rollbackPostReconcileOwnedStartup(
-      worktree,
-      ownerRecord,
-      registryRoot,
-      startupFailure,
-      deps,
-    );
-    recordPhase('readiness', null, performance.now() - readinessStarted);
-    finishStartupTiming('startup-failed');
-    exitFn(1);
-    return;
-  }
-
-  if (deps.exitAfterReady) {
-    return;
-  }
-
-  const persistForward = (record) => {
-    sessionRecord.forwardPid = record.pid;
-    sessionRecord.forwardStartTicks = record.processStartTicks;
+      startedAt: new Date().toISOString(),
+    };
     if (deps.owner) {
-      writeEnvironmentSession(environmentSessionRoot(registryRoot), {
+      activeSessionRecord = {
         ...sessionRecord,
         checkoutPath: worktree,
         parked: false,
         released: false,
-      });
+      };
+      writeEnvironmentSession(
+        environmentSessionRoot(registryRoot),
+        activeSessionRecord,
+      );
     } else {
+      activeSessionRecord = sessionRecord;
       writeDevSession(worktree, sessionRecord);
     }
-  };
-  let sessionActive = true;
-  child.on('exit', () => {
-    sessionActive = false;
-  });
-  const supervise = deps.supervisePortForward ?? superviseOwnedWebPortForward;
-  void supervise({
-    sessionActive: () => sessionActive,
-    backendReady:
-      deps.webBackendReady ??
-      (async () => {
-        const result = spawnSync(
-          'kubectl',
-          [
-            '--context',
-            'kind-offscreen-dev',
-            '-n',
-            ownerRecord.namespace,
-            'get',
-            'pod',
-            '-l',
-            'app=game-web',
-            '-o',
-            'jsonpath={.items[0].status.containerStatuses[0].ready}',
-          ],
-          { encoding: 'utf8' },
-        );
-        return result.status === 0 && String(result.stdout).trim() === 'true';
-      }),
-    portOccupied: () => probeOccupied(LOOPBACK, gamePort),
-    spawnForward:
-      deps.spawnPortForward ??
-      (() => {
-        const forward = spawn(
-          'kubectl',
-          [
-            '--context',
-            'kind-offscreen-dev',
-            '-n',
-            ownerRecord.namespace,
-            'port-forward',
-            'svc/game-web',
-            `${gamePort}:3000`,
-          ],
-          { stdio: 'ignore' },
-        );
-        return {
-          pid: forward.pid ?? null,
-          onExit: (cb) => forward.on('exit', (code) => cb(code)),
-        };
-      }),
-    readStartTicks: readStart,
-    recordForward: persistForward,
-  }).catch(() => {});
 
-  pollTimer = setInterval(async () => {
-    if (announced) return;
-    const readiness = await pollOwnedReadiness(ownerRecord.namespace);
-    const gameOcc = await probeOccupied(LOOPBACK, gamePort);
-    const tiltOcc = await probeOccupied(LOOPBACK, tiltPort);
-    const assessment = assessDevLaunch({
-      preflightOk: true,
-      preflightRefusals: [],
-      tiltOnPath: true,
-      ports: {
-        game: gameOcc ? 'owned' : 'free',
-        tilt: tiltOcc ? 'owned' : 'free',
-      },
-      readiness,
-      gamePort,
-      tiltPort,
-    });
-    const lines = maybeAnnounce(assessment);
-    if (lines.length > 0) {
-      announced = true;
-      for (const line of lines) {
-        console.log(line);
-      }
+    if (deps.exitAfterSession) {
+      releaseSlotOperationLock();
+      return;
     }
-  }, 5_000);
 
-  child.on('exit', (code) => {
-    stopPolling();
-    exitFn(code ?? 0);
-  });
+    const startupWindowMs = deps.startupWindowMs ?? OWNED_STARTUP_WINDOW_MS;
+    const startupPollMs = deps.startupPollMs ?? 5_000;
+    const pause = deps.sleep ?? sleep;
+    const readStartup =
+      deps.collectStartupReadiness ??
+      ((namespace) =>
+        Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
+    const readinessStarted = performance.now();
+    /** @type {string | null} */
+    let startupFailure = null;
+    for (
+      let elapsed = 0;
+      elapsed <= startupWindowMs;
+      elapsed += startupPollMs
+    ) {
+      const during = runPreflight(await collectProbes());
+      if (launchCancelled) {
+        startupFailure = cancelReason;
+        break;
+      }
+      const exhausted = (during.refusals ?? []).filter(
+        (refusal) =>
+          refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
+      );
+      if (exhausted.length > 0) {
+        startupFailure = exhausted[0].message;
+        break;
+      }
+      if (child.exitCode !== null && child.exitCode !== undefined) {
+        startupFailure = `tilt exited ${child.exitCode} before the six workloads were ready`;
+        break;
+      }
+      const readiness = await readStartup(ownerRecord.namespace);
+      if (launchCancelled) {
+        startupFailure = cancelReason;
+        break;
+      }
+      const assessment = assessDevLaunch({
+        preflightOk: true,
+        preflightRefusals: [],
+        tiltOnPath: true,
+        ports: { game: 'owned', tilt: 'owned' },
+        readiness,
+        gamePort,
+        tiltPort,
+      });
+      if (assessment.ok) {
+        startupFailure = null;
+        recordPhase('readiness', null, performance.now() - readinessStarted);
+        finishStartupTiming('six-roles-ready');
+        break;
+      }
+      if (elapsed === startupWindowMs) {
+        const missing = assessment.refusals
+          .map((refusal) => refusal.id)
+          .join(',');
+        startupFailure = `startup window elapsed before six workloads were ready (${missing})`;
+        break;
+      }
+      await pause(startupPollMs);
+    }
+    if (startupFailure) {
+      recordPhase('readiness', null, performance.now() - readinessStarted);
+      if (launchCancelled) {
+        await settleLaunchCleanup(startupFailure, 130);
+        return;
+      }
+      await settleLaunchCleanup(startupFailure, 1);
+      return;
+    }
+
+    releaseSlotOperationLock();
+
+    if (deps.exitAfterReady) {
+      return;
+    }
+
+    const persistForward = (record) => {
+      sessionRecord.forwardPid = record.pid;
+      sessionRecord.forwardStartTicks = record.processStartTicks;
+      if (deps.owner) {
+        writeEnvironmentSession(environmentSessionRoot(registryRoot), {
+          ...sessionRecord,
+          checkoutPath: worktree,
+          parked: false,
+          released: false,
+        });
+      } else {
+        writeDevSession(worktree, sessionRecord);
+      }
+    };
+    let sessionActive = true;
+    const onUnexpectedTiltExit = async (code) => {
+      if (tiltExitHandled) return;
+      tiltExitHandled = true;
+      sessionActive = false;
+      stopPolling();
+      if (slotOwnedCleanupInFlight.has(ownerRecord.slotId)) {
+        await slotOwnedCleanupInFlight.get(ownerRecord.slotId);
+        exitFn(code ?? 0);
+        return;
+      }
+      await settleLaunchCleanup(`tilt exited ${code ?? 0}`, code ?? 0);
+    };
+    const supervise = deps.supervisePortForward ?? superviseOwnedWebPortForward;
+    void supervise({
+      sessionActive: () => sessionActive,
+      backendReady:
+        deps.webBackendReady ??
+        (async () => {
+          const result = spawnSync(
+            'kubectl',
+            [
+              '--context',
+              'kind-offscreen-dev',
+              '-n',
+              ownerRecord.namespace,
+              'get',
+              'pod',
+              '-l',
+              'app=game-web',
+              '-o',
+              'jsonpath={.items[0].status.containerStatuses[0].ready}',
+            ],
+            { encoding: 'utf8' },
+          );
+          return result.status === 0 && String(result.stdout).trim() === 'true';
+        }),
+      portOccupied: () => probeOccupied(LOOPBACK, gamePort),
+      spawnForward:
+        deps.spawnPortForward ??
+        (() => {
+          const forward = spawn(
+            'kubectl',
+            [
+              '--context',
+              'kind-offscreen-dev',
+              '-n',
+              ownerRecord.namespace,
+              'port-forward',
+              'svc/game-web',
+              `${gamePort}:3000`,
+            ],
+            { stdio: 'ignore' },
+          );
+          return {
+            pid: forward.pid ?? null,
+            onExit: (cb) => forward.on('exit', (code) => cb(code)),
+          };
+        }),
+      readStartTicks: readStart,
+      recordForward: persistForward,
+    }).catch(() => {});
+
+    pollTimer = setInterval(async () => {
+      if (announced) return;
+      const readiness = await pollOwnedReadiness(ownerRecord.namespace);
+      const gameOcc = await probeOccupied(LOOPBACK, gamePort);
+      const tiltOcc = await probeOccupied(LOOPBACK, tiltPort);
+      const assessment = assessDevLaunch({
+        preflightOk: true,
+        preflightRefusals: [],
+        tiltOnPath: true,
+        ports: {
+          game: gameOcc ? 'owned' : 'free',
+          tilt: tiltOcc ? 'owned' : 'free',
+        },
+        readiness,
+        gamePort,
+        tiltPort,
+      });
+      const lines = maybeAnnounce(assessment, ownerRecord.slotId);
+      if (lines.length > 0) {
+        announced = true;
+        for (const line of lines) {
+          console.log(line);
+        }
+      }
+    }, 5_000);
+
+    child.on('exit', (code) => {
+      sessionActive = false;
+      if (launchCleanupSettled) {
+        stopPolling();
+        exitFn(code ?? 0);
+        return;
+      }
+      void onUnexpectedTiltExit(code);
+    });
+  } finally {
+    releaseSlotOperationLock();
+  }
 }
 
 async function runDevTiltCli() {
@@ -1758,19 +2094,37 @@ export function printDevStatus(worktree, deps = {}) {
     return 2;
   }
   if (session.parked === true) {
-    log('runtime PARKED');
+    log(
+      formatDevOperatorSummaryLine({
+        slotId: session.slotId,
+        phase: 'parked',
+        nextAction: null,
+      }),
+    );
     return 2;
   }
   if (
     session.checkoutPath &&
     resolve(String(session.checkoutPath)) !== resolve(worktree)
   ) {
-    log('runtime NOT READY checkout_mismatch');
+    log(
+      formatDevOperatorSummaryLine({
+        slotId: session.slotId,
+        phase: 'checkout_mismatch',
+        nextAction: 'stop',
+      }),
+    );
     return 2;
   }
+  log(
+    formatDevOperatorSummaryLine({
+      slotId: session.slotId,
+      phase: 'status',
+      nextAction: null,
+    }),
+  );
   const rows = [
     ['pid', session.pid ?? 'stopped'],
-    ['slot', session.slotId],
     ['namespace', session.namespace],
     ['gameUrl', `http://${LOOPBACK}:${session.gamePort}/`],
     ['tiltPort', session.tiltPort],
@@ -1977,50 +2331,92 @@ export function runDevAttachCli(instance, deps = {}) {
   }
 }
 
-function runDevStopCli(selection) {
+async function runDevStopCli(selection) {
   const registryRoot = devWorktreeRegistryRoot();
   const sessionRoot = environmentSessionRoot(registryRoot);
+  const stopRefusal = (error) => {
+    if (isSelectionRefusal(error)) {
+      console.error(`${error.id}: ${error.message}`);
+      process.exit(1);
+      return;
+    }
+    throw error;
+  };
   if (!selection?.record) {
     const legacy = readDevSession(REPO_ROOT);
-    const stopped = stopDevSession(REPO_ROOT);
-    if (
-      stopped.signalled &&
-      stopped.reason === 'pid_and_start_time' &&
-      legacy?.namespace
-    ) {
-      scaleDevSlotWorkloads(legacy.namespace);
+    const slotId = legacy?.slotId;
+    const parkLegacy = () => {
+      const stopped = stopDevSession(REPO_ROOT);
+      if (
+        stopped.signalled &&
+        stopped.reason === 'pid_and_start_time' &&
+        legacy?.namespace
+      ) {
+        scaleDevSlotWorkloads(legacy.namespace);
+      }
+      const quiet =
+        stopped.signalled ||
+        stopped.reason === 'no_session' ||
+        stopped.reason === 'not_running';
+      process.exit(quiet ? 0 : 1);
+    };
+    if (slotId) {
+      try {
+        await ensureSerializedSlotOwnedCleanup(slotId, async () =>
+          withSlotEnvironmentOperationLock(registryRoot, slotId, parkLegacy),
+        );
+      } catch (error) {
+        stopRefusal(error);
+      }
+      return;
     }
-    const quiet =
-      stopped.signalled ||
-      stopped.reason === 'no_session' ||
-      stopped.reason === 'not_running';
-    process.exit(quiet ? 0 : 1);
+    parkLegacy();
+    return;
   }
-  const result = parkSelectedEnvironment({
-    owner: selection.record,
-    sessionRoot,
-    signal: (pid, sig) => process.kill(pid, sig),
-    processDeps: {
-      pidAlive,
-      readStartTicks: (pid) => readProcessStartTicks(pid),
-      sleep: () =>
-        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50),
-    },
-    scaleRole: (namespace, role) =>
-      scaleDevSlotWorkloads(namespace, spawnSync, [role]),
-    readDesiredReplicas: (namespace) => readDevSlotDesiredReplicas(namespace),
-    portOccupied: (ports) =>
-      [ports.game, ports.tilt].some((port) =>
-        probeLoopbackPortOccupiedSync(port),
-      ),
-  });
-  if (!result.ok || !result.released) {
-    console.error(
-      `Refusing to release ${selection.record.slotId}: ${result.reason}`,
+  try {
+    const result = await ensureSerializedSlotOwnedCleanup(
+      selection.record.slotId,
+      async () =>
+        withSlotEnvironmentOperationLock(
+          registryRoot,
+          selection.record.slotId,
+          () =>
+            parkSelectedEnvironment({
+              owner: selection.record,
+              sessionRoot,
+              signal: (pid, sig) => process.kill(pid, sig),
+              processDeps: {
+                pidAlive,
+                readStartTicks: (pid) => readProcessStartTicks(pid),
+                sleep: () =>
+                  Atomics.wait(
+                    new Int32Array(new SharedArrayBuffer(4)),
+                    0,
+                    0,
+                    50,
+                  ),
+              },
+              scaleRole: (namespace, role) =>
+                scaleDevSlotWorkloads(namespace, spawnSync, [role]),
+              readDesiredReplicas: (namespace) =>
+                readDevSlotDesiredReplicas(namespace),
+              portOccupied: (ports) =>
+                [ports.game, ports.tilt].some((port) =>
+                  probeLoopbackPortOccupiedSync(port),
+                ),
+            }),
+        ),
     );
-    process.exit(1);
+    if (!result.ok || !result.released) {
+      console.error(
+        `Refusing to release ${selection.record.slotId}: ${result.reason}`,
+      );
+      process.exit(1);
+    }
+    process.exit(0);
+  } catch (error) {
+    stopRefusal(error);
   }
-  process.exit(0);
 }
 
 const invokedAsScript =
@@ -2050,7 +2446,7 @@ if (invokedAsScript) {
     } else if (!registryV2 && parsed.command === 'status' && !parsed.instance) {
       runDevStatusCli();
     } else if (!registryV2 && parsed.command === 'stop' && !parsed.instance) {
-      runDevStopCli(null);
+      await runDevStopCli(null);
     } else {
       let selection;
       try {
@@ -2088,7 +2484,7 @@ if (invokedAsScript) {
         });
         process.exit(code);
       } else if (selection.action === 'stop') {
-        runDevStopCli(selection);
+        await runDevStopCli(selection);
       }
     }
   }

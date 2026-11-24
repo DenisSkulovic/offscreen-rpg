@@ -6,6 +6,7 @@ import {
   isAllocatorRefusal,
   readRegistryJson,
   refusal,
+  withSlotOperationLock,
 } from './dev-worktree-registry.mjs';
 import {
   allocateIndependentEnvironment,
@@ -762,4 +763,31 @@ export function parkSelectedEnvironment(input) {
     reason: 'parked',
     tenantIdentity,
   };
+}
+
+/**
+ * Run one slot-scoped park or launch follow-up under the per-slot operation lock.
+ *
+ * @param {string} registryRoot
+ * @param {string} slotId
+ * @param {() => T} fn
+ * @param {{ tryOnly?: boolean, lockTimeoutMs?: number }} [options]
+ * @returns {T}
+ * @template T
+ */
+export function withSlotEnvironmentOperationLock(
+  registryRoot,
+  slotId,
+  fn,
+  options = {},
+) {
+  return withSlotOperationLock(
+    {
+      registryRoot,
+      slotId,
+      tryOnly: options.tryOnly ?? true,
+      lockTimeoutMs: options.lockTimeoutMs ?? 0,
+    },
+    fn,
+  );
 }

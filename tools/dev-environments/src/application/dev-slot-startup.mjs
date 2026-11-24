@@ -100,8 +100,15 @@ export function planSlotImageBuilds(slotId, imageExists) {
  * @param {string} detail
  * @param {object[]} [retained]
  */
-function stopped(phase, detail, retained = []) {
-  return { ok: false, phase, detail, retained, readyForWorkloads: false };
+function stopped(phase, detail, retained = [], workloadsTouched = false) {
+  return {
+    ok: false,
+    phase,
+    detail,
+    retained,
+    readyForWorkloads: false,
+    workloadsTouched,
+  };
 }
 
 function phaseResult(value) {
@@ -259,12 +266,16 @@ export async function reconcileDevSlot(input, deps) {
   const imageDetail = phaseResult(images);
   if (imageDetail) return stopped('images', imageDetail, retained);
 
+  let workloadsTouched = false;
   if (deps.applyWorkloads) {
     const workloads = await timePhase('workloads', 'reconcile', () =>
       deps.applyWorkloads(record, projected, images),
     );
+    workloadsTouched = Boolean(workloads?.workloadsTouched);
     const workloadDetail = phaseResult(workloads);
-    if (workloadDetail) return stopped('workloads', workloadDetail, retained);
+    if (workloadDetail) {
+      return stopped('workloads', workloadDetail, retained, workloadsTouched);
+    }
   }
 
   const identities = {
@@ -289,6 +300,7 @@ export async function reconcileDevSlot(input, deps) {
     readyForWorkloads: true,
     record,
     identities,
+    workloadsTouched,
   };
 }
 
