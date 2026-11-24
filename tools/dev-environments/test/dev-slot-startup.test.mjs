@@ -475,6 +475,27 @@ test('shared core readiness failure refuses before sql without tenant mutations'
   assert.equal(used.calls.includes('migration'), false);
 });
 
+test('projection failure stops before images with zero later mutation', async () => {
+  const used = deps({
+    project: async () => {
+      throw new Error('selected owner is missing');
+    },
+  });
+  const result = await reconcileDevSlot(
+    {
+      worktree: '/tmp/project-fail',
+      registryRoot: '/tmp/reg',
+      owner: record,
+    },
+    used,
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.phase, 'project');
+  assert.equal(result.detail, 'selected owner is missing');
+  assert.equal(result.identities, undefined);
+  assert.equal(used.calls.includes('images'), false);
+});
+
 test('migration failure prevents projection and later workload stages', async () => {
   const used = deps({
     ensureMigration: async () => ({

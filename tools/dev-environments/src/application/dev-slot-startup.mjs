@@ -551,8 +551,6 @@ export async function reconcileOwnedDevSlot(input) {
       project: (owner, migration) =>
         projectDevSlot({
           record: owner,
-          registryRoot: input.registryRoot,
-          worktree: input.worktree,
           oauthFile: oauthFileFor(input.worktree),
           schemaProof: {
             ok: true,

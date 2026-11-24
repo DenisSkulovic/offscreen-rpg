@@ -6,7 +6,7 @@ Owner commissioned 2026-11-24. Baseline a0f299407467baba7fc339fafe398e18df45996b
 | --- | --- | --- | --- |
 | [INF20](../../changes/archive/2026-11/platform-operations/2026-11-24--inf20-dev-admission/CHANGE.md) Admission before mutation | INF18 Done | dev-tilt launch sequencing and startup admission | Done (source) |
 | [INF21](../../changes/archive/2026-11/platform-operations/2026-11-24--inf21-dev-sql-isolation/CHANGE.md) Selected SQL tenant and migration integrity | INF20 | SQL tenant executor/adapter, migration and projection schema gate | Done (source) |
-| [INF22](../../changes/open/2026-11-24--inf22-dev-secret-projection/CHANGE.md) Safe slot Secret projection | INF21 | slot projection, exact Secret reads and create-only | Ready (dependency-gated) |
+| [INF22](../../changes/archive/2026-11/platform-operations/2026-11-24--inf22-dev-secret-projection/CHANGE.md) Safe slot Secret projection | INF21 | slot projection, exact Secret reads and create-only | Done (source) |
 | [INF23](../../changes/open/2026-11-24--inf23-dev-session-authority/CHANGE.md) Canonical v2 session authority | INF20, INF22 | registry and process lifecycle | Proposed (planner-blocked) |
 | [INF24](../../changes/open/2026-11-24--inf24-dev-image-ownership/CHANGE.md) Image identity and compatibility retirement | INF22, INF26 | image plan owner and bootstrap wrappers | Ready (dependency-gated) |
 | [INF25](../../changes/archive/2026-11/platform-operations/2026-11-24--inf25-release-deployment-integrity/CHANGE.md) Release migration and deployment integrity | INF18 Done; T03 after INF27 | release installer and stack orchestration | Done (source) |
