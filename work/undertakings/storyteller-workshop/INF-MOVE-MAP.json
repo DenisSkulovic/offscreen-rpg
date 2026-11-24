@@ -1861,6 +1861,56 @@
       "change": "INF19",
       "from": "infra/environments/release/content-bootstrap/smoke.sh",
       "to": "infra/verification/release-acceptance/content-bootstrap/smoke.sh"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-cluster-bootstrap.mjs",
+      "to": "infra/clusters/kind/manager/dev-bootstrap.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-cluster-host-probe.mjs",
+      "to": "infra/clusters/kind/manager/dev-host-probe.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-cnpg-bootstrap.mjs",
+      "to": "infra/platform/postgres/dev-bootstrap.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-cnpg-host-probe.mjs",
+      "to": "infra/platform/postgres/dev-host-probe.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-object-store-bootstrap.mjs",
+      "to": "infra/platform/object-storage/dev-bootstrap.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-object-store-host-probe.mjs",
+      "to": "infra/platform/object-storage/dev-host-probe.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-temporal-bootstrap.mjs",
+      "to": "infra/platform/temporal/dev-bootstrap.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/adapters/dev-temporal-host-probe.mjs",
+      "to": "infra/platform/temporal/dev-host-probe.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs",
+      "to": "infra/images/development/image-plan.mjs"
+    },
+    {
+      "change": "INF24",
+      "from": "tools/dev-environments/test/dev-slot-image-plan.test.mjs",
+      "to": "infra/images/development/tests/dev-slot-image-plan.test.mjs"
     }
   ]
 }

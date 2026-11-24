@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
-import { DEV_CNPG_NAMESPACE } from '../src/adapters/dev-cnpg-bootstrap.mjs';
-import { DEV_S3_NAMESPACE } from '../src/adapters/dev-object-store-bootstrap.mjs';
+import { DEV_CNPG_NAMESPACE } from '../../../infra/platform/postgres/dev-bootstrap.mjs';
+import { DEV_S3_NAMESPACE } from '../../../infra/platform/object-storage/dev-bootstrap.mjs';
 import {
   applyDevSlotSecret,
   assertDevSchemaProjectionProof,

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { randomBytes } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
-import { collectDevObjectStoreProbe } from './dev-object-store-host-probe.mjs';
+import { collectDevObjectStoreProbe } from '../../../../infra/platform/object-storage/dev-host-probe.mjs';
 import {
   DEV_S3_CONTEXT,
   DEV_S3_NAMESPACE,
@@ -9,7 +9,7 @@ import {
   planDevObjectStore,
   statusDevObjectStore,
   waitForDevObjectStoreReadiness,
-} from './dev-object-store-bootstrap.mjs';
+} from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
 import { proveDevObjectStoreS3 } from './dev-object-store-s3-proof.mjs';
 
 function run(commandName, args, options = {}) {

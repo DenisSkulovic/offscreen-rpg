@@ -53,7 +53,7 @@ flowchart TD
 | Graph and initial Kubernetes objects | `tools/dev-environments/src/rendering/dev-slot-app-graph.mjs::renderDevSlotAppGraph` | Consistent renderer and initially parked/bootstrapped objects |
 | Tilt graph and application live sync | root `Tiltfile` with `infra/images/development/sync-plan.mjs` | Sole active deployment writer and source-update controller |
 | Build and node imports | `infra/images/development/load-dev-slot-image.sh` (`--tilt-ref` for Tilt) | Consolidated preparation contract; no Kubernetes Deployment patch |
-| Image fingerprint and reuse | `tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs` | Pure image planning; no hidden Kubernetes mutation |
+| Image fingerprint and reuse | `infra/images/development/image-plan.mjs` | Pure image planning; no hidden Kubernetes mutation |
 | Current-generation verification | `tools/dev-environments/runtime/generation.mjs`, `status.mjs`, and `dev-tilt.mjs` | Read-only verifier, fail closed; one compile supervisor per compiled role |
 | Worker runtime | `apps/worker/src/runtime/index.ts` | Temporal SDK and source/watch compatibility belong to worker runtime, not the image loader |
 

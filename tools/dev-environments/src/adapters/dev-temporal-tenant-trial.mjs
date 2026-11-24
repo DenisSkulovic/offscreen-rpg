@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { ensureDevTemporalTenant } from './dev-temporal-tenant.mjs';
-import { DEV_TEMPORAL_CONTEXT, DEV_TEMPORAL_NAMESPACE, DEV_TEMPORAL_OWNER, DEV_TEMPORAL_SERVER_IMAGE } from './dev-temporal-bootstrap.mjs';
+import { DEV_TEMPORAL_CONTEXT, DEV_TEMPORAL_NAMESPACE, DEV_TEMPORAL_OWNER, DEV_TEMPORAL_SERVER_IMAGE } from '../../../../infra/platform/temporal/dev-bootstrap.mjs';
 
 const require = createRequire(new URL('../../../../apps/worker/package.json', import.meta.url));
 const { Connection, Client } = require('@temporalio/client');

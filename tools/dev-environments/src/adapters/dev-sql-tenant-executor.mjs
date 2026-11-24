@@ -1,4 +1,4 @@
-import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE, DEV_CNPG_OWNER } from './dev-cnpg-bootstrap.mjs';
+import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE, DEV_CNPG_OWNER } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
 import { deriveDevSqlTenant, renderDevSqlTenant } from '../rendering/dev-sql-tenant-contract.mjs';
 import { canConnect, quoteSqlIdent } from './dev-sql-tenant-reconciler.mjs';
 

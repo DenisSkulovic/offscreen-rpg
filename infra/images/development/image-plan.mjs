@@ -9,10 +9,17 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, posix } from 'node:path';
 
-export const UNION_ROLE_FILTER = '@offscreen/web^... @offscreen/api^... @offscreen/game-authority^... @offscreen/worker^...';
-export const SLOT_ALIAS_ROLES = Object.freeze(['web', 'api', 'authority', 'worker']);
+export const UNION_ROLE_FILTER =
+  '@offscreen/web^... @offscreen/api^... @offscreen/game-authority^... @offscreen/worker^...';
+export const SLOT_ALIAS_ROLES = Object.freeze([
+  'web',
+  'api',
+  'authority',
+  'worker',
+]);
 export const DEV_DOCKERFILE = 'infra/images/development/Dockerfile';
-export const DEV_DOCKERIGNORE = 'infra/images/development/Dockerfile.dockerignore';
+export const DEV_DOCKERIGNORE =
+  'infra/images/development/Dockerfile.dockerignore';
 export const TOOLCHAIN_PIN = 'infra/images/common/toolchain.pin';
 const REQUIRED_NODES = ['control-plane', 'worker'];
 
@@ -21,10 +28,13 @@ const REQUIRED_NODES = ['control-plane', 'worker'];
  * @returns {string[]}
  */
 export function parseDockerignore(text) {
-  return text.split('\n').map((line) => line.replace(/\r$/, '')).filter((line) => {
-    const trimmed = line.trim();
-    return trimmed && !trimmed.startsWith('#');
-  });
+  return text
+    .split('\n')
+    .map((line) => line.replace(/\r$/, ''))
+    .filter((line) => {
+      const trimmed = line.trim();
+      return trimmed && !trimmed.startsWith('#');
+    });
 }
 
 function patternToRegExp(pattern) {
@@ -57,7 +67,9 @@ export function isDockerignored(relativePath, rules) {
     let pattern = negate ? raw.slice(1) : raw;
     const dirOnly = pattern.endsWith('/');
     if (dirOnly) pattern = pattern.slice(0, -1);
-    const expression = patternToRegExp(pattern.includes('/') ? pattern : `**/${pattern}`);
+    const expression = patternToRegExp(
+      pattern.includes('/') ? pattern : `**/${pattern}`,
+    );
     const matched = expression.test(path) || path.split('/').includes(pattern);
     if (matched) ignored = !negate;
   }
@@ -136,7 +148,9 @@ export function fingerprintDevImageContext(root, input) {
   hash.update(`toolchain ${sha256(toolchain.pinBytes)}\n`);
   hash.update(`base ${baseImage}\n`);
   hash.update(`turbo-filter ${input.roleFilter}\n`);
-  const ordered = [...files].sort((left, right) => left.path.localeCompare(right.path));
+  const ordered = [...files].sort((left, right) =>
+    left.path.localeCompare(right.path),
+  );
   for (const file of ordered) {
     hash.update(`file ${file.path} ${sha256(file.bytes)}\n`);
   }
@@ -182,7 +196,8 @@ function listContextFiles(root, rules) {
       const info = statSync(absolute);
       if (info.isSymbolicLink()) throw new Error('symlink');
       if (info.isDirectory()) visit(absolute);
-      else if (info.isFile()) files.push({ path: rel, bytes: readFileSync(absolute) });
+      else if (info.isFile())
+        files.push({ path: rel, bytes: readFileSync(absolute) });
     }
   };
   visit(root);
@@ -213,18 +228,28 @@ export function planSlotImageArtifact(input) {
     loadNodes: [...REQUIRED_NODES],
   };
   if (!input.fingerprint) return base;
-  const mismatched = input.artifacts.find((artifact) => artifact.declaredFingerprint && artifact.declaredFingerprint !== artifact.fingerprint);
+  const mismatched = input.artifacts.find(
+    (artifact) =>
+      artifact.declaredFingerprint &&
+      artifact.declaredFingerprint !== artifact.fingerprint,
+  );
   if (mismatched) {
-    return { ...base, reason: 'mismatched-metadata', digest: mismatched.digest ?? null };
+    return {
+      ...base,
+      reason: 'mismatched-metadata',
+      digest: mismatched.digest ?? null,
+    };
   }
-  const compatible = input.artifacts.filter((artifact) => (
-    artifact.fingerprint === input.fingerprint
-    && artifact.role === input.role
-    && artifact.filter === input.filter
-    && typeof artifact.digest === 'string'
-    && artifact.digest.startsWith('sha256:')
-  ));
-  if (compatible.length === 0) return { ...base, reason: 'no-compatible-artifact' };
+  const compatible = input.artifacts.filter(
+    (artifact) =>
+      artifact.fingerprint === input.fingerprint &&
+      artifact.role === input.role &&
+      artifact.filter === input.filter &&
+      typeof artifact.digest === 'string' &&
+      artifact.digest.startsWith('sha256:'),
+  );
+  if (compatible.length === 0)
+    return { ...base, reason: 'no-compatible-artifact' };
   const digest = compatible[0].digest;
   if (compatible.some((artifact) => artifact.digest !== digest)) {
     return { ...base, reason: 'conflicting-digests', digest };
@@ -233,7 +258,9 @@ export function planSlotImageArtifact(input) {
     'control-plane': input.nodes?.controlPlane ?? [],
     worker: input.nodes?.worker ?? [],
   };
-  const loadNodes = REQUIRED_NODES.filter((node) => !present[node].includes(digest));
+  const loadNodes = REQUIRED_NODES.filter(
+    (node) => !present[node].includes(digest),
+  );
   const ready = loadNodes.length === 0;
   return {
     ...base,
@@ -269,7 +296,8 @@ export function planSlotImageArtifact(input) {
  */
 export function planAliasIdentityLoad(input) {
   const expected = input.expectedConfigId;
-  const comparable = typeof expected === 'string' && /^sha256:[a-f0-9]{64}$/.test(expected);
+  const comparable =
+    typeof expected === 'string' && /^sha256:[a-f0-9]{64}$/.test(expected);
   const loadNodes = REQUIRED_NODES.filter((node) => {
     if (!comparable) return true;
     return input.nodes?.[node]?.configId !== expected;
@@ -306,7 +334,8 @@ const GENERATION_ID = /^sha256:[a-f0-9]{64}$/;
  */
 /** Content tag Tilt selects. The slot alias is not Deployment authority. */
 export function contentDerivedImageRef(fingerprint) {
-  if (typeof fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(fingerprint)) return null;
+  if (typeof fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(fingerprint))
+    return null;
   return `offscreen-dev-workspace:union-${fingerprint.slice(0, 16)}`;
 }
 
@@ -317,11 +346,25 @@ export function contentDerivedImageRef(fingerprint) {
  */
 export function planContentImageSelection(input) {
   const ref = contentDerivedImageRef(input.fingerprint ?? '');
-  if (!ref) return { ref: null, roll: false, reason: 'unproven-context', missing: ['control-plane', 'worker'] };
-  const missing = ['control-plane', 'worker'].filter((node) => !(input.nodes?.[node]?.tags ?? []).includes(ref));
-  if (missing.length > 0) return { ref, roll: false, reason: 'missing-kind-node', missing };
+  if (!ref)
+    return {
+      ref: null,
+      roll: false,
+      reason: 'unproven-context',
+      missing: ['control-plane', 'worker'],
+    };
+  const missing = ['control-plane', 'worker'].filter(
+    (node) => !(input.nodes?.[node]?.tags ?? []).includes(ref),
+  );
+  if (missing.length > 0)
+    return { ref, roll: false, reason: 'missing-kind-node', missing };
   const roll = input.currentRef !== ref;
-  return { ref, roll, reason: roll ? 'generation-changed' : 'generation-unchanged', missing: [] };
+  return {
+    ref,
+    roll,
+    reason: roll ? 'generation-changed' : 'generation-unchanged',
+    missing: [],
+  };
 }
 
 export function planImageGenerationRollout(input) {
@@ -330,7 +373,11 @@ export function planImageGenerationRollout(input) {
     return { roll: false, generation: null, reason: 'unproven-generation' };
   }
   if (input.currentGeneration === expected) {
-    return { roll: false, generation: expected, reason: 'generation-unchanged' };
+    return {
+      roll: false,
+      generation: expected,
+      reason: 'generation-unchanged',
+    };
   }
   return { roll: true, generation: expected, reason: 'generation-changed' };
 }
@@ -348,7 +395,9 @@ export function confirmLoadedAliasIdentity(input) {
 }
 
 export function planUnionImageUse(input) {
-  const aliases = SLOT_ALIAS_ROLES.map((role) => `offscreen-dev-workspace:${input.slotId}-${role}`);
+  const aliases = SLOT_ALIAS_ROLES.map(
+    (role) => `offscreen-dev-workspace:${input.slotId}-${role}`,
+  );
   const base = {
     fingerprint: input.fingerprint,
     digest: input.artifact?.digest ?? null,
@@ -360,13 +409,18 @@ export function planUnionImageUse(input) {
   };
   if (!input.fingerprint) return { ...base, reason: 'unproven-context' };
   const artifact = input.artifact;
-  if (!artifact?.digest?.startsWith('sha256:') || artifact.fingerprint !== input.fingerprint) {
+  if (
+    !artifact?.digest?.startsWith('sha256:') ||
+    artifact.fingerprint !== input.fingerprint
+  ) {
     return base;
   }
   const loadNodes = REQUIRED_NODES.filter((node) => {
     const present = input.nodes?.[node] ?? {};
     const hasDigest = (present.digests ?? []).includes(artifact.digest);
-    const hasAliases = aliases.every((tag) => (present.tags ?? []).includes(tag));
+    const hasAliases = aliases.every((tag) =>
+      (present.tags ?? []).includes(tag),
+    );
     return !hasDigest || !hasAliases;
   });
   const ready = loadNodes.length === 0;
@@ -398,9 +452,9 @@ export function planUnionImageUse(input) {
 export function planRestartImageReuse(input) {
   const canonical = input.canonical ?? null;
   const fingerprintMatches = Boolean(
-    input.fingerprint
-    && canonical?.fingerprint === input.fingerprint
-    && canonical.digest?.startsWith('sha256:'),
+    input.fingerprint &&
+    canonical?.fingerprint === input.fingerprint &&
+    canonical.digest?.startsWith('sha256:'),
   );
   const dockerBuild = !fingerprintMatches;
   const alias = fingerprintMatches && input.expectedRef !== canonical.ref;
@@ -408,14 +462,18 @@ export function planRestartImageReuse(input) {
     ? input.nodeConfigId === canonical?.digest
     : input.nodeHasRef === true;
   const kindLoad = fingerprintMatches && !nodeIdentityMatches;
-  const deploymentSelected = fingerprintMatches
-    && (input.podImage === input.expectedRef || input.podImage === canonical.digest);
-  const podConfigMatches = !input.podConfigId || input.podConfigId === canonical?.digest;
-  const applicationReady = deploymentSelected
-    && podConfigMatches
-    && input.podReady === true
-    && !kindLoad
-    && !dockerBuild;
+  const deploymentSelected =
+    fingerprintMatches &&
+    (input.podImage === input.expectedRef ||
+      input.podImage === canonical.digest);
+  const podConfigMatches =
+    !input.podConfigId || input.podConfigId === canonical?.digest;
+  const applicationReady =
+    deploymentSelected &&
+    podConfigMatches &&
+    input.podReady === true &&
+    !kindLoad &&
+    !dockerBuild;
   return {
     dockerBuild,
     canonicalDigest: fingerprintMatches ? canonical.digest : null,

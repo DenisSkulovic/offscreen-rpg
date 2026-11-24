@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { executeAuthorizedDevTemporal, planDevTemporal, statusDevTemporal } from './dev-temporal-bootstrap.mjs';
-import { collectDevTemporalProbe } from './dev-temporal-host-probe.mjs';
+import { executeAuthorizedDevTemporal, planDevTemporal, statusDevTemporal } from '../../../../infra/platform/temporal/dev-bootstrap.mjs';
+import { collectDevTemporalProbe } from '../../../../infra/platform/temporal/dev-host-probe.mjs';
 
 function run(commandName, args, options = {}) {
   const child = spawnSync(commandName, args, {

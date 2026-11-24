@@ -4,7 +4,7 @@ import { createDevS3LiveAdapter } from './dev-s3-tenant-live-adapter.mjs';
 import { deriveDevS3Tenant } from './dev-s3-tenant.mjs';
 import { ensureDevS3Tenant } from './dev-s3-tenant.mjs';
 import { signS3Request } from './dev-object-store-s3-proof.mjs';
-import { DEV_S3_CONTEXT, DEV_S3_NAMESPACE } from './dev-object-store-bootstrap.mjs';
+import { DEV_S3_CONTEXT, DEV_S3_NAMESPACE } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
 
 const TOKEN = 'kind-offscreen-dev-s3-tenant-live';
 const HOST = '127.0.0.1:18334';

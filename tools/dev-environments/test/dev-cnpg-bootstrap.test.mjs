@@ -18,7 +18,7 @@ import {
   planDevCnpg,
   renderDevCnpgCluster,
   statusDevCnpg,
-} from '../src/adapters/dev-cnpg-bootstrap.mjs';
+} from '../../../infra/platform/postgres/dev-bootstrap.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pin = parseCnpgPin(

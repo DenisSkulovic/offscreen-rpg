@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
-import { chmodSync, existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -9,10 +16,13 @@ import test from 'node:test';
 import {
   fingerprintDevImageContext,
   UNION_ROLE_FILTER,
-} from '../../../../tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs';
+} from '../image-plan.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
-const slotLoader = join(repoRoot, 'infra/images/development/load-dev-slot-image.sh');
+const slotLoader = join(
+  repoRoot,
+  'infra/images/development/load-dev-slot-image.sh',
+);
 const tiltfile = readFileSync(join(repoRoot, 'Tiltfile'), 'utf8');
 
 function runTiltRef(ref, env = {}) {
@@ -96,7 +106,10 @@ exec "\${OFFSCREEN_REAL_NODE}" "$@"`,
 }
 
 test('dev Tiltfile uses worktree-scoped receipt paths and shared rebuild inputs', () => {
-  assert.match(tiltfile, /\.offscreen\/tilt-image-refs\/' \+ OFFSCREEN_DEV_SLOT \+ '\//);
+  assert.match(
+    tiltfile,
+    /\.offscreen\/tilt-image-refs\/' \+ OFFSCREEN_DEV_SLOT \+ '\//,
+  );
   assert.match(readFileSync(slotLoader, 'utf8'), /--tilt-ref/);
   assert.doesNotMatch(tiltfile, /TURBO_FILTER_BY_IMAGE/);
   assert.match(tiltfile, /rebuild_paths_by_image/);
@@ -109,26 +122,34 @@ test('tilt-ref refuses slot ref that does not match OFFSCREEN_DEV_SLOT', () => {
   const receipt = join(repoRoot, '.offscreen/tilt-image-refs/dev-2/web.ref');
   mkdirSync(dirname(receipt), { recursive: true });
   writeFileSync(receipt, 'stale-ref\n');
-  const result = runTiltRef('offscreen-dev-workspace:dev-2-web', { OFFSCREEN_DEV_SLOT: 'dev-3' });
+  const result = runTiltRef('offscreen-dev-workspace:dev-2-web', {
+    OFFSCREEN_DEV_SLOT: 'dev-3',
+  });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /refusing slot ref/);
   assert.equal(readFileSync(receipt, 'utf8'), 'stale-ref\n');
 });
 
 test('tilt-ref refuses legacy dev workspace refs before docker', () => {
-  const result = runTiltRef('offscreen-lab-dev-workspace:dxk08-api', { OFFSCREEN_DEV_SLOT: 'dev-2' });
+  const result = runTiltRef('offscreen-lab-dev-workspace:dxk08-api', {
+    OFFSCREEN_DEV_SLOT: 'dev-2',
+  });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /refusing legacy dev workspace ref/);
 });
 
 test('tilt-ref refuses malformed slot refs without valid OFFSCREEN_DEV_SLOT', () => {
-  const result = runTiltRef('offscreen-dev-workspace:dev-2-typo', { OFFSCREEN_DEV_SLOT: 'unassigned' });
+  const result = runTiltRef('offscreen-dev-workspace:dev-2-typo', {
+    OFFSCREEN_DEV_SLOT: 'unassigned',
+  });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /without valid OFFSCREEN_DEV_SLOT/);
 });
 
 test('tilt-ref refuses release refs with no cross-profile fallback', () => {
-  const result = runTiltRef('offscreen-lab-game-web:turn02', { OFFSCREEN_DEV_SLOT: 'dev-2' });
+  const result = runTiltRef('offscreen-lab-game-web:turn02', {
+    OFFSCREEN_DEV_SLOT: 'dev-2',
+  });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /refusing ref/);
 });
@@ -151,10 +172,14 @@ test('slot loader refuses invalid roles before any build', () => {
 test('source change recomputes fingerprint for tilt rebuilds', () => {
   const lock = join(repoRoot, 'pnpm-lock.yaml');
   const original = readFileSync(lock, 'utf8');
-  const first = fingerprintDevImageContext(repoRoot, { roleFilter: UNION_ROLE_FILTER });
+  const first = fingerprintDevImageContext(repoRoot, {
+    roleFilter: UNION_ROLE_FILTER,
+  });
   assert.equal(first.ok, true);
   writeFileSync(lock, `${original}# fingerprint probe\n`);
-  const changed = fingerprintDevImageContext(repoRoot, { roleFilter: UNION_ROLE_FILTER });
+  const changed = fingerprintDevImageContext(repoRoot, {
+    roleFilter: UNION_ROLE_FILTER,
+  });
   writeFileSync(lock, original);
   assert.equal(changed.ok, true);
   assert.notEqual(changed.fingerprint, first.fingerprint);
@@ -180,7 +205,10 @@ test('valid tilt-ref clears own receipt before work; failure leaves no success f
 test('authority tilt-ref targets game-authority receipt path', () => {
   const script = readFileSync(slotLoader, 'utf8');
   assert.match(script, /game-authority/);
-  const receipt = join(repoRoot, '.offscreen/tilt-image-refs/dev-2/game-authority.ref');
+  const receipt = join(
+    repoRoot,
+    '.offscreen/tilt-image-refs/dev-2/game-authority.ref',
+  );
   mkdirSync(dirname(receipt), { recursive: true });
   writeFileSync(receipt, 'stale-ref\n');
   const root = mkdtempSync(join(tmpdir(), 'receipt-ga-'));
@@ -217,7 +245,11 @@ test('concurrent role loads build the shared artifact once under fake toolchain'
     TMPDIR: root,
   };
   const run = (slot, role) =>
-    spawnSync('bash', [slotLoader, slot, role], { cwd: repoRoot, encoding: 'utf8', env });
+    spawnSync('bash', [slotLoader, slot, role], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env,
+    });
   const left = run('dev-3', 'api');
   const right = run('dev-4', 'web');
   assert.equal(left.status, 0, left.stderr);
@@ -230,11 +262,14 @@ test('concurrent role loads build the shared artifact once under fake toolchain'
 
 test('missing-node import is handled by the shared distributor, not alias tagging', () => {
   const planSource = readFileSync(
-    join(repoRoot, 'tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs'),
+    join(repoRoot, 'infra/images/development/image-plan.mjs'),
     'utf8',
   );
   assert.match(planSource, /missing-kind-node/);
-  const loader = readFileSync(join(repoRoot, 'infra/images/distribution/kind-image-loader.mjs'), 'utf8');
+  const loader = readFileSync(
+    join(repoRoot, 'infra/images/distribution/kind-image-loader.mjs'),
+    'utf8',
+  );
   assert.match(loader, /loadedNodes/);
 });
 

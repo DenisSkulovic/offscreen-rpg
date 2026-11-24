@@ -4,7 +4,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectDevTemporalProbe } from '../src/adapters/dev-temporal-host-probe.mjs';
+import { collectDevTemporalProbe } from '../../../infra/platform/temporal/dev-host-probe.mjs';
 import {
   DEV_TEMPORAL_ADMIN_IMAGE,
   DEV_TEMPORAL_CONTEXT,
@@ -17,7 +17,7 @@ import {
   ensureDevTemporal,
   executeAuthorizedDevTemporal,
   renderDevTemporal,
-} from '../src/adapters/dev-temporal-bootstrap.mjs';
+} from '../../../infra/platform/temporal/dev-bootstrap.mjs';
 
 const ready = {
   context: DEV_TEMPORAL_CONTEXT,

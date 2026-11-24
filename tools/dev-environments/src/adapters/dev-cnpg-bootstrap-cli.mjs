@@ -4,14 +4,14 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectDevCnpgProbe } from './dev-cnpg-host-probe.mjs';
+import { collectDevCnpgProbe } from '../../../../infra/platform/postgres/dev-host-probe.mjs';
 import {
   DEV_CNPG_CONTEXT,
   executeAuthorizedDevCnpg,
   parseCnpgPin,
   planDevCnpg,
   statusDevCnpg,
-} from './dev-cnpg-bootstrap.mjs';
+} from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
 import {
   DEV_POSTGRES_READINESS_TIMEOUT_MS,
   waitForDevPostgresReadiness,

@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { spawnSync } from 'node:child_process';
-import { collectDevClusterProbe, parseLoopbackListenPorts, parseMeminfoMiB } from '../src/adapters/dev-cluster-host-probe.mjs';
+import { collectDevClusterProbe, parseLoopbackListenPorts, parseMeminfoMiB } from '../../../infra/clusters/kind/manager/dev-host-probe.mjs';
 import {
   DEV_API_PORT_RANGE,
   DEV_BASELINE_NAMESPACE,
@@ -21,7 +21,7 @@ import {
   planDevCluster,
   renderDevKindConfig,
   statusDevCluster,
-} from '../src/adapters/dev-cluster-bootstrap.mjs';
+} from '../../../infra/clusters/kind/manager/dev-bootstrap.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 

@@ -39,7 +39,10 @@ test('docs-only change selects no workload', () => {
   const result = resolveDevSync('docs/runbooks/local-development.md', repoRoot);
   assert.equal(result.mode, 'none');
   assert.deepEqual(result.workloads, []);
-  assert.equal(isUnsafeDevSyncPath('docs/runbooks/local-development.md'), false);
+  assert.equal(
+    isUnsafeDevSyncPath('docs/runbooks/local-development.md'),
+    false,
+  );
 });
 
 test('release-only path selects no workload rebuild', () => {
@@ -74,15 +77,37 @@ test('db-migrations generator config is rebuild-only', () => {
   assert.equal(resolveDevSync(generatorConfig, repoRoot).mode, 'rebuild');
 });
 
+const ALL_RUNTIME_IMAGES = ['web', 'api', 'game-authority', 'worker'];
+
 test('dev Dockerfile is build-critical rebuild', () => {
   assert.equal(
     isUnsafeDevSyncPath('infra/images/development/Dockerfile'),
     true,
   );
-  assert.equal(
-    resolveDevSync('infra/images/development/Dockerfile', repoRoot).mode,
-    'rebuild',
+  const result = resolveDevSync(
+    'infra/images/development/Dockerfile',
+    repoRoot,
   );
+  assert.equal(result.mode, 'rebuild');
+  assert.deepEqual(result.images, ALL_RUNTIME_IMAGES);
+});
+
+test('dev runtime helper rebuilds all runtime images', () => {
+  const result = resolveDevSync(
+    'tools/dev-environments/runtime/generation.mjs',
+    repoRoot,
+  );
+  assert.equal(result.mode, 'rebuild');
+  assert.deepEqual(result.images, ALL_RUNTIME_IMAGES);
+});
+
+test('image-plan module is build-critical for all runtime images', () => {
+  const result = resolveDevSync(
+    'infra/images/development/image-plan.mjs',
+    repoRoot,
+  );
+  assert.equal(result.mode, 'rebuild');
+  assert.deepEqual(result.images, ALL_RUNTIME_IMAGES);
 });
 
 test('sync-plan does not import release image selector', () => {
@@ -111,9 +136,7 @@ test('tiltDevSyncConfig exposes sync and rebuild maps without warm release', () 
   assert.ok(
     config.rebuild_paths_by_image.api.includes('packages/story-engine'),
   );
-  assert.ok(
-    config.rebuild_paths_by_image.api.includes('pnpm-lock.yaml'),
-  );
+  assert.ok(config.rebuild_paths_by_image.api.includes('pnpm-lock.yaml'));
 });
 
 test('rebuild paths include migration directory when present', () => {

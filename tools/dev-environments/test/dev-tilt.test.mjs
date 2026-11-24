@@ -41,7 +41,7 @@ import {
   markDevWatchedCompilation,
   resolveCompiledDistRoot,
 } from '../runtime/generation.mjs';
-import { UNION_ROLE_FILTER } from '../src/image-cache/dev-slot-image-plan.mjs';
+import { UNION_ROLE_FILTER } from '../../../infra/images/development/image-plan.mjs';
 
 function okLaunchFingerprint() {
   return () => ({

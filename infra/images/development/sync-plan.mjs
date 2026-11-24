@@ -20,13 +20,6 @@ export const IMAGE_TO_DEV_WORKLOADS = Object.freeze({
 
 const APP_DIRS = new Set(Object.values(IMAGE_APP));
 
-const GLOBAL_REBUILD_FILES = new Set([
-  'package.json',
-  'pnpm-lock.yaml',
-  'pnpm-workspace.yaml',
-  'turbo.json',
-]);
-
 export const BUILD_CRITICAL_ROOT_FILES = Object.freeze([
   'package.json',
   'pnpm-lock.yaml',
@@ -46,7 +39,7 @@ export const BUILD_CRITICAL_ROOT_FILES = Object.freeze([
   'tools/dev-environments/runtime/launch-loaded.mjs',
   'tools/dev-environments/runtime/status.mjs',
   'infra/images/distribution/kind-image-loader.mjs',
-  'tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs',
+  'infra/images/development/image-plan.mjs',
 ]);
 
 const BUILD_CRITICAL_ROOT_FILE_SET = new Set(BUILD_CRITICAL_ROOT_FILES);
@@ -67,7 +60,9 @@ export function normalizeChangedPath(filePath) {
  * @param {string} file
  */
 function isReleaseOnlyPath(file) {
-  return RELEASE_ONLY_PREFIXES.some((prefix) => file === prefix || file.startsWith(prefix));
+  return RELEASE_ONLY_PREFIXES.some(
+    (prefix) => file === prefix || file.startsWith(prefix),
+  );
 }
 
 /**
@@ -93,7 +88,8 @@ function isWorkspaceDependencySourcePath(file) {
  */
 function isAppManifestOrTsconfig(file) {
   if (/^(apps|packages|tools)\/[^/]+\/package\.json$/.test(file)) return true;
-  if (/^(apps|packages|tools)\/[^/]+\/tsconfig[^/]*\.json$/.test(file)) return true;
+  if (/^(apps|packages|tools)\/[^/]+\/tsconfig[^/]*\.json$/.test(file))
+    return true;
   return false;
 }
 
@@ -146,7 +142,7 @@ export function resolveDevSync(changedPath, root) {
   }
 
   if (isUnsafeDevSyncPath(file)) {
-    const images = GLOBAL_REBUILD_FILES.has(file)
+    const images = BUILD_CRITICAL_ROOT_FILE_SET.has(file)
       ? [...RUNTIME_IMAGES]
       : selectWorkspaceImages([file], buildGraph);
     return {
@@ -227,7 +223,10 @@ export function rebuildPathsForImage(image, root) {
   if (existsSync(migrationDir) && statSync(migrationDir).isDirectory()) {
     paths.add('packages/db/migrations');
   }
-  const drizzleConfig = path.join(root, 'tools/db-migrations/drizzle.config.ts');
+  const drizzleConfig = path.join(
+    root,
+    'tools/db-migrations/drizzle.config.ts',
+  );
   if (existsSync(drizzleConfig)) {
     paths.add('tools/db-migrations/drizzle.config.ts');
   }
@@ -275,7 +274,10 @@ function defaultRepoRoot() {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
   const args = process.argv.slice(2);
   if (args.length === 1 && args[0] === '--tilt') {
     const root = defaultRepoRoot();

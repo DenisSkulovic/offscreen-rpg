@@ -10,11 +10,11 @@ export {
   planSlotImageArtifact,
   planUnionImageUse,
   UNION_ROLE_FILTER,
-} from '../image-cache/dev-slot-image-plan.mjs';
+} from '../../../../infra/images/development/image-plan.mjs';
 import {
   fingerprintDevImageContext,
   UNION_ROLE_FILTER as UNION_FILTER,
-} from '../image-cache/dev-slot-image-plan.mjs';
+} from '../../../../infra/images/development/image-plan.mjs';
 import { timePhase } from './dev-startup-timing.mjs';
 import { selectColdStartDocuments } from '../rendering/dev-slot-app-graph.mjs';
 import { verifySharedCoreReadiness } from './dev-shared-core-readiness.mjs';
@@ -369,7 +369,7 @@ export async function reconcileOwnedDevSlot(input) {
   const temporalTenant = await import('../adapters/dev-temporal-tenant.mjs');
   const { ensureDevTemporalTenant } = temporalTenant;
   const { projectDevSlot } = await import('../rendering/dev-slot-project.mjs');
-  const temporal = await import('../adapters/dev-temporal-bootstrap.mjs');
+  const temporal = await import('../../../../infra/platform/temporal/dev-bootstrap.mjs');
 
   return reconcileDevSlot(
     { ...input, owner: input.owner },
