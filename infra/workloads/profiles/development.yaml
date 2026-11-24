@@ -69,27 +69,9 @@ commands:
     - dist/src/bootstrap/main.js
     - tsconfig.dev.json
 
-watched:
-  api:
-    role: api
-    entry: /app/apps/api/dist/src/main.js
-  authority:
-    role: game-authority
-    entry: /app/apps/game-authority/dist/src/bootstrap/main.js
-  control:
-    role: worker-control
-    entry: /app/apps/worker/dist/src/bootstrap/control-main.js
-  executor:
-    role: worker-executor
-    entry: /app/apps/worker/dist/src/bootstrap/executor-main.js
-  relay:
-    role: worker-relay
-    entry: /app/apps/worker/dist/src/bootstrap/main.js
-
 dev:
   documentStore: s3
   authorityMode: distributed
   temporalTaskQueues:
     control: control
     executor: storyteller-execute-v1
-  podSecurityOnWorkers: true

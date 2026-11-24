@@ -2,13 +2,6 @@
 section: all
 
 catalog:
-  roles:
-    - web
-    - api
-    - authority
-    - control
-    - executor
-    - relay
   deployments:
     web: game-web
     api: game-api
@@ -27,13 +20,6 @@ catalog:
     web: 3000
     api: 3001
     authority: 3002
-  imageFamily:
-    web: web
-    api: api
-    authority: authority
-    control: worker
-    executor: worker
-    relay: worker
 
 replicas: 1
 imagePullPolicy: Never
