@@ -16,7 +16,11 @@ import {
   UNION_ROLE_FILTER as UNION_FILTER,
 } from '../../../../infra/images/development/image-plan.mjs';
 import { timePhase } from './dev-startup-timing.mjs';
-import { selectColdStartDocuments } from '../rendering/dev-slot-app-graph.mjs';
+import {
+  preserveOwnedServicePorts,
+  selectColdStartDocuments,
+  validateOwnedSlotInventory,
+} from '../rendering/dev-slot-app-graph.mjs';
 import { verifySharedCoreReadiness } from './dev-shared-core-readiness.mjs';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -369,7 +373,8 @@ export async function reconcileOwnedDevSlot(input) {
   const temporalTenant = await import('../adapters/dev-temporal-tenant.mjs');
   const { ensureDevTemporalTenant } = temporalTenant;
   const { projectDevSlot } = await import('../rendering/dev-slot-project.mjs');
-  const temporal = await import('../../../../infra/platform/temporal/dev-bootstrap.mjs');
+  const temporal =
+    await import('../../../../infra/platform/temporal/dev-bootstrap.mjs');
 
   return reconcileDevSlot(
     { ...input, owner: input.owner },
@@ -666,95 +671,199 @@ export async function ensureOwnedSlotImages(
   };
 }
 
+function workloadRefusal(id, detail) {
+  return { ok: false, workloadsTouched: false, refusals: [{ id, detail }] };
+}
+
+/**
+ * @param {string} text
+ */
+function parseClusterJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 export async function applyOwnedSlotWorkloads(projected, deps = {}) {
   const { spawnSync } = await import('node:child_process');
   const run = deps.run ?? spawnSync;
+  const context = 'kind-offscreen-dev';
+  const namespace = projected.record.namespace;
+  const slotId = projected.record.slotId;
   const { assertHelmAvailable } =
     await import('../../../../infra/workloads/render.mjs');
   try {
     assertHelmAvailable({ run: deps.helmRun ?? run });
   } catch (error) {
-    return {
-      ok: false,
-      refusals: [
-        {
-          id: 'helm',
-          detail:
-            error instanceof Error ? error.message : 'helm is not available',
-        },
-      ],
-    };
+    return workloadRefusal(
+      'helm',
+      error instanceof Error ? error.message : 'helm is not available',
+    );
   }
   if (deps.skipRenderCheck !== true) {
     try {
       const { renderDevSlotAppGraph } =
         await import('../rendering/dev-slot-app-graph.mjs');
-      renderDevSlotAppGraph(projected.record.slotId, {
+      renderDevSlotAppGraph(slotId, {
         schemaReady: true,
         ports: projected.record.ports,
       });
     } catch (error) {
-      return {
-        ok: false,
-        refusals: [
-          {
-            id: 'render',
-            detail:
-              error instanceof Error ? error.message : 'workload render failed',
-          },
-        ],
-      };
+      return workloadRefusal(
+        'render',
+        error instanceof Error ? error.message : 'workload render failed',
+      );
     }
   }
+
+  const documents = projected.documents ?? [];
+  const namespaceDoc = documents.find((item) => item.kind === 'Namespace');
+  if (namespaceDoc?.metadata?.name) {
+    const observedNamespace = run(
+      'kubectl',
+      [
+        '--context',
+        context,
+        'get',
+        'namespace',
+        namespaceDoc.metadata.name,
+        '-o',
+        'json',
+      ],
+      { encoding: 'utf8' },
+    );
+    if (observedNamespace.status !== 0 || observedNamespace.error) {
+      return workloadRefusal(
+        'workload-inventory',
+        'owned workload inventory read failed',
+      );
+    }
+    const namespaceJson = parseClusterJson(observedNamespace.stdout ?? '');
+    if (!namespaceJson?.metadata?.name) {
+      return workloadRefusal(
+        'workload-inventory',
+        'owned workload inventory read malformed',
+      );
+    }
+    const renderedLabels = namespaceDoc.metadata.labels ?? {};
+    const observedLabels = namespaceJson.metadata.labels ?? {};
+    if (
+      observedLabels['offscreen.dev/slot'] !==
+        renderedLabels['offscreen.dev/slot'] ||
+      observedLabels['offscreen.dev/owner'] !==
+        renderedLabels['offscreen.dev/owner']
+    ) {
+      return workloadRefusal(
+        'workload-inventory',
+        `managed-name collision ${namespaceJson.metadata.name}`,
+      );
+    }
+  }
+
   const listed = run(
     'kubectl',
     [
       '--context',
-      'kind-offscreen-dev',
+      context,
       '-n',
-      projected.record.namespace,
+      namespace,
       'get',
-      'deployments',
+      'deployments,services',
       '-o',
-      'jsonpath={.items[*].metadata.name}',
+      'json',
     ],
     { encoding: 'utf8' },
   );
   if (listed.status !== 0 || listed.error) {
+    return workloadRefusal(
+      'workload-inventory',
+      'owned workload inventory read failed',
+    );
+  }
+  const inventory = parseClusterJson(listed.stdout ?? '');
+  if (!inventory) {
+    return workloadRefusal(
+      'workload-inventory',
+      'owned workload inventory read malformed',
+    );
+  }
+  const validation = validateOwnedSlotInventory(inventory, slotId);
+  if (!validation.ok) {
+    return workloadRefusal(validation.id, validation.detail);
+  }
+
+  const existingDeployments = (inventory.items ?? [])
+    .filter((item) => item.kind === 'Deployment')
+    .map((item) => item.metadata?.name ?? '')
+    .filter(Boolean);
+  const pending = selectColdStartDocuments(documents, existingDeployments);
+  const deploymentsToCreate = pending.filter(
+    (item) => item.kind === 'Deployment',
+  );
+  const servicesToApply = preserveOwnedServicePorts(
+    documents,
+    inventory.items ?? [],
+  );
+
+  if (deploymentsToCreate.length === 0 && servicesToApply.length === 0) {
+    return { ok: true, workloadsTouched: false };
+  }
+
+  let workloadsTouched = false;
+
+  if (deploymentsToCreate.length > 0) {
+    const created = run(
+      'kubectl',
+      ['--context', context, '-n', namespace, 'create', '-f', '-'],
+      {
+        input: JSON.stringify({
+          apiVersion: 'v1',
+          kind: 'List',
+          items: deploymentsToCreate,
+        }),
+        encoding: 'utf8',
+      },
+    );
+    if (created.status === 0) {
+      workloadsTouched = true;
+    } else {
+      return {
+        ok: false,
+        workloadsTouched,
+        refusals: [
+          { id: 'workload-apply', detail: 'owned workload apply failed' },
+        ],
+      };
+    }
+  }
+
+  if (servicesToApply.length > 0) {
+    const applied = run(
+      'kubectl',
+      ['--context', context, '-n', namespace, 'apply', '-f', '-'],
+      {
+        input: JSON.stringify({
+          apiVersion: 'v1',
+          kind: 'List',
+          items: servicesToApply,
+        }),
+        encoding: 'utf8',
+      },
+    );
+    if (applied.status === 0) {
+      workloadsTouched = true;
+      return { ok: true, workloadsTouched };
+    }
     return {
       ok: false,
-      refusals: [
-        {
-          id: 'deployment-inventory',
-          detail: 'owned deployment inventory read failed',
-        },
-      ],
-    };
-  }
-  const existing = (listed.stdout ?? '').split(/\s+/).filter(Boolean);
-  const coldStart = selectColdStartDocuments(
-    projected.documents ?? [],
-    existing,
-  );
-  if (coldStart.length === 0) {
-    return { ok: true };
-  }
-  const list = { apiVersion: 'v1', kind: 'List', items: coldStart };
-  const applied = run(
-    'kubectl',
-    ['--context', 'kind-offscreen-dev', 'apply', '-f', '-'],
-    {
-      input: JSON.stringify(list),
-      encoding: 'utf8',
-    },
-  );
-  if (applied.status !== 0) {
-    return {
-      ok: false,
+      workloadsTouched,
       refusals: [
         { id: 'workload-apply', detail: 'owned workload apply failed' },
       ],
     };
   }
-  return { ok: true };
+
+  return { ok: true, workloadsTouched };
 }

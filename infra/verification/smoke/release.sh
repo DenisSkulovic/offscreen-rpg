@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# DNS, cross-namespace HTTP, and PVC probes. Removes the probe objects when it exits.
-# Does not delete the cluster, Docker volumes, or foreign kubectl contexts.
+# DNS, cross-namespace HTTP, and PVC probes. Removes only probe objects this run created.
+# Does not delete the cluster, Docker volumes, foreign kubectl contexts, or shared PVC data.
 
 set -euo pipefail
 
@@ -23,26 +23,115 @@ if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME";
   exit 1
 fi
 
+ensure_probe_namespaces
+
+CREATED_PROBE_SERVER_UID=""
+CREATED_PROBE_SVC_UID=""
+CREATED_DNS_PROBE_UID=""
+CREATED_CROSS_NS_CLIENT_UID=""
+CREATED_PVC_WRITER_UID=""
+CREATED_PVC_READER_UID=""
+
+probe_preflight_absent() {
+  local -a checks=(
+    "lab-b|pod|probe-server"
+    "lab-b|service|probe"
+    "lab-a|pod|dns-probe"
+    "lab-a|pod|cross-ns-client"
+    "lab-a|pod|pvc-writer"
+    "lab-a|pod|pvc-reader"
+    "lab-a|persistentvolumeclaim|probe-data"
+  )
+  local entry ns kind name found
+  local -a conflicts=()
+  for entry in "${checks[@]}"; do
+    IFS='|' read -r ns kind name <<<"$entry"
+    if ! found="$("${KUBECTL[@]}" -n "$ns" get "$kind" "$name" --ignore-not-found -o name 2>&1)"; then
+      echo "Refusing smoke: unreadable ${kind}/${name} in ${ns}: ${found}" >&2
+      exit 1
+    fi
+    if [[ -n "$found" ]]; then
+      conflicts+=("${kind}/${name} in ${ns}")
+    fi
+  done
+  if [[ ${#conflicts[@]} -gt 0 ]]; then
+    echo "Refusing smoke: preflight conflict: existing ${conflicts[*]}." >&2
+    exit 1
+  fi
+}
+
+uid_delete() {
+  local ns="$1"
+  local kind="$2"
+  local name="$3"
+  local expected_uid="$4"
+  if [[ -z "$expected_uid" ]]; then
+    return 0
+  fi
+  local current_uid=""
+  if ! current_uid="$("${KUBECTL[@]}" -n "$ns" get "$kind" "$name" -o jsonpath='{.metadata.uid}' 2>/dev/null)"; then
+    echo "Skipping cleanup for unreadable ${kind}/${name} in ${ns}." >&2
+    return 0
+  fi
+  if [[ -z "$current_uid" ]]; then
+    return 0
+  fi
+  if [[ "$current_uid" != "$expected_uid" ]]; then
+    echo "Retaining foreign ${kind}/${name} in ${ns}; uid ${current_uid} is not owned ${expected_uid}." >&2
+    return 0
+  fi
+  case "$kind" in
+    pod)
+      "${KUBECTL[@]}" -n "$ns" delete pod "$name" --wait=true >/dev/null 2>&1 || true
+      ;;
+    service)
+      "${KUBECTL[@]}" -n "$ns" delete service "$name" >/dev/null 2>&1 || true
+      ;;
+    *)
+      echo "Skipping cleanup: no delete for ${kind}/${name} in ${ns}." >&2
+      ;;
+  esac
+}
+
 cleanup() {
   local status=$?
-  "${KUBECTL[@]}" -n lab-a delete pod dns-probe cross-ns-client pvc-writer pvc-reader --ignore-not-found --wait=true >/dev/null 2>&1 || true
-  "${KUBECTL[@]}" -n lab-b delete pod probe-server --ignore-not-found --wait=true >/dev/null 2>&1 || true
-  "${KUBECTL[@]}" -n lab-b delete svc probe --ignore-not-found >/dev/null 2>&1 || true
-  "${KUBECTL[@]}" -n lab-a delete pvc probe-data --ignore-not-found --wait=true >/dev/null 2>&1 || true
+  uid_delete lab-b pod probe-server "$CREATED_PROBE_SERVER_UID"
+  uid_delete lab-b service probe "$CREATED_PROBE_SVC_UID"
+  uid_delete lab-a pod dns-probe "$CREATED_DNS_PROBE_UID"
+  uid_delete lab-a pod cross-ns-client "$CREATED_CROSS_NS_CLIENT_UID"
+  uid_delete lab-a pod pvc-writer "$CREATED_PVC_WRITER_UID"
+  uid_delete lab-a pod pvc-reader "$CREATED_PVC_READER_UID"
   exit "$status"
 }
+
+probe_preflight_absent
 trap cleanup EXIT
 
 work="$(mktemp -d)"
 snapshot_volumes "$work/volumes-before"
 snapshot_foreign_contexts "$work/contexts-before"
 
-ensure_probe_namespaces
+if ! "${KUBECTL[@]}" create -f "$VERIFY_FIXTURES/probes/cross-namespace.yaml"; then
+  echo "Probe fixture create failed; refusing to retain unknown cluster objects." >&2
+  exit 1
+fi
+CREATED_PROBE_SERVER_UID="$("${KUBECTL[@]}" -n lab-b get pod probe-server -o jsonpath='{.metadata.uid}')"
+CREATED_PROBE_SVC_UID="$("${KUBECTL[@]}" -n lab-b get service probe -o jsonpath='{.metadata.uid}')"
 
-"${KUBECTL[@]}" apply -f "$VERIFY_FIXTURES/probes/cross-namespace.yaml"
 "${KUBECTL[@]}" -n lab-b wait --for=condition=Ready pod/probe-server --timeout=180s
-"${KUBECTL[@]}" apply -f "$VERIFY_FIXTURES/probes/dns.yaml"
-"${KUBECTL[@]}" apply -f "$VERIFY_FIXTURES/probes/client.yaml"
+
+if ! "${KUBECTL[@]}" create -f "$VERIFY_FIXTURES/probes/dns.yaml"; then
+  echo "DNS probe create failed." >&2
+  exit 1
+fi
+CREATED_DNS_PROBE_UID="$("${KUBECTL[@]}" -n lab-a get pod dns-probe -o jsonpath='{.metadata.uid}')"
+
+if ! "${KUBECTL[@]}" create -f "$VERIFY_FIXTURES/probes/client.yaml"; then
+  echo "Cross-namespace client create failed." >&2
+  exit 1
+fi
+CREATED_CROSS_NS_CLIENT_UID="$("${KUBECTL[@]}" -n lab-a get pod cross-ns-client -o jsonpath='{.metadata.uid}')"
+
 "${KUBECTL[@]}" -n lab-a wait --for=jsonpath='{.status.phase}'=Succeeded pod/dns-probe --timeout=180s
 "${KUBECTL[@]}" -n lab-a wait --for=jsonpath='{.status.phase}'=Succeeded pod/cross-ns-client --timeout=180s
 
@@ -55,7 +144,12 @@ client_log="$("${KUBECTL[@]}" -n lab-a logs pod/cross-ns-client)"
 printf '%s\n' "$client_log"
 printf '%s\n' "$client_log" | grep -qx 'lab-b-ok'
 
-"${KUBECTL[@]}" apply -f "$VERIFY_FIXTURES/probes/pvc-writer.yaml"
+if ! "${KUBECTL[@]}" create -f "$VERIFY_FIXTURES/probes/pvc-writer.yaml"; then
+  echo "PVC writer fixture create failed." >&2
+  exit 1
+fi
+CREATED_PVC_WRITER_UID="$("${KUBECTL[@]}" -n lab-a get pod pvc-writer -o jsonpath='{.metadata.uid}')"
+
 "${KUBECTL[@]}" -n lab-a wait --for=condition=Ready pod/pvc-writer --timeout=180s
 marker_ok=0
 for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -69,8 +163,15 @@ if [[ "$marker_ok" -ne 1 ]]; then
   echo "PVC writer did not store the marker." >&2
   exit 1
 fi
-"${KUBECTL[@]}" -n lab-a delete pod pvc-writer --wait=true
-"${KUBECTL[@]}" apply -f "$VERIFY_FIXTURES/probes/pvc-reader.yaml"
+uid_delete lab-a pod pvc-writer "$CREATED_PVC_WRITER_UID"
+CREATED_PVC_WRITER_UID=""
+
+if ! "${KUBECTL[@]}" create -f "$VERIFY_FIXTURES/probes/pvc-reader.yaml"; then
+  echo "PVC reader create failed." >&2
+  exit 1
+fi
+CREATED_PVC_READER_UID="$("${KUBECTL[@]}" -n lab-a get pod pvc-reader -o jsonpath='{.metadata.uid}')"
+
 "${KUBECTL[@]}" -n lab-a wait --for=jsonpath='{.status.phase}'=Succeeded pod/pvc-reader --timeout=180s
 reader_log="$("${KUBECTL[@]}" -n lab-a logs pod/pvc-reader)"
 printf '%s\n' "$reader_log"

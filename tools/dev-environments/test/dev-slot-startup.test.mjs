@@ -641,20 +641,25 @@ test('oauth readiness refuses before sql for a missing, incomplete, short, or un
   assert.equal(used.calls.includes('sql'), false);
 });
 
-test('deployment inventory failure applies nothing', async () => {
-  const projected = {
+function workloadProjected(slotId = 'dev-4') {
+  const gamePort = 13112;
+  const graph = renderDevSlotAppGraph(slotId, {
+    schemaReady: true,
+    ports: { game: gamePort },
+  });
+  return {
     record: {
-      slotId: 'dev-4',
-      namespace: 'offscreen-dev-4',
-      ports: { game: 13112 },
+      slotId,
+      namespace: graph.namespace,
+      ports: { game: gamePort },
     },
-    documents: renderDevSlotAppGraph('dev-4', {
-      schemaReady: true,
-      ports: { game: 13112 },
-    }).documents,
+    documents: graph.documents,
+    graph,
   };
-  const kubectlCalls = [];
-  const run = (cmd, args, options) => {
+}
+
+function helmOk(run, kubectlCalls) {
+  return (cmd, args, options) => {
     const joined = [cmd, ...(args ?? [])].join(' ');
     kubectlCalls.push(joined);
     if (joined.includes('helm version')) {
@@ -669,27 +674,291 @@ test('deployment inventory failure applies nothing', async () => {
     if (joined.includes('helm template')) {
       return spawnSync(cmd, args, options);
     }
-    if (joined.includes('get deployments')) {
+    throw new Error(`unexpected command: ${joined}`);
+  };
+}
+
+function ownedDeployment(name, slotId) {
+  return {
+    kind: 'Deployment',
+    metadata: {
+      name,
+      labels: {
+        'offscreen.dev/owner': 'offscreen-dev',
+        'offscreen.dev/slot': slotId,
+      },
+    },
+  };
+}
+
+function ownedService(name, slotId, ports) {
+  return {
+    kind: 'Service',
+    metadata: {
+      name,
+      labels: {
+        'offscreen.dev/owner': 'offscreen-dev',
+        'offscreen.dev/slot': slotId,
+      },
+    },
+    spec: { ports },
+  };
+}
+
+function mockWorkloadKubectl(projected, kubectlCalls, handlers) {
+  const nsDoc = projected.documents.find((item) => item.kind === 'Namespace');
+  helmOk(runPlaceholder, kubectlCalls);
+  function runPlaceholder(cmd, args, options) {
+    const joined = [cmd, ...(args ?? [])].join(' ');
+    kubectlCalls.push(joined);
+    if (joined.includes('helm version')) {
       return {
-        status: 1,
-        stdout: '',
-        stderr: 'forbidden',
+        status: 0,
+        stdout: 'v3.22.1+gabc\n',
+        stderr: '',
         error: undefined,
         signal: null,
       };
     }
+    if (joined.includes('helm template')) {
+      return spawnSync(cmd, args, options);
+    }
+    if (joined.includes('get namespace')) {
+      return (
+        handlers.namespace?.(nsDoc) ?? {
+          status: 0,
+          stdout: JSON.stringify({
+            metadata: {
+              name: nsDoc.metadata.name,
+              labels: nsDoc.metadata.labels,
+            },
+          }),
+          stderr: '',
+          error: undefined,
+          signal: null,
+        }
+      );
+    }
+    if (joined.includes('get deployments,services')) {
+      return (
+        handlers.inventory?.() ?? {
+          status: 0,
+          stdout: JSON.stringify({ items: [] }),
+          stderr: '',
+          error: undefined,
+          signal: null,
+        }
+      );
+    }
+    if (joined.includes(' create ')) {
+      return (
+        handlers.create?.(options) ?? {
+          status: 0,
+          stdout: '',
+          stderr: '',
+          error: undefined,
+          signal: null,
+        }
+      );
+    }
+    if (joined.includes(' apply ')) {
+      return (
+        handlers.apply?.(options) ?? {
+          status: 0,
+          stdout: '',
+          stderr: '',
+          error: undefined,
+          signal: null,
+        }
+      );
+    }
     throw new Error(`unexpected command: ${joined}`);
-  };
+  }
+  return runPlaceholder;
+}
+
+test('deployment inventory failure applies nothing', async () => {
+  const projected = workloadProjected('dev-4');
+  const kubectlCalls = [];
+  const run = mockWorkloadKubectl(projected, kubectlCalls, {
+    inventory: () => ({
+      status: 1,
+      stdout: '',
+      stderr: 'forbidden',
+      error: undefined,
+      signal: null,
+    }),
+  });
   const result = await applyOwnedSlotWorkloads(projected, {
     run,
     helmRun: run,
   });
   assert.equal(result.ok, false);
   assert.match(result.refusals[0].detail, /inventory/);
+  assert.equal(result.workloadsTouched, false);
   assert.equal(
     kubectlCalls.some((line) => line.includes('apply')),
     false,
   );
+  assert.equal(
+    kubectlCalls.some((line) => line.includes('create')),
+    false,
+  );
+});
+
+test('foreign managed-name collision is rejected before writes', async () => {
+  const projected = workloadProjected('dev-4');
+  const kubectlCalls = [];
+  const run = mockWorkloadKubectl(projected, kubectlCalls, {
+    inventory: () => ({
+      status: 0,
+      stdout: JSON.stringify({
+        items: [
+          ownedDeployment('game-web', 'dev-9'),
+          ownedService('game-web', 'dev-4', [{ port: 3000 }]),
+        ],
+      }),
+      stderr: '',
+      error: undefined,
+      signal: null,
+    }),
+  });
+  const result = await applyOwnedSlotWorkloads(projected, {
+    run,
+    helmRun: run,
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.refusals[0].detail, /collision/);
+  assert.equal(result.workloadsTouched, false);
+  assert.equal(
+    kubectlCalls.some((line) => line.includes('create')),
+    false,
+  );
+  assert.equal(
+    kubectlCalls.some((line) => line.includes('apply')),
+    false,
+  );
+});
+
+test('an absent deployment is created on cold start', async () => {
+  const projected = workloadProjected('dev-4');
+  const kubectlCalls = [];
+  let createdPayload = null;
+  const run = mockWorkloadKubectl(projected, kubectlCalls, {
+    inventory: () => ({
+      status: 0,
+      stdout: JSON.stringify({ items: [] }),
+      stderr: '',
+      error: undefined,
+      signal: null,
+    }),
+    create: (options) => {
+      createdPayload = options?.input ?? null;
+      return {
+        status: 0,
+        stdout: '',
+        stderr: '',
+        error: undefined,
+        signal: null,
+      };
+    },
+  });
+  const result = await applyOwnedSlotWorkloads(projected, {
+    run,
+    helmRun: run,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.workloadsTouched, true);
+  assert.ok(createdPayload);
+  const parsed = JSON.parse(createdPayload);
+  assert.equal(
+    parsed.items.some(
+      (item) => item.kind === 'Deployment' && item.metadata.name === 'game-web',
+    ),
+    true,
+  );
+});
+
+test('existing active deployments are not overwritten on cold start', async () => {
+  const projected = workloadProjected('dev-4');
+  const kubectlCalls = [];
+  let createdPayload = null;
+  const deployments = [
+    'game-web',
+    'game-api',
+    'game-authority',
+    'game-control',
+    'game-executor',
+    'game-relay',
+  ].map((name) => ownedDeployment(name, 'dev-4'));
+  const run = mockWorkloadKubectl(projected, kubectlCalls, {
+    inventory: () => ({
+      status: 0,
+      stdout: JSON.stringify({ items: deployments }),
+      stderr: '',
+      error: undefined,
+      signal: null,
+    }),
+    create: (options) => {
+      createdPayload = options?.input ?? null;
+      return {
+        status: 0,
+        stdout: '',
+        stderr: '',
+        error: undefined,
+        signal: null,
+      };
+    },
+  });
+  const result = await applyOwnedSlotWorkloads(projected, {
+    run,
+    helmRun: run,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(createdPayload, null);
+  assert.equal(
+    kubectlCalls.some((line) => line.includes(' create ')),
+    false,
+  );
+  assert.equal(
+    kubectlCalls.some((line) => line.includes(' apply ')),
+    true,
+  );
+});
+
+test('partial workload apply failure still reports workloadsTouched', async () => {
+  const projected = workloadProjected('dev-4');
+  const kubectlCalls = [];
+  const run = mockWorkloadKubectl(projected, kubectlCalls, {
+    inventory: () => ({
+      status: 0,
+      stdout: JSON.stringify({ items: [] }),
+      stderr: '',
+      error: undefined,
+      signal: null,
+    }),
+    create: () => ({
+      status: 0,
+      stdout: '',
+      stderr: '',
+      error: undefined,
+      signal: null,
+    }),
+    apply: () => ({
+      status: 1,
+      stdout: '',
+      stderr: 'apply refused',
+      error: undefined,
+      signal: null,
+    }),
+  });
+  const result = await applyOwnedSlotWorkloads(projected, {
+    run,
+    helmRun: run,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.workloadsTouched, true);
+  assert.equal(result.refusals[0].id, 'workload-apply');
 });
 
 test('helm failure refuses before workload apply', async () => {

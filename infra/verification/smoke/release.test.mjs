@@ -63,8 +63,8 @@ exit 2
         : `echo kind-offscreen-lab
   exit 0`;
 
-  const applyLog = join(binDir, 'apply-log');
-  writeFileSync(applyLog, '', 'utf8');
+  const mutateLog = join(binDir, 'mutate-log');
+  writeFileSync(mutateLog, '', 'utf8');
 
   writeStub(
     'kubectl',
@@ -92,10 +92,21 @@ if [[ "$joined" == *"jsonpath={.metadata.labels.offscreen\\\\.rpg/lab}"* ]]; the
   echo "${nsLabel}"
   exit 0
 fi
+if [[ "$joined" == *"get "* && "$joined" == *"ignore-not-found"* ]]; then exit 0; fi
 if [[ "$joined" == *" apply "* ]]; then
   for arg in "$@"; do
-    echo "$arg" >> "${applyLog}"
+    echo "$arg" >> "${mutateLog}"
   done
+  exit 0
+fi
+if [[ "$joined" == *" create "* ]]; then
+  for arg in "$@"; do
+    echo "$arg" >> "${mutateLog}"
+  done
+  exit 0
+fi
+if [[ "$joined" == *"jsonpath='{.metadata.uid}'"* || "$joined" == *'jsonpath={.metadata.uid}'* ]]; then
+  echo "uid-stub"
   exit 0
 fi
 if [[ "$joined" == *"wait "* ]]; then exit 0; fi
@@ -114,7 +125,7 @@ exit 2
 `,
   );
 
-  return { binDir, applyLog };
+  return { binDir, mutateLog };
 }
 
 test('release.sh sources ensure-namespaces before probe fixtures', () => {
@@ -126,22 +137,22 @@ test('release.sh sources ensure-namespaces before probe fixtures', () => {
   assert.ok(ensureIndex > 0 && probeIndex > ensureIndex);
 });
 
-test('release.sh stub run applies probe namespaces before probe objects', () => {
-  const { binDir, applyLog } = stubBinDir({ namespacesAbsent: true });
+test('release.sh stub run creates probe namespaces before probe objects', () => {
+  const { binDir, mutateLog } = stubBinDir({ namespacesAbsent: true });
   const result = spawnSync('bash', [releaseSmokePath], {
     encoding: 'utf8',
     env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
   });
   assert.equal(result.status, 0, result.stderr);
-  const applied = readFileSync(applyLog, 'utf8');
-  assert.match(applied, /fixtures\/probes\/namespaces\.yaml/);
-  const nsPos = applied.indexOf('namespaces.yaml');
-  const crossPos = applied.indexOf('cross-namespace.yaml');
-  assert.ok(nsPos >= 0 && crossPos > nsPos, applied);
+  const created = readFileSync(mutateLog, 'utf8');
+  assert.match(created, /fixtures\/probes\/namespaces\.yaml/);
+  const nsPos = created.indexOf('namespaces.yaml');
+  const crossPos = created.indexOf('cross-namespace.yaml');
+  assert.ok(nsPos >= 0 && crossPos > nsPos, created);
 });
 
 test('release.sh refuses foreign probe namespace label before fixtures', () => {
-  const { binDir, applyLog } = stubBinDir({
+  const { binDir, mutateLog } = stubBinDir({
     contextMode: 'foreign-ns',
     namespacesAbsent: false,
   });
@@ -151,8 +162,8 @@ test('release.sh refuses foreign probe namespace label before fixtures', () => {
   });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /foreign or missing lab label/);
-  const applied = readFileSync(applyLog, 'utf8');
-  assert.equal(applied.trim(), '');
+  const created = readFileSync(mutateLog, 'utf8');
+  assert.equal(created.trim(), '');
 });
 
 test('release.sh refuses when kubectl context is unreadable', () => {

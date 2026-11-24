@@ -1,0 +1,17 @@
+# INF35 | Practical owned workload cleanup
+
+**State: Done (2026-11-24).** **Status: Done (2026-11-24). Kind: implementation. Profile: CONTRACT.** Owner commissioned; baseline 54f9261d699097835e6c97ad55612a02ae49e59c; integrated from undertaking/storyteller-workshop at 1b86be6ba34b928b42107b5623ce2cf49b689957; dependency INF28 Done. Source-only. Goal: Practical owned workload cleanup.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| Startup may create initial parked Deployments and must not overwrite Tilt-managed active Pod templates | docs/technical/platform/developer-environments.md Selected decision | unchanged: startup creates missing Deployments and applies Services only after identity checks; existing Deployments are not applied | tools/dev-environments/src/application/dev-slot-startup.mjs and tools/dev-environments/src/rendering/dev-slot-app-graph.mjs on change/inf35-owned-workload-cleanup | fixture-tested | foreign managed-name collision and inventory read failure apply nothing; existing deployment is not created again; partial apply returns workloadsTouched true | N/A; heading already matched the landed behavior |
+| Release smoke must not delete shared tenants or objects this run did not create | infra/verification/smoke/release.sh | changed: preflight refuses existing named probes, records per-object UIDs, and deletes only a matching UID | infra/verification/smoke/release.sh on this Change | fixture-tested | early refusal performs zero deletes; UID mismatch skips the replacement; partial create deletes only recorded objects | N/A |
+| Product player-facing claims | product | unchanged: no product heading describes slot startup inventory or smoke UID cleanup | no source behavior changed for product pages | reviewed | live cluster, Docker, Tilt, and tenant deletion stayed out of this source proof | N/A |
+
+Touched proof and catalog paths: `tools/dev-environments/test/dev-slot-startup.test.mjs`, `infra/verification/source/test/volume-guard.test.mjs`, `infra/verification/smoke/release.test.mjs`, `work/changes/README.md`, `work/changes/ledger/2026-11.md`, `work/undertakings/storyteller-workshop/INF-MEDIUM.md`. [Program](../../../undertakings/storyteller-workshop/INF-MEDIUM.md) · [Tasks](TASKS.md) · [Execution](EXECUTION.md) · [Source map](SOURCE-MAP.md) · [Proof](PROOF.md).
+
+Target undertaking/storyteller-workshop, reviewed snapshot 54f9261d699097835e6c97ad55612a02ae49e59c, owner commissioned 2026-11-24. Source-only, no live cluster/Docker/Tilt/registry mutation or tenant deletion. Personal dev platform: optimize daily flow, not enterprise adversarial security. Preserve existing data/credential/foreign-slot protections. No new frameworks, profile features or auto-retry. One linked Change worktree, branch guard node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop; parent Composer coordinates one bounded task at a time, shared docs/catalog joined by human custodian. Mechanical successor reconciliation permitted; material source contradiction stop. Focused tests from repo root, changed-file quality and docs health, receipt actual counts; no live acceptance credit.
+
+Dispatch T01 after dependency receipt. Archive only after focused proofs and reconciliation. No successor auto-start.
