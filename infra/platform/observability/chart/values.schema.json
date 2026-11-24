@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["mode", "namespace", "section", "images"],
+  "properties": {
+    "mode": { "enum": ["release"] },
+    "namespace": { "type": "string", "minLength": 1 },
+    "section": { "enum": ["all"] },
+    "images": {
+      "type": "object",
+      "required": ["collector"],
+      "properties": {
+        "collector": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

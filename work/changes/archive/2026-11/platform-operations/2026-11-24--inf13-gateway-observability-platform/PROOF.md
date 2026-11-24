@@ -7,3 +7,10 @@ Offline real Helm render/lint and fake runner only. Compare normalized full obje
 - T03: Boundary proof; exact cases specified in EXECUTION T03; inspect gateway/install.sh; observability/install.sh; verification/smoke/{gateway,observability}/setup.sh.
 
 Run owner node --test files and named legacy tests, bash -n/node --check, changed-source formatting/quality checks, docs health. Required missing tool = NOT-RUN; failed tests = FAIL. Record actual receipt, live NOT-RUN.
+
+## Receipt
+
+- T01: `node --test` gateway install, smoke setup, overlay-guard — 20 pass. `bash -n` install/setup/smoke.
+- T02: observability install, render, smoke setup — 10 pass. Helm lint/template via platform render. `bash -n` on changed shells.
+- T03: five focused files — 24 pass / 0 fail. `bash -n` on gateway and observability install.sh and both setup.sh.
+- Live cluster, Docker, and Helm install against a cluster: NOT-RUN.

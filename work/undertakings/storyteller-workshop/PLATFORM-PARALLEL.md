@@ -8,7 +8,7 @@ Owner commissioned 2026-11-24. INF08 source Done at 66ed7551a02ffcbee90a97db4452
 | [INF10](../../changes/open/2026-11-24--inf10-postgres-platform/CHANGE.md) CloudNativePG normalization | INF09 | infra/platform/postgres; dev-cnpg adapters/tests; postgres runbook | Ready (dependency-gated) |
 | [INF11](../../changes/open/2026-11-24--inf11-temporal-platform/CHANGE.md) Temporal and safe schema lifecycle | INF09 | infra/platform/temporal; dev-temporal bootstrap/probe/CLI/tests; Temporal smoke | Ready (dependency-gated) |
 | [INF12](../../changes/open/2026-11-24--inf12-object-storage-platform/CHANGE.md) SeaweedFS and installer separation | INF09 | infra/platform/object-storage; dev-object-store bootstrap/probe/CLI/tests; object and content bootstrap smokes | Ready (dependency-gated) |
-| [INF13](../../changes/open/2026-11-24--inf13-gateway-observability-platform/CHANGE.md) Gateway and observability fixtures | INF09 | infra/platform/gateway,observability; matching smokes/runbooks | Ready (dependency-gated) |
+| [INF13](../../changes/archive/2026-11/platform-operations/2026-11-24--inf13-gateway-observability-platform/CHANGE.md) Gateway and observability fixtures | INF09 (Done) | infra/platform/gateway,observability; matching smokes/runbooks | Done (source; live NOT-RUN) |
 | [INF14](../../changes/archive/2026-11/platform-operations/2026-11-24--inf14-redis-rabbitmq-platform/CHANGE.md) Optional Redis and RabbitMQ | INF09 | infra/platform/redis,rabbitmq; matching smokes/runbooks | Done (source; live NOT-RUN) |
 | [INF15](../../changes/open/2026-11-24--inf15-platform-environment-assembly/CHANGE.md) Environment assembly | INF10–INF14 | infra/environments platform entrypoints; stack plan/runner; dev slot startup; aggregate guards | Ready (dependency-gated) |
 

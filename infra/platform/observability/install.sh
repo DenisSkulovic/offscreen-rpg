@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Install the pinned lab collector and two synthetic hops.
+# Install the pinned lab OpenTelemetry collector. Renders the platform chart before apply.
 # Does not create or delete the kind cluster, Docker volumes, or foreign kubectl contexts.
+# Synthetic smoke hops live in infra/verification/smoke/observability/setup.sh.
 
 set -euo pipefail
 
@@ -11,17 +12,21 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../clusters/kind/release/lib.sh"
 OBS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VERIFICATION_OBS_ROOT="$OBS_DIR/../../verification/smoke/observability"
+COMMON_CLI="$OBS_DIR/../common/cli.mjs"
+COLLECTOR_CONFIG="$OBS_DIR/chart/files/collector-config.yaml"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
   exit 1
 fi
 
+if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME"; then
+  echo "Refusing install: kubectl context ${CONTEXT_NAME} is unreadable or absent." >&2
+  exit 1
+fi
+
 COLLECTOR_IMAGE="otel/opentelemetry-collector:0.165.0"
 COLLECTOR_DIGEST="sha256:34b24b740c3c88d3467740e8642a397c13898ef76d7295c5425164c482ed1b73"
-PYTHON_IMAGE="python:3.12-alpine"
-PYTHON_DIGEST="sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89"
 
 require_digest() {
   local image="$1"
@@ -52,27 +57,23 @@ echo "kubectl client: $(kubectl version --client=true -o json | python3 -c 'impo
 echo "kind: $(kind version)"
 echo "otelcol: $(docker run --rm --entrypoint /otelcol "$COLLECTOR_IMAGE" --version)"
 echo "Collector image: ${COLLECTOR_IMAGE} ${COLLECTOR_DIGEST}"
-echo "Synthetic hop image: ${PYTHON_IMAGE} ${PYTHON_DIGEST}"
 
 require_digest "$COLLECTOR_IMAGE" "$COLLECTOR_DIGEST"
-require_digest "$PYTHON_IMAGE" "$PYTHON_DIGEST"
 
-if grep -REi 'password:|api[_-]?key|bearer |player-id|player_id' "$OBS_DIR"/*.yaml "$VERIFICATION_OBS_ROOT"/hop.py >/dev/null; then
+if grep -REi 'password:|api[_-]?key|bearer |player-id|player_id' \
+  "$COLLECTOR_CONFIG" "$OBS_DIR"/chart/templates/*.yaml >/dev/null; then
   echo "Refusing to install: observability files contain secret or player-id material." >&2
   exit 1
 fi
 
 import_image "$COLLECTOR_IMAGE"
-import_image "$PYTHON_IMAGE"
 
-"${KUBECTL[@]}" -n lab-a create configmap otel-collector-config \
-  --from-file=config.yaml="$OBS_DIR/collector-config.yaml" \
-  --dry-run=client -o yaml | "${KUBECTL[@]}" apply -f -
-"${KUBECTL[@]}" -n lab-a create configmap synthetic-hop \
-  --from-file=hop.py="$VERIFICATION_OBS_ROOT/hop.py" \
-  --dry-run=client -o yaml | "${KUBECTL[@]}" apply -f -
-"${KUBECTL[@]}" apply -f "$OBS_DIR/collector.yaml"
-"${KUBECTL[@]}" apply -f "$VERIFICATION_OBS_ROOT/hops.yaml"
+rendered="$(mktemp)"
+trap 'rm -f "$rendered"' EXIT
+
+node "$COMMON_CLI" target release
+node "$COMMON_CLI" render observability release all >"$rendered"
+"${KUBECTL[@]}" apply -f "$rendered"
 
 if ! "${KUBECTL[@]}" -n lab-a rollout status deployment/otel-collector --timeout=240s; then
   echo "Collector did not become ready." >&2
@@ -81,14 +82,10 @@ if ! "${KUBECTL[@]}" -n lab-a rollout status deployment/otel-collector --timeout
   "${KUBECTL[@]}" -n lab-a logs deployment/otel-collector --tail=120 || true
   exit 1
 fi
-"${KUBECTL[@]}" -n lab-a rollout status deployment/hop-a --timeout=240s
-"${KUBECTL[@]}" -n lab-a rollout status deployment/hop-b --timeout=240s
 
 collector_type="$("${KUBECTL[@]}" -n lab-a get svc otel-collector -o jsonpath='{.spec.type}')"
-hop_a_type="$("${KUBECTL[@]}" -n lab-a get svc hop-a -o jsonpath='{.spec.type}')"
-hop_b_type="$("${KUBECTL[@]}" -n lab-a get svc hop-b -o jsonpath='{.spec.type}')"
-echo "Service types: otel-collector=${collector_type} hop-a=${hop_a_type} hop-b=${hop_b_type}"
-if [[ "$collector_type" != "ClusterIP" || "$hop_a_type" != "ClusterIP" || "$hop_b_type" != "ClusterIP" ]]; then
+echo "Service type: otel-collector=${collector_type}"
+if [[ "$collector_type" != "ClusterIP" ]]; then
   echo "An observability Service is not ClusterIP." >&2
   exit 1
 fi

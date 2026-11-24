@@ -1,0 +1,4 @@
+mode: release
+namespace: lab-a
+images:
+  collector: docker.io/otel/opentelemetry-collector:0.165.0@sha256:34b24b740c3c88d3467740e8642a397c13898ef76d7295c5425164c482ed1b73

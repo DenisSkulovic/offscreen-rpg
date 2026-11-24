@@ -180,8 +180,18 @@ test('rendered manifests contain no committed secret literals', () => {
   assert.match(allText, /game-runtime/);
 });
 
-test('gateway routes.yaml synthetic fixture is unchanged', () => {
-  const routes = readFileSync(join(platformGatewayDir, 'routes.yaml'), 'utf8');
+test('platform gateway.yaml has no synthetic HTTPRoute fixture', () => {
+  const gateway = readFileSync(join(platformGatewayDir, 'gateway.yaml'), 'utf8');
+  assert.match(gateway, /name:\s*lab-edge/);
+  assert.doesNotMatch(gateway, /lab-edge-routes/);
+  assert.doesNotMatch(gateway, /synthetic-api/);
+});
+
+test('verification gateway routes.yaml keeps the synthetic HTTPRoute', () => {
+  const routes = readFileSync(
+    join(repoRoot, 'infra/verification/smoke/gateway/routes.yaml'),
+    'utf8',
+  );
   assert.match(routes, /synthetic-api/);
   assert.match(routes, /lab-edge-routes/);
 });

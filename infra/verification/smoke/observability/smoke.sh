@@ -2,6 +2,7 @@
 # Prove one two-hop trace and one missing-hop failure signal.
 # Does not delete the cluster, Docker volumes, or foreign kubectl contexts.
 # Does not install the game.
+# Run infra/verification/smoke/observability/setup.sh after platform install before this script.
 
 set -euo pipefail
 
@@ -17,6 +18,26 @@ if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
   exit 1
 fi
+
+if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME"; then
+  echo "Refusing smoke: kubectl context ${CONTEXT_NAME} is unreadable or absent." >&2
+  exit 1
+fi
+
+if ! "${KUBECTL[@]}" -n lab-a get deployment hop-a >/dev/null 2>&1; then
+  echo "Deployment hop-a is absent. Run ${OBS_DIR}/setup.sh first." >&2
+  exit 1
+fi
+
+assert_owned_synthetic_hop() {
+  local name="$1"
+  local app
+  app="$("${KUBECTL[@]}" -n lab-a get deployment "$name" -o jsonpath='{.metadata.labels.app}' 2>/dev/null || true)"
+  if [[ "$app" != "$name" ]]; then
+    echo "Refusing smoke: deployment ${name} is missing or not an owned synthetic hop." >&2
+    exit 1
+  fi
+}
 
 restore() {
   local status=$?
@@ -70,6 +91,9 @@ if [[ -z "$endpoints_before" ]]; then
   echo "hop-b had no endpoints before the failure proof." >&2
   exit 1
 fi
+
+assert_owned_synthetic_hop hop-a
+assert_owned_synthetic_hop hop-b
 
 "${KUBECTL[@]}" -n lab-a scale deployment/hop-b --replicas=0
 pod_count=1

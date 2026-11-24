@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: lab-edge
+  namespace: lab-edge
+  labels:
+    offscreen.rpg/lab: disposable
+spec:
+  gatewayClassName: lab-traefik
+  listeners:
+    - name: web
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same

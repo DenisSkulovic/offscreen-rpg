@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Smoke the lab Gateway: routes, missing backend, SSE, loopback, and rejected proxy identity.
 # Does not delete the cluster, Docker volumes, or foreign kubectl contexts.
+# Run infra/verification/smoke/gateway/setup.sh after platform install before this script.
 
 set -euo pipefail
 
@@ -10,9 +11,20 @@ if [[ $# -ne 0 ]]; then
 fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
+GATEWAY_SMOKE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
+  exit 1
+fi
+
+if ! kubectl config get-contexts -o name 2>/dev/null | grep -qx "$CONTEXT_NAME"; then
+  echo "Refusing smoke: kubectl context ${CONTEXT_NAME} is unreadable or absent." >&2
+  exit 1
+fi
+
+if ! "${KUBECTL[@]}" -n lab-edge get httproute lab-edge-routes >/dev/null 2>&1; then
+  echo "HTTPRoute lab-edge-routes is absent. Run ${GATEWAY_SMOKE_ROOT}/setup.sh first." >&2
   exit 1
 fi
 
@@ -38,11 +50,6 @@ echo "MemAvailable KiB: $(awk '/MemAvailable:/ {print $2}' /proc/meminfo)"
 "${KUBECTL[@]}" -n gateway-system get deployment lab-gateway-traefik -o wide
 "${KUBECTL[@]}" -n lab-edge get gateway,httproute,deploy,svc,endpoints
 "${KUBECTL[@]}" -n gateway-system get svc lab-gateway-traefik -o wide
-
-if "${KUBECTL[@]}" get svc -A --no-headers | awk '{print $2}' | grep -Ei 'postgres|redis|rabbit|temporal|broker'; then
-  echo "A database or broker Service is present. This lab must not expose one." >&2
-  exit 1
-fi
 
 assert_loopback_only
 

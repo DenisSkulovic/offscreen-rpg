@@ -56,11 +56,14 @@ exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
 infra/clusters/kind/release/up.sh
 infra/platform/observability/install.sh
+infra/verification/smoke/observability/setup.sh
 infra/verification/smoke/observability/smoke.sh
 infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
-`install.sh` and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
+`install.sh` readiness is collector Deployment Available on OTLP HTTP 4318 and health 13133. Smoke readiness also needs `setup.sh`: synthetic hop Deployments Available and `synthetic-hop` ConfigMap present.
+
+`install.sh`, `setup.sh`, and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `install.sh` renders the platform observability chart and does not import the synthetic hop image or apply `hops.yaml`. `setup.sh` refuses when `otel-collector` is absent. `smoke.sh` scales only owned synthetic hops `hop-a` and `hop-b` during the missing-second-hop proof. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
 
 ## Failure
 

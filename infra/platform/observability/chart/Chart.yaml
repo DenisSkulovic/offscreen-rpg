@@ -1,0 +1,5 @@
+apiVersion: v2
+name: platform-observability
+description: Disposable lab OpenTelemetry collector (release profile only)
+type: application
+version: 0.1.0

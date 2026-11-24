@@ -8,7 +8,7 @@ Install one maintained Gateway API controller on the existing `offscreen-lab` cl
 
 The shared kind configuration does not publish a workload port. This procedure does not change that file. The host reaches the Gateway only by `kubectl port-forward` bound to `127.0.0.1`.
 
-Platform install manifests live in `infra/platform/gateway/`. Verification scripts live in `infra/verification/smoke/gateway/`. Run them from the repository root, after `infra/clusters/kind/release/up.sh`, and before `infra/clusters/kind/release/destroy.sh kind-offscreen-lab`.
+Platform install manifests live in `infra/platform/gateway/` (`gateway.yaml` is only the `lab-edge` Gateway). Synthetic HTTPRoute, backends, and smoke scripts live in `infra/verification/smoke/gateway/`. Run them from the repository root, after `infra/clusters/kind/release/up.sh`, and before `infra/clusters/kind/release/destroy.sh kind-offscreen-lab`.
 
 ## Plain loopback exception
 
@@ -59,7 +59,7 @@ Chart CRDs are skipped because this lab does not use IngressRoute or Traefik Hub
 | `GET /no-such` | no HTTPRoute match | `404` from the Gateway |
 | `GET /api/no-such` | synthetic API | `404` and `api-not-found` |
 
-Readiness is the Traefik and synthetic Deployments Available, the Gateway condition `Programmed=True`, and the HTTPRoute parent condition `Accepted=True`.
+`install.sh` readiness is Traefik Available and Gateway `Programmed=True`. Smoke readiness also needs `setup.sh`: synthetic Deployments Available and HTTPRoute `Accepted=True`.
 
 ## Create, probe, and delete
 
@@ -70,11 +70,12 @@ exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
 infra/clusters/kind/release/up.sh
 infra/platform/gateway/install.sh
+infra/verification/smoke/gateway/setup.sh
 infra/verification/smoke/gateway/smoke.sh
 infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
-`install.sh` and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `smoke.sh` opens `127.0.0.1:18080` only for the probe and closes that port-forward when it exits. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
+`install.sh`, `setup.sh`, and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `setup.sh` refuses when `game-edge-routes` is already present (release overlap). `install.sh` does not apply synthetic backends, routes, or configmaps. `smoke.sh` opens `127.0.0.1:18080` only for the probe and closes that port-forward when it exits. `down.sh` deletes the kind cluster. It does not delete Compose volumes.
 
 ## Debugging
 
@@ -89,7 +90,7 @@ infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 
 On 2026-11-19 the locked sequence created `offscreen-lab`, installed this gateway, passed the smoke, and deleted the cluster. Host tools were Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, and Helm v3.22.1. MemTotal was 12249872 kB. MemAvailable was 9816316 kB before create, 8940520 kB during the smoke, and 9620064 kB after delete. While the cluster was up, `docker stats` showed the worker near 236 MiB and the control plane near 669 MiB.
 
-`install.sh` checked the image digests, applied Gateway API v1.6.3 (`sha256sum` matched), and installed chart 42.4.1. Traefik and both synthetic Deployments became Available. Gateway `lab-edge` reported `Programmed=True`. HTTPRoute `lab-edge-routes` reported `Accepted=True`. `absent-backend` had no endpoints. Every Service in the probe was `ClusterIP`.
+`install.sh` checked the Traefik image digest, applied Gateway API v1.6.3 (`sha256sum` matched), and installed chart 42.4.1. Traefik became Available and Gateway `lab-edge` reported `Programmed=True` before smoke setup. `setup.sh` checked the synthetic Python digest, applied backends and `lab-edge-routes`, and waited until both synthetic Deployments were Available and HTTPRoute `Accepted=True`. `absent-backend` had no endpoints. Every Service in the probe was `ClusterIP`.
 
 `smoke.sh` port-forwarded `127.0.0.1:18080`. `ss` showed `127.0.0.1:18080` and did not show `0.0.0.0:18080`. The kind containers published `127.0.0.1:6443` only. Results:
 
