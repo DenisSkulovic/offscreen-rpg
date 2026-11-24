@@ -1,5 +1,7 @@
 # Workstation observability implementation wave
 
+**Current checkpoint:** INF44–46 archived source-only; installed composition defective. [INF49](../../changes/open/2026-11-24--inf49-monitor-composition/CHANGE.md) before INF47. Do not activate. Main target; historical wave table not current dispatch status.
+
 Owner commission 2026-11-24, source-only. Canonical [measurement contract](../../../docs/technical/platform/workstation-observability.md); [operator runbook](../../../docs/runbooks/workstation-observability.md). Existing INF29 live verification showed capacity abort, no continuous attribution. No new live acceptance credit.
 
 | Change | Dependency | State |

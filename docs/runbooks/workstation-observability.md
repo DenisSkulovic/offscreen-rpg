@@ -1,5 +1,7 @@
 # Workstation observability | operator runbook
 
+**Do not activate current source:** INF44–46 modules landed but composition incomplete. [INF49](../../work/changes/open/2026-11-24--inf49-monitor-composition/CHANGE.md) corrects entrypoint/config/workers, INF47 follows; live install separately authorized.
+
 [Technical contract](../technical/platform/workstation-observability.md). Workstation collector independent of Kubernetes and game. No cloud connection, no raw process argv exports.
 
 **Source acceptance (INF44–45):** tracked install assets and nested runtime modules exist under `infra/monitoring/` (`runtime.py`, `kube.py`, `cgroup_probe.sh`). They do **not** claim a live collector or live Docker/Kind/cgroup visibility until an operator completes native package install and authorized activation.

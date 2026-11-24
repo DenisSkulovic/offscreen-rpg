@@ -1,0 +1,3 @@
+# INF50 | Infrastructure correctness after INF29
+
+**State: Ready for T01 source-only; T02/T03 planner-blocked at named seams. Kind: implementation. Profile: CONTRACT.** Target main, baseline 45251aa99ffe9ff4dc8d749637a2a662b979ef94. INF29 live proof remains open. No stack/host mutation. [Tasks](TASKS.md) · [Execution](EXECUTION.md) · [Proof](PROOF.md) · [Source map](SOURCE-MAP.md). T01 may land independently as source batch; no whole-Change closure until remaining tasks resolved or disposed.

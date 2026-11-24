@@ -1,5 +1,7 @@
 # Local developer platform | composition implementation
 
+**Current checkpoint:** [consolidation](CONSOLIDATION.md) supersedes older dispatch summaries; INF29 fixes integrated/live open, INF50 corrections, INF49 before INF47, INF38 planner closure, INF48 Proposed. Main target.
+
 **Workstation resource flight recorder:** [INF44–47](WORKSTATION-OBSERVABILITY.md) is a separate source implementation wave; persistent monitoring before further optimization. INF29 live corrective work remains independent.
 
 Baseline 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. INF36 source Done; INF43 source Done (445 pass / 0 fail on the four catalog commands). INF29 live verification in progress, independent checkout. No live acceptance credit.

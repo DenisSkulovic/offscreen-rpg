@@ -1,0 +1,3 @@
+# Proof
+
+Run `python3 -m unittest discover -s infra/monitoring/tests -p 'test_*.py'` plus actual staged executable fixture. Require real timestamped host windows, process/runtime fixture data, rollups, explicit coverage, bounded overrun, shutdown/restart persistence and no secrets. Verify installer/unit paths/ownership together. Mocked systemctl or helper unit tests alone do not establish composition. No live root install, host activation, Netdata tier claim or Docker/Kind start. Record actual revision, command, counts and limitations.

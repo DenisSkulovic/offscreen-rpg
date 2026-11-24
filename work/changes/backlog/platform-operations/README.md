@@ -1,5 +1,7 @@
 # platform operations | proposed Changes
 
+[INF48 storage lifecycle](2026-11-24--inf48-storage-lifecycle/CHANGE.md) — Proposed; no automatic deletion authorization.
+
 [Backlog index](../README.md) · [Open Changes](../../README.md)
 
 | Change | Proposed outcome |
