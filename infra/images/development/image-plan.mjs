@@ -171,6 +171,26 @@ export function fingerprintDevImageContext(root, input) {
  * @param {string} root
  * @param {{ roleFilter?: string, verifiedFingerprint?: string, cachePath?: string }} input
  */
+/**
+ * Tilt or the CLI may pass a prior fingerprint as a hint. Only a match against a
+ * freshly verified hash authorizes reuse; a mismatch is a stale hint, not identity.
+ * @param {string | null | undefined} hint
+ * @param {string | null | undefined} verified
+ * @returns {{ ok: true, reason: string } | { ok: false, reason: string }}
+ */
+export function verifyDevImageFingerprintHint(hint, verified) {
+  if (hint == null || hint === '') {
+    return { ok: true, reason: 'no-hint' };
+  }
+  if (typeof verified !== 'string' || !/^[a-f0-9]{64}$/.test(verified)) {
+    return { ok: false, reason: 'unverified-context' };
+  }
+  if (hint === verified) {
+    return { ok: true, reason: 'hint-matches' };
+  }
+  return { ok: false, reason: 'stale-fingerprint-hint' };
+}
+
 export function fingerprintDevImageContextCached(root, input) {
   const verified = input?.verifiedFingerprint;
   if (typeof verified === 'string' && /^[a-f0-9]{64}$/.test(verified)) {
@@ -291,16 +311,59 @@ export function planSlotImageArtifact(input) {
  * @param {{
  *   ref: string,
  *   expectedConfigId: string | null,
- *   nodes?: Record<string, { configId?: string | null }>,
+ *   nodes?: Record<string, {
+ *     configId?: string | null,
+ *     targetDigest?: string | null,
+ *     canonicalTargetDigest?: string | null,
+ *   }>,
  * }} input
  */
+/**
+ * @param {{
+ *   expectedConfigId: string,
+ *   canonicalTargetDigest?: string | null,
+ *   alias?: {
+ *     configId?: string | null,
+ *     targetDigest?: string | null,
+ *     canonicalTargetDigest?: string | null,
+ *   } | null,
+ * }} input
+ */
+export function aliasNodeIdentityMatchesCanonical(input) {
+  const expected = input.expectedConfigId;
+  if (!GENERATION_ID.test(expected)) {
+    return false;
+  }
+  const alias = input.alias;
+  if (!alias) {
+    return false;
+  }
+  if (alias.configId === expected) {
+    return true;
+  }
+  const canonicalTarget =
+    alias.canonicalTargetDigest ?? input.canonicalTargetDigest ?? null;
+  if (
+    typeof canonicalTarget === 'string' &&
+    GENERATION_ID.test(canonicalTarget) &&
+    alias.targetDigest === canonicalTarget
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function planAliasIdentityLoad(input) {
   const expected = input.expectedConfigId;
   const comparable =
     typeof expected === 'string' && /^sha256:[a-f0-9]{64}$/.test(expected);
   const loadNodes = REQUIRED_NODES.filter((node) => {
     if (!comparable) return true;
-    return input.nodes?.[node]?.configId !== expected;
+    const nodeState = input.nodes?.[node];
+    return !aliasNodeIdentityMatchesCanonical({
+      expectedConfigId: expected,
+      alias: nodeState ?? null,
+    });
   });
   return {
     ref: input.ref,
@@ -320,7 +383,11 @@ export function planAliasIdentityLoad(input) {
  * the expected config id. A failed load leaves the previous id in place.
  * @param {{
  *   expectedConfigId: string | null,
- *   nodes?: Record<string, { configId?: string | null }>,
+ *   nodes?: Record<string, {
+ *     configId?: string | null,
+ *     targetDigest?: string | null,
+ *     canonicalTargetDigest?: string | null,
+ *   }>,
  * }} input
  */
 const GENERATION_ID = /^sha256:[a-f0-9]{64}$/;

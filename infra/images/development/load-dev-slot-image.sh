@@ -78,23 +78,30 @@ source "$repo/infra/images/development/startup-timing.sh"
 # shellcheck source=build.sh
 source "$repo/infra/images/development/build.sh"
 mkdir -p "${TMPDIR:-/tmp}/offscreen-dev-image-locks"
+fingerprint_hint="${OFFSCREEN_IMAGE_FINGERPRINT:-}"
 fingerprint_started="$(startup_timing_begin)"
-if [[ -n "${OFFSCREEN_IMAGE_FINGERPRINT:-}" ]]; then
-  fingerprint="$OFFSCREEN_IMAGE_FINGERPRINT"
+if [[ -n "$fingerprint_hint" ]]; then
+  lock="${TMPDIR:-/tmp}/offscreen-dev-image-locks/${fingerprint_hint}.lock"
+  exec 9>"$lock"
+  flock 9
+  fingerprint="$(computeDevImageFingerprint)"
+  if [[ "$fingerprint" != "$fingerprint_hint" ]]; then
+    echo "refusing stale fingerprint hint: recomputed context differs (retry)" >&2
+    exit 1
+  fi
   fingerprint_cache="invocation"
 else
-  fingerprint="$(node --input-type=module -e "
-import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './infra/images/development/image-plan.mjs';
-const result = fingerprintDevImageContext(process.cwd(), { roleFilter: UNION_ROLE_FILTER });
-if (!result.ok) { console.error(result.reason); process.exit(2); }
-process.stdout.write(result.fingerprint);
-")"
+  recompute_lock="${TMPDIR:-/tmp}/offscreen-dev-image-locks/.recompute.lock"
+  exec 8>"$recompute_lock"
+  flock 8
+  fingerprint="$(computeDevImageFingerprint)"
+  flock -u 8
   fingerprint_cache="miss"
+  lock="${TMPDIR:-/tmp}/offscreen-dev-image-locks/${fingerprint}.lock"
+  exec 9>"$lock"
+  flock 9
 fi
 startup_timing_end fingerprint images "$fingerprint_cache" "$fingerprint_started"
-lock="${TMPDIR:-/tmp}/offscreen-dev-image-locks/${fingerprint}.lock"
-exec 9>"$lock"
-flock 9
 ensureDevArtifact "$fingerprint"
 canonical="$DEV_CANONICAL_REF"
 digest="$DEV_ARTIFACT_DIGEST"
@@ -104,52 +111,81 @@ kind_loads="$(node --input-type=module -e "
 const receipt = JSON.parse(process.argv[1]);
 process.stdout.write(String(receipt.loadedNodes.length));
 " "$kind_json")"
-alias_index_digest() {
+kind_node_identity() {
   local node="$1"
   local ref="$2"
-  docker exec "$node" ctr -n k8s.io images ls 2>/dev/null \
-    | awk -v ref="docker.io/library/${ref}" '$1 == ref { print $3; exit }' \
-    || true
+  node "$repo/infra/images/distribution/kind-image-loader.mjs" inspect dev "$ref" "$node"
 }
 roles=(web api authority worker)
 if [[ "$role" != "all" ]]; then roles=("$role"); fi
 for alias_role in "${roles[@]}"; do
   ref="offscreen-dev-workspace:${slot}-${alias_role}"
   docker tag "$canonical" "$ref"
+  canonical_cp="$(kind_node_identity "${cluster}-control-plane" "$canonical")"
+  canonical_worker="$(kind_node_identity "${cluster}-worker" "$canonical")"
   for node_role in control-plane worker; do
     node="${cluster}-${node_role}"
-    current="$(alias_index_digest "$node" "$ref")"
-    if [[ "$current" == "$digest" ]]; then
+  if [[ "$node_role" == control-plane ]]; then
+    canonical_identity="$canonical_cp"
+  else
+    canonical_identity="$canonical_worker"
+  fi
+  alias_identity="$(kind_node_identity "$node" "$ref")"
+  node_decision="$(node --input-type=module -e '
+import { aliasNodeIdentityMatchesCanonical } from "./infra/images/development/image-plan.mjs";
+const [expected, aliasJson, canonicalJson] = process.argv.slice(1);
+const alias = aliasJson === "null" ? null : JSON.parse(aliasJson);
+const canonical = canonicalJson === "null" ? null : JSON.parse(canonicalJson);
+const matches = aliasNodeIdentityMatchesCanonical({
+  expectedConfigId: expected,
+  alias: alias
+    ? {
+        ...alias,
+        canonicalTargetDigest: canonical?.targetDigest ?? null,
+      }
+    : null,
+});
+process.stdout.write(matches ? "hit" : "miss");
+' "$digest" "$alias_identity" "$canonical_identity")"
+    if [[ "$node_decision" == hit ]]; then
       echo "phase=ctr-tag role=${alias_role} node=${node} result=hit" >&2
       continue
     fi
     echo "phase=ctr-tag role=${alias_role} node=${node} result=miss" >&2
     tag_started="$(startup_timing_begin)"
-    if [[ -n "$current" ]]; then
-      docker exec "$node" ctr -n k8s.io images rm "docker.io/library/${ref}"
+    if [[ "$alias_identity" != null ]]; then
+      docker exec "$node" ctr -n k8s.io images rm "docker.io/library/${ref}" 2>/dev/null || true
     fi
     docker exec "$node" ctr -n k8s.io images tag \
       "docker.io/library/${canonical}" \
       "docker.io/library/${ref}"
     startup_timing_end "ctr-tag-${alias_role}-${node_role}" images miss "$tag_started"
   done
+  alias_cp="$(kind_node_identity "${cluster}-control-plane" "$ref")"
+  alias_worker="$(kind_node_identity "${cluster}-worker" "$ref")"
   node --input-type=module -e '
 import { confirmLoadedAliasIdentity } from "./infra/images/development/image-plan.mjs";
-const [expected, control, worker] = process.argv.slice(1);
+const [expected, aliasCp, aliasWorker, canonicalCp, canonicalWorker] = process.argv.slice(1);
+const parse = (text) => (text === "null" ? null : JSON.parse(text));
+const withCanonical = (alias, canonical) =>
+  alias
+    ? {
+        ...alias,
+        canonicalTargetDigest: canonical?.targetDigest ?? null,
+      }
+    : null;
 const result = confirmLoadedAliasIdentity({
   expectedConfigId: expected,
   nodes: {
-    "control-plane": { configId: control || null },
-    worker: { configId: worker || null },
+    "control-plane": withCanonical(parse(aliasCp), parse(canonicalCp)),
+    worker: withCanonical(parse(aliasWorker), parse(canonicalWorker)),
   },
 });
 if (!result.ok) {
   console.error(`post-load-mismatch nodes=${result.nodes.join(",")}`);
   process.exit(1);
 }
-' "$digest" \
-    "$(alias_index_digest "${cluster}-control-plane" "$ref")" \
-    "$(alias_index_digest "${cluster}-worker" "$ref")"
+' "$digest" "$alias_cp" "$alias_worker" "$canonical_cp" "$canonical_worker"
 done
 if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
   receipt_ref="$canonical"

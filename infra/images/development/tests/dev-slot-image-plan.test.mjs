@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  aliasNodeIdentityMatchesCanonical,
   confirmLoadedAliasIdentity,
   contentDerivedImageRef,
   fingerprintDevImageContext,
@@ -424,6 +425,72 @@ test('alias identity loads only nodes whose config id is missing or stale', () =
   });
   assert.equal(refused.ok, false);
   assert.deepEqual(refused.nodes, ['worker']);
+});
+
+const TARGET_A =
+  'sha256:1111111111111111111111111111111111111111111111111111111111111111';
+const TARGET_B =
+  'sha256:2222222222222222222222222222222222222222222222222222222222222222';
+
+test('alias identity matches via config id or canonical target digest only', () => {
+  assert.equal(
+    aliasNodeIdentityMatchesCanonical({
+      expectedConfigId: HOST,
+      alias: { configId: HOST, targetDigest: TARGET_A },
+    }),
+    true,
+  );
+  assert.equal(
+    aliasNodeIdentityMatchesCanonical({
+      expectedConfigId: HOST,
+      alias: {
+        configId: STALE,
+        targetDigest: TARGET_A,
+        canonicalTargetDigest: TARGET_A,
+      },
+    }),
+    true,
+  );
+  assert.equal(
+    aliasNodeIdentityMatchesCanonical({
+      expectedConfigId: HOST,
+      alias: {
+        configId: HOST,
+        targetDigest: TARGET_A,
+        canonicalTargetDigest: TARGET_B,
+      },
+    }),
+    true,
+  );
+  assert.equal(
+    aliasNodeIdentityMatchesCanonical({
+      expectedConfigId: HOST,
+      alias: {
+        configId: STALE,
+        targetDigest: TARGET_A,
+        canonicalTargetDigest: TARGET_B,
+      },
+    }),
+    false,
+  );
+  const distinctTargets = planAliasIdentityLoad({
+    ref: 'offscreen-dev-workspace:dev-7-web',
+    expectedConfigId: HOST,
+    nodes: {
+      'control-plane': {
+        configId: HOST,
+        targetDigest: TARGET_A,
+        canonicalTargetDigest: TARGET_A,
+      },
+      worker: {
+        configId: HOST,
+        targetDigest: TARGET_B,
+        canonicalTargetDigest: TARGET_B,
+      },
+    },
+  });
+  assert.equal(distinctTargets.ready, true);
+  assert.deepEqual(distinctTargets.loadNodes, []);
 });
 
 test('a new fingerprint selects a new image ref and an unchanged one does not roll', () => {

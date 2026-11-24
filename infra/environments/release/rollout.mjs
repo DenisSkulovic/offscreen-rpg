@@ -20,7 +20,8 @@ import {
 } from './migration.mjs';
 
 const PROFILE_ID = 'release';
-export const DEPLOYMENT_IMAGE_ID_ANNOTATION = 'offscreen.rpg/deployment-image-id';
+export const DEPLOYMENT_IMAGE_ID_ANNOTATION =
+  'offscreen.rpg/deployment-image-id';
 
 /** @type {Readonly<Record<string, string>>} */
 export const RELEASE_PINNED_IMAGES = Object.freeze({
@@ -91,7 +92,8 @@ export function annotateDeploymentPodTemplate(deployment, digest) {
   manifest.spec.template ??= {};
   manifest.spec.template.metadata ??= {};
   manifest.spec.template.metadata.annotations ??= {};
-  manifest.spec.template.metadata.annotations[DEPLOYMENT_IMAGE_ID_ANNOTATION] = digest;
+  manifest.spec.template.metadata.annotations[DEPLOYMENT_IMAGE_ID_ANNOTATION] =
+    digest;
   return manifest;
 }
 
@@ -99,7 +101,11 @@ export function annotateDeploymentPodTemplate(deployment, digest) {
  * @param {object | null | undefined} deployment
  */
 export function deploymentPodTemplateImageIdAnnotation(deployment) {
-  return deployment?.spec?.template?.metadata?.annotations?.[DEPLOYMENT_IMAGE_ID_ANNOTATION] ?? null;
+  return (
+    deployment?.spec?.template?.metadata?.annotations?.[
+      DEPLOYMENT_IMAGE_ID_ANNOTATION
+    ] ?? null
+  );
 }
 
 /**
@@ -112,10 +118,14 @@ export function deploymentRolloutRequired(existingAnnotation, digest) {
 
 /**
  * @param {Record<string, string>} rawReceipts
- * @returns {Record<string, { ref: string, digest: string }>}
+ * @returns {Record<string, {
+ *   ref: string,
+ *   digest: string,
+ *   nodes?: Record<string, { configId: string, manifestDigest: string, targetDigest: string }>,
+ * }>}
  */
 export function parseLoaderReceiptMap(rawReceipts) {
-  /** @type {Record<string, { ref: string, digest: string }>} */
+  /** @type {Record<string, ReturnType<typeof parseLoaderReceipt>>} */
   const parsed = {};
   for (const [family, text] of Object.entries(rawReceipts)) {
     if (typeof text !== 'string' || text.trim().length === 0) {
@@ -163,7 +173,9 @@ export function buildFilteredApplyManifest(input) {
     }
     const receipt = input.loaderReceipts[family];
     if (!receipt) {
-      throw rolloutRefusal(`loader receipt is missing for selected family ${family}`);
+      throw rolloutRefusal(
+        `loader receipt is missing for selected family ${family}`,
+      );
     }
     const containerImage = doc.spec?.template?.spec?.containers?.[0]?.image;
     if (containerImage !== receipt.ref) {
@@ -212,7 +224,12 @@ export function readExistingReleaseDeployment(run, namespace, name) {
  * @param {object[]} documents
  * @param {Set<string>} selectedFamilies
  */
-export function loadExistingDeploymentsForSection(run, section, documents, selectedFamilies) {
+export function loadExistingDeploymentsForSection(
+  run,
+  section,
+  documents,
+  selectedFamilies,
+) {
   /** @type {Record<string, object | null>} */
   const existing = {};
   for (const doc of documents) {
@@ -297,7 +314,9 @@ function waitDeploymentRollout(run, contextName, namespace, name) {
     { timeoutMs: ROLLOUT_WAIT_TIMEOUT_MS + 5_000 },
   );
   if (!result.ok) {
-    throw rolloutRefusal(`deployment ${namespace}/${name} rollout did not complete`);
+    throw rolloutRefusal(
+      `deployment ${namespace}/${name} rollout did not complete`,
+    );
   }
 }
 
@@ -327,10 +346,14 @@ export function verifyDeploymentRolloutExecution(
     { run },
   );
   if (deploymentRead.state !== 'present') {
-    throw rolloutRefusal(`deployment ${namespace}/${deploymentName} unreadable after rollout`);
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} unreadable after rollout`,
+    );
   }
   const annotated =
-    deploymentRead.object.spec?.template?.metadata?.annotations?.[DEPLOYMENT_IMAGE_ID_ANNOTATION];
+    deploymentRead.object.spec?.template?.metadata?.annotations?.[
+      DEPLOYMENT_IMAGE_ID_ANNOTATION
+    ];
   if (annotated !== expectedDigest) {
     throw rolloutRefusal(
       `deployment ${namespace}/${deploymentName} pod template annotation digest mismatch`,
@@ -349,14 +372,18 @@ export function verifyDeploymentRolloutExecution(
     'json',
   ]);
   if (!pods.ok) {
-    throw rolloutRefusal(`deployment ${namespace}/${deploymentName} pod list unreadable`);
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} pod list unreadable`,
+    );
   }
   /** @type {{ items?: Array<{ status?: { containerStatuses?: Array<{ imageID?: string }> } }> }} */
   let body;
   try {
     body = JSON.parse(pods.stdout);
   } catch {
-    throw rolloutRefusal(`deployment ${namespace}/${deploymentName} pod list malformed`);
+    throw rolloutRefusal(
+      `deployment ${namespace}/${deploymentName} pod list malformed`,
+    );
   }
   const readyPod = (body.items ?? []).find(
     (item) => item?.status?.containerStatuses?.[0]?.ready === true,
@@ -382,7 +409,8 @@ export const collectAcceptedReleaseImageIds = collectAcceptedMigrationImageIds;
  */
 export function verifySelectedReleaseRollouts(input) {
   const run = input.run ?? runPlatformCommand;
-  const collectAcceptedIds = input.collectAcceptedIds ?? collectAcceptedReleaseImageIds;
+  const collectAcceptedIds =
+    input.collectAcceptedIds ?? collectAcceptedReleaseImageIds;
   const profile = readPlatformProfile(PROFILE_ID);
   const selectedFamilies = parseReleaseImageSelection(input.selected);
   const loaderReceipts = parseLoaderReceiptMap(
@@ -392,7 +420,9 @@ export function verifySelectedReleaseRollouts(input) {
   for (const family of selectedFamilies) {
     const receipt = loaderReceipts[family];
     if (!receipt) {
-      throw rolloutRefusal(`loader receipt is missing for selected family ${family}`);
+      throw rolloutRefusal(
+        `loader receipt is missing for selected family ${family}`,
+      );
     }
     const acceptedIds = collectAcceptedIds(receipt.ref, run);
     if (!acceptedIds.includes(receipt.digest)) {
@@ -408,7 +438,12 @@ export function verifySelectedReleaseRollouts(input) {
           ? 'lab-workers'
           : 'lab-edge';
     for (const deploymentName of deploymentNames) {
-      waitDeploymentRollout(run, profile.contextName, namespace, deploymentName);
+      waitDeploymentRollout(
+        run,
+        profile.contextName,
+        namespace,
+        deploymentName,
+      );
       verifyDeploymentRolloutExecution(
         run,
         profile.contextName,
@@ -435,10 +470,14 @@ function main() {
       process.exitCode = 1;
       return;
     }
-    const selected = process.env.OFFSCREEN_RELEASE_IMAGES ?? 'web,api,game-authority,worker';
-    const loaderReceiptsJsonPath = process.env.OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE;
+    const selected =
+      process.env.OFFSCREEN_RELEASE_IMAGES ?? 'web,api,game-authority,worker';
+    const loaderReceiptsJsonPath =
+      process.env.OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE;
     if (!loaderReceiptsJsonPath) {
-      process.stderr.write('Refusing install: release loader receipts file is missing.\n');
+      process.stderr.write(
+        'Refusing install: release loader receipts file is missing.\n',
+      );
       process.exitCode = 1;
       return;
     }
@@ -451,7 +490,9 @@ function main() {
         loaderReceiptsJsonPath,
       });
       if (receipt.applyCount === 0) {
-        process.stderr.write(`Release ${section} overlay unchanged (${receipt.applyCount} Deployment updates).\n`);
+        process.stderr.write(
+          `Release ${section} overlay unchanged (${receipt.applyCount} Deployment updates).\n`,
+        );
       } else {
         process.stderr.write(
           `Release ${section} overlay prepared (${receipt.applyCount} Deployment update(s)).\n`,
@@ -467,10 +508,14 @@ function main() {
   }
 
   if (command === 'verify') {
-    const selected = process.env.OFFSCREEN_RELEASE_IMAGES ?? 'web,api,game-authority,worker';
-    const loaderReceiptsJsonPath = process.env.OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE;
+    const selected =
+      process.env.OFFSCREEN_RELEASE_IMAGES ?? 'web,api,game-authority,worker';
+    const loaderReceiptsJsonPath =
+      process.env.OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE;
     if (!loaderReceiptsJsonPath) {
-      process.stderr.write('Refusing install: release loader receipts file is missing.\n');
+      process.stderr.write(
+        'Refusing install: release loader receipts file is missing.\n',
+      );
       process.exitCode = 1;
       return;
     }
@@ -488,7 +533,9 @@ function main() {
     return;
   }
 
-  process.stderr.write('usage: node rollout.mjs prepare <section> <rendered.yaml> <apply.yaml> | verify\n');
+  process.stderr.write(
+    'usage: node rollout.mjs prepare <section> <rendered.yaml> <apply.yaml> | verify\n',
+  );
   process.exitCode = 2;
 }
 

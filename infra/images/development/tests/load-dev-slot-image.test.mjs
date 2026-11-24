@@ -16,6 +16,7 @@ import test from 'node:test';
 import {
   fingerprintDevImageContext,
   UNION_ROLE_FILTER,
+  verifyDevImageFingerprintHint,
 } from '../image-plan.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -33,18 +34,51 @@ function runTiltRef(ref, env = {}) {
   });
 }
 
-function installFakes(root) {
+function verifiedFingerprint() {
+  const result = fingerprintDevImageContext(repoRoot, {
+    roleFilter: UNION_ROLE_FILTER,
+  });
+  assert.equal(result.ok, true);
+  return result.fingerprint;
+}
+
+function installFakes(
+  root,
+  { cachedFingerprint = null, driftOnBuild = false } = {},
+) {
   const bin = join(root, 'bin');
   mkdirSync(bin);
   const mark = join(root, 'fingerprint.mark');
   const counter = join(root, 'build.count');
+  const canonicalRef = join(root, 'canonical.ref');
+  const fpCounter = join(root, 'fingerprint.calls');
+  if (cachedFingerprint) {
+    writeFileSync(mark, cachedFingerprint);
+    writeFileSync(
+      canonicalRef,
+      `offscreen-dev-workspace:union-${cachedFingerprint.slice(0, 16)}`,
+    );
+  }
+  writeFileSync(fpCounter, '0');
   writeFileSync(
     join(bin, 'node'),
     `#!/bin/bash
 if [[ "\${1:-}" == *kind-image-loader.mjs ]]; then
+  if [[ "\$2" == "inspect" ]]; then
+    echo '{"configId":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","manifestDigest":"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","targetDigest":"sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}'
+    exit 0
+  fi
   ref="\$3"
   echo "{\\"ref\\":\\"\$ref\\",\\"digest\\":\\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\",\\"loadedNodes\\":[],\\"reusedNodes\\":[\\"cp\\",\\"worker\\"]}"
   exit 0
+fi
+if [[ "\${1:-}" == --input-type=module && "\$*" == *fingerprintDevImageContext* ]]; then
+  count=\$(($(cat "${fpCounter}") + 1))
+  echo "\$count" > "${fpCounter}"
+  if [[ "${driftOnBuild}" == true && "\$count" -gt 1 ]]; then
+    echo drifted-fingerprint-0000000000000000000000000000000000000000000000000000000000000001
+    exit 0
+  fi
 fi
 exec "\${OFFSCREEN_REAL_NODE}" "$@"
 `,
@@ -53,8 +87,14 @@ exec "\${OFFSCREEN_REAL_NODE}" "$@"
     join(bin, 'docker'),
     `#!/bin/bash
 if [[ "$1" == "image" && "$2" == "inspect" ]]; then
+  ref=""
+  for arg in "$@"; do
+    if [[ "\$arg" == offscreen-dev-workspace:* ]]; then ref="\$arg"; fi
+  done
   if [[ "$*" == *offscreen.fingerprint* ]]; then
-    if [[ -f "${mark}" ]]; then cat "${mark}"; fi
+    if [[ -f "${mark}" && "\$ref" == offscreen-dev-workspace:union-* && "\$ref" != offscreen-dev-workspace:union-build-* ]]; then
+      cat "${mark}"
+    fi
     exit 0
   fi
   echo sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -62,10 +102,36 @@ if [[ "$1" == "image" && "$2" == "inspect" ]]; then
 fi
 if [[ "$1" == "build" ]]; then
   echo 1 >> "${counter}"
-  printf '%s' "$OFFSCREEN_IMAGE_FINGERPRINT" > "${mark}"
+  label=""
+  tag=""
+  args=("$@")
+  i=0
+  while [[ $i -lt \${#args[@]} ]]; do
+    case "\${args[$i]}" in
+      --label)
+        i=$((i + 1))
+        label="\${args[$i]}"
+        ;;
+      -t)
+        i=$((i + 1))
+        tag="\${args[$i]}"
+        ;;
+    esac
+    i=$((i + 1))
+  done
+  if [[ "\$label" == offscreen.fingerprint=* ]]; then
+    printf '%s' "\${label#offscreen.fingerprint=}" > "${mark}"
+  fi
+  if [[ "\$tag" == offscreen-dev-workspace:union-build-* ]]; then
+    printf '%s' "\$tag" > "${canonicalRef}"
+  fi
   exit 0
 fi
-if [[ "$1" == "tag" ]]; then exit 0; fi
+if [[ "$1" == "tag" ]]; then
+  printf '%s' "$4" > "${canonicalRef}"
+  exit 0
+fi
+if [[ "$1" == "rmi" ]]; then exit 0; fi
 if [[ "$1" == "exec" && "$*" == *"images ls"* ]]; then
   for r in \\
     offscreen-dev-workspace:union-same-fp-abcdefgh \\
@@ -212,12 +278,13 @@ test('authority tilt-ref targets game-authority receipt path', () => {
   mkdirSync(dirname(receipt), { recursive: true });
   writeFileSync(receipt, 'stale-ref\n');
   const root = mkdtempSync(join(tmpdir(), 'receipt-ga-'));
-  const { bin } = installFakes(root);
+  const fingerprint = verifiedFingerprint();
+  const { bin } = installFakes(root, { cachedFingerprint: fingerprint });
   const result = runTiltRef('offscreen-dev-workspace:dev-2-authority', {
     OFFSCREEN_DEV_SLOT: 'dev-2',
     PATH: `${bin}:${process.env.PATH}`,
     OFFSCREEN_REAL_NODE: execPath,
-    OFFSCREEN_IMAGE_FINGERPRINT: 'same-fp-abcdefghijklmnopqrstuvwxyz',
+    OFFSCREEN_IMAGE_FINGERPRINT: fingerprint,
     TMPDIR: root,
   });
   assert.equal(result.status, 0, result.stderr);
@@ -236,12 +303,13 @@ test('two slots write separate receipt paths', () => {
 
 test('concurrent role loads build the shared artifact once under fake toolchain', () => {
   const root = mkdtempSync(join(tmpdir(), 'img-reuse-'));
+  const fingerprint = verifiedFingerprint();
   const { bin, counter } = installFakes(root);
   const env = {
     ...process.env,
     PATH: `${bin}:${process.env.PATH}`,
     OFFSCREEN_REAL_NODE: execPath,
-    OFFSCREEN_IMAGE_FINGERPRINT: 'same-fp-abcdefghijklmnopqrstuvwxyz',
+    OFFSCREEN_IMAGE_FINGERPRINT: fingerprint,
     TMPDIR: root,
   };
   const run = (slot, role) =>
@@ -279,4 +347,91 @@ test('alias tagging does not invoke kind load for role-only work', () => {
   assert.doesNotMatch(script, /kind load docker-image "\$ref"/);
   assert.match(script, /ctr -n k8s.io images tag/);
   assert.match(script, /write_image_ref_receipt/);
+});
+
+test('stale fingerprint hint refuses before distribution', () => {
+  const root = mkdtempSync(join(tmpdir(), 'stale-hint-'));
+  const fingerprint = verifiedFingerprint();
+  const { bin } = installFakes(root);
+  const stale = `${'0'.repeat(63)}1`;
+  assert.equal(
+    verifyDevImageFingerprintHint(stale, fingerprint).reason,
+    'stale-fingerprint-hint',
+  );
+  const result = spawnSync('bash', [slotLoader, 'dev-2', 'web'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PATH: `${bin}:${process.env.PATH}`,
+      OFFSCREEN_REAL_NODE: execPath,
+      OFFSCREEN_IMAGE_FINGERPRINT: stale,
+      TMPDIR: root,
+    },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /refusing stale fingerprint hint/);
+});
+
+test('fingerprint drift during docker build discards temp image only', () => {
+  const root = mkdtempSync(join(tmpdir(), 'build-drift-'));
+  const fingerprint = verifiedFingerprint();
+  const { bin, counter } = installFakes(root, { driftOnBuild: true });
+  const result = spawnSync('bash', [slotLoader, 'dev-2', 'web'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PATH: `${bin}:${process.env.PATH}`,
+      OFFSCREEN_REAL_NODE: execPath,
+      OFFSCREEN_IMAGE_FINGERPRINT: fingerprint,
+      TMPDIR: root,
+    },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /fingerprint changed during docker build/);
+  assert.doesNotMatch(result.stdout, /digest=/);
+  assert.equal(existsSync(counter), true);
+});
+
+test('verified cache hit reuses labeled canonical image without docker build', () => {
+  const root = mkdtempSync(join(tmpdir(), 'cache-hit-'));
+  const fingerprint = verifiedFingerprint();
+  const { bin, counter } = installFakes(root, {
+    cachedFingerprint: fingerprint,
+  });
+  const result = spawnSync('bash', [slotLoader, 'dev-2', 'web'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PATH: `${bin}:${process.env.PATH}`,
+      OFFSCREEN_REAL_NODE: execPath,
+      OFFSCREEN_IMAGE_FINGERPRINT: fingerprint,
+      TMPDIR: root,
+    },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /builds=0/);
+  assert.equal(existsSync(counter), false);
+});
+
+test('cache miss builds under temp tag then publishes canonical tag', () => {
+  const root = mkdtempSync(join(tmpdir(), 'build-ok-'));
+  const fingerprint = verifiedFingerprint();
+  const { bin, counter } = installFakes(root);
+  const result = spawnSync('bash', [slotLoader, 'dev-2', 'web'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PATH: `${bin}:${process.env.PATH}`,
+      OFFSCREEN_REAL_NODE: execPath,
+      OFFSCREEN_IMAGE_FINGERPRINT: fingerprint,
+      TMPDIR: root,
+    },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /builds=1/);
+  assert.equal(readFileSync(counter, 'utf8').trim().split('\n').length, 1);
 });

@@ -6,7 +6,7 @@ import { readKindProfile } from '../../clusters/kind/manager/config.mjs';
 import {
   discoverKindNodes,
   isValidSha256Digest,
-  normalizeCtrRef,
+  readKindImageIdentity,
   validateRefForProfile,
 } from '../../images/distribution/kind-image-loader.mjs';
 import {
@@ -16,7 +16,6 @@ import {
 import { readPlatformProfile } from '../../platform/common/profile.mjs';
 import { parseWorkloadDocuments } from '../../workloads/render.mjs';
 import { migrationStatusFromJobRead } from '../../../scripts/repo-tools/stack.mjs';
-import { acceptedCriImageIds } from '../../../tools/dev-environments/src/cli/dev-tilt.mjs';
 
 const PROFILE_ID = 'release';
 const JOB_NAME = 'game-migrate';
@@ -50,7 +49,10 @@ export function parseLoaderReceipt(text) {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw migrationRefusal('migration loader receipt is malformed');
   }
-  const receipt = /** @type {{ ref?: unknown, digest?: unknown }} */ (parsed);
+  const receipt =
+    /** @type {{ ref?: unknown, digest?: unknown, nodes?: unknown }} */ (
+      parsed
+    );
   const ref = receipt.ref;
   const digest = receipt.digest;
   if (typeof ref !== 'string' || ref.length === 0) {
@@ -59,7 +61,42 @@ export function parseLoaderReceipt(text) {
   if (typeof digest !== 'string' || !isValidSha256Digest(digest)) {
     throw migrationRefusal('migration loader receipt digest is invalid');
   }
-  return { ref, digest };
+  /** @type {Record<string, { configId: string, manifestDigest: string, targetDigest: string }> | undefined} */
+  let nodes;
+  if (receipt.nodes !== undefined && receipt.nodes !== null) {
+    if (typeof receipt.nodes !== 'object' || Array.isArray(receipt.nodes)) {
+      throw migrationRefusal('migration loader receipt nodes map is malformed');
+    }
+    nodes = {};
+    for (const [node, value] of Object.entries(
+      /** @type {Record<string, unknown>} */ (receipt.nodes),
+    )) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw migrationRefusal(
+          'migration loader receipt nodes map is malformed',
+        );
+      }
+      const entry =
+        /** @type {{ configId?: unknown, manifestDigest?: unknown, targetDigest?: unknown }} */ (
+          value
+        );
+      const { configId, manifestDigest, targetDigest } = entry;
+      if (
+        typeof configId !== 'string' ||
+        !isValidSha256Digest(configId) ||
+        typeof manifestDigest !== 'string' ||
+        !isValidSha256Digest(manifestDigest) ||
+        typeof targetDigest !== 'string' ||
+        !isValidSha256Digest(targetDigest)
+      ) {
+        throw migrationRefusal(
+          'migration loader receipt nodes map is malformed',
+        );
+      }
+      nodes[node] = { configId, manifestDigest, targetDigest };
+    }
+  }
+  return { ref, digest, nodes };
 }
 
 /**
@@ -69,10 +106,15 @@ export function parseRenderedMigrationJob(renderedYaml) {
   const docs = parseWorkloadDocuments(renderedYaml);
   const jobs = docs.filter((doc) => doc.kind === 'Job');
   if (jobs.length !== 1) {
-    throw migrationRefusal('rendered migration manifest must contain exactly one Job');
+    throw migrationRefusal(
+      'rendered migration manifest must contain exactly one Job',
+    );
   }
   const job = jobs[0];
-  if (job.metadata?.name !== JOB_NAME || job.metadata?.namespace !== JOB_NAMESPACE) {
+  if (
+    job.metadata?.name !== JOB_NAME ||
+    job.metadata?.namespace !== JOB_NAMESPACE
+  ) {
     throw migrationRefusal('rendered migration Job name or namespace mismatch');
   }
   return job;
@@ -119,7 +161,10 @@ export function migrationJobsMatchKnownIdentity(existing, template) {
  * @param {object} job
  */
 export function isProvenOwnedMigrationJob(job) {
-  if (job.metadata?.name !== JOB_NAME || job.metadata?.namespace !== JOB_NAMESPACE) {
+  if (
+    job.metadata?.name !== JOB_NAME ||
+    job.metadata?.namespace !== JOB_NAMESPACE
+  ) {
     return false;
   }
   if (job.metadata?.labels?.app !== 'game-migrate') {
@@ -151,29 +196,20 @@ export function annotateMigrationJobManifest(templateJob, digest) {
 }
 
 /**
- * @param {string} dockerInspectStdout
+ * @param {Array<{ configId: string, manifestDigest: string, targetDigest: string } | null>} identities
  */
-export function acceptedImageIdsFromDockerInspect(dockerInspectStdout) {
-  /** @type {unknown} */
-  let parsed;
-  try {
-    parsed = JSON.parse(dockerInspectStdout);
-  } catch {
-    return [];
+export function acceptedIdsFromKindImageIdentities(identities) {
+  /** @type {Set<string>} */
+  const accepted = new Set();
+  for (const identity of identities) {
+    if (!identity) {
+      continue;
+    }
+    accepted.add(identity.configId);
+    accepted.add(identity.manifestDigest);
+    accepted.add(identity.targetDigest);
   }
-  const entry = Array.isArray(parsed) ? parsed[0] : parsed;
-  if (!entry || typeof entry !== 'object') {
-    return [];
-  }
-  const id = entry.Id;
-  const repoDigests = Array.isArray(entry.RepoDigests) ? entry.RepoDigests : [];
-  const criShape = {
-    status: {
-      id: typeof id === 'string' ? id : undefined,
-      repoDigests,
-    },
-  };
-  return acceptedCriImageIds(JSON.stringify(criShape));
+  return [...accepted];
 }
 
 /**
@@ -182,21 +218,21 @@ export function acceptedImageIdsFromDockerInspect(dockerInspectStdout) {
  */
 export function collectAcceptedMigrationImageIds(ref, run) {
   const validatedRef = validateRefForProfile(PROFILE_ID, ref);
-  const normalizedRef = normalizeCtrRef(validatedRef);
 
   /** @type {Set<string>} */
   const accepted = new Set();
 
-  const dockerInspect = run('docker', [
+  const hostInspect = run('docker', [
     'image',
     'inspect',
     validatedRef,
     '--format',
-    '{{json .}}',
+    '{{.Id}}',
   ]);
-  if (dockerInspect.ok && dockerInspect.stdout.trim()) {
-    for (const id of acceptedImageIdsFromDockerInspect(dockerInspect.stdout)) {
-      accepted.add(id);
+  if (hostInspect.ok) {
+    const hostId = hostInspect.stdout.trim();
+    if (isValidSha256Digest(hostId)) {
+      accepted.add(hostId);
     }
   }
 
@@ -220,19 +256,22 @@ export function collectAcceptedMigrationImageIds(ref, run) {
     nodes = [];
   }
   for (const node of nodes) {
-    const cri = run('docker', [
-      'exec',
-      node,
-      'crictl',
-      'inspecti',
-      normalizedRef,
-    ]);
-    if (!cri.ok) {
+    let identity;
+    try {
+      identity = readKindImageIdentity({
+        node,
+        ref: validatedRef,
+        run: commandRunner,
+      });
+    } catch {
       continue;
     }
-    for (const id of acceptedCriImageIds(cri.stdout)) {
-      accepted.add(id);
+    if (!identity) {
+      continue;
     }
+    accepted.add(identity.configId);
+    accepted.add(identity.manifestDigest);
+    accepted.add(identity.targetDigest);
   }
 
   if (accepted.size === 0) {
@@ -352,7 +391,11 @@ function createMigrationJob(run, contextName, manifest) {
  * @param {string} expectedDigest
  * @param {string[]} acceptedIds
  */
-export function verifyCompletedMigrationExecution(run, expectedDigest, acceptedIds) {
+export function verifyCompletedMigrationExecution(
+  run,
+  expectedDigest,
+  acceptedIds,
+) {
   const profile = readPlatformProfile(PROFILE_ID);
   const jobRead = readPlatformObject(
     {
@@ -436,7 +479,8 @@ export function apiImageSelectedInReleaseInstall(selected) {
  */
 export function ensureReleaseMigration(input) {
   const run = input.run ?? runPlatformCommand;
-  const collectAcceptedIds = input.collectAcceptedIds ?? collectAcceptedMigrationImageIds;
+  const collectAcceptedIds =
+    input.collectAcceptedIds ?? collectAcceptedMigrationImageIds;
   const profile = readPlatformProfile(PROFILE_ID);
 
   const jobRead = readPlatformObject(
@@ -472,9 +516,12 @@ export function ensureReleaseMigration(input) {
   const renderedYaml = readFileSync(input.renderedYamlPath, 'utf8');
   const templateJob = parseRenderedMigrationJob(renderedYaml);
   const receipt = parseLoaderReceipt(input.loaderReceipt ?? '');
-  const templateImage = templateJob.spec?.template?.spec?.containers?.[0]?.image;
+  const templateImage =
+    templateJob.spec?.template?.spec?.containers?.[0]?.image;
   if (receipt.ref !== templateImage) {
-    throw migrationRefusal('migration loader receipt ref does not match rendered Job image');
+    throw migrationRefusal(
+      'migration loader receipt ref does not match rendered Job image',
+    );
   }
 
   const acceptedIds = collectAcceptedIds(receipt.ref, run);
@@ -488,9 +535,14 @@ export function ensureReleaseMigration(input) {
     throw migrationRefusal('migration Job unreadable');
   }
 
-  const annotatedManifest = annotateMigrationJobManifest(templateJob, receipt.digest);
+  const annotatedManifest = annotateMigrationJobManifest(
+    templateJob,
+    receipt.digest,
+  );
   const phase =
-    jobRead.state === 'absent' ? 'absent' : migrationPhaseFromJob(jobRead.object);
+    jobRead.state === 'absent'
+      ? 'absent'
+      : migrationPhaseFromJob(jobRead.object);
 
   if (phase === 'running') {
     throw migrationRefusal('migration Job is still running');
@@ -559,11 +611,14 @@ export function ensureReleaseMigration(input) {
 function main() {
   const renderedYamlPath = process.argv[2];
   if (!renderedYamlPath) {
-    process.stderr.write('Refusing install: migration rendered manifest path is missing.\n');
+    process.stderr.write(
+      'Refusing install: migration rendered manifest path is missing.\n',
+    );
     process.exitCode = 1;
     return;
   }
-  const selected = process.env.OFFSCREEN_RELEASE_IMAGES ?? 'web,api,game-authority,worker';
+  const selected =
+    process.env.OFFSCREEN_RELEASE_IMAGES ?? 'web,api,game-authority,worker';
   const apiSelected = apiImageSelectedInReleaseInstall(selected);
   try {
     const receipt = ensureReleaseMigration({
@@ -572,7 +627,9 @@ function main() {
       apiSelected,
     });
     if (receipt.mutations > 0) {
-      process.stderr.write(`Release migration reconciled (${receipt.action}).\n`);
+      process.stderr.write(
+        `Release migration reconciled (${receipt.action}).\n`,
+      );
     }
     process.exitCode = 0;
   } catch (error) {

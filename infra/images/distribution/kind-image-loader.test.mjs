@@ -2,15 +2,61 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   ensureKindImage,
+  manifestConfigDigestFromObject,
+  normalizeNodeArchitecture,
   parseCtrDigest,
+  readKindImageIdentity,
+  resolveManifestDigestFromIndex,
   sortKindNodes,
   validateRefForProfile,
 } from './kind-image-loader.mjs';
 
-const DIGEST_A = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-const DIGEST_B = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const CONFIG_A =
+  'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const CONFIG_B =
+  'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const MANIFEST_M =
+  'sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+const MANIFEST_N =
+  'sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+const TARGET_T =
+  'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const TARGET_U =
+  'sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+const INDEX_I =
+  'sha256:1111111111111111111111111111111111111111111111111111111111111111';
 const RELEASE_REF = 'offscreen-lab-app-release-api:turn02';
 const RELEASE_CTR = 'docker.io/library/offscreen-lab-app-release-api:turn02';
+const NODE_CP = 'offscreen-lab-control-plane';
+const NODE_WORKER = 'offscreen-lab-worker';
+
+/**
+ * @param {string} configDigest
+ */
+function ociManifestJson(configDigest) {
+  return JSON.stringify({
+    mediaType: 'application/vnd.oci.image.manifest.v1+json',
+    config: { digest: configDigest },
+  });
+}
+
+/**
+ * @param {Array<{ digest: string, os?: string, architecture?: string, artifactType?: string, mediaType?: string }>} entries
+ */
+function ociIndexJson(entries) {
+  return JSON.stringify({
+    mediaType: 'application/vnd.oci.image.index.v1+json',
+    manifests: entries.map((entry) => ({
+      mediaType:
+        entry.mediaType ?? 'application/vnd.oci.image.manifest.v1+json',
+      digest: entry.digest,
+      platform: entry.os
+        ? { os: entry.os, architecture: entry.architecture ?? 'amd64' }
+        : undefined,
+      ...(entry.artifactType ? { artifactType: entry.artifactType } : {}),
+    })),
+  });
+}
 
 /**
  * @param {Record<string, Partial<Record<string, RunScript>>>} scripts
@@ -55,51 +101,137 @@ function makeRunner(scripts) {
   return { run, calls };
 }
 
-function releaseNodeScripts(controlDigest, workerDigest) {
-  const ctrLine = (digest) =>
-    digest
-      ? `${RELEASE_CTR} ${RELEASE_CTR} ${digest} \n`
-      : '';
+/**
+ * @param {{
+ *   controlTarget?: string | null,
+ *   workerTarget?: string | null,
+ *   configId?: string,
+ *   indexTarget?: string,
+ *   indexManifest?: string,
+ * }} opts
+ */
+function releaseNodeScripts(opts = {}) {
+  const configId = opts.configId ?? CONFIG_A;
+  const controlTarget = Object.hasOwn(opts, 'controlTarget')
+    ? opts.controlTarget
+    : TARGET_T;
+  const workerTarget = Object.hasOwn(opts, 'workerTarget')
+    ? opts.workerTarget
+    : TARGET_T;
+  const ctrLine = (target) =>
+    target ? `${RELEASE_CTR} ${RELEASE_CTR} ${target} \n` : '';
+
+  /** @type {Record<string, RunScript>} */
+  const docker = {
+    [`image\0inspect\0--format\0{{.Id}}\0${RELEASE_REF}`]: {
+      stdout: `${CONFIG_A}\n`,
+    },
+    [`inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0${NODE_CP}`]:
+      {
+        stdout: 'offscreen-lab\n',
+      },
+    [`inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0${NODE_WORKER}`]:
+      {
+        stdout: 'offscreen-lab\n',
+      },
+    [`inspect\0--format\0{{.Os}}\0${NODE_CP}`]: { stdout: 'linux\n' },
+    [`inspect\0--format\0{{.Architecture}}\0${NODE_CP}`]: {
+      stdout: 'x86_64\n',
+    },
+    [`inspect\0--format\0{{.Os}}\0${NODE_WORKER}`]: { stdout: 'linux\n' },
+    [`inspect\0--format\0{{.Architecture}}\0${NODE_WORKER}`]: {
+      stdout: 'x86_64\n',
+    },
+    [`exec\0${NODE_CP}\0ctr\0-n\0k8s.io\0images\0ls`]: {
+      stdout: ctrLine(controlTarget),
+    },
+    [`exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0images\0ls`]: {
+      stdout: ctrLine(workerTarget),
+    },
+  };
+
+  /**
+   * @param {string} digest
+   * @param {string} body
+   * @param {string[]} nodes
+   */
+  const addContent = (digest, body, nodes) => {
+    for (const node of nodes) {
+      docker[`exec\0${node}\0ctr\0-n\0k8s.io\0content\0get\0${digest}`] = {
+        stdout: body,
+      };
+    }
+  };
+
+  if (opts.indexTarget && opts.indexManifest) {
+    addContent(
+      opts.indexTarget,
+      ociIndexJson([
+        {
+          digest: opts.indexManifest,
+          os: 'linux',
+          architecture: 'amd64',
+        },
+        {
+          digest: MANIFEST_N,
+          artifactType: 'application/vnd.oci.attestation.v1+json',
+        },
+      ]),
+      [NODE_CP, NODE_WORKER],
+    );
+    addContent(opts.indexManifest, ociManifestJson(configId), [
+      NODE_CP,
+      NODE_WORKER,
+    ]);
+    docker[`exec\0${NODE_CP}\0ctr\0-n\0k8s.io\0images\0ls`].stdout = ctrLine(
+      opts.indexTarget,
+    );
+    docker[`exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0images\0ls`].stdout =
+      ctrLine(opts.indexTarget);
+  } else {
+    const manifestBody = ociManifestJson(configId);
+    if (controlTarget) {
+      addContent(controlTarget, manifestBody, [NODE_CP]);
+    }
+    if (workerTarget) {
+      addContent(workerTarget, manifestBody, [NODE_WORKER]);
+    }
+  }
+
   return {
     kind: {
       'get\0nodes\0--name\0offscreen-lab\0-o\0name': {
-        stdout: 'node/offscreen-lab-control-plane\nnode/offscreen-lab-worker\n',
+        stdout: `node/${NODE_CP}\nnode/${NODE_WORKER}\n`,
       },
       load: { status: 0, stdout: '', stderr: '' },
     },
-    docker: {
-      [`image\0inspect\0--format\0{{.Id}}\0${RELEASE_REF}`]: {
-        stdout: `${DIGEST_A}\n`,
-      },
-      'inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0offscreen-lab-control-plane':
-        { stdout: 'offscreen-lab\n' },
-      'inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0offscreen-lab-worker':
-        { stdout: 'offscreen-lab\n' },
-      'exec\0offscreen-lab-control-plane\0ctr\0-n\0k8s.io\0images\0ls': {
-        stdout: ctrLine(controlDigest),
-      },
-      'exec\0offscreen-lab-worker\0ctr\0-n\0k8s.io\0images\0ls': {
-        stdout: ctrLine(workerDigest),
-      },
-    },
+    docker,
   };
 }
 
 test('sortKindNodes orders control-plane before worker then lexical', () => {
   assert.deepEqual(
     sortKindNodes(
-      ['offscreen-lab-worker', 'offscreen-lab-control-plane', 'offscreen-lab-worker-b'],
+      [
+        'offscreen-lab-worker',
+        'offscreen-lab-control-plane',
+        'offscreen-lab-worker-b',
+      ],
       'offscreen-lab',
     ),
-    ['offscreen-lab-control-plane', 'offscreen-lab-worker', 'offscreen-lab-worker-b'],
+    [
+      'offscreen-lab-control-plane',
+      'offscreen-lab-worker',
+      'offscreen-lab-worker-b',
+    ],
   );
 });
 
 test('parseCtrDigest rejects duplicate rows and malformed digests', () => {
   const ref = RELEASE_CTR;
-  assert.equal(parseCtrDigest(`${ref} x ${DIGEST_A}\n`, ref), DIGEST_A);
+  assert.equal(parseCtrDigest(`${ref} x ${TARGET_T}\n`, ref), TARGET_T);
   assert.throws(
-    () => parseCtrDigest(`${ref} x ${DIGEST_A}\n${ref} y ${DIGEST_B}\n`, ref),
+    () => parseCtrDigest(`${ref} x ${TARGET_T}\n${ref} y ${TARGET_U}\n`, ref),
     /ambiguous duplicate rows/,
   );
   assert.throws(
@@ -108,10 +240,108 @@ test('parseCtrDigest rejects duplicate rows and malformed digests', () => {
   );
 });
 
+test('normalizeNodeArchitecture maps common aliases', () => {
+  assert.equal(normalizeNodeArchitecture('x86_64'), 'amd64');
+  assert.equal(normalizeNodeArchitecture('aarch64'), 'arm64');
+  assert.equal(normalizeNodeArchitecture('arm64'), 'arm64');
+});
+
+test('manifestConfigDigestFromObject requires manifest media type and config digest', () => {
+  assert.equal(
+    manifestConfigDigestFromObject({
+      mediaType: 'application/vnd.oci.image.manifest.v1+json',
+      config: { digest: CONFIG_A },
+    }),
+    CONFIG_A,
+  );
+  assert.throws(
+    () =>
+      manifestConfigDigestFromObject({
+        mediaType: 'application/vnd.oci.image.index.v1+json',
+        manifests: [],
+      }),
+    /unsupported media type/,
+  );
+});
+
+test('resolveManifestDigestFromIndex excludes attestations and requires one platform match', () => {
+  const index = ociIndexJson([
+    { digest: MANIFEST_M, os: 'linux', architecture: 'amd64' },
+    {
+      digest: MANIFEST_N,
+      artifactType: 'application/vnd.oci.attestation.v1+json',
+    },
+    { digest: TARGET_U, os: 'linux', architecture: 'arm64' },
+  ]);
+  assert.equal(
+    resolveManifestDigestFromIndex(index, 'linux', 'x86_64'),
+    MANIFEST_M,
+  );
+  assert.throws(
+    () =>
+      resolveManifestDigestFromIndex(
+        ociIndexJson([
+          { digest: MANIFEST_M, os: 'linux', architecture: 'arm64' },
+          { digest: TARGET_U, os: 'linux', architecture: 'arm64' },
+        ]),
+        'linux',
+        'amd64',
+      ),
+    /no manifest for node platform/,
+  );
+  assert.throws(
+    () =>
+      resolveManifestDigestFromIndex(
+        ociIndexJson([
+          { digest: MANIFEST_M, os: 'linux', architecture: 'amd64' },
+          { digest: MANIFEST_N, os: 'linux', architecture: 'amd64' },
+        ]),
+        'linux',
+        'amd64',
+      ),
+    /ambiguous image index manifests/,
+  );
+});
+
+test('readKindImageIdentity returns null when ref absent on node', () => {
+  const { run } = makeRunner(
+    releaseNodeScripts({ controlTarget: null, workerTarget: null }),
+  );
+  assert.equal(
+    readKindImageIdentity({ node: NODE_CP, ref: RELEASE_REF, run }),
+    null,
+  );
+});
+
+test('readKindImageIdentity resolves index to config distinct from target digest', () => {
+  const { run } = makeRunner(
+    releaseNodeScripts({
+      indexTarget: INDEX_I,
+      indexManifest: MANIFEST_M,
+      configId: CONFIG_A,
+    }),
+  );
+  const identity = readKindImageIdentity({
+    node: NODE_CP,
+    ref: RELEASE_REF,
+    run,
+  });
+  assert.deepEqual(identity, {
+    configId: CONFIG_A,
+    manifestDigest: MANIFEST_M,
+    targetDigest: INDEX_I,
+  });
+  assert.notEqual(identity?.targetDigest, identity?.configId);
+});
+
 test('validateRefForProfile rejects cross-profile families', () => {
   assert.equal(validateRefForProfile('release', RELEASE_REF), RELEASE_REF);
   assert.throws(
-    () => validateRefForProfile('release', 'offscreen-dev-workspace:union-0123456789abcdef'),
+    () =>
+      validateRefForProfile(
+        'release',
+        'offscreen-dev-workspace:union-0123456789abcdef',
+      ),
     /cross-profile/,
   );
   assert.throws(
@@ -127,19 +357,24 @@ test('validateRefForProfile rejects retired legacy dev workspace tags', () => {
   );
 });
 
-test('all nodes hit reuses without kind load', () => {
-  const { run, calls } = makeRunner(releaseNodeScripts(DIGEST_A, DIGEST_A));
+test('all nodes hit reuses without kind load when config matches but target differs', () => {
+  const { run, calls } = makeRunner(
+    releaseNodeScripts({
+      controlTarget: TARGET_T,
+      workerTarget: TARGET_U,
+      configId: CONFIG_A,
+    }),
+  );
   const receipt = ensureKindImage({
     profileId: 'release',
     ref: RELEASE_REF,
     run,
   });
-  assert.equal(receipt.digest, DIGEST_A);
+  assert.equal(receipt.digest, CONFIG_A);
+  assert.notEqual(receipt.nodes[NODE_CP].targetDigest, receipt.digest);
+  assert.equal(receipt.nodes[NODE_CP].configId, CONFIG_A);
   assert.deepEqual(receipt.loadedNodes, []);
-  assert.deepEqual(receipt.reusedNodes, [
-    'offscreen-lab-control-plane',
-    'offscreen-lab-worker',
-  ]);
+  assert.deepEqual(receipt.reusedNodes, [NODE_CP, NODE_WORKER]);
   assert.equal(
     calls.some((call) => call.command === 'kind' && call.args[0] === 'load'),
     false,
@@ -148,12 +383,21 @@ test('all nodes hit reuses without kind load', () => {
 
 test('one stale worker loads only that node', () => {
   const workerCtr = { stdout: '' };
-  const scripts = releaseNodeScripts(DIGEST_A, null);
-  scripts.docker['exec\0offscreen-lab-worker\0ctr\0-n\0k8s.io\0images\0ls'] = workerCtr;
+  const scripts = releaseNodeScripts({
+    controlTarget: TARGET_T,
+    workerTarget: null,
+  });
+  scripts.docker[`exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0images\0ls`] =
+    workerCtr;
   const { run, calls } = makeRunner(scripts);
   const trackingRun = (command, args) => {
     if (command === 'kind' && args[0] === 'load') {
-      workerCtr.stdout = `${RELEASE_CTR} ${RELEASE_CTR} ${DIGEST_A} \n`;
+      workerCtr.stdout = `${RELEASE_CTR} ${RELEASE_CTR} ${TARGET_T} \n`;
+      scripts.docker[
+        `exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0content\0get\0${TARGET_T}`
+      ] = {
+        stdout: ociManifestJson(CONFIG_A),
+      };
     }
     return run(command, args);
   };
@@ -162,10 +406,12 @@ test('one stale worker loads only that node', () => {
     ref: RELEASE_REF,
     run: trackingRun,
   });
-  assert.deepEqual(receipt.loadedNodes, ['offscreen-lab-worker']);
-  assert.deepEqual(receipt.reusedNodes, ['offscreen-lab-control-plane']);
+  assert.deepEqual(receipt.loadedNodes, [NODE_WORKER]);
+  assert.deepEqual(receipt.reusedNodes, [NODE_CP]);
+  assert.equal(receipt.nodes[NODE_WORKER].configId, CONFIG_A);
   assert.equal(
-    calls.filter((call) => call.command === 'kind' && call.args[0] === 'load').length,
+    calls.filter((call) => call.command === 'kind' && call.args[0] === 'load')
+      .length,
     1,
   );
 });
@@ -174,13 +420,13 @@ test('missing worker in inventory refuses before mutation', () => {
   const { run, calls } = makeRunner({
     kind: {
       'get\0nodes\0--name\0offscreen-lab\0-o\0name': {
-        stdout: 'node/offscreen-lab-control-plane\n',
+        stdout: `node/${NODE_CP}\n`,
       },
       load: { status: 0 },
     },
     docker: {
       [`image\0inspect\0--format\0{{.Id}}\0${RELEASE_REF}`]: {
-        stdout: `${DIGEST_A}\n`,
+        stdout: `${CONFIG_A}\n`,
       },
     },
   });
@@ -199,14 +445,22 @@ test('missing worker in inventory refuses before mutation', () => {
   );
 });
 
-test('post-load mismatch refuses without receipt', () => {
-  const scripts = releaseNodeScripts(DIGEST_A, null);
+test('post-load mismatch refuses when node config id is wrong', () => {
+  const scripts = releaseNodeScripts({
+    controlTarget: TARGET_T,
+    workerTarget: null,
+  });
   const { run, calls } = makeRunner(scripts);
   const trackingRun = (command, args) => {
     const result = run(command, args);
     if (command === 'kind' && args[0] === 'load') {
-      scripts.docker['exec\0offscreen-lab-worker\0ctr\0-n\0k8s.io\0images\0ls'] = {
-        stdout: `${RELEASE_CTR} ${RELEASE_CTR} ${DIGEST_B} \n`,
+      scripts.docker[`exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0images\0ls`] = {
+        stdout: `${RELEASE_CTR} ${RELEASE_CTR} ${TARGET_T} \n`,
+      };
+      scripts.docker[
+        `exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0content\0get\0${TARGET_T}`
+      ] = {
+        stdout: ociManifestJson(CONFIG_B),
       };
     }
     return result;
@@ -220,20 +474,27 @@ test('post-load mismatch refuses without receipt', () => {
       }),
     /post-load-mismatch/,
   );
-  assert.equal(calls.some((call) => call.command === 'kind'), true);
+  assert.equal(
+    calls.some((call) => call.command === 'kind'),
+    true,
+  );
 });
 
 test('changed host digest before load refuses', () => {
   let hostReads = 0;
   const workerCtr = { stdout: '' };
-  const scripts = releaseNodeScripts(DIGEST_A, null);
-  scripts.docker['exec\0offscreen-lab-worker\0ctr\0-n\0k8s.io\0images\0ls'] = workerCtr;
+  const scripts = releaseNodeScripts({
+    controlTarget: TARGET_T,
+    workerTarget: null,
+  });
+  scripts.docker[`exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0images\0ls`] =
+    workerCtr;
   const { run, calls } = makeRunner(scripts);
   const trackingRun = (command, args) => {
     if (command === 'docker' && args[0] === 'image' && args[1] === 'inspect') {
       hostReads += 1;
       if (hostReads === 2) {
-        return { status: 0, stdout: `${DIGEST_B}\n`, stderr: '', signal: null };
+        return { status: 0, stdout: `${CONFIG_B}\n`, stderr: '', signal: null };
       }
     }
     return run(command, args);
@@ -254,7 +515,7 @@ test('changed host digest before load refuses', () => {
 });
 
 test('malformed expected digest refuses', () => {
-  const { run } = makeRunner(releaseNodeScripts(DIGEST_A, DIGEST_A));
+  const { run } = makeRunner(releaseNodeScripts());
   assert.throws(
     () =>
       ensureKindImage({
@@ -268,8 +529,8 @@ test('malformed expected digest refuses', () => {
 });
 
 test('failed docker inspect refuses before load', () => {
-  const scripts = releaseNodeScripts(DIGEST_A, DIGEST_A);
-  scripts.docker['exec\0offscreen-lab-worker\0ctr\0-n\0k8s.io\0images\0ls'] = {
+  const scripts = releaseNodeScripts();
+  scripts.docker[`exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0images\0ls`] = {
     status: 1,
   };
   const { run, calls } = makeRunner(scripts);
@@ -288,10 +549,33 @@ test('failed docker inspect refuses before load', () => {
   );
 });
 
-test('foreign docker label refuses before load', () => {
-  const scripts = releaseNodeScripts(DIGEST_A, DIGEST_A);
+test('unreadable ctr content refuses before load', () => {
+  const scripts = releaseNodeScripts();
   scripts.docker[
-    'inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0offscreen-lab-worker'
+    `exec\0${NODE_WORKER}\0ctr\0-n\0k8s.io\0content\0get\0${TARGET_T}`
+  ] = {
+    status: 1,
+  };
+  const { run, calls } = makeRunner(scripts);
+  assert.throws(
+    () =>
+      ensureKindImage({
+        profileId: 'release',
+        ref: RELEASE_REF,
+        run,
+      }),
+    /node image content unreadable/,
+  );
+  assert.equal(
+    calls.some((call) => call.command === 'kind' && call.args[0] === 'load'),
+    false,
+  );
+});
+
+test('foreign docker label refuses before load', () => {
+  const scripts = releaseNodeScripts();
+  scripts.docker[
+    `inspect\0--format\0{{index .Config.Labels "io.x-k8s.kind.cluster"}}\0${NODE_WORKER}`
   ] = { stdout: 'other-cluster\n' };
   const { run, calls } = makeRunner(scripts);
   assert.throws(

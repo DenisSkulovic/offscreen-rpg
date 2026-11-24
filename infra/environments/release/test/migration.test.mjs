@@ -7,8 +7,10 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { renderWorkloadDocuments } from '../../../workloads/render.mjs';
 import {
+  acceptedIdsFromKindImageIdentities,
   annotateMigrationJobManifest,
   apiImageSelectedInReleaseInstall,
+  collectAcceptedMigrationImageIds,
   deleteMigrationJobWithUidPrecondition,
   digestFromPodImageId,
   ensureReleaseMigration,
@@ -25,7 +27,10 @@ const MANIFEST_DIGEST =
 const FOREIGN_DIGEST =
   'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
-const templateJob = renderWorkloadDocuments({ profile: 'release', section: 'migration' })[0];
+const templateJob = renderWorkloadDocuments({
+  profile: 'release',
+  section: 'migration',
+})[0];
 const installSh = join(
   fileURLToPath(new URL('..', import.meta.url)),
   'install.sh',
@@ -72,7 +77,14 @@ function buildStubRun(options) {
   function run(command, args, opts = {}) {
     invocations.push({ command, args, input: opts.input });
     if (command !== 'kubectl') {
-      return { ok: false, status: 1, stdout: '', stderr: '', timedOut: false, missing: false };
+      return {
+        ok: false,
+        status: 1,
+        stdout: '',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
     }
     const joined = args.join(' ');
 
@@ -83,7 +95,14 @@ function buildStubRun(options) {
       !joined.includes('pods')
     ) {
       if (jobState === 'unreadable') {
-        return { ok: false, status: 1, stdout: '', stderr: 'denied', timedOut: false, missing: false };
+        return {
+          ok: false,
+          status: 1,
+          stdout: '',
+          stderr: 'denied',
+          timedOut: false,
+          missing: false,
+        };
       }
       if (created || (jobState !== 'absent' && !deleted)) {
         const payload = created
@@ -108,10 +127,24 @@ function buildStubRun(options) {
         };
       }
       if (deleted && jobAfterDelete === 'absent') {
-        return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+        return {
+          ok: true,
+          status: 0,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
       }
       if (jobState === 'absent' && !created) {
-        return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+        return {
+          ok: true,
+          status: 0,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
       }
       const payload = jobObject ?? defaultJob;
       return {
@@ -124,30 +157,78 @@ function buildStubRun(options) {
       };
     }
 
-    if (joined.includes(' delete --raw ') && joined.includes('/jobs/game-migrate')) {
+    if (
+      joined.includes(' delete --raw ') &&
+      joined.includes('/jobs/game-migrate')
+    ) {
       if (!deleteOk) {
-        return { ok: false, status: 409, stdout: '', stderr: 'conflict', timedOut: false, missing: false };
+        return {
+          ok: false,
+          status: 409,
+          stdout: '',
+          stderr: 'conflict',
+          timedOut: false,
+          missing: false,
+        };
       }
       deleted = true;
-      return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+      return {
+        ok: true,
+        status: 0,
+        stdout: '',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
     }
 
     if (joined.includes(' create ') && joined.includes('-f -')) {
       if (!createOk) {
-        return { ok: false, status: 1, stdout: '', stderr: '', timedOut: false, missing: false };
+        return {
+          ok: false,
+          status: 1,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
       }
       created = true;
-      return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+      return {
+        ok: true,
+        status: 0,
+        stdout: '',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
     }
 
     if (joined.includes(' wait --for=condition=complete')) {
       if (!waitOk) {
-        return { ok: false, status: 1, stdout: '', stderr: '', timedOut: false, missing: false };
+        return {
+          ok: false,
+          status: 1,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
       }
-      return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+      return {
+        ok: true,
+        status: 0,
+        stdout: '',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
     }
 
-    if (joined.includes(' get pods ') && joined.includes('job-name=game-migrate')) {
+    if (
+      joined.includes(' get pods ') &&
+      joined.includes('job-name=game-migrate')
+    ) {
       return {
         ok: true,
         status: 0,
@@ -166,7 +247,14 @@ function buildStubRun(options) {
       };
     }
 
-    return { ok: false, status: 2, stdout: '', stderr: 'unexpected', timedOut: false, missing: false };
+    return {
+      ok: false,
+      status: 2,
+      stdout: '',
+      stderr: 'unexpected',
+      timedOut: false,
+      missing: false,
+    };
   }
 
   return { run, invocations, state: () => ({ deleted, created }) };
@@ -179,11 +267,21 @@ function renderedPath() {
   return path;
 }
 
+const TARGET_DIGEST =
+  'sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+
 const loaderReceipt = JSON.stringify({
   ref: 'offscreen-lab-app-release-api:turn02',
   digest: CONFIG_DIGEST,
   loadedNodes: [],
   reusedNodes: ['offscreen-lab-control-plane'],
+  nodes: {
+    'offscreen-lab-control-plane': {
+      configId: CONFIG_DIGEST,
+      manifestDigest: MANIFEST_DIGEST,
+      targetDigest: TARGET_DIGEST,
+    },
+  },
 });
 
 const acceptedIds = () => [CONFIG_DIGEST, MANIFEST_DIGEST];
@@ -191,12 +289,118 @@ const acceptedIds = () => [CONFIG_DIGEST, MANIFEST_DIGEST];
 test('parseLoaderReceipt and digest helpers', () => {
   const receipt = parseLoaderReceipt(loaderReceipt);
   assert.equal(receipt.digest, CONFIG_DIGEST);
+  assert.equal(
+    receipt.nodes?.['offscreen-lab-control-plane']?.targetDigest,
+    TARGET_DIGEST,
+  );
   assert.throws(() => parseLoaderReceipt(''), /missing/);
+  assert.throws(
+    () =>
+      parseLoaderReceipt(
+        JSON.stringify({
+          ref: 'offscreen-lab-app-release-api:turn02',
+          digest: CONFIG_DIGEST,
+          nodes: { bad: { configId: 'not-a-digest' } },
+        }),
+      ),
+    /malformed/,
+  );
   assert.equal(
     digestFromPodImageId(`docker.io/library/app@sha256:aaa@${MANIFEST_DIGEST}`),
     MANIFEST_DIGEST,
   );
   assert.equal(digestFromPodImageId('unknown'), null);
+});
+
+test('acceptedIdsFromKindImageIdentities ignores null identities', () => {
+  assert.deepEqual(
+    acceptedIdsFromKindImageIdentities([
+      {
+        configId: CONFIG_DIGEST,
+        manifestDigest: MANIFEST_DIGEST,
+        targetDigest: TARGET_DIGEST,
+      },
+      null,
+    ]).sort(),
+    [CONFIG_DIGEST, MANIFEST_DIGEST, TARGET_DIGEST].sort(),
+  );
+});
+
+test('collectAcceptedMigrationImageIds uses verified kind identities', () => {
+  const ref = 'offscreen-lab-app-release-api:turn02';
+  const run = (command, args) => {
+    if (command === 'docker' && args[0] === 'image' && args[1] === 'inspect') {
+      return {
+        ok: true,
+        status: 0,
+        stdout: `${CONFIG_DIGEST}\n`,
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (command === 'kind' && args.includes('get')) {
+      return {
+        ok: true,
+        status: 0,
+        stdout: 'node/offscreen-lab-control-plane\nnode/offscreen-lab-worker\n',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (command === 'docker' && args[0] === 'inspect') {
+      return {
+        ok: true,
+        status: 0,
+        stdout: 'offscreen-lab\n',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (command === 'docker' && args[0] === 'exec') {
+      const joined = args.join('\0');
+      if (joined.includes('images\0ls')) {
+        return {
+          ok: true,
+          status: 0,
+          stdout: `docker.io/library/${ref} application/vnd.docker.distribution.manifest.v2+json ${TARGET_DIGEST}\n`,
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+      if (joined.includes('content\0get')) {
+        const digest = args.at(-1);
+        if (digest === TARGET_DIGEST) {
+          return {
+            ok: true,
+            status: 0,
+            stdout: JSON.stringify({
+              mediaType: 'application/vnd.docker.distribution.manifest.v2+json',
+              config: { digest: CONFIG_DIGEST },
+            }),
+            stderr: '',
+            timedOut: false,
+            missing: false,
+          };
+        }
+      }
+    }
+    return {
+      ok: false,
+      status: 1,
+      stdout: '',
+      stderr: '',
+      timedOut: false,
+      missing: false,
+    };
+  };
+  const accepted = collectAcceptedMigrationImageIds(ref, run);
+  assert.ok(accepted.includes(CONFIG_DIGEST));
+  assert.ok(accepted.includes(TARGET_DIGEST));
+  assert.equal(accepted.filter((id) => id === TARGET_DIGEST).length, 1);
 });
 
 test('apiImageSelectedInReleaseInstall', () => {
@@ -254,7 +458,10 @@ test('complete Job with matching digest reuses', () => {
   });
   assert.equal(receipt.action, 'reused');
   assert.equal(receipt.mutations, 0);
-  assert.equal(invocations.some((item) => item.args.includes('delete')), false);
+  assert.equal(
+    invocations.some((item) => item.args.includes('delete')),
+    false,
+  );
 });
 
 test('complete Job with different digest replaces via uid delete', () => {
@@ -302,7 +509,10 @@ test('running Job refuses without delete', () => {
     status: { active: 1 },
     spec: templateJob.spec,
   };
-  const { run, invocations } = buildStubRun({ jobState: 'present', jobObject: runningJob });
+  const { run, invocations } = buildStubRun({
+    jobState: 'present',
+    jobObject: runningJob,
+  });
   assert.throws(
     () =>
       ensureReleaseMigration({
@@ -314,7 +524,10 @@ test('running Job refuses without delete', () => {
       }),
     /still running/,
   );
-  assert.equal(invocations.some((item) => item.args.includes('delete')), false);
+  assert.equal(
+    invocations.some((item) => item.args.includes('delete')),
+    false,
+  );
   assert.equal(migrationPhaseFromJob(runningJob), 'running');
 });
 
@@ -517,7 +730,9 @@ test('non-api warm install observes complete Job only', () => {
   });
   assert.equal(receipt.action, 'observed');
   assert.equal(
-    invocations.some((item) => item.args.includes('create') || item.args.includes('delete')),
+    invocations.some(
+      (item) => item.args.includes('create') || item.args.includes('delete'),
+    ),
     false,
   );
 });
@@ -549,7 +764,8 @@ test('verifyCompletedMigrationExecution rejects unknown pod image', () => {
   const { run } = buildStubRun({
     jobState: 'present',
     jobObject: completeJob,
-    podImageId: 'docker.io/library/app@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+    podImageId:
+      'docker.io/library/app@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
   });
   assert.throws(
     () => verifyCompletedMigrationExecution(run, CONFIG_DIGEST, acceptedIds()),
@@ -561,7 +777,14 @@ test('deleteMigrationJobWithUidPrecondition uses raw delete body', () => {
   const invocations = [];
   const run = (command, args, opts = {}) => {
     invocations.push({ command, args, input: opts.input });
-    return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+    return {
+      ok: true,
+      status: 0,
+      stdout: '',
+      stderr: '',
+      timedOut: false,
+      missing: false,
+    };
   };
   deleteMigrationJobWithUidPrecondition(run, 'kind-offscreen-lab', 'uid-xyz');
   const deleteCall = invocations[0];
