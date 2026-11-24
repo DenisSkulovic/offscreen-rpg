@@ -353,7 +353,10 @@ export function ensureReleaseOwnershipBaseline({ run = runPlatformCommand } = {}
   const context = run('docker', ['context', 'show']);
   if (!context.ok || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())) throw new Error('Docker context unreadable');
   const endpoint = run('docker', ['context', 'inspect', context.stdout.trim(), '--format', '{{json .Endpoints.docker.Host}}']);
-  if (!endpoint.ok || !/^unix:\/\/\//.test(JSON.parse(endpoint.stdout))) throw new Error('nonlocal Docker endpoint');
+  const host = endpoint.ok ? JSON.parse(endpoint.stdout) : null;
+  if (typeof host !== 'string' || !(host.startsWith('unix:///') || host === 'npipe:////./pipe/dockerDesktopLinuxEngine')) {
+    throw new Error('nonlocal Docker endpoint');
+  }
   const node = run('docker', ['inspect', profile.clusterName + '-control-plane']);
   if (!node.ok) throw new Error('release control-plane unreadable');
   const containers = JSON.parse(node.stdout);
