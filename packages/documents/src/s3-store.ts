@@ -37,6 +37,10 @@ import {
   type LibraryNodeV2,
   type LibraryRootV2,
 } from './schema.js';
+import {
+  documentReadKind,
+  type DocumentImmutableReadCache,
+} from './immutable-read-cache.js';
 
 export type { S3Client };
 
@@ -48,6 +52,7 @@ export type S3DocumentStoreConfig = Readonly<{
   prefix?: string;
   credentials?: Readonly<{ accessKeyId: string; secretAccessKey: string }>;
   client?: S3Client;
+  immutableReadCache?: DocumentImmutableReadCache;
 }>;
 
 function objectKey(prefix: string, hash: string) {
@@ -59,9 +64,11 @@ function objectKey(prefix: string, hash: string) {
 export class S3DocumentStore implements DocumentStore {
   private readonly storage: S3ObjectStorage;
   private readonly prefix: string;
+  private readonly immutableReadCache: DocumentImmutableReadCache | undefined;
 
   constructor(config: S3DocumentStoreConfig) {
     this.prefix = config.prefix?.trim() ?? '';
+    this.immutableReadCache = config.immutableReadCache;
     this.storage = new S3ObjectStorage({
       bucket: config.bucket,
       region: config.region,
@@ -118,17 +125,57 @@ export class S3DocumentStore implements DocumentStore {
     }
   }
 
+  private readValidatedKind(schema: z.ZodType<unknown>) {
+    if (schema === canonicalDocumentSchema) {
+      return documentReadKind.canonicalDocument;
+    }
+    if (schema === canonicalSourcePassageSchema) {
+      return documentReadKind.canonicalSourcePassage;
+    }
+    if (schema === canonicalStructuredDocumentSchema) {
+      return documentReadKind.canonicalStructuredDocument;
+    }
+    if (schema === documentManifestSchema) {
+      return documentReadKind.documentManifest;
+    }
+    if (schema === worldPackageManifestSchema) {
+      return documentReadKind.worldPackageManifest;
+    }
+    if (schema === rulePackageManifestSchema) {
+      return documentReadKind.rulePackageManifest;
+    }
+    if (schema === startPackageManifestSchema) {
+      return documentReadKind.startPackageManifest;
+    }
+    if (schema === sceneCheckpointSchema) {
+      return documentReadKind.sceneCheckpoint;
+    }
+    if (schema === libraryNodeV2Schema) {
+      return documentReadKind.libraryNodeV2;
+    }
+    if (schema === libraryRootV2Schema) {
+      return documentReadKind.libraryRootV2;
+    }
+    throw new DocumentStorageError('corrupt');
+  }
+
   private async readValidated<T>(
     hash: string,
     schema: z.ZodType<T>,
   ): Promise<T> {
-    const bytes = await this.readRaw(hash);
-    if (sha256(bytes) !== hash) throw new DocumentStorageError('corrupt');
-    try {
-      return schema.parse(JSON.parse(bytes));
-    } catch (error) {
-      throw new DocumentStorageError('corrupt', { cause: error });
+    if (!this.immutableReadCache) {
+      const bytes = await this.readRaw(hash);
+      if (sha256(bytes) !== hash) throw new DocumentStorageError('corrupt');
+      try {
+        return schema.parse(JSON.parse(bytes));
+      } catch (error) {
+        throw new DocumentStorageError('corrupt', { cause: error });
+      }
     }
+    const kind = this.readValidatedKind(schema);
+    return this.immutableReadCache.readValidated(hash, kind, schema, () =>
+      this.readRaw(hash),
+    );
   }
 
   putDocument(document: CanonicalDocument) {

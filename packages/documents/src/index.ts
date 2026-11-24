@@ -3,6 +3,7 @@ export * from './library-index.js';
 export * from './library-page.js';
 export * from './library-trie.js';
 export * from './document-store-config.js';
+export * from './immutable-read-cache.js';
 export * from './local-store.js';
 export * from './markdown.js';
 export * from './markdown-metadata.js';

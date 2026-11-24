@@ -33,6 +33,10 @@ import {
   renderCanonicalMarkdown,
   renderSourcePassageMarkdown,
 } from './markdown.js';
+import {
+  documentReadKind,
+  type DocumentImmutableReadCache,
+} from './immutable-read-cache.js';
 
 export const maximumStoredObjectBytes = 1024 * 1024;
 
@@ -45,14 +49,20 @@ export class DocumentStorageError extends Error {
   }
 }
 
+export type LocalDocumentStoreOptions = Readonly<{
+  immutableReadCache?: DocumentImmutableReadCache;
+}>;
+
 export class LocalDocumentStore {
   readonly root: string;
   private readonly storage: LocalObjectStorage;
+  private readonly immutableReadCache: DocumentImmutableReadCache | undefined;
 
-  constructor(root: string) {
+  constructor(root: string, options?: LocalDocumentStoreOptions) {
     if (!root.trim()) throw new Error('Document storage root is required');
     this.root = resolve(root);
     this.storage = new LocalObjectStorage(this.root);
+    this.immutableReadCache = options?.immutableReadCache;
   }
 
   private objectKey(hash: string) {
@@ -126,27 +136,70 @@ export class LocalDocumentStore {
     return this.putValidated(libraryRootV2Schema.parse(root));
   }
 
-  private async readValidated<T>(
-    hash: string,
-    schema: z.ZodType<T>,
-  ): Promise<T> {
-    let bytes: string;
+  private async readOriginUtf8(hash: string): Promise<string> {
     try {
-      bytes = Buffer.from(
+      return Buffer.from(
         await this.storage.get(this.objectKey(hash), maximumStoredObjectBytes),
       ).toString('utf8');
     } catch (error) {
       throw mapStorageError(error);
     }
-    if (Buffer.byteLength(bytes) > maximumStoredObjectBytes) {
-      throw new DocumentStorageError('too-large');
+  }
+
+  private readValidatedKind(schema: z.ZodType<unknown>) {
+    if (schema === canonicalDocumentSchema) {
+      return documentReadKind.canonicalDocument;
     }
-    if (sha256(bytes) !== hash) throw new DocumentStorageError('corrupt');
-    try {
-      return schema.parse(JSON.parse(bytes));
-    } catch (error) {
-      throw new DocumentStorageError('corrupt', { cause: error });
+    if (schema === canonicalSourcePassageSchema) {
+      return documentReadKind.canonicalSourcePassage;
     }
+    if (schema === canonicalStructuredDocumentSchema) {
+      return documentReadKind.canonicalStructuredDocument;
+    }
+    if (schema === documentManifestSchema) {
+      return documentReadKind.documentManifest;
+    }
+    if (schema === worldPackageManifestSchema) {
+      return documentReadKind.worldPackageManifest;
+    }
+    if (schema === rulePackageManifestSchema) {
+      return documentReadKind.rulePackageManifest;
+    }
+    if (schema === startPackageManifestSchema) {
+      return documentReadKind.startPackageManifest;
+    }
+    if (schema === sceneCheckpointSchema) {
+      return documentReadKind.sceneCheckpoint;
+    }
+    if (schema === libraryNodeV2Schema) {
+      return documentReadKind.libraryNodeV2;
+    }
+    if (schema === libraryRootV2Schema) {
+      return documentReadKind.libraryRootV2;
+    }
+    throw new DocumentStorageError('corrupt');
+  }
+
+  private async readValidated<T>(
+    hash: string,
+    schema: z.ZodType<T>,
+  ): Promise<T> {
+    if (!this.immutableReadCache) {
+      const bytes = await this.readOriginUtf8(hash);
+      if (Buffer.byteLength(bytes) > maximumStoredObjectBytes) {
+        throw new DocumentStorageError('too-large');
+      }
+      if (sha256(bytes) !== hash) throw new DocumentStorageError('corrupt');
+      try {
+        return schema.parse(JSON.parse(bytes));
+      } catch (error) {
+        throw new DocumentStorageError('corrupt', { cause: error });
+      }
+    }
+    const kind = this.readValidatedKind(schema);
+    return this.immutableReadCache.readValidated(hash, kind, schema, () =>
+      this.readOriginUtf8(hash),
+    );
   }
 
   readDocument(hash: string) {

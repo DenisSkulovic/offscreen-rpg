@@ -1,6 +1,6 @@
 # CACHE06A | Immutable document read decorator
 
-**Status: Owner-commissioned / dependency-gated; not yet Ready. Kind: implementation. Profile: CONTRACT.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE02/CACHE03/CACHE05 plus wave-2 wiring; LIB05 integrated; conflicting Documents edits settled (lane B). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
+**Status: Implemented on change/cache06a-document-reads; join owned by the CACHE02 custodian. Kind: implementation. Profile: CONTRACT.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE02/CACHE03/CACHE05 plus wave-2 wiring; LIB05 integrated; conflicting Documents edits settled (lane B). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
 [Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
@@ -33,4 +33,4 @@ Owner release is conditional, not blanket readiness certification. Parent verifi
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending closure | persistence-and-caching | Immutable document read decorator | pending | NOT-RUN | TASKS | pending |
+| Immutable document read decorator | persistence-and-caching | Optional readValidated cache, default off | packages/documents immutable-read-cache.ts, s3-store.ts, local-store.ts at change branch HEAD after this commit | source-only PASS: document-read-cache.test.mjs 7/7 | corrupt cache reloads; corrupt origin not stored; write verify bypasses cache | shared catalog/status left for custodian |
