@@ -1,12 +1,12 @@
 # CACHE02 | Recoverable bounded Redis runtime
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; live planning parent 9d753b2cc2b9168b3144c4d0e0a5219e3d481693. Target undertaking/storyteller-workshop. Prerequisite: CACHE01 integrated (wave 1 lane A; independent of CACHE03/CACHE05). Owner-selected near-term open work, not execution permission.
+**Status: Owner-commissioned / dependency-gated; not yet Ready. Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: CACHE01 integrated (wave 1 lane A; independent of CACHE03/CACHE05). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
 [Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
 ## Cursor first-screen brief
 
-After ChatGPT confirms predecessor integration and current-source readiness, parent creates separate linked worktree and change branch; run node scripts/repo-tools/change-branch-guard.mjs --change CACHE02 --target undertaking/storyteller-workshop. Dispatch T01 then remaining tasks sequentially. No next Change authorization. During parallel waves, return accepted branch SHA and proof to the single integration custodian (human owner unless explicitly delegated); custodian owns shared exports/manifests, squash join and closure.
+After the dependency/export/ownership gates in CACHE-PARALLEL.md pass on latest undertaking HEAD, parent creates separate linked worktree and change branch; run node scripts/repo-tools/change-branch-guard.mjs --change CACHE02 --target undertaking/storyteller-workshop. Dispatch T01 then remaining tasks sequentially. Only the eight named CACHE Changes are commissioned; follow the assigned lane and barriers, no unrelated successor. During parallel waves, return accepted branch SHA and proof to the CACHE02 parent as integration custodian; custodian owns shared exports/manifests, squash join and closure.
 
 ## Planner source map and scope
 
@@ -27,7 +27,7 @@ Every task positive and diagnostic negative passes; actual emitted tests run; ro
 
 ## Readiness and stop
 
-G0 branch and selected authority established; G1–G7 not certified on future source. ChatGPT must refresh predecessor source, exact task/fixture commands and readiness before Ready. Parallel wave ownership is mandatory; do not edit another lane, core contracts, shared manifests/lockfile or shared documentation. The named integration custodian alone serializes joins, exports, dependency wiring and shared reconciliation; no independent push to undertaking while peers are active. See frozen interface/ownership contract. Stop on changed authority/identity, missing harness or source contradiction; return exact evidence to planner. No live stack for unit tests. Follow AGENTS, parent integration/archive policy.
+Owner release is conditional, not blanket readiness certification. Parent verifies exact predecessor exports and source anchors against latest integrated HEAD; mechanical drift is allowed, contract/fixture/design contradictions stop for planner. No additional release message needed when gates pass. Live resource permission remains separate. Parallel wave ownership is mandatory; do not edit another lane, core contracts, shared manifests/lockfile or shared documentation. The named integration custodian alone serializes joins, exports, dependency wiring and shared reconciliation; no independent push to undertaking while peers are active. See frozen interface/ownership contract. Stop on changed authority/identity, missing harness or source contradiction; return exact evidence to planner. No live stack for unit tests. Follow AGENTS, parent integration/archive policy.
 
 ## Reconciliation ledger
 
