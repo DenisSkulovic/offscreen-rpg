@@ -1,5 +1,9 @@
 # Storyteller Workshop
 
+**Owner decision 2026-11-24: `main` is the integration trunk.** Storyteller Workshop remains an active outcome/acceptance dossier, not a separate integration branch. New Changes branch from current `main` and join `main` after their own proof, using dedicated Change branches and linked worktrees. The former `undertaking/storyteller-workshop` reference is a historical transition checkpoint; no new joins there. Reconcile in-flight branches against main without resetting or discarding user work. Do not force-push or delete the old branch until local migration is verified. This explicitly overrides older Storyteller Workshop target instructions, not safety, release, live acceptance or Change gates. The dossier closes on accepted outcome, not branch promotion.
+
+**Current checkpoint:** [overview](OVERVIEW.md) and [consolidation](CONSOLIDATION.md) supersede historical dispatch/progress paragraphs below. ~75% architecture, ~40% Storyteller, ~30% distributed, ~45% overall (±20pp). INF44–46 source-only; INF49 composition required; INF29 live acceptance open. DXK10 parent cancelled; no paid execution tonight.
+
 **Workstation observability (2026-11-24):** [INF44–47 source implementation wave](WORKSTATION-OBSERVABILITY.md) selected after INF29 capacity abort. Native persistent host metrics, subsecond memory envelopes, nested workload attribution, operation correlation and incident queries. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new live acceptance credit.
 
 **Local developer composition (2026-11-24):** [implementation wave](LOCAL-DEV-PLATFORM.md) commissioned INF43, INF37, INF39, INF38 and INF42 source runner. INF43 source verification 445 pass / 0 fail. INF42 source Done: `pnpm infra:verify --suite source`. Focused tests 13/13. Live cluster NOT RUN. INF37 source Done: `pnpm infra:plan|up|status` select dev core plus Redis or the full release catalog. Focused tests 48/48. INF39 source Done. Live cluster NOT RUN. INF29 live in progress separately. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new live acceptance credit.
@@ -194,7 +198,7 @@ Move this Undertaking to **Landing** when:
 4. repository health/tests required by the affected Changes are green or failures are explicitly documented;
 5. no temporary source branch contains unique unreconciled work.
 
-Close it when the coherent branch is merged to `main` or explicitly abandoned. Then delete `undertaking/storyteller-workshop` and remove this active dossier after preserving a compact disposition in Git history. Do not leave a permanent “completed undertaking” graveyard in HEAD.
+Close only when actual outcome is accepted or explicitly abandoned. Branch promotion alone does not close the dossier; retain old branch until local migration is verified. Do not leave a permanent “completed undertaking” graveyard in HEAD.
 
 ## Branch policy for this undertaking
 

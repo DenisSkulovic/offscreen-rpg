@@ -1,5 +1,7 @@
 # Undertakings | themed integration envelopes
 
+**Owner decision 2026-11-24: `main` is the integration trunk.** Storyteller Workshop remains an active outcome/acceptance dossier, not a separate integration branch. New Changes branch from current `main` and join `main` after their own proof, using dedicated Change branches and linked worktrees. The former `undertaking/storyteller-workshop` reference is a historical transition checkpoint; no new joins there. Reconcile in-flight branches against main without resetting or discarding user work. Do not force-push or delete the old branch until local migration is verified. This explicitly overrides older Storyteller Workshop target instructions, not safety, release, live acceptance or Change gates. The dossier closes on accepted outcome, not branch promotion.
+
 **Folder lifecycle:** [Repository structure](../../REPOSITORY-STRUCTURE.md#4-work-is-temporary-coordination-not-product-truth) and [How we work](../../WORKFLOW.md) cover temporary integration dossiers, distinct Change branches, landing and retirement.
 
 **Lifecycle/branch map:** [How we work](../../WORKFLOW.md) covers Undertaking creation, documentation-first work, dedicated Change subbranches, integration and retirement. This page owns the Undertaking-specific rules.
@@ -12,7 +14,7 @@ Undertakings exist to prevent a familiar failure mode: a week of related Designs
 
 | Undertaking | Branch | State | Purpose |
 | --- | --- | --- | --- |
-| [Storyteller Workshop · **human progress overview**](storyteller-workshop/OVERVIEW.md) · [technical dossier](storyteller-workshop/UNDERTAKING.md) | `undertaking/storyteller-workshop` | **Active** | Re-found the Storyteller as a disciplined writing system with persistent source/library identity, a writer workdesk, bounded research support, coherent publication, fork-aware fictional state and one-prompt creation flow |
+| [Storyteller Workshop · **human progress overview**](storyteller-workshop/OVERVIEW.md) · [technical dossier](storyteller-workshop/UNDERTAKING.md) | `main` | **Active** | Re-found the Storyteller as a disciplined writing system with persistent source/library identity, a writer workdesk, bounded research support, coherent publication, fork-aware fictional state and one-prompt creation flow |
 
 ## Proposed subsequent Undertaking (not active)
 

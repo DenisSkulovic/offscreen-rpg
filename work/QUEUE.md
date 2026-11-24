@@ -2,7 +2,9 @@
 
 **Direction:** [implementation roadmap](IMPLEMENTATION-ROADMAP.md) owns priorities; the single `Current work:` line below owns default selection. Historical Change statuses belong in the catalogs/ledgers. Explicit owner-commissioned Change chats may run independently of this selector, but must preserve resource and integration ownership. No implicit paid model spend or unsafe cluster authorization.
 
-Current work: [DXK09 elastic developer environments](changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md)
+Current work: none
+
+**Planning-only checkpoint 2026-11-24:** no paid implementation tonight. Next recommended dispatch INF49 and INF50 T01, after owner resumes. [Consolidation](undertakings/storyteller-workshop/CONSOLIDATION.md). DXK09 and INF29 remain open.
 
 Deferred proposals live in the [domain backlog](changes/backlog/README.md); actively commissioned or imminent packets live in [open](changes/README.md). Backlog placement never selects work or confers permission to spend or deploy.
 
