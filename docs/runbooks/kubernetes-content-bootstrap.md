@@ -4,6 +4,14 @@ One importer Job and one reader Job on the [Kubernetes lab](kubernetes-lab.md) c
 
 A local `fixture-pin.json` from [Content package authoring](content-package-authoring.md#commands) is not this proof. Import still publishes a package manifest only. It does not create a campaign. A start package is not a successful opening candidate.
 
+## Release lifecycle integration
+
+`pnpm stack:up` now runs `infra/environments/release/content.mjs` after application credential projection and before migration and rollout. The bootstrap image is built from the lockfile-backed content-packages workspace closure using the shared release toolchain. Only this dedicated image contains the pinned fixture source.
+
+The release lifecycle creates an importer and a fresh independent reader Job in lab-edge using the existing game-runtime S3 credential projection, so the reader verifies actual application access. Both Jobs must report the pinned hashes; the current Job UID and runtime image provenance are checked. A repeated invocation replaces only its own terminal Jobs using UID preconditions, never a running or foreign Job. Content publication is immutable and idempotent. The reader Job receipt is used by stack status; it is historical evidence, not a new S3 read on every status command.
+
+This operational read verification does not claim least privilege. The separate acceptance smoke below still owns the independently provisioned read-only S3 identity proof.
+
 ## What this procedure is
 
 `infra/verification/release-acceptance/content-bootstrap/smoke.sh` requires an installed store from [Kubernetes object storage](kubernetes-object-storage.md). It does not apply store manifests or create `object-store-s3`. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.

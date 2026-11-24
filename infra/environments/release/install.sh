@@ -234,6 +234,12 @@ if ! node "${RELEASE_DIR}/credentials.mjs"; then
   exit 1
 fi
 
+# Content is an application prerequisite, not an optional smoke scenario.
+if ! node "${RELEASE_DIR}/content.mjs"; then
+  echo "Refusing install: pinned release content preparation failed." >&2
+  exit 1
+fi
+
 # Schema migrations travel with the API image. A worker-only or web-only warm install observes the Job only.
 if image_selected api; then
   echo "Reconciling migration Job from rendered manifests and waiting for completion…"

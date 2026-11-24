@@ -70,7 +70,7 @@ export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, par
   }
   for (const file of [
     'infra/verification/verify.test.mjs', 'infra/verification/verify-operation.test.mjs',
-    'infra/verification/diagnostic.test.mjs', 'infra/environments/infra-cli.test.mjs',
+    'infra/verification/diagnostic.test.mjs', 'infra/verification/provisioning.test.mjs', 'infra/environments/infra-cli.test.mjs',
     'infra/environments/infra-cli-operation.test.mjs', 'infra/monitoring/tests/operation-event.test.mjs',
     'infra/clusters/kind/manager/host-probe.test.mjs', 'infra/clusters/kind/manager/config.test.mjs',
     'infra/clusters/kind/manager/lifecycle.test.mjs', 'infra/platform/common/tests/commands.test.mjs'

@@ -1,12 +1,27 @@
-FROM docker.io/library/node:22-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee
+# syntax=docker/dockerfile:1
+ARG NODE_IMAGE
+FROM ${NODE_IMAGE} AS builder
+ARG PNPM_VERSION
 WORKDIR /app
-COPY infra/verification/release-acceptance/content-bootstrap/package.json infra/verification/release-acceptance/content-bootstrap/package-lock.json ./
-RUN npm ci --omit=dev
-COPY packages/documents/dist ./packages/documents/dist
-COPY scripts/repo-tools/import-pinned-fixture.mjs scripts/repo-tools/read-pinned-fixture.mjs ./scripts/repo-tools/
-COPY content/worlds/vvardenfell-poc ./content/worlds/vvardenfell-poc
-COPY content/rules/srd-5.2.1-subset ./content/rules/srd-5.2.1-subset
-COPY content/starts/seyda-neen-prisoner ./content/starts/seyda-neen-prisoner
+ENV PNPM_HOME=/pnpm
+ENV PATH=/pnpm:$PATH
+ENV CI=true
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+COPY infra/images/common/docker.npmrc .npmrc
+COPY json/ ./
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store pnpm fetch --frozen-lockfile
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile --offline
+COPY full/ ./
+COPY infra/images/common/workspace-graph.mjs infra/images/common/
+COPY infra/images/release/ infra/images/release/
+RUN pnpm --filter @offscreen/content-packages... build
+RUN bash infra/images/release/prepare-runtime-tree.sh packages/content-packages /runtime
+
+FROM ${NODE_IMAGE}
+WORKDIR /app
+COPY --from=builder --chown=node:node /runtime /app
+COPY --chown=node:node scripts/repo-tools/ scripts/repo-tools/
+COPY --chown=node:node content/ content/
 USER node
 ENTRYPOINT ["node"]
 CMD ["scripts/repo-tools/import-pinned-fixture.mjs", "--s3"]

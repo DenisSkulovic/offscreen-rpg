@@ -19,6 +19,8 @@ import {
 } from '@offscreen/documents';
 import { resolveStartupDefaultRules } from './default-rules-startup.js';
 
+let startupStage = 'configuration';
+
 async function main() {
   const config = readConfig(process.env);
   const authConfig = readAuthConfig(process.env);
@@ -31,6 +33,7 @@ async function main() {
       service: 'api',
     }),
   );
+  startupStage = 'cache';
   const cache = await createCacheAdapter(process.env, (incident) =>
     writeRuntimeLog({
       level: 'warn',
@@ -43,15 +46,19 @@ async function main() {
     }),
   );
   try {
+    startupStage = 'database-connection';
     await database.checkConnection();
+    startupStage = 'document-store';
     const documentStore = createDocumentStoreFromEnv(process.env);
     if (documentStore instanceof S3DocumentStore) {
       await documentStore.ensureBucket();
     }
+    startupStage = 'default-rules';
     const defaultRules = await resolveStartupDefaultRules(
       documentStore,
       process.env,
     );
+    startupStage = 'application-construction';
     const app = await createApp(
       database,
       createAuth(database, authConfig),
@@ -83,10 +90,10 @@ async function main() {
       },
     );
     app.enableShutdownHooks();
+    startupStage = 'listen';
     await app.listen(config.port, config.host);
   } catch (error) {
-    await cache.close();
-    await database.close();
+    await Promise.allSettled([cache.close(), database.close()]);
     throw error;
   }
 }
@@ -95,7 +102,8 @@ void main().catch((error) => {
   writeRuntimeLog({
     level: 'error',
     event: 'api.runtime.startup_failed',
-    message: 'API startup failed; check configuration and preceding logs.',
+    message: 'API startup failed at the reported initialization stage.',
+    correlation: { stage: startupStage },
     service: 'api',
     errorKind: classifyRuntimeError(error),
   });

@@ -129,9 +129,9 @@ export function readWarmStackObservation(runner) {
   const fixtureLog = runner([
     ...contextArgs,
     '-n',
-    'lab-content-bootstrap',
+    'lab-edge',
     'logs',
-    'job/fixture-reader',
+    'job/release-fixture-reader',
     '--tail=40',
   ]);
   const importRoots =
@@ -171,6 +171,14 @@ export function deploymentsFromListJson(namespace, stdout) {
  * @returns {{ world: string, rule: string, start: string } | null}
  */
 export function importRootsFromBootstrapLog(text) {
+  try {
+    const body = JSON.parse(text);
+    if (body?.ok === true && body.match === 'yes' && body.campaignCreated === false &&
+        body.catalogue === false && body.openingCandidate === false &&
+        [body.worldRootHash, body.ruleRootHash, body.startRootHash].every(hash => typeof hash === 'string' && /^[0-9a-f]{64}$/.test(hash))) {
+      return { world: body.worldRootHash, rule: body.ruleRootHash, start: body.startRootHash };
+    }
+  } catch { /* Historical human-readable fixture receipts remain parseable. */ }
   const match = text.match(
     /content-bootstrap (?:importer|reader) world=([0-9a-f]{64}) rule=([0-9a-f]{64}) start=([0-9a-f]{64})/,
   );
@@ -225,9 +233,9 @@ export function readLiveStatusObservation(runner) {
   const fixtureLog = runner([
     ...contextArgs,
     '-n',
-    'lab-content-bootstrap',
+    'lab-edge',
     'logs',
-    'job/fixture-reader',
+    'job/release-fixture-reader',
     '--tail=40',
   ]);
   const fixtureStdout = fixtureLog.status === 0 ? fixtureLog.stdout : '';

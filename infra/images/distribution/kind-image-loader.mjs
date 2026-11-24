@@ -22,6 +22,7 @@ const DEV_CANONICAL_RE = /^offscreen-dev-workspace:union-[0-9a-f]{16}$/;
 const DEV_SLOT_RE =
   /^offscreen-dev-workspace:dev-[1-9][0-9]*-(web|api|authority|worker)$/;
 const RELEASE_PINNED = new Set([
+  'offscreen-lab-content-bootstrap:boot02',
   'offscreen-lab-game-web:turn02',
   'offscreen-lab-app-release-api:turn02',
   'offscreen-lab-app-release-ga:turn02',
