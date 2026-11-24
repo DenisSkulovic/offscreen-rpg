@@ -1,0 +1,1804 @@
+{
+  "baseline": "b01a68b4e91fbbb68f4e67c91427db7435e44738",
+  "rows": [
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/Dockerfile.api",
+      "to": "infra/images/release/Dockerfile.api",
+      "sha": "08686b3ae5675d798f0e94faa8ae424bf4db6eba",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/Dockerfile.game-authority",
+      "to": "infra/images/release/Dockerfile.game-authority",
+      "sha": "5e4362a460bd4311de31fc742bde99c9dbdf0543",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/Dockerfile.web",
+      "to": "infra/images/release/Dockerfile.web",
+      "sha": "49c8efd19b80ac7b40dbd65105b5d79d13fb45ff",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/Dockerfile.worker",
+      "to": "infra/images/release/Dockerfile.worker",
+      "sha": "772917fe71a45b2f79b527f533f082c8b6e71bc4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/FAST-PATH.md",
+      "to": "infra/images/release/FAST-PATH.md",
+      "sha": "0b12f2d37ba2ad0c5a4411636a6d99c3eecb0ebd",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/Tiltfile",
+      "to": "infra/environments/release/Tiltfile",
+      "sha": "ff1e3a167f3bead1af1a6ef4da3ad1955baffe35",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/build-web.sh",
+      "to": "infra/images/release/build-web.sh",
+      "sha": "36c4691619969f0a18c8e24ff1c27678f836d32f",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/build-worker.sh",
+      "to": "infra/images/release/build-worker.sh",
+      "sha": "f4181ef0e336c2504f14dc5cf7c7d8d6d2eded86",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/build.sh",
+      "to": "infra/images/release/build.sh",
+      "sha": "2a7dbf5596643aed0e7a0814b2d58344b7f7dba8",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/docker.npmrc",
+      "to": "infra/images/release/docker.npmrc",
+      "sha": "9006d861338f2f30de654a71309ebd1bf382b89d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/images.pin",
+      "to": "infra/images/release/images.pin",
+      "sha": "585f90dfff2cc85e551c0159a4e4ee2365094068",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/app-release/install.sh",
+      "to": "infra/environments/release/install.sh",
+      "sha": "2ea1a6b9151574a7ed90315491b139c892b6892b",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/kind-image-match.mjs",
+      "to": "infra/images/release/kind-image-match.mjs",
+      "sha": "5a2e140d87124693f25c1322c7cd1389890080bc",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/lab-nest-service-origin.mjs",
+      "to": "infra/images/release/release-service-origin.mjs",
+      "sha": "b74ebb338c5376740ca857bc55ea59561057973b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/lib-build.sh",
+      "to": "infra/images/release/lib-build.sh",
+      "sha": "38beb004b33731d0455914f9e194692f9a9578fd",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/app-release/overlay/authority.yaml",
+      "to": "infra/workloads/release/authority.yaml",
+      "sha": "4ad576490274aeb7f0faadbc4f859402752aaa97",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/app-release/overlay/edge.yaml",
+      "to": "infra/workloads/release/edge.yaml",
+      "sha": "f708feecb71e1f6b7cd74c774f31b1a743bf150c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/app-release/overlay/migrate.yaml",
+      "to": "infra/workloads/release/migrate.yaml",
+      "sha": "1dd47c5e8a9b0e2938ff5cb4bf118fb64b656dce",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/app-release/overlay/workers.yaml",
+      "to": "infra/workloads/release/workers.yaml",
+      "sha": "4fd35e6516245b913ffca37a7d7e6dbf4d0cfefc",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/prepare-runtime-tree.sh",
+      "to": "infra/images/release/prepare-runtime-tree.sh",
+      "sha": "7014794f45bd5e304d777d48d69a40f7dde1db59",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/production-workspace-closure.mjs",
+      "to": "infra/images/release/production-workspace-closure.mjs",
+      "sha": "47dc0c7be72d326cd985c393238f4d893e036557",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/production-workspace-closure.test.mjs",
+      "to": "infra/images/release/production-workspace-closure.test.mjs",
+      "sha": "5c97cf9a11e9b9971ac187af1f0964b72914803e",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/app-release/release-acceptance-preflight.mjs",
+      "to": "infra/environments/release/release-acceptance-preflight.mjs",
+      "sha": "296ff62b8da5ad92ea73bfe17721d1af0179e78a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/app-release/release-acceptance-preflight.test.mjs",
+      "to": "infra/environments/release/release-acceptance-preflight.test.mjs",
+      "sha": "400ccaa1c612f026fede72aa1ac86cca38e43fc4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/release-process-env-shim.mjs",
+      "to": "infra/images/release/release-process-env-shim.mjs",
+      "sha": "ab9d3ee7eb194a63a96da96ef756837011a4dce5",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/select-affected-images.mjs",
+      "to": "infra/images/release/select-affected-images.mjs",
+      "sha": "60897bae7a975ba6e50a2664aeea786fb959bc18",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/test/dockerfile-guard.test.mjs",
+      "to": "infra/images/release/test/dockerfile-guard.test.mjs",
+      "sha": "79b9cad2f31d28edcaede605ad7dcd467f004c63",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/test/image-closure.test.mjs",
+      "to": "infra/images/release/test/image-closure.test.mjs",
+      "sha": "757988f50ca46e59b928f83cec289c8ba828babc",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/test/overlay-guard.test.mjs",
+      "to": "infra/images/release/test/overlay-guard.test.mjs",
+      "sha": "c54a2167a84b59e3010f3efdffe4a3bf762dc095",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/test/pod-bind-smoke.test.mjs",
+      "to": "infra/images/release/test/pod-bind-smoke.test.mjs",
+      "sha": "89cd8cbb5313959f7049d57e38ddd6014572775f",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/test/warm-path.test.mjs",
+      "to": "infra/images/release/test/warm-path.test.mjs",
+      "sha": "eca0cc5e349c84a24645c98c27bf5a08649f4ba1",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/adversarial.test.mjs",
+      "to": "infra/verification/release-acceptance/turn03/adversarial.test.mjs",
+      "sha": "3fcedb4250a73c3aceb3cc59d7c35158bb26367d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/causal-sql.mjs",
+      "to": "infra/verification/release-acceptance/turn03/causal-sql.mjs",
+      "sha": "fc9325ba600bdb6fa4e8ed5c6273a3b5d66a6b0f",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/causal-sql.test.mjs",
+      "to": "infra/verification/release-acceptance/turn03/causal-sql.test.mjs",
+      "sha": "1596ecf82e71eb6c5ddeb46a560021d4abff9267",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/fixture-pins.mjs",
+      "to": "infra/verification/release-acceptance/turn03/fixture-pins.mjs",
+      "sha": "4f8307ab0ad4fb85adfa245124e78dbebf3800e7",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/fixture-pins.test.mjs",
+      "to": "infra/verification/release-acceptance/turn03/fixture-pins.test.mjs",
+      "sha": "71b5b6f70114ecf4aa5359a7046f88a134aaca50",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/live-http.mjs",
+      "to": "infra/verification/release-acceptance/turn03/live-http.mjs",
+      "sha": "ee72a38445b7c27b493abed942cd0829bd64ec45",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/live-http.test.mjs",
+      "to": "infra/verification/release-acceptance/turn03/live-http.test.mjs",
+      "sha": "e40fa06330667c12889bc2d99d63f600b7d8517e",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/player-smoke.mjs",
+      "to": "infra/verification/release-acceptance/turn03/player-smoke.mjs",
+      "sha": "7b03eb3c2eb3727aaa5959119f235afe1026d300",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/player-smoke.test.mjs",
+      "to": "infra/verification/release-acceptance/turn03/player-smoke.test.mjs",
+      "sha": "1d09742ec3c7003d3bcacba41eb255cb91988b6a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/preflight.mjs",
+      "to": "infra/verification/release-acceptance/turn03/preflight.mjs",
+      "sha": "be41d31ea942ecd423cc842bf8ea5a81ea79f6f3",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/preflight.test.mjs",
+      "to": "infra/verification/release-acceptance/turn03/preflight.test.mjs",
+      "sha": "565901deaf3a6585d61f5b692c026ae4d76c1053",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/report.mjs",
+      "to": "infra/verification/release-acceptance/turn03/report.mjs",
+      "sha": "59027ac1b9917bbcba8caec1416b5d3d21583e9c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/run.mjs",
+      "to": "infra/verification/release-acceptance/turn03/run.mjs",
+      "sha": "739422e68101b1b60abc66eb3c4cdabaa0e2f652",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/run.test.mjs",
+      "to": "infra/verification/release-acceptance/turn03/run.test.mjs",
+      "sha": "00e09f4d3b4c3e992340d7eb5369f6f75b4eac74",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/app-release/turn03/trace-route.mjs",
+      "to": "infra/verification/release-acceptance/turn03/trace-route.mjs",
+      "sha": "64b06da82c12ade267c80bc4030c1be729e38a2b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/verify-production-rewrite.mjs",
+      "to": "infra/images/release/verify-production-rewrite.mjs",
+      "sha": "b98fcae5c1a9534087e868107ef70e974d273b3b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/app-release/verify-production-rewrite.test.mjs",
+      "to": "infra/images/release/verify-production-rewrite.test.mjs",
+      "sha": "b08502bef59cba422f0a9a26f00f5327576d7521",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/README.md",
+      "to": "infra/verification/chaos/README.md",
+      "sha": "b5c7e6967fb786500d8680fd3927abb27a4da11b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/bounded-load.mjs",
+      "to": "infra/verification/chaos/bounded-load.mjs",
+      "sha": "93894502385a3a3193f2ac70649d582078e26775",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/controller.mjs",
+      "to": "infra/verification/chaos/controller.mjs",
+      "sha": "34fca1c115d1e6a60e15a2bdd75b78a33ef1a823",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/live-game-driver.mjs",
+      "to": "infra/verification/chaos/live-game-driver.mjs",
+      "sha": "db15b2712fd1fa0df72774b8d5e593f9e7cfda5c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/live-oracle.mjs",
+      "to": "infra/verification/chaos/live-oracle.mjs",
+      "sha": "b1af489aea19296f77721ce5c8e5711619465a40",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/oracle.mjs",
+      "to": "infra/verification/chaos/oracle.mjs",
+      "sha": "2cbbf65ba3e7a1d9435c962adbd7067b65842815",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/preflight.mjs",
+      "to": "infra/verification/chaos/preflight.mjs",
+      "sha": "bffcde7bd757702c8d93ad3f3276301cab3da7c3",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/report.mjs",
+      "to": "infra/verification/chaos/report.mjs",
+      "sha": "e11b5a1dedc37c1cdfb936b5a00a9681e1fc5d6e",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/scripted-driver.mjs",
+      "to": "infra/verification/chaos/scripted-driver.mjs",
+      "sha": "4dafd8982df5e93ec18dfff7bdd9c88a275064a6",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/selector.mjs",
+      "to": "infra/verification/chaos/selector.mjs",
+      "sha": "11b884e592cb09c14b88bf9e3fdb3e4154dab7d5",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/bounded-load.test.mjs",
+      "to": "infra/verification/chaos/test/bounded-load.test.mjs",
+      "sha": "a1236db570bc81e673820089dcc2fa9e1314b0de",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/fixture-adapter.mjs",
+      "to": "infra/verification/chaos/test/fixture-adapter.mjs",
+      "sha": "c43770554ea6e30f810f9bfc75c596e53d1be9ef",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/live-oracle.test.mjs",
+      "to": "infra/verification/chaos/test/live-oracle.test.mjs",
+      "sha": "7828fa0676f04bc0eb24c0c4425a19e0741ae14e",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/oracle.test.mjs",
+      "to": "infra/verification/chaos/test/oracle.test.mjs",
+      "sha": "86d0dc8f38098c53953d0cd7455d7b1a5d447580",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/pod-delete.test.mjs",
+      "to": "infra/verification/chaos/test/pod-delete.test.mjs",
+      "sha": "3a6871c5080134156a210c0705bea39288ae3b9d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/preflight.test.mjs",
+      "to": "infra/verification/chaos/test/preflight.test.mjs",
+      "sha": "7c1fd9e37bcd5bef09bc02fb9e2f3fa0efbee594",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/scripted-driver.test.mjs",
+      "to": "infra/verification/chaos/test/scripted-driver.test.mjs",
+      "sha": "01ab5c27fbb23e40fedba8ce468f4fd1edc57e94",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/selector.test.mjs",
+      "to": "infra/verification/chaos/test/selector.test.mjs",
+      "sha": "8a1220bc3eb5afc4dce019c7d757f075f1342de6",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/test/turn03-proof-adapter.test.mjs",
+      "to": "infra/verification/chaos/test/turn03-proof-adapter.test.mjs",
+      "sha": "5d347dfc6f467460317b6c84f83f2d4b814f54a4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/chaos/turn03-proof-adapter.mjs",
+      "to": "infra/verification/chaos/turn03-proof-adapter.mjs",
+      "sha": "e86340b83093ecca7a838be57b9dfee8cbdd59cd",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/cnpg/cluster.yaml",
+      "to": "infra/platform/postgres/cluster.yaml",
+      "sha": "0ccf9a8f0ae3740999ff3fe42b89ec8edaceaf05",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/cnpg/install.sh",
+      "to": "infra/platform/postgres/install.sh",
+      "sha": "398aa9f484161ff38ef50cb249e1e7c22a6ca46d",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/cnpg/namespace.yaml",
+      "to": "infra/platform/postgres/namespace.yaml",
+      "sha": "2344822e98c111b9d8adac840fbd7062edb94986",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/cnpg/operator.pin",
+      "to": "infra/platform/postgres/operator.pin",
+      "sha": "2615451063d95fff38bebddc8787c15d5b4c3f5c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/cnpg/smoke.sh",
+      "to": "infra/verification/smoke/postgres/smoke.sh",
+      "sha": "b9fcdceca75712420f6b4bfdff0d18bf166d4ece",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/Dockerfile",
+      "to": "infra/environments/release/content-bootstrap/Dockerfile",
+      "sha": "eb66e612d340e8ace99e83f46bd243fb610fb591",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/build.sh",
+      "to": "infra/environments/release/content-bootstrap/build.sh",
+      "sha": "d950b20cacb81199b90926fa954fc2c6f22f0221",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/images.pin",
+      "to": "infra/environments/release/content-bootstrap/images.pin",
+      "sha": "cb1af62b94c77ab3da3e57f8a08acba3227c9ca1",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/importer-job.yaml",
+      "to": "infra/environments/release/content-bootstrap/importer-job.yaml",
+      "sha": "b9ae4aa428d8a154fc72a89873519b7f76868d5d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/namespace.yaml",
+      "to": "infra/environments/release/content-bootstrap/namespace.yaml",
+      "sha": "c3d188197d52cf142f659a00ff532e0291785ecf",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/package-lock.json",
+      "to": "infra/environments/release/content-bootstrap/package-lock.json",
+      "sha": "1afd3a08e0d3644038cf711af5cf8622a0acc434",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/package.json",
+      "to": "infra/environments/release/content-bootstrap/package.json",
+      "sha": "3a53a0bb460ae06a1fef6f1b302e9eb00ff6198f",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/reader-job.yaml",
+      "to": "infra/environments/release/content-bootstrap/reader-job.yaml",
+      "sha": "f83061659c38cc2d630c0689db63a854ad8df84a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/content-bootstrap/smoke.sh",
+      "to": "infra/environments/release/content-bootstrap/smoke.sh",
+      "sha": "f959e2951cf06f897ed91805a79eb64620bc73ed",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/Dockerfile",
+      "to": "infra/images/development/Dockerfile",
+      "sha": "4f2300cc07498ae59edcb65c0dd653db20f29951",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/Dockerfile.dockerignore",
+      "to": "infra/images/development/Dockerfile.dockerignore",
+      "sha": "ab052d032d9dcde995cb20ee009dc3e03c480de4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/Tiltfile",
+      "to": "infra/dev/Tiltfile",
+      "sha": "8604de8562334b237f27a45d6c5926425fb88952",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/dev/api.yaml",
+      "to": "infra/workloads/dev/api.yaml",
+      "sha": "d138630666bae7fe406090300cc1f1c58d64ab97",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/dev/authority.yaml",
+      "to": "infra/workloads/dev/authority.yaml",
+      "sha": "72e5d6f3b82b86c52362aa0b592eb74ae3f42506",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-cnpg-bootstrap-cli.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-cnpg-bootstrap-cli.mjs",
+      "sha": "2317d3791dc439b1060f56ab1a46bef66bcb4ab0",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-cnpg-bootstrap.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-cnpg-bootstrap.mjs",
+      "sha": "5f9e4551b9e42c6490cd3166e9c176398b65acc1",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-cnpg-bootstrap.test.mjs",
+      "to": "tools/dev-environments/test/dev-cnpg-bootstrap.test.mjs",
+      "sha": "5612cfcc1a5c0e5e7b22ba45e2d6edfddce3cbf8",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-cnpg-host-probe.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-cnpg-host-probe.mjs",
+      "sha": "8cea471d791fcd48434760968d1fa3220feedb89",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-object-store-bootstrap-cli.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-object-store-bootstrap-cli.mjs",
+      "sha": "3aee98d17d12ec07a681486cf91325c884e1ecf7",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-object-store-bootstrap.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-object-store-bootstrap.mjs",
+      "sha": "8bf2b3ecdac7596516b8c0b1ef6f3bfb2354970c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-object-store-bootstrap.test.mjs",
+      "to": "tools/dev-environments/test/dev-object-store-bootstrap.test.mjs",
+      "sha": "581073d4b8907f5dfc4e9c290c480bed66fbeadf",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-object-store-host-probe.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-object-store-host-probe.mjs",
+      "sha": "504a3e79f851d09a1cdfc01f8f5f13172b2dd5a8",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-object-store-s3-proof.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-object-store-s3-proof.mjs",
+      "sha": "481c121935a0f8a48d425e2c142cb294b7498cfc",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-s3-tenant-live-adapter.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-s3-tenant-live-adapter.mjs",
+      "sha": "dba48e0bbb8081628c1fd6e7af1dbbe9270bdcd8",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-s3-tenant-live-adapter.test.mjs",
+      "to": "tools/dev-environments/test/dev-s3-tenant-live-adapter.test.mjs",
+      "sha": "fc4a9530026bdd0f84c02f8f9c39f2a115764f56",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-s3-tenant-trial.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-s3-tenant-trial.mjs",
+      "sha": "61fee3c4beeead31896a7e0a618b92ec9d5d1490",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-s3-tenant.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-s3-tenant.mjs",
+      "sha": "f6e3ce8c443e7a34d586b7d5445a3b081f74de64",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-s3-tenant.test.mjs",
+      "to": "tools/dev-environments/test/dev-s3-tenant.test.mjs",
+      "sha": "6058142ef12197f0991380b3899351d60c42b60c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs",
+      "to": "tools/dev-environments/src/rendering/dev-slot-app-graph.mjs",
+      "sha": "a2812ffae26e7dec66ac4e882e9acd64990cc195",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-slot-app-graph.test.mjs",
+      "to": "tools/dev-environments/test/dev-slot-app-graph.test.mjs",
+      "sha": "3e88b4928d3bb93113613e41806d1d1135fad076",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-slot-project.mjs",
+      "to": "tools/dev-environments/src/rendering/dev-slot-project.mjs",
+      "sha": "8119e878a3517cb8978ce3ffa42439b34ac26d9b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-slot-project.test.mjs",
+      "to": "tools/dev-environments/test/dev-slot-project.test.mjs",
+      "sha": "b0df48a52d68b7a279109aea3eefd200512dc51d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-slot-runtime-url.mjs",
+      "to": "tools/dev-environments/src/rendering/dev-slot-runtime-url.mjs",
+      "sha": "37839f26981061056dad37c236a2e57f037ca139",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-slot-runtime-url.test.mjs",
+      "to": "tools/dev-environments/test/dev-slot-runtime-url.test.mjs",
+      "sha": "12850874a70e6965f6359637c022334d80ffbe12",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-catalog-probe.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-catalog-probe.mjs",
+      "sha": "19ca03acc6332bb426ab44b1eeb19fb5bf184fbb",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-catalog-probe.test.mjs",
+      "to": "tools/dev-environments/test/dev-sql-catalog-probe.test.mjs",
+      "sha": "146c26c8afd98a6c1fe8de1a0f2e25884207ff3b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-contract.mjs",
+      "to": "tools/dev-environments/src/rendering/dev-sql-tenant-contract.mjs",
+      "sha": "0ce14fadac83be0a1e19d6d6868906c998ed72bd",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-contract.test.mjs",
+      "to": "tools/dev-environments/test/dev-sql-tenant-contract.test.mjs",
+      "sha": "50235810e8d32ef79364a31f9680ad862f4bdddb",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-executor.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-tenant-executor.mjs",
+      "sha": "657d0a0d1610e76116082408e146452d6ee7e3f5",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-executor.test.mjs",
+      "to": "tools/dev-environments/test/dev-sql-tenant-executor.test.mjs",
+      "sha": "e786c54ad594685d60b9cf0a90d626eaa61c3735",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-grants.mjs",
+      "to": "tools/dev-environments/src/rendering/dev-sql-tenant-grants.mjs",
+      "sha": "c01eddef539b542d61f56eaeb08671c8affc0f27",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-grants.test.mjs",
+      "to": "tools/dev-environments/test/dev-sql-tenant-grants.test.mjs",
+      "sha": "1631f74a9c8c145de87d610762cc5d06fb5d7ff6",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-live-adapter.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-tenant-live-adapter.mjs",
+      "sha": "69cb3244959eb4787b3cbd9c5813e11d37eec22b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-live-adapter.test.mjs",
+      "to": "tools/dev-environments/test/dev-sql-tenant-live-adapter.test.mjs",
+      "sha": "0503f4cfebfa08802de7f6202f451ac982cd7a97",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-migrate-trial.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-tenant-migrate-trial.mjs",
+      "sha": "3112de9423e8cc4ec2cdebddda77abd8a1c5396f",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-reconciler.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-tenant-reconciler.mjs",
+      "sha": "a38fa804d305cb07671d053f25c48627906535d4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-reconciler.test.mjs",
+      "to": "tools/dev-environments/test/dev-sql-tenant-reconciler.test.mjs",
+      "sha": "0c4dbf8080835112e71fe66ea295f7db639c578a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-status-cli.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-tenant-status-cli.mjs",
+      "sha": "65279a675572a1cc78fc4cef68e2c444f926e114",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-status.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-tenant-status.mjs",
+      "sha": "2405036d525e62bea2a7bda248d6812aecd8000a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-status.test.mjs",
+      "to": "tools/dev-environments/test/dev-sql-tenant-status.test.mjs",
+      "sha": "b2e9aa50a7bfbff49aeb0e041c6b08382526262c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-sql-tenant-trial.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-sql-tenant-trial.mjs",
+      "sha": "0c32d84d8de584881fff3f5263a3bd9270ecd3f3",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-temporal-bootstrap-cli.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-temporal-bootstrap-cli.mjs",
+      "sha": "c05f9f28de45698f72b987676e222e043dfc93d7",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-temporal-bootstrap.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-temporal-bootstrap.mjs",
+      "sha": "70d18e6bd15d9e3627bd36d7544f629cbf7d57f5",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-temporal-bootstrap.test.mjs",
+      "to": "tools/dev-environments/test/dev-temporal-bootstrap.test.mjs",
+      "sha": "51a16840379569d1d9711d864772f067be3458f7",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-temporal-host-probe.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-temporal-host-probe.mjs",
+      "sha": "5ef11a2affe0047c468d602509fa07cb92c99dc0",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-temporal-tenant-trial.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-temporal-tenant-trial.mjs",
+      "sha": "0c871ae957b0fa0dbacc9332fa014336fea0f064",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-temporal-tenant.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-temporal-tenant.mjs",
+      "sha": "090039d901fb339289cea0503c099fcb5216a001",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/backing/dev-temporal-tenant.test.mjs",
+      "to": "tools/dev-environments/test/dev-temporal-tenant.test.mjs",
+      "sha": "8b882f4cd0d3ceb44d0289033eacf8bf32bb0b94",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/dev-cluster-bootstrap-cli.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-cluster-bootstrap-cli.mjs",
+      "sha": "0e3fa385c1e71c6084e276d9cae5a59f6ef91b9b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/dev-cluster-bootstrap.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-cluster-bootstrap.mjs",
+      "sha": "0c39ce140e191298f0c4b79a12a3924c473e577a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/dev-cluster-bootstrap.test.mjs",
+      "to": "tools/dev-environments/test/dev-cluster-bootstrap.test.mjs",
+      "sha": "db0fba8c893ed4395b39758e92ac3b5bea2efabb",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/dev-cluster-host-probe.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-cluster-host-probe.mjs",
+      "sha": "619e409c43dc3c680b02f324ac3b62b13ef86878",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/dev-docker-context.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-docker-context.mjs",
+      "sha": "d815c77890e1a0bff15cc058ab5c6420578f4502",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "infra/kubernetes/lab/dev/dev-docker-context.test.mjs",
+      "to": "tools/dev-environments/test/dev-docker-context.test.mjs",
+      "sha": "0c2f1c98b84aacf99db85a2fb2b303f14a0d4ac3",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-image-runtime-modules.mjs",
+      "to": "infra/dev/dev-image-runtime-modules.mjs",
+      "sha": "d83cd521b65cf3a030b5c2a9e905a285bf718464",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-image-runtime-modules.test.mjs",
+      "to": "infra/dev/dev-image-runtime-modules.test.mjs",
+      "sha": "f38bc48c7b204303bb7409cf55e87eac30b92bc4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-loaded-runtime-status.mjs",
+      "to": "infra/dev/dev-loaded-runtime-status.mjs",
+      "sha": "056bc896e818fd06fd10e5f58a5cfd4f65240eda",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-sync-paths.mjs",
+      "to": "infra/dev/dev-sync-paths.mjs",
+      "sha": "c243071d1247d4acb40dbde8e0f302a7dce88a38",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-sync-paths.test.mjs",
+      "to": "infra/dev/dev-sync-paths.test.mjs",
+      "sha": "738354d2453500875a1a5421bb987c9531522c93",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-tiltfile-api-authority.test.mjs",
+      "to": "infra/dev/dev-tiltfile-api-authority.test.mjs",
+      "sha": "22d1b5daca5ef3518d17797bd015ccdf8e12e199",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-tiltfile-web.test.mjs",
+      "to": "infra/dev/dev-tiltfile-web.test.mjs",
+      "sha": "92617357232542a50055c9a39cedd0073e96ab21",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-tiltfile-workers.test.mjs",
+      "to": "infra/dev/dev-tiltfile-workers.test.mjs",
+      "sha": "12a66576e2eca1e3d6ab6a403ab7333a1f302b99",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-watch-compilation.mjs",
+      "to": "infra/dev/dev-watch-compilation.mjs",
+      "sha": "f39a5eb2ae2c6bd57cc2ba13469172a9ef26fb1d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs",
+      "to": "infra/dev/dev-watched-compilation-receipt.mjs",
+      "sha": "7619b128948b117593d86193c0e7938ccfec8732",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/dev-watched-compilation-receipt.test.mjs",
+      "to": "infra/dev/dev-watched-compilation-receipt.test.mjs",
+      "sha": "6cf9022ff603bb82f6b2b26a8ff00c042e3d0a19",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/dev/kind.yaml",
+      "to": "infra/clusters/kind/dev/kind.yaml",
+      "sha": "a8a242cfac305b2cfb41145ae5ed1ec0fbda4cdb",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/load-dev-slot-image.sh",
+      "to": "infra/images/development/load-dev-slot-image.sh",
+      "sha": "18d8a754e5068c7725cec4f12d43412dd834cf5d",
+      "mode": "100755"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/dev/owned-app-resources.json",
+      "to": "infra/environments/dev/owned-app-resources.json",
+      "sha": "f3e22e7938c25002699c62e373d197c7ece2e978",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/startup-timing.sh",
+      "to": "infra/images/development/startup-timing.sh",
+      "sha": "fdce727255d9a8657cbef90159ed262010c500d8",
+      "mode": "100644"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/tilt/build-release-images.sh",
+      "to": "infra/images/development/tilt/build-release-images.sh",
+      "sha": "e7417b6ab0ee721f2a94c6b650d5c62f4f07fb4e",
+      "mode": "100755"
+    },
+    {
+      "change": "INF04",
+      "from": "infra/kubernetes/lab/dev/tilt/load-dev-image.sh",
+      "to": "infra/images/development/tilt/load-dev-image.sh",
+      "sha": "9c95facd43968dce74b5855d16924d8dc137b9cf",
+      "mode": "100755"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/dev/web.yaml",
+      "to": "infra/workloads/dev/web.yaml",
+      "sha": "5ae1a7d2c48c9683547956eeeae7eaad5aa0c007",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/dev/workers.yaml",
+      "to": "infra/workloads/dev/workers.yaml",
+      "sha": "e31cf8044e468e2a0ed4f1713ec4d14d9b4f1134",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/document-access/namespace.yaml",
+      "to": "infra/verification/fixtures/document-access/namespace.yaml",
+      "sha": "e87990bd5e2b99e26db777198555dcf8be8672b0",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/document-access/reader-job.yaml",
+      "to": "infra/verification/fixtures/document-access/reader-job.yaml",
+      "sha": "b63a202d8b5465580edf621a3505f5e86cc464bb",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/document-access/smoke.sh",
+      "to": "infra/verification/fixtures/document-access/smoke.sh",
+      "sha": "a4471f794a260c26fe21803f094be736e35e454c",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/document-access/writer-job.yaml",
+      "to": "infra/verification/fixtures/document-access/writer-job.yaml",
+      "sha": "470e1a4ab92366b705ad8d18447f523faa2e9826",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/down.sh",
+      "to": "infra/clusters/kind/release/down.sh",
+      "sha": "21231956fae7263a74e40d0d9832d62db5b088b5",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/fault/assert_exactly_once.py",
+      "to": "infra/verification/faults/assert_exactly_once.py",
+      "sha": "819913a018bf4fba6cb6495e9b47aeb7c2713b24",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/fault/fixtures/one-apply.txt",
+      "to": "infra/verification/faults/fixtures/one-apply.txt",
+      "sha": "549fd8cc709edbec55feaa4864e40060484b5326",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/fault/fixtures/two-applies.txt",
+      "to": "infra/verification/faults/fixtures/two-applies.txt",
+      "sha": "3e107d15750df65d5d5d074f427b4d5d227976fe",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/fault/run.sh",
+      "to": "infra/verification/faults/run.sh",
+      "sha": "cbb67b4a5deb1f2b92d4828f01a53748d3127ce3",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/fault/worker_loss.py",
+      "to": "infra/verification/faults/worker_loss.py",
+      "sha": "49410b8afd7f8299cee332a18439584b3dc964ef",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/gateway/backend.py",
+      "to": "infra/verification/smoke/gateway/backend.py",
+      "sha": "a8364daf11a556c53728d7c0181cb1562faacb42",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/gateway/backends.yaml",
+      "to": "infra/verification/smoke/gateway/backends.yaml",
+      "sha": "188eca894827ab2879a0b3f4833193412a1f3e63",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/gateway/install.sh",
+      "to": "infra/platform/gateway/install.sh",
+      "sha": "01a6e0bbb10118102e4dca7051728ca4283e4a5d",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/gateway/routes.yaml",
+      "to": "infra/platform/gateway/routes.yaml",
+      "sha": "1fc8281198d04fde7e3d3dc60dd96eebbdde611e",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/gateway/smoke.sh",
+      "to": "infra/verification/smoke/gateway/smoke.sh",
+      "sha": "76ea5b6bb6919344c815ef52acdd312df768e2c8",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/gateway/values.yaml",
+      "to": "infra/platform/gateway/values.yaml",
+      "sha": "9d6eb72c6a32a985d4e32f0ce537b8841801d0af",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/kind.yaml",
+      "to": "infra/clusters/kind/release/kind.yaml",
+      "sha": "9b5f29e5e6c66ef587252c0ba99677d6b5e83849",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/lib.sh",
+      "to": "infra/clusters/kind/release/lib.sh",
+      "sha": "9c50df8ee9ffacbeac1cd549031c0a3d61d80482",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/local-path-storage.yaml",
+      "to": "infra/clusters/kind/release/local-path-storage.yaml",
+      "sha": "e20a674c5a20dab1c70b2ce55bf5afe7b2131258",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/namespaces.yaml",
+      "to": "infra/clusters/kind/release/namespaces.yaml",
+      "sha": "a55efe48c8f7516526a24e1d09d29d555b0f1099",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/object-storage/client.yaml",
+      "to": "infra/verification/smoke/object-storage/client.yaml",
+      "sha": "e0e6f13c20b6e7c23563aa541472ed64b96e3b00",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/object-storage/smoke.sh",
+      "to": "infra/verification/smoke/object-storage/smoke.sh",
+      "sha": "b097ab9e65813af7c52ec37255e9053f9db80fce",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/object-storage/store.yaml",
+      "to": "infra/platform/object-storage/store.yaml",
+      "sha": "2fd557c52fce54081e0491ad79212fa191e24ee6",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/observability/assert_signals.py",
+      "to": "infra/verification/smoke/observability/assert_signals.py",
+      "sha": "11d0304448c45926e2225d0d02d260cd81ecc2ee",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/observability/collector-config.yaml",
+      "to": "infra/platform/observability/collector-config.yaml",
+      "sha": "bd9d8d0b06e1052216a7070cfd4e623b065a568b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/observability/collector.yaml",
+      "to": "infra/platform/observability/collector.yaml",
+      "sha": "d7ffe08f339a6cb403e2a48d5242c8058532d379",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/observability/hop.py",
+      "to": "infra/verification/smoke/observability/hop.py",
+      "sha": "b3343de54f673c8ff0e02eeae601b0f6eeb7c916",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/observability/hops.yaml",
+      "to": "infra/verification/smoke/observability/hops.yaml",
+      "sha": "557595072d0f1c8f5454171476f3ad7ea1c4f2a2",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/observability/install.sh",
+      "to": "infra/platform/observability/install.sh",
+      "sha": "91638e6003f33465007bca4d11cd7bf0bd060bd2",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/observability/smoke.sh",
+      "to": "infra/verification/smoke/observability/smoke.sh",
+      "sha": "5a275cf884e85349b7e3846f03243eb3898a7da5",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/probes/client.yaml",
+      "to": "infra/verification/fixtures/probes/client.yaml",
+      "sha": "196ed0612e48eacb8915807dad93025db5e91c4a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/probes/cross-namespace.yaml",
+      "to": "infra/verification/fixtures/probes/cross-namespace.yaml",
+      "sha": "060f639ec378100a8dc179d6d7df31f0986f8509",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/probes/dns.yaml",
+      "to": "infra/verification/fixtures/probes/dns.yaml",
+      "sha": "3095469c188ed62e6743c8d1c06580541e0ba53f",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/probes/pvc-reader.yaml",
+      "to": "infra/verification/fixtures/probes/pvc-reader.yaml",
+      "sha": "7ff81048fad9ec7bb5e5dbd91cfe5b041bb78670",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/probes/pvc-writer.yaml",
+      "to": "infra/verification/fixtures/probes/pvc-writer.yaml",
+      "sha": "bed9ec6e434401077ab73fed05329128fc29146e",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/README.md",
+      "to": "infra/platform/rabbitmq/README.md",
+      "sha": "72e80d7c061fb56c36c5abdbb7a77f4657eca5ad",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/amqp_smoke.py",
+      "to": "infra/verification/smoke/rabbitmq/amqp_smoke.py",
+      "sha": "8781427671e68cdb4dad53c558e86bcfa57540ee",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/broker.yaml",
+      "to": "infra/platform/rabbitmq/broker.yaml",
+      "sha": "9d50cffbd6afda3e12638891ff188a7756ccc0b8",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/definitions.json",
+      "to": "infra/platform/rabbitmq/definitions.json",
+      "sha": "5c5a25db753264d468a84dd6121fc5830e18f52c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/install.sh",
+      "to": "infra/platform/rabbitmq/install.sh",
+      "sha": "5a25e8cca4dc621c013825bedcbf4b41c29b5fd6",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/namespace.yaml",
+      "to": "infra/platform/rabbitmq/namespace.yaml",
+      "sha": "673e4c0ee07049088d08032a6a89dacc97fda229",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/smoke.sh",
+      "to": "infra/verification/smoke/rabbitmq/smoke.sh",
+      "sha": "b756ab08bc40510bd4305e255f3c2d702e3bfce7",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/vendor/cert-manager-v1.21.3.yaml",
+      "to": "infra/platform/rabbitmq/vendor/cert-manager-v1.21.3.yaml",
+      "sha": "f22eb6b7e249ed69d73b552ee5b2933f1f6879fb",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/rabbitmq/vendor/cluster-operator-v2.23.3.yml",
+      "to": "infra/platform/rabbitmq/vendor/cluster-operator-v2.23.3.yml",
+      "sha": "5a82dbfcbeb0a18609bb1d200194ffdc83b28614",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/redis/client.yaml",
+      "to": "infra/verification/smoke/redis/client.yaml",
+      "sha": "241a09f2d6910f5c61bc65257872c70fb7377302",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/redis/redis.yaml",
+      "to": "infra/platform/redis/redis.yaml",
+      "sha": "e12ff02db9cfd592012de572c7f345b11fd6539f",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/redis/smoke.sh",
+      "to": "infra/verification/smoke/redis/smoke.sh",
+      "sha": "e2ccc07d1735b39161734d2a0edd76c95a8e0c87",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/skeletons/install.sh",
+      "to": "infra/verification/fixtures/skeletons/install.sh",
+      "sha": "6ed7f8e7eade73d0362b11e3ead345a40d2fbae5",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/skeletons/namespace.yaml",
+      "to": "infra/verification/fixtures/skeletons/namespace.yaml",
+      "sha": "8e6dcdb27c1bab7e593c6b179aad0a40d0237fe9",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/skeletons/placeholder.py",
+      "to": "infra/verification/fixtures/skeletons/placeholder.py",
+      "sha": "401d80fe16983de2f2cfdaabe1ca54de34eb58bd",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/skeletons/smoke.sh",
+      "to": "infra/verification/fixtures/skeletons/smoke.sh",
+      "sha": "34225d603406773f4f18a8f18250790b016cc396",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/skeletons/workloads.yaml",
+      "to": "infra/verification/fixtures/skeletons/workloads.yaml",
+      "sha": "29cfbafc76ec7f732252767599e75e554d158fe7",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/smoke.sh",
+      "to": "infra/verification/smoke/release.sh",
+      "sha": "7756713790906679962d24ab26cb99d8ade082ac",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/admin.yaml",
+      "to": "infra/platform/temporal/admin.yaml",
+      "sha": "7788780284f5432380ba51c459efa3d863aa64f9",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/images.pin",
+      "to": "infra/platform/temporal/images.pin",
+      "sha": "2018361eb7ac5d63e0b89413b8a377976d36c803",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/install.sh",
+      "to": "infra/platform/temporal/install.sh",
+      "sha": "1f8deadb715a294df4a97a83d3f96e5638b5488f",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/namespace-job.yaml",
+      "to": "infra/platform/temporal/namespace-job.yaml",
+      "sha": "d195404c9a99ff93617531ee9c1e1a494d8834e3",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/namespace.yaml",
+      "to": "infra/platform/temporal/namespace.yaml",
+      "sha": "02ff689ff70faa0d06b57ccff02f206df5547356",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/postgres.yaml",
+      "to": "infra/platform/temporal/postgres.yaml",
+      "sha": "c0adb7cdf77bf5dea092e323fed8f56e5ad93c13",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/read-history.mjs",
+      "to": "infra/verification/smoke/temporal/read-history.mjs",
+      "sha": "fbf3fd32502767cec1926694e1567ed884bc2f8d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/schema-job.yaml",
+      "to": "infra/platform/temporal/schema-job.yaml",
+      "sha": "3d8046ecd3b2d0d7d488d40e96138a63948fb585",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/server.yaml",
+      "to": "infra/platform/temporal/server.yaml",
+      "sha": "de4e6fc8a51d879491b442a8abeeac4818f389a1",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/smoke.sh",
+      "to": "infra/verification/smoke/temporal/smoke.sh",
+      "sha": "ff80eaadab078173088ac550750d9af6958c2122",
+      "mode": "100755"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/start-job.yaml",
+      "to": "infra/verification/smoke/temporal/start-job.yaml",
+      "sha": "1dfa7926cee9afb16d750798654947c0622fe233",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker.yaml",
+      "to": "infra/verification/smoke/temporal/worker.yaml",
+      "sha": "d67aa2663fc16da0f900cae5069387d2ed72a2cb",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker/Dockerfile",
+      "to": "infra/verification/smoke/temporal/worker/Dockerfile",
+      "sha": "18e63c833951c768db2992926992e9611c3e02f4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker/activities.mjs",
+      "to": "infra/verification/smoke/temporal/worker/activities.mjs",
+      "sha": "f5bfae02d4a8764bf3838a367b5dbd16d153adbd",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker/package-lock.json",
+      "to": "infra/verification/smoke/temporal/worker/package-lock.json",
+      "sha": "7c8c596b256f52ace2147d8fee05f1196508f637",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker/package.json",
+      "to": "infra/verification/smoke/temporal/worker/package.json",
+      "sha": "d2b44a6cda39f29fd9870f12c96a3d8b5d8e32f5",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker/start.mjs",
+      "to": "infra/verification/smoke/temporal/worker/start.mjs",
+      "sha": "60a23176f63d001297a6a1be2eb0a88b4d41af11",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker/worker.mjs",
+      "to": "infra/verification/smoke/temporal/worker/worker.mjs",
+      "sha": "436dff30b90d81dc41985223f7ae4a381267120a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/temporal/worker/workflows.mjs",
+      "to": "infra/verification/smoke/temporal/worker/workflows.mjs",
+      "sha": "63bf4b8541833ce59ecd3fdb127881888f23a714",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/test/volume-guard.test.mjs",
+      "to": "infra/verification/source/test/volume-guard.test.mjs",
+      "sha": "e5d67f253eb19ce7833f993cbb8bb84d11016f2c",
+      "mode": "100644"
+    },
+    {
+      "change": "INF05",
+      "from": "infra/kubernetes/lab/tilt/tiltfile.test.mjs",
+      "to": "infra/verification/source/tilt/tiltfile.test.mjs",
+      "sha": "9305993ffd5133c71c3772038b36b04b6f8dfbab",
+      "mode": "100644"
+    },
+    {
+      "change": "INF03",
+      "from": "infra/kubernetes/lab/up.sh",
+      "to": "infra/clusters/kind/release/up.sh",
+      "sha": "94a896cb8835a49ea1ce40e60d2d10345682dba0",
+      "mode": "100755"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-cutover-preflight.mjs",
+      "to": "tools/dev-environments/src/application/dev-cutover-preflight.mjs",
+      "sha": "5ae14bbf533027b7fffcb3aac251d1a2fa8b4d06",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-cutover-preflight.test.mjs",
+      "to": "tools/dev-environments/test/dev-cutover-preflight.test.mjs",
+      "sha": "bb00c4a8a098534e08be4b6bf587eb31087a3eca",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-environment-session.mjs",
+      "to": "tools/dev-environments/src/domain/dev-environment-session.mjs",
+      "sha": "b8195f9b3505a278e09f24eec42add27aae806e6",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-environment-session.test.mjs",
+      "to": "tools/dev-environments/test/dev-environment-session.test.mjs",
+      "sha": "2a33d0be80232b9ad8eb7841c823d1062fbe8784",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-fu03-startup.test.mjs",
+      "to": "tools/dev-environments/test/dev-fu03-startup.test.mjs",
+      "sha": "0b1e671b6906802f2d78373553f45642ad688d26",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-host-output-guard.mjs",
+      "to": "tools/dev-environments/src/domain/dev-host-output-guard.mjs",
+      "sha": "517895da43b46128a033613660f04c26eef6d7a8",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-host-output-guard.test.mjs",
+      "to": "tools/dev-environments/test/dev-host-output-guard.test.mjs",
+      "sha": "8b5417b2f5f178801ef8fb2931c5752385bb42a4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-process-identity.mjs",
+      "to": "tools/dev-environments/src/domain/dev-process-identity.mjs",
+      "sha": "38ed2fdecce479e28bafab7773c9a5796820ce4a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-process-identity.test.mjs",
+      "to": "tools/dev-environments/test/dev-process-identity.test.mjs",
+      "sha": "ba8b49f6d1858dde73f6d338066c61d84b8f66f3",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-slot-image-plan.mjs",
+      "to": "tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs",
+      "sha": "c4fc3ad55397490cff94bd2ea315b7b5ab541c6e",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-slot-image-plan.test.mjs",
+      "to": "tools/dev-environments/test/dev-slot-image-plan.test.mjs",
+      "sha": "3692578baeddc576186b63d3bbb5c2e05fd9e5a4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-slot-migrate.mjs",
+      "to": "tools/dev-environments/src/adapters/dev-slot-migrate.mjs",
+      "sha": "40c3590ff915d8ca9916ffcdbd27ef1c60020e8d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-slot-startup.mjs",
+      "to": "tools/dev-environments/src/application/dev-slot-startup.mjs",
+      "sha": "6c606a33a54a7c57f866c42ca308868f98f8eb4b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-slot-startup.test.mjs",
+      "to": "tools/dev-environments/test/dev-slot-startup.test.mjs",
+      "sha": "315e12fcc5754c4097a4ad33953cdc8ddfc06ec1",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-startup-timing.mjs",
+      "to": "tools/dev-environments/src/application/dev-startup-timing.mjs",
+      "sha": "75610f1dae8fec56810d2a0c89b8a2b9a3662b62",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-startup-timing.test.mjs",
+      "to": "tools/dev-environments/test/dev-startup-timing.test.mjs",
+      "sha": "6571cb855249051aa5d8914b208784434f91fd2a",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-tilt.mjs",
+      "to": "tools/dev-environments/src/cli/dev-tilt.mjs",
+      "sha": "a2010de87be47c4d2f5017b16205bc9e8bec462d",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-tilt.test.mjs",
+      "to": "tools/dev-environments/test/dev-tilt.test.mjs",
+      "sha": "0da0c4c35abb09c1655fcd8d373db815406f737b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-tiltfile-split.test.mjs",
+      "to": "tools/dev-environments/test/dev-tiltfile-split.test.mjs",
+      "sha": "62a9342bbf52aac769a00df9ce26f1a250e12da4",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-toy-breaker-campaign.test.mjs",
+      "to": "tools/dev-environments/test/dev-toy-breaker-campaign.test.mjs",
+      "sha": "8ab549a5df76c454d962eb0429625af9d4748124",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-v2-cli-startup.test.mjs",
+      "to": "tools/dev-environments/test/dev-v2-cli-startup.test.mjs",
+      "sha": "8b5284c1a62729c4dac14894d81f568beb674efa",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-web-readiness.test.mjs",
+      "to": "tools/dev-environments/test/dev-web-readiness.test.mjs",
+      "sha": "4a3bbb17114a43600818a8380e19dcefcd6a5935",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-worktree-allocator.mjs",
+      "to": "tools/dev-environments/src/domain/dev-worktree-allocator.mjs",
+      "sha": "9d1cf7f4b3bd4cf8bdc4f7e51ac0ad854de1565b",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-worktree-allocator.test.mjs",
+      "to": "tools/dev-environments/test/dev-worktree-allocator.test.mjs",
+      "sha": "b89f12d24f71ac6e77a1532068d83efe7f54f2e5",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-worktree-registry-v2.test.mjs",
+      "to": "tools/dev-environments/test/dev-worktree-registry-v2.test.mjs",
+      "sha": "788aacaa4525151e2adbc8c9c9d1f81b05eb3962",
+      "mode": "100644"
+    },
+    {
+      "change": "INF02",
+      "from": "scripts/repo-tools/dev-worktree-registry.mjs",
+      "to": "tools/dev-environments/src/domain/dev-worktree-registry.mjs",
+      "sha": "acc219feee3a5d669c711f0912a2fa7e038ccef1",
+      "mode": "100644"
+    }
+  ]
+}

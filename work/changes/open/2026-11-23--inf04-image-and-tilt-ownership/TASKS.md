@@ -1,0 +1,8 @@
+# INF04 bounded tasks
+
+Ready subject to recorded dependency gate. Read INF-PARALLEL.md and filter INF-MOVE-MAP.json to INF04; exact move ownership, mechanical reference algorithm, proof/stop rules there. One Composer Standard child at a time, no research swarm. Preserve concurrent work; no live infrastructure mutation.
+
+## T01 | Move image recipes and builders
+Move mapped release image files and tests, development Dockerfile/ignore/loader/build scripts. Recompute staged turbo-prune paths in lib-build.sh, Docker COPY, repo root, shell sources, Dockerfile adjacency, image plan constants and sync fallback paths. Rename lab-nest-service-origin.mjs filename to release-service-origin.mjs per map, retain exported behavior. Preserve all pins, build flags and runtime closure. Run image closure, Dockerfile guard, warm-path, production-workspace-closure, verify-production-rewrite, image-plan deterministic tests; no live Docker build required.
+## T02 | Move Tilt and runtime freshness
+Move remaining INF04 rows, root Tiltfile include, release Tiltfile to environments/release, dev graph to infra/dev. Update app package watcher command paths, sync destinations and image Docker COPY /app locations consistently, dev-sync-paths unsafe/warm inputs, app-release installer image paths. Keep Tilt only active image writer, preserve custom build ref handoff, no change to loaded generation semantics. Run all mapped Tilt/sync/receipt tests plus existing dev-tilt tests. Compare unchanged effective input/fingerprint stability within new layout; first path-induced cache miss allowed, not permanent rebuild. No Tilt start. Integrate.

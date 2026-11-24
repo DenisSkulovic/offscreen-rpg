@@ -316,3 +316,12 @@ Review archive candidates with `pnpm repo:retirement` (read-only). No automated 
 **TURN03 blocker (2026-11-22):** [FORK01 historical authorization reconstruction](archive/2026-11/data/2026-11-22--fork01-historical-situation-authorization/CHANGE.md) is Done for the Story Engine projection. TURN03 remains blocked on the live kind fork replay and recovery gates.
 
 **2026-11-22 TURN03 systemic repair:** [FORK02 v2 checkpoint round-trip fidelity](archive/2026-11/data/2026-11-22--fork02-v2-checkpoint-roundtrip-fidelity/CHANGE.md) is Done for disposable full-field SQL readback. Live kind acceptance remains TURN03.
+
+## Infrastructure ownership cleanup (INF01–INF05)
+
+Sequential source-only batch; INF01 executable now, INF02–05 Ready with predecessor gates. [Plan](../undertakings/storyteller-workshop/INF-PARALLEL.md).
+- [INF01](open/2026-11-23--inf01-infra-ownership-map/CHANGE.md): Ownership atlas and relocation inventory
+- [INF02](open/2026-11-23--inf02-dev-environment-manager-boundary/CHANGE.md): Development environment manager placement
+- [INF03](open/2026-11-23--inf03-application-workload-layout/CHANGE.md): Cluster, workload and environment layout
+- [INF04](open/2026-11-23--inf04-image-and-tilt-ownership/CHANGE.md): Image build and Tilt ownership
+- [INF05](open/2026-11-23--inf05-platform-and-verification-separation/CHANGE.md): Platform and verification separation

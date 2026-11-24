@@ -1,5 +1,7 @@
 # Storyteller Workshop | reality check and finish line
 
+**Infrastructure ownership cleanup (2026-11-24):** [INF01–INF05](INF-PARALLEL.md) promoted for sequential source-only work. Remove generic lab source bucket; distinguish release and development, preserve actual runtime identities. INF01 ready now, successors dependency-gated; no further promotion. No live mutation or acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged. User starts each Change.
+
 **Database architecture planning (2026-11-24):** [Selected technical owner](../../../docs/technical/platform/database-infrastructure.md) and [three-lane DB program](DB-PARALLEL.md) remove domain schemas from DB infra, preserve one SQL migration history, and stage bounded runtime/transaction/telemetry improvements. DB01, DB06, and DB08 source are joined and archived. Historical SQL is unchanged. Seven successors stay Proposed. Existing journal has 25 entries but latest snapshot describes 48/71 tables. No live PostgreSQL proof; overall ~40% complete / ~60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed ~25% unchanged.
 
 **Cache wave 2 source join (2026-11-24):** CACHE04, CACHE06A, and CACHE06B are joined. CACHE06A and CACHE06B are Done source-only. CACHE04 SQL proof is still NOT-RUN. CACHE07 source harness is implemented; live disposable local Docker Redis proof is NOT-RUN pending owner authorization. Overall ~40% complete / ~60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed ~25% unchanged.

@@ -1,5 +1,7 @@
 # Development environments | identity, image authority, activation and failure contracts
 
+**Source ownership:** [infrastructure atlas](../../../infra/README.md) owns selected directory layout and release/development terminology. INF01–INF05 relocate source without changing current context, tenant or runtime identities. Existing paths below are observed baseline until corresponding Change integrates.
+
 **Owns:** the selected technical invariants for development environment identity, capacity admission, image/deployment authority and safe park/release. **Does not own:** player/game behavior, the release cluster's acceptance tests, executable commands, or empirical proof. **Status:** selected architecture; distinguish observed DXK09 implementation from unimplemented DXK10 target. **Reviewed against:** the owned-slot receipt at `d0e35b63` (2026-11-23). The earlier `e93f33c7` trial is failure evidence, not the current image path.
 
 Human explanation: [Developer environments, illustrated](../../architecture/10-developer-environments.md). Exact operational route: [Dev runbook](../../runbooks/dev-worktree-stacks.md). Evidence: [DXK09 PROOF](../../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md). Resource-lifecycle implementation proposal: [DXK10](../../../work/changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).

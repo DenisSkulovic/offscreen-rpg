@@ -1,0 +1,6 @@
+# INF01 bounded tasks
+
+Ready subject to recorded dependency gate. Read INF-PARALLEL.md and filter INF-MOVE-MAP.json to INF01; exact move ownership, mechanical reference algorithm, proof/stop rules there. One Composer Standard child at a time, no research swarm. Preserve concurrent work; no live infrastructure mutation.
+
+## T01 | Validate published atlas and inventory
+Read infra/README.md, INF-PARALLEL.md and INF-MOVE-MAP.json. Check exact tracked inventory against current HEAD, path uniqueness and modes, verify root package scripts, root Tiltfile, stack lifecycle, dev lifecycle and context fences. No source moves. Add scripts/repo-tools/infra-layout.test.mjs with source-only test reading tracked map and checking unique destinations, allowed ownership roots, no new lab path and every baseline tracked infra/kubernetes/lab file covered; fixture negative duplicate/missing entry. Test must support staged moves: each row exists at old OR new path, never both; verify exact initial old paths before INF02. Do not assert historical SHA after legitimate source changes. Run node --test scripts/repo-tools/infra-layout.test.mjs and pnpm repo:docs-health; verify atlas links. Reconcile current source map only by fixed placement rules; stop on unclassifiable new owner. Integrate docs/test; no live run.

@@ -1,5 +1,7 @@
 # Storyteller Workshop
 
+**Infrastructure ownership cleanup (2026-11-24):** [INF01–INF05](INF-PARALLEL.md) promoted for sequential source-only work. Remove generic lab source bucket; distinguish release and development, preserve actual runtime identities. INF01 ready now, successors dependency-gated; no further promotion. No live mutation or acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged. User starts each Change.
+
 **Database architecture (2026-11-24):** [Selected infrastructure and persistence](../../../docs/technical/platform/database-infrastructure.md), [DB01–DB10 DAG](DB-PARALLEL.md). DB01, DB06, and DB08 are Done source-only on undertaking/storyteller-workshop; live PostgreSQL remains NOT RUN. Seven successors stay Proposed. Historical snapshot metadata drift is separately recorded, no DDL, runtime proof or global queue change. Preserve Cache active ownership; no new acceptance credit.
 
 **Cache release (2026-11-24):** owner commissioned all eight Changes at f26ce36dcee1bda6e9eee4d305ec6200ef924b44. [Execution DAG and gates](CACHE-PARALLEL.md). CACHE01, CACHE02, CACHE03, and CACHE05 are joined source-only. CACHE02 parent still coordinates wave 2. Future gates are conditional, no further owner release needed; semantic contradictions stop. No global selection or live resource authorization change.

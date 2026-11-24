@@ -24,13 +24,7 @@ These are future work, not today's execution queue. Reconcile source/owner/accep
 
 ## Deferred INF architecture redesign (planned 2026-11-23)
 
-[Program, evidence, target ownership and dependency plan](INFRA-RESTRUCTURE-PLAN.md). Source snapshot `314f1ef1`; **all five Proposed and not executable**. Preserve DXK09 and HR-wave priority.
 
-- [INF01](2026-11-23--inf01-infra-ownership-map/CHANGE.md): Infrastructure ownership and operational entrypoint atlas
-- [INF02](2026-11-23--inf02-dev-environment-manager-boundary/CHANGE.md): One-way dev environment manager boundary
-- [INF03](2026-11-23--inf03-application-workload-layout/CHANGE.md): Workload definitions and environment overlay ownership
-- [INF04](2026-11-23--inf04-image-and-tilt-ownership/CHANGE.md): Image build and live-update ownership cleanup
-- [INF05](2026-11-23--inf05-platform-and-verification-separation/CHANGE.md): Shared platform services and verification tooling separation
 
 ## Demand-driven development lifecycle (staged 2026-11-23)
 
@@ -39,3 +33,5 @@ These are future work, not today's execution queue. Reconcile source/owner/accep
 - [DXK10](2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md): separate Change/worktree, environment reservation/attachment, tenant provisioning, workload-profile activation, parking and safe release. DXK10-A reservation/attachment is Done in [archive](../../archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md); DXK10-B scoped activation and DXK10-C retained-tenant release remain planner-held. No collision with HR02 Web source changes. Not an automatic HR01–HR03 blocker.
 
 - LIB05 generic object-storage boundary is Done in [archive](../../archive/2026-11/platform-operations/2026-11-23--lib05-generic-object-storage-boundary/CHANGE.md).
+
+INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execution plan](../../../undertakings/storyteller-workshop/INF-PARALLEL.md).
