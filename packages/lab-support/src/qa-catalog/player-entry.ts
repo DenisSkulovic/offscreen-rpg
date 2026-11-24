@@ -1,4 +1,4 @@
-import type { QaJourneyCase } from '@offscreen/contracts/qa';
+import type { QaJourneyCase } from '@offscreen/lab-interface/qa';
 import { mechanicalContentCatalogue } from '@offscreen/story-engine/campaign/fixtures/mechanical-content';
 import { defineCase, stage, stateEvidence } from './support';
 

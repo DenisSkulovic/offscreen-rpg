@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import { storySnapshotSchema } from '@offscreen/story-interface/stories';
-import { chamberInspectorSchema } from '@offscreen/contracts/chamber';
+import { chamberInspectorSchema } from '@offscreen/lab-interface/chamber';
 import type { Database } from '@offscreen/db';
 import { chamberAllowsResponse } from '@offscreen/lab-support';
 import {

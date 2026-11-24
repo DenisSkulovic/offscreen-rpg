@@ -12,7 +12,7 @@ import {
   type LiveComparisonDimension,
   type LiveComparisonTrialManifest,
   type LiveEvaluationRecipe,
-} from '@offscreen/contracts/live-evaluation';
+} from './interfaces/live-evaluation.js';
 
 function requiredReservationMicrousd(input: {
   route: LiveComparisonCandidate['route'];
@@ -88,7 +88,11 @@ export function dryRunLiveComparison(input: {
   if (input.allowPaid === true) {
     failures.push('allow_paid_forbidden');
   }
-  if (!input.case?.id || !input.case?.version || !input.case?.storyFingerprint) {
+  if (
+    !input.case?.id ||
+    !input.case?.version ||
+    !input.case?.storyFingerprint
+  ) {
     failures.push('missing_case_identity');
   }
 
@@ -118,7 +122,8 @@ export function dryRunLiveComparison(input: {
   // and total planned dispatches ceiling.
   const maxDispatches = BigInt(input.maxDispatches ?? 2);
   const plannedCeiling = worstCase * maxDispatches;
-  const hardCashCapMicrousd = input.hardCashCapMicrousd ?? plannedCeiling.toString();
+  const hardCashCapMicrousd =
+    input.hardCashCapMicrousd ?? plannedCeiling.toString();
 
   if (
     baseline.route.inputMicrousdPerMillion === '' ||

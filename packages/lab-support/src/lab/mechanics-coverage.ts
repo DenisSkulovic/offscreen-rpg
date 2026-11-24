@@ -5,7 +5,7 @@ import {
   findChamberLabScenario,
   listChamberLabScenarios,
 } from '../chamber-lab-catalog.js';
-import type { ChamberLabLane } from '@offscreen/contracts/chamber-lab';
+import type { ChamberLabLane } from '../interfaces/chamber-lab.js';
 
 export type CoverageLaneState = 'available' | 'blocked' | 'planned';
 
@@ -17,7 +17,9 @@ export type MechanicsCoverageEntry = {
   scenarioId: string | null;
   scenarioVersion: number | null;
   fixtureId: string | null;
-  lanes: Partial<Record<ChamberLabLane, { state: CoverageLaneState; reason?: string }>>;
+  lanes: Partial<
+    Record<ChamberLabLane, { state: CoverageLaneState; reason?: string }>
+  >;
   evidenceTier: ChamberLabLane[];
   injectedFailure: string | null;
   automatedPassAllowed: false;
@@ -39,7 +41,8 @@ const COVERAGE: readonly MechanicsCoverageEntry[] = [
       'bench-policy': { state: 'available' },
       'sandbox-db': {
         state: 'planned',
-        reason: 'Persisted wage/receipt proof needs authorized Sandbox exercise',
+        reason:
+          'Persisted wage/receipt proof needs authorized Sandbox exercise',
       },
       connected: {
         state: 'planned',
@@ -103,7 +106,8 @@ const COVERAGE: readonly MechanicsCoverageEntry[] = [
     mechanicId: 'activity-interrupt-same-tick',
     name: 'Same-tick activity interruption',
     invariant: 'Must use real activity admission authority when unblocked',
-    owningSource: 'packages/game/src/activities.ts (no interrupt seam exported)',
+    owningSource:
+      'packages/game/src/activities.ts (no interrupt seam exported)',
     scenarioId: 'activity-interrupt-same-tick',
     scenarioVersion: 1,
     fixtureId: 'activity-interrupt-placeholder',
@@ -245,9 +249,7 @@ export function resolveRunnableCoverage(args: {
 }
 
 /** Manual QA / planned entries never upgrade to automated passed. */
-export function coverageCannotBecomeAutomatedPass(
-  mechanicId: string,
-): boolean {
+export function coverageCannotBecomeAutomatedPass(mechanicId: string): boolean {
   const entry = COVERAGE.find((row) => row.mechanicId === mechanicId);
   return entry ? entry.automatedPassAllowed === false : true;
 }

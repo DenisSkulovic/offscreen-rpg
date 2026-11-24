@@ -1,4 +1,4 @@
-import type { QaJourneyCase } from '@offscreen/contracts/qa';
+import type { QaJourneyCase } from '@offscreen/lab-interface/qa';
 import { defineCase, stage, stateEvidence } from './support';
 
 export const activityLifecycleCases: readonly QaJourneyCase[] = [

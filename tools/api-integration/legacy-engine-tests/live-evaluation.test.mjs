@@ -7,7 +7,7 @@ import {
   preflightMemoryEvaluation,
   preflightLiveEvaluation,
 } from '../../../packages/lab-support/dist/live-evaluation.js';
-import { memoryEvaluationPacketConfigSchema } from '@offscreen/contracts/live-evaluation';
+import { memoryEvaluationPacketConfigSchema } from '@offscreen/lab-support/interfaces/live-evaluation';
 
 const now = '2026-09-20T15:00:00.000Z';
 const generationId = randomUUID();

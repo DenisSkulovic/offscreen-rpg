@@ -7,7 +7,7 @@ import {
   parseChamberLabFixtureRecipe,
   type ChamberLabFixtureOverlay,
   type ChamberLabFixtureRecipe,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 import { interactionSchema } from '@offscreen/story-interface/interactions';
 import {
   storyItemSchema,

@@ -4,8 +4,8 @@ import {
   chamberScenarioCatalog,
   chamberScenarioMetadataSchema,
   listChamberScenarios,
-} from '../src/chamber';
-import { startChamberSchema } from '../src/chamber.js';
+  startChamberSchema,
+} from '@offscreen/lab-interface/chamber';
 
 test('every accepted chamber scenario has catalog metadata', () => {
   const accepted = startChamberSchema.shape.scenario.options;

@@ -7,7 +7,7 @@ import {
   finalizeLabRunEvidence,
   redactLabEvidenceValue,
 } from './lab-evidence.js';
-import type { LabRunEvidenceCapsule } from '@offscreen/contracts/chamber-lab';
+import type { LabRunEvidenceCapsule } from '../interfaces/chamber-lab.js';
 
 export class PacketLabError extends Error {
   constructor(
@@ -49,7 +49,10 @@ export function assertHeldPacketSafe(snapshot: HeldPacketSnapshot): void {
       'Held/offline packet lab detected provider HTTP dispatch attempt',
     );
   }
-  if (snapshot.providerAttempts !== 0 || snapshot.verifiedChargeMicrousd !== 0) {
+  if (
+    snapshot.providerAttempts !== 0 ||
+    snapshot.verifiedChargeMicrousd !== 0
+  ) {
     throw new PacketLabError(
       'nonzero-charge',
       'Held packet must show zero provider attempts and zero charge',
@@ -96,10 +99,7 @@ export function materializeHeldPacketEvidence(args: {
   safeInspection: Record<string, unknown>;
 } {
   assertHeldPacketSafe(args.snapshot);
-  if (
-    args.expectedHash &&
-    args.expectedHash !== args.snapshot.packetHash
-  ) {
+  if (args.expectedHash && args.expectedHash !== args.snapshot.packetHash) {
     throw new PacketLabError(
       'hash-mismatch',
       'Held packet hash does not match expected capture',
@@ -154,8 +154,7 @@ export function materializeHeldPacketEvidence(args: {
   const serialized = JSON.stringify(finished.capsule);
   if (
     serialized.includes('sk-should-never-leak') ||
-    (args.snapshot.rawPrompt &&
-      serialized.includes(args.snapshot.rawPrompt))
+    (args.snapshot.rawPrompt && serialized.includes(args.snapshot.rawPrompt))
   ) {
     throw new PacketLabError(
       'dispatch-tripwire',

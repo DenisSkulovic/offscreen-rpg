@@ -5,7 +5,7 @@ import {
   type LiveEvaluationRecipe,
   type MemoryEvaluationManifest,
   type MemoryEvaluationPacketConfig,
-} from '@offscreen/contracts/live-evaluation';
+} from './interfaces/live-evaluation.js';
 
 function requiredReservationMicrousd(input: {
   route: LiveEvaluationManifest['route'];

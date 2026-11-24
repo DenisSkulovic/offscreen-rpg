@@ -1,6 +1,6 @@
 # DO06 | lab ownership
 
-**Status: Owner-commissioned / Ready after prerequisites. Kind: implementation. Profile: CONTRACT.** Baseline `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Integration target `undertaking/storyteller-workshop`. Prerequisite: DO03 already integrated; DO05 must be integrated on the undertaking and its creative-exploration export available. DO04 is not a prerequisite.
+**Status: Done. Kind: implementation. Profile: CONTRACT.** Baseline `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Integration target `undertaking/storyteller-workshop`. Prerequisite: DO03 already integrated; DO05 must be integrated on the undertaking and its creative-exploration export available. DO04 is not a prerequisite.
 
 [Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 
@@ -49,4 +49,7 @@ After actual prerequisites land and the narrow preflight passes, execute T01 and
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 |---|---|---|---|---|---|---|
-| To fill at close for every impacted claim | technical/product | pending | pending | not executed | pending | pending |
+| Product behavior | product | unchanged because no player, staff, authorization or spending behavior changes | source-only schema move; starting HEAD `443b26b3ed5365456d145ddc65a9c3c881dad9cf` | source-inspected | chamber and chamber-lab strict/negative tests passed (9) | N/A |
+| Code organization | `docs/technical/platform/topology.md#code-organization` | changed: DO06 realizes lab-interface and lab-support interfaces; residual contracts has no live modules | same HEAD plus this Change | source-inspected | production closure: API and Game Authority omit lab-interface and lab-support; Web includes lab-interface and omits contracts and lab-support (5 pass) | topology paragraph updated |
+| Package graph | module graph | changed imports, no new lab cycle in this diff | module-graph test 27 pass; live graph still `fail` on pre-existing `forbidden-authority-writer-import` in unchanged `action-executions.ts` | source-inspected | no remaining `@offscreen/contracts/{chamber,qa,chamber-lab,live-evaluation,memory-evaluation,creative-exploration-evaluation}` code imports | exports updated |
+| api-integration typecheck | unrelated | unchanged | `test/library-batch-read.test.ts` exactOptionalPropertyTypes; file not in this diff | NOT RUN as a DO06 failure | recorded baseline, not masked | N/A |

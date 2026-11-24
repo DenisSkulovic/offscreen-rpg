@@ -6,7 +6,7 @@ import type {
   LabObservation,
   LabRunEvidenceCapsule,
   LabSemanticDelta,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 
 export class ReplayCompareError extends Error {
   constructor(
@@ -132,9 +132,7 @@ export function compareMechanicalRuns(args: {
   return {
     equal: delta.changes.length === 0,
     delta,
-    normalizedPaths: delta.normalizedForComparison
-      ? delta.unchanged
-      : [],
+    normalizedPaths: delta.normalizedForComparison ? delta.unchanged : [],
     invariantId: args.invariantId,
     passed,
     subjectiveExcluded: true,
@@ -163,7 +161,11 @@ export function mapChamberCriteriaEvidence(): LabCriterionEvidence[] {
     { id: 'C05', status: 'demonstrated', note: 'Labeled clocks/entropy' },
     { id: 'C06', status: 'demonstrated', note: 'LabRun step orchestrator' },
     { id: 'C07', status: 'demonstrated', note: 'Observations/deltas' },
-    { id: 'C08', status: 'demonstrated', note: 'Fault cut points (fake adapters)' },
+    {
+      id: 'C08',
+      status: 'demonstrated',
+      note: 'Fault cut points (fake adapters)',
+    },
     { id: 'C09', status: 'demonstrated', note: 'Evidence capsules' },
     { id: 'C10', status: 'demonstrated', note: 'QA/LabRun bridge' },
     { id: 'C11', status: 'demonstrated', note: 'Workbench + lab routes' },
@@ -175,6 +177,10 @@ export function mapChamberCriteriaEvidence(): LabCriterionEvidence[] {
     },
     { id: 'C14', status: 'demonstrated', note: 'Held packet lab evidence' },
     { id: 'C15', status: 'demonstrated', note: 'Mechanics coverage registry' },
-    { id: 'C16', status: 'demonstrated', note: 'Replay/compare + criteria map' },
+    {
+      id: 'C16',
+      status: 'demonstrated',
+      note: 'Replay/compare + criteria map',
+    },
   ];
 }

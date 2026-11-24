@@ -18,7 +18,7 @@ import { DispatchReviewConflictError } from '@offscreen/story-engine/storyteller
 import {
   dispatchReviewDecisionRequestSchema,
   startChamberSchema,
-} from '@offscreen/contracts/chamber';
+} from '@offscreen/lab-interface/chamber';
 import { respondToStorySchema } from '@offscreen/story-interface/stories';
 
 export const CHAMBER = Symbol('CHAMBER');

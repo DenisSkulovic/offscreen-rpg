@@ -18,6 +18,10 @@
     "./qa-catalog/*": {
       "types": "./dist/qa-catalog/*.d.ts",
       "default": "./dist/qa-catalog/*.js"
+    },
+    "./interfaces/live-evaluation": {
+      "types": "./dist/interfaces/live-evaluation.d.ts",
+      "default": "./dist/interfaces/live-evaluation.js"
     }
   },
   "scripts": {
@@ -25,7 +29,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@offscreen/contracts": "workspace:*",
+    "@offscreen/lab-interface": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",

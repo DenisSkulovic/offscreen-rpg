@@ -5,7 +5,7 @@ import {
   type LongStoryMemoryCorpus,
   type MemoryEvaluationObservation,
   type MemoryOracleQuery,
-} from '@offscreen/contracts/memory-evaluation';
+} from './interfaces/memory-evaluation.js';
 import type { StoryRetrievalResult } from '@offscreen/storyteller/context/story-retrieval';
 import type { DocumentStore } from '@offscreen/documents';
 import { searchCanonicalKnowledge } from '@offscreen/story-engine/storyteller/canonical-search';

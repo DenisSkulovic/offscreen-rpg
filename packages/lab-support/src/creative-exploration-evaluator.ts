@@ -4,8 +4,8 @@ import {
   creativeExplorationObservationSchema,
   type CreativeExplorationBenchmarkCase,
   type CreativeExplorationObservation,
-} from '@offscreen/contracts/creative-exploration-evaluation';
-import type { LongStoryMemoryCorpus } from '@offscreen/contracts/memory-evaluation';
+} from './interfaces/creative-exploration-evaluation.js';
+import type { LongStoryMemoryCorpus } from './interfaces/memory-evaluation.js';
 import { buildLongStoryMemoryCorpus } from './long-story-memory-corpus';
 
 const reviewDimensions = [

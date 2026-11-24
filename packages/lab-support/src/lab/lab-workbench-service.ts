@@ -7,7 +7,7 @@ import {
   canOpenScenarioOnLane,
   type ChamberLabLane,
   type LabStepCommand,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 import {
   findChamberLabScenario,
   listChamberLabScenarios,
@@ -19,11 +19,7 @@ import { diffLabObservations } from './lab-observation.js';
 export class LabWorkbenchError extends Error {
   constructor(
     readonly code:
-      | 'invalid'
-      | 'not_found'
-      | 'conflict'
-      | 'unavailable'
-      | 'forbidden-lane',
+      'invalid' | 'not_found' | 'conflict' | 'unavailable' | 'forbidden-lane',
     message: string,
   ) {
     super(message);

@@ -24,14 +24,14 @@
     "story-inspect": "node ../../scripts/repo-tools/story-session-report.mjs",
     "storyteller-packet-audit": "pnpm --filter @offscreen/storyteller build && node ../../scripts/repo-tools/storyteller-request-audit.mjs",
     "storyteller-playability": "pnpm --filter @offscreen/storyteller build && pnpm --filter @offscreen/lab-support build && node ../../scripts/repo-tools/storyteller-playability.mjs",
-    "storyteller-live-comparison": "pnpm --filter @offscreen/contracts build && pnpm --filter @offscreen/lab-support build && node ../../scripts/repo-tools/storyteller-live-comparison.mjs",
+    "storyteller-live-comparison": "pnpm --filter @offscreen/lab-support build && node ../../scripts/repo-tools/storyteller-live-comparison.mjs",
     "memory-index-benchmark": "pnpm --filter @offscreen/documents build && pnpm --filter @offscreen/lab-support build && pnpm --filter @offscreen/story-engine build && node ../../scripts/repo-tools/memory-index-benchmark.mjs"
   },
   "dependencies": {
     "@offscreen/api": "workspace:*",
     "@offscreen/api-lab": "workspace:*",
     "@offscreen/content-packages": "workspace:*",
-    "@offscreen/contracts": "workspace:*",
+    "@offscreen/lab-interface": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",

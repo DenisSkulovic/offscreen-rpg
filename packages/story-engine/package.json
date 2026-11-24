@@ -46,7 +46,6 @@
   },
   "dependencies": {
     "@offscreen/cache-port": "workspace:*",
-    "@offscreen/contracts": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",

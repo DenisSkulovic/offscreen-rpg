@@ -10,7 +10,7 @@ import {
   type LabRunLifecycle,
   type LabStepCommand,
   type LabStepRequest,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 import {
   acceptedShiftEightyPercentRecipe,
   composeFixtureSpecimen,
@@ -31,7 +31,7 @@ import {
   type LabFaultRegistry,
 } from './lab-faults.js';
 import { observeSpecimenState } from './lab-observation.js';
-import type { LabRunEvidenceCapsule } from '@offscreen/contracts/chamber-lab';
+import type { LabRunEvidenceCapsule } from '../interfaces/chamber-lab.js';
 import {
   createMemorySandboxStore,
   materializeSandboxSpecimen,
@@ -802,9 +802,7 @@ export class LabRunHandle {
     };
   }
 
-  private armFault(
-    command: Extract<LabStepCommand, { kind: 'armFault' }>,
-  ): {
+  private armFault(command: Extract<LabStepCommand, { kind: 'armFault' }>): {
     outcome: LabStepOutcome;
     observation: unknown;
     errorCode?: string;

@@ -2,43 +2,11 @@
   "name": "@offscreen/contracts",
   "version": "0.0.0",
   "private": true,
-  "exports": {
-    "./chamber": {
-      "types": "./dist/src/chamber.d.ts",
-      "default": "./dist/src/chamber.js"
-    },
-    "./chamber-lab": {
-      "types": "./dist/src/chamber-lab.d.ts",
-      "default": "./dist/src/chamber-lab.js"
-    },
-    "./qa": {
-      "types": "./dist/src/qa.d.ts",
-      "default": "./dist/src/qa.js"
-    },
-    "./live-evaluation": {
-      "types": "./dist/src/live-evaluation.d.ts",
-      "default": "./dist/src/live-evaluation.js"
-    },
-    "./memory-evaluation": {
-      "types": "./dist/src/memory-evaluation.d.ts",
-      "default": "./dist/src/memory-evaluation.js"
-    },
-    "./creative-exploration-evaluation": {
-      "types": "./dist/src/creative-exploration-evaluation.d.ts",
-      "default": "./dist/src/creative-exploration-evaluation.js"
-    }
-  },
+  "exports": {},
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test dist/test/*.test.js"
-  },
-  "dependencies": {
-    "@offscreen/storyteller": "workspace:*",
-    "@offscreen/game": "workspace:*",
-    "@offscreen/story-interface": "workspace:*",
-    "@offscreen/usage-policy": "workspace:*",
-    "zod": "4.6.5"
+    "build": "node --eval \"\"",
+    "typecheck": "node --eval \"\"",
+    "test": "node --eval \"\""
   },
   "devDependencies": {
     "@types/node": "22.20.3",

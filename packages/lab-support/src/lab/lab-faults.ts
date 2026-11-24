@@ -7,7 +7,7 @@ import {
   parseLabFaultPlan,
   type LabFaultCutPoint,
   type LabFaultPlan,
-} from '@offscreen/contracts/chamber-lab';
+} from '../interfaces/chamber-lab.js';
 import { createChamberStorytellerControl } from '../storyteller-control.js';
 
 export class LabFaultError extends Error {
@@ -94,7 +94,10 @@ export function createCommitAckFaultAdapter() {
       const hash = payloadHash(args.payload);
       const existing = operations.get(args.operationId);
       if (!existing) {
-        throw new LabFaultError('unknown-fault', 'No committed operation to ACK');
+        throw new LabFaultError(
+          'unknown-fault',
+          'No committed operation to ACK',
+        );
       }
       if (existing.runId !== args.runId) {
         throw new LabFaultError('cross-run', 'ACK rejected for foreign run');
@@ -156,7 +159,9 @@ export function createCommitAckFaultAdapter() {
   };
 }
 
-export type CommitAckFaultAdapter = ReturnType<typeof createCommitAckFaultAdapter>;
+export type CommitAckFaultAdapter = ReturnType<
+  typeof createCommitAckFaultAdapter
+>;
 
 export function createLabFaultRegistry() {
   const armed = new Map<string, ArmedFault>();
@@ -209,10 +214,7 @@ export function createLabFaultRegistry() {
           `Cut point ${plan.cutPoint} is not wired in CH08 adapters`,
         );
       }
-      if (
-        plan.cutPoint === 'held-storyteller-consequence' &&
-        plan.storyId
-      ) {
+      if (plan.cutPoint === 'held-storyteller-consequence' && plan.storyId) {
         const current = storyteller.read(plan.storyId);
         storyteller.arm(plan.storyId, current.revision, 'hold');
       }
@@ -235,20 +237,17 @@ export function createLabFaultRegistry() {
         );
       }
       assertOwned(args.runId, fault);
-      if (
-        fault.cutPoint === 'held-storyteller-consequence' &&
-        fault.storyId
-      ) {
+      if (fault.cutPoint === 'held-storyteller-consequence' && fault.storyId) {
         const current = storyteller.read(fault.storyId);
         storyteller.clear(fault.storyId, current.revision);
       }
       armed.delete(id);
       return { faultId: args.faultId, runId: args.runId, armed: false };
     },
-    trip(args: {
-      runId: string;
-      faultId: string;
-    }): { tripped: boolean; fault: ArmedFault | null } {
+    trip(args: { runId: string; faultId: string }): {
+      tripped: boolean;
+      fault: ArmedFault | null;
+    } {
       const fault = armed.get(key(args.runId, args.faultId));
       if (!fault) {
         return { tripped: false, fault: null };
@@ -280,7 +279,8 @@ export function createLabFaultRegistry() {
         );
       }
       assertOwned(args.runId, fault);
-      const operationId = args.operationId ?? fault.targetOperationId ?? randomUUID();
+      const operationId =
+        args.operationId ?? fault.targetOperationId ?? randomUUID();
       const payload = args.payload ?? { operationId, intent: 'lab' };
       const trip = this.trip({ runId: args.runId, faultId: args.faultId });
       if (!trip.tripped) {

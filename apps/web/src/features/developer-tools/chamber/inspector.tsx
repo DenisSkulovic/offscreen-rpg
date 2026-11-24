@@ -1,6 +1,6 @@
 'use client';
 
-import type { ChamberInspector } from '@offscreen/contracts/chamber';
+import type { ChamberInspector } from '@offscreen/lab-interface/chamber';
 
 function Field(args: { label: string; value: string }) {
   return (

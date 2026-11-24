@@ -10,7 +10,7 @@ import {
   type QaRun,
   type qaEnvironmentSchema,
   type qaGitStateSchema,
-} from '@offscreen/contracts/qa';
+} from '@offscreen/lab-interface/qa';
 import type { Database } from '@offscreen/db';
 import { qaRun, qaRunStage } from '@offscreen/db/qa-schema';
 import { and, asc, desc, eq } from 'drizzle-orm';
