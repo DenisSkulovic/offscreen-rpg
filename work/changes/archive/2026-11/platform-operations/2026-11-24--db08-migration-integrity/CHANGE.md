@@ -1,8 +1,8 @@
 # DB08 | Migration integrity and single-runner hardening
 
-**Status: source implemented / live acceptance open. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
+**Status: Done / source-only. Live SQL remains NOT RUN. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
 
-[Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
+[Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
 ## Outcome and scope
 
@@ -31,4 +31,4 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Migration integrity and single-runner hardening | database-infrastructure | change/db08-migration-integrity source; historical SQL/journal bytes unchanged from 7033f654 | source tests PASS; live SQL NOT RUN | journal tamper/unknown and runner refusal in db08-*.test.ts; integration fixture NOT RUN | DB01 owns the shared join |
+| Migration integrity and single-runner hardening | database-infrastructure realization record | packages/db migrate and journal checks on undertaking/storyteller-workshop 6d20838e; historical SQL/journal bytes unchanged | source-tested | tampered journal and competing runner refuse before DDL; database.integration NOT RUN | joined with DB01 and DB06 |

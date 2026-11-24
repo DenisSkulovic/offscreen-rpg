@@ -1,6 +1,6 @@
 # Storyteller Workshop
 
-**Database architecture (2026-11-24):** [Selected infrastructure and persistence](../../../docs/technical/platform/database-infrastructure.md), [DB01–DB10 DAG](DB-PARALLEL.md). DB01/DB06/DB08 commissioned concurrently at 7033f654091a4fc66c7de6b0dce37e2b8fb504c1 for source work; seven successors Proposed. Historical snapshot metadata drift is separately recorded, no DDL, runtime proof or global queue change. Preserve Cache active ownership; no new acceptance credit.
+**Database architecture (2026-11-24):** [Selected infrastructure and persistence](../../../docs/technical/platform/database-infrastructure.md), [DB01–DB10 DAG](DB-PARALLEL.md). DB01, DB06, and DB08 are Done source-only on undertaking/storyteller-workshop; live PostgreSQL remains NOT RUN. Seven successors stay Proposed. Historical snapshot metadata drift is separately recorded, no DDL, runtime proof or global queue change. Preserve Cache active ownership; no new acceptance credit.
 
 **Cache release (2026-11-24):** owner commissioned all eight Changes at f26ce36dcee1bda6e9eee4d305ec6200ef924b44. [Execution DAG and gates](CACHE-PARALLEL.md). CACHE01, CACHE02, CACHE03, and CACHE05 are joined source-only. CACHE02 parent still coordinates wave 2. Future gates are conditional, no further owner release needed; semantic contradictions stop. No global selection or live resource authorization change.
 
