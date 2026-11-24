@@ -72,7 +72,7 @@
     "migrate": "node --env-file-if-exists=../../.env dist/src/migrate-cli.js",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "node --test dist/test/config.test.js",
+    "test": "node --test dist/test/config.test.js dist/test/db06-admission.test.js dist/test/db06-pool.test.js dist/test/db08-journal.test.js dist/test/db08-runner.test.js",
     "test:integration": "node --test dist/test/database.integration.js"
   },
   "dependencies": {
