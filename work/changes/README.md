@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+**INF07:** [Image architecture normalization](open/2026-11-24--inf07-image-architecture-normalization/CHANGE.md) commissioned source-only after INF06; no global queue change.
+
 ## Database platform redesign
 
 Selected [architecture](../../docs/technical/platform/database-infrastructure.md) and [parallel execution program](../undertakings/storyteller-workshop/DB-PARALLEL.md). DB01, DB06, and DB08 are Done source-only. Seven successors stay Proposed with dependency and planner gates. Preserve current Cache ownership. DBOPS01/02 and SQL01 retain complementary release/operational/human audit scopes. No global queue change.

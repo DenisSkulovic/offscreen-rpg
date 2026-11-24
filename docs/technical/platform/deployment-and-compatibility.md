@@ -1,5 +1,9 @@
 # Delivery, operations and validation
 
+## Container image architecture (INF07 selected)
+
+One pinned shared toolchain and workspace graph, distinct build/runtime dependency closures, one development union artifact and four release artifacts. The image factory builds; common Kind distribution checks every authorized node against the host artifact identity before success. Cluster profiles own topology, Tilt owns dev Deployment selection, release assembly owns migration/rollout. Existing tags preserved, release immutability migration deferred. No new live proof. [INF07](../../../work/changes/open/2026-11-24--inf07-image-architecture-normalization/CHANGE.md).
+
 [Database infrastructure and domain persistence](database-infrastructure.md#schema-composition-and-evolution) owns the migration execution and schema composition contract; this page owns deployment sequencing and compatibility.
 
 **Find the section:** [who owns the boundary](#who-owns-the-boundary) · [start locally](#local-development) · [Chamber/testing](#scripted-testing-chamber) · [live proof criteria](#first-live-story-poc-what-the-run-must-mean) · [deployment target](#first-hosted-deployment) · [Kubernetes](#kubernetes-as-a-deliberate-extension) · [disposable Postgres proof](#disposable-cloudnativepg-proof) · [observability](#observability) · [architecture tests](#tests-that-demonstrate-the-architecture). Read the relevant section rather than loading this entire document.
