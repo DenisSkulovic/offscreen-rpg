@@ -3,6 +3,7 @@
  * Nested phases keep their own duration. Exclusive time subtracts direct children
  * so a parent and its children are not added together unless siblings overlap.
  */
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
@@ -17,6 +18,7 @@ export { childOperationEnv };
 
 /** @typedef {{
  *   path: string,
+ *   childPath: string,
  *   startedAt: string,
  *   origin: number,
  *   phases: object[],
@@ -27,14 +29,36 @@ export { childOperationEnv };
  *   writer: ReturnType<typeof createOperationEventWriter>,
  * }} ActiveTiming */
 
-/** @type {ActiveTiming | null} */
-let active = null;
+/** @typedef {{ active: ActiveTiming | null, rollbackSpan: ReturnType<ReturnType<typeof createOperationEventWriter>['beginOperation']> | null }} TimingScope */
+
+/** @type {AsyncLocalStorage<TimingScope>} */
+const timingScope = new AsyncLocalStorage();
+/** @type {TimingScope} */
+const standaloneScope = { active: null, rollbackSpan: null };
 
 /** @type {ReturnType<typeof createOperationEventWriter> | null} */
 let sharedWriter = null;
 
-/** @type {ReturnType<ReturnType<typeof createOperationEventWriter>['beginOperation']> | null} */
-let rollbackSpan = null;
+function currentScope() {
+  return timingScope.getStore() ?? standaloneScope;
+}
+
+// Launches can overlap before and after acquiring a slot lock. Their timing
+// and rollback state must never belong to the process as a whole.
+export function withStartupTimingScope(fn) {
+  return timingScope.run({ active: null, rollbackSpan: null }, fn);
+}
+
+export function bindStartupTimingCallback(fn) {
+  return AsyncLocalStorage.bind(fn);
+}
+
+export function startupTimingChildEnv() {
+  const active = currentScope().active;
+  return active
+    ? { ...childOperationEnv(active.operationId), OFFSCREEN_STARTUP_TIMING: active.childPath }
+    : {};
+}
 
 function writerDeps() {
   return {};
@@ -60,26 +84,30 @@ export function beginMonitorOperation(name, options = {}) {
 }
 
 export function getStartupOperationId() {
-  return active?.operationId ?? null;
+  return currentScope().active?.operationId ?? null;
 }
 
 export function beginRollbackMonitorSpan(parentOperationId) {
-  const parent = parentOperationId ?? active?.operationId ?? null;
-  rollbackSpan = beginMonitorOperation('dev.rollback', { parentOperationId: parent });
-  return rollbackSpan;
+  const scope = currentScope();
+  const parent = parentOperationId ?? scope.active?.operationId ?? null;
+  scope.rollbackSpan = beginMonitorOperation('dev.rollback', { parentOperationId: parent });
+  return scope.rollbackSpan;
 }
 
 export function endRollbackMonitorSpan(parkOk = false) {
-  if (!rollbackSpan) return;
-  if (parkOk) rollbackSpan.finish('success');
-  else rollbackSpan.rollback('rollback');
-  rollbackSpan = null;
+  const scope = currentScope();
+  const span = scope.rollbackSpan;
+  if (!span) return;
+  if (parkOk) span.finish('success');
+  else span.rollback('rollback');
+  scope.rollbackSpan = null;
 }
 
 /**
  * @param {string} outcome
  */
 export function emitStartupOutcomeBeforeCleanup(outcome) {
+  const active = currentScope().active;
   if (!active?.operation || active.operationTerminalEmitted) return;
   active.operationTerminalEmitted = true;
   if (successStartupOutcome(outcome)) {
@@ -121,6 +149,7 @@ function wallNowIso() {
  * @param {Record<string, unknown>} fields
  */
 function emitTimelinePhase(event, fields) {
+  const active = currentScope().active;
   if (!active?.writer || !active.operationId) return;
   active.writer.emit(event, {
     operationId: active.operationId,
@@ -134,6 +163,7 @@ function emitTimelinePhase(event, fields) {
  * @param {{ allowApproximate?: boolean }} [options]
  */
 function resolveParentPhaseId(parentName, options = {}) {
+  const active = currentScope().active;
   if (!parentName || !active) return { parentPhaseId: null, parentHintApproximate: false };
   const direct = active.openPhases.get(parentName);
   if (direct) {
@@ -161,8 +191,14 @@ export function beginStartupTiming(receiptPath, options = {}) {
       skipGit: options.skipGit ?? false,
     }) ?? null;
   const operationId = operation?.operationId ?? randomUUID();
-  active = {
+  const scope = currentScope();
+  const childPath = timingScope.getStore()
+    ? `${receiptPath}.${operationId}.phases.jsonl`
+    : `${receiptPath}.phases.jsonl`;
+  rmSync(childPath, { force: true });
+  scope.active = {
     path: receiptPath,
+    childPath,
     startedAt: wallNowIso(),
     origin: performance.now(),
     phases: [],
@@ -172,16 +208,10 @@ export function beginStartupTiming(receiptPath, options = {}) {
     openPhases: new Map(),
     writer,
   };
-  const childPath = `${receiptPath}.phases.jsonl`;
-  rmSync(childPath, { force: true });
-  process.env.OFFSCREEN_STARTUP_TIMING = childPath;
-  for (const [key, value] of Object.entries(childOperationEnv(operationId))) {
-    process.env[key] = value;
-  }
 }
 
 export function startupTimingActive() {
-  return active !== null;
+  return currentScope().active !== null;
 }
 
 /**
@@ -190,6 +220,8 @@ export function startupTimingActive() {
  * @param {(note: (extra: object) => void) => unknown} fn
  */
 export async function timePhase(name, parent, fn) {
+  const scope = currentScope();
+  const active = scope.active;
   if (!active) {
     return fn(() => {});
   }
@@ -220,39 +252,43 @@ export async function timePhase(name, parent, fn) {
     failed = true;
     throw error;
   } finally {
-    const monotonicEndNs = monoNowNs();
-    const finishedAt = wallNowIso();
-    const durationMs = Number(monotonicEndNs - monotonicStartNs) / 1e6;
-    emitTimelinePhase('phase-end', {
-      observedAt: finishedAt,
-      monotonicNs: monotonicEndNs.toString(),
-      phaseId,
-      parentPhaseId: parentLink.parentPhaseId,
-      phaseName: name,
-      result: failed ? 'failure' : 'success',
-    });
-    if (active.openPhases.get(name)?.phaseId === phaseId) {
-      active.openPhases.delete(name);
+    // Cancellation may finish the receipt while this phase is awaiting work.
+    if (scope.active === active) {
+      const monotonicEndNs = monoNowNs();
+      const finishedAt = wallNowIso();
+      const durationMs = Number(monotonicEndNs - monotonicStartNs) / 1e6;
+      emitTimelinePhase('phase-end', {
+        observedAt: finishedAt,
+        monotonicNs: monotonicEndNs.toString(),
+        phaseId,
+        parentPhaseId: parentLink.parentPhaseId,
+        phaseName: name,
+        result: failed ? 'failure' : 'success',
+      });
+      if (active.openPhases.get(name)?.phaseId === phaseId) {
+        active.openPhases.delete(name);
+      }
+      pushPhase({
+        name,
+        parent,
+        ms: Math.max(0, Math.round(durationMs)),
+        operationId: active.operationId,
+        phaseId,
+        parentPhaseId: parentLink.parentPhaseId,
+        parentHintApproximate: parentLink.parentHintApproximate || undefined,
+        startedAt,
+        finishedAt,
+        monotonicStartNs: monotonicStartNs.toString(),
+        monotonicEndNs: monotonicEndNs.toString(),
+        measuredStart: true,
+        ...sanitize(extra),
+      });
     }
-    pushPhase({
-      name,
-      parent,
-      ms: Math.max(0, Math.round(durationMs)),
-      operationId: active.operationId,
-      phaseId,
-      parentPhaseId: parentLink.parentPhaseId,
-      parentHintApproximate: parentLink.parentHintApproximate || undefined,
-      startedAt,
-      finishedAt,
-      monotonicStartNs: monotonicStartNs.toString(),
-      monotonicEndNs: monotonicEndNs.toString(),
-      measuredStart: true,
-      ...sanitize(extra),
-    });
   }
 }
 
 export function recordPhase(name, parent, durationMs, extra = {}) {
+  const active = currentScope().active;
   if (!active) return;
   const parentLink = resolveParentPhaseId(parent, { allowApproximate: true });
   const finishedAt = wallNowIso();
@@ -284,6 +320,7 @@ export function recordPhase(name, parent, durationMs, extra = {}) {
  * @param {Record<string, unknown>} phase
  */
 function pushPhase(phase) {
+  const active = currentScope().active;
   if (!active) return;
   active.phases.push(phase);
 }
@@ -368,10 +405,10 @@ function normalizeChildPhase(value) {
   return sanitize(normalized);
 }
 
-function readChildPhases(path) {
+function readChildPhases(childPath) {
   let text;
   try {
-    text = readFileSync(`${path}.phases.jsonl`, 'utf8');
+    text = readFileSync(childPath, 'utf8');
   } catch {
     return [];
   }
@@ -404,6 +441,8 @@ function readChildPhases(path) {
 }
 
 export function finishStartupTiming(outcome) {
+  const scope = currentScope();
+  const active = scope.active;
   if (!active) return null;
   if (active.operation && !active.operationTerminalEmitted) {
     active.operationTerminalEmitted = true;
@@ -413,7 +452,7 @@ export function finishStartupTiming(outcome) {
     else if (result === 'cancelled') active.operation.fail('cancelled');
     else active.operation.fail('failure');
   }
-  const phases = exclusiveDurations([...active.phases, ...readChildPhases(active.path)]);
+  const phases = exclusiveDurations([...active.phases, ...readChildPhases(active.childPath)]);
   const receipt = {
     startedAt: active.startedAt,
     finishedAt: wallNowIso(),
@@ -429,9 +468,8 @@ export function finishStartupTiming(outcome) {
       `${phase.name} ${phase.ms}ms wall, ${phase.exclusiveMs}ms exclusive${phase.cache ? ` cache=${phase.cache}` : ''}`,
   );
   console.log(`startup timing ${active.path}\n${lines.join('\n')}`);
-  active = null;
-  rollbackSpan = null;
-  delete process.env.OFFSCREEN_STARTUP_TIMING;
+  scope.active = null;
+  scope.rollbackSpan = null;
   return receipt;
 }
 
@@ -441,9 +479,8 @@ export function appendTimingLine(file, phase) {
 
 /** Reset shared writer for isolated tests. */
 export function resetStartupTimingForTests() {
-  active = null;
-  rollbackSpan = null;
+  const scope = currentScope();
+  scope.active = null;
+  scope.rollbackSpan = null;
   sharedWriter = null;
-  delete process.env.OFFSCREEN_STARTUP_TIMING;
-  delete process.env.OFFSCREEN_MONITOR_OPERATION_ID;
 }

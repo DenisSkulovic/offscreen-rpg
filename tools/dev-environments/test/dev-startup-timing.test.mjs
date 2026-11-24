@@ -7,6 +7,8 @@ import {
   finishStartupTiming,
   recordPhase,
   resetStartupTimingForTests,
+  withStartupTimingScope,
+  startupTimingChildEnv,
 } from '../src/application/dev-startup-timing.mjs';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -185,4 +187,47 @@ test('unfinished startup leaves measured starts without a finish receipt', async
   assert.throws(() => readFileSync(path), /ENOENT/);
   await pending;
   assert.throws(() => readFileSync(path), /ENOENT/);
+});
+
+test('overlapping launches own separate timing state and child receipts', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'startup-timing-parallel-'));
+  const path = join(root, 'receipt.json');
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  let envA;
+  const a = withStartupTimingScope(async () => {
+    beginStartupTiming(path, { skipGit: true });
+    envA = startupTimingChildEnv();
+    await timePhase('reconcile', null, () => gate);
+    assert.deepEqual(startupTimingChildEnv(), envA);
+    return finishStartupTiming('ok');
+  });
+  const b = await withStartupTimingScope(async () => {
+    beginStartupTiming(path, { skipGit: true });
+    const envB = startupTimingChildEnv();
+    assert.notEqual(envB.OFFSCREEN_STARTUP_TIMING, envA.OFFSCREEN_STARTUP_TIMING);
+    assert.notEqual(envB.OFFSCREEN_MONITOR_OPERATION_ID, envA.OFFSCREEN_MONITOR_OPERATION_ID);
+    await timePhase('preflight', null, async () => {});
+    return finishStartupTiming('refused:slot-operation-busy');
+  });
+  release();
+  const first = await a;
+  assert.deepEqual(first.phases.map((phase) => phase.name), ['reconcile']);
+  assert.deepEqual(b.phases.map((phase) => phase.name), ['preflight']);
+  assert.notEqual(first.operationId, b.operationId);
+  assert.deepEqual(startupTimingChildEnv(), {});
+});
+
+test('a phase completing after its receipt was finished does not throw or reopen it', async () => {
+  await withStartupTimingScope(async () => {
+    const root = mkdtempSync(join(tmpdir(), 'startup-timing-cancel-'));
+    beginStartupTiming(join(root, 'receipt.json'), { skipGit: true });
+    let release;
+    const pending = timePhase('reconcile', null, () => new Promise((resolve) => { release = resolve; }));
+    const receipt = finishStartupTiming('signal:SIGTERM');
+    release();
+    await pending;
+    assert.equal(receipt.outcome, 'signal:SIGTERM');
+    assert.deepEqual(startupTimingChildEnv(), {});
+  });
 });

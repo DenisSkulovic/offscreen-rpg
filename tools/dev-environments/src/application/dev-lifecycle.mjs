@@ -45,7 +45,9 @@ import {
   beginMonitorOperation,
   beginRollbackMonitorSpan,
   beginStartupTiming,
-  childOperationEnv,
+  bindStartupTimingCallback,
+  startupTimingChildEnv,
+  withStartupTimingScope,
   emitStartupOutcomeBeforeCleanup,
   endRollbackMonitorSpan,
   finishStartupTiming,
@@ -1035,6 +1037,11 @@ async function settleOwnedEnvironmentPark(input, options = {}) {
  * @returns {Promise<void>}
  */
 export async function runDevTiltLaunch(deps = {}) {
+  return withStartupTimingScope(() => runScopedDevTiltLaunch(deps));
+}
+
+/** @param {RunDevTiltLaunchDeps} deps */
+async function runScopedDevTiltLaunch(deps) {
   const worktree = deps.worktree ?? REPO_ROOT;
   const registryRoot = deps.registryRoot ?? devWorktreeRegistryRoot();
   const allocate = deps.allocateDevWorktreeOwner ?? allocateDevWorktreeOwner;
@@ -1246,7 +1253,7 @@ export async function runDevTiltLaunch(deps = {}) {
       const parkResult = await settleOwnedEnvironmentPark(parkInput(reason), {
         launcherHoldsOperationLock: Boolean(slotOperationLock),
       });
-      endRollbackMonitorSpan(parkResult?.ok ? 'success' : 'rollback');
+      endRollbackMonitorSpan(parkResult?.ok === true);
       releaseSlotOperationLock();
       finishStartupTiming(reason);
       exitFn(exitCode);
@@ -1259,13 +1266,13 @@ export async function runDevTiltLaunch(deps = {}) {
       stopPolling();
     };
 
-    const onSignal = (signal) => {
+    const onSignal = bindStartupTimingCallback((signal) => {
       cancelLaunch(`signal:${signal}`);
       void settleLaunchCleanup(
         `signal:${signal}`,
         signal === 'SIGTERM' ? 143 : 130,
       );
-    };
+    });
     const installLaunchSignalHandlers = () => {
       if (deps.exitAfterSession || launchSignalsInstalled) return;
       onSigint = () => {
@@ -1365,7 +1372,7 @@ export async function runDevTiltLaunch(deps = {}) {
     }
     const tiltEnv = {
       ...process.env,
-      ...childOperationEnv(getStartupOperationId()),
+      ...startupTimingChildEnv(),
       OFFSCREEN_DEV_SLOT: ownerRecord.slotId,
       OFFSCREEN_DEV_NAMESPACE: ownerRecord.namespace,
       OFFSCREEN_DEV_GAME_PORT: String(gamePort),
@@ -1643,7 +1650,7 @@ export async function runDevTiltLaunch(deps = {}) {
       }
     }, 5_000);
 
-    child.on('exit', (code) => {
+    child.on('exit', bindStartupTimingCallback((code) => {
       sessionActive = false;
       if (launchCleanupSettled) {
         stopPolling();
@@ -1651,7 +1658,7 @@ export async function runDevTiltLaunch(deps = {}) {
         return;
       }
       void onUnexpectedTiltExit(code);
-    });
+    }));
   } finally {
     releaseSlotOperationLock();
   }

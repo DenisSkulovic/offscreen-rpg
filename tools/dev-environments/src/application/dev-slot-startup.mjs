@@ -15,7 +15,7 @@ import {
   fingerprintDevImageContext,
   UNION_ROLE_FILTER as UNION_FILTER,
 } from '../../../../infra/images/development/image-plan.mjs';
-import { timePhase } from './dev-startup-timing.mjs';
+import { startupTimingChildEnv, timePhase } from './dev-startup-timing.mjs';
 import {
   preserveOwnedServicePorts,
   selectColdStartDocuments,
@@ -335,6 +335,7 @@ export async function prepareMigrationArtifact(input, record) {
         spawnSync('pnpm', MIGRATION_PACKAGE_BUILD_ARGS, {
           cwd: input.worktree,
           encoding: 'utf8',
+          env: { ...process.env, ...startupTimingChildEnv() },
         }),
       ),
     );
@@ -664,6 +665,7 @@ export async function ensureOwnedSlotImages(
           encoding: 'utf8',
           env: {
             ...process.env,
+            ...startupTimingChildEnv(),
             OFFSCREEN_IMAGE_FINGERPRINT: identity.fingerprint,
           },
         },
