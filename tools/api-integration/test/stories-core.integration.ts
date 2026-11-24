@@ -12,6 +12,12 @@ import { listChamberScenarios } from '@offscreen/lab-interface/chamber';
 import type { Database } from '@offscreen/db';
 import type { ReadCache } from '@offscreen/cache-port/read-cache';
 import {
+  createDisabledStore,
+  createFakeStore,
+  type CacheStore,
+} from '@offscreen/cache/core';
+import { createStorySnapshotCache } from '@offscreen/story-engine/stories/read-cache-options';
+import {
   createStories,
   StoryError,
   type CampaignDocumentRoot,
@@ -371,6 +377,85 @@ export async function checkStoryCore({
           error instanceof StoryError && error.code === 'not_found',
       );
       assert.equal(reads.length, readsBeforeUnauthorized);
+    },
+  );
+
+  await t.test(
+    'versioned storySnapshotCache is owner checked, version addressed and disposable',
+    async () => {
+      let now = 1_000_000;
+      const inner = createFakeStore(() => now);
+      const storeGets: string[] = [];
+      const store: CacheStore = {
+        async get(key) {
+          storeGets.push(key);
+          return inner.get(key);
+        },
+        async set(key, entry) {
+          return inner.set(key, entry);
+        },
+      };
+      const storySnapshotCache = createStorySnapshotCache(store, 'chamber');
+      const chamber = createChamber(database, { storySnapshotCache });
+      const storyId = randomUUID();
+      await chamber.start({ ownerId: owner, storyId });
+      storeGets.length = 0;
+
+      const first = await chamber.read({ ownerId: owner, storyId });
+      const second = await chamber.read({ ownerId: owner, storyId });
+      assert.deepEqual(second, first);
+      assert.equal(
+        storeGets.length,
+        2,
+        'versioned cache consults the byte store once per read (miss then hit)',
+      );
+
+      await database.db.$client.query(
+        'UPDATE story SET view_version = view_version + 1 WHERE id = $1',
+        [storyId],
+      );
+      const changed = await chamber.read({ ownerId: owner, storyId });
+      assert.equal(changed.viewVersion, first.viewVersion + 1);
+
+      const lookupKey = storeGets.at(-1);
+      assert.ok(lookupKey);
+      await inner.set(lookupKey, {
+        bytes: new TextEncoder().encode('{malformed-snapshot'),
+        expiresAtMs: now + 60_000,
+        observedAtMs: now,
+      });
+      const recovered = await chamber.read({ ownerId: owner, storyId });
+      assert.equal(recovered.viewVersion, changed.viewVersion);
+
+      const disabledChamber = createChamber(database, {
+        storySnapshotCache: createStorySnapshotCache(
+          createDisabledStore(),
+          'chamber',
+        ),
+      });
+      const disabledStoryId = randomUUID();
+      await disabledChamber.start({ ownerId: owner, storyId: disabledStoryId });
+      const disabledA = await disabledChamber.read({
+        ownerId: owner,
+        storyId: disabledStoryId,
+      });
+      const disabledB = await disabledChamber.read({
+        ownerId: owner,
+        storyId: disabledStoryId,
+      });
+      assert.deepEqual(disabledB, disabledA);
+
+      const getsBeforeUnauthorized = storeGets.length;
+      await assert.rejects(
+        chamber.read({ ownerId: 'not-the-owner', storyId }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'not_found',
+      );
+      assert.equal(
+        storeGets.length,
+        getsBeforeUnauthorized,
+        'unauthorized owner must not consult the byte store',
+      );
     },
   );
 

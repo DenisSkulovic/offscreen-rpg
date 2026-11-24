@@ -1,6 +1,6 @@
 # CACHE04 | Story snapshot migration
 
-**Status: Owner-commissioned / dependency-gated; not yet Ready. Kind: implementation. Profile: CONTRACT.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE02/CACHE03/CACHE05 plus wave-2 dependency wiring; no overlapping Story Engine reads owner (lane A). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
+**Status: In progress / source-only landed; SQL acceptance open. Kind: implementation. Profile: CONTRACT.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE02/CACHE03/CACHE05 plus wave-2 dependency wiring; no overlapping Story Engine reads owner (lane A). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
 [Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
@@ -33,4 +33,4 @@ Owner release is conditional, not blanket readiness certification. Parent verifi
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending closure | persistence-and-caching | Story snapshot migration | pending | NOT-RUN | TASKS | pending |
+| Story snapshot cache | persistence-and-caching Current state | Versioned bindCache on byte store; SQL proof still open | reads.ts, read-cache-options.ts, api main/app; branch change/cache04-story-snapshot | source-only PASS; stories-core NOT-RUN | read-snapshot-cache.test.ts 6/6 (malformed, failure, revision, disabled, owner-order contract) | Current state updated on this branch; not joined |

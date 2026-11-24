@@ -22,7 +22,10 @@ import {
   type StoryUpdateHub,
 } from './modules/stories/story-update-hub.js';
 import type { ReadCache } from '@offscreen/cache-port/read-cache';
-import type { CacheIncident } from '@offscreen/story-engine/stories/read-cache-options';
+import type {
+  CacheIncident,
+  StorySnapshotCache,
+} from '@offscreen/story-engine/stories/read-cache-options';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import type { ApiOptionalExtension } from './lab-host-contract.js';
 import { buildApiControllers } from './bootstrap/api-controllers.js';
@@ -46,6 +49,7 @@ export type CreateAppOptions = Readonly<{
   storytellerExecution?: ExecutionPolicy;
   storytellerUsagePolicy?: EffectiveUsagePolicy | null;
   readCache?: ReadCache;
+  storySnapshotCache?: StorySnapshotCache;
   closeCache?: () => Promise<void>;
   onCacheIncident?: (incident: CacheIncident) => void;
   documentStore?: DocumentStore;
@@ -84,6 +88,9 @@ export async function createApp(
     ...(options.documentStore ? { documentStore: options.documentStore } : {}),
     ...(options.defaultRules ? { defaultRules: options.defaultRules } : {}),
     ...(options.readCache ? { cache: options.readCache } : {}),
+    ...(options.storySnapshotCache
+      ? { storySnapshotCache: options.storySnapshotCache }
+      : {}),
     ...(options.onCacheIncident
       ? { onCacheIncident: options.onCacheIncident }
       : {}),

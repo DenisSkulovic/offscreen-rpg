@@ -10,6 +10,10 @@ import {
 } from '@offscreen/runtime-logging';
 import { createCacheAdapter } from '@offscreen/cache';
 import {
+  createStorySnapshotCache,
+  readStorySnapshotCacheEnvironment,
+} from '@offscreen/story-engine/stories/read-cache-options';
+import {
   createDocumentStoreFromEnv,
   S3DocumentStore,
 } from '@offscreen/documents';
@@ -67,7 +71,10 @@ async function main() {
         ...(defaultRules ? { defaultRules } : {}),
         terminalPairingHmacSecret: authConfig.secret,
         storytellerExecution: readStorytellerExecution(process.env),
-        readCache: cache.cache,
+        storySnapshotCache: createStorySnapshotCache(
+          cache.store,
+          readStorySnapshotCacheEnvironment(process.env),
+        ),
         closeCache: cache.close,
         onCacheIncident: (incident) =>
           writeRuntimeLog({

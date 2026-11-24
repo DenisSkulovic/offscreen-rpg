@@ -45,6 +45,7 @@ import { z } from 'zod';
 import { createHash } from 'node:crypto';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { decisionPlanSchema, waitPlanSchema } from './plans';
+import type { CacheIdentity } from '@offscreen/cache/core';
 import { disabledReadCache, type ReadCacheOptions } from './read-cache-options';
 import type { DocumentStore } from '@offscreen/documents';
 import { readPassageDocument } from './passage-documents';
@@ -320,6 +321,89 @@ function snapshotCacheKey(ownerId: string, storyId: string, identity: unknown) {
   return `${snapshotCacheContract}:${digest}`;
 }
 
+type SnapshotProjectionIdentity = Readonly<{
+  viewVersion: number;
+  resolutionState:
+    'pending' | 'running' | 'succeeded' | 'failed' | 'uncertain' | null;
+  resolutionVersion: number | null;
+  failureCode: string | null;
+  generationKind: string | null;
+  captureState: string | null;
+  publicationState: 'pending' | 'published' | 'stale' | 'blocked' | null;
+  publicationFailure: string | null;
+  attemptState: string | null;
+  operationState: 'open' | 'complete' | 'uncertain' | 'exhausted' | null;
+  operationDispatchedRounds: number | null;
+  operationMaxModelRounds: number | null;
+  usage: unknown;
+}>;
+
+function snapshotCacheIdentityComponent(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function storySnapshotCacheIdentity(
+  ownerId: string,
+  storyId: string,
+  identity: SnapshotProjectionIdentity,
+): CacheIdentity {
+  return [
+    ownerId,
+    storyId,
+    String(identity.viewVersion),
+    snapshotCacheIdentityComponent(identity.resolutionState),
+    snapshotCacheIdentityComponent(identity.resolutionVersion),
+    snapshotCacheIdentityComponent(identity.failureCode),
+    snapshotCacheIdentityComponent(identity.generationKind),
+    snapshotCacheIdentityComponent(identity.captureState),
+    snapshotCacheIdentityComponent(identity.publicationState),
+    snapshotCacheIdentityComponent(identity.publicationFailure),
+    snapshotCacheIdentityComponent(identity.attemptState),
+    snapshotCacheIdentityComponent(identity.operationState),
+    snapshotCacheIdentityComponent(identity.operationDispatchedRounds),
+    snapshotCacheIdentityComponent(identity.operationMaxModelRounds),
+    snapshotCacheIdentityComponent(identity.usage),
+  ];
+}
+
+function projectionIdentityFromRow(row: {
+  viewVersion: number;
+  resolutionState: SnapshotProjectionIdentity['resolutionState'];
+  resolutionVersion: number | null;
+  failureCode: string | null;
+  generationKind: string | null;
+  captureState: string | null;
+  publicationState: SnapshotProjectionIdentity['publicationState'];
+  publicationFailure: string | null;
+  attemptState: string | null;
+  operationState: SnapshotProjectionIdentity['operationState'];
+  operationDispatchedRounds: number | null;
+  operationMaxModelRounds: number | null;
+  usage: unknown;
+}): SnapshotProjectionIdentity {
+  return {
+    viewVersion: row.viewVersion,
+    resolutionState: row.resolutionState,
+    resolutionVersion: row.resolutionVersion,
+    failureCode: row.failureCode,
+    generationKind: row.generationKind,
+    captureState: row.captureState,
+    publicationState: row.publicationState,
+    publicationFailure: row.publicationFailure,
+    attemptState: row.attemptState,
+    operationState: row.operationState,
+    operationDispatchedRounds: row.operationDispatchedRounds,
+    operationMaxModelRounds: row.operationMaxModelRounds,
+    usage: row.usage,
+  };
+}
+
 function cacheErrorKind(error: unknown) {
   return error instanceof Error && error.name ? error.name : 'UnknownError';
 }
@@ -390,6 +474,250 @@ export function createStoryReads(
       );
     if (!row) throw new StoryError('not_found');
     return row;
+  }
+
+  async function buildAuthorizedSnapshot({ ownerId, storyId }: OwnedStory) {
+    let builtIdentity: SnapshotProjectionIdentity | undefined;
+    const snapshot = await database.db.transaction(
+      async (tx) => {
+        const [row] = await tx
+          .select({
+            id: story.id,
+            forkedFromStoryId: story.forkedFromStoryId,
+            forkedFromPassageId: story.forkedFromPassageId,
+            forkedFromSequence: story.forkedFromSequence,
+            storyteller: story.storyteller,
+            execution: story.execution,
+            revision: story.revision,
+            viewVersion: story.viewVersion,
+            items: sql<unknown>`COALESCE((SELECT jsonb_agg(jsonb_build_object('key', i.key, 'label', i.label, 'holderKey', i.holder_key) ORDER BY i.key) FROM story_item i WHERE i.story_id = ${story.id}), '[]'::jsonb)`,
+            passageId: storyPassage.id,
+            content: storyPassage.content,
+            contentDocumentHash: storyPassage.contentDocumentHash,
+            interaction: storyPassage.interaction,
+            appearance: storyPassage.appearance,
+            waitPlan: storyPassage.waitPlan,
+            decisionPlan: storyPassage.decisionPlan,
+            responseDueAt: storyPassage.responseDueAt,
+            dueAt: storyPassage.dueAt,
+            controlRevision: storyPassage.controlRevision,
+            remainingMs: storyPassage.remainingMs,
+            usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
+            resolutionState: generation.state,
+            resolutionSubmission: storyResolution.submission,
+            resolutionVersion: generation.statusRevision,
+            failureCode: generation.failureCode,
+            generationKind: generation.kind,
+            generationInput: generation.input,
+            repairCandidate: generation.repairCandidate,
+            repairDiagnostic: generation.repairDiagnostic,
+            captureState: storytellerContextCapture.state,
+            publicationState: storytellerPublication.state,
+            publicationFailure: storytellerPublication.failureCode,
+            attemptState: storytellerAttempt.state,
+            operationState: storytellerOperation.state,
+            operationDispatchedRounds: storytellerOperation.dispatchedRounds,
+            operationMaxModelRounds: storytellerOperation.maxModelRounds,
+          })
+          .from(story)
+          .innerJoin(
+            storyPassage,
+            and(
+              eq(storyPassage.storyId, story.id),
+              eq(storyPassage.sequence, story.revision),
+            ),
+          )
+          .leftJoin(
+            storyResolution,
+            and(
+              eq(storyResolution.storyId, story.id),
+              eq(storyResolution.basePassageId, storyPassage.id),
+              eq(storyResolution.baseRevision, story.revision),
+            ),
+          )
+          .leftJoin(generation, eq(generation.id, storyResolution.generationId))
+          .leftJoin(
+            storytellerContextCapture,
+            eq(storytellerContextCapture.captureId, generation.id),
+          )
+          .leftJoin(
+            storytellerAttempt,
+            eq(storytellerAttempt.id, generation.attemptId),
+          )
+          .leftJoin(
+            storytellerPublication,
+            eq(storytellerPublication.generationId, generation.id),
+          )
+          .leftJoin(
+            storytellerOperation,
+            eq(storytellerOperation.generationId, generation.id),
+          )
+          .where(
+            and(
+              eq(story.id, parseStoryIdentifier(storyId)),
+              eq(story.ownerId, ownerId),
+            ),
+          );
+        if (!row) {
+          throw new StoryError('not_found');
+        }
+        builtIdentity = projectionIdentityFromRow(row);
+        const content = await resolvePassageContent(row, options.documentStore);
+        const campaignView =
+          (await readCampaign(tx, ownerId, storyId)) ??
+          (row.storyteller
+            ? {
+                settings: {
+                  revision: 1,
+                  creative: initialCreative(
+                    storytellerProfileSchema.parse(row.storyteller),
+                  ),
+                  pace: {
+                    kind: 'rate',
+                    fictionalSeconds: 1,
+                    realSeconds: 1,
+                  },
+                  locked: false,
+                  rules: 'srd-5.2.1-subset.v1',
+                  risk: 'nonlethal',
+                },
+                character: null,
+                storyFacts: [],
+                location: null,
+                gameSecond: 0,
+                offer: null,
+                activityAccess: { kind: 'none' },
+                activity: null,
+                commitments: [],
+                activityEvents: [],
+                rolls: [],
+                actionReceipts: [],
+              }
+            : null);
+        const appearance = projectStoredSceneAppearance(row.appearance, {
+          storyId: row.id,
+          passageId: row.passageId,
+        });
+        return storySnapshotSchema.parse({
+          campaign: campaignView,
+          id: row.id,
+          lineage:
+            row.forkedFromStoryId === null ||
+            row.forkedFromPassageId === null ||
+            row.forkedFromSequence === null
+              ? null
+              : {
+                  sourceStoryId: row.forkedFromStoryId,
+                  sourcePassageId: row.forkedFromPassageId,
+                  sourceSequence: row.forkedFromSequence,
+                },
+          storyteller:
+            row.storyteller == null
+              ? null
+              : storytellerSummary(
+                  storytellerProfileSchema.parse(row.storyteller),
+                ),
+          sourceMode:
+            row.execution == null
+              ? 'scripted'
+              : executionPolicySchema.parse(row.execution).mode,
+          revision: row.revision,
+          viewVersion: row.viewVersion,
+          items: row.items,
+          usage: row.usage,
+          decision:
+            row.decisionPlan === null
+              ? null
+              : {
+                  dueAt: timestampIso(row.responseDueAt, 'response due time'),
+                  defaultOptionId: decisionPlanSchema.parse(row.decisionPlan)
+                    .defaultOptionId,
+                },
+          waiting:
+            row.waitPlan === null
+              ? null
+              : {
+                  dueAt:
+                    row.remainingMs === null
+                      ? timestampIso(row.dueAt, 'interval due time')
+                      : null,
+                  remainingMs: row.remainingMs,
+                  canControl: true,
+                  controlRevision: row.controlRevision,
+                  gameDurationMs: waitPlanSchema.parse(row.waitPlan)
+                    .gameDurationMs,
+                },
+          current: {
+            id: row.passageId,
+            content,
+            interaction: row.interaction,
+            ...(appearance ? { appearance } : {}),
+          },
+          resolution:
+            row.resolutionState === null
+              ? null
+              : (() => {
+                  const provisional =
+                    row.generationKind === storytellerContextCaptureKind;
+                  // Provisional capture G is preparation, never a player-retryable
+                  // Storyteller failure. Do not parse its pointer as a task.
+                  const blocker = provisional
+                    ? row.captureState === 'held'
+                      ? {
+                          kind: 'generation' as const,
+                          recovery: 'operator' as const,
+                        }
+                      : null
+                    : publicResolutionBlocker(
+                        row.resolutionState,
+                        row.publicationState,
+                        row.failureCode,
+                        row.execution == null
+                          ? 'scripted'
+                          : executionPolicySchema.parse(row.execution).mode,
+                        row.attemptState,
+                        {
+                          task: row.generationInput,
+                          candidate: row.repairCandidate,
+                          diagnostic: row.repairDiagnostic,
+                          operationState: row.operationState,
+                          dispatchedRounds: row.operationDispatchedRounds,
+                          maxModelRounds: row.operationMaxModelRounds,
+                        },
+                      );
+                  return {
+                    ...publicResolutionState(row.resolutionState),
+                    evidence: publicResolutionEvidence(
+                      row.resolutionSubmission,
+                    ),
+                    state:
+                      row.publicationState === 'blocked' ||
+                      row.publicationState === 'stale'
+                        ? 'blocked'
+                        : publicResolutionState(row.resolutionState)?.state,
+                    version: row.resolutionVersion ?? 0,
+                    reason: provisional
+                      ? null
+                      : publicResolutionReason(
+                          row.publicationFailure,
+                          row.failureCode,
+                        ),
+                    blocker,
+                    canRetry: provisional
+                      ? false
+                      : blocker?.recovery === 'retry',
+                  };
+                })(),
+        });
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    );
+    if (!builtIdentity) {
+      throw new Error(
+        'Story snapshot build did not capture projection identity',
+      );
+    }
+    return { snapshot, builtIdentity };
   }
 
   return {
@@ -477,8 +805,31 @@ export function createStoryReads(
       });
     },
     async readSnapshot({ ownerId, storyId }: OwnedStory) {
-      const identity = await snapshotIdentity({ ownerId, storyId });
-      const key = snapshotCacheKey(ownerId, storyId, identity);
+      const preflightRow = await snapshotIdentity({ ownerId, storyId });
+      const preflightIdentity = projectionIdentityFromRow(preflightRow);
+
+      if (options.storySnapshotCache) {
+        return options.storySnapshotCache.getOrLoad(
+          storySnapshotCacheIdentity(ownerId, storyId, preflightIdentity),
+          async () => {
+            const { snapshot, builtIdentity } = await buildAuthorizedSnapshot({
+              ownerId,
+              storyId,
+            });
+            return {
+              value: snapshot,
+              identity: storySnapshotCacheIdentity(
+                ownerId,
+                storyId,
+                builtIdentity,
+              ),
+              observedAtMs: Date.now(),
+            };
+          },
+        );
+      }
+
+      const key = snapshotCacheKey(ownerId, storyId, preflightRow);
       try {
         const cached = await cache.get(key);
         if (cached !== null) return storySnapshotSchema.parse(cached);
@@ -489,261 +840,10 @@ export function createStoryReads(
           errorKind: cacheErrorKind(error),
         });
       }
-      let builtIdentity: unknown;
-      const snapshot = await database.db.transaction(
-        async (tx) => {
-          const [row] = await tx
-            .select({
-              id: story.id,
-              forkedFromStoryId: story.forkedFromStoryId,
-              forkedFromPassageId: story.forkedFromPassageId,
-              forkedFromSequence: story.forkedFromSequence,
-              storyteller: story.storyteller,
-              execution: story.execution,
-              revision: story.revision,
-              viewVersion: story.viewVersion,
-              items: sql<unknown>`COALESCE((SELECT jsonb_agg(jsonb_build_object('key', i.key, 'label', i.label, 'holderKey', i.holder_key) ORDER BY i.key) FROM story_item i WHERE i.story_id = ${story.id}), '[]'::jsonb)`,
-              passageId: storyPassage.id,
-              content: storyPassage.content,
-              contentDocumentHash: storyPassage.contentDocumentHash,
-              interaction: storyPassage.interaction,
-              appearance: storyPassage.appearance,
-              waitPlan: storyPassage.waitPlan,
-              decisionPlan: storyPassage.decisionPlan,
-              responseDueAt: storyPassage.responseDueAt,
-              dueAt: storyPassage.dueAt,
-              controlRevision: storyPassage.controlRevision,
-              remainingMs: storyPassage.remainingMs,
-              usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
-              resolutionState: generation.state,
-              resolutionSubmission: storyResolution.submission,
-              resolutionVersion: generation.statusRevision,
-              failureCode: generation.failureCode,
-              generationKind: generation.kind,
-              generationInput: generation.input,
-              repairCandidate: generation.repairCandidate,
-              repairDiagnostic: generation.repairDiagnostic,
-              captureState: storytellerContextCapture.state,
-              publicationState: storytellerPublication.state,
-              publicationFailure: storytellerPublication.failureCode,
-              attemptState: storytellerAttempt.state,
-              operationState: storytellerOperation.state,
-              operationDispatchedRounds: storytellerOperation.dispatchedRounds,
-              operationMaxModelRounds: storytellerOperation.maxModelRounds,
-            })
-            .from(story)
-            .innerJoin(
-              storyPassage,
-              and(
-                eq(storyPassage.storyId, story.id),
-                eq(storyPassage.sequence, story.revision),
-              ),
-            )
-            .leftJoin(
-              storyResolution,
-              and(
-                eq(storyResolution.storyId, story.id),
-                eq(storyResolution.basePassageId, storyPassage.id),
-                eq(storyResolution.baseRevision, story.revision),
-              ),
-            )
-            .leftJoin(
-              generation,
-              eq(generation.id, storyResolution.generationId),
-            )
-            .leftJoin(
-              storytellerContextCapture,
-              eq(storytellerContextCapture.captureId, generation.id),
-            )
-            .leftJoin(
-              storytellerAttempt,
-              eq(storytellerAttempt.id, generation.attemptId),
-            )
-            .leftJoin(
-              storytellerPublication,
-              eq(storytellerPublication.generationId, generation.id),
-            )
-            .leftJoin(
-              storytellerOperation,
-              eq(storytellerOperation.generationId, generation.id),
-            )
-            .where(
-              and(
-                eq(story.id, parseStoryIdentifier(storyId)),
-                eq(story.ownerId, ownerId),
-              ),
-            );
-          if (!row) {
-            throw new StoryError('not_found');
-          }
-          builtIdentity = {
-            viewVersion: row.viewVersion,
-            resolutionState: row.resolutionState,
-            resolutionVersion: row.resolutionVersion,
-            failureCode: row.failureCode,
-            generationKind: row.generationKind,
-            captureState: row.captureState,
-            publicationState: row.publicationState,
-            publicationFailure: row.publicationFailure,
-            attemptState: row.attemptState,
-            operationState: row.operationState,
-            operationDispatchedRounds: row.operationDispatchedRounds,
-            operationMaxModelRounds: row.operationMaxModelRounds,
-            usage: row.usage,
-          };
-          const content = await resolvePassageContent(
-            row,
-            options.documentStore,
-          );
-          const campaignView =
-            (await readCampaign(tx, ownerId, storyId)) ??
-            (row.storyteller
-              ? {
-                  settings: {
-                    revision: 1,
-                    creative: initialCreative(
-                      storytellerProfileSchema.parse(row.storyteller),
-                    ),
-                    pace: {
-                      kind: 'rate',
-                      fictionalSeconds: 1,
-                      realSeconds: 1,
-                    },
-                    locked: false,
-                    rules: 'srd-5.2.1-subset.v1',
-                    risk: 'nonlethal',
-                  },
-                  character: null,
-                  storyFacts: [],
-                  location: null,
-                  gameSecond: 0,
-                  offer: null,
-                  activityAccess: { kind: 'none' },
-                  activity: null,
-                  commitments: [],
-                  activityEvents: [],
-                  rolls: [],
-                  actionReceipts: [],
-                }
-              : null);
-          const appearance = projectStoredSceneAppearance(row.appearance, {
-            storyId: row.id,
-            passageId: row.passageId,
-          });
-          return storySnapshotSchema.parse({
-            campaign: campaignView,
-            id: row.id,
-            lineage:
-              row.forkedFromStoryId === null ||
-              row.forkedFromPassageId === null ||
-              row.forkedFromSequence === null
-                ? null
-                : {
-                    sourceStoryId: row.forkedFromStoryId,
-                    sourcePassageId: row.forkedFromPassageId,
-                    sourceSequence: row.forkedFromSequence,
-                  },
-            storyteller:
-              row.storyteller == null
-                ? null
-                : storytellerSummary(
-                    storytellerProfileSchema.parse(row.storyteller),
-                  ),
-            sourceMode:
-              row.execution == null
-                ? 'scripted'
-                : executionPolicySchema.parse(row.execution).mode,
-            revision: row.revision,
-            viewVersion: row.viewVersion,
-            items: row.items,
-            usage: row.usage,
-            decision:
-              row.decisionPlan === null
-                ? null
-                : {
-                    dueAt: timestampIso(row.responseDueAt, 'response due time'),
-                    defaultOptionId: decisionPlanSchema.parse(row.decisionPlan)
-                      .defaultOptionId,
-                  },
-            waiting:
-              row.waitPlan === null
-                ? null
-                : {
-                    dueAt:
-                      row.remainingMs === null
-                        ? timestampIso(row.dueAt, 'interval due time')
-                        : null,
-                    remainingMs: row.remainingMs,
-                    canControl: true,
-                    controlRevision: row.controlRevision,
-                    gameDurationMs: waitPlanSchema.parse(row.waitPlan)
-                      .gameDurationMs,
-                  },
-            current: {
-              id: row.passageId,
-              content,
-              interaction: row.interaction,
-              ...(appearance ? { appearance } : {}),
-            },
-            resolution:
-              row.resolutionState === null
-                ? null
-                : (() => {
-                    const provisional =
-                      row.generationKind === storytellerContextCaptureKind;
-                    // Provisional capture G is preparation, never a player-retryable
-                    // Storyteller failure. Do not parse its pointer as a task.
-                    const blocker = provisional
-                      ? row.captureState === 'held'
-                        ? {
-                            kind: 'generation' as const,
-                            recovery: 'operator' as const,
-                          }
-                        : null
-                      : publicResolutionBlocker(
-                          row.resolutionState,
-                          row.publicationState,
-                          row.failureCode,
-                          row.execution == null
-                            ? 'scripted'
-                            : executionPolicySchema.parse(row.execution).mode,
-                          row.attemptState,
-                          {
-                            task: row.generationInput,
-                            candidate: row.repairCandidate,
-                            diagnostic: row.repairDiagnostic,
-                            operationState: row.operationState,
-                            dispatchedRounds: row.operationDispatchedRounds,
-                            maxModelRounds: row.operationMaxModelRounds,
-                          },
-                        );
-                    return {
-                      ...publicResolutionState(row.resolutionState),
-                      evidence: publicResolutionEvidence(
-                        row.resolutionSubmission,
-                      ),
-                      state:
-                        row.publicationState === 'blocked' ||
-                        row.publicationState === 'stale'
-                          ? 'blocked'
-                          : publicResolutionState(row.resolutionState)?.state,
-                      version: row.resolutionVersion ?? 0,
-                      reason: provisional
-                        ? null
-                        : publicResolutionReason(
-                            row.publicationFailure,
-                            row.failureCode,
-                          ),
-                      blocker,
-                      canRetry: provisional
-                        ? false
-                        : blocker?.recovery === 'retry',
-                    };
-                  })(),
-          });
-        },
-        { isolationLevel: 'repeatable read', accessMode: 'read only' },
-      );
+      const { snapshot, builtIdentity } = await buildAuthorizedSnapshot({
+        ownerId,
+        storyId,
+      });
       // Store under the identity represented by the built snapshot, not the
       // preflight identity. A concurrent commit can therefore create a miss,
       // never make an old projection addressable as the new one.
