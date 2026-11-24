@@ -1,22 +1,24 @@
 # Open Changes | current and near-term
 
+**Final-wave conditional commission (2026-11-24):** Owner commissioned DO06 and DO07 now. DO06 may execute after DO05 integrates (DO03 already integrated); DO04 need not land first. DO07 may execute only after all six extractions integrate and no live residual module remains. Each assigned parent checks predecessor receipts and exact source/export postconditions on latest undertaking HEAD before editing; if they pass, no further ChatGPT release or approval is needed. Genuine semantic contradictions remain stop conditions. Coordinate joins with DO04 wave B custodian while active; otherwise the sole remaining parent owns its join. No global queue change, no new proof or completion credit.
+
 ## Cache platform parallel waves
 
 [Full catalog](../README.md#cache-platform-redesign) · [Frozen contracts and ownership](../../undertakings/storyteller-workshop/CACHE-PARALLEL.md). Proposed, not commissioned. After Documents and Contracts settle: CACHE01 foundation; CACHE02/CACHE03/CACHE05 concurrently; joined wiring; CACHE04/CACHE06A/CACHE06B concurrently; CACHE07. Single integration custodian. No queue change.
 
 ## Near-term domain ownership sequence (2026-11-24)
 
-**Wave B release (2026-11-24):** DO01–DO03 integrated; DO04 and DO05 Ready / owner-commissioned concurrently at `372df9646108f0442dcca4f1dcc992fddfe50511`. DO04 parent is integration custodian; join DO04 then DO05, or DO05 first if DO04 is not ready and both parents agree. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 remains gated on DO05; DO07 on all six. No cluster, provider, DB mutation, Documents or CACHE scope.
+**Wave B release (2026-11-24):** DO01–DO04 integrated source-only. DO05 remains concurrent from `372df9646108f0442dcca4f1dcc992fddfe50511`. DO04 parent is integration custodian and joins DO05 when that branch is accepted. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 and DO07 are conditionally commissioned; their execution gates are DO05 and all six respectively. No cluster, provider, DB mutation, Documents or CACHE scope.
 
 | Change | Dependency | Status |
 | --- | --- | --- |
 | [DO01 Cache port](../archive/2026-11/platform-operations/2026-11-24--do01-cache-port/CHANGE.md) | None | Done, source-only |
 | [DO02 Admin / identity / usage](../archive/2026-11/platform-operations/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Done, source-only |
 | [DO03 Story interface](../archive/2026-11/platform-operations/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled | Done, source-only |
-| [DO04 Authority protocol](2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Ready / commissioned |
+| [DO04 Authority protocol](../archive/2026-11/platform-operations/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Done, source-only |
 | [DO05 Storyteller / engine](2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Ready / commissioned |
-| [DO06 Lab ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |
-| [DO07 Retire contracts](2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Dependency-gated |
+| [DO06 Lab ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Commissioned / Ready after DO05 |
+| [DO07 Retire contracts](2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Commissioned / Ready after all six |
 
 [Retirement program](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [Parallel execution rules](../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md).
 

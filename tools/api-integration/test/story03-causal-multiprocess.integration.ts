@@ -39,7 +39,7 @@ import {
 import {
   storytellerTaskCustodyReadSavedPath,
   storytellerTaskCustodyReadSavedResponseSchema,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import { requireDefined } from './helpers/require.js';
 
 const orm: typeof Drizzle = createRequire(import.meta.url)('drizzle-orm');

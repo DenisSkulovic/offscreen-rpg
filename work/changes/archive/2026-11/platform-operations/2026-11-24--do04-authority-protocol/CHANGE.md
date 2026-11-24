@@ -1,14 +1,14 @@
 # DO04 | authority protocol
 
-**Status: Ready / owner-commissioned for parallel wave B. Kind: implementation. Profile: CONTRACT.** Baseline `372df9646108f0442dcca4f1dcc992fddfe50511`. Integration target `undertaking/storyteller-workshop`. Prerequisite: DO03 integrated; satisfied. No sibling prerequisite.
+**Status: Done (2026-11-24), source-only, joined to `undertaking/storyteller-workshop`. Kind: implementation. Profile: CONTRACT.** Baseline `372df9646108f0442dcca4f1dcc992fddfe50511` (worktree start `032f00700`). Live Kubernetes and providers NOT RUN. Prerequisite: DO03 integrated; satisfied. No sibling prerequisite.
 
-[Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
+[Program](../../../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 
 ## Cursor first-screen brief
 
 > Current-source map: SOURCE-MAP.md; frozen snapshot. Governing technical owner: `docs/technical/platform/topology.md#code-organization` (must be reconciled by ChatGPT at promotion). Known trap: do not add an inverse dependency or old-package alias. Scope: exact source migration and tests, no behavior change. Route: TASKS.md, one T-ID at a time, parent joins.
 
-**Parallel execution authority (2026-11-24):** [coordination and join rules](../../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md). This replaces any earlier serial program or generic post-Documents gate. Each Change has its own isolated linked worktree and branch; one child at a time within each parent. DO04 parent is the integration custodian for wave B. Other parents deliver locally accepted branch receipts to that custodian, do not independently push the undertaking, and do not require another human approval for a safe serialized join. Shared files are edited in isolated branches by owned import/key only; merge against the latest integration base, regenerate lockfile from merged manifests, rerun required proof. Do not overwrite siblings' edits. Local worktree/dirty-path and branch guard checks remain mandatory.
+**Parallel execution authority (2026-11-24):** [coordination and join rules](../../../../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md). This replaces any earlier serial program or generic post-Documents gate. Each Change has its own isolated linked worktree and branch; one child at a time within each parent. DO04 parent is the integration custodian for wave B. Other parents deliver locally accepted branch receipts to that custodian, do not independently push the undertaking, and do not require another human approval for a safe serialized join. Shared files are edited in isolated branches by owned import/key only; merge against the latest integration base, regenerate lockfile from merged manifests, rerun required proof. Do not overwrite siblings' edits. Local worktree/dirty-path and branch guard checks remain mandatory.
 
 **Dependency correction:** no wait on DO02 or DO05. Recheck mapped source at DO03 join, especially residual game-authority.ts now importing respondToStorySchema from story-interface.
 
@@ -49,4 +49,6 @@ Start T01 after local branch/worktree checks, finish this Change and join throug
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 |---|---|---|---|---|---|---|
-| To fill at close for every impacted claim | technical/product | pending | pending | not executed | pending | pending |
+| Product player/staff/spend behavior | product docs | unchanged because validators, hashes, limits and routes were moved without behavior edits | four protocol sources renamed with zero body diff | source-only | existing negative schema/hash tests 18/18 | N/A |
+| Private Game Authority protocol ownership | docs/technical/platform/topology.md#code-organization | changed: seam and custody wire live in `@offscreen/game-authority-protocol` | packages/game-authority-protocol plus api, worker, game-authority, api-integration importers | source-only; relocated tests 18/18; module-graph tests 27/27; turbo build/typecheck 44/44 | old protocol subpaths removed from contracts; synthetic web/workflows imports rejected as forbidden-private-authority-protocol | catalog, parallel plan, undertaking note |
+| Full-repo module graph | scripts/repo-tools/module-graph.mjs | unchanged baseline failures | pre-existing forbidden-authority-writer-import and unresolved-relative warnings | recorded, not introduced by this move | no new private-protocol production edge in allowed owners | N/A |

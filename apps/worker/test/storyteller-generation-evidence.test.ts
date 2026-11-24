@@ -5,7 +5,7 @@ import { StoryError } from '@offscreen/story-engine/stories';
 import {
   storytellerTaskCustodyContractVersion,
   storytellerTaskCustodyEvidencePath,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import { startGameAuthorityServer } from '@offscreen/game-authority/server';
 import type { DocumentStore } from '@offscreen/documents';
 import type { StorytellerTaskCustodySeam } from '@offscreen/game-authority/application';

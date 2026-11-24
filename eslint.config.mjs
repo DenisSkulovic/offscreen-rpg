@@ -33,6 +33,13 @@ const webBackendPatterns = banGroups([
     'Web must not import workers.',
   ],
   [
+    [
+      '@offscreen/game-authority-protocol',
+      '@offscreen/game-authority-protocol/*',
+    ],
+    'Web must not import private Game Authority protocol.',
+  ],
+  [
     ['**/apps/**', '**/packages/**'],
     'Use package names, not deep relative monorepo paths.',
   ],
@@ -301,6 +308,8 @@ export default ts.config(
                 '@offscreen/storyteller/*',
                 '@offscreen/worker',
                 '@offscreen/worker/*',
+                '@offscreen/game-authority-protocol',
+                '@offscreen/game-authority-protocol/*',
                 '**/apps/**',
                 '**/packages/**',
               ],

@@ -10,7 +10,7 @@ import {
   writerRoundPrivatePreparePath,
   writerRoundPrivateOutcomePath,
   writerRoundPrivateStatusPath,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import { prepareWriterRoundWire } from '@offscreen/storyteller/providers/openrouter';
 import type {
   WriterRoundTransportResult,

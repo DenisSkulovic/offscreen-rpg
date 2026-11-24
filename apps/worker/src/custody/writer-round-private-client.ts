@@ -16,7 +16,7 @@ import {
   type WriterRoundPrivateStatusResponse,
   type WriterRoundPrivateSubmitOutcomeRequest,
   type WriterRoundPrivateSubmitOutcomeResponse,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import { z } from 'zod';
 
 export type WriterRoundPrivateClientConfig = {

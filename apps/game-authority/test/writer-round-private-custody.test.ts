@@ -6,7 +6,7 @@ import {
   writerRoundPrivateCustodyContractVersion,
   writerRoundPrivateCustodyVersionHeader,
   writerRoundPrivatePreparePath,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import type { WriterRoundSeam } from '../src/application';
 import { startGameAuthorityServer } from '../src/server';
 

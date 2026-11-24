@@ -12,7 +12,7 @@ import {
   type WriterRoundPrivateStatusResponse,
   type WriterRoundPrivateSubmitOutcomeRequest,
   type WriterRoundPrivateSubmitOutcomeResponse,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import {
   buildWriterMissionRoundWire,
   prepareWriterMissionModelStep,

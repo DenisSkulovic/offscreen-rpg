@@ -7,7 +7,7 @@ import {
   writerSceneRoundFinalizePath,
   writerSceneRoundPlanPath,
   writerSceneRoundStatePath,
-} from '@offscreen/contracts/writer-scene-round-control';
+} from '@offscreen/game-authority-protocol/writer-scene-round-control';
 import type { WriterRoundSeam } from '../src/application';
 import { startGameAuthorityServer } from '../src/server';
 

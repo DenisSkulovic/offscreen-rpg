@@ -11,7 +11,7 @@ import {
   type WriterSceneRoundExecutionPlan,
   type WriterSceneRoundFinalizeResult,
   type WriterSceneRoundMissionState,
-} from '@offscreen/contracts/writer-scene-round-control';
+} from '@offscreen/game-authority-protocol/writer-scene-round-control';
 import { z } from 'zod';
 import type { StorytellerPublicationClientConfig } from './storyteller-publication-client';
 import { StorytellerPublicationTransportError } from './storyteller-publication-client';
