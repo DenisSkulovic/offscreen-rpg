@@ -1,6 +1,6 @@
 # DB08 | Migration integrity and single-runner hardening
 
-**Status: Ready / owner-commissioned for source implementation. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
+**Status: source implemented / live acceptance open. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -31,4 +31,4 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Migration integrity and single-runner hardening | database-infrastructure | pending | NOT RUN | TASKS | pending |
+| Migration integrity and single-runner hardening | database-infrastructure | change/db08-migration-integrity source; historical SQL/journal bytes unchanged from 7033f654 | source tests PASS; live SQL NOT RUN | journal tamper/unknown and runner refusal in db08-*.test.ts; integration fixture NOT RUN | DB01 owns the shared join |
