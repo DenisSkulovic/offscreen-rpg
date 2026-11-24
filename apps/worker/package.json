@@ -33,7 +33,7 @@
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
-    "@offscreen/contracts": "workspace:*",
+    "@offscreen/game-authority-protocol": "workspace:*",
     "@offscreen/lab-support": "workspace:*",
     "@offscreen/runtime-logging": "workspace:*",
     "@offscreen/story-engine": "workspace:*",

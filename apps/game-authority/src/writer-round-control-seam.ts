@@ -8,7 +8,7 @@ import type {
   WriterSceneRoundExecutionPlan,
   WriterSceneRoundFinalizeResult,
   WriterSceneRoundMissionState,
-} from '@offscreen/contracts/writer-scene-round-control';
+} from '@offscreen/game-authority-protocol/writer-scene-round-control';
 import { defaultWriterContextId } from '@offscreen/story-engine/storyteller/writer-child-custody';
 import { readLatestParentModelStepRow } from '@offscreen/story-engine/storyteller/writer-mission-custody';
 import {

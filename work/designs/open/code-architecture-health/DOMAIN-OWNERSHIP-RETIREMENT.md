@@ -18,7 +18,7 @@ Owner decision 2026-11-24: no `@offscreen/contracts` workspace in end state. Tar
 | [DO01 Cache port](../../../changes/archive/2026-11/platform-operations/2026-11-24--do01-cache-port/CHANGE.md) | None | Done, source-only |
 | [DO02 Admin / identity / usage](../../../changes/archive/2026-11/platform-operations/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Done, source-only |
 | [DO03 Story interface](../../../changes/archive/2026-11/platform-operations/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled | Done, source-only |
-| [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Ready / commissioned |
+| [DO04 Authority protocol](../../../changes/archive/2026-11/platform-operations/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Done, source-only |
 | [DO05 Storyteller / engine](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Ready / commissioned |
 | [DO06 Lab ownership](../../../changes/open/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |
 | [DO07 Retire contracts](../../../changes/open/2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Dependency-gated |

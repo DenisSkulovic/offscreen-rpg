@@ -15,7 +15,7 @@ import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers
 import {
   hashStorytellerTaskCustodyResult,
   storytellerTaskCustodyContractVersion,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import {
   createStorytellerPublicationSeam,
   createStorytellerTaskCustodySeam,

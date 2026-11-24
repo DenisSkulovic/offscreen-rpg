@@ -756,3 +756,85 @@ test('legacy application graph fields and schema stay stable', () => {
   assert.ok(Array.isArray(report.storyEngineFileEdges));
   assert.ok(Array.isArray(report.storyEngineRuntimeFileSccs));
 });
+
+const gameAuthorityProtocolPackage = packageRecord(
+  'packages/game-authority-protocol',
+  '@offscreen/game-authority-protocol',
+  { './game-authority': './dist/src/game-authority.js' },
+);
+
+test('forbidden private authority protocol import rejects web and workflows production sources', () => {
+  const webRejected = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      gameAuthorityProtocolPackage,
+      packageRecord('apps/web', '@offscreen/web', { '.': './dist/index.js' }),
+    ],
+    sources: [
+      {
+        path: 'apps/web/src/features/play/lib/authority.ts',
+        text: "import { gameAuthoritySeamVersion } from '@offscreen/game-authority-protocol/game-authority';\nexport const version = gameAuthoritySeamVersion;\n",
+      },
+    ],
+  });
+  assert.ok(
+    webRejected.errors.some(
+      (item) =>
+        item.code === 'forbidden-private-authority-protocol' &&
+        item.file === 'apps/web/src/features/play/lib/authority.ts',
+    ),
+  );
+  assert.equal(webRejected.result, 'fail');
+
+  const workflowsTypeOnly = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      gameAuthorityProtocolPackage,
+      packageRecord('packages/workflows', '@offscreen/workflows', {
+        '.': './dist/index.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'packages/workflows/src/storyteller-round.ts',
+        text: "import type { gameAuthoritySeamVersion } from '@offscreen/game-authority-protocol/game-authority';\nexport type Version = typeof gameAuthoritySeamVersion;\n",
+      },
+    ],
+  });
+  assert.ok(
+    workflowsTypeOnly.errors.some(
+      (item) =>
+        item.code === 'forbidden-private-authority-protocol' &&
+        item.file === 'packages/workflows/src/storyteller-round.ts',
+    ),
+  );
+  assert.equal(workflowsTypeOnly.result, 'fail');
+
+  const apiAccepted = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      gameAuthorityProtocolPackage,
+      packageRecord(
+        'apps/api',
+        '@offscreen/api',
+        { '.': './dist/index.js' },
+        { '@offscreen/game-authority-protocol': 'workspace:*' },
+      ),
+    ],
+    sources: [
+      {
+        path: 'apps/api/src/modules/stories/game-authority-client.ts',
+        text: "import { gameAuthoritySeamVersion } from '@offscreen/game-authority-protocol/game-authority';\nexport const version = gameAuthoritySeamVersion;\n",
+      },
+    ],
+  });
+  assert.ok(
+    !apiAccepted.errors.some(
+      (item) => item.code === 'forbidden-private-authority-protocol',
+    ),
+  );
+  assert.equal(apiAccepted.result, 'clear');
+});

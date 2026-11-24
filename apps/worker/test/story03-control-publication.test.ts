@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import {
   storytellerTaskCustodyContractVersion,
   storytellerTaskCustodyVersionHeader,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import { createStorytellerDistributedControlActivities } from '../src/activities/storyteller-distributed-control';
 import {
   readControlWorkerConfig,

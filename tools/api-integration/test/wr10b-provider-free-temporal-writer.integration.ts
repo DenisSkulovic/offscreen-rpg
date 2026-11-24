@@ -32,11 +32,11 @@ import { WRITER_SCENE_WAKE_TOPIC } from '@offscreen/story-engine/storyteller';
 import {
   writerRoundPrivateCustodyContractVersion,
   writerRoundPrivatePreparePath,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import {
   writerSceneRoundFinalizePath,
   writerSceneRoundPlanPath,
-} from '@offscreen/contracts/writer-scene-round-control';
+} from '@offscreen/game-authority-protocol/writer-scene-round-control';
 import { initializeCampaign } from '@offscreen/story-engine/campaign/settings';
 import { admitCampaignActionInTransaction } from '@offscreen/story-engine/campaign/actions';
 import { settleActionExecution } from '@offscreen/story-engine/campaign/action-executions';

@@ -674,6 +674,18 @@ function classifySpecifier(input) {
   }
   if (
     production &&
+    target?.name === '@offscreen/game-authority-protocol' &&
+    owner &&
+    owner.name !== target.name &&
+    owner.name !== '@offscreen/api' &&
+    owner.name !== '@offscreen/game-authority' &&
+    owner.name !== '@offscreen/worker'
+  ) {
+    pushMismatch(input, 'forbidden-private-authority-protocol', true);
+    return;
+  }
+  if (
+    production &&
     RUNTIME_EDGE_KINDS.has(specifier.kind) &&
     owner &&
     target &&

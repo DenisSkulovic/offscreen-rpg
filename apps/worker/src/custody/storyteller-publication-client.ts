@@ -4,7 +4,7 @@ import {
   storytellerTaskCustodyGenerationIdSchema,
   storytellerTaskCustodyHttpErrorSchema,
   type StorytellerGenerationPublishResponse,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import { z } from 'zod';
 
 export type StorytellerPublicationClientConfig = {

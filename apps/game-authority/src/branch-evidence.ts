@@ -9,7 +9,7 @@ import {
   parseStorytellerTaskCustodyEvidenceRequest,
   storytellerTaskCustodyEvidenceResponseSchema,
   storytellerTaskCustodyFetchResponseSchema,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import type { StorytellerTaskCustodySeam } from './application.js';
 
 const frozenTaskContextSchema = z.object({

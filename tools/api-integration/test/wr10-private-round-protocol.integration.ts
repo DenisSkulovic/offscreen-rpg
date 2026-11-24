@@ -28,7 +28,7 @@ import {
   writerRoundPrivatePreparePath,
   writerRoundProviderUsageToWire,
   type WriterRoundPrivatePrepareResponse,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import { initializeCampaign } from '@offscreen/story-engine/campaign/settings';
 import { createStoryInitialization } from '@offscreen/story-engine/stories/initialization';
 import { lockStoryById } from '@offscreen/story-engine/stories/persistence';

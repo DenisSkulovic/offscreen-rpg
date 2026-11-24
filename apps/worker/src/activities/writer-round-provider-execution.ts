@@ -1,10 +1,10 @@
 import { ApplicationFailure } from '@temporalio/client';
-import type { WriterRoundPrivateSubmitOutcomeResponse } from '@offscreen/contracts/writer-round-private-custody';
+import type { WriterRoundPrivateSubmitOutcomeResponse } from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import {
   writerRoundModelPolicyFromWire,
   writerRoundProviderUsageToWire,
   writerRoundPrivateOutcomeSchema,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import type { z } from 'zod';
 
 type WriterRoundPrivateOutcome = z.infer<typeof writerRoundPrivateOutcomeSchema>;

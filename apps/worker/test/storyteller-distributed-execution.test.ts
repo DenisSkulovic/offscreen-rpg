@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
-import { hashStorytellerTaskCustodyResult } from '@offscreen/contracts/storyteller-task-custody';
+import { hashStorytellerTaskCustodyResult } from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';

@@ -2,7 +2,7 @@ import { ApplicationFailure } from '@temporalio/client';
 import {
   hashStorytellerTaskCustodyResult,
   storytellerTaskCustodyFetchResponseSchema,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import {
   storytellerTaskSchema,
   type StorytellerTask,

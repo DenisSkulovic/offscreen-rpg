@@ -4,7 +4,7 @@ import {
   gameAuthorityActorIdSchema,
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
-} from '@offscreen/contracts/game-authority';
+} from '@offscreen/game-authority-protocol/game-authority';
 import { forkStorySchema, startStorySchema } from '@offscreen/story-interface/stories';
 import { z } from 'zod';
 

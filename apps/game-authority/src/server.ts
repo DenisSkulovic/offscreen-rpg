@@ -7,7 +7,7 @@ import {
   gameAuthorityResolutionRequestSchema,
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
-} from '@offscreen/contracts/game-authority';
+} from '@offscreen/game-authority-protocol/game-authority';
 import { forkStorySchema, startStorySchema } from '@offscreen/story-interface/stories';
 import { z } from 'zod';
 import {
@@ -21,10 +21,10 @@ import {
   storytellerTaskCustodyReadSavedResponseSchema,
   storytellerTaskCustodySaveResultResponseSchema,
   storytellerTaskCustodyVersionHeader,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import {
   storytellerGenerationPublishResponseSchema,
-} from '@offscreen/contracts/storyteller-task-custody';
+} from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import {
   parseWriterRoundPrivatePrepareRequest,
   parseWriterRoundPrivateSubmitOutcomeRequest,
@@ -35,7 +35,7 @@ import {
   writerRoundPrivatePrepareResponseSchema,
   writerRoundPrivateStatusResponseSchema,
   writerRoundPrivateSubmitOutcomeResponseSchema,
-} from '@offscreen/contracts/writer-round-private-custody';
+} from '@offscreen/game-authority-protocol/writer-round-private-custody';
 import {
   routeWriterSceneRoundControl,
   writerSceneRoundControlContractVersion,
@@ -45,7 +45,7 @@ import {
   writerSceneRoundHttpErrorSchema,
   writerSceneRoundMissionStateSchema,
   writerSceneRoundPlanResponseSchema,
-} from '@offscreen/contracts/writer-scene-round-control';
+} from '@offscreen/game-authority-protocol/writer-scene-round-control';
 import { WriterRoundPrivateCustodyError } from '@offscreen/story-engine/storyteller/writer-round-private-custody';
 import { WriterMissionCustodyError } from '@offscreen/story-engine/storyteller/writer-mission-custody';
 import type { DocumentStore } from '@offscreen/documents';

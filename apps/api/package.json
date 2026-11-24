@@ -43,7 +43,7 @@
     "@offscreen/cache": "workspace:*",
     "@offscreen/cache-port": "workspace:*",
     "@offscreen/content-packages": "workspace:*",
-    "@offscreen/contracts": "workspace:*",
+    "@offscreen/game-authority-protocol": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",

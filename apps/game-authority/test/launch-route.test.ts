@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { routeStorytellerTaskCustody } from '@offscreen/contracts/storyteller-task-custody';
+import { routeStorytellerTaskCustody } from '@offscreen/game-authority-protocol/storyteller-task-custody';
 import { routeFor } from '../src/server';
 
 const operationId = '550e8400-e29b-41d4-a716-446655440000';
