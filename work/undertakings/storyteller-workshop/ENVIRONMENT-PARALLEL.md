@@ -5,7 +5,7 @@ Owner commissioned 2026-11-24. Integration undertaking/storyteller-workshop, ins
 | Change | Gate | Owner | Status |
 | --- | --- | --- | --- |
 | [INF16](../../changes/archive/2026-11/platform-operations/2026-11-24--inf16-retire-release-tilt/CHANGE.md) Retire release Tilt | INF08 Done | release Tiltfile and release-specific source tests/runbooks | Done (source) |
-| [INF17](../../changes/open/2026-11-24--inf17-dev-tilt-consolidation/CHANGE.md) Consolidate dev Tilt and image loading | INF08 Done | root Tiltfile; infra/dev sync and loader; development image loader | Ready |
+| [INF17](../../changes/archive/2026-11/platform-operations/2026-11-24--inf17-dev-tilt-consolidation/CHANGE.md) Consolidate dev Tilt and image loading | INF08 Done | root Tiltfile; sync-plan; slot image loader | Done (source) |
 | [INF18](../../changes/open/2026-11-24--inf18-dev-runtime-normalization/CHANGE.md) Normalize dev runtime and eliminate infra/dev | INF17 Done | dev runtime scripts, application dev receipt hooks, dev Dockerfile, development chart commands, dev status receipt code | Ready (dependency-gated) |
 | [INF19](../../changes/open/2026-11-24--inf19-environment-composition-cleanup/CHANGE.md) Minimal environment composition | INF15 and INF16 Done | release namespaces, teardown policy, acceptance and fixture ownership | Ready (dependency-gated) |
 
