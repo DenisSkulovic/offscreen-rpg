@@ -136,6 +136,7 @@ function kubectlApplyWithRetry(run, args, options = {}) {
     if (!retryOn.test(text)) {
       return { ...result, stderr: text };
     }
+    if (i + 1 < attempts) options.sleep?.(2000);
   }
   return { ok: false, stdout: '', stderr: err.join('\n') };
 }
@@ -184,10 +185,12 @@ export async function runRabbitmqReleaseInstall(deps = {}) {
   /** @type {Array<{ id: string, reason?: string }>} */
   const refusals = [];
   let mutated = false;
+  const sleep = deps.sleep ?? (() => {});
+  const wait = (args) => run('kubectl', args, { timeoutMs: 260000 });
 
   const refuse = (id, reason) => {
     refusals.push({ id, reason });
-    return { ok: false, actions, refusals, mutated: false };
+    return { ok: false, actions, refusals, mutated };
   };
 
   if (!authorize) {
@@ -248,12 +251,22 @@ export async function runRabbitmqReleaseInstall(deps = {}) {
         '-f',
         CERT_MANAGER_MANIFEST,
       ],
-      { attempts: deps.operatorWebhookAlwaysFails ? 1 : 24 },
+      { attempts: deps.operatorWebhookAlwaysFails ? 1 : 24, sleep },
     );
     if (!applyResult.ok) {
       return refuse('apply-cert-manager-failed');
     }
     mutated = true;
+    for (const crd of ['certificates.cert-manager.io', 'issuers.cert-manager.io']) {
+      if (!wait(['wait', '--for=condition=Established', 'crd/' + crd, '--timeout=180s']).ok) {
+        return refuse('cert-manager-crd-not-ready', crd);
+      }
+    }
+    for (const name of ['cert-manager', 'cert-manager-webhook', 'cert-manager-cainjector']) {
+      if (!wait(['-n', 'cert-manager', 'rollout', 'status', 'deployment/' + name, '--timeout=240s']).ok) {
+        return refuse('cert-manager-not-ready', name);
+      }
+    }
     actions.push({ op: 'apply-operator' });
     const operatorApply = kubectlApplyWithRetry(
       run,
@@ -264,17 +277,24 @@ export async function runRabbitmqReleaseInstall(deps = {}) {
         '-f',
         OPERATOR_MANIFEST,
       ],
-      { attempts: deps.operatorWebhookAlwaysFails ? 1 : 24 },
+      { attempts: deps.operatorWebhookAlwaysFails ? 1 : 24, sleep },
     );
     if (!operatorApply.ok) {
       return refuse(
         'operator-webhook-failed',
-        'RabbitMQ cluster operator manifest was not accepted',
+        'RabbitMQ cluster operator manifest was not accepted: ' + String(operatorApply.stderr ?? '').slice(-1200),
       );
     }
     mutated = true;
   }
 
+  if (!objectPresent(operator)) {
+    if (!wait(['wait', '--for=condition=Established', 'crd/rabbitmqclusters.rabbitmq.com', '--timeout=180s']).ok ||
+        !wait(['-n', 'rabbitmq-system', 'wait', '--for=condition=Ready', 'certificate/cluster-operator-serving-cert', '--timeout=240s']).ok ||
+        !wait(['-n', 'rabbitmq-system', 'rollout', 'status', 'deployment/rabbitmq-cluster-operator', '--timeout=240s']).ok) {
+      return refuse('operator-not-ready');
+    }
+  }
   actions.push({ op: 'wait-operator-webhook' });
 
   const namespaceDoc = renderDocuments('namespace');
@@ -406,7 +426,7 @@ metadata:
 type: Opaque
 stringData:
   default_user.conf: |
-    ${conf.trimEnd()}
+    ${conf.trimEnd().replace(/\n/g, '\n    ')}
   username: ${CLIENT_USER}
   password: ${password}
   provider: rabbitmq
@@ -446,6 +466,7 @@ stringData:
     const applyBroker = kubectlApplyWithRetry(run, ['apply', '-f', '-'], {
       input: brokerYaml,
       attempts: deps.brokerWebhookAlwaysFails ? 1 : 24,
+      sleep,
     });
     if (!applyBroker.ok) {
       return refuse(
@@ -460,6 +481,7 @@ stringData:
   const waitReplicas =
     deps.waitReplicas ??
     (() => {
+      if (!wait(['-n', NAMESPACE, 'wait', '--for=condition=AllReplicasReady', 'rabbitmqcluster/' + BROKER_NAME, '--timeout=240s']).ok) return false;
       const status = readObject({
         profileId,
         resource: 'rabbitmqcluster',
@@ -613,6 +635,7 @@ async function main() {
   const result = await runRabbitmqReleaseInstall({
     run: kubectl,
     authorize: true,
+    sleep: (ms) => { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); },
   });
   if (!result.ok) {
     const last = result.refusals.at(-1);

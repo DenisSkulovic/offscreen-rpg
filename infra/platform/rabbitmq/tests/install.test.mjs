@@ -318,3 +318,23 @@ test('brokerMatchesExpected accepts pinned lab broker fields', () => {
     64,
   );
 });
+
+
+test('fresh operator installation waits for cert-manager before applying operator', async () => {
+  const calls = [];
+  const result = await runRabbitmqReleaseInstall({
+    authorize: true,
+    skipVendorVerify: true,
+    readObject: inventoryRead({}),
+    run(command, args) {
+      calls.push(args.join(' '));
+      if (args.includes('rollout') && args.includes('deployment/cert-manager-webhook')) return { ok: false };
+      return { ok: true, stdout: '' };
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, true);
+  assert.equal(result.refusals[0].id, 'cert-manager-not-ready');
+  assert.ok(calls.some(line => line.includes('certificates.cert-manager.io')));
+  assert.ok(!calls.some(line => line.includes('cluster-operator-v2.23.3.yml')));
+});
