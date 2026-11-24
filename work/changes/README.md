@@ -38,7 +38,7 @@ Owner-selected near-term parallel program after Documents and DO01–DO07. [Froz
 
 ## Lifecycle at a glance (2026-11-22)
 
-**2026-11-23:** [DXK10-A registry-only reserve and explicit attach](archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is Done. No cluster startup or existing tenant takeover was performed. DXK10-B/C remain planner-held. HR02 independently owns Web source paths.
+**2026-11-23:** [DXK10-A registry-only reserve and explicit attach](archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is Done. No cluster startup or existing tenant takeover was performed. DXK10 parent cancelled/superseded; B absorbed into INF38, C retained as future capability in the local developer platform contract. HR02 independently owns Web source paths.
 
 **[Open](open/): 15 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
 

@@ -32,7 +32,7 @@ flowchart LR
 - Existing `dev:new`, `dev`, `dev:status`, `dev:stop` fixture tests pass without semantic regression. No host live cluster test required; one local CLI smoke with temporary isolated registry may be used, never the live registry for this Change.
 - **Stop** if registry v2 cannot model null attachment without a wider migration, if acquiring a reliable no-resource guarantee requires mutating the cluster, or if current launch/session paths implicitly adopt an unattached record. Return exact evidence to ChatGPT rather than improvising release or tenant transfer.
 
-**Source map:** [SOURCE-MAP.md](SOURCE-MAP.md) · **Algorithm:** [EXECUTION.md](EXECUTION.md) · **Small tasks:** [TASKS.md](TASKS.md) · **Proof contract:** [PROOF.md](PROOF.md). DXK10-B/C stay future stages in [DXK10 parent proposal](../../../../backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
+**Source map:** [SOURCE-MAP.md](SOURCE-MAP.md) · **Algorithm:** [EXECUTION.md](EXECUTION.md) · **Small tasks:** [TASKS.md](TASKS.md) · **Proof contract:** [PROOF.md](PROOF.md). DXK10-B/C stay future stages in [DXK10 parent proposal](../../../../archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
 
 ## Reconciliation ledger
 

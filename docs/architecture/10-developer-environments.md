@@ -127,7 +127,7 @@ The selected correction is simple to state: **image preparation returns one veri
 | Four healthy full application stacks | Separate capacity target; unproven on this machine |
 | Real browser OAuth and complete game/release acceptance | Separate outstanding proofs |
 
-**Next:** finish [DXK09](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md)'s truthful ordinary development gate, implement [DXK10](../../work/changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md)'s demand-driven activation, then use it for independent application Changes. Do not demand four full stacks merely to let three agents edit and test code.
+**Next:** finish [DXK09](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md)'s truthful ordinary development gate, implement [DXK10](../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md)'s demand-driven activation, then use it for independent application Changes. Do not demand four full stacks merely to let three agents edit and test code.
 
 ## Find the next layer
 
@@ -136,5 +136,5 @@ The selected correction is simple to state: **image preparation returns one veri
 | Which developer commands are safe today? | [Worktree development runbook](../runbooks/dev-worktree-stacks.md) |
 | Which component owns image builds, Tilt, Kubernetes and readiness? | [Developer environment technical contract](../technical/platform/developer-environments.md) |
 | What exactly passed and failed? | [DXK09 operational proof](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) |
-| How will idle reservations and partial profiles work? | [DXK10 design proposal](../../work/changes/backlog/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) |
+| How will idle reservations and partial profiles work? | [DXK10 design proposal](../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) |
 | Why is release testing isolated from development? | [Infrastructure restructuring program](../../work/changes/backlog/platform-operations/INFRA-RESTRUCTURE-PLAN.md) |

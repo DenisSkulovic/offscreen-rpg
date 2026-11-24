@@ -42,6 +42,7 @@ Agent reads this catalog and current operator entry, verifies HEAD, checkout, ho
 | DEV-12 | two independent slots, mixed profiles | registry and target profiles | distinct ports/tenant/process identity; stopping A leaves B healthy | full/full historical only; mixed target-only |
 | DEV-13 | capacity refusal | existing admission gate | refusal before writes or owned rollback; no retry storm | source + live NOT-RUN |
 | DEV-14 | profile change | stop then selected start | no old active roles, tenant data retained | target-only |
+| DEV-15 | explicit idle reservation retirement | future dev:release contract | owned idle reservation/ports released, active or foreign refusal, retained tenant IDs/data unchanged, no ID reuse | target-only; not commissioned |
 | RES-01 | small/default resource preset | workload/platform Helm values | observed requests/limits match chosen preset; useful flow within measured budget | target-only |
 | RES-02 | per-role custom override | workload chart render overlay | only specified resource/replica keys differ, invalid config refuses | target-only |
 | REL-01 | cold release full | explicit build, stack:up | migration proof, intended rollout, actual images, host route | live NOT-RUN |
