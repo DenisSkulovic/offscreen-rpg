@@ -52,5 +52,5 @@
 
 **Promotion:** a future [backlog](../backlog/README.md) Change moves here only after an actual near-term commission and updated source/dependency/readiness review. **Retirement:** only verified Done/Cancelled moves to [archive](../archive/README.md) with required evidence/ledger. Do not keep a permanent queue of speculative ideas here, and do not delete or auto-archive a partially executed folder just to make this page short.
 
-- [LIB08 bounded local object reads](2026-11-24--lib08-local-object-bounded-read/CHANGE.md): read-size safety within object storage, separate from Cache program.
+- [LIB08 bounded local object reads](../archive/2026-11/platform-operations/2026-11-24--lib08-local-object-bounded-read/CHANGE.md): Done, source-only.
 - [LIB09 Library-index hash identity](2026-11-24--lib09-library-index-node-integrity/CHANGE.md): source-node consistency within Documents.
