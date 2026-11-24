@@ -1,10 +1,29 @@
-# Disposable lab Redis. Acceleration only: no snapshot, no append-only file, no authentication material.
-# The Service is ClusterIP. A restart or flush drops keys and is not a loss of game state.
+
+{{- define "platform-redis.jsonFrom" -}}
+{{- $yaml := include .name .ctx -}}
+{{- $doc := fromYaml $yaml -}}
+{{- if and (kindIs "map" $doc) (hasKey $doc "Error") -}}
+{{- fail (printf "fromYaml Error: %s" ($doc.Error | toString)) -}}
+{{- end -}}
+---
+{{ $doc | toJson | println }}
+{{- end -}}
+
+{{- define "platform-redis.validate" -}}
+{{- $section := default "all" .Values.section -}}
+{{- if ne $section "all" -}}{{- fail (printf "unsupported section %s" $section) -}}{{- end -}}
+{{- $mode := required "profile mode is required" .Values.mode -}}
+{{- if ne $mode "release" -}}{{- fail "redis chart is release-only" -}}{{- end -}}
+{{- $img := required "images.redis is required" .Values.images.redis -}}
+{{- if eq $img "placeholder-redis" -}}{{- fail "images.redis must be resolved from profile" -}}{{- end -}}
+{{- end -}}
+
+{{- define "platform-redis.doc.configmap" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: redis-config
-  namespace: lab-a
+  namespace: {{ .Values.namespace }}
   labels:
     app: redis
     offscreen.rpg/lab: disposable
@@ -18,12 +37,14 @@ data:
     dir /data
     maxmemory 32mb
     maxmemory-policy allkeys-lru
----
+{{- end -}}
+
+{{- define "platform-redis.doc.deployment" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  namespace: lab-a
+  namespace: {{ .Values.namespace }}
   labels:
     app: redis
     offscreen.rpg/lab: disposable
@@ -51,7 +72,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: redis
-          image: docker.io/library/redis:8.2.1-alpine
+          image: {{ .Values.images.redis | quote }}
           imagePullPolicy: IfNotPresent
           command: ["redis-server", "/config/redis.conf"]
           ports:
@@ -96,12 +117,14 @@ spec:
         - name: data
           emptyDir:
             sizeLimit: 32Mi
----
+{{- end -}}
+
+{{- define "platform-redis.doc.service" -}}
 apiVersion: v1
 kind: Service
 metadata:
   name: redis
-  namespace: lab-a
+  namespace: {{ .Values.namespace }}
   labels:
     app: redis
     offscreen.rpg/lab: disposable
@@ -114,3 +137,4 @@ spec:
       port: 6379
       targetPort: redis
       protocol: TCP
+{{- end -}}

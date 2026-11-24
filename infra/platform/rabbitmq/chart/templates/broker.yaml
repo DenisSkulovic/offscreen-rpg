@@ -1,0 +1,6 @@
+{{- include "platform-rabbitmq.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $ctx := . -}}
+{{- if or (eq $section "all") (eq $section "broker") -}}
+{{- include "platform-rabbitmq.jsonFrom" (dict "name" "platform-rabbitmq.doc.broker" "ctx" $ctx) -}}
+{{- end -}}

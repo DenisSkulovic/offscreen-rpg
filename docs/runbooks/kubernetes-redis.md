@@ -1,14 +1,16 @@
 # Kubernetes Redis
 
-Disposable Redis on the [Kubernetes lab](kubernetes-lab.md) cluster. This is optional acceleration. It is not the game, not Compose, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment).
+Disposable Redis on the [Kubernetes lab](kubernetes-lab.md) cluster. This is **optional** lab acceleration only. It is not the game, not Compose, not a shared development service, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment). Nothing in the application packages or dev stack turns it on by default.
 
-The cache rule stays on [Redis boundary](../technical/platform/persistence-and-caching.md#redis-boundary). PostgreSQL remains the authoritative record.
+The cache rule stays on [Redis boundary](../technical/platform/persistence-and-caching.md#redis-boundary). PostgreSQL remains the authoritative record. Redis is an unauthenticated, explicitly isolated, disposable instance. It is not an automatic application runtime and not a shared dev cache until a separate CACHE isolation and authentication contract is selected.
+
+Chart, install script, and focused render tests live in `infra/platform/redis/`. The Helm chart is `infra/platform/redis/chart/`. Only the **release** profile renders or installs Redis; `node infra/platform/common/cli.mjs render redis dev …` refuses with `release-only`. Dev worktree stacks do not include this Service.
 
 ## What this procedure is
 
 Run one Redis process in `lab-a` behind a ClusterIP Service named `redis`. The process has a memory cap, a CPU cap, and a `redis-cli ping` liveness probe. Snapshotting and the append-only file are off, and the data directory is an emptyDir that dies with the pod.
 
-`infra/verification/smoke/redis/smoke.sh` checks three losses:
+`OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed infra/verification/smoke/redis/smoke.sh` checks three losses:
 
 - a key set with a short TTL is readable, then absent after that TTL
 - `FLUSHALL` removes a key
@@ -23,7 +25,8 @@ A miss after expiry, flush, or restart is the expected cache result. It is not l
 - Do not put a password, token, or other secret in the manifest. This lab process has no authentication material in Git. The Service is ClusterIP and is not published on the host. That is a lab limit, not a production authentication design.
 - Do not use a NodePort or LoadBalancer Service.
 - Do not mount a PersistentVolume. A volume that survived a pod restart would look like durable cache authority.
-- Do not point the game, the API, or Compose at this Service. Compose remains the local development route.
+- Do not point the game, the API, dev profiles, or Compose at this Service. Compose remains the local development route.
+- Do not treat optional lab Redis as proof that production or dev caches are wired. Install and smoke here do not modify application env or package manifests.
 - Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Requirements
@@ -41,10 +44,16 @@ The container runs as uid 999 and gid 1000, which is the `redis` account in that
 Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
 
 ```bash
-infra/verification/smoke/redis/smoke.sh
+OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed infra/verification/smoke/redis/smoke.sh
 ```
 
-When local Docker already has `docker.io/library/redis:8.2.1-alpine`, the smoke saves that image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used: on this machine it stops with `content digest sha256:8ddf542da70dec1f3b0f91fde22f8cd4b9c816627dc39323416b295b278c010c: not found`. If the import fails, the kubelet may still pull the same pin. The smoke applies `infra/platform/redis/redis.yaml` and `infra/verification/smoke/redis/client.yaml`, runs the three checks, and deletes the Redis objects when it exits, including after a failure. It does not delete the cluster.
+Optional install without the smoke client or destructive checks:
+
+```bash
+infra/platform/redis/install.sh
+```
+
+When local Docker already has `docker.io/library/redis:8.2.1-alpine`, the smoke saves that image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used: on this machine it stops with `content digest sha256:8ddf542da70dec1f3b0f91fde22f8cd4b9c816627dc39323416b295b278c010c: not found`. If the import fails, the kubelet may still pull the same pin. The smoke renders `infra/platform/redis/chart` through `node infra/platform/common/cli.mjs render redis release all`, refuses when redis Deployment, Service, ConfigMap, or client already exist, creates the fixture and `infra/verification/smoke/redis/client.yaml`, requires `OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed` before `FLUSHALL` or scale, and deletes only UID-matched objects when it exits, including after a failure. It does not delete the cluster or activate application cache wiring.
 
 Delete the cluster with `infra/clusters/kind/release/destroy.sh kind-offscreen-lab` when the lab work is finished. Hold the shared cluster lock from `up.sh` through `down.sh`. If `up.sh` says the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
@@ -66,7 +75,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/verification/smoke/redis/smoke.sh
+OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed infra/verification/smoke/redis/smoke.sh
 infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 

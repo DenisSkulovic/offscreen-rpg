@@ -12,22 +12,73 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
 REDIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLATFORM_REDIS_MANIFEST="$REDIS_DIR/../../../platform/redis/redis.yaml"
+COMMON_CLI="$REDIS_DIR/../../../platform/common/cli.mjs"
+PREFLIGHT="$REDIS_DIR/smoke-preflight.mjs"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
   exit 1
 fi
 
+CREATED_DEPLOY_UID=""
+CREATED_SVC_UID=""
+CREATED_CONFIG_UID=""
+CREATED_CLIENT_UID=""
+PLATFORM_REDIS_MANIFEST=""
+require_disposable_confirmation() {
+  if [[ "${OFFSCREEN_REDIS_SMOKE_DISPOSABLE:-}" != "confirmed" ]]; then
+    echo "Refusing destructive Redis smoke step: set OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed." >&2
+    exit 1
+  fi
+}
+
+uid_delete() {
+  local kind="$1"
+  local name="$2"
+  local expected_uid="$3"
+  local current_uid=""
+  current_uid="$("${KUBECTL[@]}" -n lab-a get "$kind" "$name" -o jsonpath='{.metadata.uid}' 2>/dev/null || true)"
+  if [[ -z "$current_uid" ]]; then
+    return 0
+  fi
+  if [[ "$current_uid" != "$expected_uid" ]]; then
+    echo "Retaining foreign ${kind}/${name}; uid ${current_uid} is not owned ${expected_uid}." >&2
+    return 0
+  fi
+  case "$kind" in
+    pod)
+      "${KUBECTL[@]}" -n lab-a delete pod "$name" --wait=true >/dev/null 2>&1 || true
+      ;;
+    deployment)
+      "${KUBECTL[@]}" -n lab-a delete deployment "$name" --wait=true >/dev/null 2>&1 || true
+      ;;
+    service)
+      "${KUBECTL[@]}" -n lab-a delete service "$name" >/dev/null 2>&1 || true
+      ;;
+    configmap)
+      "${KUBECTL[@]}" -n lab-a delete configmap "$name" >/dev/null 2>&1 || true
+      ;;
+  esac
+}
+
 cleanup() {
   local status=$?
-  "${KUBECTL[@]}" -n lab-a delete pod redis-client --ignore-not-found --wait=true >/dev/null 2>&1 || true
-  "${KUBECTL[@]}" -n lab-a delete deployment redis --ignore-not-found --wait=true >/dev/null 2>&1 || true
-  "${KUBECTL[@]}" -n lab-a delete svc redis --ignore-not-found >/dev/null 2>&1 || true
-  "${KUBECTL[@]}" -n lab-a delete configmap redis-config --ignore-not-found >/dev/null 2>&1 || true
+  uid_delete pod redis-client "$CREATED_CLIENT_UID"
+  uid_delete deployment redis "$CREATED_DEPLOY_UID"
+  uid_delete service redis "$CREATED_SVC_UID"
+  uid_delete configmap redis-config "$CREATED_CONFIG_UID"
+  rm -f "$PLATFORM_REDIS_MANIFEST"
   exit "$status"
 }
+
+if ! node "$PREFLIGHT" assert-absent; then
+  exit 1
+fi
+
 trap cleanup EXIT
+
+PLATFORM_REDIS_MANIFEST="$(mktemp)"
+node "$COMMON_CLI" render redis release all >"$PLATFORM_REDIS_MANIFEST"
 
 if grep -Ei 'requirepass|REDIS_PASSWORD|password:' "$PLATFORM_REDIS_MANIFEST" >/dev/null; then
   echo "Refusing to apply Redis: the manifest contains authentication material." >&2
@@ -54,8 +105,20 @@ else
   echo "Local image ${image_ref} is absent. The nodes will pull it."
 fi
 
-"${KUBECTL[@]}" apply -f "$PLATFORM_REDIS_MANIFEST"
-"${KUBECTL[@]}" apply -f "$REDIS_DIR/client.yaml"
+if ! "${KUBECTL[@]}" create -f "$PLATFORM_REDIS_MANIFEST"; then
+  echo "Redis fixture create failed; refusing to retain unknown cluster objects." >&2
+  exit 1
+fi
+CREATED_DEPLOY_UID="$("${KUBECTL[@]}" -n lab-a get deployment redis -o jsonpath='{.metadata.uid}')"
+CREATED_SVC_UID="$("${KUBECTL[@]}" -n lab-a get service redis -o jsonpath='{.metadata.uid}')"
+CREATED_CONFIG_UID="$("${KUBECTL[@]}" -n lab-a get configmap redis-config -o jsonpath='{.metadata.uid}')"
+
+if ! "${KUBECTL[@]}" create -f "$REDIS_DIR/client.yaml"; then
+  echo "Redis client create failed." >&2
+  exit 1
+fi
+CREATED_CLIENT_UID="$("${KUBECTL[@]}" -n lab-a get pod redis-client -o jsonpath='{.metadata.uid}')"
+
 "${KUBECTL[@]}" -n lab-a rollout status deployment/redis --timeout=180s
 "${KUBECTL[@]}" -n lab-a wait --for=condition=Ready pod/redis-client --timeout=180s
 
@@ -126,6 +189,7 @@ if [[ -n "$miss" ]]; then
   exit 1
 fi
 
+require_disposable_confirmation
 flush_set="$(cli SET lab:flush present)"
 echo "SET flush reply: ${flush_set}"
 [[ "$flush_set" == "OK" ]]
@@ -143,6 +207,7 @@ restart_set="$(cli SET lab:restart present)"
 echo "SET restart reply: ${restart_set}"
 [[ "$restart_set" == "OK" ]]
 
+require_disposable_confirmation
 "${KUBECTL[@]}" -n lab-a scale deployment/redis --replicas=0
 for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do
   if ! "${KUBECTL[@]}" -n lab-a get pod -l app=redis --no-headers 2>/dev/null | grep -q .; then

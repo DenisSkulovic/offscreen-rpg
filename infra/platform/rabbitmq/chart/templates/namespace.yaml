@@ -1,0 +1,6 @@
+{{- include "platform-rabbitmq.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $ctx := . -}}
+{{- if or (eq $section "all") (eq $section "namespace") -}}
+{{- include "platform-rabbitmq.jsonFrom" (dict "name" "platform-rabbitmq.doc.namespace" "ctx" $ctx) -}}
+{{- end -}}

@@ -1,0 +1,4 @@
+mode: release
+namespace: lab-a
+images:
+  redis: docker.io/library/redis:8.2.1-alpine

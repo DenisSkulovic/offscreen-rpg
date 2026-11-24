@@ -1,0 +1,4 @@
+mode: release
+namespace: messaging
+images:
+  broker: docker.io/library/rabbitmq:4.3.4-management

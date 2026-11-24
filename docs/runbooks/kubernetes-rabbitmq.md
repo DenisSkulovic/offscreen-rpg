@@ -1,6 +1,8 @@
 # Kubernetes RabbitMQ
 
-One RabbitMQ broker on the disposable kind cluster from [Kubernetes lab](kubernetes-lab.md). This is a laboratory procedure. It is not the game, not the PostgreSQL outbox, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment). The delivery limit is [Laboratory messaging broker](../technical/platform/execution-and-delivery.md#laboratory-messaging-broker).
+One RabbitMQ broker on the disposable kind cluster from [Kubernetes lab](kubernetes-lab.md). This is an **optional** laboratory procedure only. It is not the game, not the PostgreSQL outbox, not a shared development broker, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment). Nothing in the application packages or dev stack consumes this broker by default. Enable it only when an actual consumer requirement exists and this lab proof is in scope. The delivery limit is [Laboratory messaging broker](../technical/platform/execution-and-delivery.md#laboratory-messaging-broker).
+
+Chart, `release-install.mjs`, install script, vendor pins, and focused tests live in `infra/platform/rabbitmq/`. The Helm chart is `infra/platform/rabbitmq/chart/`. Only the **release** profile renders chart sections; `node infra/platform/common/cli.mjs render rabbitmq dev …` refuses with `release-only`. Dev worktree stacks do not include this broker.
 
 ## What this procedure is
 
@@ -14,7 +16,8 @@ The smoke publishes three persistent messages, deletes the broker pod, and reads
 
 - Do not call this high availability. One replica has no standby.
 - Do not call redelivery exactly-once processing. The duplicate is the proof that the effect can happen twice.
-- Do not point the game, Temporal, or Compose at this broker. A broker message is not a committed story fact.
+- Do not point the game, Temporal, dev profiles, or Compose at this broker. A broker message is not a committed story fact.
+- Do not treat optional lab RabbitMQ as proof that production or dev messaging is wired. Install and smoke here do not modify application env or package manifests.
 - Do not publish the Service as NodePort or LoadBalancer. Do not put the password in Git.
 - Do not delete Docker volumes. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, stay outside this procedure.
 - Do not raise the WSL memory cap. The broker request is 1 GiB, below the operator default of 2 GiB, so the lab can fit the machine that already runs the kind cluster.
