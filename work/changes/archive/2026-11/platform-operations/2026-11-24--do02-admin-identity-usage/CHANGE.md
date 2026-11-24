@@ -1,6 +1,6 @@
 # DO02 | admin identity usage
 
-**Status: Ready / owner-commissioned for parallel wave A. Kind: implementation. Profile: CONTRACT.** Baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`. Integration target `undertaking/storyteller-workshop`. Prerequisite: None; Documents predecessor accepted; parallel wave A.
+**Status: Done (2026-11-24), source-only, joined to `undertaking/storyteller-workshop`. Kind: implementation. Profile: CONTRACT.** Baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`. Live Kubernetes and providers NOT RUN.
 
 [Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 

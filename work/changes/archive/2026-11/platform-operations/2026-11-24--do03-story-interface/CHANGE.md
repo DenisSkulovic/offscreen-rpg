@@ -1,6 +1,6 @@
 # DO03 | story interface
 
-**Status: Locally accepted on `change/do03-story-interface`; awaiting DO01 integration custodian join. Kind: implementation. Profile: CONTRACT.** Worktree base `c7f19e07b38d289659350768d81ba3f1c3813d81` (packet baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`). Integration target `undertaking/storyteller-workshop`. Prerequisite: Documents schema export verified at baseline; parallel wave A.
+**Status: Done (2026-11-24), source-only, joined to `undertaking/storyteller-workshop`. Kind: implementation. Profile: CONTRACT.** Worktree base `c7f19e07b38d289659350768d81ba3f1c3813d81` (packet baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`). Live Kubernetes and providers NOT RUN.
 
 [Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 
@@ -47,4 +47,4 @@ Start T01 now after local branch/worktree checks; continue through this Change o
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 |---|---|---|---|---|---|---|
-| To fill at close for every impacted claim | technical/product | pending | pending | not executed | pending | pending |
+| Story interface ownership | docs/technical/platform/topology.md#code-organization | changed: story and campaign wire shapes live in `@offscreen/story-interface` | joined manifests on undertaking | source-only; leaf tests 66/66 after stale contracts dist removed | old story subpaths not imported by production source | catalog and design tables |
