@@ -1,21 +1,9 @@
 # DB06 | bounded Composer tasks
 
-Base SHA fa77f2d3614ee821b8e4ad849a46a66342000132; state Proposed / planner-gated. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base 7033f654091a4fc66c7de6b0dce37e2b8fb504c1. Ready / commissioned source-only; independent of DB01/08. [Exact algorithm and tests](EXECUTION.md). One child at a time. Own config.ts, database.ts, src/connection/**, test/config.test.ts, test/db06-*.test.ts. No manifest/root index/migration changes.
 
-## T01 | Config and FIFO admission | PLANNER-BLOCKED until promotion
+## T01 | Bounded FIFO and config
+Read config.ts, database.ts, config.test.ts, EXECUTION.md config/controller sections. Implement optional managed config and admission controller with deadline/abort removal, active permit retained until actual settlement; deterministic queue tests. Root pnpm --filter @offscreen/db build && node --test packages/db/dist/test/config.test.js packages/db/dist/test/db06-admission.test.js.
 
-Requires: DB01; independent of schema relocation and migration runner.
-Read: packages/db/src/config.ts; packages/db/src/database.ts; packages/db/test/config.test.ts.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Preserve existing config shape/defaults; add optional managed fields via separate parsed object or optional properties preserving hand-built fixture config. Implement src/connection/admission.ts bounded FIFO, max20 waiters, monotonic deadline, abort before admission, saturation, close drains/refuses. Permit held until actual settled work, late acquire releases immediately. Fake-clock tests for overflow, abort, timeout, close, FIFO, late acquire.
-Verification (root): `pnpm --filter @offscreen/db build && node --test packages/db/dist/test/db06-admission.test.js packages/db/dist/test/config.test.js`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
-
-## T02 | Managed pool lifecycle | PLANNER-BLOCKED until promotion
-
-Requires: previous task accepted.
-Read: packages/db/src/database.ts; packages/db/src/connection/admission.ts; packages/db/test/database.integration.ts.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Preserve db/checkConnection/close signatures; add managed withClient seam (frozen program), pg Pool injectable factory; pool error handling safe, idempotent close, one checkout per operation. Probe bounded through admission; no direct raw DB calls silently marked managed. Fake tests late acquisition after close, callback throw, double close, tainted release and no premature permit release.
-Verification (root): `pnpm --filter @offscreen/db build && node --test packages/db/dist/test/db06-pool.test.js`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T02 | Checked-out lease and shutdown
+Read database.ts, src/connection/admission.ts, existing database.integration.ts (read-only), EXECUTION.md. Implement generic managed-client seam, compose pool, bounded checkConnection response and memoized drain close; regression fake client tests. Root pnpm --filter @offscreen/db build && node --test packages/db/dist/test/config.test.js packages/db/dist/test/db06-admission.test.js packages/db/dist/test/db06-pool.test.js; typecheck. No live SQL. Send branch SHA and receipt to DB01 custodian. Do not self-start DB07.

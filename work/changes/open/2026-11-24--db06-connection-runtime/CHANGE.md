@@ -1,13 +1,13 @@
 # DB06 | Bounded PostgreSQL connection runtime
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: PATCH.** Baseline fa77f2d3614ee821b8e4ad849a46a66342000132; target undertaking/storyteller-workshop. Prerequisite: DB01; independent of schema relocation and migration runner. Owner-selected near-term planning, not execution permission.
+**Status: Ready / owner-commissioned for source implementation. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
 ## Outcome and scope
 
 - Config and FIFO admission: Preserve existing config shape/defaults; add optional managed fields via separate parsed object or optional properties preserving hand-built fixture config. Implement src/connection/admission.ts bounded FIFO, max20 waiters, monotonic deadline, abort before admission, saturation, close drains/refuses. Permit held until actual settled work, late acquire releases immediately. Fake-clock tests for overflow, abort, timeout, close, FIFO, late acquire.
-- Managed pool lifecycle: Preserve db/checkConnection/close signatures; add managed withClient seam (frozen program), pg Pool injectable factory; pool error handling safe, idempotent close, one checkout per operation. Probe bounded through admission; no direct raw DB calls silently marked managed. Fake tests late acquisition after close, callback throw, double close, tainted release and no premature permit release.
+- Managed pool lifecycle: Preserve db/checkConnection/close signatures; add managed withClient seam (frozen program), typed narrow injectable lease runtime; pool error handling safe, idempotent close, one checkout per operation. Probe bounded through admission, with caller-visible deadline retaining actual work capacity; no direct raw DB calls silently marked managed. Fake tests late acquisition after close, callback throw, double close, tainted release and no premature permit release.
 
 ## Execution and ownership
 
@@ -15,7 +15,7 @@ Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guar
 
 ## Acceptance and stop
 
-Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing fixture, unresolved interface, new dependency cycle or semantic mismatch is planner stop, not executor investigation. **Readiness:** G0 target confirmed, remaining G1–G7 need current-source audit and exact fixture/consumer mapping at promotion; no Ready claim. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
+Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Actual source/contract contradiction or new cycle is planner stop. Creating the named tests is implementation, not a missing-fixture blocker. No live resource needed for source dispatch. **Readiness:** Current-source review and exact source implementation/proof selected in [Exact implementation and proof](EXECUTION.md); source Ready. No local build or live proof claimed by planner. Record exact accepted proof and baseline limitations.
 
 ## planned-impact.v1
 

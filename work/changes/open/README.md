@@ -2,7 +2,7 @@
 
 ## Database platform redesign
 
-[Ten prepared Change packets](../README.md#database-platform-redesign) · [Dependency DAG and ownership](../../undertakings/storyteller-workshop/DB-PARALLEL.md). Proposed / not commissioned. DB01 first; DB02/DB06/DB08 parallel; DB03 after identity and overlapping Cache consumers, DB07 after runtime, DB04/DB05 after story extraction, DB09 after transaction runtime, DB10 final join. Planner readiness required before dispatch.
+[Ten prepared Change packets](../README.md#database-platform-redesign) · [Dependency DAG and ownership](../../undertakings/storyteller-workshop/DB-PARALLEL.md). DB01/DB06/DB08 Ready / source-commissioned in parallel; DB01 custodian. Remaining seven Proposed pending planner gates. DB02 after DB01; DB07 after DB01+DB06; DB03 after identity and overlapping Cache consumers; DB04/DB05 after story extraction; DB09 after transaction runtime; DB10 final proof. DB08 live SQL separately gated. No global queue change.
 
 **Final-wave conditional commission (2026-11-24):** Owner commissioned DO06 and DO07 now. DO06 may execute after DO05 integrates (DO03 already integrated); DO04 need not land first. DO07 may execute only after all six extractions integrate and no live residual module remains. Each assigned parent checks predecessor receipts and exact source/export postconditions on latest undertaking HEAD before editing; if they pass, no further ChatGPT release or approval is needed. Genuine semantic contradictions remain stop conditions. Coordinate joins with DO04 wave B custodian while active; otherwise the sole remaining parent owns its join. No global queue change, no new proof or completion credit.
 

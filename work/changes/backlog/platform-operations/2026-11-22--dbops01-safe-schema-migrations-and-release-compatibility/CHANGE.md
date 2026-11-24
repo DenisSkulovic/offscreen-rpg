@@ -4,6 +4,9 @@
 
 **Coordination:** [DB redesign](../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) owns schema composition and basic migration runner integrity (DB01/DB08). This backlog Change retains mixed-version release/backfill, nontransactional operator path, risk review and real interruption proof; do not duplicate those source changes.
 
+
+**2026-11-24 planner finding:** current journal has 25 entries, newest checked-in Drizzle snapshot idx4 contains 48 tables versus 71 current declarations. DB01 preserves all history and freezes a synthetic schema identity fixture, with tracked generation refusing while terminal snapshot is missing. DBOPS01 owns a separate audited metadata reconciliation against authoritative applied SQL and an explicitly authorized disposable database; never rewrite applied SQL/journal hashes or imply actual physical drift from stale generator metadata alone. No metadata repair or deployment authorized by this note.
+
 ## Current foundation and gap
 `packages/db/src/migrate.ts:applyMigrations` uses a database-scoped advisory lock and the Drizzle migrator, `packages/db/package.json` has generate/migrate commands, and the Kubernetes app release has one controlled `game-migrate` Job. [Deployment and compatibility](../../../../../docs/technical/platform/deployment-and-compatibility.md) already selects once-per-release migrations, expand/contract changes and cross-version Temporal/Activity compatibility. That is a sound beginning. It is **not** a tested rolling schema-evolution contract covering long-running backfills, locks, old/new app compatibility or interruption.
 

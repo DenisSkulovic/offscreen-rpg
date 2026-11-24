@@ -1,13 +1,13 @@
 # DB08 | Migration integrity and single-runner hardening
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: STATE.** Baseline fa77f2d3614ee821b8e4ad849a46a66342000132; target undertaking/storyteller-workshop. Prerequisite: DB01; independent of DB06 (config backward compatible). Owner-selected near-term planning, not execution permission.
+**Status: Ready / owner-commissioned for source implementation. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
 ## Outcome and scope
 
-- Verify applied journal prefix: Keep stable lock 683291351 and dedicated Client. Read migration entries with pinned Drizzle readMigrationFiles, compare ordered applied hashes and timestamps under lock before migrate. Empty ledger legal only when absent/empty; reject unknown, gap, tamper, duplicate/out-of-order or malformed metadata; do not repair. Preserve existing fixture where when=1 etc; planner confirms exact Drizzle metadata semantics before dispatch. Fake tests prefix match/changed hash/missing entry/newer unknown; actual SQL tests later disposable only.
-- Bound runner and safe failure: Add migration-specific lock/statement budget without changing deployment path; ensure session lock retained through validation/DDL and released by end; fail safe on connection error, no retry ambiguous outcome; sanitize CLI output. Preserve generic migrationsFolder signature. Existing test competing lock and rollback plus new tamper refusal under authorized fixture.
+- Verify applied journal prefix: Keep stable lock 683291351 and dedicated Client. Read migration entries with pinned Drizzle readMigrationFiles, compare ordered applied hashes and timestamps under lock before migrate. Empty ledger legal only when absent/empty; reject unknown, gap, tamper, duplicate/out-of-order or malformed metadata; do not repair. Pinned Drizzle 0.45.2 source verified; exact one-read dialect seam and corrected failing fixture prefix in EXECUTION.md. Fake tests prefix match/changed hash/missing entry/newer unknown; actual SQL tests later disposable only.
+- Bound runner and safe failure: Set bounded migration lock timeout and retain configured statement budget without changing deployment path; ensure session lock retained through validation/DDL and released by end; fail safe on connection error, no retry ambiguous outcome; sanitize CLI output. Preserve generic migrationsFolder signature. Existing test competing lock and rollback plus new tamper refusal under authorized fixture.
 
 ## Execution and ownership
 
@@ -15,7 +15,7 @@ Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guar
 
 ## Acceptance and stop
 
-Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing fixture, unresolved interface, new dependency cycle or semantic mismatch is planner stop, not executor investigation. **Readiness:** G0 target confirmed, remaining G1–G7 need current-source audit and exact fixture/consumer mapping at promotion; no Ready claim. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
+Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Actual source/contract contradiction or new cycle is planner stop. Creating the named tests is implementation, not a missing-fixture blocker. No live resource needed for source dispatch. **Readiness:** Current-source review and exact source implementation/proof selected in [Exact implementation and proof](EXECUTION.md); source Ready. No local build or live proof claimed by planner. Record exact accepted proof and baseline limitations.
 
 ## planned-impact.v1
 
