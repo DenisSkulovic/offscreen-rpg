@@ -5,6 +5,23 @@ import process from 'node:process';
 import { OPTIONAL_EXCLUDED_SERVICES } from '../environments/platform-plan.mjs';
 import { runCommand, commandOutcome, diagnosticExcerpt, executeChecks } from './diagnostic-engine.mjs';
 
+// Explicit source-only allowlist: do not discover and run arbitrary live proof files.
+export const ADDITIONAL_PLATFORM_TESTS = Object.freeze([
+  { file: 'infra/platform/common/tests/pins.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/common/tests/render.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/temporal/tests/schema-policy.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/temporal/tests/readiness.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/postgres/tests/readiness.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/object-storage/tests/readiness.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/redis/tests/dev-install.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/temporal/tests/render.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/postgres/tests/render.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/object-storage/tests/object-storage-chart.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/rabbitmq/tests/render.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/redis/tests/render.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/observability/tests/render.test.mjs', requiresHelm: true },
+]);
+
 const SERVICES = { dev: ['postgres', 'object-storage', 'temporal', 'redis'], release: ['postgres', 'object-storage', 'temporal', 'gateway', 'redis', 'rabbitmq', 'observability'] };
 const SERVICE_IDS = { postgres: 'PL-01', 'object-storage': 'PL-02', temporal: 'PL-03', redis: 'PL-04', rabbitmq: 'PL-05', observability: 'PL-06', gateway: 'PL-07' };
 
@@ -54,6 +71,9 @@ export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, par
     'infra/clusters/kind/manager/host-probe.test.mjs', 'infra/clusters/kind/manager/config.test.mjs',
     'infra/clusters/kind/manager/lifecycle.test.mjs', 'infra/platform/common/tests/commands.test.mjs'
   ]) addNodeTest(file);
+  for (const { file, requiresHelm } of ADDITIONAL_PLATFORM_TESTS) {
+    addNodeTest(file, requiresHelm ? ['host.helm'] : []);
+  }
   add('source:monitoring-python', 'FIXTURE', 'python3', ['-m', 'unittest', 'discover', '-s', 'infra/monitoring/tests', '-p', 'test_*.py'], {
     requires: ['host.python'], timeoutMs: 120000, evaluate: result => {
       const text = result.stdout + '\n' + result.stderr;

@@ -72,12 +72,12 @@ function createMockRun(options = {}) {
           contexts: [
             {
               name: DEV_S3_CONTEXT,
-              context: { cluster: DEV_CLUSTER_NAME },
+              context: { cluster: `kind-${DEV_CLUSTER_NAME}` },
             },
           ],
           clusters: [
             {
-              name: DEV_CLUSTER_NAME,
+              name: `kind-${DEV_CLUSTER_NAME}`,
               cluster: { server: 'https://127.0.0.1:24443' },
             },
           ],

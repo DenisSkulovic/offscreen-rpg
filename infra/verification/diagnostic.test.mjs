@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import process from 'node:process';
 import { executeChecks, runCommand, commandOutcome, diagnosticExcerpt } from './diagnostic-engine.mjs';
-import { buildDiagnosticChecks } from './diagnostic.mjs';
+import { ADDITIONAL_PLATFORM_TESTS, buildDiagnosticChecks } from './diagnostic.mjs';
 
 test('failure, exception and dependency refusal do not stop independent checks', async () => {
   const calls = [];
@@ -42,4 +42,15 @@ test('live cluster failure blocks only its own service observations', async () =
   assert.equal(rows.find(row => row.id === 'live:dev:postgres').status, 'BLOCKED');
   assert.equal(rows.find(row => row.id === 'live:release:postgres').status, 'PASS');
   assert.ok(!called.some(line => line.includes('dev postgres')));
+});
+
+
+test('additional platform tests are explicitly scheduled with Helm prerequisites', () => {
+  const checks = buildDiagnosticChecks({ repoRoot: '/fixture', definitions: [], resolveFiles: () => [], parseCounts: () => ({ complete: false }) });
+  for (const { file, requiresHelm } of ADDITIONAL_PLATFORM_TESTS) {
+    const matching = checks.filter(check => check.id === 'source:' + file);
+    assert.equal(matching.length, 1);
+    assert.deepEqual(matching[0].requires, requiresHelm ? ['host.helm'] : []);
+    assert.ok(matching[0].command.includes('--test-reporter=tap'));
+  }
 });

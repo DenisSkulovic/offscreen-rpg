@@ -20,12 +20,12 @@ function kubectlConfigJson() {
   return JSON.stringify({
     clusters: [
       {
-        name: 'offscreen-dev',
+        name: 'kind-offscreen-dev',
         cluster: { server: `https://127.0.0.1:${DEV_PORT}` },
       },
     ],
     contexts: [
-      { name: 'kind-offscreen-dev', context: { cluster: 'offscreen-dev' } },
+      { name: 'kind-offscreen-dev', context: { cluster: 'kind-offscreen-dev' } },
     ],
     'current-context': 'kind-offscreen-dev',
   });
