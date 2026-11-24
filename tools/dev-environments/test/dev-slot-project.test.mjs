@@ -3,7 +3,11 @@ import test from 'node:test';
 import { Buffer } from 'node:buffer';
 import { DEV_CNPG_NAMESPACE } from '../src/adapters/dev-cnpg-bootstrap.mjs';
 import { DEV_S3_NAMESPACE } from '../src/adapters/dev-object-store-bootstrap.mjs';
-import { applyDevSlotSecret, projectDevSlot } from '../src/rendering/dev-slot-project.mjs';
+import {
+  applyDevSlotSecret,
+  assertDevSchemaProjectionProof,
+  projectDevSlot,
+} from '../src/rendering/dev-slot-project.mjs';
 
 const oauth = {
   GITHUB_CLIENT_ID: 'client',
@@ -37,12 +41,6 @@ function stubKubectl(slotId, options = {}) {
   const kubectl = (args, input) => {
     calls.push({ args, input });
     const joined = args.join(' ');
-    if (joined.includes('SELECT count(*) FROM drizzle.__drizzle_migrations')) {
-      return '25\n';
-    }
-    if (joined.includes(`-n ${DEV_CNPG_NAMESPACE}`) && joined.includes(`-d ${database}`)) {
-      return '25';
-    }
     if (joined.includes(`secret dev-${digits}-run-auth`) && joined.includes('-o json') && !joined.includes(namespace)) {
       return JSON.stringify({
         metadata: {
@@ -83,6 +81,11 @@ function stubKubectl(slotId, options = {}) {
   return { kubectl, calls, namespace, digits };
 }
 
+/** @param {string} slotId @param {number} count */
+function schemaProof(slotId, count) {
+  return { ok: /** @type {const} */ (true), slotId, appliedMigrations: count, expectedMigrations: count };
+}
+
 test('dev-2 projection uses allocator namespace and dev-2 secret names', () => {
   const { kubectl, calls, namespace } = stubKubectl('dev-2');
   const record = {
@@ -98,6 +101,7 @@ test('dev-2 projection uses allocator namespace and dev-2 secret names', () => {
   const result = projectDevSlot({
     record,
     oauth,
+    schemaProof: schemaProof('dev-2', 25),
     deps: { kubectl, randomBytes: () => Buffer.alloc(24, 1) },
   });
   assert.equal(result.record.namespace, 'offscreen-dev-2');
@@ -108,10 +112,62 @@ test('dev-2 projection uses allocator namespace and dev-2 secret names', () => {
   assert.equal(secretGets.some((item) => item.args.includes('dev-2-run-auth')), true);
   assert.equal(secretGets.some((item) => item.args.includes('dev-2-s3')), true);
   assert.equal(secretGets.some((item) => item.args.includes('dev-2-app')), true);
-  const migration = calls.find((item) => item.args.join(' ').includes('dev_2'));
-  assert.ok(migration);
-  assert.equal(migration.args.includes('-d'), true);
-  assert.equal(migration.args[migration.args.indexOf('-d') + 1], 'dev_2');
+  assert.equal(calls.some((item) => item.args.join(' ').includes('__drizzle_migrations')), false);
+});
+
+test('projection accepts a non-25 count when journal proof counts match', () => {
+  const { kubectl, calls } = stubKubectl('dev-2');
+  const record = {
+    slotId: 'dev-2',
+    worktreePath: '/tmp/wt-2',
+    cluster: 'kind-offscreen-dev',
+    namespace: 'offscreen-dev-2',
+    ports: { game: 13104, control: 13105, tilt: 13106, spare: 13107 },
+    processIdentity: null,
+    resourceUids: {},
+    lease: null,
+  };
+  const result = projectDevSlot({
+    record,
+    oauth,
+    schemaProof: schemaProof('dev-2', 26),
+    deps: { kubectl, randomBytes: () => Buffer.alloc(24, 1) },
+  });
+  assert.equal(result.record.slotId, 'dev-2');
+  assert.equal(calls.some((item) => item.args.includes('exec')), false);
+});
+
+test('bad schema proof refuses before secret or workload writes', () => {
+  const { kubectl, calls } = stubKubectl('dev-2');
+  const record = {
+    slotId: 'dev-2',
+    worktreePath: '/tmp/wt-2',
+    cluster: 'kind-offscreen-dev',
+    namespace: 'offscreen-dev-2',
+    ports: { game: 13104, control: 13105, tilt: 13106, spare: 13107 },
+    processIdentity: null,
+    resourceUids: {},
+    lease: null,
+  };
+  const cases = [
+    { proof: undefined, message: /schema proof missing/ },
+    { proof: { ok: true, slotId: 'dev-1', appliedMigrations: 25, expectedMigrations: 25 }, message: /schema proof slot/ },
+    { proof: { ok: true, slotId: 'dev-2', appliedMigrations: 24, expectedMigrations: 25 }, message: /schema gate 24/ },
+    { proof: { ok: true, slotId: 'dev-2', appliedMigrations: '25', expectedMigrations: 25 }, message: /schema proof count/ },
+  ];
+  for (const item of cases) {
+    assert.throws(
+      () => projectDevSlot({
+        record,
+        oauth,
+        schemaProof: item.proof,
+        deps: { kubectl, randomBytes: () => Buffer.alloc(24, 1) },
+      }),
+      item.message,
+    );
+  }
+  assert.equal(calls.some((item) => item.args.includes('apply')), false);
+  assert.equal(assertDevSchemaProjectionProof(record, schemaProof('dev-2', 25)), undefined);
 });
 
 test('an existing app Secret labeled dev-1 is refused when projecting dev-2', () => {
@@ -143,6 +199,7 @@ test('an existing app Secret labeled dev-1 is refused when projecting dev-2', ()
     () => projectDevSlot({
       record,
       oauth,
+      schemaProof: schemaProof('dev-2', 25),
       deps: {
         kubectl: kubectlWithForeign,
         randomBytes: () => Buffer.alloc(24, 1),

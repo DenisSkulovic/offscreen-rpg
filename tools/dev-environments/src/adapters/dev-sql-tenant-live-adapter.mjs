@@ -106,20 +106,39 @@ export function createLiveDevSqlAdapter({ exec = run } = {}) {
       psql(sql, exec);
     },
     resources(names) {
-      const text = kubectl(['-n', DEV_CNPG_NAMESPACE, 'get', 'secret,databaserole.postgresql.cnpg.io,database.postgresql.cnpg.io', '-l', `offscreen.dev/slot=${names.slotId}`, '-o', 'json'], undefined, exec);
-      const body = JSON.parse(text);
-      return (body.items ?? []).map((item) => ({
-        kind: item.kind,
-        name: item.metadata?.name,
-        uid: item.metadata?.uid,
-        owner: item.metadata?.labels?.['offscreen.dev/owner'] ?? null,
-        slot: names.slotId,
-      }));
+      const targets = [
+        { kind: 'secret', name: names.migrationSecret },
+        { kind: 'secret', name: names.runtimeSecret },
+        { kind: 'databaserole.postgresql.cnpg.io', name: names.migrationRoleCr },
+        { kind: 'databaserole.postgresql.cnpg.io', name: names.runtimeRoleCr },
+        { kind: 'database.postgresql.cnpg.io', name: names.databaseCr },
+      ];
+      const resources = [];
+      for (const target of targets) {
+        try {
+          const raw = kubectl(['-n', DEV_CNPG_NAMESPACE, 'get', target.kind, target.name, '-o', 'json', '--ignore-not-found'], undefined, exec).trim();
+          if (!raw) continue;
+          const item = JSON.parse(raw);
+          if (item.kind === 'Status') continue;
+          resources.push({
+            kind: item.kind,
+            name: item.metadata?.name,
+            uid: item.metadata?.uid,
+            owner: item.metadata?.labels?.['offscreen.dev/owner'] ?? null,
+            slot: item.metadata?.labels?.['offscreen.dev/slot'] ?? null,
+          });
+        } catch {
+          resources.push({ name: target.name, unreadable: true });
+        }
+      }
+      return resources;
     },
-    createSecrets(names) {
+    createSecrets(names, options = {}) {
       const created = [];
+      const only = options.only?.length ? new Set(options.only) : null;
       for (const kind of ['migration', 'runtime']) {
         const name = kind === 'migration' ? names.migrationSecret : names.runtimeSecret;
+        if (only && !only.has(name)) continue;
         const username = kind === 'migration' ? names.migrationRole : names.runtimeRole;
         const password = randomBytes(24).toString('base64url');
         const manifest = {
@@ -129,7 +148,7 @@ export function createLiveDevSqlAdapter({ exec = run } = {}) {
           metadata: { name, namespace: DEV_CNPG_NAMESPACE, labels: { 'offscreen.dev/owner': DEV_CNPG_OWNER, 'offscreen.dev/slot': names.slotId, 'cnpg.io/reload': 'true' } },
           stringData: { username, password },
         };
-        kubectl(['apply', '-f', '-'], JSON.stringify(manifest), exec);
+        kubectl(['create', '-f', '-'], JSON.stringify(manifest), exec);
         const uid = kubectl(['-n', DEV_CNPG_NAMESPACE, 'get', 'secret', name, '-o', 'jsonpath={.metadata.uid}'], undefined, exec).trim();
         created.push({ name, uid });
       }

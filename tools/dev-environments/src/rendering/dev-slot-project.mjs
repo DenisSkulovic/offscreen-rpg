@@ -12,7 +12,29 @@ import { renderDevSlotAppGraph } from './dev-slot-app-graph.mjs';
 const CONTEXT = 'kind-offscreen-dev';
 const HOST = 'dev-pg-rw.offscreen-dev-postgres.svc.cluster.local:5432';
 const OWNER = 'offscreen-dev';
-const EXPECTED_MIGRATION_COUNT = '25';
+
+/**
+ * Successful schema proof from the in-process migration stage only; no pod SQL count.
+ *
+ * @param {{ slotId: string }} record
+ * @param {{ ok?: boolean, slotId?: string, appliedMigrations?: unknown, expectedMigrations?: unknown }} proof
+ */
+export function assertDevSchemaProjectionProof(record, proof) {
+  if (!proof || proof.ok !== true) {
+    throw new Error('schema proof missing');
+  }
+  if (proof.slotId !== record.slotId) {
+    throw new Error(`schema proof slot ${proof.slotId ?? 'missing'}`);
+  }
+  const applied = proof.appliedMigrations;
+  const expected = proof.expectedMigrations;
+  if (!Number.isInteger(applied) || !Number.isInteger(expected)) {
+    throw new Error('schema proof count');
+  }
+  if (applied !== expected) {
+    throw new Error(`schema gate ${applied}`);
+  }
+}
 
 function kubectl(args, input) {
   return execFileSync('kubectl', ['--context', CONTEXT, ...args], { input, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
@@ -119,6 +141,7 @@ export function applyDevSlotSecret(kubectlFn, namespace, name, stringData, label
  *   oauthFile?: string,
  *   record?: import('../domain/dev-worktree-registry.mjs').DevWorktreeOwnerRecord,
  *   oauth?: { GITHUB_CLIENT_ID: string, GITHUB_CLIENT_SECRET: string, BETTER_AUTH_SECRET: string },
+ *   schemaProof: { ok: true, slotId: string, appliedMigrations: number, expectedMigrations: number },
  *   deps?: {
  *     kubectl?: (args: string[], input?: string) => string,
  *     randomBytes?: (size: number) => Buffer,
@@ -134,11 +157,7 @@ export function projectDevSlot(options) {
     throw new Error(`allocator namespace ${record.namespace} does not match slot ${record.slotId}`);
   }
 
-  const migrations = kubectlFn([
-    '-n', DEV_CNPG_NAMESPACE, 'exec', 'dev-pg-1', '--', 'psql', '-U', 'postgres', '-d', sql.database,
-    '-tAc', 'SELECT count(*) FROM drizzle.__drizzle_migrations',
-  ]).trim();
-  if (migrations !== EXPECTED_MIGRATION_COUNT) throw new Error(`schema gate ${migrations}`);
+  assertDevSchemaProjectionProof(record, options.schemaProof);
 
   const run = readOwnedBackingSecret(kubectlFn, DEV_CNPG_NAMESPACE, sql.runtimeSecret, record.slotId);
   const username = decode(run.data, 'username');
