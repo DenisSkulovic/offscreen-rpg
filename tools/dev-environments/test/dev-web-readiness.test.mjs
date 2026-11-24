@@ -5,6 +5,8 @@ import {
   assessWebDevServerReadiness,
   canonicalDockerImageReference,
   DEV_RUNTIME_FRESHNESS_ROLES,
+  KIND_DEV_IMAGE_NODES,
+  resolveDevImageConfigIds,
   superviseOwnedWebPortForward,
 } from '../src/cli/dev-tilt.mjs';
 
@@ -16,23 +18,35 @@ const healthy = {
 };
 
 test('a running pod manifest digest counts only when it is on the current CRI image', () => {
-  const current = 'sha256:3288985929cc8d5ca522f8aeaa20d3f086f11013fb8536a0c63598e52c7fc361';
-  const config = 'sha256:c2a66f034e4780a00179ed92d8c9ab99488f65c3fe08b9f4455683bfd25a9fc7';
-  const stale = 'sha256:052ab7ff652ad53089566a4444fb61c08e2c2e60dabab6c300aa3f7707599dba';
+  const current =
+    'sha256:3288985929cc8d5ca522f8aeaa20d3f086f11013fb8536a0c63598e52c7fc361';
+  const config =
+    'sha256:c2a66f034e4780a00179ed92d8c9ab99488f65c3fe08b9f4455683bfd25a9fc7';
+  const stale =
+    'sha256:052ab7ff652ad53089566a4444fb61c08e2c2e60dabab6c300aa3f7707599dba';
   const inspect = JSON.stringify({
-    status: { id: config, repoDigests: [`docker.io/library/import-2026-11-23@${current}`] },
+    status: {
+      id: config,
+      repoDigests: [`docker.io/library/import-2026-11-23@${current}`],
+    },
   });
   const accepted = acceptedCriImageIds(inspect);
   assert.deepEqual(accepted, [config, current]);
   const ready = assessWebDevServerReadiness({
     ...healthy,
     expectedConfigIds: accepted,
-    pod: { ...healthy.pod, imageId: `docker.io/library/import-2026-11-23@${current}` },
+    pod: {
+      ...healthy.pod,
+      imageId: `docker.io/library/import-2026-11-23@${current}`,
+    },
   });
   const old = assessWebDevServerReadiness({
     ...healthy,
     expectedConfigIds: accepted,
-    pod: { ...healthy.pod, imageId: `docker.io/library/import-2026-11-23@${stale}` },
+    pod: {
+      ...healthy.pod,
+      imageId: `docker.io/library/import-2026-11-23@${stale}`,
+    },
   });
   assert.equal(ready.ready, true);
   const retagged = assessWebDevServerReadiness({
@@ -80,13 +94,21 @@ test('web is ready only for the selected healthy pod, image and HTTP response', 
   const status = assessWebDevServerReadiness(healthy);
   assert.equal(status.ready, true);
   assert.equal(status.reason, 'dev_server_serving');
-  assert.equal(DEV_RUNTIME_FRESHNESS_ROLES.some((role) => role.compiledEntryPath?.includes('.next')), false);
+  assert.equal(
+    DEV_RUNTIME_FRESHNESS_ROLES.some((role) =>
+      role.compiledEntryPath?.includes('.next'),
+    ),
+    false,
+  );
 });
 
 test('docker hub library prefix is the same image; repo tag and digest stay distinct', () => {
   const bare = 'offscreen-dev-workspace:tilt-build-1795443662';
   const prefixed = `docker.io/library/${bare}`;
-  assert.equal(canonicalDockerImageReference(bare), canonicalDockerImageReference(prefixed));
+  assert.equal(
+    canonicalDockerImageReference(bare),
+    canonicalDockerImageReference(prefixed),
+  );
   const status = assessWebDevServerReadiness({
     ...healthy,
     expectedImage: bare,
@@ -106,38 +128,64 @@ test('docker hub library prefix is the same image; repo tag and digest stay dist
     canonicalDockerImageReference(`${bare}@sha256:aaa`),
     canonicalDockerImageReference(`${bare}@sha256:bbb`),
   );
-  assert.equal(assessWebDevServerReadiness({
-    ...healthy,
-    expectedImage: bare,
-    pod: { ...healthy.pod, image: 'ghcr.io/offscreen-dev-workspace:tilt-build-1795443662' },
-  }).reason, 'image_mismatch');
+  assert.equal(
+    assessWebDevServerReadiness({
+      ...healthy,
+      expectedImage: bare,
+      pod: {
+        ...healthy.pod,
+        image: 'ghcr.io/offscreen-dev-workspace:tilt-build-1795443662',
+      },
+    }).reason,
+    'image_mismatch',
+  );
 });
 
 test('web stays not ready when HTTP, pod or image checks fail', () => {
-  assert.equal(assessWebDevServerReadiness({ ...healthy, httpStatus: 500 }).reason, 'http_unsuccessful');
-  assert.equal(assessWebDevServerReadiness({ ...healthy, pod: null }).reason, 'web_pod_not_ready');
-  assert.equal(assessWebDevServerReadiness({
-    ...healthy,
-    pod: { ...healthy.pod, image: 'other' },
-  }).reason, 'image_mismatch');
-  assert.equal(assessWebDevServerReadiness({
-    ...healthy,
-    pod: { ...healthy.pod, namespace: 'dev-4' },
-  }).reason, 'namespace_mismatch');
-  const expectedConfigId = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-  assert.equal(assessWebDevServerReadiness({
-    ...healthy,
-    expectedConfigId,
-    pod: {
-      ...healthy.pod,
-      imageId: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-    },
-  }).reason, 'image_mismatch');
-  assert.equal(assessWebDevServerReadiness({
-    ...healthy,
-    expectedConfigId,
-    pod: { ...healthy.pod, imageId: expectedConfigId },
-  }).ready, true);
+  assert.equal(
+    assessWebDevServerReadiness({ ...healthy, httpStatus: 500 }).reason,
+    'http_unsuccessful',
+  );
+  assert.equal(
+    assessWebDevServerReadiness({ ...healthy, pod: null }).reason,
+    'web_pod_not_ready',
+  );
+  assert.equal(
+    assessWebDevServerReadiness({
+      ...healthy,
+      pod: { ...healthy.pod, image: 'other' },
+    }).reason,
+    'image_mismatch',
+  );
+  assert.equal(
+    assessWebDevServerReadiness({
+      ...healthy,
+      pod: { ...healthy.pod, namespace: 'dev-4' },
+    }).reason,
+    'namespace_mismatch',
+  );
+  const expectedConfigId =
+    'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  assert.equal(
+    assessWebDevServerReadiness({
+      ...healthy,
+      expectedConfigId,
+      pod: {
+        ...healthy.pod,
+        imageId:
+          'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      },
+    }).reason,
+    'image_mismatch',
+  );
+  assert.equal(
+    assessWebDevServerReadiness({
+      ...healthy,
+      expectedConfigId,
+      pod: { ...healthy.pod, imageId: expectedConfigId },
+    }).ready,
+    true,
+  );
 });
 
 test('forwarder waits for the backend, records a replacement, and refuses a foreign port', async () => {
@@ -168,7 +216,9 @@ test('forwarder waits for the backend, records a replacement, and refuses a fore
     sessionActive: () => true,
     backendReady: () => true,
     portOccupied: () => true,
-    spawnForward: () => { throw new Error('must not spawn'); },
+    spawnForward: () => {
+      throw new Error('must not spawn');
+    },
     readStartTicks: () => '1',
     recordForward: () => {},
     sleep: async () => {},
@@ -183,7 +233,13 @@ test('forwarder waits for the backend, records a replacement, and refuses a fore
     portOccupied: () => false,
     spawnForward: () => {
       const pid = 70 + exits;
-      return { pid, onExit: (cb) => { exits += 1; cb(1); } };
+      return {
+        pid,
+        onExit: (cb) => {
+          exits += 1;
+          cb(1);
+        },
+      };
     },
     readStartTicks: (pid) => (pid === 71 ? null : `tick-${pid}`),
     recordForward: (record) => recorded.push(record),
@@ -194,13 +250,31 @@ test('forwarder waits for the backend, records a replacement, and refuses a fore
   assert.equal(recovered.reason, 'start_time_mismatch');
 });
 
+test('resolveDevImageConfigIds maps both dev Kind nodes', () => {
+  const config =
+    'sha256:c2a66f034e4780a00179ed92d8c9ab99488f65c3fe08b9f4455683bfd25a9fc7';
+  const inspect = JSON.stringify({ status: { id: config, repoDigests: [] } });
+  const accepted = resolveDevImageConfigIds('offscreen-dev:gen', () => ({
+    status: 0,
+    stdout: inspect,
+  }));
+  assert.deepEqual(accepted, [config]);
+  assert.deepEqual(KIND_DEV_IMAGE_NODES, [
+    'offscreen-dev-worker',
+    'offscreen-dev-control-plane',
+  ]);
+});
+
 test('stopping during startup cancels retries without spawning a forwarder', async () => {
   let spawned = 0;
   const result = await superviseOwnedWebPortForward({
     sessionActive: () => false,
     backendReady: async () => true,
     portOccupied: async () => false,
-    spawnForward: () => { spawned += 1; return { pid: 9, onExit: () => {} }; },
+    spawnForward: () => {
+      spawned += 1;
+      return { pid: 9, onExit: () => {} };
+    },
     readStartTicks: () => '1',
     recordForward: () => {},
     sleep: async () => {},

@@ -659,6 +659,65 @@ export function acceptedCriImageIds(inspectText) {
   return ids;
 }
 
+export const KIND_DEV_IMAGE_NODES = Object.freeze([
+  'offscreen-dev-worker',
+  'offscreen-dev-control-plane',
+]);
+
+/**
+ * Image config digests accepted on each dev Kind node for one registry tag.
+ * @param {string} image
+ * @param {typeof spawnSync} [runCommand]
+ * @returns {string[]}
+ */
+export function resolveDevImageConfigIds(image, runCommand = spawnSync) {
+  /** @type {string[]} */
+  const accepted = [];
+  for (const node of KIND_DEV_IMAGE_NODES) {
+    const cri = runCommand(
+      'docker',
+      ['exec', node, 'crictl', 'inspecti', `docker.io/library/${image}`],
+      { encoding: 'utf8' },
+    );
+    if (cri.status !== 0) continue;
+    for (const id of acceptedCriImageIds(String(cri.stdout ?? ''))) {
+      if (!accepted.includes(id)) accepted.push(id);
+    }
+  }
+  return accepted;
+}
+
+/**
+ * @param {number} gamePort
+ * @param {{ fetch?: typeof fetch, signalMs?: number }} [deps]
+ * @returns {Promise<number | null>}
+ */
+export async function probeHostGameHttp(gamePort, deps = {}) {
+  const fetchFn = deps.fetch ?? globalThis.fetch;
+  if (typeof fetchFn !== 'function') return null;
+  const timeoutMs = deps.signalMs ?? 2_000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchFn(`http://${LOOPBACK}:${gamePort}/sign-in`, {
+      signal: controller.signal,
+    });
+    return response.status;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+const FRESHNESS_ROLE_WORKLOAD = Object.freeze({
+  api: 'game-api',
+  authority: 'game-authority',
+  control: 'game-control',
+  executor: 'game-executor',
+  relay: 'game-relay',
+});
+
 export function assessWebDevServerReadiness(input) {
   const pod = input.pod ?? null;
   if (!pod?.ready) {
@@ -1272,9 +1331,11 @@ export async function runDevTiltLaunch(deps = {}) {
   const probeOccupied =
     deps.probeLoopbackPortOccupied ?? probeLoopbackPortOccupied;
   const spawnFn = deps.spawnFn ?? spawn;
-  const pollOwnedReadiness =
-    deps.collectStartupReadiness ??
-    ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
+  const runKubectl =
+    deps.execKubectl ??
+    ((args) => spawnSync('kubectl', args, { encoding: 'utf8' }));
+  const observeSlotReadiness =
+    deps.collectSelectedSlotReadiness ?? collectSelectedSlotReadiness;
   const exitFn = deps.exit ?? ((code) => process.exit(code));
   const reconcile = deps.reconcileDevSlot ?? reconcileOwnedDevSlot;
 
@@ -1635,7 +1696,18 @@ export async function runDevTiltLaunch(deps = {}) {
     const readStartup =
       deps.collectStartupReadiness ??
       ((namespace) =>
-        Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
+        Promise.resolve(
+          observeSlotReadiness({
+            namespace,
+            environmentId: ownerRecord.slotId,
+            useRemoteObservations: true,
+            observeDeployments: true,
+            run: runKubectl,
+            spawnFn: deps.spawnFn ?? spawnSync,
+            resolveImageIds:
+              deps.resolveDevImageConfigIds ?? resolveDevImageConfigIds,
+          }).readiness,
+        ));
     const readinessStarted = performance.now();
     /** @type {string | null} */
     let startupFailure = null;
@@ -1739,23 +1811,13 @@ export async function runDevTiltLaunch(deps = {}) {
       backendReady:
         deps.webBackendReady ??
         (async () => {
-          const result = spawnSync(
-            'kubectl',
-            [
-              '--context',
-              'kind-offscreen-dev',
-              '-n',
-              ownerRecord.namespace,
-              'get',
-              'pod',
-              '-l',
-              'app=game-web',
-              '-o',
-              'jsonpath={.items[0].status.containerStatuses[0].ready}',
-            ],
-            { encoding: 'utf8' },
-          );
-          return result.status === 0 && String(result.stdout).trim() === 'true';
+          const web = collectWebDevServerReadiness({
+            namespace: ownerRecord.namespace,
+            run: runKubectl,
+            resolveImageIds:
+              deps.resolveDevImageConfigIds ?? resolveDevImageConfigIds,
+          });
+          return assessWebDevServerReadiness(web).ready;
         }),
       portOccupied: () => probeOccupied(LOOPBACK, gamePort),
       spawnForward:
@@ -1785,18 +1847,40 @@ export async function runDevTiltLaunch(deps = {}) {
 
     pollTimer = setInterval(async () => {
       if (announced) return;
-      const readiness = await pollOwnedReadiness(ownerRecord.namespace);
+      const resolved = await applySelectedSlotHostReadiness(
+        observeSlotReadiness({
+          namespace: ownerRecord.namespace,
+          environmentId: ownerRecord.slotId,
+          useRemoteObservations: true,
+          observeDeployments: true,
+          run: runKubectl,
+          spawnFn: deps.spawnFn ?? spawnSync,
+          resolveImageIds:
+            deps.resolveDevImageConfigIds ?? resolveDevImageConfigIds,
+        }),
+        { gamePort, fetch: deps.fetch },
+      );
       const gameOcc = await probeOccupied(LOOPBACK, gamePort);
       const tiltOcc = await probeOccupied(LOOPBACK, tiltPort);
+      const gameOwned = verifiedOwnedPortHolder(
+        sessionRecord,
+        processDeps,
+        'game',
+      );
+      const tiltOwned = verifiedOwnedPortHolder(
+        sessionRecord,
+        processDeps,
+        'tilt',
+      );
       const assessment = assessDevLaunch({
         preflightOk: true,
         preflightRefusals: [],
         tiltOnPath: true,
         ports: {
-          game: gameOcc ? 'owned' : 'free',
-          tilt: tiltOcc ? 'owned' : 'free',
+          game: gameOcc ? (gameOwned ? 'owned' : 'foreign') : 'free',
+          tilt: tiltOcc ? (tiltOwned ? 'owned' : 'free') : 'free',
         },
-        readiness,
+        readiness: resolved.readiness,
         gamePort,
         tiltPort,
       });
@@ -2084,6 +2168,161 @@ export function collectWebDevServerReadiness(input) {
   };
 }
 
+/**
+ * One probe for deployment readiness, pod image, remote v2 generations and web
+ * HTTP. Host cached receipts are not used when observing the selected slot.
+ * @param {{
+ *   namespace: string,
+ *   environmentId?: string | null,
+ *   roles?: readonly DevRuntimeFreshnessRole[],
+ *   useRemoteObservations?: boolean,
+ *   observeDeployments?: boolean,
+ *   deploymentReadiness?: Record<string, boolean>,
+ *   requireHostHttp?: boolean,
+ *   gamePort?: number,
+ *   hostHttpStatus?: number | null,
+ *   cwd?: string,
+ *   receiptRoot?: string | null,
+ *   diskIdentities?: Record<string, string | undefined>,
+ *   roleObservations?: Record<string, ReturnType<typeof parseRemoteRuntimeObservation>> | null,
+ *   webReadiness?: Parameters<typeof assessWebDevServerReadiness>[0],
+ *   run?: (args: string[]) => { status?: number | null, stdout?: string, stderr?: string },
+ *   spawnFn?: typeof spawnSync,
+ *   resolveImageIds?: (image: string) => string[],
+ *   evaluateDevLoadedRuntimeReadiness?: typeof evaluateDevLoadedRuntimeReadiness,
+ *   assessWebDevServerReadiness?: typeof assessWebDevServerReadiness,
+ *   readinessFromRemoteObservation?: typeof readinessFromRemoteObservation,
+ *   fetch?: typeof fetch,
+ * }} input
+ */
+export function collectSelectedSlotReadiness(input) {
+  const roles = input.roles ?? DEV_RUNTIME_FRESHNESS_ROLES;
+  const evaluate =
+    input.evaluateDevLoadedRuntimeReadiness ??
+    evaluateDevLoadedRuntimeReadiness;
+  const assessWeb =
+    input.assessWebDevServerReadiness ?? assessWebDevServerReadiness;
+  const remoteReadiness =
+    input.readinessFromRemoteObservation ?? readinessFromRemoteObservation;
+  const useRemoteObservations = input.useRemoteObservations === true;
+  const observeDeployments =
+    input.observeDeployments === undefined
+      ? useRemoteObservations
+      : input.observeDeployments;
+  const run =
+    input.run ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' }));
+  const spawnFn = input.spawnFn ?? spawnSync;
+  const resolveImageIds =
+    input.resolveImageIds ??
+    ((image) => resolveDevImageConfigIds(image, spawnFn));
+  const deploymentReadiness =
+    input.deploymentReadiness ??
+    (observeDeployments && input.namespace
+      ? collectOwnedWorkloadReadiness(input.namespace, spawnFn)
+      : Object.fromEntries(LAB_RESOURCES.map((name) => [name, true])));
+
+  let roleObservations = input.roleObservations ?? null;
+  if (useRemoteObservations && !roleObservations) {
+    roleObservations = observeSelectedSlotRuntimeRoles({
+      namespace: input.namespace,
+      roles,
+      environmentId: input.environmentId ?? undefined,
+      run,
+    });
+  }
+
+  const webInput =
+    input.webReadiness ??
+    (useRemoteObservations
+      ? collectWebDevServerReadiness({
+          namespace: input.namespace,
+          run,
+          resolveImageIds,
+        })
+      : {
+          namespace: input.namespace,
+          expectedImage: null,
+          pod: null,
+          httpStatus: null,
+        });
+
+  /** @type {Record<string, ReturnType<typeof evaluateDevLoadedRuntimeReadiness>>} */
+  const roleStatuses = {};
+  for (const roleSpec of roles) {
+    roleStatuses[roleSpec.role] = useRemoteObservations
+      ? remoteReadiness(
+          roleSpec,
+          roleObservations?.[roleSpec.role],
+          evaluate,
+          input.environmentId ?? null,
+        )
+      : evaluate({
+          role: roleSpec.receiptRole,
+          compiledEntryPath: roleSpec.compiledEntryPath,
+          cwd: input.cwd ?? '/',
+          receiptRoot:
+            input.receiptRoot ?? devRuntimeReceiptRoot(input.cwd ?? '/'),
+          environmentId: input.environmentId ?? null,
+          diskIdentity: input.diskIdentities?.[roleSpec.role],
+        });
+  }
+
+  const webStatus = assessWeb(webInput);
+  /** @type {ReadinessMap} */
+  const readiness = {};
+  for (const roleSpec of roles) {
+    const deploy = FRESHNESS_ROLE_WORKLOAD[roleSpec.role];
+    if (!deploy) continue;
+    readiness[deploy] =
+      deploymentReadiness[deploy] === true &&
+      roleStatuses[roleSpec.role]?.ready === true;
+  }
+  readiness['game-web'] =
+    deploymentReadiness['game-web'] === true && webStatus.ready === true;
+
+  return {
+    deploymentReadiness,
+    roleObservations,
+    roleStatuses,
+    webInput,
+    webStatus,
+    readiness,
+    hostHttpStatus: input.hostHttpStatus ?? null,
+    runtimeReady: LAB_RESOURCES.every((name) => readiness[name] === true),
+  };
+}
+
+/**
+ * Apply the post-forward host HTTP check without re-running cluster probes.
+ * @param {ReturnType<typeof collectSelectedSlotReadiness>} snapshot
+ * @param {{
+ *   gamePort: number,
+ *   hostHttpStatus?: number | null,
+ *   fetch?: typeof fetch,
+ *   signalMs?: number,
+ * }} input
+ */
+export async function applySelectedSlotHostReadiness(snapshot, input) {
+  const readiness = { ...snapshot.readiness };
+  let hostHttpStatus = input.hostHttpStatus ?? null;
+  if (hostHttpStatus === null) {
+    hostHttpStatus = await probeHostGameHttp(input.gamePort, input);
+  }
+  if (!(
+    typeof hostHttpStatus === 'number' &&
+    hostHttpStatus >= 200 &&
+    hostHttpStatus < 300
+  )) {
+    readiness['game-web'] = false;
+  }
+  return {
+    ...snapshot,
+    readiness,
+    hostHttpStatus,
+    runtimeReady: LAB_RESOURCES.every((name) => readiness[name] === true),
+  };
+}
+
 export function printDevStatus(worktree, deps = {}) {
   const log = deps.log ?? ((line) => console.log(line));
   const roles = deps.roles ?? DEV_RUNTIME_FRESHNESS_ROLES;
@@ -2151,83 +2390,34 @@ export function printDevStatus(worktree, deps = {}) {
   const execKubectl =
     deps.execKubectl ??
     ((args) => spawnSync('kubectl', args, { encoding: 'utf8' }));
-  let roleObservations = deps.roleObservations ?? null;
-  if (useRemoteObservations && !roleObservations) {
-    roleObservations = observeSelectedSlotRuntimeRoles({
-      namespace: session.namespace,
-      roles,
-      environmentId: session.slotId ?? undefined,
-      run: execKubectl,
-    });
-  }
   let everyRoleReady = true;
   if (session.namespace) {
-    const webInput =
-      deps.webReadiness ??
-      (useRemoteObservations
-        ? collectWebDevServerReadiness({
-            namespace: session.namespace,
-            run: execKubectl,
-            resolveImageIds: (image) => {
-              const accepted = [];
-              for (const node of [
-                'offscreen-dev-worker',
-                'offscreen-dev-control-plane',
-              ]) {
-                const cri = spawnSync(
-                  'docker',
-                  [
-                    'exec',
-                    node,
-                    'crictl',
-                    'inspecti',
-                    `docker.io/library/${image}`,
-                  ],
-                  { encoding: 'utf8' },
-                );
-                if (cri.status !== 0) continue;
-                for (const id of acceptedCriImageIds(
-                  String(cri.stdout ?? ''),
-                )) {
-                  if (!accepted.includes(id)) accepted.push(id);
-                }
-              }
-              return accepted;
-            },
-          })
-        : {
-            namespace: session.namespace,
-            expectedImage: null,
-            pod: null,
-            httpStatus: null,
-          });
-    const web = (
-      deps.assessWebDevServerReadiness ?? assessWebDevServerReadiness
-    )(webInput);
-    log(formatDevFreshnessStatusLine('web', web));
-    if (!web.ready) everyRoleReady = false;
-  }
-  const remoteReadiness =
-    deps.readinessFromRemoteObservation ?? readinessFromRemoteObservation;
-  for (const roleSpec of roles) {
-    const status = useRemoteObservations
-      ? remoteReadiness(
-          roleSpec,
-          roleObservations?.[roleSpec.role],
-          evaluate,
-          session.slotId ?? null,
-        )
-      : evaluate({
-          role: roleSpec.receiptRole,
-          compiledEntryPath: roleSpec.compiledEntryPath,
-          cwd,
-          receiptRoot: receiptRoot ?? devRuntimeReceiptRoot(cwd),
-          environmentId: session.slotId ?? null,
-          diskIdentity: diskIdentities[roleSpec.role],
-        });
-    log(formatDevFreshnessStatusLine(roleSpec.role, status));
-    if (!status.ready) {
-      everyRoleReady = false;
+    const snapshot =
+      deps.selectedSlotReadiness ??
+      collectSelectedSlotReadiness({
+        namespace: session.namespace,
+        environmentId: session.slotId ?? null,
+        roles,
+        useRemoteObservations,
+        observeDeployments: deps.observeDeployments === true,
+        cwd,
+        receiptRoot: receiptRoot ?? devRuntimeReceiptRoot(cwd),
+        diskIdentities,
+        roleObservations: deps.roleObservations ?? null,
+        webReadiness: deps.webReadiness,
+        run: execKubectl,
+        spawnFn: deps.spawnFn,
+        resolveImageIds: deps.resolveImageIds ?? resolveDevImageConfigIds,
+        evaluateDevLoadedRuntimeReadiness: evaluate,
+        assessWebDevServerReadiness: deps.assessWebDevServerReadiness,
+        readinessFromRemoteObservation: deps.readinessFromRemoteObservation,
+      });
+    log(formatDevFreshnessStatusLine('web', snapshot.webStatus));
+    if (!snapshot.webStatus.ready) everyRoleReady = false;
+    for (const roleSpec of roles) {
+      const status = snapshot.roleStatuses[roleSpec.role];
+      log(formatDevFreshnessStatusLine(roleSpec.role, status));
+      if (!status.ready) everyRoleReady = false;
     }
   }
 

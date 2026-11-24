@@ -10,7 +10,7 @@
 | [INF35](../../changes/archive/2026-11/platform-operations/2026-11-24--inf35-owned-workload-cleanup/CHANGE.md) Practical owned workload cleanup | INF28 Done | Done (source) |
 | [INF30](../../changes/archive/2026-11/platform-operations/2026-11-24--inf30-dev-lifecycle/CHANGE.md) Predictable developer lifecycle | INF23, INF35 | Done (source) |
 | [INF32](../../changes/archive/2026-11/platform-operations/2026-11-24--inf32-release-config-reconcile/CHANGE.md) Release configuration reconciliation | INF31 | Done (source) |
-| [INF34](../../changes/open/2026-11-24--inf34-runtime-readiness/CHANGE.md) Reliable compiler and startup readiness | INF30, INF31 | Ready (dependency-gated) |
+| [INF34](../../changes/archive/2026-11/platform-operations/2026-11-24--inf34-runtime-readiness/CHANGE.md) Reliable compiler and startup readiness | INF30, INF31 | Done (source) |
 | [INF36](../../changes/open/2026-11-24--inf36-dev-cli-simplification/CHANGE.md) Thin developer CLI | INF30, INF34 | Ready (dependency-gated) |
 | [INF29](../../changes/open/2026-11-24--inf29-infra-reconciliation/CHANGE.md) | INF23 + INF30–36 | Planner-blocked |
 

@@ -106,7 +106,7 @@ export async function stopChildBounded(child, options = {}) {
     await waitForChildExit(child, timeoutMs);
   } catch {
     kill('SIGKILL');
-    await waitForChildExit(child, timeoutMs).catch(() => undefined);
+    await waitForChildExit(child, timeoutMs);
   }
 }
 
@@ -154,6 +154,7 @@ export function createCompileWatchSupervisor(options) {
   /** @type {Promise<void>} */
   let transitionQueue = Promise.resolve();
   let disposed = false;
+  let transitionFailureHandled = false;
   let supervisorExitCode = 0;
   let intentionalRuntimeStop = false;
 
@@ -207,63 +208,111 @@ export function createCompileWatchSupervisor(options) {
   }
 
   /**
-   * @param {number} token
+   * @param {number} [code]
+   * @param {{ markCompilerFailure?: boolean }} [shutdownOptions]
    */
-  function enqueueSuccessTransition(token) {
-    transitionQueue = transitionQueue.then(async () => {
-      if (token !== compileToken || disposed) {
-        return;
-      }
-      const distRoot = resolveCompiledDistRoot(cwd, options.entry);
-      const digest = fingerprintCompiledTree(distRoot);
-
-      const stopping = runtimeChild;
-      intentionalRuntimeStop = true;
-      try {
-        await stopChildBounded(stopping, { timeoutMs: childStopTimeoutMs });
-      } finally {
-        intentionalRuntimeStop = false;
-      }
-      if (token !== compileToken || disposed) {
-        return;
-      }
-      if (runtimeChild === stopping) {
-        runtimeChild = null;
-      }
-
+  async function shutdownSupervisor(code, shutdownOptions = {}) {
+    if (disposed) {
+      return;
+    }
+    disposed = true;
+    compileToken += 1;
+    if (shutdownOptions.markCompilerFailure) {
       markDevWatchedCompilation({
-        phase: 'success',
+        phase: 'failure',
         role: options.role,
         compiledEntryPath: options.entry,
         cwd,
         environmentId,
-        compiledDistRoot: distRoot,
       });
+    }
+    await Promise.allSettled([
+      stopChildBounded(compilerChild, { timeoutMs: childStopTimeoutMs }),
+      stopChildBounded(runtimeChild, { timeoutMs: childStopTimeoutMs }),
+    ]);
+    compilerChild = null;
+    runtimeChild = null;
+    const exitCode = code ?? supervisorExitCode;
+    if (options.onSupervisorExit) {
+      options.onSupervisorExit(exitCode);
+      return;
+    }
+    if (exitCode !== 0 && COMPILE_WATCH_INVOKED_AS_MAIN) {
+      process.exit(exitCode);
+    }
+  }
 
-      if (token !== compileToken || disposed) {
-        return;
-      }
+  async function handleTransitionFailure() {
+    if (transitionFailureHandled || disposed) {
+      return;
+    }
+    transitionFailureHandled = true;
+    markCompileError();
+    clearDevLoadedRuntimeReceipt({ role: options.role, cwd });
+    supervisorExitCode = 1;
+    await shutdownSupervisor(1);
+  }
 
-      const desired = readDesiredSuccess();
-      const runtimeArgv = [
-        launchLoadedPath,
-        options.role,
-        options.entry,
-        desired.generationId,
-        desired.compiledModuleIdentity,
-      ];
-      const child = spawnRuntime(runtimeArgv);
-      runtimeChild = child;
-      child.on('exit', () => {
-        if (intentionalRuntimeStop || disposed || runtimeChild !== child) {
+  /**
+   * @param {number} token
+   */
+  function enqueueSuccessTransition(token) {
+    transitionQueue = transitionQueue
+      .then(async () => {
+        if (token !== compileToken || disposed) {
           return;
         }
-        runtimeChild = null;
-        clearDevLoadedRuntimeReceipt({ role: options.role, cwd });
-        supervisorExitCode = 1;
-        void dispose(1);
-      });
-    });
+        const distRoot = resolveCompiledDistRoot(cwd, options.entry);
+        fingerprintCompiledTree(distRoot);
+
+        const stopping = runtimeChild;
+        intentionalRuntimeStop = true;
+        try {
+          await stopChildBounded(stopping, { timeoutMs: childStopTimeoutMs });
+        } finally {
+          intentionalRuntimeStop = false;
+        }
+        if (token !== compileToken || disposed) {
+          return;
+        }
+        if (runtimeChild === stopping) {
+          runtimeChild = null;
+        }
+
+        markDevWatchedCompilation({
+          phase: 'success',
+          role: options.role,
+          compiledEntryPath: options.entry,
+          cwd,
+          environmentId,
+          compiledDistRoot: distRoot,
+        });
+
+        if (token !== compileToken || disposed) {
+          return;
+        }
+
+        const desired = readDesiredSuccess();
+        const runtimeArgv = [
+          launchLoadedPath,
+          options.role,
+          options.entry,
+          desired.generationId,
+          desired.compiledModuleIdentity,
+        ];
+        const child = spawnRuntime(runtimeArgv);
+        runtimeChild = child;
+        child.on('exit', () => {
+          if (intentionalRuntimeStop || disposed || runtimeChild !== child) {
+            return;
+          }
+          runtimeChild = null;
+          clearDevLoadedRuntimeReceipt({ role: options.role, cwd });
+          supervisorExitCode = 1;
+          void shutdownSupervisor(1);
+        });
+      })
+      .catch((error) => handleTransitionFailure(error));
   }
 
   /**
@@ -294,25 +343,7 @@ export function createCompileWatchSupervisor(options) {
    * @param {number} [code]
    */
   async function dispose(code) {
-    if (disposed) {
-      return;
-    }
-    disposed = true;
-    compileToken += 1;
-    await Promise.all([
-      stopChildBounded(compilerChild, { timeoutMs: childStopTimeoutMs }),
-      stopChildBounded(runtimeChild, { timeoutMs: childStopTimeoutMs }),
-    ]);
-    compilerChild = null;
-    runtimeChild = null;
-    const exitCode = code ?? supervisorExitCode;
-    if (options.onSupervisorExit) {
-      options.onSupervisorExit(exitCode);
-      return;
-    }
-    if (exitCode !== 0 && COMPILE_WATCH_INVOKED_AS_MAIN) {
-      process.exit(exitCode);
-    }
+    await shutdownSupervisor(code);
   }
 
   function start() {
@@ -326,21 +357,12 @@ export function createCompileWatchSupervisor(options) {
       if (disposed) {
         return;
       }
-      markDevWatchedCompilation({
-        phase: 'failure',
-        role: options.role,
-        compiledEntryPath: options.entry,
-        cwd,
-        environmentId,
-      });
-      void stopChildBounded(runtimeChild, {
-        timeoutMs: childStopTimeoutMs,
-      }).then(() => dispose(code ?? 1));
+      void shutdownSupervisor(code ?? 1, { markCompilerFailure: true });
     });
   }
 
   function handleSignal() {
-    void dispose(supervisorExitCode);
+    void shutdownSupervisor(supervisorExitCode);
   }
 
   return {

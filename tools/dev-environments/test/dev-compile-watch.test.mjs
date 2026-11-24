@@ -90,6 +90,26 @@ function createFakeCompilerProcess() {
 }
 
 /**
+ * @returns {{ child: import('node:child_process').ChildProcess, kills: string[] }}
+ */
+function createStubbornRuntimeProcess() {
+  const kills = [];
+  const child = new EventEmitter();
+  Object.assign(child, {
+    exitCode: null,
+    signalCode: null,
+    pid: 900_003,
+    kill(signal) {
+      kills.push(signal);
+    },
+  });
+  return {
+    child: /** @type {import('node:child_process').ChildProcess} */ (child),
+    kills,
+  };
+}
+
+/**
  * @returns {{ child: import('node:child_process').ChildProcess, kills: string[], exit: (code?: number) => void, delayedExit: () => void }}
  */
 function createFakeRuntimeProcess() {
@@ -364,6 +384,23 @@ test('overlapping compile discards superseded runtime start', async () => {
   delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
 });
 
+test('stopChildBounded stops after successful SIGTERM', async () => {
+  const runtime = createFakeRuntimeProcess();
+  const killCalls = [];
+  runtime.child.kill = (signal) => {
+    killCalls.push(signal);
+    if (signal === 'SIGTERM') {
+      runtime.exit(0);
+    }
+  };
+
+  await stopChildBounded(runtime.child, {
+    timeoutMs: 30,
+    kill: (signal) => runtime.child.kill(signal),
+  });
+  assert.deepEqual(killCalls, ['SIGTERM']);
+});
+
 test('stop timeout escalates to SIGKILL for stubborn runtime child', async () => {
   const runtime = createFakeRuntimeProcess();
   const killCalls = [];
@@ -379,6 +416,76 @@ test('stop timeout escalates to SIGKILL for stubborn runtime child', async () =>
     kill: (signal) => runtime.child.kill(signal),
   });
   assert.deepEqual(killCalls, ['SIGTERM', 'SIGKILL']);
+});
+
+test('stopChildBounded rejects when SIGKILL does not end the child', async () => {
+  const stubborn = createStubbornRuntimeProcess();
+  await assert.rejects(
+    () =>
+      stopChildBounded(stubborn.child, {
+        timeoutMs: 20,
+        kill: (signal) => stubborn.child.kill(signal),
+      }),
+    /child_stop_timeout/,
+  );
+  assert.deepEqual(stubborn.kills, ['SIGTERM', 'SIGKILL']);
+});
+
+test('supervisor fails closed when old runtime ignores stop signals', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'dev-compile-stubborn-'));
+  const receiptRoot = join(root, 'receipts');
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
+  const entryRel = 'dist/src/main.js';
+  const { entryAbs } = seedWorkspace(root, entryRel);
+  writeFileSync(
+    entryAbs,
+    `import { pathToFileURL } from 'node:url';\nawait import(pathToFileURL(${JSON.stringify(ENTRY_FIXTURE)}).href);\n`,
+    'utf8',
+  );
+
+  let supervisorExitCode = 0;
+  const fake = createFakeCompilerProcess();
+  let runtimeSpawns = 0;
+  const stubborn = createStubbornRuntimeProcess();
+  const supervisor = createCompileWatchSupervisor({
+    role: 'api',
+    entry: entryRel,
+    cwd: root,
+    environmentId: 'dev-10',
+    launchLoadedPath: LAUNCH_LOADED_PATH,
+    childStopTimeoutMs: 25,
+    spawnCompiler: () => fake.child,
+    spawnRuntime: () => {
+      runtimeSpawns += 1;
+      return runtimeSpawns === 1
+        ? stubborn.child
+        : createFakeRuntimeProcess().child;
+    },
+    onSupervisorExit: (code) => {
+      supervisorExitCode = code;
+    },
+  });
+
+  supervisor.start();
+  fake.pushStdout('Starting compilation in watch mode...\n');
+  fake.pushStdout(compileSuccessLine());
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 200));
+  assert.equal(runtimeSpawns, 1);
+
+  fake.pushStdout('File change detected. Starting incremental compilation.\n');
+  fake.pushStdout(compileSuccessLine());
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
+
+  assert.equal(runtimeSpawns, 1);
+  assert.equal(supervisorExitCode, 1);
+  const desired = JSON.parse(
+    readFileSync(join(receiptRoot, 'api.desired.json'), 'utf8'),
+  );
+  assert.equal(desired.ready, false);
+  assert.equal(desired.phase, 'compile_error');
+  assert.equal(existsSync(join(receiptRoot, 'api.loaded.json')), false);
+  assert.deepEqual(stubborn.kills.slice(0, 2), ['SIGTERM', 'SIGKILL']);
+  delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
 });
 
 test('runtime process death clears loaded and exits supervisor', async () => {

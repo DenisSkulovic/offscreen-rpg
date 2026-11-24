@@ -6,8 +6,10 @@ import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  applySelectedSlotHostReadiness,
   assessDevLaunch,
   buildReadyUrls,
+  collectSelectedSlotReadiness,
   devSessionPath,
   DEV_RUNTIME_FRESHNESS_ROLES,
   formatDevFreshnessStatusLine,
@@ -1649,6 +1651,221 @@ test('printDevStatus remote mode reports changed dist tree identity', () => {
   );
   assert.equal(status.ready, false);
   assert.equal(status.reason, 'desired_disk_mismatch');
+});
+
+test('collectSelectedSlotReadiness marks a role not ready when kube is ready but generation is stale', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-sel-stale-'));
+  const observation = observeApiRuntimeInFixture(worktree, {
+    slotId: 'dev-5',
+    staleLoaded: true,
+  });
+  const snapshot = collectSelectedSlotReadiness({
+    namespace: 'offscreen-dev-5',
+    environmentId: 'dev-5',
+    observeDeployments: false,
+    deploymentReadiness: fullReadiness(),
+    roles: [API_FRESHNESS_ROLE],
+    useRemoteObservations: true,
+    roleObservations: { api: observation },
+    webReadiness: {
+      namespace: 'offscreen-dev-5',
+      expectedImage: 'offscreen-dev:gen',
+      pod: {
+        ready: true,
+        namespace: 'offscreen-dev-5',
+        image: 'offscreen-dev:gen',
+      },
+      httpStatus: 200,
+    },
+  });
+  assert.equal(snapshot.deploymentReadiness['game-api'], true);
+  assert.equal(snapshot.readiness['game-api'], false);
+  assert.match(snapshot.roleStatuses.api.reason, /^stale_loaded_/);
+});
+
+test('collectSelectedSlotReadiness marks web not ready on wrong image', () => {
+  const snapshot = collectSelectedSlotReadiness({
+    namespace: 'offscreen-dev-2',
+    environmentId: 'dev-2',
+    observeDeployments: false,
+    deploymentReadiness: fullReadiness(),
+    roles: [API_FRESHNESS_ROLE],
+    useRemoteObservations: true,
+    roleObservations: {
+      api: {
+        ok: true,
+        loaded: {},
+        desired: {},
+        pidAlive: true,
+        diskIdentity: 'a',
+        environmentId: 'dev-2',
+      },
+    },
+    webReadiness: {
+      namespace: 'offscreen-dev-2',
+      expectedImage: 'offscreen-dev:gen',
+      pod: { ready: true, namespace: 'offscreen-dev-2', image: 'other' },
+      httpStatus: 200,
+    },
+    readinessFromRemoteObservation: () => ({
+      ready: true,
+      reason: 'loaded_matches_desired',
+      currentGeneration: 'gen',
+    }),
+  });
+  assert.equal(snapshot.readiness['game-web'], false);
+  assert.equal(snapshot.webStatus.reason, 'image_mismatch');
+});
+
+test('collectSelectedSlotReadiness requires verified host HTTP before game-web is ready', async () => {
+  const snapshot = collectSelectedSlotReadiness({
+    namespace: 'offscreen-dev-2',
+    environmentId: 'dev-2',
+    observeDeployments: false,
+    deploymentReadiness: fullReadiness(),
+    roles: DEV_RUNTIME_FRESHNESS_ROLES,
+    useRemoteObservations: true,
+    roleObservations: Object.fromEntries(
+      DEV_RUNTIME_FRESHNESS_ROLES.map((role) => [
+        role.role,
+        {
+          ok: true,
+          loaded: {},
+          desired: {},
+          pidAlive: true,
+          diskIdentity: 'a',
+          environmentId: 'dev-2',
+        },
+      ]),
+    ),
+    webReadiness: {
+      namespace: 'offscreen-dev-2',
+      expectedImage: 'offscreen-dev:gen',
+      pod: {
+        ready: true,
+        namespace: 'offscreen-dev-2',
+        image: 'offscreen-dev:gen',
+      },
+      httpStatus: 200,
+    },
+    readinessFromRemoteObservation: () => ({
+      ready: true,
+      reason: 'loaded_matches_desired',
+      currentGeneration: 'gen',
+    }),
+  });
+  assert.equal(snapshot.runtimeReady, true);
+  const hostBlocked = await applySelectedSlotHostReadiness(snapshot, {
+    gamePort: 13_110,
+    fetch: async () => ({ status: 503 }),
+  });
+  assert.equal(hostBlocked.readiness['game-web'], false);
+  assert.equal(hostBlocked.runtimeReady, false);
+  const hostReady = await applySelectedSlotHostReadiness(snapshot, {
+    gamePort: 13_110,
+    fetch: async () => ({ status: 200 }),
+  });
+  assert.equal(hostReady.runtimeReady, true);
+});
+
+test('collectSelectedSlotReadiness keeps compile failure not ready across six roles', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-sel-compile-'));
+  const entryRel = API_FRESHNESS_ROLE.compiledEntryPath;
+  const entryAbs = join(worktree, entryRel);
+  mkdirSync(dirname(entryAbs), { recursive: true });
+  writeFileSync(entryAbs, 'export async function main() {}\n', 'utf8');
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-6',
+    namespace: 'offscreen-dev-6',
+    gamePort: 13_128,
+    tiltPort: 13_129,
+    startedAt: '2026-11-23T00:00:13.000Z',
+  });
+  const distRoot = resolveCompiledDistRoot(worktree, entryRel);
+  const staleIdentity = fingerprintCompiledTree(distRoot);
+  const receiptRoot = join(worktree, '.offscreen-dev-runtime', 'dev-6');
+  mkdirSync(receiptRoot, { recursive: true });
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
+  writeFileSync(
+    join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.loaded.json`),
+    `${JSON.stringify({
+      schema: DEV_LOADED_RUNTIME_RECEIPT_SCHEMA,
+      role: API_FRESHNESS_ROLE.receiptRole,
+      pid: 4242,
+      startedAt: new Date().toISOString(),
+      generationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      compiledModulePath: entryAbs,
+      compiledModuleIdentity: staleIdentity,
+      environmentId: 'dev-6',
+    })}\n`,
+    'utf8',
+  );
+  markDevWatchedCompilation({
+    phase: 'failure',
+    role: API_FRESHNESS_ROLE.receiptRole,
+    compiledEntryPath: entryRel,
+    cwd: worktree,
+  });
+  const local = collectSelectedSlotReadiness({
+    namespace: 'offscreen-dev-6',
+    environmentId: 'dev-6',
+    cwd: worktree,
+    roles: [API_FRESHNESS_ROLE],
+    useRemoteObservations: false,
+    observeDeployments: false,
+    deploymentReadiness: fullReadiness(),
+    receiptRoot,
+    webReadiness: {
+      namespace: 'offscreen-dev-6',
+      expectedImage: 'offscreen-dev:gen',
+      pod: {
+        ready: true,
+        namespace: 'offscreen-dev-6',
+        image: 'offscreen-dev:gen',
+      },
+      httpStatus: 200,
+    },
+  });
+  assert.equal(local.roleStatuses.api.reason, 'compile_error');
+  assert.equal(local.readiness['game-api'], false);
+  const remoteReady = collectSelectedSlotReadiness({
+    namespace: 'offscreen-dev-6',
+    environmentId: 'dev-6',
+    observeDeployments: false,
+    deploymentReadiness: fullReadiness(),
+    roles: DEV_RUNTIME_FRESHNESS_ROLES,
+    useRemoteObservations: true,
+    roleObservations: Object.fromEntries(
+      DEV_RUNTIME_FRESHNESS_ROLES.map((role) => [
+        role.role,
+        {
+          ok: true,
+          loaded: { role: role.receiptRole },
+          desired: { role: role.receiptRole },
+          pidAlive: true,
+          diskIdentity: 'deadbeef',
+          environmentId: 'dev-6',
+        },
+      ]),
+    ),
+    webReadiness: {
+      namespace: 'offscreen-dev-6',
+      expectedImage: 'offscreen-dev:gen',
+      pod: {
+        ready: true,
+        namespace: 'offscreen-dev-6',
+        image: 'offscreen-dev:gen',
+      },
+      httpStatus: 200,
+    },
+    readinessFromRemoteObservation: () => ({
+      ready: true,
+      reason: 'loaded_matches_desired',
+      currentGeneration: 'gen',
+    }),
+  });
+  assert.equal(remoteReady.runtimeReady, true);
 });
 
 test('observeSelectedSlotRuntimeRoles execs only the owned namespace', () => {
