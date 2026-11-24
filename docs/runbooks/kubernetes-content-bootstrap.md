@@ -6,7 +6,7 @@ A local `fixture-pin.json` from [Content package authoring](content-package-auth
 
 ## What this procedure is
 
-`infra/environments/release/content-bootstrap/smoke.sh` applies the existing SeaweedFS store manifest in `infra/platform/object-storage/`. It does not edit those manifests. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
+`infra/environments/release/content-bootstrap/smoke.sh` requires an installed store from [Kubernetes object storage](kubernetes-object-storage.md). It does not apply store manifests or create `object-store-s3`. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
 
 The smoke then runs two Jobs in `lab-content-bootstrap`:
 
@@ -19,7 +19,7 @@ Game Authority and Storyteller are not started. The Nest API and the worker are 
 
 ## Credentials
 
-The access key and the secret key are created in memory by the smoke. The store identity is the Secret `object-store-s3` in `lab-objects`. The importer Job reads `content-importer-s3` in `lab-content-bootstrap`. The reader Job reads `content-reader-s3`. The reader identity is added on the running store with `s3.configure` and the action `Read` on `lab-objects`. None of those values are written into Git. The smoke refuses to run if this directory contains a Secret manifest or an `AKIA` literal.
+The store admin Secret `object-store-s3` in `lab-objects` comes from `infra/platform/object-storage/install.sh`. The smoke reads it only while creating or verifying `content-importer-s3`. That importer Secret is create-only: an existing Secret with the same bytes is reused; a byte mismatch is refused. The reader Job reads `content-reader-s3`. When that Secret already exists, the smoke reuses it and does not reconfigure the store. When both the reader Secret and a confirmed-absent `content-reader` identity are missing, the smoke adds the identity with `s3.configure` and the action `Read` on `lab-objects`, then creates `content-reader-s3`. If identity state is ambiguous, the smoke refuses instead of overwriting credentials. A failed reader configure leaves partial state and requires explicit repair; this smoke does not blind-rotate keys. None of those values are written into Git. The smoke refuses to run if this directory contains a Secret manifest or an `AKIA` literal.
 
 ## What the jobs must show
 
@@ -60,6 +60,7 @@ Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from th
 
 ```bash
 infra/clusters/kind/release/up.sh
+infra/platform/object-storage/install.sh
 infra/environments/release/content-bootstrap/smoke.sh
 infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
@@ -70,7 +71,7 @@ When local Docker already has SeaweedFS and the bootstrap image, the smoke loads
 
 ## Failure
 
-If the read-only identity cannot be added, leave the Change unproven. Do not give the reader the writer Secret and call that least privilege.
+If the read-only identity cannot be added, or partial reader state needs repair, leave the Change unproven. Do not give the reader the writer Secret and call that least privilege. Do not set `OFFSCREEN_CONTENT_BOOTSTRAP_FAULT_INJECTION` unless a separately authorized repair procedure says so.
 
 If the reader hashes differ, the proof failed.
 
@@ -88,6 +89,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 
 ```bash
 infra/clusters/kind/release/up.sh
+infra/platform/object-storage/install.sh
 infra/environments/release/content-bootstrap/smoke.sh
 infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
@@ -119,7 +121,7 @@ BOOT02 stops after immutable package objects exist in the shared lab store and a
 | Artifact | Path or value |
 | --- | --- |
 | Bootstrap namespace | `lab-content-bootstrap` — `infra/environments/release/content-bootstrap/namespace.yaml` |
-| Object-store namespace | `lab-objects` — existing SeaweedFS manifest under `infra/platform/object-storage/` (applied by `smoke.sh`, not edited here) |
+| Object-store namespace | `lab-objects` — installed by `infra/platform/object-storage/install.sh` before this smoke runs |
 | Importer Job | `fixture-importer` — `infra/environments/release/content-bootstrap/importer-job.yaml` |
 | Reader Job | `fixture-reader` — `infra/environments/release/content-bootstrap/reader-job.yaml` |
 | Orchestration | `infra/environments/release/content-bootstrap/smoke.sh` |

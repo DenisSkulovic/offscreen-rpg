@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Put, get, and delete one object, then delete the store Pod and read another object back.
+# Requires infra/platform/object-storage/install.sh first. Does not apply the store or create credentials.
 # Does not delete the cluster, the PVC, Docker volumes, or foreign kubectl contexts.
 # Does not print Secret values. Does not install the game.
 
@@ -12,10 +13,24 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
 STORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLATFORM_STORE_MANIFEST="$STORE_DIR/../../../platform/object-storage/store.yaml"
+CLIENT_MANIFEST="$STORE_DIR/client.yaml"
+CLIENT_NAME=object-store-client
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
+  exit 1
+fi
+
+if ! "${KUBECTL[@]}" -n lab-objects get deployment object-store >/dev/null 2>&1; then
+  echo "Object store is absent. Run infra/platform/object-storage/install.sh first." >&2
+  exit 1
+fi
+if ! "${KUBECTL[@]}" -n lab-objects get secret object-store-s3 >/dev/null 2>&1; then
+  echo "Secret object-store-s3 is absent. Run infra/platform/object-storage/install.sh first." >&2
+  exit 1
+fi
+if "${KUBECTL[@]}" -n lab-objects get pod "$CLIENT_NAME" >/dev/null 2>&1; then
+  echo "Refusing smoke: ${CLIENT_NAME} is already present." >&2
   exit 1
 fi
 
@@ -27,7 +42,7 @@ fail() {
   exit 1
 }
 
-if grep -RniE 'kind:[[:space:]]*Secret|AKIA[0-9A-Z]{16}' "$STORE_DIR" "$PLATFORM_STORE_MANIFEST" >/dev/null; then
+if grep -RniE 'kind:[[:space:]]*Secret|AKIA[0-9A-Z]{16}' "$STORE_DIR" >/dev/null; then
   echo "Refusing to apply: the object-store directory contains a Secret or an access-key literal." >&2
   exit 1
 fi
@@ -35,7 +50,24 @@ fi
 require_memory
 
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+PROOF_PREFIX="obj-smoke-$(openssl rand -hex 8)"
+LIFECYCLE_KEY="${PROOF_PREFIX}/lifecycle.txt"
+RESTART_KEY="${PROOF_PREFIX}/restart.txt"
+CLIENT_APPLIED=0
+
+cleanup_client() {
+  if [[ "$CLIENT_APPLIED" -eq 1 ]]; then
+    "${KUBECTL[@]}" -n lab-objects exec pod/"$CLIENT_NAME" -- \
+      aws --endpoint-url http://object-store:8333 s3api delete-object --bucket lab-objects --key "$LIFECYCLE_KEY" \
+      >/dev/null 2>&1 || true
+    "${KUBECTL[@]}" -n lab-objects exec pod/"$CLIENT_NAME" -- \
+      aws --endpoint-url http://object-store:8333 s3api delete-object --bucket lab-objects --key "$RESTART_KEY" \
+      >/dev/null 2>&1 || true
+  fi
+  "${KUBECTL[@]}" -n lab-objects delete pod "$CLIENT_NAME" --ignore-not-found --wait=true --timeout=180s >/dev/null 2>&1 || true
+}
+
+trap 'status=$?; cleanup_client; rm -rf "$work"; exit "$status"' EXIT
 volume_guard_begin "$work"
 
 import_image() {
@@ -56,19 +88,10 @@ import_image() {
 import_image "docker.io/chrislusf/seaweedfs:4.54"
 import_image "public.ecr.aws/aws-cli/aws-cli:2.31.18"
 
-"${KUBECTL[@]}" apply -f "$PLATFORM_STORE_MANIFEST"
-
-access_key="$(openssl rand -hex 16)"
-secret_key="$(openssl rand -hex 32)"
-"${KUBECTL[@]}" -n lab-objects create secret generic object-store-s3 \
-  --from-literal="access-key-id=${access_key}" \
-  --from-literal="secret-access-key=${secret_key}" \
-  >/dev/null
-unset access_key secret_key
-
 "${KUBECTL[@]}" -n lab-objects rollout status deployment/object-store --timeout=240s
-"${KUBECTL[@]}" apply -f "$STORE_DIR/client.yaml"
-"${KUBECTL[@]}" -n lab-objects wait --for=condition=Ready pod/object-store-client --timeout=240s
+"${KUBECTL[@]}" apply -f "$CLIENT_MANIFEST"
+CLIENT_APPLIED=1
+"${KUBECTL[@]}" -n lab-objects wait --for=condition=Ready pod/"$CLIENT_NAME" --timeout=240s
 
 svc_type="$("${KUBECTL[@]}" -n lab-objects get svc object-store -o jsonpath='{.spec.type}')"
 echo "Service type: ${svc_type}"
@@ -96,43 +119,44 @@ image="$("${KUBECTL[@]}" -n lab-objects get deployment object-store -o jsonpath=
 image_id="$("${KUBECTL[@]}" -n lab-objects get pod -l app=object-store -o jsonpath='{.items[0].status.containerStatuses[0].imageID}')"
 echo "Image: ${image}"
 echo "Image ID: ${image_id}"
+echo "Proof prefix: ${PROOF_PREFIX}"
 
 aws_cmd() {
-  "${KUBECTL[@]}" -n lab-objects exec pod/object-store-client -- aws --endpoint-url http://object-store:8333 "$@"
+  "${KUBECTL[@]}" -n lab-objects exec pod/"$CLIENT_NAME" -- aws --endpoint-url http://object-store:8333 "$@"
 }
 
 put_object() {
   local key="$1"
   local body="$2"
-  "${KUBECTL[@]}" -n lab-objects exec pod/object-store-client -- \
+  "${KUBECTL[@]}" -n lab-objects exec pod/"$CLIENT_NAME" -- \
     sh -c 'printf %s "$1" > /tmp/object-body && aws --endpoint-url http://object-store:8333 s3api put-object --bucket lab-objects --key "$2" --body /tmp/object-body' \
     sh "$body" "$key"
 }
 
 get_object() {
   local key="$1"
-  "${KUBECTL[@]}" -n lab-objects exec pod/object-store-client -- \
+  "${KUBECTL[@]}" -n lab-objects exec pod/"$CLIENT_NAME" -- \
     sh -c 'aws --endpoint-url http://object-store:8333 s3api get-object --bucket lab-objects --key "$1" /tmp/object-out >/dev/null && cat /tmp/object-out' \
     sh "$key"
 }
 
-put_reply="$(put_object lifecycle.txt put-ok)"
-echo "PUT lifecycle.txt: ${put_reply}"
+put_reply="$(put_object "$LIFECYCLE_KEY" put-ok)"
+echo "PUT ${LIFECYCLE_KEY}: ${put_reply}"
 if [[ "$put_reply" != *ETag* ]]; then
   fail "PUT did not return an ETag. Container start is not S3 compatibility."
 fi
-got="$(get_object lifecycle.txt)"
-echo "GET lifecycle.txt: ${got}"
+got="$(get_object "$LIFECYCLE_KEY")"
+echo "GET ${LIFECYCLE_KEY}: ${got}"
 if [[ "$got" != "put-ok" ]]; then
   fail "GET did not return the object that was put."
 fi
 
-delete_reply="$(aws_cmd s3api delete-object --bucket lab-objects --key lifecycle.txt)"
-echo "DELETE lifecycle.txt: ${delete_reply}"
+delete_reply="$(aws_cmd s3api delete-object --bucket lab-objects --key "$LIFECYCLE_KEY")"
+echo "DELETE ${LIFECYCLE_KEY}: ${delete_reply}"
 
 miss_status=0
 miss_err=""
-if miss_err="$(aws_cmd s3api head-object --bucket lab-objects --key lifecycle.txt 2>&1)"; then
+if miss_err="$(aws_cmd s3api head-object --bucket lab-objects --key "$LIFECYCLE_KEY" 2>&1)"; then
   miss_status=0
 else
   miss_status=$?
@@ -146,13 +170,13 @@ if [[ "$miss_err" != *404* && "$miss_err" != *Not\ Found* && "$miss_err" != *NoS
   fail "HEAD after delete did not report a missing object."
 fi
 
-put_reply="$(put_object restart.txt pod-replace-ok)"
-echo "PUT restart.txt: ${put_reply}"
+put_reply="$(put_object "$RESTART_KEY" pod-replace-ok)"
+echo "PUT ${RESTART_KEY}: ${put_reply}"
 if [[ "$put_reply" != *ETag* ]]; then
   fail "PUT of the restart object did not return an ETag."
 fi
-got="$(get_object restart.txt)"
-echo "GET restart.txt before delete: ${got}"
+got="$(get_object "$RESTART_KEY")"
+echo "GET ${RESTART_KEY} before delete: ${got}"
 if [[ "$got" != "pod-replace-ok" ]]; then
   fail "Restart object was not readable before the Pod was deleted."
 fi
@@ -163,6 +187,10 @@ pvc_uid_before="$("${KUBECTL[@]}" -n lab-objects get pvc object-store-data -o js
 echo "Pod before delete: ${pod_name}"
 echo "Pod uid before delete: ${pod_uid_before}"
 echo "PVC uid before delete: ${pvc_uid_before}"
+
+if [[ "${OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM:-}" != "$pod_uid_before" ]]; then
+  fail "Refusing store Pod deletion: set OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM to the Pod uid before this disposable proof step."
+fi
 
 "${KUBECTL[@]}" -n lab-objects delete pod "$pod_name" --wait=true --timeout=180s
 
@@ -183,20 +211,20 @@ fi
 
 after=""
 for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
-  if after="$(get_object restart.txt 2>/dev/null)"; then
+  if after="$(get_object "$RESTART_KEY" 2>/dev/null)"; then
     if [[ "$after" == "pod-replace-ok" ]]; then
       break
     fi
   fi
   sleep 3
 done
-echo "GET restart.txt after Pod delete: ${after}"
+echo "GET ${RESTART_KEY} after Pod delete: ${after}"
 if [[ "$after" != "pod-replace-ok" ]]; then
   fail "Deleting the store Pod lost the object. The PVC did not keep it."
 fi
 
 still_missing=0
-if aws_cmd s3api head-object --bucket lab-objects --key lifecycle.txt >/dev/null 2>&1; then
+if aws_cmd s3api head-object --bucket lab-objects --key "$LIFECYCLE_KEY" >/dev/null 2>&1; then
   still_missing=0
 else
   still_missing=$?

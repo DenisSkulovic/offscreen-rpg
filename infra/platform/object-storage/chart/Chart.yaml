@@ -1,0 +1,5 @@
+apiVersion: v2
+name: platform-object-storage
+description: SeaweedFS object store for dev and release lab profiles
+type: application
+version: 0.1.0
