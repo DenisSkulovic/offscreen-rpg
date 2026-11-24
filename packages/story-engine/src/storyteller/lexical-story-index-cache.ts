@@ -3,10 +3,13 @@
  * Never story canon; validate story/root/schema before every hit.
  */
 import type { DocumentStore } from '@offscreen/documents';
+import { createWeightedLru } from '@offscreen/cache/memory';
+import { createSingleFlight } from '@offscreen/cache/strategies';
 import {
   buildLexicalStoryIndex,
   LEXICAL_STORY_INDEX_SCHEMA_VERSION,
   lexicalStoryIndexMatchesIdentity,
+  restoreLexicalStoryIndex,
   type LexicalStoryIndex,
   type LexicalStoryIndexIdentity,
 } from './lexical-story-index';
@@ -41,12 +44,19 @@ export type LexicalStoryIndexCache = Readonly<{
   stats(): LexicalStoryIndexCacheStats;
 }>;
 
-type InflightEntry = {
-  promise: Promise<LexicalStoryIndexResolveResult>;
-};
+const LEXICAL_INDEX_MEMORY_MAX_BYTES = 32 * 1024 * 1024;
 
 function cacheKey(identity: LexicalStoryIndexIdentity) {
   return `${identity.storyId}:${identity.rootHash}:${identity.rootRevision}:${LEXICAL_STORY_INDEX_SCHEMA_VERSION}`;
+}
+
+function lexicalIndexWeight(index: LexicalStoryIndex): number {
+  const snapshot = index.snapshot();
+  return Buffer.byteLength(JSON.stringify(snapshot), 'utf8');
+}
+
+function copyLexicalStoryIndex(index: LexicalStoryIndex): LexicalStoryIndex {
+  return restoreLexicalStoryIndex(index.snapshot());
 }
 
 /**
@@ -60,12 +70,22 @@ export function createLexicalStoryIndexCache(options?: {
 }): LexicalStoryIndexCache {
   const maxEntries = options?.maxEntries ?? 8;
   if (!Number.isSafeInteger(maxEntries) || maxEntries < 1) {
-    throw new Error('Lexical index cache maxEntries must be a positive integer');
+    throw new Error(
+      'Lexical index cache maxEntries must be a positive integer',
+    );
   }
   const durable = options?.durable ?? null;
   const build = options?.build ?? buildLexicalStoryIndex;
-  const memory = new Map<string, LexicalStoryIndex>();
-  const inflight = new Map<string, InflightEntry>();
+  const memory = createWeightedLru({
+    maxBytes: LEXICAL_INDEX_MEMORY_MAX_BYTES,
+    maxEntries,
+    weight: lexicalIndexWeight,
+    copy: copyLexicalStoryIndex,
+  });
+  const flight = createSingleFlight<LexicalStoryIndexResolveResult>({
+    maxActiveKeys: 128,
+    maxWaitersPerKey: 8,
+  });
   const counters = {
     memoryHits: 0,
     durableHits: 0,
@@ -74,14 +94,15 @@ export function createLexicalStoryIndexCache(options?: {
     coalescedWaits: 0,
   };
 
-  function remember(key: string, index: LexicalStoryIndex) {
-    memory.delete(key);
-    memory.set(key, index);
-    while (memory.size > maxEntries) {
-      const oldest = memory.keys().next().value;
-      if (oldest === undefined) break;
-      memory.delete(oldest);
+  function remember(
+    key: string,
+    index: LexicalStoryIndex,
+    canPublish: () => boolean,
+  ) {
+    if (!canPublish()) {
+      return;
     }
+    memory.set(key, index);
   }
 
   function peek(identity: LexicalStoryIndexIdentity) {
@@ -94,7 +115,6 @@ export function createLexicalStoryIndexCache(options?: {
       memory.delete(key);
       return null;
     }
-    remember(key, cached);
     return cached;
   }
 
@@ -115,25 +135,9 @@ export function createLexicalStoryIndexCache(options?: {
       };
     }
 
-    const pending = inflight.get(key);
-    if (pending) {
-      counters.coalescedWaits += 1;
-      const result = await pending.promise;
-      if (!lexicalStoryIndexMatchesIdentity(result.index, identity)) {
-        throw new Error('Coalesced lexical index root mismatch');
-      }
-      return {
-        ...result,
-        coalesced: true,
-        // Followers observe a completed build through the shared promise; they
-        // did not perform CAS work themselves.
-        hit: result.hit === 'miss' ? 'memory' : result.hit,
-        buildMs: null,
-      };
-    }
-
-    const entry: InflightEntry = {
-      promise: (async () => {
+    const { value: result, coalesced } = await flight.run(
+      key,
+      async (canPublish) => {
         if (durable) {
           try {
             const loaded = await durable.load(identity.storyId);
@@ -143,7 +147,7 @@ export function createLexicalStoryIndexCache(options?: {
               loaded.snapshot().format === LEXICAL_STORY_INDEX_SCHEMA_VERSION
             ) {
               counters.durableHits += 1;
-              remember(key, loaded);
+              remember(key, loaded, canPublish);
               return {
                 index: loaded,
                 hit: 'durable' as const,
@@ -160,14 +164,25 @@ export function createLexicalStoryIndexCache(options?: {
         counters.misses += 1;
         counters.builds += 1;
         const started = performance.now();
-        const index = await build(storage, identity);
+        let index: LexicalStoryIndex;
+        try {
+          index = await build(storage, identity);
+        } catch (error) {
+          memory.delete(key);
+          throw error;
+        }
         const buildMs = performance.now() - started;
         if (!lexicalStoryIndexMatchesIdentity(index, identity)) {
+          memory.delete(key);
           throw new Error('Built lexical index root mismatch');
         }
-        remember(key, index);
+        remember(key, index, canPublish);
         if (durable) {
-          await durable.replace(index);
+          try {
+            await durable.replace(index);
+          } catch {
+            // Durable persistence is best-effort; the validated build still returns.
+          }
         }
         return {
           index,
@@ -176,25 +191,38 @@ export function createLexicalStoryIndexCache(options?: {
           schemaVersion: LEXICAL_STORY_INDEX_SCHEMA_VERSION,
           buildMs,
         };
-      })(),
-    };
-    inflight.set(key, entry);
-    try {
-      return await entry.promise;
-    } finally {
-      inflight.delete(key);
+      },
+    );
+
+    if (coalesced) {
+      counters.coalescedWaits += 1;
+      if (!lexicalStoryIndexMatchesIdentity(result.index, identity)) {
+        throw new Error('Coalesced lexical index root mismatch');
+      }
+      return {
+        ...result,
+        coalesced: true,
+        // Followers observe a completed build through the shared promise; they
+        // did not perform CAS work themselves.
+        hit: result.hit === 'miss' ? 'memory' : result.hit,
+        buildMs: null,
+      };
     }
+
+    return result;
   }
 
   return {
     resolve,
     peek,
     invalidate(identity) {
-      memory.delete(cacheKey(identity));
+      const key = cacheKey(identity);
+      memory.delete(key);
+      flight.invalidate(key);
     },
     clear() {
       memory.clear();
-      inflight.clear();
+      flight.clear();
     },
     stats() {
       return { ...counters };

@@ -25,6 +25,44 @@ function makeIndex(identity) {
   });
 }
 
+const heavyBody = 'z'.repeat(480 * 1024);
+
+function makeHeavyIndex(identity, unitCount = 40) {
+  const units = Array.from({ length: unitCount }, (_, index) => ({
+    unit: {
+      unitId: `heavy-${index}@1#root`,
+      documentId: '10000000-0000-4000-8000-000000000001',
+      revision: 1,
+      sourceHash: index.toString(16).padStart(64, '0'),
+      path: `world/lore/heavy-${index}.md`,
+      kind: 'lore',
+      authority: 'canon',
+      visibility: 'player',
+      branchKey: null,
+      current: true,
+      headingPath: [],
+      linkedDocumentIds: [],
+      effectiveFromGameSecond: null,
+      effectiveThroughGameSecond: null,
+      title: `Heavy ${index}`,
+      contextualKey: `lore Heavy ${index} world/lore/heavy-${index}.md`,
+      bodyBytes: Buffer.byteLength(heavyBody, 'utf8'),
+    },
+    title: { heavy: 1 },
+    path: { world: 1 },
+    context: { lore: 1 },
+    body: { z: 1 },
+    bodyText: heavyBody,
+  }));
+  return restoreLexicalStoryIndex({
+    format: LEXICAL_STORY_INDEX_SCHEMA_VERSION,
+    storyId: identity.storyId,
+    rootHash: identity.rootHash,
+    rootRevision: identity.rootRevision,
+    units,
+  });
+}
+
 test('lexical index cache reuses same root and isolates forks/stale roots', async () => {
   const durableRoot = await mkdtemp(join(tmpdir(), 'offscreen-sa04-durable-'));
   try {
@@ -138,6 +176,191 @@ test('lexical index cache reuses same root and isolates forks/stale roots', asyn
     assert.ok(stats.durableHits >= 1);
     assert.ok(stats.misses >= 4);
     assert.equal(stats.builds, builds);
+  } finally {
+    await rm(durableRoot, { recursive: true, force: true });
+  }
+});
+
+test('lexical index cache tolerates durable write failure and build failure cleanup', async () => {
+  const durableRoot = await mkdtemp(join(tmpdir(), 'offscreen-sa04-write-fail-'));
+  try {
+    const identity = {
+      storyId: storyA,
+      rootHash: rootA,
+      rootRevision: 1,
+    };
+    const storage = /** @type {any} */ ({});
+    const backing = new LocalLexicalStoryIndexStore(durableRoot);
+    const flakyDurable = {
+      load: (storyId) => backing.load(storyId),
+      replace: async () => {
+        throw new Error('durable write rejected');
+      },
+    };
+    let builds = 0;
+    const cache = createLexicalStoryIndexCache({
+      maxEntries: 4,
+      durable: flakyDurable,
+      build: async (_store, id) => {
+        builds += 1;
+        return makeIndex(id);
+      },
+    });
+
+    const resolved = await cache.resolve(storage, identity);
+    assert.equal(resolved.hit, 'miss');
+    assert.equal(builds, 1);
+    assert.ok(cache.peek(identity));
+
+    const warm = await cache.resolve(storage, identity);
+    assert.equal(warm.hit, 'memory');
+    assert.equal(builds, 1);
+
+    let failBuild = false;
+    const failingCache = createLexicalStoryIndexCache({
+      maxEntries: 4,
+      build: async () => {
+        if (failBuild) {
+          throw new Error('build failed');
+        }
+        return makeIndex(identity);
+      },
+    });
+    await failingCache.resolve(storage, identity);
+    failingCache.clear();
+    failBuild = true;
+    await assert.rejects(
+      () => failingCache.resolve(storage, identity),
+      /build failed/,
+    );
+    assert.equal(failingCache.peek(identity), null);
+    failBuild = false;
+    const recovered = await failingCache.resolve(storage, identity);
+    assert.equal(recovered.hit, 'miss');
+  } finally {
+    await rm(durableRoot, { recursive: true, force: true });
+  }
+});
+
+test('lexical index cache fences invalidate and clear against late memory publish', async () => {
+  const identity = {
+    storyId: storyA,
+    rootHash: rootA,
+    rootRevision: 1,
+  };
+  const storage = /** @type {any} */ ({});
+  let releaseBuild = () => {};
+  const gate = new Promise((resolve) => {
+    releaseBuild = resolve;
+  });
+  let builds = 0;
+  const cache = createLexicalStoryIndexCache({
+    maxEntries: 4,
+    build: async (_store, id) => {
+      builds += 1;
+      await gate;
+      return makeIndex(id);
+    },
+  });
+
+  const inFlight = cache.resolve(storage, identity);
+  await Promise.resolve();
+  cache.invalidate(identity);
+  releaseBuild();
+  const completed = await inFlight;
+  assert.equal(completed.index.rootHash, rootA);
+  assert.equal(cache.peek(identity), null);
+
+  builds = 0;
+  releaseBuild = () => {};
+  const gate2 = new Promise((resolve) => {
+    releaseBuild = resolve;
+  });
+  const slowCache = createLexicalStoryIndexCache({
+    maxEntries: 4,
+    build: async (_store, id) => {
+      builds += 1;
+      await gate2;
+      return makeIndex(id);
+    },
+  });
+  const blocked = slowCache.resolve(storage, identity);
+  await Promise.resolve();
+  slowCache.clear();
+  releaseBuild();
+  await blocked;
+  assert.equal(slowCache.peek(identity), null);
+  const afterClearFence = await slowCache.resolve(storage, identity);
+  assert.equal(afterClearFence.hit, 'miss');
+  assert.equal(builds, 2);
+});
+
+test('lexical index cache evicts by byte budget and rejects stale durable schema', async () => {
+  const durableRoot = await mkdtemp(join(tmpdir(), 'offscreen-sa04-byte-evict-'));
+  try {
+    const identityA = {
+      storyId: storyA,
+      rootHash: rootA,
+      rootRevision: 1,
+    };
+    const identityB = {
+      storyId: storyA,
+      rootHash: rootB,
+      rootRevision: 1,
+    };
+    const storage = /** @type {any} */ ({});
+    let builds = 0;
+    const cache = createLexicalStoryIndexCache({
+      maxEntries: 8,
+      build: async (_store, id) => {
+        builds += 1;
+        return makeHeavyIndex(id);
+      },
+    });
+
+    const first = await cache.resolve(storage, identityA);
+    assert.equal(first.hit, 'miss');
+    assert.ok(cache.peek(identityA));
+
+    const second = await cache.resolve(storage, identityB);
+    assert.equal(second.hit, 'miss');
+    assert.equal(builds, 2);
+    assert.equal(cache.peek(identityA), null);
+    assert.ok(cache.peek(identityB));
+
+    builds = 0;
+    const coldAgain = await cache.resolve(storage, identityA);
+    assert.equal(coldAgain.hit, 'miss');
+    assert.equal(builds, 1);
+
+    const durable = new LocalLexicalStoryIndexStore(durableRoot);
+    const schemaIdentity = {
+      storyId: storyA,
+      rootHash: 'c'.repeat(64),
+      rootRevision: 3,
+    };
+    await writeFile(
+      join(durableRoot, `${storyA}.json`),
+      JSON.stringify({
+        format: 'offscreen.lexical-story-index.v0',
+        storyId: storyA,
+        rootHash: schemaIdentity.rootHash,
+        rootRevision: schemaIdentity.rootRevision,
+        units: [],
+      }),
+      'utf8',
+    );
+    const schemaCache = createLexicalStoryIndexCache({
+      maxEntries: 4,
+      durable,
+      build: async (_store, id) => {
+        builds += 1;
+        return makeIndex(id);
+      },
+    });
+    const fromBadSchema = await schemaCache.resolve(storage, schemaIdentity);
+    assert.equal(fromBadSchema.hit, 'miss');
+    assert.equal(builds, 2);
   } finally {
     await rm(durableRoot, { recursive: true, force: true });
   }
