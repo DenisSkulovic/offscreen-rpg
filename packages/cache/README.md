@@ -8,4 +8,4 @@
 
 If a public snapshot looks stale, follow the **application read projection and invalidation identity** first, then this adapter. Never "repair" correctness by assuming a Redis value overrides PostgreSQL. A missing/stopped Redis instance must not grant different command semantics.
 
-The package exposes `build` and `typecheck`, **no package-local test suite**. Cache integration belongs to the consumer's read/invalidations tests. Do not start Redis or mutate cache keys merely to inspect this README.
+The package exposes `build`, `typecheck` and `test`. `./core` and `./codecs` are the CACHE01 typed foundation (keys, policy, byte outcomes, JSON and bytes codecs, deterministic test stores). The root export remains the legacy Redis JSON adapter. Those tests do not start Redis. Consumer read/invalidation tests still own integration behavior.

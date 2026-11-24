@@ -1,8 +1,8 @@
 # CACHE01 | Typed cache foundation
 
-**Status: Ready / owner-commissioned (foundation). Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: DO01–DO07 and LIB05–LIB07 integrated (verified at release baseline); freezes core interfaces for wave 1. Foundation parent owns its single join. Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
+**Status: Done (2026-11-24). Kind: implementation. Profile: PATCH.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: DO01–DO07 and LIB05–LIB07 integrated (verified at release baseline); freezes core interfaces for wave 1. Foundation parent owns its single join. Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
-[Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
+[Selected architecture](../../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
 ## Cursor first-screen brief
 
@@ -33,4 +33,6 @@ Post-DO07 source checked: cache-port exists, Contracts workspace absent, Cache i
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending closure | persistence-and-caching | Typed cache foundation | pending | NOT-RUN | TASKS | pending |
+| Typed cache core and codecs | docs/technical/platform/persistence-and-caching.md Current state | Foundation interfaces exist beside the legacy adapter | packages/cache/src/core, codecs; SHA at integration | source-tested: `pnpm --filter @offscreen/cache test` 14/14 | bad keys, invalid policy, malformed JSON, oversize skip, disabled bypass | package README and catalog updated |
+| Game, authorization, spend | product docs | unchanged because no player or permission behavior moved | legacy packages/cache/src/index.ts preserved | source-inspected | no product page edit | N/A |
+| Redis runtime, strategies, memory, consumers | CACHE-PARALLEL.md | unchanged because those lanes start after this SHA | not implemented here | NOT the claim of this Change | no Redis process | contract left in place |
