@@ -1,5 +1,7 @@
 # Local developer platform | composition implementation
 
+**Workstation resource flight recorder:** [INF44–47](WORKSTATION-OBSERVABILITY.md) is a separate source implementation wave; persistent monitoring before further optimization. INF29 live corrective work remains independent.
+
 Baseline 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. INF36 source Done; INF43 source Done (445 pass / 0 fail on the four catalog commands). INF29 live verification in progress, independent checkout. No live acceptance credit.
 
 | Change | Dependency | Status |

@@ -1,0 +1,27 @@
+# INF44 implementation decisions
+
+Read the canonical contract, not prior draft messages. All new paths below are selected future files, not claimed existing source.
+
+## T01 Native configuration and installed lifecycle
+
+Anchors: infra/monitoring/config/netdata.conf (new); infra/monitoring/systemd/offscreen-monitor@.service (new); infra/monitoring/install.sh (new); docs/runbooks/workstation-observability.md.
+
+Create tracked Netdata v2 config [db] dbengine/update every=1/storage tiers=3; retention size/time 1GiB/3d,512MiB/30d,512MiB/90d; [web] bind to=127.0.0.1; vendor telemetry opt-out, no cloud claim/stream. Native package installation is operator step, no curl-pipe-shell or package repository changes automatically. Install script default --plan read-only; --apply explicit confirmation, require Linux systemd PID1, python3, Netdata v2 installed, caller UID user and stable HOME, no arbitrary service path/symlink, refuse existing unowned config/unit or service port collision. Copy owned files to /usr/local/lib/offscreen-monitor and /etc/offscreen-monitor/<user>.json, private user state, install only declared unit. Use system service User=%i, config absolute, WorkingDirectory stable, Restart=on-failure with 5s backoff; no privileged collector, don't touch Docker/kubeconfig permissions or wsl.conf. Netdata config operator-managed backup if existing, refuse overwrite by default. No activation in source tests, live install requires explicit operator authorization. Write version/capability manifest after successful activation, verify systemctl health, loopback listener, DB tiers via API; absent/unsupported = BLOCKED. Fixture plan tests no sudo/systemctl start, existing config refusal, stable path, repeat idempotent, no daemon start on source path.
+
+## T02 Bounded record storage and identity primitives
+
+Anchors: infra/monitoring/records.py (new); infra/monitoring/storage.py (new); infra/monitoring/tests/test_storage.py (new).
+
+Python standard library. Implement schema and clock/session/scope contract exactly in workstation-observability.md. State root absolute private, resolve and validate before use, owned stream hourly segments with sequence suffix at16MiB, O_APPEND, max64KiB per record, fsync <=5s and shutdown. Use unique per-session writer filenames, no concurrent writer sharing, record coverage on partial line/crash. Retention caps fast raw384MiB/72h, minute96MiB/30d, hour32MiB/90d, process1GiB/7d, runtime768MiB/72h, events256MiB/30d, closed segment only, skip symlinks/unknown prefixes, deterministic oldest first, active files protected, quotas checked each minute. Reserve health stream inside events budget, report drops and oldest/newest. Test injected clock/boot IDs, PID key, partial read, rotation, retention by time/size, no foreign deletion, clock jump, disk full failure/no busy loop. All state tempdir; python3 -m unittest discover -s infra/monitoring/tests -p 'test_storage.py'.
+
+## T03 Sub-second memory windows and rollups
+
+Anchors: infra/monitoring/host.py (new); infra/monitoring/records.py; infra/monitoring/tests/test_host.py (new).
+
+Pure parse_meminfo(text)->allowlisted bytes/null, observe_fast_window with scheduled monotonic 200ms ticks and actual times, bucket by 1s monotonic within session, skip missed ticks, preserve raw offsets and per-field min/max/sum/count/mean, expected/observed counts/max gap, partial bucket flags. Aggregate 60s/3600s using min/max/sum/count and coverage; no mean-of-means, no interpolation, preserve observed vs lifetime peak. 1s host slow counters /proc/stat, vmstat, pressure, diskstats and net/dev selectively for counter reset/OOM evidence; native Netdata owns broad charts, no custom duplicate all-metric collector. Test injected 500ms pulse captured by 200ms samples, shorter intersample pulse deliberately missed, missing tick, 0 vs null, counter reset/boot, unequal sample counts, extrema preservation through both rollups, wall clock jump. No actual memory stress tests in source lane.
+
+## T04 Safe process snapshots and service entrypoint
+
+Anchors: infra/monitoring/processes.py (new); infra/monitoring/collector.py (new); infra/monitoring/tests/test_processes.py (new); infra/monitoring/tests/test_collector.py (new).
+
+Read /proc visible processes every5s, parse final ')' in stat, validate start ticks before/after, safe fields only per contract, optional top10 PSS at30s; category via allowlisted executable basename and exact known tool tokens only; never persist raw command line/environment. Report denied/exited/unobserved processes and process accounting unavailable; optional atop native raw history not enabled without explicit sensitive argv consent. Implement stdlib scheduler with monotonic independent fast and slow workers, bounded one in flight per stream, no catch-up, heartbeat every5s, stop SIGTERM flush <=5s, boot/collector restart coverage. Extension seam runtime.py optional imported only if installed; missing runtime extension = unsupported, not collector death. Read local config once, status record every60s incl own CPU/RSS/storage, low-memory suspend optional PSS/runtime nested exec, no service lifecycle mutation. Fixture tests child exited/reused PID, secret argv never persisted, timer overruns/no overlapping tasks, stop flush, worker exception gap, memory low optional suspend; Python unit discovery. Install only after source tests; collect 15min comparable before/after overhead and measured retention; no INF29 stack required.

@@ -1,0 +1,21 @@
+# INF47 implementation decisions
+
+Read the canonical contract, not prior draft messages. All new paths below are selected future files, not claimed existing source.
+
+## T01 Historical status and report readers
+
+Anchors: infra/monitoring/report.py (new); infra/monitoring/records.py/storage.py; infra/monitoring/tests/test_report.py (new); package.json.
+
+Implement strict CLI status/report --last N[m|h|d] or --from/--to UTC ISO [--slot dev-N] [--json]; max query span90d, bounded read only relevant owned segments, no subprocess to start collectors. Netdata local API /api/v1/charts and /api/v1/data with exact absolute timestamps, group=min/max/average, points based on actual tier window; discover actual chart ids and dimensions from response, no unverified static names, retain tier/units/cadence/coverage (unavailable if API doesn't expose counts). Report fast extrema/mean/count/coverage, source timestamps and gaps, cumulative counter deltas only same identity, peak scope not interval max, process top RSS/CPU as non-additive and PSS separately, nested pod/container attribution separate, overlapping operation events plus incomplete spans and rollback recovery, no automatic causal claim. status actual service heartbeat age, versions/oldest/newest/disk/coverage/disabled streams; report not-installed vs stopped vs gap. JSON schema versioned plus readable compact table. Test spike max retained, weighted count merge, no absent=0, PID reuse, reboot/reset, stale summary, nested double-count negative, incomplete span, clock jump, empty/partial range, Netdata unavailable, historical tier ambiguity. Add scripts infra:monitor:status/report/export in package.json after all shared file joins.
+
+## T02 Bounded sanitized incident export
+
+Anchors: infra/monitoring/report.py; infra/monitoring/export.py (new); infra/monitoring/tests/test_export.py (new); docs/runbooks/workstation-observability.md.
+
+Export --from --to --out explicit non-existing directory, validate range and path outside tracked tree (or ignored verified), create temporary sibling private dir then atomic rename; refuse overwrite, symlinks, >100MiB output, path escape, raw atop files, full argv/env, kubeconfig, arbitrary source logs or raw credentials. Manifest schema version, actual window, coverage/resolution/retention, source versions and scope IDs, event and normalized selected JSONL/CSV; omit unknown optional values, report partial sources explicitly (not failure unless required source absent); test range/size/atomic rollback, secret fixture, unknown sources, deterministic ordering, no network. Native Netdata dashboard URL only loopback; runbook how query time range and identify resource consumers without speculative causal ranking.
+
+## T03 Permanent capability proof and integration
+
+Anchors: infra/verification/CAPABILITIES.md; infra/verification/verify.mjs::SOURCE_SUITE_DEFINITIONS/CATALOG_SCENARIO_IDS; infra/verification/verify.test.mjs; infra/monitoring/tests/.
+
+Add MON-01 service independence/persistence, MON-02 host high-frequency window/peak semantics, MON-03 safe process accounting and missing exits, MON-04 Docker/Kind identity and nested attribution, MON-05 event and OOM/reset coverage, MON-06 retention/aggregation/gap/restart, MON-07 operation correlation, MON-08 report/export/no secrets, MON-09 observer overhead. Integrate Python unittest source suite into INF42 runner explicitly (current suite Node-only; add command field per suite and Python unittest summary parser, no fabricated TAP counts; missing python => BLOCKED while other suites run); retain existing catalog IDs including DEV-15 if absent in static array. Source fixture proof no Docker/Kind/systemd; live proof separately authorized install + 15min idle baseline/after, small bounded 16MiB allocate/free fixture only if memory >4GiB, never intentionally OOM or spawn full stacks, compare observed/peak semantics with actual known cgroup where available, service restart persistence/gap if authorized, verify no remote listeners, no unrelated resource changes. Record measured overhead, coverage and retention actual; live not-run not PASS. Add docs-health/link check; no change to queue.

@@ -1,5 +1,7 @@
 # Local developer platform | selected direction and capability contract
 
+**Persistent workstation evidence:** [workstation observability](workstation-observability.md) owns resource history and measurement semantics independently of application lifecycle. INF44–47 source-only; no installed-monitor claim.
+
 Owner direction 2026-11-24. Reviewed integration baseline `91bc2af40a94cdf9a95ee7db31a846d60f3abd0c` (INF36). Target design, NOT a claim that all capabilities are implemented. Current operational commands are in [developer platform runbook](../../runbooks/local-development-platform.md); repeatable acceptance belongs to [capability catalog](../../../infra/verification/CAPABILITIES.md). Existing [environment identity and lifecycle contract](developer-environments.md) remains authoritative for ownership and data preservation.
 
 ## Goal and non-goals

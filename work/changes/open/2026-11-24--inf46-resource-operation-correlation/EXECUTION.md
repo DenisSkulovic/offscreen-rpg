@@ -1,0 +1,21 @@
+# INF46 implementation decisions
+
+Read the canonical contract, not prior draft messages. All new paths below are selected future files, not claimed existing source.
+
+## T01 Safe operation event writer
+
+Anchors: infra/monitoring/operation-event.mjs (new); infra/monitoring/tests/operation-event.test.mjs (new); tools/dev-environments/src/application/dev-startup-timing.mjs::beginStartupTiming/finishStartupTiming/recordPhase; infra/images/development/startup-timing.sh::startup_timing_begin/end.
+
+Pure ESM helper emits schemaVersion1 operation records to stable user state events directory when installed/enabled; operationId randomUUID, parentOperationId optional, phaseId UUID, parentPhaseId optional, kind=start|end|phase-start|phase-end|failure|rollback, wall UTC ISO, monotonicNs via process.hrtime.bigint (same Linux monotonic domain only after verification), boot ID, PID/start ticks, repo root stable canonical path hashed or local relative worktree basename, Git branch/HEAD via bounded local git command at operation begin only, Change ID from explicit approved env/branch pattern, exact dev slot/context/profile if known, result enumerated and sanitized bounded code. Never raw args/env/secret/logs; no arbitrary extra object serialization. Writer per attempt unique file, O_APPEND single <=4096 byte record, private file/dir, nonblocking best effort on missing/unwritable monitor with one bounded diagnostic, must not change startup/rollback behavior. Emit begin immediately, end on terminal paths, crash leaves incomplete span not fabricated end. Fixture tests clock/identity, overlap same phase name distinct IDs, missing state no-op, secret input rejected, write failure no application failure, partial line. Shell child bridge via OFFSCREEN_MONITOR_OPERATION_ID and explicit timestamps; do not spawn Node process every sampling tick.
+
+## T02 Add event timeline to existing startup timing owners
+
+Anchors: tools/dev-environments/src/application/dev-startup-timing.mjs::beginStartupTiming/timePhase/recordPhase/finishStartupTiming; tools/dev-environments/test/dev-startup-timing.test.mjs; infra/images/development/startup-timing.sh; tools/dev-environments/src/application/dev-lifecycle.mjs::runDevTiltLaunch.
+
+After INF29 join only. Preserve existing receipt output/compatibility, add operationId, phaseId and parentPhaseId, startedAt/finishedAt and monotonic start/end to timing events, timePhase emits start/end at actual boundaries including exceptions, recordPhase duration-only existing callers mark estimated start if no measured start, never present as actual. Child shell records wall timestamps and duration, inherit operation ID; raw shell timing JSONL imports tolerate individual invalid/truncated lines instead of discarding entire stream; correlate child phase via explicit ID or parent hint marked approximate, do not claim exact exclusive duration when siblings overlap. Add true begin/end events for top-level dev startup, stop/rollback and image build/distribution phases at existing owner boundaries; no lifecycle algorithm or lock changes. Ensure begin emitted even if later crashes, completion/failure recorded before cleanup result, rollback separate span. Tests failed phase still ends, concurrent same-name child no double-count, missing child file, malformed line, crash start only, no credentials, historical receipts remain readable. Run node --test tools/dev-environments/test/dev-startup-timing.test.mjs and affected lifecycle tests. No live start.
+
+## T03 Other operation entrypoint metadata
+
+Anchors: infra/environments/infra-cli.mjs; infra/environments/release/install.sh; scripts/repo-tools/stack.mjs; infra/verification/verify.mjs.
+
+Wrap actual CLI entrypoint invocations for infra:up, stack:up/down and infra:verify source with operation begin/end/fail; read-only plan/status can be excluded from operation metrics or explicitly record lightweight start/end, no nested duplicate top-level ID. Preserve return codes/signal handling, no new mutator path, no shell raw args persisted. Add fixture tests for success/failure/refusal, operation child correlation, disabled monitor no change. Do not edit INF38/40 overlapping lifecycle files concurrently; coordinate after INF29. Source-only acceptance.

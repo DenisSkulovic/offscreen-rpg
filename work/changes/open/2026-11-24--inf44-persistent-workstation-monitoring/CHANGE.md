@@ -1,0 +1,7 @@
+# INF44 | Persistent local workstation flight recorder
+
+**State: Ready. Kind: implementation. Profile: STATE.** Source-only commission. Baseline fb8f5bfb950721202f712870d4a3cc15b7946d40. Dependency: None; disjoint from INF29 runtime/lifecycle code. Goal: Persistent local workstation flight recorder. [Tasks](TASKS.md) · [Execution](EXECUTION.md) · [Source map](SOURCE-MAP.md) · [Proof](PROOF.md).
+
+Integration undertaking/storyteller-workshop; source baseline fb8f5bfb950721202f712870d4a3cc15b7946d40. Source implementation commissioned by owner on 2026-11-24. No live host package install/service activation, elevated access, WSL restart, Docker/Kind mutation or cluster workload starts implied. Source tests use temporary fixtures and injected command runners. Existing INF29 live corrective work independent. Separate Change worktree and guard; parent integrates one bounded T-ID at a time, no broad delegated investigation; preserve shared package/docs joins. Runtime host visibility/version facts verified by bounded operator acceptance, not guessed, unavailable coverage honest. Use Python stdlib companion and vendor native Netdata; no new DB/dashboard/controller, no app data or credentials. Architecture/semantics in [workstation observability](../../../../docs/technical/platform/workstation-observability.md); permanent capability proof in [catalog](../../../../infra/verification/CAPABILITIES.md).
+
+First dispatch T01 after predecessor gate. Source acceptance only, live separately authorized. No automatic next Change dispatch.

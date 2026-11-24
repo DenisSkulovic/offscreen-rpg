@@ -73,3 +73,18 @@ pnpm infra:verify --suite source --json
 - Dev SQL/S3/Temporal trials under dev-environments/; these may provision fixed slots, so never run blindly on an occupied workstation. Release acceptance under release-acceptance/; fault/chaos scenarios have independent authorization and oracles.
 
 Measure cold/warm wall time and source-edit latency; report actual seconds, not arbitrary SLA. First smoke is one owned full slot cold/start/status/edit/failure/recovery/stop/resume; then selective profiles and multi-replica cases only when implemented. Do not require four full stacks on a limited workstation. Stop polishing when ordinary supported flows are proven; record failures as bounded corrective Changes.
+
+
+## Workstation observability (target, INF44–47)
+
+| ID | Capability | Required observation | Evidence |
+| --- | --- | --- | --- |
+| MON-01 | Independent persistent collectors | Service restart preserves retained history; WSL down gap visible; no game/cluster dependency | target-only |
+| MON-02 | Sub-second memory evidence | 200ms sample offsets; observed min/max/sum/count/coverage, short pulse test, kernel peak scope separate | target-only |
+| MON-03 | Safe process history | PID/start identity, CPU/RSS/HWM, missing exited process coverage, no argv/env export | target-only |
+| MON-04 | Nested runtime attribution | Docker/Kind pod UID+container identity, source timestamps, cgroup scope, absent runtime gap, no double-count | target-only |
+| MON-05 | Resource failure evidence | OOM/restart/event/counter reset; no inferred OOM from capacity guard | target-only |
+| MON-06 | Retention and fidelity | Min/max/sum/count rollups, partial coverage, cap/rotation, restart gap, actual oldest retained | target-only |
+| MON-07 | Operation correlation | Unique attempt/phase spans, overlaps, incomplete crash, rollback events, no secret fields | target-only |
+| MON-08 | Historical queries/export | Time/slot report with explicit coverage, bounded sanitized export, no raw argv | target-only |
+| MON-09 | Observer overhead | Comparable measured idle before/after, private memory/CPU/disk budget; reduced cadence reported | target-only |

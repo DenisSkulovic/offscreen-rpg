@@ -1,0 +1,7 @@
+# INF46 bounded dispatch
+
+Sequential T-IDs; parent reads CHANGE and only selected execution section. INF44 record contract; source implementation of event helper independent; edits to existing dev-startup-timing/lifecycle only after INF29 corrections integrated (no concurrent writer); INF45 not required. Each child runs focused positive/negative fixtures, reports files/commands/results and stops. No research swarm.
+
+- T01: Safe operation event writer. Anchors: infra/monitoring/operation-event.mjs (new); infra/monitoring/tests/operation-event.test.mjs (new); tools/dev-environments/src/application/dev-startup-timing.mjs::beginStartupTiming/finishStartupTiming/recordPhase; infra/images/development/startup-timing.sh::startup_timing_begin/end. See [T01](EXECUTION.md#t01-safe-operation-event-writer).
+- T02: Add event timeline to existing startup timing owners. Anchors: tools/dev-environments/src/application/dev-startup-timing.mjs::beginStartupTiming/timePhase/recordPhase/finishStartupTiming; tools/dev-environments/test/dev-startup-timing.test.mjs; infra/images/development/startup-timing.sh; tools/dev-environments/src/application/dev-lifecycle.mjs::runDevTiltLaunch. See [T02](EXECUTION.md#t02-add-event-timeline-to-existing-startup-timing-owners).
+- T03: Other operation entrypoint metadata. Anchors: infra/environments/infra-cli.mjs; infra/environments/release/install.sh; scripts/repo-tools/stack.mjs; infra/verification/verify.mjs. See [T03](EXECUTION.md#t03-other-operation-entrypoint-metadata).
