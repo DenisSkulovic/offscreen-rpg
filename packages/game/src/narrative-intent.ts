@@ -8,7 +8,7 @@ const narrativeIntentKeySchema = z
   .max(80)
   .regex(/^[a-zA-Z0-9_-]+$/);
 
-/** Same non-null bounds as choice.v1 option `risk` in @offscreen/contracts interactions. */
+/** Same non-null bounds as choice.v1 option `risk` in `@offscreen/story-interface` interactions. */
 const narrativeIntentRiskSchema = z.string().trim().min(1).max(300);
 
 export const narrativeIntentPlanSchema = z.strictObject({

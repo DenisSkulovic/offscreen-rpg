@@ -22,7 +22,7 @@ The TypeScript workspace runs a Next.js web application, NestJS API, Temporal wo
 
 ## Requirements and startup
 
-To inspect just the public story prototype, run `pnpm --filter @offscreen/contracts build` and `pnpm --filter @offscreen/web dev` after installing dependencies, then open http://localhost:3000/demo. This route needs neither PostgreSQL nor OAuth credentials. It uses a local authored script and manually advanced demonstration time; state is not saved. The full application startup below still requires its configured dependencies.
+To inspect just the public story prototype, run `pnpm --filter @offscreen/story-interface build` and `pnpm --filter @offscreen/web dev` after installing dependencies, then open http://localhost:3000/demo. This route needs neither PostgreSQL nor OAuth credentials. It uses a local authored script and manually advanced demonstration time; state is not saved. The full application startup below still requires its configured dependencies.
 
 Use Node **24.19.0** (also recorded in `.node-version`) and pnpm **11.19.0**. The system's default Node must match before running package scripts. Install the pinned pnpm with `npm install --global pnpm@11.19.0` if necessary.
 
@@ -124,7 +124,7 @@ The API test compiles with TypeScript's decorator metadata, boots Nest against a
 
 `/api/health/live` indicates process liveness; `/api/health/ready` checks PostgreSQL connectivity. Neither verifies schema compatibility, OAuth provider availability or workflow recovery. `/api/me` requires a valid database session and returns only the user's ID, name and email. All API responses use `Cache-Control: no-store`; authenticated draft pages are rendered dynamically with uncached API reads.
 
-`packages/config` exports shared compiler settings. `packages/contracts` contains browser-safe transport validation and types; `packages/application` contains owned use cases, transactions and revision checking, independent of HTTP frameworks. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. `packages/workflows` owns deterministic Temporal orchestration; worker Activity bindings call application operations.
+`packages/config` exports shared compiler settings. Domain interface packages (for example `@offscreen/story-interface`) contain browser-safe transport validation and types; `packages/story-engine` contains owned use cases, transactions and revision checking, independent of HTTP frameworks. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. `packages/workflows` owns deterministic Temporal orchestration; worker Activity bindings call story-engine operations.
 
 Disposable database suites are [Local integration tests](local-integration-tests.md). They are not part of the ordinary check list above. `pnpm test` remains usable without PostgreSQL.
 

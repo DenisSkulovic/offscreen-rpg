@@ -184,7 +184,7 @@ Authoritative inspections + assertions + safe evidence envelope
  CLI / test runner            local Chamber web workbench
 ```
 
-`@offscreen/game` owns pure rules, `@offscreen/application` owns transactions/state transition, `@offscreen/db` owns persistence, `@offscreen/contracts` owns transport validation, fixture/driver/trace code is developer-only, Nest controllers handle local auth/permission and typed requests, React/TanStack owns workbench state only. Future modular ownership should follow these **reasons to change**, not force every helper into 20 layers.
+`@offscreen/game` owns pure rules, `@offscreen/application` owns transactions/state transition, `@offscreen/db` owns persistence, `@offscreen/lab-interface` and Lab Support interface modules own transport validation, fixture/driver/trace code is developer-only, Nest controllers handle local auth/permission and typed requests, React/TanStack owns workbench state only. Future modular ownership should follow these **reasons to change**, not force every helper into 20 layers.
 
 **Documentation for inexpensive Cursor:** source-adjacent `README` near each real owner with current-vs-target and tests. An individual Change starts with a first-screen source map + exact target criterion + one negative case. This long target is read by heading only.
 

@@ -17,7 +17,7 @@
 
 ## 1. Contract and command semantics
 
-**Version the data first.** Add browser-safe contracts to `packages/contracts/src/chamber-lab.ts` (future suggested owner, not current source). Use strict Zod v4 schemas with inference, no giant bespoke parser. Keep legacy `@offscreen/contracts/chamber` for `chamber.v1–v5` and `@offscreen/contracts/qa` for human QA; a migration bridge may map these into the new catalogue but **must not** erase their identities/history.
+**Version the data first.** Browser-safe Lab wire shapes live in `packages/lab-support/src/interfaces/chamber-lab.ts` and `@offscreen/lab-interface` (`chamber`, `qa`). Use strict Zod v4 schemas with inference, no giant bespoke parser. Legacy `chamber.v1–v5` and human QA catalogue IDs are retained with `automatedPassAllowed: false`; a migration bridge may map these into the new catalogue but **must not** erase their identities/history.
 
 **Core identity vocabulary:**
 
@@ -61,7 +61,7 @@ This is *semantic setup* and must be rejected if a real accepted-shift fixture c
 **Dependency direction:** scenario data + command registry -> run orchestration -> lane-specific adapter -> **real production policy/application operation** -> typed observations/contract assertions. Delivery/UI/framework code must not be imported into `@offscreen/game`. One scenario can run in multiple lanes and produce separate evidence.
 
 **Selected source/module ownership (future):**
-- `packages/contracts/src/chamber-lab.ts`: versioned scenario/run/command/observation public contracts; no Node/DB import.
+- `packages/lab-support/src/interfaces/chamber-lab.ts`: versioned scenario/run/command/observation public contracts; no Node/DB import.
 - `packages/lab-support/src/lab/`: typed fixture recipe validators, app-boundary command adapter, run orchestration/steps, observation/diff/assertion policy, faults under explicitly local composition. Use separate small modules by responsibility; keep `createChamber` legacy API stable until migration. Application keeps a test-only reexport until MA10.
 - `tools/chamber/src/lab/`: CLI, Bench direct pure evaluator, isolated Sandbox provisioning, Connected/held mode adapters and launch commands. Existing `tools/chamber/src/main.ts` mode flags remain compatible until a controlled launcher Change.
 - `apps/api/src/modules/stories/*`: conditional dev routes mapping **only authenticated local Chamber** commands/reads; no normal API developer endpoints.

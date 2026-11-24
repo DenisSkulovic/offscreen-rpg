@@ -23,6 +23,21 @@ export const SCHEMA = 'offscreen.module-graph.v1';
 const SUMMARY_LIMIT = 12;
 const WORKSPACE_SCOPE = '@offscreen/';
 export const FORBIDDEN_APPLICATION_IMPORT = '@offscreen/application';
+export const RETIRED_CONTRACTS_PACKAGE = '@offscreen/contracts';
+/** Schema-only and pure packages that must not depend on Story Engine or Lab Support. */
+export const INTERFACE_LEAF_PACKAGES = new Set([
+  '@offscreen/game',
+  '@offscreen/story-interface',
+  '@offscreen/admin-interface',
+  '@offscreen/identity-interface',
+  '@offscreen/usage-policy',
+  '@offscreen/cache-port',
+  '@offscreen/lab-interface',
+]);
+const FORBIDDEN_LEAF_TO_APPLICATION = new Set([
+  '@offscreen/story-engine',
+  '@offscreen/lab-support',
+]);
 const STORY_ENGINE_ROOT = 'packages/story-engine/src/';
 const RUNTIME_EDGE_KINDS = new Set(['runtime', 'reexport', 'dynamic']);
 /** Pre-MA09 Authority→Writer runtime relative imports (fromFile\\0toFile). */
@@ -162,6 +177,12 @@ export function buildModuleGraph(input) {
       const block = item.manifest[field];
       if (!block || typeof block !== 'object') continue;
       for (const name of Object.keys(block).sort()) {
+        if (name === RETIRED_CONTRACTS_PACKAGE) {
+          errors.push({
+            code: 'forbidden-retired-contracts-dependency',
+            message: `${item.name} must not depend on retired ${RETIRED_CONTRACTS_PACKAGE} (${field})`,
+          });
+        }
         if (!byName.has(name) || name === item.name) continue;
         declaredEdges.push({ from: item.name, to: name, field });
       }
@@ -642,6 +663,13 @@ function classifySpecifier(input) {
     classifyRelative(input);
     return;
   }
+  if (
+    specifier.specifier === RETIRED_CONTRACTS_PACKAGE ||
+    specifier.specifier.startsWith(`${RETIRED_CONTRACTS_PACKAGE}/`)
+  ) {
+    pushMismatch(input, 'forbidden-retired-contracts-import', true);
+    return;
+  }
   const match = matchWorkspacePackage(specifier.specifier, [
     ...input.byName.keys(),
   ]);
@@ -686,6 +714,17 @@ function classifySpecifier(input) {
   }
   if (
     production &&
+    owner &&
+    target &&
+    owner.name !== target.name &&
+    INTERFACE_LEAF_PACKAGES.has(owner.name) &&
+    FORBIDDEN_LEAF_TO_APPLICATION.has(target.name)
+  ) {
+    pushMismatch(input, 'forbidden-pure-to-application', true);
+    return;
+  }
+  if (
+    production &&
     RUNTIME_EDGE_KINDS.has(specifier.kind) &&
     owner &&
     target &&
@@ -696,17 +735,6 @@ function classifySpecifier(input) {
       target.name === '@offscreen/lab-support'
     ) {
       pushMismatch(input, 'forbidden-engine-to-lab', true);
-      return;
-    }
-    if (
-      (owner.name === '@offscreen/contracts' ||
-        owner.name === '@offscreen/story-interface' ||
-        owner.name === '@offscreen/lab-interface' ||
-        owner.name === '@offscreen/game') &&
-      (target.name === '@offscreen/story-engine' ||
-        target.name === '@offscreen/lab-support')
-    ) {
-      pushMismatch(input, 'forbidden-pure-to-application', true);
       return;
     }
   }

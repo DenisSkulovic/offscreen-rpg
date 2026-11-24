@@ -11,7 +11,7 @@
 - `apps/web/src/features/play/ui/narrative-passage.tsx`, `intention-choice.tsx`, `scene-media.tsx`: original V1 source presentation, protected option behavior and optional validated inline image.
 - `apps/web/src/features/play/history.tsx`: `StoryHistoryView` loads authenticated latest-first history on demand through a viewer/story-keyed `useInfiniteQuery`, rendering original source paragraphs, numeric `before` cursor.
 - `apps/web/src/features/play/ui/campaign-offer.tsx`: campaign offers include **explore/back vs commit**, using `useOfferPath` keyed by offer identity and the existing campaign-command owner.
-- `packages/contracts/src/stories.ts`: V1 passage content `{version:1,title,paragraphs}` (1–10, each 1–6000 chars); history record `{id,sequence,content}` capped at 20/page; current snapshot optional validated `appearance`. No rich block AST, historic choice or original artistic look in history.
+- `packages/story-interface/src/stories.ts`: V1 passage content `{version:1,title,paragraphs}` (1–10, each 1–6000 chars); history record `{id,sequence,content}` capped at 20/page; current snapshot optional validated `appearance`. No rich block AST, historic choice or original artistic look in history.
 - `apps/web/src/shared/api/story-history-query.ts`: `storyHistoryInfiniteOptions` owns the existing reader source; do not create another cache or guess random history seek.
 
 **Reinspection gate:** Cursor must fetch the latest HEAD/source/dirty state before the first code edit; it may differ from this dated source basis.

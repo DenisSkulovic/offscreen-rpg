@@ -2,7 +2,7 @@
 
 **Final-wave conditional commission (2026-11-24):** Owner commissioned DO06 and DO07 now. DO06 may execute after DO05 integrates (DO03 already integrated); DO04 need not land first. DO07 may execute only after all six extractions integrate and no live residual module remains. Each assigned parent checks predecessor receipts and exact source/export postconditions on latest undertaking HEAD before editing; if they pass, no further ChatGPT release or approval is needed. Genuine semantic contradictions remain stop conditions. Coordinate joins with DO04 wave B custodian while active; otherwise the sole remaining parent owns its join. No global queue change, no new proof or completion credit.
 
-**Wave B release (2026-11-24):** DO01–DO05 integrated source-only. DO04 was the wave B custodian. Wave B is joined. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 and DO07 are conditionally commissioned; their execution gates are DO05 and all six respectively. No cluster, provider, DB mutation, Documents or CACHE scope.
+**Wave B release (2026-11-24):** DO01–DO05 integrated source-only. DO04 was the wave B custodian. Wave B is joined. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 and DO07 are integrated source-only. No cluster, provider, DB mutation, Documents or CACHE scope.
 
 | Change | Dependency | Status |
 | --- | --- | --- |
@@ -12,7 +12,7 @@
 | [DO04 Authority protocol](../../../changes/archive/2026-11/platform-operations/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Done, source-only |
 | [DO05 Storyteller / engine](../../../changes/archive/2026-11/platform-operations/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Done, source-only |
 | [DO06 Lab ownership](../../../changes/archive/2026-11/platform-operations/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Done / source-only |
-| [DO07 Retire contracts](../../../changes/open/2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Commissioned / Ready after all six |
+| [DO07 Retire contracts](../../../changes/archive/2026-11/platform-operations/2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Done source-only |
 
 ## Wave A historical execution and serialized joins
 

@@ -33,9 +33,9 @@ test('web-only source push runs code but not integration', () => {
   assert.equal(scope.touchesWeb, true);
 });
 
-test('contracts or lockfile changes are never docs-only and force integration', () => {
+test('interface packages or lockfile changes are never docs-only and force integration', () => {
   for (const path of [
-    'packages/contracts/src/stories.ts',
+    'packages/story-interface/src/stories.ts',
     'pnpm-lock.yaml',
     'Tiltfile',
     'infra/kubernetes/lab/app-release/Dockerfile.api',

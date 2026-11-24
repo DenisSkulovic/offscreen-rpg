@@ -42,11 +42,27 @@ test('Game Authority, Worker and Web closures keep their runtime workspace depen
   assert.equal(worker.includes('apps/game-authority'), false);
 
   const web = productionWorkspaceClosure(repoRoot, 'apps/web');
-  assert.ok(web.includes('packages/lab-interface'));
-  assert.equal(web.includes('packages/contracts'), false);
-  assert.ok(web.includes('packages/story-interface'));
-  assert.ok(web.includes('packages/game'));
-  assert.equal(web.includes('packages/lab-support'), false);
+  assert.deepEqual(web, [
+    'apps/web',
+    'packages/admin-interface',
+    'packages/documents',
+    'packages/game',
+    'packages/identity-interface',
+    'packages/lab-interface',
+    'packages/object-storage',
+    'packages/story-interface',
+  ]);
+  for (const forbidden of [
+    'packages/story-engine',
+    'packages/db',
+    'packages/admin',
+    'packages/lab-support',
+    'packages/game-authority-protocol',
+    'packages/cache',
+    'packages/cache-port',
+  ]) {
+    assert.equal(web.includes(forbidden), false, forbidden);
+  }
 });
 
 test('devDependencies and unknown workspace specs are rejected', () => {

@@ -131,7 +131,7 @@ test('classifies only the five bounded source boundaries', () => {
   assert.match(classifyKnowledgeBoundary(content, contentText).why, /widget-orientation/);
   assert.equal(classifyKnowledgeBoundary('content/worlds/example/WORLD.md', '# World\n'), null);
 
-  const command = 'packages/contracts/src/widget.ts';
+  const command = 'packages/story-interface/src/widget.ts';
   const commandText = 'export const widgetCommandSchema = z.strictObject({ kind: z.literal("widget") });\n';
   assert.equal(classifyKnowledgeBoundary(command, commandText).kind, 'command-authority');
   assert.equal(
@@ -141,7 +141,7 @@ test('classifies only the five bounded source boundaries', () => {
 });
 
 test('review records a disposition and never treats code as the product bible', () => {
-  const command = 'packages/contracts/src/widget.ts';
+  const command = 'packages/story-interface/src/widget.ts';
   const commandText = 'export const widgetCommandSchema = z\n  .strictObject({ kind: z.literal("widget") });\n';
   const unowned = reviewKnowledgeCoverage([{ path: command, text: commandText, owners: [] }], '');
   assert.equal(unowned.status, 'unknown review needed');

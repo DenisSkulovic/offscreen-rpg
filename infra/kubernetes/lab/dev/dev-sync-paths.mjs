@@ -68,9 +68,6 @@ export function isUnsafeDevSyncPath(filePath) {
   ) {
     return true;
   }
-  if (file.startsWith('packages/contracts/') && file.includes('/generated/')) {
-    return true;
-  }
   return false;
 }
 

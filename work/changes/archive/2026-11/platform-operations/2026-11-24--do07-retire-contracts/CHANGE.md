@@ -1,6 +1,6 @@
 # DO07 | retire contracts
 
-**Status: Owner-commissioned / Ready after prerequisites. Kind: implementation. Profile: CONTRACT.** Baseline `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Integration target `undertaking/storyteller-workshop`. Prerequisite: All DO01–DO06 integrated on the undertaking; residual contracts exports/source/test modules exhausted.
+**Status: Done. Kind: implementation. Profile: CONTRACT.** Source-only. Starting HEAD `2d002bd787863ef34b262866a95b7273aa8a661b`. Baseline `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Integration target `undertaking/storyteller-workshop`. Prerequisite: All DO01–DO06 integrated on the undertaking; residual contracts exports/source/test modules exhausted.
 
 [Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 
@@ -49,4 +49,7 @@ After actual prerequisites land and the narrow preflight passes, execute T01 and
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 |---|---|---|---|---|---|---|
-| To fill at close for every impacted claim | technical/product | pending | pending | not executed | pending | pending |
+| Product behavior | product | unchanged because no player, staff, authorization or spending behavior changes | source-only workspace deletion; starting HEAD `2d002bd787863ef34b262866a95b7273aa8a661b` | source-inspected | no validator or route edits | N/A |
+| Code organization | `docs/technical/platform/topology.md#code-organization` | changed: residual contracts workspace removed | same HEAD plus this Change | source-inspected | module-graph tests reject old import and dependency, including type-only (31/31) | topology paragraphs updated |
+| Package graph | module graph and eslint | changed: explicit interface-leaf DAG; DO05 residual exception removed | `pnpm repo:module-graph:test` 31/31 PASS | source-inspected | Web→private protocol, leaf→engine, engine→lab, retired package name rejected | graph and eslint rules updated |
+| Full typecheck | turbo build/typecheck | unchanged for this Change | 52/54 tasks successful; `@offscreen/api-integration` typecheck fails on pre-existing `library-batch-read.test.ts` exactOptionalPropertyTypes at the same baseline SHA | baseline failure, not masked | file not in this diff; reproduced on `2d002bd7` | N/A |

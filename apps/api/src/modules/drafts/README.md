@@ -23,6 +23,6 @@
 
 [Stories frontend map](../../../../web/src/features/stories/README.md) distinguishes `DraftEditor` local unsaved form and `OpeningPreviewPanel` generation/Start. Current Start client keeps a UUID but reconstructs body from mutable form settings; W09 freezes exact submitted bytes and GET-reconciles first. Current draft save body/revision remains owned by Nest.
 
-**Read deeper only when:** [story lifecycle contract](../../../../../docs/technical/engine/lifecycle-and-compatibility.md) for semantics; [draft Zod](../../../../../packages/contracts/src/drafts.ts) and [opening Zod](../../../../../packages/contracts/src/openings.ts) for wire; [browser draft](../../../../../tools/api-integration/test/drafts.browser.ts) / [Start proof](../../../../../tools/api-integration/test/story-start.integration.ts) for tests. A tested mock is not proof of provider settlement.
+**Read deeper only when:** [story lifecycle contract](../../../../../docs/technical/engine/lifecycle-and-compatibility.md) for semantics; [draft Zod](../../../../../packages/story-interface/src/drafts.ts) and [opening Zod](../../../../../packages/story-interface/src/openings.ts) for wire; [browser draft](../../../../../tools/api-integration/test/drafts.browser.ts) / [Start proof](../../../../../tools/api-integration/test/story-start.integration.ts) for tests. A tested mock is not proof of provider settlement.
 
 **Maintenance:** update this map on API status/schema/controller owner changes. Cosmetic form rewrites do not require a full description of every input field here.

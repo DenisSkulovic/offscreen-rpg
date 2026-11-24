@@ -105,26 +105,26 @@ test('a declared workspace import is a resolved source edge', () => {
     baselineSha: 'abc',
     typescript,
     packages: [
-      packageRecord('packages/contracts', '@offscreen/contracts', {
+      packageRecord('packages/story-interface', '@offscreen/story-interface', {
         './stories': './dist/stories.js',
       }),
       packageRecord(
         'packages/application',
         '@offscreen/application',
         { '.': './dist/index.js' },
-        { '@offscreen/contracts': 'workspace:*' },
+        { '@offscreen/story-interface': 'workspace:*' },
       ),
     ],
     sources: [
       {
         path: 'packages/application/src/stories/index.ts',
-        text: "import { story } from '@offscreen/contracts/stories';\nexport const value = story;\n",
+        text: "import { story } from '@offscreen/story-interface/stories';\nexport const value = story;\n",
       },
     ],
   });
   assert.equal(report.result, 'clear');
   assert.equal(report.sourceEdges[0]?.resolved, true);
-  assert.equal(report.sourceEdges[0]?.toPackage, '@offscreen/contracts');
+  assert.equal(report.sourceEdges[0]?.toPackage, '@offscreen/story-interface');
   assert.deepEqual(report.errors, []);
 });
 
@@ -133,7 +133,7 @@ test('an undeclared production import and a missing export name the source file'
     baselineSha: 'abc',
     typescript,
     packages: [
-      packageRecord('packages/contracts', '@offscreen/contracts', {
+      packageRecord('packages/story-interface', '@offscreen/story-interface', {
         './stories': './dist/stories.js',
       }),
       packageRecord('packages/application', '@offscreen/application', {
@@ -143,7 +143,7 @@ test('an undeclared production import and a missing export name the source file'
     sources: [
       {
         path: 'packages/application/src/stories/index.ts',
-        text: "import { story } from '@offscreen/contracts/missing';\nimport { other } from '@offscreen/contracts/stories';\n",
+        text: "import { story } from '@offscreen/story-interface/missing';\nimport { other } from '@offscreen/story-interface/stories';\n",
       },
     ],
   });
@@ -152,12 +152,12 @@ test('an undeclared production import and a missing export name the source file'
   );
   assert.ok(
     codes.includes(
-      'unknown-export-subpath packages/application/src/stories/index.ts @offscreen/contracts/missing',
+      'unknown-export-subpath packages/application/src/stories/index.ts @offscreen/story-interface/missing',
     ),
   );
   assert.ok(
     codes.includes(
-      'undeclared-production-import packages/application/src/stories/index.ts @offscreen/contracts/stories',
+      'undeclared-production-import packages/application/src/stories/index.ts @offscreen/story-interface/stories',
     ),
   );
   assert.equal(report.result, 'fail');
@@ -241,7 +241,7 @@ test('tests may use devDependencies and stay off the production graph', () => {
     baselineSha: 'abc',
     typescript,
     packages: [
-      packageRecord('packages/contracts', '@offscreen/contracts', {
+      packageRecord('packages/story-interface', '@offscreen/story-interface', {
         '.': './dist/index.js',
       }),
       packageRecord(
@@ -249,17 +249,17 @@ test('tests may use devDependencies and stay off the production graph', () => {
         '@offscreen/application',
         { '.': './dist/index.js' },
         {},
-        { '@offscreen/contracts': 'workspace:*' },
+        { '@offscreen/story-interface': 'workspace:*' },
       ),
     ],
     sources: [
       {
         path: 'packages/application/src/stories/index.test.ts',
-        text: "import { story } from '@offscreen/contracts';\n",
+        text: "import { story } from '@offscreen/story-interface';\n",
       },
       {
         path: 'packages/application/dist/stories/generated.ts',
-        text: "import { story } from '@offscreen/contracts';\n",
+        text: "import { story } from '@offscreen/story-interface';\n",
       },
     ],
   });
@@ -837,4 +837,102 @@ test('forbidden private authority protocol import rejects web and workflows prod
     ),
   );
   assert.equal(apiAccepted.result, 'clear');
+});
+
+test('retired @offscreen/contracts imports fail for runtime and type-only sources', () => {
+  for (const text of [
+    "import { story } from '@offscreen/contracts/stories';\nexport const value = story;\n",
+    "import type { Story } from '@offscreen/contracts/stories';\nexport type Value = Story;\n",
+  ]) {
+    const report = buildModuleGraph({
+      baselineSha: 'test',
+      typescript,
+      packages: [
+        packageRecord('packages/application', '@offscreen/application', {
+          '.': './dist/index.js',
+        }),
+      ],
+      sources: [
+        {
+          path: 'packages/application/src/stories/index.ts',
+          text,
+        },
+      ],
+    });
+    assert.ok(
+      report.errors.some((item) => item.code === 'forbidden-retired-contracts-import'),
+      text,
+    );
+    assert.equal(report.result, 'fail', text);
+  }
+});
+
+test('manifest dependency on retired @offscreen/contracts fails closed', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      packageRecord(
+        'packages/game',
+        '@offscreen/game',
+        { '.': './dist/index.js' },
+        { '@offscreen/contracts': 'workspace:*' },
+      ),
+    ],
+    sources: [],
+  });
+  assert.ok(
+    report.errors.some(
+      (item) => item.code === 'forbidden-retired-contracts-dependency',
+    ),
+  );
+  assert.equal(report.result, 'fail');
+});
+
+test('leaf interface type-only import of story-engine fails', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      storyEnginePackage,
+      packageRecord('packages/story-interface', '@offscreen/story-interface', {
+        '.': './dist/index.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'packages/story-interface/src/stories.ts',
+        text: "import type { StoryResolution } from '@offscreen/story-engine';\nexport type Probe = StoryResolution;\n",
+      },
+    ],
+  });
+  assert.ok(
+    report.errors.some((item) => item.code === 'forbidden-pure-to-application'),
+  );
+  assert.equal(report.result, 'fail');
+});
+
+test('web production source importing private authority protocol fails type-only', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'test',
+    typescript,
+    packages: [
+      gameAuthorityProtocolPackage,
+      packageRecord('apps/web', '@offscreen/web', { '.': './dist/index.js' }),
+    ],
+    sources: [
+      {
+        path: 'apps/web/src/features/play/lib/version.ts',
+        text: "import type { gameAuthoritySeamVersion } from '@offscreen/game-authority-protocol/game-authority';\nexport type Version = typeof gameAuthoritySeamVersion;\n",
+      },
+    ],
+  });
+  assert.ok(
+    report.errors.some(
+      (item) =>
+        item.code === 'forbidden-private-authority-protocol' &&
+        item.file === 'apps/web/src/features/play/lib/version.ts',
+    ),
+  );
+  assert.equal(report.result, 'fail');
 });

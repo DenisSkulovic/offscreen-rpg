@@ -4,7 +4,7 @@
 
 **Owns:** the HTTP rules that apply across player routes and that no single controller owns: authenticated actor scope, frozen operation identity, an accepted `202` versus a committed read, GET truth versus an SSE hint, error and uncertainty recovery, and private DTO projection. [Service calls are not player routes](#service-calls-are-not-player-routes) says a proposed service command is not one of those routes.
 
-**Does not own:** the route inventory ([API map](../../../apps/api/README.md), [story routes](../../../apps/api/src/modules/stories/README.md), [draft and opening routes](../../../apps/api/src/modules/drafts/README.md)), Zod shapes ([contracts](../../../packages/contracts/README.md)), session policy ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), client cache and reload UX ([Commands and hints](../client/state-and-server-boundary.md#commands-and-hints)), Temporal delivery ([Story execution with Temporal](execution-and-delivery.md)), service ownership ([Proposed service ownership](topology.md#proposed-service-ownership)), or staff grants ([Admin topology](../admin/topology-and-authorization.md)).
+**Does not own:** the route inventory ([API map](../../../apps/api/README.md), [story routes](../../../apps/api/src/modules/stories/README.md), [draft and opening routes](../../../apps/api/src/modules/drafts/README.md)), Zod shapes ([story-interface](../../../packages/story-interface/package.json) and sibling domain interface packages), session policy ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), client cache and reload UX ([Commands and hints](../client/state-and-server-boundary.md#commands-and-hints)), Temporal delivery ([Story execution with Temporal](execution-and-delivery.md)), service ownership ([Proposed service ownership](topology.md#proposed-service-ownership)), or staff grants ([Admin topology](../admin/topology-and-authorization.md)).
 
 **Status:** source-inspected at `b3113814` for the headings that describe handlers. Those statements are what those files do. [Service calls are not player routes](#service-calls-are-not-player-routes) records one internal command and still adds no player route. This page adds no player right and no retry. The named integration tests were read and were not re-run. No provider call was made.
 
@@ -139,7 +139,7 @@ An uncertain generation is reported on the receipt as `state: 'uncertain'` and `
 
 **Normative status:** source-inspected for the public schemas and presenters named here. It is not an audit of every JSON key on every route, and it adds no disclosure.
 
-**Owner:** this heading, for the cross-route projection rule. The Zod objects stay in [contracts](../../../packages/contracts/README.md).
+**Owner:** this heading, for the cross-route projection rule. The Zod objects stay in domain interface packages (for example `@offscreen/story-interface`).
 
 A player response is an authorized projection for the session owner. It is not the stored generation row.
 
@@ -225,9 +225,9 @@ Read at `b3113814`, and not re-executed:
 - [scripted opening busy check](../../../packages/application/src/generations/openings.ts)
 - [draft save](../../../packages/application/src/drafts/index.ts)
 - [receipt reader](../../../packages/application/src/stories/resolution-receipt.ts)
-- [story contracts](../../../packages/contracts/src/stories.ts)
-- [opening contracts](../../../packages/contracts/src/openings.ts)
-- [interaction contracts](../../../packages/contracts/src/interactions.ts)
+- [story wire shapes](../../../packages/story-interface/src/stories.ts)
+- [opening wire shapes](../../../packages/story-interface/src/openings.ts)
+- [interaction wire shapes](../../../packages/story-interface/src/interactions.ts)
 - [playable presentation](../../../packages/storyteller/src/tasks/playable-proposal.ts)
 - [resolution HTTP test](../../../tools/api-integration/test/story-resolution.integration.ts)
 - [SSE HTTP test](../../../tools/api-integration/test/story-updates.integration.ts)

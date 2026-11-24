@@ -141,12 +141,12 @@ Read at `b3113814`, and not re-executed. Admin policy and the situation read lat
 - [local store](../../../packages/documents/src/local-store.ts) and [S3 store](../../../packages/documents/src/s3-store.ts)
 - [canonical knowledge](../../../packages/application/src/storyteller/canonical-knowledge.ts) `loadCanonicalKnowledge`
 - [story-update hub](../../../apps/api/src/modules/stories/story-update-hub.ts)
-- [hint schema](../../../packages/contracts/src/stories.ts) `storyUpdateHintSchema`
+- [hint schema](../../../packages/story-interface/src/stories.ts) `storyUpdateHintSchema`
 - [admin actor service](../../../apps/api/src/modules/admin/admin-actor-service.ts) `requireCapability`
 - [admin route map](../../../apps/api/src/modules/admin/README.md) campaign situation route
 - [admin policy](../../../packages/admin/src/policy.ts) case and campaign scope
 - [situation read](../../../packages/admin/src/situation-reads.ts)
-- [situation schema](../../../packages/contracts/src/admin.ts) `supportSituationV1Schema`
+- [situation schema](../../../packages/admin-interface/src/admin.ts) `supportSituationV1Schema`
 - [operation trace](../../../packages/storyteller/src/providers/operation-trace.ts)
 - [lab evidence redaction](../../../packages/lab-support/src/lab/lab-evidence.ts)
 - [worker activities](../../../apps/worker/src/activities/index.ts) and [worker map](../../../apps/worker/README.md)

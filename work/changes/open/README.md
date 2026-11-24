@@ -8,7 +8,7 @@
 
 ## Near-term domain ownership sequence (2026-11-24)
 
-**Wave B release (2026-11-24):** DO01–DO05 integrated source-only. DO04 was the wave B custodian. Wave B is joined. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 is integrated source-only. DO07 stays gated on all six extractions and an empty residual module set. No cluster, provider, DB mutation, Documents or CACHE scope.
+**Wave B release (2026-11-24):** DO01–DO05 integrated source-only. DO04 was the wave B custodian. Wave B is joined. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 and DO07 are integrated source-only. The contracts workspace is removed. No cluster, provider, DB mutation, Documents or CACHE scope.
 
 | Change | Dependency | Status |
 | --- | --- | --- |
@@ -18,8 +18,6 @@
 | [DO04 Authority protocol](../archive/2026-11/platform-operations/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Done, source-only |
 | [DO05 Storyteller / engine](../archive/2026-11/platform-operations/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Done, source-only |
 | [DO06 Lab ownership](../archive/2026-11/platform-operations/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Done / source-only |
-| [DO07 Retire contracts](2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Commissioned / Ready after all six |
-
 [Retirement program](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [Parallel execution rules](../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md).
 
 **Purpose:** Keep this directory small. An entry is here only because it is being implemented, is intended for the next few days, or has already started and needs an honest completion/cancellation decision. **A folder in open is not necessarily Ready or automatically commissioned.** The one global default selector is [work/QUEUE.md](../../QUEUE.md); explicit owner commissions can exist separately.

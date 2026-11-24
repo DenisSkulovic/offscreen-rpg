@@ -37,7 +37,7 @@ This is a **composite** picture of the important journeys, not a claim that open
 | `packages/workflows` | Temporal workflows and contracts | Timing/orchestration, not final business authority |
 | `packages/db` | Schema and DB access tools | Official relational ledger |
 | `packages/documents` | Exact-version immutable documents/Library and checkpoint storage | Official content-addressed source, with DB references |
-| `packages/contracts` | Shared API/event/task schemas | Makes components agree about data |
+| Domain interface packages (`story-interface`, `admin-interface`, `identity-interface`, `lab-interface`, …) | Shared wire validation and transport types (retired monolithic `@offscreen/contracts`) | Makes components agree about data |
 | `packages/admin` | Staff identity, permissions and support operations | Separate staff powers with explicit gates |
 | `packages/game` | Game-specific mechanics/rules components | Not automatically a separate process |
 | `infra/kubernetes/lab` | Historical name for disposable local cluster/runtime work | **Not** a fifth product service; the term's boundaries need SEM01 audit |

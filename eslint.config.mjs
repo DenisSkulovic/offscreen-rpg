@@ -11,6 +11,30 @@ function banGroups(entries) {
   }));
 }
 
+const interfaceLeafBackendPatterns = banGroups([
+  [
+    [
+      '@offscreen/db',
+      '@offscreen/db/*',
+      '@offscreen/object-storage',
+      '@offscreen/object-storage/*',
+      '@offscreen/application',
+      '@offscreen/application/*',
+      '@offscreen/story-engine',
+      '@offscreen/story-engine/*',
+      '@offscreen/storyteller',
+      '@offscreen/storyteller/*',
+      '@offscreen/workflows',
+      '@offscreen/workflows/*',
+      '@offscreen/worker',
+      '@offscreen/worker/*',
+      '**/apps/**',
+      '**/packages/**',
+    ],
+    'Domain interface packages must stay free of backend packages.',
+  ],
+]);
+
 const webBackendPatterns = banGroups([
   [
     ['@offscreen/db', '@offscreen/db/*'],
@@ -107,109 +131,56 @@ export default ts.config(
     },
   },
   {
-    files: ['packages/contracts/src/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: banGroups([
-            [
-              [
-                '@offscreen/db',
-                '@offscreen/db/*',
-                '@offscreen/application',
-                '@offscreen/application/*',
-                '@offscreen/storyteller',
-                '@offscreen/storyteller/*',
-                '@offscreen/workflows',
-                '@offscreen/workflows/*',
-                '@offscreen/worker',
-                '@offscreen/worker/*',
-                '**/apps/**',
-                '**/packages/**',
-              ],
-              'Contracts must stay free of backend packages.',
-            ],
-          ]),
-        },
-      ],
-    },
-  },
-  {
-    files: [
-      'packages/lab-support/src/interfaces/creative-exploration-evaluation.ts',
-    ],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: '@offscreen/storyteller',
-              message: 'Contracts must stay free of backend packages.',
-            },
-          ],
-          patterns: [
-            ...banGroups([
-              [
-                [
-                  '@offscreen/db',
-                  '@offscreen/db/*',
-                  '@offscreen/application',
-                  '@offscreen/application/*',
-                  '@offscreen/workflows',
-                  '@offscreen/workflows/*',
-                  '@offscreen/worker',
-                  '@offscreen/worker/*',
-                  '**/apps/**',
-                  '**/packages/**',
-                ],
-                'Contracts must stay free of backend packages.',
-              ],
-            ]),
-            {
-              group: [
-                '@offscreen/storyteller/**',
-                '!@offscreen/storyteller/context',
-                '@offscreen/storyteller/context/*',
-                '!@offscreen/storyteller/context/creative-exploration',
-              ],
-              message: 'Contracts must stay free of backend packages.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
     files: ['packages/story-interface/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
-          patterns: banGroups([
-            [
-              [
-                '@offscreen/db',
-                '@offscreen/db/*',
-                '@offscreen/object-storage',
-                '@offscreen/object-storage/*',
-                '@offscreen/application',
-                '@offscreen/application/*',
-                '@offscreen/story-engine',
-                '@offscreen/story-engine/*',
-                '@offscreen/storyteller',
-                '@offscreen/storyteller/*',
-                '@offscreen/workflows',
-                '@offscreen/workflows/*',
-                '@offscreen/worker',
-                '@offscreen/worker/*',
-                '**/apps/**',
-                '**/packages/**',
-              ],
-              'Story interface must stay free of backend packages.',
-            ],
-          ]),
+          patterns: interfaceLeafBackendPatterns,
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/admin-interface/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: interfaceLeafBackendPatterns,
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/identity-interface/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: interfaceLeafBackendPatterns,
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/usage-policy/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: interfaceLeafBackendPatterns,
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/cache-port/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: interfaceLeafBackendPatterns,
         },
       ],
     },
@@ -220,29 +191,7 @@ export default ts.config(
       'no-restricted-imports': [
         'error',
         {
-          patterns: banGroups([
-            [
-              [
-                '@offscreen/db',
-                '@offscreen/db/*',
-                '@offscreen/object-storage',
-                '@offscreen/object-storage/*',
-                '@offscreen/application',
-                '@offscreen/application/*',
-                '@offscreen/story-engine',
-                '@offscreen/story-engine/*',
-                '@offscreen/storyteller',
-                '@offscreen/storyteller/*',
-                '@offscreen/workflows',
-                '@offscreen/workflows/*',
-                '@offscreen/worker',
-                '@offscreen/worker/*',
-                '**/apps/**',
-                '**/packages/**',
-              ],
-              'Lab interface must stay free of backend packages.',
-            ],
-          ]),
+          patterns: interfaceLeafBackendPatterns,
         },
       ],
     },
