@@ -56,6 +56,15 @@ Agent reads this catalog and current operator entry, verifies HEAD, checkout, ho
 
 ## Existing verification owners and current source suite
 
+Current unified source entry (no cluster mutation):
+
+```bash
+pnpm infra:verify --suite source
+pnpm infra:verify --suite source --json
+```
+
+`smoke` and `full` are not implemented yet (exit 2). The source suite invokes only `node --test` groups listed below.
+
 - `node --test infra/environments/platform-plan.test.mjs infra/images/distribution/kind-image-loader.test.mjs infra/images/development/sync-plan.test.mjs`.
 - `node --test tools/dev-environments/test/*.test.mjs` (inspect actual test prerequisites; do not invoke standalone trial CLIs).
 - `node --test infra/workloads/tests/*.test.mjs` (Helm required for render tests).

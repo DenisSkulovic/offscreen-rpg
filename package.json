@@ -61,6 +61,7 @@
     "infra:up": "node infra/environments/infra-cli.mjs up",
     "infra:status": "node infra/environments/infra-cli.mjs status",
     "infra:repair": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/repo-tools/repair-docker-desktop.ps1",
+    "infra:verify": "node infra/verification/verify.mjs",
     "fixture:import": "node scripts/repo-tools/import-pinned-fixture.mjs",
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0",
     "repo:commit:check:test": "node --test scripts/repo-tools/check-commit-message.test.mjs",
