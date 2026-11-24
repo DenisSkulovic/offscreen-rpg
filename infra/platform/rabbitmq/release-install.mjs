@@ -471,7 +471,7 @@ stringData:
     if (!applyBroker.ok) {
       return refuse(
         'broker-webhook-failed',
-        'Broker was not accepted by the operator webhook',
+        'Broker was not accepted by the operator webhook: ' + String(applyBroker.stderr ?? '').slice(-1600),
       );
     }
     mutated = true;
