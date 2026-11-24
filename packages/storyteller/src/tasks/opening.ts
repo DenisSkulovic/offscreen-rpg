@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { draftSchema } from '@offscreen/contracts/drafts';
+import { draftSchema } from '@offscreen/story-interface/drafts';
 import { premiseContentSchema } from '../context/premise';
 
 // Only narrative content comes from the model. Source identity stays outside it.

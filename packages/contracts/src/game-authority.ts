@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { respondToStorySchema } from './stories';
+import { respondToStorySchema } from '@offscreen/story-interface/stories';
 
 /** Private Nest → Game Authority contract for one story seam. Not a player route. */
 export const gameAuthoritySeamVersion = 'game-authority.story-seam.v1' as const;

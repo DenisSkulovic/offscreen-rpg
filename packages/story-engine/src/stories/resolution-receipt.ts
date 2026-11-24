@@ -3,7 +3,7 @@ import {
   canonicalResolutionRequestJson,
   resolutionOperationReceiptSchema,
   type ResolutionOperationReceipt,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { story, storyResolution } from '@offscreen/db/story-schema';

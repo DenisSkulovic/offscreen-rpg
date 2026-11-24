@@ -17,7 +17,7 @@ import {
 import {
   campaignHoldSchema as contractsCampaignHoldSchema,
   campaignHoldsSchema as contractsCampaignHoldsSchema,
-} from '@offscreen/contracts/campaign-holds';
+} from '@offscreen/story-interface/campaign-holds';
 
 test('admin public surface exports resolve from @offscreen/admin', () => {
   assert.equal(typeof AdminSessionError, 'function');

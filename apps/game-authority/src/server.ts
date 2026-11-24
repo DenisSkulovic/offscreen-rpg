@@ -8,7 +8,7 @@ import {
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
 } from '@offscreen/contracts/game-authority';
-import { forkStorySchema, startStorySchema } from '@offscreen/contracts/stories';
+import { forkStorySchema, startStorySchema } from '@offscreen/story-interface/stories';
 import { z } from 'zod';
 import {
   parseStorytellerTaskCustodyClaimRequest,

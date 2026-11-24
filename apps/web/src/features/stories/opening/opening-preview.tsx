@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { Draft } from '@offscreen/contracts/drafts';
-import type { OpeningPreview } from '@offscreen/contracts/openings';
-import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
+import type { Draft } from '@offscreen/story-interface/drafts';
+import type { OpeningPreview } from '@offscreen/story-interface/openings';
+import type { MechanicalContentSummary } from '@offscreen/story-interface/openings';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { Action } from '@/src/shared/ui/action';
 import { SystemNotice } from '@/src/shared/ui/system-notice';

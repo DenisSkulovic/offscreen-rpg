@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { draftContentSchema } from '@offscreen/contracts/drafts';
-import type { Draft, DraftContent } from '@offscreen/contracts/drafts';
-import { storytellerReferenceSchema } from '@offscreen/contracts/storytellers';
+import { draftContentSchema } from '@offscreen/story-interface/drafts';
+import type { Draft, DraftContent } from '@offscreen/story-interface/drafts';
+import { storytellerReferenceSchema } from '@offscreen/story-interface/storytellers';
 
 /** RHF input schema: same fields as draft content, no Zod defaults (avoids input/output skew). */
 export const draftEditorFormSchema = z.strictObject({

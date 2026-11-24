@@ -1,12 +1,21 @@
 import { z } from 'zod';
 import { activityAccessSchema } from '@offscreen/game/immediate-actions';
-import { acceptedActivityPlanViewSchema } from './campaign';
-import { interactionSchema } from './interactions';
+import { acceptedActivityPlanViewSchema } from '@offscreen/story-interface/campaign';
+import { interactionSchema } from '@offscreen/story-interface/interactions';
 import {
   passageContentSchema,
-  startChamberSchema,
   storyItemSchema,
-} from './stories';
+} from '@offscreen/story-interface/stories';
+
+export const startChamberSchema = z.strictObject({
+  scenario: z.enum([
+    'chamber.v1',
+    'chamber.v2',
+    'chamber.v3',
+    'chamber.v4',
+    'chamber.v5',
+  ]),
+});
 
 export type ChamberScenario = z.infer<typeof startChamberSchema>['scenario'];
 

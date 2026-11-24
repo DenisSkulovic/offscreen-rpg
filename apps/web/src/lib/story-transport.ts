@@ -1,5 +1,5 @@
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { reconcileStorySnapshot } from '@/src/shared/api/story-snapshot-reconcile';
 
 const requestTimeoutMs = 10000;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
 import { formatWorldDuration } from '@offscreen/game/calendar';
 import type { CampaignCommandApi } from '../api/campaign-command';
 import {

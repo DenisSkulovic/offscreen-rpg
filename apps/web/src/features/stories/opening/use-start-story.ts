@@ -10,7 +10,7 @@ import {
 } from '@/src/shared/api/start-intent-store';
 import { readLatestOpening } from '@/src/shared/api/opening-query';
 import { queryKeys } from '@/src/shared/api/query-keys';
-import type { OpeningPreview } from '@offscreen/contracts/openings';
+import type { OpeningPreview } from '@offscreen/story-interface/openings';
 
 export type StartStoryResult =
   | { kind: 'started'; storyId: string }

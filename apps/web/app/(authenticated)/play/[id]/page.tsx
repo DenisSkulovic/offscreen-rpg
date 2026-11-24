@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { requireViewer } from '@/src/server/viewer';
 import { readNestJson } from '@/src/server/nest-reader';
 import { seedAuthorizedQuery } from '@/src/server/seed-authorized-query';

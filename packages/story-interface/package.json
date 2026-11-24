@@ -1,0 +1,58 @@
+{
+  "name": "@offscreen/story-interface",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./stories": {
+      "types": "./dist/src/stories.d.ts",
+      "default": "./dist/src/stories.js"
+    },
+    "./scene-publication": {
+      "types": "./dist/src/scene-publication.d.ts",
+      "default": "./dist/src/scene-publication.js"
+    },
+    "./campaign": {
+      "types": "./dist/src/campaign.d.ts",
+      "default": "./dist/src/campaign.js"
+    },
+    "./interactions": {
+      "types": "./dist/src/interactions.d.ts",
+      "default": "./dist/src/interactions.js"
+    },
+    "./drafts": {
+      "types": "./dist/src/drafts.d.ts",
+      "default": "./dist/src/drafts.js"
+    },
+    "./openings": {
+      "types": "./dist/src/openings.d.ts",
+      "default": "./dist/src/openings.js"
+    },
+    "./story-launch": {
+      "types": "./dist/src/story-launch.d.ts",
+      "default": "./dist/src/story-launch.js"
+    },
+    "./storytellers": {
+      "types": "./dist/src/storytellers.d.ts",
+      "default": "./dist/src/storytellers.js"
+    },
+    "./campaign-holds": {
+      "types": "./dist/src/campaign-holds.d.ts",
+      "default": "./dist/src/campaign-holds.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "dependencies": {
+    "@offscreen/documents": "workspace:*",
+    "@offscreen/game": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

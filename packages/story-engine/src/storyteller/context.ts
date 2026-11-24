@@ -10,15 +10,15 @@ import {
   campaignSettings,
   gameActivity,
 } from '@offscreen/db/campaign-schema';
-import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
 import {
   contextInputSchema,
   continuityNotesSchema,
 } from '@offscreen/storyteller/context';
-import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { campaignSettingsSchema } from '@offscreen/story-interface/campaign';
 import { projectWorldTime } from '@offscreen/game/calendar';
 import { worldConditionsSchema } from '@offscreen/game/world-obligations';
 import type { Transaction } from '@offscreen/db/outbox';

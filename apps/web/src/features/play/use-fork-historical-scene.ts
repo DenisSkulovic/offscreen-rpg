@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   storySnapshotSchema,
   type HistoricalScene,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import { historicalForkStoryId } from './historical-fork-story-id';
 
 export function useForkHistoricalScene({

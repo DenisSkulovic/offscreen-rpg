@@ -1,7 +1,7 @@
 import {
   campaignViewSchema,
   type CampaignView,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 import { offerSchema } from '@offscreen/game/offers';
 
 const offerA = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';

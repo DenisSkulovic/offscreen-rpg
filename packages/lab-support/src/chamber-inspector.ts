@@ -16,7 +16,7 @@ import {
   chamberInspectorHistoryLimit,
   chamberInspectorSchema,
 } from '@offscreen/contracts/chamber';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { campaignReport } from '@offscreen/db/campaign-schema';

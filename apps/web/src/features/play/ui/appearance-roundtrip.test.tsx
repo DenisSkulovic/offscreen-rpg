@@ -1,6 +1,8 @@
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
-import { projectStoredSceneAppearance } from '@offscreen/contracts/stories';
-import { makeValidatedAppearanceForPublication } from '@offscreen/contracts/stories';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
+import {
+  makeValidatedAppearanceForPublication,
+  projectStoredSceneAppearance,
+} from '@offscreen/story-interface/scene-publication';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';

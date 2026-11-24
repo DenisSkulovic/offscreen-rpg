@@ -16,8 +16,8 @@ import {
   InteractionInputError,
   interactionSchema,
   interactionSubmissionSchema,
-} from '@offscreen/contracts/interactions';
-import { storyItemsSchema } from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/interactions';
+import { storyItemsSchema } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { story, storyItem, storyResolution } from '@offscreen/db/story-schema';

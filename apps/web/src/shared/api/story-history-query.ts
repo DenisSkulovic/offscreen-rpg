@@ -2,7 +2,7 @@ import { infiniteQueryOptions } from '@tanstack/react-query';
 import {
   storyHistorySchema,
   type StoryHistory,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 

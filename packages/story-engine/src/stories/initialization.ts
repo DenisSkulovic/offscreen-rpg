@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import { interactionSchema } from '@offscreen/contracts/interactions';
+import { interactionSchema } from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
 import {
   story,

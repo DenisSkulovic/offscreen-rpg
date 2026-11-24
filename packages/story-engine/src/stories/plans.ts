@@ -1,5 +1,5 @@
-import { passageContentSchema } from '@offscreen/contracts/stories';
-import { interactionSpecificationSchema } from '@offscreen/contracts/interactions';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
+import { interactionSpecificationSchema } from '@offscreen/story-interface/interactions';
 import { z } from 'zod';
 
 export const waitPlanSchema = z.strictObject({

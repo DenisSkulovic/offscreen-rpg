@@ -1,6 +1,6 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { storyListSchema } from '@offscreen/contracts/stories';
-import { draftListSchema } from '@offscreen/contracts/drafts';
+import { storyListSchema } from '@offscreen/story-interface/stories';
+import { draftListSchema } from '@offscreen/story-interface/drafts';
 import { LiveStoryList } from '@/src/features/stories/library/live-story-list';
 import { DraftList } from '@/src/features/stories/library/draft-list';
 import Link from 'next/link';

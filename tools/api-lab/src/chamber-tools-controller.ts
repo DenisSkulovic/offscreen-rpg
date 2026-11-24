@@ -15,11 +15,11 @@ import { StoryError } from '@offscreen/story-engine/stories';
 import { IdentityService, OPENINGS } from '@offscreen/api/lab-host-contract';
 import type { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { DispatchReviewConflictError } from '@offscreen/story-engine/storyteller';
-import { dispatchReviewDecisionRequestSchema } from '@offscreen/contracts/chamber';
 import {
-  respondToStorySchema,
+  dispatchReviewDecisionRequestSchema,
   startChamberSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/contracts/chamber';
+import { respondToStorySchema } from '@offscreen/story-interface/stories';
 
 export const CHAMBER = Symbol('CHAMBER');
 

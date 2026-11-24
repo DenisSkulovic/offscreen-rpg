@@ -1,5 +1,5 @@
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
-import { storyItemsSchema } from '@offscreen/contracts/stories';
+import { storyItemsSchema } from '@offscreen/story-interface/stories';
 
 /** Harbor fixture: player hands Mara an existing brass compass. */
 export const harborCompassItems = storyItemsSchema.parse([

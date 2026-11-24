@@ -31,7 +31,7 @@ import { z } from 'zod';
 import { enqueue } from '@offscreen/db/outbox';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { lockOwnedStory } from './persistence';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 
 export const knowledgeIndexTopic = 'knowledge.index.v1';
 

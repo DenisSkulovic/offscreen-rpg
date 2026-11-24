@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { campaignSettingsSchema } from '@offscreen/story-interface/campaign';
 import { sceneCheckpointSchema } from '@offscreen/documents';
 import {
   immediateActionPlanSchema,

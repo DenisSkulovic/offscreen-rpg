@@ -1,7 +1,7 @@
 import {
   openingPreviewSchema,
   type OpeningPreview,
-} from '@offscreen/contracts/openings';
+} from '@offscreen/story-interface/openings';
 import { fixtureDraftId } from './draft-fixtures';
 
 export const fixtureCandidateId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';

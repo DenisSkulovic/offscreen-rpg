@@ -9,7 +9,7 @@ import { stableNamespacedDocumentId } from '@offscreen/documents';
 import { campaign } from '@offscreen/db/campaign-schema';
 import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import { offerSchema } from '@offscreen/game/offers';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 import type { z } from 'zod';
 import { defaultWorldTimeDefinition } from '@offscreen/game/calendar';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';

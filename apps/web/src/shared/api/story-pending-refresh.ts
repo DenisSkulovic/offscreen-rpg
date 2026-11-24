@@ -1,4 +1,4 @@
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 
 /** True while Play must keep a foreground pending-status GET loop. */
 export function storyNeedsPendingRefresh(

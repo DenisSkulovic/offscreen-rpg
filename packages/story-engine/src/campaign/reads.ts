@@ -24,7 +24,7 @@ import {
   campaignViewSchema,
   campaignSettingsSchema,
   type CampaignView,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 import { projectWorldTime } from '@offscreen/game/calendar';
 import {
   projectPublicWorldObligation,

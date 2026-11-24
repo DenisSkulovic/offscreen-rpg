@@ -27,7 +27,7 @@ import {
 } from './action-executions';
 import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import type { z } from 'zod';
-import { actionCommandSchema } from '@offscreen/contracts/campaign';
+import { actionCommandSchema } from '@offscreen/story-interface/campaign';
 
 export type TrustedCampaignActionSource =
   | { kind: 'player' }

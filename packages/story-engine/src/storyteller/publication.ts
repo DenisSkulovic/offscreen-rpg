@@ -35,7 +35,7 @@ import {
   storytellerTaskSchema,
   validateStorytellerResult,
 } from '@offscreen/storyteller/tasks';
-import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
+import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import { setPublication, storytellerKind } from './records';
 import { translateGeneratedContinuation } from '../generations/generated-continuation';
 import {

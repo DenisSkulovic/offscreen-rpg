@@ -80,81 +80,6 @@ export type PublicSceneAppearanceV1 = z.infer<
   typeof publicSceneAppearanceV1Schema
 >;
 
-const publicationBackdropSchema = z
-  .string()
-  .regex(/^#[0-9a-fA-F]{6}$/);
-
-/** Server persistence subset. The public directive stays opaque for already stored reads. */
-export const publicationSceneDirectiveV1Schema = z.strictObject({
-  schemaVersion: z.literal(1),
-  scene: z.strictObject({
-    palette: z
-      .strictObject({
-        backdrop: publicationBackdropSchema,
-      })
-      .optional(),
-    atmosphere: z
-      .strictObject({
-        lighting: z.enum(['neutral', 'dim', 'diffuse', 'radiant']),
-      })
-      .optional(),
-  }),
-});
-
-/**
- * Build a stored appearance from an internal candidate.
- * Source identity is the server arguments. An invalid candidate returns undefined.
- */
-export function makeValidatedAppearanceForPublication(args: {
-  storyId: string;
-  passageId: string;
-  candidate?: unknown;
-}): PublicSceneAppearanceV1 | undefined {
-  if (args.candidate === undefined || args.candidate === null) return undefined;
-  const directive = publicationSceneDirectiveV1Schema.safeParse(args.candidate);
-  if (!directive.success) return undefined;
-  const scene = {
-    ...directive.data.scene,
-    ...(directive.data.scene.palette
-      ? {
-          palette: {
-            backdrop: directive.data.scene.palette.backdrop.toLowerCase(),
-          },
-        }
-      : {}),
-  };
-  const stored = publicSceneAppearanceV1Schema.safeParse({
-    source: { storyId: args.storyId, passageId: args.passageId },
-    directive: { schemaVersion: 1, scene },
-  });
-  return stored.success ? stored.data : undefined;
-}
-
-/** Drop corrupt decoration without failing the story snapshot. */
-export function readOptionalSceneAppearance(
-  value: unknown,
-): PublicSceneAppearanceV1 | undefined {
-  if (value === undefined || value === null) return undefined;
-  const parsed = publicSceneAppearanceV1Schema.safeParse(value);
-  return parsed.success ? parsed.data : undefined;
-}
-
-/** Keep a saved appearance only when it belongs to this story and passage. */
-export function projectStoredSceneAppearance(
-  value: unknown,
-  source: { storyId: string; passageId: string },
-): PublicSceneAppearanceV1 | undefined {
-  const stored = readOptionalSceneAppearance(value);
-  if (!stored) return undefined;
-  if (
-    stored.source.storyId !== source.storyId ||
-    stored.source.passageId !== source.passageId
-  ) {
-    return undefined;
-  }
-  return stored;
-}
-
 export const storyCanonRootSchema = z.strictObject({
   rootHash: z
     .string()
@@ -339,15 +264,6 @@ export const forkStorySchema = z.strictObject({
     .regex(/^[0-9a-f]{64}$/)
     .optional(),
 });
-export const startChamberSchema = z.strictObject({
-  scenario: z.enum([
-    'chamber.v1',
-    'chamber.v2',
-    'chamber.v3',
-    'chamber.v4',
-    'chamber.v5',
-  ]),
-});
 export const respondToStorySchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
   submission: interactionSubmissionSchema,
@@ -428,5 +344,3 @@ export const storyUpdateHintSchema = z.strictObject({
 });
 export type StoryUpdateHint = z.infer<typeof storyUpdateHintSchema>;
 
-/** PostgreSQL NOTIFY channel for committed story viewVersion bumps. */
-export const STORY_VIEW_NOTIFY_CHANNEL = 'offscreen_story_view' as const;

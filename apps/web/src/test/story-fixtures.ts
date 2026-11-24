@@ -1,5 +1,5 @@
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 
 const storyId = '11111111-1111-4111-8111-111111111111';
 const passageId = '22222222-2222-4222-8222-222222222222';

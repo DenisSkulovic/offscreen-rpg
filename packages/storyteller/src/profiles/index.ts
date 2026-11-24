@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {
   storytellerReferenceSchema,
   storytellerSummarySchema,
-} from '@offscreen/contracts/storytellers';
+} from '@offscreen/story-interface/storytellers';
 import comedy from './definitions/absurd-action-comedy.json';
 import drama from './definitions/character-driven-drama.json';
 import adventure from './definitions/driven-adventure.json';

@@ -5,7 +5,7 @@ import type { TestContext } from 'node:test';
 import {
   storySnapshotSchema,
   storyUpdateHintSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import { incrementStoryViewVersion } from '@offscreen/story-engine/stories';
 import { registerStoryConcern } from './helpers/story-suite.js';
 import { prepareCurrentCandidate } from './story-start.integration.js';

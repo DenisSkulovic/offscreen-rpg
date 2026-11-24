@@ -11,8 +11,8 @@ Owner released wave A after LIB07. DO01–DO03 are concurrent; DO01 parent is in
 | Change | Dependency | Status |
 | --- | --- | --- |
 | [DO01 Cache port](../archive/2026-11/platform-operations/2026-11-24--do01-cache-port/CHANGE.md) | None | Done, source-only |
-| [DO02 Admin / identity / usage](2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Ready / commissioned |
-| [DO03 Story interface](2026-11-24--do03-story-interface/CHANGE.md) | Documents settled; admitted | Ready / commissioned |
+| [DO02 Admin / identity / usage](../archive/2026-11/platform-operations/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Done, source-only |
+| [DO03 Story interface](../archive/2026-11/platform-operations/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled | Done, source-only |
 | [DO04 Authority protocol](2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Dependency-gated |
 | [DO05 Storyteller / engine](2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Dependency-gated |
 | [DO06 Lab ownership](2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |

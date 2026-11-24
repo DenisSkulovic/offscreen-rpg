@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
-import { storyLaunchRequestSchema } from '@offscreen/contracts/story-launch';
+import { storyLaunchRequestSchema } from '@offscreen/story-interface/story-launch';
 import {
   createDatabase,
   readDatabaseConfig,

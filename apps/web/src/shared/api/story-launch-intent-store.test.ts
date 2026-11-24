@@ -7,7 +7,7 @@ import {
   saveLaunchPointer,
   type LaunchPointer,
 } from './story-launch-intent-store';
-import type { StoryLaunchRequest } from '@offscreen/contracts/story-launch';
+import type { StoryLaunchRequest } from '@offscreen/story-interface/story-launch';
 
 const viewerId = 'viewer-launch';
 const otherViewer = 'viewer-other';

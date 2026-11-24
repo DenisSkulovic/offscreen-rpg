@@ -36,7 +36,7 @@ import {
   type SupportSafeRefV1,
   type SupportSituationV1,
 } from '@offscreen/admin-interface/admin';
-import { campaignHoldsSchema } from '@offscreen/contracts/campaign-holds';
+import { campaignHoldsSchema } from '@offscreen/story-interface/campaign-holds';
 import { AdminSessionError } from './session.js';
 
 export const SITUATION_MAX_EVENTS = 8;

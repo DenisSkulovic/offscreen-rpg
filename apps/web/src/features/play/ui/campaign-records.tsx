@@ -1,4 +1,4 @@
-import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
 
 export function CampaignRecords({ campaign }: { campaign: CampaignView }) {
   const scores = campaign.character?.scores;

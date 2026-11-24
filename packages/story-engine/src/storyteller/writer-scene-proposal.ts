@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
 import type { DocumentStore } from '@offscreen/documents';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 import type { z } from 'zod';
 import {
   writerSceneProposalSchema,

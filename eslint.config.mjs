@@ -129,6 +129,66 @@ export default ts.config(
     },
   },
   {
+    files: ['packages/story-interface/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: banGroups([
+            [
+              [
+                '@offscreen/db',
+                '@offscreen/db/*',
+                '@offscreen/object-storage',
+                '@offscreen/object-storage/*',
+                '@offscreen/application',
+                '@offscreen/application/*',
+                '@offscreen/story-engine',
+                '@offscreen/story-engine/*',
+                '@offscreen/storyteller',
+                '@offscreen/storyteller/*',
+                '@offscreen/workflows',
+                '@offscreen/workflows/*',
+                '@offscreen/worker',
+                '@offscreen/worker/*',
+                '**/apps/**',
+                '**/packages/**',
+              ],
+              'Story interface must stay free of backend packages.',
+            ],
+          ]),
+        },
+      ],
+    },
+  },
+  {
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    ignores: [
+      '**/*.test.{ts,tsx}',
+      '**/*.stories.{ts,tsx}',
+      'apps/web/src/test/**',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@offscreen/story-interface/campaign-holds',
+              message:
+                'Campaign holds are server-side vocabulary; not for browser production.',
+            },
+            {
+              name: '@offscreen/story-interface/scene-publication',
+              message:
+                'Scene publication helpers are server-side; not for browser production.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx}'],
     plugins: {
       'react-hooks': reactHooks,

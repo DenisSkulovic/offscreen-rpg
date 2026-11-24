@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import {
   preferNewerSnapshot,
   readChamberInspector,

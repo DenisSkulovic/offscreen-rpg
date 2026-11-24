@@ -1,4 +1,20 @@
 # Proof matrix
+
+## Local acceptance receipt (DO03 parent, 2026-11-24)
+
+Worktree `/home/dskul/projects/offscreen-rpg-do03`, branch `change/do03-story-interface`, base `c7f19e07`. Not joined to `undertaking/storyteller-workshop`. Shared topology, STATUS, QUEUE, overview and archive remain for the DO01 custodian.
+
+| Check | Result |
+|---|---|
+| `pnpm repo:module-graph:test` | PASS 26/26 |
+| `pnpm exec turbo run build typecheck --filter=@offscreen/story-interface...` | PASS 8/8 (story-interface plus documents, game, object-storage, config) |
+| `pnpm exec turbo run build typecheck --filter=...@offscreen/story-interface` | 35/37 PASS. `@offscreen/api-integration#typecheck` fails `library-batch-read.test.ts` TS2379 `corruptHash`. Same error is present on baseline `c7f19e07` with DO03 edits stashed. Recorded, not masked. |
+| Relocated node tests (hint pair, scene-appearance, campaign-holds, story-launch-canonical) | PASS 14/14 in one session; child also reported the remaining PROOF paths PASS |
+| Production closure test | story-interface assertion added; contracts assertion retained. Prepared API runtime-tree case still needs `apps/api` dist (NOT a relocation failure). |
+| Docs/wiki close | NOT RUN here. Custodian owns shared headings. |
+
+Negative: no production import of moved `@offscreen/contracts/{stories,campaign,interactions,drafts,openings,story-launch,storytellers,campaign-holds}` subpaths; hint test has no channel assertion; `campaign.ts` still imports `@offscreen/documents/schema`.
+
 No proof executed by ChatGPT. Run from repo root after install; report actual exit code and counts.
 
 | Check | Positive | Negative |

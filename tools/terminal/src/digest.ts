@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto';
 import {
   canonicalStoryLaunchRequestJson,
   type StoryLaunchRequest,
-} from '@offscreen/contracts/story-launch';
-import { canonicalResolutionRequestJson } from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/story-launch';
+import { canonicalResolutionRequestJson } from '@offscreen/story-interface/stories';
 
 export function digestResolutionRequest(input: {
   expectedRevision: number;

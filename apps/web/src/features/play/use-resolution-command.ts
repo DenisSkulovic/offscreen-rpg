@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
-import { respondToStorySchema } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
+import { respondToStorySchema } from '@offscreen/story-interface/stories';
 import { digestResolutionRequest } from '@/src/shared/api/canonical-digest';
 import {
   clearResolutionEnvelope,

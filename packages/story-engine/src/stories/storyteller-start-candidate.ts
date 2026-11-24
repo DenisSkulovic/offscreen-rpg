@@ -1,7 +1,7 @@
 import {
   campaignStartSchema,
   campaignSettingsSchema,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 import {
   campaignSettings,
   worldObligation,
@@ -12,7 +12,7 @@ import {
 } from '@offscreen/game/world-obligations';
 import { isDeepStrictEqual } from 'node:util';
 import { initializeCampaign } from '../campaign/settings';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { and, eq } from 'drizzle-orm';
 import type { generation } from '@offscreen/db/generation-schema';
 import { draftOpening } from '@offscreen/db/generation-schema';

@@ -16,7 +16,7 @@ import {
   settingsCommandSchema,
   type CreativeSettings,
   type CampaignStart,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 import { defaultWorldTimeDefinition } from '@offscreen/game/calendar';
 import { compileWorldObligation } from '@offscreen/game/world-obligations';
 import {

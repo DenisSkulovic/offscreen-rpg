@@ -95,6 +95,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
@@ -159,6 +162,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
@@ -199,6 +205,9 @@ importers:
       '@offscreen/identity-interface':
         specifier: workspace:*
         version: link:../../packages/identity-interface
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       '@tanstack/react-query':
         specifier: 5.107.1
         version: 5.107.1(@types/react@19.3.0)(react@19.3.0)
@@ -308,6 +317,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
@@ -357,6 +369,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../db
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../story-interface
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
@@ -444,12 +459,12 @@ importers:
 
   packages/contracts:
     dependencies:
-      '@offscreen/documents':
-        specifier: workspace:*
-        version: link:../documents
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../story-interface
       '@offscreen/usage-policy':
         specifier: workspace:*
         version: link:../usage-policy
@@ -560,6 +575,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../story-engine
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../story-interface
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../storyteller
@@ -628,6 +646,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../story-interface
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../storyteller
@@ -651,6 +672,28 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/story-interface:
+    dependencies:
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../documents
+      '@offscreen/game':
+        specifier: workspace:*
+        version: link:../game
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   packages/storyteller:
     dependencies:
       '@offscreen/contracts':
@@ -659,6 +702,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../story-interface
       '@offscreen/usage-policy':
         specifier: workspace:*
         version: link:../usage-policy
@@ -740,6 +786,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
@@ -801,6 +850,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2
@@ -850,6 +902,9 @@ importers:
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
@@ -887,6 +942,9 @@ importers:
       '@offscreen/identity-interface':
         specifier: workspace:*
         version: link:../../packages/identity-interface
+      '@offscreen/story-interface':
+        specifier: workspace:*
+        version: link:../../packages/story-interface
       zod:
         specifier: 4.6.5
         version: 4.6.5

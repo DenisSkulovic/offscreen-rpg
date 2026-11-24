@@ -6,7 +6,7 @@ import {
   storyLaunchStatusSchema,
   type StoryLaunchRequest,
   type StoryLaunchStatus,
-} from '@offscreen/contracts/story-launch';
+} from '@offscreen/story-interface/story-launch';
 import {
   clearLaunchPointer,
   hashStoryLaunchRequest,

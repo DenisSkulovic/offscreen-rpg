@@ -7,9 +7,9 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test } from 'node:test';
 import { campaign, worldObligation } from '@offscreen/db/campaign-schema';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { gameAuthoritySeamVersion } from '@offscreen/contracts/game-authority';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   story,

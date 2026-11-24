@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { draftSchema } from '@offscreen/contracts/drafts';
+import { draftSchema } from '@offscreen/story-interface/drafts';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 

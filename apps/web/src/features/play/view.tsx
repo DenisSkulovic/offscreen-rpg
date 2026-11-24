@@ -15,7 +15,7 @@ import { SystemNotice } from '@/src/shared/ui/system-notice';
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { classifyReadRecovery } from '@/src/features/recovery/read-error';
 import { RouteRecoveryPanel } from '@/src/features/recovery/route-recovery';

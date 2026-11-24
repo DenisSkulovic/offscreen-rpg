@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   campaignSettingsSchema,
   creativeSettingsSchema,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 

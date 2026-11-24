@@ -19,14 +19,14 @@ import {
   storytellerOperation,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
-import { storyListSchema } from '@offscreen/contracts/stories';
+import { storyListSchema } from '@offscreen/story-interface/stories';
 import {
   historicalSceneSchema,
   storyHistorySchema,
   passageContentSchema,
-  projectStoredSceneAppearance,
   storySnapshotSchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
+import { projectStoredSceneAppearance } from '@offscreen/story-interface/scene-publication';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
@@ -38,7 +38,7 @@ import {
 import {
   campaignSettingsSchema,
   campaignViewSchema,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 import { projectWorldTime } from '@offscreen/game/calendar';
 import { and, desc, eq, lt, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';

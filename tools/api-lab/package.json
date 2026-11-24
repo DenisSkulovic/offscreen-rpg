@@ -22,7 +22,8 @@
     "@offscreen/lab-support": "workspace:*",
     "@offscreen/story-engine": "workspace:*",
     "reflect-metadata": "0.2.2",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@offscreen/story-interface": "workspace:*"
   },
   "devDependencies": {
     "@offscreen/config": "workspace:*",

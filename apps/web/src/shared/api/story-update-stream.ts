@@ -1,7 +1,7 @@
 import {
   storyUpdateHintSchema,
   type StoryUpdateHint,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 
 const SEEN_EVENT_LIMIT = 64;
 

@@ -8,12 +8,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { test } from 'node:test';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import {
   latestOpeningSchema,
   openingPreviewSchema,
-} from '@offscreen/contracts/openings';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/openings';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { createChamberStorytellerControl } from '@offscreen/lab-support';
 import { outbox } from '@offscreen/db/outbox-schema';
 import { worldObligation } from '@offscreen/db/campaign-schema';

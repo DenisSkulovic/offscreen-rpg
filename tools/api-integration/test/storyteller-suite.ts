@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 import type * as Drizzle from 'drizzle-orm' with {
   'resolution-mode': 'require',
 };
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { createDrafts } from '@offscreen/story-engine/drafts';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import {

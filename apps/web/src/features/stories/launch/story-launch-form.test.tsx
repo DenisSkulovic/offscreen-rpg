@@ -11,7 +11,7 @@ import {
 } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { StoryLaunchStatus } from '@offscreen/contracts/story-launch';
+import type { StoryLaunchStatus } from '@offscreen/story-interface/story-launch';
 import { clearLaunchPointer } from '@/src/shared/api/story-launch-intent-store';
 import { StoryLaunchForm } from './story-launch-form';
 

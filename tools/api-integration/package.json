@@ -58,7 +58,8 @@
     "better-auth": "1.7.5",
     "drizzle-orm": "0.45.2",
     "playwright": "1.63.0",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@offscreen/story-interface": "workspace:*"
   },
   "devDependencies": {
     "@offscreen/cache-port": "workspace:*",

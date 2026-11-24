@@ -1,11 +1,11 @@
 import { StoryError } from '@offscreen/story-engine/stories';
-import type { CampaignStart } from '@offscreen/contracts/campaign';
+import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import {
   gameAuthorityActorIdSchema,
   gameAuthoritySeamVersion,
   gameAuthorityStoryIdSchema,
 } from '@offscreen/contracts/game-authority';
-import { forkStorySchema, startStorySchema } from '@offscreen/contracts/stories';
+import { forkStorySchema, startStorySchema } from '@offscreen/story-interface/stories';
 import { z } from 'zod';
 
 export type StartFromCandidateInput = {

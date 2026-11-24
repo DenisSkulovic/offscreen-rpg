@@ -1,9 +1,7 @@
-import type { PublicSceneAppearanceV1 } from '@offscreen/contracts/stories';
-import { interactionSchema } from '@offscreen/contracts/interactions';
-import {
-  STORY_VIEW_NOTIFY_CHANNEL,
-  storyUpdateHintSchema,
-} from '@offscreen/contracts/stories';
+import type { PublicSceneAppearanceV1 } from '@offscreen/story-interface/stories';
+import { interactionSchema } from '@offscreen/story-interface/interactions';
+import { storyUpdateHintSchema } from '@offscreen/story-interface/stories';
+import { STORY_VIEW_NOTIFY_CHANNEL } from './view-notification.js';
 import type { Database } from '@offscreen/db';
 import {
   story,

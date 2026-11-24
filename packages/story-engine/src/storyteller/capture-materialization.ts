@@ -19,7 +19,7 @@ import {
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import { storytellerContextCapture } from '@offscreen/db/storyteller-schema';
 import type { DocumentStore } from '@offscreen/documents';
-import { passageContentSchema } from '@offscreen/contracts/stories';
+import { passageContentSchema } from '@offscreen/story-interface/stories';
 import { projectWorldTime } from '@offscreen/game/calendar';
 import { contextInputSchema } from '@offscreen/storyteller/context';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';

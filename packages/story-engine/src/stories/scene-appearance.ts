@@ -1,7 +1,5 @@
-import {
-  makeValidatedAppearanceForPublication,
-  type PublicSceneAppearanceV1,
-} from '@offscreen/contracts/stories';
+import type { PublicSceneAppearanceV1 } from '@offscreen/story-interface/stories';
+import { makeValidatedAppearanceForPublication } from '@offscreen/story-interface/scene-publication';
 import { publicationPassageId } from './passage-documents';
 
 /** An explicit internal candidate wins. Otherwise use the admitted suggestion. */

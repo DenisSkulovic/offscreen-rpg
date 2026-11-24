@@ -1,10 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import {
-  STORY_VIEW_NOTIFY_CHANNEL,
-  storyUpdateHintSchema,
-} from '../src/stories';
+import { storyUpdateHintSchema } from '../src/stories.js';
 
 test('story update hint accepts only the public committed-view envelope', () => {
   const hint = storyUpdateHintSchema.parse({
@@ -14,7 +11,6 @@ test('story update hint accepts only the public committed-view envelope', () => 
     kind: 'committed-view',
   });
   assert.equal(hint.kind, 'committed-view');
-  assert.equal(STORY_VIEW_NOTIFY_CHANNEL, 'offscreen_story_view');
 });
 
 test('story update hint rejects narrative or private fields (negative)', () => {

@@ -5,7 +5,7 @@ import {
   chamberScenarioMetadataSchema,
   listChamberScenarios,
 } from '../src/chamber';
-import { startChamberSchema } from '../src/stories';
+import { startChamberSchema } from '../src/chamber.js';
 
 test('every accepted chamber scenario has catalog metadata', () => {
   const accepted = startChamberSchema.shape.scenario.options;

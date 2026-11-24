@@ -4,7 +4,7 @@ import type { SceneCheckpointV2 } from '@offscreen/documents';
 import {
   campaignViewSchema,
   type CampaignSettings,
-} from '@offscreen/contracts/campaign';
+} from '@offscreen/story-interface/campaign';
 import {
   projectAcceptedActivityPlan,
   readAcceptedActivityPlan,

@@ -10,7 +10,7 @@ import {
   vi,
 } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import type { StoryLaunchStatus } from '@offscreen/contracts/story-launch';
+import type { StoryLaunchStatus } from '@offscreen/story-interface/story-launch';
 import {
   clearLaunchPointer,
   saveLaunchPointer,

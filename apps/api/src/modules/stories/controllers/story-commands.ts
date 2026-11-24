@@ -13,7 +13,7 @@ import { StoryError } from '@offscreen/story-engine/stories';
 import {
   forkStorySchema,
   startStorySchema,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
 import { StoryPlayerIdentity } from '../story-player-identity.js';
 import type { StorySeam } from '../game-authority-client.js';
 import { runStoryRequest, STORIES, STORY_SEAM } from '../story-http-context.js';

@@ -30,7 +30,7 @@ import {
 import {
   makeValidatedAppearanceForPublication,
   readOptionalSceneAppearance,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/scene-publication';
 import { enqueue, type Transaction } from '@offscreen/db/outbox';
 import { knowledgeIndexTopic } from './documents';
 import { StoryError, parseStoryIdentifier } from './errors';

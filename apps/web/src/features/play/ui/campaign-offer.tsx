@@ -1,5 +1,5 @@
-import type { CampaignView } from '@offscreen/contracts/campaign';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
 import { formatWorldDuration } from '@offscreen/game/calendar';
 import type { CampaignCommandApi } from '../api/campaign-command';
 import {

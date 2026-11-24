@@ -1,4 +1,4 @@
-import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
 import {
   formatWorldDuration,
   projectWorldTime,

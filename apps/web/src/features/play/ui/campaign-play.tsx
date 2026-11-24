@@ -3,8 +3,8 @@
  * Campaign surface composer: Query snapshot projections + command callbacks.
  * Transport ownership stays in api/use-campaign-command; offer path is local.
  */
-import type { StorySnapshot } from '@offscreen/contracts/stories';
-import type { CampaignView } from '@offscreen/contracts/campaign';
+import type { StorySnapshot } from '@offscreen/story-interface/stories';
+import type { CampaignView } from '@offscreen/story-interface/campaign';
 import { useCampaignCommand } from '../api/use-campaign-command';
 import { CampaignActivityPanel } from './campaign-activity';
 import { CampaignHistory } from './campaign-history';

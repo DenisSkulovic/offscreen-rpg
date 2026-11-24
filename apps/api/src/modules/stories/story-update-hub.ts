@@ -1,9 +1,9 @@
 import { Client } from 'pg';
 import {
-  STORY_VIEW_NOTIFY_CHANNEL,
   storyUpdateHintSchema,
   type StoryUpdateHint,
-} from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/stories';
+import { STORY_VIEW_NOTIFY_CHANNEL } from '@offscreen/story-engine/stories/view-notification';
 import type { DatabaseConfig } from '@offscreen/db';
 import type { MessageEvent } from '@nestjs/common';
 import { EMPTY, Observable, Subject, from, interval, merge, of } from 'rxjs';

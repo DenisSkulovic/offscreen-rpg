@@ -1,4 +1,4 @@
-import { canonicalResolutionRequestJson } from '@offscreen/contracts/stories';
+import { canonicalResolutionRequestJson } from '@offscreen/story-interface/stories';
 
 export async function digestResolutionRequest(input: {
   expectedRevision: number;

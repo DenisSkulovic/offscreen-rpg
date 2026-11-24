@@ -5,8 +5,8 @@ import type { TestContext } from 'node:test';
 import {
   latestOpeningSchema,
   openingPreviewSchema,
-} from '@offscreen/contracts/openings';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+} from '@offscreen/story-interface/openings';
+import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
 import {
   scriptedOpeningPresentation,

@@ -32,10 +32,10 @@ const config: StorybookConfig = {
     viteConfig.optimizeDeps ??= {};
     viteConfig.optimizeDeps.include = [
       ...(viteConfig.optimizeDeps.include ?? []),
-      '@offscreen/contracts/drafts',
-      '@offscreen/contracts/stories',
-      '@offscreen/contracts/campaign',
-      '@offscreen/contracts/storytellers',
+      '@offscreen/story-interface/drafts',
+      '@offscreen/story-interface/stories',
+      '@offscreen/story-interface/campaign',
+      '@offscreen/story-interface/storytellers',
       '@offscreen/game/offers',
       '@offscreen/game/calendar',
     ];

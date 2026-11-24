@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   openingPreviewSchema,
   type OpeningPreview,
-} from '@offscreen/contracts/openings';
+} from '@offscreen/story-interface/openings';
 import { queryKeys } from '@/src/shared/api/query-keys';
 
 export type FrozenOpeningGenerate = {

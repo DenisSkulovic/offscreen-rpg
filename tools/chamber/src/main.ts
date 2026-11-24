@@ -28,7 +28,7 @@ import {
   preflightMemoryEvaluation,
 } from '@offscreen/lab-support';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
-import type { StartPackageReference } from '@offscreen/contracts/campaign';
+import type { StartPackageReference } from '@offscreen/story-interface/campaign';
 import { authOptions, createAuth } from '@offscreen/api/auth';
 import { stopChamberResources } from './stop.js';
 import { captureHeldOpeningPacket } from './packet-review.js';

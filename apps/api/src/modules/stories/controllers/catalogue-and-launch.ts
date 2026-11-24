@@ -13,7 +13,7 @@ import type { Request } from 'express';
 import type { createStoryApplication } from '@offscreen/story-engine/stories';
 import { StoryError } from '@offscreen/story-engine/stories';
 import { z } from 'zod';
-import { storyLaunchRequestSchema } from '@offscreen/contracts/story-launch';
+import { storyLaunchRequestSchema } from '@offscreen/story-interface/story-launch';
 import { StoryPlayerIdentity } from '../story-player-identity.js';
 import type { StorySeam } from '../game-authority-client.js';
 import {
