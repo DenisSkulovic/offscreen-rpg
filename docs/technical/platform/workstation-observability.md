@@ -1,6 +1,6 @@
 # Workstation observability | local infrastructure flight recorder
 
-**Selected direction, 2026-11-24. Target, not implemented.** Owner requests persistent evidence independent of any development attempt, including sub-second memory observations, peaks, attribution, historical queries and explicit blind spots. This is workstation infrastructure, not the application's disposable release OTLP debug collector. Canonical implementation location: `infra/monitoring/`. No dependency on game, Kind, Tilt, Node/pnpm builds, remote metrics store or Kubernetes monitoring deployment.
+**Selected direction, 2026-11-24.** The Python companion for sub-second memory windows, safe process snapshots, bounded JSONL storage, and the guarded install plan are implemented and fixture-tested. Native Netdata package install, systemd activation, live retention, nested runtime attribution, operation correlation, and historical query commands are not live-observed. Owner requests persistent evidence independent of any development attempt, including sub-second memory observations, peaks, attribution, historical queries and explicit blind spots. This is workstation infrastructure, not the application's disposable release OTLP debug collector. Canonical implementation location: `infra/monitoring/`. No dependency on game, Kind, Tilt, Node/pnpm builds, remote metrics store or Kubernetes monitoring deployment.
 
 ## Architecture and authorities
 
