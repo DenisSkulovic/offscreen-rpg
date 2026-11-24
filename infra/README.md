@@ -23,6 +23,6 @@ Dev: root package.json → dev-tilt.mjs::runDevTiltLaunch → dev-slot-startup.m
 
 Exact baseline move inventory and gates: work/undertakings/storyteller-workshop/INF-PARALLEL.md and INF-MOVE-MAP.json. Baseline b01a68b4e91fbbb68f4e67c91427db7435e44738. 257 tracked files assigned (INF02 76, INF03 19, INF04 44, INF05 118). This is a path map, not evidence of runtime equivalence.
 
-## Cluster normalization (INF06)
+## Cluster foundation (INF06)
 
-Selected: authoritative dev/release Kind YAML, common cluster manager and shared host/create primitives, release environment owns its namespace assembly and resource allowlist. Preserve existing runtime identities and topology; explicit destroy is not stop. Source implementation pending [INF06](../work/changes/open/2026-11-24--inf06-cluster-foundation-normalization/CHANGE.md). No new infrastructure technology.
+`infra/clusters/kind/{dev,release}/kind.yaml` are the topology sources. `infra/clusters/kind/manager/` owns profile parsing, host probes, and the only `kind create cluster` primitive. `infra/clusters/kind/common/local-path-storage.yaml` is the release storage manifest. `infra/environments/release/namespaces.yaml` and `owned-app-resources.json` belong to the release environment. `infra/clusters/kind/release/up.sh` creates through the manager CLI, then applies that environment. `destroy.sh` deletes the release cluster only with confirmation `kind-offscreen-lab`. `stack:down` still removes only the owned app allowlist. Live cluster behavior was not re-proven.

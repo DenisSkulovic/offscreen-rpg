@@ -17,7 +17,7 @@ docker info >/dev/null
 require_memory
 
 if kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
-  echo "Cluster ${CLUSTER_NAME} already exists. Run down.sh before creating it again." >&2
+  echo "Cluster ${CLUSTER_NAME} already exists. Run destroy.sh with confirmation ${CONTEXT_NAME} before creating it again." >&2
   exit 1
 fi
 
@@ -27,15 +27,14 @@ trap 'rm -rf "$work"' EXIT
 snapshot_volumes "$work/volumes-before"
 snapshot_foreign_contexts "$work/contexts-before"
 
-kind create cluster --name "$CLUSTER_NAME" --config "$LAB_ROOT/kind.yaml"
+node "$LAB_ROOT/../manager/cli.mjs" create release
 
-if [[ -n "$previous_context" && "$previous_context" != "$CONTEXT_NAME" ]]; then
-  kubectl config use-context "$previous_context" >/dev/null
-fi
+RELEASE_ENV_ROOT="$(cd "$LAB_ROOT/../../../environments/release" && pwd)"
+COMMON_ROOT="$(cd "$LAB_ROOT/../common" && pwd)"
 
 "${KUBECTL[@]}" wait --for=condition=Ready nodes --all --timeout=180s
-"${KUBECTL[@]}" apply -f "$LAB_ROOT/namespaces.yaml"
-"${KUBECTL[@]}" apply -f "$LAB_ROOT/local-path-storage.yaml"
+"${KUBECTL[@]}" apply -f "$RELEASE_ENV_ROOT/namespaces.yaml"
+"${KUBECTL[@]}" apply -f "$COMMON_ROOT/local-path-storage.yaml"
 "${KUBECTL[@]}" -n local-path-storage wait --for=condition=Available deployment/local-path-provisioner --timeout=180s
 assert_loopback_only
 

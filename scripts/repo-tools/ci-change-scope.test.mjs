@@ -40,7 +40,7 @@ test('interface packages or lockfile changes are never docs-only and force integ
     'Tiltfile',
     'infra/images/release/Dockerfile.api',
     'infra/dev/stack.yaml',
-    'infra/clusters/kind/release/namespaces.yaml',
+    'infra/environments/release/namespaces.yaml',
     'apps/api/src/main.ts',
   ]) {
     assert.equal(isDocsPath(path), false);

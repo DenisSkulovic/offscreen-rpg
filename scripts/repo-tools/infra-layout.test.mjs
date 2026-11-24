@@ -16,6 +16,7 @@ const EXPECTED_ROW_COUNTS = { INF02: 76, INF03: 19, INF04: 44, INF05: 118 };
 
 /** Destination roots selected in infra/README.md (2026-11-24 layout). */
 export const ALLOWED_DESTINATION_ROOTS = [
+  'infra/clusters/kind/common/',
   'infra/clusters/kind/dev/',
   'infra/clusters/kind/release/',
   'infra/platform/postgres/',
@@ -58,6 +59,49 @@ const STACK_ENTRY_SCRIPTS = [
   'stack:reset',
   'stack:acceptance',
 ];
+
+/** INF06 successor relocations: INF01–05 mapped destination → current home. */
+export const INF06_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/clusters/kind/release/namespaces.yaml',
+    to: 'infra/environments/release/namespaces.yaml',
+  },
+  {
+    from: 'infra/clusters/kind/release/local-path-storage.yaml',
+    to: 'infra/clusters/kind/common/local-path-storage.yaml',
+  },
+  {
+    from: 'infra/environments/dev/owned-app-resources.json',
+    to: 'infra/environments/release/owned-app-resources.json',
+  },
+  {
+    from: 'infra/clusters/kind/release/down.sh',
+    to: 'infra/clusters/kind/release/destroy.sh',
+  },
+];
+
+function effectiveMoveDestination(destination) {
+  const successor = INF06_SUCCESSOR_RELOCATIONS.find((row) => row.from === destination);
+  return successor ? successor.to : destination;
+}
+
+export function assertInf06SuccessorRelocations(root) {
+  for (const row of INF06_SUCCESSOR_RELOCATIONS) {
+    const oldExists = existsSync(join(root, row.from));
+    const newExists = existsSync(join(root, row.to));
+    if (oldExists && newExists) {
+      throw new Error(
+        `INF06 successor violation (both paths present): ${row.from} and ${row.to}`,
+      );
+    }
+    if (!newExists) {
+      throw new Error(`INF06 successor destination missing: ${row.to}`);
+    }
+    if (oldExists) {
+      throw new Error(`INF06 predecessor must be retired: ${row.from}`);
+    }
+  }
+}
 
 function readJson(relativePath) {
   return JSON.parse(readFileSync(join(repoRoot, relativePath), 'utf8'));
@@ -181,16 +225,17 @@ export function assertStagedMovePaths(
   { requireInitialOldPaths = false } = {},
 ) {
   for (const row of rows) {
+    const destination = effectiveMoveDestination(row.to);
     const oldExists = existsSync(join(root, row.from));
-    const newExists = existsSync(join(root, row.to));
+    const newExists = existsSync(join(root, destination));
     if (oldExists && newExists) {
       throw new Error(
-        `staged move violation (both paths present): ${row.from} and ${row.to}`,
+        `staged move violation (both paths present): ${row.from} and ${destination}`,
       );
     }
     if (!oldExists && !newExists) {
       throw new Error(
-        `staged move violation (neither path present): ${row.from} / ${row.to}`,
+        `staged move violation (neither path present): ${row.from} / ${destination}`,
       );
     }
     if (requireInitialOldPaths) {
@@ -254,11 +299,12 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
   assert.match(tiltfile, /infra\/dev\/Tiltfile/);
 
-  const preflight = readFileSync(
-    join(repoRoot, 'scripts/repo-tools/stack-preflight.mjs'),
+  const libSh = readFileSync(
+    join(repoRoot, 'infra/clusters/kind/release/lib.sh'),
     'utf8',
   );
-  assert.match(preflight, /kind-offscreen-lab/);
+  assert.match(libSh, /CLUSTER_NAME="offscreen-lab"/);
+  assert.match(libSh, /CONTEXT_NAME="kind-offscreen-lab"/);
 });
 
 test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
@@ -268,6 +314,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
     trackedLabPaths: trackedLab,
     requireInitialOldPaths: false,
   });
+  assertInf06SuccessorRelocations(repoRoot);
   assertTrackedModes(map.rows);
 
   const byChange = Object.create(null);

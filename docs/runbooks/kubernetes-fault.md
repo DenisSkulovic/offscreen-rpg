@@ -70,7 +70,7 @@ flock 9
 infra/clusters/kind/release/up.sh
 infra/platform/rabbitmq/install.sh
 infra/verification/faults/run.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 `run.sh` takes no arguments. It does not create or delete the cluster. It removes its client pods and script ConfigMap when it exits. The broker stays until `down.sh` deletes the cluster. `down.sh` does not delete Compose volumes.
@@ -89,7 +89,7 @@ If a check says a Docker volume outside the cluster disappeared, stop and do not
 
 ## Observed local run
 
-2026-11-19, on this worktree, branch `change/k8s10-fault-harness`. One shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-lab` only after that name was absent, and deleted that same cluster before it released the lock. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/faults/run.sh`, `infra/clusters/kind/release/down.sh`.
+2026-11-19, on this worktree, branch `change/k8s10-fault-harness`. One shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-lab` only after that name was absent, and deleted that same cluster before it released the lock. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/faults/run.sh`, `infra/clusters/kind/release/destroy.sh kind-offscreen-lab`.
 
 Versions printed by `run.sh`: Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, server v1.37.0. Broker replicas were 1. Broker pod uid `a96963db-6624-4f0a-ab16-63aa05d5c24e` was the same after the worker pod was deleted. Client image and image ID were `docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89`. No paid provider call was made. No plot image was written. The memory samples below are the hardware record.
 

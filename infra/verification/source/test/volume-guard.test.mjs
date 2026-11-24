@@ -135,6 +135,113 @@ describe('volume guard', () => {
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   });
 
+  test('destroy.sh exits before probes when confirmation is missing or wrong', () => {
+    const destroySh = join(REPO_ROOT, 'infra/clusters/kind/release/destroy.sh');
+    const work = mkdtempSync(join(tmpdir(), 'destroy-confirm-'));
+    const fakeBin = join(work, 'bin');
+    mkdirSync(fakeBin, { recursive: true });
+    const logPath = join(work, 'invocations.log');
+    writeFileSync(
+      join(fakeBin, 'kind'),
+      `#!/usr/bin/env bash
+echo "kind $*" >>"${logPath}"
+exit 0
+`,
+      'utf8',
+    );
+    writeFileSync(
+      join(fakeBin, 'docker'),
+      `#!/usr/bin/env bash
+echo "docker $*" >>"${logPath}"
+exit 0
+`,
+      'utf8',
+    );
+    writeFileSync(
+      join(fakeBin, 'kubectl'),
+      `#!/usr/bin/env bash
+echo "kubectl $*" >>"${logPath}"
+exit 0
+`,
+      'utf8',
+    );
+    chmodSync(join(fakeBin, 'kind'), 0o755);
+    chmodSync(join(fakeBin, 'docker'), 0o755);
+    chmodSync(join(fakeBin, 'kubectl'), 0o755);
+
+    const env = { ...process.env, PATH: `${fakeBin}:${process.env.PATH ?? ''}` };
+    const missing = spawnSync('bash', [destroySh], { encoding: 'utf8', env });
+    assert.equal(missing.status, 2, missing.stderr);
+    assert.match(missing.stderr, /exactly one confirmation/);
+    assert.throws(() => readFileSync(logPath, 'utf8'), /ENOENT/);
+
+    const wrong = spawnSync('bash', [destroySh, 'offscreen-lab'], {
+      encoding: 'utf8',
+      env,
+    });
+    assert.equal(wrong.status, 2, wrong.stderr);
+    assert.match(wrong.stderr, /confirmation must be exactly/);
+    assert.throws(() => readFileSync(logPath, 'utf8'), /ENOENT/);
+  });
+
+  test('cluster_volume_names selects only volumes with exact kind cluster label', () => {
+    const work = mkdtempSync(join(tmpdir(), 'vol-label-'));
+    const fakeBin = join(work, 'bin');
+    mkdirSync(fakeBin, { recursive: true });
+    const dockerPath = join(fakeBin, 'docker');
+    writeFileSync(
+      dockerPath,
+      `#!/usr/bin/env bash
+set -euo pipefail
+if [[ "\${1:-}" == volume && "\${2:-}" == ls && "\${3:-}" == -q ]]; then
+  printf '%s\n' foreign-volume kind-owned-volume
+  exit 0
+fi
+if [[ "\${1:-}" == volume && "\${2:-}" == inspect ]]; then
+  vol="\${5:-\${3:-}}"
+  if [[ "\$vol" == kind-owned-volume ]]; then
+    echo offscreen-lab
+    exit 0
+  fi
+  echo ""
+  exit 0
+fi
+echo "unexpected docker: $*" >&2
+exit 2
+`,
+      'utf8',
+    );
+    chmodSync(dockerPath, 0o755);
+
+    const outFile = join(work, 'cluster-vols');
+    const script = `#!/usr/bin/env bash
+set -euo pipefail
+source "${LIB_SH}"
+cluster_volume_names "${outFile}"
+`;
+    const result = spawnSync('bash', ['-c', script], {
+      encoding: 'utf8',
+      env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH ?? ''}` },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const listed = readFileSync(outFile, 'utf8').trim().split('\n').filter(Boolean);
+    assert.deepEqual(listed, ['kind-owned-volume']);
+
+    const before = join(work, 'before');
+    const after = join(work, 'after');
+    writeFileSync(before, 'foreign-volume\nkind-owned-volume\n', 'utf8');
+    writeFileSync(after, 'foreign-volume\n', 'utf8');
+    const assertResult = spawnSync(
+      'bash',
+      [
+        '-c',
+        `source "${LIB_SH}"; assert_volumes_outside_cluster_remain "${before}" "${outFile}" "${after}"`,
+      ],
+      { encoding: 'utf8' },
+    );
+    assert.equal(assertResult.status, 0, assertResult.stderr);
+  });
+
   test('guarded lab scripts no longer require legacy Compose volume inspect', () => {
     const legacy =
       /docker volume inspect offscreen-rpg_(postgres|temporal)-data/;

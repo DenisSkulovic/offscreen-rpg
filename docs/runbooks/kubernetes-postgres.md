@@ -31,7 +31,7 @@ Deleting the kind cluster does not preserve local-path volumes. The provisioner 
 infra/clusters/kind/release/up.sh
 infra/platform/postgres/install.sh
 infra/verification/smoke/postgres/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the operator, the primary, and the local-path files on the node.

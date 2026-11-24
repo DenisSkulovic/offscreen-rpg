@@ -4,8 +4,13 @@
 
 set -euo pipefail
 
-if [[ $# -ne 0 ]]; then
-  echo "down.sh takes no arguments. It only deletes kind cluster offscreen-lab." >&2
+if [[ $# -ne 1 ]]; then
+  echo "destroy.sh requires exactly one confirmation argument: kind-offscreen-lab" >&2
+  exit 2
+fi
+
+if [[ "$1" != "kind-offscreen-lab" ]]; then
+  echo "destroy.sh refused: confirmation must be exactly kind-offscreen-lab." >&2
   exit 2
 fi
 

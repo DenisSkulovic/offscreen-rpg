@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { collectDevClusterProbe } from './dev-cluster-host-probe.mjs';
+import { collectDevClusterProbe } from '../../../../infra/clusters/kind/manager/dev-host-probe.mjs';
 import {
   executeAuthorizedDevCluster,
   planDevCluster,
   readInjectedDevClusterProbe,
   statusDevCluster,
-} from './dev-cluster-bootstrap.mjs';
+} from '../../../../infra/clusters/kind/manager/dev-bootstrap.mjs';
 
 const command = process.argv[2] ?? 'plan';
 const ensureAuthorized = process.env.OFFSCREEN_DEV_CLUSTER_ENSURE === 'authorized';

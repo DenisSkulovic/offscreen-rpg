@@ -4,14 +4,18 @@ import { spawnSync } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LOOPBACK_API_ADDRESS, RELEASE_API_PORT, readKindProfile, parseKindTopology } from '../../infra/clusters/kind/manager/config.mjs';
+import { MIN_HOST_MEMORY_MIB } from '../../infra/clusters/kind/manager/host-probe.mjs';
 
-export const CLUSTER_NAME = 'offscreen-lab';
-export const CONTEXT_NAME = 'kind-offscreen-lab';
-export const MIN_MEM_AVAILABLE_KIB = 4_194_304;
-export const API_SERVER_ADDRESS = '127.0.0.1';
-export const API_SERVER_PORT = 6443;
-export const NODE_COUNT = 2;
-export const NODE_IMAGE = 'kindest/node:v1.37.0';
+const releaseProfile = readKindProfile('release');
+
+export const CLUSTER_NAME = releaseProfile.clusterName;
+export const CONTEXT_NAME = releaseProfile.contextName;
+export const MIN_MEM_AVAILABLE_KIB = MIN_HOST_MEMORY_MIB * 1024;
+export const API_SERVER_ADDRESS = releaseProfile.apiServerAddress;
+export const API_SERVER_PORT = releaseProfile.apiServerPort ?? RELEASE_API_PORT;
+export const NODE_COUNT = releaseProfile.nodeCount;
+export const NODE_IMAGE = releaseProfile.nodeImage;
 export const PREREQ_COMMANDS = Object.freeze(['docker', 'kind', 'kubectl']);
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -47,24 +51,42 @@ export function verifyInfraPins(kindYamlText, libShText) {
   if (!libShText.includes(expectContext)) {
     refusals.push({ id: 'pin-drift-lib-context', message: `lib.sh must pin ${expectContext}.` });
   }
-  if (!kindYamlText.includes(`apiServerAddress: "${API_SERVER_ADDRESS}"`)) {
-    refusals.push({ id: 'pin-drift-kind-address', message: `kind.yaml must pin loopback ${API_SERVER_ADDRESS}.` });
+
+  /** @type {ReturnType<typeof parseKindTopology> | null} */
+  let observed = null;
+  try {
+    observed = parseKindTopology(kindYamlText, 'release');
+  } catch (error) {
+    refusals.push({
+      id: 'pin-drift-kind-topology',
+      message: error instanceof Error ? error.message : 'kind.yaml topology is invalid',
+    });
+    return refusals;
   }
-  if (!kindYamlText.includes(`apiServerPort: ${API_SERVER_PORT}`)) {
+
+  if (observed.apiServerAddress !== LOOPBACK_API_ADDRESS) {
+    refusals.push({ id: 'pin-drift-kind-address', message: `kind.yaml must pin loopback ${LOOPBACK_API_ADDRESS}.` });
+  }
+  if (observed.apiServerPort !== API_SERVER_PORT) {
     refusals.push({ id: 'pin-drift-kind-port', message: `kind.yaml must pin apiServerPort ${API_SERVER_PORT}.` });
   }
-  const imageMatches = (kindYamlText.match(new RegExp(`image: ${NODE_IMAGE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g')) ?? []).length;
-  if (imageMatches < NODE_COUNT) {
+  if (observed.nodeCount !== NODE_COUNT) {
+    refusals.push({
+      id: 'pin-drift-kind-nodes',
+      message: `kind.yaml must declare exactly ${NODE_COUNT} nodes.`,
+    });
+  }
+  if (observed.nodeImage !== NODE_IMAGE) {
     refusals.push({
       id: 'pin-drift-kind-image',
       message: `kind.yaml must declare ${NODE_COUNT} nodes using image ${NODE_IMAGE}.`,
     });
   }
-  const roleLines = kindYamlText.match(/^\s*-\s*role:/gm) ?? [];
-  if (roleLines.length !== NODE_COUNT) {
+  const roleMismatch = observed.roles.some((role, index) => role !== releaseProfile.roles[index]);
+  if (roleMismatch || observed.roles.length !== releaseProfile.roles.length) {
     refusals.push({
-      id: 'pin-drift-kind-nodes',
-      message: `kind.yaml must declare exactly ${NODE_COUNT} nodes.`,
+      id: 'pin-drift-kind-role',
+      message: `kind.yaml node roles must match the canonical release profile (${releaseProfile.roles.join(', ')}).`,
     });
   }
   return refusals;

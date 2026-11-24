@@ -3,7 +3,7 @@
   "contextName": "kind-offscreen-lab",
   "resetConfirmation": "kind-offscreen-lab",
   "clusterUp": "infra/clusters/kind/release/up.sh",
-  "clusterReset": "infra/clusters/kind/release/down.sh",
+  "clusterReset": "infra/clusters/kind/release/destroy.sh",
   "releaseInstall": "infra/environments/release/install.sh",
   "preserveNamespaces": ["lab-postgres", "lab-objects", "lab-temporal", "lab-content-bootstrap"],
   "expectedImportRoots": {

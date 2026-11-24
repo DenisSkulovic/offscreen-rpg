@@ -65,7 +65,7 @@ Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from th
 ```bash
 infra/clusters/kind/release/up.sh
 infra/verification/fixtures/document-access/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
@@ -91,7 +91,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 ```bash
 infra/clusters/kind/release/up.sh
 infra/verification/fixtures/document-access/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 Results from that run on 2026-11-19, branch `change/data05-shared-object`, baseline `25d75a9a`:

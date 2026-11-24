@@ -46,7 +46,7 @@ infra/verification/smoke/redis/smoke.sh
 
 When local Docker already has `docker.io/library/redis:8.2.1-alpine`, the smoke saves that image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used: on this machine it stops with `content digest sha256:8ddf542da70dec1f3b0f91fde22f8cd4b9c816627dc39323416b295b278c010c: not found`. If the import fails, the kubelet may still pull the same pin. The smoke applies `infra/platform/redis/redis.yaml` and `infra/verification/smoke/redis/client.yaml`, runs the three checks, and deletes the Redis objects when it exits, including after a failure. It does not delete the cluster.
 
-Delete the cluster with `infra/clusters/kind/release/down.sh` when the lab work is finished. Hold the shared cluster lock from `up.sh` through `down.sh`. If `up.sh` says the cluster already exists, stop. Do not delete a cluster this shell did not create.
+Delete the cluster with `infra/clusters/kind/release/destroy.sh kind-offscreen-lab` when the lab work is finished. Hold the shared cluster lock from `up.sh` through `down.sh`. If `up.sh` says the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
 ## Failure
 
@@ -67,7 +67,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 ```bash
 infra/clusters/kind/release/up.sh
 infra/verification/smoke/redis/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 The first attempt on 2026-11-19 created the cluster, then `kind load docker-image` failed before any Redis pod existed:

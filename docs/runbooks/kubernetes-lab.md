@@ -27,7 +27,7 @@ Pinned for the 2026-11-19 run:
 | kubectl client | v1.37.2 |
 | Node image | `kindest/node:v1.37.0` (Kubernetes v1.37.0 inside the node) |
 | Probe image | `docker.io/library/busybox:1.36` |
-| Volume provisioner | rancher local-path-provisioner v0.0.37, copied at `infra/clusters/kind/release/local-path-storage.yaml` |
+| Volume provisioner | rancher local-path-provisioner v0.0.37, copied at `infra/clusters/kind/common/local-path-storage.yaml` |
 
 kind also installs a default StorageClass named `standard` with the same provisioner name. The probes request `local-path` explicitly so they do not depend on that default.
 
@@ -36,10 +36,10 @@ kind also installs a default StorageClass named `standard` with the same provisi
 ```bash
 infra/clusters/kind/release/up.sh
 infra/verification/smoke/release.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
-`up.sh` and `down.sh` take no arguments. They refuse any extra argument so a name cannot be substituted. `smoke.sh` removes its probe pods, Service, and claim when it exits, including after a failure. It does not delete the cluster.
+`up.sh` takes no arguments. `destroy.sh` requires exactly one confirmation argument, `kind-offscreen-lab`, before any probes or cluster deletion. `smoke.sh` removes its probe pods, Service, and claim when it exits, including after a failure. It does not delete the cluster.
 
 A second worker is not part of this procedure.
 

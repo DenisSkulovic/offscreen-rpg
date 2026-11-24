@@ -156,7 +156,7 @@ test('reset without confirmation => empty commands and refusal', () => {
   assert.ok(plan.messages.some((m) => /confirmation/i.test(m) && m.includes('kind-offscreen-lab')));
 });
 
-test('reset with exact confirmation => only down.sh', () => {
+test('reset with exact confirmation => destroy.sh with confirmation arg', () => {
   const plan = buildStackPlan({
     command: 'reset',
     probes: healthyProbes({ currentContext: null }),
@@ -164,7 +164,9 @@ test('reset with exact confirmation => only down.sh', () => {
     observation: defaultObservation(),
   });
   assert.equal(plan.ok, true);
-  assert.deepEqual(plan.commands, [['bash', 'infra/clusters/kind/release/down.sh']]);
+  assert.deepEqual(plan.commands, [
+    ['bash', 'infra/clusters/kind/release/destroy.sh', 'kind-offscreen-lab'],
+  ]);
   assert.deepEqual(plan.urls, []);
 });
 

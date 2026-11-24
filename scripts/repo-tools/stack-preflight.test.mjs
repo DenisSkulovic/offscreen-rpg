@@ -101,3 +101,15 @@ test('static pins in kind.yaml and lib.sh match lab constants', () => {
   assert.equal(profile.nodeCount, NODE_COUNT);
   assert.equal(profile.nodeImage, NODE_IMAGE);
 });
+
+test('verifyInfraPins rejects invalid release topology against canonical profile', () => {
+  const { libShText } = readInfraPinFiles();
+  const badPort = readInfraPinFiles().kindYamlText.replace(`apiServerPort: ${API_SERVER_PORT}`, 'apiServerPort: 6444');
+  assert.ok(verifyInfraPins(badPort, libShText).some((refusal) => refusal.id === 'pin-drift-kind-port'));
+
+  const badAddress = readInfraPinFiles().kindYamlText.replace(API_SERVER_ADDRESS, '127.0.0.2');
+  assert.ok(verifyInfraPins(badAddress, libShText).some((refusal) => refusal.id === 'pin-drift-kind-topology'));
+
+  const badRole = readInfraPinFiles().kindYamlText.replace('role: worker', 'role: extra-control-plane');
+  assert.ok(verifyInfraPins(badRole, libShText).some((refusal) => refusal.id === 'pin-drift-kind-role'));
+});

@@ -55,11 +55,27 @@ assert_no_volume_loss() {
 cluster_volume_names() {
   local path="$1"
   snapshot_file "$path"
-  local id
-  while read -r id; do
-    [[ -z "$id" ]] && continue
-    docker inspect -f '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}}{{"\n"}}{{end}}{{end}}' "$id"
-  done < <(docker ps -aq --filter "name=${CLUSTER_NAME}-") | sort -u >"$path"
+  local all_vols vol label
+  all_vols="$(mktemp)"
+  if ! docker volume ls -q | sort >"$all_vols"; then
+    echo "Refusing to continue: docker volume inventory failed." >&2
+    rm -f "$all_vols"
+    exit 1
+  fi
+  : >"$path"
+  while IFS= read -r vol; do
+    [[ -z "$vol" ]] && continue
+    if ! label="$(docker volume inspect -f '{{ index .Labels "io.x-k8s.kind.cluster" }}' "$vol" 2>&1)"; then
+      echo "Refusing to continue: docker volume inspect failed for ${vol}: ${label}" >&2
+      rm -f "$all_vols"
+      exit 1
+    fi
+    if [[ "$label" == "$CLUSTER_NAME" ]]; then
+      printf '%s\n' "$vol" >>"$path"
+    fi
+  done <"$all_vols"
+  rm -f "$all_vols"
+  sort -u -o "$path" "$path"
 }
 
 assert_volumes_outside_cluster_remain() {

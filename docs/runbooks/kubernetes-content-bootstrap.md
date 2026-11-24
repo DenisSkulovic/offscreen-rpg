@@ -34,7 +34,7 @@ The access key and the secret key are created in memory by the smoke. The store 
 - Do not treat a local `fixture-pin.json` as this proof.
 - Do not point the Nest API, the worker, or Compose at this Service.
 - Do not edit `infra/platform/object-storage/`. SeaweedFS 4.54 stays the store.
-- Do not edit `kind.yaml`, `up.sh`, `down.sh`, or `lib.sh` unless a printed failure names them.
+- Do not edit `kind.yaml`, `up.sh`, `destroy.sh`, or `lib.sh` unless a printed failure names them.
 - Do not publish a NodePort or a LoadBalancer. Do not publish on `0.0.0.0` or `[::]`.
 - Do not put an access key or a secret key in Git.
 - Do not create a campaign row. Do not treat a start package as an opening candidate.
@@ -61,7 +61,7 @@ Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from th
 ```bash
 infra/clusters/kind/release/up.sh
 infra/environments/release/content-bootstrap/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
@@ -89,7 +89,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 ```bash
 infra/clusters/kind/release/up.sh
 infra/environments/release/content-bootstrap/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 Results from that run on 2026-11-19, branch `change/boot02-cluster-pin`, baseline `93d57ca6`:

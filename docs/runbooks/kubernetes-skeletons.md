@@ -55,7 +55,7 @@ flock 9
 infra/clusters/kind/release/up.sh
 infra/verification/fixtures/skeletons/install.sh
 infra/verification/fixtures/skeletons/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 `install.sh` and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `down.sh` deletes the kind cluster. It does not delete Compose volumes.

@@ -39,7 +39,7 @@ From the repository root, after `infra/clusters/kind/release/up.sh`:
 ```bash
 infra/platform/rabbitmq/install.sh
 infra/verification/smoke/rabbitmq/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` removes its client pods and script ConfigMap when it exits. It leaves the broker in place until `down.sh` deletes the cluster. `down.sh` does not delete Compose volumes.
@@ -56,7 +56,7 @@ If `up.sh` was not run in this same locked shell, do not delete a cluster this p
 
 ## Observed local run
 
-2026-11-19, on this worktree, under `flock` of `/tmp/offscreen-k8s-cluster.lock`. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/smoke/rabbitmq/smoke.sh`, `infra/clusters/kind/release/down.sh`.
+2026-11-19, on this worktree, under `flock` of `/tmp/offscreen-k8s-cluster.lock`. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/smoke/rabbitmq/smoke.sh`, `infra/clusters/kind/release/destroy.sh kind-offscreen-lab`.
 
 Versions printed by the smoke: Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, server v1.37.0. Operator image `ghcr.io/rabbitmq/cluster-operator:2.23.3`. Broker image `docker.io/library/rabbitmq:4.3.4-management`, image ID `docker.io/library/rabbitmq@sha256:eb5295d083325da5929a5ade766684d4019ffd2bce8bc7e43d6f9a05cafc8646`, `rabbitmqctl` version 4.3.4. Replicas 1. Service ClusterIP. The only user was `lab-client` with tag administrator. Client image `docker.io/library/python:3.12-alpine`, image ID `docker.io/library/python@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89`.
 

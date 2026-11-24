@@ -38,7 +38,7 @@ Deleting the kind cluster does not preserve local-path volumes. The provisioner 
 infra/clusters/kind/release/up.sh
 infra/platform/temporal/install.sh
 infra/verification/smoke/temporal/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the server, the worker, PostgreSQL, and the local-path files on the node.
@@ -67,7 +67,7 @@ Commands, from the repository root:
 infra/clusters/kind/release/up.sh
 infra/platform/temporal/install.sh
 infra/verification/smoke/temporal/smoke.sh
-infra/clusters/kind/release/down.sh
+infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 The server command was `temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start`. `temporal-server --version` printed `temporal version 1.32.2`. The admin CLI printed `temporal version 1.10.0 (Server 1.32.2, UI 2.56.1)`. Postgres printed `postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)`. Cluster health was `SERVING`. Claim `temporal-postgres` was Bound on `local-path`. Both Services were ClusterIP. The API container published `127.0.0.1:6443` only.

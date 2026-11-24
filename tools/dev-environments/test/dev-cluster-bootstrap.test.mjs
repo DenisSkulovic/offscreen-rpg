@@ -365,9 +365,10 @@ test('authorized execution rechecks, creates only the owned baseline, and restor
   assert.equal(checks, 2);
   assert.equal(calls[0].command, 'kind');
   assert.match(calls[0].input, /apiServerAddress: "127.0.0.1"/);
-  assert.match(calls[1].input, new RegExp(`name: ${DEV_BASELINE_NAMESPACE}`));
+  assert.deepEqual(calls[1].args, ['config', 'use-context', 'kind-offscreen-lab']);
+  assert.match(calls[2].input, new RegExp(`name: ${DEV_BASELINE_NAMESPACE}`));
   assert.match(renderBaselineNamespace(), /offscreen.dev\/owner: offscreen-dev/);
-  assert.deepEqual(calls.at(-1).args, ['config', 'use-context', 'kind-offscreen-lab']);
+  assert.equal(calls.filter((call) => call.command === 'kubectl' && call.args[0] === 'config').length, 1);
   assert.equal(calls.some((call) => call.args.includes('delete')), false);
 });
 

@@ -14,14 +14,14 @@ const repoRoot = join(
   fileURLToPath(new URL('.', import.meta.url)),
   '../..',
 );
-const clusterRoot = join(repoRoot, 'infra/clusters/kind/release');
+const releaseEnvRoot = join(repoRoot, 'infra/environments/release');
 
 test('infra tree contains Kubernetes YAML manifests', () => {
-  const files = collectLabYamlFiles(clusterRoot);
-  assert.ok(files.length > 0, 'expected cluster yaml files');
+  const files = collectLabYamlFiles(releaseEnvRoot);
+  assert.ok(files.length > 0, 'expected release environment yaml files');
   assert.ok(
     files.some((file) => file.endsWith('namespaces.yaml')),
-    'namespaces.yaml is included',
+    'namespaces.yaml is included under infra/environments/release',
   );
 });
 
