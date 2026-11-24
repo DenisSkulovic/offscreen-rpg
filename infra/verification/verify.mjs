@@ -4,6 +4,7 @@ import { readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
+import { runDiagnostic } from './diagnostic.mjs';
 import { assertHelmAvailable as defaultAssertHelmAvailable } from '../workloads/render.mjs';
 import { runTrackedEntrypoint } from '../monitoring/operation-entrypoint.mjs';
 
@@ -97,6 +98,7 @@ export const CATALOG_SCENARIO_IDS = Object.freeze([
   'DEV-12',
   'DEV-13',
   'DEV-14',
+  'DEV-15',
   'RES-01',
   'RES-02',
   'REL-01',
@@ -107,6 +109,15 @@ export const CATALOG_SCENARIO_IDS = Object.freeze([
   'REL-06',
   'UX-01',
   'UX-02',
+  'MON-01',
+  'MON-02',
+  'MON-03',
+  'MON-04',
+  'MON-05',
+  'MON-06',
+  'MON-07',
+  'MON-08',
+  'MON-09',
 ]);
 
 /** Explicit static tier mapping from the capability catalog baseline text. */
@@ -185,7 +196,7 @@ export function parseVerifyArgs(argv) {
       message: `suite not implemented: ${suite}`,
     };
   }
-  if (suite !== 'source') {
+  if (suite !== 'source' && suite !== 'diagnostic') {
     return { ok: false, exitCode: 2, message: `unknown suite: ${suite}` };
   }
 
@@ -513,5 +524,13 @@ const IS_CLI_MAIN =
   resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (IS_CLI_MAIN) {
-  process.exitCode = runVerifyCli(process.argv.slice(2));
+  const parsed = parseVerifyArgs(process.argv.slice(2));
+  if (parsed.ok && parsed.suite === 'diagnostic') {
+    try {
+      process.exitCode = await runDiagnostic({ repoRoot: REPO_ROOT, definitions: SOURCE_SUITE_DEFINITIONS, resolveFiles: resolveSuiteFiles, parseCounts: parseTapCounts, catalogIds: CATALOG_SCENARIO_IDS, json: parsed.json });
+    } catch (error) {
+      process.stderr.write('Diagnostic stopped: ' + error.message + '\n');
+      process.exitCode = 1;
+    }
+  } else process.exitCode = runVerifyCli(process.argv.slice(2));
 }

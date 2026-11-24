@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+[INF51 autonomous verification](open/2026-11-24--inf51-autonomous-verification/CHANGE.md) — initial diagnostic implementation; full lifecycle adapters remain open.
+
 **Consolidation:** [INF49](open/2026-11-24--inf49-monitor-composition/CHANGE.md) composition correction · [INF50](open/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) T01 source-ready · [INF48](backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) Proposed. [Plan](../undertakings/storyteller-workshop/CONSOLIDATION.md). No execution tonight.
 
 **INF44–47:** [Workstation observability wave](../undertakings/storyteller-workshop/WORKSTATION-OBSERVABILITY.md). [INF44](archive/2026-11/platform-operations/2026-11-24--inf44-persistent-workstation-monitoring/CHANGE.md) source Done, live install NOT RUN. [INF45](archive/2026-11/platform-operations/2026-11-24--inf45-nested-runtime-observability/CHANGE.md) source Done, live nested visibility NOT RUN. [INF46](archive/2026-11/platform-operations/2026-11-24--inf46-resource-operation-correlation/CHANGE.md) source Done, live correlation NOT RUN. [INF47](open/2026-11-24--inf47-historical-observability-queries/CHANGE.md). Live installation separately authorized.

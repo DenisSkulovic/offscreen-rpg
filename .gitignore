@@ -51,3 +51,6 @@ saves/
 .offscreen/dev-startup-timing.json
 .offscreen/dev-startup-timing.json.phases.jsonl
 .offscreen-dev-runtime/
+
+# Private autonomous infrastructure verification receipts
+.offscreen/verification/
