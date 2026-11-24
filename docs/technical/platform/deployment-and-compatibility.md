@@ -1,5 +1,9 @@
 # Delivery, operations and validation
 
+## Backing platform (INF09–INF15 selected)
+
+Local per-service Helm charts and explicit environment profiles; no application Helm lifecycle or platform hooks. Keep pinned versions, resource identities, storage classes and existing credentials; distinguish absent from unreadable, no destructive automatic adoption, password rotation or Temporal schema replay. Preserve dedicated Temporal database and dev tenant allocation. SeaweedFS installation independent from verification and content import; Gateway/collector no synthetic applications. Optional Redis/RabbitMQ/OTel not default. Release platform ensures core before app installer, content fixture remains explicit. [Program](../../../work/undertakings/storyteller-workshop/PLATFORM-PARALLEL.md). No new live proof.
+
 ## Application workloads (INF08 selected)
 
 One local Helm application chart defines six roles, Services and migration Job. Only dev slots and stable release; Helm template is source authority, not a second deployment controller. Preserve existing namespaces, selectors, tags, credentials, release values and migration ordering. Add slot dev security, TCP readiness and preliminary requests (50m CPU each, 384Mi HTTP roles, 256Mi workers), no hard limits pending measurement. No application Helm install/upgrade/uninstall or live proof in this change. Local `pnpm workload:check`, lab manifest guards, and `pnpm stack:up` require Helm 3 or 4 on the host (`helm version --short`); CI uses the runner image Helm only and does not download an unpinned client. [INF08](../../../work/changes/archive/2026-11/platform-operations/2026-11-24--inf08-helm-workload-normalization/CHANGE.md).
