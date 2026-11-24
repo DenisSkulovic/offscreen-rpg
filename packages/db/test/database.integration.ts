@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { resolve } from 'node:path';
-import { mkdtemp, mkdir, writeFile, rm, rmdir } from 'node:fs/promises';
+import {
+  mkdtemp,
+  mkdir,
+  writeFile,
+  rm,
+  rmdir,
+  readFile,
+  copyFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { AppliedMigrationPrefixError } from '../src/migrations/journal';
 import { sql } from 'drizzle-orm';
 import { Client } from 'pg';
 import { createDatabase, readDatabaseConfig } from '../src';
@@ -16,6 +25,18 @@ if (!url || new URL(url).pathname !== '/offscreen_db_test') {
 }
 const config = readDatabaseConfig({ DATABASE_URL: url });
 const fixtures = resolve(__dirname, '../../test/fixtures/migrations');
+
+function findSqlStateCode(error: unknown, code: string): boolean {
+  let current: unknown = error;
+  while (current instanceof Error) {
+    const withCode = current as Error & { code?: string };
+    if (withCode.code === code) {
+      return true;
+    }
+    current = current.cause;
+  }
+  return false;
+}
 
 test('PostgreSQL persistence component', async (t) => {
   const admin = new Client(config);
@@ -63,16 +84,32 @@ test('PostgreSQL persistence component', async (t) => {
       'failed SQL rolls back migration DDL and releases the lock',
       async () => {
         const folder = await mkdtemp(resolve(tmpdir(), 'offscreen-migration-'));
+        const fixtureJournal = JSON.parse(
+          await readFile(resolve(fixtures, 'meta/_journal.json'), 'utf8'),
+        ) as {
+          version: string;
+          dialect: string;
+          entries: Array<Record<string, unknown>>;
+        };
         try {
           await mkdir(resolve(folder, 'meta'));
+          await copyFile(
+            resolve(fixtures, '0000_fixture.sql'),
+            resolve(folder, '0000_fixture.sql'),
+          );
+          await writeFile(
+            resolve(folder, '0001_fail.sql'),
+            'CREATE TABLE db_failed_fixture (id integer);\n--> statement-breakpoint\nSELECT 1 / 0;',
+          );
           await writeFile(
             resolve(folder, 'meta/_journal.json'),
             JSON.stringify({
-              version: '7',
-              dialect: 'postgresql',
+              version: fixtureJournal.version,
+              dialect: fixtureJournal.dialect,
               entries: [
+                ...fixtureJournal.entries,
                 {
-                  idx: 0,
+                  idx: 1,
                   version: '7',
                   when: 2,
                   tag: '0001_fail',
@@ -81,17 +118,35 @@ test('PostgreSQL persistence component', async (t) => {
               ],
             }),
           );
-          await writeFile(
-            resolve(folder, '0001_fail.sql'),
-            'CREATE TABLE db_failed_fixture (id integer);\n--> statement-breakpoint\nSELECT 1 / 0;',
+          await assert.rejects(
+            applyMigrations(config, folder),
+            (error: unknown) => {
+              assert.ok(
+                findSqlStateCode(error, '22012'),
+                'expected divide-by-zero SQLSTATE 22012',
+              );
+              return true;
+            },
           );
-          await assert.rejects(applyMigrations(config, folder));
-          const result = await admin.query(
+          const failedTable = await admin.query(
             "SELECT to_regclass('db_failed_fixture') AS table_name",
           );
-          assert.equal(result.rows[0].table_name, null);
+          assert.equal(failedTable.rows[0].table_name, null);
+          const allLedger = await admin.query<{
+            id: number;
+            created_at: string;
+          }>(
+            'SELECT id, created_at FROM drizzle.__drizzle_migrations ORDER BY id ASC',
+          );
+          assert.equal(allLedger.rows.length, 1);
+          const applied = allLedger.rows[0];
+          if (applied === undefined) {
+            throw new Error('expected the original fixture ledger row');
+          }
+          assert.equal(applied.created_at, '1');
           await applyMigrations(config, fixtures);
         } finally {
+          await rm(resolve(folder, '0000_fixture.sql'), { force: true });
           await rm(resolve(folder, '0001_fail.sql'), { force: true });
           await rm(resolve(folder, 'meta/_journal.json'), { force: true });
           await rmdir(resolve(folder, 'meta'));
@@ -99,6 +154,82 @@ test('PostgreSQL persistence component', async (t) => {
         }
       },
     );
+
+    await t.test('tampered applied hash is refused before DDL', async () => {
+      const before = await admin.query(
+        'SELECT * FROM db_component_fixture ORDER BY id',
+      );
+      const row = await admin.query<{ id: number; hash: string }>(
+        'SELECT id, hash FROM drizzle.__drizzle_migrations ORDER BY id ASC LIMIT 1',
+      );
+        const original = row.rows[0];
+        if (original === undefined) {
+          throw new Error('expected the fixture ledger row');
+        }
+        const originalHash = original.hash;
+        try {
+          await admin.query(
+            'UPDATE drizzle.__drizzle_migrations SET hash = $1 WHERE id = $2',
+            ['0'.repeat(64), original.id],
+          );
+        await assert.rejects(
+          applyMigrations(config, fixtures),
+          AppliedMigrationPrefixError,
+        );
+        const after = await admin.query(
+          'SELECT * FROM db_component_fixture ORDER BY id',
+        );
+        assert.deepEqual(after.rows, before.rows);
+        const stillOne = await admin.query<{ count: number }>(
+          'SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations',
+        );
+          const stillOneCount = stillOne.rows[0];
+          if (stillOneCount === undefined) {
+            throw new Error('expected a ledger count');
+          }
+          assert.equal(stillOneCount.count, 1);
+        } finally {
+          await admin.query(
+            'UPDATE drizzle.__drizzle_migrations SET hash = $1 WHERE id = $2',
+            [originalHash, original.id],
+          );
+      }
+    });
+
+    await t.test('unknown extra ledger row is refused before DDL', async () => {
+      const before = await admin.query(
+        'SELECT * FROM db_component_fixture ORDER BY id',
+      );
+      let insertedId: number | undefined;
+      try {
+        const inserted = await admin.query<{ id: number }>(
+          `INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+             VALUES ($1, $2)
+             RETURNING id`,
+          ['f'.repeat(64), '999'],
+        );
+          const insertedRow = inserted.rows[0];
+          if (insertedRow === undefined) {
+            throw new Error('expected the inserted ledger id');
+          }
+          insertedId = insertedRow.id;
+        await assert.rejects(
+          applyMigrations(config, fixtures),
+          AppliedMigrationPrefixError,
+        );
+        const after = await admin.query(
+          'SELECT * FROM db_component_fixture ORDER BY id',
+        );
+        assert.deepEqual(after.rows, before.rows);
+      } finally {
+        if (insertedId !== undefined) {
+          await admin.query(
+            'DELETE FROM drizzle.__drizzle_migrations WHERE id = $1',
+            [insertedId],
+          );
+        }
+      }
+    });
 
     await t.test(
       'transaction constraint failure rolls back all preceding writes',
@@ -190,7 +321,7 @@ test('PostgreSQL persistence component', async (t) => {
             sql`SELECT pg_backend_pid() AS pid`,
           );
           await admin.query('SELECT pg_terminate_backend($1)', [
-            result.rows[0]!.pid,
+            result.rows[0]?.pid,
           ]);
           const error = await Promise.race([
             reported,
