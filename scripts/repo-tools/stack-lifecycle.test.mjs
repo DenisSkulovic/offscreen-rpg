@@ -1,5 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { execPath } from 'node:process';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const RELEASE_PLATFORM_ENSURE = join(
+  REPO_ROOT,
+  'infra/environments/release/platform.mjs',
+);
 import {
   runStackPreflight,
   readInfraPinFiles,
@@ -78,7 +87,7 @@ test('foreign context probes refuse up/down/reset with empty commands', () => {
   }
 });
 
-test('up cold path: cluster absent, matching roots => up.sh then install.sh', () => {
+test('up cold path: cluster absent => up.sh, platform ensure, install.sh', () => {
   const plan = buildStackPlan({
     command: 'up',
     probes: healthyProbes({ currentContext: null }),
@@ -87,22 +96,40 @@ test('up cold path: cluster absent, matching roots => up.sh then install.sh', ()
   assert.equal(plan.ok, true);
   assert.deepEqual(plan.commands, [
     ['bash', 'infra/clusters/kind/release/up.sh'],
+    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-lab'],
     ['bash', 'infra/environments/release/install.sh'],
   ]);
   assert.deepEqual(plan.urls, []);
 });
 
-test('up warm path: cluster present => only install.sh', () => {
+test('up warm path: cluster present => platform ensure then install.sh', () => {
   const plan = buildStackPlan({
     command: 'up',
     probes: healthyProbes({ ownedClusterExists: true }),
     observation: defaultObservation({ clusterPresent: true }),
   });
   assert.equal(plan.ok, true);
-  assert.deepEqual(plan.commands, [['bash', 'infra/environments/release/install.sh']]);
+  assert.deepEqual(plan.commands, [
+    [execPath, RELEASE_PLATFORM_ENSURE, 'ensure', 'kind-offscreen-lab'],
+    ['bash', 'infra/environments/release/install.sh'],
+  ]);
   const flat = plan.commands.flat().join(' ');
   assert.ok(!flat.includes('down.sh'), 'warm up must not include down.sh');
   assert.ok(!/docker\s+volume/i.test(flat), 'warm up must not touch volumes');
+});
+
+test('up warm migration unreadable => empty commands', () => {
+  const plan = buildStackPlan({
+    command: 'up',
+    probes: healthyProbes({ ownedClusterExists: true }),
+    observation: defaultObservation({
+      clusterPresent: true,
+      migration: 'unreadable',
+    }),
+  });
+  assert.equal(plan.ok, false);
+  assert.deepEqual(plan.commands, []);
+  assert.ok(plan.messages.some((m) => /unreadable/i.test(m)));
 });
 
 test('up migration failed => exitCode 1 and empty commands', () => {
@@ -120,8 +147,9 @@ test('up migration failed => exitCode 1 and empty commands', () => {
 test('up wrong import world hash => exitCode 1 and empty commands', () => {
   const plan = buildStackPlan({
     command: 'up',
-    probes: healthyProbes({ currentContext: null }),
+    probes: healthyProbes({ ownedClusterExists: true }),
     observation: defaultObservation({
+      clusterPresent: true,
       importRoots: { ...PINNED_ROOTS, world: '0'.repeat(64) },
     }),
   });
@@ -168,6 +196,25 @@ test('reset with exact confirmation => destroy.sh with confirmation arg', () => 
     ['bash', 'infra/clusters/kind/release/destroy.sh', 'kind-offscreen-lab'],
   ]);
   assert.deepEqual(plan.urls, []);
+});
+
+test('down and reset plans do not mutate cluster or platform backing', () => {
+  const down = buildStackPlan({
+    command: 'down',
+    probes: healthyProbes(),
+    observation: defaultObservation({ clusterPresent: true }),
+  });
+  const reset = buildStackPlan({
+    command: 'reset',
+    probes: healthyProbes({ currentContext: null }),
+    confirmation: 'kind-offscreen-lab',
+    observation: defaultObservation(),
+  });
+  const flat = [...down.commands, ...reset.commands]
+    .map((cmd) => cmd.join(' '))
+    .join('\n');
+  assert.ok(!flat.includes('platform.mjs'), 'down/reset must not run platform ensure');
+  assert.ok(!flat.includes('install.sh'), 'down/reset must not install app release');
 });
 
 test('reset with cluster name missing kind- prefix => empty commands', () => {

@@ -10,7 +10,7 @@ Owner commissioned 2026-11-24. INF08 source Done at 66ed7551a02ffcbee90a97db4452
 | [INF12](../../changes/archive/2026-11/platform-operations/2026-11-24--inf12-object-storage-platform/CHANGE.md) SeaweedFS and installer separation | INF09 | infra/platform/object-storage; dev-object-store bootstrap/probe/CLI/tests; object and content bootstrap smokes | Done (source; live NOT-RUN) |
 | [INF13](../../changes/archive/2026-11/platform-operations/2026-11-24--inf13-gateway-observability-platform/CHANGE.md) Gateway and observability fixtures | INF09 (Done) | infra/platform/gateway,observability; matching smokes/runbooks | Done (source; live NOT-RUN) |
 | [INF14](../../changes/archive/2026-11/platform-operations/2026-11-24--inf14-redis-rabbitmq-platform/CHANGE.md) Optional Redis and RabbitMQ | INF09 | infra/platform/redis,rabbitmq; matching smokes/runbooks | Done (source; live NOT-RUN) |
-| [INF15](../../changes/open/2026-11-24--inf15-platform-environment-assembly/CHANGE.md) Environment assembly | INF10–INF14 | infra/environments platform entrypoints; stack plan/runner; dev slot startup; aggregate guards | Ready (dependency-gated) |
+| [INF15](../../changes/archive/2026-11/platform-operations/2026-11-24--inf15-platform-environment-assembly/CHANGE.md) Environment assembly | INF10–INF14 | infra/environments platform entrypoints; stack plan/runner; dev slot startup; aggregate guards | Done (source; live NOT-RUN) |
 
 INF10–14 independent after INF09, preferably three stateful chats first; INF13/14 may overlap. INF15 final join after all five receipts. Custodian serializes shared docs and integration; each parent owns only its rows. No global queue change.
 

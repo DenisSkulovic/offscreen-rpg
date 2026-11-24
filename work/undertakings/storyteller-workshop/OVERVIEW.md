@@ -1,6 +1,6 @@
 # Storyteller Workshop | reality check and finish line
 
-**INF09–INF15 (2026-11-24):** Owner commissioned [platform normalization program](PLATFORM-PARALLEL.md). INF08, INF09, INF13, and INF14 are source Done (live NOT-RUN). Shared primitives, five independently owned service Changes and final environment assembly. No live proof/acceptance credit; overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged.
+**INF09–INF15 (2026-11-24):** Owner commissioned [platform normalization program](PLATFORM-PARALLEL.md). INF08 through INF15 are source Done (live NOT-RUN). Shared primitives, five service Changes, and environment assembly landed in source. No live proof/acceptance credit; overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged.
 
 **INF08 (2026-11-24):** Done: [Helm workload normalization](../../changes/archive/2026-11/platform-operations/2026-11-24--inf08-helm-workload-normalization/CHANGE.md), dependency-gated after INF07. One application chart, slot-only dev and stable release, explicit resource/security policy. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.
 

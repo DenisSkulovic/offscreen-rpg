@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import { readPlatformObject } from '../../infra/platform/common/commands.mjs';
 import { collectDefaultProbes, CONTEXT_NAME } from './stack-preflight.mjs';
 import { buildStackPlan } from './stack-lifecycle.mjs';
 import { assessStackHealth, EXPECTED_IMPORT_ROOTS } from './stack-health.mjs';
 
 /**
  * @param {'up' | 'down' | 'reset'} command
- * @param {{ probes: import('./stack-preflight.mjs').StackPreflightProbes, observation: { clusterPresent: boolean, migration: 'absent' | 'running' | 'complete' | 'failed', importRoots: { world: string, rule: string, start: string } | null }, confirmation?: string }} input
+ * @param {{ probes: import('./stack-preflight.mjs').StackPreflightProbes, observation: { clusterPresent: boolean, migration: 'absent' | 'running' | 'complete' | 'failed' | 'unreadable', importRoots: { world: string, rule: string, start: string } | null }, confirmation?: string }} input
  * @param {(argv: string[]) => { status: number | null, stdout?: string, stderr?: string }} runner
  */
 export function runPlannedCommand(command, input, runner) {
@@ -77,6 +78,65 @@ export function migrationFromJobJson(stdout) {
   if (failed > 0) return 'failed';
   if (body.metadata?.name) return 'running';
   return 'absent';
+}
+
+/**
+ * @param {{ state: 'present', object: object } | { state: 'absent' } | { state: 'unreadable' }} observation
+ */
+export function migrationStatusFromJobRead(observation) {
+  if (observation.state === 'unreadable') {
+    return 'unreadable';
+  }
+  if (observation.state === 'absent') {
+    return 'absent';
+  }
+  return migrationFromJobJson(JSON.stringify(observation.object));
+}
+
+/**
+ * Warm stack up observation: migration Job via common read; fixture-reader logs when available.
+ * @param {(argv: string[]) => { status: number | null, stdout?: string, stderr?: string }} runner
+ */
+export function readWarmStackObservation(runner) {
+  const platformRun = (command, args) => {
+    const result = runner([command, ...args]);
+    return {
+      ok: result.status === 0,
+      status: result.status,
+      stdout: result.stdout ?? '',
+      stderr: result.stderr ?? '',
+      timedOut: false,
+      missing: false,
+    };
+  };
+  const migrationObservation = readPlatformObject(
+    {
+      profileId: 'release',
+      resource: 'job',
+      name: 'game-migrate',
+      namespace: 'lab-edge',
+    },
+    { run: platformRun },
+  );
+  const migration = migrationStatusFromJobRead(migrationObservation);
+  const contextArgs = ['kubectl', '--context', CONTEXT_NAME];
+  const fixtureLog = runner([
+    ...contextArgs,
+    '-n',
+    'lab-content-bootstrap',
+    'logs',
+    'job/fixture-reader',
+    '--tail=40',
+  ]);
+  const importRoots =
+    fixtureLog.status === 0 && fixtureLog.stdout
+      ? importRootsFromBootstrapLog(fixtureLog.stdout)
+      : null;
+  return {
+    clusterPresent: true,
+    migration,
+    importRoots,
+  };
 }
 
 /**
@@ -183,15 +243,20 @@ if (invokedAsScript) {
     process.exitCode = 0;
   } else if (command === 'up' || command === 'down' || command === 'reset') {
     const probes = await collectDefaultProbes();
+    const clusterPresent = probes.ownedClusterExists === true;
+  const observation =
+    clusterPresent && command === 'up'
+      ? readWarmStackObservation(defaultRunner)
+      : {
+          clusterPresent,
+          migration: /** @type {'absent'} */ ('absent'),
+          importRoots: null,
+        };
     const result = runPlannedCommand(
       command,
       {
         probes,
-        observation: {
-          clusterPresent: probes.ownedClusterExists === true,
-          migration: 'absent',
-          importRoots: null,
-        },
+        observation,
         confirmation: process.argv[3],
       },
       defaultRunner,

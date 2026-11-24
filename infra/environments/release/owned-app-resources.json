@@ -4,6 +4,7 @@
   "resetConfirmation": "kind-offscreen-lab",
   "clusterUp": "infra/clusters/kind/release/up.sh",
   "clusterReset": "infra/clusters/kind/release/destroy.sh",
+  "releasePlatformEnsure": "infra/environments/release/platform.mjs",
   "releaseInstall": "infra/environments/release/install.sh",
   "preserveNamespaces": ["lab-postgres", "lab-objects", "lab-temporal", "lab-content-bootstrap"],
   "expectedImportRoots": {

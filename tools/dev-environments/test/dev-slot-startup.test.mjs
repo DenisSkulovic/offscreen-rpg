@@ -301,6 +301,23 @@ exit 0
   assert.equal(readFileSync(counter, 'utf8').trim().split('\n').length, 1);
 });
 
+test('shared core readiness failure refuses before sql without tenant mutations', async () => {
+  const used = deps({
+    verifySharedCore: async () => ({
+      ok: false,
+      detail: 'shared CNPG cluster is not Ready',
+    }),
+  });
+  const result = await reconcileDevSlot(
+    { worktree: '/tmp/core', registryRoot: '/tmp/reg' },
+    used,
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.phase, 'platform');
+  assert.equal(used.calls.includes('sql'), false);
+  assert.equal(used.calls.includes('migration'), false);
+});
+
 test('oauth readiness refuses before sql for a missing, incomplete, short, or unreadable file', async () => {
   const root = mkdtempSync(join(tmpdir(), 'oauth-ready-'));
   const worktree = join(root, 'wt');

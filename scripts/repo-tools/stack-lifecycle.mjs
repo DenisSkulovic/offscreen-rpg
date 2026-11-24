@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
+import { execPath } from 'node:process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runStackPreflight } from './stack-preflight.mjs';
@@ -11,7 +12,7 @@ const OWNED_RESOURCES_PATH = join(REPO_ROOT, 'infra/environments/release/owned-a
 
 /** @typedef {{
  *   clusterPresent: boolean,
- *   migration: 'absent' | 'running' | 'complete' | 'failed',
+ *   migration: 'absent' | 'running' | 'complete' | 'failed' | 'unreadable',
  *   importRoots: { world: string, rule: string, start: string } | null,
  * }} StackObservation */
 
@@ -86,27 +87,56 @@ export function buildStackPlan(input) {
   const { command, observation, confirmation } = input;
 
   if (command === 'up') {
-    if (observation.migration === 'failed') {
-      return {
-        ok: false,
-        exitCode: 1,
-        commands: [],
-        messages: ['Refusing stack up: migration Job failed; fix migration before reapplying release.'],
-        urls,
-      };
-    }
-
-    if (observation.importRoots !== null) {
-      const bad = mismatchedImportRoots(observation.importRoots, owned.expectedImportRoots);
-      if (bad.length > 0) {
+    if (observation.clusterPresent) {
+      if (observation.migration === 'failed') {
         return {
           ok: false,
           exitCode: 1,
           commands: [],
-          messages: bad.map((id) => `Refusing stack up: ${id} (import root hash mismatch).`),
+          messages: [
+            'Refusing stack up: migration Job failed; fix migration before reapplying release.',
+          ],
           urls,
         };
       }
+      if (observation.migration === 'unreadable') {
+        return {
+          ok: false,
+          exitCode: 1,
+          commands: [],
+          messages: [
+            'Refusing stack up: migration Job is unreadable; fix cluster read access before reapplying release.',
+          ],
+          urls,
+        };
+      }
+      if (observation.importRoots !== null) {
+        const bad = mismatchedImportRoots(
+          observation.importRoots,
+          owned.expectedImportRoots,
+        );
+        if (bad.length > 0) {
+          return {
+            ok: false,
+            exitCode: 1,
+            commands: [],
+            messages: bad.map(
+              (id) => `Refusing stack up: ${id} (import root hash mismatch).`,
+            ),
+            urls,
+          };
+        }
+      }
+    } else if (observation.migration === 'failed') {
+      return {
+        ok: false,
+        exitCode: 1,
+        commands: [],
+        messages: [
+          'Refusing stack up: migration Job failed; fix migration before reapplying release.',
+        ],
+        urls,
+      };
     }
 
     /** @type {string[][]} */
@@ -114,6 +144,12 @@ export function buildStackPlan(input) {
     if (!observation.clusterPresent) {
       commands.push(['bash', owned.clusterUp]);
     }
+    commands.push([
+      execPath,
+      join(REPO_ROOT, owned.releasePlatformEnsure),
+      'ensure',
+      owned.contextName,
+    ]);
     commands.push(['bash', owned.releaseInstall]);
 
     return { ok: true, exitCode: 0, commands, messages: [], urls };

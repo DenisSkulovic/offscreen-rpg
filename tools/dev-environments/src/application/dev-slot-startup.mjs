@@ -9,6 +9,7 @@ export { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, U
 import { fingerprintDevImageContext, UNION_ROLE_FILTER as UNION_FILTER } from '../image-cache/dev-slot-image-plan.mjs';
 import { timePhase } from './dev-startup-timing.mjs';
 import { selectColdStartDocuments } from '../rendering/dev-slot-app-graph.mjs';
+import { verifySharedCoreReadiness } from './dev-shared-core-readiness.mjs';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -108,6 +109,7 @@ function phaseResult(value) {
  *   ensureTemporal: Function,
  *   project: Function,
  *   ensureImages: Function,
+ *   verifySharedCore?: () => Promise<{ ok: boolean, detail?: string }>,
  * }} deps
  */
 export async function reconcileDevSlot(input, deps) {
@@ -142,6 +144,16 @@ export async function reconcileDevSlot(input, deps) {
   if (deps.validateOauth) {
     const oauth = await deps.validateOauth(input.worktree);
     if (!oauth?.ok) return stopped('oauth', oauth?.detail ?? 'approved local OAuth configuration is missing');
+  }
+
+  if (deps.verifySharedCore) {
+    const core = await deps.verifySharedCore();
+    if (!core?.ok) {
+      return stopped(
+        'platform',
+        core?.detail ?? 'shared platform core is not ready',
+      );
+    }
   }
 
   const retained = [];
@@ -229,6 +241,16 @@ export async function reconcileOwnedDevSlot(input) {
   return reconcileDevSlot({ ...input, owner: input.owner }, {
     allocate: allocateDevWorktreeOwner,
     validateOauth: (worktree) => resolveOauthReadiness(worktree),
+    verifySharedCore: () => verifySharedCoreReadiness({
+      run: (command, args) => {
+        const result = spawnSync(command, args, { encoding: 'utf8', timeout: 30_000 });
+        return {
+          status: result.status,
+          stdout: result.stdout ?? '',
+          stderr: result.stderr ?? '',
+        };
+      },
+    }),
     probeCluster: async () => {
       const cluster = spawnSync('kubectl', ['--context', 'kind-offscreen-dev', 'get', 'namespace', 'offscreen-dev-postgres', '-o', 'name'], { encoding: 'utf8' });
       let memoryMiB = 0;
