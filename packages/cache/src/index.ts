@@ -1,25 +1,21 @@
 import type { ReadCache } from '@offscreen/cache-port/read-cache';
-import { z } from 'zod';
+import type { RedisClientType } from 'redis';
 
-const configSchema = z.strictObject({
-  REDIS_URL: z.url().optional(),
-  REDIS_KEY_PREFIX: z
-    .string()
-    .regex(/^[a-z0-9][a-z0-9:_-]{0,49}$/)
-    .default('offscreen'),
-  REDIS_CONNECT_TIMEOUT_MS: z.coerce
-    .number()
-    .int()
-    .min(100)
-    .max(5_000)
-    .default(500),
-  REDIS_OPERATION_TIMEOUT_MS: z.coerce
-    .number()
-    .int()
-    .min(10)
-    .max(2_000)
-    .default(100),
-});
+import {
+  createRedisStore,
+  type RedisStoreCommands,
+} from './adapters/redis-store.js';
+import type { CacheStore } from './core/cache-store.js';
+import { createDisabledStore } from './core/test-stores.js';
+import {
+  parseRedisConnectionEnv,
+  resolveRedisConnectionSettings,
+} from './runtime/redis-config.js';
+import {
+  createRedisConnectionFromRedisEnv,
+  type RedisClientFactory,
+  type RedisConnection,
+} from './runtime/redis-connection.js';
 
 export type CacheAdapterIncident = Readonly<{
   operation: 'connect' | 'get' | 'set' | 'close';
@@ -29,11 +25,43 @@ export type CacheAdapterIncident = Readonly<{
 export type CacheAdapter = Readonly<{
   cache: ReadCache;
   enabled: boolean;
+  store: CacheStore;
   close(): Promise<void>;
+}>;
+
+export type CacheAdapterRedisCommands = Readonly<{
+  get(key: string): Promise<string | null>;
+  set(
+    key: string,
+    value: string,
+    options?: Readonly<{ EX?: number; PX?: number }>,
+  ): Promise<string | null>;
+}>;
+
+export type CreateCacheAdapterTestOptions = Readonly<{
+  clientFactory?: RedisClientFactory;
+  getCommands?: () => CacheAdapterRedisCommands | null;
+  random?: () => number;
+  setTimer?: (
+    handler: () => void,
+    delayMs: number,
+  ) => ReturnType<typeof setTimeout>;
+  clearTimer?: (handle: ReturnType<typeof setTimeout>) => void;
 }>;
 
 function errorKind(error: unknown) {
   return error instanceof Error && error.name ? error.name : 'UnknownError';
+}
+
+function safeIncident(
+  onIncident: ((incident: CacheAdapterIncident) => void) | undefined,
+  incident: CacheAdapterIncident,
+) {
+  try {
+    onIncident?.(incident);
+  } catch {
+    // Incident sinks must not reject cache operations.
+  }
 }
 
 function deadline<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
@@ -43,8 +71,201 @@ function deadline<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
     timer.unref();
   });
   return Promise.race([operation, timeout]).finally(() => {
-    if (timer) clearTimeout(timer);
+    if (timer) {
+      clearTimeout(timer);
+    }
   });
+}
+
+const noopLegacyCache: ReadCache = {
+  async get() {
+    return null;
+  },
+  async set() {},
+};
+
+function createCommandCapturingClientFactory(): Readonly<{
+  factory: RedisClientFactory;
+  getCommands: () => CacheAdapterRedisCommands | null;
+}> {
+  let commands: CacheAdapterRedisCommands | null = null;
+  const factory: RedisClientFactory = (settings) => {
+    let client: RedisClientType | undefined;
+    return {
+      get isOpen() {
+        return client?.isOpen ?? false;
+      },
+      get isReady() {
+        return client?.isReady ?? false;
+      },
+      async connect() {
+        if (!client) {
+          const { createClient } = await import('redis');
+          client = createClient({
+            url: settings.url,
+            disableOfflineQueue: true,
+            socket: {
+              connectTimeout: settings.connectTimeoutMs,
+              reconnectStrategy: false,
+            },
+          });
+          client.on('error', () => {});
+          const active = client;
+          commands = {
+            get: (key) => active.get(key),
+            set: (key, value, options) => active.set(key, value, options),
+          };
+        }
+        await client.connect();
+      },
+      async close() {
+        commands = null;
+        if (client?.isOpen) {
+          await client.close();
+        }
+      },
+      on(event, listener) {
+        client?.on(event, listener as never);
+      },
+      off(event, listener) {
+        client?.off(event, listener as never);
+      },
+    };
+  };
+  return {
+    factory,
+    getCommands: () => commands,
+  };
+}
+
+function createRedisStoreCommands(
+  getCommands: () => CacheAdapterRedisCommands | null,
+  operationTimeoutMs: number,
+): RedisStoreCommands {
+  return {
+    async get(key, signal) {
+      if (signal?.aborted) {
+        throw new Error('Aborted');
+      }
+      const client = getCommands();
+      if (!client) {
+        throw new Error('RedisUnavailable');
+      }
+      return deadline(client.get(key), operationTimeoutMs);
+    },
+    async set(key, value, pxMs, signal) {
+      if (signal?.aborted) {
+        throw new Error('Aborted');
+      }
+      const client = getCommands();
+      if (!client) {
+        throw new Error('RedisUnavailable');
+      }
+      await deadline(client.set(key, value, { PX: pxMs }), operationTimeoutMs);
+    },
+  };
+}
+
+function createLegacyCache(
+  getCommands: () => CacheAdapterRedisCommands | null,
+  qualified: (key: string) => string,
+  operationTimeoutMs: number,
+): ReadCache {
+  return {
+    async get(key) {
+      const client = getCommands();
+      if (!client) {
+        return null;
+      }
+      const serialized = await deadline(
+        client.get(qualified(key)),
+        operationTimeoutMs,
+      );
+      if (serialized === null) {
+        return null;
+      }
+      const text = String(serialized);
+      if (Buffer.byteLength(text, 'utf8') > 512 * 1024) {
+        throw new Error('CacheValueTooLarge');
+      }
+      return JSON.parse(text) as unknown;
+    },
+    async set(key, value, options) {
+      const client = getCommands();
+      if (!client) {
+        return;
+      }
+      const serialized = JSON.stringify(value);
+      if (serialized === undefined) {
+        throw new Error('CacheValueInvalid');
+      }
+      if (Buffer.byteLength(serialized, 'utf8') > options.maxBytes) {
+        throw new Error('CacheValueTooLarge');
+      }
+      await deadline(
+        client.set(qualified(key), serialized, { EX: options.ttlSeconds }),
+        operationTimeoutMs,
+      );
+    },
+  };
+}
+
+function buildDisabledCacheAdapter(): CacheAdapter {
+  return {
+    enabled: false,
+    cache: noopLegacyCache,
+    store: createDisabledStore(),
+    async close() {},
+  };
+}
+
+export type BuildCacheAdapterFromConnectionOptions = Readonly<{
+  connection: RedisConnection;
+  getCommands: () => CacheAdapterRedisCommands | null;
+  onIncident?: (incident: CacheAdapterIncident) => void;
+  startupReady: boolean;
+}>;
+
+/**
+ * @internal Test and adapter wiring helper.
+ */
+export function buildCacheAdapterFromConnection(
+  options: BuildCacheAdapterFromConnectionOptions,
+): CacheAdapter {
+  const { connection, getCommands, onIncident, startupReady } = options;
+  const settings = connection.settings;
+  if (!settings) {
+    return buildDisabledCacheAdapter();
+  }
+
+  const qualified = (key: string) => `${settings.keyPrefix}:${key}`;
+  const store = createRedisStore({
+    connection,
+    clock: () => Date.now(),
+    commands: createRedisStoreCommands(
+      getCommands,
+      settings.operationTimeoutMs,
+    ),
+    operationTimeoutMs: settings.operationTimeoutMs,
+  });
+
+  return {
+    enabled: startupReady,
+    cache: startupReady
+      ? createLegacyCache(getCommands, qualified, settings.operationTimeoutMs)
+      : noopLegacyCache,
+    store,
+    async close() {
+      try {
+        await connection.close();
+      } catch (error) {
+        safeIncident(onIncident, {
+          operation: 'close',
+          errorKind: errorKind(error),
+        });
+      }
+    },
+  };
 }
 
 /**
@@ -54,84 +275,42 @@ function deadline<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
 export async function createCacheAdapter(
   env: Record<string, string | undefined>,
   onIncident?: (incident: CacheAdapterIncident) => void,
+  testOptions?: CreateCacheAdapterTestOptions,
 ): Promise<CacheAdapter> {
-  const redisEnv = Object.fromEntries(
-    Object.entries(env).filter(([key]) => key.startsWith('REDIS_')),
-  );
-  const config = configSchema.parse(redisEnv);
-  if (!config.REDIS_URL) {
-    return {
-      enabled: false,
-      cache: {
-        async get() {
-          return null;
-        },
-        async set() {},
-      },
-      async close() {},
-    };
+  const parsed = parseRedisConnectionEnv(env);
+  if (!resolveRedisConnectionSettings(parsed)) {
+    return buildDisabledCacheAdapter();
   }
-  const { createClient } = await import('redis');
-  const client = createClient({
-    url: config.REDIS_URL,
-    socket: {
-      connectTimeout: config.REDIS_CONNECT_TIMEOUT_MS,
-      reconnectStrategy: false,
-    },
-  });
-  // The caller owns safe structured diagnostics; never forward Redis strings
-  // because they may contain topology details or configured URLs.
-  client.on('error', () => {});
-  try {
-    await deadline(client.connect(), config.REDIS_CONNECT_TIMEOUT_MS);
-  } catch (error) {
-    onIncident?.({ operation: 'connect', errorKind: errorKind(error) });
-    if (client.isOpen) await client.close().catch(() => undefined);
-    return {
-      enabled: false,
-      cache: {
-        async get() {
-          return null;
-        },
-        async set() {},
-      },
-      async close() {},
-    };
-  }
-  const qualified = (key: string) => `${config.REDIS_KEY_PREFIX}:${key}`;
-  return {
-    enabled: true,
-    cache: {
-      async get(key) {
-        const serialized = await deadline(
-          client.get(qualified(key)),
-          config.REDIS_OPERATION_TIMEOUT_MS,
-        );
-        if (serialized === null) return null;
-        const text = String(serialized);
-        if (Buffer.byteLength(text, 'utf8') > 512 * 1024) {
-          throw new Error('CacheValueTooLarge');
-        }
-        return JSON.parse(text) as unknown;
-      },
-      async set(key, value, options) {
-        const serialized = JSON.stringify(value);
-        if (serialized === undefined) throw new Error('CacheValueInvalid');
-        if (Buffer.byteLength(serialized, 'utf8') > options.maxBytes) {
-          throw new Error('CacheValueTooLarge');
-        }
-        await deadline(
-          client.set(qualified(key), serialized, { EX: options.ttlSeconds }),
-          config.REDIS_OPERATION_TIMEOUT_MS,
-        );
-      },
-    },
-    async close() {
-      try {
-        if (client.isOpen) await client.close();
-      } catch (error) {
-        onIncident?.({ operation: 'close', errorKind: errorKind(error) });
+
+  const commandFactory = testOptions?.clientFactory
+    ? {
+        factory: testOptions.clientFactory,
+        getCommands:
+          testOptions.getCommands ??
+          (() => null as CacheAdapterRedisCommands | null),
       }
-    },
-  };
+    : createCommandCapturingClientFactory();
+
+  const connection = createRedisConnectionFromRedisEnv(env, {
+    clientFactory: commandFactory.factory,
+    ...(testOptions?.random ? { random: testOptions.random } : {}),
+    ...(testOptions?.setTimer ? { setTimer: testOptions.setTimer } : {}),
+    ...(testOptions?.clearTimer ? { clearTimer: testOptions.clearTimer } : {}),
+  });
+
+  await connection.start();
+  const startupReady = connection.admitsTraffic();
+  if (!startupReady) {
+    safeIncident(onIncident, {
+      operation: 'connect',
+      errorKind: 'RedisConnectFailed',
+    });
+  }
+
+  return buildCacheAdapterFromConnection({
+    connection,
+    getCommands: commandFactory.getCommands,
+    startupReady,
+    ...(onIncident ? { onIncident } : {}),
+  });
 }

@@ -4,7 +4,7 @@
 
 ## Cache platform parallel waves
 
-[Full catalog](../README.md#cache-platform-redesign) · [Frozen contracts and ownership](../../undertakings/storyteller-workshop/CACHE-PARALLEL.md). All eight owner-commissioned; DO07 and Documents predecessors verified. CACHE01 Ready now; CACHE02/CACHE03/CACHE05 after foundation; CACHE04/CACHE06A/CACHE06B after joined wiring; CACHE07 after all consumers join and disposable resource authorization. CACHE02 parent is custodian for both waves. No further release required after gates pass. No queue change.
+[Full catalog](../README.md#cache-platform-redesign) · [Frozen contracts and ownership](../../undertakings/storyteller-workshop/CACHE-PARALLEL.md). All eight owner-commissioned; DO07 and Documents predecessors verified. CACHE01 and CACHE02 are Done source-only. CACHE03/CACHE05 remain wave 1. CACHE04/CACHE06A/CACHE06B wait for joined wiring. CACHE07 waits for consumers and disposable resource authorization. The CACHE02 parent remains custodian. No further release required when gates pass. No queue change.
 
 ## Near-term domain ownership sequence (2026-11-24)
 

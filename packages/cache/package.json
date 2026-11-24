@@ -15,6 +15,10 @@
     "./codecs": {
       "types": "./dist/codecs/index.d.ts",
       "default": "./dist/codecs/index.js"
+    },
+    "./redis": {
+      "types": "./dist/redis/index.d.ts",
+      "default": "./dist/redis/index.js"
     }
   },
   "scripts": {
