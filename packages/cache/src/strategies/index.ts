@@ -3,6 +3,9 @@ import {
   CacheOverloadError,
   createSingleFlight,
 } from '../resilience/single-flight.js';
+
+export { createSingleFlight, CacheOverloadError };
+export type { SingleFlight } from '../resilience/single-flight.js';
 import { emitCacheTelemetry } from '../core/cache-telemetry.js';
 import { makeCacheKey } from '../core/cache-key.js';
 import type {
