@@ -2,18 +2,17 @@ import { hashCanonicalJson } from './canonical-json.js';
 import {
   createEmptyLibraryTrie,
   createLibraryTrieEdit,
-  deleteLibraryTrieKey,
   deleteLibraryTrieKeyInEdit,
   emptyLibraryRootHash,
   finalizeLibraryTrieEdit,
   getLibraryTrieValue,
   libraryTrieEditReadView,
-  setLibraryTrieValue,
   setLibraryTrieValueInEdit,
   type LibraryTrieEdit,
   type LibraryTrieStore,
 } from './library-trie.js';
 import {
+  contentHashSchema,
   documentManifestEntrySchema,
   libraryNodeV2Schema,
   libraryRootV2Schema,
@@ -42,11 +41,29 @@ export type LibraryBatchOperation =
   | { op: 'rename'; documentId: string; path: string };
 
 function loadNode(store: LibraryTrieStore, hash: string): LibraryNodeV2 {
+  contentHashSchema.parse(hash);
   const node = store.get(hash);
   if (node === undefined) {
     throw new Error(`Missing library node for hash ${hash}`);
   }
-  return libraryNodeV2Schema.parse(node);
+  const parsed = libraryNodeV2Schema.parse(node);
+  const contentHash = hashCanonicalJson(parsed);
+  if (contentHash !== hash) {
+    throw new Error(
+      `Library node content hash does not match requested hash ${hash}`,
+    );
+  }
+  return parsed;
+}
+
+function assertNodeContentHash(nodeHash: string, parsed: LibraryNodeV2): void {
+  contentHashSchema.parse(nodeHash);
+  const contentHash = hashCanonicalJson(parsed);
+  if (contentHash !== nodeHash) {
+    throw new Error(
+      `Library node content hash does not match requested hash ${nodeHash}`,
+    );
+  }
 }
 
 function nibblesToKey(nibbles: readonly string[]): string {
@@ -81,7 +98,9 @@ function idTrieKey(documentId: string): string {
   return documentId.toLowerCase();
 }
 
-function idLeafValue(entry: Pick<DocumentManifestEntry, 'documentId' | 'path'>): Record<string, unknown> {
+function idLeafValue(
+  entry: Pick<DocumentManifestEntry, 'documentId' | 'path'>,
+): Record<string, unknown> {
   return {
     documentId: entry.documentId,
     path: entry.path,
@@ -96,27 +115,36 @@ export async function loadLibraryIndex(
   readNode: (hash: string) => Promise<LibraryNodeV2>,
   root: LibraryRootV2,
 ): Promise<LibraryIndex> {
+  const validatedRoot = libraryRootV2Schema.parse(root);
   const store = new Map<string, LibraryNodeV2>();
   const visited = new Set<string>();
   const visit = async (nodeHash: string): Promise<void> => {
-    if (visited.has(nodeHash)) return;
+    if (visited.has(nodeHash)) {
+      return;
+    }
+    const raw = await readNode(nodeHash);
+    const parsed = libraryNodeV2Schema.parse(raw);
+    assertNodeContentHash(nodeHash, parsed);
     visited.add(nodeHash);
-    const node = await readNode(nodeHash);
-    store.set(nodeHash, node);
-    for (const child of node.children) {
+    store.set(nodeHash, parsed);
+    for (const child of parsed.children) {
       await visit(child.hash);
     }
   };
-  await visit(root.pathsRootHash);
-  await visit(root.idsRootHash);
+  await visit(validatedRoot.pathsRootHash);
+  await visit(validatedRoot.idsRootHash);
   if (!store.has(emptyLibraryRootHash)) {
     const empty = createEmptyLibraryTrie();
-    store.set(emptyLibraryRootHash, empty.store.get(emptyLibraryRootHash)!);
+    const emptyNode = empty.store.get(emptyLibraryRootHash);
+    if (emptyNode === undefined) {
+      throw new Error('Missing empty library root node');
+    }
+    store.set(emptyLibraryRootHash, emptyNode);
   }
   const library: LibraryIndex = {
     store,
-    root,
-    rootHash: hashCanonicalJson(root),
+    root: validatedRoot,
+    rootHash: hashCanonicalJson(validatedRoot),
   };
   assertLibraryIndexConsistent(library);
   return library;
@@ -147,6 +175,9 @@ export function createEmptyLibraryIndex(): LibraryIndex {
 }
 
 export function assertLibraryIndexConsistent(library: LibraryIndex): void {
+  if (library.rootHash !== hashCanonicalJson(library.root)) {
+    throw new Error('Library root hash does not match canonical root');
+  }
   const paths = new Map<string, Record<string, unknown>>();
   const ids = new Map<string, Record<string, unknown>>();
   collectTrieLeaves(library.store, library.root.pathsRootHash, [], paths);
@@ -162,7 +193,10 @@ export function assertLibraryIndexConsistent(library: LibraryIndex): void {
       throw new Error('ID index points to an absent path');
     }
     const manifest = documentManifestEntrySchema.parse(pathEntry);
-    if (manifest.documentId !== leaf.documentId || manifest.path !== leaf.path) {
+    if (
+      manifest.documentId !== leaf.documentId ||
+      manifest.path !== leaf.path
+    ) {
       throw new Error('ID index reverse-link mismatch');
     }
   }
@@ -177,7 +211,10 @@ export function assertLibraryIndexConsistent(library: LibraryIndex): void {
       throw new Error('Path entry has no matching ID index leaf');
     }
     const leaf = libraryIdLeafSchema.parse(idValue);
-    if (leaf.documentId !== manifest.documentId || leaf.path !== manifest.path) {
+    if (
+      leaf.documentId !== manifest.documentId ||
+      leaf.path !== manifest.path
+    ) {
       throw new Error('Path index reverse-link mismatch');
     }
   }
@@ -228,7 +265,11 @@ function applyOneInEdit(
       if (idLeaf.path !== entry.path) {
         throw new Error('Replace cannot change document path; use rename');
       }
-      const existingPath = getLibraryTrieValue(readStore, pathsRootHash, entry.path);
+      const existingPath = getLibraryTrieValue(
+        readStore,
+        pathsRootHash,
+        entry.path,
+      );
       if (existingPath === null) {
         throw new Error('Cannot replace missing path entry');
       }
@@ -254,8 +295,16 @@ function applyOneInEdit(
         throw new Error('Cannot delete unknown document ID');
       }
       const idLeaf = libraryIdLeafSchema.parse(existingId);
-      const nextPathsRootHash = deleteLibraryTrieKeyInEdit(edit, pathsRootHash, idLeaf.path);
-      const nextIdsRootHash = deleteLibraryTrieKeyInEdit(edit, idsRootHash, idKey);
+      const nextPathsRootHash = deleteLibraryTrieKeyInEdit(
+        edit,
+        pathsRootHash,
+        idLeaf.path,
+      );
+      const nextIdsRootHash = deleteLibraryTrieKeyInEdit(
+        edit,
+        idsRootHash,
+        idKey,
+      );
       return {
         pathsRootHash: nextPathsRootHash,
         idsRootHash: nextIdsRootHash,
@@ -275,7 +324,11 @@ function applyOneInEdit(
       if (getLibraryTrieValue(readStore, pathsRootHash, newPath) !== null) {
         throw new Error('Document path already exists');
       }
-      const existingPath = getLibraryTrieValue(readStore, pathsRootHash, idLeaf.path);
+      const existingPath = getLibraryTrieValue(
+        readStore,
+        pathsRootHash,
+        idLeaf.path,
+      );
       if (existingPath === null) {
         throw new Error('Cannot rename missing path entry');
       }
@@ -283,14 +336,21 @@ function applyOneInEdit(
       if (entry.documentId !== operation.documentId) {
         throw new Error('Path entry documentId does not match rename target');
       }
-      const renamed = documentManifestEntrySchema.parse({ ...entry, path: newPath });
+      const renamed = documentManifestEntrySchema.parse({
+        ...entry,
+        path: newPath,
+      });
       const pathsAfterSet = setLibraryTrieValueInEdit(
         edit,
         pathsRootHash,
         newPath,
         manifestRecord(renamed),
       );
-      const nextPathsRootHash = deleteLibraryTrieKeyInEdit(edit, pathsAfterSet, idLeaf.path);
+      const nextPathsRootHash = deleteLibraryTrieKeyInEdit(
+        edit,
+        pathsAfterSet,
+        idLeaf.path,
+      );
       const nextIdsRootHash = setLibraryTrieValueInEdit(
         edit,
         idsRootHash,
@@ -304,24 +364,11 @@ function applyOneInEdit(
     }
     default: {
       const _exhaustive: never = operation;
-      throw new Error(`Unknown library batch operation: ${String(_exhaustive)}`);
+      throw new Error(
+        `Unknown library batch operation: ${String(_exhaustive)}`,
+      );
     }
   }
-}
-
-function applyOne(
-  store: LibraryTrieStore,
-  pathsRootHash: string,
-  idsRootHash: string,
-  operation: LibraryBatchOperation,
-): { store: LibraryTrieStore; pathsRootHash: string; idsRootHash: string } {
-  const edit = createLibraryTrieEdit(store);
-  const next = applyOneInEdit(edit, pathsRootHash, idsRootHash, operation);
-  return {
-    store: finalizeLibraryTrieEdit(edit),
-    pathsRootHash: next.pathsRootHash,
-    idsRootHash: next.idsRootHash,
-  };
 }
 
 export function applyLibraryBatch(
