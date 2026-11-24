@@ -51,7 +51,12 @@ function deps(overrides = {}) {
     },
     ensureMigration: async () => {
       calls.push('migration');
-      return { ok: true, appliedMigrations: 25 };
+      return {
+        ok: true,
+        slotId: record.slotId,
+        appliedMigrations: 25,
+        expectedMigrations: 25,
+      };
     },
     ensureS3: async () => {
       calls.push('s3');
@@ -61,8 +66,10 @@ function deps(overrides = {}) {
       calls.push('temporal');
       return { ok: true, namespace: 'offscreen-dev-3', id: 'temporal-id' };
     },
-    project: async () => {
+    project: async (_rec, migration) => {
       calls.push('project');
+      assert.equal(migration?.ok, true);
+      assert.equal(migration?.appliedMigrations, migration?.expectedMigrations);
       return {
         ok: true,
         dbUid: 'db',
@@ -466,6 +473,23 @@ test('shared core readiness failure refuses before sql without tenant mutations'
   assert.equal(used.calls.includes('artifact'), false);
   assert.equal(used.calls.includes('sql'), false);
   assert.equal(used.calls.includes('migration'), false);
+});
+
+test('migration failure prevents projection and later workload stages', async () => {
+  const used = deps({
+    ensureMigration: async () => ({
+      ok: false,
+      refusals: [{ id: 'schema-not-verified', detail: 'dev_3' }],
+    }),
+  });
+  const result = await reconcileDevSlot(
+    { worktree: '/tmp/migrate-fail', registryRoot: '/tmp/reg' },
+    used,
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.phase, 'migration');
+  assert.equal(used.calls.includes('project'), false);
+  assert.equal(used.calls.includes('images'), false);
 });
 
 test('migration artifact failure refuses before sql with empty retained', async () => {

@@ -212,6 +212,13 @@ export async function reconcileDevSlot(input, deps) {
   );
   const migrationDetail = phaseResult(migration);
   if (migrationDetail) return stopped('migration', migrationDetail, retained);
+  if (migration?.ok !== true) {
+    return stopped(
+      'migration',
+      migrationDetail ?? 'migration did not produce schema proof',
+      retained,
+    );
+  }
 
   const s3 = await timePhase('s3', 'reconcile', () => deps.ensureS3(record));
   const s3Detail = phaseResult(s3);
@@ -226,7 +233,7 @@ export async function reconcileDevSlot(input, deps) {
 
   let projected;
   try {
-    projected = await deps.project(record);
+    projected = await deps.project(record, migration);
   } catch (error) {
     return stopped(
       'project',
@@ -418,9 +425,10 @@ export async function reconcileOwnedDevSlot(input) {
             : Object.values(raw?.ownersByWorktree ?? {}).map(
                 (item) => item.slotId,
               );
-        const slots = [...new Set([owner.slotId, ...known])];
+        const knownSlots = [...new Set([owner.slotId, ...known])];
         return executeDevSqlTenants({
-          slots,
+          knownSlots,
+          selectedSlot: owner.slotId,
           authorizeLive: 'kind-offscreen-dev-sql-tenant-live',
           adapter: createLiveDevSqlAdapter(),
         });
@@ -540,12 +548,18 @@ export async function reconcileOwnedDevSlot(input) {
             },
           },
         }),
-      project: (owner) =>
+      project: (owner, migration) =>
         projectDevSlot({
           record: owner,
           registryRoot: input.registryRoot,
           worktree: input.worktree,
           oauthFile: oauthFileFor(input.worktree),
+          schemaProof: {
+            ok: true,
+            slotId: migration.slotId ?? owner.slotId,
+            appliedMigrations: migration.appliedMigrations,
+            expectedMigrations: migration.expectedMigrations,
+          },
         }),
       ensureImages: (owner) => ensureOwnedSlotImages(owner, input.worktree),
       applyWorkloads: (_owner, projected) => applyOwnedSlotWorkloads(projected),

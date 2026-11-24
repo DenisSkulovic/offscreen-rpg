@@ -44,35 +44,6 @@ function assertIdentity(identity) {
   return null;
 }
 
-function applyKnownStatement(catalog, sql) {
-  const identifiers = [...sql.matchAll(/"([a-z_][a-z0-9_]*)"/g)].map((match) => match[1]);
-  if (sql.startsWith('REVOKE CONNECT, TEMPORARY ON DATABASE')) {
-    const database = catalog.databases[identifiers[0]];
-    if (!database) return refusal('unknown-database', identifiers[0]);
-    database.publicConnect = false;
-    database.publicTemporary = false;
-    catalog.statements.push(sql);
-    return null;
-  }
-  if (sql.startsWith('GRANT CONNECT, TEMPORARY ON DATABASE "dev" TO "dev"')) {
-    catalog.databases.dev.connect = [...new Set([...catalog.databases.dev.connect, 'dev'])];
-    catalog.statements.push(sql);
-    return null;
-  }
-  if (sql.startsWith('GRANT CONNECT ON DATABASE')) {
-    const [databaseName, ...roles] = identifiers;
-    const database = catalog.databases[databaseName];
-    if (!database) return refusal('unknown-database', databaseName);
-    for (const role of roles) {
-      if (!catalog.roles[role]) return refusal('unknown-role', role);
-    }
-    database.connect = [...new Set([...database.connect, ...roles])];
-    catalog.statements.push(sql);
-    return null;
-  }
-  return refusal('unexpected-sql', 'statement is outside the tenant executor vocabulary');
-}
-
 function baselineStatements(catalog) {
   const statements = [];
   for (const name of ['postgres', 'dev', 'template1']) {
@@ -96,78 +67,251 @@ function aclsMatch(database, names) {
     && !database.connect.includes('dev');
 }
 
-export function executeDevSqlTenants({ slots, authorizeLive, adapter, failAt }) {
+function catalogAllowlist(knownSlots) {
+  const allowed = new Set(BASELINE);
+  for (const slotId of knownSlots) allowed.add(deriveDevSqlTenant(slotId).database);
+  return allowed;
+}
+
+function proveKnownTenantsBeforeWrites(catalog, knownSlots) {
+  for (const slotId of knownSlots) {
+    const names = deriveDevSqlTenant(slotId);
+    const database = catalog.databases[names.database];
+    if (!database) continue;
+    if (database.owner !== names.migrationRole) {
+      return stopped('foreign-database-owner', database.owner ?? 'missing');
+    }
+    if (database.allowConnections === true && !aclsMatch(database, names)) {
+      return stopped('opened-before-grants', names.database);
+    }
+  }
+  for (const left of knownSlots) {
+    for (const right of knownSlots) {
+      if (left === right) continue;
+      const source = deriveDevSqlTenant(left);
+      const target = deriveDevSqlTenant(right);
+      if (canConnect(catalog, source.runtimeRole, target.database)) {
+        return stopped('cross-tenant', `${source.runtimeRole}->${target.database}`);
+      }
+      if (canConnect(catalog, source.migrationRole, target.database)) {
+        return stopped('cross-tenant', `${source.migrationRole}->${target.database}`);
+      }
+    }
+  }
+  return null;
+}
+
+function resourceByName(resources, name) {
+  return resources.find((resource) => resource?.name === name) ?? null;
+}
+
+function validateSelectedResources(catalog, names, resources) {
+  const expected = [names.migrationSecret, names.runtimeSecret];
+  for (const secretName of expected) {
+    const item = resourceByName(resources, secretName);
+    if (item?.unreadable === true) return stopped('unreadable-resource', secretName);
+    if (item && item.owner !== DEV_CNPG_OWNER) return stopped('foreign-resource', secretName);
+    if (item && item.slot !== names.slotId) return stopped('foreign-resource', secretName);
+  }
+  for (const crName of [names.migrationRoleCr, names.runtimeRoleCr, names.databaseCr]) {
+    const item = resourceByName(resources, crName);
+    if (item?.unreadable === true) return stopped('unreadable-resource', crName);
+    if (item && item.owner !== DEV_CNPG_OWNER) return stopped('foreign-resource', crName);
+    if (item && item.slot !== names.slotId) return stopped('foreign-resource', crName);
+  }
+
+  const database = catalog.databases[names.database];
+  const hasRoles = Boolean(catalog.roles[names.migrationRole] && catalog.roles[names.runtimeRole]);
+  const persistent = Boolean(database || hasRoles);
+  const presentSecrets = expected.filter((name) => {
+    const item = resourceByName(resources, name);
+    return item && item.unreadable !== true;
+  });
+  if (presentSecrets.length === 1 && presentSecrets.length < expected.length && persistent) {
+    return stopped('partial-identity', names.slotId);
+  }
+  const presentCrs = [names.migrationRoleCr, names.runtimeRoleCr, names.databaseCr].filter((name) => {
+    const item = resourceByName(resources, name);
+    return item && item.unreadable !== true;
+  });
+  if (presentCrs.length > 0 && presentCrs.length < 3 && persistent) {
+    return stopped('partial-identity', names.slotId);
+  }
+  if (presentCrs.length > 0 && presentSecrets.length === 0 && persistent) {
+    return stopped('missing-credential', names.slotId);
+  }
+  return null;
+}
+
+function ensureSecrets(adapter, names, resources, retained) {
+  const expected = [names.migrationSecret, names.runtimeSecret];
+  const missing = expected.filter((secretName) => {
+    const item = resourceByName(resources, secretName);
+    return !item || item.unreadable === true;
+  });
+  if (missing.length === 0) {
+    for (const secretName of expected) {
+      const item = resourceByName(resources, secretName);
+      retained.push({ name: item.name, uid: item.uid });
+    }
+    return null;
+  }
+  if (missing.length === 1 && missing.length < expected.length) {
+    const created = adapter.createSecrets(names, { only: missing });
+    retained.push(...created.map(({ name, uid }) => ({ name, uid })));
+    for (const secretName of expected) {
+      if (!missing.includes(secretName)) {
+        const item = resourceByName(resources, secretName);
+        retained.push({ name: item.name, uid: item.uid });
+      }
+    }
+    return null;
+  }
+  if (missing.length === 2) {
+    const created = adapter.createSecrets(names);
+    retained.push(...created.map(({ name, uid }) => ({ name, uid })));
+    return null;
+  }
+  return stopped('missing-credential', names.slotId);
+}
+
+function proveCrossTenantAfterWrites(catalog, knownSlots) {
+  for (const left of knownSlots) {
+    for (const right of knownSlots) {
+      if (left === right) continue;
+      const source = deriveDevSqlTenant(left);
+      const target = deriveDevSqlTenant(right);
+      if (!catalog.databases[target.database]) continue;
+      if (canConnect(catalog, source.runtimeRole, target.database)) {
+        return stopped('cross-tenant', `${source.runtimeRole}->${target.database}`);
+      }
+      if (canConnect(catalog, source.migrationRole, target.database)) {
+        return stopped('cross-tenant', `${source.migrationRole}->${target.database}`);
+      }
+    }
+  }
+  return null;
+}
+
+export function executeDevSqlTenants({ knownSlots, selectedSlot, authorizeLive, adapter, failAt }) {
   if (authorizeLive !== LIVE_TOKEN) return stopped('ensure-not-authorized', 'live SQL tenant ensure remains held');
   if (!adapter || adapter.injectedProbe === true) return stopped('injected-probe', 'an injected probe cannot authorize mutation');
+  if (!Array.isArray(knownSlots) || knownSlots.length === 0) {
+    return stopped('invalid-selection', 'knownSlots must list reserved slot ids');
+  }
+  if (!knownSlots.includes(selectedSlot)) {
+    return stopped('invalid-selection', `${selectedSlot} is not a known reservation`);
+  }
   const binding = assertIdentity(adapter.identity());
   if (binding) return binding;
-  const catalog = adapter.readCatalog();
+
+  let catalog = adapter.readCatalog();
   if (canConnect(catalog, 'dev', 'dev') !== true) return stopped('dev-login-unusable', 'database dev');
-  const allowed = new Set(BASELINE);
-  for (const slotId of slots) allowed.add(deriveDevSqlTenant(slotId).database);
+
+  const allowed = catalogAllowlist(knownSlots);
   const unexpected = Object.keys(catalog.databases).filter((name) => !allowed.has(name));
   if (unexpected.length > 0) return stopped('unexpected-database', unexpected.join(','));
+
+  const preProof = proveKnownTenantsBeforeWrites(catalog, knownSlots);
+  if (preProof) return preProof;
+
   const baseline = baselineStatements(catalog);
   if (baseline.refusals.length > 0) return { ok: false, mutated: false, refusals: baseline.refusals };
   if (failAt === 'baseline') return stopped('baseline-leak', 'PUBLIC CONNECT remains');
+
+  let mutated = false;
   for (const sql of baseline.statements) {
-    const problem = applyKnownStatement(catalog, sql);
-    if (problem) return { ok: false, mutated: false, refusals: [problem] };
     adapter.execSql(sql);
+    mutated = true;
+  }
+  if (baseline.statements.length > 0) {
+    catalog = adapter.readCatalog();
   }
   if (canConnect(catalog, 'fixture', 'postgres') || canConnect(catalog, 'dev', 'dev') !== true) {
     return stopped('baseline-leak', 'baseline CONNECT does not match the selected fence');
   }
+
+  const names = deriveDevSqlTenant(selectedSlot);
+  const rendered = renderDevSqlTenant(selectedSlot);
+  const resources = adapter.resources(names);
+  const resourceProof = validateSelectedResources(catalog, names, resources);
+  if (resourceProof) return resourceProof;
+
   const retained = [];
-  for (const slotId of slots) {
-    const names = deriveDevSqlTenant(slotId);
-    const rendered = renderDevSqlTenant(slotId);
-    const existing = adapter.resources(names);
-    if (existing.some((resource) => resource.owner !== DEV_CNPG_OWNER)) return stopped('foreign-resource', names.slotId, { retained });
-    const secrets = existing.filter((resource) => resource.kind === 'Secret');
-    if (secrets.length === 0) {
-      const created = adapter.createSecrets(names);
-      retained.push(...created.map(({ name, uid }) => ({ name, uid })));
-    } else {
-      retained.push(...secrets.map(({ name, uid }) => ({ name, uid })));
+  const secrets = ensureSecrets(adapter, names, resources, retained);
+  if (secrets) return secrets;
+
+  if (failAt === `before-database:${selectedSlot}`) return stopped('partial-create', names.database, { retained });
+
+  const database = catalog.databases[names.database];
+  if (database?.allowConnections === true) {
+    if (database.owner === names.migrationRole && aclsMatch(database, names)) {
+      const cross = proveCrossTenantAfterWrites(catalog, knownSlots);
+      if (cross) return { ...cross, retained };
+      return {
+        ok: true,
+        mutated,
+        refusals: [],
+        retained,
+        devLogin: canConnect(catalog, 'dev', 'dev'),
+        ambientContext: adapter.identity().ambientContext ?? null,
+      };
     }
-    if (failAt === `before-database:${slotId}`) return stopped('partial-create', names.database, { retained });
-    const database = catalog.databases[names.database];
-    const alreadyOpen = database?.allowConnections === true && database.owner === names.migrationRole && aclsMatch(database, names);
-    if (alreadyOpen) continue;
-    adapter.applyClosedDatabase(rendered, names);
-    const observed = adapter.waitFor(names);
-    if (!observed || observed.ready !== true) return stopped('cnpg-reconcile-failed', names.database, { retained });
-    if (observed.allowConnections !== false) return stopped('cnpg-allow-connections', names.database, { retained });
-    if (observed.owner !== names.migrationRole) return stopped('foreign-database-owner', observed.owner ?? 'missing', { retained });
-    if (!catalog.databases[names.database]) return stopped('unknown-database', names.database, { retained });
-    if (!catalog.roles[names.migrationRole] || !catalog.roles[names.runtimeRole]) return stopped('unknown-role', names.slotId, { retained });
-    for (const sql of [
-      `REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(names.database)} FROM PUBLIC`,
-      `GRANT CONNECT ON DATABASE ${quoteSqlIdent(names.database)} TO ${quoteSqlIdent(names.migrationRole)}, ${quoteSqlIdent(names.runtimeRole)}`,
-    ]) {
-      const problem = applyKnownStatement(catalog, sql);
-      if (problem) return { ok: false, mutated: true, refusals: [problem], retained };
-      adapter.execSql(sql);
-    }
-    if (failAt === `acl:${slotId}` || !aclsMatch(catalog.databases[names.database], names)) {
-      return stopped('acl-verification-failed', names.database, { retained });
-    }
-    catalog.databases[names.database].allowConnections = true;
-    adapter.permitConnections(names);
-    const after = adapter.waitFor(names);
-    if (after?.allowConnections !== true) return stopped('cnpg-reconcile-failed', names.database, { retained });
-    if (canConnect(catalog, names.runtimeRole, names.database) !== true) return stopped('acl-verification-failed', names.database, { retained });
+    return stopped('opened-before-grants', names.database, { retained });
   }
-  for (const left of slots) {
-    for (const right of slots) {
-      if (left === right) continue;
-      const source = deriveDevSqlTenant(left);
-      const target = deriveDevSqlTenant(right);
-      if (canConnect(catalog, source.runtimeRole, target.database)) return stopped('cross-tenant', `${source.runtimeRole}->${target.database}`, { retained });
-    }
+
+  if (database && database.owner !== names.migrationRole) {
+    return stopped('foreign-database-owner', database.owner ?? 'missing', { retained });
   }
-  return { ok: true, mutated: true, refusals: [], retained, devLogin: canConnect(catalog, 'dev', 'dev'), ambientContext: adapter.identity().ambientContext ?? null };
+
+  adapter.applyClosedDatabase(rendered, names);
+  mutated = true;
+  const observed = adapter.waitFor(names);
+  if (!observed || observed.ready !== true) return stopped('cnpg-reconcile-failed', names.database, { retained });
+  if (observed.allowConnections !== false) return stopped('cnpg-allow-connections', names.database, { retained });
+  if (observed.owner !== names.migrationRole) return stopped('foreign-database-owner', observed.owner ?? 'missing', { retained });
+
+  catalog = adapter.readCatalog();
+  if (!catalog.databases[names.database]) return stopped('unknown-database', names.database, { retained });
+  if (!catalog.roles[names.migrationRole] || !catalog.roles[names.runtimeRole]) {
+    return stopped('unknown-role', names.slotId, { retained });
+  }
+
+  for (const sql of [
+    `REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(names.database)} FROM PUBLIC`,
+    `GRANT CONNECT ON DATABASE ${quoteSqlIdent(names.database)} TO ${quoteSqlIdent(names.migrationRole)}, ${quoteSqlIdent(names.runtimeRole)}`,
+  ]) {
+    adapter.execSql(sql);
+  }
+
+  catalog = adapter.readCatalog();
+  if (failAt === `acl:${selectedSlot}` || !aclsMatch(catalog.databases[names.database], names)) {
+    return stopped('acl-verification-failed', names.database, { retained });
+  }
+
+  adapter.permitConnections(names);
+  const after = adapter.waitFor(names);
+  if (after?.allowConnections !== true) return stopped('cnpg-reconcile-failed', names.database, { retained });
+
+  catalog = adapter.readCatalog();
+  if (!aclsMatch(catalog.databases[names.database], names)) {
+    return stopped('acl-verification-failed', names.database, { retained });
+  }
+  if (canConnect(catalog, names.runtimeRole, names.database) !== true) {
+    return stopped('acl-verification-failed', names.database, { retained });
+  }
+
+  const cross = proveCrossTenantAfterWrites(catalog, knownSlots);
+  if (cross) return { ...cross, retained };
+
+  return {
+    ok: true,
+    mutated: true,
+    refusals: [],
+    retained,
+    devLogin: canConnect(catalog, 'dev', 'dev'),
+    ambientContext: adapter.identity().ambientContext ?? null,
+  };
 }
 
 export function holdLiveTenantMutation() {

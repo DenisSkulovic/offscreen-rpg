@@ -37,9 +37,13 @@ const preflight = adapter.readCatalog();
 const identity = adapter.identity();
 const capacity = kubectl(['-n', 'offscreen-dev-postgres', 'exec', 'dev-pg-1', '-c', 'postgres', '--', 'psql', '-U', 'postgres', '-d', 'postgres', '-At', '-F', '|', '-c', "SELECT current_setting('max_connections'), count(*)::text FROM pg_stat_activity"]);
 process.stdout.write(`${JSON.stringify({ phase: 'preflight', identity, databases: Object.keys(preflight.databases), capacity: capacity.trim() })}\n`);
-const first = executeDevSqlTenants({ slots, authorizeLive: TOKEN, adapter });
-process.stdout.write(`${JSON.stringify({ phase: 'ensure', slots, ok: first.ok, refusals: first.refusals, retained: first.retained, devLogin: first.devLogin })}\n`);
-if (!first.ok) process.exit(2);
+const ensured = [];
+for (const selectedSlot of slots) {
+  ensured.push(executeDevSqlTenants({ knownSlots: slots, selectedSlot, authorizeLive: TOKEN, adapter: createLiveDevSqlAdapter() }));
+}
+const first = ensured[0];
+process.stdout.write(`${JSON.stringify({ phase: 'ensure', slots, ok: ensured.every((item) => item.ok), refusals: ensured.flatMap((item) => item.refusals), retained: ensured.flatMap((item) => item.retained ?? []), devLogin: first?.devLogin })}\n`);
+if (!ensured.every((item) => item.ok)) process.exit(2);
 const tenants = slots.map((slotId) => deriveDevSqlTenant(slotId));
 const matrix = [];
 for (const names of tenants) {
@@ -58,7 +62,8 @@ for (const names of tenants) {
   matrix.push(login('dev', names.database, 'dev-pg-app'));
 }
 matrix.push(login('dev', 'dev', 'dev-pg-app'));
-const second = executeDevSqlTenants({ slots, authorizeLive: TOKEN, adapter: createLiveDevSqlAdapter() });
+const secondRuns = slots.map((selectedSlot) => executeDevSqlTenants({ knownSlots: slots, selectedSlot, authorizeLive: TOKEN, adapter: createLiveDevSqlAdapter() }));
+const second = { ok: secondRuns.every((item) => item.ok), retained: secondRuns.flatMap((item) => item.retained ?? []) };
 const roleList = ['dev', ...tenants.flatMap((names) => [names.migrationRole, names.runtimeRole])].map((name) => `'${name}'`).join(',');
 const databaseList = ['dev', ...tenants.map((names) => names.database)].map((name) => `'${name}'`).join(',');
 const ids = kubectl(['-n', 'offscreen-dev-postgres', 'exec', 'dev-pg-1', '-c', 'postgres', '--', 'psql', '-U', 'postgres', '-d', 'postgres', '-At', '-F', '|', '-c', `SELECT 'db', oid::text, datname, COALESCE(array_to_string(datacl, ','), '<default>') FROM pg_database WHERE datname IN (${databaseList}) UNION ALL SELECT 'role', oid::text, rolname, rolinherit::text FROM pg_roles WHERE rolname IN (${roleList})`]);

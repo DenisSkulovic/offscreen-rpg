@@ -43,7 +43,7 @@ export function assertDevRuntimeReady({ slotId, currentUser, gatePresent, schema
   return { ok: true, refusals: [] };
 }
 
-export async function applyDevTenantMigration({ slotId, currentUser, authorizeLive, applyMigrations, execSql, verify }) {
+export async function applyDevTenantMigration({ slotId, currentUser, authorizeLive, applyMigrations, execSql, verify, verifyRuntimeGate }) {
   if (authorizeLive !== DEV_SQL_MIGRATION_LIVE && authorizeLive !== 'dev-1-migration-live') {
     return refusal('migration-not-authorized', 'live tenant migration remains held');
   }
@@ -57,8 +57,53 @@ export async function applyDevTenantMigration({ slotId, currentUser, authorizeLi
   const gate = quoteSqlIdent(GATE);
   const run = quoteSqlIdent(names.runtimeRole);
   const record = `INSERT INTO public.${gate} (slot, migrations) VALUES ('${names.slotId}', ${proof.appliedMigrations}) ON CONFLICT (slot) DO UPDATE SET migrations = EXCLUDED.migrations`;
-  for (const sql of [`CREATE TABLE IF NOT EXISTS public.${gate} (slot text PRIMARY KEY, migrations integer NOT NULL)`, record, `GRANT SELECT ON public.${gate} TO ${run}`]) {
+  const gateStatements = [
+    `CREATE TABLE IF NOT EXISTS public.${gate} (slot text PRIMARY KEY, migrations integer NOT NULL)`,
+    record,
+    `GRANT SELECT ON public.${gate} TO ${run}`,
+    `REVOKE INSERT, UPDATE, DELETE ON public.${gate} FROM ${run}`,
+  ];
+  for (const sql of gateStatements) {
     await execSql(sql);
+  }
+  const privileges = await execSql(
+    `SELECT current_user AS writer,
+            has_table_privilege('${names.runtimeRole}', 'public.${GATE}', 'INSERT') AS runtime_insert,
+            has_table_privilege('${names.runtimeRole}', 'public.${GATE}', 'SELECT') AS runtime_select`,
+  );
+  const row = privileges?.rows?.[0];
+  if (row) {
+    if (row.writer !== names.migrationRole) {
+      return {
+        ok: false,
+        mutated: true,
+        refusals: [{ id: 'gate-writer', detail: names.database }],
+      };
+    }
+    if (row.runtime_insert === true || row.runtime_select !== true) {
+      return {
+        ok: false,
+        mutated: true,
+        refusals: [{ id: 'gate-privileges', detail: names.database }],
+      };
+    }
+  }
+  if (verifyRuntimeGate) {
+    const runtimeGate = await verifyRuntimeGate();
+    if (runtimeGate?.ok !== true) {
+      return {
+        ok: false,
+        mutated: true,
+        refusals: [{ id: 'gate-runtime-read', detail: names.database }],
+      };
+    }
+    if (runtimeGate.currentUser !== names.runtimeRole) {
+      return {
+        ok: false,
+        mutated: true,
+        refusals: [{ id: 'gate-runtime-role', detail: names.runtimeRole }],
+      };
+    }
   }
   return { ok: true, mutated: true, refusals: [], owner: names.migrationRole, appliedMigrations: proof.appliedMigrations };
 }

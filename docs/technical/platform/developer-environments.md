@@ -74,6 +74,8 @@ Reserve and attach are implemented as registry-only commands with focused tests.
 | Release | End idle reservation after ownership verification | Reassign durable tenant identity to another owner |
 | Destroy | Separately authorized destructive disposal | Implicit call from stop, chat exit or Change archive |
 
+SQL provisioning writes only the selected slot. Registered peer slot ids are a catalog allowlist: existing peer databases are proved and left untouched, and an unknown database refuses the write. Schema projection accepts only the in-process migration proof (slot and applied count matching the verified journal). The runtime role keeps SELECT on the dev schema-gate table and loses INSERT, UPDATE, and DELETE on that table after the migration role records the count.
+
 Reservation, attachment, provisioning and activation are **independent facts**, not one exclusive state enum. Status must reflect all separately and must never mutate anything. Preserve PID + Linux process start ticks, Kubernetes UIDs, canonical checkout path and assigned ports. Do not infer a lease is dead solely from a Cursor chat ending. Retained tenant IDs must remain fenced against reassignment after release.
 
 ## Capacity admission and failed-start rollback
