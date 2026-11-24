@@ -1,0 +1,5 @@
+apiVersion: v2
+name: platform-postgres
+description: CloudNativePG platform chart for dev and release profiles
+type: application
+version: 0.1.0

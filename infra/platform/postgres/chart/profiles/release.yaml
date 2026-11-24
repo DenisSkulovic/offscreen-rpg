@@ -1,0 +1,27 @@
+mode: release
+namespace: lab-postgres
+clusterName: lab-pg
+namespaceLabels:
+  offscreen.rpg/lab: disposable
+storage:
+  size: 1Gi
+  storageClass: local-path
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+postgresql:
+  parameters:
+    shared_buffers: "64MB"
+    max_connections: "20"
+    work_mem: "4MB"
+    maintenance_work_mem: "32MB"
+bootstrap:
+  initdb:
+    database: lab
+    owner: lab
+    localeCType: C
+    localeCollate: C

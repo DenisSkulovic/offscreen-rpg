@@ -1,0 +1,26 @@
+section: all
+mode: placeholder
+namespace: placeholder-ns
+clusterName: placeholder-cluster
+namespaceLabels: {}
+clusterLabels: {}
+storage:
+  size: placeholder
+  storageClass: placeholder
+resources:
+  requests:
+    cpu: placeholder
+    memory: placeholder
+  limits:
+    cpu: placeholder
+    memory: placeholder
+postgresql:
+  parameters: {}
+bootstrap:
+  initdb:
+    database: placeholder
+    owner: placeholder
+    localeCType: C
+    localeCollate: C
+images:
+  postgres: placeholder-postgres

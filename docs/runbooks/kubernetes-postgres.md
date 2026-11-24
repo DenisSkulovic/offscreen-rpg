@@ -8,7 +8,7 @@ Install CloudNativePG 1.30.2 into the existing `offscreen-lab` cluster, then cre
 
 The operator manifest is downloaded from the pinned GitHub release and checked with SHA-256 `ea4cc355b394e10661d30c6b409cefb19029dd973bccb76b1ed8c789985bc68c` before apply. The operator Deployment image is `ghcr.io/cloudnative-pg/cloudnative-pg:1.30.2`. Release 1.30.2 lists Kubernetes 1.34, 1.35, and 1.36. This lab's node image is Kubernetes 1.37.0. The pin is the current operator release; the run below records whether that release became ready on this node.
 
-Scripts and the cluster manifest live in `infra/platform/postgres/`. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
+Scripts live in `infra/platform/postgres/`. The workload manifests are no longer flat `cluster.yaml` or `namespace.yaml` files. They are rendered from `infra/platform/postgres/chart/templates/{namespace,cluster}.yaml` through `infra/platform/common/cli.mjs render postgres release …`, and `infra/platform/postgres/release-install.mjs` observes the live cluster to decide create, reuse, or refuse before any `kubectl apply`. Run from the repository root after `infra/clusters/kind/release/up.sh`.
 
 ## What it must not do
 
@@ -35,6 +35,17 @@ infra/clusters/kind/release/destroy.sh kind-offscreen-lab
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the operator, the primary, and the local-path files on the node.
+
+### Release install decision
+
+`install.sh` still owns the disposable-lab guards from `infra/clusters/kind/release/lib.sh`: it refuses foreign Docker volume loss, foreign kubectl context loss, non-loopback exposure, and sub-4 GiB `MemAvailable` before mutation. After those guards it runs `node infra/platform/common/cli.mjs target release`, downloads the checksum-pinned operator manifest from `operator.pin`, and calls `release-install.mjs install`.
+
+`release-install.mjs` does not print Secret values, does not rotate credentials on reentry, and does not force-apply when the live namespace, Cluster, and operator already match the rendered release profile. A matching reentry waits for webhook and `lab-pg` readiness only. A missing namespace or Cluster creates only the absent object. An existing `lab-postgres` namespace must carry `offscreen.rpg/lab=disposable`. An existing `lab-pg` Cluster must match the pinned operand image, one instance, `local-path` storage, and `lab/lab` bootstrap identity. A matching operator skips manifest fetch and apply; a missing operator uses the checksum-verified download; a mismatched operator image refuses. Unreadable observation or foreign or mismatched resources refuse without create.
+
+| Retired path | Successor |
+| --- | --- |
+| `infra/platform/postgres/namespace.yaml` | `infra/platform/postgres/chart/templates/namespace.yaml` via `cli.mjs render postgres release namespace` |
+| `infra/platform/postgres/cluster.yaml` | `infra/platform/postgres/chart/templates/cluster.yaml` via `cli.mjs render postgres release cluster` and `release-install.mjs` apply decisions |
 
 ## Failure
 

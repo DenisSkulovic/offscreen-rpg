@@ -1,0 +1,6 @@
+{{- include "platform-postgres.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $ctx := . -}}
+{{- if or (eq $section "all") (eq $section "namespace") -}}
+{{- include "platform-postgres.jsonFrom" (dict "name" "platform-postgres.doc.namespace" "ctx" $ctx) -}}
+{{- end -}}

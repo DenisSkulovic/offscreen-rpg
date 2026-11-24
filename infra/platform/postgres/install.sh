@@ -12,9 +12,11 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../clusters/kind/release/lib.sh"
 POSTGRES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$POSTGRES_DIR/../../.." && pwd)"
 
 command -v curl >/dev/null
 command -v sha256sum >/dev/null
+command -v node >/dev/null
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
@@ -43,12 +45,14 @@ if [[ ! "$CNPG_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
   echo "operator.pin sha256 is not 64 hex characters." >&2
   exit 1
 fi
-if ! grep -q "imageName: ${POSTGRES_IMAGE}" "$POSTGRES_DIR/cluster.yaml"; then
-  echo "cluster.yaml imageName does not match operator.pin." >&2
+
+rendered_cluster="$(node "$REPO_ROOT/infra/platform/common/cli.mjs" render postgres release cluster)"
+if ! grep -q "imageName: ${POSTGRES_IMAGE}" <<<"$rendered_cluster"; then
+  echo "rendered cluster imageName does not match operator.pin." >&2
   exit 1
 fi
-if ! grep -q 'instances: 1' "$POSTGRES_DIR/cluster.yaml"; then
-  echo "cluster.yaml must request one instance." >&2
+if ! grep -q 'instances: 1' <<<"$rendered_cluster"; then
+  echo "rendered cluster must request one instance." >&2
   exit 1
 fi
 
@@ -58,75 +62,31 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 volume_guard_begin "$work"
 
-curl -fsSL --retry 3 --retry-delay 2 -o "$work/cnpg.yaml" "$CNPG_URL"
-echo "${CNPG_SHA256}  $work/cnpg.yaml" | sha256sum -c -
-if ! grep -q "image: ${CNPG_IMAGE}" "$work/cnpg.yaml"; then
-  echo "Downloaded operator manifest does not contain ${CNPG_IMAGE}." >&2
+if ! node "$REPO_ROOT/infra/platform/common/cli.mjs" target release >/dev/null; then
+  echo "release target verification failed." >&2
   exit 1
 fi
 
-"${KUBECTL[@]}" apply --server-side --field-manager=offscreen-lab-cnpg -f "$work/cnpg.yaml"
-"${KUBECTL[@]}" wait --for=condition=Established "crd/clusters.postgresql.cnpg.io" --timeout=180s
-"${KUBECTL[@]}" -n cnpg-system rollout status deployment/cnpg-controller-manager --timeout=240s
-
-webhook_ready=0
-for _ in $(seq 1 60); do
-  if [[ -n "$("${KUBECTL[@]}" -n cnpg-system get endpoints cnpg-webhook-service -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null || true)" ]]; then
-    webhook_ready=1
-    break
+prepare="$(node "$POSTGRES_DIR/release-install.mjs" prepare)"
+if [[ "$prepare" == "fetch" ]]; then
+  curl -fsSL --retry 3 --retry-delay 2 -o "$work/cnpg.yaml" "$CNPG_URL"
+  echo "${CNPG_SHA256}  $work/cnpg.yaml" | sha256sum -c -
+  if ! grep -q "image: ${CNPG_IMAGE}" "$work/cnpg.yaml"; then
+    echo "Downloaded operator manifest does not contain ${CNPG_IMAGE}." >&2
+    exit 1
   fi
-  sleep 2
-done
-if [[ "$webhook_ready" -ne 1 ]]; then
-  echo "CloudNativePG webhook has no endpoint." >&2
-  exit 1
-fi
-
-"${KUBECTL[@]}" apply -f "$POSTGRES_DIR/namespace.yaml"
-
-applied=0
-for _ in $(seq 1 12); do
-  if "${KUBECTL[@]}" apply -f "$POSTGRES_DIR/cluster.yaml"; then
-    applied=1
-    break
-  fi
-  sleep 5
-done
-if [[ "$applied" -ne 1 ]]; then
-  echo "CloudNativePG cluster manifest was not accepted." >&2
-  exit 1
-fi
-
-deadline=$((SECONDS + 600))
-phase=""
-ready=""
-while (( SECONDS < deadline )); do
-  phase="$("${KUBECTL[@]}" -n lab-postgres get cluster lab-pg -o jsonpath='{.status.phase}' 2>/dev/null || true)"
-  ready="$("${KUBECTL[@]}" -n lab-postgres get cluster lab-pg -o jsonpath='{range .status.conditions[?(@.type=="Ready")]}{.status}{end}' 2>/dev/null || true)"
-  if [[ "$phase" == "Cluster in healthy state" && "$ready" == "True" ]]; then
-    break
-  fi
-  sleep 5
-done
-if [[ "$phase" != "Cluster in healthy state" || "$ready" != "True" ]]; then
-  echo "CloudNativePG cluster lab-pg did not become ready. phase=${phase:-unknown} ready=${ready:-unknown}" >&2
-  "${KUBECTL[@]}" -n lab-postgres get pods -o wide >&2 || true
-  "${KUBECTL[@]}" -n cnpg-system logs deployment/cnpg-controller-manager --tail=80 >&2 || true
-  exit 1
-fi
-
-instances="$("${KUBECTL[@]}" -n lab-postgres get cluster lab-pg -o jsonpath='{.spec.instances}')"
-if [[ "$instances" != "1" ]]; then
-  echo "Refusing to continue: lab-pg instances is ${instances}, expected 1." >&2
+  node "$POSTGRES_DIR/release-install.mjs" install \
+    --operator-manifest "$work/cnpg.yaml" \
+    --repo-root "$REPO_ROOT"
+elif [[ "$prepare" == "skip" ]]; then
+  node "$POSTGRES_DIR/release-install.mjs" install \
+    --repo-root "$REPO_ROOT"
+else
+  echo "release prepare returned ${prepare}." >&2
   exit 1
 fi
 
 assert_loopback_only
 volume_guard_end "$work"
 
-echo "CloudNativePG ${CNPG_VERSION} is ready."
-echo "Operator image: ${CNPG_IMAGE}"
-echo "Postgres image: ${POSTGRES_IMAGE}"
-echo "Instances: ${instances}"
-echo "Phase: ${phase}"
-"${KUBECTL[@]}" -n lab-postgres get pvc -o custom-columns=NAME:.metadata.name,CLASS:.spec.storageClassName,STATUS:.status.phase --no-headers
+echo "Install completed for CloudNativePG ${CNPG_VERSION}."

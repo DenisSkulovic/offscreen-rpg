@@ -1,0 +1,6 @@
+{{- $section := default "all" .Values.section -}}
+{{- if or (eq $section "all") (eq $section "cluster") -}}
+{{- include "platform-postgres.validate" . -}}
+{{- $ctx := . -}}
+{{- include "platform-postgres.jsonFrom" (dict "name" "platform-postgres.doc.cluster" "ctx" $ctx) -}}
+{{- end -}}
