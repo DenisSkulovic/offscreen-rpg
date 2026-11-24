@@ -176,12 +176,17 @@ packages/
   documents/           document schemas and canonical content
   object-storage/      byte transport
   content-packages/    authored package import
-  db/                  Drizzle schema, migrations, database access
+  db/                  domain-neutral PostgreSQL infrastructure and historical migration assets
+  identity-persistence/ server-only identity declarations
+  story-persistence/    Story Engine-owned server-only declarations
+  outbox/               durable delivery store and relay
   storyteller/         profiles, context, tasks, planning, providers and fixtures
   config/              validated environment and build configuration
 ```
 
 Keep UI components inside `web` until another application genuinely shares them. Keep server packages out of the browser dependency graph. Sharing TypeScript does not mean exporting database rows, secrets or hidden storyteller plans to clients. Runtime validation is necessary for HTTP, jobs, model output and stored versioned JSON; TypeScript types disappear at runtime.
+
+[Database infrastructure and domain persistence](database-infrastructure.md) owns the selected DB/schema dependency split and composition root under tools/db-migrations. That split does not change physical SQL placement or authority.
 
 Keep dependencies directional: `game` is pure; domain owners own canonical schemas. Public interface leaves depend only on necessary pure schemas and validation libraries. `story-interface` imports `@offscreen/documents/schema` and game, not document storage adapters or backend implementation. Documents currently has a transitive object-storage workspace dependency; schema-only source imports do not prove a storage-free manifest closure, and the retirement does not redesign Documents. Admin, identity, usage and cache-port leaves are independent. Game Authority protocol depends on story-interface and is private/server-only; browser and deterministic Workflow runtime must not import it. Storyteller owns retrieval and creative semantics; it never imports Story Engine. Story Engine owns its internal dispatch-authority, generation identity and notice semantics and consumes domain interfaces and ports; no reverse dependency from interface leaves to engine. Lab interface consumes story-interface/game; evaluation implementation stays in Lab Support. Preserve existing authority-to-writer and production-to-lab restrictions. No generic `contracts`, `shared` or `core` replacement. The old workspace is removed; there is no compatibility alias and no residual contracts package. All Zod semantics, authorization fences, hashes, financial constraints, persistence and wire behavior are preserved. No new service or database is introduced. `workflows` imports only deterministic helpers and type-only Activity contracts, never NestJS, database clients or provider SDKs. Activity implementations live outside the workflow bundle. Enforce the final architecture through package exports, lint, actual source/import graph and workspace closure tests. [Retirement implementation sequence](../../../work/designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md).
 

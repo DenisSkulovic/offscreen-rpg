@@ -2,7 +2,7 @@
 
 This page owns the selected architecture and normative guarantees. Present-tense rules specify the end state; the Current state section and [Change sequence](../../../work/changes/README.md#cache-platform-redesign) distinguish implementation and evidence.
 
-PostgreSQL owns transactional game and financial authority, immutable object storage owns canonical bytes, and Temporal owns durable execution. See [who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record). Drizzle and connection lifecycle belong to @offscreen/db; queries and transactions belong to domain owners including @offscreen/story-engine. No generic repository per table: locks, joins, isolation, revision fences and atomic transitions are meaningful domain behavior.
+PostgreSQL owns transactional game and financial authority, immutable object storage owns canonical bytes, and Temporal owns durable execution. See [who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record). Drizzle and connection lifecycle belong to @offscreen/db; [domain schema ownership and managed execution](database-infrastructure.md) define the persistence package boundary; queries and transactions belong to domain owners including @offscreen/story-engine. No generic repository per table: locks, joins, isolation, revision fences and atomic transitions are meaningful domain behavior.
 
 ## Read models
 
