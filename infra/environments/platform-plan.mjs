@@ -429,7 +429,7 @@ export function runChartRenderPreflight(
  * Pinned Traefik image/repo checks aligned with infra/platform/gateway/install.sh.
  * @param {{ run?: typeof runPlatformCommand }} [deps]
  */
-export export function runGatewayInstallPreflight(deps = {}) {
+export function runGatewayInstallPreflight(deps = {}) {
   const run = deps.run ?? runPlatformCommand;
   const inspect = run(
     'docker',
