@@ -4,6 +4,10 @@
 
 **Find the section:** [who owns the durable record](#who-owns-the-durable-record) · [durable record families](#durable-records) · [proposed service schemas](#proposed-service-schemas-and-delivery-records) · [selected document store](#selected-document-store) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
 
+## PostgreSQL package ownership
+
+[Database infrastructure and domain persistence](database-infrastructure.md) owns the selected TypeScript schema placement, dependency law, managed database runtime and migration composition. Domain declaration ownership is distinct from physical service schemas; the current shared SQL transaction boundary and all domain invariants below remain unchanged. See that page's realization record for implementation status.
+
 ## Who owns the durable record
 
 | Promise | Owner |
