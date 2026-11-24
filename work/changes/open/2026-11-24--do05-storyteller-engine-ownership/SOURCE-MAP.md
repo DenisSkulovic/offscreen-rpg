@@ -1,5 +1,5 @@
 # Source map
-Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD pending. Line anchors are snapshot observations, not current execution proof.
+Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; refreshed at 372df9646108f0442dcca4f1dcc992fddfe50511; changed mapped callers inspected and original import sites retained. Preserve wave A imports; use named symbols, not line-number replacement.
 
 ## story-retrieval
 - Source: `packages/contracts/src/story-retrieval.ts` → `packages/storyteller/src/context/story-retrieval.ts`
@@ -43,7 +43,7 @@ Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD 
 ## current-authority
 - Source: `packages/contracts/src/current-authority.ts` → `packages/story-engine/src/storyteller/dispatch-authority-policy.ts`
 - Import: `relative internal`
-- Current imports: `zod`, `./usage-policy`
+- Current imports: `zod`, `@offscreen/usage-policy/usage-policy`
 - Exports: `storytellerDispatchRouteEntrySchema`, `StorytellerDispatchRouteEntry`, `storytellerDispatchRouteMapSchema`, `StorytellerDispatchRouteMap`, `storytellerCurrentPlatformPolicyRowSchema`, `StorytellerCurrentPlatformPolicyRow`, `storytellerCurrentOwnerGrantRowSchema`, `StorytellerCurrentOwnerGrantRow`, `IndependentAuthorityDenialReason`, `parseStorytellerCurrentPlatformPolicyRow`, `parseStorytellerCurrentOwnerGrantRow`, `fundingBalanceIsNotDispatchEntitlement`, `capturedUsagePolicySnapshotIsNotDispatchEntitlement`, `assessPlatformPolicyAvailability`, `assessOwnerGrantAvailability`
 - Existing tests: `packages/contracts/test/current-authority.test.ts`
 

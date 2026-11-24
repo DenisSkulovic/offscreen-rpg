@@ -1,18 +1,18 @@
 # Domain ownership | parallel release and join contract
 
-**Owner release:** DO01, DO02, DO03. Baseline `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e` on `undertaking/storyteller-workshop`. Selected architecture: [technical topology](../../../../docs/technical/platform/topology.md#code-organization). This is a release of three Changes, not a second global queue. All other Changes remain uncommissioned.
+**Wave B release (2026-11-24):** DO01–DO03 integrated; DO04 and DO05 Ready / owner-commissioned concurrently at `372df9646108f0442dcca4f1dcc992fddfe50511`. DO04 parent is integration custodian; join DO04 then DO05, or DO05 first if DO04 is not ready and both parents agree. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 remains gated on DO05; DO07 on all six. No cluster, provider, DB mutation, Documents or CACHE scope.
 
 | Change | Dependency | Status |
 | --- | --- | --- |
 | [DO01 Cache port](../../../changes/archive/2026-11/platform-operations/2026-11-24--do01-cache-port/CHANGE.md) | None | Done, source-only |
 | [DO02 Admin / identity / usage](../../../changes/archive/2026-11/platform-operations/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Done, source-only |
 | [DO03 Story interface](../../../changes/archive/2026-11/platform-operations/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled | Done, source-only |
-| [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Dependency-gated |
-| [DO05 Storyteller / engine](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Dependency-gated |
+| [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Ready / commissioned |
+| [DO05 Storyteller / engine](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Ready / commissioned |
 | [DO06 Lab ownership](../../../changes/open/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |
 | [DO07 Retire contracts](../../../changes/open/2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Dependency-gated |
 
-## Execution and serialized joins
+## Wave A historical execution and serialized joins
 
 Three separate Cursor parents, three separate linked worktrees and Change branches, no shared working tree or Git index. DO01 parent is named integration custodian for wave A; join order DO01, DO02, DO03. DO01 may close its own Change immediately and remain the custodian to accept the other two local branch receipts. No sibling must wait for another Change to start its own code. If a parent finishes before its join window, keep the accepted clean branch/worktree and report its SHA and focused proof; do not push the undertaking independently. Custodian may integrate a completed branch when its join window opens without new owner approval. No automatic successor commission.
 
@@ -26,6 +26,9 @@ Three separate Cursor parents, three separate linked worktrees and Change branch
 
 Snapshot baseline ed0837d0531b → current baseline f28085e3e5cb: comparison showed 142 changed paths, none in packages/contracts. All 4 DO01 and 72 DO02 mapped consumer paths unchanged. Of 171 unique DO03 consumer paths, five changed (start.ts, three integration files, Chamber main); all five current import sites rechecked and recorded in DO03 SOURCE-MAP. New LIB files inspected for imports do not add old-contract consumers among the inspected paths. Documents package and package-reference schema verified: original schema exports retained; byte transport now object-storage; no direct new storage edge. Original schema/test content retained, explicit test fixtures and exact split adjustments in packets. Remote branch list inspected; local worktree/dirty-path inspection and branch guard must occur before edits. No tests run by planner. This release does not claim implementation acceptance or a shipping milestone.
 
-## Successor gates
+## Wave B source refresh and successor gates
+
+At the current baseline the residual manifest has 15 exports, including the four private protocol and five Storyteller/engine modules. DO03's story-interface and DO02's usage-policy imports are already in the residual sources. All 12 changed mapped consumer paths were re-opened and retained their expected old import sites; no mapped direct consumer overlap between DO04 and DO05. GitHub comparison returned 300 files (potential truncation); no claim of exhaustive diff beyond inspected sources. Local guard remains mandatory. Planner tests NOT RUN. Exact atomic joins, test paths and guard edits are in the released CHANGE.md packets.
+
 
 DO04 may run after DO03 integration regardless of DO05. DO05 waits on DO02 and DO03 because the residual creative-evaluation import would otherwise invert contracts↔Storyteller. DO06 waits on DO03 and DO05, not DO04; may leave DO04-owned old files in place. DO07 waits on every extraction. Planner refreshes each newly admitted successor against integrated HEAD and coordinates its shared-file join.

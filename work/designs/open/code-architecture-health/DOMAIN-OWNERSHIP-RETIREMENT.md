@@ -1,5 +1,7 @@
 # Domain ownership | retirement of horizontal contracts
 
+**Wave B release (2026-11-24):** DO01–DO03 integrated; DO04 and DO05 Ready / owner-commissioned concurrently at `372df9646108f0442dcca4f1dcc992fddfe50511`. DO04 parent is integration custodian; join DO04 then DO05, or DO05 first if DO04 is not ready and both parents agree. Separate linked worktrees, local lockfiles, no independent undertaking pushes. Shared files: residual contracts manifest, lockfile, ESLint config, graph rules and shared docs; merge by owned keys/rules, regenerate lockfile and run combined affected proofs. No mapped direct consumer file overlap. DO05 must remove its two remaining Storyteller old imports and manifest dependency before adding the transitional reverse edge from residual evaluation. DO04 owns private protocol guard; DO05 owns narrow residual evaluation exception. DO06 remains gated on DO05; DO07 on all six. No cluster, provider, DB mutation, Documents or CACHE scope.
+
 Owner decision 2026-11-24: no `@offscreen/contracts` workspace in end state. Target integration `undertaking/storyteller-workshop`. Baseline archive `ed0837d0531be4050b40d9b2485b5759ef479fea`; no current Git checkout, no tests run. LIB07 and LIB05 integrated; owner admitted DO01–DO03 after source refresh at `f28085e3e5cbf15bb32f430bd3b0b833f7429c6e`. No edits to Documents or object-storage here. Existing Workshop overview ~40% overall / ~60% remaining, architecture/dev ~70% (subjective), no implementation credit. This program extends existing MONOREPO-MODULE-OWNERSHIP design, not MA06/MA09 runtime extraction. Existing queue unchanged. Owner explicitly placed DO01–DO07 in open as near-term work, not execution authorization. Live branch placement check at `7e2b554fbaaede28cbdbbf536c44c44a9ac511e5`; source maps retain their immutable inspected baseline.
 
 ## Target dependency law
@@ -16,8 +18,8 @@ Owner decision 2026-11-24: no `@offscreen/contracts` workspace in end state. Tar
 | [DO01 Cache port](../../../changes/archive/2026-11/platform-operations/2026-11-24--do01-cache-port/CHANGE.md) | None | Done, source-only |
 | [DO02 Admin / identity / usage](../../../changes/archive/2026-11/platform-operations/2026-11-24--do02-admin-identity-usage/CHANGE.md) | None | Done, source-only |
 | [DO03 Story interface](../../../changes/archive/2026-11/platform-operations/2026-11-24--do03-story-interface/CHANGE.md) | Documents settled | Done, source-only |
-| [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Dependency-gated |
-| [DO05 Storyteller / engine](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Dependency-gated |
+| [DO04 Authority protocol](../../../changes/open/2026-11-24--do04-authority-protocol/CHANGE.md) | DO03 | Ready / commissioned |
+| [DO05 Storyteller / engine](../../../changes/open/2026-11-24--do05-storyteller-engine-ownership/CHANGE.md) | DO02 + DO03 | Ready / commissioned |
 | [DO06 Lab ownership](../../../changes/open/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Dependency-gated |
 | [DO07 Retire contracts](../../../changes/open/2026-11-24--do07-retire-contracts/CHANGE.md) | DO01–DO06 | Dependency-gated |
 

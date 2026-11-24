@@ -1,8 +1,8 @@
 # TASKS
-Serial T-IDs within this Change only; other admitted Changes may execute concurrently in separate linked worktrees. Parent owns local manifests/lock and its receipt; the named integration custodian serializes shared docs and integration. See CHANGE.md and the program coordination rules. Each child gets only its row plus relevant SOURCE-MAP subsection and Change-specific split instructions. No broad discovery; mismatch returns to planner. Root cwd.
+Serial T-IDs within this Change only; other admitted Changes may execute concurrently in separate linked worktrees. Parent owns local manifests/lock and its receipt; the named integration custodian serializes shared docs and integration. See CHANGE.md exact wave B addendum and the program coordination rules. Each child gets only its row plus relevant SOURCE-MAP subsection and Change-specific split instructions. No broad discovery; mismatch returns to planner. Root cwd.
 
 ## T01 | story-retrieval
-- Prerequisite: actual predecessors in CHANGE.md integrated and planner admission granted.
+- Prerequisite: Wave B released; local branch/worktree checks only.
 - Anchors: `packages/contracts/src/story-retrieval.ts`, `packages/contracts/package.json`, `SOURCE-MAP.md`
 - Edit: move story-retrieval to exact destination(s) from SOURCE-MAP, preserve symbols; apply Change-specific splits and relative imports. Rewrite listed consumers, direct manifests and exports; parent alone regenerates lockfile. Remove corresponding old export/source/test. For connected cohorts parent can divide mechanical caller edits by workspace, but no independent child design or concurrent manifest writers.
 - Proof: compile affected destination(s) and reverse consumers after parent lockfile refresh; run relocated tests new focused fixtures described in CHANGE.md and existing relevant consumer tests. Negative: strict schemas/hash/type checks preserved and old moved imports absent. Stop on source map mismatch, cycle, missing test emission or unexpected semantic difference.
@@ -22,15 +22,15 @@ Serial T-IDs within this Change only; other admitted Changes may execute concurr
 - Proof: compile affected destination(s) and reverse consumers after parent lockfile refresh; run relocated tests `current-authority.test.ts`. Negative: strict schemas/hash/type checks preserved and old moved imports absent. Stop on source map mismatch, cycle, missing test emission or unexpected semantic difference.
 - Receipt: changed paths, moved exports, consumer count, exact test commands/results and any blocker.
 
-## T04 | storyteller-kinds
+## T04 | storyteller-kinds (atomic with T05 before build)
 - Prerequisite: T03 receipt accepted
 - Anchors: `packages/contracts/src/storyteller-kinds.ts`, `packages/contracts/package.json`, `SOURCE-MAP.md`
 - Edit: move storyteller-kinds to exact destination(s) from SOURCE-MAP, preserve symbols; apply Change-specific splits and relative imports. Rewrite listed consumers, direct manifests and exports; parent alone regenerates lockfile. Remove corresponding old export/source/test. For connected cohorts parent can divide mechanical caller edits by workspace, but no independent child design or concurrent manifest writers.
-- Proof: compile affected destination(s) and reverse consumers after parent lockfile refresh; run relocated tests `storyteller-kinds.test.ts`. Negative: strict schemas/hash/type checks preserved and old moved imports absent. Stop on source map mismatch, cycle, missing test emission or unexpected semantic difference.
+- Proof: compile affected destination(s) and reverse consumers after parent lockfile refresh; defer build/test until T05, then run both relocated tests. Negative: strict schemas/hash/type checks preserved and old moved imports absent. Stop on source map mismatch, cycle, missing test emission or unexpected semantic difference.
 - Receipt: changed paths, moved exports, consumer count, exact test commands/results and any blocker.
 
-## T05 | storyteller-notices
-- Prerequisite: T04 receipt accepted
+## T05 | storyteller-notices (complete T04 join)
+- Prerequisite: T04 edits complete; build/test both together
 - Anchors: `packages/contracts/src/storyteller-notices.ts`, `packages/contracts/package.json`, `SOURCE-MAP.md`
 - Edit: move storyteller-notices to exact destination(s) from SOURCE-MAP, preserve symbols; apply Change-specific splits and relative imports. Rewrite listed consumers, direct manifests and exports; parent alone regenerates lockfile. Remove corresponding old export/source/test. For connected cohorts parent can divide mechanical caller edits by workspace, but no independent child design or concurrent manifest writers.
 - Proof: compile affected destination(s) and reverse consumers after parent lockfile refresh; run relocated tests `storyteller-notices.test.ts`. Negative: strict schemas/hash/type checks preserved and old moved imports absent. Stop on source map mismatch, cycle, missing test emission or unexpected semantic difference.

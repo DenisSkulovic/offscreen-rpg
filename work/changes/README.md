@@ -10,7 +10,7 @@ Owner-selected near-term parallel program after Documents and DO01–DO07. [Froz
 
 
 
-**2026-11-24 domain ownership:** Owner released DO01–DO03 in parallel after LIB07; DO04 follows DO03, DO05 follows DO02 + DO03, DO06 follows DO03 + DO05, DO07 joins all. [Open execution table](open/README.md#near-term-domain-ownership-sequence-2026-11-24) · [Parallel coordination](../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md). No global queue change.
+**2026-11-24 domain ownership:** Wave A integrated; DO04 and DO05 commissioned concurrently, DO04 custodian. DO06 follows DO05; DO07 joins all. [Open execution table](open/README.md#near-term-domain-ownership-sequence-2026-11-24) · [Parallel coordination](../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md). No global queue change.
 
 **2026-11-24 Library navigation:** [LIB06 bounded Story Library navigation](archive/2026-11/storyteller/2026-11-24--lib06-story-library-navigation-correctness/CHANGE.md) is Done as a source-only scan correction. [LIB07 bounded batch reads](archive/2026-11/storyteller/2026-11-24--lib07-bounded-library-batch-read/CHANGE.md) is Done as a source-only helper over the existing navigator. [LIB05 byte storage](archive/2026-11/platform-operations/2026-11-23--lib05-generic-object-storage-boundary/CHANGE.md) is Done as a source-only transport under Documents. Neither Change adds a Writer grant, SQL change, or storage change.
 

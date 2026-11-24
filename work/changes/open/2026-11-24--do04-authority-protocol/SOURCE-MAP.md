@@ -1,10 +1,10 @@
 # Source map
-Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; actual post-Documents HEAD pending. Line anchors are snapshot observations, not current execution proof.
+Baseline `ed0837d0531be4050b40d9b2485b5759ef479fea`; refreshed at 372df9646108f0442dcca4f1dcc992fddfe50511; changed mapped callers inspected and original import sites retained. Preserve wave A imports; use named symbols, not line-number replacement.
 
 ## game-authority
 - Source: `packages/contracts/src/game-authority.ts` → `packages/game-authority-protocol/src/game-authority.ts`
 - Import: `@offscreen/game-authority-protocol/game-authority`
-- Current imports: `zod`, `./stories`
+- Current imports: `zod`, `@offscreen/story-interface/stories`
 - Exports: `gameAuthoritySeamVersion`, `gameAuthorityActorIdSchema`, `gameAuthorityStoryIdSchema`, `gameAuthorityResolutionRequestSchema`, `gameAuthorityErrorSchema`
 - Existing tests: `packages/contracts/test/game-authority.test.ts`
 
