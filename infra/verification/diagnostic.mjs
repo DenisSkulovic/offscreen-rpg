@@ -16,6 +16,8 @@ export const ADDITIONAL_PLATFORM_TESTS = Object.freeze([
   { file: 'infra/platform/redis/tests/dev-install.test.mjs', requiresHelm: true },
   { file: 'infra/platform/temporal/tests/render.test.mjs', requiresHelm: true },
   { file: 'infra/platform/postgres/tests/render.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/postgres/tests/release-install.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/temporal/tests/release-install.test.mjs', requiresHelm: true },
   { file: 'infra/platform/object-storage/tests/object-storage-chart.test.mjs', requiresHelm: true },
   { file: 'infra/platform/rabbitmq/tests/render.test.mjs', requiresHelm: true },
   { file: 'infra/platform/redis/tests/render.test.mjs', requiresHelm: true },

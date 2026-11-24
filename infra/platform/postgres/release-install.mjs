@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import { verifyManifestBytes } from '../common/pins.mjs';
@@ -27,6 +27,21 @@ export const RELEASE_LAB_LABEL_VALUE = 'disposable';
 export const RELEASE_CNPG_MIN_MEMORY_MIB = 4096;
 export const RELEASE_OPERATOR_FIELD_MANAGER = 'offscreen-lab-cnpg';
 
+export function assertReleaseClusterPin(documents, pin) {
+  if (documents.length !== 1 || documents[0]?.kind !== 'Cluster' ||
+      documents[0]?.metadata?.name !== RELEASE_CNPG_CLUSTER ||
+      documents[0]?.metadata?.namespace !== RELEASE_CNPG_NAMESPACE) {
+    throw new Error('unexpected rendered release PostgreSQL cluster identity');
+  }
+  const spec = documents[0].spec;
+  if (spec?.imageName !== pin.postgresImage) {
+    throw new Error('rendered cluster imageName does not match operator.pin');
+  }
+  if (spec?.instances !== 1) {
+    throw new Error('rendered cluster must request one instance');
+  }
+}
+
 /**
  * @param {{ run?: typeof runPlatformCommand }} [deps]
  */
@@ -40,6 +55,7 @@ function renderReleaseManifests(deps = {}) {
     { service: 'postgres', profile: 'release', section: 'cluster' },
     { run },
   );
+  assertReleaseClusterPin(clusterDocs, parseCnpgPin(readFileSync(operatorPinPath, 'utf8')));
   return {
     namespaceManifest: renderPlatformYaml(namespaceDocs),
     clusterManifest: renderPlatformYaml(clusterDocs),
@@ -925,6 +941,11 @@ function parseInstallArgs(argv) {
 
 function main() {
   const cmd = process.argv[2];
+  if (cmd === 'verify-render') {
+    renderReleaseManifests();
+    process.stdout.write('release PostgreSQL render verified\n');
+    return;
+  }
   if (cmd === 'prepare') {
     const probe = collectReleaseCnpgProbe();
     const decision = ensureReleaseCnpg(probe, { authorize: true });
@@ -951,6 +972,6 @@ function main() {
   process.exit(2);
 }
 
-if (import.meta.url === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main();
 }

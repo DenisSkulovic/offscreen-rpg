@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
@@ -14,6 +15,7 @@ import {
   RELEASE_CNPG_CLUSTER_NAME,
   RELEASE_CNPG_CONTEXT,
   ensureReleaseCnpg,
+  assertReleaseClusterPin,
   executeAuthorizedReleaseCnpg,
   planReleaseCnpg,
 } from '../release-install.mjs';
@@ -378,4 +380,25 @@ test('matching operator verifies readiness and rejects a bad manifest digest', (
     digest.actions.some((action) => action.op?.startsWith('apply-')),
     false,
   );
+});
+
+
+test('release installer CLI validates structured render and actually executes', () => {
+  const result = spawnSync(process.execPath, [join(postgresRoot, 'release-install.mjs'), 'verify-render'], { encoding: 'utf8', timeout: 30000 });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), 'release PostgreSQL render verified');
+  const unknown = spawnSync(process.execPath, [join(postgresRoot, 'release-install.mjs'), 'unknown'], { encoding: 'utf8', timeout: 30000 });
+  assert.equal(unknown.status, 2);
+});
+
+test('release render guard rejects wrong pin, count and identity', () => {
+  const docs = renderPlatformDocuments({ service: 'postgres', profile: 'release', section: 'cluster' });
+  assert.doesNotThrow(() => assertReleaseClusterPin(docs, pin));
+  const bad = structuredClone(docs);
+  bad[0].spec.imageName += '-wrong';
+  assert.throws(() => assertReleaseClusterPin(bad, pin), /imageName/);
+  bad[0].spec.imageName = pin.postgresImage;
+  bad[0].spec.instances = 2;
+  assert.throws(() => assertReleaseClusterPin(bad, pin), /one instance/);
+  assert.throws(() => assertReleaseClusterPin([], pin), /identity/);
 });

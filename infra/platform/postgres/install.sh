@@ -46,15 +46,7 @@ if [[ ! "$CNPG_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
   exit 1
 fi
 
-rendered_cluster="$(node "$REPO_ROOT/infra/platform/common/cli.mjs" render postgres release cluster)"
-if ! grep -q "imageName: ${POSTGRES_IMAGE}" <<<"$rendered_cluster"; then
-  echo "rendered cluster imageName does not match operator.pin." >&2
-  exit 1
-fi
-if ! grep -q 'instances: 1' <<<"$rendered_cluster"; then
-  echo "rendered cluster must request one instance." >&2
-  exit 1
-fi
+node "$POSTGRES_DIR/release-install.mjs" verify-render
 
 require_memory
 
