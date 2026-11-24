@@ -6,12 +6,12 @@
 
 | Real owner | Current behavior | Required profile contract |
 | --- | --- | --- |
-| `infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs::deployment` | Hardcodes `replicas:1` on six Deployments | Deterministic desired replicas from a validated dependency-closed profile, while retaining identical namespaces, Services, secrets and slot labels |
+| `tools/dev-environments/src/rendering/dev-slot-app-graph.mjs::deployment` | Hardcodes `replicas:1` on six Deployments | Deterministic desired replicas from a validated dependency-closed profile, while retaining identical namespaces, Services, secrets and slot labels |
 | `renderDevSlotAppGraph` / `renderTiltDeploymentDocuments` | Both produce six one-replica Deployments | One pure profile resolver feeds **both** startup and Tilt; no separate uncoordinated scale policy |
-| `infra/kubernetes/lab/dev/Tiltfile` | Registers four custom-image builds and all six `k8s_resource` Deployments; live sync closure per role | Do not let a Tilt resync turn intentionally inactive workloads back on or create an unrelated resource writer |
-| `scripts/repo-tools/dev-slot-startup.mjs::reconcileDevSlot` | SQL, migration, S3, Temporal, image and workload ensure happen sequentially for every up | Enforce role prerequisites before mutations, lazily reconcile only dependencies selected by accepted profile where feasible; source identity stays pinned |
-| `scripts/repo-tools/dev-tilt.mjs::{collectOwnedWorkloadReadiness,assessDevLaunch,runDevTiltLaunch}` | Six workloads unconditionally must be ready | Readiness is **all selected roles current-generation READY; all unselected roles INACTIVE (desired=0)**. Never count an inactive role ready or mark it failed for intentional zero |
-| `scripts/repo-tools/dev-tilt.mjs::rollbackFailedOwnedStartup` and `dev-environment-session.mjs::parkSelectedEnvironment` | Full six-role park/rollback | If a profile activation fails, fence the owned attempt, return selected newly activated roles to zero (or verified prior profile), and preserve tenant UIDs and foreign slots; report incomplete rollback honestly |
+| `infra/dev/Tiltfile` | Registers four custom-image builds and all six `k8s_resource` Deployments; live sync closure per role | Do not let a Tilt resync turn intentionally inactive workloads back on or create an unrelated resource writer |
+| `tools/dev-environments/src/application/dev-slot-startup.mjs::reconcileDevSlot` | SQL, migration, S3, Temporal, image and workload ensure happen sequentially for every up | Enforce role prerequisites before mutations, lazily reconcile only dependencies selected by accepted profile where feasible; source identity stays pinned |
+| `tools/dev-environments/src/cli/dev-tilt.mjs::{collectOwnedWorkloadReadiness,assessDevLaunch,runDevTiltLaunch}` | Six workloads unconditionally must be ready | Readiness is **all selected roles current-generation READY; all unselected roles INACTIVE (desired=0)**. Never count an inactive role ready or mark it failed for intentional zero |
+| `tools/dev-environments/src/cli/dev-tilt.mjs::rollbackFailedOwnedStartup` and `dev-environment-session.mjs::parkSelectedEnvironment` | Full six-role park/rollback | If a profile activation fails, fence the owned attempt, return selected newly activated roles to zero (or verified prior profile), and preserve tenant UIDs and foreign slots; report incomplete rollback honestly |
 
 ## Decision: distinguish `READY` for a profile from playability
 

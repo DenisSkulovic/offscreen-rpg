@@ -252,7 +252,7 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
   const tiltfile = readFileSync(join(repoRoot, 'Tiltfile'), 'utf8');
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-dev'\)/);
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
-  assert.match(tiltfile, /infra\/kubernetes\/lab\/dev\/Tiltfile/);
+  assert.match(tiltfile, /infra\/dev\/Tiltfile/);
 
   const preflight = readFileSync(
     join(repoRoot, 'scripts/repo-tools/stack-preflight.mjs'),

@@ -53,8 +53,8 @@ Hold the shared cluster lock for the whole sequence. If the cluster already exis
 exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/skeletons/install.sh
-infra/kubernetes/lab/skeletons/smoke.sh
+infra/verification/fixtures/skeletons/install.sh
+infra/verification/fixtures/skeletons/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 

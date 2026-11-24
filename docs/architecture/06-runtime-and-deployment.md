@@ -20,7 +20,7 @@ flowchart TD
     Kind --> Import[Content importer and reader jobs]
 ```
 
-The infrastructure work is meaningful: component installers and smokes exist under infra/kubernetes/lab. But infra/kubernetes/lab/skeletons/workloads.yaml is explicitly marked **placeholder**. The synthetic HTTPRoute still targets **synthetic-web** and **synthetic-api**. On 2026-11-20 a fresh `kind-offscreen-lab` also routed `/sign-in` to Next and `/api/me` to Nest, and kept Game Authority off the public Gateway. The Temporal lab toy is not the actual storytellerV1 Activity worker. **An all-green infrastructure lab is not an all-green game**. The disposable application release is recorded under [Kubernetes as a deliberate extension](../technical/platform/deployment-and-compatibility.md#kubernetes-as-a-deliberate-extension). It is not the hosted release.
+The infrastructure work is meaningful: component installers and smokes live under `infra/platform` and release assembly under `infra/environments/release` (see [infra/README.md](../../infra/README.md)). But infra/verification/fixtures/skeletons/workloads.yaml is explicitly marked **placeholder**. The synthetic HTTPRoute still targets **synthetic-web** and **synthetic-api**. On 2026-11-20 a fresh `kind-offscreen-lab` also routed `/sign-in` to Next and `/api/me` to Nest, and kept Game Authority off the public Gateway. The Temporal lab toy is not the actual storytellerV1 Activity worker. **An all-green infrastructure lab is not an all-green game**. The disposable application release is recorded under [Kubernetes as a deliberate extension](../technical/platform/deployment-and-compatibility.md#kubernetes-as-a-deliberate-extension). It is not the hosted release.
 
 ## SELECTED TARGET: one real disposable release
 

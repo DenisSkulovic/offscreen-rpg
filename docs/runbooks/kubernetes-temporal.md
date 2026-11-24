@@ -14,7 +14,7 @@ A separate worker image runs one toy workflow, `labOnce`, on task queue `lab-onc
 
 The server container limits are 700m CPU and 768Mi memory. PostgreSQL limits are 500m CPU and 384Mi memory. The worker limits are 500m CPU and 640Mi memory. There is no authorizer. `--allow-no-auth` is a lab limit, not a production authentication design.
 
-Scripts and manifests live in `infra/kubernetes/lab/temporal/`. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
+Platform install manifests live in `infra/platform/temporal/`. Verification scripts and the toy worker live under `infra/verification/smoke/temporal/`. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
 
 ## What it must not do
 
@@ -36,8 +36,8 @@ Deleting the kind cluster does not preserve local-path volumes. The provisioner 
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/temporal/install.sh
-infra/kubernetes/lab/temporal/smoke.sh
+infra/platform/temporal/install.sh
+infra/verification/smoke/temporal/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 
@@ -65,8 +65,8 @@ Commands, from the repository root:
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/temporal/install.sh
-infra/kubernetes/lab/temporal/smoke.sh
+infra/platform/temporal/install.sh
+infra/verification/smoke/temporal/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 

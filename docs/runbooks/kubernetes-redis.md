@@ -8,7 +8,7 @@ The cache rule stays on [Redis boundary](../technical/platform/persistence-and-c
 
 Run one Redis process in `lab-a` behind a ClusterIP Service named `redis`. The process has a memory cap, a CPU cap, and a `redis-cli ping` liveness probe. Snapshotting and the append-only file are off, and the data directory is an emptyDir that dies with the pod.
 
-`infra/kubernetes/lab/redis/smoke.sh` checks three losses:
+`infra/verification/smoke/redis/smoke.sh` checks three losses:
 
 - a key set with a short TTL is readable, then absent after that TTL
 - `FLUSHALL` removes a key
@@ -41,10 +41,10 @@ The container runs as uid 999 and gid 1000, which is the `redis` account in that
 Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
 
 ```bash
-infra/kubernetes/lab/redis/smoke.sh
+infra/verification/smoke/redis/smoke.sh
 ```
 
-When local Docker already has `docker.io/library/redis:8.2.1-alpine`, the smoke saves that image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used: on this machine it stops with `content digest sha256:8ddf542da70dec1f3b0f91fde22f8cd4b9c816627dc39323416b295b278c010c: not found`. If the import fails, the kubelet may still pull the same pin. The smoke applies `infra/kubernetes/lab/redis/redis.yaml` and `infra/kubernetes/lab/redis/client.yaml`, runs the three checks, and deletes the Redis objects when it exits, including after a failure. It does not delete the cluster.
+When local Docker already has `docker.io/library/redis:8.2.1-alpine`, the smoke saves that image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used: on this machine it stops with `content digest sha256:8ddf542da70dec1f3b0f91fde22f8cd4b9c816627dc39323416b295b278c010c: not found`. If the import fails, the kubelet may still pull the same pin. The smoke applies `infra/platform/redis/redis.yaml` and `infra/verification/smoke/redis/client.yaml`, runs the three checks, and deletes the Redis objects when it exits, including after a failure. It does not delete the cluster.
 
 Delete the cluster with `infra/clusters/kind/release/down.sh` when the lab work is finished. Hold the shared cluster lock from `up.sh` through `down.sh`. If `up.sh` says the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
@@ -66,7 +66,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/redis/smoke.sh
+infra/verification/smoke/redis/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 

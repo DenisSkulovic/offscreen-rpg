@@ -48,12 +48,12 @@ flowchart TD
 | Concern | Current source anchor | Selected owner contract |
 | --- | --- | --- |
 | Runtime orchestration, status, process fencing | `tools/dev-environments/src/cli/dev-tilt.mjs::runDevTiltLaunch` | Lifecycle coordinator; cannot be a second live image writer |
-| Reservation/session identity | `scripts/repo-tools/dev-environment-session.mjs` and `dev-worktree-{allocator,registry}.mjs` | Local atomic registry, owned sessions, not Git state |
-| Cold slot reconciliation | `scripts/repo-tools/dev-slot-startup.mjs::reconcileOwnedDevSlot` | Provision/bind initial slot resources; hand off active Deployments |
+| Reservation/session identity | `tools/dev-environments/src/domain/dev-environment-session.mjs` and `dev-worktree-{allocator,registry}.mjs` | Local atomic registry, owned sessions, not Git state |
+| Cold slot reconciliation | `tools/dev-environments/src/application/dev-slot-startup.mjs::reconcileOwnedDevSlot` | Provision/bind initial slot resources; hand off active Deployments |
 | Graph and initial Kubernetes objects | `tools/dev-environments/src/rendering/dev-slot-app-graph.mjs::renderDevSlotAppGraph` | Consistent renderer and initially parked/bootstrapped objects |
 | Tilt graph and application live sync | `infra/dev/Tiltfile` | Sole active deployment writer and source-update controller |
 | Build and node imports | `infra/images/development/{load-dev-slot-image.sh,tilt/load-dev-image.sh}` | Consolidated preparation contract; no Kubernetes Deployment patch |
-| Image fingerprint and reuse | `scripts/repo-tools/dev-slot-image-plan.mjs` | Pure image planning; no hidden Kubernetes mutation |
+| Image fingerprint and reuse | `tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs` | Pure image planning; no hidden Kubernetes mutation |
 | Current-generation verification | `infra/dev/dev-watched-compilation-receipt.mjs`, loaded-runtime status and `dev-tilt.mjs` | Read-only verifier, fail closed |
 | Worker runtime | `apps/worker/src/runtime/index.ts` | Temporal SDK and source/watch compatibility belong to worker runtime, not the image loader |
 

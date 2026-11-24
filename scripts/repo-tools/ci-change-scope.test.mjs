@@ -39,7 +39,7 @@ test('interface packages or lockfile changes are never docs-only and force integ
     'pnpm-lock.yaml',
     'Tiltfile',
     'infra/images/release/Dockerfile.api',
-    'infra/kubernetes/lab/dev/stack.yaml',
+    'infra/dev/stack.yaml',
     'infra/clusters/kind/release/namespaces.yaml',
     'apps/api/src/main.ts',
   ]) {

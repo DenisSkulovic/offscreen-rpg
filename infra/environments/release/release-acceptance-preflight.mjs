@@ -8,18 +8,17 @@ import {
   CONTEXT_NAME,
   RELEASE_IMAGES,
   runTurn03Preflight,
-} from '../../kubernetes/lab/app-release/turn03/preflight.mjs';
-import { TURN03_MANDATORY_GATE_IDS } from '../../kubernetes/lab/app-release/turn03/report.mjs';
-import { runTurn03ColdTrace } from '../../kubernetes/lab/app-release/turn03/run.mjs';
+} from '../../verification/release-acceptance/turn03/preflight.mjs';
+import { TURN03_MANDATORY_GATE_IDS } from '../../verification/release-acceptance/turn03/report.mjs';
+import { runTurn03ColdTrace } from '../../verification/release-acceptance/turn03/run.mjs';
 
 export const DEV_CONTEXT_NAME = 'kind-offscreen-dev';
 export const KNOWN_MIGRATION_JOB = 'game-migrate';
 export const INSTALL_SCRIPT = 'install.sh';
 export const BUILD_RELEASE_IMAGES_SCRIPT = join(
   'infra',
-  'kubernetes',
-  'lab',
-  'dev',
+  'images',
+  'development',
   'tilt',
   'build-release-images.sh',
 );
@@ -209,7 +208,7 @@ export function classifyForeignKubeContext(contextName) {
 
 /**
  * @param {readonly ReleaseAcceptancePlanStage[]} template
- * @param {import('../../kubernetes/lab/app-release/turn03/report.mjs').Turn03DistributedPocProofReport} turn03Report
+ * @param {import('../../verification/release-acceptance/turn03/report.mjs').Turn03DistributedPocProofReport} turn03Report
  */
 export function classifyReleasePlanStages(template, turn03Report) {
   /** @type {Record<string, string>} */

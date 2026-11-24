@@ -6,7 +6,7 @@ The game adapter stays on [Selected document store](../technical/platform/data-a
 
 ## What this procedure is
 
-`infra/kubernetes/lab/document-access/smoke.sh` applies the existing SeaweedFS manifests in `infra/kubernetes/lab/object-storage/`. It does not edit those manifests. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
+`infra/verification/fixtures/document-access/smoke.sh` applies the existing SeaweedFS store manifest in `infra/platform/object-storage/`. It does not edit those manifests. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
 
 The smoke then runs two Jobs in `lab-document-access`:
 
@@ -38,7 +38,7 @@ Each Job mounts one emptyDir at `/tmp`. That volume is client scratch. It is not
 
 - Do not treat a Ready Pod as proof. The reader has to return the same SHA-256.
 - Do not point the Nest API, the worker, or Compose at this Service.
-- Do not edit `infra/kubernetes/lab/object-storage/`. SeaweedFS 4.54 stays the store.
+- Do not edit `infra/platform/object-storage/`. SeaweedFS 4.54 stays the store.
 - Do not publish a NodePort or a LoadBalancer. Do not publish on `0.0.0.0` or `[::]`.
 - Do not put an access key or a secret key in Git.
 - Do not call a failed S3 put a stored object because a local file exists.
@@ -64,7 +64,7 @@ Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from th
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/document-access/smoke.sh
+infra/verification/fixtures/document-access/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 
@@ -90,7 +90,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/document-access/smoke.sh
+infra/verification/fixtures/document-access/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 

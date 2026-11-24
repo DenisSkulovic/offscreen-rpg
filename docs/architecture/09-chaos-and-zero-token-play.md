@@ -119,7 +119,7 @@ Randomness uses a recorded seed and produces a sequence of **eligible target cho
 | Multiple replicas, Pod startup reordered | Later when actually deployed | Dependency readiness, root/pin verification and restart converge | One replica proves scaling |
 | Resource exhaustion, disk full, PVC loss | Specialized destructive profile only | Mostly **fail closed**, perhaps manual restore, no invented automatic availability | Safe default random monkey |
 
-The one-replica CNPG lab is declared in `infra/kubernetes/lab/cnpg/cluster.yaml`. Killing it every few seconds creates unavailability; for multi-replica failover, first build and verify an appropriate backup/HA environment and separate approval. **Do not delete PVCs** or simulate data loss in the ordinary chaos pool.
+The one-replica CNPG lab is declared in `infra/platform/postgres/cluster.yaml`. Killing it every few seconds creates unavailability; for multi-replica failover, first build and verify an appropriate backup/HA environment and separate approval. **Do not delete PVCs** or simulate data loss in the ordinary chaos pool.
 
 ## Health is a collection of invariants, not a green Pod count
 

@@ -5,7 +5,7 @@ Base SHA fa77f2d3614ee821b8e4ad849a46a66342000132; state Proposed / planner-gate
 ## T01 | Enforce final graph | PLANNER-BLOCKED until promotion
 
 Requires: DB02–DB09 integrated; Cache waves joined; authorized disposable proof resources.
-Read: scripts/repo-tools/module-graph.mjs; scripts/repo-tools/module-graph.test.mjs; eslint.config.mjs; infra/kubernetes/lab/app-release/production-workspace-closure.test.mjs.
+Read: scripts/repo-tools/module-graph.mjs; scripts/repo-tools/module-graph.test.mjs; eslint.config.mjs; infra/images/release/production-workspace-closure.test.mjs.
 May write: exact source/test destinations in algorithm, no peer ownership. 
 Algorithm: Reject DB domain workspace imports and retired schema subpaths, identity/story schema leaves runtime imports except Drizzle/identity, browser/workflows/SQL-free executor transitive SQL closure. Add fixtures per negative. Reconcile direct manifests, lock, package READMEs/SQL-OWNERSHIP; require no residual old alias. Existing migration asset paths unchanged.
 Verification (root): `node --test scripts/repo-tools/module-graph.test.mjs; pnpm repo:module-graph; pnpm exec turbo run build typecheck`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.

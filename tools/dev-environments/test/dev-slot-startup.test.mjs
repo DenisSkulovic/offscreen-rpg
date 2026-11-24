@@ -163,7 +163,7 @@ test('slot image script reports build, control-plane and worker failures', () =>
   const root = mkdtempSync(join(tmpdir(), 'img-load-'));
   const bin = join(root, 'bin');
   mkdirSync(bin);
-  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/kubernetes/lab/dev/load-dev-slot-image.sh';
+  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/images/development/load-dev-slot-image.sh';
   const run = (mode) => spawnSync('bash', [script, 'dev-3', 'authority', '@offscreen/game-authority'], {
     encoding: 'utf8',
     env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, IMG_MODE: mode, OFFSCREEN_IMAGE_FINGERPRINT: 'test-fingerprint' },
@@ -217,7 +217,7 @@ exit 0
   writeFileSync(join(bin, 'kind'), '#!/bin/bash\nexit 0\n');
   chmodSync(join(bin, 'docker'), 0o755);
   chmodSync(join(bin, 'kind'), 0o755);
-  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/kubernetes/lab/dev/load-dev-slot-image.sh';
+  const script = '/home/dskul/projects/offscreen-rpg-dxk09-t05/infra/images/development/load-dev-slot-image.sh';
   const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, OFFSCREEN_IMAGE_FINGERPRINT: 'same-fp', TMPDIR: root };
   const run = (slot, role) => new Promise((resolve) => {
     const child = spawn('bash', [script, slot, role], { env });

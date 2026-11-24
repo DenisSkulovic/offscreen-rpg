@@ -10,7 +10,7 @@ const appReleaseDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = join(appReleaseDir, '../../..');
 const releaseInstallPath = join(repoRoot, 'infra/environments/release/install.sh');
 const overlayDir = join(repoRoot, 'infra/workloads/release');
-const labRoot = join(repoRoot, 'infra/kubernetes/lab');
+const platformGatewayDir = join(repoRoot, 'infra/platform/gateway');
 const pinnedRuleHash =
   'd643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab';
 
@@ -154,7 +154,7 @@ test('overlay manifests contain no committed secret literals', () => {
 });
 
 test('gateway routes.yaml synthetic fixture is unchanged', () => {
-  const routes = readFileSync(join(labRoot, 'gateway/routes.yaml'), 'utf8');
+  const routes = readFileSync(join(platformGatewayDir, 'routes.yaml'), 'utf8');
   assert.match(routes, /synthetic-api/);
   assert.match(routes, /lab-edge-routes/);
 });

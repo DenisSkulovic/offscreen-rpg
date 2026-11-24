@@ -26,9 +26,9 @@
 The attached tree has explicit docker volume inspect offscreen-rpg_postgres-data and offscreen-rpg_temporal-data assertions in:
 - infra/kubernetes/lab/cnpg/{install.sh,smoke.sh}
 - infra/kubernetes/lab/temporal/{install.sh,smoke.sh}
-- infra/kubernetes/lab/object-storage/smoke.sh
-- infra/kubernetes/lab/content-bootstrap/smoke.sh
-- infra/kubernetes/lab/document-access/smoke.sh
+- infra/verification/smoke/object-storage/smoke.sh
+- infra/environments/release/content-bootstrap/smoke.sh
+- infra/verification/fixtures/document-access/smoke.sh
 
 These protect the historical Compose lab but make a pristine clone fail. Replace with generic before/after full-volume snapshot and unrelated-context comparisons in lib.sh, not simple deletion of safety assertions. Component labs must work with **zero** old named volumes. Preserve right to detect volume loss. Do not delete user data even when old volumes are discovered.
 

@@ -7,7 +7,7 @@
 ## T01 | Real Next production rewrite and SSR origin probe | VERIFY PASS (`ec73a535`)
 **Write:** focused production-build test/integration in apps/web or app-release test owner only; coordinate TURN02 T03 image build. **Positive:** behind one local trusted reverse proxy, browser /api and SSR read the **same** Nest Service DNS with cookie forwarding and no cache leak. **Negative:** SSR wrong-owner, build-time rewrite localhost despite new runtime env and disconnected Nest fail closed. Use proper auth test fixture, not fake signed session in production. No K8s mutation required to characterize rewrite.
 
-**Result (2026-11-20):** `node --test infra/kubernetes/lab/app-release/verify-production-rewrite.test.mjs` — **5/5**, 0 fail. No cluster apply, no live Gateway, no browser E2E.
+**Result (2026-11-20):** `node --test infra/images/release/verify-production-rewrite.test.mjs` — **5/5**, 0 fail. No cluster apply, no live Gateway, no browser E2E.
 
 | Label | Basis |
 | --- | --- |

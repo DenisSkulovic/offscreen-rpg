@@ -6,11 +6,11 @@ The game document adapter stays on [Selected document store](../technical/platfo
 
 ## What this procedure is
 
-Run one SeaweedFS process in `lab-objects` behind a ClusterIP Service named `object-store` on port 8333. The process is `weed mini` with its data directory on a `local-path` persistent volume. The bucket name is `lab-objects`. The access key and secret key are created in memory by `infra/kubernetes/lab/object-storage/smoke.sh` and stored only as the Kubernetes Secret `object-store-s3`. They are not written into Git.
+Run one SeaweedFS process in `lab-objects` behind a ClusterIP Service named `object-store` on port 8333. The process is `weed mini` with its data directory on a `local-path` persistent volume. The bucket name is `lab-objects`. The access key and secret key are created in memory by `infra/verification/smoke/object-storage/smoke.sh` and stored only as the Kubernetes Secret `object-store-s3`. They are not written into Git.
 
 The readiness and liveness probes request `http://127.0.0.1:8333/`. With the smoke credentials, that request is refused with HTTP 403. HTTP 200 is the unauthenticated mode. The probe accepts either code so it knows the port answered. A 403 does not prove that an object can be stored. The put, get, and delete in the smoke are that proof.
 
-`infra/kubernetes/lab/object-storage/smoke.sh` checks the S3 calls, then Pod replacement:
+`infra/verification/smoke/object-storage/smoke.sh` checks the S3 calls, then Pod replacement:
 
 - put `lifecycle.txt`, get the same bytes back, delete it, and show that a later head reports the object missing
 - put `restart.txt`, delete the store Pod, and get `restart.txt` back from the replacement Pod
@@ -58,13 +58,13 @@ Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from th
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/object-storage/smoke.sh
+infra/verification/smoke/object-storage/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
-When local Docker already has the two pins, the smoke saves each image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used. If the import fails, the kubelet may still pull the same pin. The smoke applies `infra/kubernetes/lab/object-storage/store.yaml` and `infra/kubernetes/lab/object-storage/client.yaml`, runs the checks, and leaves the store in place. `down.sh` deletes the cluster, including the claim and the local-path files on the node. The smoke does not delete Compose volumes.
+When local Docker already has the two pins, the smoke saves each image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used. If the import fails, the kubelet may still pull the same pin. The smoke applies `infra/platform/object-storage/store.yaml` and `infra/verification/smoke/object-storage/client.yaml`, runs the checks, and leaves the store in place. `down.sh` deletes the cluster, including the claim and the local-path files on the node. The smoke does not delete Compose volumes.
 
 ## Failure
 
@@ -86,7 +86,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/object-storage/smoke.sh
+infra/verification/smoke/object-storage/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 

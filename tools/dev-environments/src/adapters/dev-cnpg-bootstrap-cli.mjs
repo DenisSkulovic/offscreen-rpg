@@ -57,7 +57,7 @@ if (command === 'ensure' && injected) {
   const result = executeAuthorizedDevCnpg({
     collect: collectDevCnpgProbe,
     readOperatorManifest() {
-      const pin = parseCnpgPin(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../../infra/kubernetes/lab/cnpg/operator.pin'), 'utf8'));
+      const pin = parseCnpgPin(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../../infra/platform/postgres/operator.pin'), 'utf8'));
       const file = join('/tmp', `offscreen-dev-cnpg-${pin.sha256}.yaml`);
       const response = spawnSync('curl', ['-fsSL', '--retry', '3', '--retry-delay', '2', '-o', file, pin.url], {
         encoding: 'utf8',

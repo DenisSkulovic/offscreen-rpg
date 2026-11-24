@@ -2,19 +2,19 @@
 
 **Profile:** STATE/PROOF. **Inspected baseline:** Git snapshot 584b594, 2026-11-19, plus the preceding K8S10 receipt; the newer design docs are not a verified runtime run. **Existing K8S10 is Implementing**, with only its *Rabbit consumer loss* slice selected/passed. Game-level monkey is **not selected/implemented** by adding these files.
 
-**2026-11-20 source update:** A current TURN02 release [overlay](../../../../infra/kubernetes/lab/app-release/overlay/workers.yaml) **does exist**, contrary to this November 19 snapshot's statement. Its Pod template has the eligibility marker, its Pod is owned by a ReplicaSet, and its image is a local `:turn02` tag with the Pod's runtime digest as the actual identity. The earlier K8S10 selector/preflight was unable to prove that hierarchy and erroneously demanded digest-in-Deployment. Source commit `14e2bf33` fixes the read-only guard; all four chaos test suites locally **43/43 PASS** on Node 22, no cluster. **Not** a live kind plan or real fault proof. [Next T04a/T04b](TASKS.md#2026-11-20-source-backed-status-correction-and-next-gates) distinguishes plan-readiness from mutation authorization.
+**2026-11-20 source update:** A current TURN02 release [overlay](../../../../infra/workloads/release/workers.yaml) **does exist**, contrary to this November 19 snapshot's statement. Its Pod template has the eligibility marker, its Pod is owned by a ReplicaSet, and its image is a local `:turn02` tag with the Pod's runtime digest as the actual identity. The earlier K8S10 selector/preflight was unable to prove that hierarchy and erroneously demanded digest-in-Deployment. Source commit `14e2bf33` fixes the read-only guard; all four chaos test suites locally **43/43 PASS** on Node 22, no cluster. **Not** a live kind plan or real fault proof. [Next T04a/T04b](TASKS.md#2026-11-20-source-backed-status-correction-and-next-gates) distinguishes plan-readiness from mutation authorization.
 
 ## Do not rebuild what we already have
 
 | Existing code | Exact observed behavior | What it is not |
 | --- | --- | --- |
-| `infra/kubernetes/lab/lib.sh` | `CLUSTER_NAME=offscreen-lab`, `CONTEXT_NAME=kind-offscreen-lab`, `KUBECTL=(kubectl --context ...)`, memory/loopback/snapshot guards | Does not choose app Pods or protect live tests from a second run |
-| `infra/kubernetes/lab/up.sh` / `down.sh` | Creates/deletes the named disposable kind cluster while checking contexts and Docker volumes | Chaos loop must **not** invoke these, delete volumes or own a cluster it didn't create |
-| `infra/kubernetes/lab/fault/run.sh` | Proof of durable Rabbit message redelivery after killing the **consumer client Pod**, with forced delete; one broker instance stayed up | Not a real game-worker kill, not exactly-once business effect, not safe as the generic chaos runner |
-| `infra/kubernetes/lab/fault/worker_loss.py` | Consumer `hold` logs an application effect and waits; another drains redelivered message | Not a reusable application Storyteller worker |
-| `infra/kubernetes/lab/fault/assert_exactly_once.py` | Rejects two `APPLY` log lines, demonstrating unsafe duplicate side effects | No source-of-truth SQL effect test |
-| `infra/kubernetes/lab/cnpg/cluster.yaml` | `instances: 1`, 1Gi local-path PVC | A killed PG Pod cannot maintain uninterrupted writes; no actual HA failover |
-| `infra/kubernetes/lab/skeletons/workloads.yaml` | synthetic placeholder Pods | Not eligible real game services for campaign-monkey PASS |
+| `infra/clusters/kind/release/lib.sh` | `CLUSTER_NAME=offscreen-lab`, `CONTEXT_NAME=kind-offscreen-lab`, `KUBECTL=(kubectl --context ...)`, memory/loopback/snapshot guards | Does not choose app Pods or protect live tests from a second run |
+| `infra/clusters/kind/release/up.sh` / `down.sh` | Creates/deletes the named disposable kind cluster while checking contexts and Docker volumes | Chaos loop must **not** invoke these, delete volumes or own a cluster it didn't create |
+| `infra/verification/faults/run.sh` | Proof of durable Rabbit message redelivery after killing the **consumer client Pod**, with forced delete; one broker instance stayed up | Not a real game-worker kill, not exactly-once business effect, not safe as the generic chaos runner |
+| `infra/verification/faults/worker_loss.py` | Consumer `hold` logs an application effect and waits; another drains redelivered message | Not a reusable application Storyteller worker |
+| `infra/verification/faults/assert_exactly_once.py` | Rejects two `APPLY` log lines, demonstrating unsafe duplicate side effects | No source-of-truth SQL effect test |
+| `infra/platform/postgres/cluster.yaml` | `instances: 1`, 1Gi local-path PVC | A killed PG Pod cannot maintain uninterrupted writes; no actual HA failover |
+| `infra/verification/fixtures/skeletons/workloads.yaml` | synthetic placeholder Pods | Not eligible real game services for campaign-monkey PASS |
 | `infra/kubernetes/lab/gateway/{routes,backends}.yaml` | synthetic web/API routes | No authenticated game yet, and not a safe chaos target |
 | `docs/runbooks/kubernetes-fault.md` | Precise past one-worker Rabbit redelivery receipt with cluster/volume guard | Must retain historical scope; do not relabel as distributed game test |
 

@@ -38,7 +38,8 @@ const MAINTENANCE_DOC_PREFIXES = [
 const INTEGRATION_PREFIXES = [
   'apps/api/',
   'apps/worker/',
-  'infra/kubernetes/lab/',
+  'infra/platform/',
+  'infra/verification/',
   'infra/clusters/',
   'infra/workloads/',
   'infra/environments/',
@@ -56,8 +57,8 @@ const INTEGRATION_FILES = new Set([
   '.npmrc',
 ]);
 
-const LAB_DEV_PREFIX = 'infra/kubernetes/lab/dev/';
-const LAB_APP_RELEASE_PREFIX = 'infra/kubernetes/lab/app-release/';
+const LAB_DEV_PREFIX = 'infra/dev/';
+const LAB_APP_RELEASE_PREFIX = 'infra/environments/release/';
 const IMAGE_PREFIX = 'infra/images/';
 const DEV_GRAPH_PREFIX = 'infra/dev/';
 const DOCKERFILE_PATH =

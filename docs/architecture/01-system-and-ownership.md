@@ -86,6 +86,6 @@ The engine and Game Authority are **logical write authorities** even while shari
 | Durable workflow | packages/workflows/src/index.ts, apps/worker/src | One combined storytellerV1 execution/publication Activity today |
 | Task custody | packages/application/src/storyteller/execution.ts | Claim and saved validated result exist; no independent worker-to-GA API at baseline |
 | Canon storage | packages/documents and packages/application/src/stories/scene-checkpoint.ts | Immutable object+SQL selector pattern exists; deploy with shared S3 and prove cross-Pod |
-| Broader infra | infra/kubernetes/lab | Several independent component smokes and **synthetic** workloads; real application join pending |
+| Broader infra | infra/{platform,environments,verification,images,dev} per [infra/README.md](../../infra/README.md) | Several independent component smokes and **synthetic** workloads; real application join pending |
 
 **Diagnostic test for a supposed distribution win:** can a Nest Pod start/fork/publish directly when distributed mode is configured and GA is down? If yes, routing isolation is incomplete. If an executor has a general story-write DB credential, architectural isolation is weaker than the diagram. Both cases must be explicitly checked; a pretty Pod chart is not proof.

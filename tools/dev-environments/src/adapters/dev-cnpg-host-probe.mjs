@@ -65,7 +65,7 @@ export function collectDevCnpgProbe(deps = {}) {
   }
   let pin = null;
   try {
-    pin = parseCnpgPin(deps.readPin ? deps.readPin() : readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../../infra/kubernetes/lab/cnpg/operator.pin'), 'utf8'));
+    pin = parseCnpgPin(deps.readPin ? deps.readPin() : readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../../infra/platform/postgres/operator.pin'), 'utf8'));
   } catch {
     pin = null;
   }

@@ -11,7 +11,7 @@
  * - apps/api/test/game-authority-seam.test.mjs (expects throw)
  * - scripts/repo-tools/ci-change-scope.test.mjs (compose.yaml not integration)
  * - scripts/repo-tools/root-command-surface.test.mjs (banned infra script names)
- * - infra/kubernetes/lab/tilt/tiltfile.test.mjs (Tiltfile has no compose)
+ * - infra/verification/source/tilt/tiltfile.test.mjs (Tiltfile has no compose)
  *
  * Usage:
  *   node scripts/repo-tools/check-dxk06-compose-remnants.mjs
@@ -50,7 +50,7 @@ const ALLOWLIST = new Set([
   'apps/api/test/game-authority-seam.test.mjs',
   'scripts/repo-tools/ci-change-scope.test.mjs',
   'scripts/repo-tools/root-command-surface.test.mjs',
-  'infra/kubernetes/lab/tilt/tiltfile.test.mjs',
+  'infra/verification/source/tilt/tiltfile.test.mjs',
 ]);
 
 const repoRoot = path.join(

@@ -1,6 +1,6 @@
 # Storyteller Workshop | reality check and finish line
 
-**Infrastructure ownership cleanup (2026-11-24):** [INF01–INF05](INF-PARALLEL.md) promoted for sequential source-only work. Remove generic lab source bucket; distinguish release and development, preserve actual runtime identities. INF01 Done, successors dependency-gated; no further promotion. No live mutation or acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged. User starts each Change.
+**Infrastructure ownership cleanup (2026-11-24):** [INF01–INF05](INF-PARALLEL.md) source relocation is Done. The generic `infra/kubernetes/lab` bucket is empty. Release, development, and verification source are split; runtime identities are unchanged. Live cluster proof is NOT-RUN and is not acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged.
 
 **Database architecture planning (2026-11-24):** [Selected technical owner](../../../docs/technical/platform/database-infrastructure.md) and [three-lane DB program](DB-PARALLEL.md) remove domain schemas from DB infra, preserve one SQL migration history, and stage bounded runtime/transaction/telemetry improvements. DB01, DB06, and DB08 source are joined and archived. Historical SQL is unchanged. Seven successors stay Proposed. Existing journal has 25 entries but latest snapshot describes 48/71 tables. No live PostgreSQL proof; overall ~40% complete / ~60% remaining (±20 pp), architecture ~70%, Storyteller ~40%, distributed ~25% unchanged.
 

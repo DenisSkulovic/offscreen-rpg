@@ -227,7 +227,7 @@ test('planner entry, catalog companions, infra READMEs and app inventories are c
   baseFiles(fx);
   fx.add('CHATGPT.md', '# Planner\n');
   fx.add('work/changes/COMPOSER-QUEUE-AUDIT-2026-11-20.md', '# Audit\n');
-  fx.add('infra/kubernetes/lab/chaos/README.md', '# Chaos\n');
+  fx.add('infra/verification/chaos/README.md', '# Chaos\n');
   fx.add('apps/web/src/stories/design-system-inventory.md', '# Inventory\n');
   const report = scan(fx);
   fx.cleanup();

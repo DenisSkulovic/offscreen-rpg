@@ -35,7 +35,7 @@
 ### What does not gate P1/P2
 
 - DXK10-B/C selective environment profiles, four simultaneous dev stacks, INF01–INF05 infrastructure renaming, [SEM01 semantic debt audit](changes/backlog/quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md), load/HA/autoscaling, K8S10 destructive Pod proof, image generation, multiuser economy, broad billing dashboards and a production cloud deployment. Valuable later, not reasons to delay the first advancing story.
-- The **two known uncommitted primary-checkout files**, `infra/kubernetes/lab/app-release/install.sh` and `work/changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/TURN03-CURRENT-EXECUTION.md`, require owner-aware reconciliation, not reset or an accidental planner overwrite.
+- The **two known uncommitted primary-checkout files**, `infra/environments/release/install.sh` and `work/changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/TURN03-CURRENT-EXECUTION.md`, require owner-aware reconciliation, not reset or an accidental planner overwrite.
 
 **Acceptance wording:** `implemented` means code exists, `local-pass` means named tests passed at their actual tier, `real-smoke-pass` means one player completed the observed release flow, `TURN03-pass` means all eight cold-kind gates genuinely passed, and `paid-trial-pass` means an explicitly authorized model result was accounted for and published through the guarded authoritative path. No gate inherits PASS from a predecessor merely because its source exists.
 

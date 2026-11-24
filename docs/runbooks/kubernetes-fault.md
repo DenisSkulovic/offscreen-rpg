@@ -23,7 +23,7 @@ The second label is the difference between a dead consumer and a lost message. T
 - Do not call the replay an exactly-once effect. The failing assertion is the proof that the effect can happen twice.
 - Do not treat this as the application case where a worker dies after a database commit and the retry returns the existing outcome.
 - Do not point the game, Temporal, or Compose at this broker. A broker message is not a committed story fact.
-- Do not extract a game service. The clients are `python:3.12-alpine` pods. They load `infra/kubernetes/lab/rabbitmq/amqp_smoke.py`.
+- Do not extract a game service. The clients are `python:3.12-alpine` pods. They load `infra/verification/smoke/rabbitmq/amqp_smoke.py`.
 - Do not publish a Service as NodePort or LoadBalancer. Do not raise the WSL memory cap.
 - Do not delete Docker volumes. Compose volumes, including `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data`, stay outside this procedure.
 - Do not run this against a shared or paid cluster. The only cluster name is `offscreen-lab`.
@@ -37,13 +37,13 @@ The second label is the difference between a dead consumer and a lost message. T
 | Queue | `lab.durable`, durable classic |
 | Client image | `docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89` |
 | Client limits | 200m CPU, 128Mi memory |
-| Runner | `infra/kubernetes/lab/fault/run.sh` |
+| Runner | `infra/verification/faults/run.sh` |
 
 `up.sh` refuses to create the cluster when MemAvailable is below 4 GiB. This machine's MemTotal stayed 12249872 kB.
 
 ## Exactly-once assertion
 
-`infra/kubernetes/lab/fault/assert_exactly_once.py` exits 0 when a log has one `APPLY` line. It exits 1 for any other count. The live runner concatenates the hold apply and the replay apply, then requires exit 1 and this line:
+`infra/verification/faults/assert_exactly_once.py` exits 0 when a log has one `APPLY` line. It exits 1 for any other count. The live runner concatenates the hold apply and the replay apply, then requires exit 1 and this line:
 
 ```text
 ASSERTION-FAILED duplicated side effect: expected 1 APPLY, saw 2 for <run-id>
@@ -54,8 +54,8 @@ If that assertion exits 0, the harness fails. A green exactly-once result would 
 The fixture files check the script without a cluster:
 
 ```bash
-python3 infra/kubernetes/lab/fault/assert_exactly_once.py infra/kubernetes/lab/fault/fixtures/one-apply.txt
-python3 infra/kubernetes/lab/fault/assert_exactly_once.py infra/kubernetes/lab/fault/fixtures/two-applies.txt
+python3 infra/verification/faults/assert_exactly_once.py infra/verification/faults/fixtures/one-apply.txt
+python3 infra/verification/faults/assert_exactly_once.py infra/verification/faults/fixtures/two-applies.txt
 ```
 
 The first command exits 0. The second exits 1. Those files are not a cluster run.
@@ -68,8 +68,8 @@ Hold `/tmp/offscreen-k8s-cluster.lock` for the whole sequence. If `offscreen-lab
 exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/rabbitmq/install.sh
-infra/kubernetes/lab/fault/run.sh
+infra/platform/rabbitmq/install.sh
+infra/verification/faults/run.sh
 infra/clusters/kind/release/down.sh
 ```
 
@@ -89,7 +89,7 @@ If a check says a Docker volume outside the cluster disappeared, stop and do not
 
 ## Observed local run
 
-2026-11-19, on this worktree, branch `change/k8s10-fault-harness`. One shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-lab` only after that name was absent, and deleted that same cluster before it released the lock. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/kubernetes/lab/rabbitmq/install.sh`, `infra/kubernetes/lab/fault/run.sh`, `infra/clusters/kind/release/down.sh`.
+2026-11-19, on this worktree, branch `change/k8s10-fault-harness`. One shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-lab` only after that name was absent, and deleted that same cluster before it released the lock. Commands, in order: `infra/clusters/kind/release/up.sh`, `infra/platform/rabbitmq/install.sh`, `infra/verification/faults/run.sh`, `infra/clusters/kind/release/down.sh`.
 
 Versions printed by `run.sh`: Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, server v1.37.0. Broker replicas were 1. Broker pod uid `a96963db-6624-4f0a-ab16-63aa05d5c24e` was the same after the worker pod was deleted. Client image and image ID were `docker.io/library/python:3.12-alpine@sha256:c5ba3deef00c7758561a0f03c26f44f10589263d40e732b8748e0d1f38f6dd89`. No paid provider call was made. No plot image was written. The memory samples below are the hardware record.
 

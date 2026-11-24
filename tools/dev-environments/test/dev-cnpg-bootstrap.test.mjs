@@ -20,7 +20,7 @@ import {
 } from '../src/adapters/dev-cnpg-bootstrap.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const pin = parseCnpgPin(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../infra/kubernetes/lab/cnpg/operator.pin'), 'utf8'));
+const pin = parseCnpgPin(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../infra/platform/postgres/operator.pin'), 'utf8'));
 
 const ready = {
   context: DEV_CNPG_CONTEXT,

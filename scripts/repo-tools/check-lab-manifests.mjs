@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Parse all Kubernetes YAML under infra/kubernetes/lab (stdlib + python3 PyYAML).
+ * Parse Kubernetes YAML under the relocated platform, verification, cluster, and release trees.
  *
  * Usage:
  *   node scripts/repo-tools/check-lab-manifests.mjs [--root DIR]
@@ -10,10 +10,17 @@ import { readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const DEFAULT_ROOT = path.join(
+const REPO_ROOT = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../../infra/kubernetes/lab',
+  '../..',
 );
+const DEFAULT_ROOTS = [
+  path.join(REPO_ROOT, 'infra/platform'),
+  path.join(REPO_ROOT, 'infra/verification'),
+  path.join(REPO_ROOT, 'infra/clusters/kind'),
+  path.join(REPO_ROOT, 'infra/workloads'),
+  path.join(REPO_ROOT, 'infra/environments/release'),
+];
 
 const PYTHON_PARSE = `
 import pathlib
@@ -81,15 +88,22 @@ export function parseLabYamlFile(filePath) {
 /**
  * @param {string} [root]
  */
-export function checkLabManifests(root = DEFAULT_ROOT) {
-  const files = collectLabYamlFiles(root);
-  if (files.length === 0) {
-    throw new Error(`No YAML manifests found under ${path.resolve(root)}`);
+export function checkLabManifests(roots = DEFAULT_ROOTS) {
+  const resolvedRoots = Array.isArray(roots) ? roots : [roots];
+  const files = [];
+  for (const root of resolvedRoots) {
+    files.push(...collectLabYamlFiles(root));
   }
-  for (const file of files) {
+  const unique = [...new Set(files)].sort();
+  if (unique.length === 0) {
+    throw new Error(
+      `No YAML manifests found under ${resolvedRoots.map((r) => path.resolve(r)).join(', ')}`,
+    );
+  }
+  for (const file of unique) {
     parseLabYamlFile(file);
   }
-  return { root: path.resolve(root), fileCount: files.length, files };
+  return { roots: resolvedRoots.map((r) => path.resolve(r)), fileCount: unique.length, files: unique };
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -100,10 +114,10 @@ function main(argv = process.argv.slice(2)) {
     return;
   }
   const rootIdx = argv.indexOf('--root');
-  const root = rootIdx !== -1 ? argv[rootIdx + 1] : DEFAULT_ROOT;
-  const result = checkLabManifests(root);
+  const root = rootIdx !== -1 ? argv[rootIdx + 1] : undefined;
+  const result = checkLabManifests(root ? [root] : DEFAULT_ROOTS);
   console.log(
-    `Parsed ${result.fileCount} lab Kubernetes manifest file(s) under ${result.root}`,
+    `Parsed ${result.fileCount} lab Kubernetes manifest file(s) under ${result.roots.join(', ')}`,
   );
 }
 

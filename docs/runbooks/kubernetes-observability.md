@@ -55,8 +55,8 @@ Hold the shared cluster lock for the whole sequence. If `up.sh` says the cluster
 exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/observability/install.sh
-infra/kubernetes/lab/observability/smoke.sh
+infra/platform/observability/install.sh
+infra/verification/smoke/observability/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 

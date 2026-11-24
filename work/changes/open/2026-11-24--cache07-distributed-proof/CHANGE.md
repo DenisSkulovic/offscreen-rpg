@@ -10,7 +10,7 @@ After the dependency/export/ownership gates in CACHE-PARALLEL.md pass on latest 
 
 ## Planner source map and scope
 
-Anchors: infra/kubernetes/lab/redis/redis.yaml; work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md; packages/cache/src/adapters/redis-store.ts. Old adapter uses get/set JSON, Promise.race, disabled reconnect. DO01 owns port relocation. Story Engine owns SQL preflight and repeatable-read built identity; lexical reuse and immutable Documents bytes remain domain-owned. Canonical architecture defines algorithms, policy, authority and failure invariants. Exclusive write scope: new packages/cache/test/distributed files and proof/reconciliation; PLAN.md pins the new fixture and exact commands. Source implementation starts now. No full stack for unit tests.
+Anchors: infra/platform/redis/redis.yaml; work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md; packages/cache/src/adapters/redis-store.ts. Old adapter uses get/set JSON, Promise.race, disabled reconnect. DO01 owns port relocation. Story Engine owns SQL preflight and repeatable-read built identity; lexical reuse and immutable Documents bytes remain domain-owned. Canonical architecture defines algorithms, policy, authority and failure invariants. Exclusive write scope: new packages/cache/test/distributed files and proof/reconciliation; PLAN.md pins the new fixture and exact commands. Source implementation starts now. No full stack for unit tests.
 
 ## Acceptance
 

@@ -32,7 +32,7 @@ const ready = {
 };
 
 test('the rendered Temporal stack uses the pinned images and dev storage class', () => {
-  const pin = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../infra/kubernetes/lab/temporal/images.pin'), 'utf8');
+  const pin = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../infra/platform/temporal/images.pin'), 'utf8');
   const manifest = renderDevTemporal();
   assert.equal(renderDevTemporal(), manifest);
   assert.match(pin, new RegExp(DEV_TEMPORAL_SERVER_IMAGE.split(':')[1]));

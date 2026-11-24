@@ -6,7 +6,7 @@ A local `fixture-pin.json` from [Content package authoring](content-package-auth
 
 ## What this procedure is
 
-`infra/kubernetes/lab/content-bootstrap/smoke.sh` applies the existing SeaweedFS manifests in `infra/kubernetes/lab/object-storage/`. It does not edit those manifests. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
+`infra/environments/release/content-bootstrap/smoke.sh` applies the existing SeaweedFS store manifest in `infra/platform/object-storage/`. It does not edit those manifests. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
 
 The smoke then runs two Jobs in `lab-content-bootstrap`:
 
@@ -33,7 +33,7 @@ The access key and the secret key are created in memory by the smoke. The store 
 - Do not treat a Ready Pod as proof. The reader has to return the same hashes.
 - Do not treat a local `fixture-pin.json` as this proof.
 - Do not point the Nest API, the worker, or Compose at this Service.
-- Do not edit `infra/kubernetes/lab/object-storage/`. SeaweedFS 4.54 stays the store.
+- Do not edit `infra/platform/object-storage/`. SeaweedFS 4.54 stays the store.
 - Do not edit `kind.yaml`, `up.sh`, `down.sh`, or `lib.sh` unless a printed failure names them.
 - Do not publish a NodePort or a LoadBalancer. Do not publish on `0.0.0.0` or `[::]`.
 - Do not put an access key or a secret key in Git.
@@ -60,7 +60,7 @@ Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from th
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/content-bootstrap/smoke.sh
+infra/environments/release/content-bootstrap/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 
@@ -88,7 +88,7 @@ Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-clu
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/content-bootstrap/smoke.sh
+infra/environments/release/content-bootstrap/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 
@@ -118,16 +118,16 @@ BOOT02 stops after immutable package objects exist in the shared lab store and a
 
 | Artifact | Path or value |
 | --- | --- |
-| Bootstrap namespace | `lab-content-bootstrap` — `infra/kubernetes/lab/content-bootstrap/namespace.yaml` |
-| Object-store namespace | `lab-objects` — existing SeaweedFS manifests under `infra/kubernetes/lab/object-storage/` (applied by `smoke.sh`, not edited here) |
-| Importer Job | `fixture-importer` — `infra/kubernetes/lab/content-bootstrap/importer-job.yaml` |
-| Reader Job | `fixture-reader` — `infra/kubernetes/lab/content-bootstrap/reader-job.yaml` |
-| Orchestration | `infra/kubernetes/lab/content-bootstrap/smoke.sh` |
+| Bootstrap namespace | `lab-content-bootstrap` — `infra/environments/release/content-bootstrap/namespace.yaml` |
+| Object-store namespace | `lab-objects` — existing SeaweedFS manifest under `infra/platform/object-storage/` (applied by `smoke.sh`, not edited here) |
+| Importer Job | `fixture-importer` — `infra/environments/release/content-bootstrap/importer-job.yaml` |
+| Reader Job | `fixture-reader` — `infra/environments/release/content-bootstrap/reader-job.yaml` |
+| Orchestration | `infra/environments/release/content-bootstrap/smoke.sh` |
 | S3 endpoint | `http://object-store.lab-objects.svc.cluster.local:8333` |
 | Bucket | `lab-objects` |
 | Importer entrypoint | `scripts/repo-tools/import-pinned-fixture.mjs --s3` (writer credentials: Secret `content-importer-s3`) |
 | Reader entrypoint | `scripts/repo-tools/read-pinned-fixture.mjs --s3` (read-only credentials: Secret `content-reader-s3`) |
-| Job image pin | `offscreen-lab-content-bootstrap:boot02` — built from `infra/kubernetes/lab/content-bootstrap/Dockerfile`, digest recorded in [Observed local run](#observed-local-run) |
+| Job image pin | `offscreen-lab-content-bootstrap:boot02` — built from `infra/environments/release/content-bootstrap/Dockerfile`, digest recorded in [Observed local run](#observed-local-run) |
 
 Pinned content-addressed roots (package manifests), identical on import and read:
 

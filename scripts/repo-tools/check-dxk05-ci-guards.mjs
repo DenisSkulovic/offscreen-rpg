@@ -109,9 +109,16 @@ export function checkDxk05CiGuards(root = repoRoot) {
   assertNoStaleComposeCommand(workflowPath, workflowText);
   composeScanCount += 1;
 
-  const labDir = path.join(resolved, 'infra/kubernetes/lab');
+  const shellRoots = [
+    path.join(resolved, 'infra/platform'),
+    path.join(resolved, 'infra/verification'),
+    path.join(resolved, 'infra/clusters/kind/release'),
+    path.join(resolved, 'infra/environments/release'),
+  ];
   const shellFiles = [];
-  collectShellFiles(labDir, shellFiles);
+  for (const dir of shellRoots) {
+    collectShellFiles(dir, shellFiles);
+  }
   shellFiles.sort();
   for (const file of shellFiles) {
     const text = readFileSync(file, 'utf8');

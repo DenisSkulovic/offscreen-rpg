@@ -14,11 +14,11 @@ const repoRoot = join(
   fileURLToPath(new URL('.', import.meta.url)),
   '../..',
 );
-const labRoot = join(repoRoot, 'infra/kubernetes/lab');
+const clusterRoot = join(repoRoot, 'infra/clusters/kind/release');
 
-test('lab tree contains Kubernetes YAML manifests', () => {
-  const files = collectLabYamlFiles(labRoot);
-  assert.ok(files.length > 20, 'expected many lab yaml files');
+test('infra tree contains Kubernetes YAML manifests', () => {
+  const files = collectLabYamlFiles(clusterRoot);
+  assert.ok(files.length > 0, 'expected cluster yaml files');
   assert.ok(
     files.some((file) => file.endsWith('namespaces.yaml')),
     'namespaces.yaml is included',
@@ -26,7 +26,7 @@ test('lab tree contains Kubernetes YAML manifests', () => {
 });
 
 test('all lab Kubernetes YAML parses', () => {
-  const result = checkLabManifests(labRoot);
+  const result = checkLabManifests();
   assert.ok(result.fileCount > 0);
 });
 

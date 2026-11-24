@@ -1,4 +1,4 @@
-# Developer profile for pnpm dev (scripts/repo-tools/dev-tilt.mjs).
+# Developer profile for pnpm dev (tools/dev-environments/src/cli/dev-tilt.mjs).
 # Release acceptance graph: infra/environments/release/Tiltfile
 
 if os.getenv('OFFSCREEN_DEV_SLOT', '').startswith('dev-'):

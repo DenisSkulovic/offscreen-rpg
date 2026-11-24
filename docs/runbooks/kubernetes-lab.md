@@ -6,7 +6,7 @@ Disposable local kind cluster for the [educational laboratory](../technical/plat
 
 Create a two-node cluster named `offscreen-lab`: one control plane and one worker. The API server listens on `127.0.0.1:6443`. Two namespaces, `lab-a` and `lab-b`, hold the probes. A pinned local-path provisioner supplies the `local-path` storage class. The probes check cluster DNS, an HTTP call from `lab-a` to `lab-b`, and a file that survives a new pod on the same claim.
 
-Scripts and manifests live in `infra/kubernetes/lab/`. Run them from the repository root.
+Cluster lifecycle scripts live in `infra/clusters/kind/release/`; verification smokes and fixtures live under `infra/verification/` and `infra/platform/`. Run them from the repository root.
 
 ## What it must not do
 
@@ -27,7 +27,7 @@ Pinned for the 2026-11-19 run:
 | kubectl client | v1.37.2 |
 | Node image | `kindest/node:v1.37.0` (Kubernetes v1.37.0 inside the node) |
 | Probe image | `docker.io/library/busybox:1.36` |
-| Volume provisioner | rancher local-path-provisioner v0.0.37, copied at `infra/kubernetes/lab/local-path-storage.yaml` |
+| Volume provisioner | rancher local-path-provisioner v0.0.37, copied at `infra/clusters/kind/release/local-path-storage.yaml` |
 
 kind also installs a default StorageClass named `standard` with the same provisioner name. The probes request `local-path` explicitly so they do not depend on that default.
 
@@ -35,7 +35,7 @@ kind also installs a default StorageClass named `standard` with the same provisi
 
 ```bash
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/smoke.sh
+infra/verification/smoke/release.sh
 infra/clusters/kind/release/down.sh
 ```
 

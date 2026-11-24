@@ -8,7 +8,7 @@ Install one maintained Gateway API controller on the existing `offscreen-lab` cl
 
 The shared kind configuration does not publish a workload port. This procedure does not change that file. The host reaches the Gateway only by `kubectl port-forward` bound to `127.0.0.1`.
 
-Manifests and scripts live in `infra/kubernetes/lab/gateway/`. Run them from the repository root, after `infra/clusters/kind/release/up.sh`, and before `infra/clusters/kind/release/down.sh`.
+Platform install manifests live in `infra/platform/gateway/`. Verification scripts live in `infra/verification/smoke/gateway/`. Run them from the repository root, after `infra/clusters/kind/release/up.sh`, and before `infra/clusters/kind/release/down.sh`.
 
 ## Plain loopback exception
 
@@ -69,8 +69,8 @@ Hold the shared cluster lock for the whole sequence. If `up.sh` says the cluster
 exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
 infra/clusters/kind/release/up.sh
-infra/kubernetes/lab/gateway/install.sh
-infra/kubernetes/lab/gateway/smoke.sh
+infra/platform/gateway/install.sh
+infra/verification/smoke/gateway/smoke.sh
 infra/clusters/kind/release/down.sh
 ```
 

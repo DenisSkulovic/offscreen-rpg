@@ -156,8 +156,8 @@ Frozen snapshot. Current-source refresh required before promotion. Historical re
 - `docs/technical/platform/persistence-and-caching.md`
 - `docs/technical/platform/security-and-trust-boundaries.md`
 - `eslint.config.mjs`
-- `infra/kubernetes/lab/app-release/production-workspace-closure.test.mjs`
-- `infra/kubernetes/lab/dev/dev-sync-paths.mjs`
+- `infra/images/release/production-workspace-closure.test.mjs`
+- `infra/dev/dev-sync-paths.mjs`
 - `packages/admin/package.json`
 - `packages/admin/src/audit-reads.ts`
 - `packages/admin/src/case-writes.ts`
