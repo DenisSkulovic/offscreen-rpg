@@ -1,5 +1,5 @@
 # Developer profile for pnpm dev (tools/dev-environments/src/cli/dev-tilt.mjs).
-# Release acceptance graph: infra/environments/release/Tiltfile
+# Release acceptance: explicit image build plus pnpm stack:up (see runbooks).
 
 def assert_dev_slot_env():
     slot = os.getenv('OFFSCREEN_DEV_SLOT', '').strip()

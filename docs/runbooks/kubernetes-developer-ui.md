@@ -12,7 +12,13 @@ From the repository root:
 pnpm dev
 ```
 
-`pnpm dev` is the Tilt front door. It runs the stack preflight, then `tilt up` against the existing `kind-offscreen-lab` context. It does not create the cluster, and it does not print the URLs below until `game-web`, `game-api`, `game-authority`, `game-control`, `game-executor`, and `game-relay` are Available. The root Tiltfile is the dev graph: one workspace image, `live_update` for source, and the warm release script only for lockfile, manifest, Dockerfile, and migration changes. Immutable release acceptance is `tilt up -f infra/environments/release/Tiltfile`. Worker dev pods need about 2Gi; three `tsc-watch` processes abort below that. Kind image loads on this WSL host must be one node at a time. On 2026-11-20, `tilt ci` (same Tiltfile, Tilt v0.35.2) exited 0 against the existing `offscreen-lab` cluster and reported all workloads healthy. `pnpm dev` itself was not the process observed.
+`pnpm dev` is the Tilt front door for the owned dev slot. It runs the stack preflight, then `tilt up` against the `kind-offscreen-dev` context. It does not create the cluster, and it does not print the URLs below until the dev-slot workloads are Available. The root Tiltfile is the dev graph only: one workspace image, `live_update` for source, and the warm release script only for lockfile, manifest, Dockerfile, and migration changes. Immutable **release** acceptance is explicit image build plus stack apply: `bash infra/images/release/build-release-images.sh`, then `pnpm stack:up` from the repository root. Operator loopback access to the release lab edge (when the cluster is already up) may use:
+
+```bash
+kubectl --context kind-offscreen-lab -n lab-edge port-forward --address 127.0.0.1 svc/game-web 3000:3000
+```
+
+Worker dev pods need about 2Gi; three `tsc-watch` processes abort below that. Kind image loads on this WSL host must be one node at a time. On 2026-11-20, release-lab `tilt ci` (historical release Tiltfile, Tilt v0.35.2) exited 0 against the existing `offscreen-lab` cluster and reported all workloads healthy; that graph is retired—current release work uses the build script and `pnpm stack:up` instead.
 
 | Surface | URL | Notes |
 | --- | --- | --- |

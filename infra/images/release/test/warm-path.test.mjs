@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -48,7 +48,10 @@ test('build-only workspace dependency change selects owning image', () => {
     worker: ['apps/worker'],
   };
   assert.deepEqual(
-    selectImagesFromPaths(['packages/build-only-tool/tsconfig.json'], buildOnlyGraph),
+    selectImagesFromPaths(
+      ['packages/build-only-tool/tsconfig.json'],
+      buildOnlyGraph,
+    ),
     ['api'],
   );
   assert.deepEqual(
@@ -75,7 +78,10 @@ test('web source selects only web', () => {
 });
 
 test('workspace manifest edits require rebuilding every image', () => {
-  assert.equal(requiresFullImageRebuild(['packages/story-engine/package.json']), true);
+  assert.equal(
+    requiresFullImageRebuild(['packages/story-engine/package.json']),
+    true,
+  );
   assert.equal(requiresFullImageRebuild(['pnpm-workspace.yaml']), true);
   assert.equal(
     requiresFullImageRebuild(['packages/story-engine/src/index.ts']),
@@ -93,9 +99,16 @@ test('lockfile selects every runtime image', () => {
 });
 
 test('kind load is required unless every node already has the same image id', () => {
-  const digest = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  const digest =
+    'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
   assert.equal(allNodesMatchDigest(digest, [digest, digest]), true);
-  assert.equal(allNodesMatchDigest(digest, [digest, 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']), false);
+  assert.equal(
+    allNodesMatchDigest(digest, [
+      digest,
+      'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    ]),
+    false,
+  );
   assert.equal(allNodesMatchDigest(digest, []), false);
   assert.equal(allNodesMatchDigest('', [digest]), false);
 });
@@ -126,13 +139,10 @@ test('warm build helper bounds concurrency and still has a clean all-image path'
   );
   assert.match(install, /node "\$KIND_IMAGE_LOADER" release/);
   assert.doesNotMatch(install, /SKIP unchanged/);
-  assert.match(install, /OFFSCREEN_RELEASE_IMAGES:-web,api,game-authority,worker/);
-  const releaseTilt = readFileSync(
-    join(repoRoot, 'infra/environments/release/Tiltfile'),
-    'utf8',
+  assert.match(
+    install,
+    /OFFSCREEN_RELEASE_IMAGES:-web,api,game-authority,worker/,
   );
-  assert.match(releaseTilt, /max_parallel_updates=1/);
-  assert.match(releaseTilt, /kind-image-loader\.mjs release "\$EXPECTED_REF"/);
-  assert.match(releaseTilt, /skips_local_docker=True/);
-  assert.doesNotMatch(releaseTilt, /resource_deps=\['app-release-images'\]/);
+  const releaseTiltPath = join(repoRoot, 'infra/environments/release/Tiltfile');
+  assert.equal(existsSync(releaseTiltPath), false);
 });

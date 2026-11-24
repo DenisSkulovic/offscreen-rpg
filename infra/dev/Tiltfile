@@ -1,5 +1,5 @@
 # Owned dev slot graph (pnpm dev / root Tiltfile).
-# Release image builds and TURN02 overlays: infra/environments/release/Tiltfile.
+# Release image builds and stack apply: infra/images/release/build-release-images.sh and pnpm stack:up.
 
 OFFSCREEN_DEV_SLOT = os.getenv('OFFSCREEN_DEV_SLOT', 'unassigned')
 OFFSCREEN_DEV_NAMESPACE = os.getenv('OFFSCREEN_DEV_NAMESPACE', 'unassigned')

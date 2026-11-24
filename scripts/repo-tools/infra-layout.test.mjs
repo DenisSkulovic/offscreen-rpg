@@ -131,6 +131,21 @@ export const INF08_RETIRED_WORKLOAD_PATHS = [
   'infra/workloads/release/migrate.yaml',
 ];
 
+/**
+ * INF16 retired release Tilt graph: single release install authority.
+ * Proof: exact absence of infra/environments/release/Tiltfile.
+ */
+export const INF16_RETIRED_RELEASE_TILT_PATH =
+  'infra/environments/release/Tiltfile';
+
+/** INF16 successor for historical move-map destination rows. */
+export const INF16_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/environments/release/Tiltfile',
+    to: 'infra/environments/release/install.sh',
+  },
+];
+
 /** INF15 successor relocations: INF01–05 platform YAML → Helm chart homes. */
 export const INF15_SUCCESSOR_RELOCATIONS = [
   {
@@ -276,7 +291,10 @@ export function assertInf08WorkloadRetirement(root) {
     bindings: devOverlay.bindings,
   });
   assert.equal(devDocs.length, 10);
-  const releaseDocs = renderWorkloadDocuments({ profile: 'release', section: 'all' });
+  const releaseDocs = renderWorkloadDocuments({
+    profile: 'release',
+    section: 'all',
+  });
   assert.equal(releaseDocs.length, 12);
 }
 
@@ -326,6 +344,29 @@ export function assertInf15PlatformChartSuccessors(root) {
   }
 }
 
+export function assertInf16ReleaseTiltRetirement(root) {
+  if (existsSync(join(root, INF16_RETIRED_RELEASE_TILT_PATH))) {
+    throw new Error(
+      `INF16 predecessor must be retired: ${INF16_RETIRED_RELEASE_TILT_PATH}`,
+    );
+  }
+  for (const row of INF16_SUCCESSOR_RELOCATIONS) {
+    if (existsSync(join(root, row.from))) {
+      throw new Error(`INF16 predecessor must be retired: ${row.from}`);
+    }
+    if (!existsSync(join(root, row.to))) {
+      throw new Error(`INF16 release authority missing: ${row.to}`);
+    }
+  }
+  for (const relativePath of [
+    'infra/images/release/build-release-images.sh',
+  ]) {
+    if (!existsSync(join(root, relativePath))) {
+      throw new Error(`INF16 release authority missing: ${relativePath}`);
+    }
+  }
+}
+
 export function assertInf07SuccessorRelocations(root) {
   for (const row of INF07_SUCCESSOR_RELOCATIONS) {
     const oldExists = existsSync(join(root, row.from));
@@ -372,7 +413,9 @@ function gitTrackedMode(relativePath) {
 }
 
 function relocatedDestinationPresent(root, destination) {
-  return Boolean(gitTrackedMode(destination) || existsSync(join(root, destination)));
+  return Boolean(
+    gitTrackedMode(destination) || existsSync(join(root, destination)),
+  );
 }
 
 export function destinationRoot(destination) {
@@ -424,7 +467,9 @@ export function assertAllowedDestinations(rows) {
 }
 
 export function assertLabInventoryCoverage(rows, trackedLabPaths) {
-  const labRows = rows.filter((r) => r.from.startsWith('infra/kubernetes/lab/'));
+  const labRows = rows.filter((r) =>
+    r.from.startsWith('infra/kubernetes/lab/'),
+  );
   const mapped = new Set(labRows.map((r) => r.from));
   const tracked = new Set(trackedLabPaths);
   const missing = trackedLabPaths.filter((path) => !mapped.has(path));
@@ -437,7 +482,12 @@ export function assertLabInventoryCoverage(rows, trackedLabPaths) {
   for (const path of mapped) {
     if (tracked.has(path)) continue;
     const row = labRows.find((entry) => entry.from === path);
-    if (row?.to && relocatedDestinationPresent(repoRoot, effectiveMoveDestination(row.to))) {
+    if (
+      row?.to &&
+      (relocatedDestinationPresent(repoRoot, effectiveMoveDestination(row.to)) ||
+        (effectiveMoveDestination(row.to) === INF16_RETIRED_RELEASE_TILT_PATH &&
+          !existsSync(join(repoRoot, INF16_RETIRED_RELEASE_TILT_PATH))))
+    ) {
       continue;
     }
     extra.push(path);
@@ -454,6 +504,12 @@ export function assertTrackedModes(rows) {
     const trackedMode = gitTrackedMode(row.from);
     if (!trackedMode) {
       const destination = effectiveMoveDestination(row.to);
+      if (
+        destination === INF16_RETIRED_RELEASE_TILT_PATH &&
+        !existsSync(join(repoRoot, destination))
+      ) {
+        continue;
+      }
       const relocatedMode = gitTrackedMode(destination);
       if (!relocatedMode) {
         assert.ok(
@@ -492,6 +548,12 @@ export function assertStagedMovePaths(
       );
     }
     if (!oldExists && !newExists) {
+      if (
+        destination === INF16_RETIRED_RELEASE_TILT_PATH &&
+        !existsSync(join(root, INF16_RETIRED_RELEASE_TILT_PATH))
+      ) {
+        continue;
+      }
       throw new Error(
         `staged move violation (neither path present): ${row.from} / ${destination}`,
       );
@@ -553,14 +615,14 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
   }
 
   const tiltfile = readFileSync(join(repoRoot, 'Tiltfile'), 'utf8');
-  const releaseTiltfile = readFileSync(
-    join(repoRoot, 'infra/environments/release/Tiltfile'),
-    'utf8',
+  assert.equal(
+    existsSync(join(repoRoot, INF16_RETIRED_RELEASE_TILT_PATH)),
+    false,
   );
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-dev'\)/);
   assert.doesNotMatch(tiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
-  assert.match(releaseTiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
   assert.match(tiltfile, /infra\/dev\/Tiltfile/);
+  assertInf16ReleaseTiltRetirement(repoRoot);
 
   const libSh = readFileSync(
     join(repoRoot, 'infra/clusters/kind/release/lib.sh'),
@@ -581,6 +643,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   assertInf07SuccessorRelocations(repoRoot);
   assertInf08WorkloadRetirement(repoRoot);
   assertInf15PlatformChartSuccessors(repoRoot);
+  assertInf16ReleaseTiltRetirement(repoRoot);
   assertTrackedModes(map.rows);
 
   const byChange = Object.create(null);

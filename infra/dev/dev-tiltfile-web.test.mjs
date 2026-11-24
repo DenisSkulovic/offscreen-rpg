@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -7,9 +7,11 @@ import { renderDevSlotAppGraph } from '../../tools/dev-environments/src/renderin
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
-const releaseTiltfilePath = join(repoRoot, 'infra/environments/release/Tiltfile');
+const releaseTiltfilePath = join(
+  repoRoot,
+  'infra/environments/release/Tiltfile',
+);
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
-const releaseTiltfile = readFileSync(releaseTiltfilePath, 'utf8');
 
 /**
  * @param {string} tiltfile
@@ -69,20 +71,34 @@ test('dev Tiltfile live_update syncs apps/web with dependency fallbacks', () => 
   assert.doesNotMatch(devTiltfile, /port_forwards/);
 });
 
-test('release Tiltfile still owns app-release-images unchanged', () => {
-  assert.match(releaseTiltfile, /app-release-images/);
-  assert.match(releaseTiltfile, /build-release-images\.sh/);
-  assert.doesNotMatch(releaseTiltfile, /live_update\s*\(/);
+test('release Tiltfile is retired; image build script remains the release build owner', () => {
+  assert.equal(existsSync(releaseTiltfilePath), false);
+  const buildScript = readFileSync(
+    join(repoRoot, 'infra/images/release/build-release-images.sh'),
+    'utf8',
+  );
+  assert.match(buildScript, /OFFSCREEN_IMAGE_BUILD_CONCURRENCY/);
 });
 
 test('slot graph game-web uses watched dev compile and slot image', () => {
-  const graph = renderDevSlotAppGraph('dev-1', { schemaReady: true, ports: { game: 3100 } });
-  const web = graph.documents.find((item) => item.kind === 'Deployment' && item.metadata.name === 'game-web');
+  const graph = renderDevSlotAppGraph('dev-1', {
+    schemaReady: true,
+    ports: { game: 3100 },
+  });
+  const web = graph.documents.find(
+    (item) => item.kind === 'Deployment' && item.metadata.name === 'game-web',
+  );
   assert.ok(web);
   assert.equal(web.metadata.namespace, 'offscreen-dev-1');
-  assert.match(web.spec.template.spec.containers[0].image, /^offscreen-dev-workspace:dev-1-web$/);
+  assert.match(
+    web.spec.template.spec.containers[0].image,
+    /^offscreen-dev-workspace:dev-1-web$/,
+  );
   const command = web.spec.template.spec.containers[0].command.join(' ');
-  assert.match(command, /dev-pod-web-receipt\.mjs|dev-pod-compile-watch\.mjs web/);
+  assert.match(
+    command,
+    /dev-pod-web-receipt\.mjs|dev-pod-compile-watch\.mjs web/,
+  );
   const readiness = web.spec.template.spec.containers[0].readinessProbe;
   assert.equal(readiness.tcpSocket.port, 'http');
 });
