@@ -233,6 +233,24 @@ export async function runRabbitmqReleaseInstall(deps = {}) {
     if (image !== OPERATOR_IMAGE) {
       return refuse('operator-image-mismatch', image);
     }
+  }
+  // An earlier multi-document apply may have created the Deployment but failed
+  // before creating its certificate/issuer. Reconcile the pinned bundle again.
+  const certificate = readObject({
+    profileId, resource: 'certificate', name: 'cluster-operator-serving-cert',
+    namespace: 'rabbitmq-system',
+  });
+  const issuer = readObject({
+    profileId, resource: 'issuer', name: 'selfsigned-issuer',
+    namespace: 'rabbitmq-system',
+  });
+  for (const [name, observation] of [['certificate', certificate], ['issuer', issuer]]) {
+    if (observation.state === 'unreadable' && objectPresent(operator)) {
+      return refuse('operator-dependency-unreadable', name);
+    }
+  }
+  const needsOperatorApply = !objectPresent(operator) || !objectPresent(certificate) || !objectPresent(issuer);
+  if (!needsOperatorApply) {
     actions.push({ op: 'reuse-operator' });
   } else {
     if (deps.operatorWebhookAlwaysFails) {
@@ -288,7 +306,7 @@ export async function runRabbitmqReleaseInstall(deps = {}) {
     mutated = true;
   }
 
-  if (!objectPresent(operator)) {
+  {
     if (!wait(['wait', '--for=condition=Established', 'crd/rabbitmqclusters.rabbitmq.com', '--timeout=180s']).ok ||
         !wait(['-n', 'rabbitmq-system', 'wait', '--for=condition=Ready', 'certificate/cluster-operator-serving-cert', '--timeout=240s']).ok ||
         !wait(['-n', 'rabbitmq-system', 'rollout', 'status', 'deployment/rabbitmq-cluster-operator', '--timeout=240s']).ok) {

@@ -57,6 +57,8 @@ const readyInventory = {
   'deployment/rabbitmq-system/rabbitmq-cluster-operator': {
     spec: { template: { spec: { containers: [{ image: OPERATOR_IMAGE }] } } },
   },
+  'certificate/rabbitmq-system/cluster-operator-serving-cert': { metadata: { name: 'cluster-operator-serving-cert' } },
+  'issuer/rabbitmq-system/selfsigned-issuer': { metadata: { name: 'selfsigned-issuer' } },
   'namespace//messaging': {
     metadata: {
       name: NAMESPACE,
@@ -211,7 +213,7 @@ test('unreadable broker read refuses without mutation', async () => {
   });
   assert.equal(result.ok, false);
   assert.equal(result.refusals[0]?.id, 'broker-unreadable');
-  assert.equal(calls.length, 0);
+  assert.equal(calls.some(call => call.args.includes('apply') || call.args.includes('create')), false);
 });
 
 test('missing secret when broker data exists refuses', async () => {
@@ -337,4 +339,26 @@ test('fresh operator installation waits for cert-manager before applying operato
   assert.equal(result.refusals[0].id, 'cert-manager-not-ready');
   assert.ok(calls.some(line => line.includes('certificates.cert-manager.io')));
   assert.ok(!calls.some(line => line.includes('cluster-operator-v2.23.3.yml')));
+});
+
+
+test('partial operator install reconciles missing certificate before broker admission', async () => {
+  const inventory = { ...readyInventory };
+  delete inventory['certificate/rabbitmq-system/cluster-operator-serving-cert'];
+  const calls = [];
+  const result = await runRabbitmqReleaseInstall({
+    authorize: true,
+    skipVendorVerify: true,
+    readObject: inventoryRead(inventory),
+    run(command, args) {
+      calls.push(args.join(' '));
+      if (args.includes('certificate/cluster-operator-serving-cert')) return { ok: false };
+      return { ok: true, stdout: '' };
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, true);
+  assert.equal(result.refusals[0].id, 'operator-not-ready');
+  assert.ok(calls.some(line => line.includes('apply') && line.includes('cluster-operator-v2.23.3.yml')));
+  assert.ok(!calls.some(line => line.includes('list_queues')));
 });
