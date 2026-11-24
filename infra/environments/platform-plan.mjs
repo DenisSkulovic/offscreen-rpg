@@ -429,7 +429,7 @@ export function runChartRenderPreflight(
  * Pinned Traefik image/repo checks aligned with infra/platform/gateway/install.sh.
  * @param {{ run?: typeof runPlatformCommand }} [deps]
  */
-export function runGatewayInstallPreflight(deps = {}) {
+export export function runGatewayInstallPreflight(deps = {}) {
   const run = deps.run ?? runPlatformCommand;
   const inspect = run(
     'docker',
@@ -438,7 +438,7 @@ export function runGatewayInstallPreflight(deps = {}) {
       'inspect',
       GATEWAY_TRAEFIK_IMAGE,
       '--format',
-      '{{range .RepoDigests}}{{.}}{{"\n"}}{{end}}',
+      '{{json .RepoDigests}}',
     ],
     { timeoutMs: 10_000 },
   );
@@ -447,8 +447,15 @@ export function runGatewayInstallPreflight(deps = {}) {
       `Refusing gateway install: ${GATEWAY_TRAEFIK_IMAGE} digest check failed`,
     );
   }
-  const digests = inspect.stdout ?? '';
-  if (!digests.includes(GATEWAY_TRAEFIK_DIGEST)) {
+  let digests;
+  try {
+    digests = JSON.parse(inspect.stdout ?? '');
+  } catch {
+    throw new Error('Gateway image digest inspection returned invalid JSON');
+  }
+  const expectedRefs = ['traefik', 'library/traefik', 'docker.io/library/traefik', 'docker.io/traefik']
+    .map(name => `${name}@${GATEWAY_TRAEFIK_DIGEST}`);
+  if (!Array.isArray(digests) || !digests.some(ref => expectedRefs.includes(ref))) {
     throw new Error(
       `Refusing to install: ${GATEWAY_TRAEFIK_IMAGE} is not ${GATEWAY_TRAEFIK_DIGEST}.`,
     );
