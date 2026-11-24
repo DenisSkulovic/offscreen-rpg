@@ -890,3 +890,25 @@ test('runPlatformCommand exposes status and missing semantics', () => {
   assert.equal(missing.ok, false);
   assert.equal(missing.missing, true);
 });
+
+import { ensureReleaseOwnershipBaseline } from '../commands.mjs';
+test('release bootstrap creates only absent baseline after local node identity proof', () => {
+  let existing = null;
+  let writes = 0;
+  const run = (command, args, options) => {
+    const ok = stdout => ({ ok: true, stdout });
+    if (command === 'kind') return ok(releaseKind.clusterName);
+    if (command === 'docker' && args[0] === 'context') return ok(args[1] === 'show' ? 'default' : JSON.stringify('unix:///var/run/docker.sock'));
+    if (command === 'docker' && args[0] === 'inspect') return ok(JSON.stringify([{ Config: { Labels: { 'io.x-k8s.kind.cluster': releaseKind.clusterName, 'io.x-k8s.kind.role': 'control-plane' } }, State: { Running: true }, NetworkSettings: { Ports: { '6443/tcp': [{ HostIp: '127.0.0.1', HostPort: '6443' }] } } }]));
+    if (args.includes('config')) return ok(kubectlConfigJson('release', RELEASE_API_PORT));
+    if (args.includes('get')) return ok(existing ? JSON.stringify(existing) : '');
+    if (args.includes('create')) { writes++; existing = JSON.parse(options.input); return ok('created'); }
+    throw Error('unexpected command');
+  };
+  assert.equal(ensureReleaseOwnershipBaseline({ run }).mutated, true);
+  assert.equal(ensureReleaseOwnershipBaseline({ run }).mutated, false);
+  assert.equal(writes, 1);
+  existing.metadata.labels = {};
+  assert.throws(() => ensureReleaseOwnershipBaseline({ run }), /foreign ownership/);
+  assert.equal(writes, 1);
+});

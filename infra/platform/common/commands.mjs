@@ -237,10 +237,7 @@ function assertLoopbackPort(port, profileId) {
  * @param {'dev' | 'release'} profileId
  * @param {{ run?: typeof runPlatformCommand }} [deps]
  */
-export function assertPlatformTarget(
-  profileId,
-  { run = runPlatformCommand } = {},
-) {
+function assertTargetIdentity(profileId, run) {
   const profile = readPlatformProfile(profileId);
 
   const kindList = run('kind', ['get', 'clusters']);
@@ -280,6 +277,12 @@ export function assertPlatformTarget(
   );
   assertLoopbackPort(port, profileId);
 
+  return { profile, port };
+}
+
+/** Read-only ownership assertion. */
+export function assertPlatformTarget(profileId, { run = runPlatformCommand } = {}) {
+  const { profile, port } = assertTargetIdentity(profileId, run);
   if (profileId === 'dev') {
     const baseline = readPlatformObject(
       { profileId: 'dev', resource: 'namespace', name: DEV_BASELINE_NAMESPACE },
@@ -331,4 +334,44 @@ export function assertPlatformTarget(
     contextName: profile.contextName,
     port,
   };
+}
+
+/** Explicit cluster-bootstrap action; never adopts or relabels an existing namespace. */
+export function ensureReleaseOwnershipBaseline({ run = runPlatformCommand } = {}) {
+  const { profile } = assertTargetIdentity('release', run);
+  const spec = { profileId: 'release', resource: 'namespace', name: profile.namespaces.postgres };
+  const existing = readPlatformObject(spec, { run });
+  if (existing.state === 'unreadable') throw new Error('release baseline unreadable');
+  if (existing.state === 'present') {
+    if (existing.object.metadata?.labels?.[profile.ownerLabel + '/lab'] !== profile.ownerValue) {
+      throw new Error('release baseline has foreign ownership');
+    }
+    return { ok: true, mutated: false };
+  }
+  // Bind the API endpoint to the actual local Kind control-plane container.
+  if (process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT || process.env.DOCKER_TLS_VERIFY) throw new Error('Docker endpoint override refused');
+  const context = run('docker', ['context', 'show']);
+  if (!context.ok || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())) throw new Error('Docker context unreadable');
+  const endpoint = run('docker', ['context', 'inspect', context.stdout.trim(), '--format', '{{json .Endpoints.docker.Host}}']);
+  if (!endpoint.ok || !/^unix:\/\/\//.test(JSON.parse(endpoint.stdout))) throw new Error('nonlocal Docker endpoint');
+  const node = run('docker', ['inspect', profile.clusterName + '-control-plane']);
+  if (!node.ok) throw new Error('release control-plane unreadable');
+  const containers = JSON.parse(node.stdout);
+  const cp = containers[0];
+  const bindings = cp?.NetworkSettings?.Ports?.['6443/tcp'] ?? [];
+  if (containers.length !== 1 || cp?.Config?.Labels?.['io.x-k8s.kind.cluster'] !== profile.clusterName ||
+      cp?.Config?.Labels?.['io.x-k8s.kind.role'] !== 'control-plane' || cp?.State?.Running !== true ||
+      !bindings.some(b => b.HostIp === '127.0.0.1' && b.HostPort === String(RELEASE_API_PORT))) {
+    throw new Error('release control-plane identity mismatch');
+  }
+  const config = run('kubectl', ['--context', profile.contextName, 'config', 'view', '--minify', '-o', 'json']);
+  if (!config.ok) throw new Error('release kubeconfig unreadable');
+  const body = JSON.parse(config.stdout);
+  if (body.users?.some(u => u.user?.exec || u.user?.['auth-provider']) || body.clusters?.some(c => c.cluster?.['proxy-url'])) throw new Error('external authentication or proxy refused');
+  const created = run('kubectl', ['--context', profile.contextName, 'create', '-f', '-'], {
+    input: JSON.stringify({ apiVersion: 'v1', kind: 'Namespace', metadata: { name: spec.name, labels: { [profile.ownerLabel + '/lab']: profile.ownerValue } } }),
+  });
+  if (!created.ok) throw new Error('release baseline creation failed');
+  assertPlatformTarget('release', { run });
+  return { ok: true, mutated: true };
 }

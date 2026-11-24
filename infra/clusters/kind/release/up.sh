@@ -35,6 +35,7 @@ COMMON_ROOT="$(cd "$LAB_ROOT/../common" && pwd)"
 "${KUBECTL[@]}" apply -f "$COMMON_ROOT/local-path-storage.yaml"
 "${KUBECTL[@]}" -n local-path-storage wait --for=condition=Available deployment/local-path-provisioner --timeout=180s
 assert_loopback_only
+node "$LAB_ROOT/../../../platform/common/release-baseline.mjs"
 
 snapshot_volumes "$work/volumes-after"
 snapshot_foreign_contexts "$work/contexts-after"
