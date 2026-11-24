@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeDevSessionJsonAtomically } from './dev-session-json.mjs';
 import { join, resolve } from 'node:path';
 import { assessOwnedProcess } from './dev-process-identity.mjs';
 import {
@@ -47,9 +48,16 @@ export function parseDevCliArgs(argv) {
     if (arg === '--instance') {
       const value = args[index + 1];
       if (!value || value.startsWith('-')) {
-        throw refusal('invalid-arguments', '--instance requires an environment id.');
+        throw refusal(
+          'invalid-arguments',
+          '--instance requires an environment id.',
+        );
       }
-      if (instance) throw refusal('conflicting-arguments', '--instance was provided more than once.');
+      if (instance)
+        throw refusal(
+          'conflicting-arguments',
+          '--instance was provided more than once.',
+        );
       instance = value;
       index += 1;
       continue;
@@ -57,18 +65,34 @@ export function parseDevCliArgs(argv) {
     if (arg.startsWith('-')) {
       throw refusal('invalid-arguments', `Unknown argument: ${arg}`);
     }
-    if (arg !== 'status' && arg !== 'stop' && arg !== 'new' && arg !== 'reserve' && arg !== 'attach') {
+    if (
+      arg !== 'status' &&
+      arg !== 'stop' &&
+      arg !== 'new' &&
+      arg !== 'reserve' &&
+      arg !== 'attach'
+    ) {
       throw refusal('invalid-arguments', `Unknown command: ${arg}`);
     }
-    if (sawCommand) throw refusal('conflicting-arguments', 'Only one dev command is allowed.');
+    if (sawCommand)
+      throw refusal(
+        'conflicting-arguments',
+        'Only one dev command is allowed.',
+      );
     command = arg;
     sawCommand = true;
   }
   if (command === 'new' && instance) {
-    throw refusal('conflicting-arguments', 'dev:new allocates an id; do not also pass --instance.');
+    throw refusal(
+      'conflicting-arguments',
+      'dev:new allocates an id; do not also pass --instance.',
+    );
   }
   if (command === 'reserve' && instance) {
-    throw refusal('conflicting-arguments', 'dev:reserve does not accept --instance.');
+    throw refusal(
+      'conflicting-arguments',
+      'dev:reserve does not accept --instance.',
+    );
   }
   if (command === 'attach' && !instance) {
     throw refusal('invalid-arguments', 'dev:attach requires --instance.');
@@ -84,9 +108,16 @@ function ownerFromEitherRegistry(registryRoot, slotId) {
   const raw = readRegistryJson(registryRoot);
   if (!raw) throw refusal('registry-corrupt', 'Dev registry is missing.');
   if (raw.version === 2) return getEnvironment(registryRoot, slotId);
-  if (raw.version !== 1) throw refusal('registry-version', `Unsupported registry version: ${raw.version}`);
-  const match = Object.values(raw.ownersByWorktree).find((record) => record.slotId === slotId);
-  if (!match) throw refusal('unknown-environment', `Unknown environment id: ${slotId}`);
+  if (raw.version !== 1)
+    throw refusal(
+      'registry-version',
+      `Unsupported registry version: ${raw.version}`,
+    );
+  const match = Object.values(raw.ownersByWorktree).find(
+    (record) => record.slotId === slotId,
+  );
+  if (!match)
+    throw refusal('unknown-environment', `Unknown environment id: ${slotId}`);
   return match;
 }
 
@@ -117,7 +148,10 @@ export function resolveDevEnvironmentSelection(input) {
   const raw = readRegistryJson(input.registryRoot);
   if (input.command === 'new') {
     if (!raw || raw.version !== 2) {
-      throw refusal('registry-version', 'dev:new requires registry v2 and does not migrate it.');
+      throw refusal(
+        'registry-version',
+        'dev:new requires registry v2 and does not migrate it.',
+      );
     }
     const allocate = input.allocate ?? allocateIndependentEnvironment;
     const record = allocate(checkout, input.registryRoot);
@@ -126,11 +160,17 @@ export function resolveDevEnvironmentSelection(input) {
   if (input.instance) {
     const record = ownerFromEitherRegistry(input.registryRoot, input.instance);
     if (record.worktreePath === null) {
-      throw refusal('unattached-environment', `${record.slotId} is not attached to this checkout.`);
+      throw refusal(
+        'unattached-environment',
+        `${record.slotId} is not attached to this checkout.`,
+      );
     }
     const bound = resolve(String(record.worktreePath));
     if (bound !== checkout) {
-      throw refusal('foreign-checkout', `${record.slotId} belongs to another checkout.`);
+      throw refusal(
+        'foreign-checkout',
+        `${record.slotId} belongs to another checkout.`,
+      );
     }
     return {
       action: input.command,
@@ -142,12 +182,17 @@ export function resolveDevEnvironmentSelection(input) {
     const existing = getDefaultEnvironment(input.registryRoot, checkout);
     if (existing) return { action: 'up', record: existing, checkout };
     const allocate = input.allocate ?? allocateIndependentEnvironment;
-    const record = allocate(checkout, input.registryRoot, { setAsDefault: true });
+    const record = allocate(checkout, input.registryRoot, {
+      setAsDefault: true,
+    });
     return { action: 'up', record, checkout, allocatedDefault: true };
   }
   const record = defaultFromEitherRegistry(input.registryRoot, checkout);
   if (raw?.version === 2 && !record) {
-    throw refusal('missing-default', 'This checkout has no v2 default environment.');
+    throw refusal(
+      'missing-default',
+      'This checkout has no v2 default environment.',
+    );
   }
   return { action: input.command, record, checkout };
 }
@@ -160,7 +205,10 @@ export function resolveDevEnvironmentSelection(input) {
  * @param {{ pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null }} processDeps
  */
 export function ownedEnvironmentSessionPid(registryRoot, owner, processDeps) {
-  const session = readEnvironmentSession(environmentSessionRoot(registryRoot), owner.slotId);
+  const session = readEnvironmentSession(
+    environmentSessionRoot(registryRoot),
+    owner.slotId,
+  );
   if (!session) return null;
   const ownership = assessOwnedProcess(session, processDeps);
   return ownership.owned ? Number(session.pid) : null;
@@ -190,9 +238,9 @@ export function readEnvironmentSession(sessionRoot, slotId) {
  * @param {Record<string, unknown>} session
  */
 export function writeEnvironmentSession(sessionRoot, session) {
-  mkdirSync(sessionRoot, { recursive: true });
-  const file = environmentSessionPath(sessionRoot, String(session.slotId));
-  writeFileSync(file, `${JSON.stringify(session)}\n`, 'utf8');
+  const slotId = String(session.slotId);
+  const file = environmentSessionPath(sessionRoot, slotId);
+  writeDevSessionJsonAtomically(file, session);
 }
 
 /**
@@ -226,28 +274,53 @@ export function readLegacyDevSession(worktree) {
  */
 export function adoptLegacyEnvironmentSession(input) {
   const legacy = readLegacyDevSession(input.owner.worktreePath);
-  if (!legacy) throw refusal('legacy-session-missing', `No legacy session for ${input.owner.slotId}.`);
+  if (!legacy)
+    throw refusal(
+      'legacy-session-missing',
+      `No legacy session for ${input.owner.slotId}.`,
+    );
   const checkout = resolve(input.owner.worktreePath);
   if (resolve(input.worktree) !== checkout) {
-    throw refusal('checkout-mismatch', 'Legacy session checkout does not match the selected source.');
+    throw refusal(
+      'checkout-mismatch',
+      'Legacy session checkout does not match the selected source.',
+    );
   }
   if (legacy.slotId !== input.owner.slotId) {
-    throw refusal('slot-mismatch', `Legacy session ${legacy.slotId} is not ${input.owner.slotId}.`);
+    throw refusal(
+      'slot-mismatch',
+      `Legacy session ${legacy.slotId} is not ${input.owner.slotId}.`,
+    );
   }
   if (legacy.namespace !== input.owner.namespace) {
-    throw refusal('namespace-mismatch', `Legacy namespace ${legacy.namespace} is not ${input.owner.namespace}.`);
+    throw refusal(
+      'namespace-mismatch',
+      `Legacy namespace ${legacy.namespace} is not ${input.owner.namespace}.`,
+    );
   }
-  if (legacy.gamePort !== input.owner.ports.game || legacy.tiltPort !== input.owner.ports.tilt) {
-    throw refusal('port-mismatch', `Legacy ports do not match ${input.owner.slotId}.`);
+  if (
+    legacy.gamePort !== input.owner.ports.game ||
+    legacy.tiltPort !== input.owner.ports.tilt
+  ) {
+    throw refusal(
+      'port-mismatch',
+      `Legacy ports do not match ${input.owner.slotId}.`,
+    );
   }
   const assess = input.assess ?? assessOwnedProcess;
   const tilt = assess(legacy, input.processDeps);
-  const forward = assess({
-    pid: legacy.forwardPid,
-    processStartTicks: legacy.forwardStartTicks,
-  }, input.processDeps);
+  const forward = assess(
+    {
+      pid: legacy.forwardPid,
+      processStartTicks: legacy.forwardStartTicks,
+    },
+    input.processDeps,
+  );
   if (!tilt.owned || !forward.owned) {
-    throw refusal('process-ownership-unverified', `Legacy ${input.owner.slotId} process ownership is ${tilt.reason}/${forward.reason}.`);
+    throw refusal(
+      'process-ownership-unverified',
+      `Legacy ${input.owner.slotId} process ownership is ${tilt.reason}/${forward.reason}.`,
+    );
   }
   const adopted = {
     ...legacy,
@@ -257,11 +330,14 @@ export function adoptLegacyEnvironmentSession(input) {
   writeEnvironmentSession(input.sessionRoot, adopted);
   const receiptDir = join(input.sessionRoot, 'receipts');
   mkdirSync(receiptDir, { recursive: true });
-  writeFileSync(join(receiptDir, `${input.owner.slotId}.json`), `${JSON.stringify({
-    slotId: input.owner.slotId,
-    legacyPath: adopted.adoptedFrom,
-    preserved: true,
-  })}\n`);
+  writeFileSync(
+    join(receiptDir, `${input.owner.slotId}.json`),
+    `${JSON.stringify({
+      slotId: input.owner.slotId,
+      legacyPath: adopted.adoptedFrom,
+      preserved: true,
+    })}\n`,
+  );
   return adopted;
 }
 
@@ -280,32 +356,78 @@ export function adoptLegacyEnvironmentSession(input) {
  * }} input
  */
 export function stopSelectedEnvironment(input) {
-  const session = input.session ?? readEnvironmentSession(input.sessionRoot, input.owner.slotId);
+  const session =
+    input.session ??
+    readEnvironmentSession(input.sessionRoot, input.owner.slotId);
   if (!session) {
-    return { ok: true, idempotent: true, signalled: false, scaled: false, reason: 'already_stopped' };
+    return {
+      ok: true,
+      idempotent: true,
+      signalled: false,
+      scaled: false,
+      reason: 'already_stopped',
+    };
   }
-  if (session.slotId !== input.owner.slotId || session.namespace !== input.owner.namespace) {
-    return { ok: false, signalled: false, scaled: false, reason: 'slot_or_namespace_mismatch' };
+  if (
+    session.slotId !== input.owner.slotId ||
+    session.namespace !== input.owner.namespace
+  ) {
+    return {
+      ok: false,
+      signalled: false,
+      scaled: false,
+      reason: 'slot_or_namespace_mismatch',
+    };
   }
-  if (resolve(String(session.checkoutPath ?? input.owner.worktreePath)) !== resolve(input.owner.worktreePath)) {
-    return { ok: false, signalled: false, scaled: false, reason: 'checkout_mismatch' };
+  if (
+    resolve(String(session.checkoutPath ?? input.owner.worktreePath)) !==
+    resolve(input.owner.worktreePath)
+  ) {
+    return {
+      ok: false,
+      signalled: false,
+      scaled: false,
+      reason: 'checkout_mismatch',
+    };
   }
-  if (session.gamePort !== input.owner.ports.game || session.tiltPort !== input.owner.ports.tilt) {
-    return { ok: false, signalled: false, scaled: false, reason: 'port_mismatch' };
+  if (
+    session.gamePort !== input.owner.ports.game ||
+    session.tiltPort !== input.owner.ports.tilt
+  ) {
+    return {
+      ok: false,
+      signalled: false,
+      scaled: false,
+      reason: 'port_mismatch',
+    };
   }
   const assess = assessOwnedProcess(session, input.processDeps);
   if (!assess.owned) {
     if (assess.reason === 'not_running' || assess.reason === 'missing_pid') {
-      return { ok: true, idempotent: true, signalled: false, scaled: false, reason: 'already_stopped' };
+      return {
+        ok: true,
+        idempotent: true,
+        signalled: false,
+        scaled: false,
+        reason: 'already_stopped',
+      };
     }
-    return { ok: false, signalled: false, scaled: false, reason: assess.reason };
+    return {
+      ok: false,
+      signalled: false,
+      scaled: false,
+      reason: assess.reason,
+    };
   }
   const signal = input.signal ?? (() => {});
   signal(Number(session.pid), 'SIGTERM');
-  const forward = assessOwnedProcess({
-    pid: session.forwardPid,
-    processStartTicks: session.forwardStartTicks,
-  }, input.processDeps);
+  const forward = assessOwnedProcess(
+    {
+      pid: session.forwardPid,
+      processStartTicks: session.forwardStartTicks,
+    },
+    input.processDeps,
+  );
   if (forward.owned) signal(Number(session.forwardPid), 'SIGTERM');
   if (input.scale) input.scale(input.owner.namespace);
   writeEnvironmentSession(input.sessionRoot, {
@@ -313,7 +435,13 @@ export function stopSelectedEnvironment(input) {
     stopped: true,
     stoppedAt: new Date().toISOString(),
   });
-  return { ok: true, idempotent: false, signalled: true, scaled: Boolean(input.scale), reason: 'owned' };
+  return {
+    ok: true,
+    idempotent: false,
+    signalled: true,
+    scaled: Boolean(input.scale),
+    reason: 'owned',
+  };
 }
 
 export const PARKED_APPLICATION_ROLES = Object.freeze([
@@ -327,8 +455,10 @@ export const PARKED_APPLICATION_ROLES = Object.freeze([
 
 function reservationMatchesSession(owner, session) {
   if (!owner.lease) return true;
-  return owner.lease.pid === Number(session.pid)
-    && String(owner.lease.startTimeJiffies) === String(session.processStartTicks);
+  return (
+    owner.lease.pid === Number(session.pid) &&
+    String(owner.lease.startTimeJiffies) === String(session.processStartTicks)
+  );
 }
 
 function desiredAreZero(desired) {
@@ -354,62 +484,175 @@ function desiredAreZero(desired) {
  * }} input
  */
 export function parkSelectedEnvironment(input) {
-  const session = input.session ?? readEnvironmentSession(input.sessionRoot, input.owner.slotId);
-  const readDesired = input.readDesiredReplicas ?? (() => Object.fromEntries(PARKED_APPLICATION_ROLES.map((role) => [role, 0])));
+  const session =
+    input.session ??
+    readEnvironmentSession(input.sessionRoot, input.owner.slotId);
+  const readDesired =
+    input.readDesiredReplicas ??
+    (() =>
+      Object.fromEntries(PARKED_APPLICATION_ROLES.map((role) => [role, 0])));
   const tenantIdentity = {
     namespace: input.owner.namespace,
     resourceUids: input.owner.resourceUids ?? null,
     ports: input.owner.ports,
   };
   if (!session) {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: 'missing_session', tenantIdentity };
+    return {
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: 'missing_session',
+      tenantIdentity,
+    };
   }
-  if (session.slotId !== input.owner.slotId || session.namespace !== input.owner.namespace) {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: 'slot_or_namespace_mismatch', tenantIdentity };
+  if (
+    session.slotId !== input.owner.slotId ||
+    session.namespace !== input.owner.namespace
+  ) {
+    return {
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: 'slot_or_namespace_mismatch',
+      tenantIdentity,
+    };
   }
-  if (resolve(String(session.checkoutPath ?? '')) !== resolve(input.owner.worktreePath)) {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: 'checkout_mismatch', tenantIdentity };
+  if (
+    resolve(String(session.checkoutPath ?? '')) !==
+    resolve(input.owner.worktreePath)
+  ) {
+    return {
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: 'checkout_mismatch',
+      tenantIdentity,
+    };
   }
-  if (input.activeConsumer && session.consumerId && input.activeConsumer !== session.consumerId) {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: 'foreign_consumer', tenantIdentity };
+  if (
+    input.activeConsumer &&
+    session.consumerId &&
+    input.activeConsumer !== session.consumerId
+  ) {
+    return {
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: 'foreign_consumer',
+      tenantIdentity,
+    };
   }
   if (!reservationMatchesSession(input.owner, session)) {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: 'foreign_lease', tenantIdentity };
+    return {
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: 'foreign_lease',
+      tenantIdentity,
+    };
   }
   if (session?.parked === true && input.portOccupied?.(input.owner.ports)) {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: 'conflicting_listener', tenantIdentity };
+    return {
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: 'conflicting_listener',
+      tenantIdentity,
+    };
   }
   const assess = assessOwnedProcess(session, input.processDeps);
-  if (!assess.owned && assess.reason !== 'not_running' && assess.reason !== 'missing_pid') {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: assess.reason, tenantIdentity };
-  }
-  if (session?.parked === true && !assess.owned && !input.owner.lease && desiredAreZero(readDesired(input.owner.namespace))) {
+  if (
+    !assess.owned &&
+    assess.reason !== 'not_running' &&
+    assess.reason !== 'missing_pid'
+  ) {
     return {
-      ok: true, idempotent: true, released: true, signalled: false, scaled: false, reason: 'already_parked', tenantIdentity,
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: assess.reason,
+      tenantIdentity,
+    };
+  }
+  if (
+    session?.parked === true &&
+    !assess.owned &&
+    !input.owner.lease &&
+    desiredAreZero(readDesired(input.owner.namespace))
+  ) {
+    return {
+      ok: true,
+      idempotent: true,
+      released: true,
+      signalled: false,
+      scaled: false,
+      reason: 'already_parked',
+      tenantIdentity,
     };
   }
   const signal = input.signal ?? (() => {});
   const stoppedProcess = (record) => {
     const seen = assessOwnedProcess(record, input.processDeps);
-    return !seen.owned && (seen.reason === 'not_running' || seen.reason === 'missing_pid' || seen.reason === 'start_time_mismatch');
+    return (
+      !seen.owned &&
+      (seen.reason === 'not_running' ||
+        seen.reason === 'missing_pid' ||
+        seen.reason === 'start_time_mismatch')
+    );
   };
   let signalled = false;
   const targets = [];
-  if (assess.owned) targets.push({ pid: session.pid, processStartTicks: session.processStartTicks });
-  const forward = assessOwnedProcess({
-    pid: session.forwardPid,
-    processStartTicks: session.forwardStartTicks,
-  }, input.processDeps);
-  if (forward.owned) targets.push({ pid: session.forwardPid, processStartTicks: session.forwardStartTicks });
-  else if (forward.reason !== 'not_running' && forward.reason !== 'missing_pid' && session.forwardPid) {
-    return { ok: false, released: false, signalled: false, scaled: false, reason: forward.reason, tenantIdentity };
+  if (assess.owned)
+    targets.push({
+      pid: session.pid,
+      processStartTicks: session.processStartTicks,
+    });
+  const forward = assessOwnedProcess(
+    {
+      pid: session.forwardPid,
+      processStartTicks: session.forwardStartTicks,
+    },
+    input.processDeps,
+  );
+  if (forward.owned)
+    targets.push({
+      pid: session.forwardPid,
+      processStartTicks: session.forwardStartTicks,
+    });
+  else if (
+    forward.reason !== 'not_running' &&
+    forward.reason !== 'missing_pid' &&
+    session.forwardPid
+  ) {
+    return {
+      ok: false,
+      released: false,
+      signalled: false,
+      scaled: false,
+      reason: forward.reason,
+      tenantIdentity,
+    };
   }
   // Tilt is recorded first. Its exit is confirmed before the forwarder is signalled.
   for (const target of targets) {
     const again = assessOwnedProcess(target, input.processDeps);
     if (!again.owned) {
       if (stoppedProcess(target)) continue;
-      return { ok: false, released: false, signalled, scaled: false, reason: again.reason, tenantIdentity };
+      return {
+        ok: false,
+        released: false,
+        signalled,
+        scaled: false,
+        reason: again.reason,
+        tenantIdentity,
+      };
     }
     signal(Number(target.pid), 'SIGTERM');
     signalled = true;
@@ -430,7 +673,14 @@ export function parkSelectedEnvironment(input) {
         released: false,
         parked: false,
       });
-      return { ok: false, released: false, signalled, scaled: false, reason: 'process-stop-incomplete', tenantIdentity };
+      return {
+        ok: false,
+        released: false,
+        signalled,
+        scaled: false,
+        reason: 'process-stop-incomplete',
+        tenantIdentity,
+      };
     }
   }
   if (input.portOccupied?.(input.owner.ports)) {
@@ -441,7 +691,14 @@ export function parkSelectedEnvironment(input) {
       released: false,
       parked: false,
     });
-    return { ok: false, released: false, signalled, scaled: false, reason: 'conflicting_listener', tenantIdentity };
+    return {
+      ok: false,
+      released: false,
+      signalled,
+      scaled: false,
+      reason: 'conflicting_listener',
+      tenantIdentity,
+    };
   }
   const scaleRole = input.scaleRole ?? (() => {});
   const scaled = [];
@@ -460,7 +717,13 @@ export function parkSelectedEnvironment(input) {
       parkError: error instanceof Error ? error.message : String(error),
     });
     return {
-      ok: false, released: false, signalled, scaled: false, reason: 'scale_incomplete', tenantIdentity, scaledRoles: scaled,
+      ok: false,
+      released: false,
+      signalled,
+      scaled: false,
+      reason: 'scale_incomplete',
+      tenantIdentity,
+      scaledRoles: scaled,
     };
   }
   const desired = readDesired(input.owner.namespace);
@@ -472,7 +735,14 @@ export function parkSelectedEnvironment(input) {
       released: false,
       scaledRoles: scaled,
     });
-    return { ok: false, released: false, signalled, scaled: true, reason: 'replicas_not_zero', tenantIdentity };
+    return {
+      ok: false,
+      released: false,
+      signalled,
+      scaled: true,
+      reason: 'replicas_not_zero',
+      tenantIdentity,
+    };
   }
   if (input.clearReservation) input.clearReservation(input.owner);
   writeEnvironmentSession(input.sessionRoot, {
@@ -483,5 +753,13 @@ export function parkSelectedEnvironment(input) {
     parkIncomplete: false,
     stoppedAt: new Date().toISOString(),
   });
-  return { ok: true, idempotent: false, released: true, signalled, scaled: true, reason: 'parked', tenantIdentity };
+  return {
+    ok: true,
+    idempotent: false,
+    released: true,
+    signalled,
+    scaled: true,
+    reason: 'parked',
+    tenantIdentity,
+  };
 }
