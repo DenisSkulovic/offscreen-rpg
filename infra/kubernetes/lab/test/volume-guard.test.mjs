@@ -14,7 +14,7 @@ import { describe, test } from 'node:test';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LAB_ROOT = join(HERE, '..');
-const LIB_SH = join(LAB_ROOT, 'lib.sh');
+const LIB_SH = join(HERE, '../../../clusters/kind/release/lib.sh');
 
 const GUARDED_SCRIPTS = [
   'cnpg/install.sh',

@@ -12,7 +12,8 @@ if [[ $# -ne 0 ]]; then
 fi
 
 RELEASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OVERLAY_DIR="${RELEASE_DIR}/overlay"
+OVERLAY_DIR="$(cd "${RELEASE_DIR}/../../workloads/release" && pwd)"
+APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../kubernetes/lab/app-release" && pwd)"
 CONTEXT_NAME="kind-offscreen-lab"
 CLUSTER_NAME="offscreen-lab"
 KUBECTL=(kubectl --context "$CONTEXT_NAME")
@@ -96,9 +97,11 @@ load_image_if_changed() {
   fi
   local local_id node_id
   local_id="$(docker image inspect --format '{{.Id}}' "$image")"
+  # awk exits at the first match and closes the pipe. Under pipefail that SIGPIPE (141)
+  # aborts install before any image load. Other docker/ctr failures still abort.
   node_id="$(docker exec "${CLUSTER_NAME}-control-plane" ctr -n k8s.io images ls 2>/dev/null \
-    | awk -v name="docker.io/library/${image}" '$1 == name { print $3; exit }')"
-  if node "$RELEASE_DIR/kind-image-match.mjs" "$local_id" ${node_id:-}; then
+    | awk -v name="docker.io/library/${image}" '$1 == name { print $3; exit }')" || [[ $? -eq 141 ]]
+  if node "$APP_RELEASE_IMAGE_DIR/kind-image-match.mjs" "$local_id" ${node_id:-}; then
     echo "SKIP unchanged ${image}"
     return 0
   fi
@@ -113,7 +116,7 @@ load_image_if_changed game-authority "$GA_IMAGE"
 load_image_if_changed worker "$WORKER_IMAGE"
 
 echo "Preparing release Secrets from the lab database, object store, and root .env…"
-export OFFSCREEN_REPO_ROOT="$(cd "${RELEASE_DIR}/../../../.." && pwd)"
+export OFFSCREEN_REPO_ROOT="$(cd "${RELEASE_DIR}/../../.." && pwd)"
 python3 - "$CONTEXT_NAME" <<'PY'
 import base64, json, os, secrets, subprocess, sys
 

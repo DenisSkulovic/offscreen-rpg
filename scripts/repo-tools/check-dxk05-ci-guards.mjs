@@ -133,7 +133,7 @@ export function checkDxk05CiGuards(root = repoRoot) {
   );
   assertImagePin(pinText, dockerfileTexts);
 
-  const libPath = path.join(labDir, 'lib.sh');
+  const libPath = path.join(resolved, 'infra/clusters/kind/release/lib.sh');
   const libText = readFileSync(libPath, 'utf8');
   const contextMatch = libText.match(/^CONTEXT_NAME="([^"]+)"/m);
   if (!contextMatch) {

@@ -10,7 +10,7 @@ if [[ $# -ne 0 ]]; then
   exit 2
 fi
 
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
 ACCESS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../object-storage" && pwd)"
 NS=lab-document-access

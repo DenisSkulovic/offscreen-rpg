@@ -11,11 +11,11 @@ import { assertDevWebLiveUpdateContract } from './dev-tiltfile-web.test.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const devTiltfilePath = join(repoRoot, 'infra/kubernetes/lab/dev/Tiltfile');
-const workersYamlPath = join(repoRoot, 'infra/kubernetes/lab/dev/workers.yaml');
+const workersYamlPath = join(repoRoot, 'infra/workloads/dev/workers.yaml');
 const workerPackagePath = join(repoRoot, 'apps/worker/package.json');
 const releaseWorkersPath = join(
   repoRoot,
-  'infra/kubernetes/lab/app-release/overlay/workers.yaml',
+  'infra/workloads/release/workers.yaml',
 );
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
 const workersYaml = readFileSync(workersYamlPath, 'utf8');
@@ -131,7 +131,7 @@ export function assertDevWorkerTiltContract(tiltfile) {
       `expected k8s_resource for ${name}`,
     );
   }
-  assert.match(tiltfile, /k8s_yaml\s*\(\s*['"]workers\.yaml['"]\s*\)/);
+  assert.match(tiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/workers\.yaml['"]\s*\)/);
 }
 
 test('dev Tiltfile worker live_update syncs apps/worker only on worker resources', () => {

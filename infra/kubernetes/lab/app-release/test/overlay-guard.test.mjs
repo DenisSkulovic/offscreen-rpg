@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const appReleaseDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const overlayDir = join(appReleaseDir, 'overlay');
+const repoRoot = join(appReleaseDir, '../../../..');
+const releaseInstallPath = join(repoRoot, 'infra/environments/release/install.sh');
+const overlayDir = join(repoRoot, 'infra/workloads/release');
 const labRoot = join(appReleaseDir, '..');
 const pinnedRuleHash =
   'd643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab';
@@ -207,7 +209,7 @@ exit 2
   chmodSync(kubectlStub, 0o755);
   chmodSync(kindStub, 0o755);
 
-  const result = spawnSync('bash', [join(appReleaseDir, 'install.sh')], {
+  const result = spawnSync('bash', [releaseInstallPath], {
     encoding: 'utf8',
     env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
   });

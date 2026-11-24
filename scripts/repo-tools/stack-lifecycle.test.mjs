@@ -86,8 +86,8 @@ test('up cold path: cluster absent, matching roots => up.sh then install.sh', ()
   });
   assert.equal(plan.ok, true);
   assert.deepEqual(plan.commands, [
-    ['bash', 'infra/kubernetes/lab/up.sh'],
-    ['bash', 'infra/kubernetes/lab/app-release/install.sh'],
+    ['bash', 'infra/clusters/kind/release/up.sh'],
+    ['bash', 'infra/environments/release/install.sh'],
   ]);
   assert.deepEqual(plan.urls, []);
 });
@@ -99,7 +99,7 @@ test('up warm path: cluster present => only install.sh', () => {
     observation: defaultObservation({ clusterPresent: true }),
   });
   assert.equal(plan.ok, true);
-  assert.deepEqual(plan.commands, [['bash', 'infra/kubernetes/lab/app-release/install.sh']]);
+  assert.deepEqual(plan.commands, [['bash', 'infra/environments/release/install.sh']]);
   const flat = plan.commands.flat().join(' ');
   assert.ok(!flat.includes('down.sh'), 'warm up must not include down.sh');
   assert.ok(!/docker\s+volume/i.test(flat), 'warm up must not touch volumes');
@@ -164,7 +164,7 @@ test('reset with exact confirmation => only down.sh', () => {
     observation: defaultObservation(),
   });
   assert.equal(plan.ok, true);
-  assert.deepEqual(plan.commands, [['bash', 'infra/kubernetes/lab/down.sh']]);
+  assert.deepEqual(plan.commands, [['bash', 'infra/clusters/kind/release/down.sh']]);
   assert.deepEqual(plan.urls, []);
 });
 

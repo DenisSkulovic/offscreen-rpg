@@ -8,7 +8,7 @@ Install CloudNativePG 1.30.2 into the existing `offscreen-lab` cluster, then cre
 
 The operator manifest is downloaded from the pinned GitHub release and checked with SHA-256 `ea4cc355b394e10661d30c6b409cefb19029dd973bccb76b1ed8c789985bc68c` before apply. The operator Deployment image is `ghcr.io/cloudnative-pg/cloudnative-pg:1.30.2`. Release 1.30.2 lists Kubernetes 1.34, 1.35, and 1.36. This lab's node image is Kubernetes 1.37.0. The pin is the current operator release; the run below records whether that release became ready on this node.
 
-Scripts and the cluster manifest live in `infra/kubernetes/lab/cnpg/`. Run them from the repository root after `infra/kubernetes/lab/up.sh`.
+Scripts and the cluster manifest live in `infra/kubernetes/lab/cnpg/`. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
 
 ## What it must not do
 
@@ -28,10 +28,10 @@ Deleting the kind cluster does not preserve local-path volumes. The provisioner 
 ## Create, probe, and delete
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/cnpg/install.sh
 infra/kubernetes/lab/cnpg/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the operator, the primary, and the local-path files on the node.

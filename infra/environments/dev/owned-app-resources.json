@@ -2,9 +2,9 @@
   "clusterName": "offscreen-lab",
   "contextName": "kind-offscreen-lab",
   "resetConfirmation": "kind-offscreen-lab",
-  "clusterUp": "infra/kubernetes/lab/up.sh",
-  "clusterReset": "infra/kubernetes/lab/down.sh",
-  "releaseInstall": "infra/kubernetes/lab/app-release/install.sh",
+  "clusterUp": "infra/clusters/kind/release/up.sh",
+  "clusterReset": "infra/clusters/kind/release/down.sh",
+  "releaseInstall": "infra/environments/release/install.sh",
   "preserveNamespaces": ["lab-postgres", "lab-objects", "lab-temporal", "lab-content-bootstrap"],
   "expectedImportRoots": {
     "world": "5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9",

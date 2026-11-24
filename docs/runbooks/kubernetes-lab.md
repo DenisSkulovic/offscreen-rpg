@@ -34,9 +34,9 @@ kind also installs a default StorageClass named `standard` with the same provisi
 ## Create, probe, and delete
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 `up.sh` and `down.sh` take no arguments. They refuse any extra argument so a name cannot be substituted. `smoke.sh` removes its probe pods, Service, and claim when it exits, including after a failure. It does not delete the cluster.

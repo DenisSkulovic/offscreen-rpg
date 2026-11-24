@@ -54,12 +54,12 @@ The store container runs as uid 1000 and gid 1000, which is the `seaweed` accoun
 
 ## Create, smoke, and delete
 
-Create the cluster with `infra/kubernetes/lab/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
+Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/object-storage/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
@@ -85,9 +85,9 @@ The pinned store image is `docker.io/chrislusf/seaweedfs:4.54`. The import recor
 Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-cluster.lock`:
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/object-storage/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 Results from that run on 2026-11-19, branch `change/k8s05-object-storage`, baseline `66f82cac`:

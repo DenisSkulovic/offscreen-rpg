@@ -10,7 +10,7 @@ if [[ $# -ne 0 ]]; then
 fi
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$ROOT/../lib.sh"
+source "$ROOT/../../../clusters/kind/release/lib.sh"
 
 CERT_MANAGER_SHA256="c04a51295adda2b1a775146751f973e787190778c7f35180861d9678876e5c74"
 CLUSTER_OPERATOR_SHA256="3ccd8a7c8a7f319ff21c444f3599829242f3cc1c18ae2dedea170cfcefeb8681"

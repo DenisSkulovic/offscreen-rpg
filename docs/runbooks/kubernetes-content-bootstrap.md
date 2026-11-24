@@ -56,12 +56,12 @@ The cluster comes from [Kubernetes lab](kubernetes-lab.md). The store pin is the
 
 ## Create, smoke, and delete
 
-Create the cluster with `infra/kubernetes/lab/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
+Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/content-bootstrap/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
@@ -87,9 +87,9 @@ Machine: MemAvailable was 6066936 kB before create, 5983168 kB when `up.sh` chec
 Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-cluster.lock` (pid 188308):
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/content-bootstrap/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 Results from that run on 2026-11-19, branch `change/boot02-cluster-pin`, baseline `93d57ca6`:

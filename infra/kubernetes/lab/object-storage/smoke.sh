@@ -10,7 +10,7 @@ if [[ $# -ne 0 ]]; then
   exit 2
 fi
 
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../clusters/kind/release/lib.sh"
 STORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then

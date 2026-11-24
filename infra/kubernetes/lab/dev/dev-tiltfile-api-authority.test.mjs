@@ -7,8 +7,8 @@ import { assertDevWebFallbackContract } from './dev-tiltfile-web.test.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const devTiltfilePath = join(repoRoot, 'infra/kubernetes/lab/dev/Tiltfile');
-const apiYamlPath = join(repoRoot, 'infra/kubernetes/lab/dev/api.yaml');
-const authorityYamlPath = join(repoRoot, 'infra/kubernetes/lab/dev/authority.yaml');
+const apiYamlPath = join(repoRoot, 'infra/workloads/dev/api.yaml');
+const authorityYamlPath = join(repoRoot, 'infra/workloads/dev/authority.yaml');
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
 const apiYaml = readFileSync(apiYamlPath, 'utf8');
 const authorityYaml = readFileSync(authorityYamlPath, 'utf8');
@@ -96,7 +96,7 @@ export function assertDevTiltReadinessNotBlind(tiltfile) {
 
 test('dev Tiltfile game-api live_update syncs apps/api only', () => {
   assertDevApiTiltContract(devTiltfile);
-  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]api\.yaml['"]\s*\)/);
+  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/api\.yaml['"]\s*\)/);
   assert.match(
     devTiltfile,
     /k8s_resource\s*\(\s*['"]game-api['"][\s\S]*?port_forwards\s*=\s*\[[\s\S]*?['"]127\.0\.0\.1:3001:3001['"]/,
@@ -105,7 +105,7 @@ test('dev Tiltfile game-api live_update syncs apps/api only', () => {
 
 test('dev Tiltfile game-authority live_update syncs apps/game-authority only', () => {
   assertDevGaTiltContract(devTiltfile);
-  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]authority\.yaml['"]\s*\)/);
+  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/authority\.yaml['"]\s*\)/);
   assert.match(
     devTiltfile,
     /k8s_resource\s*\(\s*['"]game-authority['"][\s\S]*?port_forwards\s*=\s*\[[\s\S]*?['"]127\.0\.0\.1:3002:3002['"]/,

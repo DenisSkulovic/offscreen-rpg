@@ -8,9 +8,9 @@ import {
   CONTEXT_NAME,
   RELEASE_IMAGES,
   runTurn03Preflight,
-} from './turn03/preflight.mjs';
-import { TURN03_MANDATORY_GATE_IDS } from './turn03/report.mjs';
-import { runTurn03ColdTrace } from './turn03/run.mjs';
+} from '../../kubernetes/lab/app-release/turn03/preflight.mjs';
+import { TURN03_MANDATORY_GATE_IDS } from '../../kubernetes/lab/app-release/turn03/report.mjs';
+import { runTurn03ColdTrace } from '../../kubernetes/lab/app-release/turn03/run.mjs';
 
 export const DEV_CONTEXT_NAME = 'kind-offscreen-dev';
 export const KNOWN_MIGRATION_JOB = 'game-migrate';
@@ -58,7 +58,7 @@ export const RELEASE_ACCEPTANCE_PLAN_STAGES = Object.freeze([
   {
     id: 'cluster-release-install',
     mode: 'mutating-gated',
-    summary: `Plan overlay apply via app-release/${INSTALL_SCRIPT} on ${CONTEXT_NAME} only`,
+    summary: `Plan overlay apply via environments/release/${INSTALL_SCRIPT} on ${CONTEXT_NAME} only`,
     turn03GateIds: ['cluster-real-app'],
   },
   {
@@ -209,7 +209,7 @@ export function classifyForeignKubeContext(contextName) {
 
 /**
  * @param {readonly ReleaseAcceptancePlanStage[]} template
- * @param {import('./turn03/report.mjs').Turn03DistributedPocProofReport} turn03Report
+ * @param {import('../../kubernetes/lab/app-release/turn03/report.mjs').Turn03DistributedPocProofReport} turn03Report
  */
 export function classifyReleasePlanStages(template, turn03Report) {
   /** @type {Record<string, string>} */

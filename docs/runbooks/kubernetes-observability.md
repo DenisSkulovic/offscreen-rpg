@@ -54,10 +54,10 @@ Hold the shared cluster lock for the whole sequence. If `up.sh` says the cluster
 ```bash
 exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/observability/install.sh
 infra/kubernetes/lab/observability/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 `install.sh` and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `down.sh` deletes the kind cluster. It does not delete Compose volumes.

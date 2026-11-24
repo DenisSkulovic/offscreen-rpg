@@ -60,12 +60,12 @@ The cluster comes from [Kubernetes lab](kubernetes-lab.md). The store pin is the
 
 ## Create, smoke, and delete
 
-Create the cluster with `infra/kubernetes/lab/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
+Create the cluster with `infra/clusters/kind/release/up.sh` first. Then, from the repository root, using context `kind-offscreen-lab`:
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/document-access/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
@@ -89,9 +89,9 @@ Machine: MemAvailable was 7745856 kB before create, 7677808 kB when `up.sh` chec
 Commands, from the repository root, in one shell holding `/tmp/offscreen-k8s-cluster.lock`:
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/document-access/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 Results from that run on 2026-11-19, branch `change/data05-shared-object`, baseline `25d75a9a`:

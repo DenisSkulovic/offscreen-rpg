@@ -14,7 +14,7 @@ A separate worker image runs one toy workflow, `labOnce`, on task queue `lab-onc
 
 The server container limits are 700m CPU and 768Mi memory. PostgreSQL limits are 500m CPU and 384Mi memory. The worker limits are 500m CPU and 640Mi memory. There is no authorizer. `--allow-no-auth` is a lab limit, not a production authentication design.
 
-Scripts and manifests live in `infra/kubernetes/lab/temporal/`. Run them from the repository root after `infra/kubernetes/lab/up.sh`.
+Scripts and manifests live in `infra/kubernetes/lab/temporal/`. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
 
 ## What it must not do
 
@@ -35,10 +35,10 @@ Deleting the kind cluster does not preserve local-path volumes. The provisioner 
 ## Create, probe, and delete
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/temporal/install.sh
 infra/kubernetes/lab/temporal/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 `install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the server, the worker, PostgreSQL, and the local-path files on the node.
@@ -64,10 +64,10 @@ Pinned images: `docker.io/temporalio/server:1.32.2` digest `sha256:7bf69188a6232
 Commands, from the repository root:
 
 ```bash
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/temporal/install.sh
 infra/kubernetes/lab/temporal/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 The server command was `temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start`. `temporal-server --version` printed `temporal version 1.32.2`. The admin CLI printed `temporal version 1.10.0 (Server 1.32.2, UI 2.56.1)`. Postgres printed `postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)`. Cluster health was `SERVING`. Claim `temporal-postgres` was Bound on `local-path`. Both Services were ClusterIP. The API container published `127.0.0.1:6443` only.

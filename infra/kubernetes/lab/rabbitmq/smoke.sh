@@ -10,7 +10,7 @@ if [[ $# -ne 0 ]]; then
 fi
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$ROOT/../lib.sh"
+source "$ROOT/../../../clusters/kind/release/lib.sh"
 NS=messaging
 POD=lab-broker-server-0
 

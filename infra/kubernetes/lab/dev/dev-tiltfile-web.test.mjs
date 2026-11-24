@@ -67,7 +67,7 @@ export function assertDevWebFallbackContract(tiltfile) {
 
 test('dev Tiltfile live_update syncs apps/web with dependency fallbacks', () => {
   assertDevWebLiveUpdateContract(devTiltfile);
-  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]web\.yaml['"]\s*\)/);
+  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/web\.yaml['"]\s*\)/);
   assert.match(
     devTiltfile,
     /k8s_resource\(\s*'game-web',\s*port_forwards=\['127\.0\.0\.1:' \+ OFFSCREEN_DEV_GAME_PORT \+ ':3000'\]/,

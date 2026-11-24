@@ -8,7 +8,7 @@ Install one maintained Gateway API controller on the existing `offscreen-lab` cl
 
 The shared kind configuration does not publish a workload port. This procedure does not change that file. The host reaches the Gateway only by `kubectl port-forward` bound to `127.0.0.1`.
 
-Manifests and scripts live in `infra/kubernetes/lab/gateway/`. Run them from the repository root, after `infra/kubernetes/lab/up.sh`, and before `infra/kubernetes/lab/down.sh`.
+Manifests and scripts live in `infra/kubernetes/lab/gateway/`. Run them from the repository root, after `infra/clusters/kind/release/up.sh`, and before `infra/clusters/kind/release/down.sh`.
 
 ## Plain loopback exception
 
@@ -68,10 +68,10 @@ Hold the shared cluster lock for the whole sequence. If `up.sh` says the cluster
 ```bash
 exec 9>/tmp/offscreen-k8s-cluster.lock
 flock 9
-infra/kubernetes/lab/up.sh
+infra/clusters/kind/release/up.sh
 infra/kubernetes/lab/gateway/install.sh
 infra/kubernetes/lab/gateway/smoke.sh
-infra/kubernetes/lab/down.sh
+infra/clusters/kind/release/down.sh
 ```
 
 `install.sh` and `smoke.sh` take no arguments. They use `kubectl --context kind-offscreen-lab`. `smoke.sh` opens `127.0.0.1:18080` only for the probe and closes that port-forward when it exits. `down.sh` deletes the kind cluster. It does not delete Compose volumes.

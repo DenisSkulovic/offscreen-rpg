@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { runStackPreflight } from './stack-preflight.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const OWNED_RESOURCES_PATH = join(REPO_ROOT, 'infra/kubernetes/lab/dev/owned-app-resources.json');
+const OWNED_RESOURCES_PATH = join(REPO_ROOT, 'infra/environments/dev/owned-app-resources.json');
 
 /** @typedef {'up' | 'down' | 'reset'} StackLifecycleCommand */
 

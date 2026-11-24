@@ -141,10 +141,10 @@ if SLOT_SESSION:
     for name in ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay']:
         k8s_resource(name)
 else:
-    k8s_yaml('web.yaml')
-    k8s_yaml('api.yaml')
-    k8s_yaml('authority.yaml')
-    k8s_yaml('workers.yaml')
+    k8s_yaml('infra/workloads/dev/web.yaml')
+    k8s_yaml('infra/workloads/dev/api.yaml')
+    k8s_yaml('infra/workloads/dev/authority.yaml')
+    k8s_yaml('infra/workloads/dev/workers.yaml')
     k8s_resource(
         'game-web',
         port_forwards=['127.0.0.1:' + OFFSCREEN_DEV_GAME_PORT + ':3000'],

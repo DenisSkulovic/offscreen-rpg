@@ -82,7 +82,7 @@ test('warm up runs only install.sh and stops when it fails', () => {
       return { status: 1, stderr: 'migration failed' };
     },
   );
-  assert.deepEqual(ran, [['bash', 'infra/kubernetes/lab/app-release/install.sh']]);
+  assert.deepEqual(ran, [['bash', 'infra/environments/release/install.sh']]);
   assert.equal(result.ok, false);
   assert.equal(result.messages[0], 'migration failed');
   assert.equal(result.ran.some((argv) => argv.join(' ').includes('volume')), false);

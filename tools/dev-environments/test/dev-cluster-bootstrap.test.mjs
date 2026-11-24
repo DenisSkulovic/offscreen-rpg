@@ -49,7 +49,7 @@ test('plan names the dev cluster, loopback API, and a port other than the releas
   assert.equal(plan.releasePresent, true);
   assert.deepEqual(plan.actions, []);
   assert.deepEqual(plan.refusals, []);
-  const committed = readFileSync(join(here, '../../../infra/kubernetes/lab/dev/kind.yaml'), 'utf8');
+  const committed = readFileSync(join(here, '../../../infra/clusters/kind/dev/kind.yaml'), 'utf8');
   assert.match(committed, /127\.0\.0\.1/);
   assert.doesNotMatch(committed, /apiServerPort:\s*6443/);
   assert.doesNotMatch(committed, new RegExp(`name:\\s*${RELEASE_KIND_CLUSTER_NAME}`));

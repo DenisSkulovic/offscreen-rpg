@@ -15,8 +15,8 @@ export const NODE_IMAGE = 'kindest/node:v1.37.0';
 export const PREREQ_COMMANDS = Object.freeze(['docker', 'kind', 'kubectl']);
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const KIND_YAML_PATH = join(REPO_ROOT, 'infra/kubernetes/lab/kind.yaml');
-const LIB_SH_PATH = join(REPO_ROOT, 'infra/kubernetes/lab/lib.sh');
+const KIND_YAML_PATH = join(REPO_ROOT, 'infra/clusters/kind/release/kind.yaml');
+const LIB_SH_PATH = join(REPO_ROOT, 'infra/clusters/kind/release/lib.sh');
 
 /** @typedef {{ id: string, message: string }} StackPreflightRefusal */
 
