@@ -1,0 +1,4 @@
+section: all
+namespace: placeholder-ns
+images:
+  postgres: placeholder-postgres

@@ -6,15 +6,14 @@ import test from 'node:test';
 import {
   checkLabManifests,
   collectLabYamlFiles,
+  discoverImplementedPlatformCharts,
   isExcludedFromRawYamlScan,
+  isPlatformServiceTemplatePath,
   parseLabYamlFile,
 } from './check-lab-manifests.mjs';
 import { fileURLToPath } from 'node:url';
 
-const repoRoot = join(
-  fileURLToPath(new URL('.', import.meta.url)),
-  '../..',
-);
+const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '../..');
 const releaseEnvRoot = join(repoRoot, 'infra/environments/release');
 
 test('infra tree contains Kubernetes YAML manifests', () => {
@@ -40,10 +39,42 @@ test('raw yaml scan skips helm chart templates only', () => {
   assert.ok(files.some((file) => file.endsWith('profiles/release.yaml')));
   assert.ok(!files.some((file) => file.includes('chart/templates/')));
   assert.equal(
-    isExcludedFromRawYamlScan(join(workloadsRoot, 'chart/templates/deployments.yaml')),
+    isExcludedFromRawYamlScan(
+      join(workloadsRoot, 'chart/templates/deployments.yaml'),
+    ),
     true,
   );
-  assert.equal(isExcludedFromRawYamlScan(join(workloadsRoot, 'chart/values.yaml')), false);
+  assert.equal(
+    isExcludedFromRawYamlScan(join(workloadsRoot, 'chart/values.yaml')),
+    false,
+  );
+});
+
+test('raw yaml scan skips platform chart templates and offline fixtures', () => {
+  const platformRoot = join(repoRoot, 'infra/platform');
+  const files = collectLabYamlFiles(platformRoot);
+  assert.ok(!files.some((file) => file.includes('tiny-chart/templates/')));
+  assert.ok(!files.some((file) => file.includes('/chart/templates/')));
+  const postgresTemplate = join(
+    platformRoot,
+    'postgres/chart/templates/cluster.yaml',
+  );
+  assert.equal(isPlatformServiceTemplatePath(postgresTemplate), true);
+  assert.equal(isExcludedFromRawYamlScan(postgresTemplate), false);
+
+  const fixtureTemplate = join(
+    platformRoot,
+    'common/tests/fixtures/tiny-chart/templates/manifests.yaml',
+  );
+  assert.equal(isExcludedFromRawYamlScan(fixtureTemplate), true);
+});
+
+test('implemented platform charts are discovered without requiring future services', () => {
+  const charts = discoverImplementedPlatformCharts();
+  assert.deepEqual(
+    charts.map((chart) => chart.service),
+    [],
+  );
 });
 
 test('explicit --root scan skips helm validation', () => {
@@ -60,9 +91,12 @@ test('deliberately invalid YAML fails the checker', () => {
     'apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: [unclosed\n',
     'utf8',
   );
-  assert.throws(() => parseLabYamlFile(bad), (error) => {
-    assert.ok(error);
-    return true;
-  });
+  assert.throws(
+    () => parseLabYamlFile(bad),
+    (error) => {
+      assert.ok(error);
+      return true;
+    },
+  );
   assert.throws(() => checkLabManifests(dir));
 });

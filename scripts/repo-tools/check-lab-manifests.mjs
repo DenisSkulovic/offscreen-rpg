@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 /**
  * Parse Kubernetes YAML under the relocated platform, verification, cluster, and release trees.
- * Static files under infra/workloads/chart/templates are validated via Helm lint/template instead.
+ * Helm chart template directories are validated via Helm lint/template instead.
  *
  * Usage:
  *   node scripts/repo-tools/check-lab-manifests.mjs [--root DIR]
  */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import {
+  PLATFORM_SERVICES,
+  assertPlatformRenderRequest,
+  lintPlatformChart,
+  renderPlatformDocuments,
+} from '../../infra/platform/common/render.mjs';
 import { deriveDevWorkloadBindings } from '../../infra/workloads/tests/helpers/dev-bindings.mjs';
 import {
   assertHelmAvailable,
@@ -21,8 +27,8 @@ const REPO_ROOT = path.join(
   '../..',
 );
 const WORKLOADS_ROOT = path.join(REPO_ROOT, 'infra/workloads');
+const PLATFORM_ROOT = path.join(REPO_ROOT, 'infra/platform');
 const CHART_PATH = path.join(WORKLOADS_ROOT, 'chart');
-const CHART_TEMPLATES_DIR = path.join(CHART_PATH, 'templates');
 const RELEASE_PROFILE = path.join(WORKLOADS_ROOT, 'profiles/release.yaml');
 const DEV_PROFILE = path.join(WORKLOADS_ROOT, 'profiles/development.yaml');
 
@@ -42,6 +48,24 @@ const RELEASE_DEPLOYMENT_NAMES = [
   'game-executor',
   'game-relay',
 ];
+
+/** @type {Record<string, string[]>} */
+const PLATFORM_SECTIONS_BY_SERVICE = {
+  postgres: ['all', 'namespace', 'cluster'],
+  temporal: [
+    'all',
+    'namespace',
+    'postgres',
+    'schema',
+    'server',
+    'admin',
+    'namespace-job',
+  ],
+  'object-storage': ['all', 'namespace', 'workloads'],
+  redis: ['all'],
+  rabbitmq: ['all', 'namespace', 'broker'],
+  observability: ['all'],
+};
 
 const PYTHON_PARSE = `
 import pathlib
@@ -64,6 +88,54 @@ except yaml.YAMLError as error:
     sys.exit(1)
 `;
 
+const CHART_PACKAGE_ASSERT = `
+import json
+import pathlib
+import sys
+
+import yaml
+
+chart_dir = pathlib.Path(sys.argv[1])
+chart_yaml = chart_dir / "Chart.yaml"
+try:
+    data = yaml.safe_load(chart_yaml.read_text(encoding="utf-8"))
+except yaml.YAMLError as error:
+    print(f"Chart.yaml parse error: {error}", file=sys.stderr)
+    sys.exit(1)
+
+if data.get("apiVersion") != "v2":
+    print(f"Chart.yaml apiVersion must be v2, got {data.get('apiVersion')!r}", file=sys.stderr)
+    sys.exit(1)
+if data.get("version") != "0.1.0":
+    print(f"Chart.yaml version must be 0.1.0, got {data.get('version')!r}", file=sys.stderr)
+    sys.exit(1)
+if data.get("type") != "application":
+    print(f"Chart.yaml type must be application, got {data.get('type')!r}", file=sys.stderr)
+    sys.exit(1)
+
+for name in ("values.schema.json", "templates", "profiles"):
+    target = chart_dir / name
+    if not target.exists():
+        print(f"missing required chart path: {target}", file=sys.stderr)
+        sys.exit(1)
+    if name in ("templates", "profiles") and not target.is_dir():
+        print(f"{name} must be a directory: {target}", file=sys.stderr)
+        sys.exit(1)
+
+profiles = chart_dir / "profiles"
+allowed_profiles = {"development.yaml", "release.yaml"}
+for entry in profiles.iterdir():
+    if not entry.is_file():
+        continue
+    if entry.suffix not in (".yaml", ".yml"):
+        continue
+    if entry.name not in allowed_profiles:
+        print(f"unknown profile file: {entry.name}", file=sys.stderr)
+        sys.exit(1)
+
+print(json.dumps({"ok": True}))
+`;
+
 function isYamlFile(name) {
   return name.endsWith('.yaml') || name.endsWith('.yml');
 }
@@ -73,8 +145,59 @@ function isYamlFile(name) {
  */
 export function isExcludedFromRawYamlScan(filePath) {
   const resolved = path.resolve(filePath);
-  const relative = path.relative(CHART_TEMPLATES_DIR, resolved);
-  return !relative.startsWith('..') && !path.isAbsolute(relative);
+  const parts = resolved.split(path.sep);
+  const templatesIdx = parts.lastIndexOf('templates');
+  if (templatesIdx < 1 || parts[templatesIdx] !== 'templates') {
+    return false;
+  }
+  const chartDir = parts.slice(0, templatesIdx).join(path.sep);
+  return existsSync(path.join(chartDir, 'Chart.yaml'));
+}
+
+/**
+ * @param {string} filePath
+ */
+export function isPlatformServiceTemplatePath(filePath) {
+  const resolved = path.resolve(filePath);
+  for (const service of PLATFORM_SERVICES) {
+    const templatesDir = path.join(
+      PLATFORM_ROOT,
+      service,
+      'chart',
+      'templates',
+    );
+    const relative = path.relative(templatesDir, resolved);
+    if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @returns {{ service: string, chartDir: string }[]}
+ */
+export function discoverImplementedPlatformCharts() {
+  /** @type {{ service: string, chartDir: string }[]} */
+  const charts = [];
+  for (const service of PLATFORM_SERVICES) {
+    const chartDir = path.join(PLATFORM_ROOT, service, 'chart');
+    if (existsSync(path.join(chartDir, 'Chart.yaml'))) {
+      charts.push({ service, chartDir });
+    }
+  }
+  charts.sort((a, b) => a.service.localeCompare(b.service));
+  return charts;
+}
+
+/**
+ * @param {string} chartDir
+ */
+export function assertPlatformChartPackage(chartDir) {
+  execFileSync('python3', ['-c', CHART_PACKAGE_ASSERT, chartDir], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
 }
 
 /**
@@ -122,7 +245,11 @@ export function parseLabYamlFile(filePath) {
  * @param {number} expectedCount
  * @param {string[]} deploymentNames
  */
-export function assertRenderedDeployments(documents, expectedCount, deploymentNames) {
+export function assertRenderedDeployments(
+  documents,
+  expectedCount,
+  deploymentNames,
+) {
   if (documents.length !== expectedCount) {
     throw new Error(
       `expected ${expectedCount} rendered manifest documents, got ${documents.length}`,
@@ -153,11 +280,9 @@ function helmLint(argv, options = {}) {
 }
 
 /**
- * @returns {{ releaseDocumentCount: number, devSlotCounts: Record<string, number> }}
+ * @returns {Omit<ReturnType<typeof validateHelmManifests>, 'helmVersion' | 'platform'>}
  */
 export function validateWorkloadHelmManifests() {
-  const helmVersion = assertHelmAvailable();
-
   helmLint(['lint', CHART_PATH, '-f', RELEASE_PROFILE]);
 
   const devSlots = [
@@ -180,14 +305,67 @@ export function validateWorkloadHelmManifests() {
     devSlotCounts[slotId] = docs.length;
   }
 
-  const releaseDocs = renderWorkloadDocuments({ profile: 'release', section: 'all' });
+  const releaseDocs = renderWorkloadDocuments({
+    profile: 'release',
+    section: 'all',
+  });
   assertRenderedDeployments(releaseDocs, 12, RELEASE_DEPLOYMENT_NAMES);
 
   return {
-    helmVersion,
     releaseDocumentCount: releaseDocs.length,
     devSlotCounts,
   };
+}
+
+/**
+ * @returns {{ services: string[], renderCounts: Record<string, Record<string, Record<string, number>>> }}
+ */
+export function validatePlatformHelmManifests() {
+  const charts = discoverImplementedPlatformCharts();
+  /** @type {Record<string, Record<string, Record<string, number>>>} */
+  const renderCounts = {};
+
+  for (const { service, chartDir } of charts) {
+    assertPlatformChartPackage(chartDir);
+    renderCounts[service] = { dev: {}, release: {} };
+
+    for (const profile of ['dev', 'release']) {
+      try {
+        assertPlatformRenderRequest(service, profile, 'all');
+      } catch {
+        continue;
+      }
+      lintPlatformChart({ service, profile }, { chartRoot: chartDir });
+
+      for (const section of PLATFORM_SECTIONS_BY_SERVICE[service] ?? []) {
+        try {
+          assertPlatformRenderRequest(service, profile, section);
+        } catch {
+          continue;
+        }
+        const docs = renderPlatformDocuments(
+          { service, profile, section },
+          { chartRoot: chartDir },
+        );
+        renderCounts[service][profile][section] = docs.length;
+      }
+    }
+  }
+
+  return {
+    services: charts.map((chart) => chart.service),
+    renderCounts,
+  };
+}
+
+/**
+ * @returns {{ helmVersion: string, releaseDocumentCount: number, devSlotCounts: Record<string, number>, platform: ReturnType<typeof validatePlatformHelmManifests> }}
+ */
+export function validateHelmManifests() {
+  const helmVersion = assertHelmAvailable();
+  const workload = validateWorkloadHelmManifests();
+  const platform = validatePlatformHelmManifests();
+  return { helmVersion, ...workload, platform };
 }
 
 /**
@@ -210,10 +388,10 @@ export function checkLabManifests(roots = DEFAULT_ROOTS, options = {}) {
     parseLabYamlFile(file);
   }
 
-  /** @type {ReturnType<typeof validateWorkloadHelmManifests> | null} */
+  /** @type {ReturnType<typeof validateHelmManifests> | null} */
   let helm = null;
   if (options.helm === true) {
-    helm = validateWorkloadHelmManifests();
+    helm = validateHelmManifests();
   }
 
   return {
@@ -233,9 +411,15 @@ function main(argv = process.argv.slice(2)) {
   }
   const rootIdx = argv.indexOf('--root');
   const root = rootIdx !== -1 ? argv[rootIdx + 1] : undefined;
-  const result = checkLabManifests(root ? [root] : DEFAULT_ROOTS, { helm: !root });
+  const result = checkLabManifests(root ? [root] : DEFAULT_ROOTS, {
+    helm: !root,
+  });
+  const platformSuffix =
+    result.helm && result.helm.platform.services.length > 0
+      ? `; platform charts ${result.helm.platform.services.join(', ')}`
+      : '';
   const helmSuffix = result.helm
-    ? `; helm ${result.helm.helmVersion} lint/template release + dev-1/dev-2 (${result.helm.releaseDocumentCount} release docs)`
+    ? `; helm ${result.helm.helmVersion} lint/template release + dev-1/dev-2 (${result.helm.releaseDocumentCount} release docs)${platformSuffix}`
     : '';
   console.log(
     `Parsed ${result.fileCount} lab Kubernetes manifest file(s) under ${result.roots.join(', ')}${helmSuffix}`,

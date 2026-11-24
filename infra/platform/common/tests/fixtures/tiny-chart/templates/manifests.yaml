@@ -1,0 +1,11 @@
+{{- include "platform-fixture.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $ctx := . -}}
+{{- if or (eq $section "all") (eq $section "namespace") -}}
+{{- include "platform-fixture.jsonFrom" (dict "name" "platform-fixture.doc.namespace" "ctx" $ctx) -}}
+{{- end -}}
+{{- if or (eq $section "all") (eq $section "cluster") -}}
+{{- if eq .Values.mode "release" -}}
+{{- include "platform-fixture.jsonFrom" (dict "name" "platform-fixture.doc.cluster" "ctx" $ctx) -}}
+{{- end -}}
+{{- end -}}

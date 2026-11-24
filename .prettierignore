@@ -8,3 +8,10 @@ README.md
 AGENTS.md
 packages/db/migrations/meta
 infra/workloads/chart/templates/**
+infra/platform/postgres/chart/templates/**
+infra/platform/temporal/chart/templates/**
+infra/platform/object-storage/chart/templates/**
+infra/platform/redis/chart/templates/**
+infra/platform/rabbitmq/chart/templates/**
+infra/platform/observability/chart/templates/**
+infra/platform/common/tests/fixtures/*/templates/**
