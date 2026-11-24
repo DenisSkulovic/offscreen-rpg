@@ -745,18 +745,6 @@ export function collectReleaseCnpgProbe(deps = {}) {
     unreadableReads,
   );
 
-  const clusterObservation = read({
-    profileId: 'release',
-    resource: 'cluster.postgresql.cnpg.io',
-    name: RELEASE_CNPG_CLUSTER,
-    namespace: RELEASE_CNPG_NAMESPACE,
-  });
-  const clusterState = observeState(
-    clusterObservation,
-    'postgres-cluster',
-    unreadableReads,
-  );
-
   const crdObservation = read({
     profileId: 'release',
     resource: 'crd',
@@ -767,6 +755,19 @@ export function collectReleaseCnpgProbe(deps = {}) {
     'postgres-crd',
     unreadableReads,
   );
+
+  const clusterObservation = crdProbeState === 'absent' ? { state: 'absent' } : crdProbeState === 'present' ? read({
+    profileId: 'release',
+    resource: 'cluster.postgresql.cnpg.io',
+    name: RELEASE_CNPG_CLUSTER,
+    namespace: RELEASE_CNPG_NAMESPACE,
+  }) : { state: 'unreadable', reason: 'CRD inventory unreadable' };
+  const clusterState = observeState(
+    clusterObservation,
+    'postgres-cluster',
+    unreadableReads,
+  );
+
 
   let memoryMiB;
   try {

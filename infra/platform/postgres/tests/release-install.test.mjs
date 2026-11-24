@@ -402,3 +402,33 @@ test('release render guard rejects wrong pin, count and identity', () => {
   assert.throws(() => assertReleaseClusterPin(bad, pin), /one instance/);
   assert.throws(() => assertReleaseClusterPin([], pin), /identity/);
 });
+
+import { collectReleaseCnpgProbe } from '../release-install.mjs';
+
+test('cold release inventory does not query an unregistered CNPG resource', () => {
+  const calls = [];
+  const probe = collectReleaseCnpgProbe({
+    readMeminfo: () => 'MemAvailable: 8192000 kB',
+    run(command, args) {
+      calls.push(args);
+      if (args.includes('cluster.postgresql.cnpg.io')) throw Error('CRD not installed');
+      return { ok: true, stdout: '' };
+    },
+  });
+  assert.equal(probe.crdState, 'absent');
+  assert.deepEqual(probe.unreadableReads, []);
+  assert.ok(!calls.some(args => args.includes('cluster.postgresql.cnpg.io')));
+});
+
+test('unreadable CNPG CRD does not authorize cold installation', () => {
+  const probe = collectReleaseCnpgProbe({
+    readMeminfo: () => 'MemAvailable: 8192000 kB',
+    run(command, args) {
+      if (args.includes('cluster.postgresql.cnpg.io')) throw Error('CRD state unknown');
+      if (args.includes('crd')) return { ok: false, stdout: '', stderr: 'Forbidden' };
+      return { ok: true, stdout: '' };
+    },
+  });
+  assert.equal(probe.crdState, 'unreadable');
+  assert.ok(probe.unreadableReads.some(row => row.id === 'postgres-crd'));
+});
