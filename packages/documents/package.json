@@ -19,6 +19,7 @@
     "test": "pnpm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
+    "@offscreen/cache": "workspace:*",
     "@offscreen/object-storage": "workspace:*",
     "zod": "4.6.5"
   },

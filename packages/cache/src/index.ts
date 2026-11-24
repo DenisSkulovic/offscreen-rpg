@@ -140,28 +140,30 @@ function createCommandCapturingClientFactory(): Readonly<{
 
 function createRedisStoreCommands(
   getCommands: () => CacheAdapterRedisCommands | null,
-  operationTimeoutMs: number,
 ): RedisStoreCommands {
   return {
-    async get(key, signal) {
+    get(key, signal) {
       if (signal?.aborted) {
-        throw new Error('Aborted');
+        return Promise.reject(new Error('Aborted'));
       }
       const client = getCommands();
       if (!client) {
-        throw new Error('RedisUnavailable');
+        return Promise.reject(new Error('RedisUnavailable'));
       }
-      return deadline(client.get(key), operationTimeoutMs);
+      // Return the SDK promise itself. A Promise.race deadline would settle
+      // this method while the command is still in flight, and the store would
+      // release its outstanding slot before Redis actually finishes.
+      return client.get(key);
     },
-    async set(key, value, pxMs, signal) {
+    set(key, value, pxMs, signal) {
       if (signal?.aborted) {
-        throw new Error('Aborted');
+        return Promise.reject(new Error('Aborted'));
       }
       const client = getCommands();
       if (!client) {
-        throw new Error('RedisUnavailable');
+        return Promise.reject(new Error('RedisUnavailable'));
       }
-      await deadline(client.set(key, value, { PX: pxMs }), operationTimeoutMs);
+      return client.set(key, value, { PX: pxMs }).then(() => undefined);
     },
   };
 }
@@ -242,10 +244,7 @@ export function buildCacheAdapterFromConnection(
   const store = createRedisStore({
     connection,
     clock: () => Date.now(),
-    commands: createRedisStoreCommands(
-      getCommands,
-      settings.operationTimeoutMs,
-    ),
+    commands: createRedisStoreCommands(getCommands),
     operationTimeoutMs: settings.operationTimeoutMs,
   });
 

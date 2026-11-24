@@ -130,20 +130,19 @@ export function bindCache<T>(
       return;
     }
 
-    const bytes = definition.codec.encode(loaded.value);
-    if (bytes.byteLength > policy.maxEntryBytes) {
-      telemetryEvent({ tier: 'l2', operation: 'set', outcome: 'skipped' });
-      return;
-    }
-
-    const publishKey = makeCacheKey(
-      runtime.environment,
-      definition.namespace,
-      definition.version,
-      loaded.identity,
-    );
-
     try {
+      const bytes = definition.codec.encode(loaded.value);
+      if (bytes.byteLength > policy.maxEntryBytes) {
+        telemetryEvent({ tier: 'l2', operation: 'set', outcome: 'skipped' });
+        return;
+      }
+
+      const publishKey = makeCacheKey(
+        runtime.environment,
+        definition.namespace,
+        definition.version,
+        loaded.identity,
+      );
       const writeResult = await store.set(publishKey, {
         bytes,
         expiresAtMs,
@@ -155,6 +154,8 @@ export function bindCache<T>(
         telemetryEvent({ tier: 'l2', operation: 'set', outcome: 'skipped' });
       }
     } catch {
+      // Encoding and publication-key failures are cache failures. They must
+      // not reject getOrLoad after the authoritative loader has succeeded.
       telemetryEvent({ tier: 'l2', operation: 'set', outcome: 'skipped' });
     }
   }

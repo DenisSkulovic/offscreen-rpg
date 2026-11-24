@@ -484,6 +484,9 @@ importers:
 
   packages/documents:
     dependencies:
+      '@offscreen/cache':
+        specifier: workspace:*
+        version: link:../cache
       '@offscreen/object-storage':
         specifier: workspace:*
         version: link:../object-storage
@@ -644,6 +647,9 @@ importers:
 
   packages/story-engine:
     dependencies:
+      '@offscreen/cache':
+        specifier: workspace:*
+        version: link:../cache
       '@offscreen/cache-port':
         specifier: workspace:*
         version: link:../cache-port
