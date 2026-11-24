@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | [INF23](../../changes/open/2026-11-24--inf23-dev-session-authority/CHANGE.md) Registry and session persistence | INF22 Done | Ready |
 | [INF31](../../changes/open/2026-11-24--inf31-image-identity/CHANGE.md) Correct image identity and reuse | INF24 Done | Ready |
-| [INF33](../../changes/open/2026-11-24--inf33-s3-tenant-reliability/CHANGE.md) S3 tenancy reliability | INF28 Done | Ready |
+| [INF33](../../changes/archive/2026-11/platform-operations/2026-11-24--inf33-s3-tenant-reliability/CHANGE.md) S3 tenancy reliability | INF28 Done | Done |
 | [INF35](../../changes/open/2026-11-24--inf35-owned-workload-cleanup/CHANGE.md) Practical owned workload cleanup | INF28 Done | Ready |
 | [INF30](../../changes/open/2026-11-24--inf30-dev-lifecycle/CHANGE.md) Predictable developer lifecycle | INF23, INF35 | Ready (dependency-gated) |
 | [INF32](../../changes/open/2026-11-24--inf32-release-config-reconcile/CHANGE.md) Release configuration reconciliation | INF31 | Ready (dependency-gated) |
