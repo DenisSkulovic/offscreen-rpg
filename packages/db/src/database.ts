@@ -1,24 +1,99 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { Pool, type PoolClient } from 'pg';
 import type { DatabaseConfig } from './config';
+import { DatabaseAdmissionError } from './connection/admission';
+import {
+  createManagedClientRuntime,
+  safeBackgroundErrorSink,
+} from './connection/managed-client';
+
+const DEFAULT_MANAGED = {
+  queueLimit: 20,
+  acquireTimeoutMs: 5000,
+} as const;
 
 export function createDatabase(
   config: DatabaseConfig,
   onBackgroundError: (error: Error) => void,
 ) {
-  const pool = new Pool(config);
-  // Idle sockets can fail outside a query. The process owner supplies logging/metrics.
-  pool.on('error', onBackgroundError);
-  let closing: Promise<void> | undefined;
+  const managedConfig = config.managed ?? DEFAULT_MANAGED;
+  const { managed: _managed, ...pgConfig } = config;
+  const pool = new Pool(pgConfig);
+  pool.on('error', safeBackgroundErrorSink(onBackgroundError));
+
+  const runtime = createManagedClientRuntime<PoolClient>({
+    maxActive: config.max,
+    maxQueued: managedConfig.queueLimit,
+    acquireTimeoutMs: managedConfig.acquireTimeoutMs,
+    connect: () => pool.connect(),
+    end: () => pool.end(),
+  });
 
   return {
     db: drizzle(pool),
+    withClient: runtime.withClient.bind(runtime),
     async checkConnection(): Promise<void> {
-      await pool.query('SELECT 1');
+      const probeTimeoutMs = Math.min(
+        config.connectionTimeoutMillis,
+        managedConfig.acquireTimeoutMs,
+      );
+
+      let discardLease: (() => void) | undefined;
+      let acquired = false;
+
+      const work = runtime.withClient(
+        { timeoutMs: probeTimeoutMs },
+        async (client, _remainingMs, discard) => {
+          acquired = true;
+          discardLease = discard;
+          await client.query('SELECT 1');
+        },
+      );
+
+      let probeTimer: ReturnType<typeof setTimeout> | undefined;
+      let settled = false;
+
+      await new Promise<void>((resolve, reject) => {
+        probeTimer = setTimeout(() => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          if (acquired && discardLease) {
+            discardLease();
+          }
+          reject(new DatabaseAdmissionError('timeout'));
+          void work.catch(() => {
+            // Bounded probe response; permit held until query settles.
+          });
+        }, probeTimeoutMs);
+
+        void work.then(
+          () => {
+            if (probeTimer !== undefined) {
+              clearTimeout(probeTimer);
+            }
+            if (settled) {
+              return;
+            }
+            settled = true;
+            resolve();
+          },
+          (error) => {
+            if (probeTimer !== undefined) {
+              clearTimeout(probeTimer);
+            }
+            if (settled) {
+              return;
+            }
+            settled = true;
+            reject(error);
+          },
+        );
+      });
     },
     close(): Promise<void> {
-      closing ??= pool.end();
-      return closing;
+      return runtime.close();
     },
   };
 }

@@ -26,7 +26,24 @@ const schema = z.object({
   DB_CONNECT_TIMEOUT_MS: positiveInteger('5000', 60000),
   DB_STATEMENT_TIMEOUT_MS: positiveInteger('10000', 300000),
   DB_IDLE_TRANSACTION_TIMEOUT_MS: positiveInteger('10000', 300000),
+  DB_MANAGED_QUEUE_MAX: positiveInteger('20', 1000),
+  DB_MANAGED_ACQUIRE_TIMEOUT_MS: positiveInteger('5000', 60000),
 });
+
+export type DatabaseManagedConfig = {
+  queueLimit: number;
+  acquireTimeoutMs: number;
+};
+
+export type DatabaseConfig = {
+  connectionString: string;
+  max: number;
+  connectionTimeoutMillis: number;
+  statement_timeout: number;
+  idle_in_transaction_session_timeout: number;
+  idleTimeoutMillis: number;
+  managed?: DatabaseManagedConfig;
+};
 
 export function readDatabaseConfig(env: Record<string, string | undefined>) {
   const parsed = schema.safeParse(env);
@@ -43,7 +60,9 @@ export function readDatabaseConfig(env: Record<string, string | undefined>) {
     idle_in_transaction_session_timeout:
       parsed.data.DB_IDLE_TRANSACTION_TIMEOUT_MS,
     idleTimeoutMillis: 30000,
+    managed: {
+      queueLimit: parsed.data.DB_MANAGED_QUEUE_MAX,
+      acquireTimeoutMs: parsed.data.DB_MANAGED_ACQUIRE_TIMEOUT_MS,
+    },
   };
 }
-
-export type DatabaseConfig = ReturnType<typeof readDatabaseConfig>;

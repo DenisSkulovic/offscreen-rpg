@@ -1,6 +1,6 @@
 # DB06 | Bounded PostgreSQL connection runtime
 
-**Status: Ready / owner-commissioned for source implementation. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
+**Status: Source-implemented on change/db06-connection-runtime; join, shared catalog and archive belong to the DB01 custodian. Kind: implementation. Profile: STATE.** Release baseline 7033f654091a4fc66c7de6b0dce37e2b8fb504c1; target undertaking/storyteller-workshop. No dependency on other wave-0 Changes. [Exact implementation and proof](EXECUTION.md). DB01 parent is integration custodian. No live PostgreSQL authorization; DB08 live acceptance remains separately gated.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -31,4 +31,4 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Bounded PostgreSQL connection runtime | database-infrastructure | pending | NOT RUN | TASKS | pending |
+| Bounded PostgreSQL connection runtime | database-infrastructure | packages/db src/connection, config.ts, database.ts on this branch; technical realization text left for the serialized docs join | source-only node:test 21/21 and @offscreen/db typecheck; live PostgreSQL NOT RUN | saturated queue, closed late acquire, probe timeout keeps the permit | N/A until DB01 join |
