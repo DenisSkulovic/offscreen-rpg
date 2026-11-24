@@ -5,7 +5,7 @@ import {
   type CreativeExplorationLimits,
   type CreativeExplorationPosture,
   type CreativeExplorationRecipe,
-} from '@offscreen/contracts/creative-exploration';
+} from '@offscreen/storyteller/context/creative-exploration';
 
 const zeroLimits: CreativeExplorationLimits = {
   maxLenses: 0,

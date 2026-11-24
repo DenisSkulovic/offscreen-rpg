@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import {
   storytellerContextCaptureKind,
   storytellerKind,
-} from '../src/storyteller-kinds';
+} from './storyteller-kinds';
 
 type StorytellerKind = typeof storytellerKind;
 type StorytellerContextCaptureKind = typeof storytellerContextCaptureKind;

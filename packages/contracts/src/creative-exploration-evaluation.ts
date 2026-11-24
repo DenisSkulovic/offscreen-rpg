@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { creativeLensSchema } from './creative-exploration.js';
+import { creativeLensSchema } from '@offscreen/storyteller/context/creative-exploration';
 
 const keySchema = z.string().regex(/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/);
 const uniqueKeysSchema = z

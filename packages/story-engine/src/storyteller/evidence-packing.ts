@@ -2,7 +2,7 @@ import {
   packableEvidenceItemSchema,
   type EvidenceRepresentationLevel,
   type PackableEvidenceItem,
-} from '@offscreen/contracts/story-retrieval';
+} from '@offscreen/storyteller/context/story-retrieval';
 
 const levelRank: Record<EvidenceRepresentationLevel, number> = {
   lead: 0,

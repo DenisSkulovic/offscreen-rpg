@@ -14,7 +14,7 @@ import {
 import type {
   CreativeExplorationLimits,
   CreativeExplorationPosture,
-} from '@offscreen/contracts/creative-exploration';
+} from '@offscreen/storyteller/context/creative-exploration';
 import { resolveCreativeExplorationRecipe } from './creative-exploration-recipes';
 import { decideAdmittedRecipe } from './adaptive-recipe';
 import type { TaskEvidenceNeedInput } from './task-evidence-need';

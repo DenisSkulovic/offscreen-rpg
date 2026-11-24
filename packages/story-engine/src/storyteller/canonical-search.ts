@@ -4,7 +4,7 @@ import {
   storyRetrievalResultSchema,
   type StoryRetrievalCandidate,
   type StoryRetrievalQuery,
-} from '@offscreen/contracts/story-retrieval';
+} from '@offscreen/storyteller/context/story-retrieval';
 import { z } from 'zod';
 
 export const canonicalKnowledgeKinds: ReadonlySet<string> = new Set([

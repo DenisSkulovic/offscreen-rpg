@@ -1,4 +1,4 @@
-import type { PackableEvidenceItem } from '@offscreen/contracts/story-retrieval';
+import type { PackableEvidenceItem } from '@offscreen/storyteller/context/story-retrieval';
 import type { MemoryExplorationSnapshot } from './memory-exploration';
 import {
   packStoryEvidence,

@@ -13,7 +13,7 @@ import {
   storytellerRetry,
 } from '@offscreen/db/storyteller-schema';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
-import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+import { storytellerKind } from '../generations/storyteller-kinds';
 import { lockOwnedStory, incrementStoryViewVersion } from './persistence';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { enqueue } from '@offscreen/db/outbox';

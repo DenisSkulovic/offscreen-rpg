@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyPassage } from '@offscreen/db/story-schema';
 import type { Transaction } from '@offscreen/db/outbox';
-import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+import { storytellerKind } from '../generations/storyteller-kinds';
 import type { ContinuityNotes } from '@offscreen/storyteller/context';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';

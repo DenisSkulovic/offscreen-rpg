@@ -1,12 +1,12 @@
-import type { CreativeExplorationRecipe } from '@offscreen/contracts/creative-exploration';
+import type { CreativeExplorationRecipe } from '@offscreen/storyteller/context/creative-exploration';
 import {
   creativeExplorationRecipeSchema,
   disabledCreativeExplorationRecipe,
-} from '@offscreen/contracts/creative-exploration';
+} from '@offscreen/storyteller/context/creative-exploration';
 import type {
   StoryRetrievalCandidate,
   StoryRetrievalUnit,
-} from '@offscreen/contracts/story-retrieval';
+} from '@offscreen/storyteller/context/story-retrieval';
 import type { DocumentStore } from '@offscreen/documents';
 import {
   storytellerNeedsContextSchema,

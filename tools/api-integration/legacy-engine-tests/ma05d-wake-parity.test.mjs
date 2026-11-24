@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   storytellerDistributedTopic,
   storytellerTopic,
-} from '@offscreen/contracts/storyteller-notices';
+} from '../../../packages/story-engine/dist/generations/storyteller-notices.js';
 import {
   readFrozenStorytellerNoticeTopic,
   storytellerNoticeTopicForWake,

@@ -101,6 +101,7 @@ export default ts.config(
   },
   {
     files: ['packages/contracts/src/**/*.ts'],
+    ignores: ['packages/contracts/src/creative-exploration-evaluation.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -124,6 +125,50 @@ export default ts.config(
               'Contracts must stay free of backend packages.',
             ],
           ]),
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/contracts/src/creative-exploration-evaluation.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@offscreen/storyteller',
+              message: 'Contracts must stay free of backend packages.',
+            },
+          ],
+          patterns: [
+            ...banGroups([
+              [
+                [
+                  '@offscreen/db',
+                  '@offscreen/db/*',
+                  '@offscreen/application',
+                  '@offscreen/application/*',
+                  '@offscreen/workflows',
+                  '@offscreen/workflows/*',
+                  '@offscreen/worker',
+                  '@offscreen/worker/*',
+                  '**/apps/**',
+                  '**/packages/**',
+                ],
+                'Contracts must stay free of backend packages.',
+              ],
+            ]),
+            {
+              group: [
+                '@offscreen/storyteller/**',
+                '!@offscreen/storyteller/context',
+                '@offscreen/storyteller/context/*',
+                '!@offscreen/storyteller/context/creative-exploration',
+              ],
+              message: 'Contracts must stay free of backend packages.',
+            },
+          ],
         },
       ],
     },

@@ -1,4 +1,4 @@
-import type { EvidencePacket } from '@offscreen/contracts/story-retrieval';
+import type { EvidencePacket } from '@offscreen/storyteller/context/story-retrieval';
 import {
   memoryEvidenceUseSchema,
   type MemoryEvidenceUse,

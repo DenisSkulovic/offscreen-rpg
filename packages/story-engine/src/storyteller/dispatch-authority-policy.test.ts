@@ -8,7 +8,7 @@ import {
   fundingBalanceIsNotDispatchEntitlement,
   parseStorytellerCurrentOwnerGrantRow,
   parseStorytellerCurrentPlatformPolicyRow,
-} from '../src/current-authority';
+} from './dispatch-authority-policy';
 import { usageEntitlementProfileSchema } from '@offscreen/usage-policy/usage-policy';
 
 const digest = 'ab'.repeat(32);
@@ -98,7 +98,10 @@ test('OBS00-B T02: funding and captured snapshots are never entitlements', () =>
 });
 
 test('OBS00-B T02: invalid profile and store states are denied', () => {
-  assert.throws(() => parseStorytellerCurrentPlatformPolicyRow({ revision: 0 }), /revision/);
+  assert.throws(
+    () => parseStorytellerCurrentPlatformPolicyRow({ revision: 0 }),
+    /revision/,
+  );
   assert.throws(
     () =>
       parseStorytellerCurrentPlatformPolicyRow(
@@ -109,15 +112,26 @@ test('OBS00-B T02: invalid profile and store states are denied', () => {
     /Profile revision must match row revision/,
   );
   assert.throws(
-    () => parseStorytellerCurrentOwnerGrantRow(grantRow({ enabled: true, revokedAt: new Date().toISOString() })),
+    () =>
+      parseStorytellerCurrentOwnerGrantRow(
+        grantRow({ enabled: true, revokedAt: new Date().toISOString() }),
+      ),
     /Revoked grants must remain disabled/,
   );
   assert.equal(assessPlatformPolicyAvailability(null), 'platform_missing');
-  assert.equal(assessPlatformPolicyAvailability(platformRow({ enabled: false })), 'platform_disabled');
-  assert.equal(assessOwnerGrantAvailability(null), 'grant_missing');
-  assert.equal(assessOwnerGrantAvailability(grantRow({ enabled: false })), 'grant_disabled');
   assert.equal(
-    assessOwnerGrantAvailability(grantRow({ enabled: false, revokedAt: new Date().toISOString() })),
+    assessPlatformPolicyAvailability(platformRow({ enabled: false })),
+    'platform_disabled',
+  );
+  assert.equal(assessOwnerGrantAvailability(null), 'grant_missing');
+  assert.equal(
+    assessOwnerGrantAvailability(grantRow({ enabled: false })),
+    'grant_disabled',
+  );
+  assert.equal(
+    assessOwnerGrantAvailability(
+      grantRow({ enabled: false, revokedAt: new Date().toISOString() }),
+    ),
     'grant_disabled',
   );
   assert.equal(

@@ -1,6 +1,6 @@
 # DO05 | storyteller engine ownership
 
-**Status: Ready / owner-commissioned for parallel wave B. Kind: implementation. Profile: CONTRACT.** Baseline `372df9646108f0442dcca4f1dcc992fddfe50511`. Integration target `undertaking/storyteller-workshop`. Prerequisite: DO02 + DO03 integrated; satisfied. No sibling prerequisite.
+**Status: Locally accepted, awaiting DO04 custodian join. Kind: implementation. Profile: CONTRACT.** Baseline `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Integration target `undertaking/storyteller-workshop`. Prerequisite: DO02 + DO03 integrated; satisfied. Branch `change/do05-storyteller-engine-ownership` in worktree `offscreen-rpg-do05`. Not pushed. Not archived.
 
 [Program](../../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [PROOF](PROOF.md).
 
@@ -49,4 +49,5 @@ Start T01 after local branch/worktree checks, finish this Change and join throug
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 |---|---|---|---|---|---|---|
-| To fill at close for every impacted claim | technical/product | pending | pending | not executed | pending | pending |
+| `docs/technical/platform/topology.md#code-organization` | technical | retrieval and creative exploration live in Storyteller context; dispatch policy, kinds, and notices live in story-engine | source move on `032f0070`; topology heading not edited (custodian) | source-only PASS | balance/captured policy are not entitlement; strict parse rejects extra fields and disabled maxReads 1 | shared topology/catalog left for DO04 join |
+| Product behavior | product | no player or spend change | validators preserved | source-only | no provider, SQL, or cluster | none |

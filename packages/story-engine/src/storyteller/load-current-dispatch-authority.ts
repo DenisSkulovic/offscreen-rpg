@@ -11,7 +11,7 @@ import {
 import {
   storytellerDispatchRouteMapSchema,
   type IndependentAuthorityDenialReason,
-} from '@offscreen/contracts/current-authority';
+} from './dispatch-authority-policy';
 import {
   effectiveUsagePolicySchema,
   type EffectiveUsagePolicy,

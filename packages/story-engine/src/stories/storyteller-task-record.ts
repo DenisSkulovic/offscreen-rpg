@@ -7,11 +7,11 @@ import {
   storytellerTaskSchema,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
-import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+import { storytellerKind } from '../generations/storyteller-kinds';
 import {
   storytellerTopic,
   storytellerDistributedTopic,
-} from '@offscreen/contracts/storyteller-notices';
+} from '../generations/storyteller-notices';
 
 /** Runtime flag at task admission only. Relay must read the persisted notice topic. */
 export function selectStorytellerNoticeTopicAtAdmission(

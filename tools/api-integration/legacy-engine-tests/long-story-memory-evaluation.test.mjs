@@ -48,7 +48,7 @@ import {
 import {
   creativeDiscoveryRequestSchema,
   creativeDiscoveryResultSchema,
-} from '@offscreen/contracts/creative-exploration';
+} from '@offscreen/storyteller/context/creative-exploration';
 
 test('bounds provider-neutral creative discovery without promoting possibilities', () => {
   const off = resolveCreativeExplorationRecipe({ posture: 'off' });

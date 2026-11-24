@@ -5,8 +5,8 @@ import type { Transaction } from '@offscreen/db/outbox';
 import {
   storytellerTopic,
   storytellerDistributedTopic,
-} from '@offscreen/contracts/storyteller-notices';
-import { storytellerContextCaptureKind } from '@offscreen/contracts/storyteller-kinds';
+} from '../generations/storyteller-notices';
+import { storytellerContextCaptureKind } from '../generations/storyteller-kinds';
 
 const storytellerNoticeTopics = [
   storytellerTopic,

@@ -1,7 +1,7 @@
 import type {
   EvidenceRepresentationLevel,
   PackableEvidenceItem,
-} from '@offscreen/contracts/story-retrieval';
+} from '@offscreen/storyteller/context/story-retrieval';
 import {
   packStoryEvidence,
   type EvidencePackingPolicy,

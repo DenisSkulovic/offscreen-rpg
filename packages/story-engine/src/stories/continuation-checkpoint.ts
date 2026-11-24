@@ -43,7 +43,7 @@ import {
   type SceneAfterState,
 } from './scene-after-state';
 import { generation } from '@offscreen/db/generation-schema';
-import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+import { storytellerKind } from '../generations/storyteller-kinds';
 import {
   storytellerTaskSchema,
   validateStorytellerResult,

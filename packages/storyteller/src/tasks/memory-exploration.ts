@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {
   evidencePacketSchema,
   type EvidencePacket,
-} from '@offscreen/contracts/story-retrieval';
+} from '../context/story-retrieval';
 import {
   capturedProviderRequestSchema,
   type CapturedProviderRequest,

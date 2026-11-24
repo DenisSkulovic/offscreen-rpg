@@ -3,7 +3,7 @@
  * Never uses prose regex or a preparatory model call as authority.
  */
 import { z } from 'zod';
-import type { CreativeExplorationPosture } from '@offscreen/contracts/creative-exploration';
+import type { CreativeExplorationPosture } from '@offscreen/storyteller/context/creative-exploration';
 
 export const taskEvidenceNeedSchema = z.strictObject({
   version: z.literal('task-evidence-need.v1'),

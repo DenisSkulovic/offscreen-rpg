@@ -5,7 +5,7 @@ import { storytellerContextCaptureKind } from '../../../packages/story-engine/di
 import {
   storytellerKind as contractStorytellerKind,
   storytellerContextCaptureKind as contractStorytellerContextCaptureKind,
-} from '@offscreen/contracts/storyteller-kinds';
+} from '../../../packages/story-engine/dist/generations/storyteller-kinds.js';
 
 test('neutral storyteller kinds stay compatible with contracts', () => {
   assert.equal(storytellerKind, 'storyteller.profiled.v1');

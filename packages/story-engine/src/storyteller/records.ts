@@ -8,18 +8,18 @@ import {
 import { createGenerations } from '../generations/index';
 import type { Database } from '@offscreen/db';
 import { recordExecutionStage } from './execution-stages';
-import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+import { storytellerKind } from '../generations/storyteller-kinds';
 import {
   storytellerTopic,
   storytellerDistributedTopic,
-} from '@offscreen/contracts/storyteller-notices';
+} from '../generations/storyteller-notices';
 
 export {
   selectStorytellerNoticeTopicAtAdmission,
   insertStorytellerTask,
 } from '../stories/storyteller-task-record';
 
-export { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+export { storytellerKind } from '../generations/storyteller-kinds';
 export { storytellerTopic, storytellerDistributedTopic };
 export {
   readFrozenStorytellerNoticeTopic,

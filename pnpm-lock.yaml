@@ -465,6 +465,9 @@ importers:
       '@offscreen/story-interface':
         specifier: workspace:*
         version: link:../story-interface
+      '@offscreen/storyteller':
+        specifier: workspace:*
+        version: link:../storyteller
       '@offscreen/usage-policy':
         specifier: workspace:*
         version: link:../usage-policy
@@ -696,9 +699,6 @@ importers:
 
   packages/storyteller:
     dependencies:
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../contracts
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game

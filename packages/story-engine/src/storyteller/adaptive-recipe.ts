@@ -6,7 +6,7 @@ import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy'
 import type {
   CreativeExplorationLimits,
   CreativeExplorationPosture,
-} from '@offscreen/contracts/creative-exploration';
+} from '@offscreen/storyteller/context/creative-exploration';
 import type { StorytellerRecipeDecision } from '@offscreen/storyteller/tasks';
 import {
   assessTaskEvidenceNeed,

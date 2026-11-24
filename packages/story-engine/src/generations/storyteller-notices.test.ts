@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { storytellerContextCaptureKind } from '../src/storyteller-kinds';
+import { storytellerContextCaptureKind } from './storyteller-kinds';
 import {
   storytellerDistributedTopic,
   storytellerTopic,
-} from '../src/storyteller-notices';
+} from './storyteller-notices';
 
 test('MA05D T01: frozen storyteller notice topics stay distinct', () => {
   assert.equal(storytellerTopic, 'storyteller.profiled.v1');

@@ -6,7 +6,7 @@ import {
   type MemoryEvaluationObservation,
   type MemoryOracleQuery,
 } from '@offscreen/contracts/memory-evaluation';
-import type { StoryRetrievalResult } from '@offscreen/contracts/story-retrieval';
+import type { StoryRetrievalResult } from '@offscreen/storyteller/context/story-retrieval';
 import type { DocumentStore } from '@offscreen/documents';
 import { searchCanonicalKnowledge } from '@offscreen/story-engine/storyteller/canonical-search';
 import type { LexicalStoryIndex } from '@offscreen/story-engine/storyteller/lexical-story-index';

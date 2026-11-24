@@ -4,7 +4,7 @@ import {
   creativeDiscoveryResultSchema,
   type CreativeDiscoveryRequest,
   type CreativeDiscoveryResult,
-} from '@offscreen/contracts/creative-exploration';
+} from '@offscreen/storyteller/context/creative-exploration';
 
 export function creativeDiscoveryRequestHash(
   rawRequest: CreativeDiscoveryRequest,

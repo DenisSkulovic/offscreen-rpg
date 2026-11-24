@@ -3,7 +3,7 @@ import { effectiveUsagePolicySchema } from '@offscreen/usage-policy/usage-policy
 import {
   creativeExplorationRecipeSchema,
   disabledCreativeExplorationRecipe,
-} from '@offscreen/contracts/creative-exploration';
+} from '../context/creative-exploration.js';
 import type { ExecutionPolicy } from './policy';
 import { writerToolNameSchema } from './writer-mission.js';
 

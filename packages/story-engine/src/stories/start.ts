@@ -2,7 +2,7 @@ import {
   campaignStartSchema,
   type CampaignStart,
 } from '@offscreen/story-interface/campaign';
-import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+import { storytellerKind } from '../generations/storyteller-kinds';
 import { startStorytellerCandidate } from './storyteller-start-candidate';
 import {
   playableOpeningArtifactSchema,

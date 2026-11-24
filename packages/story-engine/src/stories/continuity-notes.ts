@@ -12,7 +12,7 @@ import {
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
 import type { Transaction } from '@offscreen/db/outbox';
-import { storytellerKind } from '@offscreen/contracts/storyteller-kinds';
+import { storytellerKind } from '../generations/storyteller-kinds';
 
 export type ProjectStorytellerNotesInput = {
   task: StorytellerTask;

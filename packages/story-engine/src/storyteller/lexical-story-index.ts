@@ -5,7 +5,7 @@ import {
   type StoryRetrievalCandidate,
   type StoryRetrievalQuery,
   type StoryRetrievalUnit,
-} from '@offscreen/contracts/story-retrieval';
+} from '@offscreen/storyteller/context/story-retrieval';
 import type { DocumentStore } from '@offscreen/documents';
 import { z } from 'zod';
 import { canonicalKnowledgeKinds } from './canonical-search';

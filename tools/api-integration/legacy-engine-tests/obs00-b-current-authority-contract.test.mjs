@@ -4,7 +4,7 @@ import test from 'node:test';
 import {
   capturedUsagePolicySnapshotIsNotDispatchEntitlement,
   fundingBalanceIsNotDispatchEntitlement,
-} from '@offscreen/contracts/current-authority';
+} from '../../../packages/story-engine/dist/storyteller/dispatch-authority-policy.js';
 import {
   retainsIndependentCurrentAuthority,
 } from '../../../packages/story-engine/dist/storyteller/dispatch-authority.js';

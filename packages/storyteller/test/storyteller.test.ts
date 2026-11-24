@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
-import type { EvidencePacket } from '@offscreen/contracts/story-retrieval';
+import type { EvidencePacket } from '../src/context/story-retrieval';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import {
   createStorytellerCatalogue,

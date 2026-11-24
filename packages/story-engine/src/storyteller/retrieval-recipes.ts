@@ -1,7 +1,7 @@
 import {
   storyRetrievalTuningSchema,
   type StoryRetrievalTuning,
-} from '@offscreen/contracts/story-retrieval';
+} from '@offscreen/storyteller/context/story-retrieval';
 
 export type StoryRetrievalPosture = 'minimal' | 'balanced' | 'rich';
 

@@ -4,7 +4,7 @@ import {
   parseStorytellerCurrentOwnerGrantRow,
   parseStorytellerCurrentPlatformPolicyRow,
   type IndependentAuthorityDenialReason,
-} from '@offscreen/contracts/current-authority';
+} from './dispatch-authority-policy';
 import {
   resolveEffectiveUsagePolicy,
   type UsagePolicyResolution,

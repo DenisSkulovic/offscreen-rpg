@@ -31,10 +31,6 @@
       "types": "./dist/src/qa.d.ts",
       "default": "./dist/src/qa.js"
     },
-    "./current-authority": {
-      "types": "./dist/src/current-authority.d.ts",
-      "default": "./dist/src/current-authority.js"
-    },
     "./live-evaluation": {
       "types": "./dist/src/live-evaluation.d.ts",
       "default": "./dist/src/live-evaluation.js"
@@ -46,22 +42,6 @@
     "./creative-exploration-evaluation": {
       "types": "./dist/src/creative-exploration-evaluation.d.ts",
       "default": "./dist/src/creative-exploration-evaluation.js"
-    },
-    "./creative-exploration": {
-      "types": "./dist/src/creative-exploration.d.ts",
-      "default": "./dist/src/creative-exploration.js"
-    },
-    "./story-retrieval": {
-      "types": "./dist/src/story-retrieval.d.ts",
-      "default": "./dist/src/story-retrieval.js"
-    },
-    "./storyteller-kinds": {
-      "types": "./dist/src/storyteller-kinds.d.ts",
-      "default": "./dist/src/storyteller-kinds.js"
-    },
-    "./storyteller-notices": {
-      "types": "./dist/src/storyteller-notices.d.ts",
-      "default": "./dist/src/storyteller-notices.js"
     }
   },
   "scripts": {
@@ -70,6 +50,7 @@
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
+    "@offscreen/storyteller": "workspace:*",
     "@offscreen/game": "workspace:*",
     "@offscreen/story-interface": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",

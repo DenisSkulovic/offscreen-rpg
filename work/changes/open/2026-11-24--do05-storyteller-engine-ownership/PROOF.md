@@ -1,5 +1,16 @@
 # Proof matrix
-No proof executed by ChatGPT. Run from repo root after install; report actual exit code and counts.
+Local source-only receipt on `change/do05-storyteller-engine-ownership` from `032f00700eb13cad0d3115d9f5d91c5f16feeb10`. Not a custodian join and not live acceptance.
+
+| Check | Result |
+|---|---|
+| Relocated node tests | PASS 10/10 |
+| `turbo build typecheck` for storyteller, contracts, story-engine and their dependencies | PASS 20/20 |
+| Dependents build/typecheck | PASS except `@offscreen/api-integration#typecheck` on `test/library-batch-read.test.ts` exactOptional `corruptHash` (file not in this diff; recorded baseline) |
+| `pnpm repo:module-graph` | FAIL on pre-existing `forbidden-authority-writer-import` in `action-executions.ts`; no package-dependency-cycle or package-source-cycle |
+| `pnpm repo:module-graph:test` | PASS 26/26 |
+| `repo:code-health --strict-new` | PASS strict 0 |
+| `repo:code-quality:changed` | NOT VERIFIED: script resolves `npm_execpath` as a missing `pnpm` module. Direct Prettier/quality eslint on new and fully moved modules PASS. Consumer files still carry pre-existing quality findings after import-only edits. |
+| wiki plan/close | NOT RUN. Shared docs stay with the DO04 custodian. |
 
 | Check | Positive | Negative |
 |---|---|---|

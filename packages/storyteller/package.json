@@ -11,6 +11,14 @@
       "types": "./dist/src/context/index.d.ts",
       "default": "./dist/src/context/index.js"
     },
+    "./context/story-retrieval": {
+      "types": "./dist/src/context/story-retrieval.d.ts",
+      "default": "./dist/src/context/story-retrieval.js"
+    },
+    "./context/creative-exploration": {
+      "types": "./dist/src/context/creative-exploration.d.ts",
+      "default": "./dist/src/context/creative-exploration.js"
+    },
     "./tasks": {
       "types": "./dist/src/tasks/index.d.ts",
       "default": "./dist/src/tasks/index.js"
@@ -70,7 +78,6 @@
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
-    "@offscreen/contracts": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/game": "workspace:*",
     "zod": "4.6.5",
