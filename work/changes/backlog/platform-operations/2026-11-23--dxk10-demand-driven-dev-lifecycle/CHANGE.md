@@ -1,5 +1,7 @@
 # DXK10 | Demand-driven development environment lifecycle
 
+**2026-11-24 supersession:** selective activation DXK10-B implementation routes to [INF38](../../open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md); do not dispatch competing implementation. DXK10-C retained proposal only; DXK10-A remains archived Done.
+
 **State:** PROPOSED BACKLOG, PLANNER-HELD; not Cursor-ready or commissioned. **Selected technical contract:** [developer environments](../../../../../docs/technical/platform/developer-environments.md) and [human-first view](../../../../../docs/architecture/10-developer-environments.md). **Integration target:** `undertaking/storyteller-workshop`. **Owner:** developer infrastructure. **Dependency:** preserve current DXK09 implementation/proof; no concurrent edits to lifecycle tools. **Source basis:** originally `955e904b`; updated source inspection of integrated `fb5bf588` (DXK11 included) on 2026-11-23. **Execution decomposition:** [DXK10-A reserve/attach](../../../archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is Done as registry-only commands; DXK10-B selective profiles and DXK10-C guarded retained-tenant release remain planner-held, not automatically commissioned.
 
 ## Owner decision / user experience

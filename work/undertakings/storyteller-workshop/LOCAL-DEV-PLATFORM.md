@@ -1,17 +1,17 @@
-# Local developer platform | next implementation sequence
+# Local developer platform | composition implementation
 
-Baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. INF36 Done; INF29 is final current-flow reconciliation, not a new broad security audit. Owner selected developer usability direction. [Target](../../../docs/technical/platform/local-developer-platform.md) · [Catalog](../../../infra/verification/CAPABILITIES.md) · [Quick reference](../../../docs/runbooks/local-development-platform.md).
+Baseline 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. INF36 source Done; INF29 live verification in progress, independent checkout. Source verifier reports 430 pass / 4 fail. INF43 repairs two retired imports, two stale loader fixtures and any actual signal listener leak. No live acceptance credit.
 
-The following are candidate implementation slices, not commissioned executable packets. Planner must re-read current source, freeze algorithms and tests, reconcile DXK10-B instead of parallel lifecycle authority, and release each when ready.
-
-| Slice | Outcome | Main owner / dependency |
+| Change | Dependency | Status |
 | --- | --- | --- |
-| INF29 | Current-flow source reconciliation and exact one-slot live smoke plan | existing lifecycle; live authorization separate |
-| INF37 | Cluster/platform selection and convenient plan/up/status | platform-plan, kind manager; optional release services can first be selected, dev optional service profiles follow |
-| INF38 | DXK10-B selective dev profiles, dependency-scoped provisioning and readiness | existing lifecycle + Tilt + chart; stop/start profile change; dependency on selected platform contracts |
-| INF39 | Standard Helm values overlays, per-role replicas and measured small/default presets | workloads/render and service render; avoid bespoke schema; selected role values contract shared with INF38 |
-| INF40 | Partial release profile and multi-replica flow | existing stack plan/install and INF39; apply exact role selection and current image/migration proof |
-| INF41 | Data connection choices and host portability | isolated staging and local snapshot first; production diagnostic only; native macOS separate measured support, no implicit remote migration |
-| INF42 | Repeatable verification entrypoint over permanent scenario IDs | reuse existing tests and proof scripts; source suite then authorized live cases; grows alongside earlier slices |
+| [INF43](../../changes/open/2026-11-24--inf43-source-baseline-repair/CHANGE.md) Repair integrated source verification | INF36 Done | Ready |
+| [INF37](../../changes/open/2026-11-24--inf37-platform-composition/CHANGE.md) Convenient cluster and service selection | INF36 Done | Ready |
+| [INF39](../../changes/open/2026-11-24--inf39-helm-workload-overrides/CHANGE.md) Standard workload values overrides | INF36 Done | Ready |
+| [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) Selective developer application activation | INF43, INF37, INF39; INF29 live verifier no active writer to same paths | Ready (dependency-gated) |
+| [INF42](../../changes/open/2026-11-24--inf42-verification-source-runner/CHANGE.md) Repeatable source verification entrypoint | INF43 | Ready (dependency-gated) |
 
-No live work authorized. First prove current full-slot workflow, fix blockers rather than enlarge framework. INF37–42 naming is a proposed planning sequence, not a global work selector or dispatch instruction. No new acceptance credit. Overall undertaking ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (subjective ±20 pp), unchanged.
+Parallel first wave INF43 + INF37 + INF39, separate source worktrees. INF37 package.json and INF42 package.json serialize; INF38 after INF43/37/39 and no active overlapping writer. INF42 source runner after INF43; may run while INF38 implements provided package/docs joins serialized. Live INF29 agent is verification only, no code writes in shared integration branch. INF40 partial release and replica CLI integration follows INF38 profile contract and INF39; INF41 external data and macOS separate later slices. Live smoke/full verification runner deferred until selected workflows implemented and scope explicit. Dev optional RabbitMQ/observability/gateway deferred; INF37 supports release all and dev core + Redis. No new queue selection. Measured small preset deferred until actual resource data. DXK10-B selective activation implementation superseded by INF38; DXK10-C retained backlog, not commissioned.
+
+Target undertaking/storyteller-workshop, inspected source snapshot 91bc2af40a94 matches current documentation-only HEAD 21ed6630e8a8f60a9a3e2bc49054eb5a0bec916e. Owner commissioned source implementation 2026-11-24. No live cluster/Docker/Tilt/tenant/production/remote data mutation by these packets. INF29 live proof remains independent; no edits in its checkout. Preserve existing defaults, isolation and data. No new orchestration framework, daemon, scheduler, custom YAML language or security expansion. Separate Change worktree, node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop; one bounded child per task, parent integrates and archives; no automatic successor dispatch. Shared package.json/docs/catalog edits serialized by human integration custodian. Mechanical predecessor path joins allowed; material source contradiction returns to planner with exact evidence. Focused tests at repo root; changed-file quality/docs health; report actual commands/counts, source vs live NOT-RUN.
+
+Planning limitations: matching uploaded source and current branch verified; independent full G0–G7 review not completed, API/Authority Temporal boot closure and actual API HTTP endpoint require planner confirmation before corresponding INF38 tasks (not delegated architecture choice). INF38 source execution gated until planner settles these two exact facts. Native macOS/external bindings not commissioned. No source tests run by planner.
