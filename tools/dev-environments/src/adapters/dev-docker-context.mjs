@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Classifies repo paths for the dev Dockerfile root build context.
-// Mirrors infra/kubernetes/lab/dev/Dockerfile.dockerignore (BuildKit's Dockerfile-specific ignore).
+// Mirrors infra/images/development/Dockerfile.dockerignore (BuildKit's Dockerfile-specific ignore).
 
 import { lstatSync, readdirSync, readFileSync, readlinkSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const DEV_DOCKER_IGNORE_RELATIVE = 'infra/kubernetes/lab/dev/Dockerfile.dockerignore';
+export const DEV_DOCKER_IGNORE_RELATIVE = 'infra/images/development/Dockerfile.dockerignore';
 
 const EXCLUDED_TOP_LEVEL = new Set([
   '.git',
@@ -25,7 +25,7 @@ const ROOT_MANIFESTS = new Set([
   'turbo.json',
 ]);
 
-const REQUIRED_NPMRC = 'infra/kubernetes/lab/app-release/docker.npmrc';
+const REQUIRED_NPMRC = 'infra/images/release/docker.npmrc';
 
 /**
  * @param {string} filePath

@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1
+# Build context: `turbo prune @offscreen/web --docker` directory (json/ + full/), not the repository root.
+# (see build-web.sh). Bakes API_PROXY_ORIGIN at `next build`; set API_INTERNAL_ORIGIN
+# at Pod runtime to the same trusted Nest Service — runtime env does not re-bake rewrites.
+
+FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
+
+FROM base AS deps
+WORKDIR /app
+COPY docker.npmrc .npmrc
+COPY json/ ./
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm fetch --frozen-lockfile
+RUN --mount=type=cache,id=offscreen-pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --offline
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/ .
+COPY full/ ./
+COPY infra/images/release/release-service-origin.mjs \
+  infra/images/release/verify-production-rewrite.mjs \
+  ./infra/images/release/
+
+ARG OFFSCREEN_LAB_NEST_ORIGIN=http://game-api.lab-edge.svc.cluster.local:3001
+ENV API_PROXY_ORIGIN=${OFFSCREEN_LAB_NEST_ORIGIN}
+
+# Build workspace deps first, then Next so API_PROXY_ORIGIN is visible to next.config.ts
+# (turbo cache keys do not include API_PROXY_ORIGIN).
+RUN pnpm turbo run build --filter=@offscreen/web^...
+RUN pnpm --filter @offscreen/web exec next build
+
+RUN node --input-type=module <<'VERIFY'
+import { readApiRewriteDestination, assertReleaseRewriteNotLoopback, assertReleaseRewriteMatchesNestService } from './infra/images/release/verify-production-rewrite.mjs';
+import { LAB_NEST_SERVICE_ORIGIN } from './infra/images/release/release-service-origin.mjs';
+
+const destination = readApiRewriteDestination('apps/web/.next/routes-manifest.json');
+assertReleaseRewriteNotLoopback(destination);
+assertReleaseRewriteMatchesNestService(
+  destination,
+  process.env.API_PROXY_ORIGIN ?? LAB_NEST_SERVICE_ORIGIN,
+);
+VERIFY
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+# SSR and baked rewrite compare against the same in-cluster Nest Service (runtime env does not re-bake).
+ENV API_PROXY_ORIGIN=http://game-api.lab-edge.svc.cluster.local:3001
+ENV API_INTERNAL_ORIGIN=http://game-api.lab-edge.svc.cluster.local:3001
+
+RUN groupadd --system --gid 1001 nodejs \
+  && useradd --system --uid 1001 --gid nodejs nextjs
+
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+
+USER nextjs
+WORKDIR /app/apps/web
+EXPOSE 3000
+CMD ["node", "server.js"]

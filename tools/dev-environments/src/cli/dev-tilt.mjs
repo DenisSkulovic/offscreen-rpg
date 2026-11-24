@@ -18,7 +18,7 @@ import {
   runStackPreflight,
   CONTEXT_NAME,
 } from '../../../../scripts/repo-tools/stack-preflight.mjs';
-import { evaluateDevLoadedRuntimeReadiness } from '../../../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
+import { evaluateDevLoadedRuntimeReadiness } from '../../../../infra/dev/dev-watched-compilation-receipt.mjs';
 import { DEV_POD_RUNTIME_RECEIPT_DIR } from '../rendering/dev-slot-app-graph.mjs';
 import { assessOwnedProcess, readProcessStartTicks } from '../domain/dev-process-identity.mjs';
 import {

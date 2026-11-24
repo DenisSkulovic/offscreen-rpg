@@ -76,8 +76,8 @@ The source for allocation/registration is `scripts/repo-tools/dev-worktree-{allo
 
 - Assignment/lease: `scripts/repo-tools/dev-worktree-{allocator,registry}.mjs`.
 - Slot renderer/credential projection: `tools/dev-environments/src/rendering/dev-slot-{app-graph,project}.mjs`.
-- Dev image build: `infra/kubernetes/lab/dev/load-dev-slot-image.sh`.
-- Watch graph/compiled freshness: `infra/kubernetes/lab/dev/{dev-sync-paths,dev-watch-compilation,dev-watched-compilation-receipt,dev-loaded-runtime-status}.mjs`; historical shared `Tiltfile` is a compatibility reference, not the accepted slot launcher.
+- Dev image build: `infra/images/development/load-dev-slot-image.sh`.
+- Watch graph/compiled freshness: `infra/dev/{dev-sync-paths,dev-watch-compilation,dev-watched-compilation-receipt,dev-loaded-runtime-status}.mjs`; historical shared `Tiltfile` is a compatibility reference, not the accepted slot launcher.
 - Change gate and evidence: [DXK09](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md), [T05](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/TASKS.md), [PROOF](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md).
 - HR01–HR03 gated wave: [NEXT-WAVE](../../work/undertakings/storyteller-workshop/NEXT-WAVE.md).
 

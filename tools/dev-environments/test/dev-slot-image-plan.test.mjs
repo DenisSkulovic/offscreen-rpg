@@ -22,10 +22,10 @@ work
 
 function checkout(name) {
   const root = mkdtempSync(join(tmpdir(), name));
-  mkdirSync(join(root, 'infra/kubernetes/lab/dev'), { recursive: true });
+  mkdirSync(join(root, 'infra/images/development'), { recursive: true });
   mkdirSync(join(root, 'packages/db'), { recursive: true });
-  writeFileSync(join(root, 'infra/kubernetes/lab/dev/Dockerfile'), RECIPE);
-  writeFileSync(join(root, 'infra/kubernetes/lab/dev/Dockerfile.dockerignore'), IGNORE);
+  writeFileSync(join(root, 'infra/images/development/Dockerfile'), RECIPE);
+  writeFileSync(join(root, 'infra/images/development/Dockerfile.dockerignore'), IGNORE);
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v1\n');
   writeFileSync(join(root, 'packages/db/index.ts'), 'export const value = 1;\n');
   return root;
@@ -107,7 +107,7 @@ test('included source, lockfile, Dockerfile and role argument change the fingerp
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v2\n');
   assert.notEqual(fingerprint(root).fingerprint, original);
   writeFileSync(join(root, 'pnpm-lock.yaml'), 'lock: v1\n');
-  writeFileSync(join(root, 'infra/kubernetes/lab/dev/Dockerfile'), RECIPE.replace('node:24', 'node:25'));
+  writeFileSync(join(root, 'infra/images/development/Dockerfile'), RECIPE.replace('node:24', 'node:25'));
   assert.notEqual(fingerprint(root).fingerprint, original);
   assert.notEqual(fingerprint(checkout('ctx-role-'), '@offscreen/web^...').fingerprint, original);
 });

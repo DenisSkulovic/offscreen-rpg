@@ -11,20 +11,20 @@ import {
 } from '../src/adapters/dev-docker-context.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-const loadScript = join(repoRoot, 'infra/kubernetes/lab/dev/tilt/load-dev-image.sh');
-const libBuild = join(repoRoot, 'infra/kubernetes/lab/app-release/lib-build.sh');
+const loadScript = join(repoRoot, 'infra/images/development/tilt/load-dev-image.sh');
+const libBuild = join(repoRoot, 'infra/images/release/lib-build.sh');
 
 test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned context not repo root', () => {
   const script = readFileSync(loadScript, 'utf8');
   const build = script.slice(script.indexOf('docker build'));
   assert.doesNotMatch(build, /ignorefile/);
-  const ignoreFile = join(repoRoot, 'infra/kubernetes/lab/dev/Dockerfile.dockerignore');
+  const ignoreFile = join(repoRoot, 'infra/images/development/Dockerfile.dockerignore');
   assert.equal(existsSync(ignoreFile), true);
   assert.match(readFileSync(ignoreFile, 'utf8'), /\*\*\/node_modules/);
   assert.match(readFileSync(ignoreFile, 'utf8'), /^\.offscreen$/m);
   assert.match(script, /Dockerfile\.dockerignore/);
   assert.doesNotMatch(script, /kubectl/);
-  const slotLoader = readFileSync(join(repoRoot, 'infra/kubernetes/lab/dev/load-dev-slot-image.sh'), 'utf8');
+  const slotLoader = readFileSync(join(repoRoot, 'infra/images/development/load-dev-slot-image.sh'), 'utf8');
   assert.match(slotLoader, /OFFSCREEN_IMAGE_REF_FILE/);
   assert.doesNotMatch(slotLoader, /kubectl/);
   assert.match(slotLoader, /post-load-mismatch/);

@@ -379,7 +379,7 @@ export async function ensureOwnedSlotImages(owner, worktree, spawnImage = null) 
     return { ok: false, refusals: [{ id: 'image-build', detail: `role=union phase=fingerprint exit=1 ${identity.reason}` }], rebuilt: 0 };
   }
   const run = spawnImage ?? (() => spawnSync('bash', [
-    'infra/kubernetes/lab/dev/load-dev-slot-image.sh',
+    'infra/images/development/load-dev-slot-image.sh',
     owner.slotId,
     'all',
   ], {

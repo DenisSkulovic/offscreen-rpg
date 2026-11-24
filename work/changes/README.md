@@ -319,9 +319,9 @@ Review archive candidates with `pnpm repo:retirement` (read-only). No automated 
 
 ## Infrastructure ownership cleanup (INF01–INF05)
 
-Sequential source-only batch; INF01–INF03 Done, INF04–05 Ready with predecessor gates. [Plan](../undertakings/storyteller-workshop/INF-PARALLEL.md).
+Sequential source-only batch; INF01–INF04 Done, INF05 Ready with predecessor gate. [Plan](../undertakings/storyteller-workshop/INF-PARALLEL.md).
 - [INF01](archive/2026-11/platform-operations/2026-11-23--inf01-infra-ownership-map/CHANGE.md): Done. Ownership atlas guard; no runtime moves.
 - [INF02](archive/2026-11/platform-operations/2026-11-23--inf02-dev-environment-manager-boundary/CHANGE.md): Done. Dev manager under tools/dev-environments. Live cluster NOT-RUN.
 - [INF03](archive/2026-11/platform-operations/2026-11-23--inf03-application-workload-layout/CHANGE.md): Done. Cluster, workload and environment layout. Live cluster NOT-RUN.
-- [INF04](open/2026-11-23--inf04-image-and-tilt-ownership/CHANGE.md): Image build and Tilt ownership
+- [INF04](archive/2026-11/platform-operations/2026-11-23--inf04-image-and-tilt-ownership/CHANGE.md): Done. Image build and Tilt ownership. Live cluster NOT-RUN.
 - [INF05](open/2026-11-23--inf05-platform-and-verification-separation/CHANGE.md): Platform and verification separation

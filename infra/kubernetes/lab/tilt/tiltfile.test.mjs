@@ -8,7 +8,7 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const rootTiltfilePath = join(repoRoot, 'Tiltfile');
 const releaseTiltfilePath = join(
   repoRoot,
-  'infra/kubernetes/lab/app-release/Tiltfile',
+  'infra/environments/release/Tiltfile',
 );
 const rootTiltfile = readFileSync(rootTiltfilePath, 'utf8');
 const releaseTiltfile = readFileSync(releaseTiltfilePath, 'utf8');
@@ -32,7 +32,7 @@ test('root Tiltfile pins kubectl context kind-offscreen-lab', () => {
 test('root Tiltfile loads the dev graph only', () => {
   assert.match(
     rootTiltfile,
-    /include\s*\(\s*['"]\.\/infra\/kubernetes\/lab\/dev\/Tiltfile['"]\s*\)/,
+    /include\s*\(\s*['"]\.\/infra\/dev\/Tiltfile['"]\s*\)/,
   );
   assert.doesNotMatch(rootTiltfile, /app-release-images/);
   assert.doesNotMatch(rootTiltfile, /build-release-images\.sh/);

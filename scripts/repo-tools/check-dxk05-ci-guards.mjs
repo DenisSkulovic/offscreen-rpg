@@ -119,7 +119,7 @@ export function checkDxk05CiGuards(root = repoRoot) {
     composeScanCount += 1;
   }
 
-  const releaseDir = path.join(labDir, 'app-release');
+  const releaseDir = path.join(resolved, 'infra/images/release');
   const pinPath = path.join(releaseDir, 'images.pin');
   const pinText = readFileSync(pinPath, 'utf8');
   const dockerNames = [

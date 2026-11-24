@@ -11,8 +11,8 @@ import { join, relative, posix } from 'node:path';
 
 export const UNION_ROLE_FILTER = '@offscreen/web^... @offscreen/api^... @offscreen/game-authority^... @offscreen/worker^...';
 export const SLOT_ALIAS_ROLES = Object.freeze(['web', 'api', 'authority', 'worker']);
-export const DEV_DOCKERFILE = 'infra/kubernetes/lab/dev/Dockerfile';
-export const DEV_DOCKERIGNORE = 'infra/kubernetes/lab/dev/Dockerfile.dockerignore';
+export const DEV_DOCKERFILE = 'infra/images/development/Dockerfile';
+export const DEV_DOCKERIGNORE = 'infra/images/development/Dockerfile.dockerignore';
 const REQUIRED_NODES = ['control-plane', 'worker'];
 
 /**

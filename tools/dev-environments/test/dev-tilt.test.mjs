@@ -31,7 +31,7 @@ import { readRegistryJson, writeRegistry } from '../src/domain/dev-worktree-regi
 import {
   fingerprintCompiledEntryFile,
   markDevWatchedCompilation,
-} from '../../../infra/kubernetes/lab/dev/dev-watched-compilation-receipt.mjs';
+} from '../../../infra/dev/dev-watched-compilation-receipt.mjs';
 const API_FRESHNESS_ROLE = DEV_RUNTIME_FRESHNESS_ROLES.find((entry) => entry.role === 'api');
 assert.ok(API_FRESHNESS_ROLE);
 

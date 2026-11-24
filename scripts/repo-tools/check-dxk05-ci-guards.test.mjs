@@ -49,7 +49,7 @@ test('assertLabContext rejects non-lab context', () => {
 });
 
 test('assertImagePin accepts real pin and dockerfiles from repo', () => {
-  const releaseDir = join(repoRoot, 'infra/kubernetes/lab/app-release');
+  const releaseDir = join(repoRoot, 'infra/images/release');
   const pinText = readFileSync(join(releaseDir, 'images.pin'), 'utf8');
   const dockerTexts = [
     'Dockerfile.api',

@@ -27,9 +27,9 @@
     "start:control": "node --env-file-if-exists=../../.env dist/src/bootstrap/control-main.js",
     "start:executor": "node --env-file-if-exists=../../.env dist/src/bootstrap/executor-main.js",
     "dev": "pnpm run dev:relay",
-    "dev:relay": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs failure worker-relay dist/src/bootstrap/main.js\" --onSuccess \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs success worker-relay dist/src/bootstrap/main.js\"",
-    "dev:control": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs failure worker-control dist/src/bootstrap/control-main.js\" --onSuccess \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs success worker-control dist/src/bootstrap/control-main.js\"",
-    "dev:executor": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs failure worker-executor dist/src/bootstrap/executor-main.js\" --onSuccess \"node ../../infra/kubernetes/lab/dev/dev-watch-compilation.mjs success worker-executor dist/src/bootstrap/executor-main.js\"",
+    "dev:relay": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/dev/dev-watch-compilation.mjs failure worker-relay dist/src/bootstrap/main.js\" --onSuccess \"node ../../infra/dev/dev-watch-compilation.mjs success worker-relay dist/src/bootstrap/main.js\"",
+    "dev:control": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/dev/dev-watch-compilation.mjs failure worker-control dist/src/bootstrap/control-main.js\" --onSuccess \"node ../../infra/dev/dev-watch-compilation.mjs success worker-control dist/src/bootstrap/control-main.js\"",
+    "dev:executor": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/dev/dev-watch-compilation.mjs failure worker-executor dist/src/bootstrap/executor-main.js\" --onSuccess \"node ../../infra/dev/dev-watch-compilation.mjs success worker-executor dist/src/bootstrap/executor-main.js\"",
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {

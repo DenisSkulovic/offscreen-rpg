@@ -7,7 +7,7 @@ import test from 'node:test';
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 const rootTiltfile = readFileSync(join(repoRoot, 'Tiltfile'), 'utf8');
 const releaseTiltfile = readFileSync(
-  join(repoRoot, 'infra/kubernetes/lab/app-release/Tiltfile'),
+  join(repoRoot, 'infra/environments/release/Tiltfile'),
   'utf8',
 );
 
@@ -18,7 +18,7 @@ test('root Tiltfile is the dev profile without release image builds', () => {
     rootTiltfile,
     /allow_k8s_contexts\s*\(\s*['"]kind-offscreen-lab['"]\s*\)/,
   );
-  assert.match(rootTiltfile, /include\s*\(\s*['"]\.\/infra\/kubernetes\/lab\/dev\/Tiltfile['"]\s*\)/);
+  assert.match(rootTiltfile, /include\s*\(\s*['"]\.\/infra\/dev\/Tiltfile['"]\s*\)/);
 });
 
 test('release Tiltfile still owns app-release-images', () => {

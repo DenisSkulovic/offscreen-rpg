@@ -104,7 +104,7 @@ export function parseImagesPin(text) {
  * @param {string} repoRoot
  */
 export function loadPinnedReleaseImages(repoRoot) {
-  const pinPath = join(repoRoot, 'infra/kubernetes/lab/app-release/images.pin');
+  const pinPath = join(repoRoot, 'infra/images/release/images.pin');
   if (!existsSync(pinPath)) {
     return { pinPath, pins: {} };
   }

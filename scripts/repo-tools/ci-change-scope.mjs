@@ -39,6 +39,9 @@ const INTEGRATION_PREFIXES = [
   'apps/api/',
   'apps/worker/',
   'infra/kubernetes/lab/',
+  'infra/clusters/',
+  'infra/workloads/',
+  'infra/environments/',
   'packages/',
   'tools/',
   'scripts/',
@@ -55,6 +58,8 @@ const INTEGRATION_FILES = new Set([
 
 const LAB_DEV_PREFIX = 'infra/kubernetes/lab/dev/';
 const LAB_APP_RELEASE_PREFIX = 'infra/kubernetes/lab/app-release/';
+const IMAGE_PREFIX = 'infra/images/';
+const DEV_GRAPH_PREFIX = 'infra/dev/';
 const DOCKERFILE_PATH =
   /(^|\/)Dockerfile(\.[^/]+)?$/;
 
@@ -101,6 +106,8 @@ export function isIntegrationPath(path) {
   if (p.startsWith('.github/workflows/')) return true;
   if (p.startsWith(LAB_DEV_PREFIX)) return true;
   if (p.startsWith(LAB_APP_RELEASE_PREFIX)) return true;
+  if (p.startsWith(IMAGE_PREFIX)) return true;
+  if (p.startsWith(DEV_GRAPH_PREFIX)) return true;
   if (isLabDockerfilePath(p)) return true;
   if (INTEGRATION_PREFIXES.some((prefix) => p.startsWith(prefix))) return true;
   return false;

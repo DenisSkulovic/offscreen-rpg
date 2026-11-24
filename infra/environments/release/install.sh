@@ -13,7 +13,7 @@ fi
 
 RELEASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OVERLAY_DIR="$(cd "${RELEASE_DIR}/../../workloads/release" && pwd)"
-APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../kubernetes/lab/app-release" && pwd)"
+APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../images/release" && pwd)"
 CONTEXT_NAME="kind-offscreen-lab"
 CLUSTER_NAME="offscreen-lab"
 KUBECTL=(kubectl --context "$CONTEXT_NAME")
