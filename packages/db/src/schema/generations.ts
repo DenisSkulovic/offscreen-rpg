@@ -8,7 +8,7 @@ import {
   timestamp,
   check,
 } from 'drizzle-orm/pg-core';
-import { user } from './auth';
+import { user } from '@offscreen/identity-persistence/auth';
 import { storyDraft } from './drafts';
 
 export const generation = pgTable(

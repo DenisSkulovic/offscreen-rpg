@@ -9,7 +9,7 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 import { createDatabase } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
-import { user } from '@offscreen/db/schema';
+import { user } from '@offscreen/identity-persistence/auth';
 import {
   storytellerAttempt,
   storytellerDispatchReview,

@@ -11,7 +11,7 @@ import {
   uniqueIndex,
   foreignKey,
 } from 'drizzle-orm/pg-core';
-import { user } from '../auth';
+import { user } from '@offscreen/identity-persistence/auth';
 import { storytellerFunding, storytellerRun } from './funding';
 
 export const storytellerCurrentPlatformPolicy = pgTable(

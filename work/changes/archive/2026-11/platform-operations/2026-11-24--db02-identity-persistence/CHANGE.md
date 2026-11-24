@@ -1,8 +1,8 @@
 # DB02 | Identity declaration and credential-store ownership
 
-**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: CONTRACT.** Baseline 2fb3f056; target undertaking/storyteller-workshop. DB01 joined. Executable now; no further promotion. Live SQL separately gated.
+**Status: Done / source-only. Kind: implementation. Profile: CONTRACT.** Baseline 2fb3f056; target undertaking/storyteller-workshop. DB01 joined. Executable now; no further promotion. Live SQL separately gated.
 
-[Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
+[Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
 ## Outcome and scope
 
@@ -31,6 +31,6 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Identity declaration and credential-store ownership | database-infrastructure | pending | NOT RUN | TASKS | pending |
+| Identity declaration and credential-store ownership | database-infrastructure | identity-persistence auth/terminal-auth; API terminal-auth/store.ts; SHA at join | source build, db-migrations test 9/9, api build/typecheck, check:schema PASS | old terminal-auth-store export absent; live SQL NOT RUN | database-infrastructure realization |
 
 Read [SOURCE-MAP.md](SOURCE-MAP.md) before dispatch. No further planner approval.

@@ -14,7 +14,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { story, storyPassage } from './stories';
-import { user } from './auth';
+import { user } from '@offscreen/identity-persistence/auth';
 import { generation } from './generations';
 
 export const campaign = pgTable('campaign', {

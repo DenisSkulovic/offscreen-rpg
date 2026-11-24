@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import type { BetterAuthOptions } from 'better-auth';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { Database } from '@offscreen/db';
-import * as schema from '@offscreen/db/schema';
+import * as schema from '@offscreen/identity-persistence/auth';
 import type { AuthConfig } from './config.js';
 
 export function authOptions(database: Database, config: AuthConfig) {

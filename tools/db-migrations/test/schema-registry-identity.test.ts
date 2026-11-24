@@ -18,7 +18,7 @@ import {
   accountRelations as sourceAccountRelations,
   sessionRelations as sourceSessionRelations,
   userRelations as sourceUserRelations,
-} from '@offscreen/db/schema';
+} from '@offscreen/identity-persistence/auth';
 import { canonicalSnapshotDigest } from '../src/canonical-snapshot.js';
 
 const ORIGIN_SHA = '7033f654091a4fc66c7de6b0dce37e2b8fb504c1';
@@ -199,7 +199,7 @@ test('frozen synthetic baseline digest matches origin capture', () => {
   assert.equal(ORIGIN_SHA, '7033f654091a4fc66c7de6b0dce37e2b8fb504c1');
 });
 
-test('auth relation exports are identical to @offscreen/db/schema', () => {
+test('auth relation exports are identical to @offscreen/identity-persistence/auth', () => {
   for (const name of AUTH_RELATION_EXPORTS) {
     const value = auth[name];
     assert.ok(is(value, Relations), `${name} is not Relations`);

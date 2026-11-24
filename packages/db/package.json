@@ -11,10 +11,6 @@
       "types": "./dist/src/schema/drafts.d.ts",
       "default": "./dist/src/schema/drafts.js"
     },
-    "./schema": {
-      "types": "./dist/src/schema/auth.d.ts",
-      "default": "./dist/src/schema/auth.js"
-    },
     ".": {
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
@@ -58,14 +54,6 @@
     "./admin-schema": {
       "types": "./dist/src/schema/admin.d.ts",
       "default": "./dist/src/schema/admin.js"
-    },
-    "./terminal-auth-schema": {
-      "types": "./dist/src/schema/terminal-auth.d.ts",
-      "default": "./dist/src/schema/terminal-auth.js"
-    },
-    "./terminal-auth-store": {
-      "types": "./dist/src/terminal-auth-store.d.ts",
-      "default": "./dist/src/terminal-auth-store.js"
     }
   },
   "scripts": {
@@ -76,6 +64,7 @@
     "test:integration": "node --test dist/test/database.integration.js"
   },
   "dependencies": {
+    "@offscreen/identity-persistence": "workspace:*",
     "drizzle-orm": "0.45.2",
     "pg": "8.23.0",
     "zod": "4.6.5"

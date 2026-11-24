@@ -11,7 +11,7 @@ import {
   uuid,
   unique,
 } from 'drizzle-orm/pg-core';
-import { user } from './auth';
+import { user } from '@offscreen/identity-persistence/auth';
 
 export const qaRun = pgTable(
   'qa_run',

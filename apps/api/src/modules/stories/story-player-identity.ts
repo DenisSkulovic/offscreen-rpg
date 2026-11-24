@@ -4,7 +4,7 @@ import type { Database } from '@offscreen/db';
 import {
   readTerminalAccessToken,
   readUserDisplay,
-} from '@offscreen/db/terminal-auth-store';
+} from '../terminal-auth/store.js';
 import { IdentityService, type AuthenticatedUser } from '../auth/identity.js';
 import { digestAccessToken } from '../terminal-auth/crypto.js';
 import { DATABASE } from '../../database-token.js';

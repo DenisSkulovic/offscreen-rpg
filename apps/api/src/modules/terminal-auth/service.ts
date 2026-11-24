@@ -21,7 +21,7 @@ import {
   readTerminalPairingConsent,
   readUserDisplay,
   revokeTerminalAccessToken,
-} from '@offscreen/db/terminal-auth-store';
+} from './store.js';
 import type {
   ApproveTerminalPairingRequest,
   CreateTerminalPairingRequest,

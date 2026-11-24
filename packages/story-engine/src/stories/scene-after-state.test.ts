@@ -10,7 +10,7 @@ import {
   worldObligation,
 } from '@offscreen/db/campaign-schema';
 import { story, storyItem } from '@offscreen/db/story-schema';
-import { user } from '@offscreen/db/schema';
+import { user } from '@offscreen/identity-persistence/auth';
 import type { Transaction } from '@offscreen/db/outbox';
 import type { StoryContinuation } from './command-policy';
 import {
