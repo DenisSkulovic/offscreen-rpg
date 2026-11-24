@@ -1,6 +1,6 @@
 # CACHE07 | Distributed reliability evidence
 
-**Status: Owner-commissioned / Ready for source harness implementation; live execution separately gated. Kind: implementation. Profile: PROOF.** Current baseline c0d3c283e60e1c06d627f9a9b96603f7294d5202; target undertaking/storyteller-workshop. Wave 2 source joined. [Exact fixture and commands](PLAN.md). No further commission needed for source. Actual local disposable Docker Redis run requires explicit owner permission; CACHE04 SQL proof remains independent.
+**Status: Source harness implemented; live execution NOT-RUN and still owner-gated. Kind: implementation. Profile: PROOF. Not Done.** Current baseline c0d3c283e60e1c06d627f9a9b96603f7294d5202; target undertaking/storyteller-workshop. Wave 2 source joined. [Exact fixture and commands](PLAN.md). No further commission needed for source. Actual local disposable Docker Redis run requires explicit owner permission; CACHE04 SQL proof remains independent.
 
 [Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)
 
@@ -33,4 +33,4 @@ Owner release is conditional, not blanket readiness certification. Parent verifi
 
 | Affected selected claim/heading | Authority | Target delta | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update |
 | --- | --- | --- | --- | --- | --- | --- |
-| Pending closure | persistence-and-caching | Distributed reliability evidence | pending | NOT-RUN | TASKS | pending |
+| Current state, CACHE07 distributed proof | docs/technical/platform/persistence-and-caching.md | Source harness exists; live Redis proof not claimed | packages/cache/test/distributed at change/cache07-distributed-proof | source-only; live NOT-RUN | harness.test.mjs refuses Docker without opt-in | README and PROOF.md |
