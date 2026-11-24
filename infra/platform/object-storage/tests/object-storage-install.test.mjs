@@ -179,3 +179,44 @@ test('release probe collector maps readPlatformObject shapes', () => {
   assert.equal(probe.context, RELEASE_S3_CONTEXT);
   assert.equal(probe.storageClass, 'local-path');
 });
+
+
+test('fresh release creates one owned credential Secret before workloads', () => {
+  const writes = [];
+  const result = executeReleaseObjectStorageInstall({
+    collect: () => releaseReadyProbe,
+    generateCredentials: () => ({ accessKeyId: 'fixture-access', secretAccessKey: 'fixture-secret' }),
+    run(command, args, options) {
+      if (args.includes('create') || args.includes('apply')) {
+        writes.push({ args, doc: JSON.parse(options.input.replace(/^---\s*/, '')) });
+      }
+      return readinessStdout(args);
+    },
+  });
+  assert.equal(result.ok, true);
+  const secrets = writes.filter(call => call.doc.kind === 'Secret');
+  assert.equal(secrets.length, 1);
+  assert.ok(secrets[0].args.includes('create'));
+  assert.ok(secrets[0].args.includes(RELEASE_S3_CONTEXT));
+  assert.deepEqual(secrets[0].doc.metadata, {
+    name: DEV_S3_SECRET,
+    namespace: RELEASE_S3_NAMESPACE,
+    labels: { 'offscreen.rpg/lab': RELEASE_S3_OWNER },
+  });
+  assert.deepEqual(Object.keys(secrets[0].doc.stringData).sort(), ['access-key-id', 'secret-access-key']);
+  const deploymentIndex = writes.findIndex(call => call.doc.kind === 'Deployment');
+  assert.ok(deploymentIndex > writes.indexOf(secrets[0]));
+});
+
+test('legacy unlabeled Secret refuses without writes or credential rotation', () => {
+  const probe = ownedReleaseProbe();
+  probe.resources.find(item => item.kind === 'Secret').owner = null;
+  const result = executeReleaseObjectStorageInstall({
+    collect: () => probe,
+    generateCredentials() { assert.fail('must not generate credentials'); },
+    run() { assert.fail('must not execute any commands'); },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, false);
+  assert.ok(result.refusals.some(item => item.id === 'foreign-secret'));
+});
