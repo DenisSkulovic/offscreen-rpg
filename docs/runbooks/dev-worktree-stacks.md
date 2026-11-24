@@ -34,7 +34,7 @@ Worktrees, Changes, environment identities and running application workloads are
 
 For a commissioned Change, first follow [AGENTS.md](../../AGENTS.md), its `CHANGE.md`/`TASKS.md`, and the linked-worktree branch rules. Use the **worktree-root developer command** when T05 has passed live proof and the command reports that it targets `kind-offscreen-dev`; use the scripts' normal `status` and `stop` commands instead of manually choosing Pods, ports, credentials or namespaces. If the command is absent or reports NOT READY, treat that as a platform gate: report the exact stage; do not silently fall back to the release lab, Compose, a global Tilt process, hard-coded dev-1 or destructive recreation.
 
-**Integrated implementation note:** the root CLI calls `scripts/repo-tools/dev-tilt.mjs`, backed by v2 environment records and slot-aware resources. Image preparation returns a content-derived ref and does not patch Deployments. One owned slot and one brand-new worktree have passed current-generation readiness. That does not by itself authorize HR01–HR03 or four-stack capacity.
+**Integrated implementation note:** the root CLI calls `tools/dev-environments/src/cli/dev-tilt.mjs`, backed by v2 environment records and slot-aware resources. Image preparation returns a content-derived ref and does not patch Deployments. One owned slot and one brand-new worktree have passed current-generation readiness. That does not by itself authorize HR01–HR03 or four-stack capacity.
 
 ## Actual targets, not interchangeable
 
@@ -75,7 +75,7 @@ The source for allocation/registration is `scripts/repo-tools/dev-worktree-{allo
 ## Source navigation
 
 - Assignment/lease: `scripts/repo-tools/dev-worktree-{allocator,registry}.mjs`.
-- Slot renderer/credential projection: `infra/kubernetes/lab/dev/backing/dev-slot-{app-graph,project}.mjs`.
+- Slot renderer/credential projection: `tools/dev-environments/src/rendering/dev-slot-{app-graph,project}.mjs`.
 - Dev image build: `infra/kubernetes/lab/dev/load-dev-slot-image.sh`.
 - Watch graph/compiled freshness: `infra/kubernetes/lab/dev/{dev-sync-paths,dev-watch-compilation,dev-watched-compilation-receipt,dev-loaded-runtime-status}.mjs`; historical shared `Tiltfile` is a compatibility reference, not the accepted slot launcher.
 - Change gate and evidence: [DXK09](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md), [T05](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/TASKS.md), [PROOF](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md).

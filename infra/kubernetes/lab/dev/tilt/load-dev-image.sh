@@ -27,7 +27,7 @@ if [[ -n "${OFFSCREEN_IMAGE_FINGERPRINT:-}" ]]; then
   fingerprint="$OFFSCREEN_IMAGE_FINGERPRINT"
 else
 fingerprint="$(node --input-type=module -e "
-import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './scripts/repo-tools/dev-slot-image-plan.mjs';
+import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs';
 const result = fingerprintDevImageContext(process.cwd(), { roleFilter: UNION_ROLE_FILTER });
 if (!result.ok) { console.error(result.reason); process.exit(2); }
 process.stdout.write(result.fingerprint);

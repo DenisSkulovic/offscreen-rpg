@@ -22,7 +22,7 @@ if [[ -n "${OFFSCREEN_IMAGE_FINGERPRINT:-}" ]]; then
   fingerprint_cache="invocation"
 else
 fingerprint="$(node --input-type=module -e "
-import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './scripts/repo-tools/dev-slot-image-plan.mjs';
+import { fingerprintDevImageContext, UNION_ROLE_FILTER } from './tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs';
 const result = fingerprintDevImageContext(process.cwd(), { roleFilter: UNION_ROLE_FILTER });
 if (!result.ok) { console.error(result.reason); process.exit(2); }
 process.stdout.write(result.fingerprint);
@@ -105,7 +105,7 @@ for alias_role in "${roles[@]}"; do
     startup_timing_end "ctr-tag-${alias_role}-${node_role}" images miss "$tag_started"
   done
   node --input-type=module -e '
-import { confirmLoadedAliasIdentity } from "./scripts/repo-tools/dev-slot-image-plan.mjs";
+import { confirmLoadedAliasIdentity } from "./tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs";
 const [expected, control, worker] = process.argv.slice(1);
 const result = confirmLoadedAliasIdentity({
   expectedConfigId: expected,

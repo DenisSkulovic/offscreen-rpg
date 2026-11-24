@@ -6,12 +6,12 @@
     "node": ">=24.19.0 <25"
   },
   "scripts": {
-    "dev": "node scripts/repo-tools/dev-tilt.mjs",
-    "dev:new": "node scripts/repo-tools/dev-tilt.mjs new",
-    "dev:reserve": "node scripts/repo-tools/dev-tilt.mjs reserve",
-    "dev:attach": "node scripts/repo-tools/dev-tilt.mjs attach",
-    "dev:status": "node scripts/repo-tools/dev-tilt.mjs status",
-    "dev:stop": "node scripts/repo-tools/dev-tilt.mjs stop",
+    "dev": "node tools/dev-environments/src/cli/dev-tilt.mjs",
+    "dev:new": "node tools/dev-environments/src/cli/dev-tilt.mjs new",
+    "dev:reserve": "node tools/dev-environments/src/cli/dev-tilt.mjs reserve",
+    "dev:attach": "node tools/dev-environments/src/cli/dev-tilt.mjs attach",
+    "dev:status": "node tools/dev-environments/src/cli/dev-tilt.mjs status",
+    "dev:stop": "node tools/dev-environments/src/cli/dev-tilt.mjs stop",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",

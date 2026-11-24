@@ -131,18 +131,22 @@ export function assertAllowedDestinations(rows) {
 }
 
 export function assertLabInventoryCoverage(rows, trackedLabPaths) {
-  const mapped = new Set(
-    rows
-      .filter((r) => r.from.startsWith('infra/kubernetes/lab/'))
-      .map((r) => r.from),
-  );
+  const labRows = rows.filter((r) => r.from.startsWith('infra/kubernetes/lab/'));
+  const mapped = new Set(labRows.map((r) => r.from));
+  const tracked = new Set(trackedLabPaths);
   const missing = trackedLabPaths.filter((path) => !mapped.has(path));
   if (missing.length > 0) {
     throw new Error(
       `tracked lab files missing from move map: ${missing.join(', ')}`,
     );
   }
-  const extra = [...mapped].filter((path) => !trackedLabPaths.includes(path));
+  const extra = [];
+  for (const path of mapped) {
+    if (tracked.has(path)) continue;
+    const row = labRows.find((entry) => entry.from === path);
+    if (row?.to && gitTrackedMode(row.to)) continue;
+    extra.push(path);
+  }
   if (extra.length > 0) {
     throw new Error(
       `move map lists lab sources that are not tracked: ${extra.join(', ')}`,
@@ -153,7 +157,16 @@ export function assertLabInventoryCoverage(rows, trackedLabPaths) {
 export function assertTrackedModes(rows) {
   for (const row of rows) {
     const trackedMode = gitTrackedMode(row.from);
-    assert.ok(trackedMode, `expected tracked source path ${row.from}`);
+    if (!trackedMode) {
+      const relocatedMode = gitTrackedMode(row.to);
+      assert.ok(relocatedMode, `expected relocated destination ${row.to}`);
+      assert.equal(
+        relocatedMode,
+        row.mode,
+        `mode mismatch for relocated ${row.from}: map ${row.mode}, git ${relocatedMode}`,
+      );
+      continue;
+    }
     assert.equal(
       trackedMode,
       row.mode,
@@ -227,7 +240,7 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
   }
 
   for (const relativePath of [
-    'scripts/repo-tools/dev-tilt.mjs',
+    'tools/dev-environments/src/cli/dev-tilt.mjs',
     'scripts/repo-tools/stack.mjs',
     'scripts/repo-tools/stack-lifecycle.mjs',
     'scripts/repo-tools/stack-preflight.mjs',
@@ -253,7 +266,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   const trackedLab = gitLsFiles('infra/kubernetes/lab');
   auditMoveMap(map, {
     trackedLabPaths: trackedLab,
-    requireInitialOldPaths: true,
+    requireInitialOldPaths: false,
   });
   assertTrackedModes(map.rows);
 

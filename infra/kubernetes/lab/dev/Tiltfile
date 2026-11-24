@@ -133,7 +133,7 @@ if SLOT_SESSION:
     # Declarative slot Deployments. Live `kubectl get` copies resourceVersion and
     # managedFields, and those collide with the next image roll.
     rendered = local(
-        'node infra/kubernetes/lab/dev/backing/dev-slot-app-graph.mjs --tilt-deployments',
+        'node tools/dev-environments/src/rendering/dev-slot-app-graph.mjs --tilt-deployments',
         dir=REPO_ROOT,
         quiet=True,
     )

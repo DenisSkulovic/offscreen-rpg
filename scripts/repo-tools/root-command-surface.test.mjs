@@ -53,7 +53,7 @@ test('root package.json exposes the supported public command surface', () => {
     assert.ok(key in rootPkg.scripts, `missing root script ${key}`);
   }
 
-  assert.equal(rootPkg.scripts.dev, 'node scripts/repo-tools/dev-tilt.mjs');
+  assert.equal(rootPkg.scripts.dev, 'node tools/dev-environments/src/cli/dev-tilt.mjs');
 
   for (const [key, value] of Object.entries(rootPkg.scripts)) {
     assert.equal(typeof value, 'string', `root script ${key} must be a string`);

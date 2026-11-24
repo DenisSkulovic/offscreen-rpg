@@ -17,7 +17,7 @@ if [[ "${OFFSCREEN_DEV_SLOT:-}" == dev-* ]]; then
   (
     cd "$REPO"
     node --input-type=module -e '
-    import { assertExclusiveHostWrite } from "./scripts/repo-tools/dev-host-output-guard.mjs";
+    import { assertExclusiveHostWrite } from "./tools/dev-environments/src/domain/dev-host-output-guard.mjs";
     import { homedir } from "node:os";
     import { join } from "node:path";
     const registryRoot = process.env.OFFSCREEN_DEV_REGISTRY_ROOT
