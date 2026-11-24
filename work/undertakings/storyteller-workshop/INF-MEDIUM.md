@@ -1,10 +1,10 @@
 # Infrastructure medium-grained reconciliation
 
-2026-11-24: INF20–22,24–28 archived Done at 54f9261d699097835e6c97ad55612a02ae49e59c. INF23 revised to practical registry persistence, legacy conversion retained; INF29 final join planner-blocked. Owner commissioned second corrective wave focused on personal developer usability. No new live acceptance credit.
+2026-11-24: INF20–28 source Done. INF23 registry flock and atomic session write landed; INF29 final join planner-blocked. Owner commissioned second corrective wave focused on personal developer usability. No new live acceptance credit.
 
 | Change | Dependency | Status |
 | --- | --- | --- |
-| [INF23](../../changes/open/2026-11-24--inf23-dev-session-authority/CHANGE.md) Registry and session persistence | INF22 Done | Ready |
+| [INF23](../../changes/archive/2026-11/platform-operations/2026-11-24--inf23-dev-session-authority/CHANGE.md) Registry and session persistence | INF22 Done | Done (source) |
 | [INF31](../../changes/archive/2026-11/platform-operations/2026-11-24--inf31-image-identity/CHANGE.md) Correct image identity and reuse | INF24 Done | Done |
 | [INF33](../../changes/archive/2026-11/platform-operations/2026-11-24--inf33-s3-tenant-reliability/CHANGE.md) S3 tenancy reliability | INF28 Done | Done |
 | [INF35](../../changes/archive/2026-11/platform-operations/2026-11-24--inf35-owned-workload-cleanup/CHANGE.md) Practical owned workload cleanup | INF28 Done | Done (source) |

@@ -3,7 +3,6 @@ import { createConnection } from 'node:net';
 import { spawn, spawnSync } from 'node:child_process';
 import {
   existsSync,
-  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -24,7 +23,6 @@ import { readRegistryJson } from '../domain/dev-worktree-registry.mjs';
 import {
   collectDefaultProbes,
   runStackPreflight,
-  CONTEXT_NAME,
 } from '../../../../scripts/repo-tools/stack-preflight.mjs';
 import {
   devRuntimeReceiptRoot,
@@ -46,6 +44,7 @@ import {
   parkSelectedEnvironment,
   writeEnvironmentSession,
 } from '../domain/dev-environment-session.mjs';
+import { writeDevSessionJsonAtomically } from '../domain/dev-session-json.mjs';
 import { reconcileOwnedDevSlot } from '../application/dev-slot-startup.mjs';
 import {
   fingerprintDevImageContext,
@@ -108,9 +107,7 @@ export function readDevSession(worktree) {
  * @param {DevSessionRecord} session
  */
 export function writeDevSession(worktree, session) {
-  const file = devSessionPath(worktree);
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, `${JSON.stringify(session)}\n`, 'utf8');
+  writeDevSessionJsonAtomically(devSessionPath(worktree), session);
 }
 
 /**

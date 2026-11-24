@@ -1,6 +1,6 @@
 # Storyteller Workshop | reality check and finish line
 
-**INF23/INF30–INF36 (2026-11-24):** [Practical medium-grained follow-up](INF-MEDIUM.md) commissioned at 54f9261d699097835e6c97ad55612a02ae49e59c; INF20–22/24–28 source Done, INF29 final join blocked. Focus developer usability, preserve data and isolation, defer enterprise hardening. No live acceptance credit.
+**INF23/INF30–INF36 (2026-11-24):** [Practical medium-grained follow-up](INF-MEDIUM.md) commissioned at 54f9261d699097835e6c97ad55612a02ae49e59c; INF20–28 source Done, INF29 final join blocked. INF23 source Done (registry flock and atomic session write). Focus developer usability, preserve data and isolation, defer enterprise hardening. No live acceptance credit.
 
 **INF20–INF29 (2026-11-24):** Owner commissioned [medium-grained infrastructure reconciliation](INF-MEDIUM.md). INF18 and INF20 source Done. Admission, selected tenancy, credentials, release integrity, readiness, chart and retirement. INF23/29 planner-blocked. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.
 

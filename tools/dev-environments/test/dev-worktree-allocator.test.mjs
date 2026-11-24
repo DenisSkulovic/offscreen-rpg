@@ -1,8 +1,16 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import {
   allocateDevWorktreeOwner,
   allocateIndependentEnvironment,
@@ -22,6 +30,8 @@ import {
 } from '../src/domain/dev-worktree-allocator.mjs';
 import {
   encodeDnsSafeSlotId,
+  flockLockFilePath,
+  lockFilePath,
   migrateRegistryV1ToV2,
   readRegistryV2,
   registryFilePath,
@@ -30,6 +40,10 @@ import {
   withRegistryLock,
   writeRegistry,
 } from '../src/domain/dev-worktree-registry.mjs';
+
+const registryModulePath = fileURLToPath(
+  new URL('../src/domain/dev-worktree-registry.mjs', import.meta.url),
+);
 
 const IDENTITY_COUNTS = [1, 4, 5, 10, 100];
 
@@ -54,7 +68,13 @@ function allocateSyntheticWorktrees(registryRoot, n, deps = {}) {
   /** @type {ReturnType<typeof allocateDevWorktreeOwner>[]} */
   const owners = [];
   for (let i = 0; i < n; i += 1) {
-    owners.push(allocateDevWorktreeOwner(`/tmp/synthetic-worktree-${i}`, registryRoot, deps));
+    owners.push(
+      allocateDevWorktreeOwner(
+        `/tmp/synthetic-worktree-${i}`,
+        registryRoot,
+        deps,
+      ),
+    );
   }
   return owners;
 }
@@ -116,23 +136,36 @@ test('dynamic port bundle planning is not a fixed four-slot table', () => {
   const tenth = planPortBundleForSlotIndex(9, DEFAULT_PORT_RANGE);
   assert.ok(fifth);
   assert.ok(tenth);
-  assert.deepEqual(portBundleValues(fifth), [fifth.game, fifth.game + 1, fifth.game + 2, fifth.game + 3]);
+  assert.deepEqual(portBundleValues(fifth), [
+    fifth.game,
+    fifth.game + 1,
+    fifth.game + 2,
+    fifth.game + 3,
+  ]);
   assert.equal(new Set(portBundleValues(fifth)).size, 4);
   assert.ok(portBundlesDisjoint(fifth, tenth));
   assert.ok(fifth.tilt < tenth.game);
 });
 
 test('a range that cannot hold four distinct ports refuses a new bundle', () => {
-  assert.equal(planPortBundleForSlotIndex(0, { start: 20000, end: 20002 }, 4), null);
-  assert.equal(planPortBundleForSlotIndex(0, { start: 20000, end: 20003 }, 3), null);
+  assert.equal(
+    planPortBundleForSlotIndex(0, { start: 20000, end: 20002 }, 4),
+    null,
+  );
+  assert.equal(
+    planPortBundleForSlotIndex(0, { start: 20000, end: 20003 }, 3),
+    null,
+  );
   withTempRegistry((registryRoot) => {
     assert.throws(
-      () => allocateDevWorktreeOwner('/tmp/too-small', registryRoot, {
-        canonicalizePath: (p) => p,
-        isPortAvailable: () => true,
-        portRange: { start: 20000, end: 20002 },
-      }),
-      (error) => isAllocatorRefusal(error) && error.id === 'exhausted-port-range',
+      () =>
+        allocateDevWorktreeOwner('/tmp/too-small', registryRoot, {
+          canonicalizePath: (p) => p,
+          isPortAvailable: () => true,
+          portRange: { start: 20000, end: 20002 },
+        }),
+      (error) =>
+        isAllocatorRefusal(error) && error.id === 'exhausted-port-range',
     );
   });
 });
@@ -142,38 +175,138 @@ test('concurrent allocation race: lock holder times out second caller without mu
     let entered = false;
     assert.throws(
       () => {
-        withRegistryLock(
-          {
-            registryRoot,
-            lockTimeoutMs: 80,
-            sleepMs: (ms) => {
-              const end = Date.now() + ms;
-              while (Date.now() < end) {
-                // spin
-              }
-            },
-          },
-          () => {
-            entered = true;
-            withRegistryLock({ registryRoot, lockTimeoutMs: 50 }, () => {
-              throw new Error('should not enter nested lock');
-            });
-          },
-        );
+        withRegistryLock({ registryRoot, lockTimeoutMs: 5_000 }, () => {
+          entered = true;
+          withRegistryLock({ registryRoot, lockTimeoutMs: 200 }, () => {
+            throw new Error('should not enter nested lock');
+          });
+        });
       },
-      (error) => isAllocatorRefusal(error) && error.id === 'registry-lock-timeout',
+      (error) =>
+        isAllocatorRefusal(error) && error.id === 'registry-lock-timeout',
     );
     assert.equal(entered, true);
   });
 });
 
+test('legacy owners.lock refuses kernel flock without deleting the legacy file', () => {
+  withTempRegistry((registryRoot) => {
+    writeFileSync(lockFilePath(registryRoot), '{"pid":1,"at":0}\n', 'utf8');
+    assert.throws(
+      () => withRegistryLock({ registryRoot }, () => {}),
+      (error) =>
+        isAllocatorRefusal(error) && error.id === 'legacy-registry-lock',
+    );
+    assert.ok(
+      readFileSync(lockFilePath(registryRoot), 'utf8').includes('"pid":1'),
+    );
+    assert.throws(
+      () =>
+        allocateDevWorktreeOwner('/tmp/legacy-lock', registryRoot, {
+          canonicalizePath: (p) => p,
+          isPortAvailable: () => true,
+        }),
+      (error) =>
+        isAllocatorRefusal(error) && error.id === 'legacy-registry-lock',
+    );
+  });
+});
+
+test(
+  'subprocess flock holder blocks then releases the registry lock',
+  { timeout: 30_000 },
+  async () => {
+    await new Promise((resolve, reject) => {
+      withTempRegistry((registryRoot) => {
+        const heldSentinel = join(registryRoot, '.flock-holder-ready');
+        /** @type {string[]} */
+        const holderStderr = [];
+        const holder = spawn(
+          process.execPath,
+          [
+            '--input-type=module',
+            '-e',
+            `
+        import { spawnSync } from 'node:child_process';
+        import { writeFileSync } from 'node:fs';
+        import { withRegistryLock } from ${JSON.stringify(registryModulePath)};
+        withRegistryLock({ registryRoot: ${JSON.stringify(registryRoot)}, lockTimeoutMs: 30_000 }, () => {
+          writeFileSync(${JSON.stringify(heldSentinel)}, 'held\\n', 'utf8');
+          spawnSync('sleep', ['3'], { stdio: 'ignore' });
+        });
+        `,
+          ],
+          { stdio: ['ignore', 'pipe', 'pipe'] },
+        );
+        holder.stderr?.on('data', (chunk) =>
+          holderStderr.push(chunk.toString()),
+        );
+        holder.on('error', reject);
+
+        const waitHeldUntil = Date.now() + 10_000;
+        const waitForSentinel = () => {
+          if (existsSync(heldSentinel)) {
+            assert.equal(
+              holder.exitCode,
+              null,
+              'holder should still be running while the lock is contested',
+            );
+            let contested = false;
+            assert.throws(
+              () =>
+                withRegistryLock({ registryRoot, lockTimeoutMs: 500 }, () => {
+                  contested = true;
+                }),
+              (error) =>
+                isAllocatorRefusal(error) &&
+                error.id === 'registry-lock-timeout',
+            );
+            assert.equal(contested, false);
+            holder.once('close', (code) => {
+              try {
+                assert.equal(code, 0, holderStderr.join(''));
+                let acquired = false;
+                withRegistryLock({ registryRoot, lockTimeoutMs: 5_000 }, () => {
+                  acquired = true;
+                });
+                assert.equal(acquired, true);
+                assert.ok(existsSync(flockLockFilePath(registryRoot)));
+                resolve();
+              } catch (error) {
+                reject(error);
+              }
+            });
+            return;
+          }
+          if (holder.exitCode !== null || Date.now() >= waitHeldUntil) {
+            reject(
+              new assert.AssertionError({
+                message: 'holder process should acquire the registry lock',
+                operator: 'ok',
+                actual: false,
+              }),
+            );
+            return;
+          }
+          setTimeout(waitForSentinel, 10);
+        };
+        waitForSentinel();
+      });
+    });
+  },
+);
+
 test('foreign listener refuses reattach without killing', () => {
   withTempRegistry((registryRoot) => {
-    const owner = allocateDevWorktreeOwner('/tmp/foreign-listener', registryRoot, {
-      canonicalizePath: (p) => p,
-      isPortAvailable: () => true,
-      readProcessIdentity: () => ({ startTimeJiffies: 1 }),
-    });
+    const owner = allocateDevWorktreeOwner(
+      '/tmp/foreign-listener',
+      registryRoot,
+      {
+        canonicalizePath: (p) => p,
+        isPortAvailable: () => true,
+        readProcessIdentity: () => ({ startTimeJiffies: 1 }),
+      },
+    );
     assert.throws(
       () => {
         allocateDevWorktreeOwner('/tmp/foreign-listener', registryRoot, {
@@ -196,7 +329,11 @@ test('stale PID reused by another owner refuses reclaim', () => {
     ports: { game: 13100, control: 13100, tilt: 13101, spare: 13102 },
     processIdentity: { pid: 4242, startTimeJiffies: 111 },
     resourceUids: { deployment: 'uid-a' },
-    lease: { pid: 4242, startTimeJiffies: 111, acquiredAt: '2026-01-01T00:00:00.000Z' },
+    lease: {
+      pid: 4242,
+      startTimeJiffies: 111,
+      acquiredAt: '2026-01-01T00:00:00.000Z',
+    },
   };
   assert.throws(
     () => {
@@ -222,7 +359,8 @@ test('exhausted port range refuses new worktree', () => {
     allocateDevWorktreeOwner('/tmp/only-one-bundle', registryRoot, deps);
     assert.throws(
       () => allocateDevWorktreeOwner('/tmp/no-room', registryRoot, deps),
-      (error) => isAllocatorRefusal(error) && error.id === 'exhausted-port-range',
+      (error) =>
+        isAllocatorRefusal(error) && error.id === 'exhausted-port-range',
     );
   });
 });
@@ -253,7 +391,11 @@ test('resource UID mismatch refuses stale reconciliation', () => {
     ports: { game: 13104, control: 13104, tilt: 13105, spare: 13106 },
     processIdentity: { pid: 77, startTimeJiffies: 5 },
     resourceUids: { 'tilt-session': 'abc' },
-    lease: { pid: 77, startTimeJiffies: 5, acquiredAt: '2026-01-01T00:00:00.000Z' },
+    lease: {
+      pid: 77,
+      startTimeJiffies: 5,
+      acquiredAt: '2026-01-01T00:00:00.000Z',
+    },
   };
   assert.throws(
     () => {
@@ -262,7 +404,8 @@ test('resource UID mismatch refuses stale reconciliation', () => {
         resourceUids: { 'tilt-session': 'different' },
       });
     },
-    (error) => isAllocatorRefusal(error) && error.id === 'resource-uid-mismatch',
+    (error) =>
+      isAllocatorRefusal(error) && error.id === 'resource-uid-mismatch',
   );
 });
 
@@ -275,7 +418,11 @@ test('stale dead process reconciles when resource UID and owner labels match', (
     ports: { game: 13104, control: 13104, tilt: 13105, spare: 13106 },
     processIdentity: { pid: 77, startTimeJiffies: 5 },
     resourceUids: { 'tilt-session': 'abc' },
-    lease: { pid: 77, startTimeJiffies: 5, acquiredAt: '2026-01-01T00:00:00.000Z' },
+    lease: {
+      pid: 77,
+      startTimeJiffies: 5,
+      acquiredAt: '2026-01-01T00:00:00.000Z',
+    },
   };
   const reconciled = reconcileStaleWithoutLiveProcess({
     owner,
@@ -310,7 +457,10 @@ test('attach stores validated process identity without kubernetes calls', () => 
   );
   assert.equal(owner.lease?.pid, 9001);
   assert.equal(owner.processIdentity?.startTimeJiffies, 42);
-  assert.deepEqual(portBundleValues(owner.ports).sort(), [13120, 13120, 13121, 13122].sort());
+  assert.deepEqual(
+    portBundleValues(owner.ports).sort(),
+    [13120, 13120, 13121, 13122].sort(),
+  );
 });
 
 test('ensurePortsStillOwned treats live lease listeners as owned', () => {
@@ -322,7 +472,11 @@ test('ensurePortsStillOwned treats live lease listeners as owned', () => {
     ports: { game: 13108, control: 13108, tilt: 13109, spare: 13110 },
     processIdentity: { pid: 5, startTimeJiffies: 8 },
     resourceUids: {},
-    lease: { pid: 5, startTimeJiffies: 8, acquiredAt: '2026-01-01T00:00:00.000Z' },
+    lease: {
+      pid: 5,
+      startTimeJiffies: 8,
+      acquiredAt: '2026-01-01T00:00:00.000Z',
+    },
   };
   assert.doesNotThrow(() => {
     ensurePortsStillOwned(
@@ -367,7 +521,10 @@ test('historical three-port records migrate unchanged and new bundles avoid them
         },
       },
     });
-    const migrated = migrateRegistryV1ToV2(registryRoot, { authorizeCutover: true, liveRoot: '/not-live' });
+    const migrated = migrateRegistryV1ToV2(registryRoot, {
+      authorizeCutover: true,
+      liveRoot: '/not-live',
+    });
     assert.deepEqual(migrated.environmentsById['dev-1'].ports, historical);
     const created = allocateIndependentEnvironment('/tmp/fresh', registryRoot, {
       canonicalizePath: (path) => path,
@@ -378,7 +535,10 @@ test('historical three-port records migrate unchanged and new bundles avoid them
       assert.equal(reserved.has(port), false);
     }
     assert.equal(new Set(portBundleValues(created.ports)).size, 4);
-    assert.deepEqual(readRegistryV2(registryRoot).environmentsById['dev-1'].ports, historical);
+    assert.deepEqual(
+      readRegistryV2(registryRoot).environmentsById['dev-1'].ports,
+      historical,
+    );
   });
 });
 
