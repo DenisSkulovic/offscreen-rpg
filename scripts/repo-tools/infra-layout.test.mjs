@@ -315,10 +315,8 @@ export const INF15_SUCCESSOR_RELOCATIONS = [
   },
 ];
 
-/** Staging-only: document-access smoke still applies store.yaml. */
-export const INF15_STAGING_PREDECESSOR_PATHS = [
-  'infra/platform/object-storage/store.yaml',
-];
+/** Historical INF15 staging predecessors (all retired). */
+export const INF15_STAGING_PREDECESSOR_PATHS = [];
 
 /** INF08 successor relocations for historical move-map destination rows. */
 export const INF08_SUCCESSOR_RELOCATIONS = [

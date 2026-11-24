@@ -1,5 +1,13 @@
-import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE, DEV_CNPG_OWNER } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
-import { deriveDevSqlTenant, renderDevSqlTenant } from '../rendering/dev-sql-tenant-contract.mjs';
+import {
+  DEV_CNPG_CLUSTER,
+  DEV_CNPG_CONTEXT,
+  DEV_CNPG_NAMESPACE,
+  DEV_CNPG_OWNER,
+} from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+import {
+  deriveDevSqlTenant,
+  renderDevSqlTenant,
+} from '../rendering/dev-sql-tenant-contract.mjs';
 import { canConnect, quoteSqlIdent } from './dev-sql-tenant-reconciler.mjs';
 
 const LIVE_TOKEN = 'kind-offscreen-dev-sql-tenant-live';
@@ -10,7 +18,12 @@ function refusal(id, detail) {
 }
 
 function stopped(id, detail, extra = {}) {
-  return { ok: false, mutated: Boolean(extra.retained?.length), refusals: [refusal(id, detail)], ...extra };
+  return {
+    ok: false,
+    mutated: Boolean(extra.retained?.length),
+    refusals: [refusal(id, detail)],
+    ...extra,
+  };
 }
 
 export function planDevSqlChanges(catalog, slots) {
@@ -18,29 +31,56 @@ export function planDevSqlChanges(catalog, slots) {
   for (const name of ['postgres', 'dev', 'template1']) {
     const database = catalog.databases[name];
     if (database?.publicConnect || database?.publicTemporary) {
-      actions.push(`REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(name)} FROM PUBLIC`);
+      actions.push(
+        `REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(name)} FROM PUBLIC`,
+      );
     }
   }
   if (!catalog.databases.dev?.connect.includes('dev')) {
-    actions.push(`GRANT CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent('dev')} TO ${quoteSqlIdent('dev')}`);
+    actions.push(
+      `GRANT CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent('dev')} TO ${quoteSqlIdent('dev')}`,
+    );
   }
   for (const slotId of slots) {
     const names = deriveDevSqlTenant(slotId);
-    actions.push(`APPLY closed Database ${names.database} owner ${names.migrationRole}`);
-    actions.push(`REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(names.database)} FROM PUBLIC`);
-    actions.push(`GRANT CONNECT ON DATABASE ${quoteSqlIdent(names.database)} TO ${quoteSqlIdent(names.migrationRole)}, ${quoteSqlIdent(names.runtimeRole)}`);
+    actions.push(
+      `APPLY closed Database ${names.database} owner ${names.migrationRole}`,
+    );
+    actions.push(
+      `REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(names.database)} FROM PUBLIC`,
+    );
+    actions.push(
+      `GRANT CONNECT ON DATABASE ${quoteSqlIdent(names.database)} TO ${quoteSqlIdent(names.migrationRole)}, ${quoteSqlIdent(names.runtimeRole)}`,
+    );
     actions.push(`ALLOW CONNECTIONS ${names.database} after ACL proof`);
   }
-  return { context: DEV_CNPG_CONTEXT, namespace: DEV_CNPG_NAMESPACE, cluster: DEV_CNPG_CLUSTER, readOnly: true, actions };
+  return {
+    context: DEV_CNPG_CONTEXT,
+    namespace: DEV_CNPG_NAMESPACE,
+    cluster: DEV_CNPG_CLUSTER,
+    readOnly: true,
+    actions,
+  };
 }
 
 function assertIdentity(identity) {
-  if (!identity || identity.context !== DEV_CNPG_CONTEXT || identity.namespace !== DEV_CNPG_NAMESPACE || identity.cluster !== DEV_CNPG_CLUSTER) {
-    return stopped('wrong-binding', 'executor is bound to kind-offscreen-dev/offscreen-dev-postgres/dev-pg');
+  if (
+    !identity ||
+    identity.context !== DEV_CNPG_CONTEXT ||
+    identity.namespace !== DEV_CNPG_NAMESPACE ||
+    identity.cluster !== DEV_CNPG_CLUSTER
+  ) {
+    return stopped(
+      'wrong-binding',
+      'executor is bound to kind-offscreen-dev/offscreen-dev-postgres/dev-pg',
+    );
   }
-  if (identity.owner !== DEV_CNPG_OWNER) return stopped('foreign-owner', identity.owner ?? 'missing');
-  if (identity.ready !== true) return stopped('cnpg-not-ready', DEV_CNPG_CLUSTER);
-  if (identity.changedContext === true) return stopped('ambient-context', 'kubectl context must stay unchanged');
+  if (identity.owner !== DEV_CNPG_OWNER)
+    return stopped('foreign-owner', identity.owner ?? 'missing');
+  if (identity.ready !== true)
+    return stopped('cnpg-not-ready', DEV_CNPG_CLUSTER);
+  if (identity.changedContext === true)
+    return stopped('ambient-context', 'kubectl context must stay unchanged');
   return null;
 }
 
@@ -50,26 +90,33 @@ function baselineStatements(catalog) {
     const database = catalog.databases[name];
     if (!database) return { refusals: [refusal('unknown-database', name)] };
     if (database.publicConnect || database.publicTemporary) {
-      statements.push(`REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(name)} FROM PUBLIC`);
+      statements.push(
+        `REVOKE CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent(name)} FROM PUBLIC`,
+      );
     }
   }
   if (!catalog.databases.dev.connect.includes('dev')) {
-    statements.push(`GRANT CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent('dev')} TO ${quoteSqlIdent('dev')}`);
+    statements.push(
+      `GRANT CONNECT, TEMPORARY ON DATABASE ${quoteSqlIdent('dev')} TO ${quoteSqlIdent('dev')}`,
+    );
   }
   return { statements, refusals: [] };
 }
 
 function aclsMatch(database, names) {
-  return database.publicConnect === false
-    && database.publicTemporary === false
-    && database.connect.includes(names.migrationRole)
-    && database.connect.includes(names.runtimeRole)
-    && !database.connect.includes('dev');
+  return (
+    database.publicConnect === false &&
+    database.publicTemporary === false &&
+    database.connect.includes(names.migrationRole) &&
+    database.connect.includes(names.runtimeRole) &&
+    !database.connect.includes('dev')
+  );
 }
 
 function catalogAllowlist(knownSlots) {
   const allowed = new Set(BASELINE);
-  for (const slotId of knownSlots) allowed.add(deriveDevSqlTenant(slotId).database);
+  for (const slotId of knownSlots)
+    allowed.add(deriveDevSqlTenant(slotId).database);
   return allowed;
 }
 
@@ -91,10 +138,16 @@ function proveKnownTenantsBeforeWrites(catalog, knownSlots) {
       const source = deriveDevSqlTenant(left);
       const target = deriveDevSqlTenant(right);
       if (canConnect(catalog, source.runtimeRole, target.database)) {
-        return stopped('cross-tenant', `${source.runtimeRole}->${target.database}`);
+        return stopped(
+          'cross-tenant',
+          `${source.runtimeRole}->${target.database}`,
+        );
       }
       if (canConnect(catalog, source.migrationRole, target.database)) {
-        return stopped('cross-tenant', `${source.migrationRole}->${target.database}`);
+        return stopped(
+          'cross-tenant',
+          `${source.migrationRole}->${target.database}`,
+        );
       }
     }
   }
@@ -109,28 +162,48 @@ function validateSelectedResources(catalog, names, resources) {
   const expected = [names.migrationSecret, names.runtimeSecret];
   for (const secretName of expected) {
     const item = resourceByName(resources, secretName);
-    if (item?.unreadable === true) return stopped('unreadable-resource', secretName);
-    if (item && item.owner !== DEV_CNPG_OWNER) return stopped('foreign-resource', secretName);
-    if (item && item.slot !== names.slotId) return stopped('foreign-resource', secretName);
+    if (item?.unreadable === true)
+      return stopped('unreadable-resource', secretName);
+    if (item && item.owner !== DEV_CNPG_OWNER)
+      return stopped('foreign-resource', secretName);
+    if (item && item.slot !== names.slotId)
+      return stopped('foreign-resource', secretName);
   }
-  for (const crName of [names.migrationRoleCr, names.runtimeRoleCr, names.databaseCr]) {
+  for (const crName of [
+    names.migrationRoleCr,
+    names.runtimeRoleCr,
+    names.databaseCr,
+  ]) {
     const item = resourceByName(resources, crName);
-    if (item?.unreadable === true) return stopped('unreadable-resource', crName);
-    if (item && item.owner !== DEV_CNPG_OWNER) return stopped('foreign-resource', crName);
-    if (item && item.slot !== names.slotId) return stopped('foreign-resource', crName);
+    if (item?.unreadable === true)
+      return stopped('unreadable-resource', crName);
+    if (item && item.owner !== DEV_CNPG_OWNER)
+      return stopped('foreign-resource', crName);
+    if (item && item.slot !== names.slotId)
+      return stopped('foreign-resource', crName);
   }
 
   const database = catalog.databases[names.database];
-  const hasRoles = Boolean(catalog.roles[names.migrationRole] && catalog.roles[names.runtimeRole]);
+  const hasRoles = Boolean(
+    catalog.roles[names.migrationRole] && catalog.roles[names.runtimeRole],
+  );
   const persistent = Boolean(database || hasRoles);
   const presentSecrets = expected.filter((name) => {
     const item = resourceByName(resources, name);
     return item && item.unreadable !== true;
   });
-  if (presentSecrets.length === 1 && presentSecrets.length < expected.length && persistent) {
+  if (
+    presentSecrets.length === 1 &&
+    presentSecrets.length < expected.length &&
+    persistent
+  ) {
     return stopped('partial-identity', names.slotId);
   }
-  const presentCrs = [names.migrationRoleCr, names.runtimeRoleCr, names.databaseCr].filter((name) => {
+  const presentCrs = [
+    names.migrationRoleCr,
+    names.runtimeRoleCr,
+    names.databaseCr,
+  ].filter((name) => {
     const item = resourceByName(resources, name);
     return item && item.unreadable !== true;
   });
@@ -183,41 +256,73 @@ function proveCrossTenantAfterWrites(catalog, knownSlots) {
       const target = deriveDevSqlTenant(right);
       if (!catalog.databases[target.database]) continue;
       if (canConnect(catalog, source.runtimeRole, target.database)) {
-        return stopped('cross-tenant', `${source.runtimeRole}->${target.database}`);
+        return stopped(
+          'cross-tenant',
+          `${source.runtimeRole}->${target.database}`,
+        );
       }
       if (canConnect(catalog, source.migrationRole, target.database)) {
-        return stopped('cross-tenant', `${source.migrationRole}->${target.database}`);
+        return stopped(
+          'cross-tenant',
+          `${source.migrationRole}->${target.database}`,
+        );
       }
     }
   }
   return null;
 }
 
-export function executeDevSqlTenants({ knownSlots, selectedSlot, authorizeLive, adapter, failAt }) {
-  if (authorizeLive !== LIVE_TOKEN) return stopped('ensure-not-authorized', 'live SQL tenant ensure remains held');
-  if (!adapter || adapter.injectedProbe === true) return stopped('injected-probe', 'an injected probe cannot authorize mutation');
+export function executeDevSqlTenants({
+  knownSlots,
+  selectedSlot,
+  authorizeLive,
+  adapter,
+  failAt,
+}) {
+  if (authorizeLive !== LIVE_TOKEN)
+    return stopped(
+      'ensure-not-authorized',
+      'live SQL tenant ensure remains held',
+    );
+  if (!adapter || adapter.injectedProbe === true)
+    return stopped(
+      'injected-probe',
+      'an injected probe cannot authorize mutation',
+    );
   if (!Array.isArray(knownSlots) || knownSlots.length === 0) {
-    return stopped('invalid-selection', 'knownSlots must list reserved slot ids');
+    return stopped(
+      'invalid-selection',
+      'knownSlots must list reserved slot ids',
+    );
   }
   if (!knownSlots.includes(selectedSlot)) {
-    return stopped('invalid-selection', `${selectedSlot} is not a known reservation`);
+    return stopped(
+      'invalid-selection',
+      `${selectedSlot} is not a known reservation`,
+    );
   }
   const binding = assertIdentity(adapter.identity());
   if (binding) return binding;
 
   let catalog = adapter.readCatalog();
-  if (canConnect(catalog, 'dev', 'dev') !== true) return stopped('dev-login-unusable', 'database dev');
+  if (canConnect(catalog, 'dev', 'dev') !== true)
+    return stopped('dev-login-unusable', 'database dev');
 
   const allowed = catalogAllowlist(knownSlots);
-  const unexpected = Object.keys(catalog.databases).filter((name) => !allowed.has(name));
-  if (unexpected.length > 0) return stopped('unexpected-database', unexpected.join(','));
+  const unexpected = Object.keys(catalog.databases).filter(
+    (name) => !allowed.has(name),
+  );
+  if (unexpected.length > 0)
+    return stopped('unexpected-database', unexpected.join(','));
 
   const preProof = proveKnownTenantsBeforeWrites(catalog, knownSlots);
   if (preProof) return preProof;
 
   const baseline = baselineStatements(catalog);
-  if (baseline.refusals.length > 0) return { ok: false, mutated: false, refusals: baseline.refusals };
-  if (failAt === 'baseline') return stopped('baseline-leak', 'PUBLIC CONNECT remains');
+  if (baseline.refusals.length > 0)
+    return { ok: false, mutated: false, refusals: baseline.refusals };
+  if (failAt === 'baseline')
+    return stopped('baseline-leak', 'PUBLIC CONNECT remains');
 
   let mutated = false;
   for (const sql of baseline.statements) {
@@ -227,8 +332,14 @@ export function executeDevSqlTenants({ knownSlots, selectedSlot, authorizeLive, 
   if (baseline.statements.length > 0) {
     catalog = adapter.readCatalog();
   }
-  if (canConnect(catalog, 'fixture', 'postgres') || canConnect(catalog, 'dev', 'dev') !== true) {
-    return stopped('baseline-leak', 'baseline CONNECT does not match the selected fence');
+  if (
+    canConnect(catalog, 'fixture', 'postgres') ||
+    canConnect(catalog, 'dev', 'dev') !== true
+  ) {
+    return stopped(
+      'baseline-leak',
+      'baseline CONNECT does not match the selected fence',
+    );
   }
 
   const names = deriveDevSqlTenant(selectedSlot);
@@ -241,7 +352,8 @@ export function executeDevSqlTenants({ knownSlots, selectedSlot, authorizeLive, 
   const secrets = ensureSecrets(adapter, names, resources, retained);
   if (secrets) return secrets;
 
-  if (failAt === `before-database:${selectedSlot}`) return stopped('partial-create', names.database, { retained });
+  if (failAt === `before-database:${selectedSlot}`)
+    return stopped('partial-create', names.database, { retained });
 
   const database = catalog.databases[names.database];
   if (database?.allowConnections === true) {
@@ -261,19 +373,30 @@ export function executeDevSqlTenants({ knownSlots, selectedSlot, authorizeLive, 
   }
 
   if (database && database.owner !== names.migrationRole) {
-    return stopped('foreign-database-owner', database.owner ?? 'missing', { retained });
+    return stopped('foreign-database-owner', database.owner ?? 'missing', {
+      retained,
+    });
   }
 
   adapter.applyClosedDatabase(rendered, names);
   mutated = true;
   const observed = adapter.waitFor(names);
-  if (!observed || observed.ready !== true) return stopped('cnpg-reconcile-failed', names.database, { retained });
-  if (observed.allowConnections !== false) return stopped('cnpg-allow-connections', names.database, { retained });
-  if (observed.owner !== names.migrationRole) return stopped('foreign-database-owner', observed.owner ?? 'missing', { retained });
+  if (!observed || observed.ready !== true)
+    return stopped('cnpg-reconcile-failed', names.database, { retained });
+  if (observed.allowConnections !== false)
+    return stopped('cnpg-allow-connections', names.database, { retained });
+  if (observed.owner !== names.migrationRole)
+    return stopped('foreign-database-owner', observed.owner ?? 'missing', {
+      retained,
+    });
 
   catalog = adapter.readCatalog();
-  if (!catalog.databases[names.database]) return stopped('unknown-database', names.database, { retained });
-  if (!catalog.roles[names.migrationRole] || !catalog.roles[names.runtimeRole]) {
+  if (!catalog.databases[names.database])
+    return stopped('unknown-database', names.database, { retained });
+  if (
+    !catalog.roles[names.migrationRole] ||
+    !catalog.roles[names.runtimeRole]
+  ) {
     return stopped('unknown-role', names.slotId, { retained });
   }
 
@@ -285,13 +408,17 @@ export function executeDevSqlTenants({ knownSlots, selectedSlot, authorizeLive, 
   }
 
   catalog = adapter.readCatalog();
-  if (failAt === `acl:${selectedSlot}` || !aclsMatch(catalog.databases[names.database], names)) {
+  if (
+    failAt === `acl:${selectedSlot}` ||
+    !aclsMatch(catalog.databases[names.database], names)
+  ) {
     return stopped('acl-verification-failed', names.database, { retained });
   }
 
   adapter.permitConnections(names);
   const after = adapter.waitFor(names);
-  if (after?.allowConnections !== true) return stopped('cnpg-reconcile-failed', names.database, { retained });
+  if (after?.allowConnections !== true)
+    return stopped('cnpg-reconcile-failed', names.database, { retained });
 
   catalog = adapter.readCatalog();
   if (!aclsMatch(catalog.databases[names.database], names)) {
@@ -311,18 +438,5 @@ export function executeDevSqlTenants({ knownSlots, selectedSlot, authorizeLive, 
     retained,
     devLogin: canConnect(catalog, 'dev', 'dev'),
     ambientContext: adapter.identity().ambientContext ?? null,
-  };
-}
-
-export function holdLiveTenantMutation() {
-  return stopped('ensure-not-authorized', 'host CLI mutation remains disabled');
-}
-
-export function createDevSqlKubectlAdapter() {
-  return {
-    injectedProbe: false,
-    identity() {
-      throw Object.assign(new Error('live SQL adapter transport is disabled'), { code: 'live-adapter-disabled' });
-    },
   };
 }

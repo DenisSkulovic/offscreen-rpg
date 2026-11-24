@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
@@ -18,6 +18,14 @@ const OBJECT_SMOKE = join(
 const BOOTSTRAP_SMOKE = join(
   REPO_ROOT,
   'infra/verification/release-acceptance/content-bootstrap/smoke.sh',
+);
+const DOCUMENT_ACCESS_SMOKE = join(
+  REPO_ROOT,
+  'infra/verification/fixtures/document-access/smoke.sh',
+);
+const RETIRED_STORE_MANIFEST = join(
+  REPO_ROOT,
+  'infra/platform/object-storage/store.yaml',
 );
 const INSTALL_SH = join(REPO_ROOT, 'infra/platform/object-storage/install.sh');
 const OBJECT_RUNBOOK = join(
@@ -119,6 +127,30 @@ describe('object-storage smoke contract', () => {
     assert.match(body, /OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM/);
     assert.match(body, /pvc_uid_after.*pvc_uid_before/);
   });
+});
+
+describe('document-access smoke contract', () => {
+  const body = readFileSync(DOCUMENT_ACCESS_SMOKE, 'utf8');
+
+  test('requires install and existing secret; does not provision store', () => {
+    assert.match(body, /install\.sh first/);
+    assert.match(body, /get secret object-store-s3/);
+    assert.doesNotMatch(body, /platform\/object-storage\/store\.yaml/);
+    assert.doesNotMatch(body, /apply -f.*store\.yaml/);
+    assert.doesNotMatch(body, /create secret generic object-store-s3/);
+  });
+
+  test('create-only writer and guarded reader bootstrap', () => {
+    assert.match(body, /decide-writer/);
+    assert.match(body, /decide-reader/);
+    assert.match(body, /create secret generic document-writer-s3/);
+    assert.match(body, /Repair the partial reader state/);
+    assert.match(body, /document-reader-s3/);
+  });
+});
+
+test('retired duplicate platform store manifest is absent', () => {
+  assert.equal(existsSync(RETIRED_STORE_MANIFEST), false);
 });
 
 describe('content-bootstrap smoke contract', () => {

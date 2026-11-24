@@ -6,7 +6,7 @@ The game adapter stays on [Selected document store](../technical/platform/data-a
 
 ## What this procedure is
 
-`infra/verification/fixtures/document-access/smoke.sh` applies the existing SeaweedFS store manifest in `infra/platform/object-storage/`. It does not edit those manifests. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
+`infra/verification/fixtures/document-access/smoke.sh` requires the release object store from [Kubernetes object storage](kubernetes-object-storage.md) (`infra/platform/object-storage/install.sh`). It does not apply a separate store manifest or create the admin Secret `object-store-s3`. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
 
 The smoke then runs two Jobs in `lab-document-access`:
 
@@ -19,7 +19,7 @@ Game Authority and Storyteller are not separate application entrypoints in this 
 
 ## Credentials
 
-The access key and the secret key are created in memory by the smoke. The store identity is the Secret `object-store-s3` in `lab-objects`. The writer Job reads `document-writer-s3` in `lab-document-access`. The reader Job reads `document-reader-s3`. The reader identity is added on the running store with `s3.configure` and the action `Read` on `lab-objects`. None of those values are written into Git. The smoke refuses to run if this directory contains a Secret manifest or an `AKIA` literal.
+The platform admin credentials live only in Secret `object-store-s3` in `lab-objects`, created by `install.sh`. The smoke copies those bytes into `document-writer-s3` in `lab-document-access` on first run (create-only; mismatch refuses). The reader Job reads `document-reader-s3`, a distinct read-only identity configured with `s3.configure` on the running store. None of those values are written into Git. The smoke refuses to run if this directory contains a Secret manifest or an `AKIA` literal.
 
 The denied-read check uses the fixed names `denied-document-reader` and `denied-document-reader-secret`. Those names are not installed on the store.
 

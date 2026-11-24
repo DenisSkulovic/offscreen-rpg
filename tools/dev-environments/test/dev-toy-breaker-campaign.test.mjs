@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   writeFileSync,
   symlinkSync,
   rmSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { assessOwnedProcess } from '../src/domain/dev-process-identity.mjs';
 import {
@@ -880,4 +883,39 @@ test('toy breaker fixture matrix', () => {
   rmSync(broken, { recursive: true, force: true });
   console.log(JSON.stringify({ counts, rows }));
   void refusal;
+});
+
+test('live tenant trial proof scripts use verification paths only', () => {
+  const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
+  const verificationDir = join(repoRoot, 'infra/verification/dev-environments');
+  const retired = 'tools/dev-environments/src/adapters';
+  const trials = [
+    'dev-s3-tenant-trial.mjs',
+    'dev-sql-tenant-trial.mjs',
+    'dev-sql-tenant-migrate-trial.mjs',
+    'dev-temporal-tenant-trial.mjs',
+  ];
+  for (const name of trials) {
+    assert.equal(existsSync(join(verificationDir, name)), true);
+    assert.equal(existsSync(join(repoRoot, retired, name)), false);
+    const body = readFileSync(join(verificationDir, name), 'utf8');
+    assert.doesNotMatch(body, /\.\/dev-.*-tenant/);
+  }
+  let runtimeImports = '';
+  try {
+    runtimeImports = execFileSync(
+      'git',
+      [
+        'grep',
+        '-l',
+        'infra/verification/dev-environments',
+        '--',
+        'tools/dev-environments/src',
+      ],
+      { cwd: repoRoot, encoding: 'utf8' },
+    ).trim();
+  } catch (error) {
+    if (error.status !== 1) throw error;
+  }
+  assert.equal(runtimeImports, '');
 });
