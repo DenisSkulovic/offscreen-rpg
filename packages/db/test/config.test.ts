@@ -35,3 +35,44 @@ test('pool and timeout limits reject unbounded or malformed settings', () => {
     assert.throws(() => readDatabaseConfig({ ...base, [key]: '0' }));
   }
 });
+
+test('managed queue and acquire timeout defaults are applied from env', () => {
+  const config = readDatabaseConfig({
+    DATABASE_URL: 'postgres://localhost/db',
+  });
+  assert.deepEqual(config.managed, {
+    queueLimit: 20,
+    acquireTimeoutMs: 5000,
+  });
+});
+
+test('managed queue and acquire timeout reject malformed values', () => {
+  const base = { DATABASE_URL: 'postgres://localhost/db' };
+  for (const value of ['0', '-1', '1001', '1.5', '', 'unbounded']) {
+    assert.throws(() =>
+      readDatabaseConfig({ ...base, DB_MANAGED_QUEUE_MAX: value }),
+    );
+  }
+  for (const value of ['0', '-1', '60001', '1.5', '', 'unbounded']) {
+    assert.throws(() =>
+      readDatabaseConfig({ ...base, DB_MANAGED_ACQUIRE_TIMEOUT_MS: value }),
+    );
+  }
+});
+
+test('readDatabaseConfig does not echo the connection string in validation errors', () => {
+  const secret = 'postgresql://user:supersecret@localhost/secret-db';
+  assert.throws(
+    () =>
+      readDatabaseConfig({
+        DATABASE_URL: secret,
+        DB_POOL_MAX: '0',
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.doesNotMatch(error.message, /supersecret/);
+      assert.doesNotMatch(error.message, /secret-db/);
+      return true;
+    },
+  );
+});
