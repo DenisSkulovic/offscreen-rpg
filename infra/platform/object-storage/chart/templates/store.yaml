@@ -1,0 +1,11 @@
+{{- include "platform-object-storage.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $ctx := . -}}
+{{- if or (eq $section "all") (eq $section "namespace") -}}
+{{- include "platform-object-storage.jsonFrom" (dict "name" "platform-object-storage.doc.namespace" "ctx" $ctx) -}}
+{{- end -}}
+{{- if or (eq $section "all") (eq $section "workloads") -}}
+{{- include "platform-object-storage.jsonFrom" (dict "name" "platform-object-storage.doc.pvc" "ctx" $ctx) -}}
+{{- include "platform-object-storage.jsonFrom" (dict "name" "platform-object-storage.doc.deployment" "ctx" $ctx) -}}
+{{- include "platform-object-storage.jsonFrom" (dict "name" "platform-object-storage.doc.service" "ctx" $ctx) -}}
+{{- end -}}

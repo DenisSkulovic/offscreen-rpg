@@ -1,0 +1,3 @@
+mode: development
+namespace: offscreen-dev-objects
+storageClass: standard

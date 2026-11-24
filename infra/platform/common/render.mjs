@@ -54,6 +54,7 @@ const ALLOWED_KINDS = new Set([
   'Job',
   'ConfigMap',
   'Cluster',
+  'PersistentVolumeClaim',
 ]);
 
 /**

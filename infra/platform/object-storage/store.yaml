@@ -58,7 +58,7 @@ spec:
         - name: seaweedfs
           image: docker.io/chrislusf/seaweedfs:4.54
           imagePullPolicy: IfNotPresent
-          args: ["mini", "-dir=/data"]
+          args: ['mini', '-dir=/data']
           ports:
             - name: s3
               containerPort: 8333
@@ -79,7 +79,7 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
-              drop: ["ALL"]
+              drop: ['ALL']
           resources:
             requests:
               cpu: 50m
