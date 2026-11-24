@@ -1,5 +1,9 @@
 # Delivery, operations and validation
 
+## Application workloads (INF08 selected)
+
+One local Helm application chart defines six roles, Services and migration Job. Only dev slots and stable release; Helm template is source authority, not a second deployment controller. Preserve existing namespaces, selectors, tags, credentials, release values and migration ordering. Add slot dev security, TCP readiness and preliminary requests (50m CPU each, 384Mi HTTP roles, 256Mi workers), no hard limits pending measurement. No application Helm install/upgrade/uninstall or live proof in this change. [INF08](../../../work/changes/open/2026-11-24--inf08-helm-workload-normalization/CHANGE.md).
+
 ## Container image architecture (INF07 selected)
 
 One pinned shared toolchain and workspace graph, distinct build/runtime dependency closures, one development union artifact and four release artifacts. The image factory builds; common Kind distribution checks every authorized node against the host artifact identity before success. Cluster profiles own topology, Tilt owns dev Deployment selection, release assembly owns migration/rollout. Existing tags preserved, release immutability migration deferred. No new live proof. [INF07](../../../work/changes/archive/2026-11/platform-operations/2026-11-24--inf07-image-architecture-normalization/CHANGE.md).
