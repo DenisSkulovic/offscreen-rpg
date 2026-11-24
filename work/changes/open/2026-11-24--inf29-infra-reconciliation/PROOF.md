@@ -1,3 +1,3 @@
 # INF29 proof
 
-No dispatch or acceptance until planner blocker resolves.
+Not yet specified against final integrated source. Live proof NOT-RUN.

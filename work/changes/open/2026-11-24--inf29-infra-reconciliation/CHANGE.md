@@ -1,9 +1,3 @@
 # INF29 | Final medium-grained reconciliation
 
-Status: **Proposed (planner-blocked)**. Owner commissioned 2026-11-24; design only, not dispatchable. Profile: CONTRACT. Dependency: INF20–INF28 (INF23 only when resolved). Target undertaking/storyteller-workshop; baseline a0f299407467baba7fc339fafe398e18df45996b.
-
-Owner: current docs and cross-boundary proof.
-
-[Program](../../../undertakings/storyteller-workshop/INF-MEDIUM.md) · [TASKS](TASKS.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md).
-
-Planner blocker is explicit in EXECUTION; no implementation dispatch.
+**Proposed (planner-blocked)**. Owner commissioned final join, not dispatchable yet. Baseline 54f9261d699097835e6c97ad55612a02ae49e59c. Dependency INF23 and INF30–INF36 source Done. Planner must inspect integrated result and write exact remaining corrections; do not delegate broad audit. Practical developer-flow proof separately authorized by owner. Legacy v1 deletion not prerequisite; deferred pending workstation evidence. [Program](../../../undertakings/storyteller-workshop/INF-MEDIUM.md).

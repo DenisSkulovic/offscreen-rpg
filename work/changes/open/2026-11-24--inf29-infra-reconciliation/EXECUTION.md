@@ -1,9 +1,3 @@
-# INF29 execution
+# INF29 final join
 
-Integration target undertaking/storyteller-workshop; inspected snapshot a0f299407467baba7fc339fafe398e18df45996b, matching GitHub HEAD at planning. Owner commissioned this wave on 2026-11-24. Source only; no actual cluster, Docker build, Tilt start, tenant migration, registry conversion, slot deletion, OAuth changes or paid provider calls. No destructive live proof authorization. One Change branch and separate linked worktree; run node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop. One bounded Composer child at a time; parent integrates/archives after acceptance, no successor auto-start. Human integration custodian serializes shared docs/catalog/test edits. Preserve data, names, UID and credential authority; no new frameworks, no legacy fallback to release cluster. Verify dependency receipt and exact source postcondition before dispatch. If a selected contract contradicts landed source, stop with exact anchor; no delegated redesign. Run changed-file quality/format and docs health; report commands/counts and NOT-RUN live. Historical evidence remains unchanged.
-
-## T01 Blocked: final integrated source inventory
-
-Anchors: infra/README.md; docs/technical/platform/developer-environments.md; docs/runbooks/dev-worktree-stacks.md; scripts/repo-tools/infra-layout.test.mjs.
-
-Final join requires completed predecessor receipts and fresh planner inspection of actual integrated source, especially INF23 registry outcome. Selected end state one current architecture description, historical evidence linked not repeated, exact retired paths absent, no contradictory runbooks. Planner must verify source and produce exact remaining mismatch list; do not dispatch vague audit to Cursor. Then bounded implementation tasks and scenario proof design; live proof requires separate owner authorization.
+After predecessors: planner checks current source/docs for startup, warm cache, shared-package edit, compile failure/recovery, concurrent slots, stop/resume, release config-only changes. Produce bounded correction tasks if needed; separately request explicit live authorization for one owned slot and release proof. No enterprise hardening or legacy retirement prerequisite. Do not delegate investigation to Cursor.

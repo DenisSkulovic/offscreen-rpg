@@ -1,5 +1,6 @@
-# INF23 dispatch
+# INF23 route
 
-PLANNER-BLOCKED; do not dispatch.
+- T01 Kernel-backed registry lock — tools/dev-environments/src/domain/dev-worktree-registry.mjs::withRegistryLock; tools/dev-environments/test/dev-worktree-registry-v2.test.mjs; tools/dev-environments/test/dev-worktree-allocator.test.mjs. Exact edits and negative proof in EXECUTION.md section T01.
+- T02 Atomic session publication — tools/dev-environments/src/domain/dev-environment-session.mjs::writeEnvironmentSession/readEnvironmentSession; tools/dev-environments/src/cli/dev-tilt.mjs::writeDevSession; tools/dev-environments/test/dev-environment-session.test.mjs. Exact edits and negative proof in EXECUTION.md section T02.
 
-- T01: Blocked: local migration state evidence. Read tools/dev-environments/src/domain/dev-worktree-registry.mjs::readRegistryV2/convertRegistryV1ToV2/cutoverAuthorizedLiveRegistry; tools/dev-environments/src/domain/dev-environment-session.mjs::adoptLegacyEnvironmentSession/resolveDevEnvironmentSelection; tools/dev-environments/src/domain/dev-worktree-allocator.mjs; tools/dev-environments/src/cli/dev-tilt.mjs. Exact implementation and proof in [EXECUTION](EXECUTION.md#t01-blocked-local-migration-state-evidence).
+Sequential tasks; dependency INF22 Done.

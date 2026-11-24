@@ -1,22 +1,23 @@
-# Infrastructure medium-grained reconciliation | INF20–INF29
+# Infrastructure medium-grained reconciliation
 
-Owner commissioned 2026-11-24. Baseline a0f299407467baba7fc339fafe398e18df45996b (INF18 Done). No new live acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged. Human integration custodian.
+2026-11-24: INF20–22,24–28 archived Done at 54f9261d699097835e6c97ad55612a02ae49e59c. INF23 revised to practical registry persistence, legacy conversion retained; INF29 final join planner-blocked. Owner commissioned second corrective wave focused on personal developer usability. No new live acceptance credit.
 
-| Change | Gate | Owner | Status |
-| --- | --- | --- | --- |
-| [INF20](../../changes/archive/2026-11/platform-operations/2026-11-24--inf20-dev-admission/CHANGE.md) Admission before mutation | INF18 Done | dev-tilt launch sequencing and startup admission | Done (source) |
-| [INF21](../../changes/archive/2026-11/platform-operations/2026-11-24--inf21-dev-sql-isolation/CHANGE.md) Selected SQL tenant and migration integrity | INF20 | SQL tenant executor/adapter, migration and projection schema gate | Done (source) |
-| [INF22](../../changes/archive/2026-11/platform-operations/2026-11-24--inf22-dev-secret-projection/CHANGE.md) Safe slot Secret projection | INF21 | slot projection, exact Secret reads and create-only | Done (source) |
-| [INF23](../../changes/open/2026-11-24--inf23-dev-session-authority/CHANGE.md) Canonical v2 session authority | INF20, INF22 | registry and process lifecycle | Proposed (planner-blocked) |
-| [INF24](../../changes/archive/2026-11/platform-operations/2026-11-24--inf24-dev-image-ownership/CHANGE.md) Image identity and compatibility retirement | INF22, INF26 | image plan owner and bootstrap wrappers | Done (source) |
-| [INF25](../../changes/archive/2026-11/platform-operations/2026-11-24--inf25-release-deployment-integrity/CHANGE.md) Release migration and deployment integrity | INF18 Done; T03 after INF27 | release installer and stack orchestration | Done (source) |
-| [INF26](../../changes/archive/2026-11/platform-operations/2026-11-24--inf26-platform-readiness/CHANGE.md) Canonical platform observations | INF20 | service readiness and shared dev core | Done (source) |
-| [INF27](../../changes/archive/2026-11/platform-operations/2026-11-24--inf27-workload-chart-convergence/CHANGE.md) Helm configuration authority | INF18 Done | workload templates and parity tests | Done (source) |
-| [INF28](../../changes/archive/2026-11/platform-operations/2026-11-24--inf28-verification-retirement/CHANGE.md) Retire legacy fixture authorities | INF24, INF26 | document-access storage fixture and trial boundaries | Done (source) |
-| [INF29](../../changes/open/2026-11-24--inf29-infra-reconciliation/CHANGE.md) Final medium-grained reconciliation | INF20–INF28 (INF23 only when resolved) | current docs and cross-boundary proof | Proposed (planner-blocked) |
+| Change | Dependency | Status |
+| --- | --- | --- |
+| [INF23](../../changes/open/2026-11-24--inf23-dev-session-authority/CHANGE.md) Registry and session persistence | INF22 Done | Ready |
+| [INF31](../../changes/open/2026-11-24--inf31-image-identity/CHANGE.md) Correct image identity and reuse | INF24 Done | Ready |
+| [INF33](../../changes/open/2026-11-24--inf33-s3-tenant-reliability/CHANGE.md) S3 tenancy reliability | INF28 Done | Ready |
+| [INF35](../../changes/open/2026-11-24--inf35-owned-workload-cleanup/CHANGE.md) Practical owned workload cleanup | INF28 Done | Ready |
+| [INF30](../../changes/open/2026-11-24--inf30-dev-lifecycle/CHANGE.md) Predictable developer lifecycle | INF23, INF35 | Ready (dependency-gated) |
+| [INF32](../../changes/open/2026-11-24--inf32-release-config-reconcile/CHANGE.md) Release configuration reconciliation | INF31 | Ready (dependency-gated) |
+| [INF34](../../changes/open/2026-11-24--inf34-runtime-readiness/CHANGE.md) Reliable compiler and startup readiness | INF30, INF31 | Ready (dependency-gated) |
+| [INF36](../../changes/open/2026-11-24--inf36-dev-cli-simplification/CHANGE.md) Thin developer CLI | INF30, INF34 | Ready (dependency-gated) |
+| [INF29](../../changes/open/2026-11-24--inf29-infra-reconciliation/CHANGE.md) | INF23 + INF30–36 | Planner-blocked |
 
-First wave INF20 + INF27. INF25 T01/T02 may run in parallel (release only), T03 after INF27. INF21 follows INF20; INF22 follows INF21. INF26 follows INF20; serialize INF26 primary adapter change after INF21. INF24 after INF22/26; INF28 after INF24/26. INF23 and INF29 remain planner-blocked, not an instruction to investigate in Cursor. Shared docs/guards/test joins serialized. No new global queue selection.
+First wave INF23, INF31, INF33, INF35; INF23 and INF35 join before INF30. INF31 then INF32; INF30 and INF31 then INF34; INF34 then INF36. Serialize INF31 release tests with INF32; INF23 CLI legacy writer edit before INF30; INF35 startup before INF30; INF33 adapter independent. Shared docs/catalog human custodian. INF29 planner review after all source joins. No queue selection change. Legacy v1 deletion and more elaborate security/UID deletion hardening deferred; no automatic credential rotation or cross-tenant destructive operations.
 
-Integration target undertaking/storyteller-workshop; inspected snapshot a0f299407467baba7fc339fafe398e18df45996b, matching GitHub HEAD at planning. Owner commissioned this wave on 2026-11-24. Source only; no actual cluster, Docker build, Tilt start, tenant migration, registry conversion, slot deletion, OAuth changes or paid provider calls. No destructive live proof authorization. One Change branch and separate linked worktree; run node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop. One bounded Composer child at a time; parent integrates/archives after acceptance, no successor auto-start. Human integration custodian serializes shared docs/catalog/test edits. Preserve data, names, UID and credential authority; no new frameworks, no legacy fallback to release cluster. Verify dependency receipt and exact source postcondition before dispatch. If a selected contract contradicts landed source, stop with exact anchor; no delegated redesign. Run changed-file quality/format and docs health; report commands/counts and NOT-RUN live. Historical evidence remains unchanged.
+Target undertaking/storyteller-workshop, reviewed snapshot 54f9261d699097835e6c97ad55612a02ae49e59c, owner commissioned 2026-11-24. Source-only, no live cluster/Docker/Tilt/registry mutation or tenant deletion. Personal dev platform: optimize daily flow, not enterprise adversarial security. Preserve existing data/credential/foreign-slot protections. No new frameworks, profile features or auto-retry. One linked Change worktree, branch guard node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop; parent Composer coordinates one bounded task at a time, shared docs/catalog joined by human custodian. Mechanical successor reconciliation permitted; material source contradiction stop. Focused tests from repo root, changed-file quality and docs health, receipt actual counts; no live acceptance credit.
 
-Review limitation: source inspected from owner-uploaded snapshot matching exact integration HEAD; no live workstation observations or executed tests. Detailed source-wide consumer inventory not exhaustive; exact mechanical retired-path checks remain required. INF25 identity mapping stop condition must be honored. INF23 local state and INF29 integrated end-state evidence are unresolved. No claim of a completed independent readiness audit for every packet. 
+Prior wave historical context: INF20 admission; INF21 SQL; INF22 projection; INF24 images; INF25 release; INF26 readiness; INF27 Helm; INF28 verification. All source Done, live NOT-RUN.
+
+Planning limitations: inspected critical anchors from matching snapshot; full G0–G7 independent audit and all consumer joins not independently verified. INF31 actual Docker/CRI formats and flock behavior require focused tests and eventual real workstation proof. No live work authorized.
