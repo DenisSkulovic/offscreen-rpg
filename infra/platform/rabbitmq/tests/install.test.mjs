@@ -76,9 +76,7 @@ const readyInventory = {
 function queueStdout() {
   return {
     ok: true,
-    stdout: expectedQueues
-      .map((q) => `${q.name}\t${q.durable}\t${q.type}`)
-      .join('\n'),
+    stdout: JSON.stringify(expectedQueues),
     stderr: '',
   };
 }
@@ -361,4 +359,24 @@ test('partial operator install reconciles missing certificate before broker admi
   assert.equal(result.refusals[0].id, 'operator-not-ready');
   assert.ok(calls.some(line => line.includes('apply') && line.includes('cluster-operator-v2.23.3.yml')));
   assert.ok(!calls.some(line => line.includes('list_queues')));
+});
+
+
+test('queue JSON rejects malformed observation without changing broker', async () => {
+  const result = await runRabbitmqReleaseInstall({
+    authorize: true, skipVendorVerify: true,
+    readObject: inventoryRead(readyInventory),
+    renderDocuments: section => [{ kind: section === 'namespace' ? 'Namespace' : 'RabbitmqCluster' }],
+    run(command, args) {
+      if (args.includes('list_queues')) {
+        assert.ok(args.includes('--formatter=json'));
+        return { ok: true, stdout: 'name durable type\\nlab.durable true classic' };
+      }
+      assert.ok(!args.includes('apply') && !args.includes('create'));
+      return { ok: true, stdout: '' };
+    },
+    waitReplicas: () => true,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0].id, 'list-queues-failed');
 });

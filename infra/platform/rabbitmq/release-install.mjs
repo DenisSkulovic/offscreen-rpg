@@ -517,36 +517,24 @@ stringData:
   }
   actions.push({ op: 'verify-all-replicas-ready' });
 
-  const listQueuesResult = run('kubectl', [
-    '-n',
-    NAMESPACE,
-    'exec',
-    POD_NAME,
-    '--',
-    'rabbitmqctl',
-    'list_queues',
-    'name',
-    'durable',
-    'type',
-    '--quiet',
-  ]);
-  if (!listQueuesResult.ok) {
-    return refuse('list-queues-failed');
-  }
-
-  /** @type {{ name: string, durable: boolean, type: string }[]} */
-  const actualQueues = (listQueuesResult.stdout ?? '')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [name, durableText, type] = line.split(/\s+/);
-      return {
-        name,
-        durable: durableText === 'true',
-        type: type ?? '',
-      };
-    });
+  const readQueues = () => {
+    const result = run('kubectl', [
+      '-n', NAMESPACE, 'exec', POD_NAME, '-c', 'rabbitmq', '--',
+      'rabbitmqctl', 'list_queues', 'name', 'durable', 'type', '--formatter=json',
+    ]);
+    if (!result.ok) return null;
+    try {
+      const queues = JSON.parse(result.stdout ?? '');
+      if (!Array.isArray(queues) || !queues.every(q =>
+        q && typeof q.name === 'string' && typeof q.durable === 'boolean' &&
+        typeof q.type === 'string')) return null;
+      return queues;
+    } catch {
+      return null;
+    }
+  };
+  const actualQueues = readQueues();
+  if (!actualQueues) return refuse('list-queues-failed');
 
   const queuesOk = queuesMatchExpected(actualQueues, expectedQueues);
 
@@ -623,6 +611,10 @@ stringData:
     }
   }
 
+  const finalQueues = readQueues();
+  if (!finalQueues || !queuesMatchExpected(finalQueues, expectedQueues)) {
+    return refuse('queue-postcondition-failed', 'final queue set does not match definitions.json');
+  }
   return { ok: true, actions, refusals, mutated };
 }
 
