@@ -55,11 +55,8 @@ test('lintPlatformChart succeeds for redis release', () => {
   );
 });
 
-test('assertPlatformRenderRequest refuses redis on dev profile', () => {
-  assert.throws(
-    () => assertPlatformRenderRequest('redis', 'dev', 'all'),
-    /release-only/,
-  );
+test('assertPlatformRenderRequest allows redis on dev profile', () => {
+  assert.doesNotThrow(() => assertPlatformRenderRequest('redis', 'dev', 'all'));
 });
 
 test('release render matches disposable lab redis meaningful fields', () => {
@@ -98,4 +95,34 @@ test('release render matches disposable lab redis meaningful fields', () => {
   assert.equal(service.spec.type, 'ClusterIP');
   assert.equal(service.spec.ports[0].port, 6379);
   assert.equal(service.spec.ports[0].targetPort, 'redis');
+});
+
+test('development render uses offscreen-dev-redis and dev owner labels', () => {
+  const docs = renderPlatformDocuments(
+    { service: 'redis', profile: 'dev', section: 'all' },
+    { chartRoot, run: helmRun },
+  );
+  assert.equal(docs.length, 3);
+  const byId = docMap(docs);
+
+  const deployment = byId.get('Deployment/offscreen-dev-redis/redis');
+  assert.ok(deployment);
+  assert.equal(
+    deployment.metadata.labels['offscreen.dev/owner'],
+    'offscreen-dev',
+  );
+  assert.equal(
+    deployment.spec.template.metadata.labels['offscreen.dev/owner'],
+    'offscreen-dev',
+  );
+  const container = deployment.spec.template.spec.containers[0];
+  assert.equal(container.image, RELEASE_IMAGE);
+  assert.deepEqual(container.resources, {
+    requests: { cpu: '20m', memory: '32Mi' },
+    limits: { cpu: '500m', memory: '128Mi' },
+  });
+
+  const service = byId.get('Service/offscreen-dev-redis/redis');
+  assert.ok(service);
+  assert.equal(service.spec.type, 'ClusterIP');
 });

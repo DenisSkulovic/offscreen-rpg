@@ -3,7 +3,7 @@
   "type": "object",
   "required": ["mode", "namespace", "section", "images"],
   "properties": {
-    "mode": { "enum": ["release"] },
+    "mode": { "enum": ["development", "release"] },
     "namespace": { "type": "string", "minLength": 1 },
     "section": { "enum": ["all"] },
     "images": {

@@ -4,6 +4,9 @@ Current baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. See [selected target]
 
 | Need | Current command / route |
 | --- | --- |
+| Plan selected dev/release platform ensures | `pnpm infra:plan --env dev --services core` |
+| Ensure cluster and selected platform services | `pnpm infra:up --env dev --services core` |
+| Read-only cluster and service status | `pnpm infra:status --env dev --services core` |
 | Start dev application (full) | `pnpm dev`; [dev lifecycle](dev-worktree-stacks.md) |
 | Allocate another full environment | `pnpm dev:new` |
 | Reserve or attach without starting | `pnpm dev:reserve`, `pnpm dev:attach --instance dev-N` |

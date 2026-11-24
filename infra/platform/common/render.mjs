@@ -24,7 +24,7 @@ export const PLATFORM_SERVICES = new Set([
   'observability',
 ]);
 
-const RELEASE_ONLY_SERVICES = new Set(['redis', 'rabbitmq', 'observability']);
+const RELEASE_ONLY_SERVICES = new Set(['rabbitmq', 'observability']);
 
 /** @type {Record<string, Set<string>>} */
 const SERVICE_SECTIONS = {
@@ -68,7 +68,10 @@ export function allowedNamespacesForService(service, profileId) {
   if (service === 'temporal') return new Set([profile.namespaces.temporal]);
   if (service === 'object-storage')
     return new Set([profile.namespaces.objectStorage]);
-  if (service === 'redis' && profileId === 'release') return new Set(['lab-a']);
+  if (service === 'redis') {
+    const ns = profileId === 'release' ? 'lab-a' : profile.namespaces.redis;
+    if (typeof ns === 'string' && ns.length > 0) return new Set([ns]);
+  }
   if (service === 'rabbitmq' && profileId === 'release')
     return new Set(['messaging']);
   if (service === 'observability' && profileId === 'release')

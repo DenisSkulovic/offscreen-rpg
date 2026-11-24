@@ -6,6 +6,9 @@ import {
   OPTIONAL_EXCLUDED_SERVICES,
   REPO_ROOT,
   buildPlatformPlan,
+  parsePlatformServiceSelection,
+  runChartRenderPreflight,
+  runEnsurePreflight,
   runPlatformPlan,
 } from './platform-plan.mjs';
 
@@ -14,6 +17,11 @@ const here = dirname(fileURLToPath(import.meta.url));
 test('dev and release plans keep the core service order with absolute entrypoints', () => {
   const dev = buildPlatformPlan({ profileId: 'dev', command: 'plan' });
   assert.equal(dev.ok, true);
+  assert.deepEqual(dev.selectedServices, [
+    'postgres',
+    'object-storage',
+    'temporal',
+  ]);
   assert.deepEqual(
     dev.phases.map((phase) => phase.id),
     ['cnpg', 'object-storage', 'temporal'],
@@ -22,18 +30,231 @@ test('dev and release plans keep the core service order with absolute entrypoint
     assert.equal(phase.argv[1]?.startsWith('/'), true);
     assert.equal(phase.argv[2], 'plan');
   }
-  assert.deepEqual(dev.excludedOptional, [...OPTIONAL_EXCLUDED_SERVICES]);
+  assert.deepEqual(dev.excludedOptional, ['redis']);
 
   const release = buildPlatformPlan({ profileId: 'release', command: 'plan' });
   assert.equal(release.ok, true);
+  assert.deepEqual(release.selectedServices, [
+    'postgres',
+    'object-storage',
+    'temporal',
+    'gateway',
+  ]);
   assert.deepEqual(
     release.phases.map((phase) => phase.id),
     ['postgres', 'object-storage', 'temporal', 'gateway'],
   );
   for (const phase of release.phases) {
     assert.equal(phase.argv[0], 'bash');
-    assert.equal(phase.argv[1]?.startsWith(join(REPO_ROOT, 'infra/platform')), true);
+    assert.equal(
+      phase.argv[1]?.startsWith(join(REPO_ROOT, 'infra/platform')),
+      true,
+    );
   }
+  assert.deepEqual(release.excludedOptional, [...OPTIONAL_EXCLUDED_SERVICES]);
+});
+
+test('none selection yields empty phases and no ensure preflight', () => {
+  const dev = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'plan',
+    services: 'none',
+  });
+  assert.equal(dev.ok, true);
+  assert.deepEqual(dev.selectedServices, []);
+  assert.equal(dev.phases.length, 0);
+
+  const ensure = buildPlatformPlan({
+    profileId: 'release',
+    command: 'ensure',
+    services: 'none',
+    confirmation: 'kind-offscreen-lab',
+  });
+  assert.equal(ensure.ok, true);
+  assert.deepEqual(ensure.preflight, []);
+  assert.equal(ensure.phases.length, 0);
+});
+
+test('dev redis-only selection uses dev-install argv', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'plan',
+    services: 'redis',
+  });
+  assert.equal(plan.ok, true);
+  assert.deepEqual(plan.selectedServices, ['redis']);
+  assert.equal(plan.phases.length, 1);
+  assert.equal(plan.phases[0].id, 'redis');
+  assert.deepEqual(plan.phases[0].argv, [
+    process.execPath,
+    join(REPO_ROOT, 'infra/platform/redis/dev-install.mjs'),
+    'plan',
+  ]);
+});
+
+test('release redis-only selection uses the optional installer argv', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'release',
+    command: 'plan',
+    services: 'redis',
+  });
+  assert.equal(plan.ok, true);
+  assert.deepEqual(plan.selectedServices, ['redis']);
+  assert.equal(plan.phases.length, 1);
+  assert.equal(plan.phases[0].id, 'redis');
+  assert.deepEqual(plan.phases[0].argv, [
+    'bash',
+    join(REPO_ROOT, 'infra/platform/redis/install.sh'),
+  ]);
+  assert.deepEqual(plan.excludedOptional, ['rabbitmq', 'observability']);
+});
+
+test('explicit mixed selection reorders to the canonical catalog', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'release',
+    command: 'plan',
+    services: 'observability,temporal,postgres',
+  });
+  assert.equal(plan.ok, true);
+  assert.deepEqual(plan.selectedServices, [
+    'postgres',
+    'temporal',
+    'observability',
+  ]);
+  assert.deepEqual(
+    plan.phases.map((phase) => phase.id),
+    ['postgres', 'temporal', 'observability'],
+  );
+});
+
+test('dev refuses unsupported gateway and rabbitmq before planning', () => {
+  for (const services of ['gateway', 'rabbitmq']) {
+    const plan = buildPlatformPlan({
+      profileId: 'dev',
+      command: 'plan',
+      services,
+    });
+    assert.equal(plan.ok, false);
+    assert.equal(plan.refusals[0]?.id, 'unsupported-service');
+    assert.equal(plan.phases.length, 0);
+    assert.equal(plan.selectedServices.length, 0);
+  }
+});
+
+test('chart render preflight touches only selected services', () => {
+  /** @type {string[]} */
+  const linted = [];
+  /** @type {string[]} */
+  const rendered = [];
+  const fixtureHelm = (command, args) => {
+    if (command === 'helm' && args[0] === 'template') {
+      rendered.push(args[2]);
+      return {
+        ok: true,
+        stdout: `${JSON.stringify({
+          kind: 'Namespace',
+          metadata: { name: 'offscreen-dev-temporal' },
+        })}\n`,
+      };
+    }
+    if (command === 'helm' && args[0] === 'lint') {
+      linted.push(args[1]);
+      return { ok: true, stdout: '', stderr: '' };
+    }
+    return { ok: true, stdout: '', stderr: '' };
+  };
+  runChartRenderPreflight('dev', ['temporal'], { run: fixtureHelm });
+  assert.equal(linted.length, 1);
+  assert.match(linted[0], /temporal\/chart$/);
+  assert.equal(rendered.length, 1);
+  assert.match(rendered[0], /temporal\/chart$/);
+  assert.equal(
+    linted.some((path) => /postgres|object-storage/.test(path)),
+    false,
+  );
+});
+
+test('ensure preflight skips unselected chart services', () => {
+  /** @type {string[]} */
+  const helmLintTargets = [];
+  const run = (command, args) => {
+    if (command === 'kind' && args[0] === 'get') {
+      return { ok: true, stdout: 'offscreen-lab\n' };
+    }
+    if (command === 'kubectl' && args.includes('config')) {
+      return {
+        ok: true,
+        stdout: JSON.stringify({
+          clusters: [
+            {
+              name: 'offscreen-lab',
+              cluster: { server: 'https://127.0.0.1:6443' },
+            },
+          ],
+          contexts: [
+            {
+              name: 'kind-offscreen-lab',
+              context: { cluster: 'offscreen-lab' },
+            },
+          ],
+          'current-context': 'kind-offscreen-lab',
+        }),
+      };
+    }
+    if (command === 'kubectl' && args.includes('lab-postgres')) {
+      return {
+        ok: true,
+        stdout: JSON.stringify({
+          metadata: {
+            labels: { 'offscreen.rpg/lab': 'disposable' },
+            name: 'lab-postgres',
+          },
+        }),
+      };
+    }
+    if (command === 'helm' && args[0] === 'version') {
+      return { ok: true, stdout: 'v3.22.1\n', stderr: '' };
+    }
+    if (command === 'helm' && args[0] === 'template') {
+      return {
+        ok: true,
+        stdout: `${JSON.stringify({
+          kind: 'Namespace',
+          metadata: { name: 'lab-a' },
+        })}\n`,
+      };
+    }
+    if (command === 'helm' && args[0] === 'lint') {
+      helmLintTargets.push(args[1]);
+      return { ok: true, stdout: '', stderr: '' };
+    }
+    return { ok: true, stdout: '', stderr: '' };
+  };
+
+  const pre = runEnsurePreflight('release', 'ensure', {
+    run,
+    memoryMiB: 99_999,
+    selectedServices: ['redis'],
+  });
+  assert.equal(pre.ok, true);
+  assert.equal(helmLintTargets.length, 1);
+  assert.match(helmLintTargets[0], /redis\/chart$/);
+  assert.equal(
+    helmLintTargets.some((path) =>
+      /postgres|temporal|object-storage/.test(path),
+    ),
+    false,
+  );
+});
+
+test('parsePlatformServiceSelection rejects duplicates and alias mixing', () => {
+  const duplicate = parsePlatformServiceSelection('release', 'redis,redis');
+  assert.equal(duplicate.ok, false);
+  assert.equal(duplicate.refusal.id, 'invalid-services');
+
+  const mixed = parsePlatformServiceSelection('release', 'core,redis');
+  assert.equal(mixed.ok, false);
+  assert.equal(mixed.refusal.id, 'invalid-services');
 });
 
 test('dev ensure carries the existing authorization env flags on bootstrap CLIs', () => {
@@ -46,11 +267,10 @@ test('dev ensure carries the existing authorization env flags on bootstrap CLIs'
   assert.equal(plan.phases[0].env?.OFFSCREEN_DEV_CNPG_ENSURE, 'authorized');
   assert.equal(plan.phases[1].env?.OFFSCREEN_DEV_S3_ENSURE, 'authorized');
   assert.equal(plan.phases[2].env?.OFFSCREEN_DEV_TEMPORAL_ENSURE, 'authorized');
-  assert.deepEqual(plan.phases.map((p) => p.argv[2]), [
-    'ensure',
-    'ensure',
-    'ensure',
-  ]);
+  assert.deepEqual(
+    plan.phases.map((p) => p.argv[2]),
+    ['ensure', 'ensure', 'ensure'],
+  );
 });
 
 test('unknown profile refuses before planning phases', () => {
@@ -91,7 +311,8 @@ test('a second phase failure skips the remaining phases without rollback', () =>
 });
 
 test('core plans never include fixture, tenant, or optional service phases', () => {
-  const forbidden = /fixture|tenant|redis|rabbitmq|observabilit|content-bootstrap|cluster-up/i;
+  const forbidden =
+    /fixture|tenant|redis|rabbitmq|observabilit|content-bootstrap|cluster-up/i;
   for (const profileId of ['dev', 'release']) {
     const plan = buildPlatformPlan({ profileId, command: 'plan' });
     for (const phase of plan.phases) {

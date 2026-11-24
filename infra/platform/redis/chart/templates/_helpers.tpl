@@ -13,7 +13,8 @@
 {{- $section := default "all" .Values.section -}}
 {{- if ne $section "all" -}}{{- fail (printf "unsupported section %s" $section) -}}{{- end -}}
 {{- $mode := required "profile mode is required" .Values.mode -}}
-{{- if ne $mode "release" -}}{{- fail "redis chart is release-only" -}}{{- end -}}
+{{- if and (ne $mode "development") (ne $mode "release") -}}{{- fail (printf "unsupported profile mode %s" $mode) -}}{{- end -}}
+{{- if and (eq $mode "development") (ne .Values.namespace "offscreen-dev-redis") -}}{{- fail "development profile requires namespace offscreen-dev-redis" -}}{{- end -}}
 {{- $img := required "images.redis is required" .Values.images.redis -}}
 {{- if eq $img "placeholder-redis" -}}{{- fail "images.redis must be resolved from profile" -}}{{- end -}}
 {{- end -}}
@@ -26,7 +27,11 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: redis
+{{- if eq .Values.mode "development" }}
+    offscreen.dev/owner: offscreen-dev
+{{- else }}
     offscreen.rpg/lab: disposable
+{{- end }}
 data:
   redis.conf: |
     bind 0.0.0.0
@@ -47,7 +52,11 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: redis
+{{- if eq .Values.mode "development" }}
+    offscreen.dev/owner: offscreen-dev
+{{- else }}
     offscreen.rpg/lab: disposable
+{{- end }}
 spec:
   replicas: 1
   strategy:
@@ -59,7 +68,11 @@ spec:
     metadata:
       labels:
         app: redis
+{{- if eq .Values.mode "development" }}
+        offscreen.dev/owner: offscreen-dev
+{{- else }}
         offscreen.rpg/lab: disposable
+{{- end }}
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
@@ -127,7 +140,11 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: redis
+{{- if eq .Values.mode "development" }}
+    offscreen.dev/owner: offscreen-dev
+{{- else }}
     offscreen.rpg/lab: disposable
+{{- end }}
 spec:
   type: ClusterIP
   selector:

@@ -29,6 +29,9 @@ const REQUIRED_ROOT_KEYS = [
   'stack:status',
   'stack:down',
   'stack:reset',
+  'infra:plan',
+  'infra:up',
+  'infra:status',
   'infra:repair',
   'fixture:import',
   'repo:commit:check',
@@ -37,7 +40,6 @@ const REQUIRED_ROOT_KEYS = [
 const FORBIDDEN_ROOT_KEYS = [
   'dev:host',
   'infra',
-  'infra:up',
   'infra:down',
   'story:local',
   'story:server',
@@ -53,7 +55,10 @@ test('root package.json exposes the supported public command surface', () => {
     assert.ok(key in rootPkg.scripts, `missing root script ${key}`);
   }
 
-  assert.equal(rootPkg.scripts.dev, 'node tools/dev-environments/src/cli/dev-tilt.mjs');
+  assert.equal(
+    rootPkg.scripts.dev,
+    'node tools/dev-environments/src/cli/dev-tilt.mjs',
+  );
 
   for (const [key, value] of Object.entries(rootPkg.scripts)) {
     assert.equal(typeof value, 'string', `root script ${key} must be a string`);
@@ -81,7 +86,12 @@ test('chamber package.json keeps container entry and moved story routes', () => 
   assert.ok(scripts.start?.startsWith('node dist/src/main.js'));
   assert.doesNotMatch(scripts.start ?? '', /turbo/);
 
-  for (const key of ['packet', 'story-inspect', 'storyteller-packet-audit', 'scenario']) {
+  for (const key of [
+    'packet',
+    'story-inspect',
+    'storyteller-packet-audit',
+    'scenario',
+  ]) {
     assert.ok(key in scripts, `missing chamber script ${key}`);
     assert.equal(typeof scripts[key], 'string');
     assert.ok(scripts[key].length > 0);

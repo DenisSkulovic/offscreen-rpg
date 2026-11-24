@@ -12,6 +12,7 @@ const PLATFORM_HOME = Object.freeze({
       postgres: 'offscreen-dev-postgres',
       temporal: 'offscreen-dev-temporal',
       objectStorage: 'offscreen-dev-objects',
+      redis: 'offscreen-dev-redis',
     }),
   }),
   release: Object.freeze({
@@ -46,6 +47,7 @@ export function readPlatformProfile(profileId) {
       postgres: home.namespaces.postgres,
       temporal: home.namespaces.temporal,
       objectStorage: home.namespaces.objectStorage,
+      redis: home.namespaces.redis ?? null,
     },
   };
 }

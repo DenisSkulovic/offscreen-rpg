@@ -1,6 +1,6 @@
 # Storyteller Workshop
 
-**Local developer composition (2026-11-24):** [implementation wave](LOCAL-DEV-PLATFORM.md) commissioned INF43, INF37, INF39 (source Done), INF38 and INF42 source runner. Source verification 430 pass / 4 fail; INF29 live in progress separately. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new live acceptance credit.
+**Local developer composition (2026-11-24):** [implementation wave](LOCAL-DEV-PLATFORM.md) commissioned INF43, INF37, INF39, INF38 and INF42 source runner. INF37 source Done: `pnpm infra:plan|up|status` select dev core plus Redis or the full release catalog. Focused tests 48/48. INF39 source Done. Live cluster NOT RUN. Source verification baseline 430 pass / 4 fail remains the pre-wave figure; INF29 live in progress separately. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no new live acceptance credit.
 
 **Local developer platform direction (2026-11-24):** INF36 Done at 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. [Next sequence](LOCAL-DEV-PLATFORM.md) and permanent capability catalog now define practical composition, configuration and repeatable verification. INF29 current-flow live proof separately gated. INF37–42 candidate slices, not executable. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged; no new live acceptance credit.
 

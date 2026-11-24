@@ -1,0 +1,4 @@
+mode: development
+namespace: offscreen-dev-redis
+images:
+  redis: docker.io/library/redis:8.2.1-alpine

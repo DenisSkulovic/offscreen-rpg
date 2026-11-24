@@ -86,11 +86,8 @@ test('lintPlatformChart succeeds for postgres fixture release profile', () => {
   );
 });
 
-test('assertPlatformRenderRequest rejects release-only redis on dev and unknown section', () => {
-  assert.throws(
-    () => assertPlatformRenderRequest('redis', 'dev', 'all'),
-    /release-only/,
-  );
+test('assertPlatformRenderRequest accepts redis on dev and rejects unknown section', () => {
+  assert.doesNotThrow(() => assertPlatformRenderRequest('redis', 'dev', 'all'));
   assert.throws(
     () => assertPlatformRenderRequest('postgres', 'release', 'broker'),
     /unsupported section/,
