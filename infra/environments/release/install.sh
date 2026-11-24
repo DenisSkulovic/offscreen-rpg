@@ -14,6 +14,7 @@ fi
 RELEASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${RELEASE_DIR}/../../.." && pwd)"
 RENDER_MJS="${REPO_ROOT}/infra/workloads/render.mjs"
+ROLLOUT_MJS="${RELEASE_DIR}/rollout.mjs"
 EDGE_ROUTE_YAML="${RELEASE_DIR}/game-edge-route.yaml"
 APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../images/release" && pwd)"
 KIND_IMAGE_LOADER="$(cd "${RELEASE_DIR}/../../images/distribution" && pwd)/kind-image-loader.mjs"
@@ -130,6 +131,9 @@ if image_selected web || image_selected api; then
   render_release_section edge "${RENDER_WORK}/edge.yaml"
 fi
 
+LOADER_RECEIPTS_FILE="${RENDER_WORK}/loader-receipts.json"
+echo '{}' >"${LOADER_RECEIPTS_FILE}"
+
 echo "Loading selected release images into ${CLUSTER_NAME}…"
 API_LOADER_RECEIPT=""
 load_image_if_changed() {
@@ -143,6 +147,12 @@ load_image_if_changed() {
     echo "Refusing install: could not verify/load ${image} into ${CLUSTER_NAME}." >&2
     exit 1
   fi
+  RECEIPT_LINE="$receipt" node --input-type=module -e "
+import fs from 'node:fs';
+const map = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+map[process.argv[2]] = process.env.RECEIPT_LINE.trim();
+fs.writeFileSync(process.argv[1], JSON.stringify(map));
+" "${LOADER_RECEIPTS_FILE}" "${name}"
   if [[ "$name" == "api" ]]; then
     API_LOADER_RECEIPT="$receipt"
   fi
@@ -151,6 +161,17 @@ load_image_if_changed web "$WEB_IMAGE"
 load_image_if_changed api "$API_IMAGE"
 load_image_if_changed game-authority "$GA_IMAGE"
 load_image_if_changed worker "$WORKER_IMAGE"
+
+prepare_release_apply() {
+  local section="$1"
+  local rendered="$2"
+  local apply_out="$3"
+  export OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE="${LOADER_RECEIPTS_FILE}"
+  if ! node "${ROLLOUT_MJS}" prepare "${section}" "${rendered}" "${apply_out}"; then
+    echo "Refusing install: could not prepare release ${section} apply manifest." >&2
+    exit 1
+  fi
+}
 
 echo "Preparing release Secrets from the lab database, object store, and root .env…"
 export OFFSCREEN_REPO_ROOT="${REPO_ROOT}"
@@ -177,30 +198,27 @@ fi
 
 if image_selected game-authority; then
   echo "Applying authority overlay…"
-  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/authority.yaml"
+  prepare_release_apply authority "${RENDER_WORK}/authority.yaml" "${RENDER_WORK}/authority.apply.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/authority.apply.yaml"
 fi
 if image_selected worker; then
   echo "Applying workers overlay…"
-  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/workers.yaml"
+  prepare_release_apply workers "${RENDER_WORK}/workers.yaml" "${RENDER_WORK}/workers.apply.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/workers.apply.yaml"
 fi
 if image_selected web || image_selected api; then
   echo "Applying edge overlay and HTTPRoute…"
-  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/edge.yaml" -f "${EDGE_ROUTE_YAML}"
+  prepare_release_apply edge "${RENDER_WORK}/edge.yaml" "${RENDER_WORK}/edge.apply.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/edge.apply.yaml" -f "${EDGE_ROUTE_YAML}"
 fi
 
-if image_selected api; then
-  "${KUBECTL[@]}" -n lab-edge rollout status deployment/game-api --timeout=300s
-fi
-if image_selected web; then
-  "${KUBECTL[@]}" -n lab-edge rollout status deployment/game-web --timeout=300s
-fi
-if image_selected game-authority; then
-  "${KUBECTL[@]}" -n lab-authority rollout status deployment/game-authority --timeout=300s
-fi
-if image_selected worker; then
-  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-control --timeout=300s
-  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-executor --timeout=300s
-  "${KUBECTL[@]}" -n lab-workers rollout status deployment/game-relay --timeout=300s
+echo "Verifying selected release rollouts and running pod image identities…"
+export OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE="${LOADER_RECEIPTS_FILE}"
+if image_selected web || image_selected api || image_selected game-authority || image_selected worker; then
+  if ! node "${ROLLOUT_MJS}" verify; then
+    echo "Refusing install: release rollout verification failed." >&2
+    exit 1
+  fi
 fi
 
 echo "App release overlay applied."

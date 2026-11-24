@@ -187,7 +187,27 @@ export function nodesReadyFromListJson(stdout) {
 export function readLiveStatusObservation(runner) {
   const contextArgs = ['kubectl', '--context', CONTEXT_NAME];
   const nodes = runner([...contextArgs, 'get', 'nodes', '-o', 'json']);
-  const job = runner([...contextArgs, '-n', 'lab-edge', 'get', 'job', 'game-migrate', '-o', 'json']);
+  const platformRun = (command, args) => {
+    const result = runner([command, ...args]);
+    return {
+      ok: result.status === 0,
+      status: result.status,
+      stdout: result.stdout ?? '',
+      stderr: result.stderr ?? '',
+      timedOut: false,
+      missing: false,
+    };
+  };
+  const migrationObservation = readPlatformObject(
+    {
+      profileId: 'release',
+      resource: 'job',
+      name: 'game-migrate',
+      namespace: 'lab-edge',
+    },
+    { run: platformRun },
+  );
+  const migration = migrationStatusFromJobRead(migrationObservation);
   /** @type {Array<{ namespace: string, name: string, ready: boolean }>} */
   const deployments = [];
   for (const namespace of ['lab-edge', 'lab-authority', 'lab-workers']) {
@@ -204,15 +224,18 @@ export function readLiveStatusObservation(runner) {
     'job/fixture-reader',
     '--tail=40',
   ]);
+  const fixtureStdout = fixtureLog.status === 0 ? fixtureLog.stdout : '';
   const importRoots =
-    fixtureLog.status === 0 && fixtureLog.stdout ? importRootsFromBootstrapLog(fixtureLog.stdout) : null;
+    fixtureStdout && fixtureStdout.trim()
+      ? importRootsFromBootstrapLog(fixtureStdout)
+      : null;
   return {
     context: CONTEXT_NAME,
     apiServerAddress: '127.0.0.1',
     nodesReady: nodes.status === 0 && nodes.stdout ? nodesReadyFromListJson(nodes.stdout) : false,
     memAvailableKib: null,
     durations: {},
-    migration: job.status === 0 && job.stdout ? migrationFromJobJson(job.stdout) : 'absent',
+    migration,
     deployments,
     pinnedObjectPresent: importRoots !== null,
     importRoots,

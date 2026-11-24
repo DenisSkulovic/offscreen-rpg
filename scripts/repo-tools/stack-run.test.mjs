@@ -194,8 +194,14 @@ test('live status reader issues only get commands', () => {
         stdout: JSON.stringify({ items: [{ status: { conditions: [{ type: 'Ready', status: 'True' }] } }] }),
       };
     }
-    if (argv.includes('job')) {
-      return { status: 0, stdout: JSON.stringify({ metadata: { name: 'game-migrate' }, status: { succeeded: 1 } }) };
+    if (argv.includes('job') && argv.includes('game-migrate')) {
+      return {
+        status: 0,
+        stdout: JSON.stringify({
+          metadata: { name: 'game-migrate', namespace: 'lab-edge' },
+          status: { succeeded: 1 },
+        }),
+      };
     }
     return { status: 0, stdout: JSON.stringify({ items: [] }) };
   });
