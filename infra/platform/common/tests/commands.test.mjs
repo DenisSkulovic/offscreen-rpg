@@ -182,6 +182,7 @@ test('readPlatformProfile accepts dev and release with frozen fields', () => {
     postgres: 'offscreen-dev-postgres',
     temporal: 'offscreen-dev-temporal',
     objectStorage: 'offscreen-dev-objects',
+    redis: 'offscreen-dev-redis',
   });
 
   const release = readPlatformProfile('release');
@@ -192,6 +193,7 @@ test('readPlatformProfile accepts dev and release with frozen fields', () => {
     postgres: 'lab-postgres',
     temporal: 'lab-temporal',
     objectStorage: 'lab-objects',
+    redis: null,
   });
 });
 
