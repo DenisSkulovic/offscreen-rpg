@@ -3,16 +3,16 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { renderDevSlotAppGraph } from '../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
+import { renderDevSlotAppGraph } from '../../../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
 import { assertDevWebFallbackContract } from './dev-tiltfile-web.test.mjs';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
+const devTiltfilePath = join(repoRoot, 'Tiltfile');
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
 
 /**
  * Dev API/GA use tsc-watch: readiness must track the serving process (tcp), not exec true.
- * @param {import('../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs').DeploymentDoc} deployment
+ * @param {import('../../../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs').DeploymentDoc} deployment
  * @param {string} label
  */
 export function assertDevWatchReadinessContract(deployment, label) {
@@ -66,13 +66,13 @@ export function assertDevTiltReadinessNotBlind(tiltfile) {
   assert.doesNotMatch(tiltfile, /readiness_probe/);
 }
 
-test('dev Tiltfile game-api live_update syncs apps/api only', () => {
+test('root Tiltfile game-api live_update syncs apps/api only', () => {
   assertDevApiTiltContract(devTiltfile);
   assert.doesNotMatch(devTiltfile, /infra\/workloads\/dev\/api\.yaml/);
   assert.doesNotMatch(devTiltfile, /port_forwards/);
 });
 
-test('dev Tiltfile game-authority live_update syncs apps/game-authority only', () => {
+test('root Tiltfile game-authority live_update syncs apps/game-authority only', () => {
   assertDevGaTiltContract(devTiltfile);
   assert.doesNotMatch(devTiltfile, /infra\/workloads\/dev\/authority\.yaml/);
 });

@@ -2,25 +2,72 @@
 # Build the shared dev image once per fingerprint, then alias one slot role tag.
 # A second slot or role waits on the fingerprint lock and must not build again.
 set -euo pipefail
-slot="${1:?slot}"
-role="${2:?role}"
-cluster="${3:-offscreen-dev}"
-if [[ "$cluster" == @* ]]; then cluster="${4:-offscreen-dev}"; fi
-case "$role" in
-  all|web|api|authority|worker) ;;
-  *)
-    echo "refusing role ${role}" >&2
-    exit 1
-    ;;
-esac
-if [[ "$cluster" != "offscreen-dev" || ! "$slot" =~ ^dev-[1-9][0-9]*$ ]]; then
-  echo "refusing image target ${cluster}/${slot}" >&2
-  exit 1
-fi
 repo="$(cd "$(dirname "$0")/../../.." && pwd)"
 test -f "$repo/package.json"
+
+tilt_ref_mode=false
+slot=""
+role=""
+cluster="offscreen-dev"
+
+if [[ "${1:-}" == --tilt-ref ]]; then
+  tilt_ref_mode=true
+  expected_ref="${2:?expected image ref with --tilt-ref}"
+  if [[ "${expected_ref}" =~ ^offscreen-lab-dev-workspace: ]]; then
+    echo "refusing legacy dev workspace ref ${expected_ref}" >&2
+    exit 1
+  fi
+  if [[ ! "${expected_ref}" =~ ^offscreen-dev-workspace:dev-[1-9][0-9]*-(web|api|authority|worker)$ ]]; then
+    slot_env="${OFFSCREEN_DEV_SLOT:-}"
+    if [[ ! "$slot_env" =~ ^dev-[1-9][0-9]*$ ]]; then
+      echo "refusing ref ${expected_ref} without valid OFFSCREEN_DEV_SLOT" >&2
+      exit 1
+    fi
+    if [[ "${expected_ref}" =~ ^offscreen-dev-workspace: ]]; then
+      echo "refusing malformed slot ref ${expected_ref}" >&2
+      exit 1
+    fi
+    echo "refusing ref ${expected_ref}" >&2
+    exit 1
+  fi
+  parsed="${expected_ref#offscreen-dev-workspace:}"
+  ref_role="${parsed##*-}"
+  ref_slot="${parsed%-${ref_role}}"
+  slot_env="${OFFSCREEN_DEV_SLOT:-}"
+  if [[ ! "$slot_env" =~ ^dev-[1-9][0-9]*$ ]] || [[ "$ref_slot" != "$slot_env" ]]; then
+    echo "refusing slot ref ${expected_ref} for OFFSCREEN_DEV_SLOT=${slot_env:-unset}" >&2
+    exit 1
+  fi
+  receipt_key="$ref_role"
+  if [[ "$ref_role" == authority ]]; then
+    receipt_key="game-authority"
+  fi
+  export OFFSCREEN_IMAGE_REF_FILE="$repo/.offscreen/tilt-image-refs/${ref_slot}/${receipt_key}.ref"
+  rm -f "$OFFSCREEN_IMAGE_REF_FILE"
+  unset OFFSCREEN_IMAGE_FINGERPRINT
+  slot="$ref_slot"
+  role="$ref_role"
+  cluster="offscreen-dev"
+else
+  slot="${1:?slot}"
+  role="${2:?role}"
+  cluster="${3:-offscreen-dev}"
+  if [[ "$cluster" == @* ]]; then cluster="${4:-offscreen-dev}"; fi
+  case "$role" in
+    all|web|api|authority|worker) ;;
+    *)
+      echo "refusing role ${role}" >&2
+      exit 1
+      ;;
+  esac
+  if [[ "$cluster" != "offscreen-dev" || ! "$slot" =~ ^dev-[1-9][0-9]*$ ]]; then
+    echo "refusing image target ${cluster}/${slot}" >&2
+    exit 1
+  fi
+fi
+
 cd "$repo"
-if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
+if [[ "$tilt_ref_mode" != true && -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
   rm -f "$OFFSCREEN_IMAGE_REF_FILE"
 fi
 # shellcheck source=/dev/null

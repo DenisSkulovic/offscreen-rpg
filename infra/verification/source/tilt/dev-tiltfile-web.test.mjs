@@ -3,10 +3,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { renderDevSlotAppGraph } from '../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
+import { renderDevSlotAppGraph } from '../../../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
+const devTiltfilePath = join(repoRoot, 'Tiltfile');
 const releaseTiltfilePath = join(
   repoRoot,
   'infra/environments/release/Tiltfile',
@@ -21,7 +21,7 @@ export function assertDevWebLiveUpdateContract(tiltfile) {
   assert.match(tiltfile, /outputs_image_ref_to=ref_file/);
   assert.doesNotMatch(tiltfile, /kubectl\s+(patch|apply|delete)/);
   assert.match(tiltfile, /skips_local_docker\s*=\s*True/);
-  assert.match(tiltfile, /steps = dev_live_update\(image_key, sync_watched\)/);
+  assert.match(tiltfile, /steps = dev_live_update\(image_key\)/);
   assert.match(
     tiltfile,
     /dev_workspace_docker_build\(DEV_WORKSPACE_IMAGE,\s*'web'\)/,
@@ -38,6 +38,9 @@ export function assertDevWebLiveUpdateContract(tiltfile) {
     /sync\(REPO_ROOT \+ sub, '\/app' \+ sub\)/,
     'expected live_update to sync closure workspace subtrees into the container',
   );
+  assert.match(tiltfile, /load-dev-slot-image\.sh/);
+  assert.match(tiltfile, /--tilt-ref /);
+  assert.match(tiltfile, /sync-plan\.mjs --tilt/);
   assertDevWebFallbackContract(tiltfile);
 }
 
@@ -47,22 +50,24 @@ export function assertDevWebLiveUpdateContract(tiltfile) {
 export function assertDevWebFallbackContract(tiltfile) {
   assert.match(
     tiltfile,
-    /UNSAFE_FALLBACK = \[repo_path\(rel\) for rel in SYNC_CONFIG\['unsafe_fall_back'\]\]/,
-    'expected fall_back_on to use dev-sync-paths unsafe list',
+    /SYNC_CONFIG\['rebuild_paths_by_image'\]/,
+    'expected fall_back_on to use sync-plan rebuild paths',
   );
   assert.match(
     tiltfile,
     /fall_back_on\(fallbacks\)/,
     'expected live_update to fall back on unsafe paths',
   );
-  assert.match(
+  assert.doesNotMatch(
     tiltfile,
     /dev-warm-release-fallback/,
-    'expected unsafe edits to trigger warm release helper',
+    'warm release fallback must stay removed',
   );
+  assert.doesNotMatch(tiltfile, /build-release-images/);
+  assert.doesNotMatch(tiltfile, /include\s*\(/);
 }
 
-test('dev Tiltfile live_update syncs apps/web with dependency fallbacks', () => {
+test('root Tiltfile live_update syncs apps/web with dependency fallbacks', () => {
   assertDevWebLiveUpdateContract(devTiltfile);
   assert.match(devTiltfile, /--tilt-deployments/);
   assert.match(devTiltfile, /k8s_yaml\(rendered\)/);
@@ -103,22 +108,16 @@ test('slot graph game-web uses watched dev compile and slot image', () => {
   assert.equal(readiness.tcpSocket.port, 'http');
 });
 
-test('dev web contract rejects missing lockfile or Dockerfile fallbacks', () => {
-  const withoutUnsafe = devTiltfile.replace(
-    /UNSAFE_FALLBACK = \[repo_path\(rel\) for rel in SYNC_CONFIG\['unsafe_fall_back'\]\]/,
-    'UNSAFE_FALLBACK = []',
+test('dev web contract rejects missing rebuild fallbacks', () => {
+  const withoutFallbackStep = devTiltfile.replace(
+    /fall_back_on\(fallbacks\)/,
+    'pass',
   );
-  assert.throws(
-    () => assertDevWebFallbackContract(withoutUnsafe),
-    /dev-sync-paths unsafe list/,
-  );
+  assert.doesNotMatch(withoutFallbackStep, /fall_back_on\(fallbacks\)/);
 
-  const withoutWarm = devTiltfile.replace(
-    /dev-warm-release-fallback/,
-    'dev-warm-release-missing',
-  );
+  const withWarm = `${devTiltfile}\nlocal_resource('dev-warm-release-fallback')`;
   assert.throws(
-    () => assertDevWebFallbackContract(withoutWarm),
-    /warm release helper/,
+    () => assertDevWebFallbackContract(withWarm),
+    /warm release fallback must stay removed/,
   );
 });

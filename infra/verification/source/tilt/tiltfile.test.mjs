@@ -42,13 +42,12 @@ test('root Tiltfile pins kubectl context kind-offscreen-dev', () => {
   assert.doesNotMatch(rootTiltfile, /kind-offscreen-lab/);
 });
 
-test('root Tiltfile loads the dev graph only', () => {
-  assert.match(
-    rootTiltfile,
-    /include\s*\(\s*['"]\.\/infra\/dev\/Tiltfile['"]\s*\)/,
-  );
+test('root Tiltfile owns the consolidated dev graph', () => {
+  assert.doesNotMatch(rootTiltfile, /include\s*\(/);
   assert.doesNotMatch(rootTiltfile, /app-release-images/);
   assert.doesNotMatch(rootTiltfile, /build-release-images\.sh/);
+  assert.match(rootTiltfile, /custom_build\s*\(/);
+  assert.match(rootTiltfile, /live_update\s*\(/);
 });
 
 test('root Tiltfile does not use Docker Compose or compose.yaml', () => {
@@ -61,7 +60,3 @@ test('root Tiltfile does not load lab skeleton manifests', () => {
   assert.doesNotMatch(rootTiltfile, /skeletons\/workloads/);
 });
 
-test('root Tiltfile does not use live_update on app images', () => {
-  assert.doesNotMatch(rootTiltfile, /live_update\s*\(/);
-  assert.doesNotMatch(rootTiltfile, /docker_build\s*\(/);
-});

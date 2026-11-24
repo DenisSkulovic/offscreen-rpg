@@ -9,15 +9,14 @@ import test from 'node:test';
 import {
   fingerprintDevImageContext,
   UNION_ROLE_FILTER,
-} from '../../tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs';
+} from '../../../../tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const adapter = join(repoRoot, 'infra/dev/load-dev-image.sh');
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const slotLoader = join(repoRoot, 'infra/images/development/load-dev-slot-image.sh');
-const tiltfile = readFileSync(join(repoRoot, 'infra/dev/Tiltfile'), 'utf8');
+const tiltfile = readFileSync(join(repoRoot, 'Tiltfile'), 'utf8');
 
-function runAdapter(ref, env = {}) {
-  return spawnSync('bash', [adapter, ref], {
+function runTiltRef(ref, env = {}) {
+  return spawnSync('bash', [slotLoader, '--tilt-ref', ref], {
     cwd: repoRoot,
     encoding: 'utf8',
     env: { ...process.env, ...env },
@@ -60,6 +59,7 @@ if [[ "$1" == "tag" ]]; then exit 0; fi
 if [[ "$1" == "exec" && "$*" == *"images ls"* ]]; then
   for r in \\
     offscreen-dev-workspace:union-same-fp-abcdefgh \\
+    offscreen-dev-workspace:dev-2-authority \\
     offscreen-dev-workspace:dev-3-api \\
     offscreen-dev-workspace:dev-4-web; do
     printf 'docker.io/library/%s application/vnd.oci.image.index.v1+json sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\n' "$r"
@@ -76,41 +76,65 @@ exit 0
   return { bin, counter, mark };
 }
 
+function installFingerprintFailFakes(root) {
+  const base = installFakes(root);
+  const nodePath = join(base.bin, 'node');
+  const prior = readFileSync(nodePath, 'utf8');
+  writeFileSync(
+    nodePath,
+    prior.replace(
+      'exec "${OFFSCREEN_REAL_NODE}" "$@"',
+      `if [[ "\${1:-}" == --input-type=module && "\$*" == *fingerprintDevImageContext* ]]; then
+  echo refusing-fingerprint >&2
+  exit 2
+fi
+exec "\${OFFSCREEN_REAL_NODE}" "$@"`,
+    ),
+  );
+  chmodSync(nodePath, 0o755);
+  return base;
+}
+
 test('dev Tiltfile uses worktree-scoped receipt paths and shared rebuild inputs', () => {
   assert.match(tiltfile, /\.offscreen\/tilt-image-refs\/' \+ OFFSCREEN_DEV_SLOT \+ '\//);
-  assert.match(tiltfile, /infra\/dev\/load-dev-image\.sh/);
+  assert.match(readFileSync(slotLoader, 'utf8'), /--tilt-ref/);
   assert.doesNotMatch(tiltfile, /TURBO_FILTER_BY_IMAGE/);
-  assert.match(tiltfile, /kind-image-loader\.mjs/);
+  assert.match(tiltfile, /rebuild_paths_by_image/);
+  assert.match(tiltfile, /--tilt-ref /);
   assert.match(tiltfile, /deps=rebuild_deps/);
   assert.doesNotMatch(tiltfile, /\/tmp\/offscreen-tilt-image-ref-/);
 });
 
-test('adapter refuses slot ref that does not match OFFSCREEN_DEV_SLOT', () => {
-  const result = runAdapter('offscreen-dev-workspace:dev-2-web', { OFFSCREEN_DEV_SLOT: 'dev-3' });
+test('tilt-ref refuses slot ref that does not match OFFSCREEN_DEV_SLOT', () => {
+  const receipt = join(repoRoot, '.offscreen/tilt-image-refs/dev-2/web.ref');
+  mkdirSync(dirname(receipt), { recursive: true });
+  writeFileSync(receipt, 'stale-ref\n');
+  const result = runTiltRef('offscreen-dev-workspace:dev-2-web', { OFFSCREEN_DEV_SLOT: 'dev-3' });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /refusing slot ref/);
+  assert.equal(readFileSync(receipt, 'utf8'), 'stale-ref\n');
 });
 
-test('adapter refuses legacy dev workspace refs before docker', () => {
-  const result = runAdapter('offscreen-lab-dev-workspace:dxk08-api', { OFFSCREEN_DEV_SLOT: 'dev-2' });
+test('tilt-ref refuses legacy dev workspace refs before docker', () => {
+  const result = runTiltRef('offscreen-lab-dev-workspace:dxk08-api', { OFFSCREEN_DEV_SLOT: 'dev-2' });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /refusing legacy dev workspace ref/);
 });
 
-test('adapter refuses malformed slot refs without valid OFFSCREEN_DEV_SLOT', () => {
-  const result = runAdapter('offscreen-dev-workspace:dev-2-typo', { OFFSCREEN_DEV_SLOT: 'unassigned' });
+test('tilt-ref refuses malformed slot refs without valid OFFSCREEN_DEV_SLOT', () => {
+  const result = runTiltRef('offscreen-dev-workspace:dev-2-typo', { OFFSCREEN_DEV_SLOT: 'unassigned' });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /without valid OFFSCREEN_DEV_SLOT/);
 });
 
-test('adapter refuses release refs with no cross-profile fallback', () => {
-  const result = runAdapter('offscreen-lab-game-web:turn02', { OFFSCREEN_DEV_SLOT: 'dev-2' });
+test('tilt-ref refuses release refs with no cross-profile fallback', () => {
+  const result = runTiltRef('offscreen-lab-game-web:turn02', { OFFSCREEN_DEV_SLOT: 'dev-2' });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /refusing ref/);
 });
 
-test('adapter rejects unknown refs with no cross-profile fallback', () => {
-  const result = runAdapter('offscreen-lab-game-web:turn02');
+test('tilt-ref rejects unknown refs with no cross-profile fallback', () => {
+  const result = runTiltRef('offscreen-lab-game-web:turn02');
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /refusing ref/);
 });
@@ -136,17 +160,40 @@ test('source change recomputes fingerprint for tilt rebuilds', () => {
   assert.notEqual(changed.fingerprint, first.fingerprint);
 });
 
-test('failure removes stale receipt before adapter work and leaves no success file', () => {
-  const root = mkdtempSync(join(tmpdir(), 'receipt-'));
-  const receipt = join(root, '.offscreen/tilt-image-refs/dev-2/web.ref');
+test('valid tilt-ref clears own receipt before work; failure leaves no success file', () => {
+  const root = mkdtempSync(join(tmpdir(), 'receipt-fail-'));
+  const receipt = join(repoRoot, '.offscreen/tilt-image-refs/dev-2/web.ref');
   mkdirSync(dirname(receipt), { recursive: true });
   writeFileSync(receipt, 'stale-ref\n');
-  const result = runAdapter('offscreen-dev-workspace:dev-2-web', {
-    OFFSCREEN_DEV_SLOT: 'dev-3',
-    OFFSCREEN_IMAGE_REF_FILE: receipt,
+  const { bin } = installFingerprintFailFakes(root);
+  const result = runTiltRef('offscreen-dev-workspace:dev-2-web', {
+    OFFSCREEN_DEV_SLOT: 'dev-2',
+    PATH: `${bin}:${process.env.PATH}`,
+    OFFSCREEN_REAL_NODE: execPath,
+    TMPDIR: root,
   });
   assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /refusing-fingerprint/);
   assert.equal(existsSync(receipt), false);
+});
+
+test('authority tilt-ref targets game-authority receipt path', () => {
+  const script = readFileSync(slotLoader, 'utf8');
+  assert.match(script, /game-authority/);
+  const receipt = join(repoRoot, '.offscreen/tilt-image-refs/dev-2/game-authority.ref');
+  mkdirSync(dirname(receipt), { recursive: true });
+  writeFileSync(receipt, 'stale-ref\n');
+  const root = mkdtempSync(join(tmpdir(), 'receipt-ga-'));
+  const { bin } = installFakes(root);
+  const result = runTiltRef('offscreen-dev-workspace:dev-2-authority', {
+    OFFSCREEN_DEV_SLOT: 'dev-2',
+    PATH: `${bin}:${process.env.PATH}`,
+    OFFSCREEN_REAL_NODE: execPath,
+    OFFSCREEN_IMAGE_FINGERPRINT: 'same-fp-abcdefghijklmnopqrstuvwxyz',
+    TMPDIR: root,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(existsSync(receipt), true);
 });
 
 test('two slots write separate receipt paths', () => {
@@ -195,6 +242,6 @@ test('alias tagging does not invoke kind load for role-only work', () => {
   const script = readFileSync(slotLoader, 'utf8');
   assert.match(script, /kind-image-loader\.mjs" dev/);
   assert.doesNotMatch(script, /kind load docker-image "\$ref"/);
-  assert.match(script, /ctr -n k8s\.io images tag/);
+  assert.match(script, /ctr -n k8s.io images tag/);
   assert.match(script, /write_image_ref_receipt/);
 });

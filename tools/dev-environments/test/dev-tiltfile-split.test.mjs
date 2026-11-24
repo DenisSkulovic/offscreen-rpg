@@ -35,10 +35,11 @@ test('root Tiltfile is the dev profile without release image builds', () => {
   );
   assert.match(rootTiltfile, /assert_dev_slot_env/);
   assert.doesNotMatch(rootTiltfile, /kind-offscreen-lab/);
-  assert.match(
-    rootTiltfile,
-    /include\s*\(\s*['"]\.\/infra\/dev\/Tiltfile['"]\s*\)/,
-  );
+  assert.doesNotMatch(rootTiltfile, /include\s*\(/);
+  assert.match(rootTiltfile, /sync-plan\.mjs --tilt/);
+  assert.match(rootTiltfile, /k8s_yaml\(rendered\)/);
+  assert.doesNotMatch(rootTiltfile, /dev-warm-release-fallback/);
+  assert.doesNotMatch(rootTiltfile, /load-dev-image\.sh/);
 });
 
 test('root Tiltfile refuses missing slot env before renderer runs', () => {

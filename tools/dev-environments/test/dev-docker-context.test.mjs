@@ -11,11 +11,10 @@ import {
 } from '../src/adapters/dev-docker-context.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-const loadScript = join(repoRoot, 'infra/dev/load-dev-image.sh');
+const slotLoaderPath = join(repoRoot, 'infra/images/development/load-dev-slot-image.sh');
 const libBuild = join(repoRoot, 'infra/images/release/lib-build.sh');
 
-test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned context not repo root', () => {
-  const script = readFileSync(loadScript, 'utf8');
+test('dev slot loader uses Dockerfile.dockerignore; release builds use pruned context not repo root', () => {
   const buildHelper = readFileSync(join(repoRoot, 'infra/images/development/build.sh'), 'utf8');
   const build = buildHelper.slice(buildHelper.indexOf('docker build'));
   assert.doesNotMatch(build, /ignorefile/);
@@ -23,16 +22,13 @@ test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned con
   assert.equal(existsSync(ignoreFile), true);
   assert.match(readFileSync(ignoreFile, 'utf8'), /\*\*\/node_modules/);
   assert.match(readFileSync(ignoreFile, 'utf8'), /^\.offscreen$/m);
-  assert.match(script, /Dockerfile\.dockerignore/);
-  assert.doesNotMatch(script, /kubectl/);
-  const slotLoader = readFileSync(join(repoRoot, 'infra/images/development/load-dev-slot-image.sh'), 'utf8');
+  const slotLoader = readFileSync(slotLoaderPath, 'utf8');
+  assert.match(slotLoader, /--tilt-ref/);
   assert.match(slotLoader, /OFFSCREEN_IMAGE_REF_FILE/);
   assert.doesNotMatch(slotLoader, /kubectl/);
   assert.match(slotLoader, /post-load-mismatch/);
   assert.match(slotLoader, /distribution\/kind-image-loader\.mjs/);
-  const adapter = readFileSync(loadScript, 'utf8');
-  assert.doesNotMatch(adapter, /kind-image-loader\.mjs" release/);
-  assert.match(adapter, /load-dev-slot-image\.sh/);
+  assert.doesNotMatch(slotLoader, /kind-image-loader\.mjs" release/);
   assert.doesNotMatch(slotLoader, /kind load docker-image "\$ref"/);
   assert.match(slotLoader, /ctr -n k8s.io images tag/);
   const release = readFileSync(libBuild, 'utf8');

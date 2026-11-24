@@ -3,18 +3,18 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { renderDevSlotAppGraph } from '../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
-import { renderWorkloadDocuments } from '../workloads/render.mjs';
+import { renderDevSlotAppGraph } from '../../../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
+import { renderWorkloadDocuments } from '../../../workloads/render.mjs';
 import {
   assertDevApiTiltContract,
   assertDevGaTiltContract,
 } from './dev-tiltfile-api-authority.test.mjs';
 import { assertDevWebLiveUpdateContract } from './dev-tiltfile-web.test.mjs';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const workerPackagePath = join(repoRoot, 'apps/worker/package.json');
 const devWatchCompilationPath = join(repoRoot, 'infra/dev/dev-watch-compilation.mjs');
+const devTiltfilePath = join(repoRoot, 'Tiltfile');
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
 const workerPackage = JSON.parse(readFileSync(workerPackagePath, 'utf8'));
 
@@ -107,7 +107,7 @@ export function assertDevWorkerTiltContract(tiltfile) {
   assert.doesNotMatch(tiltfile, /infra\/workloads\/dev\/workers\.yaml/);
 }
 
-test('dev Tiltfile worker live_update syncs apps/worker only on worker resources', () => {
+test('root Tiltfile worker live_update syncs apps/worker only on worker resources', () => {
   assertDevWorkerTiltContract(devTiltfile);
   assertDevWebLiveUpdateContract(devTiltfile);
   assertDevApiTiltContract(devTiltfile);

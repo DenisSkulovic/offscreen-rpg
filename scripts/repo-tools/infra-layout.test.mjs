@@ -106,7 +106,32 @@ export const INF07_SUCCESSOR_RELOCATIONS = [
   },
   {
     from: 'infra/images/development/tilt/load-dev-image.sh',
-    to: 'infra/dev/load-dev-image.sh',
+    to: 'infra/images/development/load-dev-slot-image.sh',
+  },
+];
+
+/** INF17 collapsed the nested dev graph into the root Tiltfile and sync-plan. */
+export const INF17_SUCCESSOR_RELOCATIONS = [
+  { from: 'infra/dev/Tiltfile', to: 'Tiltfile' },
+  {
+    from: 'infra/dev/dev-sync-paths.mjs',
+    to: 'infra/images/development/sync-plan.mjs',
+  },
+  {
+    from: 'infra/dev/dev-sync-paths.test.mjs',
+    to: 'infra/images/development/sync-plan.test.mjs',
+  },
+  {
+    from: 'infra/dev/dev-tiltfile-api-authority.test.mjs',
+    to: 'infra/verification/source/tilt/dev-tiltfile-api-authority.test.mjs',
+  },
+  {
+    from: 'infra/dev/dev-tiltfile-web.test.mjs',
+    to: 'infra/verification/source/tilt/dev-tiltfile-web.test.mjs',
+  },
+  {
+    from: 'infra/dev/dev-tiltfile-workers.test.mjs',
+    to: 'infra/verification/source/tilt/dev-tiltfile-workers.test.mjs',
   },
 ];
 
@@ -258,6 +283,7 @@ function effectiveMoveDestination(destination) {
     INF07_EFFECTIVE_DESTINATION_SUCCESSORS,
     INF08_SUCCESSOR_RELOCATIONS,
     INF15_SUCCESSOR_RELOCATIONS,
+    INF17_SUCCESSOR_RELOCATIONS,
   ]) {
     const successor = table.find((row) => row.from === current);
     if (successor) {
@@ -621,7 +647,8 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
   );
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-dev'\)/);
   assert.doesNotMatch(tiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
-  assert.match(tiltfile, /infra\/dev\/Tiltfile/);
+  assert.doesNotMatch(tiltfile, /infra\/dev\/Tiltfile/);
+  assert.match(tiltfile, /sync-plan\.mjs --tilt/);
   assertInf16ReleaseTiltRetirement(repoRoot);
 
   const libSh = readFileSync(
