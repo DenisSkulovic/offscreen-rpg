@@ -202,13 +202,13 @@ test('ensure preflight skips unselected chart services', () => {
         }),
       };
     }
-    if (command === 'kubectl' && args.includes('lab-postgres')) {
+    if (command === 'kubectl' && args.includes('offscreen-release-system')) {
       return {
         ok: true,
         stdout: JSON.stringify({
           metadata: {
             labels: { 'offscreen.rpg/lab': 'disposable' },
-            name: 'lab-postgres',
+            name: 'offscreen-release-system', uid: 'release-baseline-uid',
           },
         }),
       };

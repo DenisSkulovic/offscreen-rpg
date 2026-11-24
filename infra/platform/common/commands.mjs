@@ -10,6 +10,7 @@ import {
 } from '../../clusters/kind/manager/dev-bootstrap.mjs';
 import { readPlatformProfile } from './profile.mjs';
 
+export const RELEASE_BASELINE_NAMESPACE = 'offscreen-release-system';
 export const PLATFORM_COMMAND_TIMEOUT_MS = 15_000;
 const MAX_BUFFER_BYTES = 8 * 1024 * 1024;
 
@@ -314,17 +315,17 @@ export function assertPlatformTarget(profileId, { run = runPlatformCommand } = {
     {
       profileId: 'release',
       resource: 'namespace',
-      name: profile.namespaces.postgres,
+      name: RELEASE_BASELINE_NAMESPACE,
     },
     { run },
   );
   if (labNamespace.state !== 'present') {
-    throw new Error('release lab namespace unreadable or absent');
+    throw new Error('release baseline namespace unreadable or absent');
   }
   const lab =
     labNamespace.object?.metadata?.labels?.[`${profile.ownerLabel}/lab`];
-  if (lab !== profile.ownerValue) {
-    throw new Error('release lab namespace label mismatch');
+  if (lab !== profile.ownerValue || !labNamespace.object?.metadata?.uid) {
+    throw new Error('release baseline namespace label or uid mismatch');
   }
 
   return {
@@ -338,16 +339,7 @@ export function assertPlatformTarget(profileId, { run = runPlatformCommand } = {
 
 /** Explicit cluster-bootstrap action; never adopts or relabels an existing namespace. */
 export function ensureReleaseOwnershipBaseline({ run = runPlatformCommand } = {}) {
-  const { profile } = assertTargetIdentity('release', run);
-  const spec = { profileId: 'release', resource: 'namespace', name: profile.namespaces.postgres };
-  const existing = readPlatformObject(spec, { run });
-  if (existing.state === 'unreadable') throw new Error('release baseline unreadable');
-  if (existing.state === 'present') {
-    if (existing.object.metadata?.labels?.[profile.ownerLabel + '/lab'] !== profile.ownerValue) {
-      throw new Error('release baseline has foreign ownership');
-    }
-    return { ok: true, mutated: false };
-  }
+  const profile = readPlatformProfile('release');
   // Bind the API endpoint to the actual local Kind control-plane container.
   if (process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT || process.env.DOCKER_TLS_VERIFY) throw new Error('Docker endpoint override refused');
   const context = run('docker', ['context', 'show']);
@@ -371,6 +363,16 @@ export function ensureReleaseOwnershipBaseline({ run = runPlatformCommand } = {}
   if (!config.ok) throw new Error('release kubeconfig unreadable');
   const body = JSON.parse(config.stdout);
   if (body.users?.some(u => u.user?.exec || u.user?.['auth-provider']) || body.clusters?.some(c => c.cluster?.['proxy-url'])) throw new Error('external authentication or proxy refused');
+  assertTargetIdentity('release', run);
+  const spec = { profileId: 'release', resource: 'namespace', name: RELEASE_BASELINE_NAMESPACE };
+  const existing = readPlatformObject(spec, { run });
+  if (existing.state === 'unreadable') throw new Error('release baseline unreadable');
+  if (existing.state === 'present') {
+    if (existing.object.metadata?.labels?.[profile.ownerLabel + '/lab'] !== profile.ownerValue || !existing.object.metadata?.uid) {
+      throw new Error('release baseline has foreign ownership');
+    }
+    return { ok: true, mutated: false };
+  }
   const created = run('kubectl', ['--context', profile.contextName, 'create', '-f', '-'], {
     input: JSON.stringify({ apiVersion: 'v1', kind: 'Namespace', metadata: { name: spec.name, labels: { [profile.ownerLabel + '/lab']: profile.ownerValue } } }),
   });

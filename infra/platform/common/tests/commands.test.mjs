@@ -484,7 +484,7 @@ test('assertPlatformTarget accepts healthy dev and release targets', () => {
         releaseKind.contextName,
         'get',
         'namespace',
-        'lab-postgres',
+        'offscreen-release-system',
         '--ignore-not-found',
         '-o',
         'json',
@@ -494,7 +494,7 @@ test('assertPlatformTarget accepts healthy dev and release targets', () => {
         status: 0,
         stdout: JSON.stringify({
           metadata: {
-            name: 'lab-postgres',
+            name: 'offscreen-release-system', uid: 'release-baseline-uid',
             labels: { 'offscreen.rpg/lab': 'disposable' },
           },
         }),
@@ -556,7 +556,7 @@ test('assertPlatformTarget expects Kind kubeconfig cluster entries, not Kind clu
                 kind.contextName,
                 'get',
                 'namespace',
-                'lab-postgres',
+                'offscreen-release-system',
                 '--ignore-not-found',
                 '-o',
                 'json',
@@ -566,7 +566,7 @@ test('assertPlatformTarget expects Kind kubeconfig cluster entries, not Kind clu
                 status: 0,
                 stdout: JSON.stringify({
                   metadata: {
-                    name: 'lab-postgres',
+                    name: 'offscreen-release-system', uid: 'release-baseline-uid',
                     labels: { 'offscreen.rpg/lab': 'disposable' },
                   },
                 }),
@@ -903,7 +903,7 @@ test('release bootstrap creates only absent baseline after local node identity p
     if (command === 'docker' && args[0] === 'inspect') return ok(JSON.stringify([{ Config: { Labels: { 'io.x-k8s.kind.cluster': releaseKind.clusterName, 'io.x-k8s.kind.role': 'control-plane' } }, State: { Running: true }, NetworkSettings: { Ports: { '6443/tcp': [{ HostIp: '127.0.0.1', HostPort: '6443' }] } } }]));
     if (args.includes('config')) return ok(kubectlConfigJson('release', RELEASE_API_PORT));
     if (args.includes('get')) return ok(existing ? JSON.stringify(existing) : '');
-    if (args.includes('create')) { writes++; existing = JSON.parse(options.input); return ok('created'); }
+    if (args.includes('create')) { writes++; existing = JSON.parse(options.input); existing.metadata.uid = 'release-baseline-uid'; return ok('created'); }
     throw Error('unexpected command');
   };
   dockerHost = 'tcp://remote.example:2375';

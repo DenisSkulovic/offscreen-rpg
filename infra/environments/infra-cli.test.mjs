@@ -136,12 +136,12 @@ function releaseWarmRun(clusterPresent = true) {
         stdout: kubectlConfigJson('release', RELEASE_API_PORT),
       };
     }
-    if (command === 'kubectl' && args.includes('lab-postgres')) {
+    if (command === 'kubectl' && args.includes('offscreen-release-system')) {
       return {
         ok: true,
         stdout: JSON.stringify({
           metadata: {
-            name: 'lab-postgres',
+            name: 'offscreen-release-system', uid: 'release-baseline-uid',
             labels: { 'offscreen.rpg/lab': 'disposable' },
           },
         }),
