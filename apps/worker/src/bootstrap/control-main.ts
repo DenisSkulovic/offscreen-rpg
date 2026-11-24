@@ -4,16 +4,6 @@ import {
 } from '@offscreen/runtime-logging';
 import { startControlRuntime } from '../runtime/control';
 import { readControlWorkerConfig } from './config';
-import { writeDevLoadedRuntimeReceipt } from '@offscreen/runtime-logging/dev-loaded-runtime';
-
-const devCompiledEntry = process.env.OFFSCREEN_DEV_COMPILED_ENTRY;
-if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1' && devCompiledEntry) {
-  writeDevLoadedRuntimeReceipt({
-    role: 'worker-control',
-    compiledModulePath: devCompiledEntry,
-  });
-}
-
 async function main() {
   let runtime: Awaited<ReturnType<typeof startControlRuntime>> | undefined;
   const stop = () => {

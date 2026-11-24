@@ -54,7 +54,7 @@ flowchart TD
 | Tilt graph and application live sync | root `Tiltfile` with `infra/images/development/sync-plan.mjs` | Sole active deployment writer and source-update controller |
 | Build and node imports | `infra/images/development/load-dev-slot-image.sh` (`--tilt-ref` for Tilt) | Consolidated preparation contract; no Kubernetes Deployment patch |
 | Image fingerprint and reuse | `tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs` | Pure image planning; no hidden Kubernetes mutation |
-| Current-generation verification | `infra/dev/dev-watched-compilation-receipt.mjs`, loaded-runtime status and `dev-tilt.mjs` | Read-only verifier, fail closed |
+| Current-generation verification | `tools/dev-environments/runtime/generation.mjs`, `status.mjs`, and `dev-tilt.mjs` | Read-only verifier, fail closed; one compile supervisor per compiled role |
 | Worker runtime | `apps/worker/src/runtime/index.ts` | Temporal SDK and source/watch compatibility belong to worker runtime, not the image loader |
 
 These anchors describe the inspected integration baseline and the local conflict, **not** a promise that the unintegrated image-refactor branch already follows the target.

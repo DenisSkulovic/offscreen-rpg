@@ -36,16 +36,6 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=development
 COPY --from=deps --chown=node:node /app/ ./
-# Commands run inside each app directory. Copy the entrypoints again so a
-# reused dependency layer cannot omit a watcher that the deployment invokes.
-COPY --chown=node:node apps/api/dev-pod-compile-watch.mjs apps/api/dev-pod-compile-watch.mjs
-COPY --chown=node:node apps/game-authority/dev-pod-compile-watch.mjs apps/game-authority/dev-pod-compile-watch.mjs
-COPY --chown=node:node apps/worker/dev-pod-compile-watch.mjs apps/worker/dev-pod-compile-watch.mjs
-COPY --chown=node:node apps/web/dev-pod-web-receipt.mjs apps/web/dev-pod-web-receipt.mjs
-# Slot watchers import these modules. The rest of infra is not part of the dev image.
-COPY --chown=node:node infra/dev/dev-watched-compilation-receipt.mjs infra/dev/dev-watched-compilation-receipt.mjs
-COPY --chown=node:node infra/dev/dev-watch-compilation.mjs infra/dev/dev-watch-compilation.mjs
-COPY --chown=node:node infra/dev/dev-image-runtime-modules.mjs infra/dev/dev-image-runtime-modules.mjs
 USER node
-RUN node infra/dev/dev-image-runtime-modules.mjs --check
+RUN node tools/dev-environments/runtime/check-packaging.mjs --check
 EXPOSE 3000

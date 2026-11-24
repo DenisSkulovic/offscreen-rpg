@@ -37,11 +37,8 @@ SYNC_CONFIG = decode_json(str(local(
 def repo_path(rel):
     return REPO_ROOT + '/' + rel
 
-DEV_RECEIPT_MODULES = [
-    'infra/dev/dev-watched-compilation-receipt.mjs',
-    'infra/dev/dev-watch-compilation.mjs',
-    'infra/dev/dev-image-runtime-modules.mjs',
-]
+# Dev compile supervision is image-baked; runtime edits rebuild, not live_sync.
+DEV_RUNTIME_REBUILD = 'tools/dev-environments/runtime'
 
 def is_under_synced_app(rel, image_key):
     for sub in SYNC_CONFIG['sync_dirs_by_image'][image_key]:
@@ -66,8 +63,6 @@ def dev_live_update(image_key):
         steps.append(fall_back_on(fallbacks))
     for sub in SYNC_CONFIG['sync_dirs_by_image'][image_key]:
         steps.append(sync(REPO_ROOT + sub, '/app' + sub))
-    for rel in DEV_RECEIPT_MODULES:
-        steps.append(sync(REPO_ROOT + '/' + rel, '/app/' + rel))
     return steps
 
 def rebuild_deps_for_image(image_key):
@@ -83,11 +78,10 @@ def rebuild_deps_for_image(image_key):
         if path not in seen:
             seen[path] = True
             deps.append(path)
-    for rel in DEV_RECEIPT_MODULES:
-        path = repo_path(rel)
-        if path not in seen:
-            seen[path] = True
-            deps.append(path)
+    runtime = repo_path(DEV_RUNTIME_REBUILD)
+    if runtime not in seen:
+        seen[runtime] = True
+        deps.append(runtime)
     return deps
 
 def dev_workspace_docker_build(image, image_key):

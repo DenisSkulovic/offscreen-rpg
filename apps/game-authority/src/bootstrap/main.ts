@@ -26,16 +26,6 @@ import {
   readWriterRoundBootstrapMode,
   writerRoundModelPolicyForBootstrap,
 } from '../writer-round-lab-policy.js';
-import { writeDevLoadedRuntimeReceipt } from '@offscreen/runtime-logging/dev-loaded-runtime';
-
-const devCompiledEntry = process.env.OFFSCREEN_DEV_COMPILED_ENTRY;
-if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1' && devCompiledEntry) {
-  writeDevLoadedRuntimeReceipt({
-    role: 'game-authority',
-    compiledModulePath: devCompiledEntry,
-  });
-}
-
 function log(
   level: 'info' | 'error',
   event: string,

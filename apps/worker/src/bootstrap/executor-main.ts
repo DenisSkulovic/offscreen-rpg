@@ -4,16 +4,6 @@ import {
   classifyRuntimeError,
   writeRuntimeLog,
 } from '@offscreen/runtime-logging';
-import { writeDevLoadedRuntimeReceipt } from '@offscreen/runtime-logging/dev-loaded-runtime';
-
-const devCompiledEntry = process.env.OFFSCREEN_DEV_COMPILED_ENTRY;
-if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1' && devCompiledEntry) {
-  writeDevLoadedRuntimeReceipt({
-    role: 'worker-executor',
-    compiledModulePath: devCompiledEntry,
-  });
-}
-
 async function main() {
   let runtime: Awaited<ReturnType<typeof startExecutionRuntime>> | undefined;
   const stop = () => {

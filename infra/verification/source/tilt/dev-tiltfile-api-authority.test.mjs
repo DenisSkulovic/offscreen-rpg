@@ -91,7 +91,7 @@ test('slot graph runs package dev watch commands without envFrom', () => {
   for (const name of ['game-api', 'game-authority']) {
     const deployment = graph.documents.find((item) => item.kind === 'Deployment' && item.metadata.name === name);
     const command = deployment.spec.template.spec.containers[0].command.join(' ');
-    assert.match(command, /dev-pod-compile-watch\.mjs/);
+    assert.match(command, /compile-watch\.mjs/);
     assert.equal(deployment.spec.template.spec.containers[0].envFrom, undefined);
   }
 });

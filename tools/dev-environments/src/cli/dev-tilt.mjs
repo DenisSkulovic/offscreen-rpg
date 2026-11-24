@@ -1,8 +1,16 @@
 #!/usr/bin/env node
 import { createConnection } from 'node:net';
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -18,9 +26,15 @@ import {
   runStackPreflight,
   CONTEXT_NAME,
 } from '../../../../scripts/repo-tools/stack-preflight.mjs';
-import { evaluateDevLoadedRuntimeReadiness } from '../../../../infra/dev/dev-watched-compilation-receipt.mjs';
+import {
+  devRuntimeReceiptRoot,
+  evaluateDevLoadedRuntimeReadiness,
+} from '../../runtime/generation.mjs';
 import { DEV_POD_RUNTIME_RECEIPT_DIR } from '../rendering/dev-slot-app-graph.mjs';
-import { assessOwnedProcess, readProcessStartTicks } from '../domain/dev-process-identity.mjs';
+import {
+  assessOwnedProcess,
+  readProcessStartTicks,
+} from '../domain/dev-process-identity.mjs';
 import {
   environmentSessionRoot,
   isAllocatorRefusal as isSelectionRefusal,
@@ -33,11 +47,22 @@ import {
   writeEnvironmentSession,
 } from '../domain/dev-environment-session.mjs';
 import { reconcileOwnedDevSlot } from '../application/dev-slot-startup.mjs';
-import { fingerprintDevImageContext, UNION_ROLE_FILTER } from '../image-cache/dev-slot-image-plan.mjs';
+import {
+  fingerprintDevImageContext,
+  UNION_ROLE_FILTER,
+} from '../image-cache/dev-slot-image-plan.mjs';
 import { performance } from 'node:perf_hooks';
-import { beginStartupTiming, finishStartupTiming, recordPhase, timePhase } from '../application/dev-startup-timing.mjs';
+import {
+  beginStartupTiming,
+  finishStartupTiming,
+  recordPhase,
+  timePhase,
+} from '../application/dev-startup-timing.mjs';
 
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../');
+const REPO_ROOT = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../',
+);
 const LOOPBACK = '127.0.0.1';
 const GAME_PORT = 3000;
 const TILT_PORT = 10350;
@@ -105,13 +130,18 @@ export function stopDevSession(worktree, deps = {}) {
     } catch {
       // ignore
     }
-    return { hadSession: false, signalled: false, reason: 'unreadable_session' };
+    return {
+      hadSession: false,
+      signalled: false,
+      reason: 'unreadable_session',
+    };
   }
 
   const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
   const ownership = assessOwnedProcess(session, {
     pidAlive: deps.pidAlive ?? pidAlive,
-    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+    readStartTicks:
+      deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
   });
   let signalled = false;
   if (ownership.owned) {
@@ -122,13 +152,17 @@ export function stopDevSession(worktree, deps = {}) {
       // ignore
     }
   }
-  const forwardOwnership = assessOwnedProcess({
-    pid: session.forwardPid,
-    processStartTicks: session.forwardStartTicks,
-  }, {
-    pidAlive: deps.pidAlive ?? pidAlive,
-    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-  });
+  const forwardOwnership = assessOwnedProcess(
+    {
+      pid: session.forwardPid,
+      processStartTicks: session.forwardStartTicks,
+    },
+    {
+      pidAlive: deps.pidAlive ?? pidAlive,
+      readStartTicks:
+        deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+    },
+  );
   if (forwardOwnership.owned) {
     try {
       signal(Number(session.forwardPid), 'SIGTERM');
@@ -170,7 +204,11 @@ const SLOT_WORKLOADS = [
  * @param {string} namespace
  * @param {typeof spawnSync} [spawnFn]
  */
-export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync, roles = SLOT_WORKLOADS) {
+export function scaleDevSlotWorkloads(
+  namespace,
+  spawnFn = spawnSync,
+  roles = SLOT_WORKLOADS,
+) {
   if (!SLOT_NAMESPACE.test(namespace)) {
     throw new Error(`refusing to scale workloads in ${namespace}`);
   }
@@ -181,9 +219,12 @@ export function scaleDevSlotWorkloads(namespace, spawnFn = spawnSync, roles = SL
   const result = spawnFn(
     'kubectl',
     [
-      '--context', 'kind-offscreen-dev',
-      '-n', namespace,
-      'scale', 'deploy',
+      '--context',
+      'kind-offscreen-dev',
+      '-n',
+      namespace,
+      'scale',
+      'deploy',
       ...selected,
       '--replicas=0',
     ],
@@ -209,13 +250,23 @@ export function collectOwnedWorkloadReadiness(namespace, spawnFn = spawnSync) {
   /** @type {Record<string, boolean>} */
   const readiness = {};
   for (const name of SLOT_WORKLOADS) {
-    const result = spawnFn('kubectl', [
-      '--context', 'kind-offscreen-dev',
-      '-n', namespace,
-      'get', 'deploy', name,
-      '-o', 'jsonpath={.status.readyReplicas}',
-    ], { encoding: 'utf8' });
-    readiness[name] = result.status === 0 && String(result.stdout).trim() === '1';
+    const result = spawnFn(
+      'kubectl',
+      [
+        '--context',
+        'kind-offscreen-dev',
+        '-n',
+        namespace,
+        'get',
+        'deploy',
+        name,
+        '-o',
+        'jsonpath={.status.readyReplicas}',
+      ],
+      { encoding: 'utf8' },
+    );
+    readiness[name] =
+      result.status === 0 && String(result.stdout).trim() === '1';
   }
   return readiness;
 }
@@ -246,7 +297,10 @@ export function rollbackFailedOwnedStartup(input) {
     resourceUids: input.owner.resourceUids ?? null,
   };
   const sessionRoot = environmentSessionRoot(input.registryRoot);
-  const environmentSession = readEnvironmentSession(sessionRoot, input.owner.slotId);
+  const environmentSession = readEnvironmentSession(
+    sessionRoot,
+    input.owner.slotId,
+  );
   if (!environmentSession) {
     try {
       stopDevSession(input.worktree, {
@@ -260,14 +314,30 @@ export function rollbackFailedOwnedStartup(input) {
       void scaleAll;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      log(`rollback-incomplete: ${input.reason}; ${message}; ${JSON.stringify(ownedResources)}`);
-      return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources };
+      log(
+        `rollback-incomplete: ${input.reason}; ${message}; ${JSON.stringify(ownedResources)}`,
+      );
+      return {
+        ok: false,
+        id: 'rollback-incomplete',
+        parked: false,
+        ownedResources,
+      };
     }
-    const desired = (input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)))(namespace);
+    const desired = (
+      input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns))
+    )(namespace);
     const leftover = SLOT_WORKLOADS.filter((role) => desired?.[role] !== 0);
     if (leftover.length > 0) {
-      log(`rollback-incomplete: ${input.reason}; replicas still desired; ${JSON.stringify({ ...ownedResources, leftover })}`);
-      return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources: { ...ownedResources, leftover } };
+      log(
+        `rollback-incomplete: ${input.reason}; replicas still desired; ${JSON.stringify({ ...ownedResources, leftover })}`,
+      );
+      return {
+        ok: false,
+        id: 'rollback-incomplete',
+        parked: false,
+        ownedResources: { ...ownedResources, leftover },
+      };
     }
     log(`startup-parked: ${input.reason}; ${namespace}`);
     return { ok: true, id: 'startup-parked', parked: true, ownedResources };
@@ -280,26 +350,54 @@ export function rollbackFailedOwnedStartup(input) {
       signal: input.signal,
       processDeps: {
         pidAlive: input.pidAlive ?? pidAlive,
-        readStartTicks: input.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+        readStartTicks:
+          input.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
         sleep: () => {},
       },
-      scaleRole: input.scaleRole ?? ((ns, role) => scaleDevSlotWorkloads(ns, spawnSync, [role])),
-      readDesiredReplicas: input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)),
+      scaleRole:
+        input.scaleRole ??
+        ((ns, role) => scaleDevSlotWorkloads(ns, spawnSync, [role])),
+      readDesiredReplicas:
+        input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    log(`rollback-incomplete: ${input.reason}; ${message}; ${JSON.stringify(ownedResources)}`);
-    return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources };
+    log(
+      `rollback-incomplete: ${input.reason}; ${message}; ${JSON.stringify(ownedResources)}`,
+    );
+    return {
+      ok: false,
+      id: 'rollback-incomplete',
+      parked: false,
+      ownedResources,
+    };
   }
   if (!park?.ok || park.released !== true) {
-    log(`rollback-incomplete: ${input.reason}; ${park?.reason ?? 'park failed'}; ${JSON.stringify({ ...ownedResources, scaledRoles: park?.scaledRoles ?? [] })}`);
-    return { ok: false, id: 'rollback-incomplete', parked: false, reason: park?.reason, ownedResources };
+    log(
+      `rollback-incomplete: ${input.reason}; ${park?.reason ?? 'park failed'}; ${JSON.stringify({ ...ownedResources, scaledRoles: park?.scaledRoles ?? [] })}`,
+    );
+    return {
+      ok: false,
+      id: 'rollback-incomplete',
+      parked: false,
+      reason: park?.reason,
+      ownedResources,
+    };
   }
-  const desired = (input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns)))(namespace);
+  const desired = (
+    input.readDesiredReplicas ?? ((ns) => readDevSlotDesiredReplicas(ns))
+  )(namespace);
   const leftover = SLOT_WORKLOADS.filter((role) => desired?.[role] !== 0);
   if (leftover.length > 0) {
-    log(`rollback-incomplete: ${input.reason}; replicas still desired; ${JSON.stringify({ ...ownedResources, leftover })}`);
-    return { ok: false, id: 'rollback-incomplete', parked: false, ownedResources: { ...ownedResources, leftover } };
+    log(
+      `rollback-incomplete: ${input.reason}; replicas still desired; ${JSON.stringify({ ...ownedResources, leftover })}`,
+    );
+    return {
+      ok: false,
+      id: 'rollback-incomplete',
+      parked: false,
+      ownedResources: { ...ownedResources, leftover },
+    };
   }
   log(`startup-parked: ${input.reason}; ${namespace}`);
   return { ok: true, id: 'startup-parked', parked: true, ownedResources };
@@ -311,14 +409,25 @@ export function readDevSlotDesiredReplicas(namespace, spawnFn = spawnSync) {
   }
   const desired = {};
   for (const role of SLOT_WORKLOADS) {
-    const result = spawnFn('kubectl', [
-      '--context', 'kind-offscreen-dev',
-      '-n', namespace,
-      'get', 'deploy', role,
-      '-o', 'jsonpath={.spec.replicas}',
-    ], { encoding: 'utf8' });
+    const result = spawnFn(
+      'kubectl',
+      [
+        '--context',
+        'kind-offscreen-dev',
+        '-n',
+        namespace,
+        'get',
+        'deploy',
+        role,
+        '-o',
+        'jsonpath={.spec.replicas}',
+      ],
+      { encoding: 'utf8' },
+    );
     if (result.status !== 0) {
-      throw new Error(result.stderr || `replica read failed for ${namespace}/${role}`);
+      throw new Error(
+        result.stderr || `replica read failed for ${namespace}/${role}`,
+      );
     }
     desired[role] = Number(String(result.stdout).trim());
   }
@@ -338,7 +447,11 @@ export const LAB_RESOURCES = Object.freeze([
 
 export const DEV_RUNTIME_FRESHNESS_ROLES = Object.freeze(
   /** @type {const} */ ([
-    { role: 'api', receiptRole: 'api', compiledEntryPath: 'apps/api/dist/src/main.js' },
+    {
+      role: 'api',
+      receiptRole: 'api',
+      compiledEntryPath: 'apps/api/dist/src/main.js',
+    },
     {
       role: 'authority',
       receiptRole: 'game-authority',
@@ -399,9 +512,9 @@ export function canonicalDockerImageReference(reference) {
   const firstSlash = rest.indexOf('/');
   const firstSegment = firstSlash > 0 ? rest.slice(0, firstSlash) : '';
   if (
-    firstSegment.includes('.')
-    || firstSegment.includes(':')
-    || firstSegment === 'localhost'
+    firstSegment.includes('.') ||
+    firstSegment.includes(':') ||
+    firstSegment === 'localhost'
   ) {
     registry = firstSegment;
     name = rest.slice(firstSlash + 1);
@@ -434,7 +547,8 @@ export function acceptedCriImageIds(inspectText) {
   }
   const ids = [];
   const statusId = parsed?.status?.id;
-  if (typeof statusId === 'string' && /^sha256:[a-f0-9]{64}$/.test(statusId)) ids.push(statusId);
+  if (typeof statusId === 'string' && /^sha256:[a-f0-9]{64}$/.test(statusId))
+    ids.push(statusId);
   for (const ref of parsed?.status?.repoDigests ?? []) {
     const digest = String(ref).match(/sha256:[a-f0-9]{64}/)?.[0];
     if (digest && !ids.includes(digest)) ids.push(digest);
@@ -445,19 +559,31 @@ export function acceptedCriImageIds(inspectText) {
 export function assessWebDevServerReadiness(input) {
   const pod = input.pod ?? null;
   if (!pod?.ready) {
-    return { ready: false, reason: 'web_pod_not_ready', currentGeneration: null };
+    return {
+      ready: false,
+      reason: 'web_pod_not_ready',
+      currentGeneration: null,
+    };
   }
   if (pod.namespace !== input.namespace) {
-    return { ready: false, reason: 'namespace_mismatch', currentGeneration: null };
+    return {
+      ready: false,
+      reason: 'namespace_mismatch',
+      currentGeneration: null,
+    };
   }
   const expectedImage = canonicalDockerImageReference(input.expectedImage);
   const runningImage = canonicalDockerImageReference(pod.image);
-  const accepted = input.expectedConfigIds
-    ?? (input.expectedConfigId ? [input.expectedConfigId] : null);
-  const runningConfig = typeof pod.imageId === 'string'
-    ? (pod.imageId.match(/sha256:[a-f0-9]{64}/) ?? [])[0] ?? null
-    : null;
-  const identityMatches = Boolean(accepted && runningConfig && accepted.includes(runningConfig));
+  const accepted =
+    input.expectedConfigIds ??
+    (input.expectedConfigId ? [input.expectedConfigId] : null);
+  const runningConfig =
+    typeof pod.imageId === 'string'
+      ? ((pod.imageId.match(/sha256:[a-f0-9]{64}/) ?? [])[0] ?? null)
+      : null;
+  const identityMatches = Boolean(
+    accepted && runningConfig && accepted.includes(runningConfig),
+  );
   // Kind containerd can report a sibling tag of the same image. A matching
   // verified digest is the artifact. A different tag without that digest,
   // or a digest that is not on the selected image, stays a mismatch.
@@ -467,10 +593,22 @@ export function assessWebDevServerReadiness(input) {
   if (accepted && !identityMatches) {
     return { ready: false, reason: 'image_mismatch', currentGeneration: null };
   }
-  if (typeof input.httpStatus !== 'number' || input.httpStatus < 200 || input.httpStatus >= 300) {
-    return { ready: false, reason: 'http_unsuccessful', currentGeneration: null };
+  if (
+    typeof input.httpStatus !== 'number' ||
+    input.httpStatus < 200 ||
+    input.httpStatus >= 300
+  ) {
+    return {
+      ready: false,
+      reason: 'http_unsuccessful',
+      currentGeneration: null,
+    };
   }
-  return { ready: true, reason: 'dev_server_serving', currentGeneration: expectedImage };
+  return {
+    ready: true,
+    reason: 'dev_server_serving',
+    currentGeneration: expectedImage,
+  };
 }
 
 /**
@@ -489,7 +627,8 @@ export function assessWebDevServerReadiness(input) {
  * }} input
  */
 export async function superviseOwnedWebPortForward(input) {
-  const sleep = input.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+  const sleep =
+    input.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   const maxAttempts = input.maxAttempts ?? 8;
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     if (!input.sessionActive()) {
@@ -509,12 +648,23 @@ export async function superviseOwnedWebPortForward(input) {
     }
     const processStartTicks = input.readStartTicks(child.pid);
     if (!processStartTicks) {
-      return { ok: false, reason: 'start_time_mismatch', attempts: attempt, pid: child.pid };
+      return {
+        ok: false,
+        reason: 'start_time_mismatch',
+        attempts: attempt,
+        pid: child.pid,
+      };
     }
     input.recordForward({ pid: child.pid, processStartTicks });
     const code = await new Promise((resolve) => child.onExit(resolve));
     if (!input.sessionActive()) {
-      return { ok: true, reason: 'session_stopped', attempts: attempt + 1, pid: child.pid, code };
+      return {
+        ok: true,
+        reason: 'session_stopped',
+        attempts: attempt + 1,
+        pid: child.pid,
+        code,
+      };
     }
     await sleep(Math.min(1_000, 50 * (attempt + 1)));
   }
@@ -553,7 +703,13 @@ export function buildReadyUrls(gamePort, tiltPort) {
 export function devWorktreeRegistryRoot() {
   const fromEnv = process.env.OFFSCREEN_DEV_WORKTREE_REGISTRY?.trim();
   if (fromEnv) return resolve(fromEnv);
-  return join(homedir(), '.local', 'state', 'offscreen-rpg', 'dev-worktree-registry');
+  return join(
+    homedir(),
+    '.local',
+    'state',
+    'offscreen-rpg',
+    'dev-worktree-registry',
+  );
 }
 
 /**
@@ -579,7 +735,10 @@ export function assessDevLaunch(input) {
   }
 
   if (!input.tiltOnPath) {
-    refusals.push({ id: 'missing-tilt', message: 'Required command not found: tilt.' });
+    refusals.push({
+      id: 'missing-tilt',
+      message: 'Required command not found: tilt.',
+    });
   }
 
   if (input.ports.game === 'foreign') {
@@ -598,7 +757,10 @@ export function assessDevLaunch(input) {
   for (const name of LAB_RESOURCES) {
     const ready = input.readiness[name];
     if (ready !== true) {
-      const id = ready === undefined ? `resource-missing-${name}` : `resource-not-ready-${name}`;
+      const id =
+        ready === undefined
+          ? `resource-missing-${name}`
+          : `resource-not-ready-${name}`;
       const verb = ready === undefined ? 'missing' : 'not ready';
       refusals.push({
         id,
@@ -611,7 +773,9 @@ export function assessDevLaunch(input) {
     (input.ports.game === 'free' || input.ports.game === 'owned') &&
     (input.ports.tilt === 'free' || input.ports.tilt === 'owned');
 
-  const allReady = LAB_RESOURCES.every((name) => input.readiness[name] === true);
+  const allReady = LAB_RESOURCES.every(
+    (name) => input.readiness[name] === true,
+  );
 
   const launchOk =
     input.preflightOk &&
@@ -648,7 +812,11 @@ export function formatReadyLines(urls) {
  * @returns {string[]}
  */
 export function maybeAnnounce(assessment) {
-  if (!assessment || typeof assessment !== 'object' || Array.isArray(assessment)) {
+  if (
+    !assessment ||
+    typeof assessment !== 'object' ||
+    Array.isArray(assessment)
+  ) {
     return [];
   }
   if (!('urls' in assessment) || assessment.urls == null) {
@@ -669,13 +837,20 @@ function commandOnPath(name) {
  * @returns {Promise<boolean>}
  */
 function probeLoopbackPortOccupiedSync(port) {
-  const probe = spawnSync(process.execPath, ['-e', `
+  const probe = spawnSync(
+    process.execPath,
+    [
+      '-e',
+      `
     const net = require('node:net');
     const socket = net.connect({ host: '127.0.0.1', port: ${Number(port)}, timeout: 200 });
     socket.on('connect', () => { socket.destroy(); process.exit(0); });
     socket.on('timeout', () => { socket.destroy(); process.exit(1); });
     socket.on('error', () => process.exit(1));
-  `], { stdio: 'ignore' });
+  `,
+    ],
+    { stdio: 'ignore' },
+  );
   return probe.status === 0;
 }
 
@@ -708,11 +883,16 @@ function pidAlive(pid) {
  * @returns {{ previousPid: number | null, killedPrevious: boolean }}
  */
 function replaceOwnedEnvironmentTilt(slotId, registryRoot, deps = {}) {
-  const session = readEnvironmentSession(environmentSessionRoot(registryRoot), slotId);
-  if (!session) return { previousPid: null, killedPrevious: false, reason: 'no_session' };
+  const session = readEnvironmentSession(
+    environmentSessionRoot(registryRoot),
+    slotId,
+  );
+  if (!session)
+    return { previousPid: null, killedPrevious: false, reason: 'no_session' };
   const ownership = assessOwnedProcess(session, {
     pidAlive: deps.pidAlive ?? pidAlive,
-    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+    readStartTicks:
+      deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
   });
   const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
   if (ownership.owned) {
@@ -736,7 +916,8 @@ function replaceOwnedDevSessionTilt(worktree, deps = {}) {
   }
   const ownership = assessOwnedProcess(session, {
     pidAlive: deps.pidAlive ?? pidAlive,
-    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+    readStartTicks:
+      deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
   });
   const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
   if (ownership.owned) {
@@ -777,7 +958,9 @@ function refuseAndExit(refusals, exitFn = (code) => process.exit(code)) {
   for (const refusal of refusals) {
     console.error(refusal.message);
   }
-  finishStartupTiming(`refused:${refusals.map((refusal) => refusal.id).join(',')}`);
+  finishStartupTiming(
+    `refused:${refusals.map((refusal) => refusal.id).join(',')}`,
+  );
   exitFn(1);
 }
 
@@ -816,10 +999,12 @@ export async function runDevTiltLaunch(deps = {}) {
   const collectProbes = deps.collectDefaultProbes ?? collectDefaultProbes;
   const runPreflight = deps.runStackPreflight ?? runStackPreflight;
   const onPath = deps.commandOnPath ?? commandOnPath;
-  const probeOccupied = deps.probeLoopbackPortOccupied ?? probeLoopbackPortOccupied;
+  const probeOccupied =
+    deps.probeLoopbackPortOccupied ?? probeLoopbackPortOccupied;
   const spawnFn = deps.spawnFn ?? spawn;
-  const pollOwnedReadiness = deps.collectStartupReadiness
-    ?? ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
+  const pollOwnedReadiness =
+    deps.collectStartupReadiness ??
+    ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
   const exitFn = deps.exit ?? ((code) => process.exit(code));
   const reconcile = deps.reconcileDevSlot ?? reconcileOwnedDevSlot;
 
@@ -828,51 +1013,69 @@ export async function runDevTiltLaunch(deps = {}) {
   beginStartupTiming(join(worktree, '.offscreen', 'dev-startup-timing.json'));
   const probes = await timePhase('preflight', null, () => collectProbes());
   const preflight = runPreflight(probes);
-  const capacityRefusals = (preflight.refusals ?? []).filter((refusal) =>
-    refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
+  const capacityRefusals = (preflight.refusals ?? []).filter(
+    (refusal) => refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
   );
   if (capacityRefusals.length > 0) {
     refuseAndExit(capacityRefusals, exitFn);
     return;
   }
 
-  const helmProbe = deps.assertHelmAvailable ?? (async () => {
-    const { spawnSync } = await import('node:child_process');
-    const { assertHelmAvailable } = await import('../../../../infra/workloads/render.mjs');
-    const run = deps.helmRun ?? deps.runCommand ?? spawnSync;
-    return assertHelmAvailable({ run });
-  });
+  const helmProbe =
+    deps.assertHelmAvailable ??
+    (async () => {
+      const { spawnSync } = await import('node:child_process');
+      const { assertHelmAvailable } =
+        await import('../../../../infra/workloads/render.mjs');
+      const run = deps.helmRun ?? deps.runCommand ?? spawnSync;
+      return assertHelmAvailable({ run });
+    });
   try {
     await helmProbe();
   } catch (error) {
-    refuseAndExit([{
-      id: 'helm-missing',
-      message: error instanceof Error ? error.message : 'helm is not available',
-    }], exitFn);
+    refuseAndExit(
+      [
+        {
+          id: 'helm-missing',
+          message:
+            error instanceof Error ? error.message : 'helm is not available',
+        },
+      ],
+      exitFn,
+    );
     return;
   }
 
-  const slot = await timePhase('reconcile', null, () => reconcile({ worktree, registryRoot, owner: deps.owner }));
+  const slot = await timePhase('reconcile', null, () =>
+    reconcile({ worktree, registryRoot, owner: deps.owner }),
+  );
   if (!slot?.ok || slot.readyForWorkloads !== true) {
-    refuseAndExit([{
-      id: `slot-${slot?.phase ?? 'startup'}`,
-      message: `Dev slot reconciliation stopped at ${slot?.phase ?? 'startup'}: ${slot?.detail ?? 'not ready'}`,
-    }], exitFn);
+    refuseAndExit(
+      [
+        {
+          id: `slot-${slot?.phase ?? 'startup'}`,
+          message: `Dev slot reconciliation stopped at ${slot?.phase ?? 'startup'}: ${slot?.detail ?? 'not ready'}`,
+        },
+      ],
+      exitFn,
+    );
     return;
   }
 
   // Drop a tilt this worktree started before deciding a listener is foreign.
-  const { previousPid, killedPrevious } = (deps.owner
+  const { previousPid, killedPrevious } = deps.owner
     ? replaceOwnedEnvironmentTilt(deps.owner.slotId, registryRoot, {
-    pidAlive: deps.pidAlive ?? pidAlive,
-    readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-    signal: deps.signal,
-  })
+        pidAlive: deps.pidAlive ?? pidAlive,
+        readStartTicks:
+          deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+        signal: deps.signal,
+      })
     : replaceOwnedDevSessionTilt(worktree, {
-      pidAlive: deps.pidAlive ?? pidAlive,
-      readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-      signal: deps.signal,
-    }));
+        pidAlive: deps.pidAlive ?? pidAlive,
+        readStartTicks:
+          deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+        signal: deps.signal,
+      });
   if (killedPrevious && previousPid !== null) {
     for (let attempt = 0; attempt < 10; attempt += 1) {
       if (!pidAlive(previousPid)) break;
@@ -906,12 +1109,22 @@ export async function runDevTiltLaunch(deps = {}) {
   const launchRefusals = [];
   if (!preflight.ok) {
     const devSlotChecks = new Set([
-      'missing-docker', 'missing-kind', 'missing-kubectl', 'docker-daemon', 'memory-low', 'memory-unknown',
+      'missing-docker',
+      'missing-kind',
+      'missing-kubectl',
+      'docker-daemon',
+      'memory-low',
+      'memory-unknown',
     ]);
-    launchRefusals.push(...preflight.refusals.filter((refusal) => devSlotChecks.has(refusal.id)));
+    launchRefusals.push(
+      ...preflight.refusals.filter((refusal) => devSlotChecks.has(refusal.id)),
+    );
   }
   if (!tiltOnPath) {
-    launchRefusals.push({ id: 'missing-tilt', message: 'Required command not found: tilt.' });
+    launchRefusals.push({
+      id: 'missing-tilt',
+      message: 'Required command not found: tilt.',
+    });
   }
   if (gameOccupied) {
     launchRefusals.push({
@@ -942,7 +1155,8 @@ export async function runDevTiltLaunch(deps = {}) {
     stopPolling();
     const processDeps = {
       pidAlive: deps.pidAlive ?? pidAlive,
-      readStartTicks: deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+      readStartTicks:
+        deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
     };
     const pid = deps.owner
       ? ownedEnvironmentSessionPid(registryRoot, deps.owner, processDeps)
@@ -963,10 +1177,15 @@ export async function runDevTiltLaunch(deps = {}) {
     process.once('SIGTERM', () => onSignal('SIGTERM'));
   }
 
-  const fingerprint = deps.fingerprintDevImageContext ?? fingerprintDevImageContext;
+  const fingerprint =
+    deps.fingerprintDevImageContext ?? fingerprintDevImageContext;
   const fingerprintStarted = performance.now();
-  const imageIdentity = fingerprint(worktree, { roleFilter: UNION_ROLE_FILTER });
-  recordPhase('fingerprint', null, performance.now() - fingerprintStarted, { cache: imageIdentity.ok ? 'miss' : 'fail' });
+  const imageIdentity = fingerprint(worktree, {
+    roleFilter: UNION_ROLE_FILTER,
+  });
+  recordPhase('fingerprint', null, performance.now() - fingerprintStarted, {
+    cache: imageIdentity.ok ? 'miss' : 'fail',
+  });
   if (!imageIdentity.ok) {
     console.error(`image fingerprint failed: ${imageIdentity.reason}`);
     finishStartupTiming('fingerprint-failed');
@@ -986,7 +1205,15 @@ export async function runDevTiltLaunch(deps = {}) {
 
   const child = spawnFn(
     'tilt',
-    ['up', '--context', 'kind-offscreen-dev', '--host', LOOPBACK, '--port', String(tiltPort)],
+    [
+      'up',
+      '--context',
+      'kind-offscreen-dev',
+      '--host',
+      LOOPBACK,
+      '--port',
+      String(tiltPort),
+    ],
     { cwd: worktree, stdio: 'inherit', env: tiltEnv },
   );
 
@@ -997,7 +1224,8 @@ export async function runDevTiltLaunch(deps = {}) {
     return;
   }
 
-  const readStart = deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
+  const readStart =
+    deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
   const sessionRecord = {
     pid: child.pid,
     processStartTicks: readStart(child.pid),
@@ -1027,14 +1255,16 @@ export async function runDevTiltLaunch(deps = {}) {
   const startupWindowMs = deps.startupWindowMs ?? OWNED_STARTUP_WINDOW_MS;
   const startupPollMs = deps.startupPollMs ?? 5_000;
   const pause = deps.sleep ?? sleep;
-  const readStartup = deps.collectStartupReadiness
-    ?? ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
+  const readStartup =
+    deps.collectStartupReadiness ??
+    ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
   const readinessStarted = performance.now();
   let startupFailure = null;
   for (let elapsed = 0; elapsed <= startupWindowMs; elapsed += startupPollMs) {
     const during = runPreflight(await collectProbes());
-    const exhausted = (during.refusals ?? []).filter((refusal) =>
-      refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
+    const exhausted = (during.refusals ?? []).filter(
+      (refusal) =>
+        refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
     );
     if (exhausted.length > 0) {
       startupFailure = exhausted[0].message;
@@ -1061,7 +1291,9 @@ export async function runDevTiltLaunch(deps = {}) {
       break;
     }
     if (elapsed === startupWindowMs) {
-      const missing = assessment.refusals.map((refusal) => refusal.id).join(',');
+      const missing = assessment.refusals
+        .map((refusal) => refusal.id)
+        .join(',');
       startupFailure = `startup window elapsed before six workloads were ready (${missing})`;
       break;
     }
@@ -1111,22 +1343,49 @@ export async function runDevTiltLaunch(deps = {}) {
   const supervise = deps.supervisePortForward ?? superviseOwnedWebPortForward;
   void supervise({
     sessionActive: () => sessionActive,
-    backendReady: deps.webBackendReady ?? (async () => {
-      const result = spawnSync('kubectl', [
-        '--context', 'kind-offscreen-dev', '-n', ownerRecord.namespace,
-        'get', 'pod', '-l', 'app=game-web',
-        '-o', 'jsonpath={.items[0].status.containerStatuses[0].ready}',
-      ], { encoding: 'utf8' });
-      return result.status === 0 && String(result.stdout).trim() === 'true';
-    }),
+    backendReady:
+      deps.webBackendReady ??
+      (async () => {
+        const result = spawnSync(
+          'kubectl',
+          [
+            '--context',
+            'kind-offscreen-dev',
+            '-n',
+            ownerRecord.namespace,
+            'get',
+            'pod',
+            '-l',
+            'app=game-web',
+            '-o',
+            'jsonpath={.items[0].status.containerStatuses[0].ready}',
+          ],
+          { encoding: 'utf8' },
+        );
+        return result.status === 0 && String(result.stdout).trim() === 'true';
+      }),
     portOccupied: () => probeOccupied(LOOPBACK, gamePort),
-    spawnForward: deps.spawnPortForward ?? (() => {
-      const forward = spawn('kubectl', [
-        '--context', 'kind-offscreen-dev', '-n', ownerRecord.namespace,
-        'port-forward', 'svc/game-web', `${gamePort}:3000`,
-      ], { stdio: 'ignore' });
-      return { pid: forward.pid ?? null, onExit: (cb) => forward.on('exit', (code) => cb(code)) };
-    }),
+    spawnForward:
+      deps.spawnPortForward ??
+      (() => {
+        const forward = spawn(
+          'kubectl',
+          [
+            '--context',
+            'kind-offscreen-dev',
+            '-n',
+            ownerRecord.namespace,
+            'port-forward',
+            'svc/game-web',
+            `${gamePort}:3000`,
+          ],
+          { stdio: 'ignore' },
+        );
+        return {
+          pid: forward.pid ?? null,
+          onExit: (cb) => forward.on('exit', (code) => cb(code)),
+        };
+      }),
     readStartTicks: readStart,
     recordForward: persistForward,
   }).catch(() => {});
@@ -1187,32 +1446,161 @@ const POD_COMPILED_ENTRY = Object.freeze({
   relay: '/app/apps/worker/dist/src/bootstrap/main.js',
 });
 
+export const DEV_POD_RUNTIME_STATUS_SCRIPT =
+  '/app/tools/dev-environments/runtime/status.mjs';
+
 /**
- * Copy the selected namespace's real receipt files. A missing exec stays missing.
- * @param {{ namespace: string, roles: readonly {role: string, receiptRole: string}[], receiptRoot: string, run: Function }} input
+ * @param {{ status?: number | null, stdout?: string, stderr?: string }} execResult
  */
-export function pullSelectedSlotReceipts(input) {
-  mkdirSync(input.receiptRoot, { recursive: true });
-  const diskIdentities = {};
+export function parseRemoteRuntimeObservation(execResult) {
+  if (execResult.status !== 0 || !String(execResult.stdout ?? '').trim()) {
+    return { ok: false, reason: 'remote_unreadable' };
+  }
+  try {
+    const parsed = JSON.parse(String(execResult.stdout).trim());
+    if (!parsed || typeof parsed !== 'object') {
+      return { ok: false, reason: 'remote_unreadable' };
+    }
+    return parsed;
+  } catch {
+    return { ok: false, reason: 'remote_unreadable' };
+  }
+}
+
+/**
+ * @param {Record<string, unknown>} observation
+ */
+function writeEphemeralReceiptRoot(observation) {
+  const desired = /** @type {Record<string, unknown>} */ (observation.desired);
+  const loaded = /** @type {Record<string, unknown>} */ (observation.loaded);
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-remote-rcpt-'));
+  writeFileSync(
+    join(root, `${String(desired.role)}.desired.json`),
+    `${JSON.stringify(desired)}\n`,
+    'utf8',
+  );
+  writeFileSync(
+    join(root, `${String(loaded.role)}.loaded.json`),
+    `${JSON.stringify(loaded)}\n`,
+    'utf8',
+  );
+  return root;
+}
+
+/**
+ * @param {DevRuntimeFreshnessRole} roleSpec
+ * @param {Record<string, unknown> | null | undefined} observation
+ * @param {typeof evaluateDevLoadedRuntimeReadiness} evaluate
+ * @param {string | null} [expectedEnvironmentId]
+ */
+export function readinessFromRemoteObservation(
+  roleSpec,
+  observation,
+  evaluate,
+  expectedEnvironmentId = null,
+) {
+  if (!observation?.ok) {
+    return {
+      ready: false,
+      reason:
+        typeof observation?.reason === 'string'
+          ? observation.reason
+          : 'remote_unreadable',
+      currentGeneration: null,
+    };
+  }
+  if (observation.legacyReceipt === true) {
+    return {
+      ready: false,
+      reason: 'restart_required',
+      currentGeneration: null,
+    };
+  }
+  if (observation.concurrentUpdate === true) {
+    return {
+      ready: false,
+      reason: 'concurrent_compile',
+      currentGeneration: null,
+    };
+  }
+  if (observation.pidAlive === false) {
+    return {
+      ready: false,
+      reason: 'dead_loaded_process',
+      currentGeneration: null,
+    };
+  }
+  if (typeof observation.diskIdentity !== 'string') {
+    return {
+      ready: false,
+      reason: 'missing_disk_identity',
+      currentGeneration: null,
+    };
+  }
+  const ephemeralRoot = writeEphemeralReceiptRoot(observation);
+  try {
+    return evaluate({
+      role: roleSpec.receiptRole,
+      compiledEntryPath: roleSpec.compiledEntryPath,
+      cwd: '/',
+      receiptRoot: ephemeralRoot,
+      environmentId:
+        expectedEnvironmentId ??
+        (typeof observation.environmentId === 'string'
+          ? observation.environmentId
+          : null),
+      diskIdentity: observation.diskIdentity,
+      requireRemoteDiskIdentity: true,
+    });
+  } finally {
+    rmSync(ephemeralRoot, { recursive: true, force: true });
+  }
+}
+
+/**
+ * One kubectl exec per role runs the pod status helper; no host receipt cache.
+ * @param {{
+ *   namespace: string,
+ *   roles: readonly DevRuntimeFreshnessRole[],
+ *   environmentId?: string,
+ *   receiptDir?: string,
+ *   context?: string,
+ *   run: (args: string[]) => { status?: number | null, stdout?: string, stderr?: string },
+ * }} input
+ */
+export function observeSelectedSlotRuntimeRoles(input) {
+  const context = input.context ?? 'kind-offscreen-dev';
+  const receiptDir = input.receiptDir ?? DEV_POD_RUNTIME_RECEIPT_DIR;
+  /** @type {Record<string, ReturnType<typeof parseRemoteRuntimeObservation>>} */
+  const observations = {};
   for (const roleSpec of input.roles) {
     const deploy = `deploy/game-${roleSpec.role}`;
-    for (const kind of ['desired', 'loaded']) {
-      const remote = `${DEV_POD_RUNTIME_RECEIPT_DIR}/${roleSpec.receiptRole}.${kind}.json`;
-      const result = input.run([
-        '--context', 'kind-offscreen-dev', '-n', input.namespace, 'exec', deploy, '--', 'cat', remote,
-      ]);
-      if (result.status !== 0 || !result.stdout) continue;
-      writeFileSync(join(input.receiptRoot, `${roleSpec.receiptRole}.${kind}.json`), result.stdout);
+    const podEntry = POD_COMPILED_ENTRY[roleSpec.role];
+    const args = [
+      '--context',
+      context,
+      '-n',
+      input.namespace,
+      'exec',
+      deploy,
+      '--',
+      'node',
+      DEV_POD_RUNTIME_STATUS_SCRIPT,
+      '--receipt-role',
+      roleSpec.receiptRole,
+      '--compiled-entry',
+      podEntry,
+      '--receipt-dir',
+      receiptDir,
+    ];
+    if (input.environmentId) {
+      args.push('--environment-id', input.environmentId);
     }
-    const entry = POD_COMPILED_ENTRY[roleSpec.role];
-    const hashed = input.run([
-      '--context', 'kind-offscreen-dev', '-n', input.namespace, 'exec', deploy, '--', 'sha256sum', entry,
-    ]);
-    if (hashed.status === 0) {
-      diskIdentities[roleSpec.role] = String(hashed.stdout).trim().split(/\s+/)[0];
-    }
+    observations[roleSpec.role] = parseRemoteRuntimeObservation(
+      input.run(args),
+    );
   }
-  return diskIdentities;
+  return observations;
 }
 
 /**
@@ -1221,39 +1609,76 @@ export function pullSelectedSlotReceipts(input) {
  * @param {{ namespace: string, run?: Function, httpStatus?: number | null }} input
  */
 export function collectWebDevServerReadiness(input) {
-  const run = input.run ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' }));
+  const run =
+    input.run ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' }));
   const pod = run([
-    '--context', 'kind-offscreen-dev', '-n', input.namespace,
-    'get', 'pod', '-l', 'app=game-web',
-    '-o', 'jsonpath={.items[0].metadata.namespace}{" "}{.items[0].status.containerStatuses[0].ready}{" "}{.items[0].status.containerStatuses[0].image}{" "}{.items[0].status.containerStatuses[0].imageID}',
+    '--context',
+    'kind-offscreen-dev',
+    '-n',
+    input.namespace,
+    'get',
+    'pod',
+    '-l',
+    'app=game-web',
+    '-o',
+    'jsonpath={.items[0].metadata.namespace}{" "}{.items[0].status.containerStatuses[0].ready}{" "}{.items[0].status.containerStatuses[0].image}{" "}{.items[0].status.containerStatuses[0].imageID}',
   ]);
-  const [namespace, ready, image, imageId] = String(pod.stdout ?? '').trim().split(/\s+/);
+  const [namespace, ready, image, imageId] = String(pod.stdout ?? '')
+    .trim()
+    .split(/\s+/);
   let httpStatus = input.httpStatus ?? null;
   if (httpStatus === null && pod.status === 0 && ready === 'true') {
     const http = run([
-      '--context', 'kind-offscreen-dev', '-n', input.namespace,
-      'exec', 'deploy/game-web', '--', 'node', '-e',
+      '--context',
+      'kind-offscreen-dev',
+      '-n',
+      input.namespace,
+      'exec',
+      'deploy/game-web',
+      '--',
+      'node',
+      '-e',
       'fetch("http://127.0.0.1:3000/sign-in").then((r)=>process.stdout.write(String(r.status))).catch(()=>process.exit(1))',
     ]);
     httpStatus = http.status === 0 ? Number(String(http.stdout).trim()) : null;
   }
   const expected = run([
-    '--context', 'kind-offscreen-dev', '-n', input.namespace,
-    'get', 'deploy', 'game-web', '-o', 'jsonpath={.spec.template.spec.containers[0].image}',
+    '--context',
+    'kind-offscreen-dev',
+    '-n',
+    input.namespace,
+    'get',
+    'deploy',
+    'game-web',
+    '-o',
+    'jsonpath={.spec.template.spec.containers[0].image}',
   ]);
-  const expectedImage = expected.status === 0 ? String(expected.stdout).trim() : null;
+  const expectedImage =
+    expected.status === 0 ? String(expected.stdout).trim() : null;
   const expectedConfigIds = [...(input.expectedConfigIds ?? [])];
   if (input.expectedConfigId) expectedConfigIds.push(input.expectedConfigId);
-  if (expectedConfigIds.length === 0 && expectedImage && input.resolveImageIds) {
-    expectedConfigIds.push(...input.resolveImageIds(expectedImage).filter(Boolean));
+  if (
+    expectedConfigIds.length === 0 &&
+    expectedImage &&
+    input.resolveImageIds
+  ) {
+    expectedConfigIds.push(
+      ...input.resolveImageIds(expectedImage).filter(Boolean),
+    );
   }
   return {
     namespace: input.namespace,
     expectedImage,
     expectedConfigIds: expectedConfigIds.length > 0 ? expectedConfigIds : null,
-    pod: pod.status === 0 && namespace
-      ? { ready: ready === 'true', namespace, image: image || null, imageId: imageId || null }
-      : null,
+    pod:
+      pod.status === 0 && namespace
+        ? {
+            ready: ready === 'true',
+            namespace,
+            image: image || null,
+            imageId: imageId || null,
+          }
+        : null,
     httpStatus: Number.isFinite(httpStatus) ? httpStatus : null,
   };
 }
@@ -1261,7 +1686,8 @@ export function collectWebDevServerReadiness(input) {
 export function printDevStatus(worktree, deps = {}) {
   const log = deps.log ?? ((line) => console.log(line));
   const roles = deps.roles ?? DEV_RUNTIME_FRESHNESS_ROLES;
-  const evaluate = deps.evaluateDevLoadedRuntimeReadiness ?? evaluateDevLoadedRuntimeReadiness;
+  const evaluate =
+    deps.evaluateDevLoadedRuntimeReadiness ?? evaluateDevLoadedRuntimeReadiness;
   const session = deps.session ?? readDevSession(worktree);
   if (!session) {
     return 2;
@@ -1270,7 +1696,10 @@ export function printDevStatus(worktree, deps = {}) {
     log('runtime PARKED');
     return 2;
   }
-  if (session.checkoutPath && resolve(String(session.checkoutPath)) !== resolve(worktree)) {
+  if (
+    session.checkoutPath &&
+    resolve(String(session.checkoutPath)) !== resolve(worktree)
+  ) {
     log('runtime NOT READY checkout_mismatch');
     return 2;
   }
@@ -1291,54 +1720,92 @@ export function printDevStatus(worktree, deps = {}) {
     log('runtime NOT READY image_loading');
     return 2;
   }
-  const receiptRoot = deps.receiptRoot ?? (
-    session.slotId
-      ? join(cwd, '.offscreen-dev-runtime', String(session.slotId))
-      : join(cwd, '.offscreen-dev-runtime')
-  );
-  let diskIdentities = deps.diskIdentities ?? {};
-  if (deps.pullSlotReceipts && session.namespace) {
-    diskIdentities = pullSelectedSlotReceipts({
+  const useRemoteObservations =
+    deps.pullSlotReceipts === true && Boolean(session.namespace);
+  const receiptRoot = useRemoteObservations
+    ? null
+    : (deps.receiptRoot ??
+      (session.slotId
+        ? join(cwd, '.offscreen-dev-runtime', String(session.slotId))
+        : join(cwd, '.offscreen-dev-runtime')));
+  const diskIdentities = deps.diskIdentities ?? {};
+  const execKubectl =
+    deps.execKubectl ??
+    ((args) => spawnSync('kubectl', args, { encoding: 'utf8' }));
+  let roleObservations = deps.roleObservations ?? null;
+  if (useRemoteObservations && !roleObservations) {
+    roleObservations = observeSelectedSlotRuntimeRoles({
       namespace: session.namespace,
       roles,
-      receiptRoot,
-      run: deps.execKubectl ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' })),
+      environmentId: session.slotId ?? undefined,
+      run: execKubectl,
     });
   }
   let everyRoleReady = true;
   if (session.namespace) {
-    const webInput = deps.webReadiness ?? (
-      deps.pullSlotReceipts
+    const webInput =
+      deps.webReadiness ??
+      (useRemoteObservations
         ? collectWebDevServerReadiness({
-          namespace: session.namespace,
-          run: deps.execKubectl ?? ((args) => spawnSync('kubectl', args, { encoding: 'utf8' })),
-          resolveImageIds: (image) => {
-            const accepted = [];
-            for (const node of ['offscreen-dev-worker', 'offscreen-dev-control-plane']) {
-              const cri = spawnSync('docker', ['exec', node, 'crictl', 'inspecti', `docker.io/library/${image}`], { encoding: 'utf8' });
-              if (cri.status !== 0) continue;
-              for (const id of acceptedCriImageIds(String(cri.stdout ?? ''))) {
-                if (!accepted.includes(id)) accepted.push(id);
+            namespace: session.namespace,
+            run: execKubectl,
+            resolveImageIds: (image) => {
+              const accepted = [];
+              for (const node of [
+                'offscreen-dev-worker',
+                'offscreen-dev-control-plane',
+              ]) {
+                const cri = spawnSync(
+                  'docker',
+                  [
+                    'exec',
+                    node,
+                    'crictl',
+                    'inspecti',
+                    `docker.io/library/${image}`,
+                  ],
+                  { encoding: 'utf8' },
+                );
+                if (cri.status !== 0) continue;
+                for (const id of acceptedCriImageIds(
+                  String(cri.stdout ?? ''),
+                )) {
+                  if (!accepted.includes(id)) accepted.push(id);
+                }
               }
-            }
-            return accepted;
-          },
-        })
-        : { namespace: session.namespace, expectedImage: null, pod: null, httpStatus: null }
-    );
-    const web = (deps.assessWebDevServerReadiness ?? assessWebDevServerReadiness)(webInput);
+              return accepted;
+            },
+          })
+        : {
+            namespace: session.namespace,
+            expectedImage: null,
+            pod: null,
+            httpStatus: null,
+          });
+    const web = (
+      deps.assessWebDevServerReadiness ?? assessWebDevServerReadiness
+    )(webInput);
     log(formatDevFreshnessStatusLine('web', web));
     if (!web.ready) everyRoleReady = false;
   }
+  const remoteReadiness =
+    deps.readinessFromRemoteObservation ?? readinessFromRemoteObservation;
   for (const roleSpec of roles) {
-    const status = evaluate({
-      role: roleSpec.receiptRole,
-      compiledEntryPath: roleSpec.compiledEntryPath,
-      cwd,
-      receiptRoot,
-      environmentId: session.slotId ?? null,
-      diskIdentity: diskIdentities[roleSpec.role],
-    });
+    const status = useRemoteObservations
+      ? remoteReadiness(
+          roleSpec,
+          roleObservations?.[roleSpec.role],
+          evaluate,
+          session.slotId ?? null,
+        )
+      : evaluate({
+          role: roleSpec.receiptRole,
+          compiledEntryPath: roleSpec.compiledEntryPath,
+          cwd,
+          receiptRoot: receiptRoot ?? devRuntimeReceiptRoot(cwd),
+          environmentId: session.slotId ?? null,
+          diskIdentity: diskIdentities[roleSpec.role],
+        });
     log(formatDevFreshnessStatusLine(roleSpec.role, status));
     if (!status.ready) {
       everyRoleReady = false;
@@ -1354,7 +1821,9 @@ function runDevStatusCli() {
   const code = printDevStatus(worktree, { pullSlotReceipts: true });
   if (code !== 0) {
     if (!session) {
-      console.error('No dev session for this worktree. Start one with: pnpm dev');
+      console.error(
+        'No dev session for this worktree. Start one with: pnpm dev',
+      );
     }
     process.exit(code);
   }
@@ -1449,10 +1918,17 @@ function runDevStopCli(selection) {
   if (!selection?.record) {
     const legacy = readDevSession(REPO_ROOT);
     const stopped = stopDevSession(REPO_ROOT);
-    if (stopped.signalled && stopped.reason === 'pid_and_start_time' && legacy?.namespace) {
+    if (
+      stopped.signalled &&
+      stopped.reason === 'pid_and_start_time' &&
+      legacy?.namespace
+    ) {
       scaleDevSlotWorkloads(legacy.namespace);
     }
-    const quiet = stopped.signalled || stopped.reason === 'no_session' || stopped.reason === 'not_running';
+    const quiet =
+      stopped.signalled ||
+      stopped.reason === 'no_session' ||
+      stopped.reason === 'not_running';
     process.exit(quiet ? 0 : 1);
   }
   const result = parkSelectedEnvironment({
@@ -1462,20 +1938,29 @@ function runDevStopCli(selection) {
     processDeps: {
       pidAlive,
       readStartTicks: (pid) => readProcessStartTicks(pid),
-      sleep: () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50),
+      sleep: () =>
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50),
     },
-    scaleRole: (namespace, role) => scaleDevSlotWorkloads(namespace, spawnSync, [role]),
+    scaleRole: (namespace, role) =>
+      scaleDevSlotWorkloads(namespace, spawnSync, [role]),
     readDesiredReplicas: (namespace) => readDevSlotDesiredReplicas(namespace),
-    portOccupied: (ports) => [ports.game, ports.tilt].some((port) => probeLoopbackPortOccupiedSync(port)),
+    portOccupied: (ports) =>
+      [ports.game, ports.tilt].some((port) =>
+        probeLoopbackPortOccupiedSync(port),
+      ),
   });
   if (!result.ok || !result.released) {
-    console.error(`Refusing to release ${selection.record.slotId}: ${result.reason}`);
+    console.error(
+      `Refusing to release ${selection.record.slotId}: ${result.reason}`,
+    );
     process.exit(1);
   }
   process.exit(0);
 }
 
-const invokedAsScript = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const invokedAsScript =
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
   let parsed;
   try {
@@ -1492,54 +1977,54 @@ if (invokedAsScript) {
   } else if (parsed.command === 'attach') {
     runDevAttachCli(parsed.instance);
   } else {
-  const registryRoot = devWorktreeRegistryRoot();
-  const registry = readRegistryJson(registryRoot);
-  const registryV2 = registry?.version === 2;
-  if (!registryV2 && parsed.command === 'up' && !parsed.instance) {
-    await runDevTiltCli();
-  } else if (!registryV2 && parsed.command === 'status' && !parsed.instance) {
-    runDevStatusCli();
-  } else if (!registryV2 && parsed.command === 'stop' && !parsed.instance) {
-    runDevStopCli(null);
-  } else {
-    let selection;
-    try {
-      selection = resolveDevEnvironmentSelection({
-        command: parsed.command,
-        instance: parsed.instance,
-        worktree: REPO_ROOT,
-        registryRoot,
-        processDeps: {
-          pidAlive,
-          readStartTicks: (pid) => readProcessStartTicks(pid),
-        },
-      });
-    } catch (error) {
-      if (isSelectionRefusal(error)) {
-        console.error(`${error.id}: ${error.message}`);
-        process.exit(1);
+    const registryRoot = devWorktreeRegistryRoot();
+    const registry = readRegistryJson(registryRoot);
+    const registryV2 = registry?.version === 2;
+    if (!registryV2 && parsed.command === 'up' && !parsed.instance) {
+      await runDevTiltCli();
+    } else if (!registryV2 && parsed.command === 'status' && !parsed.instance) {
+      runDevStatusCli();
+    } else if (!registryV2 && parsed.command === 'stop' && !parsed.instance) {
+      runDevStopCli(null);
+    } else {
+      let selection;
+      try {
+        selection = resolveDevEnvironmentSelection({
+          command: parsed.command,
+          instance: parsed.instance,
+          worktree: REPO_ROOT,
+          registryRoot,
+          processDeps: {
+            pidAlive,
+            readStartTicks: (pid) => readProcessStartTicks(pid),
+          },
+        });
+      } catch (error) {
+        if (isSelectionRefusal(error)) {
+          console.error(`${error.id}: ${error.message}`);
+          process.exit(1);
+        }
+        throw error;
       }
-      throw error;
+      if (selection.action === 'up') {
+        await runDevTiltLaunch({
+          owner: selection.record,
+          worktree: REPO_ROOT,
+          registryRoot,
+        });
+      } else if (selection.action === 'status') {
+        const session = readEnvironmentSession(
+          environmentSessionRoot(devWorktreeRegistryRoot()),
+          selection.record.slotId,
+        );
+        const code = printDevStatus(selection.record.worktreePath, {
+          session,
+          pullSlotReceipts: true,
+        });
+        process.exit(code);
+      } else if (selection.action === 'stop') {
+        runDevStopCli(selection);
+      }
     }
-    if (selection.action === 'up') {
-      await runDevTiltLaunch({
-        owner: selection.record,
-        worktree: REPO_ROOT,
-        registryRoot,
-      });
-    } else if (selection.action === 'status') {
-      const session = readEnvironmentSession(
-        environmentSessionRoot(devWorktreeRegistryRoot()),
-        selection.record.slotId,
-      );
-      const code = printDevStatus(selection.record.worktreePath, {
-        session,
-        pullSlotReceipts: true,
-      });
-      process.exit(code);
-    } else if (selection.action === 'stop') {
-      runDevStopCli(selection);
-    }
-  }
   }
 }

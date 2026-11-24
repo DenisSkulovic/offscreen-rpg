@@ -39,6 +39,12 @@ export const BUILD_CRITICAL_ROOT_FILES = Object.freeze([
   'infra/images/development/Dockerfile.dockerignore',
   'infra/images/development/build.sh',
   'infra/images/development/load-dev-slot-image.sh',
+  'infra/images/development/packaging.mjs',
+  'tools/dev-environments/runtime/check-packaging.mjs',
+  'tools/dev-environments/runtime/compile-watch.mjs',
+  'tools/dev-environments/runtime/generation.mjs',
+  'tools/dev-environments/runtime/launch-loaded.mjs',
+  'tools/dev-environments/runtime/status.mjs',
   'infra/images/distribution/kind-image-loader.mjs',
   'tools/dev-environments/src/image-cache/dev-slot-image-plan.mjs',
 ]);

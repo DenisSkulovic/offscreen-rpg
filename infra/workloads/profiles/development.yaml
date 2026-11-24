@@ -38,33 +38,33 @@ commands:
   web:
     - sh
     - -c
-    - node dev-pod-web-receipt.mjs & exec pnpm exec next dev --hostname 0.0.0.0 --port 3000
+    - exec pnpm exec next dev --hostname 0.0.0.0 --port 3000
   api:
     - node
-    - dev-pod-compile-watch.mjs
+    - /app/tools/dev-environments/runtime/compile-watch.mjs
     - api
     - dist/src/main.js
   authority:
     - node
-    - dev-pod-compile-watch.mjs
+    - /app/tools/dev-environments/runtime/compile-watch.mjs
     - game-authority
     - dist/src/bootstrap/main.js
     - tsconfig.dev.json
   control:
     - node
-    - dev-pod-compile-watch.mjs
+    - /app/tools/dev-environments/runtime/compile-watch.mjs
     - worker-control
     - dist/src/bootstrap/control-main.js
     - tsconfig.dev.json
   executor:
     - node
-    - dev-pod-compile-watch.mjs
+    - /app/tools/dev-environments/runtime/compile-watch.mjs
     - worker-executor
     - dist/src/bootstrap/executor-main.js
     - tsconfig.dev.json
   relay:
     - node
-    - dev-pod-compile-watch.mjs
+    - /app/tools/dev-environments/runtime/compile-watch.mjs
     - worker-relay
     - dist/src/bootstrap/main.js
     - tsconfig.dev.json

@@ -3,111 +3,111 @@
     "apiVersion": "v1",
     "kind": "Namespace",
     "metadata": {
-      "name": "offscreen-dev-2",
       "labels": {
         "app": "slot",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "offscreen-dev-2"
     }
   },
   {
     "apiVersion": "v1",
     "kind": "Service",
     "metadata": {
-      "name": "game-web",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-web",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-web",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
-      "type": "ClusterIP",
-      "selector": {
-        "app": "game-web",
-        "offscreen.dev/slot": "dev-2"
-      },
       "ports": [
         {
           "name": "http",
           "port": 3000,
           "targetPort": "http"
         }
-      ]
+      ],
+      "selector": {
+        "app": "game-web",
+        "offscreen.dev/slot": "dev-2"
+      },
+      "type": "ClusterIP"
     }
   },
   {
     "apiVersion": "v1",
     "kind": "Service",
     "metadata": {
-      "name": "game-api",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-api",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-api",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
-      "type": "ClusterIP",
-      "selector": {
-        "app": "game-api",
-        "offscreen.dev/slot": "dev-2"
-      },
       "ports": [
         {
           "name": "http",
           "port": 3001,
           "targetPort": "http"
         }
-      ]
+      ],
+      "selector": {
+        "app": "game-api",
+        "offscreen.dev/slot": "dev-2"
+      },
+      "type": "ClusterIP"
     }
   },
   {
     "apiVersion": "v1",
     "kind": "Service",
     "metadata": {
-      "name": "game-authority",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-authority",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-authority",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
-      "type": "ClusterIP",
-      "selector": {
-        "app": "game-authority",
-        "offscreen.dev/slot": "dev-2"
-      },
       "ports": [
         {
           "name": "http",
           "port": 3002,
           "targetPort": "http"
         }
-      ]
+      ],
+      "selector": {
+        "app": "game-authority",
+        "offscreen.dev/slot": "dev-2"
+      },
+      "type": "ClusterIP"
     }
   },
   {
     "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
-      "name": "game-web",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-web",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-web",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
       "replicas": 1,
@@ -121,51 +121,51 @@
         "metadata": {
           "labels": {
             "app": "game-web",
-            "offscreen.dev/slot": "dev-2",
             "offscreen.dev/owner": "offscreen-dev",
+            "offscreen.dev/slot": "dev-2",
             "offscreen.rpg/profile": "dev-slot"
           }
         },
         "spec": {
           "automountServiceAccountToken": false,
-          "enableServiceLinks": false,
           "containers": [
             {
-              "name": "web",
-              "image": "offscreen-dev-workspace:dev-2-web",
-              "imagePullPolicy": "Never",
-              "workingDir": "/app/apps/web",
               "command": [
                 "sh",
                 "-c",
-                "node dev-pod-web-receipt.mjs & exec pnpm exec next dev --hostname 0.0.0.0 --port 3000"
-              ],
-              "ports": [
-                {
-                  "name": "http",
-                  "containerPort": 3000
-                }
+                "exec pnpm exec next dev --hostname 0.0.0.0 --port 3000"
               ],
               "env": [
                 {
-                  "name": "OFFSCREEN_DEV_SLOT",
-                  "value": "dev-2"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
-                  "value": "/tmp/offscreen-dev-runtime"
+                  "name": "API_INTERNAL_ORIGIN",
+                  "value": "http://game-api.offscreen-dev-2.svc.cluster.local:3001"
                 },
                 {
                   "name": "API_PROXY_ORIGIN",
                   "value": "http://game-api.offscreen-dev-2.svc.cluster.local:3001"
                 },
                 {
-                  "name": "API_INTERNAL_ORIGIN",
-                  "value": "http://game-api.offscreen-dev-2.svc.cluster.local:3001"
+                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
+                  "value": "/tmp/offscreen-dev-runtime"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_SLOT",
+                  "value": "dev-2"
                 }
-              ]
+              ],
+              "image": "offscreen-dev-workspace:dev-2-web",
+              "imagePullPolicy": "Never",
+              "name": "web",
+              "ports": [
+                {
+                  "containerPort": 3000,
+                  "name": "http"
+                }
+              ],
+              "workingDir": "/app/apps/web"
             }
-          ]
+          ],
+          "enableServiceLinks": false
         }
       }
     }
@@ -174,14 +174,14 @@
     "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
-      "name": "game-api",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-api",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-api",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
       "replicas": 1,
@@ -195,56 +195,29 @@
         "metadata": {
           "labels": {
             "app": "game-api",
-            "offscreen.dev/slot": "dev-2",
             "offscreen.dev/owner": "offscreen-dev",
+            "offscreen.dev/slot": "dev-2",
             "offscreen.rpg/profile": "dev-slot"
           }
         },
         "spec": {
           "automountServiceAccountToken": false,
-          "enableServiceLinks": false,
           "containers": [
             {
-              "name": "api",
-              "image": "offscreen-dev-workspace:dev-2-api",
-              "imagePullPolicy": "Never",
-              "workingDir": "/app/apps/api",
               "command": [
                 "node",
-                "dev-pod-compile-watch.mjs",
+                "/app/tools/dev-environments/runtime/compile-watch.mjs",
                 "api",
                 "dist/src/main.js"
               ],
-              "ports": [
-                {
-                  "name": "http",
-                  "containerPort": 3001
-                }
-              ],
               "env": [
                 {
-                  "name": "OFFSCREEN_DEV_SLOT",
-                  "value": "dev-2"
+                  "name": "API_HOST",
+                  "value": "0.0.0.0"
                 },
                 {
-                  "name": "OFFSCREEN_DEV_WATCHED_COMPILATION",
-                  "value": "1"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_COMPILED_ENTRY",
-                  "value": "/app/apps/api/dist/src/main.js"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
-                  "value": "/tmp/offscreen-dev-runtime"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RECEIPT_ROLE",
-                  "value": "api"
-                },
-                {
-                  "name": "DB_POOL_MAX",
-                  "value": "2"
+                  "name": "API_PORT",
+                  "value": "3001"
                 },
                 {
                   "name": "APP_ORIGIN",
@@ -255,24 +228,82 @@
                   "value": "dev-2"
                 },
                 {
-                  "name": "GAME_AUTHORITY_ORIGIN",
-                  "value": "http://game-authority.offscreen-dev-2.svc.cluster.local:3002"
+                  "name": "BETTER_AUTH_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "better-auth-secret",
+                      "name": "dev-2-app"
+                    }
+                  }
+                },
+                {
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "uri",
+                      "name": "dev-2-run-auth"
+                    }
+                  }
+                },
+                {
+                  "name": "DB_POOL_MAX",
+                  "value": "2"
                 },
                 {
                   "name": "GAME_AUTHORITY_MODE",
                   "value": "distributed"
                 },
                 {
-                  "name": "API_HOST",
-                  "value": "0.0.0.0"
+                  "name": "GAME_AUTHORITY_ORIGIN",
+                  "value": "http://game-authority.offscreen-dev-2.svc.cluster.local:3002"
                 },
                 {
-                  "name": "API_PORT",
-                  "value": "3001"
+                  "name": "GAME_AUTHORITY_SERVICE_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "game-authority-service-token",
+                      "name": "dev-2-app"
+                    }
+                  }
                 },
                 {
-                  "name": "OFFSCREEN_DOCUMENT_STORE",
-                  "value": "s3"
+                  "name": "GITHUB_CLIENT_ID",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "github-client-id",
+                      "name": "dev-2-app"
+                    }
+                  }
+                },
+                {
+                  "name": "GITHUB_CLIENT_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "github-client-secret",
+                      "name": "dev-2-app"
+                    }
+                  }
+                },
+                {
+                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
+                  "value": "/tmp/offscreen-dev-runtime"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_SLOT",
+                  "value": "dev-2"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_WATCHED_COMPILATION",
+                  "value": "1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "access-key-id",
+                      "name": "dev-2-s3"
+                    }
+                  }
                 },
                 {
                   "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
@@ -283,71 +314,32 @@
                   "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
                 },
                 {
-                  "name": "DATABASE_URL",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-run-auth",
-                      "key": "uri"
-                    }
-                  }
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-s3",
-                      "key": "access-key-id"
-                    }
-                  }
-                },
-                {
                   "name": "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY",
                   "valueFrom": {
                     "secretKeyRef": {
-                      "name": "dev-2-s3",
-                      "key": "secret-access-key"
+                      "key": "secret-access-key",
+                      "name": "dev-2-s3"
                     }
                   }
                 },
                 {
-                  "name": "GAME_AUTHORITY_SERVICE_TOKEN",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "game-authority-service-token"
-                    }
-                  }
-                },
-                {
-                  "name": "BETTER_AUTH_SECRET",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "better-auth-secret"
-                    }
-                  }
-                },
-                {
-                  "name": "GITHUB_CLIENT_ID",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "github-client-id"
-                    }
-                  }
-                },
-                {
-                  "name": "GITHUB_CLIENT_SECRET",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "github-client-secret"
-                    }
-                  }
+                  "name": "OFFSCREEN_DOCUMENT_STORE",
+                  "value": "s3"
                 }
-              ]
+              ],
+              "image": "offscreen-dev-workspace:dev-2-api",
+              "imagePullPolicy": "Never",
+              "name": "api",
+              "ports": [
+                {
+                  "containerPort": 3001,
+                  "name": "http"
+                }
+              ],
+              "workingDir": "/app/apps/api"
             }
-          ]
+          ],
+          "enableServiceLinks": false
         }
       }
     }
@@ -356,14 +348,14 @@
     "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
-      "name": "game-authority",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-authority",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-authority",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
       "replicas": 1,
@@ -377,61 +369,53 @@
         "metadata": {
           "labels": {
             "app": "game-authority",
-            "offscreen.dev/slot": "dev-2",
             "offscreen.dev/owner": "offscreen-dev",
+            "offscreen.dev/slot": "dev-2",
             "offscreen.rpg/profile": "dev-slot"
           }
         },
         "spec": {
           "automountServiceAccountToken": false,
-          "enableServiceLinks": false,
           "containers": [
             {
-              "name": "authority",
-              "image": "offscreen-dev-workspace:dev-2-authority",
-              "imagePullPolicy": "Never",
-              "workingDir": "/app/apps/game-authority",
               "command": [
                 "node",
-                "dev-pod-compile-watch.mjs",
+                "/app/tools/dev-environments/runtime/compile-watch.mjs",
                 "game-authority",
                 "dist/src/bootstrap/main.js",
                 "tsconfig.dev.json"
               ],
-              "ports": [
-                {
-                  "name": "http",
-                  "containerPort": 3002
-                }
-              ],
               "env": [
                 {
-                  "name": "OFFSCREEN_DEV_SLOT",
-                  "value": "dev-2"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_WATCHED_COMPILATION",
-                  "value": "1"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_COMPILED_ENTRY",
-                  "value": "/app/apps/game-authority/dist/src/bootstrap/main.js"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
-                  "value": "/tmp/offscreen-dev-runtime"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RECEIPT_ROLE",
-                  "value": "game-authority"
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "uri",
+                      "name": "dev-2-run-auth"
+                    }
+                  }
                 },
                 {
                   "name": "DB_POOL_MAX",
                   "value": "2"
                 },
                 {
-                  "name": "OFFSCREEN_DOCUMENT_STORE",
-                  "value": "s3"
+                  "name": "GAME_AUTHORITY_CONTROL_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "game-authority-control-token",
+                      "name": "dev-2-app"
+                    }
+                  }
+                },
+                {
+                  "name": "GAME_AUTHORITY_EXECUTOR_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "game-authority-executor-token",
+                      "name": "dev-2-app"
+                    }
+                  }
                 },
                 {
                   "name": "GAME_AUTHORITY_HOST",
@@ -442,6 +426,36 @@
                   "value": "3002"
                 },
                 {
+                  "name": "GAME_AUTHORITY_SERVICE_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "game-authority-service-token",
+                      "name": "dev-2-app"
+                    }
+                  }
+                },
+                {
+                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
+                  "value": "/tmp/offscreen-dev-runtime"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_SLOT",
+                  "value": "dev-2"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_WATCHED_COMPILATION",
+                  "value": "1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "access-key-id",
+                      "name": "dev-2-s3"
+                    }
+                  }
+                },
+                {
                   "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
                   "value": "offscreen-dev-2"
                 },
@@ -450,62 +464,32 @@
                   "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
                 },
                 {
-                  "name": "DATABASE_URL",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-run-auth",
-                      "key": "uri"
-                    }
-                  }
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-s3",
-                      "key": "access-key-id"
-                    }
-                  }
-                },
-                {
                   "name": "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY",
                   "valueFrom": {
                     "secretKeyRef": {
-                      "name": "dev-2-s3",
-                      "key": "secret-access-key"
+                      "key": "secret-access-key",
+                      "name": "dev-2-s3"
                     }
                   }
                 },
                 {
-                  "name": "GAME_AUTHORITY_SERVICE_TOKEN",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "game-authority-service-token"
-                    }
-                  }
-                },
-                {
-                  "name": "GAME_AUTHORITY_CONTROL_TOKEN",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "game-authority-control-token"
-                    }
-                  }
-                },
-                {
-                  "name": "GAME_AUTHORITY_EXECUTOR_TOKEN",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "game-authority-executor-token"
-                    }
-                  }
+                  "name": "OFFSCREEN_DOCUMENT_STORE",
+                  "value": "s3"
                 }
-              ]
+              ],
+              "image": "offscreen-dev-workspace:dev-2-authority",
+              "imagePullPolicy": "Never",
+              "name": "authority",
+              "ports": [
+                {
+                  "containerPort": 3002,
+                  "name": "http"
+                }
+              ],
+              "workingDir": "/app/apps/game-authority"
             }
-          ]
+          ],
+          "enableServiceLinks": false
         }
       }
     }
@@ -514,14 +498,14 @@
     "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
-      "name": "game-control",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-control",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-control",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
       "replicas": 1,
@@ -535,28 +519,40 @@
         "metadata": {
           "labels": {
             "app": "game-control",
-            "offscreen.dev/slot": "dev-2",
             "offscreen.dev/owner": "offscreen-dev",
+            "offscreen.dev/slot": "dev-2",
             "offscreen.rpg/profile": "dev-slot"
           }
         },
         "spec": {
           "automountServiceAccountToken": false,
-          "enableServiceLinks": false,
           "containers": [
             {
-              "name": "control",
-              "image": "offscreen-dev-workspace:dev-2-worker",
-              "imagePullPolicy": "Never",
-              "workingDir": "/app/apps/worker",
               "command": [
                 "node",
-                "dev-pod-compile-watch.mjs",
+                "/app/tools/dev-environments/runtime/compile-watch.mjs",
                 "worker-control",
                 "dist/src/bootstrap/control-main.js",
                 "tsconfig.dev.json"
               ],
               "env": [
+                {
+                  "name": "GAME_AUTHORITY_CONTROL_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "game-authority-control-token",
+                      "name": "dev-2-app"
+                    }
+                  }
+                },
+                {
+                  "name": "GAME_AUTHORITY_ORIGIN",
+                  "value": "http://game-authority.offscreen-dev-2.svc.cluster.local:3002"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
+                  "value": "/tmp/offscreen-dev-runtime"
+                },
                 {
                   "name": "OFFSCREEN_DEV_SLOT",
                   "value": "dev-2"
@@ -564,18 +560,6 @@
                 {
                   "name": "OFFSCREEN_DEV_WATCHED_COMPILATION",
                   "value": "1"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_COMPILED_ENTRY",
-                  "value": "/app/apps/worker/dist/src/bootstrap/control-main.js"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
-                  "value": "/tmp/offscreen-dev-runtime"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RECEIPT_ROLE",
-                  "value": "worker-control"
                 },
                 {
                   "name": "TEMPORAL_ADDRESS",
@@ -588,23 +572,15 @@
                 {
                   "name": "TEMPORAL_TASK_QUEUE",
                   "value": "control"
-                },
-                {
-                  "name": "GAME_AUTHORITY_ORIGIN",
-                  "value": "http://game-authority.offscreen-dev-2.svc.cluster.local:3002"
-                },
-                {
-                  "name": "GAME_AUTHORITY_CONTROL_TOKEN",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "game-authority-control-token"
-                    }
-                  }
                 }
-              ]
+              ],
+              "image": "offscreen-dev-workspace:dev-2-worker",
+              "imagePullPolicy": "Never",
+              "name": "control",
+              "workingDir": "/app/apps/worker"
             }
-          ]
+          ],
+          "enableServiceLinks": false
         }
       }
     }
@@ -613,14 +589,14 @@
     "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
-      "name": "game-executor",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-executor",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-executor",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
       "replicas": 1,
@@ -634,28 +610,40 @@
         "metadata": {
           "labels": {
             "app": "game-executor",
-            "offscreen.dev/slot": "dev-2",
             "offscreen.dev/owner": "offscreen-dev",
+            "offscreen.dev/slot": "dev-2",
             "offscreen.rpg/profile": "dev-slot"
           }
         },
         "spec": {
           "automountServiceAccountToken": false,
-          "enableServiceLinks": false,
           "containers": [
             {
-              "name": "executor",
-              "image": "offscreen-dev-workspace:dev-2-worker",
-              "imagePullPolicy": "Never",
-              "workingDir": "/app/apps/worker",
               "command": [
                 "node",
-                "dev-pod-compile-watch.mjs",
+                "/app/tools/dev-environments/runtime/compile-watch.mjs",
                 "worker-executor",
                 "dist/src/bootstrap/executor-main.js",
                 "tsconfig.dev.json"
               ],
               "env": [
+                {
+                  "name": "GAME_AUTHORITY_EXECUTOR_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "game-authority-executor-token",
+                      "name": "dev-2-app"
+                    }
+                  }
+                },
+                {
+                  "name": "GAME_AUTHORITY_ORIGIN",
+                  "value": "http://game-authority.offscreen-dev-2.svc.cluster.local:3002"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
+                  "value": "/tmp/offscreen-dev-runtime"
+                },
                 {
                   "name": "OFFSCREEN_DEV_SLOT",
                   "value": "dev-2"
@@ -663,18 +651,6 @@
                 {
                   "name": "OFFSCREEN_DEV_WATCHED_COMPILATION",
                   "value": "1"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_COMPILED_ENTRY",
-                  "value": "/app/apps/worker/dist/src/bootstrap/executor-main.js"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
-                  "value": "/tmp/offscreen-dev-runtime"
-                },
-                {
-                  "name": "OFFSCREEN_DEV_RECEIPT_ROLE",
-                  "value": "worker-executor"
                 },
                 {
                   "name": "TEMPORAL_ADDRESS",
@@ -687,23 +663,15 @@
                 {
                   "name": "TEMPORAL_TASK_QUEUE",
                   "value": "storyteller-execute-v1"
-                },
-                {
-                  "name": "GAME_AUTHORITY_ORIGIN",
-                  "value": "http://game-authority.offscreen-dev-2.svc.cluster.local:3002"
-                },
-                {
-                  "name": "GAME_AUTHORITY_EXECUTOR_TOKEN",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-app",
-                      "key": "game-authority-executor-token"
-                    }
-                  }
                 }
-              ]
+              ],
+              "image": "offscreen-dev-workspace:dev-2-worker",
+              "imagePullPolicy": "Never",
+              "name": "executor",
+              "workingDir": "/app/apps/worker"
             }
-          ]
+          ],
+          "enableServiceLinks": false
         }
       }
     }
@@ -712,14 +680,14 @@
     "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
-      "name": "game-relay",
-      "namespace": "offscreen-dev-2",
       "labels": {
         "app": "game-relay",
-        "offscreen.dev/slot": "dev-2",
         "offscreen.dev/owner": "offscreen-dev",
+        "offscreen.dev/slot": "dev-2",
         "offscreen.rpg/profile": "dev-slot"
-      }
+      },
+      "name": "game-relay",
+      "namespace": "offscreen-dev-2"
     },
     "spec": {
       "replicas": 1,
@@ -733,28 +701,40 @@
         "metadata": {
           "labels": {
             "app": "game-relay",
-            "offscreen.dev/slot": "dev-2",
             "offscreen.dev/owner": "offscreen-dev",
+            "offscreen.dev/slot": "dev-2",
             "offscreen.rpg/profile": "dev-slot"
           }
         },
         "spec": {
           "automountServiceAccountToken": false,
-          "enableServiceLinks": false,
           "containers": [
             {
-              "name": "relay",
-              "image": "offscreen-dev-workspace:dev-2-worker",
-              "imagePullPolicy": "Never",
-              "workingDir": "/app/apps/worker",
               "command": [
                 "node",
-                "dev-pod-compile-watch.mjs",
+                "/app/tools/dev-environments/runtime/compile-watch.mjs",
                 "worker-relay",
                 "dist/src/bootstrap/main.js",
                 "tsconfig.dev.json"
               ],
               "env": [
+                {
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "uri",
+                      "name": "dev-2-run-auth"
+                    }
+                  }
+                },
+                {
+                  "name": "DB_POOL_MAX",
+                  "value": "2"
+                },
+                {
+                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
+                  "value": "/tmp/offscreen-dev-runtime"
+                },
                 {
                   "name": "OFFSCREEN_DEV_SLOT",
                   "value": "dev-2"
@@ -764,20 +744,30 @@
                   "value": "1"
                 },
                 {
-                  "name": "OFFSCREEN_DEV_COMPILED_ENTRY",
-                  "value": "/app/apps/worker/dist/src/bootstrap/main.js"
+                  "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "access-key-id",
+                      "name": "dev-2-s3"
+                    }
+                  }
                 },
                 {
-                  "name": "OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR",
-                  "value": "/tmp/offscreen-dev-runtime"
+                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
+                  "value": "offscreen-dev-2"
                 },
                 {
-                  "name": "OFFSCREEN_DEV_RECEIPT_ROLE",
-                  "value": "worker-relay"
+                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
+                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
                 },
                 {
-                  "name": "DB_POOL_MAX",
-                  "value": "2"
+                  "name": "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "secret-access-key",
+                      "name": "dev-2-s3"
+                    }
+                  }
                 },
                 {
                   "name": "OFFSCREEN_DOCUMENT_STORE",
@@ -790,45 +780,15 @@
                 {
                   "name": "TEMPORAL_NAMESPACE",
                   "value": "offscreen-dev-2"
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
-                  "value": "offscreen-dev-2"
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
-                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
-                },
-                {
-                  "name": "DATABASE_URL",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-run-auth",
-                      "key": "uri"
-                    }
-                  }
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-s3",
-                      "key": "access-key-id"
-                    }
-                  }
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY",
-                  "valueFrom": {
-                    "secretKeyRef": {
-                      "name": "dev-2-s3",
-                      "key": "secret-access-key"
-                    }
-                  }
                 }
-              ]
+              ],
+              "image": "offscreen-dev-workspace:dev-2-worker",
+              "imagePullPolicy": "Never",
+              "name": "relay",
+              "workingDir": "/app/apps/worker"
             }
-          ]
+          ],
+          "enableServiceLinks": false
         }
       }
     }

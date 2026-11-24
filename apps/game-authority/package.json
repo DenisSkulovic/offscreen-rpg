@@ -16,7 +16,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node --env-file-if-exists=../../.env dist/src/bootstrap/main.js",
-    "dev": "tsc-watch --project tsconfig.dev.json --onFailure \"node ../../infra/dev/dev-watch-compilation.mjs failure game-authority dist/src/bootstrap/main.js\" --onSuccess \"node ../../infra/dev/dev-watch-compilation.mjs success game-authority dist/src/bootstrap/main.js\"",
+    "dev": "node ../../tools/dev-environments/runtime/compile-watch.mjs game-authority dist/src/bootstrap/main.js tsconfig.dev.json",
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {

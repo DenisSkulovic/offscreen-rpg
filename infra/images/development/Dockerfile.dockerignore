@@ -1,6 +1,7 @@
 # Dev image only. BuildKit loads this because load-dev-image.sh passes
 # -f infra/images/development/Dockerfile. Patterns match the repo-root context.
 # Release images build from turbo-pruned staging context, not this file.
+# Pod compile supervision lives under tools/dev-environments/runtime (via COPY tools).
 
 .git
 **/.git

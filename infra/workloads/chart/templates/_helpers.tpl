@@ -899,11 +899,10 @@ spec:
       - name: web
         image: {{ .Values.bindings.images.web | quote }}
         imagePullPolicy: Never
-        workingDir: "/app/apps/web"
+        workingDir: {{ .Values.workingDirs.web | quote }}
+        {{/* Host web READY: pod image + HTTP /sign-in — not compiled-generation proof. */}}
         command:
-          - "sh"
-          - "-c"
-          - "node dev-pod-web-receipt.mjs & exec pnpm exec next dev --hostname 0.0.0.0 --port 3000"
+{{- toYaml .Values.commands.web | nindent 10 }}
         ports:
           - name: http
             containerPort: 3000
@@ -928,12 +927,8 @@ spec:
   value: {{ .Values.bindings.slotId | quote }}
 - name: OFFSCREEN_DEV_WATCHED_COMPILATION
   value: "1"
-- name: OFFSCREEN_DEV_COMPILED_ENTRY
-  value: "/app/apps/api/dist/src/main.js"
 - name: OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR
   value: {{ .Values.bindings.receiptDir | quote }}
-- name: OFFSCREEN_DEV_RECEIPT_ROLE
-  value: "api"
 - name: DB_POOL_MAX
   value: {{ .Values.bindings.dbPoolMax | quote }}
 - name: APP_ORIGIN
@@ -1024,12 +1019,9 @@ spec:
       - name: api
         image: {{ .Values.bindings.images.api | quote }}
         imagePullPolicy: Never
-        workingDir: "/app/apps/api"
+        workingDir: {{ .Values.workingDirs.api | quote }}
         command:
-          - "node"
-          - "dev-pod-compile-watch.mjs"
-          - "api"
-          - "dist/src/main.js"
+{{- toYaml .Values.commands.api | nindent 10 }}
         ports:
           - name: http
             containerPort: 3001
@@ -1054,12 +1046,8 @@ spec:
   value: {{ .Values.bindings.slotId | quote }}
 - name: OFFSCREEN_DEV_WATCHED_COMPILATION
   value: "1"
-- name: OFFSCREEN_DEV_COMPILED_ENTRY
-  value: "/app/apps/game-authority/dist/src/bootstrap/main.js"
 - name: OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR
   value: {{ .Values.bindings.receiptDir | quote }}
-- name: OFFSCREEN_DEV_RECEIPT_ROLE
-  value: "game-authority"
 - name: DB_POOL_MAX
   value: {{ .Values.bindings.dbPoolMax | quote }}
 - name: OFFSCREEN_DOCUMENT_STORE
@@ -1137,13 +1125,9 @@ spec:
       - name: authority
         image: {{ .Values.bindings.images.authority | quote }}
         imagePullPolicy: Never
-        workingDir: "/app/apps/game-authority"
+        workingDir: {{ .Values.workingDirs.authority | quote }}
         command:
-          - "node"
-          - "dev-pod-compile-watch.mjs"
-          - "game-authority"
-          - "dist/src/bootstrap/main.js"
-          - "tsconfig.dev.json"
+{{- toYaml .Values.commands.authority | nindent 10 }}
         ports:
           - name: http
             containerPort: 3002
@@ -1168,12 +1152,8 @@ spec:
   value: {{ .Values.bindings.slotId | quote }}
 - name: OFFSCREEN_DEV_WATCHED_COMPILATION
   value: "1"
-- name: OFFSCREEN_DEV_COMPILED_ENTRY
-  value: "/app/apps/worker/dist/src/bootstrap/control-main.js"
 - name: OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR
   value: {{ .Values.bindings.receiptDir | quote }}
-- name: OFFSCREEN_DEV_RECEIPT_ROLE
-  value: "worker-control"
 - name: TEMPORAL_ADDRESS
   value: {{ .Values.bindings.temporalAddress | quote }}
 - name: TEMPORAL_NAMESPACE
@@ -1222,13 +1202,9 @@ spec:
       - name: control
         image: {{ .Values.bindings.images.worker | quote }}
         imagePullPolicy: Never
-        workingDir: "/app/apps/worker"
+        workingDir: {{ .Values.workingDirs.control | quote }}
         command:
-          - "node"
-          - "dev-pod-compile-watch.mjs"
-          - "worker-control"
-          - "dist/src/bootstrap/control-main.js"
-          - "tsconfig.dev.json"
+{{- toYaml .Values.commands.control | nindent 10 }}
         env:
           {{- include "offscreen-app.dev.env.control" . | nindent 10 }}
         securityContext:
@@ -1244,12 +1220,8 @@ spec:
   value: {{ .Values.bindings.slotId | quote }}
 - name: OFFSCREEN_DEV_WATCHED_COMPILATION
   value: "1"
-- name: OFFSCREEN_DEV_COMPILED_ENTRY
-  value: "/app/apps/worker/dist/src/bootstrap/executor-main.js"
 - name: OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR
   value: {{ .Values.bindings.receiptDir | quote }}
-- name: OFFSCREEN_DEV_RECEIPT_ROLE
-  value: "worker-executor"
 - name: TEMPORAL_ADDRESS
   value: {{ .Values.bindings.temporalAddress | quote }}
 - name: TEMPORAL_NAMESPACE
@@ -1298,13 +1270,9 @@ spec:
       - name: executor
         image: {{ .Values.bindings.images.worker | quote }}
         imagePullPolicy: Never
-        workingDir: "/app/apps/worker"
+        workingDir: {{ .Values.workingDirs.executor | quote }}
         command:
-          - "node"
-          - "dev-pod-compile-watch.mjs"
-          - "worker-executor"
-          - "dist/src/bootstrap/executor-main.js"
-          - "tsconfig.dev.json"
+{{- toYaml .Values.commands.executor | nindent 10 }}
         env:
           {{- include "offscreen-app.dev.env.executor" . | nindent 10 }}
         securityContext:
@@ -1320,12 +1288,8 @@ spec:
   value: {{ .Values.bindings.slotId | quote }}
 - name: OFFSCREEN_DEV_WATCHED_COMPILATION
   value: "1"
-- name: OFFSCREEN_DEV_COMPILED_ENTRY
-  value: "/app/apps/worker/dist/src/bootstrap/main.js"
 - name: OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR
   value: {{ .Values.bindings.receiptDir | quote }}
-- name: OFFSCREEN_DEV_RECEIPT_ROLE
-  value: "worker-relay"
 - name: DB_POOL_MAX
   value: {{ .Values.bindings.dbPoolMax | quote }}
 - name: OFFSCREEN_DOCUMENT_STORE
@@ -1388,13 +1352,9 @@ spec:
       - name: relay
         image: {{ .Values.bindings.images.worker | quote }}
         imagePullPolicy: Never
-        workingDir: "/app/apps/worker"
+        workingDir: {{ .Values.workingDirs.relay | quote }}
         command:
-          - "node"
-          - "dev-pod-compile-watch.mjs"
-          - "worker-relay"
-          - "dist/src/bootstrap/main.js"
-          - "tsconfig.dev.json"
+{{- toYaml .Values.commands.relay | nindent 10 }}
         env:
           {{- include "offscreen-app.dev.env.relay" . | nindent 10 }}
         securityContext:

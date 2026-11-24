@@ -13,7 +13,7 @@ import { assertDevWebLiveUpdateContract } from './dev-tiltfile-web.test.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const workerPackagePath = join(repoRoot, 'apps/worker/package.json');
-const devWatchCompilationPath = join(repoRoot, 'infra/dev/dev-watch-compilation.mjs');
+const compileWatchPath = join(repoRoot, 'tools/dev-environments/runtime/compile-watch.mjs');
 const devTiltfilePath = join(repoRoot, 'Tiltfile');
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
 const workerPackage = JSON.parse(readFileSync(workerPackagePath, 'utf8'));
@@ -72,17 +72,12 @@ export function assertWorkerDevBootstrapScripts(scripts) {
     /dist\/src\/bootstrap\/executor-main\.js/,
     'dev:executor must run bootstrap/executor-main.js',
   );
-  const watchCompilation = readFileSync(devWatchCompilationPath, 'utf8');
-  assert.match(
-    watchCompilation,
-    /--env-file-if-exists=\.\.\/\.\.\/\.env/,
-    'dev-watch-compilation must keep optional repo-root .env loading',
-  );
+  assert.match(readFileSync(compileWatchPath, 'utf8'), /compile-watch\.mjs/);
   for (const name of ['dev:relay', 'dev:control', 'dev:executor']) {
     assert.match(
       scripts[name],
-      /dev-watch-compilation\.mjs/,
-      `${name} must route process start through dev-watch-compilation`,
+      /tools\/dev-environments\/runtime\/compile-watch\.mjs/,
+      `${name} must invoke the shared compile-watch supervisor`,
     );
   }
 }

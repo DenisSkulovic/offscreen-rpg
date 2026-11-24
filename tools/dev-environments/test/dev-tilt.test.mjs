@@ -1,5 +1,5 @@
 import { createServer } from 'node:net';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { EventEmitter } from 'node:events';
@@ -14,7 +14,9 @@ import {
   formatReadyLines,
   maybeAnnounce,
   LAB_RESOURCES,
+  observeSelectedSlotRuntimeRoles,
   printDevStatus,
+  readinessFromRemoteObservation,
   readDevSession,
   runDevTiltLaunch,
   runDevAttachCli,
@@ -23,15 +25,22 @@ import {
   scaleDevSlotWorkloads,
   writeDevSession,
 } from '../src/cli/dev-tilt.mjs';
+import { observeDevRuntimeRoleInPod } from '../runtime/status.mjs';
 import {
   attachUnattachedEnvironment,
   reserveUnattachedEnvironment,
 } from '../src/domain/dev-worktree-allocator.mjs';
-import { readRegistryJson, writeRegistry } from '../src/domain/dev-worktree-registry.mjs';
 import {
-  fingerprintCompiledEntryFile,
+  readRegistryJson,
+  writeRegistry,
+} from '../src/domain/dev-worktree-registry.mjs';
+import {
+  DEV_LOADED_RUNTIME_RECEIPT_SCHEMA,
+  evaluateDevLoadedRuntimeReadiness,
+  fingerprintCompiledTree,
   markDevWatchedCompilation,
-} from '../../../infra/dev/dev-watched-compilation-receipt.mjs';
+  resolveCompiledDistRoot,
+} from '../runtime/generation.mjs';
 import { UNION_ROLE_FILTER } from '../src/image-cache/dev-slot-image-plan.mjs';
 
 function okLaunchFingerprint() {
@@ -41,7 +50,9 @@ function okLaunchFingerprint() {
     roleFilter: UNION_ROLE_FILTER,
   });
 }
-const API_FRESHNESS_ROLE = DEV_RUNTIME_FRESHNESS_ROLES.find((entry) => entry.role === 'api');
+const API_FRESHNESS_ROLE = DEV_RUNTIME_FRESHNESS_ROLES.find(
+  (entry) => entry.role === 'api',
+);
 assert.ok(API_FRESHNESS_ROLE);
 
 /**
@@ -64,27 +75,64 @@ function seedApiRuntimeFreshness(worktree, options = {}) {
       role: API_FRESHNESS_ROLE.receiptRole,
       compiledEntryPath: entryRel,
       cwd: worktree,
+      environmentId: options.environmentId ?? options.slotId ?? undefined,
     });
+    const desired = JSON.parse(
+      readFileSync(
+        join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.desired.json`),
+        'utf8',
+      ),
+    );
+    const distRoot = resolveCompiledDistRoot(worktree, entryRel);
     const identity = options.staleLoaded
       ? 'stale-generation-identity'
-      : fingerprintCompiledEntryFile(entryAbs);
+      : fingerprintCompiledTree(distRoot);
     writeFileSync(
       join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.loaded.json`),
       `${JSON.stringify({
-        schema: 'offscreen.dev-loaded-runtime.v1',
+        schema: DEV_LOADED_RUNTIME_RECEIPT_SCHEMA,
         role: API_FRESHNESS_ROLE.receiptRole,
         pid: 4242,
         startedAt: new Date().toISOString(),
+        generationId: options.staleLoaded
+          ? '99999999-9999-4999-8999-999999999999'
+          : desired.generationId,
         compiledModulePath: entryAbs,
         compiledModuleIdentity: identity,
-        environmentId: options.environmentId ?? options.slotId ?? null,
+        ...((options.environmentId ?? options.slotId)
+          ? { environmentId: options.environmentId ?? options.slotId }
+          : {}),
       })}\n`,
       'utf8',
     );
   } finally {
-    if (previousReceiptDir === undefined) delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
+    if (previousReceiptDir === undefined)
+      delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
     else process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = previousReceiptDir;
   }
+}
+
+/**
+ * @param {string} worktree
+ * @param {{ staleLoaded?: boolean, slotId?: string, environmentId?: string }} [options]
+ */
+function observeApiRuntimeInFixture(worktree, options = {}) {
+  seedApiRuntimeFreshness(worktree, options);
+  const slotId = options.slotId ?? 'dev-3';
+  const receiptRoot = join(worktree, '.offscreen-dev-runtime', slotId);
+  const loadedPath = join(
+    receiptRoot,
+    `${API_FRESHNESS_ROLE.receiptRole}.loaded.json`,
+  );
+  const loaded = JSON.parse(readFileSync(loadedPath, 'utf8'));
+  loaded.pid = process.pid;
+  writeFileSync(loadedPath, `${JSON.stringify(loaded)}\n`, 'utf8');
+  return observeDevRuntimeRoleInPod({
+    receiptRole: API_FRESHNESS_ROLE.receiptRole,
+    compiledEntryPath: join(worktree, API_FRESHNESS_ROLE.compiledEntryPath),
+    receiptDir: receiptRoot,
+    environmentId: options.environmentId ?? slotId,
+  });
 }
 
 const FAKE_OWNER = /** @type {const} */ ({
@@ -157,7 +205,8 @@ test('foreign context preflight refusal yields null urls', () => {
   const preflightRefusals = [
     {
       id: 'foreign-context',
-      message: 'Refusing: current kubectl context is "minikube", not kind-offscreen-lab.',
+      message:
+        'Refusing: current kubectl context is "minikube", not kind-offscreen-lab.',
     },
   ];
   const result = assessDevLaunch({
@@ -196,7 +245,9 @@ test('unready game-executor yields null urls', () => {
   });
   assert.equal(result.ok, false);
   assert.equal(result.urls, null);
-  assert.ok(result.refusals.some((r) => r.id === 'resource-not-ready-game-executor'));
+  assert.ok(
+    result.refusals.some((r) => r.id === 'resource-not-ready-game-executor'),
+  );
 });
 
 test('missing tilt yields null urls', () => {
@@ -276,9 +327,10 @@ test('stop(A) does not delete or alter B session file', () => {
 
 test('scale refuses a namespace that is not a dev slot', () => {
   assert.throws(
-    () => scaleDevSlotWorkloads('lab-edge', () => {
-      throw new Error('kubectl must not run');
-    }),
+    () =>
+      scaleDevSlotWorkloads('lab-edge', () => {
+        throw new Error('kubectl must not run');
+      }),
     /refusing to scale/,
   );
 });
@@ -294,7 +346,14 @@ test('scale names only the six slot deployments', () => {
   assert.equal(args.includes('--namespace') || args.includes('-n'), true);
   assert.equal(args.includes('offscreen-dev-8'), true);
   assert.equal(args.includes('--replicas=0'), true);
-  for (const name of ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay']) {
+  for (const name of [
+    'game-web',
+    'game-api',
+    'game-authority',
+    'game-control',
+    'game-executor',
+    'game-relay',
+  ]) {
     assert.equal(args.includes(name), true);
   }
 });
@@ -344,7 +403,8 @@ test('occupied allocator game port refuses before tilt spawn', async () => {
       collectDefaultProbes: async () => ({}),
       runStackPreflight: () => okPreflight(),
       commandOnPath: () => true,
-      probeLoopbackPortOccupied: async (_host, port) => port === FAKE_OWNER.ports.game,
+      probeLoopbackPortOccupied: async (_host, port) =>
+        port === FAKE_OWNER.ports.game,
       spawnFn: spawn,
       exit: (code) => {
         exitCodes.push(code);
@@ -377,7 +437,12 @@ test('low memory refuses before reconciliation, Tilt replacement, or spawn', asy
     collectDefaultProbes: async () => ({ memAvailableKib: 1 }),
     runStackPreflight: () => ({
       ok: false,
-      refusals: [{ id: 'memory-low', message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).' }],
+      refusals: [
+        {
+          id: 'memory-low',
+          message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).',
+        },
+      ],
     }),
     commandOnPath: () => true,
     probeLoopbackPortOccupied: alwaysFreeProbe,
@@ -434,7 +499,9 @@ test('missing memory reading fails closed before mutation', async () => {
     collectDefaultProbes: async () => ({ memAvailableKib: null }),
     runStackPreflight: () => ({
       ok: false,
-      refusals: [{ id: 'memory-unknown', message: 'MemAvailable KiB is unknown.' }],
+      refusals: [
+        { id: 'memory-unknown', message: 'MemAvailable KiB is unknown.' },
+      ],
     }),
     spawnFn: spawn,
     exit: (code) => {
@@ -501,7 +568,12 @@ test('memory refusal does not terminate an owned running session', async () => {
     collectDefaultProbes: async () => ({ memAvailableKib: 1 }),
     runStackPreflight: () => ({
       ok: false,
-      refusals: [{ id: 'memory-low', message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).' }],
+      refusals: [
+        {
+          id: 'memory-low',
+          message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).',
+        },
+      ],
     }),
     pidAlive: () => true,
     readStartTicks: () => '99',
@@ -558,13 +630,17 @@ test('formatReadyLines and assertions never use 0.0.0.0 as bind address', () => 
     tilt: 'http://127.0.0.1:10350/',
   };
   const lines = formatReadyLines(urls);
-  const blob = JSON.stringify({ urls, lines, result: assessDevLaunch({
-    preflightOk: true,
-    preflightRefusals: [],
-    tiltOnPath: true,
-    ports: { game: 'free', tilt: 'free' },
-    readiness: fullReadiness(),
-  }) });
+  const blob = JSON.stringify({
+    urls,
+    lines,
+    result: assessDevLaunch({
+      preflightOk: true,
+      preflightRefusals: [],
+      tiltOnPath: true,
+      ports: { game: 'free', tilt: 'free' },
+      readiness: fullReadiness(),
+    }),
+  });
   assert.doesNotMatch(blob, /0\.0\.0\.0/);
 });
 
@@ -606,14 +682,20 @@ test('printDevStatus exits 0 when session and api runtime receipts match', () =>
     webReadiness: {
       namespace: 'offscreen-dev-3',
       expectedImage: 'offscreen-dev:gen',
-      pod: { ready: true, namespace: 'offscreen-dev-3', image: 'offscreen-dev:gen' },
+      pod: {
+        ready: true,
+        namespace: 'offscreen-dev-3',
+        image: 'offscreen-dev:gen',
+      },
       httpStatus: 200,
     },
     log: (line) => lines.push(line),
   });
 
   assert.equal(code, 0);
-  assert.ok(lines.some((line) => line.startsWith('api READY loaded_matches_desired ')));
+  assert.ok(
+    lines.some((line) => line.startsWith('api READY loaded_matches_desired ')),
+  );
   assert.ok(!lines.some((line) => line.includes('NOT READY')));
 });
 
@@ -652,7 +734,9 @@ test('printDevStatus reports stale_loaded_runtime and exits 2', () => {
   });
 
   assert.equal(code, 2);
-  assert.ok(lines.some((line) => line === 'api NOT READY stale_loaded_runtime'));
+  assert.ok(
+    lines.some((line) => line === 'api NOT READY stale_loaded_runtime'),
+  );
 });
 
 test('printDevStatus reports compile_error and exits 2', () => {
@@ -670,19 +754,22 @@ test('printDevStatus reports compile_error and exits 2', () => {
     startedAt: '2026-11-23T00:00:13.000Z',
   });
 
-  const staleIdentity = fingerprintCompiledEntryFile(entryAbs);
+  const distRoot = resolveCompiledDistRoot(worktree, entryRel);
+  const staleIdentity = fingerprintCompiledTree(distRoot);
   const receiptRoot = join(worktree, '.offscreen-dev-runtime', 'dev-6');
   mkdirSync(receiptRoot, { recursive: true });
   process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
   writeFileSync(
     join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.loaded.json`),
     `${JSON.stringify({
-      schema: 'offscreen.dev-loaded-runtime.v1',
+      schema: DEV_LOADED_RUNTIME_RECEIPT_SCHEMA,
       role: API_FRESHNESS_ROLE.receiptRole,
       pid: 4242,
       startedAt: new Date().toISOString(),
+      generationId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
       compiledModulePath: entryAbs,
       compiledModuleIdentity: staleIdentity,
+      environmentId: 'dev-6',
     })}\n`,
     'utf8',
   );
@@ -737,10 +824,19 @@ test('printDevStatus does not accept another environment receipt or a loading im
     startedAt: '2026-11-23T00:00:15.000Z',
     checkoutPath: worktree,
   });
-  seedApiRuntimeFreshness(worktree, { slotId: 'dev-5', environmentId: 'dev-5' });
-  const missing = printDevStatus(worktree, { roles: [API_FRESHNESS_ROLE], log() {} });
+  seedApiRuntimeFreshness(worktree, {
+    slotId: 'dev-5',
+    environmentId: 'dev-5',
+  });
+  const missing = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    log() {},
+  });
   assert.equal(missing, 2);
-  seedApiRuntimeFreshness(worktree, { slotId: 'dev-6', environmentId: 'dev-5' });
+  seedApiRuntimeFreshness(worktree, {
+    slotId: 'dev-6',
+    environmentId: 'dev-5',
+  });
   const lines = [];
   const foreign = printDevStatus(worktree, {
     roles: [API_FRESHNESS_ROLE],
@@ -822,13 +918,20 @@ function ownedLaunch(worktree, extra) {
           ...FAKE_OWNER,
           worktreePath: worktree,
         },
-        allocateDevWorktreeOwner: () => ({ ...FAKE_OWNER, worktreePath: worktree }),
+        allocateDevWorktreeOwner: () => ({
+          ...FAKE_OWNER,
+          worktreePath: worktree,
+        }),
         collectDefaultProbes: async () => ({ memAvailableKib: 8_000_000 }),
         runStackPreflight: () => okPreflight(),
         commandOnPath: () => true,
         probeLoopbackPortOccupied: alwaysFreeProbe,
         spawnFn: fakeSpawn(),
-        reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true, record: { ...FAKE_OWNER, worktreePath: worktree } }),
+        reconcileDevSlot: async () => ({
+          ok: true,
+          readyForWorkloads: true,
+          record: { ...FAKE_OWNER, worktreePath: worktree },
+        }),
         startupWindowMs: 0,
         startupPollMs: 1,
         sleep: async () => {},
@@ -841,10 +944,13 @@ function ownedLaunch(worktree, extra) {
           if (extra?.scaleError) throw new Error(extra.scaleError);
           scaled.push({ namespace, role });
         },
-        readDesiredReplicas: (namespace) => Object.fromEntries(LAB_RESOURCES.map((role) => [
-          role,
-          extra?.replicas?.(namespace, role) ?? 0,
-        ])),
+        readDesiredReplicas: (namespace) =>
+          Object.fromEntries(
+            LAB_RESOURCES.map((role) => [
+              role,
+              extra?.replicas?.(namespace, role) ?? 0,
+            ]),
+          ),
         log: (line) => lines.push(line),
         supervisePortForward: async () => {},
         exitAfterReady: true,
@@ -861,18 +967,28 @@ test('partial startup parks all six owned workloads and leaves the other environ
   const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-partial-'));
   const harness = ownedLaunch(worktree);
   await harness.launch({
-    collectStartupReadiness: async () => fullReadiness({
-      'game-api': false,
-      'game-authority': false,
-      'game-control': false,
-      'game-executor': false,
-      'game-relay': false,
-    }),
+    collectStartupReadiness: async () =>
+      fullReadiness({
+        'game-api': false,
+        'game-authority': false,
+        'game-control': false,
+        'game-executor': false,
+        'game-relay': false,
+      }),
   });
   assert.equal(harness.scaled.length, 6);
-  assert.equal(harness.scaled.every((call) => call.namespace === 'offscreen-dev-2'), true);
-  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), true);
-  assert.equal(harness.lines.some((line) => line.startsWith('rollback-incomplete:')), false);
+  assert.equal(
+    harness.scaled.every((call) => call.namespace === 'offscreen-dev-2'),
+    true,
+  );
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('rollback-incomplete:')),
+    false,
+  );
 });
 
 test('memory exhaustion after admission parks the attempted slot', async () => {
@@ -884,15 +1000,29 @@ test('memory exhaustion after admission parks the attempted slot', async () => {
       probes += 1;
       return { memAvailableKib: probes === 1 ? 8_000_000 : 1 };
     },
-    runStackPreflight: (probe) => (probe.memAvailableKib === 1
-      ? { ok: false, refusals: [{ id: 'memory-low', message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).' }] }
-      : okPreflight()),
+    runStackPreflight: (probe) =>
+      probe.memAvailableKib === 1
+        ? {
+            ok: false,
+            refusals: [
+              {
+                id: 'memory-low',
+                message: 'MemAvailable is 1 KiB, below 4194304 KiB (4 GiB).',
+              },
+            ],
+          }
+        : okPreflight(),
     collectStartupReadiness: async () => {
-      throw new Error('readiness must not be consulted after memory exhaustion');
+      throw new Error(
+        'readiness must not be consulted after memory exhaustion',
+      );
     },
   });
   assert.equal(harness.scaled.length, 6);
-  assert.match(harness.lines.find((line) => line.startsWith('startup-parked:')) ?? '', /4 GiB/);
+  assert.match(
+    harness.lines.find((line) => line.startsWith('startup-parked:')) ?? '',
+    /4 GiB/,
+  );
 });
 
 test('a fully ready startup stays up and does not scale', async () => {
@@ -902,7 +1032,10 @@ test('a fully ready startup stays up and does not scale', async () => {
     collectStartupReadiness: async () => fullReadiness(),
   });
   assert.deepEqual(harness.scaled, []);
-  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), false);
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    false,
+  );
 });
 
 test('a failed rollback reports rollback-incomplete and does not claim parked', async () => {
@@ -911,9 +1044,18 @@ test('a failed rollback reports rollback-incomplete and does not claim parked', 
   await harness.launch({
     collectStartupReadiness: async () => fullReadiness({ 'game-web': false }),
   });
-  assert.equal(harness.lines.some((line) => line.startsWith('rollback-incomplete:')), true);
-  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), false);
-  assert.match(harness.lines.find((line) => line.startsWith('rollback-incomplete:')) ?? '', /offscreen-dev-2/);
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('rollback-incomplete:')),
+    true,
+  );
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    false,
+  );
+  assert.match(
+    harness.lines.find((line) => line.startsWith('rollback-incomplete:')) ?? '',
+    /offscreen-dev-2/,
+  );
 });
 
 test('reserve and attach CLI handlers skip launch-side mutators', () => {
@@ -927,7 +1069,10 @@ test('reserve and attach CLI handlers skip launch-side mutators', () => {
     environmentsById: {},
     defaultEnvironmentByCheckout: {},
   });
-  const allocatorDeps = { canonicalizePath: (path) => path, isPortAvailable: () => true };
+  const allocatorDeps = {
+    canonicalizePath: (path) => path,
+    isPortAvailable: () => true,
+  };
   /** @type {string[]} */
   const lines = [];
   let spawnCalled = false;
@@ -946,7 +1091,9 @@ test('reserve and attach CLI handlers skip launch-side mutators', () => {
     log: (line) => lines.push(line),
     exit: () => {},
   });
-  const reserved = Object.values(readRegistryJson(registryRoot).environmentsById)[0];
+  const reserved = Object.values(
+    readRegistryJson(registryRoot).environmentsById,
+  )[0];
   runDevAttachCli(reserved.slotId, {
     worktree: checkout,
     registryRoot,
@@ -967,6 +1114,255 @@ test('reserve and attach CLI handlers skip launch-side mutators', () => {
   assert.equal(tenantWriteCalled, false);
 });
 
+test('printDevStatus remote mode ignores host receipts when exec fails', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-fail-'));
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-6',
+    namespace: 'offscreen-dev-6',
+    gamePort: 13120,
+    tiltPort: 13121,
+    startedAt: '2026-11-23T00:00:16.000Z',
+  });
+  seedApiRuntimeFreshness(worktree, { slotId: 'dev-6' });
+  const lines = [];
+  const code = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    pullSlotReceipts: true,
+    execKubectl: () => ({ status: 1, stdout: '' }),
+    log: (line) => lines.push(line),
+  });
+  assert.equal(code, 2);
+  assert.ok(lines.some((line) => line === 'api NOT READY remote_unreadable'));
+});
+
+test('printDevStatus remote mode accepts a current pod observation', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-ok-'));
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-3',
+    namespace: 'offscreen-dev-3',
+    gamePort: 13120,
+    tiltPort: 13121,
+    startedAt: '2026-11-23T00:00:17.000Z',
+  });
+  const observation = observeApiRuntimeInFixture(worktree, { slotId: 'dev-3' });
+  assert.equal(observation.ok, true);
+  const lines = [];
+  const code = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    pullSlotReceipts: true,
+    roleObservations: { api: observation },
+    webReadiness: {
+      namespace: 'offscreen-dev-3',
+      expectedImage: 'offscreen-dev:gen',
+      pod: {
+        ready: true,
+        namespace: 'offscreen-dev-3',
+        image: 'offscreen-dev:gen',
+      },
+      httpStatus: 200,
+    },
+    log: (line) => lines.push(line),
+  });
+  assert.equal(code, 0);
+  assert.ok(
+    lines.some((line) => line.startsWith('api READY loaded_matches_desired ')),
+  );
+});
+
+test('printDevStatus remote mode reports foreign slot receipts', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-foreign-'));
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-6',
+    namespace: 'offscreen-dev-6',
+    gamePort: 13120,
+    tiltPort: 13121,
+    startedAt: '2026-11-23T00:00:18.000Z',
+  });
+  const observation = observeApiRuntimeInFixture(worktree, {
+    slotId: 'dev-6',
+    environmentId: 'dev-5',
+  });
+  const lines = [];
+  const code = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    pullSlotReceipts: true,
+    roleObservations: { api: observation },
+    log: (line) => lines.push(line),
+  });
+  assert.equal(code, 2);
+  assert.ok(lines.some((line) => line === 'api NOT READY foreign_environment'));
+});
+
+test('printDevStatus remote mode reports stale loaded generation', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-stale-'));
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-5',
+    namespace: 'offscreen-dev-5',
+    gamePort: 13120,
+    tiltPort: 13121,
+    startedAt: '2026-11-23T00:00:19.000Z',
+  });
+  seedApiRuntimeFreshness(worktree, { slotId: 'dev-5' });
+  const receiptRoot = join(worktree, '.offscreen-dev-runtime', 'dev-5');
+  const desired = JSON.parse(
+    readFileSync(
+      join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.desired.json`),
+      'utf8',
+    ),
+  );
+  writeFileSync(
+    join(receiptRoot, `${API_FRESHNESS_ROLE.receiptRole}.loaded.json`),
+    `${JSON.stringify({
+      schema: DEV_LOADED_RUNTIME_RECEIPT_SCHEMA,
+      role: API_FRESHNESS_ROLE.receiptRole,
+      pid: process.pid,
+      startedAt: new Date().toISOString(),
+      generationId: '99999999-9999-4999-8999-999999999999',
+      compiledModulePath: join(worktree, API_FRESHNESS_ROLE.compiledEntryPath),
+      compiledModuleIdentity: desired.compiledModuleIdentity,
+      environmentId: 'dev-5',
+    })}\n`,
+    'utf8',
+  );
+  const observation = observeDevRuntimeRoleInPod({
+    receiptRole: API_FRESHNESS_ROLE.receiptRole,
+    compiledEntryPath: join(worktree, API_FRESHNESS_ROLE.compiledEntryPath),
+    receiptDir: receiptRoot,
+    environmentId: 'dev-5',
+  });
+  const lines = [];
+  const code = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    pullSlotReceipts: true,
+    roleObservations: { api: observation },
+    log: (line) => lines.push(line),
+  });
+  assert.equal(code, 2);
+  assert.ok(
+    lines.some((line) => line === 'api NOT READY stale_loaded_generation'),
+  );
+});
+
+test('printDevStatus remote mode reports dead loaded process', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-dead-'));
+  const observation = observeApiRuntimeInFixture(worktree, { slotId: 'dev-7' });
+  observation.pidAlive = false;
+  const status = readinessFromRemoteObservation(
+    API_FRESHNESS_ROLE,
+    observation,
+    evaluateDevLoadedRuntimeReadiness,
+  );
+  assert.equal(status.ready, false);
+  assert.equal(status.reason, 'dead_loaded_process');
+});
+
+test('printDevStatus remote mode reports legacy v1 receipts as restart_required', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-v1-'));
+  const receiptRoot = join(worktree, '.offscreen-dev-runtime', 'dev-8');
+  mkdirSync(receiptRoot, { recursive: true });
+  writeFileSync(
+    join(receiptRoot, 'api.desired.json'),
+    `${JSON.stringify({
+      schema: 'offscreen.dev-watched-compilation.v1',
+      role: 'api',
+      phase: 'compile_success',
+      ready: true,
+    })}\n`,
+  );
+  writeFileSync(
+    join(receiptRoot, 'api.loaded.json'),
+    `${JSON.stringify({
+      schema: 'offscreen.dev-loaded-runtime.v1',
+      role: 'api',
+      pid: 4242,
+    })}\n`,
+  );
+  const observation = observeDevRuntimeRoleInPod({
+    receiptRole: 'api',
+    compiledEntryPath: join(worktree, API_FRESHNESS_ROLE.compiledEntryPath),
+    receiptDir: receiptRoot,
+    environmentId: 'dev-8',
+  });
+  assert.equal(observation.legacyReceipt, true);
+  const status = readinessFromRemoteObservation(
+    API_FRESHNESS_ROLE,
+    observation,
+    evaluateDevLoadedRuntimeReadiness,
+  );
+  assert.equal(status.reason, 'restart_required');
+});
+
+test('printDevStatus remote mode reports changed dist tree identity', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-disk-'));
+  const observation = observeApiRuntimeInFixture(worktree, { slotId: 'dev-9' });
+  observation.diskIdentity = 'deadbeef';
+  const status = readinessFromRemoteObservation(
+    API_FRESHNESS_ROLE,
+    observation,
+    evaluateDevLoadedRuntimeReadiness,
+  );
+  assert.equal(status.ready, false);
+  assert.equal(status.reason, 'desired_disk_mismatch');
+});
+
+test('observeSelectedSlotRuntimeRoles execs only the owned namespace', () => {
+  /** @type {string[][]} */
+  const calls = [];
+  observeSelectedSlotRuntimeRoles({
+    namespace: 'offscreen-dev-2',
+    environmentId: 'dev-2',
+    roles: [API_FRESHNESS_ROLE],
+    run: (args) => {
+      calls.push([...args]);
+      return { status: 0, stdout: '{"ok":false,"reason":"remote_unreadable"}' };
+    },
+  });
+  assert.equal(calls.length, 1);
+  const args = calls[0];
+  assert.ok(args.includes('-n'));
+  assert.ok(args.includes('offscreen-dev-2'));
+  assert.ok(args.includes('deploy/game-api'));
+  assert.equal(args.includes('offscreen-dev-3'), false);
+});
+
+test('printDevStatus web readiness stays independent of remote role failures', () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-remote-web-'));
+  writeDevSession(worktree, {
+    pid: 0,
+    slotId: 'dev-3',
+    namespace: 'offscreen-dev-3',
+    gamePort: 13120,
+    tiltPort: 13121,
+    startedAt: '2026-11-23T00:00:20.000Z',
+  });
+  const lines = [];
+  const code = printDevStatus(worktree, {
+    roles: [API_FRESHNESS_ROLE],
+    pullSlotReceipts: true,
+    roleObservations: { api: { ok: false, reason: 'remote_unreadable' } },
+    webReadiness: {
+      namespace: 'offscreen-dev-3',
+      expectedImage: 'offscreen-dev:gen',
+      pod: {
+        ready: true,
+        namespace: 'offscreen-dev-3',
+        image: 'offscreen-dev:gen',
+      },
+      httpStatus: 200,
+    },
+    log: (line) => lines.push(line),
+  });
+  assert.equal(code, 2);
+  assert.ok(
+    lines.some((line) => line.startsWith('web READY dev_server_serving')),
+  );
+  assert.ok(lines.some((line) => line === 'api NOT READY remote_unreadable'));
+});
+
 test('replica readback keeps another environment out of the rollback report', async () => {
   const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-foreign-'));
   const harness = ownedLaunch(worktree, {
@@ -975,6 +1371,12 @@ test('replica readback keeps another environment out of the rollback report', as
   await harness.launch({
     collectStartupReadiness: async () => fullReadiness({ 'game-api': false }),
   });
-  assert.equal(harness.scaled.some((call) => call.namespace === 'offscreen-dev-6'), false);
-  assert.equal(harness.lines.some((line) => line.startsWith('startup-parked:')), true);
+  assert.equal(
+    harness.scaled.some((call) => call.namespace === 'offscreen-dev-6'),
+    false,
+  );
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
 });

@@ -41,7 +41,7 @@ test('dev-1 and dev-2 graphs stay in their own namespaces with distinct images',
       const host = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'API_HOST');
       assert.equal(host.value, '0.0.0.0');
       const command = deployment.spec.template.spec.containers[0].command.join(' ');
-      assert.match(command, /dev-pod-compile-watch.mjs api dist\/src\/main.js/);
+      assert.match(command, /compile-watch\.mjs api dist\/src\/main.js/);
       const watched = deployment.spec.template.spec.containers[0].env.find((item) => item.name === 'OFFSCREEN_DEV_WATCHED_COMPILATION');
       assert.equal(watched.value, '1');
     }
@@ -125,7 +125,12 @@ test('tilt deployments are declarative and match startup before image substituti
   const api = tilt.find((item) => item.metadata.name === 'game-api');
   const watched = api.spec.template.spec.containers[0].env.find((item) => item.name === 'OFFSCREEN_DEV_WATCHED_COMPILATION');
   assert.equal(watched.value, '1');
-  assert.deepEqual(api.spec.template.spec.containers[0].command, ['node', 'dev-pod-compile-watch.mjs', 'api', 'dist/src/main.js']);
+  assert.deepEqual(api.spec.template.spec.containers[0].command, [
+    'node',
+    '/app/tools/dev-environments/runtime/compile-watch.mjs',
+    'api',
+    'dist/src/main.js',
+  ]);
   const other = renderTiltDeploymentDocuments({ ...env, OFFSCREEN_DEV_SLOT: 'dev-6', OFFSCREEN_DEV_NAMESPACE: 'offscreen-dev-6' });
   assert.equal(other.some((item) => item.metadata.namespace !== 'offscreen-dev-6'), false);
   assert.throws(() => renderTiltDeploymentDocuments({ ...env, OFFSCREEN_DEV_NAMESPACE: 'offscreen-dev-6' }), /offscreen-dev-6 is not offscreen-dev-5/);

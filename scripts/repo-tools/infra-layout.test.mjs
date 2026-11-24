@@ -110,6 +110,34 @@ export const INF07_SUCCESSOR_RELOCATIONS = [
   },
 ];
 
+/** INF18 retired infra/dev runtime shims in favor of tools/dev-environments/runtime. */
+export const INF18_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/dev/dev-watched-compilation-receipt.mjs',
+    to: 'tools/dev-environments/runtime/generation.mjs',
+  },
+  {
+    from: 'infra/dev/dev-watched-compilation-receipt.test.mjs',
+    to: 'tools/dev-environments/test/dev-generation.test.mjs',
+  },
+  {
+    from: 'infra/dev/dev-loaded-runtime-status.mjs',
+    to: 'tools/dev-environments/runtime/status.mjs',
+  },
+  {
+    from: 'infra/dev/dev-watch-compilation.mjs',
+    to: 'tools/dev-environments/runtime/compile-watch.mjs',
+  },
+  {
+    from: 'infra/dev/dev-image-runtime-modules.mjs',
+    to: 'infra/images/development/packaging.mjs',
+  },
+  {
+    from: 'infra/dev/dev-image-runtime-modules.test.mjs',
+    to: 'infra/images/development/tests/packaging.test.mjs',
+  },
+];
+
 /** INF17 collapsed the nested dev graph into the root Tiltfile and sync-plan. */
 export const INF17_SUCCESSOR_RELOCATIONS = [
   { from: 'infra/dev/Tiltfile', to: 'Tiltfile' },
@@ -336,6 +364,7 @@ function effectiveMoveDestination(destination) {
     INF08_SUCCESSOR_RELOCATIONS,
     INF15_SUCCESSOR_RELOCATIONS,
     INF17_SUCCESSOR_RELOCATIONS,
+    INF18_SUCCESSOR_RELOCATIONS,
     INF19_SUCCESSOR_RELOCATIONS,
   ]) {
     const successor = table.find((row) => row.from === current);
@@ -420,7 +449,9 @@ export function assertInf15PlatformChartSuccessors(root) {
   }
   const verificationRoute = 'infra/verification/smoke/gateway/routes.yaml';
   if (!existsSync(join(root, verificationRoute))) {
-    throw new Error(`INF15 gateway verification successor missing: ${verificationRoute}`);
+    throw new Error(
+      `INF15 gateway verification successor missing: ${verificationRoute}`,
+    );
   }
 }
 
@@ -456,11 +487,23 @@ export function assertInf16ReleaseTiltRetirement(root) {
       throw new Error(`INF16 release authority missing: ${row.to}`);
     }
   }
-  for (const relativePath of [
-    'infra/images/release/build-release-images.sh',
-  ]) {
+  for (const relativePath of ['infra/images/release/build-release-images.sh']) {
     if (!existsSync(join(root, relativePath))) {
       throw new Error(`INF16 release authority missing: ${relativePath}`);
+    }
+  }
+}
+
+export function assertInf18DevFolderRetirement(root) {
+  if (existsSync(join(root, 'infra/dev'))) {
+    throw new Error('INF18 predecessor directory must be retired: infra/dev/');
+  }
+  for (const row of INF18_SUCCESSOR_RELOCATIONS) {
+    if (existsSync(join(root, row.from))) {
+      throw new Error(`INF18 predecessor must be retired: ${row.from}`);
+    }
+    if (!existsSync(join(root, row.to))) {
+      throw new Error(`INF18 successor missing: ${row.to}`);
     }
   }
 }
@@ -582,7 +625,10 @@ export function assertLabInventoryCoverage(rows, trackedLabPaths) {
     const row = labRows.find((entry) => entry.from === path);
     if (
       row?.to &&
-      (relocatedDestinationPresent(repoRoot, effectiveMoveDestination(row.to)) ||
+      (relocatedDestinationPresent(
+        repoRoot,
+        effectiveMoveDestination(row.to),
+      ) ||
         (effectiveMoveDestination(row.to) === INF16_RETIRED_RELEASE_TILT_PATH &&
           !existsSync(join(repoRoot, INF16_RETIRED_RELEASE_TILT_PATH))))
     ) {
@@ -743,6 +789,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   assertInf08WorkloadRetirement(repoRoot);
   assertInf15PlatformChartSuccessors(repoRoot);
   assertInf16ReleaseTiltRetirement(repoRoot);
+  assertInf18DevFolderRetirement(repoRoot);
   assertInf19VerificationFixtureOwnership(repoRoot);
   assertTrackedModes(map.rows);
 

@@ -69,6 +69,8 @@ export function assertDevWebFallbackContract(tiltfile) {
 
 test('root Tiltfile live_update syncs apps/web with dependency fallbacks', () => {
   assertDevWebLiveUpdateContract(devTiltfile);
+  assert.match(devTiltfile, /DEV_RUNTIME_REBUILD/);
+  assert.doesNotMatch(devTiltfile, /infra\/dev\/dev-watch-compilation/);
   assert.match(devTiltfile, /--tilt-deployments/);
   assert.match(devTiltfile, /k8s_yaml\(rendered\)/);
   assert.doesNotMatch(devTiltfile, /infra\/workloads\/dev\//);
@@ -100,10 +102,8 @@ test('slot graph game-web uses watched dev compile and slot image', () => {
     /^offscreen-dev-workspace:dev-1-web$/,
   );
   const command = web.spec.template.spec.containers[0].command.join(' ');
-  assert.match(
-    command,
-    /dev-pod-web-receipt\.mjs|dev-pod-compile-watch\.mjs web/,
-  );
+  assert.match(command, /exec pnpm exec next dev/);
+  assert.doesNotMatch(command, /dev-pod-web-receipt/);
   const readiness = web.spec.template.spec.containers[0].readinessProbe;
   assert.equal(readiness.tcpSocket.port, 'http');
 });

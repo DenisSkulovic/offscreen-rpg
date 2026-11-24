@@ -18,15 +18,6 @@ import {
   S3DocumentStore,
 } from '@offscreen/documents';
 import { resolveStartupDefaultRules } from './default-rules-startup.js';
-import { writeDevLoadedRuntimeReceipt } from '@offscreen/runtime-logging/dev-loaded-runtime';
-
-const devCompiledEntry = process.env.OFFSCREEN_DEV_COMPILED_ENTRY;
-if (process.env.OFFSCREEN_DEV_WATCHED_COMPILATION === '1' && devCompiledEntry) {
-  writeDevLoadedRuntimeReceipt({
-    role: 'api',
-    compiledModulePath: devCompiledEntry,
-  });
-}
 
 async function main() {
   const config = readConfig(process.env);

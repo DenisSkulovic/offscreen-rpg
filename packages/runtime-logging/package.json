@@ -6,10 +6,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./dev-loaded-runtime": {
-      "types": "./dist/dev-loaded-runtime-receipt.d.ts",
-      "default": "./dist/dev-loaded-runtime-receipt.js"
     }
   },
   "scripts": {
