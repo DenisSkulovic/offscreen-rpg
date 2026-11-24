@@ -22,3 +22,7 @@ Root pnpm dev, dev:new, dev:reserve, dev:attach, dev:status, dev:stop remain unc
 Dev: root package.json → dev-tilt.mjs::runDevTiltLaunch → dev-slot-startup.mjs::reconcileOwnedDevSlot → backing adapters and dev-slot-app-graph.mjs::renderDevSlotAppGraph → Tilt → compile/process receipts. Release: package.json → scripts/repo-tools/stack.mjs → stack-lifecycle.mjs::buildStackPlan → cluster/bootstrap/service installers → release image builder and install.sh → migration and workload definitions. Verification is separate from provisioning, although some current installers call smoke fixtures; preserve those calls. DXK09 cold worktree proof e3fa10b7 accepted start/status/stop, not full capacity or completed story.
 
 Exact baseline move inventory and gates: work/undertakings/storyteller-workshop/INF-PARALLEL.md and INF-MOVE-MAP.json. Baseline b01a68b4e91fbbb68f4e67c91427db7435e44738. 257 tracked files assigned (INF02 76, INF03 19, INF04 44, INF05 118). This is a path map, not evidence of runtime equivalence.
+
+## Cluster normalization (INF06)
+
+Selected: authoritative dev/release Kind YAML, common cluster manager and shared host/create primitives, release environment owns its namespace assembly and resource allowlist. Preserve existing runtime identities and topology; explicit destroy is not stop. Source implementation pending [INF06](../work/changes/open/2026-11-24--inf06-cluster-foundation-normalization/CHANGE.md). No new infrastructure technology.

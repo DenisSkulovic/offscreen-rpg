@@ -1,5 +1,7 @@
 # Storyteller Workshop
 
+**INF06 (2026-11-24):** INF01–05 source joined. Owner commissioned [cluster foundation normalization](../../changes/open/2026-11-24--inf06-cluster-foundation-normalization/CHANGE.md), source only, no live changes or new acceptance credit. Existing overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged.
+
 **Infrastructure ownership cleanup (2026-11-24):** [INF01–INF05](INF-PARALLEL.md) source relocation is Done. The generic `infra/kubernetes/lab` bucket is empty. Release, development, and verification source are split; runtime identities are unchanged. Live cluster proof is NOT-RUN and is not acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged.
 
 **Database architecture (2026-11-24):** [Selected infrastructure and persistence](../../../docs/technical/platform/database-infrastructure.md), [DB01–DB10 DAG](DB-PARALLEL.md). DB01, DB06, and DB08 are Done source-only on undertaking/storyteller-workshop; live PostgreSQL remains NOT RUN. Seven successors stay Proposed. Historical snapshot metadata drift is separately recorded, no DDL, runtime proof or global queue change. Preserve Cache active ownership; no new acceptance credit.

@@ -325,3 +325,5 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 - [INF03](archive/2026-11/platform-operations/2026-11-23--inf03-application-workload-layout/CHANGE.md): Done. Cluster, workload and environment layout. Live cluster NOT-RUN.
 - [INF04](archive/2026-11/platform-operations/2026-11-23--inf04-image-and-tilt-ownership/CHANGE.md): Done. Image build and Tilt ownership. Live cluster NOT-RUN.
 - [INF05](archive/2026-11/platform-operations/2026-11-23--inf05-platform-and-verification-separation/CHANGE.md): Done. Platform and verification separation. Live cluster NOT-RUN.
+
+- [INF06 cluster foundation normalization](open/2026-11-24--inf06-cluster-foundation-normalization/CHANGE.md): Ready, owner-commissioned source-only.
