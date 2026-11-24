@@ -1,0 +1,21 @@
+# INF20 execution
+
+Integration target undertaking/storyteller-workshop; inspected snapshot a0f299407467baba7fc339fafe398e18df45996b, matching GitHub HEAD at planning. Owner commissioned this wave on 2026-11-24. Source only; no actual cluster, Docker build, Tilt start, tenant migration, registry conversion, slot deletion, OAuth changes or paid provider calls. No destructive live proof authorization. One Change branch and separate linked worktree; run node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop. One bounded Composer child at a time; parent integrates/archives after acceptance, no successor auto-start. Human integration custodian serializes shared docs/catalog/test edits. Preserve data, names, UID and credential authority; no new frameworks, no legacy fallback to release cluster. Verify dependency receipt and exact source postcondition before dispatch. If a selected contract contradicts landed source, stop with exact anchor; no delegated redesign. Run changed-file quality/format and docs health; report commands/counts and NOT-RUN live. Historical evidence remains unchanged.
+
+## T01 Read-only launch admission
+
+Anchors: tools/dev-environments/src/cli/dev-tilt.mjs::runDevTiltLaunch; tools/dev-environments/test/dev-tilt.test.mjs; scripts/repo-tools/stack-preflight.mjs.
+
+Before reconcile, collect host facts once; reject all existing dev-required missing-docker/kind/kubectl/daemon/memory failures and missing Tilt/Helm. Keep existing conservative memory threshold. Resolve selected owner before reconcile; reserve-only allocation is allowed; do not create tenants on refusal. Check selected ports with existing owner session PID+start-tick fencing; occupied ports without verified owned session refuse, never label arbitrary listener owned. If verified running owned session exists refuse ordinary duplicate launch (tell operator dev:stop then dev); no automatic replacement on start. Maintain test injection, current CLI names and exit codes. Only after successful host/owner/port admission call reconcile. Tests fake missing Tilt/daemon, foreign port, low memory, stale PID and verified active session all zero reconcile calls; valid free owned slot calls once. node --test tools/dev-environments/test/dev-tilt.test.mjs tools/dev-environments/test/dev-v2-cli-startup.test.mjs.
+
+## T02 Separate observation from build
+
+Anchors: tools/dev-environments/src/application/dev-slot-startup.mjs::reconcileDevSlot/reconcileOwnedDevSlot; tools/dev-environments/test/dev-slot-startup.test.mjs; tools/dev-environments/src/domain/dev-host-output-guard.mjs.
+
+Make probeCluster read-only (no OAuth/build). Keep validateOauth once; verifySharedCore before mutation. Introduce prepareMigrationArtifact(record) phase after all admission/core gates and before SQL, exclusive host output guard using actual selected owner. Move current host DB build there, not in probe, keep current artifact existence behavior pending INF21. Remove duplicate Helm probe from live binding only when caller admission proved it; direct reconcileOwnedDevSlot retains required Helm check by shared admission result or explicit probe. Do not alter SQL yet. Fail phase artifact, retain no mutations. Test event ordering and zero build/SQL on bad platform/OAuth, build failure before SQL. node --test tools/dev-environments/test/dev-slot-startup.test.mjs tools/dev-environments/test/dev-fu03-startup.test.mjs.
+
+## T03 Failure and rollback coverage
+
+Anchors: tools/dev-environments/src/cli/dev-tilt.mjs::runDevTiltLaunch/rollbackFailedOwnedStartup; tools/dev-environments/test/dev-tilt.test.mjs; tools/dev-environments/test/dev-v2-cli-startup.test.mjs.
+
+After reconcile returns success or partial workload creation, all subsequent failures (fingerprint, spawn, missing process identity, startup timeout, signal/child failure) go through one owned rollback path; do not claim parked unless replicas observed zero. No foreign process signal, no deletion of tenant data; do not rollback a previously running session (T01 refuses). Preserve startup bounded poll and forward lifecycle. Tests injected spawn failure, unknown start ticks, timeout, early child exit, no foreign scale/signal. Source tests only.

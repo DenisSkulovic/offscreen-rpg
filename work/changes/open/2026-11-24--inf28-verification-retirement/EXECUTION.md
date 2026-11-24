@@ -1,0 +1,15 @@
+# INF28 execution
+
+Integration target undertaking/storyteller-workshop; inspected snapshot a0f299407467baba7fc339fafe398e18df45996b, matching GitHub HEAD at planning. Owner commissioned this wave on 2026-11-24. Source only; no actual cluster, Docker build, Tilt start, tenant migration, registry conversion, slot deletion, OAuth changes or paid provider calls. No destructive live proof authorization. One Change branch and separate linked worktree; run node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop. One bounded Composer child at a time; parent integrates/archives after acceptance, no successor auto-start. Human integration custodian serializes shared docs/catalog/test edits. Preserve data, names, UID and credential authority; no new frameworks, no legacy fallback to release cluster. Verify dependency receipt and exact source postcondition before dispatch. If a selected contract contradicts landed source, stop with exact anchor; no delegated redesign. Run changed-file quality/format and docs health; report commands/counts and NOT-RUN live. Historical evidence remains unchanged.
+
+## T01 Remove last duplicate SeaweedFS manifest authority
+
+Anchors: infra/platform/object-storage/store.yaml; infra/verification/fixtures/document-access; infra/platform/common/render.mjs; infra/platform/object-storage/install.sh.
+
+Document-access proof consumes old store.yaml; replace use with explicit release object-storage installer/renderer (same release namespace and identity), do not apply an independent store manifest or overwrite admin credentials. If proof expects isolated alternative identity, retain separate fixture only when it is intentionally different and named; current store.yaml exact runtime identities must not be reused as second authority. Move proof-specific credentials/objects under verification, preserve INF12 create-once constraints, explicit authorization. Delete store.yaml and exact successor map points to service chart; tests no executable old path, fake document-access smoke verifies platform precondition and no duplicate apply, existing chart/install tests. No live proof.
+
+## T02 Retire trial code from runtime surface
+
+Anchors: tools/dev-environments/src/adapters/dev-s3-tenant-trial.mjs; dev-sql-tenant-trial.mjs; dev-sql-tenant-migrate-trial.mjs; dev-temporal-tenant-trial.mjs; tools/dev-environments/test/dev-toy-breaker-campaign.test.mjs.
+
+Move four trial modules to infra/verification/dev-environments/ with exact relative import repairs, retain proof behavior and authorization, no runtime imports into verification. dev-toy-breaker-campaign tests and active proof docs consume new paths. Keep dev-object-store-s3-proof and cutover preflight until explicit consumer audit confirms runtime vs verification; don't delete held safety gate on name alone. Remove disabled SQL stub exports holdLiveTenantMutation/createDevSqlKubectlAdapter only if zero current callers after moving trials; otherwise retain as explicit negative test helper under verification, not active adapter. Source tests and git grep exact paths, no live execution.

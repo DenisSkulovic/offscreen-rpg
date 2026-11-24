@@ -1,0 +1,22 @@
+# Infrastructure medium-grained reconciliation | INF20–INF29
+
+Owner commissioned 2026-11-24. Baseline a0f299407467baba7fc339fafe398e18df45996b (INF18 Done). No new live acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged. Human integration custodian.
+
+| Change | Gate | Owner | Status |
+| --- | --- | --- | --- |
+| [INF20](../../changes/open/2026-11-24--inf20-dev-admission/CHANGE.md) Admission before mutation | INF18 Done | dev-tilt launch sequencing and startup admission | Ready |
+| [INF21](../../changes/open/2026-11-24--inf21-dev-sql-isolation/CHANGE.md) Selected SQL tenant and migration integrity | INF20 | SQL tenant executor/adapter, migration and projection schema gate | Ready (dependency-gated) |
+| [INF22](../../changes/open/2026-11-24--inf22-dev-secret-projection/CHANGE.md) Safe slot Secret projection | INF21 | slot projection, exact Secret reads and create-only | Ready (dependency-gated) |
+| [INF23](../../changes/open/2026-11-24--inf23-dev-session-authority/CHANGE.md) Canonical v2 session authority | INF20, INF22 | registry and process lifecycle | Proposed (planner-blocked) |
+| [INF24](../../changes/open/2026-11-24--inf24-dev-image-ownership/CHANGE.md) Image identity and compatibility retirement | INF22, INF26 | image plan owner and bootstrap wrappers | Ready (dependency-gated) |
+| [INF25](../../changes/open/2026-11-24--inf25-release-deployment-integrity/CHANGE.md) Release migration and deployment integrity | INF18 Done | release installer and stack orchestration; T03 gated on source identity contract | Ready (dependency-gated) |
+| [INF26](../../changes/open/2026-11-24--inf26-platform-readiness/CHANGE.md) Canonical platform observations | INF20 | service readiness and shared dev core | Ready (dependency-gated) |
+| [INF27](../../changes/open/2026-11-24--inf27-workload-chart-convergence/CHANGE.md) Helm configuration authority | INF18 Done | workload templates and parity tests | Ready |
+| [INF28](../../changes/open/2026-11-24--inf28-verification-retirement/CHANGE.md) Retire legacy fixture authorities | INF24, INF26 | document-access storage fixture and trial boundaries | Ready (dependency-gated) |
+| [INF29](../../changes/open/2026-11-24--inf29-infra-reconciliation/CHANGE.md) Final medium-grained reconciliation | INF20–INF28 (INF23 only when resolved) | current docs and cross-boundary proof | Proposed (planner-blocked) |
+
+First wave INF20 + INF27. INF25 T01/T02 may run in parallel (release only), T03 after INF27. INF21 follows INF20; INF22 follows INF21. INF26 follows INF20; serialize INF26 primary adapter change after INF21. INF24 after INF22/26; INF28 after INF24/26. INF23 and INF29 remain planner-blocked, not an instruction to investigate in Cursor. Shared docs/guards/test joins serialized. No new global queue selection.
+
+Integration target undertaking/storyteller-workshop; inspected snapshot a0f299407467baba7fc339fafe398e18df45996b, matching GitHub HEAD at planning. Owner commissioned this wave on 2026-11-24. Source only; no actual cluster, Docker build, Tilt start, tenant migration, registry conversion, slot deletion, OAuth changes or paid provider calls. No destructive live proof authorization. One Change branch and separate linked worktree; run node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop. One bounded Composer child at a time; parent integrates/archives after acceptance, no successor auto-start. Human integration custodian serializes shared docs/catalog/test edits. Preserve data, names, UID and credential authority; no new frameworks, no legacy fallback to release cluster. Verify dependency receipt and exact source postcondition before dispatch. If a selected contract contradicts landed source, stop with exact anchor; no delegated redesign. Run changed-file quality/format and docs health; report commands/counts and NOT-RUN live. Historical evidence remains unchanged.
+
+Review limitation: source inspected from owner-uploaded snapshot matching exact integration HEAD; no live workstation observations or executed tests. Detailed source-wide consumer inventory not exhaustive; exact mechanical retired-path checks remain required. INF25 identity mapping stop condition must be honored. INF23 local state and INF29 integrated end-state evidence are unresolved. No claim of a completed independent readiness audit for every packet. 

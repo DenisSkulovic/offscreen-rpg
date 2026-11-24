@@ -1,0 +1,15 @@
+# INF27 execution
+
+Integration target undertaking/storyteller-workshop; inspected snapshot a0f299407467baba7fc339fafe398e18df45996b, matching GitHub HEAD at planning. Owner commissioned this wave on 2026-11-24. Source only; no actual cluster, Docker build, Tilt start, tenant migration, registry conversion, slot deletion, OAuth changes or paid provider calls. No destructive live proof authorization. One Change branch and separate linked worktree; run node scripts/repo-tools/change-branch-guard.mjs --change ID --target undertaking/storyteller-workshop. One bounded Composer child at a time; parent integrates/archives after acceptance, no successor auto-start. Human integration custodian serializes shared docs/catalog/test edits. Preserve data, names, UID and credential authority; no new frameworks, no legacy fallback to release cluster. Verify dependency receipt and exact source postcondition before dispatch. If a selected contract contradicts landed source, stop with exact anchor; no delegated redesign. Run changed-file quality/format and docs health; report commands/counts and NOT-RUN live. Historical evidence remains unchanged.
+
+## T01 Make values authoritative without redesign
+
+Anchors: infra/workloads/chart/templates/_helpers.tpl; infra/workloads/chart/values.yaml; infra/workloads/profiles/{development,release}.yaml; infra/workloads/tests.
+
+Record actual render outputs baseline both profiles/sections using existing test bindings. Replace literal repeats with existing values for catalog role names/container names/ports/image family, replicas, imagePullPolicy, automountServiceAccountToken, enableServiceLinks and security knobs only where current value equals existing output. Preserve dev/release distinctions (web UID1001 release, workers etc). Do not introduce new fields unless existing literal has no authority and repeated in >=2 roles; no generic template rewrite. Use one helper per repeated pod security or env fragment where identical, no dynamic lookup of user-controlled secrets. INF18 commands already selected values; verify not duplicated. Exact canonical JSON deep equality for all rendered objects except ordering of YAML keys, no behavior change. Test nondefault values actually change corresponding rendered fields, schema rejects invalid. node --test infra/workloads/tests/*.test.mjs; helm lint/template both profiles. Stop if literal/value conflict requires product decision; report exact field, leave unchanged.
+
+## T02 Trim unused profile declarations
+
+Anchors: infra/workloads/chart/values.schema.json; infra/workloads/chart/values.yaml; infra/workloads/profiles/{development,release}.yaml; infra/workloads/chart/templates/_helpers.tpl.
+
+Remove only keys demonstrably unused by render/schema/consumer after T01; prefer wire existing intended authority rather than delete used config. Exact render equivalence, no resource budget change. Add test all six roles and migration section, release/slot names, env/secret refs, ports/security and image identity unchanged. No change to release migration annotations (INF25 follows).
