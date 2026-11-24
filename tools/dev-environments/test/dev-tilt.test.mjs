@@ -176,6 +176,22 @@ function fakeSpawn() {
   return fn;
 }
 
+function spawnWithoutPid() {
+  let called = false;
+  /** @type {import('node:child_process').ChildProcess} */
+  const child = new EventEmitter();
+  child.stdout = null;
+  child.stderr = null;
+  child.stdin = null;
+  const fn = () => {
+    called = true;
+    return child;
+  };
+  fn.called = () => called;
+  fn.child = child;
+  return fn;
+}
+
 function fullReadiness(overrides = {}) {
   /** @type {Record<string, boolean>} */
   const map = Object.fromEntries(LAB_RESOURCES.map((name) => [name, true]));
@@ -370,6 +386,7 @@ test('launcher writes allocator game and tilt ports to the worktree session', as
     commandOnPath: () => true,
     probeLoopbackPortOccupied: alwaysFreeProbe,
     spawnFn: spawn,
+    readStartTicks: () => '99',
     exitAfterSession: true,
     reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true }),
   });
@@ -396,6 +413,7 @@ test('occupied allocator game port refuses before tilt spawn', async () => {
   try {
     /** @type {number[]} */
     const exitCodes = [];
+    let reconciled = false;
     await runDevTiltLaunch({
       worktree,
       fingerprintDevImageContext: okLaunchFingerprint(),
@@ -410,10 +428,14 @@ test('occupied allocator game port refuses before tilt spawn', async () => {
         exitCodes.push(code);
       },
       exitAfterSession: true,
-      reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true }),
+      reconcileDevSlot: async () => {
+        reconciled = true;
+        return { ok: true, readyForWorkloads: true };
+      },
     });
 
     assert.deepEqual(exitCodes, [1]);
+    assert.equal(reconciled, false);
     assert.equal(spawn.called(), false);
     assert.equal(readDevSession(worktree), null);
   } finally {
@@ -421,6 +443,145 @@ test('occupied allocator game port refuses before tilt spawn', async () => {
       server.close((error) => (error ? reject(error) : resolve()));
     });
   }
+});
+
+test('missing tilt refuses before reconciliation or spawn', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-missing-tilt-'));
+  const spawn = fakeSpawn();
+  let reconciled = false;
+  /** @type {number[]} */
+  const exitCodes = [];
+  await runDevTiltLaunch({
+    worktree,
+    allocateDevWorktreeOwner: fakeAllocator,
+    collectDefaultProbes: async () => ({}),
+    runStackPreflight: () => okPreflight(),
+    commandOnPath: (name) => name !== 'tilt',
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    spawnFn: spawn,
+    exit: (code) => exitCodes.push(code),
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(reconciled, false);
+  assert.equal(spawn.called(), false);
+});
+
+test('docker daemon refusal stays before reconciliation', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-docker-daemon-'));
+  const spawn = fakeSpawn();
+  let reconciled = false;
+  /** @type {number[]} */
+  const exitCodes = [];
+  await runDevTiltLaunch({
+    worktree,
+    allocateDevWorktreeOwner: fakeAllocator,
+    collectDefaultProbes: async () => ({}),
+    runStackPreflight: () => ({
+      ok: false,
+      refusals: [
+        {
+          id: 'docker-daemon',
+          message: 'Docker daemon is not responding (docker info failed).',
+        },
+      ],
+    }),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    spawnFn: spawn,
+    exit: (code) => exitCodes.push(code),
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(reconciled, false);
+  assert.equal(spawn.called(), false);
+});
+
+test('stale session pid treats an occupied port as foreign', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-stale-port-'));
+  writeDevSession(worktree, {
+    pid: 4242,
+    processStartTicks: '100',
+    forwardPid: 4243,
+    forwardStartTicks: '101',
+    slotId: 'dev-2',
+    namespace: 'offscreen-dev-2',
+    gamePort: FAKE_OWNER.ports.game,
+    tiltPort: FAKE_OWNER.ports.tilt,
+    startedAt: '2026-11-23T00:00:00.000Z',
+  });
+  const spawn = fakeSpawn();
+  let reconciled = false;
+  /** @type {number[]} */
+  const exitCodes = [];
+  await runDevTiltLaunch({
+    worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
+    allocateDevWorktreeOwner: fakeAllocator,
+    collectDefaultProbes: async () => ({}),
+    runStackPreflight: () => okPreflight(),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: async (_host, port) =>
+      port === FAKE_OWNER.ports.game,
+    pidAlive: () => true,
+    readStartTicks: () => '999',
+    spawnFn: spawn,
+    exit: (code) => exitCodes.push(code),
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(reconciled, false);
+  assert.equal(spawn.called(), false);
+});
+
+test('verified active session refuses duplicate launch without signalling', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-active-session-'));
+  writeDevSession(worktree, {
+    pid: 4242,
+    processStartTicks: '100',
+    slotId: 'dev-2',
+    namespace: 'offscreen-dev-2',
+    gamePort: FAKE_OWNER.ports.game,
+    tiltPort: FAKE_OWNER.ports.tilt,
+    startedAt: '2026-11-23T00:00:00.000Z',
+  });
+  const spawn = fakeSpawn();
+  let reconciled = false;
+  /** @type {number[]} */
+  const exitCodes = [];
+  /** @type {string[]} */
+  const signals = [];
+  await runDevTiltLaunch({
+    worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
+    allocateDevWorktreeOwner: fakeAllocator,
+    collectDefaultProbes: async () => ({}),
+    runStackPreflight: () => okPreflight(),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    pidAlive: () => true,
+    readStartTicks: () => '100',
+    signal: (pid, sig) => signals.push(`${pid}:${sig}`),
+    spawnFn: spawn,
+    exit: (code) => exitCodes.push(code),
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(reconciled, false);
+  assert.equal(spawn.called(), false);
+  assert.deepEqual(signals, []);
 });
 
 test('low memory refuses before reconciliation, Tilt replacement, or spawn', async () => {
@@ -477,6 +638,7 @@ test('sufficient memory still reconciles and launches', async () => {
     commandOnPath: () => true,
     probeLoopbackPortOccupied: alwaysFreeProbe,
     spawnFn: spawn,
+    readStartTicks: () => '99',
     exitAfterSession: true,
     reconcileDevSlot: async () => {
       reconciled = true;
@@ -592,27 +754,28 @@ test('memory refusal does not terminate an owned running session', async () => {
   assert.equal(readDevSession(worktree)?.pid, 4242);
 });
 
-test('launcher refuses unreadable recipe before tilt spawn', async () => {
+test('fingerprint failure after reconcile parks the owned slot', async () => {
   const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-fp-fail-'));
+  const harness = ownedLaunch(worktree);
   const spawn = fakeSpawn();
-  const exitCodes = [];
-  await runDevTiltLaunch({
-    worktree,
-    allocateDevWorktreeOwner: fakeAllocator,
-    collectDefaultProbes: async () => ({ memAvailableKib: 8_000_000 }),
-    runStackPreflight: () => okPreflight(),
-    commandOnPath: () => true,
-    probeLoopbackPortOccupied: alwaysFreeProbe,
+  await harness.launch({
+    fingerprintDevImageContext: () => ({
+      ok: false,
+      reason: 'unreadable-recipe',
+    }),
     spawnFn: spawn,
-    exit: (code) => {
-      exitCodes.push(code);
-    },
     exitAfterSession: true,
-    reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true }),
   });
-  assert.deepEqual(exitCodes, [1]);
   assert.equal(spawn.called(), false);
-  assert.equal(readDevSession(worktree), null);
+  assert.equal(harness.scaled.length, 6);
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
+  assert.match(
+    harness.lines.find((line) => line.startsWith('startup-parked:')) ?? '',
+    /unreadable-recipe/,
+  );
 });
 
 test('dynamic ready URLs follow injected allocator ports', () => {
@@ -899,7 +1062,9 @@ test('stop signals only the process with the recorded start time', () => {
 });
 
 function ownedLaunch(worktree, extra) {
-  const registryRoot = mkdtempSync(join(tmpdir(), 'offscreen-reg-'));
+  const sandbox = mkdtempSync(join(tmpdir(), 'offscreen-reg-'));
+  const registryRoot = join(sandbox, 'registry');
+  mkdirSync(registryRoot, { recursive: true });
   /** @type {string[]} */
   const lines = [];
   /** @type {{ namespace: string, role: string }[]} */
@@ -962,6 +1127,90 @@ function ownedLaunch(worktree, extra) {
     },
   };
 }
+
+test('injected tilt spawn failure parks without signalling foreign pids', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-spawn-fail-'));
+  const harness = ownedLaunch(worktree);
+  /** @type {string[]} */
+  const signals = [];
+  const spawn = spawnWithoutPid();
+  await harness.launch({
+    spawnFn: spawn,
+    signal: (pid, sig) => signals.push(`${pid}:${sig}`),
+  });
+  assert.equal(spawn.called(), true);
+  assert.deepEqual(signals, []);
+  assert.equal(harness.scaled.length, 6);
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
+});
+
+test('missing tilt start ticks parks and signals only the spawned child', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-unknown-ticks-'));
+  const harness = ownedLaunch(worktree);
+  /** @type {string[]} */
+  const signals = [];
+  await harness.launch({
+    readStartTicks: () => null,
+    signal: (pid, sig) => signals.push(`${pid}:${sig}`),
+    exitAfterSession: true,
+  });
+  assert.deepEqual(signals, ['42001:SIGTERM']);
+  assert.equal(harness.scaled.length, 6);
+  assert.equal(readDevSession(worktree), null);
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
+});
+
+test('tilt child exit during startup poll parks the slot', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-child-exit-'));
+  const harness = ownedLaunch(worktree);
+  const spawn = fakeSpawn();
+  await harness.launch({
+    spawnFn: () => {
+      const child = spawn();
+      child.exitCode = 17;
+      child.emit('exit', 17);
+      return child;
+    },
+    collectStartupReadiness: async () => fullReadiness({ 'game-web': false }),
+  });
+  assert.equal(harness.scaled.length, 6);
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
+  assert.match(
+    harness.lines.find((line) => line.startsWith('startup-parked:')) ?? '',
+    /tilt exited 17/,
+  );
+});
+
+test('startup timeout parks without scaling a foreign namespace', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-timeout-'));
+  const harness = ownedLaunch(worktree, {
+    replicas: (namespace) => (namespace === 'offscreen-dev-6' ? 1 : 0),
+  });
+  await harness.launch({
+    collectStartupReadiness: async () => fullReadiness({ 'game-web': false }),
+  });
+  assert.equal(
+    harness.scaled.every((call) => call.namespace === 'offscreen-dev-2'),
+    true,
+  );
+  assert.equal(
+    harness.scaled.some((call) => call.namespace === 'offscreen-dev-6'),
+    false,
+  );
+  assert.equal(
+    harness.lines.some((line) => line.startsWith('startup-parked:')),
+    true,
+  );
+});
 
 test('partial startup parks all six owned workloads and leaves the other environment', async () => {
   const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-partial-'));

@@ -1,6 +1,6 @@
 # Storyteller Workshop
 
-**INF20–INF29 (2026-11-24):** Owner commissioned [medium-grained infrastructure reconciliation](INF-MEDIUM.md). INF18 source Done. Admission, selected tenancy, credentials, release integrity, readiness, chart and retirement. INF23/29 planner-blocked. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.
+**INF20–INF29 (2026-11-24):** Owner commissioned [medium-grained infrastructure reconciliation](INF-MEDIUM.md). INF18 and INF20 source Done. Admission, selected tenancy, credentials, release integrity, readiness, chart and retirement. INF23/29 planner-blocked. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.
 
 **INF16–INF19 (2026-11-24):** Owner commissioned [environment and development normalization](ENVIRONMENT-PARALLEL.md). Remove release Tilt, consolidate dev graph and image loader, normalize freshness supervision, eliminate infra/dev and separate fixture composition. INF16–INF19 source Done. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp) unchanged; no live acceptance credit.
 

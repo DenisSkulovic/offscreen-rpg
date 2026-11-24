@@ -20,7 +20,12 @@ function owner(slot, checkout) {
     worktreePath: checkout,
     cluster: 'kind-offscreen-dev',
     namespace: `offscreen-${slot}`,
-    ports: { game: 13000 + n, control: 13100 + n, tilt: 13200 + n, spare: 13300 + n },
+    ports: {
+      game: 13000 + n,
+      control: 13100 + n,
+      tilt: 13200 + n,
+      spare: 13300 + n,
+    },
     processIdentity: null,
     resourceUids: { namespace: `uid-${slot}`, database: `db-${slot}` },
     lease: null,
@@ -52,11 +57,17 @@ function readyDeps(calls) {
     },
     async project(record) {
       calls.project.push(record.slotId);
-      return { ok: true, images: { web: `offscreen-dev-workspace:${record.slotId}-web` } };
+      return {
+        ok: true,
+        images: { web: `offscreen-dev-workspace:${record.slotId}-web` },
+      };
     },
     async ensureImages(record) {
       calls.images.push(record.resourceUids.database);
-      return { ok: true, refs: { web: `offscreen-dev-workspace:${record.slotId}-web` } };
+      return {
+        ok: true,
+        refs: { web: `offscreen-dev-workspace:${record.slotId}-web` },
+      };
     },
     async applyWorkloads(record) {
       calls.workloads.push(record.slotId);
@@ -66,14 +77,24 @@ function readyDeps(calls) {
 }
 
 test('explicit owner reaches startup and does not allocate', async () => {
-  const calls = { allocate: 0, sql: [], s3: [], project: [], images: [], workloads: [] };
+  const calls = {
+    allocate: 0,
+    sql: [],
+    s3: [],
+    project: [],
+    images: [],
+    workloads: [],
+  };
   const selected = owner('dev-2', '/checkout');
-  const result = await reconcileDevSlot({
-    worktree: '/checkout',
-    registryRoot: '/unused',
-    owner: selected,
-    memoryMiB: 4096,
-  }, readyDeps(calls));
+  const result = await reconcileDevSlot(
+    {
+      worktree: '/checkout',
+      registryRoot: '/unused',
+      owner: selected,
+      memoryMiB: 4096,
+    },
+    readyDeps(calls),
+  );
   assert.equal(result.ok, true);
   assert.equal(result.record.slotId, 'dev-2');
   assert.equal(result.identities.namespace, 'offscreen-dev-2');
@@ -83,15 +104,28 @@ test('explicit owner reaches startup and does not allocate', async () => {
 });
 
 test('failed image load does not apply workloads', async () => {
-  const calls = { allocate: 0, sql: [], s3: [], project: [], images: [], workloads: [] };
+  const calls = {
+    allocate: 0,
+    sql: [],
+    s3: [],
+    project: [],
+    images: [],
+    workloads: [],
+  };
   const deps = readyDeps(calls);
-  deps.ensureImages = async () => ({ ok: false, refusals: [{ detail: 'image missing' }] });
-  const result = await reconcileDevSlot({
-    worktree: '/checkout',
-    registryRoot: '/unused',
-    owner: owner('dev-3', '/checkout'),
-    memoryMiB: 4096,
-  }, deps);
+  deps.ensureImages = async () => ({
+    ok: false,
+    refusals: [{ detail: 'image missing' }],
+  });
+  const result = await reconcileDevSlot(
+    {
+      worktree: '/checkout',
+      registryRoot: '/unused',
+      owner: owner('dev-3', '/checkout'),
+      memoryMiB: 4096,
+    },
+    deps,
+  );
   assert.equal(result.ok, false);
   assert.equal(result.phase, 'images');
   assert.deepEqual(calls.workloads, []);
@@ -99,8 +133,9 @@ test('failed image load does not apply workloads', async () => {
 });
 
 test('two environments keep separate sessions and starting B does not signal A', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'offscreen-fu03-'));
-  const checkout = '/shared/checkout';
+  const parent = mkdtempSync(join(tmpdir(), 'offscreen-fu03-'));
+  const root = join(parent, 'registry');
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-checkout-'));
   const a = owner('dev-1', checkout);
   const b = owner('dev-2', checkout);
   writeRegistry(root, {
@@ -110,10 +145,18 @@ test('two environments keep separate sessions and starting B does not signal A',
     defaultEnvironmentByCheckout: { [checkout]: 'dev-1' },
   });
   writeEnvironmentSession(environmentSessionRoot(root), {
-    slotId: 'dev-1', pid: 11, processStartTicks: '100', namespace: a.namespace, gamePort: a.ports.game, tiltPort: a.ports.tilt,
+    slotId: 'dev-1',
+    pid: 11,
+    processStartTicks: '100',
+    namespace: a.namespace,
+    gamePort: a.ports.game,
+    tiltPort: a.ports.tilt,
   });
   const selected = resolveDevEnvironmentSelection({
-    command: 'up', instance: 'dev-2', worktree: checkout, registryRoot: root,
+    command: 'up',
+    instance: 'dev-2',
+    worktree: checkout,
+    registryRoot: root,
   });
   assert.equal(selected.record.slotId, 'dev-2');
   assert.equal(selected.action, 'up');
@@ -130,6 +173,7 @@ test('two environments keep separate sessions and starting B does not signal A',
     runStackPreflight: () => ({ ok: true, refusals: [] }),
     commandOnPath: () => true,
     probeLoopbackPortOccupied: async () => false,
+    fingerprintDevImageContext: () => ({ ok: true, fingerprint: 'test-fp' }),
     spawnFn: () => ({ pid: 22, on() {} }),
     exitAfterSession: true,
     pidAlive: (pid) => pid === 11,
@@ -140,10 +184,19 @@ test('two environments keep separate sessions and starting B does not signal A',
     },
   });
   assert.deepEqual(signalled, []);
-  assert.equal(readEnvironmentSession(environmentSessionRoot(root), 'dev-1').pid, 11);
-  assert.equal(readEnvironmentSession(environmentSessionRoot(root), 'dev-2').pid, 22);
-  assert.equal(readEnvironmentSession(environmentSessionRoot(root), 'dev-2').tiltPort, b.ports.tilt);
-  rmSync(root, { recursive: true, force: true });
+  assert.equal(
+    readEnvironmentSession(environmentSessionRoot(root), 'dev-1').pid,
+    11,
+  );
+  assert.equal(
+    readEnvironmentSession(environmentSessionRoot(root), 'dev-2').pid,
+    22,
+  );
+  assert.equal(
+    readEnvironmentSession(environmentSessionRoot(root), 'dev-2').tiltPort,
+    b.ports.tilt,
+  );
+  rmSync(parent, { recursive: true, force: true });
 });
 
 test('unknown id and active foreign checkout refuse', () => {
@@ -157,11 +210,23 @@ test('unknown id and active foreign checkout refuse', () => {
     defaultEnvironmentByCheckout: { '/one': 'dev-1' },
   });
   assert.throws(
-    () => resolveDevEnvironmentSelection({ command: 'up', instance: 'dev-9', worktree: '/one', registryRoot: root }),
+    () =>
+      resolveDevEnvironmentSelection({
+        command: 'up',
+        instance: 'dev-9',
+        worktree: '/one',
+        registryRoot: root,
+      }),
     (error) => error.id === 'unknown-environment',
   );
   assert.throws(
-    () => resolveDevEnvironmentSelection({ command: 'up', instance: 'dev-1', worktree: '/other', registryRoot: root }),
+    () =>
+      resolveDevEnvironmentSelection({
+        command: 'up',
+        instance: 'dev-1',
+        worktree: '/other',
+        registryRoot: root,
+      }),
     (error) => error.id === 'foreign-checkout',
   );
   a.lease = null;
@@ -172,15 +237,23 @@ test('unknown id and active foreign checkout refuse', () => {
     defaultEnvironmentByCheckout: { '/one': 'dev-1' },
   });
   assert.throws(
-    () => resolveDevEnvironmentSelection({
-      command: 'up', instance: 'dev-1', worktree: '/other', registryRoot: root,
-    }),
+    () =>
+      resolveDevEnvironmentSelection({
+        command: 'up',
+        instance: 'dev-1',
+        worktree: '/other',
+        registryRoot: root,
+      }),
     (error) => error.id === 'foreign-checkout',
   );
   assert.throws(
-    () => resolveDevEnvironmentSelection({
-      command: 'status', instance: 'dev-1', worktree: '/other', registryRoot: root,
-    }),
+    () =>
+      resolveDevEnvironmentSelection({
+        command: 'status',
+        instance: 'dev-1',
+        worktree: '/other',
+        registryRoot: root,
+      }),
     (error) => error.id === 'foreign-checkout',
   );
   rmSync(root, { recursive: true, force: true });

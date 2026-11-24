@@ -238,6 +238,83 @@ export function scaleDevSlotWorkloads(
 
 const OWNED_STARTUP_WINDOW_MS = 900_000;
 
+const DEV_LAUNCH_HOST_REFUSAL_IDS = Object.freeze(
+  new Set([
+    'missing-docker',
+    'missing-kind',
+    'missing-kubectl',
+    'docker-daemon',
+    'memory-low',
+    'memory-unknown',
+  ]),
+);
+
+/**
+ * @param {{ ok: boolean, refusals?: DevRefusal[] }} preflight
+ * @returns {DevRefusal[]}
+ */
+export function collectDevLaunchHostRefusals(preflight) {
+  if (preflight.ok) return [];
+  return (preflight.refusals ?? []).filter((refusal) =>
+    DEV_LAUNCH_HOST_REFUSAL_IDS.has(refusal.id),
+  );
+}
+
+/**
+ * @param {DevSessionRecord | null} session
+ * @param {{ pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null }} processDeps
+ * @param {'game' | 'tilt'} kind
+ */
+function verifiedOwnedPortHolder(session, processDeps, kind) {
+  if (!session) return false;
+  if (kind === 'tilt') {
+    return assessOwnedProcess(session, processDeps).owned;
+  }
+  return assessOwnedProcess(
+    {
+      pid: session.forwardPid,
+      processStartTicks: session.forwardStartTicks,
+    },
+    processDeps,
+  ).owned;
+}
+
+/**
+ * @param {{
+ *   gamePort: number,
+ *   tiltPort: number,
+ *   session: DevSessionRecord | null,
+ *   probeOccupied: typeof probeLoopbackPortOccupied,
+ *   processDeps: { pidAlive: (pid: number) => boolean, readStartTicks: (pid: number) => string | null },
+ * }} input
+ * @returns {Promise<DevRefusal[]>}
+ */
+export async function collectDevLaunchPortRefusals(input) {
+  /** @type {DevRefusal[]} */
+  const refusals = [];
+  const gameOccupied = await input.probeOccupied(LOOPBACK, input.gamePort);
+  const tiltOccupied = await input.probeOccupied(LOOPBACK, input.tiltPort);
+  if (
+    gameOccupied &&
+    !verifiedOwnedPortHolder(input.session, input.processDeps, 'game')
+  ) {
+    refusals.push({
+      id: 'foreign-game-port',
+      message: `${LOOPBACK}:${input.gamePort} is in use by a non-owned listener.`,
+    });
+  }
+  if (
+    tiltOccupied &&
+    !verifiedOwnedPortHolder(input.session, input.processDeps, 'tilt')
+  ) {
+    refusals.push({
+      id: 'foreign-tilt-port',
+      message: `${LOOPBACK}:${input.tiltPort} is in use by a non-owned listener.`,
+    });
+  }
+  return refusals;
+}
+
 /**
  * Deployment readyReplicas for the six slot workloads. Missing output is not ready.
  * @param {string} namespace
@@ -880,62 +957,6 @@ function pidAlive(pid) {
 
 /**
  * @param {string} worktree
- * @returns {{ previousPid: number | null, killedPrevious: boolean }}
- */
-function replaceOwnedEnvironmentTilt(slotId, registryRoot, deps = {}) {
-  const session = readEnvironmentSession(
-    environmentSessionRoot(registryRoot),
-    slotId,
-  );
-  if (!session)
-    return { previousPid: null, killedPrevious: false, reason: 'no_session' };
-  const ownership = assessOwnedProcess(session, {
-    pidAlive: deps.pidAlive ?? pidAlive,
-    readStartTicks:
-      deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-  });
-  const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
-  if (ownership.owned) {
-    try {
-      signal(Number(session.pid), 'SIGTERM');
-    } catch {
-      // ignore
-    }
-  }
-  return {
-    previousPid: ownership.owned ? Number(session.pid) : null,
-    killedPrevious: ownership.owned,
-    reason: ownership.reason,
-  };
-}
-
-function replaceOwnedDevSessionTilt(worktree, deps = {}) {
-  const session = readDevSession(worktree);
-  if (!session) {
-    return { previousPid: null, killedPrevious: false, reason: 'no_session' };
-  }
-  const ownership = assessOwnedProcess(session, {
-    pidAlive: deps.pidAlive ?? pidAlive,
-    readStartTicks:
-      deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-  });
-  const signal = deps.signal ?? ((pid, sig) => process.kill(pid, sig));
-  if (ownership.owned) {
-    try {
-      signal(Number(session.pid), 'SIGTERM');
-    } catch {
-      // ignore
-    }
-  }
-  return {
-    previousPid: ownership.owned ? Number(session.pid) : null,
-    killedPrevious: ownership.owned,
-    reason: ownership.reason,
-  };
-}
-
-/**
- * @param {string} worktree
  * @returns {number | null}
  */
 function readWorktreeSessionPid(worktree) {
@@ -973,6 +994,54 @@ function sleep(ms) {
 /** @typedef {import('../domain/dev-worktree-registry.mjs').DevWorktreeOwnerRecord} DevWorktreeOwnerRecord */
 
 /**
+ * Park the attempted slot after reconcile succeeded and a later owned step failed.
+ *
+ * @param {string} worktree
+ * @param {DevWorktreeOwnerRecord} ownerRecord
+ * @param {string} registryRoot
+ * @param {string} reason
+ * @param {RunDevTiltLaunchDeps} deps
+ */
+function rollbackPostReconcileOwnedStartup(
+  worktree,
+  ownerRecord,
+  registryRoot,
+  reason,
+  deps,
+) {
+  const readStart =
+    deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
+  return rollbackFailedOwnedStartup({
+    worktree,
+    owner: { ...ownerRecord, worktreePath: worktree },
+    registryRoot,
+    reason,
+    signal: deps.signal,
+    pidAlive: deps.pidAlive ?? pidAlive,
+    readStartTicks: readStart,
+    scaleRole: deps.scaleRole,
+    readDesiredReplicas: deps.readDesiredReplicas,
+    log: deps.log,
+  });
+}
+
+/**
+ * @param {RunDevTiltLaunchDeps} deps
+ * @param {number | null | undefined} pid
+ */
+function signalEphemeralOwnedChild(deps, pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return;
+  try {
+    (deps.signal ?? ((childPid, sig) => process.kill(childPid, sig)))(
+      pid,
+      'SIGTERM',
+    );
+  } catch {
+    // ignore
+  }
+}
+
+/**
  * @typedef {{
  *   worktree?: string,
  *   registryRoot?: string,
@@ -1008,18 +1077,18 @@ export async function runDevTiltLaunch(deps = {}) {
   const exitFn = deps.exit ?? ((code) => process.exit(code));
   const reconcile = deps.reconcileDevSlot ?? reconcileOwnedDevSlot;
 
-  // Capacity is a host fact. Refuse before slot reconciliation or owned-Tilt
-  // replacement so a low-memory start cannot scale workloads or signal a session.
+  // Read-only launch admission: host facts, owner, ports, then reconcile.
   beginStartupTiming(join(worktree, '.offscreen', 'dev-startup-timing.json'));
   const probes = await timePhase('preflight', null, () => collectProbes());
   const preflight = runPreflight(probes);
-  const capacityRefusals = (preflight.refusals ?? []).filter(
-    (refusal) => refusal.id === 'memory-low' || refusal.id === 'memory-unknown',
-  );
-  if (capacityRefusals.length > 0) {
-    refuseAndExit(capacityRefusals, exitFn);
-    return;
-  }
+  const processDeps = {
+    pidAlive: deps.pidAlive ?? pidAlive,
+    readStartTicks:
+      deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
+  };
+
+  /** @type {DevRefusal[]} */
+  const admissionRefusals = [...collectDevLaunchHostRefusals(preflight)];
 
   const helmProbe =
     deps.assertHelmAvailable ??
@@ -1033,21 +1102,76 @@ export async function runDevTiltLaunch(deps = {}) {
   try {
     await helmProbe();
   } catch (error) {
-    refuseAndExit(
-      [
-        {
-          id: 'helm-missing',
-          message:
-            error instanceof Error ? error.message : 'helm is not available',
-        },
-      ],
-      exitFn,
-    );
+    admissionRefusals.push({
+      id: 'helm-missing',
+      message: error instanceof Error ? error.message : 'helm is not available',
+    });
+  }
+
+  if (!onPath('tilt')) {
+    admissionRefusals.push({
+      id: 'missing-tilt',
+      message: 'Required command not found: tilt.',
+    });
+  }
+
+  /** @type {DevWorktreeOwnerRecord | undefined} */
+  let ownerRecord = deps.owner;
+  if (!ownerRecord) {
+    try {
+      ownerRecord = allocate(worktree, registryRoot);
+    } catch (error) {
+      if (isAllocatorRefusal(error)) {
+        refuseAndExit([{ id: error.id, message: error.message }], exitFn);
+        return;
+      }
+      throw error;
+    }
+  }
+
+  const session = deps.owner
+    ? readEnvironmentSession(
+        environmentSessionRoot(registryRoot),
+        ownerRecord.slotId,
+      )
+    : readDevSession(worktree);
+
+  const activeOwnership = session
+    ? assessOwnedProcess(session, processDeps)
+    : { owned: false };
+  if (activeOwnership.owned) {
+    admissionRefusals.push({
+      id: 'session-active',
+      message:
+        'An owned dev session is already running. Stop it with pnpm dev:stop, then run pnpm dev again.',
+    });
+  }
+
+  admissionRefusals.push(
+    ...(await collectDevLaunchPortRefusals({
+      gamePort: ownerRecord.ports.game,
+      tiltPort: ownerRecord.ports.tilt,
+      session,
+      probeOccupied,
+      processDeps,
+    })),
+  );
+
+  if (admissionRefusals.length > 0) {
+    refuseAndExit(admissionRefusals, exitFn);
     return;
   }
 
+  const gamePort = ownerRecord.ports.game;
+  const tiltPort = ownerRecord.ports.tilt;
+
   const slot = await timePhase('reconcile', null, () =>
-    reconcile({ worktree, registryRoot, owner: deps.owner }),
+    reconcile({
+      worktree,
+      registryRoot,
+      owner: ownerRecord,
+      launchAdmissionProved: true,
+    }),
   );
   if (!slot?.ok || slot.readyForWorkloads !== true) {
     refuseAndExit(
@@ -1062,87 +1186,7 @@ export async function runDevTiltLaunch(deps = {}) {
     return;
   }
 
-  // Drop a tilt this worktree started before deciding a listener is foreign.
-  const { previousPid, killedPrevious } = deps.owner
-    ? replaceOwnedEnvironmentTilt(deps.owner.slotId, registryRoot, {
-        pidAlive: deps.pidAlive ?? pidAlive,
-        readStartTicks:
-          deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-        signal: deps.signal,
-      })
-    : replaceOwnedDevSessionTilt(worktree, {
-        pidAlive: deps.pidAlive ?? pidAlive,
-        readStartTicks:
-          deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid)),
-        signal: deps.signal,
-      });
-  if (killedPrevious && previousPid !== null) {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      if (!pidAlive(previousPid)) break;
-      await sleep(100);
-    }
-  }
-
-  /** @type {DevWorktreeOwnerRecord} */
-  let ownerRecord = deps.owner ?? slot.record;
-  if (!ownerRecord) {
-    try {
-      ownerRecord = allocate(worktree, registryRoot);
-    } catch (error) {
-      if (isAllocatorRefusal(error)) {
-        refuseAndExit([{ id: error.id, message: error.message }], exitFn);
-        return;
-      }
-      throw error;
-    }
-  }
-
-  const gamePort = ownerRecord.ports.game;
-  const tiltPort = ownerRecord.ports.tilt;
-
-  const tiltOnPath = onPath('tilt');
-
-  const gameOccupied = await probeOccupied(LOOPBACK, gamePort);
-  const tiltOccupied = await probeOccupied(LOOPBACK, tiltPort);
-
-  /** @type {DevRefusal[]} */
-  const launchRefusals = [];
-  if (!preflight.ok) {
-    const devSlotChecks = new Set([
-      'missing-docker',
-      'missing-kind',
-      'missing-kubectl',
-      'docker-daemon',
-      'memory-low',
-      'memory-unknown',
-    ]);
-    launchRefusals.push(
-      ...preflight.refusals.filter((refusal) => devSlotChecks.has(refusal.id)),
-    );
-  }
-  if (!tiltOnPath) {
-    launchRefusals.push({
-      id: 'missing-tilt',
-      message: 'Required command not found: tilt.',
-    });
-  }
-  if (gameOccupied) {
-    launchRefusals.push({
-      id: 'foreign-game-port',
-      message: `${LOOPBACK}:${gamePort} is in use by a non-owned listener.`,
-    });
-  }
-  if (tiltOccupied) {
-    launchRefusals.push({
-      id: 'foreign-tilt-port',
-      message: `${LOOPBACK}:${tiltPort} is in use by a non-owned listener.`,
-    });
-  }
-
-  if (launchRefusals.length > 0) {
-    refuseAndExit(launchRefusals, exitFn);
-    return;
-  }
+  ownerRecord = deps.owner ?? slot.record ?? ownerRecord;
 
   let announced = false;
   let pollTimer;
@@ -1188,6 +1232,13 @@ export async function runDevTiltLaunch(deps = {}) {
   });
   if (!imageIdentity.ok) {
     console.error(`image fingerprint failed: ${imageIdentity.reason}`);
+    rollbackPostReconcileOwnedStartup(
+      worktree,
+      ownerRecord,
+      registryRoot,
+      `image fingerprint failed: ${imageIdentity.reason}`,
+      deps,
+    );
     finishStartupTiming('fingerprint-failed');
     exitFn(1);
     return;
@@ -1219,6 +1270,13 @@ export async function runDevTiltLaunch(deps = {}) {
 
   if (!child.pid) {
     console.error('Failed to start tilt.');
+    rollbackPostReconcileOwnedStartup(
+      worktree,
+      ownerRecord,
+      registryRoot,
+      'Failed to start tilt.',
+      deps,
+    );
     finishStartupTiming('tilt-spawn-failed');
     exitFn(1);
     return;
@@ -1226,9 +1284,24 @@ export async function runDevTiltLaunch(deps = {}) {
 
   const readStart =
     deps.readStartTicks ?? ((pid) => readProcessStartTicks(pid));
+  const processStartTicks = readStart(child.pid);
+  if (!processStartTicks) {
+    console.error('Failed to read owned tilt process identity.');
+    signalEphemeralOwnedChild(deps, child.pid);
+    rollbackPostReconcileOwnedStartup(
+      worktree,
+      ownerRecord,
+      registryRoot,
+      'missing tilt process start ticks',
+      deps,
+    );
+    finishStartupTiming('tilt-identity-failed');
+    exitFn(1);
+    return;
+  }
   const sessionRecord = {
     pid: child.pid,
-    processStartTicks: readStart(child.pid),
+    processStartTicks,
     forwardPid: null,
     forwardStartTicks: null,
     slotId: ownerRecord.slotId,
@@ -1300,18 +1373,13 @@ export async function runDevTiltLaunch(deps = {}) {
     await pause(startupPollMs);
   }
   if (startupFailure) {
-    rollbackFailedOwnedStartup({
+    rollbackPostReconcileOwnedStartup(
       worktree,
-      owner: { ...ownerRecord, worktreePath: worktree },
+      ownerRecord,
       registryRoot,
-      reason: startupFailure,
-      signal: deps.signal,
-      pidAlive: deps.pidAlive ?? pidAlive,
-      readStartTicks: readStart,
-      scaleRole: deps.scaleRole,
-      readDesiredReplicas: deps.readDesiredReplicas,
-      log: deps.log,
-    });
+      startupFailure,
+      deps,
+    );
     recordPhase('readiness', null, performance.now() - readinessStarted);
     finishStartupTiming('startup-failed');
     exitFn(1);

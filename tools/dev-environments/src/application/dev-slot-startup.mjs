@@ -5,8 +5,16 @@
  */
 
 import { migrateOwnedDevSlot } from '../adapters/dev-slot-migrate.mjs';
-export { fingerprintDevImageContext, planSlotImageArtifact, planUnionImageUse, UNION_ROLE_FILTER } from '../image-cache/dev-slot-image-plan.mjs';
-import { fingerprintDevImageContext, UNION_ROLE_FILTER as UNION_FILTER } from '../image-cache/dev-slot-image-plan.mjs';
+export {
+  fingerprintDevImageContext,
+  planSlotImageArtifact,
+  planUnionImageUse,
+  UNION_ROLE_FILTER,
+} from '../image-cache/dev-slot-image-plan.mjs';
+import {
+  fingerprintDevImageContext,
+  UNION_ROLE_FILTER as UNION_FILTER,
+} from '../image-cache/dev-slot-image-plan.mjs';
 import { timePhase } from './dev-startup-timing.mjs';
 import { selectColdStartDocuments } from '../rendering/dev-slot-app-graph.mjs';
 import { verifySharedCoreReadiness } from './dev-shared-core-readiness.mjs';
@@ -26,7 +34,9 @@ function oauthCandidates(worktree, env = process.env) {
 }
 
 function oauthFileFor(worktree, env = process.env) {
-  return oauthCandidates(worktree, env).find((path) => existsSync(path)) ?? null;
+  return (
+    oauthCandidates(worktree, env).find((path) => existsSync(path)) ?? null
+  );
 }
 
 /**
@@ -37,17 +47,25 @@ function oauthFileFor(worktree, env = process.env) {
  */
 export async function resolveOauthReadiness(worktree, env = process.env) {
   const path = oauthFileFor(worktree, env);
-  if (!path) return { ok: false, detail: 'approved local OAuth file is missing' };
-  const { assertApprovedOauthFile } = await import('../rendering/dev-slot-project.mjs');
+  if (!path)
+    return { ok: false, detail: 'approved local OAuth file is missing' };
+  const { assertApprovedOauthFile } =
+    await import('../rendering/dev-slot-project.mjs');
   try {
     assertApprovedOauthFile(path);
     return { ok: true, path };
   } catch (error) {
     const detail = error instanceof Error ? error.message : '';
-    if (detail === 'approved local OAuth configuration is missing' || detail === 'approved local OAuth configuration is unreadable') {
+    if (
+      detail === 'approved local OAuth configuration is missing' ||
+      detail === 'approved local OAuth configuration is unreadable'
+    ) {
       return { ok: false, detail };
     }
-    return { ok: false, detail: 'approved local OAuth configuration is missing' };
+    return {
+      ok: false,
+      detail: 'approved local OAuth configuration is missing',
+    };
   }
 }
 
@@ -110,6 +128,7 @@ function phaseResult(value) {
  *   project: Function,
  *   ensureImages: Function,
  *   verifySharedCore?: () => Promise<{ ok: boolean, detail?: string }>,
+ *   prepareMigrationArtifact?: (record: object) => Promise<{ ok: boolean, detail?: string }>,
  * }} deps
  */
 export async function reconcileDevSlot(input, deps) {
@@ -125,7 +144,10 @@ export async function reconcileDevSlot(input, deps) {
     try {
       record = deps.allocate(input.worktree, input.registryRoot);
     } catch (error) {
-      return stopped('allocate', error instanceof Error ? error.message : 'allocate failed');
+      return stopped(
+        'allocate',
+        error instanceof Error ? error.message : 'allocate failed',
+      );
     }
   }
   if (record.cluster !== DEV_CLUSTER) {
@@ -134,16 +156,26 @@ export async function reconcileDevSlot(input, deps) {
 
   const health = await deps.probeCluster();
   if (!health?.ok || health.cluster !== DEV_CLUSTER) {
-    return stopped('cluster', health?.detail ?? 'kind-offscreen-dev is not healthy');
+    return stopped(
+      'cluster',
+      health?.detail ?? 'kind-offscreen-dev is not healthy',
+    );
   }
   const memory = input.memoryMiB ?? health.memoryMiB ?? 0;
   if (memory < MIN_MEMORY_MIB) {
-    return stopped('capacity', `available memory ${memory}MiB is below ${MIN_MEMORY_MIB}MiB`);
+    return stopped(
+      'capacity',
+      `available memory ${memory}MiB is below ${MIN_MEMORY_MIB}MiB`,
+    );
   }
 
   if (deps.validateOauth) {
     const oauth = await deps.validateOauth(input.worktree);
-    if (!oauth?.ok) return stopped('oauth', oauth?.detail ?? 'approved local OAuth configuration is missing');
+    if (!oauth?.ok)
+      return stopped(
+        'oauth',
+        oauth?.detail ?? 'approved local OAuth configuration is missing',
+      );
   }
 
   if (deps.verifySharedCore) {
@@ -156,21 +188,39 @@ export async function reconcileDevSlot(input, deps) {
     }
   }
 
+  if (deps.prepareMigrationArtifact) {
+    const artifact = await timePhase('artifact', 'reconcile', () =>
+      deps.prepareMigrationArtifact(record),
+    );
+    if (!artifact?.ok) {
+      return stopped(
+        'artifact',
+        artifact?.detail ?? 'migration artifact is not ready',
+        [],
+      );
+    }
+  }
+
   const retained = [];
   const sql = await timePhase('sql', 'reconcile', () => deps.ensureSql(record));
   const sqlDetail = phaseResult(sql);
   if (sqlDetail) return stopped('sql', sqlDetail, sql.retained ?? []);
   retained.push(...(sql.retained ?? []));
 
-  const migration = await timePhase('migration', 'reconcile', () => deps.ensureMigration(record));
+  const migration = await timePhase('migration', 'reconcile', () =>
+    deps.ensureMigration(record),
+  );
   const migrationDetail = phaseResult(migration);
   if (migrationDetail) return stopped('migration', migrationDetail, retained);
 
   const s3 = await timePhase('s3', 'reconcile', () => deps.ensureS3(record));
   const s3Detail = phaseResult(s3);
-  if (s3Detail) return stopped('s3', s3Detail, [...retained, ...(s3.retained ?? [])]);
+  if (s3Detail)
+    return stopped('s3', s3Detail, [...retained, ...(s3.retained ?? [])]);
 
-  const temporal = await timePhase('temporal', 'reconcile', () => deps.ensureTemporal(record));
+  const temporal = await timePhase('temporal', 'reconcile', () =>
+    deps.ensureTemporal(record),
+  );
   const temporalDetail = phaseResult(temporal);
   if (temporalDetail) return stopped('temporal', temporalDetail, retained);
 
@@ -178,18 +228,30 @@ export async function reconcileDevSlot(input, deps) {
   try {
     projected = await deps.project(record);
   } catch (error) {
-    return stopped('project', error instanceof Error ? error.message : 'project failed', retained);
+    return stopped(
+      'project',
+      error instanceof Error ? error.message : 'project failed',
+      retained,
+    );
   }
   if (projected?.ok === false) {
-    return stopped('project', phaseResult(projected) ?? 'project refused', retained);
+    return stopped(
+      'project',
+      phaseResult(projected) ?? 'project refused',
+      retained,
+    );
   }
 
-  const images = await timePhase('images', 'reconcile', () => deps.ensureImages(record, projected));
+  const images = await timePhase('images', 'reconcile', () =>
+    deps.ensureImages(record, projected),
+  );
   const imageDetail = phaseResult(images);
   if (imageDetail) return stopped('images', imageDetail, retained);
 
   if (deps.applyWorkloads) {
-    const workloads = await timePhase('workloads', 'reconcile', () => deps.applyWorkloads(record, projected, images));
+    const workloads = await timePhase('workloads', 'reconcile', () =>
+      deps.applyWorkloads(record, projected, images),
+    );
     const workloadDetail = phaseResult(workloads);
     if (workloadDetail) return stopped('workloads', workloadDetail, retained);
   }
@@ -209,162 +271,286 @@ export async function reconcileDevSlot(input, deps) {
   if (/password|secret-access-key|github-client-secret/i.test(serialized)) {
     return stopped('redaction', 'resource report included a credential');
   }
-  return { ok: true, phase: 'ready', retained, readyForWorkloads: true, record, identities };
+  return {
+    ok: true,
+    phase: 'ready',
+    retained,
+    readyForWorkloads: true,
+    record,
+    identities,
+  };
+}
+
+/**
+ * Host compile for migration entrypoint after admission gates; read-only when present.
+ *
+ * @param {{ worktree: string, registryRoot: string }} input
+ * @param {{ slotId: string }} record
+ */
+export async function prepareMigrationArtifact(input, record) {
+  const { spawnSync } = await import('node:child_process');
+  const built = join(input.worktree, 'packages/db/dist/src/migrate.js');
+  if (!existsSync(built)) {
+    const { assertExclusiveHostWrite } =
+      await import('../domain/dev-host-output-guard.mjs');
+    assertExclusiveHostWrite({
+      checkout: input.worktree,
+      registryRoot: input.registryRoot,
+      selfSlotId: record.slotId,
+      operation: 'database build',
+      outputPath: 'packages/db/dist',
+    });
+    const compiled = await timePhase('database-build', 'reconcile', () =>
+      Promise.resolve(
+        spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], {
+          cwd: input.worktree,
+          encoding: 'utf8',
+        }),
+      ),
+    );
+    if (compiled.status !== 0 || !existsSync(built)) {
+      return {
+        ok: false,
+        detail: 'packages/db build failed before tenant mutation',
+      };
+    }
+  }
+  return { ok: true };
 }
 
 /**
  * Live binding. SQL ensure includes every registry slot so existing dev
  * databases stay in the executor's expected catalog.
  *
- * @param {{ worktree: string, registryRoot: string }} input
+ * @param {{ worktree: string, registryRoot: string, owner?: object, launchAdmissionProved?: boolean }} input
  */
 export async function reconcileOwnedDevSlot(input) {
   const { readFileSync } = await import('node:fs');
   const { spawnSync } = await import('node:child_process');
-  const { assertHelmAvailable } = await import('../../../../infra/workloads/render.mjs');
-  try {
-    assertHelmAvailable({ run: spawnSync });
-  } catch (error) {
-    return stopped('helm', error instanceof Error ? error.message : 'helm is not available');
+  const readAvailableMemoryMiB = () => {
+    try {
+      const text = readFileSync('/proc/meminfo', 'utf8');
+      const available = text.match(/^MemAvailable:\s+(\d+)\s+kB/m);
+      return available ? Math.floor(Number(available[1]) / 1024) : 0;
+    } catch {
+      return 0;
+    }
+  };
+  if (input.launchAdmissionProved !== true) {
+    const { assertHelmAvailable } =
+      await import('../../../../infra/workloads/render.mjs');
+    try {
+      assertHelmAvailable({ run: spawnSync });
+    } catch (error) {
+      return stopped(
+        'helm',
+        error instanceof Error ? error.message : 'helm is not available',
+      );
+    }
   }
-  const { allocateDevWorktreeOwner } = await import('../domain/dev-worktree-allocator.mjs');
-  const { readRegistryJson } = await import('../domain/dev-worktree-registry.mjs');
-  const { executeDevSqlTenants } = await import('../adapters/dev-sql-tenant-executor.mjs');
-  const { createLiveDevSqlAdapter } = await import('../adapters/dev-sql-tenant-live-adapter.mjs');
+  const { allocateDevWorktreeOwner } =
+    await import('../domain/dev-worktree-allocator.mjs');
+  const { readRegistryJson } =
+    await import('../domain/dev-worktree-registry.mjs');
+  const { executeDevSqlTenants } =
+    await import('../adapters/dev-sql-tenant-executor.mjs');
+  const { createLiveDevSqlAdapter } =
+    await import('../adapters/dev-sql-tenant-live-adapter.mjs');
   const { ensureDevS3Tenant } = await import('../adapters/dev-s3-tenant.mjs');
-  const { createDevS3LiveAdapter } = await import('../adapters/dev-s3-tenant-live-adapter.mjs');
+  const { createDevS3LiveAdapter } =
+    await import('../adapters/dev-s3-tenant-live-adapter.mjs');
   const temporalTenant = await import('../adapters/dev-temporal-tenant.mjs');
   const { ensureDevTemporalTenant } = temporalTenant;
   const { projectDevSlot } = await import('../rendering/dev-slot-project.mjs');
   const temporal = await import('../adapters/dev-temporal-bootstrap.mjs');
 
-  return reconcileDevSlot({ ...input, owner: input.owner }, {
-    allocate: allocateDevWorktreeOwner,
-    validateOauth: (worktree) => resolveOauthReadiness(worktree),
-    verifySharedCore: () => verifySharedCoreReadiness({
-      run: (command, args) => {
-        const result = spawnSync(command, args, { encoding: 'utf8', timeout: 30_000 });
+  return reconcileDevSlot(
+    { ...input, owner: input.owner },
+    {
+      allocate: allocateDevWorktreeOwner,
+      validateOauth: (worktree) => resolveOauthReadiness(worktree),
+      verifySharedCore: () =>
+        verifySharedCoreReadiness({
+          run: (command, args) => {
+            const result = spawnSync(command, args, {
+              encoding: 'utf8',
+              timeout: 30_000,
+            });
+            return {
+              status: result.status,
+              stdout: result.stdout ?? '',
+              stderr: result.stderr ?? '',
+            };
+          },
+        }),
+      prepareMigrationArtifact: (record) =>
+        prepareMigrationArtifact(input, record),
+      probeCluster: async () => {
+        const cluster = spawnSync(
+          'kubectl',
+          [
+            '--context',
+            'kind-offscreen-dev',
+            'get',
+            'namespace',
+            'offscreen-dev-postgres',
+            '-o',
+            'name',
+          ],
+          { encoding: 'utf8' },
+        );
+        const memoryMiB = readAvailableMemoryMiB();
         return {
-          status: result.status,
-          stdout: result.stdout ?? '',
-          stderr: result.stderr ?? '',
+          ok: cluster.status === 0 && memoryMiB >= MIN_MEMORY_MIB,
+          cluster: 'kind-offscreen-dev',
+          memoryMiB,
+          detail:
+            cluster.status === 0
+              ? 'ready'
+              : 'kind-offscreen-dev postgres namespace is missing',
         };
       },
-    }),
-    probeCluster: async () => {
-      const cluster = spawnSync('kubectl', ['--context', 'kind-offscreen-dev', 'get', 'namespace', 'offscreen-dev-postgres', '-o', 'name'], { encoding: 'utf8' });
-      let memoryMiB = 0;
-      try {
-        const text = readFileSync('/proc/meminfo', 'utf8');
-        const available = text.match(/^MemAvailable:\s+(\d+)\s+kB/m);
-        memoryMiB = available ? Math.floor(Number(available[1]) / 1024) : 0;
-      } catch {
-        memoryMiB = 0;
-      }
-      const oauth = await resolveOauthReadiness(input.worktree);
-      if (!oauth.ok) {
-        return { ok: false, cluster: 'kind-offscreen-dev', memoryMiB, detail: oauth.detail };
-      }
-      const built = join(input.worktree, 'packages/db/dist/src/migrate.js');
-      if (!existsSync(built)) {
-        const { assertExclusiveHostWrite } = await import('../domain/dev-host-output-guard.mjs');
-        assertExclusiveHostWrite({
-          checkout: input.worktree,
-          registryRoot: input.registryRoot,
-          selfSlotId: input.owner?.slotId,
-          operation: 'database build',
-          outputPath: 'packages/db/dist',
+      ensureSql: (owner) => {
+        const raw = readRegistryJson(input.registryRoot);
+        const known =
+          raw?.version === 2
+            ? Object.keys(raw.environmentsById ?? {})
+            : Object.values(raw?.ownersByWorktree ?? {}).map(
+                (item) => item.slotId,
+              );
+        const slots = [...new Set([owner.slotId, ...known])];
+        return executeDevSqlTenants({
+          slots,
+          authorizeLive: 'kind-offscreen-dev-sql-tenant-live',
+          adapter: createLiveDevSqlAdapter(),
         });
-        const compiled = await timePhase('database-build', 'reconcile', () => Promise.resolve(spawnSync('pnpm', ['--filter', '@offscreen/db', 'build'], { cwd: input.worktree, encoding: 'utf8' })));
-        if (compiled.status !== 0 || !existsSync(built)) {
-          return { ok: false, cluster: 'kind-offscreen-dev', memoryMiB, detail: 'packages/db build failed before tenant mutation' };
-        }
-      }
-      return {
-        ok: cluster.status === 0 && memoryMiB >= MIN_MEMORY_MIB,
-        cluster: 'kind-offscreen-dev',
-        memoryMiB,
-        detail: cluster.status === 0 ? 'ready' : 'kind-offscreen-dev postgres namespace is missing',
-      };
-    },
-    ensureSql: (owner) => {
-      const raw = readRegistryJson(input.registryRoot);
-      const known = raw?.version === 2
-        ? Object.keys(raw.environmentsById ?? {})
-        : Object.values(raw?.ownersByWorktree ?? {}).map((item) => item.slotId);
-      const slots = [...new Set([owner.slotId, ...known])];
-      return executeDevSqlTenants({
-        slots,
-        authorizeLive: 'kind-offscreen-dev-sql-tenant-live',
-        adapter: createLiveDevSqlAdapter(),
-      });
-    },
-    ensureMigration: (owner) => migrateOwnedDevSlot(owner, input.worktree),
-    ensureS3: (owner) => ensureDevS3Tenant({
-      slotId: owner.slotId,
-      authorizeLive: 'kind-offscreen-dev-s3-tenant-live',
-      adapter: createDevS3LiveAdapter(),
-    }),
-    ensureTemporal: (owner) => ensureDevTemporalTenant({
-      slotId: owner.slotId,
-      authorizeLive: 'kind-offscreen-dev-temporal-tenant-live',
-      adapter: {
-        identity() {
-          const listed = spawnSync('kubectl', [
-            '--context', temporal.DEV_TEMPORAL_CONTEXT,
-            '-n', temporal.DEV_TEMPORAL_NAMESPACE,
-            'get', 'deploy', 'temporal-server', '-o', 'jsonpath={.spec.template.spec.containers[0].image}',
-          ], { encoding: 'utf8' });
-          return {
-            context: temporal.DEV_TEMPORAL_CONTEXT,
-            namespace: temporal.DEV_TEMPORAL_NAMESPACE,
-            owner: temporal.DEV_TEMPORAL_OWNER,
-            image: (listed.stdout ?? '').trim(),
-          };
-        },
-        async describe(name) {
-          const described = spawnSync('kubectl', [
-            '--context', temporal.DEV_TEMPORAL_CONTEXT,
-            '-n', temporal.DEV_TEMPORAL_NAMESPACE,
-            'run', `temporal-admin-describe-${Date.now()}`,
-            '--rm', '-i', '--restart=Never',
-            '--image', 'docker.io/temporalio/admin-tools:1.32.2',
-            '--command', '--', 'temporal', 'operator', 'namespace', 'describe',
-            '--namespace', name, '--address', 'temporal-server:7233', '--output', 'json',
-          ], { encoding: 'utf8', timeout: 60000 });
-          const text = `${described.stdout ?? ''}\n${described.stderr ?? ''}`;
-          const parsed = temporalTenant.parseTemporalDescribe(text, described.status ?? 1);
-          if (parsed.status === 'absent') return null;
-          if (parsed.status !== 'ready') return { failure: parsed.status, detail: parsed.detail };
-          return { id: parsed.id, retentionSeconds: parsed.retentionSeconds };
-        },
-        async create(names) {
-          const created = spawnSync('kubectl', [
-            '--context', temporal.DEV_TEMPORAL_CONTEXT,
-            '-n', temporal.DEV_TEMPORAL_NAMESPACE,
-            'run', `temporal-admin-create-${Date.now()}`,
-            '--rm', '-i', '--restart=Never',
-            '--image', 'docker.io/temporalio/admin-tools:1.32.2',
-            '--command', '--', 'temporal', 'operator', 'namespace', 'create',
-            '--namespace', names.temporalNamespace, '--retention', '1d',
-            '--address', 'temporal-server:7233',
-          ], { encoding: 'utf8', timeout: 60000 });
-          const text = `${created.stdout ?? ''}${created.stderr ?? ''}`;
-          if (created.status !== 0 && !text.includes('already exists')) {
-            throw new Error('temporal namespace create failed');
-          }
-        },
       },
-    }),
-    project: (owner) => projectDevSlot({
-      record: owner,
-      registryRoot: input.registryRoot,
-      worktree: input.worktree,
-      oauthFile: oauthFileFor(input.worktree),
-    }),
-    ensureImages: (owner) => ensureOwnedSlotImages(owner, input.worktree),
-    applyWorkloads: (_owner, projected) => applyOwnedSlotWorkloads(projected),
-  });
+      ensureMigration: (owner) => migrateOwnedDevSlot(owner, input.worktree),
+      ensureS3: (owner) =>
+        ensureDevS3Tenant({
+          slotId: owner.slotId,
+          authorizeLive: 'kind-offscreen-dev-s3-tenant-live',
+          adapter: createDevS3LiveAdapter(),
+        }),
+      ensureTemporal: (owner) =>
+        ensureDevTemporalTenant({
+          slotId: owner.slotId,
+          authorizeLive: 'kind-offscreen-dev-temporal-tenant-live',
+          adapter: {
+            identity() {
+              const listed = spawnSync(
+                'kubectl',
+                [
+                  '--context',
+                  temporal.DEV_TEMPORAL_CONTEXT,
+                  '-n',
+                  temporal.DEV_TEMPORAL_NAMESPACE,
+                  'get',
+                  'deploy',
+                  'temporal-server',
+                  '-o',
+                  'jsonpath={.spec.template.spec.containers[0].image}',
+                ],
+                { encoding: 'utf8' },
+              );
+              return {
+                context: temporal.DEV_TEMPORAL_CONTEXT,
+                namespace: temporal.DEV_TEMPORAL_NAMESPACE,
+                owner: temporal.DEV_TEMPORAL_OWNER,
+                image: (listed.stdout ?? '').trim(),
+              };
+            },
+            async describe(name) {
+              const described = spawnSync(
+                'kubectl',
+                [
+                  '--context',
+                  temporal.DEV_TEMPORAL_CONTEXT,
+                  '-n',
+                  temporal.DEV_TEMPORAL_NAMESPACE,
+                  'run',
+                  `temporal-admin-describe-${Date.now()}`,
+                  '--rm',
+                  '-i',
+                  '--restart=Never',
+                  '--image',
+                  'docker.io/temporalio/admin-tools:1.32.2',
+                  '--command',
+                  '--',
+                  'temporal',
+                  'operator',
+                  'namespace',
+                  'describe',
+                  '--namespace',
+                  name,
+                  '--address',
+                  'temporal-server:7233',
+                  '--output',
+                  'json',
+                ],
+                { encoding: 'utf8', timeout: 60000 },
+              );
+              const text = `${described.stdout ?? ''}\n${described.stderr ?? ''}`;
+              const parsed = temporalTenant.parseTemporalDescribe(
+                text,
+                described.status ?? 1,
+              );
+              if (parsed.status === 'absent') return null;
+              if (parsed.status !== 'ready')
+                return { failure: parsed.status, detail: parsed.detail };
+              return {
+                id: parsed.id,
+                retentionSeconds: parsed.retentionSeconds,
+              };
+            },
+            async create(names) {
+              const created = spawnSync(
+                'kubectl',
+                [
+                  '--context',
+                  temporal.DEV_TEMPORAL_CONTEXT,
+                  '-n',
+                  temporal.DEV_TEMPORAL_NAMESPACE,
+                  'run',
+                  `temporal-admin-create-${Date.now()}`,
+                  '--rm',
+                  '-i',
+                  '--restart=Never',
+                  '--image',
+                  'docker.io/temporalio/admin-tools:1.32.2',
+                  '--command',
+                  '--',
+                  'temporal',
+                  'operator',
+                  'namespace',
+                  'create',
+                  '--namespace',
+                  names.temporalNamespace,
+                  '--retention',
+                  '1d',
+                  '--address',
+                  'temporal-server:7233',
+                ],
+                { encoding: 'utf8', timeout: 60000 },
+              );
+              const text = `${created.stdout ?? ''}${created.stderr ?? ''}`;
+              if (created.status !== 0 && !text.includes('already exists')) {
+                throw new Error('temporal namespace create failed');
+              }
+            },
+          },
+        }),
+      project: (owner) =>
+        projectDevSlot({
+          record: owner,
+          registryRoot: input.registryRoot,
+          worktree: input.worktree,
+          oauthFile: oauthFileFor(input.worktree),
+        }),
+      ensureImages: (owner) => ensureOwnedSlotImages(owner, input.worktree),
+      applyWorkloads: (_owner, projected) => applyOwnedSlotWorkloads(projected),
+    },
+  );
 }
 
 const IMAGE_DIAGNOSTIC_LIMIT = 1200;
@@ -377,13 +563,18 @@ const IMAGE_DIAGNOSTIC_LIMIT = 1200;
  */
 export function describeImageLoadFailure(image, built) {
   const combined = `${built.stderr ?? ''}\n${built.stdout ?? ''}`;
-  const phases = [...combined.matchAll(/^phase=(\S+) role=(\S+)(?: node=(\S+))?$/gm)];
+  const phases = [
+    ...combined.matchAll(/^phase=(\S+) role=(\S+)(?: node=(\S+))?$/gm),
+  ];
   const last = phases.at(-1);
   const phase = last?.[1] ?? 'unknown';
   const node = last?.[3] ?? null;
   const redacted = combined
     .replace(/postgres(?:ql)?:\/\/[^\s]+/gi, '[redacted-url]')
-    .replace(/\b(password|secret|token|api[_-]?key)\s*[=:]\s*\S+/gi, '$1=[redacted]')
+    .replace(
+      /\b(password|secret|token|api[_-]?key)\s*[=:]\s*\S+/gi,
+      '$1=[redacted]',
+    )
     .replace(/\bAKIA[0-9A-Z]{16}\b/g, '[redacted-key]');
   const diagnostic = redacted
     .split('\n')
@@ -396,74 +587,162 @@ export function describeImageLoadFailure(image, built) {
   const where = node ? ` node=${node}` : '';
   return {
     id: 'image-build',
-    detail: `role=${image.role} phase=${phase}${where} exit=${status} ${diagnostic}`.trim(),
+    detail:
+      `role=${image.role} phase=${phase}${where} exit=${status} ${diagnostic}`.trim(),
   };
 }
 
-export async function ensureOwnedSlotImages(owner, worktree, spawnImage = null) {
+export async function ensureOwnedSlotImages(
+  owner,
+  worktree,
+  spawnImage = null,
+) {
   const { spawnSync } = await import('node:child_process');
-  const identity = fingerprintDevImageContext(worktree, { roleFilter: UNION_FILTER });
+  const identity = fingerprintDevImageContext(worktree, {
+    roleFilter: UNION_FILTER,
+  });
   if (!identity.ok) {
-    return { ok: false, refusals: [{ id: 'image-build', detail: `role=union phase=fingerprint exit=1 ${identity.reason}` }], rebuilt: 0 };
+    return {
+      ok: false,
+      refusals: [
+        {
+          id: 'image-build',
+          detail: `role=union phase=fingerprint exit=1 ${identity.reason}`,
+        },
+      ],
+      rebuilt: 0,
+    };
   }
-  const run = spawnImage ?? (() => spawnSync('bash', [
-    'infra/images/development/load-dev-slot-image.sh',
-    owner.slotId,
-    'all',
-  ], {
-    cwd: worktree,
-    encoding: 'utf8',
-    env: { ...process.env, OFFSCREEN_IMAGE_FINGERPRINT: identity.fingerprint },
-  }));
-  const built = run({ slotId: owner.slotId, fingerprint: identity.fingerprint, filter: UNION_FILTER });
+  const run =
+    spawnImage ??
+    (() =>
+      spawnSync(
+        'bash',
+        [
+          'infra/images/development/load-dev-slot-image.sh',
+          owner.slotId,
+          'all',
+        ],
+        {
+          cwd: worktree,
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            OFFSCREEN_IMAGE_FINGERPRINT: identity.fingerprint,
+          },
+        },
+      ));
+  const built = run({
+    slotId: owner.slotId,
+    fingerprint: identity.fingerprint,
+    filter: UNION_FILTER,
+  });
   if (built.status !== 0) {
-    return { ok: false, refusals: [describeImageLoadFailure({ role: 'union' }, built)], rebuilt: 0 };
+    return {
+      ok: false,
+      refusals: [describeImageLoadFailure({ role: 'union' }, built)],
+      rebuilt: 0,
+    };
   }
   const plan = planSlotImageBuilds(owner.slotId, () => true);
   const builds = Number(built.stdout?.match(/builds=(\d+)/)?.[1] ?? '1');
-  return { ok: true, refs: plan.refs, fingerprint: identity.fingerprint, rebuilt: builds };
+  return {
+    ok: true,
+    refs: plan.refs,
+    fingerprint: identity.fingerprint,
+    rebuilt: builds,
+  };
 }
 
 export async function applyOwnedSlotWorkloads(projected, deps = {}) {
   const { spawnSync } = await import('node:child_process');
   const run = deps.run ?? spawnSync;
-  const { assertHelmAvailable } = await import('../../../../infra/workloads/render.mjs');
+  const { assertHelmAvailable } =
+    await import('../../../../infra/workloads/render.mjs');
   try {
     assertHelmAvailable({ run: deps.helmRun ?? run });
   } catch (error) {
-    return { ok: false, refusals: [{ id: 'helm', detail: error instanceof Error ? error.message : 'helm is not available' }] };
+    return {
+      ok: false,
+      refusals: [
+        {
+          id: 'helm',
+          detail:
+            error instanceof Error ? error.message : 'helm is not available',
+        },
+      ],
+    };
   }
   if (deps.skipRenderCheck !== true) {
     try {
-      const { renderDevSlotAppGraph } = await import('../rendering/dev-slot-app-graph.mjs');
-      renderDevSlotAppGraph(projected.record.slotId, { schemaReady: true, ports: projected.record.ports });
+      const { renderDevSlotAppGraph } =
+        await import('../rendering/dev-slot-app-graph.mjs');
+      renderDevSlotAppGraph(projected.record.slotId, {
+        schemaReady: true,
+        ports: projected.record.ports,
+      });
     } catch (error) {
       return {
         ok: false,
-        refusals: [{ id: 'render', detail: error instanceof Error ? error.message : 'workload render failed' }],
+        refusals: [
+          {
+            id: 'render',
+            detail:
+              error instanceof Error ? error.message : 'workload render failed',
+          },
+        ],
       };
     }
   }
-  const listed = run('kubectl', [
-    '--context', 'kind-offscreen-dev', '-n', projected.record.namespace,
-    'get', 'deployments', '-o', 'jsonpath={.items[*].metadata.name}',
-  ], { encoding: 'utf8' });
+  const listed = run(
+    'kubectl',
+    [
+      '--context',
+      'kind-offscreen-dev',
+      '-n',
+      projected.record.namespace,
+      'get',
+      'deployments',
+      '-o',
+      'jsonpath={.items[*].metadata.name}',
+    ],
+    { encoding: 'utf8' },
+  );
   if (listed.status !== 0 || listed.error) {
-    return { ok: false, refusals: [{ id: 'deployment-inventory', detail: 'owned deployment inventory read failed' }] };
+    return {
+      ok: false,
+      refusals: [
+        {
+          id: 'deployment-inventory',
+          detail: 'owned deployment inventory read failed',
+        },
+      ],
+    };
   }
   const existing = (listed.stdout ?? '').split(/\s+/).filter(Boolean);
-  const coldStart = selectColdStartDocuments(projected.documents ?? [], existing);
+  const coldStart = selectColdStartDocuments(
+    projected.documents ?? [],
+    existing,
+  );
   if (coldStart.length === 0) {
     return { ok: true };
   }
   const list = { apiVersion: 'v1', kind: 'List', items: coldStart };
-  const applied = run('kubectl', ['--context', 'kind-offscreen-dev', 'apply', '-f', '-'], {
-    input: JSON.stringify(list),
-    encoding: 'utf8',
-  });
+  const applied = run(
+    'kubectl',
+    ['--context', 'kind-offscreen-dev', 'apply', '-f', '-'],
+    {
+      input: JSON.stringify(list),
+      encoding: 'utf8',
+    },
+  );
   if (applied.status !== 0) {
-    return { ok: false, refusals: [{ id: 'workload-apply', detail: 'owned workload apply failed' }] };
+    return {
+      ok: false,
+      refusals: [
+        { id: 'workload-apply', detail: 'owned workload apply failed' },
+      ],
+    };
   }
   return { ok: true };
 }
-
