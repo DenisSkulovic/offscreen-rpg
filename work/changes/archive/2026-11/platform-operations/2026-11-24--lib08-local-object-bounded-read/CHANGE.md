@@ -11,7 +11,7 @@
 | Documents consumers | Code | unchanged because Documents still maps the same storage errors | pnpm --filter @offscreen/documents test | source-only | 42 pass, 2 live S3 skips, 0 fail; no Documents source edit | No document schema change |
 | docs/product and docs/technical | Product / technical | unchanged because this is a local filesystem enforcement of an existing byte ceiling | No product or technical page edited | reviewed | Parent-directory symlink races are not claimed closed | work/QUEUE.md was not the selector |
 
-Receipt: `@offscreen/object-storage` test 5/5 and typecheck PASS. Documents test 42 pass, 2 skipped, 0 fail. Changed files formatted with Prettier. No database, cluster, or provider call. Permission-denied mapping is implemented for non-root; this process did not assert it when uid is 0.
+Receipt: `@offscreen/object-storage` test 5/5 and typecheck PASS as uid 1000, including chmod 000 mapping to unavailable. Documents test 42 pass, 2 skipped, 0 fail. Changed files formatted with Prettier. No database, cluster, or provider call.
 
 ## Observed defect
 `LocalObjectStorage.get()` in `packages/object-storage/src/local-object-storage.ts` calls `stat(path)` and then `readFile(path)`. A file changed/grown between those calls can cause allocation of an unbounded buffer before the post-read maxBytes check. `exists` uses `stat`. The package promises bounded bytes for `get(key,maxBytes)`; its local implementation does not enforce the bound *while reading*.
