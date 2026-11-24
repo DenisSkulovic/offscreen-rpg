@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { isValidSha256Digest } from '../../images/distribution/kind-image-loader.mjs';
+import { isValidSha256Digest, matchesRuntimeImageDigest } from '../../images/distribution/kind-image-loader.mjs';
 import {
   readPlatformObject,
   runPlatformCommand,
@@ -574,7 +574,14 @@ export function verifyDeploymentRolloutExecution(
       );
     }
     const podDigest = digestFromPodImageId(container.imageID);
-    if (!podDigest || !acceptedIds.includes(podDigest)) {
+    if (!matchesRuntimeImageDigest({
+      profileId: PROFILE_ID, node: pod?.spec?.nodeName, observedDigest: podDigest,
+      expectedDigest, acceptedIds,
+      run: (command, args) => {
+        const result = run(command, args);
+        return { ...result, status: result.ok ? 0 : 1 };
+      },
+    })) {
       throw rolloutRefusal(
         `deployment ${namespace}/${deploymentName} pod image identity is unknown`,
       );

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readKindProfile } from '../../clusters/kind/manager/config.mjs';
 
 /** @typedef {{ status: number | null, stdout: string, stderr: string, signal?: string | null }} RunResult */
@@ -668,5 +669,41 @@ if (isCli()) {
       console.error(message);
       process.exit(1);
     }
+  }
+}
+
+/**
+ * A containerd import may report a synthetic OCI index wrapping the loaded
+ * target. Accept only a content-hash-verified, single-child index chain ending
+ * at the expected target. Never accept a multi-image index by membership.
+ */
+export function matchesRuntimeImageDigest({ profileId, node, observedDigest, expectedDigest, acceptedIds, run = defaultRun }) {
+  if (!isValidSha256Digest(observedDigest) || !isValidSha256Digest(expectedDigest)) return false;
+  if (acceptedIds.includes(observedDigest)) return true;
+  const profile = readKindProfile(profileId);
+  if (!profile.roles.some(role => node === profile.clusterName + '-' + role)) return false;
+  try {
+    if (!discoverKindNodes(profile, run).includes(node)) return false;
+    let digest = observedDigest;
+    const visited = new Set();
+    for (let depth = 0; depth < 4; depth++) {
+      if (digest === expectedDigest) return true;
+      if (visited.has(digest)) return false;
+      visited.add(digest);
+      const result = run('docker', ['exec', node, 'ctr', '-n', 'k8s.io', 'content', 'get', digest]);
+      if (result.status !== 0 || typeof result.stdout !== 'string' || result.stdout.length > 1024 * 1024) return false;
+      // Hash the exact bytes, not a parsed or reserialized representation.
+      if ('sha256:' + createHash('sha256').update(result.stdout).digest('hex') !== digest) return false;
+      const body = JSON.parse(result.stdout);
+      if (body.schemaVersion !== 2 || !INDEX_MEDIA_TYPES.has(body.mediaType) ||
+          !Array.isArray(body.manifests) || body.manifests.length !== 1) return false;
+      const child = body.manifests[0];
+      if ((!INDEX_MEDIA_TYPES.has(child?.mediaType) && !MANIFEST_MEDIA_TYPES.has(child?.mediaType)) ||
+          !isValidSha256Digest(child?.digest) || child.artifactType) return false;
+      digest = child.digest;
+    }
+    return digest === expectedDigest;
+  } catch {
+    return false;
   }
 }

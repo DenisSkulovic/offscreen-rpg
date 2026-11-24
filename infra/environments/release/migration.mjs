@@ -6,6 +6,7 @@ import { readKindProfile } from '../../clusters/kind/manager/config.mjs';
 import {
   discoverKindNodes,
   isValidSha256Digest,
+  matchesRuntimeImageDigest,
   readKindImageIdentity,
   validateRefForProfile,
 } from '../../images/distribution/kind-image-loader.mjs';
@@ -448,7 +449,14 @@ export function verifyCompletedMigrationExecution(
   );
   const imageId = pod?.status?.containerStatuses?.[0]?.imageID;
   const podDigest = digestFromPodImageId(imageId ?? '');
-  if (!podDigest || !acceptedIds.includes(podDigest)) {
+  if (!matchesRuntimeImageDigest({
+    profileId: PROFILE_ID, node: pod?.spec?.nodeName, observedDigest: podDigest,
+    expectedDigest, acceptedIds,
+    run: (command, args) => {
+      const result = run(command, args);
+      return { ...result, status: result.ok ? 0 : 1 };
+    },
+  })) {
     throw migrationRefusal('migration Job pod image identity is unknown');
   }
 }

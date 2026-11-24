@@ -600,3 +600,33 @@ test('foreign docker label refuses before load', () => {
     false,
   );
 });
+
+import { createHash } from 'node:crypto';
+import { matchesRuntimeImageDigest } from './kind-image-loader.mjs';
+
+test('runtime import wrapper proves exact target by content hash, not alias name', () => {
+  const expected = 'sha256:' + 'b'.repeat(64);
+  const foreign = 'sha256:' + 'c'.repeat(64);
+  const index = 'application/vnd.oci.image.index.v1+json';
+  const node = 'offscreen-release-worker';
+  const check = (children, tampered = false, scheduledNode = node) => {
+    const bytes = JSON.stringify({ schemaVersion: 2, mediaType: index,
+      manifests: children.map(digest => ({ mediaType: index, digest, size: 856 })) });
+    const digest = 'sha256:' + createHash('sha256').update(bytes).digest('hex');
+    return matchesRuntimeImageDigest({
+      profileId: 'release', node: scheduledNode, observedDigest: digest,
+      expectedDigest: expected, acceptedIds: [expected],
+      run(command, args) {
+        if (command === 'kind') return { status: 0, stdout: 'offscreen-release-control-plane\noffscreen-release-worker\n' };
+        if (args[0] === 'inspect') return { status: 0, stdout: 'offscreen-release' };
+        if (args[0] === 'exec' && args.at(-1) === digest) return { status: 0, stdout: tampered ? bytes + ' ' : bytes };
+        return { status: 1, stdout: '' };
+      },
+    });
+  };
+  assert.equal(check([expected]), true);
+  assert.equal(check([foreign]), false);
+  assert.equal(check([expected, foreign]), false);
+  assert.equal(check([expected], true), false);
+  assert.equal(check([expected], false, 'offscreen-dev-worker'), false);
+});
