@@ -1,0 +1,95 @@
+mode: development
+
+readiness:
+  web:
+    failureThreshold: 24
+  api:
+    failureThreshold: 24
+  authority:
+    failureThreshold: 24
+  periodSeconds: 5
+  timeoutSeconds: 2
+
+resources:
+  requests:
+    cpu: 50m
+    web:
+      memory: 384Mi
+    api:
+      memory: 384Mi
+    authority:
+      memory: 384Mi
+    control:
+      memory: 256Mi
+    executor:
+      memory: 256Mi
+    relay:
+      memory: 256Mi
+
+workingDirs:
+  web: /app/apps/web
+  api: /app/apps/api
+  authority: /app/apps/game-authority
+  control: /app/apps/worker
+  executor: /app/apps/worker
+  relay: /app/apps/worker
+
+commands:
+  web:
+    - sh
+    - -c
+    - node dev-pod-web-receipt.mjs & exec pnpm exec next dev --hostname 0.0.0.0 --port 3000
+  api:
+    - node
+    - dev-pod-compile-watch.mjs
+    - api
+    - dist/src/main.js
+  authority:
+    - node
+    - dev-pod-compile-watch.mjs
+    - game-authority
+    - dist/src/bootstrap/main.js
+    - tsconfig.dev.json
+  control:
+    - node
+    - dev-pod-compile-watch.mjs
+    - worker-control
+    - dist/src/bootstrap/control-main.js
+    - tsconfig.dev.json
+  executor:
+    - node
+    - dev-pod-compile-watch.mjs
+    - worker-executor
+    - dist/src/bootstrap/executor-main.js
+    - tsconfig.dev.json
+  relay:
+    - node
+    - dev-pod-compile-watch.mjs
+    - worker-relay
+    - dist/src/bootstrap/main.js
+    - tsconfig.dev.json
+
+watched:
+  api:
+    role: api
+    entry: /app/apps/api/dist/src/main.js
+  authority:
+    role: game-authority
+    entry: /app/apps/game-authority/dist/src/bootstrap/main.js
+  control:
+    role: worker-control
+    entry: /app/apps/worker/dist/src/bootstrap/control-main.js
+  executor:
+    role: worker-executor
+    entry: /app/apps/worker/dist/src/bootstrap/executor-main.js
+  relay:
+    role: worker-relay
+    entry: /app/apps/worker/dist/src/bootstrap/main.js
+
+dev:
+  documentStore: s3
+  authorityMode: distributed
+  temporalTaskQueues:
+    control: control
+    executor: storyteller-execute-v1
+  podSecurityOnWorkers: true

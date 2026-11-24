@@ -4,6 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { deriveDevWorkloadBindings } from '../../infra/workloads/tests/helpers/dev-bindings.mjs';
+import { renderWorkloadDocuments } from '../../infra/workloads/render.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..');
@@ -28,6 +30,8 @@ export const ALLOWED_DESTINATION_ROOTS = [
   'infra/platform/rabbitmq/',
   'infra/workloads/dev/',
   'infra/workloads/release/',
+  'infra/workloads/chart/',
+  'infra/workloads/profiles/',
   'infra/environments/dev/',
   'infra/environments/release/',
   'infra/images/common/',
@@ -115,15 +119,95 @@ export const INF07_EFFECTIVE_DESTINATION_SUCCESSORS = [
   },
 ];
 
+/** INF08 retired static workload YAML (replaced by Helm chart + slot render). */
+export const INF08_RETIRED_WORKLOAD_PATHS = [
+  'infra/workloads/dev/web.yaml',
+  'infra/workloads/dev/api.yaml',
+  'infra/workloads/dev/authority.yaml',
+  'infra/workloads/dev/workers.yaml',
+  'infra/workloads/release/edge.yaml',
+  'infra/workloads/release/authority.yaml',
+  'infra/workloads/release/workers.yaml',
+  'infra/workloads/release/migrate.yaml',
+];
+
+/** INF08 successor relocations for historical move-map destination rows. */
+export const INF08_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/workloads/dev/web.yaml',
+    to: 'infra/workloads/chart/templates/deployments.yaml',
+  },
+  {
+    from: 'infra/workloads/dev/api.yaml',
+    to: 'infra/workloads/chart/templates/deployments.yaml',
+  },
+  {
+    from: 'infra/workloads/dev/authority.yaml',
+    to: 'infra/workloads/chart/templates/deployments.yaml',
+  },
+  {
+    from: 'infra/workloads/dev/workers.yaml',
+    to: 'infra/workloads/chart/templates/deployments.yaml',
+  },
+  {
+    from: 'infra/workloads/release/edge.yaml',
+    to: 'infra/workloads/chart/templates/deployments.yaml',
+  },
+  {
+    from: 'infra/workloads/release/authority.yaml',
+    to: 'infra/workloads/chart/templates/deployments.yaml',
+  },
+  {
+    from: 'infra/workloads/release/workers.yaml',
+    to: 'infra/workloads/chart/templates/deployments.yaml',
+  },
+  {
+    from: 'infra/workloads/release/migrate.yaml',
+    to: 'infra/workloads/chart/templates/migration-job.yaml',
+  },
+];
+
 function effectiveMoveDestination(destination) {
   let current = destination;
-  for (const table of [INF06_SUCCESSOR_RELOCATIONS, INF07_EFFECTIVE_DESTINATION_SUCCESSORS]) {
+  for (const table of [
+    INF06_SUCCESSOR_RELOCATIONS,
+    INF07_EFFECTIVE_DESTINATION_SUCCESSORS,
+    INF08_SUCCESSOR_RELOCATIONS,
+  ]) {
     const successor = table.find((row) => row.from === current);
     if (successor) {
       current = successor.to;
     }
   }
   return current;
+}
+
+export function assertInf08WorkloadRetirement(root) {
+  for (const relativePath of INF08_RETIRED_WORKLOAD_PATHS) {
+    if (existsSync(join(root, relativePath))) {
+      throw new Error(`INF08 predecessor must be retired: ${relativePath}`);
+    }
+  }
+  for (const relativePath of [
+    'infra/workloads/chart/templates/deployments.yaml',
+    'infra/workloads/chart/templates/services.yaml',
+    'infra/workloads/chart/templates/migration-job.yaml',
+    'infra/environments/release/game-edge-route.yaml',
+    'infra/workloads/render.mjs',
+  ]) {
+    if (!existsSync(join(root, relativePath))) {
+      throw new Error(`INF08 successor missing: ${relativePath}`);
+    }
+  }
+  const devOverlay = deriveDevWorkloadBindings('dev-1', 3100);
+  const devDocs = renderWorkloadDocuments({
+    profile: 'development',
+    section: 'all',
+    bindings: devOverlay.bindings,
+  });
+  assert.equal(devDocs.length, 10);
+  const releaseDocs = renderWorkloadDocuments({ profile: 'release', section: 'all' });
+  assert.equal(releaseDocs.length, 12);
 }
 
 export function assertInf06SuccessorRelocations(root) {
@@ -371,8 +455,13 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
   }
 
   const tiltfile = readFileSync(join(repoRoot, 'Tiltfile'), 'utf8');
+  const releaseTiltfile = readFileSync(
+    join(repoRoot, 'infra/environments/release/Tiltfile'),
+    'utf8',
+  );
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-dev'\)/);
-  assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
+  assert.doesNotMatch(tiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
+  assert.match(releaseTiltfile, /allow_k8s_contexts\('kind-offscreen-lab'\)/);
   assert.match(tiltfile, /infra\/dev\/Tiltfile/);
 
   const libSh = readFileSync(
@@ -392,6 +481,7 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   });
   assertInf06SuccessorRelocations(repoRoot);
   assertInf07SuccessorRelocations(repoRoot);
+  assertInf08WorkloadRetirement(repoRoot);
   assertTrackedModes(map.rows);
 
   const byChange = Object.create(null);

@@ -29,6 +29,14 @@ function healthyProbes(overrides = {}) {
   };
 }
 
+test('stack up requires Helm 3 or 4 when requested', () => {
+  const probes = healthyProbes({ currentContext: null });
+  const withHelm = runStackPreflight(probes, { requireHelm: true });
+  assert.equal(withHelm.ok, true);
+  const withoutHelm = runStackPreflight(probes, { requireHelm: false });
+  assert.equal(withoutHelm.ok, true);
+});
+
 test('healthy injected probes pass and mutate runs once', () => {
   let calls = 0;
   const probes = healthyProbes({ currentContext: null });

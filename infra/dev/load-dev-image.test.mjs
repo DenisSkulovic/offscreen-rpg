@@ -77,7 +77,7 @@ exit 0
 }
 
 test('dev Tiltfile uses worktree-scoped receipt paths and shared rebuild inputs', () => {
-  assert.match(tiltfile, /\.offscreen\/tilt-image-refs\/' \+ scope \+ '\//);
+  assert.match(tiltfile, /\.offscreen\/tilt-image-refs\/' \+ OFFSCREEN_DEV_SLOT \+ '\//);
   assert.match(tiltfile, /infra\/dev\/load-dev-image\.sh/);
   assert.doesNotMatch(tiltfile, /TURBO_FILTER_BY_IMAGE/);
   assert.match(tiltfile, /kind-image-loader\.mjs/);
@@ -91,16 +91,22 @@ test('adapter refuses slot ref that does not match OFFSCREEN_DEV_SLOT', () => {
   assert.match(result.stderr, /refusing slot ref/);
 });
 
-test('adapter refuses legacy refs during an active slot session', () => {
+test('adapter refuses legacy dev workspace refs before docker', () => {
   const result = runAdapter('offscreen-lab-dev-workspace:dxk08-api', { OFFSCREEN_DEV_SLOT: 'dev-2' });
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /refusing legacy profile ref/);
+  assert.match(result.stderr, /refusing legacy dev workspace ref/);
 });
 
-test('adapter does not fall malformed slot refs through to legacy release handling', () => {
+test('adapter refuses malformed slot refs without valid OFFSCREEN_DEV_SLOT', () => {
   const result = runAdapter('offscreen-dev-workspace:dev-2-typo', { OFFSCREEN_DEV_SLOT: 'unassigned' });
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /refusing malformed slot ref/);
+  assert.match(result.stderr, /without valid OFFSCREEN_DEV_SLOT/);
+});
+
+test('adapter refuses release refs with no cross-profile fallback', () => {
+  const result = runAdapter('offscreen-lab-game-web:turn02', { OFFSCREEN_DEV_SLOT: 'dev-2' });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /refusing ref/);
 });
 
 test('adapter rejects unknown refs with no cross-profile fallback', () => {
@@ -145,7 +151,7 @@ test('failure removes stale receipt before adapter work and leaves no success fi
 
 test('two slots write separate receipt paths', () => {
   assert.notEqual(
-    tiltfile.includes("scope + '/' + image_key"),
+    tiltfile.includes("OFFSCREEN_DEV_SLOT + '/' + image_key"),
     false,
   );
   const left = join(repoRoot, '.offscreen/tilt-image-refs/dev-2/web.ref');

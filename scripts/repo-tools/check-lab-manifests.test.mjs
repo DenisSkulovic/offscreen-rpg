@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
   checkLabManifests,
   collectLabYamlFiles,
+  isExcludedFromRawYamlScan,
   parseLabYamlFile,
 } from './check-lab-manifests.mjs';
 import { fileURLToPath } from 'node:url';
@@ -26,8 +27,29 @@ test('infra tree contains Kubernetes YAML manifests', () => {
 });
 
 test('all lab Kubernetes YAML parses', () => {
-  const result = checkLabManifests();
+  const result = checkLabManifests(undefined, { helm: true });
   assert.ok(result.fileCount > 0);
+  assert.ok(result.helm);
+  assert.equal(result.helm.releaseDocumentCount, 12);
+});
+
+test('raw yaml scan skips helm chart templates only', () => {
+  const workloadsRoot = join(repoRoot, 'infra/workloads');
+  const files = collectLabYamlFiles(workloadsRoot);
+  assert.ok(files.some((file) => file.endsWith('chart/Chart.yaml')));
+  assert.ok(files.some((file) => file.endsWith('profiles/release.yaml')));
+  assert.ok(!files.some((file) => file.includes('chart/templates/')));
+  assert.equal(
+    isExcludedFromRawYamlScan(join(workloadsRoot, 'chart/templates/deployments.yaml')),
+    true,
+  );
+  assert.equal(isExcludedFromRawYamlScan(join(workloadsRoot, 'chart/values.yaml')), false);
+});
+
+test('explicit --root scan skips helm validation', () => {
+  const result = checkLabManifests(releaseEnvRoot, { helm: false });
+  assert.ok(result.fileCount > 0);
+  assert.equal(result.helm, null);
 });
 
 test('deliberately invalid YAML fails the checker', () => {

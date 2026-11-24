@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LOOPBACK_API_ADDRESS, RELEASE_API_PORT, readKindProfile, parseKindTopology } from '../../infra/clusters/kind/manager/config.mjs';
 import { MIN_HOST_MEMORY_MIB } from '../../infra/clusters/kind/manager/host-probe.mjs';
+import { assertHelmAvailable } from '../../infra/workloads/render.mjs';
 
 const releaseProfile = readKindProfile('release');
 
@@ -105,12 +106,22 @@ export function resourceProfileFromPins() {
 
 /**
  * @param {StackPreflightProbes} probes
+ * @param {{ requireHelm?: boolean }} [options]
  * @returns {{ ok: boolean, refusals: StackPreflightRefusal[], profile: ReturnType<typeof resourceProfileFromPins> }}
  */
-export function runStackPreflight(probes) {
+export function runStackPreflight(probes, options = {}) {
   /** @type {StackPreflightRefusal[]} */
   const refusals = [];
   const profile = resourceProfileFromPins();
+
+  if (options.requireHelm) {
+    try {
+      assertHelmAvailable();
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'helm is not available';
+      refusals.push({ id: 'missing-helm', message: `Required Helm 3 or 4 was not found: ${detail}.` });
+    }
+  }
 
   for (const cmd of PREREQ_COMMANDS) {
     if (probes.commandsPresent?.[cmd] !== true) {
@@ -170,8 +181,8 @@ export function runStackPreflight(probes) {
  * @param {StackPreflightProbes} probes
  * @returns {{ ok: boolean, refusals: StackPreflightRefusal[], profile: ReturnType<typeof resourceProfileFromPins>, mutated: boolean }}
  */
-export function withStackPreflightGuard(mutate, probes) {
-  const result = runStackPreflight(probes);
+export function withStackPreflightGuard(mutate, probes, options = {}) {
+  const result = runStackPreflight(probes, options);
   if (result.ok) {
     mutate();
     return { ...result, mutated: true };

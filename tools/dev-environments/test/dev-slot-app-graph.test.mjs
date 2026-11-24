@@ -108,7 +108,13 @@ test('tilt deployments are declarative and match startup before image substituti
   assert.deepEqual(tilt, startup);
   assert.equal(tilt.length, 6);
   const yaml = renderTiltDeploymentYaml(env);
-  for (const field of ['resourceVersion', 'uid:', 'managedFields', 'status:', 'deployment.kubernetes.io/revision']) {
+  const parsedTilt = yaml
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('{'))
+    .map((line) => JSON.parse(line));
+  assert.deepEqual(parsedTilt, tilt);
+  for (const field of ['resourceVersion', 'uid', 'managedFields', 'status', 'deployment.kubernetes.io/revision']) {
     assert.equal(yaml.includes(field), false, field);
   }
   for (const document of tilt) {
@@ -134,7 +140,7 @@ test('tilt deployment route does not invoke kubectl', () => {
     encoding: 'utf8',
   });
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /^---\napiVersion: "apps\/v1"/);
+  assert.match(result.stdout, /^---\n\{"apiVersion":"apps\/v1"/);
   assert.equal(result.stdout.includes('resourceVersion'), false);
   assert.equal(result.stdout.includes('kind: Namespace'), false);
   assert.equal(result.stdout.includes('kind: Secret'), false);

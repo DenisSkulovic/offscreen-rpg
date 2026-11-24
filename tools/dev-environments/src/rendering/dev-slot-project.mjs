@@ -180,20 +180,3 @@ export function projectDevSlot(options) {
 
   return { record, dbUid, s3Uid, appUid, images: graph.images, documents: graph.documents };
 }
-
-if (process.argv[1]?.endsWith('dev-slot-project.mjs')) {
-  const result = projectDevSlot({
-    worktree: process.argv[2],
-    registryRoot: process.argv[3],
-    oauthFile: process.argv[4],
-  });
-  const kubectlFn = kubectl;
-  for (const document of result.documents.slice(1)) kubectlFn(['apply', '-f', '-'], JSON.stringify(document));
-  process.stdout.write(`${JSON.stringify({
-    slot: result.record.slotId,
-    namespace: result.record.namespace,
-    ports: result.record.ports,
-    uids: { db: result.dbUid, s3: result.s3Uid, app: result.appUid },
-    images: result.images,
-  })}\n`);
-}

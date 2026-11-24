@@ -9,7 +9,15 @@ import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { execPath } from 'node:process';
 import { allocateDevWorktreeOwner } from '../src/domain/dev-worktree-allocator.mjs';
-import { reconcileDevSlot, planSlotImageBuilds, describeImageLoadFailure, resolveOauthReadiness, ensureOwnedSlotImages } from '../src/application/dev-slot-startup.mjs';
+import {
+  applyOwnedSlotWorkloads,
+  reconcileDevSlot,
+  planSlotImageBuilds,
+  describeImageLoadFailure,
+  resolveOauthReadiness,
+  ensureOwnedSlotImages,
+} from '../src/application/dev-slot-startup.mjs';
+import { renderDevSlotAppGraph } from '../src/rendering/dev-slot-app-graph.mjs';
 
 const record = {
   slotId: 'dev-3',
@@ -348,4 +356,54 @@ test('oauth readiness refuses before sql for a missing, incomplete, short, or un
   const blocked = await reconcileDevSlot({ worktree, registryRoot: root }, used);
   assert.equal(blocked.phase, 'oauth');
   assert.equal(used.calls.includes('sql'), false);
+});
+
+test('deployment inventory failure applies nothing', async () => {
+  const projected = {
+    record: {
+      slotId: 'dev-4',
+      namespace: 'offscreen-dev-4',
+      ports: { game: 13112 },
+    },
+    documents: renderDevSlotAppGraph('dev-4', { schemaReady: true, ports: { game: 13112 } }).documents,
+  };
+  const kubectlCalls = [];
+  const run = (cmd, args, options) => {
+  const joined = [cmd, ...(args ?? [])].join(' ');
+    kubectlCalls.push(joined);
+    if (joined.includes('helm version')) {
+      return { status: 0, stdout: 'v3.22.1+gabc\n', stderr: '', error: undefined, signal: null };
+    }
+    if (joined.includes('helm template')) {
+      return spawnSync(cmd, args, options);
+    }
+    if (joined.includes('get deployments')) {
+      return { status: 1, stdout: '', stderr: 'forbidden', error: undefined, signal: null };
+    }
+    throw new Error(`unexpected command: ${joined}`);
+  };
+  const result = await applyOwnedSlotWorkloads(projected, { run, helmRun: run });
+  assert.equal(result.ok, false);
+  assert.match(result.refusals[0].detail, /inventory/);
+  assert.equal(kubectlCalls.some((line) => line.includes('apply')), false);
+});
+
+test('helm failure refuses before workload apply', async () => {
+  const projected = {
+    record: {
+      slotId: 'dev-4',
+      namespace: 'offscreen-dev-4',
+      ports: { game: 13112 },
+    },
+    documents: [],
+  };
+  const run = (cmd, args) => {
+    if (cmd === 'helm') {
+      return { status: 127, stdout: '', stderr: 'not found', error: undefined, signal: null };
+    }
+    throw new Error('kubectl must not run when helm is missing');
+  };
+  const result = await applyOwnedSlotWorkloads(projected, { run, helmRun: run, skipRenderCheck: true });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0].id, 'helm');
 });

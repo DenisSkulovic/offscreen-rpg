@@ -1,6 +1,9 @@
 # Real lab app release for kind-offscreen-lab: build app-release images and apply
-# TURN02 overlays. Invoke with: tilt up -f infra/environments/release/Tiltfile
+# Helm-rendered release workloads. Invoke with: tilt up -f infra/environments/release/Tiltfile
 # Does not use Docker Compose or gateway synthetic skeleton workloads.
+#
+# Schema migrations and first-time Secrets still require infra/environments/release/install.sh.
+# Do not run install.sh and this Tiltfile as concurrent release writers against the same cluster.
 
 allow_k8s_contexts('kind-offscreen-lab')
 
@@ -58,9 +61,20 @@ release_image_build(API_IMAGE, 'api', API_IMAGE)
 release_image_build(GA_IMAGE, 'game-authority', GA_IMAGE)
 release_image_build(WORKER_IMAGE, 'worker', WORKER_IMAGE)
 
-k8s_yaml(REPO_ROOT + '/infra/workloads/release/authority.yaml')
-k8s_yaml(REPO_ROOT + '/infra/workloads/release/workers.yaml')
-k8s_yaml(REPO_ROOT + '/infra/workloads/release/edge.yaml')
+watch_file(REPO_ROOT + '/infra/workloads/render.mjs')
+watch_file(REPO_ROOT + '/infra/workloads/profiles/release.yaml')
+watch_file(REPO_ROOT + '/infra/workloads/chart/Chart.yaml')
+watch_file(REPO_ROOT + '/infra/workloads/chart/values.yaml')
+watch_file(REPO_ROOT + '/infra/workloads/chart/values.schema.json')
+watch_file(REPO_ROOT + '/infra/environments/release/game-edge-route.yaml')
+
+release_manifests = local(
+    'node infra/workloads/render.mjs release all',
+    dir=REPO_ROOT,
+    quiet=True,
+)
+k8s_yaml(release_manifests)
+k8s_yaml(REPO_ROOT + '/infra/environments/release/game-edge-route.yaml')
 
 k8s_resource('game-authority')
 

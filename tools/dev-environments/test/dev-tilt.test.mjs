@@ -311,7 +311,6 @@ test('launcher writes allocator game and tilt ports to the worktree session', as
     commandOnPath: () => true,
     probeLoopbackPortOccupied: alwaysFreeProbe,
     spawnFn: spawn,
-    collectLabReadiness: async () => ({}),
     exitAfterSession: true,
     reconcileDevSlot: async () => ({ ok: true, readyForWorkloads: true }),
   });
@@ -413,7 +412,6 @@ test('sufficient memory still reconciles and launches', async () => {
     commandOnPath: () => true,
     probeLoopbackPortOccupied: alwaysFreeProbe,
     spawnFn: spawn,
-    collectLabReadiness: async () => ({}),
     exitAfterSession: true,
     reconcileDevSlot: async () => {
       reconciled = true;
@@ -441,6 +439,36 @@ test('missing memory reading fails closed before mutation', async () => {
     spawnFn: spawn,
     exit: (code) => {
       exitCodes.push(code);
+    },
+    reconcileDevSlot: async () => {
+      reconciled = true;
+      return { ok: true, readyForWorkloads: true };
+    },
+  });
+  assert.deepEqual(exitCodes, [1]);
+  assert.equal(reconciled, false);
+  assert.equal(spawn.called(), false);
+});
+
+test('missing helm refuses before reconciliation or spawn', async () => {
+  const worktree = mkdtempSync(join(tmpdir(), 'offscreen-wt-helm-missing-'));
+  const spawn = fakeSpawn();
+  /** @type {number[]} */
+  const exitCodes = [];
+  let reconciled = false;
+  await runDevTiltLaunch({
+    worktree,
+    fingerprintDevImageContext: okLaunchFingerprint(),
+    collectDefaultProbes: async () => ({ memAvailableKib: 9_000_000 }),
+    runStackPreflight: () => okPreflight(),
+    commandOnPath: () => true,
+    probeLoopbackPortOccupied: alwaysFreeProbe,
+    spawnFn: spawn,
+    exit: (code) => {
+      exitCodes.push(code);
+    },
+    assertHelmAvailable: async () => {
+      throw new Error('helm is not available');
     },
     reconcileDevSlot: async () => {
       reconciled = true;

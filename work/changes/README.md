@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**INF08:** [Helm application workload normalization](open/2026-11-24--inf08-helm-workload-normalization/CHANGE.md) commissioned after INF07; no global queue change.
+**INF08:** [Helm application workload normalization](archive/2026-11/platform-operations/2026-11-24--inf08-helm-workload-normalization/CHANGE.md) Done and archived after INF07; no global queue change.
 
 **INF07:** [Image architecture normalization](archive/2026-11/platform-operations/2026-11-24--inf07-image-architecture-normalization/CHANGE.md) is Done source-only after INF06. Live Docker/Kind/Tilt NOT-RUN. No global queue change.
 

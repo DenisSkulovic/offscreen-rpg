@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { renderDevSlotAppGraph } from '../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
@@ -61,17 +62,29 @@ export function assertDevWebFallbackContract(tiltfile) {
 
 test('dev Tiltfile live_update syncs apps/web with dependency fallbacks', () => {
   assertDevWebLiveUpdateContract(devTiltfile);
-  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/web\.yaml['"]\s*\)/);
-  assert.match(
-    devTiltfile,
-    /k8s_resource\(\s*'game-web',\s*port_forwards=\['127\.0\.0\.1:' \+ OFFSCREEN_DEV_GAME_PORT \+ ':3000'\]/,
-  );
+  assert.match(devTiltfile, /--tilt-deployments/);
+  assert.match(devTiltfile, /k8s_yaml\(rendered\)/);
+  assert.doesNotMatch(devTiltfile, /infra\/workloads\/dev\//);
+  assert.doesNotMatch(devTiltfile, /offscreen-lab-dev-workspace/);
+  assert.doesNotMatch(devTiltfile, /port_forwards/);
 });
 
 test('release Tiltfile still owns app-release-images unchanged', () => {
   assert.match(releaseTiltfile, /app-release-images/);
   assert.match(releaseTiltfile, /build-release-images\.sh/);
   assert.doesNotMatch(releaseTiltfile, /live_update\s*\(/);
+});
+
+test('slot graph game-web uses watched dev compile and slot image', () => {
+  const graph = renderDevSlotAppGraph('dev-1', { schemaReady: true, ports: { game: 3100 } });
+  const web = graph.documents.find((item) => item.kind === 'Deployment' && item.metadata.name === 'game-web');
+  assert.ok(web);
+  assert.equal(web.metadata.namespace, 'offscreen-dev-1');
+  assert.match(web.spec.template.spec.containers[0].image, /^offscreen-dev-workspace:dev-1-web$/);
+  const command = web.spec.template.spec.containers[0].command.join(' ');
+  assert.match(command, /dev-pod-web-receipt\.mjs|dev-pod-compile-watch\.mjs web/);
+  const readiness = web.spec.template.spec.containers[0].readinessProbe;
+  assert.equal(readiness.tcpSocket.port, 'http');
 });
 
 test('dev web contract rejects missing lockfile or Dockerfile fallbacks', () => {

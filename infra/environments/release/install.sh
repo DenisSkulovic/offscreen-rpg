@@ -12,7 +12,9 @@ if [[ $# -ne 0 ]]; then
 fi
 
 RELEASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OVERLAY_DIR="$(cd "${RELEASE_DIR}/../../workloads/release" && pwd)"
+REPO_ROOT="$(cd "${RELEASE_DIR}/../../.." && pwd)"
+RENDER_MJS="${REPO_ROOT}/infra/workloads/render.mjs"
+EDGE_ROUTE_YAML="${RELEASE_DIR}/game-edge-route.yaml"
 APP_RELEASE_IMAGE_DIR="$(cd "${RELEASE_DIR}/../../images/release" && pwd)"
 KIND_IMAGE_LOADER="$(cd "${RELEASE_DIR}/../../images/distribution" && pwd)/kind-image-loader.mjs"
 CONTEXT_NAME="kind-offscreen-lab"
@@ -89,6 +91,47 @@ if ! "${KUBECTL[@]}" -n lab-temporal get service temporal-server >/dev/null 2>&1
   exit 1
 fi
 
+RENDER_WORK="$(mktemp -d)"
+cleanup_render_work() {
+  rm -rf "${RENDER_WORK}"
+}
+trap cleanup_render_work EXIT
+
+verify_helm() {
+  local short
+  if ! short="$(helm version --short 2>/dev/null | head -n1)"; then
+    echo "Refusing install: helm is not available." >&2
+    exit 1
+  fi
+  if [[ ! "${short}" =~ ^v[34]\. ]]; then
+    echo "Refusing install: unsupported helm version (${short:-unknown})." >&2
+    exit 1
+  fi
+}
+
+render_release_section() {
+  local section="$1"
+  local outfile="$2"
+  if ! node "${RENDER_MJS}" release "${section}" >"${outfile}"; then
+    echo "Refusing install: could not render release ${section} manifests." >&2
+    exit 1
+  fi
+}
+
+verify_helm
+if image_selected api; then
+  render_release_section migration "${RENDER_WORK}/migration.yaml"
+fi
+if image_selected game-authority; then
+  render_release_section authority "${RENDER_WORK}/authority.yaml"
+fi
+if image_selected worker; then
+  render_release_section workers "${RENDER_WORK}/workers.yaml"
+fi
+if image_selected web || image_selected api; then
+  render_release_section edge "${RENDER_WORK}/edge.yaml"
+fi
+
 echo "Loading selected release images into ${CLUSTER_NAME}…"
 load_image_if_changed() {
   local name="$1"
@@ -107,7 +150,7 @@ load_image_if_changed game-authority "$GA_IMAGE"
 load_image_if_changed worker "$WORKER_IMAGE"
 
 echo "Preparing release Secrets from the lab database, object store, and root .env…"
-export OFFSCREEN_REPO_ROOT="$(cd "${RELEASE_DIR}/../../.." && pwd)"
+export OFFSCREEN_REPO_ROOT="${REPO_ROOT}"
 python3 - "$CONTEXT_NAME" <<'PY'
 import base64, json, os, secrets, subprocess, sys
 
@@ -223,22 +266,22 @@ PY
 
 # Schema migrations travel with the API image. A worker-only or web-only warm install leaves the Job alone.
 if image_selected api; then
-  echo "Applying migration Job ${OVERLAY_DIR}/migrate.yaml and waiting for completion…"
-  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/migrate.yaml"
+  echo "Applying migration Job from rendered manifests and waiting for completion…"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/migration.yaml"
   "${KUBECTL[@]}" -n lab-edge wait --for=condition=complete "job/game-migrate" --timeout=300s
 fi
 
 if image_selected game-authority; then
   echo "Applying authority overlay…"
-  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/authority.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/authority.yaml"
 fi
 if image_selected worker; then
   echo "Applying workers overlay…"
-  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/workers.yaml"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/workers.yaml"
 fi
 if image_selected web || image_selected api; then
-  echo "Applying edge overlay…"
-  "${KUBECTL[@]}" apply -f "${OVERLAY_DIR}/edge.yaml"
+  echo "Applying edge overlay and HTTPRoute…"
+  "${KUBECTL[@]}" apply -f "${RENDER_WORK}/edge.yaml" -f "${EDGE_ROUTE_YAML}"
 fi
 
 if image_selected api; then

@@ -69,7 +69,9 @@ function mismatchedImportRoots(observed, expected) {
 export function buildStackPlan(input) {
   const urls = /** @type {[]} */ ([]);
   const owned = loadOwnedResources();
-  const preflight = runStackPreflight(input.probes);
+  const preflight = runStackPreflight(input.probes, {
+    requireHelm: input.command === 'up',
+  });
 
   if (!preflight.ok) {
     return {

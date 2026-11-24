@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { renderDevSlotAppGraph } from '../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
+import { renderWorkloadDocuments } from '../workloads/render.mjs';
 import {
   assertDevApiTiltContract,
   assertDevGaTiltContract,
@@ -11,79 +13,42 @@ import { assertDevWebLiveUpdateContract } from './dev-tiltfile-web.test.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
-const workersYamlPath = join(repoRoot, 'infra/workloads/dev/workers.yaml');
 const workerPackagePath = join(repoRoot, 'apps/worker/package.json');
 const devWatchCompilationPath = join(repoRoot, 'infra/dev/dev-watch-compilation.mjs');
-const releaseWorkersPath = join(
-  repoRoot,
-  'infra/workloads/release/workers.yaml',
-);
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
-const workersYaml = readFileSync(workersYamlPath, 'utf8');
 const workerPackage = JSON.parse(readFileSync(workerPackagePath, 'utf8'));
-const releaseWorkersYaml = readFileSync(releaseWorkersPath, 'utf8');
 
 /**
- * @param {string} tiltfile
- * @param {string} marker
- */
-function dockerBuildSlice(tiltfile, marker) {
-  const start = tiltfile.indexOf(marker);
-  assert.notEqual(start, -1, `expected Tiltfile marker ${marker}`);
-  const rest = tiltfile.slice(start);
-  const next = rest.indexOf(
-    'dev_workspace_docker_build(',
-    marker.length,
-  );
-  return next === -1 ? rest : rest.slice(0, next);
-}
-
-/**
- * @param {string} yaml
+ * @param {Array<{ kind?: string, metadata?: { name?: string, namespace?: string } }>} documents
  * @param {string} deploymentName
  */
-function deploymentSlice(yaml, deploymentName) {
-  const marker = `name: ${deploymentName}\n  namespace: lab-workers`;
-  const start = yaml.indexOf(marker);
-  assert.notEqual(
-    start,
-    -1,
-    `expected deployment ${deploymentName} in workers manifest`,
+function deploymentFromDocs(documents, deploymentName) {
+  const deployment = documents.find(
+    (item) => item.kind === 'Deployment' && item.metadata?.name === deploymentName,
   );
-  const rest = yaml.slice(start);
-  const next = rest.indexOf('\n---\n', marker.length);
-  return next === -1 ? rest : rest.slice(0, next);
+  assert.ok(deployment, `expected deployment ${deploymentName}`);
+  return deployment;
 }
 
 /**
  * Release overlay withholds broad DB client env from control and executor.
- * @param {string} releaseYaml
- * @param {string} devYaml
+ * @param {ReturnType<typeof renderWorkloadDocuments>} releaseDocs
+ * @param {ReturnType<typeof renderDevSlotAppGraph>} devGraph
  */
-export function assertDevWorkerDbEnvMatchesReleaseContract(releaseYaml, devYaml) {
+export function assertDevWorkerDbEnvMatchesReleaseContract(releaseDocs, devGraph) {
   for (const role of ['game-control', 'game-executor']) {
-    const releaseBlock = deploymentSlice(releaseYaml, role);
-    const devBlock = deploymentSlice(devYaml, role);
-    assert.doesNotMatch(
-      releaseBlock,
-      /DATABASE_URL/,
-      `release ${role} must not expose DATABASE_URL`,
-    );
-    assert.doesNotMatch(
-      devBlock,
-      /DATABASE_URL/,
-      `dev ${role} must not expose DATABASE_URL`,
-    );
-    assert.doesNotMatch(
-      devBlock,
-      /postgres/i,
-      `dev ${role} must not reference postgres connection strings`,
-    );
+    const releaseBlock = deploymentFromDocs(releaseDocs, role);
+    const devBlock = deploymentFromDocs(devGraph.documents, role);
+    const releaseText = JSON.stringify(releaseBlock.spec.template.spec.containers[0].env ?? []);
+    const devText = JSON.stringify(devBlock.spec.template.spec.containers[0].env ?? []);
+    assert.doesNotMatch(releaseText, /DATABASE_URL/, `release ${role} must not expose DATABASE_URL`);
+    assert.doesNotMatch(devText, /DATABASE_URL/, `dev ${role} must not expose DATABASE_URL`);
+    assert.doesNotMatch(devText, /postgres/i, `dev ${role} must not reference postgres connection strings`);
   }
-  const relayBlock = deploymentSlice(devYaml, 'game-relay');
+  const relayBlock = deploymentFromDocs(devGraph.documents, 'game-relay');
   assert.match(
-    relayBlock,
-    /name: DATABASE_URL/,
+    JSON.stringify(relayBlock.spec.template.spec.containers[0].env ?? []),
+    /DATABASE_URL/,
     'dev game-relay must keep DATABASE_URL like release relay',
   );
 }
@@ -131,14 +96,15 @@ export function assertDevWorkerTiltContract(tiltfile) {
     /dev_workspace_docker_build\(DEV_WORKSPACE_WORKER_IMAGE,\s*'worker'\)/,
   );
   assert.match(tiltfile, /SYNC_CONFIG\['sync_dirs_by_image'\]/);
-  for (const name of ['game-control', 'game-executor', 'game-relay']) {
+  for (const name of ['game-control', 'game-executor', 'game-relay', 'game-web', 'game-api', 'game-authority']) {
     assert.match(
       tiltfile,
-      new RegExp(`k8s_resource\\(\\s*['"]${name}['"]\\)`),
-      `expected k8s_resource for ${name}`,
+      new RegExp(`['"]${name}['"]`),
+      `expected tilt graph to include ${name}`,
     );
   }
-  assert.match(tiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/workers\.yaml['"]\s*\)/);
+  assert.match(tiltfile, /--tilt-deployments/);
+  assert.doesNotMatch(tiltfile, /infra\/workloads\/dev\/workers\.yaml/);
 }
 
 test('dev Tiltfile worker live_update syncs apps/worker only on worker resources', () => {
@@ -152,32 +118,27 @@ test('dev worker package scripts target the three bootstrap entrypoints', () => 
   assertWorkerDevBootstrapScripts(workerPackage.scripts);
 });
 
-test('dev worker manifests mirror release DB env boundaries', () => {
-  assertDevWorkerDbEnvMatchesReleaseContract(releaseWorkersYaml, workersYaml);
+test('slot worker graph mirrors release DB env boundaries', () => {
+  const devGraph = renderDevSlotAppGraph('dev-1', { schemaReady: true, ports: { game: 3100 } });
+  const releaseDocs = renderWorkloadDocuments({ profile: 'release', section: 'workers' });
+  assertDevWorkerDbEnvMatchesReleaseContract(releaseDocs, devGraph);
+  const control = deploymentFromDocs(devGraph.documents, 'game-control');
+  const executor = deploymentFromDocs(devGraph.documents, 'game-executor');
+  const relay = deploymentFromDocs(devGraph.documents, 'game-relay');
+  assert.match(control.spec.template.spec.containers[0].command.join(' '), /control-main\.js/);
+  assert.match(executor.spec.template.spec.containers[0].command.join(' '), /executor-main\.js/);
+  assert.match(relay.spec.template.spec.containers[0].command.join(' '), /bootstrap\/main\.js/);
   assert.match(
-    deploymentSlice(workersYaml, 'game-control'),
-    /dev:control/,
-    'game-control must run dev:control',
-  );
-  assert.match(
-    deploymentSlice(workersYaml, 'game-executor'),
-    /dev:executor/,
-    'game-executor must run dev:executor',
-  );
-  assert.match(
-    deploymentSlice(workersYaml, 'game-relay'),
-    /dev:relay/,
-    'game-relay must run dev:relay',
-  );
-  assert.match(
-    workersYaml,
-    /offscreen-lab-dev-workspace:dxk08-worker/,
-    'all worker roles share the dev worker image',
+    relay.spec.template.spec.containers[0].image,
+    /^offscreen-dev-workspace:dev-1-worker$/,
+    'all worker roles share the dev worker image family',
   );
 });
 
 test('control with DATABASE_URL is rejected (negative)', () => {
-  const poisoned = deploymentSlice(workersYaml, 'game-control').replace(
+  const devGraph = renderDevSlotAppGraph('dev-1', { schemaReady: true, ports: { game: 3100 } });
+  const control = deploymentFromDocs(devGraph.documents, 'game-control');
+  const poisoned = JSON.stringify(control.spec.template.spec.containers[0].env).replace(
     'TEMPORAL_ADDRESS',
     'DATABASE_URL',
   );

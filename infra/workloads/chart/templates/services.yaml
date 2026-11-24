@@ -1,0 +1,30 @@
+{{- include "offscreen-app.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $mode := .Values.mode -}}
+{{- $ctx := . -}}
+
+{{- if and (or (eq $section "all") (eq $section "namespaces") (eq $section "edge")) (eq $mode "development") -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.namespace.dev" "ctx" $ctx) -}}
+{{- end -}}
+{{- if eq $mode "release" -}}
+{{- if or (eq $section "all") (eq $section "namespaces") -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.namespace.release.edge" "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.namespace.release.authority" "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.namespace.release.workers" "ctx" $ctx) -}}
+{{- else if eq $section "edge" -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.namespace.release.edge" "ctx" $ctx) -}}
+{{- else if eq $section "authority" -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.namespace.release.authority" "ctx" $ctx) -}}
+{{- else if eq $section "workers" -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.namespace.release.workers" "ctx" $ctx) -}}
+{{- end -}}
+{{- end -}}
+
+{{- if or (eq $section "all") (eq $section "services") (eq $section "edge") (eq $section "authority") -}}
+{{- $suffix := ternary "dev" "release" (eq $mode "development") -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" (printf "offscreen-app.doc.service.game-web.%s" $suffix) "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" (printf "offscreen-app.doc.service.game-api.%s" $suffix) "ctx" $ctx) -}}
+{{- if or (eq $section "all") (eq $section "services") (eq $section "authority") -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" (printf "offscreen-app.doc.service.game-authority.%s" $suffix) "ctx" $ctx) -}}
+{{- end -}}
+{{- end -}}

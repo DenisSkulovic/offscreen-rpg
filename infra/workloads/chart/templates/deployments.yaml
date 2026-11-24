@@ -1,0 +1,27 @@
+{{- include "offscreen-app.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- $mode := .Values.mode -}}
+{{- $ctx := . -}}
+
+{{- if or (eq $section "all") (eq $section "deployments") (eq $section "edge") (eq $section "authority") (eq $section "workers") -}}
+{{- if or (eq $section "all") (eq $section "deployments") (eq $section "edge") -}}
+{{- $suffix := ternary "dev" "release" (eq $mode "development") -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" (printf "offscreen-app.doc.deployment.game-web.%s" $suffix) "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" (printf "offscreen-app.doc.deployment.game-api.%s" $suffix) "ctx" $ctx) -}}
+{{- end -}}
+{{- if or (eq $section "all") (eq $section "deployments") (eq $section "authority") -}}
+{{- $suffix := ternary "dev" "release" (eq $mode "development") -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" (printf "offscreen-app.doc.deployment.game-authority.%s" $suffix) "ctx" $ctx) -}}
+{{- end -}}
+{{- if or (eq $section "all") (eq $section "deployments") (eq $section "workers") -}}
+{{- if eq $mode "development" -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.deployment.game-control.dev" "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.deployment.game-executor.dev" "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.deployment.game-relay.dev" "ctx" $ctx) -}}
+{{- else -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.deployment.game-control.release" "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.deployment.game-executor.release" "ctx" $ctx) -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.deployment.game-relay.release" "ctx" $ctx) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}

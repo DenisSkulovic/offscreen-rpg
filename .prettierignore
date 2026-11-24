@@ -7,3 +7,4 @@ docs
 README.md
 AGENTS.md
 packages/db/migrations/meta
+infra/workloads/chart/templates/**

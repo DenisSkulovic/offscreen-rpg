@@ -1,24 +1,14 @@
-# DXK08 developer lab graph (pnpm dev / root Tiltfile).
+# Owned dev slot graph (pnpm dev / root Tiltfile).
 # Release image builds and TURN02 overlays: infra/environments/release/Tiltfile.
 
 OFFSCREEN_DEV_SLOT = os.getenv('OFFSCREEN_DEV_SLOT', 'unassigned')
 OFFSCREEN_DEV_NAMESPACE = os.getenv('OFFSCREEN_DEV_NAMESPACE', 'unassigned')
 OFFSCREEN_DEV_GAME_PORT = os.getenv('OFFSCREEN_DEV_GAME_PORT', '3000')
-SLOT_SESSION = OFFSCREEN_DEV_SLOT.startswith('dev-')
 
-# A slot session syncs into the images already running in that slot.
-# The lab manifests stay on the unassigned DXK08 path so `tilt up` cannot
-# create lab-edge inside kind-offscreen-dev.
-if SLOT_SESSION:
-    DEV_WORKSPACE_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-web'
-    DEV_WORKSPACE_API_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-api'
-    DEV_WORKSPACE_GA_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-authority'
-    DEV_WORKSPACE_WORKER_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-worker'
-else:
-    DEV_WORKSPACE_IMAGE = 'offscreen-lab-dev-workspace:dxk08'
-    DEV_WORKSPACE_API_IMAGE = 'offscreen-lab-dev-workspace:dxk08-api'
-    DEV_WORKSPACE_GA_IMAGE = 'offscreen-lab-dev-workspace:dxk08-game-authority'
-    DEV_WORKSPACE_WORKER_IMAGE = 'offscreen-lab-dev-workspace:dxk08-worker'
+DEV_WORKSPACE_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-web'
+DEV_WORKSPACE_API_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-api'
+DEV_WORKSPACE_GA_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-authority'
+DEV_WORKSPACE_WORKER_IMAGE = 'offscreen-dev-workspace:' + OFFSCREEN_DEV_SLOT + '-worker'
 # config.main_dir is the root Tiltfile directory. Paths passed to docker_build(only=)
 # must sit inside that context; a relative climb made COPY tools fail checksum.
 REPO_ROOT = config.main_dir
@@ -41,11 +31,6 @@ BUILD_ROOTS = [
     # tsconfig extends this package. It is not a production runtime closure entry.
     'packages/config',
 ]
-
-def image_ref_scope():
-    if SLOT_SESSION:
-        return OFFSCREEN_DEV_SLOT
-    return 'legacy'
 
 SYNC_CONFIG = decode_json(str(local(
     'node infra/dev/dev-sync-paths.mjs --tilt',
@@ -113,8 +98,7 @@ def dev_workspace_docker_build(image, image_key):
     sync_watched = [REPO_ROOT + '/' + rel for rel in inputs]
     rebuild_deps = [repo_path(rel) for rel in BUILD_ROOTS] + [REPO_ROOT + '/infra/dev/load-dev-image.sh']
     steps = dev_live_update(image_key, sync_watched)
-    scope = image_ref_scope()
-    ref_file = REPO_ROOT + '/.offscreen/tilt-image-refs/' + scope + '/' + image_key + '.ref'
+    ref_file = REPO_ROOT + '/.offscreen/tilt-image-refs/' + OFFSCREEN_DEV_SLOT + '/' + image_key + '.ref'
     custom_build(
         image,
         'OFFSCREEN_IMAGE_REF_FILE=' + ref_file + ' OFFSCREEN_DEV_SLOT=' + OFFSCREEN_DEV_SLOT + ' bash ' + REPO_ROOT + '/infra/dev/load-dev-image.sh ' + image,
@@ -131,34 +115,20 @@ if os.getenv('OFFSCREEN_DEV_TILT_ROLE', '') != 'web':
     dev_workspace_docker_build(DEV_WORKSPACE_GA_IMAGE, 'game-authority')
     dev_workspace_docker_build(DEV_WORKSPACE_WORKER_IMAGE, 'worker')
 
-if SLOT_SESSION:
-    # Declarative slot Deployments. Live `kubectl get` copies resourceVersion and
-    # managedFields, and those collide with the next image roll.
-    rendered = local(
-        'node tools/dev-environments/src/rendering/dev-slot-app-graph.mjs --tilt-deployments',
-        dir=REPO_ROOT,
-        quiet=True,
-    )
-    k8s_yaml(rendered)
-    for name in ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay']:
-        k8s_resource(name)
-else:
-    k8s_yaml('infra/workloads/dev/web.yaml')
-    k8s_yaml('infra/workloads/dev/api.yaml')
-    k8s_yaml('infra/workloads/dev/authority.yaml')
-    k8s_yaml('infra/workloads/dev/workers.yaml')
-    k8s_resource(
-        'game-web',
-        port_forwards=['127.0.0.1:' + OFFSCREEN_DEV_GAME_PORT + ':3000'],
-    )
-    k8s_resource(
-        'game-api',
-        port_forwards=['127.0.0.1:3001:3001'],
-    )
-    k8s_resource(
-        'game-authority',
-        port_forwards=['127.0.0.1:3002:3002'],
-    )
-    k8s_resource('game-control')
-    k8s_resource('game-executor')
-    k8s_resource('game-relay')
+# Chart or adapter edits reload Tilt config without a broad image rebuild.
+watch_file(REPO_ROOT + '/infra/workloads/render.mjs')
+watch_file(REPO_ROOT + '/infra/workloads/profiles/development.yaml')
+watch_file(REPO_ROOT + '/infra/workloads/chart/Chart.yaml')
+watch_file(REPO_ROOT + '/infra/workloads/chart/values.yaml')
+watch_file(REPO_ROOT + '/infra/workloads/chart/values.schema.json')
+watch_file(REPO_ROOT + '/tools/dev-environments/src/rendering/dev-slot-app-graph.mjs')
+# Declarative slot Deployments. Live `kubectl get` copies resourceVersion and
+# managedFields, and those collide with the next image roll.
+rendered = local(
+    'node tools/dev-environments/src/rendering/dev-slot-app-graph.mjs --tilt-deployments',
+    dir=REPO_ROOT,
+    quiet=True,
+)
+k8s_yaml(rendered)
+for name in ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay']:
+    k8s_resource(name)

@@ -531,16 +531,6 @@ export function formatDevFreshnessStatusLine(displayRole, status) {
   return `${displayRole} NOT READY ${status.reason}`;
 }
 
-/** @type {Record<string, string>} */
-export const DEPLOYMENT_NAMESPACE = Object.freeze({
-  'game-web': 'lab-edge',
-  'game-api': 'lab-edge',
-  'game-authority': 'lab-authority',
-  'game-control': 'lab-workers',
-  'game-executor': 'lab-workers',
-  'game-relay': 'lab-workers',
-});
-
 /** @typedef {{ id: string, message: string }} DevRefusal */
 /** @typedef {{ game: 'free'|'owned'|'foreign', tilt: 'free'|'owned'|'foreign' }} DevPorts */
 /** @typedef {Record<string, boolean | undefined>} ReadinessMap */
@@ -779,44 +769,6 @@ function readWorktreeSessionPid(worktree) {
  * @param {string} deployment
  * @returns {boolean}
  */
-export function deploymentAvailableFromKubectlOutput(stdout) {
-  return (stdout ?? '').trim() === 'True';
-}
-
-/**
- * @param {string} namespace
- * @param {string} deployment
- * @returns {Promise<boolean>}
- */
-export async function queryDeploymentAvailable(namespace, deployment) {
-  const r = spawnSync(
-    'kubectl',
-    [
-      'get',
-      'deployment',
-      deployment,
-      '-n',
-      namespace,
-      '-o',
-      'jsonpath={.status.conditions[?(@.type=="Available")].status}',
-    ],
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
-  if (r.status !== 0) return false;
-  return deploymentAvailableFromKubectlOutput(r.stdout);
-}
-
-/** @returns {Promise<ReadinessMap>} */
-export async function collectLabReadiness() {
-  /** @type {ReadinessMap} */
-  const readiness = {};
-  for (const name of LAB_RESOURCES) {
-    const ns = DEPLOYMENT_NAMESPACE[name];
-    readiness[name] = await queryDeploymentAvailable(ns, name);
-  }
-  return readiness;
-}
-
 /**
  * @param {DevRefusal[]} refusals
  * @param {(code: number) => never | void} [exitFn]
@@ -847,7 +799,7 @@ function sleep(ms) {
  *   commandOnPath?: (name: string) => boolean,
  *   probeLoopbackPortOccupied?: typeof probeLoopbackPortOccupied,
  *   spawnFn?: typeof spawn,
- *   collectLabReadiness?: typeof collectLabReadiness,
+ *   collectStartupReadiness?: (namespace: string) => Promise<ReadinessMap>,
  *   exit?: (code: number) => never | void,
  *   exitAfterSession?: boolean,
  *   fingerprintDevImageContext?: typeof fingerprintDevImageContext,
@@ -866,7 +818,8 @@ export async function runDevTiltLaunch(deps = {}) {
   const onPath = deps.commandOnPath ?? commandOnPath;
   const probeOccupied = deps.probeLoopbackPortOccupied ?? probeLoopbackPortOccupied;
   const spawnFn = deps.spawnFn ?? spawn;
-  const readinessPoll = deps.collectLabReadiness ?? collectLabReadiness;
+  const pollOwnedReadiness = deps.collectStartupReadiness
+    ?? ((namespace) => Promise.resolve(collectOwnedWorkloadReadiness(namespace)));
   const exitFn = deps.exit ?? ((code) => process.exit(code));
   const reconcile = deps.reconcileDevSlot ?? reconcileOwnedDevSlot;
 
@@ -880,6 +833,22 @@ export async function runDevTiltLaunch(deps = {}) {
   );
   if (capacityRefusals.length > 0) {
     refuseAndExit(capacityRefusals, exitFn);
+    return;
+  }
+
+  const helmProbe = deps.assertHelmAvailable ?? (async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { assertHelmAvailable } = await import('../../../../infra/workloads/render.mjs');
+    const run = deps.helmRun ?? deps.runCommand ?? spawnSync;
+    return assertHelmAvailable({ run });
+  });
+  try {
+    await helmProbe();
+  } catch (error) {
+    refuseAndExit([{
+      id: 'helm-missing',
+      message: error instanceof Error ? error.message : 'helm is not available',
+    }], exitFn);
     return;
   }
 
@@ -1164,7 +1133,7 @@ export async function runDevTiltLaunch(deps = {}) {
 
   pollTimer = setInterval(async () => {
     if (announced) return;
-    const readiness = await readinessPoll();
+    const readiness = await pollOwnedReadiness(ownerRecord.namespace);
     const gameOcc = await probeOccupied(LOOPBACK, gamePort);
     const tiltOcc = await probeOccupied(LOOPBACK, tiltPort);
     const assessment = assessDevLaunch({

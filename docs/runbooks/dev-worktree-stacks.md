@@ -45,7 +45,7 @@ For a commissioned Change, first follow [AGENTS.md](../../AGENTS.md), its `CHANG
 | Shared dev S3 | `offscreen-dev-objects` / SeaweedFS, bucket `offscreen-dev-N` | Bucket-scoped user/Secret; admin key must never reach application Pods |
 | Shared dev Temporal | `offscreen-dev-temporal` server, Temporal namespace `offscreen-dev-N` | Same queue names per namespace; trusted-local routing isolation, not an auth boundary |
 | Release acceptance | **`kind-offscreen-lab`** | Separate purpose; do not direct dev Tilt, image loads or worktree tests here |
-| Old shared DXK08 dev resources | `lab-edge`, `lab-authority`, `lab-workers` | Legacy path retained for compatibility, **not** a worktree-owned slot |
+| Release lab app namespaces | `lab-edge`, `lab-authority`, `lab-workers` on **`kind-offscreen-lab`** | Release acceptance only; never use as a worktree dev slot or substitute for `pnpm dev` |
 
 Always pass explicit Kubernetes context; the ambient context may remain `kind-offscreen-lab`. Headlamp/Tilt are inspection tools, not ownership authorities.
 

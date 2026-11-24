@@ -1,0 +1,50 @@
+# Game edge HTTPRoute (moved from infra/workloads/release/edge.yaml for INF08).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: game-edge-routes
+  namespace: lab-edge
+  labels:
+    offscreen.rpg/lab: disposable
+spec:
+  parentRefs:
+    - name: lab-edge
+      namespace: lab-edge
+      sectionName: web
+  rules:
+    # Longer than the synthetic fixture's /api prefix, so these game paths win.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/me
+        - path:
+            type: PathPrefix
+            value: /api/stories
+        - path:
+            type: PathPrefix
+            value: /api/drafts
+        - path:
+            type: PathPrefix
+            value: /api/storytellers
+        - path:
+            type: PathPrefix
+            value: /api/auth
+        - path:
+            type: PathPrefix
+            value: /api/health
+        - path:
+            type: PathPrefix
+            value: /api/chamber-tools
+        - path:
+            type: PathPrefix
+            value: /api/admin
+      backendRefs:
+        - name: game-api
+          port: 3001
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: game-web
+          port: 3000

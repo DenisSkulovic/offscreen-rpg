@@ -1,0 +1,5 @@
+{{- include "offscreen-app.validate" . -}}
+{{- $section := default "all" .Values.section -}}
+{{- if and (eq $section "migration") (eq .Values.mode "release") -}}
+{{- include "offscreen-app.jsonFrom" (dict "name" "offscreen-app.doc.job.migrate.release" "ctx" .) -}}
+{{- end -}}

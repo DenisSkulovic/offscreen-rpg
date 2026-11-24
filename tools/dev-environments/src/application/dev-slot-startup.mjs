@@ -209,6 +209,12 @@ export async function reconcileDevSlot(input, deps) {
 export async function reconcileOwnedDevSlot(input) {
   const { readFileSync } = await import('node:fs');
   const { spawnSync } = await import('node:child_process');
+  const { assertHelmAvailable } = await import('../../../../infra/workloads/render.mjs');
+  try {
+    assertHelmAvailable({ run: spawnSync });
+  } catch (error) {
+    return stopped('helm', error instanceof Error ? error.message : 'helm is not available');
+  }
   const { allocateDevWorktreeOwner } = await import('../domain/dev-worktree-allocator.mjs');
   const { readRegistryJson } = await import('../domain/dev-worktree-registry.mjs');
   const { executeDevSqlTenants } = await import('../adapters/dev-sql-tenant-executor.mjs');
@@ -396,15 +402,40 @@ export async function ensureOwnedSlotImages(owner, worktree, spawnImage = null) 
   return { ok: true, refs: plan.refs, fingerprint: identity.fingerprint, rebuilt: builds };
 }
 
-async function applyOwnedSlotWorkloads(projected) {
+export async function applyOwnedSlotWorkloads(projected, deps = {}) {
   const { spawnSync } = await import('node:child_process');
-  const listed = spawnSync('kubectl', [
+  const run = deps.run ?? spawnSync;
+  const { assertHelmAvailable } = await import('../../../../infra/workloads/render.mjs');
+  try {
+    assertHelmAvailable({ run: deps.helmRun ?? run });
+  } catch (error) {
+    return { ok: false, refusals: [{ id: 'helm', detail: error instanceof Error ? error.message : 'helm is not available' }] };
+  }
+  if (deps.skipRenderCheck !== true) {
+    try {
+      const { renderDevSlotAppGraph } = await import('../rendering/dev-slot-app-graph.mjs');
+      renderDevSlotAppGraph(projected.record.slotId, { schemaReady: true, ports: projected.record.ports });
+    } catch (error) {
+      return {
+        ok: false,
+        refusals: [{ id: 'render', detail: error instanceof Error ? error.message : 'workload render failed' }],
+      };
+    }
+  }
+  const listed = run('kubectl', [
     '--context', 'kind-offscreen-dev', '-n', projected.record.namespace,
     'get', 'deployments', '-o', 'jsonpath={.items[*].metadata.name}',
   ], { encoding: 'utf8' });
-  const existing = listed.status === 0 ? listed.stdout.split(/\s+/).filter(Boolean) : [];
-  const list = { apiVersion: 'v1', kind: 'List', items: selectColdStartDocuments(projected.documents ?? [], existing) };
-  const applied = spawnSync('kubectl', ['--context', 'kind-offscreen-dev', 'apply', '-f', '-'], {
+  if (listed.status !== 0 || listed.error) {
+    return { ok: false, refusals: [{ id: 'deployment-inventory', detail: 'owned deployment inventory read failed' }] };
+  }
+  const existing = (listed.stdout ?? '').split(/\s+/).filter(Boolean);
+  const coldStart = selectColdStartDocuments(projected.documents ?? [], existing);
+  if (coldStart.length === 0) {
+    return { ok: true };
+  }
+  const list = { apiVersion: 'v1', kind: 'List', items: coldStart };
+  const applied = run('kubectl', ['--context', 'kind-offscreen-dev', 'apply', '-f', '-'], {
     input: JSON.stringify(list),
     encoding: 'utf8',
   });

@@ -10,8 +10,6 @@ const SHA256_RE = /^sha256:[0-9a-f]{64}$/;
 
 const DEV_CANONICAL_RE = /^offscreen-dev-workspace:union-[0-9a-f]{16}$/;
 const DEV_SLOT_RE = /^offscreen-dev-workspace:dev-[1-9][0-9]*-(web|api|authority|worker)$/;
-const DEV_LEGACY_RE = /^offscreen-lab-dev-workspace:dxk08(-api|-game-authority|-worker)?$/;
-
 const RELEASE_PINNED = new Set([
   'offscreen-lab-game-web:turn02',
   'offscreen-lab-app-release-api:turn02',
@@ -61,8 +59,7 @@ export function validateRefForProfile(profileId, ref) {
   if (typeof ref !== 'string' || ref.length === 0 || /[\s$`'";\\|&<>]/.test(ref)) {
     throw new Error('refusing ref: malformed or unsafe ref');
   }
-  const isDevFamily =
-    DEV_CANONICAL_RE.test(ref) || DEV_SLOT_RE.test(ref) || DEV_LEGACY_RE.test(ref);
+  const isDevFamily = DEV_CANONICAL_RE.test(ref) || DEV_SLOT_RE.test(ref);
   const isReleaseFamily =
     RELEASE_PINNED.has(ref) || RELEASE_REPO_RES.some((re) => re.test(ref));
 

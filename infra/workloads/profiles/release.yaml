@@ -1,0 +1,90 @@
+mode: release
+
+namespaces:
+  edge: lab-edge
+  authority: lab-authority
+  workers: lab-workers
+
+images:
+  web: offscreen-lab-game-web:turn02
+  api: offscreen-lab-app-release-api:turn02
+  authority: offscreen-lab-app-release-ga:turn02
+  worker: offscreen-lab-app-release-worker:turn02
+  migrate: offscreen-lab-app-release-api:turn02
+
+readiness:
+  web:
+    failureThreshold: 12
+  api:
+    failureThreshold: 24
+  authority:
+    failureThreshold: 24
+  periodSeconds: 5
+  timeoutSeconds: 2
+
+resources:
+  requests:
+    cpu: 50m
+    web:
+      memory: 256Mi
+    api:
+      memory: 384Mi
+    authority:
+      memory: 384Mi
+    control:
+      memory: 256Mi
+    executor:
+      memory: 256Mi
+    relay:
+      memory: 256Mi
+  limits:
+    web:
+      memory: 768Mi
+    api:
+      memory: 1024Mi
+    authority:
+      memory: 1024Mi
+    control:
+      memory: 768Mi
+    executor:
+      memory: 768Mi
+    relay:
+      memory: 768Mi
+
+workerCommands:
+  control:
+    - node
+    - apps/worker/dist/src/bootstrap/control-main.js
+  executor:
+    - node
+    - apps/worker/dist/src/bootstrap/executor-main.js
+  relay:
+    - node
+    - apps/worker/dist/src/bootstrap/main.js
+
+release:
+  webRunAsUser: 1001
+  webRunAsGroup: 1001
+  labLabel: disposable
+  s3Bucket: lab-objects
+  s3Endpoint: http://object-store.lab-objects.svc.cluster.local:8333
+  s3ForcePathStyle: "true"
+  ruleRootHash: d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab
+  temporalAddress: temporal-server.lab-temporal.svc.cluster.local:7233
+  temporalNamespace: default
+  authorityOrigin: http://game-authority.lab-authority.svc.cluster.local:3002
+  apiProxyOrigin: http://game-api.lab-edge.svc.cluster.local:3001
+  appOrigin: http://127.0.0.1:3000
+  writerExecutionMode: scripted-offline-lab
+  relayDistributed: "true"
+  dbSecret: game-db
+  runtimeSecret: game-runtime
+  migrateCommand:
+    - node
+    - packages/db/dist/src/migrate-cli.js
+  migrateResources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi

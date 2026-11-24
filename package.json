@@ -49,6 +49,7 @@
     "lint:web:negatives": "node scripts/repo-tools/web-lint-negatives.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "workload:check": "node --test infra/workloads/tests/*.test.mjs",
     "stack:preflight": "node scripts/repo-tools/stack-preflight.mjs",
     "stack:up": "node scripts/repo-tools/stack.mjs up",
     "stack:status": "node scripts/repo-tools/stack.mjs status",

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: offscreen-app
+description: Offscreen RPG application workloads (six roles and migration)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

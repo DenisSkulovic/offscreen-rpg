@@ -3,44 +3,23 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { renderDevSlotAppGraph } from '../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
 import { assertDevWebFallbackContract } from './dev-tiltfile-web.test.mjs';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const devTiltfilePath = join(repoRoot, 'infra/dev/Tiltfile');
-const apiYamlPath = join(repoRoot, 'infra/workloads/dev/api.yaml');
-const authorityYamlPath = join(repoRoot, 'infra/workloads/dev/authority.yaml');
 const devTiltfile = readFileSync(devTiltfilePath, 'utf8');
-const apiYaml = readFileSync(apiYamlPath, 'utf8');
-const authorityYaml = readFileSync(authorityYamlPath, 'utf8');
-
-/**
- * @param {string} tiltfile
- * @param {string} resourceName
- */
-function dockerBuildSlice(tiltfile, resourceName) {
-  const match = tiltfile.match(
-    new RegExp(`k8s_resource\\([\\s\\S]*?['"]${resourceName}['"][\\s\\S]*?\\)`),
-  );
-  assert.ok(match, `expected k8s_resource for ${resourceName}`);
-  return match[0];
-}
 
 /**
  * Dev API/GA use tsc-watch: readiness must track the serving process (tcp), not exec true.
- * @param {string} yaml
+ * @param {import('../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs').DeploymentDoc} deployment
  * @param {string} label
  */
-export function assertDevWatchReadinessContract(yaml, label) {
-  assert.doesNotMatch(
-    yaml,
-    /readinessProbe:[\s\S]*?exec:[\s\S]*?command:[\s\S]*?- true\b/,
-    `${label} must not use an always-ready exec probe`,
-  );
-  assert.match(
-    yaml,
-    /readinessProbe:\s*\n\s*tcpSocket:\s*\n\s*port: http/,
-    `${label} must use tcpSocket readiness tied to the HTTP port`,
-  );
+export function assertDevWatchReadinessContract(deployment, label) {
+  const probe = deployment.spec.template.spec.containers[0].readinessProbe;
+  assert.ok(probe, `${label} readinessProbe expected`);
+  assert.equal(probe.exec, undefined, `${label} must not use an always-ready exec probe`);
+  assert.equal(probe.tcpSocket?.port, 'http', `${label} must use tcpSocket readiness tied to the HTTP port`);
 }
 
 /**
@@ -77,67 +56,59 @@ export function assertDevGaTiltContract(tiltfile) {
  */
 export function assertDevTiltReadinessNotBlind(tiltfile) {
   for (const name of ['game-api', 'game-authority']) {
-    const slice = dockerBuildSlice(tiltfile, name);
-    assert.doesNotMatch(
-      slice,
-      /trigger_mode\s*=\s*TRIGGER_MODE_MANUAL/,
-      `${name} must not ignore container readiness via manual trigger mode`,
-    );
-    assert.doesNotMatch(
-      slice,
-      /readiness_probe/,
-      `${name} k8s_resource must not override Kubernetes readiness`,
+    assert.match(
+      tiltfile,
+      new RegExp(`['"]${name}['"]`),
+      `expected tilt graph to include ${name}`,
     );
   }
+  assert.doesNotMatch(tiltfile, /trigger_mode\s*=\s*TRIGGER_MODE_MANUAL/);
+  assert.doesNotMatch(tiltfile, /readiness_probe/);
 }
 
 test('dev Tiltfile game-api live_update syncs apps/api only', () => {
   assertDevApiTiltContract(devTiltfile);
-  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/api\.yaml['"]\s*\)/);
-  assert.match(
-    devTiltfile,
-    /k8s_resource\s*\(\s*['"]game-api['"][\s\S]*?port_forwards\s*=\s*\[[\s\S]*?['"]127\.0\.0\.1:3001:3001['"]/,
-  );
+  assert.doesNotMatch(devTiltfile, /infra\/workloads\/dev\/api\.yaml/);
+  assert.doesNotMatch(devTiltfile, /port_forwards/);
 });
 
 test('dev Tiltfile game-authority live_update syncs apps/game-authority only', () => {
   assertDevGaTiltContract(devTiltfile);
-  assert.match(devTiltfile, /k8s_yaml\s*\(\s*['"]infra\/workloads\/dev\/authority\.yaml['"]\s*\)/);
-  assert.match(
-    devTiltfile,
-    /k8s_resource\s*\(\s*['"]game-authority['"][\s\S]*?port_forwards\s*=\s*\[[\s\S]*?['"]127\.0\.0\.1:3002:3002['"]/,
-  );
+  assert.doesNotMatch(devTiltfile, /infra\/workloads\/dev\/authority\.yaml/);
 });
 
-test('dev api and authority manifests use process-bound readiness probes', () => {
-  assertDevWatchReadinessContract(apiYaml, 'game-api');
-  assertDevWatchReadinessContract(authorityYaml, 'game-authority');
+test('slot graph api and authority use process-bound readiness probes', () => {
+  const graph = renderDevSlotAppGraph('dev-1', { schemaReady: true, ports: { game: 3100 } });
+  for (const name of ['game-api', 'game-authority']) {
+    const deployment = graph.documents.find((item) => item.kind === 'Deployment' && item.metadata.name === name);
+    assert.ok(deployment);
+    assertDevWatchReadinessContract(deployment, name);
+  }
 });
 
-test('dev manifests run package dev watch commands without host .env in image', () => {
-  assert.match(
-    apiYaml,
-    /@offscreen\/api[\s\S]*?run[\s\S]*?dev/,
-    'game-api should run the API package dev script',
-  );
-  assert.match(
-    authorityYaml,
-    /@offscreen\/game-authority[\s\S]*?run[\s\S]*?dev/,
-    'game-authority should run the GA package dev script',
-  );
-  assert.doesNotMatch(apiYaml, /envFrom/);
-  assert.doesNotMatch(authorityYaml, /envFrom/);
+test('slot graph runs package dev watch commands without envFrom', () => {
+  const graph = renderDevSlotAppGraph('dev-1', { schemaReady: true, ports: { game: 3100 } });
+  for (const name of ['game-api', 'game-authority']) {
+    const deployment = graph.documents.find((item) => item.kind === 'Deployment' && item.metadata.name === name);
+    const command = deployment.spec.template.spec.containers[0].command.join(' ');
+    assert.match(command, /dev-pod-compile-watch\.mjs/);
+    assert.equal(deployment.spec.template.spec.containers[0].envFrom, undefined);
+  }
 });
 
 test('always-true readiness exec probe is rejected for watch workloads', () => {
-  const blindProbeSnippet = `
-readinessProbe:
-  exec:
-    command:
-      - true
-`;
+  /** @type {any} */
+  const blind = {
+    spec: {
+      template: {
+        spec: {
+          containers: [{ readinessProbe: { exec: { command: ['true'] } } }],
+        },
+      },
+    },
+  };
   assert.throws(
-    () => assertDevWatchReadinessContract(blindProbeSnippet, 'synthetic'),
+    () => assertDevWatchReadinessContract(blind, 'synthetic'),
     /always-ready exec probe/,
   );
 });

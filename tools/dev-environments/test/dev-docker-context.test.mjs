@@ -31,7 +31,8 @@ test('load-dev-image uses Dockerfile.dockerignore; release builds use pruned con
   assert.match(slotLoader, /post-load-mismatch/);
   assert.match(slotLoader, /distribution\/kind-image-loader\.mjs/);
   const adapter = readFileSync(loadScript, 'utf8');
-  assert.match(adapter, /kind-image-loader\.mjs" release/);
+  assert.doesNotMatch(adapter, /kind-image-loader\.mjs" release/);
+  assert.match(adapter, /load-dev-slot-image\.sh/);
   assert.doesNotMatch(slotLoader, /kind load docker-image "\$ref"/);
   assert.match(slotLoader, /ctr -n k8s.io images tag/);
   const release = readFileSync(libBuild, 'utf8');

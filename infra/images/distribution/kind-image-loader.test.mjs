@@ -120,6 +120,13 @@ test('validateRefForProfile rejects cross-profile families', () => {
   );
 });
 
+test('validateRefForProfile rejects retired legacy dev workspace tags', () => {
+  assert.throws(
+    () => validateRefForProfile('dev', 'offscreen-lab-dev-workspace:dxk08'),
+    /not accepted for dev profile/,
+  );
+});
+
 test('all nodes hit reuses without kind load', () => {
   const { run, calls } = makeRunner(releaseNodeScripts(DIGEST_A, DIGEST_A));
   const receipt = ensureKindImage({
