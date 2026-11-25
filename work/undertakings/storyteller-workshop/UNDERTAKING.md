@@ -212,3 +212,5 @@ Target **long-lived** topology after Change integration: **two branches only**:
 ## 2026-11-24 | Cache platform design
 
 [Selected architecture](../../../docs/technical/platform/persistence-and-caching.md) and [CACHE01–CACHE07](../../changes/README.md#cache-platform-redesign) (including CACHE06A/B). [Parallel DAG and frozen interfaces](CACHE-PARALLEL.md): CACHE01–CACHE03, CACHE05, CACHE06A, and CACHE06B are Done source-only. CACHE04 source is joined and its SQL suite remains NOT-RUN. CACHE07 source harness is implemented; live execution still requires explicit disposable local Docker Redis authorization. No live Redis proof and no queue change. Overview estimates unchanged.
+
+**2026-11-25 Redis exploration:** [INF58–INF60](REDIS-INFRASTRUCTURE.md) owner-commissioned source only; INF58 and INF59 parallel, INF60 gated. No queue change, no live permission or outcome credit. Hosted security and topology decisions held for planner, not delegated.

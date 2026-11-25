@@ -80,3 +80,11 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 ## Cache reconciliation (2026-11-25)
 
 Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. CACHE04/CACHE08 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). [VER06](../archive/2026-11/platform-operations/2026-11-25--ver06-cache-resource-and-harness/CHANGE.md) source Done; VER07 after VER06/CACHE08; VER08 after VER07/02. Use `pnpm verify package cache`; no legacy live command, no global queue change.
+
+## Redis infrastructure source wave (2026-11-25)
+
+- [INF58 Redis chart configuration and rollout identity](2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Ready, source-only.
+- [INF59 Redis installer safety and readiness](2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Ready, source-only.
+- [INF60 Named Redis pools and operator inspection](2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready, gated on INF58 + INF59.
+
+[Decisions and dependency graph](../../undertakings/storyteller-workshop/REDIS-INFRASTRUCTURE.md). No live authorization or global queue change.
