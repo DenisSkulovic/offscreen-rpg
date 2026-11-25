@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -168,7 +169,7 @@ export function createCompileWatchSupervisor(options) {
   const spawnCompiler =
     options.spawnCompiler ??
     (() =>
-      spawn('pnpm', tscArgs, {
+      spawn(process.execPath, [createRequire(join(cwd, 'package.json')).resolve('typescript/bin/tsc'), ...tscArgs.slice(2)], {
         cwd,
         stdio: ['ignore', 'pipe', 'inherit'],
         env: process.env,

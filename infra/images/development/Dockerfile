@@ -7,9 +7,11 @@ ARG PNPM_VERSION
 
 FROM ${NODE_IMAGE} AS base
 ARG PNPM_VERSION
+ENV COREPACK_HOME="/opt/offscreen-corepack"
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate \
+    && chmod -R a+rX "$COREPACK_HOME"
 
 FROM base AS deps
 WORKDIR /app
@@ -37,5 +39,6 @@ WORKDIR /app
 ENV NODE_ENV=development
 COPY --from=deps --chown=node:node /app/ ./
 USER node
+RUN pnpm --version
 RUN node tools/dev-environments/runtime/check-packaging.mjs --check
 EXPOSE 3000

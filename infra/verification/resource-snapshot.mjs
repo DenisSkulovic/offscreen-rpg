@@ -36,6 +36,30 @@ function host() {
   try { pressure=Object.fromEntries(['cpu','memory','io'].map(k=>[k,readFileSync('/proc/pressure/'+k,'utf8').trim()])); } catch {}
   return {logicalCpu:cpus().length,totalMemory:totalmem(),freeMemory:freemem(),meminfo,pressure};
 }
+export function summarizeKubelet(summary) {
+  const bytes = value => Number.isFinite(value) && value >= 0 ? value : null;
+  if (!Array.isArray(summary.pods)) throw new Error('missing kubelet pods');
+  const pods = summary.pods.map(p => ({
+    namespace:p.podRef.namespace,name:p.podRef.name,uid:p.podRef.uid,
+    containers:(p.containers ?? []).map(c=>({
+      name:c.name,workingSetBytes:bytes(c.memory?.workingSetBytes),
+      rssBytes:bytes(c.memory?.rssBytes),memoryTime:c.memory?.time ?? null,
+      cpuNanoCores:bytes(c.cpu?.usageNanoCores)
+    }))
+  }));
+  const groups = new Map();
+  for (const pod of pods) {
+    const row = groups.get(pod.namespace) ?? {namespace:pod.namespace,workingSetBytes:0,unknownContainers:0,containers:0};
+    for (const c of pod.containers) {
+      row.containers++;
+      if (c.workingSetBytes === null) row.unknownContainers++;
+      else row.workingSetBytes += c.workingSetBytes;
+    }
+    groups.set(pod.namespace,row);
+  }
+  return {nodeWorkingSetBytes:bytes(summary.node?.memory?.workingSetBytes),pods,namespaces:[...groups.values()]};
+}
+
 export function observeResources(run=runPlatformCommand) {
   const out={schemaVersion:1,observedAt:new Date().toISOString(),host:host(),clusters:[]};
   if(process.env.DOCKER_HOST || process.env.DOCKER_TLS_VERIFY || process.env.DOCKER_CONTEXT) throw new Error('Docker endpoint override refused');
@@ -58,6 +82,16 @@ export function observeResources(run=runPlatformCommand) {
       try {
         entry.metrics=k(['get','--raw','/apis/metrics.k8s.io/v1beta1/pods']).items.map(p=>({namespace:p.metadata.namespace,name:p.metadata.name,timestamp:p.timestamp,window:p.window,containers:p.containers.map(c=>({name:c.name,cpu:quantity(c.usage.cpu),memory:quantity(c.usage.memory)}))}));
       } catch { entry.metrics=null; }
+      // Metrics Server is optional. Kubelet summary is already available on Kind.
+      entry.kubelet = [];
+      for (const node of entry.nodes) {
+        const name = node.name;
+        if (!kind.roles.some(role => name === kind.clusterName + '-' + role)) continue;
+        try {
+          const summary = k(['get','--raw','/api/v1/nodes/'+name+'/proxy/stats/summary']);
+          entry.kubelet.push({node:name,status:'observed',...summarizeKubelet(summary)});
+        } catch { entry.kubelet.push({node:name,status:'unavailable'}); }
+      }
       entry.status='observed';
     } catch { entry.reason='local cluster or resource inventory unavailable'; }
   }
