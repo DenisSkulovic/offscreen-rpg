@@ -60,6 +60,7 @@
     "infra:plan": "node infra/environments/infra-cli.mjs plan",
     "infra:up": "node infra/environments/infra-cli.mjs up",
     "infra:status": "node infra/environments/infra-cli.mjs status",
+    "infra:postgres": "node infra/platform/postgres/topology-cli.mjs",
     "infra:repair": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/repo-tools/repair-docker-desktop.ps1",
     "infra:verify": "node infra/verification/verify.mjs",
     "infra:monitor:status": "python3 infra/monitoring/report.py status",

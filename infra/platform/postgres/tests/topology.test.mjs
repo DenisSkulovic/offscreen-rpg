@@ -219,7 +219,87 @@ test('parseTopologyCliArgs accepts exact argv for release plan', () => {
     clusterName: RELEASE_CNPG_CLUSTER,
     instances: 2,
     allowScaleDown: false,
+    outputMode: 'human',
+    noColor: false,
   });
+});
+
+test('parseTopologyCliArgs defaults to human and accepts --json', () => {
+  const human = parseTopologyCliArgs([
+    'node',
+    'cli.mjs',
+    'status',
+    '--env',
+    'dev',
+    '--cluster',
+    DEV_CNPG_CLUSTER,
+    '--instances',
+    '1',
+    '--human',
+  ]);
+  assert.equal(/** @type {{ outputMode: string }} */ (human).outputMode, 'human');
+
+  const json = parseTopologyCliArgs([
+    'node',
+    'cli.mjs',
+    'status',
+    '--env',
+    'dev',
+    '--cluster',
+    DEV_CNPG_CLUSTER,
+    '--instances',
+    '1',
+    '--json',
+  ]);
+  assert.equal(/** @type {{ outputMode: string }} */ (json).outputMode, 'json');
+
+  assert.throws(
+    () =>
+      parseTopologyCliArgs([
+        'node',
+        'cli.mjs',
+        'status',
+        '--env',
+        'dev',
+        '--cluster',
+        DEV_CNPG_CLUSTER,
+        '--instances',
+        '1',
+        '--human',
+        '--json',
+      ]),
+    /conflicting options/,
+  );
+  assert.throws(
+    () =>
+      parseTopologyCliArgs([
+        'node',
+        'cli.mjs',
+        'status',
+        '--env',
+        'dev',
+        '--cluster',
+        DEV_CNPG_CLUSTER,
+        '--instances',
+        '1',
+        '--json',
+        '--no-color',
+      ]),
+    /--no-color requires human output/,
+  );
+});
+
+test('parseTopologyCliArgs returns help without requiring target flags', () => {
+  assert.deepEqual(parseTopologyCliArgs(['node', 'cli.mjs', '--help']), {
+    help: true,
+  });
+  assert.deepEqual(
+    parseTopologyCliArgs(['node', 'cli.mjs', 'plan', '--help']),
+    {
+      help: true,
+      command: 'plan',
+    },
+  );
 });
 
 test('parseTopologyCliArgs rejects unknown and duplicate flags', () => {

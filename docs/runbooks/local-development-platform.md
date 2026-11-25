@@ -29,7 +29,7 @@ Do not use proposed flags on current commands except the documented `--human` / 
 
 Default stdout for `pnpm infra:plan|up|status` remains one JSON object for existing machine callers. Explicit `--json` is equivalent. Explicit `--human` prints a plain multi-line summary on stdout and, for `up` only, phase `START`/`OK`/`FAIL` lines with elapsed ms on stderr. `--help` is static and makes zero host/cluster calls. `--no-color` is accepted only with `--human` (output is already plain). Mutually exclusive or repeated flags refuse before any runner.
 
-Limits: human text allowlists service/phase/refusal ids and never prints raw child stderr, argv, or env; overall `ok` is not equated with every service healthy; failed `up` does not claim data unchanged. Source fixtures cover both profiles; live readiness and human operator acceptance remain NOT-RUN. Topology CLI presentation is out of scope here.
+Limits: human text allowlists service/phase/refusal ids and never prints raw child stderr, argv, or env; overall `ok` is not equated with every service healthy; failed `up` does not claim data unchanged. Source fixtures cover both profiles; live readiness and human operator acceptance remain NOT-RUN. PostgreSQL topology uses `pnpm infra:postgres` (human default, `--json` for receipts); see [kubernetes-postgres](kubernetes-postgres.md).
 
 ## Workload chart defaults and local values overrides
 
