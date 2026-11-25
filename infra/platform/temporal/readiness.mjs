@@ -5,16 +5,15 @@ import {
   runPlatformCommand,
 } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
-import { parsePins } from '../common/pins.mjs';
+import { parsePins, TEMPORAL_CHART_PIN_KEYS } from '../common/pins.mjs';
 
 const RELEASE = 'temporal';
 const CORE_ROLES = ['frontend', 'history', 'matching', 'worker'];
-const PIN_KEYS = ['CHART_VERSION', 'CHART_URL', 'CHART_SHA256'];
 
 function readChartVersion() {
   return parsePins(
     readFileSync(new URL('./chart.pin', import.meta.url), 'utf8'),
-    PIN_KEYS,
+    TEMPORAL_CHART_PIN_KEYS,
   ).CHART_VERSION;
 }
 
