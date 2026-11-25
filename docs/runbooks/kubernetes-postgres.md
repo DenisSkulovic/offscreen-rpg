@@ -13,7 +13,7 @@ Scripts live in `infra/platform/postgres/`. The workload manifests are no longer
 ## What it must not do
 
 - Do not put a password, a client certificate, or a generated Secret in Git. The operator creates credentials when the primary starts. The smoke uses local peer authentication inside the Pod and does not print Secret values.
-- Do not set `instances` above 1. One replacement Pod is not a replica, and it is not a highly available cluster.
+- Default baseline is one instance. Selected INF53/INF54 topology contract permits explicit scaling and isolated clusters once implemented; until source joins, existing installer remains single-instance. The historical pod-replacement smoke intentionally requires one instance. Never use it as a multi-instance failover test.
 - Do not point Compose, the game, or Temporal at `lab-pg`.
 - Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-release` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not publish a workload on `0.0.0.0` or `[::]`. A NodePort or LoadBalancer Service fails the check.

@@ -1,0 +1,7 @@
+# INF54 | Owned independent PostgreSQL clusters
+
+**Status: Ready with explicit limits / owner-commissioned source-only (dependency-gated after INF53). Kind: implementation. Profile: RELEASE.** Baseline c5a3e2d28c33d863a8d8168997bc33ce74fd59c3; target main. [Selected topology](../../../../docs/technical/platform/database-infrastructure.md#local-cnpg-topology-selected-2026-11-25) · [TASKS](TASKS.md) · [PROOF](PROOF.md).
+
+Outcome: additional named independently replicated PostgreSQL clusters in both dev and release, via INF53 shared control. Explicit owner-scoped namespace, no application shard routing or redistribution. Coordinate with VER02/VER topology resource adapters; they consume common builder and do not maintain a second CNPG manifest algorithm. No automatic cleanup, no ordinary slot endpoint switch. Predecessor INF53 shared topology API and tests joined; no live permission.
+
+Dedicated Change branch and linked worktree from current main; `node scripts/repo-tools/change-branch-guard.mjs --change INF54 --target main`. One Composer Standard child at a time. Parent serializes catalog/docs join; no live actions, provider calls, existing tenant mutation or destructive operations during implementation. Owner executes live experiments separately. Source proof and live NOT-RUN recorded separately. Stop on material contract/ownership contradiction; do not redesign. No global queue change.

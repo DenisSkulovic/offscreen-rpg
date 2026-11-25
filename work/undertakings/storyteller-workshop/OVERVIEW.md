@@ -30,3 +30,5 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 Finish line: ordinary authenticated player creates story, resolves scene, reaches scene2, forks and continues coherently with durable evidence; local dev operations are bounded and boring. Main trunk promotion is not product acceptance. Prior overview recoverable at audited SHA; dated checkpoints remain in UNDERTAKING and PROGRAM.
 - New reusable verification programme selected: [VER01–VER05](VERIFICATION-PROGRAMME.md), DB first; source planning only, no outcome credit. Existing DB work continues.
+
+- 2026-11-25: INF53/54 shared local PostgreSQL topology commissioned; no implementation or live/outcome credit, percentages unchanged (~75/40/30/45). Normal dev tenant topology preserved.
