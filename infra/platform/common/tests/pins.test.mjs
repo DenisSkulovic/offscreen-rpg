@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import {
   POSTGRES_OPERATOR_PIN_KEYS,
-  TEMPORAL_IMAGE_PIN_KEYS,
+  TEMPORAL_CHART_PIN_KEYS,
   parsePins,
   verifyManifestBytes,
 } from '../pins.mjs';
@@ -23,10 +23,10 @@ test('parsePins accepts authoritative postgres operator.pin', () => {
   assert.match(pins.CNPG_SHA256, /^[0-9a-f]{64}$/);
 });
 
-test('parsePins accepts authoritative temporal images.pin digests', () => {
-  const text = readFileSync(join(platformRoot, 'temporal/images.pin'), 'utf8');
-  const pins = parsePins(text, TEMPORAL_IMAGE_PIN_KEYS);
-  assert.match(pins.SERVER_DIGEST, /^sha256:[0-9a-f]{64}$/);
+test('parsePins accepts authoritative Temporal chart.pin digest', () => {
+  const text = readFileSync(join(platformRoot, 'temporal/chart.pin'), 'utf8');
+  const pins = parsePins(text, TEMPORAL_CHART_PIN_KEYS);
+  assert.match(pins.CHART_SHA256, /^[0-9a-f]{64}$/);
 });
 
 test('parsePins rejects missing, unknown, duplicate, and malformed digest keys', () => {
