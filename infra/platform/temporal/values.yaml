@@ -58,7 +58,7 @@ server:
 
 web:
   image:
-    tag: "2.56.1@sha256:584dd3408ab8333888d50b12d4a683e550e963409bf95fa2c9159d40d7cb825f"
+    tag: "2.58.1@sha256:ac3c13eddb4547d830991bb5eee93a5d97140134522b7297fdb2be1fe25ef925"
   enabled: true
   service:
     type: ClusterIP
