@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@offscreen/cache": "workspace:*",
     "@offscreen/db": "workspace:*",
     "drizzle-orm": "0.45.2",
-    "pg": "8.23.0"
+    "pg": "8.23.0",
+    "redis": "5.8.2"
   }
 }

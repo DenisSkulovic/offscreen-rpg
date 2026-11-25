@@ -40,6 +40,22 @@ test('materializeExecutionPlan wires source prerequisite and resource validation
   assert.equal(peakResourceBudget(materialized.plan.sections), 1);
 });
 
+test('materializeExecutionPlan accepts cache redis resource specs', () => {
+  const subject = resolveSubject('package', '@offscreen/cache', REPO_ROOT);
+  const planned = buildVerificationPlan({
+    subject: subject.subject,
+    profile: 'standard',
+    live: false,
+    section: 'redis',
+  });
+  assert.equal(planned.ok, true);
+  const materialized = materializeExecutionPlan(planned.plan);
+  assert.equal(materialized.ok, true);
+  const redis = materialized.plan.sections.find((row) => row.id === 'redis');
+  assert.deepEqual(redis.resources, ['redis:single']);
+  assert.equal(peakResourceBudget(materialized.plan.sections), 1);
+});
+
 test('materializeExecutionPlan rejects sections without scenario ids', () => {
   const materialized = materializeExecutionPlan({
     subject: { kind: 'infra', id: 'infra' },

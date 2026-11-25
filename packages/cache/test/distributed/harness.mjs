@@ -1,17 +1,33 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { fork } from 'node:child_process';
-import { execFile as execFileCb } from 'node:child_process';
-import { promisify } from 'node:util';
+import console from 'node:console';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { createClient } from 'redis';
-
+import process from 'node:process';
+import { clearTimeout, setTimeout } from 'node:timers';
+import { URL, fileURLToPath } from 'node:url';
 import { makeCacheKey } from '@offscreen/cache/core';
 
-import { parseSyntheticValue, rpc } from './worker.mjs';
+import { runBounded } from '../../../../tools/verification/resources/postgres/docker.mjs';
+import {
+  CLEANUP_TIMEOUT_MS,
+  pauseOwnedRedisClients as pauseOwnedRedisClientsResource,
+  RECOVERY_VERIFICATION_PROFILE,
+  restartOwnedRedisDockerContainer,
+  sanitizeRedisResourcePublicFacts,
+  stopStartOwnedRedisDockerContainer,
+  waitForRedisPing,
+} from '../../../../tools/verification/resources/redis/docker.mjs';
+import { VERIFY_RUNTIME_USER } from '../../../../tools/verification/resources/redis/docker-plan.mjs';
 
-const execFile = promisify(execFileCb);
+import { parseSyntheticValue } from './worker.mjs';
+
 const workerPath = fileURLToPath(new URL('./worker.mjs', import.meta.url));
+
+export const LEGACY_LIVE_VERIFY_COMMAND = 'pnpm verify package cache --live';
+export const WORKER_RPC_DEADLINE_MS = 5_000;
+export const WORKER_GRACEFUL_EXIT_MS = 5_000;
+export const WORKER_TERMINATE_MS = 2_000;
+export const WORKER_OUTPUT_DRAIN_BYTES = 64_000;
 
 export const COMMAND_TIMEOUT_MS = 10_000;
 export const SUITE_TIMEOUT_MS = 180_000;
@@ -38,19 +54,26 @@ export const CACHE07_POLICY = Object.freeze({
 });
 
 /**
- * @param {string[]} argv
- * @param {NodeJS.ProcessEnv} env
+ * @param {string[]} [argv]
+ * @param {NodeJS.ProcessEnv} [env]
  */
-export function validateLiveOptIn(argv, env) {
-  const hasLiveFlag = argv.includes('--live');
-  const allowed = env.CACHE07_ALLOW_DISPOSABLE_REDIS === '1';
-  if (!hasLiveFlag || !allowed) {
-    return {
-      status: 'NOT-RUN',
-      reason: 'Live opt-in requires --live and CACHE07_ALLOW_DISPOSABLE_REDIS=1',
-    };
-  }
-  return null;
+export function validateLiveOptIn(argv = [], env = {}) {
+  void env;
+  return refuseLegacyLiveHarnessInvocation(argv);
+}
+
+/**
+ * @param {string[]} [argv]
+ */
+export function refuseLegacyLiveHarnessInvocation(argv = []) {
+  const legacyAttempt = argv.includes('--live');
+  return {
+    status: 'NOT-RUN',
+    reason: legacyAttempt
+      ? 'legacy-harness-live-retired'
+      : 'legacy-harness-cli-retired',
+    verifyCommand: LEGACY_LIVE_VERIFY_COMMAND,
+  };
 }
 
 /**
@@ -60,8 +83,7 @@ export function rejectSuppliedRedisUrl(env) {
   if (typeof env.REDIS_URL === 'string' && env.REDIS_URL.length > 0) {
     return {
       status: 'FAIL',
-      reason:
-        'Supplied REDIS_URL is rejected; harness must own the generated endpoint',
+      reason: 'supplied-redis-url-rejected',
     };
   }
   return null;
@@ -133,7 +155,10 @@ export function assertDisabledParityScenario(result) {
     return { ok: false, reason: 'Disabled scenario expected disabled adapter' };
   }
   if (result.l2Hits > 0) {
-    return { ok: false, reason: 'Disabled scenario must not report Redis hits' };
+    return {
+      ok: false,
+      reason: 'Disabled scenario must not report Redis hits',
+    };
   }
   return { ok: true };
 }
@@ -177,7 +202,10 @@ export function assertEvictionScenario(result) {
     return { ok: false, reason: 'INFO evicted_keys did not increase' };
   }
   if (!result.absentKeyVerified) {
-    return { ok: false, reason: 'Previously populated key still present in Redis' };
+    return {
+      ok: false,
+      reason: 'Previously populated key still present in Redis',
+    };
   }
   parseSyntheticValue(result.value);
   return { ok: true };
@@ -226,10 +254,16 @@ export function extractTelemetryOverloadCoalesced(telemetry) {
  */
 export function assertStartupOutageScenario(result) {
   if (!result.originFallbackDuringOutage) {
-    return { ok: false, reason: 'Expected origin fallback during startup outage' };
+    return {
+      ok: false,
+      reason: 'Expected origin fallback during startup outage',
+    };
   }
   if (!result.crossProcessHit) {
-    return { ok: false, reason: 'Cross-process cache hit not observed within budget' };
+    return {
+      ok: false,
+      reason: 'Cross-process cache hit not observed within budget',
+    };
   }
   if (
     result.recoveryTimeMs === null ||
@@ -322,7 +356,10 @@ export function assertSyntheticFailureScenario(result) {
     return { ok: false, reason: 'Synthetic origin failure did not propagate' };
   }
   if (!result.retrySucceeded) {
-    return { ok: false, reason: 'Retry after synthetic failure did not succeed' };
+    return {
+      ok: false,
+      reason: 'Retry after synthetic failure did not succeed',
+    };
   }
   parseSyntheticValue(result.value);
   return { ok: true };
@@ -364,15 +401,15 @@ export function buildT02ScenarioMetrics(fields) {
   };
 }
 
-/**
- * @param {typeof execFile} runner
- * @param {{ timeoutMs?: number }} [options]
- */
-export function createDockerExecutor(runner, options = {}) {
-  const timeoutMs = options.timeoutMs ?? COMMAND_TIMEOUT_MS;
-  return async function dockerExec(file, args, opts = {}) {
-    return runner(file, args, { ...opts, timeout: timeoutMs });
-  };
+export class WorkerRpcError extends Error {
+  /**
+   * @param {string} code
+   */
+  constructor(code) {
+    super(code);
+    this.name = 'WorkerRpcError';
+    this.code = code;
+  }
 }
 
 function shortRunId(runId) {
@@ -401,100 +438,22 @@ export function buildGeneratedRedisEnv(hostPort, keyPrefix = 'cache07') {
 
 /**
  * @param {{
- *   Id?: string;
- *   Name?: string;
- *   Config?: { Labels?: Record<string, string> };
- *   Image?: string;
- *   NetworkSettings?: { Ports?: Record<string, Array<{ HostIp?: string; HostPort?: string }> | null> };
- * }} inspect
- * @param {{ runId: string; containerId: string; hostPort: number }} expected
+ *   host: string,
+ *   port: number,
+ *   runtimeUser?: string,
+ *   runtimePassword: string,
+ *   keyNamespace: string,
+ * }} input
  */
-export function verifyContainerOwnership(inspect, expected) {
-  if (!inspect.Id || !inspect.Id.startsWith(expected.containerId.slice(0, 12))) {
-    return { ok: false, reason: 'Container id mismatch' };
-  }
-  const label = inspect.Config?.Labels?.['offscreen.cache07.run'];
-  if (label !== expected.runId) {
-    return { ok: false, reason: 'Ownership label mismatch' };
-  }
-  const image = inspect.Config?.Image ?? inspect.Image ?? '';
-  const imageOk =
-    image.includes(REDIS_IMAGE_PIN) ||
-    REDIS_IMAGE_ALIASES.some((alias) => image.includes(alias));
-  if (!imageOk) {
-    return { ok: false, reason: 'Pinned redis image mismatch' };
-  }
-  const bindings =
-    inspect.NetworkSettings?.Ports?.['6379/tcp'] ??
-    inspect.NetworkSettings?.Ports?.['6379/udp'];
-  const mapped = Array.isArray(bindings) ? bindings[0] : undefined;
-  if (!mapped?.HostPort || Number(mapped.HostPort) !== expected.hostPort) {
-    return { ok: false, reason: 'Published loopback port mismatch' };
-  }
-  if (mapped.HostIp && mapped.HostIp !== '127.0.0.1' && mapped.HostIp !== '0.0.0.0') {
-    return { ok: false, reason: 'Published bind address is not loopback' };
-  }
-  return { ok: true };
-}
-
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- * @param {string} runId
- */
-export function buildOwnedContainerCreateArgs(runId) {
-  const name = `cache07-${runId}`;
+export function buildAuthenticatedWorkerRedisEnv(input) {
+  const user = encodeURIComponent(input.runtimeUser ?? VERIFY_RUNTIME_USER);
+  const pass = encodeURIComponent(input.runtimePassword);
   return {
-    name,
-    args: [
-      'run',
-      '-d',
-      '--name',
-      name,
-      '--label',
-      `offscreen.cache07.run=${runId}`,
-      '--network',
-      'bridge',
-      '-p',
-      '127.0.0.1::6379',
-      '--memory',
-      '128m',
-      '--cpus',
-      '0.5',
-      '--read-only',
-      '--tmpfs',
-      '/data:rw,size=32m',
-      '--cap-drop',
-      'ALL',
-      '--security-opt',
-      'no-new-privileges',
-      '--pull',
-      'never',
-      REDIS_IMAGE_PIN,
-      'redis-server',
-      '--save',
-      '',
-      '--appendonly',
-      'no',
-      '--maxmemory',
-      '8mb',
-      '--maxmemory-policy',
-      'allkeys-lru',
-      '--protected-mode',
-      'no',
-    ],
+    REDIS_URL: `redis://${user}:${pass}@${input.host}:${input.port}`,
+    REDIS_KEY_PREFIX: input.keyNamespace,
+    REDIS_CONNECT_TIMEOUT_MS: String(CACHE07_POLICY.connectTimeoutMs),
+    REDIS_OPERATION_TIMEOUT_MS: String(CACHE07_POLICY.operationTimeoutMs),
   };
-}
-
-/**
- * @param {string} stdout
- */
-export function parseDockerPort(stdout) {
-  const trimmed = stdout.trim();
-  const port = Number(trimmed);
-  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-    throw new Error('CouldNotParseDockerPort');
-  }
-  return port;
 }
 
 /**
@@ -520,99 +479,187 @@ export function proofCacheKey(environment, identity) {
   );
 }
 
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- */
-export async function readDockerContextEndpoint(dockerExec) {
-  const { stdout } = await dockerExec('docker', [
-    'context',
-    'inspect',
-    '--format',
-    '{{.Endpoints.docker.Host}}',
-  ]);
-  return stdout.trim();
+function cleanChildProcessEnv() {
+  const env = { ...process.env };
+  delete env.REDIS_URL;
+  delete env.REDIS_KEY_PREFIX;
+  delete env.REDIS_CONNECT_TIMEOUT_MS;
+  delete env.REDIS_OPERATION_TIMEOUT_MS;
+  delete env.CACHE07_ALLOW_DISPOSABLE_REDIS;
+  return env;
+}
+
+function drainWorkerStream(stream) {
+  if (!stream) return;
+  let drained = 0;
+  stream.on('data', (chunk) => {
+    drained += chunk.length;
+    if (drained > WORKER_OUTPUT_DRAIN_BYTES) {
+      stream.removeAllListeners('data');
+      stream.resume();
+    }
+  });
 }
 
 /**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
+ * @param {import('node:child_process').ChildProcess} proc
  */
-export async function assertLocalImagePresent(dockerExec) {
-  try {
-    await dockerExec('docker', [
-      'image',
-      'inspect',
-      REDIS_IMAGE_PIN,
-      '--format',
-      '{{.Id}}',
-    ]);
-    return { ok: true };
-  } catch {
-    return {
-      ok: false,
-      status: 'NOT-RUN',
-      reason: `Missing local image ${REDIS_IMAGE_PIN} (pull disabled)`,
-    };
+export function createWorkerSession(proc) {
+  /** @type {Map<string, {resolve: Function, reject: Function, timer: NodeJS.Timeout}>} */
+  const pending = new Map();
+  let closed = false;
+
+  function rejectAll(code) {
+    for (const [id, entry] of pending.entries()) {
+      clearTimeout(entry.timer);
+      pending.delete(id);
+      entry.reject(new WorkerRpcError(code));
+    }
   }
-}
 
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- * @param {string} containerId
- */
-export async function inspectOwnedContainer(dockerExec, containerId) {
-  const { stdout } = await dockerExec('docker', [
-    'inspect',
-    '--format',
-    '{{json .}}',
-    containerId,
-  ]);
-  return JSON.parse(stdout.trim());
-}
-
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- * @param {string} containerId
- */
-export async function forceRemoveOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['rm', '-f', containerId]);
-  try {
-    await dockerExec('docker', [
-      'inspect',
-      '--format',
-      '{{.Id}}',
-      containerId,
-    ]);
-    return { removed: false };
-  } catch {
-    return { removed: true };
-  }
-}
-
-/**
- * @param {import('node:child_process').ChildProcess[]} workers
- */
-export async function closeWorkers(workers) {
-  const closes = workers.map(async (worker) => {
-    if (!worker.connected) {
+  function onMessage(response) {
+    const requestId = String(response?.requestId ?? '');
+    const entry = pending.get(requestId);
+    if (!entry) return;
+    clearTimeout(entry.timer);
+    pending.delete(requestId);
+    if (response?.ok === false) {
+      entry.reject(
+        new WorkerRpcError(String(response.outcome ?? 'worker-rpc-rejected')),
+      );
       return;
     }
-    try {
-      await rpc(worker, { type: 'close' });
-    } catch {
-      // ignore close errors during cleanup
+    if (!response || typeof response !== 'object' || response.ok !== true) {
+      entry.reject(new WorkerRpcError('worker-rpc-malformed'));
+      return;
     }
-    worker.kill();
+    entry.resolve(response);
+  }
+
+  const onExit = () => rejectAll('worker-exited');
+  const onError = () => rejectAll('worker-error');
+  const onDisconnect = () => rejectAll('worker-disconnected');
+
+  proc.on('message', onMessage);
+  proc.on('exit', onExit);
+  proc.on('error', onError);
+  proc.on('disconnect', onDisconnect);
+
+  return {
+    proc,
+    async rpc(message) {
+      if (closed) {
+        throw new WorkerRpcError('worker-closed');
+      }
+      const requestId = randomUUID();
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          pending.delete(requestId);
+          reject(new WorkerRpcError('worker-rpc-timeout'));
+        }, WORKER_RPC_DEADLINE_MS);
+        timer.unref?.();
+        pending.set(requestId, { resolve, reject, timer });
+        /** @type {boolean} */
+        let sent;
+        try {
+          sent = Boolean(proc.send({ ...message, requestId }));
+        } catch {
+          sent = false;
+        }
+        if (!sent) {
+          clearTimeout(timer);
+          pending.delete(requestId);
+          reject(new WorkerRpcError('worker-send-failed'));
+        }
+      });
+    },
+    dispose() {
+      if (closed) return;
+      closed = true;
+      proc.off('message', onMessage);
+      proc.off('exit', onExit);
+      proc.off('error', onError);
+      proc.off('disconnect', onDisconnect);
+      rejectAll('worker-closed');
+    },
+  };
+}
+
+export function spawnHarnessWorker() {
+  const proc = fork(workerPath, {
+    stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+    env: cleanChildProcessEnv(),
   });
-  await Promise.all(closes);
+  drainWorkerStream(proc.stdout);
+  drainWorkerStream(proc.stderr);
+  return createWorkerSession(proc);
 }
 
 /**
- * @param {import('node:child_process').ChildProcess} worker
+ * @param {ReturnType<typeof createWorkerSession>} session
+ */
+export async function shutdownHarnessWorker(session) {
+  try {
+    await session.rpc({ type: 'close' });
+  } catch {
+    /* proceed to exit wait */
+  }
+  const proc = session.proc;
+  const gracefulExit = await new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(false), WORKER_GRACEFUL_EXIT_MS);
+    timer.unref?.();
+    proc.once('exit', () => {
+      clearTimeout(timer);
+      resolve(true);
+    });
+  });
+  if (!gracefulExit && proc.exitCode === null) {
+    proc.kill('SIGTERM');
+    const terminated = await new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(false), WORKER_TERMINATE_MS);
+      timer.unref?.();
+      proc.once('exit', () => {
+        clearTimeout(timer);
+        resolve(true);
+      });
+    });
+    if (!terminated && proc.exitCode === null) {
+      proc.kill('SIGKILL');
+      await new Promise((resolve) => {
+        proc.once('exit', () => resolve(true));
+      });
+    }
+  }
+  session.dispose();
+  return { ok: proc.exitCode === 0 };
+}
+
+/**
+ * @param {ReturnType<typeof createWorkerSession>[]} workers
+ */
+export async function cleanupWorkerSessions(workers) {
+  const outcomes = await Promise.all(
+    workers.map(async (session) => {
+      try {
+        return await shutdownHarnessWorker(session);
+      } catch {
+        session.dispose();
+        return { ok: false };
+      }
+    }),
+  );
+  const ok = outcomes.every((outcome) => outcome.ok);
+  return { ok, code: ok ? 'cleanup-ok' : 'cleanup-failed' };
+}
+
+/**
+ * @param {ReturnType<typeof createWorkerSession>} session
  * @param {Record<string, string | undefined>} env
  * @param {string} environment
+ * @param {boolean} [disabled]
  */
-async function initWorker(worker, env, environment, disabled = false) {
-  return rpc(worker, {
+async function initWorker(session, env, environment, disabled = false) {
+  return session.rpc({
     type: 'init',
     env,
     environment,
@@ -620,24 +667,177 @@ async function initWorker(worker, env, environment, disabled = false) {
   });
 }
 
+/**
+ * @param {object} ctx
+ */
+async function spawnScenarioWorker(ctx) {
+  const session = spawnHarnessWorker();
+  ctx.workers.push(session);
+  return session;
+}
+
+async function reconnectAdminClient(ctx) {
+  await disconnectAdminClient(ctx.admin);
+  ctx.admin = await ctx.redis.connectAdmin();
+  if (
+    ctx.admin &&
+    typeof ctx.admin.connect === 'function' &&
+    !ctx.admin.isOpen
+  ) {
+    await ctx.admin.connect();
+  }
+}
+
+/**
+ * @param {Record<string, unknown>[]} responses
+ */
+function mergeStatsDeltaTelemetry(responses) {
+  /** @type {Record<string, number>} */
+  const telemetry = {};
+  for (const response of responses) {
+    const delta = /** @type {{ telemetry?: Record<string, number> }} */ (
+      response.statsDelta ?? {}
+    ).telemetry;
+    for (const [key, count] of Object.entries(delta ?? {})) {
+      telemetry[key] = (telemetry[key] ?? 0) + count;
+    }
+  }
+  return telemetry;
+}
+
+/**
+ * @param {{
+ *   resource: object,
+ *   plan: object,
+ *   run: Function,
+ *   verificationProfile?: string,
+ * }} input
+ */
+export function createHarnessRedisHandle(input) {
+  const { resource, plan, run } = input;
+  const verificationProfile =
+    input.verificationProfile ?? RECOVERY_VERIFICATION_PROFILE;
+  const redisEnv = buildAuthenticatedWorkerRedisEnv({
+    host: resource.host,
+    port: resource.port,
+    runtimeUser: plan.runtimeUser,
+    runtimePassword: plan.credentials.runtimePassword,
+    keyNamespace: plan.keyNamespace,
+  });
+
+  return {
+    runId: resource.runId,
+    redisEnv,
+    publicFacts: sanitizeRedisResourcePublicFacts(resource),
+    async connectAdmin() {
+      if (!resource.adminObserver?.connectClient) {
+        throw new WorkerRpcError('admin-handle-missing');
+      }
+      const client = await resource.adminObserver.connectClient();
+      if (typeof client.on === 'function') {
+        client.on('error', () => {});
+      }
+      return client;
+    },
+    async disconnectAdmin(client) {
+      if (client?.isOpen) {
+        await client.close();
+      } else if (typeof client?.disconnect === 'function') {
+        await client.disconnect().catch(() => {});
+      }
+    },
+    faults: {
+      async stop() {
+        const stopped = await runBounded(
+          'docker',
+          ['stop', resource.containerId],
+          run,
+          CLEANUP_TIMEOUT_MS,
+        );
+        if (!stopped?.ok) {
+          return { ok: false, reason: 'fault-stop-failed' };
+        }
+        return { ok: true };
+      },
+      async start() {
+        const started = await runBounded(
+          'docker',
+          ['start', resource.containerId],
+          run,
+          CLEANUP_TIMEOUT_MS,
+        );
+        if (!started?.ok) {
+          return { ok: false, reason: 'fault-start-failed' };
+        }
+        const ready = await waitForRedisPing({
+          containerId: resource.containerId,
+          run,
+          deadlineMs: CLEANUP_TIMEOUT_MS,
+        });
+        if (!ready.ok) {
+          return { ok: false, reason: ready.reason ?? 'fault-start-timeout' };
+        }
+        return { ok: true };
+      },
+      async stopStart() {
+        return stopStartOwnedRedisDockerContainer({
+          resource,
+          plan,
+          verificationProfile,
+          run,
+        });
+      },
+      async restart() {
+        return restartOwnedRedisDockerContainer({
+          resource,
+          plan,
+          verificationProfile,
+          run,
+        });
+      },
+      async pauseClients(pauseMs) {
+        return pauseOwnedRedisClientsResource({
+          resource,
+          plan,
+          verificationProfile,
+          run,
+          pauseMs,
+        });
+      },
+    },
+  };
+}
+
+/**
+ * @param {import('redis').RedisClientType | { isOpen?: boolean, disconnect?: Function, close?: Function } | null} client
+ */
+export async function disconnectAdminClient(client) {
+  if (!client) return;
+  if (client.isOpen && typeof client.close === 'function') {
+    await client.close();
+    return;
+  }
+  if (typeof client.disconnect === 'function') {
+    await client.disconnect().catch(() => {});
+  }
+}
+
 /** @type {Record<string, (ctx: object) => Promise<object>>} */
 export const T01_SCENARIO_RUNNERS = {
   async 'shared-hit'(ctx) {
-    const workerA = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    const workerB = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-  ctx.workers.push(workerA, workerB);
+    const workerA = await spawnScenarioWorker(ctx);
+    const workerB = await spawnScenarioWorker(ctx);
     await Promise.all([
       initWorker(workerA, ctx.redisEnv, ctx.environment),
       initWorker(workerB, ctx.redisEnv, ctx.environment),
     ]);
     const identity = ['shared-hit', '1'];
-    const readA = await rpc(workerA, { type: 'read', identity });
-    const readB = await rpc(workerB, { type: 'read', identity });
+    const readA = await workerA.rpc({ type: 'read', identity });
+    const readB = await workerB.rpc({ type: 'read', identity });
     const verdict = assertSharedHitScenario({
       valueA: readA.value,
       valueB: readB.value,
-      totalOriginLoads:
-        Number(readA.originLoads) + Number(readB.originLoads),
+      totalOriginLoads: Number(readA.originLoads) + Number(readB.originLoads),
     });
     return {
       id: 'shared-hit',
@@ -649,11 +849,10 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'disabled-parity'(ctx) {
-    const worker = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     const init = await initWorker(worker, {}, ctx.environment, true);
     const identity = ['disabled-parity', '1'];
-    const read = await rpc(worker, { type: 'read', identity });
+    const read = await worker.rpc({ type: 'read', identity });
     const l2Hits = Number(read.telemetry?.['l2:get:hit'] ?? 0);
     const verdict = assertDisabledParityScenario({
       value: read.value,
@@ -669,18 +868,17 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'distinct-revision'(ctx) {
-    const workerA = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    const workerB = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(workerA, workerB);
+    const workerA = await spawnScenarioWorker(ctx);
+    const workerB = await spawnScenarioWorker(ctx);
     await Promise.all([
       initWorker(workerA, ctx.redisEnv, ctx.environment),
       initWorker(workerB, ctx.redisEnv, ctx.environment),
     ]);
-    const readA = await rpc(workerA, {
+    const readA = await workerA.rpc({
       type: 'read',
       identity: ['distinct', 'rev-a'],
     });
-    const readB = await rpc(workerB, {
+    const readB = await workerB.rpc({
       type: 'read',
       identity: ['distinct', 'rev-b'],
     });
@@ -697,14 +895,13 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'malformed-envelope'(ctx) {
-    const worker = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     await initWorker(worker, ctx.redisEnv, ctx.environment);
     const identity = ['malformed', '1'];
     const key = proofCacheKey(ctx.environment, identity);
     await ctx.admin.set(key, '{not-a-valid-envelope');
-    await rpc(worker, { type: 'reset-stats' });
-    const read = await rpc(worker, { type: 'read', identity });
+    await worker.rpc({ type: 'reset-stats' });
+    const read = await worker.rpc({ type: 'read', identity });
     const verdict = assertMalformedEnvelopeScenario({
       value: read.value,
       originLoads: Number(read.originLoads),
@@ -719,8 +916,7 @@ export const T01_SCENARIO_RUNNERS = {
   },
 
   async 'eviction-via-info'(ctx) {
-    const worker = fork(workerPath, { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     await initWorker(worker, ctx.redisEnv, ctx.environment);
     const baselineEvicted = await parseEvictedKeys(ctx.admin);
     /** @type {Map<string, readonly string[]>} */
@@ -728,14 +924,14 @@ export const T01_SCENARIO_RUNNERS = {
     for (let i = 0; i < 64; i += 1) {
       const identity = /** @type {const} */ ([`evict-${i}`, '1']);
       keyToIdentity.set(proofCacheKey(ctx.environment, identity), identity);
-      await rpc(worker, { type: 'read', identity });
+      await worker.rpc({ type: 'read', identity });
     }
     let evictedKeys = await parseEvictedKeys(ctx.admin);
     let writeCount = 64;
     while (evictedKeys <= baselineEvicted && writeCount < 128) {
       const identity = /** @type {const} */ ([`evict-${writeCount}`, '1']);
       keyToIdentity.set(proofCacheKey(ctx.environment, identity), identity);
-      await rpc(worker, { type: 'read', identity });
+      await worker.rpc({ type: 'read', identity });
       writeCount += 1;
       evictedKeys = await parseEvictedKeys(ctx.admin);
     }
@@ -751,8 +947,8 @@ export const T01_SCENARIO_RUNNERS = {
     }
     let recoveryValue = null;
     if (trackedIdentity) {
-      await rpc(worker, { type: 'reset-stats' });
-      const read = await rpc(worker, {
+      await worker.rpc({ type: 'reset-stats' });
+      const read = await worker.rpc({
         type: 'read',
         identity: trackedIdentity,
       });
@@ -778,38 +974,44 @@ export const T01_SCENARIO_RUNNERS = {
 export const T02_SCENARIO_RUNNERS = {
   async 'startup-outage'(ctx) {
     const samples = [];
-    await stopOwnedContainer(ctx.dockerExec, ctx.containerId);
-    const workerA = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerA);
+    const stopped = await ctx.redis.faults.stop();
+    if (!stopped.ok) {
+      return {
+        id: 'startup-outage',
+        status: 'FAIL',
+        reason: 'fault-stop-failed',
+      };
+    }
+    const workerA = await spawnScenarioWorker(ctx);
     await initWorker(workerA, ctx.redisEnv, ctx.environment);
     const identity = ['startup-outage', '1'];
-    const outageRead = await rpc(workerA, { type: 'read', identity });
+    const outageRead = await workerA.rpc({ type: 'read', identity });
     samples.push(Number(outageRead.durationMs));
     const originFallbackDuringOutage = Number(outageRead.originLoads) >= 1;
     parseSyntheticValue(outageRead.value);
 
-    await startOwnedContainer(ctx.dockerExec, ctx.containerId);
-    if (!ctx.admin.isOpen) {
-      await ctx.admin.connect();
+    const recovered = await ctx.redis.faults.start();
+    if (!recovered.ok) {
+      return {
+        id: 'startup-outage',
+        status: 'FAIL',
+        reason: 'fault-start-failed',
+      };
     }
+    await reconnectAdminClient(ctx);
     await new Promise((resolve) => setTimeout(resolve, 200));
 
-    const workerB = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerB);
+    const workerB = await spawnScenarioWorker(ctx);
     await initWorker(workerB, ctx.redisEnv, ctx.environment);
 
     const recoveryStarted = Date.now();
     let crossProcessHit = false;
     let recoveryTimeMs = null;
     while (Date.now() - recoveryStarted < T02_RECOVERY_BUDGET_MS) {
-      const warm = await rpc(workerA, { type: 'read', identity });
+      const warm = await workerA.rpc({ type: 'read', identity });
       samples.push(Number(warm.durationMs));
-      await rpc(workerB, { type: 'reset-stats' });
-      const remoteRead = await rpc(workerB, { type: 'read', identity });
+      await workerB.rpc({ type: 'reset-stats' });
+      const remoteRead = await workerB.rpc({ type: 'read', identity });
       samples.push(Number(remoteRead.durationMs));
       const l2Hits = Number(remoteRead.telemetry?.['l2:get:hit'] ?? 0);
       if (l2Hits > 0 && Number(remoteRead.originLoads) === 0) {
@@ -843,33 +1045,29 @@ export const T02_SCENARIO_RUNNERS = {
 
   async restart(ctx) {
     const samples = [];
-    const workerA = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    const workerB = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerA, workerB);
+    const workerA = await spawnScenarioWorker(ctx);
+    const workerB = await spawnScenarioWorker(ctx);
     await Promise.all([
       initWorker(workerA, ctx.redisEnv, ctx.environment),
       initWorker(workerB, ctx.redisEnv, ctx.environment),
     ]);
     const identity = ['restart', '1'];
-    const warm = await rpc(workerA, { type: 'read', identity });
+    const warm = await workerA.rpc({ type: 'read', identity });
     samples.push(Number(warm.durationMs));
     parseSyntheticValue(warm.value);
 
-    await restartOwnedContainer(ctx.dockerExec, ctx.containerId);
-    if (!ctx.admin.isOpen) {
-      await ctx.admin.connect();
+    const restarted = await ctx.redis.faults.restart();
+    if (!restarted.ok) {
+      return { id: 'restart', status: 'FAIL', reason: 'fault-restart-failed' };
     }
+    await reconnectAdminClient(ctx);
     await new Promise((resolve) => setTimeout(resolve, 200));
 
-    await rpc(workerA, { type: 'reset-stats' });
-    const afterRestart = await rpc(workerA, { type: 'read', identity });
+    await workerA.rpc({ type: 'reset-stats' });
+    const afterRestart = await workerA.rpc({ type: 'read', identity });
     samples.push(Number(afterRestart.durationMs));
-    await rpc(workerB, { type: 'reset-stats' });
-    const shared = await rpc(workerB, { type: 'read', identity });
+    await workerB.rpc({ type: 'reset-stats' });
+    const shared = await workerB.rpc({ type: 'read', identity });
     samples.push(Number(shared.durationMs));
     const l2Hits = Number(shared.telemetry?.['l2:get:hit'] ?? 0);
     const verdict = assertRestartScenario({
@@ -882,12 +1080,7 @@ export const T02_SCENARIO_RUNNERS = {
       Number(shared.peakOrigin),
     );
     /** @type {Record<string, number>} */
-    const telemetry = {
-      .../** @type {Record<string, number>} */ (afterRestart.telemetry ?? {}),
-    };
-    for (const [key, count] of Object.entries(shared.telemetry ?? {})) {
-      telemetry[key] = (telemetry[key] ?? 0) + count;
-    }
+    const telemetry = mergeStatsDeltaTelemetry([afterRestart, shared]);
     return {
       id: 'restart',
       status: verdict.ok ? 'PASS' : 'FAIL',
@@ -903,29 +1096,28 @@ export const T02_SCENARIO_RUNNERS = {
 
   async pause(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     await initWorker(worker, ctx.redisEnv, ctx.environment);
     const identity = ['pause', '1'];
-    const warm = await rpc(worker, { type: 'read', identity });
+    const warm = await worker.rpc({ type: 'read', identity });
     samples.push(Number(warm.durationMs));
-    await rpc(worker, { type: 'reset-stats' });
-    await pauseOwnedRedisClients(ctx.dockerExec, ctx.containerId, 350);
-    const duringPause = await rpc(worker, { type: 'read', identity });
+    await worker.rpc({ type: 'reset-stats' });
+    const paused = await ctx.redis.faults.pauseClients(350);
+    if (!paused.ok) {
+      return { id: 'pause', status: 'FAIL', reason: 'fault-pause-failed' };
+    }
+    const duringPause = await worker.rpc({ type: 'read', identity });
     samples.push(Number(duringPause.durationMs));
     parseSyntheticValue(duringPause.value);
     await new Promise((resolve) => setTimeout(resolve, 450));
-    await rpc(worker, { type: 'reset-stats' });
-    const afterPause = await rpc(worker, { type: 'read', identity });
+    await worker.rpc({ type: 'reset-stats' });
+    const afterPause = await worker.rpc({ type: 'read', identity });
     samples.push(Number(afterPause.durationMs));
     const l2Hits = Number(afterPause.telemetry?.['l2:get:hit'] ?? 0);
     const verdict = assertPauseScenario({
       value: duringPause.value,
       recoveredAfterPause:
-        l2Hits > 0 ||
-        parseSyntheticValue(afterPause.value).id === identity[0],
+        l2Hits > 0 || parseSyntheticValue(afterPause.value).id === identity[0],
     });
     return {
       id: 'pause',
@@ -946,14 +1138,11 @@ export const T02_SCENARIO_RUNNERS = {
 
   async 'burst-same-key'(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     await initWorker(worker, ctx.redisEnv, ctx.environment);
     const singleIdentity = ['burst-same', '1'];
-    await rpc(worker, { type: 'reset-stats' });
-    const singleBurst = await rpc(worker, {
+    await worker.rpc({ type: 'reset-stats' });
+    const singleBurst = await worker.rpc({
       type: 'burst',
       count: 32,
       sameKey: true,
@@ -963,31 +1152,26 @@ export const T02_SCENARIO_RUNNERS = {
     samples.push(Number(singleBurst.durationMs));
     const singleProcessOriginLoads = Number(singleBurst.originLoads);
 
-    const workerA = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    const workerB = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(workerA, workerB);
+    const workerA = await spawnScenarioWorker(ctx);
+    const workerB = await spawnScenarioWorker(ctx);
     await Promise.all([
       initWorker(workerA, ctx.redisEnv, ctx.environment),
       initWorker(workerB, ctx.redisEnv, ctx.environment),
     ]);
     const dualIdentity = ['burst-same-2p', '1'];
     await Promise.all([
-      rpc(workerA, { type: 'reset-stats' }),
-      rpc(workerB, { type: 'reset-stats' }),
+      workerA.rpc({ type: 'reset-stats' }),
+      workerB.rpc({ type: 'reset-stats' }),
     ]);
     const [burstA, burstB] = await Promise.all([
-      rpc(workerA, {
+      workerA.rpc({
         type: 'burst',
         count: 16,
         sameKey: true,
         identity: dualIdentity,
         delayMs: 20,
       }),
-      rpc(workerB, {
+      workerB.rpc({
         type: 'burst',
         count: 16,
         sameKey: true,
@@ -1003,16 +1187,7 @@ export const T02_SCENARIO_RUNNERS = {
       Number(burstA.peakOrigin),
       Number(burstB.peakOrigin),
     );
-    /** @type {Record<string, number>} */
-    const telemetry = {
-      .../** @type {Record<string, number>} */ (singleBurst.telemetry ?? {}),
-    };
-    for (const [key, count] of Object.entries(burstA.telemetry ?? {})) {
-      telemetry[key] = (telemetry[key] ?? 0) + count;
-    }
-    for (const [key, count] of Object.entries(burstB.telemetry ?? {})) {
-      telemetry[key] = (telemetry[key] ?? 0) + count;
-    }
+    const telemetry = mergeStatsDeltaTelemetry([singleBurst, burstA, burstB]);
     const verdict = assertBurstSameKeyScenario({
       singleProcessOriginLoads,
       twoProcessTotalOriginLoads,
@@ -1034,16 +1209,13 @@ export const T02_SCENARIO_RUNNERS = {
 
   async 'burst-distinct-keys'(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     await initWorker(worker, ctx.redisEnv, ctx.environment);
-    await rpc(worker, { type: 'reset-stats' });
+    await worker.rpc({ type: 'reset-stats' });
     const delayMs = 40;
     const settled = await Promise.allSettled(
       Array.from({ length: 64 }, (_unused, index) =>
-        rpc(worker, {
+        worker.rpc({
           type: 'read',
           identity: [`distinct-burst-${index}`, '1'],
           delayMs,
@@ -1060,17 +1232,14 @@ export const T02_SCENARIO_RUNNERS = {
         samples.push(Number(outcome.value.durationMs));
         peak = Math.max(peak, Number(outcome.value.peakOrigin));
         originLoads = Math.max(originLoads, Number(outcome.value.originLoads));
-        for (const [key, count] of Object.entries(outcome.value.telemetry ?? {})) {
+        for (const [key, count] of Object.entries(
+          outcome.value.statsDelta?.telemetry ?? {},
+        )) {
           telemetry[key] = (telemetry[key] ?? 0) + count;
         }
       } else if (
-        /Cache overload/i.test(
-          String(
-            outcome.reason instanceof Error
-              ? outcome.reason.message
-              : outcome.reason,
-          ),
-        )
+        outcome.reason instanceof WorkerRpcError &&
+        outcome.reason.code === 'origin-failed'
       ) {
         overloadRejections += 1;
       }
@@ -1094,16 +1263,13 @@ export const T02_SCENARIO_RUNNERS = {
 
   async 'synthetic-failure'(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     await initWorker(worker, ctx.redisEnv, ctx.environment);
     const identity = ['synthetic-failure', '1'];
-    await rpc(worker, { type: 'reset-stats' });
+    await worker.rpc({ type: 'reset-stats' });
     let firstAttemptFailed = false;
     try {
-      await rpc(worker, {
+      await worker.rpc({
         type: 'read',
         identity,
         failWith: 'SyntheticOriginFailure',
@@ -1111,7 +1277,7 @@ export const T02_SCENARIO_RUNNERS = {
     } catch {
       firstAttemptFailed = true;
     }
-    const retry = await rpc(worker, { type: 'read', identity });
+    const retry = await worker.rpc({ type: 'read', identity });
     samples.push(Number(retry.durationMs));
     const verdict = assertSyntheticFailureScenario({
       firstAttemptFailed,
@@ -1133,28 +1299,19 @@ export const T02_SCENARIO_RUNNERS = {
 
   async shutdown(ctx) {
     const samples = [];
-    const worker = fork(workerPath, {
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
-    ctx.workers.push(worker);
+    const worker = await spawnScenarioWorker(ctx);
     await initWorker(worker, ctx.redisEnv, ctx.environment);
-    await rpc(worker, { type: 'read', identity: ['shutdown', '1'] });
+    await worker.rpc({ type: 'read', identity: ['shutdown', '1'] });
     const closeStarted = Date.now();
-    await rpc(worker, { type: 'close' });
+    await worker.rpc({ type: 'close' });
     const closeDurationMs = Date.now() - closeStarted;
     samples.push(closeDurationMs);
-    const exited = await new Promise((resolve) => {
-      const timer = setTimeout(() => resolve(false), T02_SHUTDOWN_BUDGET_MS);
-      worker.once('exit', () => {
-        clearTimeout(timer);
-        resolve(true);
-      });
-      worker.kill();
-    });
+    const shutdownOutcome = await shutdownHarnessWorker(worker);
+    ctx.workers = ctx.workers.filter((entry) => entry !== worker);
     const verdict = assertShutdownScenario({ closeDurationMs });
     return {
       id: 'shutdown',
-      status: verdict.ok && exited === true ? 'PASS' : 'FAIL',
+      status: verdict.ok && shutdownOutcome.ok ? 'PASS' : 'FAIL',
       ...(verdict.ok ? {} : { reason: verdict.reason }),
       ...buildT02ScenarioMetrics({
         samples,
@@ -1163,7 +1320,7 @@ export const T02_SCENARIO_RUNNERS = {
         telemetry: {},
       }),
       closeDurationMs,
-      workerExited: Boolean(exited),
+      workerExited: Boolean(shutdownOutcome.ok),
     };
   },
 };
@@ -1180,6 +1337,130 @@ export async function runScenario(scenarioId, ctx, wave = 't01') {
     return { id: scenarioId, status: 'FAIL', reason: 'Unknown scenario' };
   }
   return runner(ctx);
+}
+
+/**
+ * @param {object} redisHandle
+ * @param {string} scenarioId
+ * @param {'t01' | 't02'} wave
+ * @param {AbortSignal} [signal]
+ */
+export async function runIsolatedScenario(
+  redisHandle,
+  scenarioId,
+  wave,
+  signal,
+) {
+  /** @type {ReturnType<typeof createWorkerSession>[]} */
+  const workers = [];
+  let admin = null;
+  const environment = buildCacheEnvironmentName(
+    `${redisHandle.runId}:${scenarioId}:${randomUUID()}`,
+  );
+  /** @type {{ id: string, status: string, reason?: string, cleanup?: object }} */
+  let scenarioResult;
+  /** @type {{ ok: boolean, code?: string }} */
+  let cleanup;
+
+  try {
+    if (signal?.aborted) {
+      return { id: scenarioId, status: 'FAIL', reason: 'suite-interrupted' };
+    }
+    admin = await redisHandle.connectAdmin();
+    if (admin && typeof admin.connect === 'function' && !admin.isOpen) {
+      await admin.connect();
+    }
+    const ctx = {
+      redisEnv: redisHandle.redisEnv,
+      environment,
+      admin,
+      redis: redisHandle,
+      workers,
+    };
+    scenarioResult = await runScenario(scenarioId, ctx, wave);
+  } catch {
+    scenarioResult = {
+      id: scenarioId,
+      status: 'FAIL',
+      reason: 'scenario-exception',
+    };
+  } finally {
+    cleanup = await cleanupWorkerSessions(workers);
+    await redisHandle.disconnectAdmin(admin);
+    if (!cleanup.ok) {
+      scenarioResult = {
+        id: scenarioId,
+        status: 'FAIL',
+        reason: 'cleanup-failed',
+        cleanup,
+      };
+    }
+  }
+  return scenarioResult;
+}
+
+/**
+ * @param {object} redisHandle
+ * @param {{ signal?: AbortSignal }} [options]
+ */
+export async function runHarnessSuite(redisHandle, options = {}) {
+  const started = Date.now();
+  const signal = options.signal;
+  const t01 = [];
+  const t02 = [];
+  let cleanupOk = true;
+
+  for (const scenarioId of Object.keys(T01_SCENARIO_RUNNERS)) {
+    if (signal?.aborted) {
+      t01.push({ id: scenarioId, status: 'FAIL', reason: 'suite-interrupted' });
+      continue;
+    }
+    const result = await runIsolatedScenario(
+      redisHandle,
+      scenarioId,
+      't01',
+      signal,
+    );
+    if (result.reason === 'cleanup-failed') cleanupOk = false;
+    t01.push(result);
+  }
+  for (const scenarioId of Object.keys(T02_SCENARIO_RUNNERS)) {
+    if (signal?.aborted) {
+      t02.push({ id: scenarioId, status: 'FAIL', reason: 'suite-interrupted' });
+      continue;
+    }
+    const result = await runIsolatedScenario(
+      redisHandle,
+      scenarioId,
+      't02',
+      signal,
+    );
+    if (result.reason === 'cleanup-failed') cleanupOk = false;
+    t02.push(result);
+  }
+
+  const all = [...t01, ...t02];
+  const samples = all
+    .flatMap((item) => item.samples ?? [])
+    .sort((a, b) => a - b);
+  const scenarioFail = all.some((item) => item.status === 'FAIL');
+  const status = !cleanupOk ? 'FAIL' : scenarioFail ? 'FAIL' : 'PASS';
+
+  return redactLiveResult({
+    tier: 'live',
+    status,
+    runId: redisHandle.runId,
+    elapsedMs: Date.now() - started,
+    publicFacts: redisHandle.publicFacts,
+    t01,
+    t02,
+    percentiles: {
+      p95: computeNearestRankPercentile(samples, 0.95),
+      p99: computeNearestRankPercentile(samples, 0.99),
+      sampleCount: samples.length,
+    },
+    cleanup: { ok: cleanupOk },
+  });
 }
 
 /**
@@ -1205,135 +1486,7 @@ export async function runT02Suite(ctx) {
 }
 
 /**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- * @param {AbortSignal} signal
- */
-export async function provisionOwnedRedis(dockerExec, signal) {
-  const endpoint = await readDockerContextEndpoint(dockerExec);
-  const endpointVerdict = validateDockerContextEndpoint(endpoint);
-  if (!endpointVerdict.ok) {
-    return { status: 'NOT-RUN', reason: endpointVerdict.reason };
-  }
-  const imageVerdict = await assertLocalImagePresent(dockerExec);
-  if (!imageVerdict.ok) {
-    return imageVerdict;
-  }
-  const runId = randomUUID();
-  const { name, args } = buildOwnedContainerCreateArgs(runId);
-  const started = Date.now();
-  let containerId = '';
-  let hostPort = 0;
-  try {
-    const { stdout } = await dockerExec('docker', args, { signal });
-    containerId = stdout.trim();
-    const { stdout: portRaw } = await dockerExec('docker', [
-      'port',
-      containerId,
-      '6379/tcp',
-    ]);
-    const portLine = portRaw.trim().split('\n')[0] ?? '';
-    const portMatch = portLine.match(/:(\d+)\s*$/);
-    hostPort = portMatch
-      ? Number(portMatch[1])
-      : parseDockerPort(
-          (
-            await dockerExec('docker', [
-              'inspect',
-              '--format',
-              '{{(index (index .NetworkSettings.Ports "6379/tcp") 0).HostPort}}',
-              containerId,
-            ])
-          ).stdout,
-        );
-    const inspect = await inspectOwnedContainer(dockerExec, containerId);
-    const owned = verifyContainerOwnership(inspect, {
-      runId,
-      containerId,
-      hostPort,
-    });
-    if (!owned.ok) {
-      await forceRemoveOwnedContainer(dockerExec, containerId);
-      return { status: 'FAIL', reason: owned.reason };
-    }
-    return {
-      status: 'READY',
-      runId,
-      name,
-      containerId,
-      hostPort,
-      elapsedMs: Date.now() - started,
-      redisEnv: buildGeneratedRedisEnv(hostPort),
-      environment: buildCacheEnvironmentName(runId),
-    };
-  } catch (error) {
-    if (containerId) {
-      await forceRemoveOwnedContainer(dockerExec, containerId);
-    }
-    const message = error instanceof Error ? error.message : String(error);
-    if (/Cannot connect to the Docker daemon/i.test(message)) {
-      return { status: 'NOT-RUN', reason: 'Docker daemon unavailable' };
-    }
-    return { status: 'NOT-RUN', reason: message };
-  }
-}
-
-/**
- * @param {import('redis').RedisClientType | null} client
- */
-export async function disconnectAdminClient(client) {
-  if (client?.isOpen) {
-    await client.close();
-  }
-}
-
-/**
- * @param {string} url
- */
-export function createAdminClient(url) {
-  const client = createClient({ url, disableOfflineQueue: true });
-  client.on('error', () => {});
-  return client;
-}
-
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- */
-export async function stopOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['stop', containerId]);
-}
-
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- */
-export async function startOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['start', containerId]);
-}
-
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- * @param {string} containerId
- */
-export async function restartOwnedContainer(dockerExec, containerId) {
-  await dockerExec('docker', ['restart', containerId]);
-}
-
-/**
- * @param {(file: string, args: string[], opts?: object) => Promise<{ stdout: string; stderr: string }>} dockerExec
- */
-export async function pauseOwnedRedisClients(dockerExec, containerId, pauseMs = 350) {
-  await dockerExec('docker', [
-    'exec',
-    containerId,
-    'redis-cli',
-    'CLIENT',
-    'PAUSE',
-    String(pauseMs),
-    'ALL',
-  ]);
-}
-
-/**
- * @param {ReturnType<typeof buildGeneratedRedisEnv>} redisEnv
+ * @param {unknown} payload
  */
 export function redactLiveResult(payload) {
   return JSON.parse(
@@ -1346,112 +1499,29 @@ export function redactLiveResult(payload) {
   );
 }
 
-async function runLiveCli() {
-  const refusal = validateLiveOptIn(process.argv, process.env);
-  if (refusal) {
-    console.log(JSON.stringify(refusal));
-    process.exit(1);
-  }
-  const redisRefusal = rejectSuppliedRedisUrl(process.env);
-  if (redisRefusal) {
-    console.log(JSON.stringify(redisRefusal));
-    process.exit(1);
-  }
-
-  const dockerExec = createDockerExecutor(execFile);
-  const abort = new AbortController();
-  const suiteTimer = setTimeout(() => abort.abort(), SUITE_TIMEOUT_MS);
-  suiteTimer.unref?.();
-
-  const started = Date.now();
-  const workers = [];
-  /** @type {import('redis').RedisClientType | null} */
-  let admin = null;
-  let owned = null;
-
-  try {
-    owned = await provisionOwnedRedis(dockerExec, abort.signal);
-    if (owned.status !== 'READY') {
-      const payload = redactLiveResult({
-        tier: 'live',
-        status: owned.status,
-        reason: owned.reason,
-        elapsedMs: Date.now() - started,
-        cleanup: { containerRemoved: false },
-      });
-      console.log(JSON.stringify(payload));
-      process.exit(owned.status === 'FAIL' ? 1 : 2);
-    }
-
-    admin = createAdminClient(owned.redisEnv.REDIS_URL);
-    await admin.connect();
-
-    const ctx = {
-      redisEnv: owned.redisEnv,
-      environment: owned.environment,
-      admin,
-      workers,
-      dockerExec,
-      containerId: owned.containerId,
-      runId: owned.runId,
-    };
-
-    const t01 = await runT01Suite(ctx);
-    const t02 = await runT02Suite(ctx);
-    const sorted = [...t01, ...t02]
-      .flatMap((item) => item.samples ?? [])
-      .sort((a, b) => a - b);
-
-    const fail = [...t01, ...t02].some((item) => item.status === 'FAIL');
-    const payload = redactLiveResult({
-      tier: 'live',
-      status: fail ? 'FAIL' : 'PASS',
-      runId: owned.runId,
-      containerId: owned.containerId,
-      hostPort: owned.hostPort,
-      elapsedMs: Date.now() - started,
-      t01,
-      t02,
-      percentiles: {
-        p95: computeNearestRankPercentile(sorted, 0.95),
-        p99: computeNearestRankPercentile(sorted, 0.99),
-        sampleCount: sorted.length,
-      },
-      cleanup: {},
-    });
-
-    console.log(JSON.stringify(payload));
-    process.exit(fail ? 1 : 0);
-  } finally {
-    clearTimeout(suiteTimer);
-    await closeWorkers(workers);
-    await disconnectAdminClient(admin);
-    if (owned?.containerId) {
-      const removed = await forceRemoveOwnedContainer(
-        dockerExec,
-        owned.containerId,
-      );
-      if (typeof owned === 'object' && owned !== null) {
-        owned.cleanup = removed;
-      }
-    }
-  }
+function runLiveCli() {
+  const refusal = refuseLegacyLiveHarnessInvocation(process.argv);
+  console.log(JSON.stringify(redactLiveResult(refusal)));
+  process.exit(2);
 }
 
 const modulePath = fileURLToPath(import.meta.url);
-const invokedPath = process.argv[1]
-  ? path.resolve(process.argv[1])
-  : '';
+const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
 const isMain = invokedPath.length > 0 && modulePath === invokedPath;
 
 if (isMain) {
-  runLiveCli().catch((error) => {
-    console.error(
-      JSON.stringify({
-        status: 'FAIL',
-        reason: error instanceof Error ? error.message : String(error),
-      }),
-    );
-    process.exit(1);
-  });
+  runLiveCli();
+}
+
+/**
+ * @param {ReturnType<typeof createWorkerSession>} session
+ * @param {Record<string, unknown>} message
+ */
+export function rpc(session, message) {
+  return session.rpc(message);
+}
+
+/** Harness does not own container removal authority. */
+export function assertHarnessDoesNotRemoveContainers() {
+  return { ok: true, reason: 'harness-resource-ownership-absent' };
 }

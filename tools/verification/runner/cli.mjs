@@ -9,6 +9,7 @@ import {
   resolveSubject,
 } from './catalog.mjs';
 import { runVerification } from './execute.mjs';
+import { buildCacheVerificationDeps } from '../suites/packages/cache/adapter.mjs';
 import { buildDbVerificationDeps } from '../suites/packages/db/adapter.mjs';
 import { buildInfraVerificationDeps } from '../suites/infra/adapter.mjs';
 
@@ -17,7 +18,10 @@ import { buildInfraVerificationDeps } from '../suites/infra/adapter.mjs';
  * @param {object} deps
  */
 export function buildVerificationExecutionDeps(plan, deps) {
-  return buildDbVerificationDeps(plan, buildInfraVerificationDeps(plan, deps));
+  return buildCacheVerificationDeps(
+    plan,
+    buildDbVerificationDeps(plan, buildInfraVerificationDeps(plan, deps)),
+  );
 }
 
 /** @typedef {{ ok: true, command: 'list' } | { ok: true, kind: 'infra' | 'package' | 'app', name?: string, profile?: string, section?: string, plan: boolean, live: boolean, json: boolean } | { ok: false, exitCode: number, message: string }} ParsedArgs */

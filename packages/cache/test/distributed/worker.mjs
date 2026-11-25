@@ -1,3 +1,7 @@
+import process from 'node:process';
+import { setImmediate } from 'node:timers';
+import { setTimeout } from 'node:timers/promises';
+
 import { createCacheAdapter } from '@offscreen/cache';
 import { defineCache } from '@offscreen/cache/core';
 import { jsonCodec } from '@offscreen/cache/codecs';
@@ -59,6 +63,31 @@ function snapshotStats() {
   };
 }
 
+/**
+ * @param {ReturnType<typeof snapshotStats>} before
+ */
+function diffStats(before) {
+  const after = snapshotStats();
+  /** @type {Record<string, number>} */
+  const telemetry = {};
+  for (const key of new Set([
+    ...Object.keys(before.telemetry),
+    ...Object.keys(after.telemetry),
+  ])) {
+    const delta = (after.telemetry[key] ?? 0) - (before.telemetry[key] ?? 0);
+    if (delta !== 0) {
+      telemetry[key] = delta;
+    }
+  }
+  return {
+    originLoads: after.originLoads - before.originLoads,
+    activeOrigin: after.activeOrigin - before.activeOrigin,
+    peakOrigin: after.peakOrigin - before.peakOrigin,
+    telemetry,
+    final: after,
+  };
+}
+
 function resetOriginStats() {
   originLoads = 0;
   activeOrigin = 0;
@@ -78,7 +107,7 @@ async function runOrigin(identity, opts = {}) {
   originLoads += 1;
   const delayMs = opts.delayMs ?? 0;
   if (delayMs > 0) {
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await setTimeout(delayMs);
   }
   if (opts.failWith) {
     activeOrigin -= 1;
@@ -138,33 +167,7 @@ async function handleInit(env, envName, disabled) {
   });
 }
 
-/**
- * @param {import('node:child_process').ChildProcess} proc
- * @param {Record<string, unknown>} message
- * @returns {Promise<Record<string, unknown>>}
- */
-export function rpc(proc, message) {
-  const requestId =
-    typeof message.requestId === 'string'
-      ? message.requestId
-      : crypto.randomUUID();
-  return new Promise((resolve, reject) => {
-    /** @param {Record<string, unknown>} response */
-    function onMessage(response) {
-      if (response.requestId !== requestId) {
-        return;
-      }
-      proc.off('message', onMessage);
-      if (response.ok === false) {
-        reject(new Error(String(response.error ?? 'WorkerRequestFailed')));
-        return;
-      }
-      resolve(response);
-    }
-    proc.on('message', onMessage);
-    proc.send({ ...message, requestId });
-  });
-}
+/** @typedef {'ok' | 'worker-not-initialized' | 'unknown-command' | 'origin-failed' | 'internal'} WorkerOutcome */
 
 /**
  * @param {Record<string, unknown>} msg
@@ -182,18 +185,26 @@ async function dispatch(msg) {
         const envName = String(msg.environment ?? '');
         const disabled = Boolean(msg.disabled);
         await handleInit(env, envName, disabled);
+        const stats = snapshotStats();
         return {
           requestId,
           ok: true,
+          outcome: /** @type {WorkerOutcome} */ ('ok'),
           enabled: adapter?.enabled ?? false,
-          ...snapshotStats(),
+          stats,
+          statsDelta: stats,
         };
       }
       case 'read': {
         if (!bound) {
-          throw new Error('WorkerNotInitialized');
+          return {
+            requestId,
+            ok: false,
+            outcome: /** @type {WorkerOutcome} */ ('worker-not-initialized'),
+          };
         }
         const identity = /** @type {readonly string[]} */ (msg.identity ?? []);
+        const before = snapshotStats();
         const start = Date.now();
         const value = await bound.getOrLoad(identity, () =>
           runOrigin(identity, {
@@ -202,24 +213,37 @@ async function dispatch(msg) {
               typeof msg.failWith === 'string' ? msg.failWith : undefined,
           }),
         );
+        const delta = diffStats(before);
         return {
           requestId,
           ok: true,
-          outcome: 'ok',
+          outcome: /** @type {WorkerOutcome} */ ('ok'),
           value,
-          durationMs: Date.now() - start,
-          ...snapshotStats(),
+          durationMs: Math.max(0, Date.now() - start),
+          ...delta.final,
+          stats: delta.final,
+          statsDelta: {
+            originLoads: delta.originLoads,
+            activeOrigin: delta.activeOrigin,
+            peakOrigin: delta.peakOrigin,
+            telemetry: delta.telemetry,
+          },
         };
       }
       case 'burst': {
         if (!bound) {
-          throw new Error('WorkerNotInitialized');
+          return {
+            requestId,
+            ok: false,
+            outcome: /** @type {WorkerOutcome} */ ('worker-not-initialized'),
+          };
         }
         const count = Math.min(64, Math.max(1, Number(msg.count ?? 1)));
         const sameKey = Boolean(msg.sameKey);
         const baseIdentity = /** @type {readonly string[]} */ (
           msg.identity ?? ['burst', '1']
         );
+        const before = snapshotStats();
         const start = Date.now();
         const tasks = [];
         for (let i = 0; i < count; i += 1) {
@@ -237,18 +261,33 @@ async function dispatch(msg) {
           );
         }
         const values = await Promise.all(tasks);
+        const delta = diffStats(before);
         return {
           requestId,
           ok: true,
-          outcome: 'ok',
+          outcome: /** @type {WorkerOutcome} */ ('ok'),
           values,
-          durationMs: Date.now() - start,
-          ...snapshotStats(),
+          durationMs: Math.max(0, Date.now() - start),
+          ...delta.final,
+          stats: delta.final,
+          statsDelta: {
+            originLoads: delta.originLoads,
+            activeOrigin: delta.activeOrigin,
+            peakOrigin: delta.peakOrigin,
+            telemetry: delta.telemetry,
+          },
         };
       }
       case 'reset-stats': {
         resetOriginStats();
-        return { requestId, ok: true, ...snapshotStats() };
+        const stats = snapshotStats();
+        return {
+          requestId,
+          ok: true,
+          outcome: /** @type {WorkerOutcome} */ ('ok'),
+          stats,
+          statsDelta: stats,
+        };
       }
       case 'close': {
         if (adapter) {
@@ -257,26 +296,61 @@ async function dispatch(msg) {
         adapter = null;
         bound = null;
         definition = null;
-        return { requestId, ok: true, closed: true, ...snapshotStats() };
+        const stats = snapshotStats();
+        setImmediate(() => {
+          process.exit(0);
+        });
+        return {
+          requestId,
+          ok: true,
+          outcome: /** @type {WorkerOutcome} */ ('ok'),
+          closed: true,
+          stats,
+          statsDelta: stats,
+        };
       }
       default:
-        throw new Error(`UnknownWorkerCommand:${type}`);
+        return {
+          requestId,
+          ok: false,
+          outcome: /** @type {WorkerOutcome} */ ('unknown-command'),
+        };
     }
   } catch (error) {
+    const name = error instanceof Error ? error.name : '';
+    const outcome =
+      name === 'SyntheticOriginFailure'
+        ? /** @type {WorkerOutcome} */ ('origin-failed')
+        : /** @type {WorkerOutcome} */ ('internal');
     return {
       requestId,
       ok: false,
-      error: error instanceof Error ? error.message : String(error),
-      ...snapshotStats(),
+      outcome,
+      stats: snapshotStats(),
     };
   }
 }
 
 if (process.send) {
-  process.on('message', async (msg) => {
-    const response = await dispatch(
-      /** @type {Record<string, unknown>} */ (msg),
-    );
-    process.send?.(response);
+  let chain = Promise.resolve();
+  process.on('message', (msg) => {
+    chain = chain
+      .then(() => dispatch(/** @type {Record<string, unknown>} */ (msg)))
+      .then((response) => {
+        if (process.connected) {
+          process.send?.(response);
+        }
+      })
+      .catch(() => {
+        if (process.connected) {
+          process.send?.({
+            requestId: String(
+              /** @type {Record<string, unknown>} */ (msg).requestId ?? '',
+            ),
+            ok: false,
+            outcome: 'internal',
+          });
+        }
+      });
   });
 }

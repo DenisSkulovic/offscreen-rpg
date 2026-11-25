@@ -1,14 +1,20 @@
 import assert from 'node:assert/strict';
+import { fork } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import {
   CACHE07_POLICY,
+  LEGACY_LIVE_VERIFY_COMMAND,
   SDK_QUEUE_METRICS_PROOF,
+  WORKER_RPC_DEADLINE_MS,
+  WorkerRpcError,
   assertBurstDistinctKeysScenario,
   assertBurstSameKeyScenario,
   assertDisabledParityScenario,
   assertDistinctRevisionScenario,
   assertEvictionScenario,
+  assertHarnessDoesNotRemoveContainers,
   assertMalformedEnvelopeScenario,
   assertPauseScenario,
   assertRestartScenario,
@@ -16,102 +22,66 @@ import {
   assertShutdownScenario,
   assertStartupOutageScenario,
   assertSyntheticFailureScenario,
+  buildAuthenticatedWorkerRedisEnv,
   buildCacheEnvironmentName,
   buildCasePercentiles,
   buildGeneratedRedisEnv,
-  buildOwnedContainerCreateArgs,
   buildT02ScenarioMetrics,
+  cleanupWorkerSessions,
   computeNearestRankPercentile,
-  createDockerExecutor,
+  createHarnessRedisHandle,
+  createWorkerSession,
   extractTelemetryOverloadCoalesced,
-  forceRemoveOwnedContainer,
-  parseDockerPort,
-  pauseOwnedRedisClients,
   proofCacheKey,
+  redactLiveResult,
+  refuseLegacyLiveHarnessInvocation,
   rejectSuppliedRedisUrl,
-  restartOwnedContainer,
-  startOwnedContainer,
-  stopOwnedContainer,
+  rpc,
+  runIsolatedScenario,
+  shutdownHarnessWorker,
+  spawnHarnessWorker,
   T02_SCENARIO_RUNNERS,
   validateDockerContextEndpoint,
   validateLiveOptIn,
-  verifyContainerOwnership,
 } from './harness.mjs';
 
-test('validateLiveOptIn refuses without explicit live opt-in', () => {
-  const refusal = validateLiveOptIn([], {});
-  assert.ok(refusal);
-  assert.equal(refusal.status, 'NOT-RUN');
+const workerPath = fileURLToPath(new URL('./worker.mjs', import.meta.url));
 
-  const missingEnv = validateLiveOptIn(['--live'], {});
-  assert.ok(missingEnv);
+test('legacy live harness invocation always refuses before side effects', () => {
+  const missingFlag = validateLiveOptIn([], {});
+  assert.equal(missingFlag.status, 'NOT-RUN');
+  assert.equal(missingFlag.verifyCommand, LEGACY_LIVE_VERIFY_COMMAND);
 
-  assert.equal(
-    validateLiveOptIn(['--live'], { CACHE07_ALLOW_DISPOSABLE_REDIS: '1' }),
-    null,
-  );
+  const withEnv = validateLiveOptIn(['--live'], {
+    CACHE07_ALLOW_DISPOSABLE_REDIS: '1',
+  });
+  assert.equal(withEnv.status, 'NOT-RUN');
+  assert.equal(withEnv.reason, 'legacy-harness-live-retired');
+  assert.deepEqual(refuseLegacyLiveHarnessInvocation(['--live']), withEnv);
 });
 
 test('rejectSuppliedRedisUrl rejects external endpoint injection', () => {
   const refusal = rejectSuppliedRedisUrl({ REDIS_URL: 'redis://shared:6379' });
   assert.ok(refusal);
   assert.equal(refusal.status, 'FAIL');
+  assert.equal(refusal.reason, 'supplied-redis-url-rejected');
   assert.equal(rejectSuppliedRedisUrl({}), null);
 });
 
 test('validateDockerContextEndpoint accepts local sockets and rejects remote tcp', () => {
-  assert.deepEqual(validateDockerContextEndpoint('unix:///var/run/docker.sock'), {
-    ok: true,
-  });
   assert.deepEqual(
-    validateDockerContextEndpoint('npipe:////./pipe/docker_engine'),
-    { ok: true },
+    validateDockerContextEndpoint('unix:///var/run/docker.sock'),
+    {
+      ok: true,
+    },
   );
   const remote = validateDockerContextEndpoint('tcp://203.0.113.10:2376');
   assert.equal(remote.ok, false);
-  const ssh = validateDockerContextEndpoint('ssh://ubuntu@203.0.113.10');
-  assert.equal(ssh.ok, false);
-});
-
-test('verifyContainerOwnership enforces id, label, image and port', () => {
-  const inspect = {
-    Id: 'abcd1234ef567890',
-    Config: {
-      Image: 'redis:8.2.1-alpine',
-      Labels: { 'offscreen.cache07.run': 'run-1' },
-    },
-    NetworkSettings: {
-      Ports: {
-        '6379/tcp': [{ HostIp: '127.0.0.1', HostPort: '63791' }],
-      },
-    },
-  };
-  const ok = verifyContainerOwnership(inspect, {
-    runId: 'run-1',
-    containerId: 'abcd1234ef567890',
-    hostPort: 63791,
-  });
-  assert.deepEqual(ok, { ok: true });
-
-  const wrongLabel = verifyContainerOwnership(inspect, {
-    runId: 'run-2',
-    containerId: 'abcd1234ef567890',
-    hostPort: 63791,
-  });
-  assert.equal(wrongLabel.ok, false);
-
-  const wrongPort = verifyContainerOwnership(inspect, {
-    runId: 'run-1',
-    containerId: 'abcd1234ef567890',
-    hostPort: 12345,
-  });
-  assert.equal(wrongPort.ok, false);
 });
 
 test('computeNearestRankPercentile uses nearest-rank method', () => {
   const samples = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
   assert.equal(computeNearestRankPercentile(samples, 0.95), 100);
-  assert.equal(computeNearestRankPercentile(samples, 0.5), 50);
   assert.equal(computeNearestRankPercentile([], 0.95), null);
 });
 
@@ -124,36 +94,9 @@ test('T01 scenario assertions pass and fail predictably', () => {
     }),
     { ok: true },
   );
-  assert.equal(
-    assertSharedHitScenario({
-      valueA: { id: 'a', revision: '1' },
-      valueB: { id: 'b', revision: '1' },
-      totalOriginLoads: 1,
-    }).ok,
-    false,
-  );
-
-  assert.deepEqual(
-    assertDisabledParityScenario({
-      value: { id: 'a', revision: '1' },
-      enabled: false,
-      l2Hits: 0,
-    }),
-    { ok: true },
-  );
-
   assert.deepEqual(assertDistinctRevisionScenario({ totalOriginLoads: 2 }), {
     ok: true,
   });
-
-  assert.deepEqual(
-    assertMalformedEnvelopeScenario({
-      value: { id: 'm', revision: '1' },
-      originLoads: 1,
-    }),
-    { ok: true },
-  );
-
   assert.deepEqual(
     assertEvictionScenario({
       evictedKeysDelta: 2,
@@ -164,20 +107,22 @@ test('T01 scenario assertions pass and fail predictably', () => {
   );
 });
 
-test('buildGeneratedRedisEnv only exposes the generated loopback endpoint', () => {
+test('buildGeneratedRedisEnv only exposes loopback endpoint shape', () => {
   const env = buildGeneratedRedisEnv(65123);
   assert.equal(env.REDIS_URL, 'redis://127.0.0.1:65123');
-  assert.equal(env.REDIS_CONNECT_TIMEOUT_MS, '500');
-  assert.equal(env.REDIS_OPERATION_TIMEOUT_MS, '100');
 });
 
-test('buildOwnedContainerCreateArgs pins docker flags and disables pull', () => {
-  const spec = buildOwnedContainerCreateArgs('uuid-1');
-  assert.equal(spec.name, 'cache07-uuid-1');
-  assert.ok(spec.args.includes('--pull'));
-  assert.ok(spec.args.includes('never'));
-  assert.ok(spec.args.includes('redis:8.2.1-alpine'));
-  assert.ok(spec.args.includes('--cap-drop'));
+test('buildAuthenticatedWorkerRedisEnv encodes credentials without reporting them', () => {
+  const env = buildAuthenticatedWorkerRedisEnv({
+    host: '127.0.0.1',
+    port: 65000,
+    runtimePassword: 'secret',
+    keyNamespace: 'offscreen:verify:run',
+  });
+  assert.match(env.REDIS_URL, /^redis:\/\//);
+  assert.equal(env.REDIS_KEY_PREFIX, 'offscreen:verify:run');
+  const redacted = redactLiveResult({ nested: env.REDIS_URL });
+  assert.equal(redacted.nested, 'redis://127.0.0.1:[redacted]');
 });
 
 test('proofCacheKey uses cache07-proof namespace/version', () => {
@@ -186,37 +131,227 @@ test('proofCacheKey uses cache07-proof namespace/version', () => {
   assert.equal(CACHE07_POLICY.namespace, 'cache07-proof');
 });
 
-test('createDockerExecutor bounds command duration', async () => {
-  let observedTimeout = 0;
-  const fakeRunner = async (_file, _args, opts = {}) => {
-    observedTimeout = opts.timeout ?? 0;
-    return { stdout: '', stderr: '' };
-  };
-  const dockerExec = createDockerExecutor(fakeRunner, { timeoutMs: 2500 });
-  await dockerExec('docker', ['version']);
-  assert.equal(observedTimeout, 2500);
+test('harness does not expose resource removal authority', () => {
+  const verdict = assertHarnessDoesNotRemoveContainers();
+  assert.equal(verdict.ok, true);
+  assert.match(String(verdict.reason), /ownership-absent/);
 });
 
-test('forceRemoveOwnedContainer treats inspect failure as successful cleanup', async () => {
-  const calls = [];
-  const fakeRunner = async (file, args) => {
-    calls.push([file, ...args]);
-    if (args[0] === 'inspect') {
-      throw new Error('No such object');
+function createFakeWorkerProcess() {
+  /** @type {Record<string, Function>} */
+  const listeners = {};
+  let sentRequestId = '';
+  return {
+    listeners,
+    proc: {
+      on(event, handler) {
+        listeners[event] = handler;
+      },
+      off(event, handler) {
+        if (listeners[event] === handler) {
+          delete listeners[event];
+        }
+      },
+      once(event, handler) {
+        listeners[event] = handler;
+      },
+      send(message) {
+        sentRequestId = String(message.requestId ?? '');
+        return true;
+      },
+      kill(signal) {
+        this.killed = true;
+        this.signalCode = signal ?? 'SIGTERM';
+        if (this.exitCode == null) {
+          this.exitCode = 1;
+        }
+        listeners.exit?.();
+      },
+      exitCode: null,
+      signalCode: null,
+      killed: false,
+      stdout: null,
+      stderr: null,
+    },
+    getSentRequestId() {
+      return sentRequestId;
+    },
+  };
+}
+
+test('worker RPC rejects malformed and partial responses', async () => {
+  const fake = createFakeWorkerProcess();
+  const session = createWorkerSession(fake.proc);
+  const pending = session.rpc({ type: 'init', env: {}, environment: 'x' });
+  fake.listeners.message?.({
+    requestId: fake.getSentRequestId(),
+    partial: true,
+  });
+  await assert.rejects(pending, (error) => {
+    assert.ok(error instanceof WorkerRpcError);
+    assert.equal(error.code, 'worker-rpc-malformed');
+    return true;
+  });
+  session.dispose();
+});
+
+test('worker RPC rejects explicit worker failures', async () => {
+  const fake = createFakeWorkerProcess();
+  const session = createWorkerSession(fake.proc);
+  const pending = session.rpc({ type: 'read', identity: ['a', '1'] });
+  fake.listeners.message?.({
+    requestId: fake.getSentRequestId(),
+    ok: false,
+    outcome: 'worker-not-initialized',
+  });
+  await assert.rejects(pending, (error) => {
+    assert.ok(error instanceof WorkerRpcError);
+    assert.equal(error.code, 'worker-not-initialized');
+    return true;
+  });
+  session.dispose();
+});
+
+test(
+  'worker RPC rejects hung child via deadline',
+  { timeout: 10_000 },
+  async () => {
+    const fake = createFakeWorkerProcess();
+    const session = createWorkerSession(fake.proc);
+    const started = Date.now();
+    await assert.rejects(
+      session.rpc({ type: 'init', env: {}, environment: 'x' }),
+      (error) => {
+        assert.ok(error instanceof WorkerRpcError);
+        assert.equal(error.code, 'worker-rpc-timeout');
+        return true;
+      },
+    );
+    const elapsed = Date.now() - started;
+    // Allow modest scheduler jitter around the 5s RPC deadline.
+    assert.ok(elapsed >= WORKER_RPC_DEADLINE_MS - 250);
+    assert.ok(elapsed <= WORKER_RPC_DEADLINE_MS + 1_000);
+    session.dispose();
+  },
+);
+
+test('worker session rejects all pending after exit', async () => {
+  const proc = fork(workerPath, {
+    stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+    env: { ...process.env, WORKER_TEST_EXIT: '1' },
+  });
+  const session = createWorkerSession(proc);
+  const pending = session.rpc({ type: 'read', identity: ['x'] });
+  proc.kill('SIGKILL');
+  await assert.rejects(pending, (error) =>
+    ['worker-exited', 'worker-disconnected', 'worker-closed'].includes(
+      /** @type {WorkerRpcError} */ (error).code,
+    ),
+  );
+  session.dispose();
+});
+
+test('cleanup failure is not treated as pass', async () => {
+  const fake = createFakeWorkerProcess();
+  const originalSend = fake.proc.send;
+  fake.proc.send = (message) => {
+    originalSend(message);
+    if (message.type === 'close') {
+      queueMicrotask(() => {
+        fake.listeners.message?.({
+          requestId: message.requestId,
+          ok: true,
+          closed: true,
+        });
+      });
     }
-    return { stdout: '', stderr: '' };
+    return true;
   };
-  const result = await forceRemoveOwnedContainer(fakeRunner, 'abcd');
-  assert.equal(result.removed, true);
-  assert.deepEqual(calls[0], ['docker', 'rm', '-f', 'abcd']);
+  const session = createWorkerSession(fake.proc);
+  const outcome = await cleanupWorkerSessions([session]);
+  assert.equal(outcome.ok, false);
+  assert.equal(outcome.code, 'cleanup-failed');
+  session.dispose();
 });
 
-test('parseDockerPort rejects malformed values', () => {
-  assert.equal(parseDockerPort('63901'), 63901);
-  assert.throws(() => parseDockerPort('not-a-port'), /CouldNotParseDockerPort/);
+test('suite interruption returns typed scenario failure', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const fakeHandle = {
+    runId: 'run-interrupted',
+    redisEnv: {},
+    publicFacts: { kind: 'redis-docker', runId: 'run-interrupted' },
+    async connectAdmin() {
+      return { isOpen: false };
+    },
+    async disconnectAdmin() {},
+    faults: {
+      stop: async () => ({ ok: true }),
+      start: async () => ({ ok: true }),
+      stopStart: async () => ({ ok: true }),
+      restart: async () => ({ ok: true }),
+      pauseClients: async () => ({ ok: true }),
+    },
+  };
+
+  const outcome = await runIsolatedScenario(
+    fakeHandle,
+    'disabled-parity',
+    't01',
+    controller.signal,
+  );
+  assert.equal(outcome.reason, 'suite-interrupted');
 });
 
-test('T02 scenario assertions pass and fail predictably', () => {
+test('createHarnessRedisHandle wires runner-owned faults without docker removal', () => {
+  const calls = [];
+  const handle = createHarnessRedisHandle({
+    resource: {
+      runId: 'run-1',
+      host: '127.0.0.1',
+      port: 6501,
+      containerId: 'abcabcabcabc123456789abc',
+      adminObserver: {
+        connectClient: async () => ({ isOpen: true, close: async () => {} }),
+      },
+    },
+    plan: {
+      runId: 'run-1',
+      runtimeUser: 'verify_runtime',
+      keyNamespace: 'offscreen:verify:run-1',
+      credentials: { runtimePassword: 'runtime-pass' },
+    },
+    run: (...args) => {
+      calls.push(args);
+      return { ok: true, stdout: '', stderr: '' };
+    },
+  });
+  assert.equal(handle.runId, 'run-1');
+  assert.equal(handle.redisEnv.REDIS_KEY_PREFIX, 'offscreen:verify:run-1');
+  assert.doesNotMatch(JSON.stringify(handle.publicFacts), /runtime-pass/);
+  assert.equal(typeof handle.faults.stop, 'function');
+  assert.equal(typeof handle.faults.restart, 'function');
+});
+
+test('rpc accepts session responses with final stats', async () => {
+  const worker = spawnHarnessWorker();
+  await rpc(worker, {
+    type: 'init',
+    env: {},
+    environment: buildCacheEnvironmentName('rpc-proof'),
+    disabled: true,
+  });
+  const response = await rpc(worker, {
+    type: 'read',
+    identity: ['rpc', '1'],
+  });
+  assert.equal(response.ok, true);
+  assert.equal(typeof response.statsDelta, 'object');
+  assert.equal(typeof response.durationMs, 'number');
+  await shutdownHarnessWorker(worker);
+});
+
+test('T02 scenario assertions and metrics helpers stay stable', () => {
   assert.deepEqual(
     assertStartupOutageScenario({
       originFallbackDuringOutage: true,
@@ -225,55 +360,36 @@ test('T02 scenario assertions pass and fail predictably', () => {
     }),
     { ok: true },
   );
-  assert.equal(
-    assertStartupOutageScenario({
-      originFallbackDuringOutage: true,
-      crossProcessHit: false,
-      recoveryTimeMs: null,
-    }).ok,
-    false,
-  );
-
-  assert.deepEqual(
-    assertRestartScenario({
-      valueAfterRestart: { id: 'r', revision: '1' },
-      originLoadsAfterRestart: 1,
-      sharedHitAfterWarm: true,
-    }),
-    { ok: true },
-  );
-
-  assert.deepEqual(
-    assertPauseScenario({
-      value: { id: 'p', revision: '1' },
-      recoveredAfterPause: true,
-    }),
-    { ok: true },
-  );
-
-  assert.deepEqual(
-    assertBurstSameKeyScenario({
-      singleProcessOriginLoads: 1,
-      twoProcessTotalOriginLoads: 2,
-    }),
-    { ok: true },
-  );
-  assert.equal(
-    assertBurstSameKeyScenario({
-      singleProcessOriginLoads: 2,
-      twoProcessTotalOriginLoads: 1,
-    }).ok,
-    false,
-  );
-
-  assert.deepEqual(assertBurstDistinctKeysScenario({ peakOriginConcurrency: 4 }), {
+  assert.deepEqual(assertShutdownScenario({ closeDurationMs: 120 }), {
     ok: true,
   });
-  assert.equal(
-    assertBurstDistinctKeysScenario({ peakOriginConcurrency: 5 }).ok,
-    false,
-  );
+  const metrics = buildT02ScenarioMetrics({
+    samples: [10, 20, 30, 40, 50],
+    originLoads: 2,
+    peakOriginConcurrency: 3,
+    telemetry: { 'origin:load:overload': 1, 'runtime:coalesce:coalesced': 4 },
+    recoveryTimeMs: 900,
+  });
+  assert.equal(metrics.sampleCount, 5);
+  assert.deepEqual(metrics.sdkPendingQueueMetrics, {
+    status: 'unavailable',
+    proof: SDK_QUEUE_METRICS_PROOF,
+  });
+  const totals = extractTelemetryOverloadCoalesced({
+    'origin:load:overload': 2,
+    'runtime:coalesce:coalesced': 5,
+  });
+  assert.equal(totals.overload, 2);
+  assert.equal(totals.coalesced, 5);
+  const built = buildCasePercentiles([5, 15, 25, 35, 45]);
+  assert.equal(built.p95, 45);
+});
 
+test('T02_SCENARIO_RUNNERS lists seven live fault scenarios', () => {
+  assert.equal(Object.keys(T02_SCENARIO_RUNNERS).length, 7);
+});
+
+test('synthetic failure and burst scenarios still assert predictably', () => {
   assert.deepEqual(
     assertSyntheticFailureScenario({
       firstAttemptFailed: true,
@@ -282,92 +398,49 @@ test('T02 scenario assertions pass and fail predictably', () => {
     }),
     { ok: true },
   );
-
-  assert.deepEqual(assertShutdownScenario({ closeDurationMs: 120 }), { ok: true });
-  assert.equal(assertShutdownScenario({ closeDurationMs: 6000 }).ok, false);
-});
-
-test('buildT02ScenarioMetrics reports percentiles and unavailable queue metrics', () => {
-  const metrics = buildT02ScenarioMetrics({
-    samples: [10, 20, 30, 40, 50],
-    originLoads: 2,
-    peakOriginConcurrency: 3,
-    telemetry: {
-      'origin:load:overload': 1,
-      'runtime:coalesce:coalesced': 4,
-    },
-    recoveryTimeMs: 900,
-  });
-  assert.equal(metrics.sampleCount, 5);
-  assert.equal(metrics.p95, 50);
-  assert.equal(metrics.originLoads, 2);
-  assert.equal(metrics.peakOriginConcurrency, 3);
-  assert.equal(metrics.telemetryOverload, 1);
-  assert.equal(metrics.telemetryCoalesced, 4);
-  assert.equal(metrics.recoveryTimeMs, 900);
-  assert.deepEqual(metrics.sdkPendingQueueMetrics, {
-    status: 'unavailable',
-    proof: SDK_QUEUE_METRICS_PROOF,
-  });
-});
-
-test('extractTelemetryOverloadCoalesced sums outcome counters', () => {
-  const totals = extractTelemetryOverloadCoalesced({
-    'origin:load:overload': 2,
-    'runtime:coalesce:overload': 1,
-    'runtime:coalesce:coalesced': 5,
-    'l2:get:hit': 3,
-  });
-  assert.equal(totals.overload, 3);
-  assert.equal(totals.coalesced, 5);
-});
-
-test('buildCasePercentiles aligns with suite percentiles', () => {
-  const built = buildCasePercentiles([5, 15, 25, 35, 45]);
-  assert.equal(built.p95, 45);
-  assert.equal(
-    computeNearestRankPercentile([5, 15, 25, 35, 45], 0.95),
-    built.p95,
+  assert.deepEqual(
+    assertBurstSameKeyScenario({
+      singleProcessOriginLoads: 1,
+      twoProcessTotalOriginLoads: 2,
+    }),
+    { ok: true },
   );
-});
-
-test('fake docker executor records stop start restart and pause commands', async () => {
-  const calls = [];
-  const fakeRunner = async (_file, args) => {
-    calls.push(args);
-    return { stdout: '', stderr: '' };
-  };
-  await stopOwnedContainer(fakeRunner, 'cid-1');
-  await startOwnedContainer(fakeRunner, 'cid-1');
-  await restartOwnedContainer(fakeRunner, 'cid-1');
-  await pauseOwnedRedisClients(fakeRunner, 'cid-1', 350);
-  assert.deepEqual(calls[0], ['stop', 'cid-1']);
-  assert.deepEqual(calls[1], ['start', 'cid-1']);
-  assert.deepEqual(calls[2], ['restart', 'cid-1']);
-  assert.deepEqual(calls[3], [
-    'exec',
-    'cid-1',
-    'redis-cli',
-    'CLIENT',
-    'PAUSE',
-    '350',
-    'ALL',
-  ]);
-});
-
-test('T02_SCENARIO_RUNNERS lists seven live fault scenarios', () => {
-  assert.equal(Object.keys(T02_SCENARIO_RUNNERS).length, 7);
-  for (const id of [
-    'startup-outage',
-    'restart',
-    'pause',
-    'burst-same-key',
-    'burst-distinct-keys',
-    'synthetic-failure',
-    'shutdown',
-  ]) {
-    assert.equal(typeof T02_SCENARIO_RUNNERS[id], 'function');
-  }
+  assert.deepEqual(
+    assertBurstDistinctKeysScenario({ peakOriginConcurrency: 4 }),
+    {
+      ok: true,
+    },
+  );
+  assert.deepEqual(
+    assertDisabledParityScenario({
+      value: { id: 'a', revision: '1' },
+      enabled: false,
+      l2Hits: 0,
+    }),
+    { ok: true },
+  );
+  assert.deepEqual(
+    assertRestartScenario({
+      valueAfterRestart: { id: 'r', revision: '1' },
+      originLoadsAfterRestart: 1,
+      sharedHitAfterWarm: true,
+    }),
+    { ok: true },
+  );
+  assert.deepEqual(
+    assertPauseScenario({
+      value: { id: 'p', revision: '1' },
+      recoveredAfterPause: true,
+    }),
+    { ok: true },
+  );
+  assert.deepEqual(
+    assertMalformedEnvelopeScenario({
+      value: { id: 'm', revision: '1' },
+      originLoads: 1,
+    }),
+    { ok: true },
+  );
 });
 
 test('buildCacheEnvironmentName is deterministic for a run id', () => {

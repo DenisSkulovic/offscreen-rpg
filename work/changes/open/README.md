@@ -71,7 +71,7 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 
 ## Unified verification programme (2026-11-25)
 
-[VER01–VER05 execution program](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [Normative verification contract](../../../docs/technical/platform/verification-programmes.md). [VER01](../archive/2026-11/platform-operations/2026-11-25--ver01-unified-verification-runner/CHANGE.md) source Done (live NOT-RUN). [VER02](../archive/2026-11/platform-operations/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md) source Done (live Docker NOT-RUN). [VER03](../archive/2026-11/platform-operations/2026-11-25--ver03-db-admission-workloads/CHANGE.md) source Done (live admission/stress NOT-RUN). VER04–05 dependency-gated, source commissioned. DB work continues; live resources separately authorized. No global queue change.
+[VER01–VER05 execution program](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [Normative verification contract](../../../docs/technical/platform/verification-programmes.md). [VER01](../archive/2026-11/platform-operations/2026-11-25--ver01-unified-verification-runner/CHANGE.md) source Done (live NOT-RUN). [VER02](../archive/2026-11/platform-operations/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md) source Done (live Docker NOT-RUN). [VER03](../archive/2026-11/platform-operations/2026-11-25--ver03-db-admission-workloads/CHANGE.md) source Done (live admission/stress NOT-RUN). [VER06](../archive/2026-11/platform-operations/2026-11-25--ver06-cache-resource-and-harness/CHANGE.md) source Done (owned Redis + harness migration; live Redis NOT-RUN). VER04–05 dependency-gated, source commissioned. DB work continues; live resources separately authorized. No global queue change.
 
 ## Infrastructure reconciliation (2026-11-25)
 
@@ -79,4 +79,4 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 
 ## Cache reconciliation (2026-11-25)
 
-Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. CACHE04/CACHE08 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). VER06 after VER01/02; VER07 after VER06/CACHE08; VER08 after VER07/02. No legacy live command, no global queue change.
+Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. CACHE04/CACHE08 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). [VER06](../archive/2026-11/platform-operations/2026-11-25--ver06-cache-resource-and-harness/CHANGE.md) source Done; VER07 after VER06/CACHE08; VER08 after VER07/02. Use `pnpm verify package cache`; no legacy live command, no global queue change.

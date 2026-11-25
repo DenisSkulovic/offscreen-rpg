@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { REPO_ROOT } from './catalog.mjs';
+import { REPO_ROOT, buildVerificationCatalog } from './catalog.mjs';
 import { parseCliArgs, runVerifyCli } from './cli.mjs';
 
 const CLI_PATH = join(dirname(fileURLToPath(import.meta.url)), 'cli.mjs');
@@ -68,7 +68,10 @@ test('invalid profile and missing suite exit codes', () => {
   assert.equal(invalidProfile.exitCode, 2);
   assert.match(invalidProfile.stderr, /unknown profile/);
 
-  const missingSuite = captureRun(['package', '@offscreen/cache'], {
+  const catalog = buildVerificationCatalog(REPO_ROOT);
+  const unimplementedName = catalog.unimplemented.packages[0];
+  assert.ok(unimplementedName);
+  const missingSuite = captureRun(['package', unimplementedName], {
     repoRoot: REPO_ROOT,
   });
   assert.equal(missingSuite.exitCode, 1);

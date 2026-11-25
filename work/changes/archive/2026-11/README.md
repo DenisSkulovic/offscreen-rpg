@@ -341,3 +341,4 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [VER01](platform-operations/2026-11-25--ver01-unified-verification-runner/CHANGE.md): Done source (`pnpm verify` + infra adapter); live disposable acceptance NOT-RUN.
 - [VER02](platform-operations/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md): Done source (owned Postgres Docker plan/create/fault/cleanup); live Docker acquire NOT-RUN.
 - [VER03](platform-operations/2026-11-25--ver03-db-admission-workloads/CHANGE.md): Done source (`@offscreen/db` admission/pressure/process isolation suite); live admission/stress NOT-RUN.
+- [VER06](platform-operations/2026-11-25--ver06-cache-resource-and-harness/CHANGE.md): Done source (owned Redis Docker + CACHE07 harness migration + cache source suite); live Redis acquire NOT-RUN.

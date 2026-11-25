@@ -1,5 +1,6 @@
 import { DB_SECTION_DEFINITIONS } from './catalog.mjs';
 import { INFRA_SECTION_BY_ID } from '../suites/infra/manifest.mjs';
+import { CACHE_SECTION_DEFINITIONS } from '../suites/packages/cache/manifest.mjs';
 
 const ALLOWED_TIERS = new Set([
   'SOURCE',
@@ -27,19 +28,26 @@ function parseResourceSpec(resource) {
   if (!kind || !profile) {
     return { ok: false, message: `invalid resource spec: ${resource}` };
   }
-  if (kind !== 'postgres') {
-    return { ok: false, message: `unsupported resource kind: ${kind}` };
+  if (kind === 'postgres') {
+    const allowedProfiles = new Set([
+      'single',
+      'constrained',
+      'replicated',
+      'dual-replicated',
+    ]);
+    if (!allowedProfiles.has(profile)) {
+      return { ok: false, message: `unsupported resource profile: ${profile}` };
+    }
+    return { ok: true, kind, profile };
   }
-  const allowedProfiles = new Set([
-    'single',
-    'constrained',
-    'replicated',
-    'dual-replicated',
-  ]);
-  if (!allowedProfiles.has(profile)) {
-    return { ok: false, message: `unsupported resource profile: ${profile}` };
+  if (kind === 'redis') {
+    const allowedProfiles = new Set(['single', 'constrained-noeviction']);
+    if (!allowedProfiles.has(profile)) {
+      return { ok: false, message: `unsupported resource profile: ${profile}` };
+    }
+    return { ok: true, kind, profile };
   }
-  return { ok: true, kind, profile };
+  return { ok: false, message: `unsupported resource kind: ${kind}` };
 }
 
 /**
@@ -61,6 +69,9 @@ export function materializeExecutionPlan(catalogPlan) {
   const definitionById = new Map(
     DB_SECTION_DEFINITIONS.map((row) => [row.id, row]),
   );
+  for (const row of CACHE_SECTION_DEFINITIONS) {
+    definitionById.set(row.id, row);
+  }
   if (catalogPlan.subject?.kind === 'infra') {
     for (const row of INFRA_SECTION_BY_ID.values()) {
       definitionById.set(row.id, row);

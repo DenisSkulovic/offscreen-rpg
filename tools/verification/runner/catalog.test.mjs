@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { CACHE_PROFILE_SECTIONS } from '../suites/packages/cache/manifest.mjs';
 import {
   DB_PROFILE_SECTIONS,
   REPO_ROOT,
@@ -44,7 +45,13 @@ test('buildVerificationCatalog registers infra adapter and db suite', () => {
   assert.ok(dbRow);
   assert.equal(dbRow.implementationStatus, 'registered');
   assert.equal(dbRow.adapter, 'suites/packages/db');
-  assert.ok(catalog.unimplemented.packages.includes('@offscreen/cache'));
+  const cacheRow = catalog.packages.find(
+    (row) => row.manifestName === '@offscreen/cache',
+  );
+  assert.ok(cacheRow);
+  assert.equal(cacheRow.implementationStatus, 'registered');
+  assert.ok(!catalog.unimplemented.packages.includes('@offscreen/cache'));
+  assert.ok(!catalog.unimplemented.packages.includes('@offscreen/db'));
   assert.ok(catalog.unimplemented.apps.length > 0);
 });
 
@@ -95,5 +102,47 @@ test('buildVerificationPlan honors frozen profile section order', () => {
   assert.deepEqual(
     plan.plan.sections.map((row) => row.id),
     [...DB_PROFILE_SECTIONS.stress],
+  );
+});
+
+test('buildVerificationPlan marks live cache sections NOT-RUN without --live', () => {
+  const subject = resolveSubject('package', '@offscreen/cache', REPO_ROOT);
+  assert.equal(subject.ok, true);
+  const plan = buildVerificationPlan({
+    subject: subject.subject,
+    profile: 'standard',
+    live: false,
+  });
+  assert.equal(plan.ok, true);
+  const redis = plan.plan.sections.find((row) => row.id === 'redis');
+  assert.equal(redis.plannedStatus, 'NOT-RUN');
+  const memory = plan.plan.sections.find((row) => row.id === 'memory');
+  assert.equal(memory.plannedStatus, 'PLANNED');
+  assert.equal(plan.plan.incomplete, true);
+});
+
+test('buildVerificationPlan rejects invalid cache profile', () => {
+  const subject = resolveSubject('package', '@offscreen/cache', REPO_ROOT);
+  assert.equal(subject.ok, true);
+  const plan = buildVerificationPlan({
+    subject: subject.subject,
+    profile: 'not-a-profile',
+  });
+  assert.equal(plan.ok, false);
+  assert.match(plan.message, /unknown profile/);
+});
+
+test('buildVerificationPlan honors cache profile section order', () => {
+  const subject = resolveSubject('package', '@offscreen/cache', REPO_ROOT);
+  assert.equal(subject.ok, true);
+  const plan = buildVerificationPlan({
+    subject: subject.subject,
+    profile: 'full',
+    live: false,
+  });
+  assert.equal(plan.ok, true);
+  assert.deepEqual(
+    plan.plan.sections.map((row) => row.id),
+    [...CACHE_PROFILE_SECTIONS.full],
   );
 });

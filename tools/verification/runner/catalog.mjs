@@ -2,6 +2,12 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { INFRA_SECTION_BY_ID } from '../suites/infra/manifest.mjs';
+import {
+  CACHE_MANIFEST,
+  CACHE_MANIFEST_NAME,
+  CACHE_PROFILE_SECTIONS,
+  CACHE_SECTION_DEFINITIONS,
+} from '../suites/packages/cache/manifest.mjs';
 
 export const REPO_ROOT = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -181,6 +187,17 @@ const DB_SUITE = Object.freeze({
   sections: DB_SECTION_DEFINITIONS,
 });
 
+const CACHE_SUITE_REGISTERED = Object.freeze({
+  kind: 'package',
+  manifestName: CACHE_MANIFEST_NAME,
+  defaultProfile: CACHE_MANIFEST.defaultProfile,
+  implementationStatus: 'registered',
+  manifestPath: CACHE_MANIFEST.manifestPath,
+  adapter: CACHE_MANIFEST.adapter,
+  profiles: CACHE_PROFILE_SECTIONS,
+  sections: CACHE_SECTION_DEFINITIONS,
+});
+
 /**
  * @param {string} repoRoot
  * @param {'packages' | 'apps'} category
@@ -232,6 +249,18 @@ export function buildVerificationCatalog(repoRoot) {
         adapter: DB_SUITE.adapter,
         manifestPath: DB_SUITE.manifestPath,
         profiles: Object.keys(DB_PROFILE_SECTIONS),
+      };
+    }
+    if (entry.manifestName === CACHE_MANIFEST_NAME) {
+      return {
+        kind: 'package',
+        dirName: entry.dirName,
+        manifestName: entry.manifestName,
+        defaultProfile: CACHE_SUITE_REGISTERED.defaultProfile,
+        implementationStatus: 'registered',
+        manifestPath: CACHE_SUITE_REGISTERED.manifestPath,
+        adapter: CACHE_SUITE_REGISTERED.adapter,
+        profiles: Object.keys(CACHE_PROFILE_SECTIONS),
       };
     }
     return {
@@ -324,6 +353,19 @@ export function resolveSubject(kind, name, repoRoot) {
     };
   }
 
+  if (
+    kind === 'package' &&
+    resolved.entry.manifestName === CACHE_MANIFEST_NAME
+  ) {
+    return {
+      ok: true,
+      subject: {
+        ...CACHE_SUITE_REGISTERED,
+        dirName: resolved.entry.dirName,
+      },
+    };
+  }
+
   return {
     ok: true,
     subject: {
@@ -407,10 +449,11 @@ export function buildVerificationPlan(input) {
       return { ok: false, message: `unknown profile: ${profileId}` };
     }
 
+    const sectionDefinitions = subject.sections ?? [];
     const profileSections = [...profiles[profileId]];
     if (input.section) {
       const inProfile = profileSections.includes(input.section);
-      const knownSection = DB_SECTION_DEFINITIONS.some(
+      const knownSection = sectionDefinitions.some(
         (row) => row.id === input.section,
       );
       if (!knownSection) {
@@ -428,7 +471,7 @@ export function buildVerificationPlan(input) {
       ? [input.section]
       : profileSections;
     const definitionById = new Map(
-      DB_SECTION_DEFINITIONS.map((row) => [row.id, row]),
+      sectionDefinitions.map((row) => [row.id, row]),
     );
 
     const sections = selectedSectionIds.map((id) => {

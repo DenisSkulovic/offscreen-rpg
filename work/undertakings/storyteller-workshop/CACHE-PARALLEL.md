@@ -1,4 +1,4 @@
-> **Current disposition 2026-11-25:** historical implementation schedule below is superseded. All eight original Changes are archived. CACHE04 source Done, CACHE07 superseded with existing harness preserved; live obligations transfer to VER06–08. CACHE08 source Done for residual runtime corrections (live still VER07/08). Main only. Do not dispatch old tasks or run legacy CACHE07 live CLI. [Current verification programme](VERIFICATION-PROGRAMME.md).
+> **Current disposition 2026-11-25:** historical implementation schedule below is superseded. All eight original Changes are archived. CACHE04 source Done, CACHE07 superseded; VER06 source Done (owned Redis resource + harness migration + `pnpm verify package cache` source); live obligations remain VER07–08. CACHE08 source Done for residual runtime corrections (live still VER07/08). Main only. Do not dispatch old tasks or run legacy CACHE07 live CLI. [Current verification programme](VERIFICATION-PROGRAMME.md).
 
 # Cache parallel implementation contract
 
