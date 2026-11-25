@@ -1,3 +1,3 @@
-# INF29 route
+# INF29 | Proof disposition
 
-Source audit and permanent capability catalog recorded. Next planner action: authorize and specify one owned current full-slot smoke with measured cold/warm timing, edit/failure/recovery and park/resume. No live dispatch until target slot/capacity/permission settled. Feature composition belongs to separately planned INF37–42, not hidden in final join.
+No implementation tasks remain in this packet. INF52 owns executable lifecycle checks; INF29 records resulting current-source evidence and closes only after its selected capabilities pass or owner explicitly disposes remaining acceptance. Do not reimplement image, migration, park or startup fixes. Use disposable owned slot; no existing tenant, peer slot, provider or release mutation. Run only with explicit live permission. See [INF52](../2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md).
