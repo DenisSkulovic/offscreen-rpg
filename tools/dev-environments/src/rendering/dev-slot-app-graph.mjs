@@ -61,7 +61,7 @@ export function renderDevSlotAppGraph(slotId, input) {
   const authority = `http://game-authority.${namespace}.svc.cluster.local:3002`;
   const api = `http://game-api.${namespace}.svc.cluster.local:3001`;
   const s3Endpoint = `http://object-store.${DEV_S3_NAMESPACE}.svc.cluster.local:8333`;
-  const temporal = `temporal-server.offscreen-dev-temporal.svc.cluster.local:7233`;
+  const temporal = `temporal-frontend.offscreen-dev-temporal.svc.cluster.local:7233`;
   const temporalNamespace = namespace;
 
   const bindings = {
