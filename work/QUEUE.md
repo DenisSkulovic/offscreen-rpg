@@ -4,7 +4,7 @@
 
 Current work: none
 
-**Planning-only checkpoint 2026-11-24:** no paid implementation tonight. Next recommended dispatch INF49 and INF50 T01, after owner resumes. [Consolidation](undertakings/storyteller-workshop/CONSOLIDATION.md). DXK09 and INF29 remain open.
+**Reconciliation 2026-11-25:** INF49 and narrowed INF50 source Ready; INF38 after INF50 if concurrent, INF47 after INF49. INF51 archived, INF29 evidence-only, INF52 after VER01/INF50. [Consolidation](undertakings/storyteller-workshop/CONSOLIDATION.md). No change to selection pointer or live permission.
 
 Deferred proposals live in the [domain backlog](changes/backlog/README.md); actively commissioned or imminent packets live in [open](changes/README.md). Backlog placement never selects work or confers permission to spend or deploy.
 
