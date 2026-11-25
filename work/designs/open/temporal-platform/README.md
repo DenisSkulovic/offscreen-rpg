@@ -44,6 +44,7 @@ No local chart templates, persistence DSL, shell installer or duplicate bootstra
 4. [INTEGRATION.md](INTEGRATION.md): existing external callers and common utilities.
 5. [VERIFICATION.md](VERIFICATION.md): source tests, rendering and live proof.
 6. [REVIEW.md](REVIEW.md): decisions, review history and outstanding acceptance gates.
+7. [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md): proposed Change boundaries, dependency order, migration and acceptance gates; not commissioned.
 
 ## Outstanding evidence
 
