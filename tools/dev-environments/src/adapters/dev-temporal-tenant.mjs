@@ -1,5 +1,10 @@
 import { deriveDevSqlTenant } from '../rendering/dev-sql-tenant-contract.mjs';
-import { DEV_TEMPORAL_CONTEXT, DEV_TEMPORAL_NAMESPACE, DEV_TEMPORAL_OWNER, DEV_TEMPORAL_SERVER_IMAGE } from '../../../../infra/platform/temporal/dev-bootstrap.mjs';
+import { readPlatformProfile } from '../../../../infra/platform/common/profile.mjs';
+
+const profile = readPlatformProfile('dev');
+const DEV_TEMPORAL_CONTEXT = profile.contextName;
+const DEV_TEMPORAL_NAMESPACE = profile.namespaces.temporal;
+const DEV_TEMPORAL_OWNER = profile.ownerValue;
 
 const LIVE_TOKEN = 'kind-offscreen-dev-temporal-tenant-live';
 export const DEV_TEMPORAL_RETENTION_SECONDS = 24 * 60 * 60;
@@ -14,7 +19,7 @@ export function deriveDevTemporalTenant(slotId) {
     slotId: names.slotId,
     temporalNamespace: names.appNamespace,
     kubernetesNamespace: DEV_TEMPORAL_NAMESPACE,
-    address: 'temporal-server:7233',
+    address: 'temporal-frontend:7233',
     retentionSeconds: DEV_TEMPORAL_RETENTION_SECONDS,
     taskQueues: ['storyteller-execute-v1', 'control'],
   };
@@ -23,7 +28,7 @@ export function deriveDevTemporalTenant(slotId) {
 export function parseTemporalDescribe(text, status) {
   const body = String(text ?? '');
   if (status !== 0) {
-    if (/not found|NamespaceNotFound|does not exist/i.test(body)) return { status: 'absent' };
+    if (/NamespaceNotFound|namespace\s+[^\n]+\s+(?:not found|does not exist)/i.test(body)) return { status: 'absent' };
     return { status: 'command-failed', detail: 'temporal describe exited non-zero' };
   }
   const start = body.indexOf('{');
@@ -70,7 +75,7 @@ export async function ensureDevTemporalTenant({ slotId, authorizeLive, adapter }
   if (host.context !== DEV_TEMPORAL_CONTEXT || host.namespace !== DEV_TEMPORAL_NAMESPACE || host.owner !== DEV_TEMPORAL_OWNER) {
     return stopped('wrong-binding', 'Temporal tenants bind to kind-offscreen-dev/offscreen-dev-temporal');
   }
-  if (host.image !== DEV_TEMPORAL_SERVER_IMAGE) return stopped('unexpected-image', host.image ?? 'missing');
+  if (host.ready !== true) return stopped('platform-not-ready', 'owned Temporal release is not ready');
   const names = deriveDevTemporalTenant(slotId);
   if (names.temporalNamespace === 'default') return stopped('reserved-namespace', 'default');
   const existing = describeOutcome(await adapter.describe(names.temporalNamespace));
