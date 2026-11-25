@@ -28,7 +28,10 @@ const plan = buildPlatformPlan({
 });
 
 const receipt = runPlatformPlan(plan, (argv, options) =>
-  defaultPlatformRunner(argv, options),
+  {
+    if (process.env.OFFSCREEN_STACK_PROGRESS === '1') process.stderr.write('@offscreen-stack ' + JSON.stringify({ type: 'detail', text: 'Platform: ' + options.phaseId }) + '\n');
+    return defaultPlatformRunner(argv, options);
+  },
 );
 
 process.stdout.write(`${JSON.stringify(redactPlatformReceipt(receipt))}\n`);

@@ -8,6 +8,7 @@ import { runTrackedEntrypoint } from '../../infra/monitoring/operation-entrypoin
 import { collectDefaultProbes, CONTEXT_NAME } from './stack-preflight.mjs';
 import { buildStackPlan } from './stack-lifecycle.mjs';
 import { assessStackHealth, EXPECTED_IMPORT_ROOTS } from './stack-health.mjs';
+import { APP_PHASES, emitStackProgress, shouldUseStackDashboard, runStackDashboard } from './stack-dashboard.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -21,6 +22,7 @@ export function runPlannedCommand(command, input, runner) {
   if (!plan.ok) {
     return { ...plan, ran: [] };
   }
+  if (command === 'up') emitStackProgress({ type: 'plan', phases: [...(input.observation.clusterPresent ? [] : ['cluster']), 'platform', ...APP_PHASES] });
   /** @type {string[][]} */
   const ran = [];
   for (const argv of plan.commands) {
@@ -265,6 +267,8 @@ function defaultRunner(argv, { planned = false } = {}) {
       argv[1]?.endsWith('install.sh') ? 'Release application' :
       argv[1]?.endsWith('/up.sh') ? 'Cluster startup' :
       argv[1]?.endsWith('/destroy.sh') ? 'Cluster reset' : 'Owned resource operation';
+    const id = phase === 'Platform services' ? 'platform' : phase === 'Cluster startup' ? 'cluster' : null;
+    if (id) emitStackProgress({ type: 'start', id });
     process.stderr.write('\n[release] ▶ ' + phase + '\n');
     // Only plan-approved operations stream. JSON observations and secret reads stay captured.
     const result = spawnSync(argv[0], argv.slice(1), {
@@ -272,6 +276,7 @@ function defaultRunner(argv, { planned = false } = {}) {
     });
     const elapsed = ((Date.now() - started) / 1000).toFixed(1);
     const ok = result.status === 0 && !result.error;
+    if (ok && id) emitStackProgress({ type: 'done', id });
     process.stderr.write('[release] ' + (ok ? '✓ ' : '✗ ') + phase + ' (' + elapsed + 's)\n');
     return { status: ok ? 0 : result.status || 1, stdout: '', stderr: ok ? '' : phase + ' failed; see live output above.' };
   }
@@ -361,6 +366,7 @@ const modulePath = fileURLToPath(import.meta.url);
 const invokedAsScript =
   process.argv[1] !== undefined && resolve(process.argv[1]) === modulePath;
 if (invokedAsScript) {
-  const result = await runStackCliArgv(process.argv.slice(2));
-  process.exitCode = result.exitCode;
+  const argv = process.argv.slice(2);
+  if (shouldUseStackDashboard(argv)) process.exitCode = await runStackDashboard(modulePath, argv);
+  else process.exitCode = (await runStackCliArgv(argv)).exitCode;
 }

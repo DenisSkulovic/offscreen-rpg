@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url';
+import { emitStackProgress } from '../../../scripts/repo-tools/stack-dashboard.mjs';
 import { resolve } from 'node:path';
 import { assertPlatformTarget, readPlatformObject, runPlatformCommand } from '../../platform/common/commands.mjs';
 import { ensureReleaseGenerationImage, releaseGenerationRef, matchesRuntimeImageDigest } from '../../images/distribution/kind-image-loader.mjs';
@@ -135,19 +136,27 @@ export function ensureReleaseContent({ run = runPlatformCommand, load = ensureRe
   const credentials = named('secret', 'game-runtime', run);
   if (credentials.state !== 'present' || credentials.object.metadata?.labels?.[OWNER] !== 'disposable' ||
       !credentials.object.metadata?.uid || !credentials.object.data?.['access-key-id'] || !credentials.object.data?.['secret-access-key']) fail('runtime S3 credential projection missing or foreign');
+  emitStackProgress({ type: 'start', id: 'content-build' });
   console.error('[content] Building pinned fixture image');
   const built = run('bash', [BUILD], { timeoutMs: 900000 });
   if (!built.ok) fail('bootstrap image build failed; run ' + BUILD + ' for build diagnostics');
+  emitStackProgress({ type: 'done', id: 'content-build' });
+  emitStackProgress({ type: 'start', id: 'content-load' });
   console.error('[content] Distributing fixture image');
   const receipt = load({ profileId: 'release', ref: IMAGE, run: (command, args) => {
     const r = run(command, args, { timeoutMs: 180000 });
     return { ...r, status: r.ok ? 0 : 1 };
   } });
   if (receipt.runtimeRef !== releaseGenerationRef(IMAGE, receipt.digest)) fail('bootstrap generation receipt mismatch');
+  emitStackProgress({ type: 'done', id: 'content-load' });
+  emitStackProgress({ type: 'start', id: 'content-import' });
   console.error('[content] Publishing pinned fixture');
   executeJob('importer', receipt, run);
+  emitStackProgress({ type: 'done', id: 'content-import' });
+  emitStackProgress({ type: 'start', id: 'content-read' });
   console.error('[content] Verifying pinned fixture from a fresh Pod');
   const roots = executeJob('reader', receipt, run);
+  emitStackProgress({ type: 'done', id: 'content-read' });
   return { ok: true, roots };
 }
 

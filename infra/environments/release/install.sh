@@ -188,6 +188,12 @@ fi
 LOADER_RECEIPTS_FILE="${RENDER_WORK}/loader-receipts.json"
 echo '{}' >"${LOADER_RECEIPTS_FILE}"
 
+progress() {
+  if [[ "${OFFSCREEN_STACK_PROGRESS:-}" == "1" ]]; then
+    printf '@offscreen-stack {"type":"%s","id":"%s"}\n' "$1" "$2" >&2
+  fi
+}
+progress start images
 echo "Loading selected release images into ${CLUSTER_NAME}…"
 API_LOADER_RECEIPT=""
 load_image_if_changed() {
@@ -215,6 +221,7 @@ load_image_if_changed web "$WEB_IMAGE"
 load_image_if_changed api "$API_IMAGE"
 load_image_if_changed game-authority "$GA_IMAGE"
 load_image_if_changed worker "$WORKER_IMAGE"
+progress done images
 
 prepare_release_apply() {
   local section="$1"
@@ -227,6 +234,7 @@ prepare_release_apply() {
   fi
 }
 
+progress start credentials
 echo "Preparing release Secrets from the lab database, object store, and root .env…"
 export OFFSCREEN_REPO_ROOT="${REPO_ROOT}"
 if ! node "${RELEASE_DIR}/credentials.mjs"; then
@@ -234,12 +242,14 @@ if ! node "${RELEASE_DIR}/credentials.mjs"; then
   exit 1
 fi
 
+progress done credentials
 # Content is an application prerequisite, not an optional smoke scenario.
 if ! node "${RELEASE_DIR}/content.mjs"; then
   echo "Refusing install: pinned release content preparation failed." >&2
   exit 1
 fi
 
+progress start migration
 # Schema migrations travel with the API image. A worker-only or web-only warm install observes the Job only.
 if image_selected api; then
   echo "Reconciling migration Job from rendered manifests and waiting for completion…"
@@ -256,6 +266,8 @@ elif image_selected web || image_selected game-authority || image_selected worke
   fi
 fi
 
+progress done migration
+progress start apply
 if image_selected game-authority; then
   echo "Applying authority overlay…"
   prepare_release_apply authority "${RENDER_WORK}/authority.yaml" "${RENDER_WORK}/authority.apply.yaml"
@@ -272,6 +284,8 @@ if image_selected web || image_selected api; then
   "${KUBECTL[@]}" apply -f "${RENDER_WORK}/edge.apply.yaml" -f "${EDGE_ROUTE_YAML}"
 fi
 
+progress done apply
+progress start rollout
 echo "Verifying selected release rollouts and running pod image identities…"
 export OFFSCREEN_RELEASE_LOADER_RECEIPTS_FILE="${LOADER_RECEIPTS_FILE}"
 if image_selected web || image_selected api || image_selected game-authority || image_selected worker; then
@@ -281,4 +295,5 @@ if image_selected web || image_selected api || image_selected game-authority || 
   fi
 fi
 
+progress done rollout
 echo "App release overlay applied."
