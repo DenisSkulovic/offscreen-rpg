@@ -14,3 +14,7 @@ Read infra/verification/diagnostic-engine.mjs executeChecks/runCommand, diagnost
 
 Read infra/verification/verify.mjs, diagnostic.mjs, provisioning.mjs, infra/verification/CAPABILITIES.md. Create suites/infra/manifest.mjs and adapter.mjs; invoke existing source/diagnostic CLI as child, source and diagnostic tier metadata, parse explicit result/report only, preserve child report paths; no provisioning or mutation hidden in diagnostic. Missing live acceptance stays NOT-RUN. Existing infra CLI remains untouched (INF51 active). Test fake child PASS/FAIL/malformed and no mutation, existing infra verify tests. pnpm verify list; pnpm verify infra --plan; node --test infra/verification/verify.test.mjs tools/verification/runner/*.test.mjs. Reconcile docs and lockfile through custodian.
 
+
+## Readiness ratchet
+
+Use frozen profile/section catalogue in normative document. Test source-only invocation never calls any resource adapter, source and infra read-only observation can run without --live. executeChecks current accepted status set excludes TIMEOUT; normalize to FAIL with static timeout reason for dependency propagation, map to public TIMEOUT in report. Do not modify infra engine. Runner child results must be schema-validated and sanitized before shared executeChecks sees them, no raw error detail in new report. Tests include missing scenario IDs and all-selected scenarios emitted, incomplete report on interrupt, and old diagnostic child report pointer validated within repository report directory.

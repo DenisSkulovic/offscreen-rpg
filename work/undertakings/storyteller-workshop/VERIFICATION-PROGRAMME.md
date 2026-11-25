@@ -17,3 +17,7 @@ Inspected current main DB07 public database.ts, transaction/execute.ts, errors.t
 
 ## Evidence and lifecycle
 Permanent coverage manifest/report and reusable CLI outlive Changes. Source fixtures can be joined before live proof but do not mark live guarantees Done. Required first DB acceptance report must show standard, stress, recovery, topology outcomes individually, actual resource topology and cleanup. Missing live environment remains NOT-RUN/BLOCKED. Owner may run sections repeatedly. No new global queue selection, no overall outcome percentage credit for planning. 
+
+## Readiness review amendments
+
+VER01 runner now explicitly maps legacy engine timeout and read-only diagnostic scope; VER02 uses non-superuser runtime credentials and separate observer; VER03 has deterministic role-limit refusal; VER04 freezes PostgreSQL frame handling and a real deferred-constraint commit refusal oracle; VER05 freezes UID-preconditioned deletion and stable tunnel relay. Canonical DB section/profile IDs and time limits are normative. No runtime implementation proof claimed; known DB07 defects remain experiment targets and follow-up correction candidates. Owner runs live profiles with --live, standard no flag executes source and records live NOT-RUN. Source readiness is not a blanket permission for faults against current dev tenant.
