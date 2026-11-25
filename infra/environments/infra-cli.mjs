@@ -591,6 +591,9 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
       return devReadinessToServiceState(observeDevObjectStoreReady(deps));
     }
     if (serviceId === 'temporal') {
+      const release = observeTemporalRelease('dev', deps);
+      if (release.state === 'absent') return { state: 'not-installed', detail: release.detail };
+      if (release.state === 'unreadable') return { state: 'unreadable', detail: release.detail };
       return devReadinessToServiceState(observeTemporalReady('dev', deps));
     }
     if (serviceId === 'redis') {
