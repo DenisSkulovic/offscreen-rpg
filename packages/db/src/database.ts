@@ -6,7 +6,9 @@ import {
   createManagedClientRuntime,
   safeBackgroundErrorSink,
 } from './connection/managed-client';
-
+import { executeManagedTransaction } from './transaction/execute';
+import type { TransactionPolicy } from './transaction/policy';
+import type { Transaction } from './transaction/types';
 const DEFAULT_MANAGED = {
   queueLimit: 20,
   acquireTimeoutMs: 5000,
@@ -17,7 +19,8 @@ export function createDatabase(
   onBackgroundError: (error: Error) => void,
 ) {
   const managedConfig = config.managed ?? DEFAULT_MANAGED;
-  const { managed: _managed, ...pgConfig } = config;
+  const { managed, ...pgConfig } = config;
+  void managed;
   const pool = new Pool(pgConfig);
   pool.on('error', safeBackgroundErrorSink(onBackgroundError));
 
@@ -32,6 +35,19 @@ export function createDatabase(
   return {
     db: drizzle(pool),
     withClient: runtime.withClient.bind(runtime),
+    transaction<T>(
+      policy: TransactionPolicy,
+      run: (tx: Transaction) => Promise<T>,
+    ): Promise<T> {
+      return executeManagedTransaction(
+        {
+          withClient: runtime.withClient.bind(runtime),
+          onBackgroundError,
+        },
+        policy,
+        run,
+      );
+    },
     async checkConnection(): Promise<void> {
       const probeTimeoutMs = Math.min(
         config.connectionTimeoutMillis,

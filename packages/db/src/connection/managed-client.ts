@@ -54,7 +54,11 @@ export function createManagedClientRuntime<C extends ReleasableClient>(
   const notifyIfIdle = () => {
     if (outstanding === 0) {
       while (idleWaiters.length > 0) {
-        idleWaiters.shift()!();
+        const notifyIdle = idleWaiters.shift();
+        if (notifyIdle === undefined) {
+          break;
+        }
+        notifyIdle();
       }
     }
   };
@@ -93,7 +97,10 @@ export function createManagedClientRuntime<C extends ReleasableClient>(
       return closePromise;
     }
     admission.close();
-    closePromise = waitForOutstanding().then(async () => {
+    closePromise = Promise.all([
+      waitForOutstanding(),
+      admission.whenDrained(),
+    ]).then(async () => {
       if (!ended) {
         ended = true;
         await options.end();

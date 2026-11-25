@@ -7,6 +7,8 @@
 | Need | Source |
 | --- | --- |
 | Connection and config | [database.ts](src/database.ts) `createDatabase`, [config.ts](src/config.ts) `readDatabaseConfig` |
+| Managed admission / withClient | [connection/admission.ts](src/connection/admission.ts), [connection/managed-client.ts](src/connection/managed-client.ts) |
+| Managed SQL transactions and errors | [database.ts](src/database.ts) `transaction`, [transaction/execute.ts](src/transaction/execute.ts), [transaction/errors.ts](src/transaction/errors.ts), [transaction/policy.ts](src/transaction/policy.ts) |
 | Controlled migration execution | [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts) |
 | Story, passage, item, and scene-checkpoint selector | [schema/stories.ts](src/schema/stories.ts) `story`, `storyPassage`, `storyItem`, `storySceneCheckpoint` |
 | Launch admission ledger, reserved ids, no story row | [schema/launch.ts](src/schema/launch.ts) `storyLaunch` |

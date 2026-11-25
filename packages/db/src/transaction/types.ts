@@ -1,5 +1,8 @@
-import type { Database } from '../database';
+import type { ExtractTablesWithRelations } from 'drizzle-orm';
+import type { NodePgTransaction } from 'drizzle-orm/node-postgres';
 
-export type Transaction = Parameters<
-  Parameters<Database['db']['transaction']>[0]
->[0];
+type FullSchema = Record<string, never>;
+type Schema = ExtractTablesWithRelations<FullSchema>;
+
+/** Same Drizzle handle shape as `Database['db']['transaction']` callbacks. */
+export type Transaction = NodePgTransaction<FullSchema, Schema>;

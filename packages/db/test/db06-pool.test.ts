@@ -116,7 +116,11 @@ test('structural fake connect, release and end without pg Pool', async () => {
 test('callback throw still releases the client once', async () => {
   const clock = new FakeClock();
   const client = createFakeClient(1);
-  const runtime = createStructuralRuntime(clock, async () => client, async () => {});
+  const runtime = createStructuralRuntime(
+    clock,
+    async () => client,
+    async () => {},
+  );
 
   await assert.rejects(
     () =>
@@ -170,12 +174,19 @@ test('callback pending after admission deadline retains permit until settlement'
 test('discard marks lease tainted with release(true)', async () => {
   const clock = new FakeClock();
   const client = createFakeClient(3);
-  const runtime = createStructuralRuntime(clock, async () => client, async () => {});
+  const runtime = createStructuralRuntime(
+    clock,
+    async () => client,
+    async () => {},
+  );
 
-  await runtime.withClient({ timeoutMs: 5_000 }, async (_c, _remaining, discard) => {
-    discard();
-    return 'done';
-  });
+  await runtime.withClient(
+    { timeoutMs: 5_000 },
+    async (_c, _remaining, discard) => {
+      discard();
+      return 'done';
+    },
+  );
 
   assert.equal(client.releases, 1);
   assert.equal(client.lastReleaseArg, true);
@@ -204,17 +215,19 @@ test('delayed acquisition after close releases exactly once and skips callback',
   });
   await Promise.resolve();
 
-  await runtime.close();
-
-  await assert.rejects(pending, (error: unknown) => {
+  const pendingResult = assert.rejects(pending, (error: unknown) => {
     assert.ok(error instanceof DatabaseAdmissionError);
     assert.equal(error.category, 'closed');
     return true;
   });
 
+  const closing = runtime.close();
+  await pendingResult;
+
   const client = createFakeClient(4);
   gate.resolve(client);
   await Promise.resolve();
+  await closing;
 
   assert.equal(connectCalls, 1);
   assert.equal(client.releases, 1);
@@ -311,10 +324,124 @@ test('safe background error sink does not throw', () => {
   assert.doesNotThrow(() => sink(new Error('idle failure')));
 });
 
+test('release failure after success still returns the callback result', async () => {
+  const clock = new FakeClock();
+  const client = createFakeClient(9);
+  client.release = () => {
+    client.releases += 1;
+    throw new Error('release failed');
+  };
+  const runtime = createStructuralRuntime(
+    clock,
+    async () => client,
+    async () => {},
+  );
+
+  assert.equal(
+    await runtime.withClient({ timeoutMs: 5_000 }, async () => 'payload'),
+    'payload',
+  );
+  assert.equal(client.releases, 1);
+});
+
+test('close waits for active permits before ending the pool', async () => {
+  const clock = new FakeClock();
+  let endCalls = 0;
+  const gate = createConnectGate();
+  const runtime = createManagedClientRuntime({
+    maxActive: 1,
+    maxQueued: 0,
+    acquireTimeoutMs: 50,
+    clock,
+    connect: () => gate.promise,
+    end: async () => {
+      endCalls += 1;
+    },
+  });
+
+  let callbackRuns = 0;
+  const pending = runtime.withClient({ timeoutMs: 5_000 }, async () => {
+    callbackRuns += 1;
+    return 'late';
+  });
+
+  clock.tick(50);
+  await assert.rejects(pending, (error: unknown) => {
+    assert.ok(error instanceof DatabaseAdmissionError);
+    assert.equal(error.category, 'timeout');
+    return true;
+  });
+
+  const closing = runtime.close();
+  await Promise.resolve();
+  assert.equal(endCalls, 0);
+
+  const client = createFakeClient(10);
+  gate.resolve(client);
+  await closing;
+  assert.equal(endCalls, 1);
+  assert.equal(client.releases, 1);
+  assert.equal(callbackRuns, 0);
+});
+
+test('callback throw undefined is a rejection', async () => {
+  const clock = new FakeClock();
+  const client = createFakeClient(11);
+  const runtime = createStructuralRuntime(
+    clock,
+    async () => client,
+    async () => {},
+  );
+
+  await assert.rejects(
+    () =>
+      runtime.withClient({ timeoutMs: 5_000 }, async () => {
+        throw undefined;
+      }),
+    (error: unknown) => {
+      assert.equal(error, undefined);
+      return true;
+    },
+  );
+  assert.equal(client.releases, 1);
+});
+
+test('synchronous connect throw releases the permit once', async () => {
+  const clock = new FakeClock();
+  let connectCalls = 0;
+  const runtime = createManagedClientRuntime({
+    maxActive: 1,
+    maxQueued: 0,
+    acquireTimeoutMs: 1_000,
+    clock,
+    connect: () => {
+      connectCalls += 1;
+      if (connectCalls === 1) {
+        throw new Error('sync connect failure');
+      }
+      return Promise.resolve(createFakeClient(12));
+    },
+    end: async () => {},
+  });
+
+  await assert.rejects(
+    () => runtime.withClient({ timeoutMs: 5_000 }, async () => 'nope'),
+    /sync connect failure/,
+  );
+  assert.equal(
+    await runtime.withClient({ timeoutMs: 5_000 }, async () => 'second'),
+    'second',
+  );
+});
+
 test('probe race discard does not prematurely release in-flight work', async () => {
   const clock = new FakeClock();
   const client = createFakeClient(8);
-  const runtime = createStructuralRuntime(clock, async () => client, async () => {});
+  const runtime = createStructuralRuntime(
+    clock,
+    async () => client,
+    async () => {},
+  );
 
   const probeTimeoutMs = 50;
   let discardLease: (() => void) | undefined;
@@ -325,11 +452,14 @@ test('probe race discard does not prematurely release in-flight work', async () 
     releaseQuery = resolve;
   });
 
-  const work = runtime.withClient({ timeoutMs: probeTimeoutMs }, async (_c, _r, discard) => {
-    acquired = true;
-    discardLease = discard;
-    await queryHang;
-  });
+  const work = runtime.withClient(
+    { timeoutMs: probeTimeoutMs },
+    async (_c, _r, discard) => {
+      acquired = true;
+      discardLease = discard;
+      await queryHang;
+    },
+  );
 
   let probeTimer: ReturnType<typeof setTimeout> | undefined;
   let settled = false;

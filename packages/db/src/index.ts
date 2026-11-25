@@ -8,3 +8,4 @@ export type {
   TransactionPolicy,
 } from './transaction/policy';
 export type { DatabaseTelemetryEvent } from './telemetry/types';
+export { DatabaseTransactionError } from './transaction/errors';

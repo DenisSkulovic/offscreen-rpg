@@ -1,8 +1,5 @@
 export type DatabaseAdmissionErrorCategory =
-  | 'saturated'
-  | 'timeout'
-  | 'cancelled'
-  | 'closed';
+  'saturated' | 'timeout' | 'cancelled' | 'closed';
 
 const ADMISSION_MESSAGES: Record<DatabaseAdmissionErrorCategory, string> = {
   saturated: 'Database admission queue is saturated.',
@@ -56,6 +53,7 @@ export interface AdmissionController<C extends ReleasableClient> {
     ) => Promise<T>,
   ): Promise<T>;
   close(): void;
+  whenDrained(): Promise<void>;
 }
 
 const MIN_TIMEOUT_MS = 1;
@@ -65,7 +63,8 @@ function defaultClock(): AdmissionClock {
   return {
     now: () => performance.now(),
     setTimeout: (fn, delayMs) => setTimeout(fn, delayMs),
-    clearTimeout: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+    clearTimeout: (handle) =>
+      clearTimeout(handle as ReturnType<typeof setTimeout>),
   };
 }
 
@@ -84,6 +83,8 @@ function validateAcquireTimeout(timeoutMs: number): void {
 
 type QueuedWaiter = {
   options: AcquireOptions;
+  totalDeadline: number;
+  acquisitionDeadline: number;
   run: (
     client: ReleasableClient,
     remainingMs: () => number,
@@ -100,6 +101,14 @@ type PendingAcquisition = {
   clearGuards: () => void;
 };
 
+function admissionExpired(
+  now: number,
+  totalDeadline: number,
+  acquisitionDeadline: number,
+): boolean {
+  return now >= totalDeadline || now >= acquisitionDeadline;
+}
+
 export function createAdmissionController<C extends ReleasableClient>(
   options: AdmissionControllerOptions<C>,
 ): AdmissionController<C> {
@@ -114,8 +123,35 @@ export function createAdmissionController<C extends ReleasableClient>(
   const queue: QueuedWaiter[] = [];
   const pendingAcquisitions = new Set<PendingAcquisition>();
 
+  let drainPromise: Promise<void> | undefined;
+  let resolveDrain: (() => void) | undefined;
+
   const remainingMs = (totalDeadline: number) =>
     Math.max(0, totalDeadline - clock.now());
+
+  const maybeResolveDrain = () => {
+    if (!closed || active !== 0) {
+      return;
+    }
+    if (resolveDrain) {
+      resolveDrain();
+      resolveDrain = undefined;
+    }
+  };
+
+  const ensureDrainPromise = (): Promise<void> => {
+    if (drainPromise) {
+      return drainPromise;
+    }
+    if (active === 0) {
+      drainPromise = Promise.resolve();
+      return drainPromise;
+    }
+    drainPromise = new Promise<void>((resolve) => {
+      resolveDrain = resolve;
+    });
+    return drainPromise;
+  };
 
   const clearWaiterTimers = (waiter: QueuedWaiter) => {
     if (waiter.queueTimer !== undefined) {
@@ -144,14 +180,27 @@ export function createAdmissionController<C extends ReleasableClient>(
     clearWaiterTimers(waiter);
   };
 
+  const queueWaitDeadline = (
+    totalDeadline: number,
+    acquisitionDeadline: number,
+  ) => Math.min(totalDeadline, acquisitionDeadline);
+
   const tryDrainQueue = () => {
     if (closed) {
       return;
     }
     while (queue.length > 0 && active < maxActive) {
-      const waiter = queue.shift()!;
+      const waiter = queue.shift();
+      if (waiter === undefined) {
+        break;
+      }
       clearWaiterTimers(waiter);
-      void beginAcquire(waiter.options, waiter.run as never)
+      void beginAcquire(
+        waiter.options,
+        waiter.totalDeadline,
+        waiter.acquisitionDeadline,
+        waiter.run as never,
+      )
         .then(waiter.resolve, waiter.reject)
         .catch(waiter.reject);
     }
@@ -159,23 +208,20 @@ export function createAdmissionController<C extends ReleasableClient>(
 
   const releaseActivePermit = () => {
     active -= 1;
+    maybeResolveDrain();
     tryDrainQueue();
   };
 
   const beginAcquire = <T>(
     acquireOptions: AcquireOptions,
+    totalDeadline: number,
+    acquisitionDeadline: number,
     run: (
       client: C,
       remainingMs: () => number,
       discard: () => void,
     ) => Promise<T>,
   ): Promise<T> => {
-    const totalDeadline = clock.now() + acquireOptions.timeoutMs;
-    const acquisitionDeadline = Math.min(
-      totalDeadline,
-      clock.now() + acquireTimeoutMs,
-    );
-
     active += 1;
 
     return new Promise<T>((resolve, reject) => {
@@ -185,16 +231,18 @@ export function createAdmissionController<C extends ReleasableClient>(
       let abortListener: (() => void) | undefined;
       let callbackStarted = false;
 
+      const failAdmission = (error: DatabaseAdmissionError) => {
+        if (admissionRejected || callbackStarted) {
+          return;
+        }
+        admissionRejected = true;
+        admissionError = error;
+        clearGuards();
+        reject(error);
+      };
+
       const pending: PendingAcquisition = {
-        rejectAdmission: (error: DatabaseAdmissionError) => {
-          if (admissionRejected || callbackStarted) {
-            return;
-          }
-          admissionRejected = true;
-          admissionError = error;
-          clearGuards();
-          reject(error);
-        },
+        rejectAdmission: failAdmission,
         clearGuards: () => {},
       };
 
@@ -213,17 +261,26 @@ export function createAdmissionController<C extends ReleasableClient>(
       pending.clearGuards = clearGuards;
       pendingAcquisitions.add(pending);
 
-      const acquisitionDelayMs = Math.max(0, acquisitionDeadline - clock.now());
-      acquisitionTimer = clock.setTimeout(() => {
-        pending.rejectAdmission(new DatabaseAdmissionError('timeout'));
-      }, acquisitionDelayMs);
+      const scheduleAcquisitionTimeout = () => {
+        const now = clock.now();
+        if (admissionExpired(now, totalDeadline, acquisitionDeadline)) {
+          failAdmission(new DatabaseAdmissionError('timeout'));
+          return;
+        }
+        const acquisitionDelayMs = Math.max(0, acquisitionDeadline - now);
+        acquisitionTimer = clock.setTimeout(() => {
+          failAdmission(new DatabaseAdmissionError('timeout'));
+        }, acquisitionDelayMs);
+      };
+
+      scheduleAcquisitionTimeout();
 
       if (acquireOptions.signal) {
         if (acquireOptions.signal.aborted) {
-          pending.rejectAdmission(new DatabaseAdmissionError('cancelled'));
+          failAdmission(new DatabaseAdmissionError('cancelled'));
         } else {
           abortListener = () => {
-            pending.rejectAdmission(new DatabaseAdmissionError('cancelled'));
+            failAdmission(new DatabaseAdmissionError('cancelled'));
           };
           acquireOptions.signal.addEventListener('abort', abortListener, {
             once: true,
@@ -231,17 +288,60 @@ export function createAdmissionController<C extends ReleasableClient>(
         }
       }
 
-      void connect()
+      if (admissionRejected) {
+        releaseActivePermit();
+        return;
+      }
+
+      if (admissionExpired(clock.now(), totalDeadline, acquisitionDeadline)) {
+        clearGuards();
+        releaseActivePermit();
+        reject(new DatabaseAdmissionError('timeout'));
+        return;
+      }
+
+      let connectPromise: Promise<C>;
+      try {
+        connectPromise = connect();
+      } catch (error) {
+        clearGuards();
+        releaseActivePermit();
+        if (!admissionRejected) {
+          reject(error);
+        }
+        return;
+      }
+
+      void connectPromise
         .then(async (client) => {
           clearGuards();
 
-          if (admissionRejected) {
+          const now = clock.now();
+          if (admissionRejected || admissionError) {
             try {
               client.release();
             } catch {
               // Admission failure is preserved when release also fails.
             }
             releaseActivePermit();
+            return;
+          }
+
+          if (
+            admissionExpired(now, totalDeadline, acquisitionDeadline) ||
+            (acquireOptions.signal?.aborted ?? false)
+          ) {
+            try {
+              client.release();
+            } catch {
+              // Timeout refusal still releases once.
+            }
+            releaseActivePermit();
+            reject(
+              acquireOptions.signal?.aborted
+                ? new DatabaseAdmissionError('cancelled')
+                : new DatabaseAdmissionError('timeout'),
+            );
             return;
           }
 
@@ -258,8 +358,9 @@ export function createAdmissionController<C extends ReleasableClient>(
 
           callbackStarted = true;
           let discarded = false;
-          let callbackSettled = false;
-          let callbackResult: T;
+          let callbackSucceeded = false;
+          let callbackFailed = false;
+          let callbackResult: T | undefined;
           let callbackError: unknown;
 
           try {
@@ -270,34 +371,36 @@ export function createAdmissionController<C extends ReleasableClient>(
                 discarded = true;
               },
             );
-            callbackSettled = true;
+            callbackSucceeded = true;
           } catch (error) {
-            callbackSettled = true;
+            callbackFailed = true;
             callbackError = error;
           }
 
-          let releaseError: unknown;
+          if (callbackSucceeded && clock.now() >= totalDeadline) {
+            callbackSucceeded = false;
+            callbackFailed = true;
+            callbackError = new DatabaseAdmissionError('timeout');
+          }
+
           try {
             client.release(discarded ? true : undefined);
-          } catch (error) {
-            releaseError = error;
+          } catch (releaseError) {
+            void releaseError;
           }
 
           releaseActivePermit();
 
-          if (!callbackSettled) {
-            reject(new Error('Admission callback did not settle.'));
+          if (callbackFailed) {
+            // Callback rejection (including `throw undefined`) wins over release failure.
+            reject(callbackError);
             return;
           }
-          if (callbackError !== undefined) {
-            reject(releaseError ?? callbackError);
+          if (callbackSucceeded) {
+            resolve(callbackResult as T);
             return;
           }
-          if (releaseError !== undefined) {
-            reject(releaseError);
-            return;
-          }
-          resolve(callbackResult!);
+          reject(new Error('Admission callback did not settle.'));
         })
         .catch((error) => {
           clearGuards();
@@ -326,30 +429,55 @@ export function createAdmissionController<C extends ReleasableClient>(
       throw new DatabaseAdmissionError('closed');
     }
 
+    const totalDeadline = clock.now() + acquireOptions.timeoutMs;
+    const acquisitionDeadline = Math.min(
+      totalDeadline,
+      clock.now() + acquireTimeoutMs,
+    );
+
     const canGrantImmediately = active < maxActive && queue.length === 0;
     if (canGrantImmediately) {
-      return beginAcquire(acquireOptions, run);
+      return beginAcquire(
+        acquireOptions,
+        totalDeadline,
+        acquisitionDeadline,
+        run,
+      );
     }
 
     if (queue.length >= maxQueued) {
       throw new DatabaseAdmissionError('saturated');
     }
 
-    const totalDeadline = clock.now() + acquireOptions.timeoutMs;
-
     return new Promise<T>((resolve, reject) => {
       const waiter: QueuedWaiter = {
         options: acquireOptions,
+        totalDeadline,
+        acquisitionDeadline,
         run: run as QueuedWaiter['run'],
         resolve: resolve as (value: unknown) => void,
         reject,
       };
 
-      const queueDelayMs = Math.max(0, totalDeadline - clock.now());
-      waiter.queueTimer = clock.setTimeout(() => {
-        removeQueuedWaiter(waiter);
-        reject(new DatabaseAdmissionError('timeout'));
-      }, queueDelayMs);
+      const scheduleQueueTimeout = () => {
+        const now = clock.now();
+        const queueDeadline = queueWaitDeadline(
+          totalDeadline,
+          acquisitionDeadline,
+        );
+        if (now >= queueDeadline) {
+          removeQueuedWaiter(waiter);
+          reject(new DatabaseAdmissionError('timeout'));
+          return;
+        }
+        const queueDelayMs = Math.max(0, queueDeadline - now);
+        waiter.queueTimer = clock.setTimeout(() => {
+          removeQueuedWaiter(waiter);
+          reject(new DatabaseAdmissionError('timeout'));
+        }, queueDelayMs);
+      };
+
+      scheduleQueueTimeout();
 
       if (acquireOptions.signal) {
         waiter.abortListener = () => {
@@ -370,16 +498,29 @@ export function createAdmissionController<C extends ReleasableClient>(
       return;
     }
     closed = true;
+    ensureDrainPromise();
 
     while (queue.length > 0) {
-      const waiter = queue.shift()!;
+      const waiter = queue.shift();
+      if (waiter === undefined) {
+        break;
+      }
       rejectWaiter(waiter, new DatabaseAdmissionError('closed'));
     }
 
     for (const pending of pendingAcquisitions) {
       pending.rejectAdmission(new DatabaseAdmissionError('closed'));
     }
+
+    maybeResolveDrain();
   };
 
-  return { acquire, close };
+  const whenDrained = (): Promise<void> => {
+    if (!closed) {
+      return Promise.resolve();
+    }
+    return ensureDrainPromise();
+  };
+
+  return { acquire, close, whenDrained };
 }
