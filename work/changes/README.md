@@ -391,5 +391,5 @@ No live authorization or queue change; DBOPS01 remains separate.
 - [DBOPS03 Database operations catalog and local target guard](open/2026-11-25--dbops03-db-operation-catalog/CHANGE.md) — Ready; source only.
 - [DBOPS04 Explicit enrollment and atomic operation ledger](open/2026-11-25--dbops04-db-operation-ledger/CHANGE.md) — Ready (dependency-gated); source only.
 - [DBOPS05 Resumable bounded data-operation engine](open/2026-11-25--dbops05-db-batched-operations/CHANGE.md) — Ready (dependency-gated); source only.
-- [DBOPS06 Lightweight schema change review workflow](open/2026-11-25--dbops06-schema-change-review/CHANGE.md) — Ready; source only.
+- [DBOPS06 Lightweight schema change review workflow](archive/2026-11/platform-operations/2026-11-25--dbops06-schema-change-review/CHANGE.md) — Done (source), live NOT RUN.
 No global queue change or live permission; DBOPS01 metadata and release proof remain separate.

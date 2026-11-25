@@ -39,4 +39,4 @@ Finish line: ordinary authenticated player creates story, resolves scene, reache
 
 - 2026-11-25 [DB craftsmanship wave](DB-CRAFT.md): DB11–DB14 source Done (DB14: explicit admission telemetry + probe/admission navigation; 106/106; live NOT-RUN). Post-commit admission-deadline contract remains planner work. DB10 live NOT-RUN; VER04/05 independent; DBOPS01 metadata held. No new outcome credit; estimates ~75/40/30/45 with broad uncertainty.
 
-- 2026-11-25 [DB operations programme](DB-OPERATIONS.md): DBOPS03/06 commissioned now, DBOPS04 after 03, DBOPS05 after 04. Local-first operator guard, ledger, resumable execution and offline schema review; no hosted IAM, no live permission. DBOPS01 remains backlog. No outcome credit; estimates ~75/40/30/45 (broad uncertainty).
+- 2026-11-25 [DB operations programme](DB-OPERATIONS.md): DBOPS06 source Done (offline `review:change`; 16/16; live NOT-RUN). DBOPS03 commissioned now, DBOPS04 after 03, DBOPS05 after 04. Local-first operator guard, ledger, resumable execution and offline schema review; no hosted IAM, no live permission. DBOPS01 remains backlog. No outcome credit; estimates ~75/40/30/45 (broad uncertainty).

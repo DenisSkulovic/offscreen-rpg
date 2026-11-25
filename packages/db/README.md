@@ -37,7 +37,7 @@ Live transaction, migration recovery, telemetry workload, and replicated-topolog
 | Telemetry sink and snapshot | [telemetry/runtime.ts](src/telemetry/runtime.ts) `createDatabaseTelemetry` + explicit `AdmissionInstrumentation` options; [database.ts](src/database.ts) optional observer / `telemetrySnapshot` |
 | Narrow concurrency helpers | [transaction/concurrency.ts](src/transaction/concurrency.ts) `expectOneAffected`, `acquireTransactionAdvisoryLock` |
 | Controlled migration execution | [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts) (`packages/db/migrations` asset folder) |
-| Schema registry / verification | `tools/db-migrations` (`check:schema`, guarded `generate`) — [package.json](../../tools/db-migrations/package.json) |
+| Schema registry / verification | `tools/db-migrations` (`check:schema`, guarded `generate`, read-only `review:change`) — [package.json](../../tools/db-migrations/package.json), [README](../../tools/db-migrations/README.md) |
 | Durable delivery (outbox) | `@offscreen/outbox` (`./schema`, `./enqueue`, `./relay`) |
 | Identity / auth tables | `@offscreen/identity-persistence` |
 | Story Engine durable schema | `@offscreen/story-persistence` (`drafts`, `generations`, `stories`, `launch`, `campaign`, `storyteller`) |

@@ -8,6 +8,7 @@
     "test": "node --test dist/test/*.test.js",
     "check:schema": "pnpm -w exec turbo run build --filter=@offscreen/db-migrations... && node scripts/check-schema.mjs",
     "check:history": "node scripts/check-history.mjs",
+    "review:change": "node scripts/review-change.mjs",
     "generate": "node scripts/check-history.mjs && drizzle-kit generate"
   },
   "dependencies": {
