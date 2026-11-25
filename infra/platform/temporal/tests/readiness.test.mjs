@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { parse } from 'yaml';
 import { observeTemporalReady, observeTemporalRelease } from '../readiness.mjs';
 
 const context = 'kind-offscreen-dev';
 const namespace = 'offscreen-dev-temporal';
+const values = parse(readFileSync(new URL('../values.yaml', import.meta.url), 'utf8'));
 
-function fixture({ releaseStatus = 'deployed', absent = false, unreadable = false, stale = false, foreign = false, health = 'SERVING', ui = true } = {}) {
+function fixture({ releaseStatus = 'deployed', absent = false, unreadable = false, stale = false, foreign = false, health = 'SERVING', ui = true, driftedImage = false } = {}) {
   const calls = [];
   const ok = (value) => ({
     ok: true, status: 0, stdout: typeof value === 'string' ? value : JSON.stringify(value),
@@ -37,7 +40,7 @@ function fixture({ releaseStatus = 'deployed', absent = false, unreadable = fals
     const type = args[get + 1];
     const name = args[get + 2] === '-n' ? args[get + 4] : args[get + 2];
     if (type === 'namespace') {
-      return ok({ metadata: { name, uid: 'baseline-uid', labels: { 'offscreen.dev/owner': 'offscreen-dev' } } });
+      return ok({ metadata: { name, uid: 'baseline-uid', labels: { 'offscreen.dev/owner': 'offscreen-dev', 'app.kubernetes.io/part-of': 'temporal' } } });
     }
     const metadata = {
       name, namespace, generation: 2,
@@ -53,7 +56,7 @@ function fixture({ releaseStatus = 'deployed', absent = false, unreadable = fals
     if (type === 'deployment') {
       if (!ui && name === 'temporal-web') return ok('');
       return ok({
-        metadata, spec: { replicas: 1 },
+        metadata, spec: { replicas: 1, template: { spec: { containers: [{ image: driftedImage && name === 'temporal-history' ? 'temporalio/server:wrong' : 'temporalio/image:' + values[name === 'temporal-web' ? 'web' : name === 'temporal-admintools' ? 'admintools' : 'server'].image.tag }] } } },
         status: {
           observedGeneration: stale && name === 'temporal-history' ? 1 : 2,
           replicas: 1, readyReplicas: 1, updatedReplicas: 1, availableReplicas: 1,
@@ -100,7 +103,7 @@ test('owned current deployments and serving frontend establish readiness', () =>
 });
 
 test('foreign, stale, or non-serving core refuses readiness', () => {
-  for (const options of [{ foreign: true }, { stale: true }, { health: 'NOT_SERVING' }, { health: 'unexpected SERVING text' }]) {
+  for (const options of [{ foreign: true }, { stale: true }, { driftedImage: true }, { health: 'NOT_SERVING' }, { health: 'unexpected SERVING text' }]) {
     assert.equal(observeTemporalReady('dev', fixture(options)).ok, false);
   }
 });
