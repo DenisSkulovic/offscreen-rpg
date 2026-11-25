@@ -1,9 +1,9 @@
 # Proposed Temporal Helm configuration specimen
 
-Design only; not part of runtime infrastructure. Do not install. Tagged upstream source reviewed at [temporal-1.8.0](https://github.com/temporalio/helm-charts/tree/temporal-1.8.0), release commit 01210ac0212049d8f66cf0c249665a031b6852b8. Chart 1.8.0 defaults: server/admin-tools 1.32.2, UI 2.56.1. Inherit image tags from the pinned package; no duplicate version declarations. Registry image digest enforcement remains unresolved.
+Design only; not part of runtime infrastructure. Do not install. Tagged upstream source reviewed at [temporal-1.8.0](https://github.com/temporalio/helm-charts/tree/temporal-1.8.0), release commit 01210ac0212049d8f66cf0c249665a031b6852b8. Chart 1.8.0 defaults: server/admin-tools 1.32.2, UI 2.56.1. Explicit tag@index-digest overrides in values.yaml based on observed registry indexes; final render of all three pins pending.
 
 Files:
-- chart.pin: published version, URL and SHA-256 from upstream gh-pages index. Downloaded bytes not verified.
+- chart.pin: published version, URL and SHA-256 from upstream gh-pages index. Archive checksum verified OK.
 - values.yaml: shared configuration; proposed fresh topology and credential names.
 - profiles/: only actual endpoint differences. No cluster or Kubernetes namespace duplicated.
 
@@ -11,7 +11,7 @@ Design decisions: fullnameOverride temporal provides predictable service names f
 
 ## Render evidence
 
-NOT RUN: sandbox has no helm executable and cannot resolve go.temporal.io; web index fetch rejects YAML content type. Upstream release existence and tagged configuration/template source inspected. Published checksum and URL obtained directly from the upstream index; no archive bytes or rendered resource counts verified. Do not interpret expected names as observed render.
+Baseline owner terminal renders observed for both profiles, release lint passed; development lint result not retained. See [FINDINGS.md](../FINDINGS.md). Final pinned configuration needs another render from the verified archive. No live installation.
 
 When the archive is available, verify published index digest against downloaded bytes and record URL and SHA-256. Then use only local, non-mutating Helm commands from this folder:
 ```sh
