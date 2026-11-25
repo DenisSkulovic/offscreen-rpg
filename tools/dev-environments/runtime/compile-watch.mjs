@@ -17,7 +17,8 @@ const LAUNCH_LOADED_PATH = join(
   'launch-loaded.mjs',
 );
 
-const TSC_WATCH_STAMP = /^(?:\d{1,2}:\d{2}:\d{2} [AP]M - )?/;
+const TSC_WATCH_STAMP =
+  /^(?:(?:\d{1,2}:\d{2}:\d{2} [AP]M|\d{2}:\d{2}:\d{2}) - )?/;
 const COMPILER_START_RE = new RegExp(
   TSC_WATCH_STAMP.source + 'Starting compilation in watch mode',
 );
@@ -169,11 +170,20 @@ export function createCompileWatchSupervisor(options) {
   const spawnCompiler =
     options.spawnCompiler ??
     (() =>
-      spawn(process.execPath, [createRequire(join(cwd, 'package.json')).resolve('typescript/bin/tsc'), ...tscArgs.slice(2)], {
-        cwd,
-        stdio: ['ignore', 'pipe', 'inherit'],
-        env: process.env,
-      }));
+      spawn(
+        process.execPath,
+        [
+          createRequire(join(cwd, 'package.json')).resolve(
+            'typescript/bin/tsc',
+          ),
+          ...tscArgs.slice(2),
+        ],
+        {
+          cwd,
+          stdio: ['ignore', 'pipe', 'inherit'],
+          env: process.env,
+        },
+      ));
 
   const spawnRuntime =
     options.spawnRuntime ??

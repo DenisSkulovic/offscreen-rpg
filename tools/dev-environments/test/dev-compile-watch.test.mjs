@@ -286,6 +286,111 @@ test('supervisor starts runtime once after successful compile', async () => {
   delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
 });
 
+const INCREMENTAL_SUCCESS_LINES = [
+  {
+    name: 'plain',
+    start: 'Starting compilation in watch mode...\n',
+    incremental: 'File change detected. Starting incremental compilation.\n',
+    complete: 'Found 0 errors. Watching for file changes.\n',
+  },
+  {
+    name: '12h stamp',
+    start: '8:00:03 PM - Starting compilation in watch mode...\n',
+    incremental:
+      '8:00:04 PM - File change detected. Starting incremental compilation.\n',
+    complete: '8:00:05 PM - Found 0 errors. Watching for file changes.\n',
+  },
+  {
+    name: '24h stamp',
+    start: '20:00:03 - Starting compilation in watch mode...\n',
+    incremental:
+      '20:00:04 - File change detected. Starting incremental compilation.\n',
+    complete: '20:00:05 - Found 0 errors. Watching for file changes.\n',
+  },
+];
+
+for (const scenario of INCREMENTAL_SUCCESS_LINES) {
+  test(`compiler output table promotes runtime for ${scenario.name} incremental success`, async () => {
+    const root = mkdtempSync(
+      join(tmpdir(), `dev-compile-table-${scenario.name}-`),
+    );
+    const receiptRoot = join(root, 'receipts');
+    process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
+    const entryRel = 'dist/src/main.js';
+    const { entryAbs } = seedWorkspace(root, entryRel);
+    writeFileSync(
+      entryAbs,
+      `import { pathToFileURL } from 'node:url';\nawait import(pathToFileURL(${JSON.stringify(ENTRY_FIXTURE)}).href);\n`,
+      'utf8',
+    );
+
+    const fake = createFakeCompilerProcess();
+    let runtimeStarts = 0;
+    const supervisor = createCompileWatchSupervisor({
+      role: 'api',
+      entry: entryRel,
+      cwd: root,
+      environmentId: 'dev-11',
+      launchLoadedPath: LAUNCH_LOADED_PATH,
+      spawnCompiler: () => fake.child,
+      spawnRuntime: () => {
+        runtimeStarts += 1;
+        return createFakeRuntimeProcess().child;
+      },
+    });
+
+    supervisor.start();
+    fake.pushStdout(scenario.start);
+    fake.pushStdout(scenario.complete);
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 200));
+    fake.pushStdout(scenario.incremental);
+    fake.pushStdout(scenario.complete);
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
+    assert.equal(runtimeStarts, 2);
+    await supervisor.dispose(0);
+    delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
+  });
+}
+
+test('arbitrary timestamp-like prefix does not treat compile errors as success', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'dev-compile-false-prefix-'));
+  const receiptRoot = join(root, 'receipts');
+  process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR = receiptRoot;
+  const entryRel = 'dist/src/main.js';
+  seedWorkspace(root, entryRel);
+
+  const fake = createFakeCompilerProcess();
+  let runtimeStarts = 0;
+  const supervisor = createCompileWatchSupervisor({
+    role: 'api',
+    entry: entryRel,
+    cwd: root,
+    environmentId: 'dev-12',
+    launchLoadedPath: LAUNCH_LOADED_PATH,
+    spawnCompiler: () => fake.child,
+    spawnRuntime: () => {
+      runtimeStarts += 1;
+      return createFakeRuntimeProcess().child;
+    },
+  });
+
+  supervisor.start();
+  fake.pushStdout('not-a-time - Starting compilation in watch mode...\n');
+  fake.pushStdout('not-a-time - Found 0 errors. Watching for file changes.\n');
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 100));
+  assert.equal(runtimeStarts, 0);
+
+  fake.pushStdout('99:99:99 PM - Found 2 errors. Watching for file changes.\n');
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 50));
+  assert.equal(runtimeStarts, 0);
+  const desired = JSON.parse(
+    readFileSync(join(receiptRoot, 'api.desired.json'), 'utf8'),
+  );
+  assert.equal(desired.ready, false);
+  await supervisor.dispose(0);
+  delete process.env.OFFSCREEN_DEV_RUNTIME_RECEIPT_DIR;
+});
+
 test('supervisor accepts tsc watch timestamp prefix', async () => {
   const root = mkdtempSync(join(tmpdir(), 'dev-compile-stamp-'));
   const receiptRoot = join(root, 'receipts');

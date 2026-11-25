@@ -776,6 +776,212 @@ test('park releases only after both processes exit and a free port, and never si
   rmSync(checkoutB, { recursive: true, force: true });
 });
 
+test('park records signal-failed when SIGTERM throws and retains reservation without scaling', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-sigterm-'));
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-sigterm-src-'));
+  const sessions = environmentSessionRoot(root);
+  const record = {
+    ...owner('dev-5', checkout),
+    lease: { pid: 50, startTimeJiffies: '100' },
+  };
+  writeEnvironmentSession(sessions, { ...sessionFor(record), pid: 50 });
+  const processState = { alive: true, startTicks: '100' };
+  const scaled = [];
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: () => processState.alive,
+      readStartTicks: () => processState.startTicks,
+      sleep: () => {},
+    },
+    signal: (_pid, sig) => {
+      if (sig === 'SIGTERM') throw new Error('injected signal failure');
+    },
+    scaleRole: () => scaled.push('scaled'),
+    clearReservation: () => {
+      throw new Error('reservation cleared');
+    },
+  });
+  assert.equal(result.reason, 'signal-failed');
+  assert.equal(result.released, false);
+  assert.equal(result.scaled, false);
+  assert.equal(result.signalled, false);
+  assert.deepEqual(scaled, []);
+  assert.equal(record.lease.pid, 50);
+  const persisted = readEnvironmentSession(sessions, 'dev-5');
+  assert.equal(persisted.parkIncomplete, true);
+  assert.equal(persisted.processesStopped, false);
+  assert.equal(persisted.parked, false);
+  assert.equal(persisted.released, false);
+  assert.equal(persisted.parkError, undefined);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('park records signal-failed when SIGKILL throws after the polite wait', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-sigkill-'));
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-sigkill-src-'));
+  const sessions = environmentSessionRoot(root);
+  const record = {
+    ...owner('dev-5', checkout),
+    lease: { pid: 50, startTimeJiffies: '100' },
+  };
+  writeEnvironmentSession(sessions, { ...sessionFor(record), pid: 50 });
+  const processState = { alive: true, startTicks: '100' };
+  const scaled = [];
+  const signals = [];
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: () => processState.alive,
+      readStartTicks: () => processState.startTicks,
+      sleep: () => {},
+    },
+    signal: (pid, sig) => {
+      signals.push(sig);
+      if (sig === 'SIGKILL') throw new Error('injected kill failure');
+    },
+    scaleRole: () => scaled.push('scaled'),
+  });
+  assert.equal(result.reason, 'signal-failed');
+  assert.equal(result.released, false);
+  assert.deepEqual(signals, ['SIGTERM', 'SIGKILL']);
+  assert.equal(result.signalled, true);
+  assert.deepEqual(scaled, []);
+  assert.equal(readEnvironmentSession(sessions, 'dev-5').parkIncomplete, true);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('park records process-stop-incomplete when owned process survives SIGKILL', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-survive-'));
+  const checkout = mkdtempSync(join(tmpdir(), 'offscreen-park-survive-src-'));
+  const sessions = environmentSessionRoot(root);
+  const record = {
+    ...owner('dev-5', checkout),
+    lease: { pid: 50, startTimeJiffies: '100' },
+  };
+  writeEnvironmentSession(sessions, { ...sessionFor(record), pid: 50 });
+  const processState = { alive: true, startTicks: '100' };
+  const scaled = [];
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: () => processState.alive,
+      readStartTicks: () => processState.startTicks,
+      sleep: () => {},
+    },
+    signal: () => {},
+    scaleRole: () => scaled.push('scaled'),
+  });
+  assert.equal(result.reason, 'process-stop-incomplete');
+  assert.equal(result.released, false);
+  assert.deepEqual(scaled, []);
+  assert.equal(processState.alive, true);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('park does not signal a PID reused immediately before SIGTERM', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-pre-signal-reuse-'));
+  const checkout = mkdtempSync(
+    join(tmpdir(), 'offscreen-park-pre-signal-reuse-src-'),
+  );
+  const sessions = environmentSessionRoot(root);
+  const record = {
+    ...owner('dev-5', checkout),
+    lease: { pid: 50, startTimeJiffies: '100' },
+  };
+  writeEnvironmentSession(sessions, {
+    ...sessionFor(record),
+    pid: 50,
+    forwardPid: null,
+    forwardStartTicks: null,
+  });
+  const processState = { alive: true, startTicks: '100', reused: false };
+  let startReads = 0;
+  const signals = [];
+  const scaled = [];
+  const result = parkSelectedEnvironment({
+    owner: record,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: () => processState.alive,
+      readStartTicks: (pid) => {
+        if (pid !== 50) return '100';
+        startReads += 1;
+        if (startReads === 3) processState.reused = true;
+        return processState.reused ? '999' : processState.startTicks;
+      },
+      sleep: () => {},
+    },
+    signal: (pid, sig) => {
+      signals.push({ pid, sig });
+    },
+    scaleRole: (_namespace, role) => scaled.push(role),
+    readDesiredReplicas: () =>
+      Object.fromEntries(scaled.map((role) => [role, 0])),
+    portOccupied: () => false,
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(signals, []);
+  assert.equal(scaled.length, 6);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkout, { recursive: true, force: true });
+});
+
+test('park signal failure leaves a foreign peer process untouched', () => {
+  const root = mkdtempSync(join(tmpdir(), 'offscreen-park-signal-foreign-'));
+  const checkoutA = mkdtempSync(join(tmpdir(), 'offscreen-park-signal-a-'));
+  const checkoutB = mkdtempSync(join(tmpdir(), 'offscreen-park-signal-b-'));
+  const sessions = environmentSessionRoot(root);
+  const recordA = {
+    ...owner('dev-5', checkoutA),
+    lease: { pid: 50, startTimeJiffies: '100' },
+  };
+  const recordB = {
+    ...owner('dev-6', checkoutB),
+    lease: { pid: 60, startTimeJiffies: '200' },
+  };
+  writeEnvironmentSession(sessions, { ...sessionFor(recordA), pid: 50 });
+  writeEnvironmentSession(sessions, {
+    ...sessionFor(recordB),
+    pid: 60,
+    processStartTicks: '200',
+  });
+  const processState = {
+    alive: new Set([50, 60]),
+    startTicks: (pid) => (pid === 60 ? '200' : '100'),
+  };
+  const foreignSignals = [];
+  const scaled = [];
+  const failed = parkSelectedEnvironment({
+    owner: recordA,
+    sessionRoot: sessions,
+    processDeps: {
+      pidAlive: (pid) => processState.alive.has(pid),
+      readStartTicks: (pid) => processState.startTicks(pid),
+      sleep: () => {},
+    },
+    signal: (pid, sig) => {
+      if (pid === 60) foreignSignals.push(sig);
+      if (pid === 50 && sig === 'SIGTERM') throw new Error('injected');
+    },
+    scaleRole: () => scaled.push('scaled'),
+  });
+  assert.equal(failed.reason, 'signal-failed');
+  assert.deepEqual(foreignSignals, []);
+  assert.deepEqual(scaled, []);
+  assert.equal(processState.alive.has(60), true);
+  assert.equal(recordB.lease.pid, 60);
+  rmSync(root, { recursive: true, force: true });
+  rmSync(checkoutA, { recursive: true, force: true });
+  rmSync(checkoutB, { recursive: true, force: true });
+});
+
 test('atomic session write replaces an existing slot file with mode 0600', () => {
   const root = mkdtempSync(join(tmpdir(), 'offscreen-atomic-'));
   const sessions = environmentSessionRoot(root);

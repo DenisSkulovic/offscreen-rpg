@@ -40,6 +40,7 @@ import {
   resolveOauthReadiness,
   ensureOwnedSlotImages,
   MIGRATION_PACKAGE_BUILD_ARGS,
+  prepareMigrationArtifact,
 } from '../src/application/dev-slot-startup.mjs';
 import { renderDevSlotAppGraph } from '../src/rendering/dev-slot-app-graph.mjs';
 import {
@@ -169,6 +170,50 @@ test('migration artifact build includes workspace dependencies', () => {
     '@offscreen/db...',
     'build',
   ]);
+});
+
+test('prepareMigrationArtifact invokes injected pnpm build when dist is missing', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'inf50-artifact-'));
+  const registryRoot = join(root, 'reg');
+  mkdirSync(join(root, 'packages/db/dist/src'), { recursive: true });
+  const calls = [];
+  const result = await prepareMigrationArtifact(
+    { worktree: root, registryRoot },
+    { slotId: 'dev-1' },
+    {
+      spawnSync: (cmd, args, opts) => {
+        calls.push({ cmd, args, opts });
+        writeFileSync(
+          join(root, 'packages/db/dist/src/migrate.js'),
+          'export {};\n',
+        );
+        return { status: 0, stderr: '', stdout: '' };
+      },
+    },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].cmd, 'pnpm');
+  assert.deepEqual(calls[0].args, MIGRATION_PACKAGE_BUILD_ARGS);
+  assert.equal(calls[0].opts.cwd, root);
+});
+
+test('prepareMigrationArtifact refuses before tenant mutation on build failure', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'inf50-artifact-fail-'));
+  const registryRoot = join(root, 'reg');
+  mkdirSync(join(root, 'packages/db/dist/src'), { recursive: true });
+  const result = await prepareMigrationArtifact(
+    { worktree: root, registryRoot },
+    { slotId: 'dev-2' },
+    {
+      spawnSync: () => ({ status: 2, stderr: 'build exploded', stdout: '' }),
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(
+    result.detail,
+    'packages/db build failed before tenant mutation',
+  );
 });
 
 const record = {

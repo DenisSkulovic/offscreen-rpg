@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
 import {
+  buildMigrationPackage,
   connectPgWithFreshAttempts,
   migrateOwnedDevSlot,
   pgPortForwardArgs,
   redactMigrationFailure,
+  startOwnedPgPortForward,
   validateDevMigrationSecret,
   waitForPortForwardReady,
 } from '../src/adapters/dev-slot-migrate.mjs';
@@ -58,11 +60,7 @@ function fakeForward() {
   };
 }
 
-function fakeModules({
-  expected = 26,
-  ledgerRows,
-  assertThrows = false,
-} = {}) {
+function fakeModules({ expected = 26, ledgerRows, assertThrows = false } = {}) {
   const entries = Array.from({ length: expected }, (_, idx) => ({
     folderMillis: 1_000 + idx,
     hash: `${'a'.repeat(63)}${idx % 10}`,
@@ -95,7 +93,13 @@ function mockClientFactory(rows) {
     async query(sql) {
       if (sql.includes('current_user AS writer')) {
         return {
-          rows: [{ writer: 'dev_1_mig', runtime_insert: false, runtime_select: true }],
+          rows: [
+            {
+              writer: 'dev_1_mig',
+              runtime_insert: false,
+              runtime_select: true,
+            },
+          ],
         };
       }
       if (sql.includes('current_user')) {
@@ -125,20 +129,140 @@ test('validateDevMigrationSecret rejects malformed migration secrets', () => {
   const names = deriveDevSqlTenant('dev-1');
   assert.equal(
     validateDevMigrationSecret(
-      { metadata: { name: 'wrong', namespace: names.namespace, labels: {} }, data: {} },
+      {
+        metadata: { name: 'wrong', namespace: names.namespace, labels: {} },
+        data: {},
+      },
       names,
     ).refusals[0].id,
     'migration-secret',
   );
   const badUsername = secretBody(names, { username: 'dev_1_run' });
-  assert.equal(validateDevMigrationSecret(badUsername, names).refusals[0].detail, 'username');
+  assert.equal(
+    validateDevMigrationSecret(badUsername, names).refusals[0].detail,
+    'username',
+  );
+});
+
+function fakeKubectlForwardChild(port) {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  child.exitCode = null;
+  child.kill = () => {
+    child.exitCode = 0;
+    child.emit('exit', 0);
+  };
+  child.emitReady = () => {
+    child.stdout.emit(
+      'data',
+      Buffer.from(`Forwarding from 127.0.0.1:${port} -> 5432\n`),
+    );
+  };
+  child.emitExit = (code = 1) => {
+    child.emit('exit', code);
+  };
+  return child;
+}
+
+test('startOwnedPgPortForward default wrapper uses kubectl once with exact argv', async () => {
+  const spawns = [];
+  const port = 13111;
+  /** @type {ReturnType<typeof fakeKubectlForwardChild> | undefined} */
+  let child;
+  const fakeSpawn = (cmd, args, opts) => {
+    spawns.push({ cmd, args, opts });
+    child = fakeKubectlForwardChild(port);
+    return child;
+  };
+  const forwardPromise = startOwnedPgPortForward(port, undefined, {
+    spawn: fakeSpawn,
+  });
+  child.emitReady();
+  const forward = await forwardPromise;
+  assert.equal(forward.ok, true);
+  assert.equal(spawns.length, 1);
+  assert.equal(spawns[0].cmd, 'kubectl');
+  assert.deepEqual(spawns[0].args, pgPortForwardArgs(port));
+  assert.deepEqual(spawns[0].opts, { stdio: ['ignore', 'pipe', 'pipe'] });
+  await forward.close();
+});
+
+test('startOwnedPgPortForward times out and cleans up when readiness line is absent', async () => {
+  const killed = [];
+  const fakeSpawn = () => {
+    const child = fakeKubectlForwardChild(13112);
+    child.kill = (signal) => {
+      killed.push(signal);
+      child.exitCode = 0;
+      child.emit('exit', 0);
+    };
+    return child;
+  };
+  const forward = await startOwnedPgPortForward(13112, undefined, {
+    spawn: fakeSpawn,
+    readyTimeoutMs: 50,
+  });
+  assert.equal(forward.ok, false);
+  assert.equal(forward.refusal.id, 'port-forward-timeout');
+  assert.deepEqual(killed, ['SIGTERM']);
+});
+
+test('startOwnedPgPortForward refuses when child exits before readiness', async () => {
+  const killed = [];
+  /** @type {ReturnType<typeof fakeKubectlForwardChild> | undefined} */
+  let child;
+  const fakeSpawn = () => {
+    child = fakeKubectlForwardChild(13113);
+    child.kill = (signal) => killed.push(signal);
+    return child;
+  };
+  const forwardPromise = startOwnedPgPortForward(13113, undefined, {
+    spawn: fakeSpawn,
+    readyTimeoutMs: 200,
+  });
+  child.emitExit(1);
+  const forward = await forwardPromise;
+  assert.equal(forward.ok, false);
+  assert.equal(forward.refusal.id, 'port-forward-exited');
+});
+
+test('buildMigrationPackage invokes pnpm db build in worktree cwd', () => {
+  const calls = [];
+  const worktree = '/tmp/inf50-wt';
+  const result = buildMigrationPackage(worktree, {
+    spawnSync: (cmd, args, opts) => {
+      calls.push({ cmd, args, opts });
+      return { status: 0, stderr: '' };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].cmd, 'pnpm');
+  assert.deepEqual(calls[0].args, ['--filter', '@offscreen/db...', 'build']);
+  assert.equal(calls[0].opts.cwd, worktree);
+});
+
+test('buildMigrationPackage refuses on nonzero pnpm status', () => {
+  const result = buildMigrationPackage('/tmp/wt', {
+    spawnSync: () => ({
+      status: 1,
+      stderr: 'password=hunter2 typescript failed',
+    }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0].id, 'migrate-build');
+  assert.equal(result.refusals[0].detail.includes('hunter2'), false);
 });
 
 test('waitForPortForwardReady matches the owned spare port', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
   const ready = waitForPortForwardReady(child, 13111, 500);
-  child.stdout.emit('data', Buffer.from('Forwarding from 127.0.0.1:13111 -> 5432\n'));
+  child.stdout.emit(
+    'data',
+    Buffer.from('Forwarding from 127.0.0.1:13111 -> 5432\n'),
+  );
   const result = await ready;
   assert.equal(result.ok, true);
 });
@@ -183,9 +307,15 @@ test('port-forward child exit and cleanup are bounded', async () => {
       ok: false,
       refusal: { id: 'port-forward-exited', detail: 'port-forward exited (1)' },
     }),
-    getMigrationSecret: () => ({ ok: true, body: secretBody(deriveDevSqlTenant('dev-1')) }),
+    getMigrationSecret: () => ({
+      ok: true,
+      body: secretBody(deriveDevSqlTenant('dev-1')),
+    }),
     createPgClient: () => mockClientFactory([]),
-    connectPg: async () => ({ query: async () => ({ rows: [] }), end: async () => {} }),
+    connectPg: async () => ({
+      query: async () => ({ rows: [] }),
+      end: async () => {},
+    }),
   });
   assert.equal(result.refusals[0].id, 'port-forward-exited');
 
@@ -201,7 +331,10 @@ test('port-forward child exit and cleanup are bounded', async () => {
       };
       return forward;
     },
-    getMigrationSecret: () => ({ ok: true, body: secretBody(deriveDevSqlTenant('dev-1')) }),
+    getMigrationSecret: () => ({
+      ok: true,
+      body: secretBody(deriveDevSqlTenant('dev-1')),
+    }),
     createPgClient: () => mockClientFactory(modules.ledgerRows),
     connectPg: async (Client, uri) => new Client({ connectionString: uri }),
     skipRuntimeGateVerify: true,
@@ -219,20 +352,29 @@ test('journal length and mismatched hash verification', async () => {
     loadModules: async () => modules,
     probeSparePortFree: () => true,
     startPortForward: async () => fakeForward(),
-    getMigrationSecret: () => ({ ok: true, body: secretBody(deriveDevSqlTenant('dev-1')) }),
+    getMigrationSecret: () => ({
+      ok: true,
+      body: secretBody(deriveDevSqlTenant('dev-1')),
+    }),
     createPgClient: () => mockClientFactory(modules.ledgerRows),
     connectPg: async (Client) => new Client({}),
   });
   assert.equal(mismatch.ok, false);
   assert.equal(mismatch.refusals[0].id, 'schema-not-verified');
 
-  const shortLedger = fakeModules({ expected: 26, ledgerRows: [{ id: 1, hash: 'x', created_at: 1 }] });
+  const shortLedger = fakeModules({
+    expected: 26,
+    ledgerRows: [{ id: 1, hash: 'x', created_at: 1 }],
+  });
   const incomplete = await migrateOwnedDevSlot(OWNER, '/tmp/worktree', {
     buildPackage: () => ({ ok: true, built: '/tmp/migrate.js' }),
     loadModules: async () => shortLedger,
     probeSparePortFree: () => true,
     startPortForward: async () => fakeForward(),
-    getMigrationSecret: () => ({ ok: true, body: secretBody(deriveDevSqlTenant('dev-1')) }),
+    getMigrationSecret: () => ({
+      ok: true,
+      body: secretBody(deriveDevSqlTenant('dev-1')),
+    }),
     createPgClient: () => mockClientFactory(shortLedger.ledgerRows),
     connectPg: async (Client) => new Client({}),
   });
@@ -251,11 +393,15 @@ test('connectPgWithFreshAttempts uses a fresh client per attempt', async () => {
     }
     async end() {}
   }
-  const client = await connectPgWithFreshAttempts(FlakyClient, 'postgresql://example', {
-    attempts: 4,
-    intervalMs: 0,
-    sleep: async () => {},
-  });
+  const client = await connectPgWithFreshAttempts(
+    FlakyClient,
+    'postgresql://example',
+    {
+      attempts: 4,
+      intervalMs: 0,
+      sleep: async () => {},
+    },
+  );
   assert.equal(attempts, 3);
   assert.ok(client);
 });

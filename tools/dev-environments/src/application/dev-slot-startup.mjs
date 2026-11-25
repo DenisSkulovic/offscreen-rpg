@@ -316,9 +316,11 @@ export async function reconcileDevSlot(input, deps) {
  *
  * @param {{ worktree: string, registryRoot: string }} input
  * @param {{ slotId: string }} record
+ * @param {{ spawnSync?: typeof import('node:child_process').spawnSync }} [deps]
  */
-export async function prepareMigrationArtifact(input, record) {
-  const { spawnSync } = await import('node:child_process');
+export async function prepareMigrationArtifact(input, record, deps = {}) {
+  const { spawnSync: defaultSpawnSync } = await import('node:child_process');
+  const spawnSync = deps.spawnSync ?? defaultSpawnSync;
   const built = join(input.worktree, 'packages/db/dist/src/migrate.js');
   if (!existsSync(built)) {
     const { assertExclusiveHostWrite } =

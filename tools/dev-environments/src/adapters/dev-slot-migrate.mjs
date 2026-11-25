@@ -2,7 +2,10 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+import {
+  DEV_CNPG_CONTEXT,
+  DEV_CNPG_NAMESPACE,
+} from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
 import {
   applyDevTenantMigration,
   DEV_SQL_MIGRATION_LIVE,
@@ -38,8 +41,12 @@ export function redactMigrationFailure(text) {
  * @param {ReturnType<typeof deriveDevSqlTenant>} names
  */
 export function validateDevMigrationSecret(body, names) {
-  if (!body || typeof body !== 'object') return refusal('migration-secret', 'malformed');
-  const record = /** @type {{ metadata?: { name?: string, namespace?: string, labels?: Record<string, string> }, data?: Record<string, string> }} */ (body);
+  if (!body || typeof body !== 'object')
+    return refusal('migration-secret', 'malformed');
+  const record =
+    /** @type {{ metadata?: { name?: string, namespace?: string, labels?: Record<string, string> }, data?: Record<string, string> }} */ (
+      body
+    );
   if (record.metadata?.name !== names.migrationSecret) {
     return refusal('migration-secret', 'name');
   }
@@ -74,7 +81,11 @@ export function validateDevMigrationSecret(body, names) {
  * @param {number} port
  * @param {number} timeoutMs
  */
-export function waitForPortForwardReady(child, port, timeoutMs = FORWARD_READY_MS) {
+export function waitForPortForwardReady(
+  child,
+  port,
+  timeoutMs = FORWARD_READY_MS,
+) {
   const pattern = new RegExp(`Forwarding from ${LOOPBACK}:${port}(?: ->| )`);
   return new Promise((resolveReady) => {
     let settled = false;
@@ -85,7 +96,12 @@ export function waitForPortForwardReady(child, port, timeoutMs = FORWARD_READY_M
       resolveReady(result);
     };
     const timer = setTimeout(
-      () => finish({ ok: false, id: 'port-forward-timeout', detail: 'port-forward did not become ready' }),
+      () =>
+        finish({
+          ok: false,
+          id: 'port-forward-timeout',
+          detail: 'port-forward did not become ready',
+        }),
       timeoutMs,
     );
     const onData = (chunk) => {
@@ -100,16 +116,15 @@ export function waitForPortForwardReady(child, port, timeoutMs = FORWARD_READY_M
       finish({
         ok: false,
         id: 'port-forward-exited',
-        detail: code === null ? 'port-forward exited' : `port-forward exited (${code})`,
+        detail:
+          code === null
+            ? 'port-forward exited'
+            : `port-forward exited (${code})`,
       });
     });
   });
 }
 
-/**
- * @param {number} port
- * @param {(port: number) => Promise<import('node:child_process').ChildProcess>} [spawnForward]
- */
 export function pgPortForwardArgs(localPort) {
   return [
     '--context',
@@ -124,15 +139,28 @@ export function pgPortForwardArgs(localPort) {
   ];
 }
 
-export async function startOwnedPgPortForward(port, spawnForward) {
+/**
+ * @param {number} port
+ * @param {(port: number) => import('node:child_process').ChildProcess | Promise<import('node:child_process').ChildProcess>} [spawnForward]
+ * @param {{ spawn?: typeof spawn, readyTimeoutMs?: number }} [deps]
+ */
+export async function startOwnedPgPortForward(port, spawnForward, deps = {}) {
+  const spawnProcess = deps.spawn ?? spawn;
   const openForward =
     spawnForward ??
     ((localPort) =>
-      spawn('kubectl', pgPortForwardArgs(localPort), {
+      spawnProcess('kubectl', pgPortForwardArgs(localPort), {
         stdio: ['ignore', 'pipe', 'pipe'],
       }));
-  const child = await openForward(port);
-  const ready = await waitForPortForwardReady(child, port);
+  let child = openForward(port);
+  if (child && typeof child.then === 'function') {
+    child = await child;
+  }
+  const ready = await waitForPortForwardReady(
+    child,
+    port,
+    deps.readyTimeoutMs ?? FORWARD_READY_MS,
+  );
   if (!ready.ok) {
     child.kill('SIGTERM');
     return { ok: false, refusal: { id: ready.id, detail: ready.detail } };
@@ -163,7 +191,10 @@ export function buildMigrationPackage(worktree, deps = {}) {
     encoding: 'utf8',
   });
   if (compiled.status !== 0) {
-    return refusal('migrate-build', redactMigrationFailure(compiled.stderr ?? 'packages/db build failed'));
+    return refusal(
+      'migrate-build',
+      redactMigrationFailure(compiled.stderr ?? 'packages/db build failed'),
+    );
   }
   return { ok: true, built };
 }
@@ -174,7 +205,10 @@ export function buildMigrationPackage(worktree, deps = {}) {
 export async function loadCompiledMigrationModules(worktree) {
   const migrationsFolder = resolve(worktree, 'packages/db/migrations');
   const migratePath = resolve(worktree, 'packages/db/dist/src/migrate.js');
-  const journalPath = resolve(worktree, 'packages/db/dist/src/migrations/journal.js');
+  const journalPath = resolve(
+    worktree,
+    'packages/db/dist/src/migrations/journal.js',
+  );
   const { applyMigrations } = await import(pathToFileURL(migratePath).href);
   const { validateMigrationJournal, assertAppliedPrefix } = await import(
     pathToFileURL(journalPath).href
@@ -195,7 +229,9 @@ export async function loadCompiledMigrationModules(worktree) {
 export async function connectPgWithFreshAttempts(Client, uri, options = {}) {
   const attempts = options.attempts ?? CONNECT_ATTEMPTS;
   const intervalMs = options.intervalMs ?? CONNECT_INTERVAL_MS;
-  const sleep = options.sleep ?? ((ms) => new Promise((resolveWait) => setTimeout(resolveWait, ms)));
+  const sleep =
+    options.sleep ??
+    ((ms) => new Promise((resolveWait) => setTimeout(resolveWait, ms)));
   let lastError;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const client = new Client({
@@ -216,7 +252,9 @@ export async function connectPgWithFreshAttempts(Client, uri, options = {}) {
       await sleep(intervalMs);
     }
   }
-  throw lastError instanceof Error ? lastError : new Error('migration connection failed');
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('migration connection failed');
 }
 
 /**
@@ -246,8 +284,7 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
   if (!built.ok) return built;
 
   const probeFree =
-    deps.probeSparePortFree ??
-    ((port) => probeLoopbackPortBindableSync(port));
+    deps.probeSparePortFree ?? ((port) => probeLoopbackPortBindableSync(port));
   if (!probeFree(localPort)) {
     return refusal('foreign-port', `${LOOPBACK}:${localPort}`);
   }
@@ -259,23 +296,33 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
   } catch (error) {
     return refusal(
       'migrate-build',
-      redactMigrationFailure(error instanceof Error ? error.message : 'migration modules missing'),
+      redactMigrationFailure(
+        error instanceof Error ? error.message : 'migration modules missing',
+      ),
     );
   }
 
   let verifiedEntries;
   try {
-    verifiedEntries = modules.validateMigrationJournal(modules.migrationsFolder);
+    verifiedEntries = modules.validateMigrationJournal(
+      modules.migrationsFolder,
+    );
   } catch (error) {
     return refusal(
       'migration-journal',
-      redactMigrationFailure(error instanceof Error ? error.message : 'journal invalid'),
+      redactMigrationFailure(
+        error instanceof Error ? error.message : 'journal invalid',
+      ),
     );
   }
   const expectedMigrations = verifiedEntries.length;
 
   const startPortForward = deps.startPortForward ?? startOwnedPgPortForward;
-  const forward = await startPortForward(localPort, deps.spawnPortForward);
+  const forward = await startPortForward(
+    localPort,
+    deps.spawnPortForward,
+    deps,
+  );
   if (!forward.ok) {
     return refusal(forward.refusal.id, forward.refusal.detail);
   }
@@ -312,7 +359,10 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
 
     const secretResult = getSecret(names);
     if (!secretResult.ok) {
-      return refusal('migration-secret', secretResult.detail ?? names.migrationSecret);
+      return refusal(
+        'migration-secret',
+        secretResult.detail ?? names.migrationSecret,
+      );
     }
     const validated = validateDevMigrationSecret(secretResult.body, names);
     if (!validated.ok) return validated;
@@ -320,7 +370,9 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
     const createPgClient =
       deps.createPgClient ??
       ((root) => {
-        const nodeRequire = createRequire(resolve(root, 'packages/db/package.json'));
+        const nodeRequire = createRequire(
+          resolve(root, 'packages/db/package.json'),
+        );
         return nodeRequire('pg').Client;
       });
     const Client = createPgClient(worktree);
@@ -336,10 +388,16 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
     const role = identity.rows[0]?.role;
     const currentDatabase = identity.rows[0]?.current_database;
     if (role !== names.migrationRole) {
-      return refusal('migration-role', redactMigrationFailure(String(role ?? 'missing')));
+      return refusal(
+        'migration-role',
+        redactMigrationFailure(String(role ?? 'missing')),
+      );
     }
     if (currentDatabase !== names.database) {
-      return refusal('migration-database', redactMigrationFailure(String(currentDatabase ?? 'missing')));
+      return refusal(
+        'migration-database',
+        redactMigrationFailure(String(currentDatabase ?? 'missing')),
+      );
     }
 
     const runtimeNames = {
@@ -396,45 +454,47 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
         deps.skipRuntimeGateVerify === true
           ? undefined
           : async () => {
-        const runtimeSecretResult = getRuntimeSecret(names);
-        if (!runtimeSecretResult.ok) {
-          return { ok: false, currentUser: null };
-        }
-        const validatedRuntime = validateDevMigrationSecret(
-          runtimeSecretResult.body,
-          runtimeNames,
-        );
-        if (!validatedRuntime.ok) {
-          return { ok: false, currentUser: null };
-        }
-        const runtimeUri = `postgresql://${names.runtimeRole}:${encodeURIComponent(validatedRuntime.password)}@${LOOPBACK}:${localPort}/${names.database}?sslmode=disable&default_transaction_read_only=on`;
-        const connectPg = deps.connectPg ?? connectPgWithFreshAttempts;
-        let runtimeClient;
-        try {
-          runtimeClient = await connectPg(Client, runtimeUri, deps);
-          const role = await runtimeClient.query('SELECT current_user AS role');
-          const gate = await runtimeClient.query(
-            'SELECT migrations FROM public.offscreen_dev_schema_gate WHERE slot = $1',
-            [names.slotId],
-          );
-          const migrations = gate.rows[0]?.migrations;
-          return {
-            ok:
-              gate.rows.length === 1 &&
-              migrations === expectedMigrations &&
-              role.rows[0]?.role === names.runtimeRole,
-            currentUser: role.rows[0]?.role,
-          };
-        } catch {
-          return { ok: false, currentUser: null };
-        } finally {
-          try {
-            if (runtimeClient) await runtimeClient.end();
-          } catch {
-            // Not connected.
-          }
-        }
-      },
+              const runtimeSecretResult = getRuntimeSecret(names);
+              if (!runtimeSecretResult.ok) {
+                return { ok: false, currentUser: null };
+              }
+              const validatedRuntime = validateDevMigrationSecret(
+                runtimeSecretResult.body,
+                runtimeNames,
+              );
+              if (!validatedRuntime.ok) {
+                return { ok: false, currentUser: null };
+              }
+              const runtimeUri = `postgresql://${names.runtimeRole}:${encodeURIComponent(validatedRuntime.password)}@${LOOPBACK}:${localPort}/${names.database}?sslmode=disable&default_transaction_read_only=on`;
+              const connectPg = deps.connectPg ?? connectPgWithFreshAttempts;
+              let runtimeClient;
+              try {
+                runtimeClient = await connectPg(Client, runtimeUri, deps);
+                const role = await runtimeClient.query(
+                  'SELECT current_user AS role',
+                );
+                const gate = await runtimeClient.query(
+                  'SELECT migrations FROM public.offscreen_dev_schema_gate WHERE slot = $1',
+                  [names.slotId],
+                );
+                const migrations = gate.rows[0]?.migrations;
+                return {
+                  ok:
+                    gate.rows.length === 1 &&
+                    migrations === expectedMigrations &&
+                    role.rows[0]?.role === names.runtimeRole,
+                  currentUser: role.rows[0]?.role,
+                };
+              } catch {
+                return { ok: false, currentUser: null };
+              } finally {
+                try {
+                  if (runtimeClient) await runtimeClient.end();
+                } catch {
+                  // Not connected.
+                }
+              }
+            },
       verify: async () => {
         const ledger = await admin.query(
           'SELECT id, hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id ASC',
@@ -445,7 +505,9 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
           return {
             ok: false,
             appliedMigrations: ledger.rows.length,
-            detail: redactMigrationFailure(error instanceof Error ? error.message : 'prefix invalid'),
+            detail: redactMigrationFailure(
+              error instanceof Error ? error.message : 'prefix invalid',
+            ),
           };
         }
         if (ledger.rows.length !== expectedMigrations) {
@@ -471,12 +533,16 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
       ...migrationResult,
       slotId: owner.slotId,
       expectedMigrations,
-      appliedMigrations: migrationResult.appliedMigrations ?? appliedMigrationsFromProof(migrationResult),
+      appliedMigrations:
+        migrationResult.appliedMigrations ??
+        appliedMigrationsFromProof(migrationResult),
     };
   } catch (error) {
     return refusal(
       'migration-failed',
-      redactMigrationFailure(error instanceof Error ? error.message : 'migration runner failed'),
+      redactMigrationFailure(
+        error instanceof Error ? error.message : 'migration runner failed',
+      ),
     );
   } finally {
     try {
@@ -496,5 +562,7 @@ export async function migrateOwnedDevSlot(owner, worktree, deps = {}) {
  * @param {{ appliedMigrations?: number }} result
  */
 function appliedMigrationsFromProof(result) {
-  return typeof result.appliedMigrations === 'number' ? result.appliedMigrations : 0;
+  return typeof result.appliedMigrations === 'number'
+    ? result.appliedMigrations
+    : 0;
 }

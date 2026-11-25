@@ -641,6 +641,23 @@ export function parkSelectedEnvironment(input) {
       tenantIdentity,
     };
   }
+  const failSignal = () => {
+    writeEnvironmentSession(input.sessionRoot, {
+      ...session,
+      processesStopped: false,
+      parkIncomplete: true,
+      released: false,
+      parked: false,
+    });
+    return {
+      ok: false,
+      released: false,
+      signalled,
+      scaled: false,
+      reason: 'signal-failed',
+      tenantIdentity,
+    };
+  };
   // Tilt is recorded first. Its exit is confirmed before the forwarder is signalled.
   for (const target of targets) {
     const again = assessOwnedProcess(target, input.processDeps);
@@ -655,9 +672,24 @@ export function parkSelectedEnvironment(input) {
         tenantIdentity,
       };
     }
-    signal(Number(target.pid), 'SIGTERM');
+    const beforeSignal = assessOwnedProcess(target, input.processDeps);
+    if (!beforeSignal.owned) {
+      if (stoppedProcess(target)) continue;
+      return {
+        ok: false,
+        released: false,
+        signalled,
+        scaled: false,
+        reason: beforeSignal.reason,
+        tenantIdentity,
+      };
+    }
+    try {
+      signal(Number(target.pid), 'SIGTERM');
+    } catch {
+      return failSignal();
+    }
     signalled = true;
-    let gone = false;
     // kubectl port-forward often exits after the first 250ms. Forty 50ms polls cover about two seconds.
     const waitForExit = (attempts) => {
       for (let attempt = 0; attempt < attempts; attempt += 1) {
@@ -666,7 +698,7 @@ export function parkSelectedEnvironment(input) {
       }
       return stoppedProcess(target);
     };
-    gone = waitForExit(40);
+    let gone = waitForExit(40);
     if (!gone) {
       // Re-check PID and start time. A reused PID must not receive SIGKILL.
       const stillOwned = assessOwnedProcess(target, input.processDeps);
@@ -691,9 +723,36 @@ export function parkSelectedEnvironment(input) {
           };
         }
       } else {
-        // Under memory pressure Tilt can ignore SIGTERM for the whole polite wait.
-        signal(Number(target.pid), 'SIGKILL');
-        gone = waitForExit(10);
+        const beforeKill = assessOwnedProcess(target, input.processDeps);
+        if (!beforeKill.owned) {
+          if (stoppedProcess(target)) {
+            gone = true;
+          } else {
+            writeEnvironmentSession(input.sessionRoot, {
+              ...session,
+              processesStopped: false,
+              parkIncomplete: true,
+              released: false,
+              parked: false,
+            });
+            return {
+              ok: false,
+              released: false,
+              signalled,
+              scaled: false,
+              reason: beforeKill.reason,
+              tenantIdentity,
+            };
+          }
+        } else {
+          // Under memory pressure Tilt can ignore SIGTERM for the whole polite wait.
+          try {
+            signal(Number(target.pid), 'SIGKILL');
+          } catch {
+            return failSignal();
+          }
+          gone = waitForExit(10);
+        }
       }
     }
     if (!gone) {
