@@ -56,3 +56,8 @@ Owner terminal, 2026-11-25. Verified archive used with baseline specimen, develo
 ## Implementation source proof
 
 Owner terminal, 2026-11-26, detached worktree at d6100d30006c6c0a90d55e18b6b01270ef9b2b96. Node 24.19.0, pnpm 11.19.0, frozen lockfile install succeeded. `node --test infra/platform/temporal/tests/*.test.mjs infra/platform/postgres/tests/temporal-persistence.test.mjs infra/environments/platform-plan.test.mjs infra/environments/infra-cli.test.mjs tools/dev-environments/test/dev-temporal-tenant.test.mjs`: 62 passed, zero failed/skipped/cancelled, 119.832592 ms reported. Source fixture evidence only; full repository suite, integrated pinned chart rendering, live installation, schema execution, release ACL resolution and workflow acceptance remain outstanding. Owner authorized integration to main before terminal runtime experiments.
+
+
+## Integrated render proof
+
+Owner terminal on main after integration a2e2e7b1, 2026-11-26: `pnpm infra:render temporal dev` and `pnpm infra:render temporal release` both completed successfully; each serialized YAML output has 1049 lines. This exercises the integrated pinned archive acquisition, checksum and render route. Resource inventory and profile differences still to be inspected. No live mutations.
