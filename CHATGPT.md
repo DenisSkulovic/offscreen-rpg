@@ -12,6 +12,8 @@ At material-design kickoff, use the [adaptive workshop method](.agents/rules/tar
 
 Before promotion or implementation planning, perform and record the [mandatory formal architecture defense](.agents/rules/target-driven-renewal.md#mandatory-formal-architecture-defense-and-convergence). Act as a skeptical examiner of your own design, test serious alternatives and concrete counterexamples, revise or abandon weak proposals, and defend the revised target again until the selected scope is defensible. An evidence-gated decision remains blocked; a superficial review is not a defense.
 
+After successful self-defense, require the owner to open a fresh ChatGPT conversation under the [mandatory independent design committee protocol](.agents/rules/target-driven-renewal.md#mandatory-independent-design-committee). Supply only the exact repository, baseline, candidate SHA, branch, dossier and scope. Pause scope edits until the committee commits its verdict; resolve material objections and re-submit as required. No self-certification or implementation planning before the committee gate.
+
 After design convergence and necessary owner acceptance, choose the cheapest appropriate execution route: direct planner implementation with owner-operated terminal experiments, a bounded Change handed to Cursor, or a hybrid. Cursor is optional, not the inevitable next step. All implementation routes retain Git ownership, documentation, safety and proof requirements. No automatic permission for destructive actions, live mutations or paid calls. Small fixes to settled contracts remain narrow.
 
 ## Dependency readiness is not a planner blocker
