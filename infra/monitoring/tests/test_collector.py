@@ -18,10 +18,12 @@ if str(MONITORING_ROOT) not in sys.path:
 
 from collector import (  # noqa: E402
     CollectorConfig,
+    FAST_TICK_S,
     HEARTBEAT_INTERVAL_S,
     MonotonicWorker,
     MonitoringCollector,
     RuntimeExtensionStatus,
+    WORKER_ERROR_RUNTIME,
     try_import_runtime_module,
 )
 from host import build_meminfo_text  # noqa: E402
@@ -95,7 +97,7 @@ def _collector(
     proc_fixture = proc or FakeProcRoot({1000: _proc_bundle(1000, "node")})
 
     def advance_sleep(_duration: float) -> None:
-        fake_clock.advance(1.0)
+        fake_clock.advance(FAST_TICK_S)
 
     collector = MonitoringCollector(
         config,
@@ -112,6 +114,7 @@ def _collector(
         read_boot_text=lambda: "boot-collector-test\n",
         sleep=sleep or advance_sleep,
         mono=lambda: fake_clock._mono_ns / 1e9,
+        collector_pid=9001,
     )
     collector.run_until(max_ticks=max_ticks)
     return collector, fake_clock, state_root
@@ -174,12 +177,21 @@ class CollectorSchedulingTest(unittest.TestCase):
             ),
             read_meminfo=lambda: build_meminfo_text({"MemAvailable": 8_000_000}),
             read_self_status=lambda: "VmRSS:\t1024 kB\n",
-            sleep=lambda _: fake_clock.advance(5.0),
+            sleep=lambda _: fake_clock.advance(FAST_TICK_S),
             mono=lambda: fake_clock._mono_ns / 1e9,
+            collector_pid=9001,
         )
         collector._workers[0].callback = failing_snapshot  # type: ignore[method-assign]
         collector.run_until(max_ticks=40)
         self.assertTrue(any("process-fast" in gap for gap in collector.state.worker_gaps))
+        event_paths = list(state_root.glob("events-*.jsonl"))
+        error_codes = set()
+        for path in event_paths:
+            for record in read_all_complete_records(path):
+                coverage = record.get("coverage", {})
+                if coverage.get("workerGap"):
+                    error_codes.add(coverage.get("errorCode"))
+        self.assertIn(WORKER_ERROR_RUNTIME, error_codes)
 
     def test_stop_flush_persists_records(self) -> None:
         collector, _, state_root = _collector(max_ticks=80)
@@ -264,6 +276,270 @@ class CollectorCoverageTest(unittest.TestCase):
         for path in state_root.glob("*.jsonl"):
             text = path.read_text(encoding="utf-8")
             self.assertNotIn(secret, text)
+
+
+class HostCadenceCollectorTest(unittest.TestCase):
+    def test_fast_raw_windows_while_slow_process_cycle_runs(self) -> None:
+        fake_clock = FakeClock()
+        state_root = _private_dir()
+        config = CollectorConfig(
+            installation_id=INSTALLATION_ID,
+            state_root=str(state_root),
+        )
+        slow_ran = {"count": 0}
+
+        def slow_snapshot() -> None:
+            slow_ran["count"] += 1
+            fake_clock.advance(2.0)
+
+        collector = MonitoringCollector(
+            config,
+            clock=fake_clock.clock(),
+            proc=FakeProcRoot({1001: _proc_bundle(1001, "node")}),
+            store=__import__("storage").RecordStore(
+                state_root,
+                build_scope_id(INSTALLATION_ID, fake_clock.boot_id),
+                fake_clock.clock(),
+                create_root=True,
+            ),
+            read_meminfo=lambda: build_meminfo_text({"MemAvailable": 8_000_000}),
+            read_self_status=lambda: "VmRSS:\t1024 kB\n",
+            sleep=lambda _: fake_clock.advance(FAST_TICK_S),
+            mono=lambda: fake_clock._mono_ns / 1e9,
+            collector_pid=9001,
+        )
+        for worker in collector._workers:
+            if worker.name == "process-fast":
+                worker.callback = slow_snapshot  # type: ignore[method-assign]
+        collector.run_until(max_ticks=400)
+        self.assertGreaterEqual(slow_ran["count"], 1)
+        fast_paths = list(state_root.glob("fast-raw-*.jsonl"))
+        self.assertTrue(fast_paths)
+        host_windows = [
+            record
+            for path in fast_paths
+            for record in read_all_complete_records(path)
+            if record.get("source") == "host-fast-meminfo"
+        ]
+        self.assertGreater(len(host_windows), 2)
+
+    def test_slow_workers_never_overlap(self) -> None:
+        fake_clock = FakeClock()
+        state_root = _private_dir()
+        config = CollectorConfig(
+            installation_id=INSTALLATION_ID,
+            state_root=str(state_root),
+        )
+        overlapped: list[str] = []
+
+        def make_slow(name: str) -> Callable[[], None]:
+            def run() -> None:
+                active = [worker.name for worker in collector._workers if worker.overlapped()]
+                if len(active) > 1:
+                    overlapped.append(":".join(active))
+                fake_clock.advance(0.05)
+
+            return run
+
+        collector = MonitoringCollector(
+            config,
+            clock=fake_clock.clock(),
+            proc=FakeProcRoot({1001: _proc_bundle(1001, "node")}),
+            store=__import__("storage").RecordStore(
+                state_root,
+                build_scope_id(INSTALLATION_ID, fake_clock.boot_id),
+                fake_clock.clock(),
+                create_root=True,
+            ),
+            read_meminfo=lambda: build_meminfo_text({"MemAvailable": 8_000_000}),
+            read_self_status=lambda: "VmRSS:\t1024 kB\n",
+            sleep=lambda _: fake_clock.advance(FAST_TICK_S),
+            mono=lambda: fake_clock._mono_ns / 1e9,
+            collector_pid=9001,
+        )
+        for worker in collector._workers:
+            if worker.name.startswith("process") or worker.name == "host-slow":
+                worker.callback = make_slow(worker.name)  # type: ignore[method-assign]
+        collector.run_until(max_ticks=200)
+        self.assertEqual(overlapped, [])
+
+    def test_missed_fast_deadline_skips_without_catchup_burst(self) -> None:
+        fake_clock = FakeClock()
+        state_root = _private_dir()
+        config = CollectorConfig(
+            installation_id=INSTALLATION_ID,
+            state_root=str(state_root),
+        )
+        collector = MonitoringCollector(
+            config,
+            clock=fake_clock.clock(),
+            proc=FakeProcRoot({}),
+            store=__import__("storage").RecordStore(
+                state_root,
+                build_scope_id(INSTALLATION_ID, fake_clock.boot_id),
+                fake_clock.clock(),
+                create_root=True,
+            ),
+            read_meminfo=lambda: build_meminfo_text({"MemAvailable": 8_000_000}),
+            read_self_status=lambda: "VmRSS:\t512 kB\n",
+            sleep=lambda _: fake_clock.advance(FAST_TICK_S * 3),
+            mono=lambda: fake_clock._mono_ns / 1e9,
+            collector_pid=9001,
+        )
+        collector.run_until(max_ticks=30)
+        fast_paths = list(state_root.glob("fast-raw-*.jsonl"))
+        self.assertTrue(fast_paths)
+        partial = False
+        for path in fast_paths:
+            for record in read_all_complete_records(path):
+                if record.get("source") != "host-fast-meminfo":
+                    continue
+                window = record.get("window", {})
+                if window.get("partial"):
+                    partial = True
+                self.assertLessEqual(
+                    int(window.get("observedCount", 0)),
+                    5,
+                )
+        self.assertTrue(partial)
+        self.assertGreater(collector._fast_skipped_ticks, 0)
+
+    def test_status_records_actual_pid(self) -> None:
+        _, _, state_root = _collector(max_ticks=6000)
+        health_paths = list(state_root.glob("health-*.jsonl"))
+        self.assertTrue(health_paths)
+        for record in read_all_complete_records(health_paths[0]):
+            if record.get("kind") == "health":
+                self.assertEqual(record["collector"]["pid"], 9001)
+
+
+def _collector_on_state(
+    state_root: Path,
+    *,
+    config: CollectorConfig | None = None,
+    max_ticks: int,
+    mem_kib: int = 8_000_000,
+) -> tuple[MonitoringCollector, Path]:
+    cfg = config or CollectorConfig(
+        installation_id=INSTALLATION_ID,
+        state_root=str(state_root),
+        enable_optional_pss=True,
+        mem_available_suspend_bytes=4 * 1024 * 1024 * 1024,
+    )
+    fake_clock = FakeClock()
+    proc_fixture = FakeProcRoot({1000: _proc_bundle(1000, "node")})
+    collector = MonitoringCollector(
+        cfg,
+        clock=fake_clock.clock(),
+        proc=proc_fixture,
+        store=__import__("storage").RecordStore(
+            state_root,
+            build_scope_id(INSTALLATION_ID, fake_clock.boot_id),
+            fake_clock.clock(),
+            create_root=True,
+        ),
+        read_meminfo=lambda: build_meminfo_text({"MemAvailable": mem_kib, "MemTotal": mem_kib}),
+        read_self_status=lambda: "VmRSS:\t2048 kB\n",
+        read_boot_text=lambda: "boot-collector-test\n",
+        sleep=lambda _: fake_clock.advance(FAST_TICK_S),
+        mono=lambda: fake_clock._mono_ns / 1e9,
+        collector_pid=9001,
+    )
+    collector.run_until(max_ticks=max_ticks)
+    return collector, state_root
+
+
+class CollectorCompositionProofTest(unittest.TestCase):
+    def test_restart_distinct_session_preserves_prior_records(self) -> None:
+        state_root = _private_dir()
+        first, _ = _collector_on_state(state_root, max_ticks=1200)
+        second, _ = _collector_on_state(state_root, max_ticks=1200)
+        self.assertNotEqual(first.session, second.session)
+
+        sessions: set[str] = set()
+        host_windows: list[dict] = []
+        for path in state_root.glob("*.jsonl"):
+            for record in read_all_complete_records(path):
+                if "collectorSession" in record:
+                    sessions.add(str(record["collectorSession"]))
+                if record.get("kind") == "host_window" and record.get("source") == "host-fast-meminfo":
+                    host_windows.append(record)
+
+        self.assertIn(first.session, sessions)
+        self.assertIn(second.session, sessions)
+        self.assertGreater(len(host_windows), 2)
+        sample = host_windows[0]
+        self.assertEqual(sample["schemaVersion"], 1)
+        self.assertIn(":", sample["scopeId"])
+        self.assertIn("boot-collector-test", sample["scopeId"])
+        window = sample["window"]
+        self.assertEqual(int(window.get("scheduledCount", 0)), 5)
+        self.assertGreaterEqual(len(sample.get("samples", [])), 1)
+        mem_metrics = sample.get("metrics", {}).get("MemAvailable", {})
+        self.assertIn("max", mem_metrics)
+        self.assertIn("count", mem_metrics)
+
+    def test_runtime_unavailable_host_collection_continues(self) -> None:
+        state_root = _private_dir()
+        config = CollectorConfig(
+            installation_id=INSTALLATION_ID,
+            state_root=str(state_root),
+            enable_runtime_extension=True,
+            docker_context="",
+            kubeconfig_path="",
+        )
+        collector, _ = _collector_on_state(state_root, config=config, max_ticks=200)
+        self.assertEqual(collector.state.runtime_status, RuntimeExtensionStatus.UNSUPPORTED)
+        host_windows = [
+            record
+            for path in state_root.glob("fast-raw-*.jsonl")
+            for record in read_all_complete_records(path)
+            if record.get("kind") == "host_window"
+        ]
+        self.assertGreater(len(host_windows), 0)
+
+    def test_sigterm_entrypoint_flushes_host_windows(self) -> None:
+        import signal
+        import subprocess
+        import time
+
+        state_root = Path(tempfile.mkdtemp(prefix="offscreen-collector-sigterm-"))
+        state_root.chmod(PRIVATE_DIR_MODE)
+        config_path = state_root / "operator.json"
+        config_path.write_text(
+            json.dumps(
+                {
+                    "installationId": INSTALLATION_ID,
+                    "stateRoot": str(state_root),
+                }
+            ),
+            encoding="utf-8",
+        )
+        entrypoint = MONITORING_ROOT / "collector.py"
+        proc = subprocess.Popen(
+            [
+                sys.executable,
+                str(entrypoint),
+                "--config",
+                str(config_path),
+                "--fixture",
+            ],
+            cwd=MONITORING_ROOT,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        time.sleep(2.5)
+        proc.send_signal(signal.SIGTERM)
+        rc = proc.wait(timeout=15)
+        self.assertEqual(rc, 0, proc.stderr.read() if proc.stderr else "")
+        windows = [
+            record
+            for path in state_root.glob("fast-raw-*.jsonl")
+            for record in read_all_complete_records(path)
+            if record.get("kind") == "host_window"
+        ]
+        self.assertGreater(len(windows), 0)
 
 
 if __name__ == "__main__":

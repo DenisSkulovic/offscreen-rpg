@@ -1,10 +1,10 @@
 # Workstation observability | operator runbook
 
-**Do not activate current source:** INF44–46 modules landed but composition incomplete. [INF49](../../work/changes/open/2026-11-24--inf49-monitor-composition/CHANGE.md) corrects entrypoint/config/workers, INF47 follows; live install separately authorized.
+**Do not activate on a production workstation from this repository alone.** Source composition for [INF49](../../work/changes/archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) is proven by staged fixture tests (real `install.sh` tree + real `collector.py --config` under unprivileged temp roots). [INF47](../../work/changes/open/2026-11-24--inf47-historical-observability-queries/CHANGE.md) follows for historical CLI/query. Live native install, Netdata activation, and nested runtime visibility remain **separately operator-authorized**.
 
 [Technical contract](../technical/platform/workstation-observability.md). Workstation collector independent of Kubernetes and game. No cloud connection, no raw process argv exports.
 
-**Source acceptance (INF44–45):** tracked install assets and nested runtime modules exist under `infra/monitoring/` (`runtime.py`, `kube.py`, `cgroup_probe.sh`). They do **not** claim a live collector or live Docker/Kind/cgroup visibility until an operator completes native package install and authorized activation.
+**Source acceptance (INF44–49):** `infra/monitoring/` ships the guarded installer, flat-module collector entrypoint, host cadence, and nested runtime modules (`runtime.py`, `kube.py`, `cgroup_probe.sh`). Staged fixtures demonstrate emitted JSONL (`schemaVersion=1`) including host windows, rollups, process snapshots, coverage, and health. They **do not** claim a live systemd-managed collector, live Netdata dbengine tier counts, or live Docker/Kind/cgroup visibility until an operator completes native package install and **authorized** activation.
 
 ## Prerequisites (operator)
 

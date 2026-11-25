@@ -145,6 +145,7 @@ def observe_fast_window(
     When tick_times_ns is supplied (tests), each entry is the actual monotonic time at
   that tick; a tick is missed when actual exceeds scheduled plus grace or is omitted.
     """
+    explicit_ticks = tick_times_ns is not None
     if tick_times_ns is None:
         tick_times_ns = []
 
@@ -158,6 +159,8 @@ def observe_fast_window(
         actual_ns: Optional[int]
         if index < len(tick_times_ns):
             actual_ns = tick_times_ns[index]
+        elif explicit_ticks:
+            actual_ns = None
         else:
             actual_ns = clock.mono_ns()
 

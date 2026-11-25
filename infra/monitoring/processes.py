@@ -6,6 +6,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any, Callable, Mapping, Optional, Protocol
 
 from records import (
@@ -143,6 +144,35 @@ class FakeProcRoot:
         if name not in proc:
             raise ProcNotFound(f"missing {pid}/{name}")
         return proc[name]
+
+
+@dataclass
+class LiveProcRoot:
+    """Read-only adapter for the live host /proc tree."""
+
+    root: Path = field(default_factory=lambda: Path("/proc"))
+
+    def list_pids(self) -> list[int]:
+        try:
+            entries = self.root.iterdir()
+        except OSError as exc:
+            raise ProcReadError(str(exc)) from exc
+        pids: list[int] = []
+        for entry in entries:
+            if entry.name.isdigit():
+                pids.append(int(entry.name))
+        return sorted(pids)
+
+    def read_file(self, pid: int, name: str) -> bytes:
+        path = self.root / str(pid) / name
+        try:
+            return path.read_bytes()
+        except FileNotFoundError as exc:
+            raise ProcNotFound(f"missing {pid}/{name}") from exc
+        except PermissionError as exc:
+            raise ProcAccessDenied(f"access denied for {pid}/{name}") from exc
+        except OSError as exc:
+            raise ProcReadError(str(exc)) from exc
 
 
 def parse_proc_stat(text: str) -> ParsedProcStat:

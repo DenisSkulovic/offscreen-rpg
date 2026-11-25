@@ -4,9 +4,9 @@ Reconciled 2026-11-25; target main; source baseline 86c9461a1fa117ef2aaf90029411
 
 | Lane | Next | Gate |
 | --- | --- | --- |
-| Monitor | [INF49](../../changes/open/2026-11-24--inf49-monitor-composition/CHANGE.md) | Ready; actual staged service composition |
+| Monitor | [INF49](../../changes/archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) | Composition source Done; live install NOT-RUN |
 | Correctness | [INF50](../../changes/archive/2026-11/platform-operations/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) | Residual behavioral regressions source Done; live NOT-RUN |
-| Report | [INF47](../../changes/open/2026-11-24--inf47-historical-observability-queries/CHANGE.md) | INF49 emitted schema |
+| Report | [INF47](../../changes/open/2026-11-24--inf47-historical-observability-queries/CHANGE.md) | Ready; INF49 emitted schema gate cleared |
 | Selective dev | [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) | Ready; INF50 overlap cleared |
 | Storage | [INF48](../../changes/backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) | Proposed GC/ownership design |
 | DB | [DB10](DB-PARALLEL.md) | DB01–DB09 source Done; DB10 final dependency-gated; no live permission |

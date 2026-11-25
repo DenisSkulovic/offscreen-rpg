@@ -449,6 +449,16 @@ def parse_pod_list(body: Mapping[str, Any]) -> list[dict[str, Any]]:
                         spec_container.get("resources")
                     )
 
+        node_name: Optional[str] = None
+        if isinstance(status, dict):
+            raw_node = status.get("nodeName")
+            if isinstance(raw_node, str) and raw_node.strip():
+                node_name = raw_node.strip()
+        if node_name is None and isinstance(spec, dict):
+            raw_spec_node = spec.get("nodeName")
+            if isinstance(raw_spec_node, str) and raw_spec_node.strip():
+                node_name = raw_spec_node.strip()
+
         status_containers = status.get("containerStatuses") if isinstance(status, dict) else None
         if isinstance(status_containers, list):
             for st in status_containers:
@@ -486,6 +496,7 @@ def parse_pod_list(body: Mapping[str, Any]) -> list[dict[str, Any]]:
             {
                 "namespace": namespace,
                 "podUid": pod_uid,
+                "nodeName": node_name,
                 "owner": owner,
                 "appRole": app_role,
                 "containers": containers_out,
@@ -1316,6 +1327,7 @@ class CgroupCollector:
     """10s cadence read-only nested cgroup peaks via bounded docker exec per Kind node."""
 
     config: RuntimeConfig
+    run: CommandRunner = default_command_runner
     run_stdin: CgroupStdinRunner = default_cgroup_stdin_runner
 
     def collect_cycle(
@@ -1349,7 +1361,7 @@ class CgroupCollector:
                 CgroupAccessState.SKIPPED,
             )
 
-        permitted, gap = refuse_cross_target(self.config, default_command_runner)
+        permitted, gap = refuse_cross_target(self.config, self.run)
         if not permitted:
             return (
                 [

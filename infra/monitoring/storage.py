@@ -6,6 +6,7 @@ import errno
 import json
 import os
 import re
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -539,6 +540,17 @@ class RecordStore:
             clock,
             active_paths=self._collect_active_paths,
         )
+        self._append_lock = threading.Lock()
+        self.dropped_append_coverage: int = 0
+
+    def append_locked(self, writer: StreamWriter, record: dict[str, Any]) -> int:
+        """Serialize appends; never hold this lock across probe I/O in callers."""
+        with self._append_lock:
+            try:
+                return writer.append(record)
+            except StorageLimitedError:
+                self.dropped_append_coverage += 1
+                raise
 
     def _collect_active_paths(self) -> set[Path]:
         paths: set[Path] = set()
@@ -550,6 +562,7 @@ class RecordStore:
         self,
         stream_prefix: str,
         *,
+        collector_session: Optional[str] = None,
         process_start_key: Optional[str] = None,
         segment_max_bytes: int = SEGMENT_MAX_BYTES,
     ) -> StreamWriter:
@@ -558,6 +571,7 @@ class RecordStore:
             stream_prefix,
             self.scope_id,
             self.clock,
+            collector_session=collector_session,
             process_start_key=process_start_key,
             segment_max_bytes=segment_max_bytes,
             retention=self._retention,
@@ -578,9 +592,10 @@ class RecordStore:
         return lines
 
     def shutdown(self) -> None:
-        for writer in self._writers:
-            writer.flush_and_close()
-        self._writers.clear()
+        with self._append_lock:
+            for writer in self._writers:
+                writer.flush_and_close()
+            self._writers.clear()
 
 
 def read_all_complete_records(path: Path) -> Iterator[dict[str, Any]]:

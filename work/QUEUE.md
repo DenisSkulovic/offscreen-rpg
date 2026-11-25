@@ -4,7 +4,7 @@
 
 Current work: none
 
-**Reconciliation 2026-11-25:** INF50 residual regression source Done/archived (live NOT-RUN → INF52); INF49 Ready; INF38 Ready (startup overlap with INF50 cleared); INF47 after INF49. INF51 archived, INF29 evidence-only, INF52 after VER01. [Consolidation](undertakings/storyteller-workshop/CONSOLIDATION.md). No change to selection pointer or live permission.
+**Reconciliation 2026-11-25:** INF49 composition source Done/archived (live install NOT-RUN); INF50 residual regression source Done/archived (live NOT-RUN → INF52); INF47 Ready (INF49 schema gate cleared); INF38 Ready. INF51 archived, INF29 evidence-only, INF52 after VER01. [Consolidation](undertakings/storyteller-workshop/CONSOLIDATION.md). No change to selection pointer or live permission.
 
 Deferred proposals live in the [domain backlog](changes/backlog/README.md); actively commissioned or imminent packets live in [open](changes/README.md). Backlog placement never selects work or confers permission to spend or deploy.
 
