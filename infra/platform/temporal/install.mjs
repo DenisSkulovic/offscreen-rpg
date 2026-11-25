@@ -4,10 +4,10 @@ import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
-import { parse } from 'yaml';
+import { parse, parseAllDocuments } from 'yaml';
 import { assertPlatformTarget, readPlatformObject, runPlatformCommand } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
-import { parsePins, verifyManifestBytes } from '../common/pins.mjs';
+import { parsePins, verifyManifestBytes, TEMPORAL_CHART_PIN_KEYS } from '../common/pins.mjs';
 import { MIN_HOST_MEMORY_MIB, parseMeminfoMiB } from '../../clusters/kind/manager/host-probe.mjs';
 import { baselineCnpgClusterName } from '../postgres/config.mjs';
 import { prepareFreshTemporalPersistence } from '../postgres/temporal-persistence/prepare.mjs';
@@ -16,11 +16,10 @@ import { observeTemporalRelease, observeTemporalReady } from './readiness.mjs';
 const RELEASE = 'temporal';
 const SECRET = 'temporal-db';
 const HERE = fileURLToPath(new URL('./', import.meta.url));
-const PIN_KEYS = ['CHART_VERSION', 'CHART_URL', 'CHART_SHA256'];
 const STORES = ['default', 'visibility'];
 
 function resolveConfiguration(profile) {
-  const pin = parsePins(readFileSync(join(HERE, 'chart.pin'), 'utf8'), PIN_KEYS);
+  const pin = parsePins(readFileSync(join(HERE, 'chart.pin'), 'utf8'), TEMPORAL_CHART_PIN_KEYS);
   const version = pin.CHART_VERSION;
   if (!/^\d+\.\d+\.\d+$/.test(version) ||
       pin.CHART_URL !== `https://github.com/temporalio/helm-charts/releases/download/temporal-${version}/temporal-${version}.tgz`) {
@@ -68,6 +67,43 @@ function acquireChart(pin, directory, run) {
   }
   verifyManifestBytes(readFileSync(archive), pin.CHART_SHA256);
   return archive;
+}
+
+/** Render the pinned upstream chart without access to a Kubernetes cluster. */
+export function renderTemporalChart(profileId, { run = runPlatformCommand } = {}) {
+  const profile = readPlatformProfile(profileId);
+  const configuration = resolveConfiguration(profile);
+  const directory = mkdtempSync(join(tmpdir(), 'offscreen-temporal-render-'));
+  try {
+    const archive = acquireChart(configuration.pin, directory, run);
+    const rendered = run('helm', [
+      'template', RELEASE, archive, '--namespace', profile.namespaces.temporal,
+      '-f', configuration.commonPath, '-f', configuration.profilePath,
+    ], { timeoutMs: 30_000 });
+    if (!rendered.ok) throw new Error('Temporal Helm template failed');
+    const parsed = parseAllDocuments(rendered.stdout);
+    const documents = parsed.map((doc) => {
+      if (doc.errors.length) throw new Error('malformed Temporal Helm YAML');
+      return doc.toJS();
+    }).filter((doc) => doc !== null);
+    const identities = new Set();
+    const allowedKinds = new Set(['Deployment', 'Service', 'Job', 'Pod', 'ConfigMap']);
+    for (const doc of documents) {
+      const identity = doc.kind + '/' + doc.metadata?.name;
+      if (!allowedKinds.has(doc.kind) || !doc.metadata?.name ||
+          doc.metadata.namespace !== profile.namespaces.temporal || identities.has(identity)) {
+        throw new Error('unexpected Temporal Helm resource identity');
+      }
+      identities.add(identity);
+    }
+    if (!identities.has('Deployment/temporal-frontend') ||
+        !identities.has('Service/temporal-frontend')) {
+      throw new Error('Temporal render is incomplete');
+    }
+    return documents;
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 }
 
 function namespaceLabels(profile) {
