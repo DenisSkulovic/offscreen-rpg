@@ -15,7 +15,7 @@ export function emitStackProgress(event) {
 }
 
 export function shouldUseStackDashboard(argv, { stdout = process.stdout, stderr = process.stderr, env = process.env } = {}) {
-  return argv[0] === 'up' && stdout.isTTY && stderr.isTTY && env.TERM !== 'dumb' &&
+  return argv[0] === 'up' && stdout.isTTY === true && stderr.isTTY === true && env.TERM !== 'dumb' &&
     env.CI !== 'true' && env.CI !== '1' && env.OFFSCREEN_STACK_UI !== 'plain' && env.OFFSCREEN_STACK_PROGRESS !== '1';
 }
 
