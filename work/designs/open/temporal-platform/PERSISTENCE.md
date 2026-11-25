@@ -16,4 +16,22 @@ Kubernetes namespace groups server resources; Temporal namespace groups executio
 
 ## File responsibility
 
-No persistence/ folder in Temporal. Helm values reference existing databases and credentials. The existing PostgreSQL authority must provide the two databases, scoped role and stable Secret; the chart owns schema initialization/upgrades, not database creation. Environment tenant lifecycle owns application namespace registration. Exact provisioning API and existing identity adoption are unresolved; no fake interface or executable SQL is proposed.
+No persistence/ folder in Temporal. Helm values reference existing databases and credentials. The existing PostgreSQL authority must provide the two databases, scoped role and stable Secret; the chart owns schema initialization/upgrades, not database creation. Environment tenant lifecycle owns application namespace registration. The concrete candidate is the existing CNPG DatabaseRole and Database CR pattern, described below. Existing identity adoption remains unresolved; no executable SQL or implementation is proposed.
+
+## Narrow database provisioning design (not PostgreSQL tuning)
+
+Source evidence: original snapshot 03ea79c469d0, tools/dev-environments/src/adapters/dev-sql-tenant-live-adapter.mjs createSecrets(), applyClosedDatabase(), readCatalog() and waitFor(). It already uses kubernetes.io/basic-auth Secrets, DatabaseRole and Database CRs, retained reclaim policies, database catalog verification and restricted SQL vocabulary. This is a proven source pattern, not a generic platform database provisioning API; its slot ownership and connection limits are inappropriate for shared Temporal. Do not import this dev-only adapter from the Temporal installer or reuse its application-specific grants.
+
+Candidate shared PostgreSQL-owned declaration for each cluster (fresh identities only):
+
+| Resource | Namespace | Identity / purpose |
+| --- | --- | --- |
+| Secret | profile.namespaces.postgres | temporal-db, type kubernetes.io/basic-auth, username temporal, generated password once, CNPG reload label |
+| DatabaseRole | same PG namespace | temporal; cluster from existing PG profile; login true; no superuser, createdb, createrole, replication, bypassrls, membership; retain policy; passwordSecret references temporal-db |
+| Database | same PG namespace | temporal, owner temporal, retain policy |
+| Database | same PG namespace | temporal-visibility (K8s resource), SQL name temporal_visibility, owner temporal, retain policy |
+| Secret | profile.namespaces.temporal | temporal-db, projection of username/password from the source Secret; independently owned, never Helm-generated |
+
+Use declared CRs and CNPG reconciliation, not ad hoc CREATE DATABASE/ROLE SQL or a Temporal-owned database. PostgreSQL provisioning owns creation and catalog/ACL verification; do not expose app databases through PUBLIC privileges, and restrict PUBLIC access on these two databases. Follow existing closed-before-grants pattern where applicable, only open intended databases after roles/ACLs verified. Do not change unrelated database ACLs without separate review. Source credential is authoritative: projection copies values through stdin, never logs, no automatic regeneration or silent rotation, foreign or inconsistent existing Secret refuses. Existing credentials must be preserved on adoption; fresh naming is not a claim about current state.
+
+Do not make this into a new database subsystem. The intended integration is a small PG-owned provisioning action with two declarative CRs, one role CR and credential preparation, followed by Helm. Existing PostgreSQL platform has no verified generic shared-role entrypoint, so exact path/call boundary and live CNPG CR compatibility remain to be settled during narrow integration review. Temporal install calls or requires the authorized PG preparation result; it never runs superuser SQL itself. The owner explicitly deferred PG capacity, storage, connection limits and tuning. No changes to those settings are proposed.
