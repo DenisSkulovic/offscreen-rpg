@@ -77,3 +77,7 @@ For public interfaces preserve infra:up/plan/status/render and infra:postgres sy
 6. Is file layout actually smaller in responsibility and code, not just moved? Source audit next. No arbitrary line/file cap, no demand to remove working Helm.
 
 Next: detailed legacy gap analysis. Read actual installer/topology/readiness, common helpers and consumers/tests. Map every retained or retired entrypoint and incompatible canonical requirement. Revisit provisional tree based on source evidence; no implementation or destructive operation authorized.
+
+## Defense revision (round 8)
+
+[Defense pass 1](DEFENSE.md) rejects generic tenant orchestration; use narrowly scoped common PostgreSQL access and native resource primitives based on stronger existing Temporal implementation, including actual primary discovery, identity fencing, bounded commands, verified catalog attributes and credential revision. Preserve separate consumer sequences. Shared operation lock/admission ownership and exact compatibility matrix must be resolved before commissioning; no final layout guarantee. No runtime proof.
