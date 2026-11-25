@@ -347,3 +347,7 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 - [INF05](archive/2026-11/platform-operations/2026-11-23--inf05-platform-and-verification-separation/CHANGE.md): Done. Platform and verification separation. Live cluster NOT-RUN.
 
 - [INF06](archive/2026-11/platform-operations/2026-11-24--inf06-cluster-foundation-normalization/CHANGE.md): Done. Shared Kind create primitive and explicit release destroy. Live cluster NOT-RUN.
+
+## Unified verification programme (2026-11-25)
+
+[VER01–VER05 execution program](../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [Normative verification contract](../../docs/technical/platform/verification-programmes.md). VER01 Ready, VER02–05 dependency-gated, source commissioned. DB work continues; live resources separately authorized. No global queue change.

@@ -29,3 +29,4 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 5. Release, fault, restore and scale acceptance separately gated.
 
 Finish line: ordinary authenticated player creates story, resolves scene, reaches scene2, forks and continues coherently with durable evidence; local dev operations are bounded and boring. Main trunk promotion is not product acceptance. Prior overview recoverable at audited SHA; dated checkpoints remain in UNDERTAKING and PROGRAM.
+- New reusable verification programme selected: [VER01–VER05](VERIFICATION-PROGRAMME.md), DB first; source planning only, no outcome credit. Existing DB work continues.

@@ -88,3 +88,5 @@ flowchart LR
 | Which Chamber label is which proof? | [Proof tiers](lab/experiment-protocol.md#proof-tiers). A fixture, a connected smoke, and a manual QA mark are not live player acceptance |
 
 Accepted trade-offs that are not the norm itself: [decisions](../decisions/README.md).
+
+- [Verification programmes: infrastructure, packages and apps](platform/verification-programmes.md)
