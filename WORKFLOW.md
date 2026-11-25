@@ -102,6 +102,8 @@ When all selected child outcomes are complete, review the integrated docs, sourc
 
 ## 4. Design first; documentation before implementation
 
+For substantial work, choose an [adaptive design workshop](.agents/rules/target-driven-renewal.md#adaptive-design-workshop-choose-the-investigation-not-a-universal-sequence) suited to the domain. Keep speculative specimens and experiments isolated; converge through evidence and architecture defense before projecting the design into implementation. Direct implementation, Cursor or hybrid are execution choices, not design methods.
+
 **Product docs decide what should happen** ([`docs/product/`](docs/product/README.md)). **Technical docs decide what must be guaranteed** ([`docs/technical/`](docs/technical/README.md)), including identity, permissions, schemas, transaction fences, concurrency, failure/retry, spend and backward compatibility. **Code/tests/STATUS/evidence show what has actually been realized.**
 
 For new behavior or changed guarantees:
