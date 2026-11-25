@@ -110,9 +110,7 @@ builds="$DEV_ARTIFACT_BUILDS"
 # Any missing/stale/unreadable identity uses the existing full reconciliation.
 if [[ "$builds" == 0 ]] && node "$repo/infra/images/development/verify-warm-aliases.mjs" "$slot" "$role" "$canonical" "$digest"; then
   if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
-    receipt_ref="$canonical"
-    if [[ "$role" != all ]]; then receipt_ref="offscreen-dev-workspace:${slot}-${role}"; fi
-    write_image_ref_receipt "$OFFSCREEN_IMAGE_REF_FILE" "$receipt_ref"
+    write_image_ref_receipt "$OFFSCREEN_IMAGE_REF_FILE" "$canonical"
   fi
   echo "builds=0 kindLoads=0 digest=${digest} ref=${canonical} warmAliasProof=hit"
   exit 0
@@ -199,10 +197,6 @@ if (!result.ok) {
 ' "$digest" "$alias_cp" "$alias_worker" "$canonical_cp" "$canonical_worker"
 done
 if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
-  receipt_ref="$canonical"
-  if [[ "$role" != "all" ]]; then
-    receipt_ref="offscreen-dev-workspace:${slot}-${role}"
-  fi
-  write_image_ref_receipt "$OFFSCREEN_IMAGE_REF_FILE" "$receipt_ref"
+  write_image_ref_receipt "$OFFSCREEN_IMAGE_REF_FILE" "$canonical"
 fi
 echo "builds=${builds} kindLoads=${kind_loads} digest=${digest} ref=${canonical}"

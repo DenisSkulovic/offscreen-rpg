@@ -289,6 +289,7 @@ test('authority tilt-ref targets game-authority receipt path', () => {
   });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(existsSync(receipt), true);
+  assert.equal(readFileSync(receipt, 'utf8').trim(), `offscreen-dev-workspace:union-${fingerprint.slice(0, 16)}`);
 });
 
 test('two slots write separate receipt paths', () => {
@@ -434,4 +435,10 @@ test('cache miss builds under temp tag then publishes canonical tag', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /builds=1/);
   assert.equal(readFileSync(counter, 'utf8').trim().split('\n').length, 1);
+});
+
+test('warm and reconciled image handoffs both select immutable canonical generation', () => {
+  const source = readFileSync(slotLoader, 'utf8');
+  assert.equal([...source.matchAll(/write_image_ref_receipt "\$OFFSCREEN_IMAGE_REF_FILE" "\$canonical"/g)].length, 2);
+  assert.doesNotMatch(source, /receipt_ref="offscreen-dev-workspace:/);
 });
