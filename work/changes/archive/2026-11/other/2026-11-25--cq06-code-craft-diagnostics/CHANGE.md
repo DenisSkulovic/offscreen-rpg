@@ -2,7 +2,7 @@
 
 **Status: Done (2026-11-25).** Kind: repository tooling + governance. Integration target `main`. Change branch `change/cq06-code-craft-diagnostics`.
 
-Baseline main `9c2c29513a94e1ff6d1ad6a24f9baf939cfc33a6`. Implemented from `ad8d1ed0f636e95cbf2f52dd25f57cf7590fd4c0`. Profile STANDARD. Independent of cache Changes; owns `scripts/repo-tools/code-health*`, quality rule and its tests only.
+Baseline main `9c2c29513a94e1ff6d1ad6a24f9baf939cfc33a6`. Implemented from `ad8d1ed0f636e95cbf2f52dd25f57cf7590fd4c0`. Squash-joined to `main` at `daec7e8a2c936db4a9de023d2f555aef059221ea`. Profile STANDARD. Independent of cache Changes; owns `scripts/repo-tools/code-health*`, quality rule and its tests only.
 
 ## Outcome
 Readable and navigable code without changing cache authority, public contracts, wire format, limits or runtime guarantees (CQ06 adds advisory diagnostics only). See [source map and wave](../../../../undertakings/storyteller-workshop/CACHE-CRAFT.md) and [TASKS](TASKS.md).
