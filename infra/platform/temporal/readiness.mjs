@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { parse } from 'yaml';
 import {
   assertPlatformTarget,
   readPlatformObject,
@@ -99,7 +100,35 @@ function deploymentReady(object) {
     status.availableReplicas === desired;
 }
 
-function observeDeployment(profile, component, run) {
+function readExpectedImageTags() {
+  const values = parse(readFileSync(new URL('./values.yaml', import.meta.url), 'utf8'));
+  const tags = {
+    server: values.server?.image?.tag,
+    web: values.web?.image?.tag,
+    admintools: values.admintools?.image?.tag,
+  };
+  if (Object.values(tags).some((tag) =>
+    typeof tag !== 'string' || !/^\d+\.\d+\.\d+@sha256:[0-9a-f]{64}$/.test(tag))) {
+    throw new Error('Temporal image pins are invalid');
+  }
+  return tags;
+}
+
+function ownedNamespace(profile, run) {
+  const observation = readPlatformObject({
+    profileId: profile.id,
+    resource: 'namespace',
+    name: profile.namespaces.temporal,
+  }, { run });
+  if (observation.state !== 'present') return false;
+  const metadata = observation.object.metadata;
+  const ownerKey = profile.id === 'dev' ? 'offscreen.dev/owner' : 'offscreen.rpg/lab';
+  return Boolean(metadata.uid) && !metadata.deletionTimestamp &&
+    metadata.labels?.[ownerKey] === profile.ownerValue &&
+    metadata.labels?.['app.kubernetes.io/part-of'] === RELEASE;
+}
+
+function observeDeployment(profile, component, expectedTag, run) {
   const namespace = profile.namespaces.temporal;
   const observation = readPlatformObject({
     profileId: profile.id,
@@ -107,9 +136,15 @@ function observeDeployment(profile, component, run) {
     name: `temporal-${component}`,
     namespace,
   }, { run });
-  return observation.state === 'present' &&
-    isReleaseOwned(observation.object, namespace) &&
-    deploymentReady(observation.object);
+  if (observation.state !== 'present' ||
+      !isReleaseOwned(observation.object, namespace) ||
+      !deploymentReady(observation.object)) return false;
+  const containers = observation.object.spec?.template?.spec?.containers;
+  // Read the single authoritative image pin from values.yaml, rather than
+  // maintaining a second copy of the digest in this module.
+  return Array.isArray(containers) && containers.length === 1 &&
+    typeof containers[0].image === 'string' &&
+    containers[0].image.endsWith(':' + expectedTag);
 }
 
 function frontendServiceReady(profile, run) {
@@ -166,11 +201,13 @@ export function observeTemporalReady(profileId, { run = runPlatformCommand } = {
     return notReady('Temporal Helm chart version mismatch');
   }
 
+  if (!ownedNamespace(profile, run)) return notReady('Temporal namespace ownership mismatch');
+  const tags = readExpectedImageTags();
   const coreDeploymentsReady = CORE_ROLES.every((role) =>
-    observeDeployment(profile, role, run));
+    observeDeployment(profile, role, tags.server, run));
   const frontendReady = frontendServiceReady(profile, run);
-  const adminReady = observeDeployment(profile, 'admintools', run);
-  const webReady = observeDeployment(profile, 'web', run);
+  const adminReady = observeDeployment(profile, 'admintools', tags.admintools, run);
+  const webReady = observeDeployment(profile, 'web', tags.web, run);
   const coreReady = coreDeploymentsReady && frontendReady && adminReady &&
     clusterServing(profile, run);
   return {
