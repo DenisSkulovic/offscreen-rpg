@@ -1,3 +1,3 @@
-# INF29 current-flow verification
+# INF29 | Proof disposition
 
-Use infra/verification/CAPABILITIES.md as persistent scenario authority. Current full-slot smoke DEV-02,03,07,09,10; collect exact host/registry/slot/context and authorized scope, preserve tenant data, stop on capacity or failed park. Source checks first. No new destructive or provider authorization; no profile commands until implemented. Planner owns exact live scope before dispatch. Record current integration SHA, durations and result per case. Subsequent feature candidates in LOCAL-DEV-PLATFORM.md.
+No implementation tasks remain in this packet. INF52 owns executable lifecycle checks; INF29 records resulting current-source evidence and closes only after its selected capabilities pass or owner explicitly disposes remaining acceptance. Do not reimplement image, migration, park or startup fixes. Use disposable owned slot; no existing tenant, peer slot, provider or release mutation. Run only with explicit live permission. See [INF52](../2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md).

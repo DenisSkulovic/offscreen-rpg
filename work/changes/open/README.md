@@ -72,3 +72,7 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 ## Unified verification programme (2026-11-25)
 
 [VER01–VER05 execution program](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [Normative verification contract](../../../docs/technical/platform/verification-programmes.md). VER01 Ready, VER02–05 dependency-gated, source commissioned. DB work continues; live resources separately authorized. No global queue change.
+
+## Infrastructure reconciliation (2026-11-25)
+
+[INF38](2026-11-24--inf38-selective-dev-profiles/CHANGE.md), [INF49](2026-11-24--inf49-monitor-composition/CHANGE.md), [INF50](2026-11-24--inf50-infrastructure-correctness/CHANGE.md) Ready source-only. INF50 precedes INF38 if both dispatched (overlapping startup/tests). [INF47](2026-11-24--inf47-historical-observability-queries/CHANGE.md) after INF49 staged source proof. [INF52](2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) after VER01 and INF50; INF38 gates selective scenarios only. INF29 live evidence tracker, no separate Cursor implementation. INF51 archived source-only. INF48 backlog. See [consolidation](../../undertakings/storyteller-workshop/CONSOLIDATION.md). No live permission or global queue change.

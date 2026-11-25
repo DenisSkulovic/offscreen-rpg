@@ -1,17 +1,17 @@
 # Consolidation | November 24
 
-Planning-only checkpoint; target main; audited baseline 45251aa99ffe9ff4dc8d749637a2a662b979ef94. [Overview](OVERVIEW.md). At most two source lanes after owner resumes, no full-stack retries until monitoring/headroom; no automatic uncommissioned successor dispatch; explicit DB batch follows its dependency gates.
+Reconciled 2026-11-25; target main; source baseline 86c9461a1fa117ef2aaf90029411981a8eefbfc1. [Overview](OVERVIEW.md). At most two source lanes after owner resumes, no unsupervised full-stack retries; explicit measured headroom; no automatic uncommissioned successor dispatch; explicit DB batch follows its dependency gates.
 
 | Lane | Next | Gate |
 | --- | --- | --- |
-| Monitor | [INF49](../../changes/open/2026-11-24--inf49-monitor-composition/CHANGE.md) | Actual staged service composition |
-| Correctness | [INF50](../../changes/open/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) | T01 source-ready; T02/T03 planner gated |
+| Monitor | [INF49](../../changes/open/2026-11-24--inf49-monitor-composition/CHANGE.md) | Ready; actual staged service composition |
+| Correctness | [INF50](../../changes/open/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) | Residual behavioral regressions only; Ready |
 | Report | [INF47](../../changes/open/2026-11-24--inf47-historical-observability-queries/CHANGE.md) | INF49 emitted schema |
-| Selective dev | [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) | Transitive boot closure and API endpoint |
+| Selective dev | [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) | Ready; after INF50 if concurrent |
 | Storage | [INF48](../../changes/backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) | Proposed GC/ownership design |
 | DB | [DB05 and DB09](DB-PARALLEL.md) | DB04 source Done; DB05 schema lane next; DB09 after DB07; DB10 final; no live permission |
 | Cache | CACHE04/CACHE07 | Existing SQL/Redis proof |
-| Platform | INF29/DXK09 | Authorized one slot, measured headroom |
+| Platform | INF29/DXK09 | INF29 evidence only; INF52 after VER01/INF50; explicit live permission |
 | Product | TURN03 | Real authenticated scene2/fork/cross-Pod proof |
 
 Every integration must include actual composition proof at its selected tier, not just helper/constant tests. Unavailable prerequisites BLOCKED/NOT-RUN. Localized contract-preserving bugs may be fixed and tested without repeated approval; material architecture/data/security contradictions return to planner. No provider spend or host/cluster mutation implied.
