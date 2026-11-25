@@ -6,19 +6,19 @@ Proposed only; no Change folders, IDs, commission or live permission. Reviewed m
 
 Reject previous A/B/C partition as written. It bundled unrelated pin relocation with a new PG provisioning API, hid broad caller rewrites in B6, duplicated fixture work in C, and treated source merge as sufficient to switch runtime topology. The installer design also overreached: custom safe-values whitelist, independent CLI, repeated lint/render and speculative upgrade machinery are unnecessary for the first local installation. Preserve safety outcomes, not previous custom machinery.
 
-Selected minimal programme: **one small independent prerequisite correction, one narrow persistence Change, one coherent platform replacement.** No mandatory fourth verification Change. Integrate the basic fixture and consumer compatibility in the replacement. Advanced resilience/restore is a separate future decision, not part of this commission.
+Selected minimal programme: **one coherent platform replacement, preceded by a separate persistence Change only if the actual PG work merits independent integration.** The pin relocation is a small task in the replacement, not its own Change. No mandatory fourth verification Change. Integrate the basic fixture and consumer compatibility in the replacement. Advanced resilience/restore is a separate future decision, not part of this commission.
 
 ```text
-                       ChatGPT planning gates
-                      /                     \
- A: decouple PG verification pin     B: PG persistence prerequisites
-                      \                     /
-                       C: atomic Helm replacement
-                                  |
-                  approved dev then release activation
+ChatGPT: terminal experiments and source mapping
+        |
+Optional persistence Change (only if substantive)
+        |
+One Temporal replacement Change (includes pin relocation)
+        |
+Approved dev then release activation
 ```
 
-A and B are independent source outcomes, not mandatory separate paid chats: one parent can implement sequentially if cheaper. Parallel only after disjoint file/test owners frozen. C joins both. No second Temporal platform, no temporal-next, no partial runtime authority switch. Source tests before integration, operator live permission separate. One integration custodian; one branch/worktree per actual Change. No paid agent research assignment.
+A is a task within C. B is a conditional predecessor, otherwise also a task within C. C is the sole mandatory Change. Default serial execution; no separate pin-relocation chat. No second Temporal platform, no temporal-next, no partial runtime authority switch. Source tests before integration, operator live permission separate. One integration custodian; one branch/worktree per actual Change. No paid agent research assignment.
 
 ## 2. First resolve planning gates, not write packets
 
@@ -34,18 +34,18 @@ A and B are independent source outcomes, not mandatory separate paid chats: one 
 
 No actual packet creation until owner approves roadmap and material decisions settled. Do not conflate unavailable live permission with deterministic source-test readiness. Existing folder exclusion is respected; cannot claim exhaustive retirement map without that inspection. No permission to inspect it inferred.
 
-## 3. A: remove unrelated verification pin dependency
+## 3. Task A within C: remove unrelated verification pin dependency
 
-One small PATCH, not a PG subsystem redesign.
+One small bounded task, not a separate PATCH or PG subsystem redesign.
 
 - Anchor: tools/verification/resources/postgres/docker-plan.mjs loadPinnedPostgresImage, normalizeImageId and resolvePinnedPostgresImageId. Existing reads Temporal images.pin, returns POSTGRES_IMAGE and POSTGRES_DIGEST. Docker image ID is not a registry manifest digest. Preserve exact image/digest and comparison behavior.
 - Selected destination: verification-owned postgres pin adjacent to docker-plan.mjs (proposed image.pin, only POSTGRES_IMAGE and POSTGRES_DIGEST). Use common parsePins; keep legacy pin intact for old Temporal until C. No change to CNPG operator pin or deployed images.
 - Exact matching test paths and current pin bytes still need source inventory. Positive proof identical image/digest, negative missing/invalid digest refuses; independent test proving legacy pin absent from fixture. No Docker pull, cluster or PG mutation.
-- A may be folded into C as its first tiny task if owner wants one less Change; no dependency on B. Do not create a large packet for a two-key relocation.
+- A is folded into C as its first tiny task. No dependency on B.
 
-## 4. B: narrow CNPG persistence preparation
+## 4. Conditional B: narrow CNPG persistence preparation
 
-Independent CONTRACT outcome, source-only: prepare the two stores and scoped credential prerequisites, without deploying Temporal. No generic shared DB abstraction, no provisioning during PG baseline startup, no PG tuning.
+If substantive independent work is established, a separate CONTRACT outcome; otherwise a bounded task within C. Source-only: prepare the two stores and scoped credential prerequisites, without deploying Temporal. No generic shared DB abstraction, no provisioning during PG baseline startup, no PG tuning.
 
 - Candidate owner: infra/platform/postgres/temporal-persistence.mjs with focused test. Final owner and exact inputs chosen at PG gate. Existing dev SQL adapter is evidence of CNPG pattern, not code to import blindly. PostgreSQL owns role/databases, Temporal namespace owner owns its projected Secret; do not make PG responsible for Temporal workload namespace creation.
 - Use native CNPG CRs for one role and two retained DBs, stable credential source. Verify actual CRD and installed operator first. A closed database cannot be connected to for in-database ACL verification: settle correct ordering/privilege mechanism here, not Cursor. Verify negative access to application stores without broadly changing unrelated DB ACLs. No blanket superuser grants, no secret logs or auto rotation.
@@ -81,12 +81,12 @@ Source search across original ZIP explicitly skipped infra/platform/temporal/**;
 - infra/workloads/profiles/release.yaml:77–78 sets temporalAddress=temporal-server.lab-temporal.svc.cluster.local:7233, temporalNamespace=default. Preserve default for release unless approved migration maps it. Upstream namespace-create:false means explicit release namespace preparation is REQUIRED if it is absent; no silent fallback. Earlier generic 'never default' language applies to dev slots, not existing release.
 - tools/dev-environments/src/rendering/dev-slot-app-graph.mjs:64–65 sets endpoint and slot namespace. Update dev projection and workload fixture JSON (dev-1/dev-2/release) and tests/helpers/dev-bindings.mjs; do not change workflow contracts/queues or tenant names.
 - infra/verification/release-acceptance/turn03/preflight.mjs:211 legacy temporal-server; update identity/health gate only, preserve TURN03 scope.
-- infra/verification/smoke/temporal/{smoke.sh,start-job.yaml,worker.yaml}: legacy server/admin/postgres/PVC assumptions. Remove obsolete topology checks and direct embedded-PG dependencies; retain reusable fixture if compatible. Do not leave known-broken smoke entrypoint on main; C extends evidence, B fixes compatibility or explicitly refuses unsupported old test operation.
+- infra/verification/smoke/temporal/{smoke.sh,start-job.yaml,worker.yaml}: legacy server/admin/postgres/PVC assumptions. Remove obsolete topology checks and direct embedded-PG dependencies; retain reusable fixture if compatible. Do not leave known-broken smoke entrypoint on main; C fixes compatibility or explicitly refuses unsupported old test operation.
 - infra/verification/dev-environments/dev-temporal-tenant-trial.mjs imports old constants, creates admin pods, port-forwards old service. Move to new shared identity/transport and correct service; preserve live token and tenant proof.
 - infra/verification/diagnostic.mjs references schema-policy.test.mjs, render.test.mjs, release-install.test.mjs; update catalog to actual new tests, preserve unrelated entries. infra/verification/source/test/volume-guard.test.mjs points to old install.sh; replace with negative destructive-operation assertion in new source, not simply removing safety coverage.
 - scripts/repo-tools/infra-layout.test.mjs hard-codes old chart template destinations; retire obsolete migration expectations only when new authority exists; preserve other services' layout.
-- tools/verification/resources/postgres/docker-plan.mjs depends on Temporal pin; A removes this dependency before B removes pin.
-- Existing source suite glob and package/script registrations must be mapped completely at P3. Archived docs/history may retain historical names; active executable/current runbook must not. No broad replacement of every string 'temporal-server' (vendor binary/image names remain valid).
+- tools/verification/resources/postgres/docker-plan.mjs depends on Temporal pin; Task A removes this dependency before C retires the pin.
+- Existing source suite glob and package/script registrations must be mapped completely at the runtime transition gate. Archived docs/history may retain historical names; active executable/current runbook must not. No broad replacement of every string 'temporal-server' (vendor binary/image names remain valid).
 
 
 
@@ -94,7 +94,7 @@ Source search across original ZIP explicitly skipped infra/platform/temporal/**;
 
 Previous roadmap omitted an operational hazard: once C merges, old worktrees can still execute old infrastructure writers and new application configs cannot use an unconverted cluster. Git integration is not a distributed lock. Before C joins main, owner selects and records maintenance boundary: stop affected app callers, prevent old worktree platform operations, maintain explicit per-cluster compatibility/status and coordinate activation. No second runtime installation in same namespace. No automatic deletion, adoption or migration. If live cutover not yet approved, do not claim current platform operational under new source; delay integration if the owner cannot tolerate downtime or select a deliberate maintenance window.
 
-Fresh installation and preservation are **different runbooks**, not branches of a generic installer. Fresh path requires explicitly authorized empty/owned stores and no legacy resource collision. Preserve path needs actual server version, schema versions, shard count, DB identity and namespace IDs/retention, active execution inventory, coherent backups and tested restore/migration procedure. Decide per cluster; release default namespace is preserved unless explicitly changed. Do not turn migration into a paid agent investigation. No cluster reset or data loss authorization implied. Dev first, release second after observed evidence. A/B source changes do not touch existing live resources.
+Fresh installation and preservation are **different runbooks**, not branches of a generic installer. Fresh path requires explicitly authorized empty/owned stores and no legacy resource collision. Preserve path needs actual server version, schema versions, shard count, DB identity and namespace IDs/retention, active execution inventory, coherent backups and tested restore/migration procedure. Decide per cluster; release default namespace is preserved unless explicitly changed. Do not turn migration into a paid agent investigation. No cluster reset or data loss authorization implied. Dev first, release second after observed evidence. Source changes do not touch existing live resources.
 
 ## 7. Scope and proof discipline
 
@@ -103,13 +103,13 @@ Fresh installation and preservation are **different runbooks**, not branches of 
 - Distinguish health from actual execution, source PASS from live PASS. Verify repeat explicit ensure causes no Helm revision/intentional rollout, not immutable pod UIDs.
 - Exact source map and tests are still incomplete because old folder excluded. Do not label ready, assign speculative code counts, or claim full independent audit. After planner gates, run full packet G0–G7 review separately.
 - Previous programme INF64–69 held, proposed A/B absorb relevant INF64 prerequisites; C absorbs INF65–69 local deployment and basic verification. No duplicate execution or reopening archived INF61–63/70–71. Existing INF29 live tracker stays. No change to queue or broader undertaking estimates; no live progress.
-- Default serial parent children. A/B parallel source only after frozen paths/test outputs and active branch checks. C1–C8 sequential by default; optional disjoint child concurrency only if actual proof benefit. Parent integrates and reviews once; no repetitive repo-wide agent audits.
+- Default serial parent children. A is the first task in C; optional B precedes C only if independent work is justified. C1–C8 sequential by default; optional disjoint child concurrency only if actual proof benefit. Parent integrates and reviews once; no repetitive repo-wide agent audits.
 
 ## 8. Strict review disposition
 
 | Previous weakness | Correction | Remaining evidence |
 | --- | --- | --- |
-| A mixed independent pin and PG work | separate small prerequisite; optional fold | old pin and test map |
+| A mixed independent pin and PG work | fold small pin task into C; isolate B only if substantive | old pin and test map |
 | B broad cleanup/research group | exact bounded caller groups, final deletion inventory planner-owned | authorized legacy inventory |
 | C duplicate proof programme | fold basic verification into replacement | exact existing fixture and runner contract |
 | Custom upgrade policy | no automated upgrades in initial scope | maintenance contract |
@@ -119,3 +119,7 @@ Fresh installation and preservation are **different runbooks**, not branches of 
 | Existing fixture dangerous assumptions | no blind invocation; bounded owned fixture | exact fixture contract |
 
 Verdict: revised roadmap is materially leaner but **not approved or dispatchable**. No Changes created. Stop before implementation packet authoring; complete missing planner evidence and owner review.
+
+## Defense revision
+
+No standalone pin Change. No mandatory standalone persistence Change until the terminal and source evidence establish its size. No custom release description hash: compare Helm recorded values with narrowly composed endpoint overlays. Verify chart bytes before creating any persistence resources. See OPERATIONS.md. Next step is the read-only [terminal experiments](EXPERIMENTS.md), not packet drafting.
