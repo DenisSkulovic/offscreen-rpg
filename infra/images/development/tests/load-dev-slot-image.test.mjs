@@ -63,6 +63,9 @@ function installFakes(
   writeFileSync(
     join(bin, 'node'),
     `#!/bin/bash
+if [[ "\${1:-}" == *verify-warm-aliases.mjs && "\${2:-}" == --reconcile ]]; then
+  exit 0
+fi
 if [[ "\${1:-}" == *kind-image-loader.mjs ]]; then
   if [[ "\$2" == "inspect" ]]; then
     echo '{"configId":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","manifestDigest":"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","targetDigest":"sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}'
@@ -346,7 +349,7 @@ test('alias tagging does not invoke kind load for role-only work', () => {
   const script = readFileSync(slotLoader, 'utf8');
   assert.match(script, /kind-image-loader\.mjs" dev/);
   assert.doesNotMatch(script, /kind load docker-image "\$ref"/);
-  assert.match(script, /ctr -n k8s.io images tag/);
+  assert.match(script, /verify-warm-aliases\.mjs\" --reconcile/);
   assert.match(script, /write_image_ref_receipt/);
 });
 
