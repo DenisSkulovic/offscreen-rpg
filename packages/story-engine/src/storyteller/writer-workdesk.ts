@@ -4,7 +4,7 @@ import type { Database } from '@offscreen/db';
 import {
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import {
   applyLibraryBatch,

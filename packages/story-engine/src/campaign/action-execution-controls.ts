@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaign, gameActionExecution } from '@offscreen/db/campaign-schema';
+import { campaign, gameActionExecution } from '@offscreen/story-persistence/campaign';
 import { actionExecutionControlSchema } from '@offscreen/story-interface/campaign';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { paceSchema, gameTimeProgressSchema } from '@offscreen/game/time';

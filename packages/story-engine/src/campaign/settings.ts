@@ -7,9 +7,9 @@ import {
   campaignCommand,
   storytellerPreset,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
-import { story } from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/campaign';
+import { storyResolution } from '@offscreen/story-persistence/stories';
+import { story } from '@offscreen/story-persistence/stories';
 import {
   campaignSettingsSchema,
   creativeSettingsSchema,

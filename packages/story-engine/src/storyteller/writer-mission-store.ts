@@ -6,7 +6,7 @@ import {
   storytellerWriterChild,
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { defaultWriterContextId } from './writer-child-custody';
 import type { WriterMissionCapture } from '@offscreen/storyteller/tasks';
 

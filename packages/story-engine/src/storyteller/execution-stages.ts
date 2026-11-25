@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq } from 'drizzle-orm';
-import { storytellerExecutionStage } from '@offscreen/db/storyteller-schema';
+import { storytellerExecutionStage } from '@offscreen/story-persistence/storyteller';
 import type { Database } from '@offscreen/db';
 import type { Transaction } from '@offscreen/db/outbox';
 

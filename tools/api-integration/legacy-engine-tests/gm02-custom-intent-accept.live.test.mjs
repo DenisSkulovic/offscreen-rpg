@@ -7,7 +7,7 @@ import {
   campaign,
   gameActionExecution,
   gameActionReceipt,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { createStories } from '../../../packages/story-engine/dist/stories/index.js';
 import { initializeStoryInTransaction } from '../../../packages/story-engine/dist/stories/initialization.js';
 import { initializeCampaign } from '../../../packages/story-engine/dist/campaign/settings.js';

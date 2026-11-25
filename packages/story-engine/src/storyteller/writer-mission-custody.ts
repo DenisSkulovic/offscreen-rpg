@@ -14,7 +14,7 @@ import {
   storytellerWriterChild,
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import type {
   ProviderTelemetry,

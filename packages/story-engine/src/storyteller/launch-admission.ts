@@ -1,8 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { and, eq, gt, gte, isNull, or, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyLaunch } from '@offscreen/db/launch-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
 import { enqueue } from '@offscreen/db/outbox';
 import type { Transaction } from '@offscreen/db/outbox';
 import { outbox } from '@offscreen/db/outbox-schema';
@@ -11,7 +11,7 @@ import {
   storytellerFunding,
   storytellerOperation,
   storytellerRun,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { hashCanonicalJson } from '@offscreen/documents';
 import {
   WRITER_MANDATORY_TOOL_NAMES,

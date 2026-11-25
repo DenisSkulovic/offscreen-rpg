@@ -23,8 +23,8 @@ import {
   type LibraryRootV2,
 } from '@offscreen/documents';
 import type { Database } from '@offscreen/db';
-import { story, storyDocumentCommit } from '@offscreen/db/story-schema';
-import { storyPassage } from '@offscreen/db/story-schema';
+import { story, storyDocumentCommit } from '@offscreen/story-persistence/stories';
+import { storyPassage } from '@offscreen/story-persistence/stories';
 import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';

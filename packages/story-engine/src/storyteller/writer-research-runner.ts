@@ -6,7 +6,7 @@ import type { Database } from '@offscreen/db';
 import {
   storytellerWriterChild,
   storytellerWriterMission,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import type { WriterResearchCaptureV1 } from '@offscreen/storyteller/tasks';
 import type { LibraryAccess } from './library-navigation';

@@ -7,21 +7,21 @@ import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   campaign,
   campaignConsequence,
   gameActionExecution,
   gameActionExecutionEvent,
   gameActionReceipt,
-} from '@offscreen/db/campaign-schema';
-import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/campaign';
+import { storyPassage, storyResolution } from '@offscreen/story-persistence/stories';
 import {
   storytellerAttempt,
   storytellerContextCapture,
   storytellerContextCaptureRearm,
   storytellerOperation,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { enqueue } from '@offscreen/db/outbox';
 import { campaignConsequenceTopic } from '../campaign/topics';
 import { campaignHoldsSchema } from '../campaign/holds';

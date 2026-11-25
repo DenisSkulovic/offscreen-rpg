@@ -12,14 +12,14 @@ import {
   gameRoll,
   worldObligation,
   worldObligationEvent,
-} from '@offscreen/db/campaign-schema';
-import { story } from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/campaign';
+import { story } from '@offscreen/story-persistence/stories';
 import {
   appliedItemTransfers,
   immediateActionPlanSchema,
   situationAuthorizationSchema,
 } from '@offscreen/game/immediate-actions';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
 import {
   campaignViewSchema,
   campaignSettingsSchema,

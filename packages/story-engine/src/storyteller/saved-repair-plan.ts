@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 import { and, eq, inArray, ne, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerAttempt,
   storytellerDispatchReview,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import {
   inspectSavedInvalidRepairResponse,

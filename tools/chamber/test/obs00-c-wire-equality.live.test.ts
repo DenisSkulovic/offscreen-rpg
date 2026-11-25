@@ -16,9 +16,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
 import {
   buildLongStoryMemoryCorpus,
   destroyDisposableSandboxDatabase,

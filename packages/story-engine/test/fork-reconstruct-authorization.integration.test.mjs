@@ -9,13 +9,13 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { campaign } from '@offscreen/db/campaign-schema';
-import { campaignSettings } from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/story-persistence/campaign';
+import { campaignSettings } from '@offscreen/story-persistence/campaign';
 import {
   story,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   documentManifestSchema,
   LocalDocumentStore,

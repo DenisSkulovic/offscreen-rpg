@@ -7,15 +7,15 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
-import { generation } from '@offscreen/db/generation-schema';
+import { campaign, campaignSettings } from '@offscreen/story-persistence/campaign';
+import { generation } from '@offscreen/story-persistence/generations';
 import { outbox } from '@offscreen/db/outbox-schema';
 import {
   story,
   storyItem,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   LocalDocumentStore,
   documentManifestSchema,

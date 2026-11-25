@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
-import { generation } from '@offscreen/db/generation-schema';
-import { storytellerAttempt, storytellerFunding, storytellerOperation, storytellerRun } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storytellerAttempt, storytellerFunding, storytellerOperation, storytellerRun } from '@offscreen/story-persistence/storyteller';
 import { createStorytellerOpenings } from '@offscreen/story-engine/storyteller';
 import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
 import { createStorytellerBudget, createDispatchReviewControls } from '@offscreen/story-engine/storyteller';

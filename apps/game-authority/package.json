@@ -26,6 +26,7 @@
     "@offscreen/documents": "workspace:*",
     "@offscreen/runtime-logging": "workspace:*",
     "@offscreen/story-engine": "workspace:*",
+    "@offscreen/story-persistence": "workspace:*",
     "@offscreen/storyteller": "workspace:*",
     "zod": "4.6.5",
     "@offscreen/story-interface": "workspace:*"

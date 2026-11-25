@@ -6,8 +6,8 @@ import { randomUUID } from 'node:crypto';
 import { and, desc, eq, lt, max, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { storyPublicEvent } from '@offscreen/db/campaign-schema';
-import { story } from '@offscreen/db/story-schema';
+import { storyPublicEvent } from '@offscreen/story-persistence/campaign';
+import { story } from '@offscreen/story-persistence/stories';
 import type { Transaction } from '@offscreen/db/outbox';
 import { StoryError, parseStoryIdentifier } from './errors';
 

@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerFunding,
   storytellerOperation,
   storytellerRun,
   storytellerUsageAllocation,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   createStorytellerBudget,
   resourcesForEffectiveUsagePolicy,

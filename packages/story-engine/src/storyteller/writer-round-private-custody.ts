@@ -4,7 +4,7 @@
 import { Buffer } from 'node:buffer';
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import type { PreparedProviderWire } from '@offscreen/storyteller/providers/openrouter';
 import { preparedWireIsSelfConsistent } from '@offscreen/storyteller/providers/openrouter';

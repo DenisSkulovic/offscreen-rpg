@@ -1,12 +1,12 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { storyDraft } from '@offscreen/db/draft-schema';
-import { generation, draftOpening } from '@offscreen/db/generation-schema';
+import { storyDraft } from '@offscreen/story-persistence/drafts';
+import { generation, draftOpening } from '@offscreen/story-persistence/generations';
 import {
   storytellerAttempt,
   storytellerOperation,
   storytellerRetry,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   storytellerCatalogue,
   storytellerSummary,

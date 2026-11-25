@@ -1,17 +1,17 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyResolution } from '@offscreen/story-persistence/stories';
 import {
   gameActionExecution,
   gameActionReceipt,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   storytellerAttempt,
   storytellerOperation,
   storytellerPublication,
   storytellerRetry,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { storytellerKind } from '../generations/storyteller-kinds';
 import { lockOwnedStory, incrementStoryViewVersion } from './persistence';

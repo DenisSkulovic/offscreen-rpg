@@ -5,7 +5,7 @@ import type { Database } from '@offscreen/db';
 import {
   storyDelegationPolicy,
   storyDelegationPolicyCommand,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { DECLINE_HARMLESS_INVITATION_CLASS } from '@offscreen/game/delegation-eligibility';
 import type { Transaction } from '@offscreen/db/outbox';
 import { revokeArmedDelegatedOffersOnPolicyDisable } from '../campaign/delegated-offer';

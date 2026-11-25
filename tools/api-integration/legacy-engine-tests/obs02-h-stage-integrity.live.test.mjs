@@ -10,8 +10,8 @@ import {
   campaign,
   gameActionExecution,
   gameActionReceipt,
-} from '@offscreen/db/campaign-schema';
-import { storytellerContextCapture } from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/campaign';
+import { storytellerContextCapture } from '@offscreen/story-persistence/storyteller';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';

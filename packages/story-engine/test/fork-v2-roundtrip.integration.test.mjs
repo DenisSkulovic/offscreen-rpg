@@ -17,14 +17,14 @@ import {
   gameActivity,
   gameOffer,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   story,
   storyDocumentCommit,
   storyItem,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   documentManifestSchema,
   LocalDocumentStore,

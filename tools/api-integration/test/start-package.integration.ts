@@ -21,12 +21,12 @@ import {
   MemoryExplorationControllerError,
   type ScriptedMemoryRoundSource,
 } from '@offscreen/story-engine/storyteller';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerFunding,
   storytellerMemoryExploration,
   storytellerRun,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   type ExecutionPolicy,
   prepareStorytellerTask,

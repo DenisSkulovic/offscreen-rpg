@@ -6,13 +6,13 @@ import { randomUUID } from 'node:crypto';
 import { and, desc, eq, gt, lte, max, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { storyPublicEvent } from '@offscreen/db/campaign-schema';
+import { storyPublicEvent } from '@offscreen/story-persistence/campaign';
 import {
   story,
   storyViewerVisit,
   storyViewerVisitAck,
   storyViewerVisitOpen,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { publicStoryEventSchema } from './public-events';
 

@@ -5,8 +5,8 @@ import {
   campaignConsequence,
   worldObligation,
   worldObligationEvent,
-} from '@offscreen/db/campaign-schema';
-import { storyPassage } from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/campaign';
+import { storyPassage } from '@offscreen/story-persistence/stories';
 import {
   applyWorldObligationCondition,
   worldObligationSchema,

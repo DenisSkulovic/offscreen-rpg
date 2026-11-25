@@ -3,7 +3,7 @@
  * Aligns with ENG04 Now filter, plus completion-pending retained work.
  */
 import { and, eq, inArray, or, type SQL } from 'drizzle-orm';
-import { gameActivity } from '@offscreen/db/campaign-schema';
+import { gameActivity } from '@offscreen/story-persistence/campaign';
 
 /** Nonterminal / retained commitments eligible for Storyteller current context. */
 export const STORYTELLER_ACTIVITY_STATES = [

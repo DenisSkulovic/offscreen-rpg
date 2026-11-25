@@ -52,6 +52,7 @@
     "@offscreen/game": "workspace:*",
     "@offscreen/lab-support": "workspace:*",
     "@offscreen/story-engine": "workspace:*",
+    "@offscreen/story-persistence": "workspace:*",
     "@offscreen/storyteller": "workspace:*",
     "@offscreen/web": "workspace:*",
     "@offscreen/worker": "workspace:*",

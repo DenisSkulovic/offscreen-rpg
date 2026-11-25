@@ -1,6 +1,6 @@
-export { storyDraft } from '@offscreen/db/draft-schema';
+export { storyDraft } from '@offscreen/story-persistence/drafts';
 
-export { generation, draftOpening } from '@offscreen/db/generation-schema';
+export { generation, draftOpening } from '@offscreen/story-persistence/generations';
 
 export {
   story,
@@ -15,9 +15,9 @@ export {
   storyViewerVisitAck,
   storyPublicInspectTarget,
   customIntentCandidate,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 
-export { storyLaunch } from '@offscreen/db/launch-schema';
+export { storyLaunch } from '@offscreen/story-persistence/launch';
 
 export {
   campaign,
@@ -39,7 +39,7 @@ export {
   gameActionExecutionEvent,
   storyPublicEvent,
   storytellerPreset,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 
 export {
   storytellerPublication,
@@ -62,4 +62,4 @@ export {
   storytellerWriterMission,
   storytellerWriterStep,
   storytellerWriterChild,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';

@@ -9,13 +9,13 @@ import {
   campaign,
   campaignConsequence,
   gameActionExecution,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   customIntentCandidate,
   storyPassage,
   storyPublicInspectTarget,
   storyResolution,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import {

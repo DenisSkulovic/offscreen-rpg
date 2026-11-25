@@ -16,12 +16,12 @@ import {
 import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { createChamberStorytellerControl } from '@offscreen/lab-support';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { worldObligation } from '@offscreen/db/campaign-schema';
-import { story, storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
+import { worldObligation } from '@offscreen/story-persistence/campaign';
+import { story, storyPassage, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import {
   storytellerAttempt,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { storytellerDistributedTopic } from '@offscreen/story-engine/storyteller';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { createRequire } from 'node:module';

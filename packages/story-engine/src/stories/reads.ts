@@ -18,7 +18,7 @@ import {
   storytellerContextCapture,
   storytellerOperation,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { storyListSchema } from '@offscreen/story-interface/stories';
 import {
   historicalSceneSchema,
@@ -28,13 +28,13 @@ import {
 } from '@offscreen/story-interface/stories';
 import { projectStoredSceneAppearance } from '@offscreen/story-interface/scene-publication';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { campaign, campaignSettings } from '@offscreen/story-persistence/campaign';
 import {
   story,
   storyPassage,
   storyResolution,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   campaignSettingsSchema,
   campaignViewSchema,

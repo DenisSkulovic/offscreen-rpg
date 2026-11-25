@@ -6,16 +6,16 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test } from 'node:test';
-import { campaign, worldObligation } from '@offscreen/db/campaign-schema';
+import { campaign, worldObligation } from '@offscreen/story-persistence/campaign';
 import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { gameAuthoritySeamVersion } from '@offscreen/game-authority-protocol/game-authority';
 import { storySnapshotSchema } from '@offscreen/story-interface/stories';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   story,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createChamberStorytellerControl } from '@offscreen/lab-support';
 import { createDrafts } from '@offscreen/story-engine/drafts';

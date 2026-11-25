@@ -9,8 +9,8 @@ import { isDeepStrictEqual } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storytellerMemoryExploration } from '@offscreen/story-persistence/storyteller';
 import { canonicalJson } from '@offscreen/documents';
 import {
   composeMemoryExplorationDecisionRequest,

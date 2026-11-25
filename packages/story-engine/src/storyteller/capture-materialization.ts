@@ -5,7 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { and, eq, gt, lte } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   campaignConsequence,
   campaignReport,
@@ -15,9 +15,9 @@ import {
   gameActivity,
   gameRoll,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
-import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
-import { storytellerContextCapture } from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/campaign';
+import { storyPassage, storyResolution } from '@offscreen/story-persistence/stories';
+import { storytellerContextCapture } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { passageContentSchema } from '@offscreen/story-interface/stories';
 import { projectWorldTime } from '@offscreen/game/calendar';
@@ -54,7 +54,7 @@ import {
   storytellerKind,
 } from './records';
 import { actionProjectedStateDigest } from '../campaign/action-overlap';
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/story-persistence/campaign';
 import { campaignHoldsSchema } from '../campaign/holds';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { rollSchema } from '@offscreen/game/checks';

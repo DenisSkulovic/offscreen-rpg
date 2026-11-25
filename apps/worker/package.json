@@ -37,6 +37,7 @@
     "@offscreen/lab-support": "workspace:*",
     "@offscreen/runtime-logging": "workspace:*",
     "@offscreen/story-engine": "workspace:*",
+    "@offscreen/story-persistence": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/workflows": "workspace:*",

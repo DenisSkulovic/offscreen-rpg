@@ -4,7 +4,7 @@ import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy'
 import {
   storytellerAttempt,
   storytellerOperation,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import { loadCurrentDispatchAuthority } from './load-current-dispatch-authority';
 

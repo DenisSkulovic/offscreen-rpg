@@ -10,8 +10,8 @@ import {
   gameActionExecution,
   gameActionExecutionEvent,
   storyPublicEvent,
-} from '@offscreen/db/campaign-schema';
-import { story } from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/campaign';
+import { story } from '@offscreen/story-persistence/stories';
 import {
   declineHarmlessInvitationWithdrawalPlan,
   harmlessSocialInvitationPlan,

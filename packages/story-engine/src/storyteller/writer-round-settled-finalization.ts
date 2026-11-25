@@ -3,11 +3,11 @@
  */
 import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
+import { storyPassage, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import {
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import type { WriterSceneProposalV3 } from '@offscreen/storyteller/tasks';
 import { writerSceneProposalV3Schema } from '@offscreen/storyteller/tasks';
@@ -28,7 +28,7 @@ import { recordWriterPublicationFailure } from './writer-publication-diagnostic'
 import type { WriterRoundCapturePolicyMode } from './writer-round-capture-validation';
 import { validateWriterRoundCaptureAgainstPolicy } from './writer-round-capture-validation';
 import type { WriterRoundModelPolicy } from '@offscreen/storyteller/providers/writer-round-transport';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import { writerMissionCaptureV3ContinuationSchema } from '@offscreen/storyteller/tasks';
 import type { z } from 'zod';
 

@@ -197,7 +197,7 @@ test('GM05 live: settled and interrupted actions append ordered public events on
         path: ['give-compass'],
       },
     });
-    const { storyItem } = await import('@offscreen/db/story-schema');
+    const { storyItem } = await import('@offscreen/story-persistence/stories');
     const { eq } = await import('drizzle-orm');
     await database.db
       .update(storyItem)

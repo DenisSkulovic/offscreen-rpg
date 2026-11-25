@@ -16,7 +16,7 @@ import {
   gameActionExecution,
   gameActionReceipt,
   storyPublicEvent,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { createStories } from '@offscreen/story-engine/stories';
 import {
   destroyDisposableSandboxDatabase,

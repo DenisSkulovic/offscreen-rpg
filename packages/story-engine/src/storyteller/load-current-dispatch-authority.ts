@@ -1,13 +1,13 @@
 import { and, eq } from 'drizzle-orm';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyDraft } from '@offscreen/db/draft-schema';
-import { story } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyDraft } from '@offscreen/story-persistence/drafts';
+import { story } from '@offscreen/story-persistence/stories';
 import {
   storytellerCurrentOwnerGrant,
   storytellerCurrentPlatformPolicy,
   storytellerAttempt,
   storytellerOperation,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   storytellerDispatchRouteMapSchema,
   type IndependentAuthorityDenialReason,

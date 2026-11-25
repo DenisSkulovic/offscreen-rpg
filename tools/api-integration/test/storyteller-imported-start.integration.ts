@@ -6,9 +6,9 @@ import { join, resolve } from 'node:path';
 import {
   gameActionReceipt,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import type { CampaignStart } from '@offscreen/story-interface/campaign';
-import { story } from '@offscreen/db/story-schema';
+import { story } from '@offscreen/story-persistence/stories';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createStories } from '@offscreen/story-engine/stories';
 import { offlineExecution } from '@offscreen/storyteller/tasks';

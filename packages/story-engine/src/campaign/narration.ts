@@ -11,7 +11,7 @@ import {
   campaignConsequence,
   gameActionExecution,
   gameActionReceipt,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import type { Transaction } from '@offscreen/db/outbox';
 import type { StoryRecord } from '../stories/persistence';
 import {

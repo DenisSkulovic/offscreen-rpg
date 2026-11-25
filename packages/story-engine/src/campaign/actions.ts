@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { and, eq, inArray } from 'drizzle-orm';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { storyResolution } from '@offscreen/story-persistence/stories';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
@@ -10,7 +10,7 @@ import {
   gameActionExecution,
   gameActivity,
   storyDelegationPolicy,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { isDeclineHarmlessInvitation } from '@offscreen/game/delegation-eligibility';
 import { actionCommandSchema } from '@offscreen/story-interface/campaign';
 import {

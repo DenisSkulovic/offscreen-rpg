@@ -1,0 +1,44 @@
+{
+  "name": "@offscreen/story-persistence",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./drafts": {
+      "types": "./dist/src/drafts.d.ts",
+      "default": "./dist/src/drafts.js"
+    },
+    "./generations": {
+      "types": "./dist/src/generations.d.ts",
+      "default": "./dist/src/generations.js"
+    },
+    "./stories": {
+      "types": "./dist/src/stories.d.ts",
+      "default": "./dist/src/stories.js"
+    },
+    "./launch": {
+      "types": "./dist/src/launch.d.ts",
+      "default": "./dist/src/launch.js"
+    },
+    "./campaign": {
+      "types": "./dist/src/campaign.d.ts",
+      "default": "./dist/src/campaign.js"
+    },
+    "./storyteller": {
+      "types": "./dist/src/storyteller.d.ts",
+      "default": "./dist/src/storyteller.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@offscreen/identity-persistence": "workspace:*",
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

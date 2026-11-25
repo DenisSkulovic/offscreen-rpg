@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/story-persistence/campaign';
 import { acceptedActivityPlanControlSchema } from '@offscreen/story-interface/campaign';
 import {
   incrementStoryViewVersion,

@@ -5,7 +5,7 @@ import {
   campaign,
   campaignDelegatedOffer,
   gameActionExecution,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import type { GameOffer } from '@offscreen/game/offers';
 import type { NarrativeIntentPlan } from '@offscreen/game/narrative-intent';
 import type { Transaction } from '@offscreen/db/outbox';

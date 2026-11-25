@@ -3,9 +3,9 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { story, storyPassage, storyResolution } from '@offscreen/db/story-schema';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { story, storyPassage, storyResolution } from '@offscreen/story-persistence/stories';
+import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
 import {
   offlineExecution,
   prepareStorytellerTask,

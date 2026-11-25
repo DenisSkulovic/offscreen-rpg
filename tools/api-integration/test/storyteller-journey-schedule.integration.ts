@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { campaignConsequence, campaignReport, worldObligation, worldObligationEvent } from '@offscreen/db/campaign-schema';
+import { campaignConsequence, campaignReport, worldObligation, worldObligationEvent } from '@offscreen/story-persistence/campaign';
 import { requireDefined } from './helpers/require.js';
 import type { TestContext } from 'node:test';
 import { type ProfiledStoryteller, eq } from './storyteller-suite.js';

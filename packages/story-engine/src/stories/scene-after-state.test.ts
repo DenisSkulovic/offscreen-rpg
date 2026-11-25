@@ -8,8 +8,8 @@ import {
   gameActivity,
   gameOffer,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
-import { story, storyItem } from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/campaign';
+import { story, storyItem } from '@offscreen/story-persistence/stories';
 import { user } from '@offscreen/identity-persistence/auth';
 import type { Transaction } from '@offscreen/db/outbox';
 import type { StoryContinuation } from './command-policy';

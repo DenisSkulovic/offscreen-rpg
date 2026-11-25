@@ -9,11 +9,11 @@ import {
   campaign,
   campaignSettings,
   gameActivity,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import { passageContentSchema } from '@offscreen/story-interface/stories';
 import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
-import { storyItem, storyPassage } from '@offscreen/db/story-schema';
+import { storyItem, storyPassage } from '@offscreen/story-persistence/stories';
 import {
   contextInputSchema,
   continuityNotesSchema,

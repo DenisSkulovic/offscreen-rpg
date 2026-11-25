@@ -5,7 +5,7 @@ import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy'
 import {
   storytellerCurrentOwnerGrant,
   storytellerCurrentPlatformPolicy,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { retainsIndependentCurrentAuthority } from './dispatch-authority';
 import { resolveIndependentAuthorityFromStore } from './current-authority';

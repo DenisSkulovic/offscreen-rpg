@@ -6,8 +6,8 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { story, storySceneCheckpoint } from '@offscreen/db/story-schema';
-import { storyPassage } from '@offscreen/db/story-schema';
+import { story, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
+import { storyPassage } from '@offscreen/story-persistence/stories';
 import {
   LocalDocumentStore,
   S3DocumentStore,

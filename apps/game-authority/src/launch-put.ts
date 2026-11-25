@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
-import { storyLaunch } from '@offscreen/db/launch-schema';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
 import { StoryError } from '@offscreen/story-engine/stories';
 import {
   storyLaunchRequestSchema,
@@ -8,7 +8,7 @@ import {
   type StoryLaunchStatus,
 } from '@offscreen/story-interface/story-launch';
 import type { Database } from '@offscreen/db';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { hashCanonicalJson } from '@offscreen/documents';
 import {

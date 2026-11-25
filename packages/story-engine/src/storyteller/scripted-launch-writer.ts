@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import type { Transaction } from '@offscreen/db/outbox';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyLaunch } from '@offscreen/db/launch-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
 import {
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 
 export type ScriptedLaunchWriterResult =
   | 'composing'

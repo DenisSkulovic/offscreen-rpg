@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 
 export type Transaction = Parameters<
   Parameters<Database['db']['transaction']>[0]

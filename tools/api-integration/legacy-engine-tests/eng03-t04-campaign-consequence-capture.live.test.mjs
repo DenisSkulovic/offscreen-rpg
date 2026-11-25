@@ -6,13 +6,13 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { campaign, campaignConsequence } from '@offscreen/db/campaign-schema';
-import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { campaign, campaignConsequence } from '@offscreen/story-persistence/campaign';
+import { storyPassage, storyResolution } from '@offscreen/story-persistence/stories';
 import {
   storytellerContextCapture,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';

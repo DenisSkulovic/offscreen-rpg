@@ -10,7 +10,7 @@ import {
   gameActivity,
   gameOffer,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   DocumentStorageError,
   sceneCheckpointSchema,
@@ -42,7 +42,7 @@ import {
   readSceneAfterStateFromDatabase,
   type SceneAfterState,
 } from './scene-after-state';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import { storytellerKind } from '../generations/storyteller-kinds';
 import {
   storytellerTaskSchema,
@@ -52,7 +52,7 @@ import {
   story,
   storyPassage,
   storyResolution,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { and, eq } from 'drizzle-orm';
 
 export type StagedContinuationCheckpoint = StagedSceneCheckpoint &

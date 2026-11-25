@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { generation } from '@offscreen/db/generation-schema';
-import { campaignConsequence, gameActivity } from '@offscreen/db/campaign-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { campaignConsequence, gameActivity } from '@offscreen/story-persistence/campaign';
+import { storyResolution } from '@offscreen/story-persistence/stories';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { requireDefined } from './helpers/require.js';
 import type { TestContext } from 'node:test';

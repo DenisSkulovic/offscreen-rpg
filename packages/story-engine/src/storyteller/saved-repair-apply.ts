@@ -1,11 +1,11 @@
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerAttempt,
   storytellerDispatchReview,
   storytellerSavedRepairAudit,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import { createStorytellerBudget } from './budget.js';
 import { inspectSavedInvalidRepairResponse } from './saved-response-inspection.js';

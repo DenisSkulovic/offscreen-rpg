@@ -9,7 +9,7 @@ import {
   gameActivity,
   gameOffer,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   story,
   storyDocumentCommit,
@@ -17,7 +17,7 @@ import {
   storyPassage,
   storyResolution,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   DocumentStorageError,
   documentManifestSchema,

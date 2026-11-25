@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
-import { story } from '@offscreen/db/story-schema';
+import { campaign, gameActivity } from '@offscreen/story-persistence/campaign';
+import { story } from '@offscreen/story-persistence/stories';
 import {
   DocumentStorageError,
   sceneCheckpointSchema,

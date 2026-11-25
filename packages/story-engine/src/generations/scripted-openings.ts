@@ -5,7 +5,7 @@ import {
 } from '@offscreen/storyteller/tasks';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import type { OpeningPreview } from '@offscreen/story-interface/openings';
 import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import { createOpenings } from './openings';

@@ -1,8 +1,8 @@
 import { and, asc, eq, isNotNull, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storytellerWriterMission, storytellerWriterStep } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storytellerWriterMission, storytellerWriterStep } from '@offscreen/story-persistence/storyteller';
 import { hashCanonicalJson, type DocumentStore } from '@offscreen/documents';
 import {
   writerRoundModelPolicyToWire,

@@ -8,14 +8,14 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { eq } from 'drizzle-orm';
 import { createDatabase } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import { user } from '@offscreen/identity-persistence/auth';
 import {
   storytellerAttempt,
   storytellerDispatchReview,
   storytellerFunding,
   storytellerRun,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import {

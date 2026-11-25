@@ -6,8 +6,8 @@ import {
   storyDocumentCommit,
   storyItem,
   storyPassage,
-} from '@offscreen/db/story-schema';
-import { campaignSettings } from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/stories';
+import { campaignSettings } from '@offscreen/story-persistence/campaign';
 import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import {

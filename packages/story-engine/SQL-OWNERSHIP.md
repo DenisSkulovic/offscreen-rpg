@@ -2,7 +2,7 @@
 
 Navigation map of the code that actually reads and writes SQL, inspected on `undertaking/storyteller-workshop` at `ade6cfbf`. This is not a claim that every query is exactly-once, highly available, or scalable. `@offscreen/db` defines tables and the connection; Story Engine functions own transactions, locks, and idempotency.
 
-Table declarations for the 20 Storyteller tables stay behind `@offscreen/db/storyteller-schema` ([barrel](../db/src/schema/storyteller.ts)).
+Table declarations for the 20 Storyteller tables stay behind `@offscreen/story-persistence/storyteller` ([barrel](../story-persistence/src/storyteller.ts)).
 
 ## Where a command starts a transaction
 

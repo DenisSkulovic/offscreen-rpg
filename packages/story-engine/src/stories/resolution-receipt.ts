@@ -5,8 +5,8 @@ import {
   type ResolutionOperationReceipt,
 } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { story, storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { story, storyResolution } from '@offscreen/story-persistence/stories';
 import { and, eq } from 'drizzle-orm';
 import { StoryError, parseStoryIdentifier } from './errors';
 

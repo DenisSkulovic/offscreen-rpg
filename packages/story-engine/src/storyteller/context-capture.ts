@@ -42,7 +42,7 @@ import {
   gameActionReceipt,
   gameRoll,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   campaignReportSourceSchema,
   type CampaignReportSource,
@@ -50,12 +50,12 @@ import {
 import type { CampaignRecord } from '../campaign/persistence';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { positiveItemTransfers } from '@offscreen/game/immediate-actions';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyItem, storyPassage, storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyItem, storyPassage, storyResolution } from '@offscreen/story-persistence/stories';
 import {
   storytellerContextCapture,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { Transaction } from '@offscreen/db/outbox';
 import { enqueue } from '@offscreen/db/outbox';
 import type { StoryRecord } from '../stories/persistence';

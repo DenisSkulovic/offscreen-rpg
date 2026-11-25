@@ -12,10 +12,10 @@ import {
   readDatabaseConfig,
   type Database,
 } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyLaunch } from '@offscreen/db/launch-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { storytellerOperation } from '@offscreen/db/storyteller-schema';
+import { storytellerOperation } from '@offscreen/story-persistence/storyteller';
 import { hashCanonicalJson } from '@offscreen/documents';
 import {
   destroyDisposableSandboxDatabase,

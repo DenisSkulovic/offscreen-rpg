@@ -1,17 +1,17 @@
 import { and, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaignReport } from '@offscreen/db/campaign-schema';
+import { campaignReport } from '@offscreen/story-persistence/campaign';
 import {
   story,
   storyPassage,
   storyResolution,
-} from '@offscreen/db/story-schema';
-import { generation } from '@offscreen/db/generation-schema';
+} from '@offscreen/story-persistence/stories';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerAttempt,
   storytellerContextCapture,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type {
   CampaignMetadataPageV1,
   CampaignMetadataV1,

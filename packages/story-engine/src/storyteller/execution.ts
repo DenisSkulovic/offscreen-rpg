@@ -1,12 +1,12 @@
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { createHash, randomUUID } from 'node:crypto';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerAttempt,
   storytellerFunding,
   storytellerRun,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   diagnoseStorytellerResult,
   prepareStorytellerRepairRequest,

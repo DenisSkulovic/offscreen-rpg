@@ -3,7 +3,7 @@ import {
   storytellerCurrentOwnerGrant,
   storytellerFunding as funding,
   storytellerRun as run,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { executionPolicySchema, type ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import type { Transaction } from '@offscreen/db/outbox';
 

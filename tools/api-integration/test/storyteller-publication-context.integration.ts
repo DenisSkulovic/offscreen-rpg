@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
-import { generation } from '@offscreen/db/generation-schema';
-import { story } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { story } from '@offscreen/story-persistence/stories';
 import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
 import { createStories } from '@offscreen/story-engine/stories';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';

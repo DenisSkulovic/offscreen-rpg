@@ -7,19 +7,19 @@ import test from 'node:test';
 import { and, eq, sql } from 'drizzle-orm';
 import { storyLaunchRequestSchema } from '@offscreen/story-interface/story-launch';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { campaign, gameOffer } from '@offscreen/db/campaign-schema';
+import { campaign, gameOffer } from '@offscreen/story-persistence/campaign';
 import { hashCanonicalJson, LocalDocumentStore, stableNamespacedDocumentId } from '@offscreen/documents';
-import { storyLaunch } from '@offscreen/db/launch-schema';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
 import {
   story,
   storyDocumentCommit,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { offerSchema } from '@offscreen/game/offers';
 import {
   admitLaunchWriterMission,

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { campaign as campaignTable, campaignReport } from '@offscreen/db/campaign-schema';
+import { campaign as campaignTable, campaignReport } from '@offscreen/story-persistence/campaign';
 import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { requireDefined } from './helpers/require.js';

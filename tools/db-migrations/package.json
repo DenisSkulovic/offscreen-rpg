@@ -13,6 +13,7 @@
   "dependencies": {
     "@offscreen/db": "workspace:*",
     "@offscreen/identity-persistence": "workspace:*",
+    "@offscreen/story-persistence": "workspace:*",
     "drizzle-orm": "0.45.2"
   },
   "devDependencies": {

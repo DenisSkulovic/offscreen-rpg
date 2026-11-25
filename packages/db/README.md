@@ -16,7 +16,7 @@
 
 `@offscreen/db` owns the pool, the Drizzle client, migrations, table definitions, the generic outbox relay, and low-level persistence helpers. It does not decide campaign authorization, story-state mutation, Writer spend, or the transaction boundary those commands use. Those owners are mapped in [Story Engine SQL ownership](../story-engine/SQL-OWNERSHIP.md). Splitting the Storyteller declarations into lifecycle files does not change table identity or SQL behavior.
 
-The named public exports are in [package.json](package.json). `./storyteller-schema` still resolves to the barrel. Baseline SQL/migration metadata are under [migrations/](migrations). [Canonical files](../../docs/technical/storyteller/context-and-memory.md) also defines a **future/mixed** file-ownership target; do not infer live migration completion from that design.
+The named public exports are in [package.json](package.json). Story domain schema subpaths (`drafts`, `generations`, `stories`, `launch`, `campaign`, `storyteller`) are published from `@offscreen/story-persistence`. Baseline SQL/migration metadata are under [migrations/](migrations). [Canonical files](../../docs/technical/storyteller/context-and-memory.md) also defines a **future/mixed** file-ownership target; do not infer live migration completion from that design.
 
 ## Side effects and verification
 

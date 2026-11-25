@@ -7,7 +7,7 @@ import {
   campaign,
   campaignDelegatedOffer,
   storyDelegationPolicy,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { outbox } from '@offscreen/db/outbox-schema';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import {

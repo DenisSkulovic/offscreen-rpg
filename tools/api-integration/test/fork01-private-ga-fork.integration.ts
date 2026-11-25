@@ -14,7 +14,7 @@ import { createDrafts } from '@offscreen/story-engine/drafts';
 import { createScriptedOpenings } from '@offscreen/story-engine/generations';
 import { createStoryApplication } from '@offscreen/story-engine/stories';
 import { createStorytellerRuntime } from '@offscreen/story-engine/storyteller';
-import { story, storySceneCheckpoint } from '@offscreen/db/story-schema';
+import { story, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { createRequire } from 'node:module';

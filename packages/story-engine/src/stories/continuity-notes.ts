@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
-import { generation } from '@offscreen/db/generation-schema';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { story, storyPassage } from '@offscreen/story-persistence/stories';
 import { applyContinuityPatch } from '@offscreen/storyteller/context';
 import type { ContinuityNotes } from '@offscreen/storyteller/context';
 import {

@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { StoryError } from '../stories/errors';

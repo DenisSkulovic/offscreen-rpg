@@ -1,7 +1,7 @@
 import { count, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { user } from '@offscreen/identity-persistence/auth';
-import { story } from '@offscreen/db/story-schema';
+import { story } from '@offscreen/story-persistence/stories';
 import type {
   AdminReadEnvelopeV1,
   PlayerSearchPageV1,

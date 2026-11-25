@@ -1,6 +1,6 @@
 import { and, eq, inArray } from 'drizzle-orm';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import type { Transaction } from '@offscreen/db/outbox';
 import {
   storytellerTopic,

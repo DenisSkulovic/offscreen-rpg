@@ -15,8 +15,8 @@ import {
   validateStorytellerResult,
 } from '@offscreen/storyteller/tasks';
 import type { Database } from '@offscreen/db';
-import { storyDraft } from '@offscreen/db/draft-schema';
-import { draftOpening, generation } from '@offscreen/db/generation-schema';
+import { storyDraft } from '@offscreen/story-persistence/drafts';
+import { draftOpening, generation } from '@offscreen/story-persistence/generations';
 import { and, eq } from 'drizzle-orm';
 import {
   absentOpeningCheckpoint,
@@ -44,7 +44,7 @@ import {
   stageStoryBootstrapDocuments,
   type StagedStoryBootstrap,
 } from './passage-documents';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import { story, storyPassage } from '@offscreen/story-persistence/stories';
 import { worldPackageReferenceSchema } from '@offscreen/documents';
 import { z } from 'zod';
 import { worldObligationProposalSchema } from '@offscreen/game/world-obligations';

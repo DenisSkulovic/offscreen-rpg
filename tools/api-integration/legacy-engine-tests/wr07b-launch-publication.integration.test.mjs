@@ -8,16 +8,16 @@ import { and, eq, sql } from 'drizzle-orm';
 import { storyLaunchRequestSchema } from '@offscreen/story-interface/story-launch';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { hashCanonicalJson, LocalDocumentStore } from '@offscreen/documents';
-import { storyLaunch } from '@offscreen/db/launch-schema';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
 import {
   story,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   admitLaunchWriterMission,
   publishLaunchOpeningScene,

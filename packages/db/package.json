@@ -3,14 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./generation-schema": {
-      "types": "./dist/src/schema/generations.d.ts",
-      "default": "./dist/src/schema/generations.js"
-    },
-    "./draft-schema": {
-      "types": "./dist/src/schema/drafts.d.ts",
-      "default": "./dist/src/schema/drafts.js"
-    },
     ".": {
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
@@ -30,22 +22,6 @@
     "./outbox-relay": {
       "types": "./dist/src/outbox-relay.d.ts",
       "default": "./dist/src/outbox-relay.js"
-    },
-    "./story-schema": {
-      "types": "./dist/src/schema/stories.d.ts",
-      "default": "./dist/src/schema/stories.js"
-    },
-    "./launch-schema": {
-      "types": "./dist/src/schema/launch.d.ts",
-      "default": "./dist/src/schema/launch.js"
-    },
-    "./storyteller-schema": {
-      "types": "./dist/src/schema/storyteller.d.ts",
-      "default": "./dist/src/schema/storyteller.js"
-    },
-    "./campaign-schema": {
-      "types": "./dist/src/schema/campaign.d.ts",
-      "default": "./dist/src/schema/campaign.js"
     },
     "./qa-schema": {
       "types": "./dist/src/schema/qa.d.ts",

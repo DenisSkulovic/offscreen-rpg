@@ -5,7 +5,7 @@ import {
 import {
   campaignSettings,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   compileWorldObligation,
   worldObligationSchema,
@@ -14,10 +14,10 @@ import { isDeepStrictEqual } from 'node:util';
 import { initializeCampaign } from '../campaign/settings';
 import type { CampaignStart } from '@offscreen/story-interface/campaign';
 import { and, eq } from 'drizzle-orm';
-import type { generation } from '@offscreen/db/generation-schema';
-import { draftOpening } from '@offscreen/db/generation-schema';
-import { storyDraft } from '@offscreen/db/draft-schema';
-import { storyPassage } from '@offscreen/db/story-schema';
+import type { generation } from '@offscreen/story-persistence/generations';
+import { draftOpening } from '@offscreen/story-persistence/generations';
+import { storyDraft } from '@offscreen/story-persistence/drafts';
+import { storyPassage } from '@offscreen/story-persistence/stories';
 import {
   storytellerTaskSchema,
   mechanicalOpeningSceneSchema,

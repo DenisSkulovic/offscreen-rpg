@@ -15,7 +15,7 @@ import {
   storyItemEffectSchema,
   storyItemsSchema,
 } from '@offscreen/story-interface/stories';
-import type { storyPassage } from '@offscreen/db/story-schema';
+import type { storyPassage } from '@offscreen/story-persistence/stories';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { effectiveUsagePolicySchema } from '@offscreen/usage-policy/usage-policy';

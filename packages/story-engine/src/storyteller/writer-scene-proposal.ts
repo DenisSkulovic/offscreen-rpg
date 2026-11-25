@@ -3,7 +3,7 @@
  */
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { passageContentSchema } from '@offscreen/story-interface/stories';
 import type { z } from 'zod';

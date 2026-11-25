@@ -9,7 +9,7 @@ import {
   gameRoll,
   gameActivity,
   gameActivityEvent,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   immediateActionContentSchema,
   immediateActionAvailable,

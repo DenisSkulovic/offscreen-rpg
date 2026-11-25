@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
-import { generation } from '@offscreen/db/generation-schema';
-import { campaignConsequence, gameActionExecution, gameActionExecutionEvent, gameActionReceipt } from '@offscreen/db/campaign-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { campaignConsequence, gameActionExecution, gameActionExecutionEvent, gameActionReceipt } from '@offscreen/story-persistence/campaign';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { requireDefined } from './helpers/require.js';
 import type { TestContext } from 'node:test';

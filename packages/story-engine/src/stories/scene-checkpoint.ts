@@ -7,7 +7,7 @@ import {
   type DocumentStore,
   type SceneCheckpoint,
 } from '@offscreen/documents';
-import { storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
+import { storyPassage, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import { and, eq } from 'drizzle-orm';
 import type { Transaction } from '@offscreen/db/outbox';
 import { StoryError, parseStoryIdentifier } from './errors';

@@ -5,7 +5,7 @@ import {
   validateInteractionSubmission,
 } from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/story-persistence/campaign';
 import type { Transaction } from '@offscreen/db/outbox';
 import { type DocumentStore, type SceneCheckpoint } from '@offscreen/documents';
 import {
@@ -54,7 +54,7 @@ import {
   story,
   storyDocumentCommit,
   storyItem,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { enqueue } from '@offscreen/db/outbox';

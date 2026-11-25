@@ -1,12 +1,12 @@
 import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyLaunch } from '@offscreen/db/launch-schema';
-import { storySceneCheckpoint } from '@offscreen/db/story-schema';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
+import { storySceneCheckpoint } from '@offscreen/story-persistence/stories';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { stableNamespacedDocumentId } from '@offscreen/documents';
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/story-persistence/campaign';
 import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import { offerSchema } from '@offscreen/game/offers';
 import { passageContentSchema } from '@offscreen/story-interface/stories';

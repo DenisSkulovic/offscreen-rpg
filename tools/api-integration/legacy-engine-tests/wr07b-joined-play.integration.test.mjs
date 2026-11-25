@@ -9,11 +9,11 @@ import { and, eq, sql } from 'drizzle-orm';
 import { storyLaunchRequestSchema } from '@offscreen/story-interface/story-launch';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { hashCanonicalJson, LocalDocumentStore } from '@offscreen/documents';
-import { storyLaunch } from '@offscreen/db/launch-schema';
-import { story, storyPassage } from '@offscreen/db/story-schema';
-import { generation } from '@offscreen/db/generation-schema';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
+import { story, storyPassage } from '@offscreen/story-persistence/stories';
+import { generation } from '@offscreen/story-persistence/generations';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import { createPinnedLibraryNavigation } from '@offscreen/story-engine/storyteller/library-navigation';
 import {
   WRITER_MANDATORY_TOOL_NAMES,

@@ -11,8 +11,8 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyResolution } from '@offscreen/story-persistence/stories';
 import { LocalDocumentStore } from '@offscreen/documents';
 import {
   playablePresentation,

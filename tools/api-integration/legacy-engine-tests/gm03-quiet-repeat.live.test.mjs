@@ -7,8 +7,8 @@ import {
   campaign,
   gameActivity,
   gameActivityEvent,
-} from '@offscreen/db/campaign-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/campaign';
+import { storyResolution } from '@offscreen/story-persistence/stories';
 import { createStories } from '../../../packages/story-engine/dist/stories/index.js';
 import { initializeStoryInTransaction } from '../../../packages/story-engine/dist/stories/initialization.js';
 import { initializeCampaign } from '../../../packages/story-engine/dist/campaign/settings.js';

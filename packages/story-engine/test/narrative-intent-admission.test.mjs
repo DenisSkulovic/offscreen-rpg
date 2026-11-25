@@ -3,7 +3,7 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { campaign, gameActionExecution } from '@offscreen/db/campaign-schema';
+import { campaign, gameActionExecution } from '@offscreen/story-persistence/campaign';
 import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import { offerSchema } from '@offscreen/game/offers';
 import { admitCampaignActionInTransaction } from '../dist/campaign/actions.js';

@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { story } from '@offscreen/db/story-schema';
+import { story } from '@offscreen/story-persistence/stories';
 import {
   LocalDocumentStore,
   canonicalDocumentSchema,

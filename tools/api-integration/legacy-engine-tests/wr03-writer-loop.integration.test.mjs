@@ -9,7 +9,7 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import {
   storytellerAttempt,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   applyLibraryBatch,
   canonicalDocumentSchema,

@@ -1,8 +1,8 @@
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/story-persistence/campaign';
 import { and, eq } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
-import { generation } from '@offscreen/db/generation-schema';
-import { story, storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { story, storyResolution } from '@offscreen/story-persistence/stories';
 import {
   interactionSchema,
   interactionSubmissionSchema,

@@ -6,7 +6,7 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import {
   storyDelegationPolicy,
   storyDelegationPolicyCommand,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { DECLINE_HARMLESS_INVITATION_CLASS } from '@offscreen/game/delegation-eligibility';
 import { isDeclineHarmlessInvitation } from '@offscreen/game/delegation-eligibility';

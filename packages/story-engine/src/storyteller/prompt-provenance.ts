@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { storytellerPromptProvenance } from '@offscreen/db/storyteller-schema';
+import { storytellerPromptProvenance } from '@offscreen/story-persistence/storyteller';
 import {
   storytellerPromptComponentCatalogueV1,
   type StorytellerTask,

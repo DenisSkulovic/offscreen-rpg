@@ -6,7 +6,7 @@ import {
   type DocumentManifest,
   type DocumentStore,
 } from '@offscreen/documents';
-import type { campaign } from '@offscreen/db/campaign-schema';
+import type { campaign } from '@offscreen/story-persistence/campaign';
 import { StoryError } from '../stories/errors';
 
 const jsonValue = z.json();

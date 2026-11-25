@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign } from '@offscreen/story-persistence/campaign';
 import {
   campaignHoldSchema,
   campaignHoldsSchema,

@@ -33,7 +33,7 @@ import {
   createCustomIntentInterpretation,
 } from '../campaign/custom-intent';
 import type { ReadCacheOptions } from './read-cache-options';
-import { story } from '@offscreen/db/story-schema';
+import { story } from '@offscreen/story-persistence/stories';
 import { and, eq } from 'drizzle-orm';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import { createCampaignDocuments } from './documents';

@@ -13,11 +13,11 @@ import { Client, Connection } from '@temporalio/client';
 import { eq, sql } from 'drizzle-orm';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerAttempt,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import {

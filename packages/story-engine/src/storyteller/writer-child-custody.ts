@@ -7,7 +7,7 @@ import {
   storytellerAttempt,
   storytellerWriterChild,
   storytellerWriterMission,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { StorytellerBudgetError } from './budget';
 import { WriterMissionCustodyError } from './writer-mission-custody';
 

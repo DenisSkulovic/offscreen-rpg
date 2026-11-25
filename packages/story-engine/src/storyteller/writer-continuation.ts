@@ -1,17 +1,17 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { and, eq, gt, gte, isNull, or, sql } from 'drizzle-orm';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import { enqueue } from '@offscreen/db/outbox';
 import type { Transaction } from '@offscreen/db/outbox';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { storyPassage, storySceneCheckpoint } from '@offscreen/db/story-schema';
+import { storyPassage, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import {
   storytellerCurrentOwnerGrant,
   storytellerFunding,
   storytellerOperation,
   storytellerRun,
   storytellerWriterMission,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { hashCanonicalJson } from '@offscreen/documents';
 import {
   WRITER_MANDATORY_TOOL_NAMES,

@@ -7,7 +7,7 @@ import {
   type StoryLaunchStatus,
 } from '@offscreen/story-interface/story-launch';
 import type { Database } from '@offscreen/db';
-import { storyLaunch } from '@offscreen/db/launch-schema';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
 import { hashCanonicalJson } from '@offscreen/documents';
 import { z } from 'zod';
 

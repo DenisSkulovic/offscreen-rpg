@@ -4,7 +4,7 @@ import {
   storytellerAttempt,
   storytellerFunding,
   storytellerUsageAllocation,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type {
   UsageStatusEnvelopeV1,
   UsageStatusV1,

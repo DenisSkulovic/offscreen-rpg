@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { generation } from '@offscreen/db/generation-schema';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
 import type { Transaction } from '@offscreen/db/outbox';
 import { enqueue } from '@offscreen/db/outbox';
 import {

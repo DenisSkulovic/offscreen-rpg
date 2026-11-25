@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaignDelegatedOffer } from '@offscreen/db/campaign-schema';
+import { campaignDelegatedOffer } from '@offscreen/story-persistence/campaign';
 import type { DocumentStore } from '@offscreen/documents';
 import { lockStoryById, readDatabaseClockMs } from '../stories/persistence';
 import { admitPreapprovedWithdrawal } from './actions';

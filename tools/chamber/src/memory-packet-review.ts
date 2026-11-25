@@ -19,8 +19,8 @@ import {
 import { dispatchReviewResponseSchema } from '@offscreen/lab-interface/chamber';
 import type { EffectiveUsagePolicy } from '@offscreen/usage-policy/usage-policy';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { inspectOpenRouterRequest } from '@offscreen/storyteller/providers/openrouter';

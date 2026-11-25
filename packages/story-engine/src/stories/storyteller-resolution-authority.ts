@@ -2,17 +2,17 @@ import {
   campaign,
   campaignSettings,
   gameActivity,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { and, eq } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import type {
   story,
-  storyPassage} from '@offscreen/db/story-schema';
+  storyPassage} from '@offscreen/story-persistence/stories';
 import {
   storyItem,
   storyResolution,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
 import type { Transaction } from '@offscreen/db/outbox';

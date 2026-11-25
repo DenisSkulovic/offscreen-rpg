@@ -8,7 +8,7 @@ import {
   storyControl,
   storyItem,
   storyPassage,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { and, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { enqueue, type Transaction } from '@offscreen/db/outbox';

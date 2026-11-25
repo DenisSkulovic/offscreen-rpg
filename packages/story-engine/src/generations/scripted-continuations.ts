@@ -1,8 +1,8 @@
 import { translateGeneratedContinuation } from './generated-continuation';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyResolution } from '@offscreen/story-persistence/stories';
 import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import {
   validateContinuationResult,

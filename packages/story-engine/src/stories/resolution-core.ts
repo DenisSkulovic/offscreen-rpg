@@ -19,8 +19,8 @@ import {
 } from '@offscreen/story-interface/interactions';
 import { storyItemsSchema } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { story, storyItem, storyResolution } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { story, storyItem, storyResolution } from '@offscreen/story-persistence/stories';
 import { and, eq } from 'drizzle-orm';
 import { createGenerations, GenerationError } from '../generations/index';
 import { enqueue } from '@offscreen/db/outbox';

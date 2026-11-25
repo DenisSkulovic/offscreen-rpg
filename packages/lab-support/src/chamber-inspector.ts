@@ -18,18 +18,18 @@ import {
 } from '@offscreen/lab-interface/chamber';
 import { passageContentSchema } from '@offscreen/story-interface/stories';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { campaignReport } from '@offscreen/db/campaign-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { campaignReport } from '@offscreen/story-persistence/campaign';
 import {
   storytellerAttempt,
   storytellerDispatchReview,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   story,
   storyPassage,
   storyResolution,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { and, desc, eq, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {

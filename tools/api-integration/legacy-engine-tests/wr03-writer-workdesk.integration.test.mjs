@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { writerMissionCaptureSchema } from '@offscreen/storyteller/tasks';
 import {

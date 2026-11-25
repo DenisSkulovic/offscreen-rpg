@@ -3,7 +3,7 @@
  * Must not dispatch transport or validate model output; see ./execution.ts and
  * @offscreen/storyteller/providers/openrouter.
  */
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
@@ -13,7 +13,7 @@ import {
   storytellerOperation as operation,
   storytellerRun as run,
   storytellerSavedRepairAudit as savedRepairAudit,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   executionPolicySchema,
   reservationForRequest,

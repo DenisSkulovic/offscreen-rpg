@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import { story, storyPassage } from '@offscreen/story-persistence/stories';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';

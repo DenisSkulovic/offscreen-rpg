@@ -6,13 +6,13 @@ import test from 'node:test';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerAttempt,
   storytellerFunding,
   storytellerOperation,
   storytellerRun,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
 import { createStorytellerBudget } from '../../../packages/story-engine/dist/storyteller/budget.js';

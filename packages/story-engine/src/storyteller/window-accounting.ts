@@ -1,6 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm';
-import { storytellerFunding } from '@offscreen/db/storyteller-schema';
-import { storytellerUsageAllocation as allocation } from '@offscreen/db/storyteller-schema';
+import { storytellerFunding } from '@offscreen/story-persistence/storyteller';
+import { storytellerUsageAllocation as allocation } from '@offscreen/story-persistence/storyteller';
 import type {
   EffectiveUsagePolicy,
   UsageWindowDefinition,

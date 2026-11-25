@@ -8,9 +8,9 @@ import { and, eq, sql } from 'drizzle-orm';
 import { storyLaunchRequestSchema } from '@offscreen/story-interface/story-launch';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { LocalDocumentStore } from '@offscreen/documents';
-import { story } from '@offscreen/db/story-schema';
-import { storyLaunch } from '@offscreen/db/launch-schema';
-import { storyPassage } from '@offscreen/db/story-schema';
+import { story } from '@offscreen/story-persistence/stories';
+import { storyLaunch } from '@offscreen/story-persistence/launch';
+import { storyPassage } from '@offscreen/story-persistence/stories';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,

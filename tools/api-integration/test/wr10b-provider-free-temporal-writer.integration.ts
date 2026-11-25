@@ -15,8 +15,8 @@ import {
   WorkflowExecutionAlreadyStartedError,
 } from '@temporalio/client';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { campaign, gameActionExecution } from '@offscreen/db/campaign-schema';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { campaign, gameActionExecution } from '@offscreen/story-persistence/campaign';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import { createRequire } from 'node:module';
 import type * as Drizzle from 'drizzle-orm' with { 'resolution-mode': 'require' };
 import { LocalDocumentStore } from '@offscreen/documents';

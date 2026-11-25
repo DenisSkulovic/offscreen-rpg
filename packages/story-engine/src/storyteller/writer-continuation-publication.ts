@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Transaction } from '@offscreen/db/outbox';
-import { campaign, gameOffer } from '@offscreen/db/campaign-schema';
-import { generation } from '@offscreen/db/generation-schema';
+import { campaign, gameOffer } from '@offscreen/story-persistence/campaign';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   story,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/stories';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { offerSchema } from '@offscreen/game/offers';
 import type { NarrativeIntentPlan } from '@offscreen/game/narrative-intent';

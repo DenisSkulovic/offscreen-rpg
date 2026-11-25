@@ -1,8 +1,8 @@
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
-import { storyPassage } from '@offscreen/db/story-schema';
-import { storytellerWriterMission } from '@offscreen/db/storyteller-schema';
+import { generation } from '@offscreen/story-persistence/generations';
+import { storyPassage } from '@offscreen/story-persistence/stories';
+import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import type {
   WriterSceneRoundExecutionPlan,

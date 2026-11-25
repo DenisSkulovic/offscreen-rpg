@@ -18,19 +18,19 @@ import {
   gameActivity,
   storyPublicEvent,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
-import { generation } from '@offscreen/db/generation-schema';
+} from '@offscreen/story-persistence/campaign';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   story,
   storyPassage,
   storyResolution,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   storytellerAttempt,
   storytellerContextCapture,
   storytellerExecutionStage,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   supportSituationV1Schema,
   type SupportSafeRefV1,

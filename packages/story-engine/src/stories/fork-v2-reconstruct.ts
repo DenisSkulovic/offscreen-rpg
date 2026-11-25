@@ -8,13 +8,13 @@ import type {
   gameActivity,
   gameOffer,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import type {
   story,
   storyDocumentCommit,
   storyItem,
   storyPassage,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import {
   isNarrativeIntentPlanValue,

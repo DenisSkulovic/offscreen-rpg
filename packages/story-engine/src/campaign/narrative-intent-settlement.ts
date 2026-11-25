@@ -5,7 +5,7 @@ import type { Transaction } from '@offscreen/db/outbox';
 import {
   campaign,
   gameActionExecution,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { incrementStoryViewVersion, type StoryRecord } from '../stories/persistence';
 import type { CampaignRecord } from './persistence';
 import { campaignClockHeld } from './holds';

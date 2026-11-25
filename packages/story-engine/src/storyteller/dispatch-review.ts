@@ -2,13 +2,13 @@ import { randomUUID } from 'node:crypto';
 import { and, eq, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import {
   storytellerDispatchReview,
   storytellerDispatchReviewDecision,
   storytellerMemoryExploration,
   storytellerPublication,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import {
   inspectOpenRouterRequest,
   preparedWireIsSelfConsistent,

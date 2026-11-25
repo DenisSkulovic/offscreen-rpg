@@ -6,8 +6,8 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
-import { story, storyItem, storyPassage } from '@offscreen/db/story-schema';
+import { campaign, campaignSettings } from '@offscreen/story-persistence/campaign';
+import { story, storyItem, storyPassage } from '@offscreen/story-persistence/stories';
 import {
   LocalDocumentStore,
   canonicalDocumentSchema,

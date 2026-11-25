@@ -11,7 +11,7 @@ import {
   storytellerWriterChild,
   storytellerWriterMission,
   storytellerWriterStep,
-} from '@offscreen/db/storyteller-schema';
+} from '@offscreen/story-persistence/storyteller';
 import type { DocumentStore } from '@offscreen/documents';
 import { hashCanonicalJson } from '@offscreen/documents';
 import { prepareWriterRoundWire } from '@offscreen/storyteller/providers/openrouter';

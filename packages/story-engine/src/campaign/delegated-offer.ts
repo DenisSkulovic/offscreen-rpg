@@ -5,7 +5,7 @@ import type { Database } from '@offscreen/db';
 import {
   campaignDelegatedOffer,
   storyDelegationPolicy,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import {
   immediateActionPlanSchema,
   type ImmediateActionPlan,

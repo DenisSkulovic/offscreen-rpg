@@ -13,14 +13,14 @@ import {
   gameActivity,
   gameOffer,
   worldObligation,
-} from '@offscreen/db/campaign-schema';
-import { generation } from '@offscreen/db/generation-schema';
+} from '@offscreen/story-persistence/campaign';
+import { generation } from '@offscreen/story-persistence/generations';
 import { outbox } from '@offscreen/db/outbox-schema';
 import {
   story,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import {
   LocalDocumentStore,
   documentManifestSchema,

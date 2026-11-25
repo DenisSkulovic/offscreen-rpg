@@ -10,7 +10,7 @@ import {
   campaign,
   gameActionExecution,
   gameActionReceipt,
-} from '@offscreen/db/campaign-schema';
+} from '@offscreen/story-persistence/campaign';
 import { LocalDocumentStore } from '@offscreen/documents';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
@@ -26,7 +26,7 @@ import {
 import { materializePendingActionCapture } from '../../../packages/story-engine/dist/storyteller/capture-materialization.js';
 import { readPromptProvenance } from '../../../packages/story-engine/dist/storyteller/prompt-provenance.js';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 
 const profile = storytellerCatalogue.resolve({
   id: 'absurd-action-comedy',

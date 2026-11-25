@@ -12,11 +12,11 @@ import {
   storyItem,
   storyPassage,
   storySceneCheckpoint,
-} from '@offscreen/db/story-schema';
+} from '@offscreen/story-persistence/stories';
 import { outbox } from '@offscreen/db/outbox-schema';
-import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
+import { campaign, campaignSettings } from '@offscreen/story-persistence/campaign';
 import { DocumentStorageError, LocalDocumentStore } from '@offscreen/documents';
-import { generation } from '@offscreen/db/generation-schema';
+import { generation } from '@offscreen/story-persistence/generations';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';
@@ -43,7 +43,7 @@ import {
 } from '../../../packages/lab-support/dist/index.js';
 import { publishStorytellerResult } from '../../../packages/story-engine/dist/storyteller/publication.js';
 import { createStories } from '../../../packages/story-engine/dist/stories/index.js';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { storyResolution } from '@offscreen/story-persistence/stories';
 import { offlineExecution } from '@offscreen/storyteller/tasks';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 
