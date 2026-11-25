@@ -16,7 +16,7 @@
     "migrate": "node --env-file-if-exists=../../.env dist/src/migrate-cli.js",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "node --test dist/test/config.test.js dist/test/admission.test.js dist/test/managed-pool.test.js dist/test/transaction-errors.test.js dist/test/managed-transaction.test.js dist/test/migration-journal.test.js dist/test/migration-runner.test.js dist/test/database-telemetry.test.js dist/test/transaction-concurrency.test.js",
+    "test": "node --test dist/test/config.test.js dist/test/admission.test.js dist/test/managed-pool.test.js dist/test/transaction-errors.test.js dist/test/managed-transaction.test.js dist/test/migration-journal.test.js dist/test/migration-runner.test.js dist/test/migration-diagnostics.test.js dist/test/database-telemetry.test.js dist/test/transaction-concurrency.test.js",
     "test:integration": "node --test --test-concurrency=1 dist/test/database.integration.js dist/test/obs00-current-authority.migration.integration.js dist/test/wr05s-scene-checkpoint-schema.integration.js dist/test/wr07l-launch-ledger.integration.js"
   },
   "dependencies": {

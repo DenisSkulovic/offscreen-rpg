@@ -2,6 +2,15 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readMigrationFiles, type MigrationMeta } from 'drizzle-orm/migrator';
 
+export {
+  AppliedMigrationPrefixError,
+  assertAppliedPrefix,
+  parseCreatedAt,
+  parseRowHash,
+  parseRowId,
+  type AppliedMigrationLedgerRow,
+} from './applied-ledger';
+
 const TAG_PATTERN = /^[0-9]{4,}_[A-Za-z0-9_-]+$/;
 const HASH_PATTERN = /^[0-9a-f]{64}$/;
 
@@ -19,22 +28,6 @@ export class MigrationJournalError extends Error {
   }
 }
 
-export class AppliedMigrationPrefixError extends Error {
-  constructor(
-    readonly category: string,
-    readonly index: number,
-  ) {
-    super(`Applied migration prefix invalid at index ${index}: ${category}`);
-    this.name = 'AppliedMigrationPrefixError';
-  }
-}
-
-export type AppliedMigrationLedgerRow = {
-  id: unknown;
-  hash: unknown;
-  created_at: unknown;
-};
-
 type ValidatedJournalEntry = {
   idx: number;
   when: number;
@@ -44,10 +37,6 @@ type ValidatedJournalEntry = {
 
 function throwJournal(category: string, index: number | null = null): never {
   throw new MigrationJournalError(category, index);
-}
-
-function throwApplied(category: string, index: number): never {
-  throw new AppliedMigrationPrefixError(category, index);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -60,9 +49,6 @@ function parsePositiveSafeInteger(
   index: number | null,
 ): number {
   if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
-    if (index === null) {
-      throwJournal(category);
-    }
     throwJournal(category, index);
   }
   return value;
@@ -141,50 +127,12 @@ function parseJournalEntries(
   return validated;
 }
 
-function parseCreatedAt(
-  value: unknown,
-  index: number,
-  expected: number,
-): number {
-  if (value === null || value === undefined) {
-    throwApplied('created_at', index);
-  }
-  if (typeof value === 'number') {
-    if (!Number.isSafeInteger(value) || value <= 0) {
-      throwApplied('created_at', index);
-    }
-    if (value !== expected) {
-      throwApplied('created_at', index);
-    }
-    return value;
-  }
-  if (typeof value === 'string' && /^\d+$/.test(value)) {
-    const parsed = Number(value);
-    if (!Number.isSafeInteger(parsed) || parsed <= 0) {
-      throwApplied('created_at', index);
-    }
-    if (parsed !== expected) {
-      throwApplied('created_at', index);
-    }
-    return parsed;
-  }
-  throwApplied('created_at', index);
-}
-
-function parseRowId(value: unknown, index: number): number {
-  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
-    throwApplied('id', index);
-  }
-  return value;
-}
-
-function parseRowHash(value: unknown, index: number): string {
-  if (typeof value !== 'string' || value.length === 0) {
-    throwApplied('hash', index);
-  }
-  return value;
-}
-
+/**
+ * Validates meta/_journal.json and cross-checks readMigrationFiles output:
+ * folderMillis must equal journal when; hashes are content-derived from SQL on
+ * disk, not from the ledger. Does not verify live schema or applied rows—use
+ * assertAppliedPrefix after reading drizzle.__drizzle_migrations.
+ */
 export function validateMigrationJournal(
   migrationsFolder: string,
 ): MigrationMeta[] {
@@ -234,35 +182,4 @@ export function validateMigrationJournal(
   }
 
   return loaded;
-}
-
-export function assertAppliedPrefix(
-  loaded: MigrationMeta[],
-  rows: readonly AppliedMigrationLedgerRow[],
-): void {
-  if (rows.length > loaded.length) {
-    throwApplied('length', loaded.length);
-  }
-
-  let previousId: number | undefined;
-
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const expected = loaded[i];
-    if (row === undefined || expected === undefined) {
-      throwApplied('length', i);
-    }
-    const id = parseRowId(row.id, i);
-    if (previousId !== undefined && id <= previousId) {
-      throwApplied('id', i);
-    }
-    previousId = id;
-
-    const hash = parseRowHash(row.hash, i);
-    if (hash !== expected.hash) {
-      throwApplied('hash', i);
-    }
-
-    parseCreatedAt(row.created_at, i, expected.folderMillis);
-  }
 }

@@ -1,15 +1,17 @@
 import { resolve } from 'node:path';
 import { readDatabaseConfig } from './config';
 import { applyMigrations } from './migrate';
+import { formatMigrationFailure } from './migrations/diagnostics';
 
-void applyMigrations(
-  readDatabaseConfig(process.env),
-  resolve(__dirname, '../../migrations'),
-)
-  .then(() => console.log('Database migrations applied.'))
-  .catch(() => {
-    console.error(
-      'Migration failed. Check database connectivity, schema and migration lock.',
-    );
+async function main(): Promise<void> {
+  try {
+    const config = readDatabaseConfig(process.env);
+    await applyMigrations(config, resolve(__dirname, '../../migrations'));
+    console.log('Database migrations applied.');
+  } catch (error) {
+    console.error(formatMigrationFailure(error));
     process.exitCode = 1;
-  });
+  }
+}
+
+void main();

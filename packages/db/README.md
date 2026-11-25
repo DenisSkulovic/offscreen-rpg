@@ -7,14 +7,14 @@
 | Surface | What it is | Admission? |
 | --- | --- | --- |
 | `@offscreen/db` (package root) | Public runtime: `createDatabase`, `readDatabaseConfig`, transaction types/errors, telemetry factory, concurrency helpers — see [index.ts](src/index.ts) and [package.json](package.json) `exports["."]` | Managed paths only |
-| `@offscreen/db/migrate` | `applyMigrations` and migrate CLI — [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts) | Dedicated migration connection (session advisory lock) |
+| `@offscreen/db/migrate` | `applyMigrations` and migrate CLI — [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts); post-DDL ledger assert + allowlisted CLI failure text ([diagnostics.ts](src/migrations/diagnostics.ts)) | Dedicated migration connection (session advisory lock) |
 | `createDatabase(...).db` | Untyped Drizzle client on the shared pool — [database.ts](src/database.ts) | **Bypasses** managed admission; legacy or direct SQL |
 | `withClient` / `transaction` | Bounded queue, deadlines, policy-driven retries — [connection/managed-client.ts](src/connection/managed-client.ts), [transaction/execute.ts](src/transaction/execute.ts) | **Yes** — the supported application seam |
 
 | Migration artifact | Role |
 | --- | --- |
-| `migrations/meta/_journal.json` | Ordered deployment journal (tags, hashes); runner validates the applied prefix before DDL |
-| Applied ledger (`__drizzle_migrations` in PostgreSQL) | Per-database record of which journal entries have run |
+| `migrations/meta/_journal.json` | Ordered deployment journal (tags, hashes); runner validates the applied prefix before DDL and again after verified migrate |
+| Applied ledger (`__drizzle_migrations` in PostgreSQL) | Per-database record of which journal entries have run; success requires full prefix length match under lock |
 | `tools/db-migrations` generator snapshots (`meta/*_snapshot.json`) | Synthetic schema-diff input for `check:schema` / `generate`; not deployment history |
 
 Stale checked-in generator metadata (journal through idx 24 vs newest snapshot idx 4) is reconciled under **[DBOPS01](../../work/changes/backlog/platform-operations/2026-11-22--dbops01-safe-schema-migrations-and-release-compatibility/CHANGE.md)**; `@offscreen/db-migrations` `check:history` refuses tracked generation until that gate passes.
