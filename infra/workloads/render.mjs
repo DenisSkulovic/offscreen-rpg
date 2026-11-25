@@ -1,8 +1,10 @@
 import { spawnSync } from 'node:child_process';
 import { accessSync, constants, lstatSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
+import { formatManifestDocuments } from '../platform/common/manifest-output.mjs';
 
 const workloadsRoot = join(dirname(fileURLToPath(import.meta.url)));
 const chartPath = join(workloadsRoot, 'chart');
@@ -20,10 +22,15 @@ const RELEASE_SECTIONS = new Set([
   'workers',
 ]);
 const ROLES = ['web', 'api', 'authority', 'control', 'executor', 'relay'];
-const VALUES_ALLOWED_TOP_KEYS = new Set(['replicas', 'replicasByRole', 'resources']);
+const VALUES_ALLOWED_TOP_KEYS = new Set([
+  'replicas',
+  'replicasByRole',
+  'resources',
+]);
 const HELM_TIMEOUT_MS = 30_000;
 const HELM_MAX_BUFFER = 4 * 1024 * 1024;
 const DIAGNOSTIC_LIMIT = 1000;
+const ACCEPTED_MANIFEST_FORMATS = new Set(['yaml', 'json', 'legacy']);
 
 /**
  * Allowed Helm values overrides (see profiles/*.yaml resources block):
@@ -90,7 +97,9 @@ export function parseWorkloadDocuments(output) {
       throw new Error('malformed workload document');
     }
     if (Object.prototype.hasOwnProperty.call(parsed, 'Error')) {
-      throw new Error(`helm emitted Error field: ${String(parsed.Error).slice(0, 200)}`);
+      throw new Error(
+        `helm emitted Error field: ${String(parsed.Error).slice(0, 200)}`,
+      );
     }
     const kind = parsed.kind;
     if (typeof kind !== 'string' || !ALLOWED_KINDS.has(kind)) {
@@ -167,7 +176,8 @@ print(json.dumps(data))`;
     maxBuffer: 256 * 1024,
   });
   if (result.status === 2) throw new Error('values file is not valid YAML');
-  if (result.status === 3) throw new Error('values file must be a YAML mapping');
+  if (result.status === 3)
+    throw new Error('values file must be a YAML mapping');
   if (result.status !== 0) throw new Error('values file could not be parsed');
   return JSON.parse(result.stdout);
 }
@@ -184,7 +194,10 @@ export function validateKubernetesQuantity(quantity, kind) {
   if (!pattern.test(quantity)) {
     throw new Error(`invalid ${kind} quantity: ${quantity}`);
   }
-  const numeric = kind === 'cpu' ? parseCpuToMillicores(quantity) : parseMemoryToBytes(quantity);
+  const numeric =
+    kind === 'cpu'
+      ? parseCpuToMillicores(quantity)
+      : parseMemoryToBytes(quantity);
   if (!(numeric > 0)) {
     throw new Error(`invalid ${kind} quantity: ${quantity}`);
   }
@@ -219,8 +232,10 @@ function assertRequestsWithinLimits(requests, limits) {
     const req = requests?.[key];
     const lim = limits?.[key];
     if (!req || !lim) continue;
-    const reqVal = key === 'cpu' ? parseCpuToMillicores(req) : parseMemoryToBytes(req);
-    const limVal = key === 'cpu' ? parseCpuToMillicores(lim) : parseMemoryToBytes(lim);
+    const reqVal =
+      key === 'cpu' ? parseCpuToMillicores(req) : parseMemoryToBytes(req);
+    const limVal =
+      key === 'cpu' ? parseCpuToMillicores(lim) : parseMemoryToBytes(lim);
     if (reqVal > limVal) {
       throw new Error('resource requests exceed limits');
     }
@@ -308,7 +323,11 @@ function validateResourcesValues(resources, profile) {
     for (const role of ROLES) {
       if (role in limits && limits[role] != null) {
         const block = limits[role];
-        if (typeof block !== 'object' || Array.isArray(block) || block === null) {
+        if (
+          typeof block !== 'object' ||
+          Array.isArray(block) ||
+          block === null
+        ) {
           throw new Error(`invalid resources.limits.${role}`);
         }
         if ('cpu' in block) {
@@ -327,7 +346,10 @@ function validateResourcesValues(resources, profile) {
     const reqCpu = requests.cpu;
     const limCpu = undefined;
     assertRequestsWithinLimits(
-      { cpu: reqCpu != null ? String(reqCpu) : undefined, memory: String(reqMem) },
+      {
+        cpu: reqCpu != null ? String(reqCpu) : undefined,
+        memory: String(reqMem),
+      },
       { cpu: limCpu, memory: limMem != null ? String(limMem) : undefined },
     );
   }
@@ -342,7 +364,12 @@ export function stripComparableWorkloadFields(doc) {
     if (clone.spec && typeof clone.spec === 'object') {
       delete clone.spec.replicas;
       const containers = clone.spec.template?.spec?.containers;
-      if (Array.isArray(containers) && containers.length > 0 && containers[0] && typeof containers[0] === 'object') {
+      if (
+        Array.isArray(containers) &&
+        containers.length > 0 &&
+        containers[0] &&
+        typeof containers[0] === 'object'
+      ) {
         delete containers[0].resources;
       }
     }
@@ -370,9 +397,11 @@ function validateRenderedContainerResources(resources, label) {
   const requests = resources.requests;
   const limits = resources.limits;
   if (requests?.cpu) validateKubernetesQuantity(String(requests.cpu), 'cpu');
-  if (requests?.memory) validateKubernetesQuantity(String(requests.memory), 'memory');
+  if (requests?.memory)
+    validateKubernetesQuantity(String(requests.memory), 'memory');
   if (limits?.cpu) validateKubernetesQuantity(String(limits.cpu), 'cpu');
-  if (limits?.memory) validateKubernetesQuantity(String(limits.memory), 'memory');
+  if (limits?.memory)
+    validateKubernetesQuantity(String(limits.memory), 'memory');
   assertRequestsWithinLimits(
     requests
       ? {
@@ -400,8 +429,12 @@ export function assertValuesOverlayPermitted(baseline, candidate) {
   if (baseline.length !== candidate.length) {
     throw new Error('values overlay changed document count');
   }
-  const baselineById = new Map(baseline.map((doc) => [documentIdentity(doc), doc]));
-  const candidateById = new Map(candidate.map((doc) => [documentIdentity(doc), doc]));
+  const baselineById = new Map(
+    baseline.map((doc) => [documentIdentity(doc), doc]),
+  );
+  const candidateById = new Map(
+    candidate.map((doc) => [documentIdentity(doc), doc]),
+  );
   for (const id of baselineById.keys()) {
     if (!candidateById.has(id)) {
       throw new Error(`values overlay removed document: ${id}`);
@@ -434,7 +467,13 @@ export function assertValuesOverlayPermitted(baseline, candidate) {
  * @param {string} stdin
  * @param {{ run?: typeof spawnSync }} options
  */
-function invokeHelmTemplate(profile, profilePath, valuesPath, stdin, { run = spawnSync } = {}) {
+function invokeHelmTemplate(
+  profile,
+  profilePath,
+  valuesPath,
+  stdin,
+  { run = spawnSync } = {},
+) {
   const args = ['template', 'offscreen-app', chartPath, '-f', profilePath];
   if (valuesPath) args.push('-f', valuesPath);
   args.push('-f', '-');
@@ -491,8 +530,16 @@ export function renderWorkloadDocuments(
   const parsedValues = parseValuesYamlFile(absoluteValuesPath);
   validateValuesFileContents(parsedValues, profile);
 
-  const baseline = invokeHelmTemplate(profile, profilePath, undefined, stdin, { run });
-  const candidate = invokeHelmTemplate(profile, profilePath, absoluteValuesPath, stdin, { run });
+  const baseline = invokeHelmTemplate(profile, profilePath, undefined, stdin, {
+    run,
+  });
+  const candidate = invokeHelmTemplate(
+    profile,
+    profilePath,
+    absoluteValuesPath,
+    stdin,
+    { run },
+  );
   assertValuesOverlayPermitted(baseline, candidate);
   return candidate;
 }
@@ -501,44 +548,141 @@ export function renderWorkloadDocuments(
  * @param {object[]} documents
  */
 export function renderWorkloadYaml(documents) {
-  return documents.map((doc) => `---\n${JSON.stringify(doc)}`).join('\n').concat('\n');
+  return formatManifestDocuments(documents, 'legacy');
 }
 
-function parseReleaseCliArgs(argv) {
-  if (argv[2] !== 'release' || !argv[3]) {
-    return { error: 'usage: node infra/workloads/render.mjs release <section> [--values PATH]' };
+function printReleaseHelp() {
+  process.stdout.write(
+    'Render workload manifests (release profile)\n\n' +
+      'usage: node infra/workloads/render.mjs release [options] <section>\n' +
+      '       node infra/workloads/render.mjs --help\n' +
+      '       node infra/workloads/render.mjs release --help\n\n' +
+      'Options:\n' +
+      '  --format <yaml|json|legacy>  output format (default: legacy)\n' +
+      '  --values PATH                additional Helm values file\n' +
+      '  --help                       show this help\n\n' +
+      'Examples:\n' +
+      '  node infra/workloads/render.mjs release services\n' +
+      '  node infra/workloads/render.mjs release --format yaml edge\n' +
+      '  node infra/workloads/render.mjs release workers --format json\n' +
+      '  node infra/workloads/render.mjs release all --values ./custom-values.yaml\n',
+  );
+}
+
+function releaseUsageError() {
+  return 'usage: node infra/workloads/render.mjs release <section> [--values PATH] [--format <yaml|json|legacy>]';
+}
+
+/**
+ * @param {string[]} argv
+ * @returns {{ kind: 'help' } | { kind: 'render', section: string, valuesPath?: string, format: 'yaml' | 'json' | 'legacy' }}
+ */
+export function parseReleaseCliArgs(argv) {
+  const args = argv.slice(2);
+
+  if (args.length === 1 && args[0] === '--help') {
+    return { kind: 'help' };
   }
-  const section = argv[3];
+
+  if (args[0] !== 'release') {
+    throw new Error(releaseUsageError());
+  }
+
+  if (args.length === 2 && args[1] === '--help') {
+    return { kind: 'help' };
+  }
+
+  let format = /** @type {'yaml' | 'json' | 'legacy'} */ ('legacy');
   let valuesPath;
-  for (let i = 4; i < argv.length; i += 1) {
-    const token = argv[i];
-    if (token === '--values') {
-      valuesPath = argv[i + 1];
-      if (!valuesPath) {
-        return { error: 'missing path after --values' };
+  let help = false;
+  /** @type {string[]} */
+  const positionals = [];
+  const seen = new Set();
+
+  for (let index = 1; index < args.length; index += 1) {
+    const token = args[index];
+    if (token === '--help') {
+      if (seen.has('--help')) {
+        throw new Error('duplicate flag: --help');
       }
-      i += 1;
+      seen.add('--help');
+      help = true;
       continue;
     }
-    return { error: `unknown argument: ${token}` };
+    if (token === '--format') {
+      if (seen.has('--format')) {
+        throw new Error('duplicate flag: --format');
+      }
+      seen.add('--format');
+      const value = args[index + 1];
+      if (value == null || value.startsWith('--')) {
+        throw new Error('flag --format requires a value');
+      }
+      if (!ACCEPTED_MANIFEST_FORMATS.has(value)) {
+        throw new Error(`unsupported manifest format: ${value}`);
+      }
+      format = /** @type {'yaml' | 'json' | 'legacy'} */ (value);
+      index += 1;
+      continue;
+    }
+    if (token === '--values') {
+      if (seen.has('--values')) {
+        throw new Error('duplicate flag: --values');
+      }
+      seen.add('--values');
+      const value = args[index + 1];
+      if (value == null || value.startsWith('--')) {
+        throw new Error('missing path after --values');
+      }
+      valuesPath = value;
+      index += 1;
+      continue;
+    }
+    if (token.startsWith('--')) {
+      throw new Error(`unknown flag: ${token}`);
+    }
+    positionals.push(token);
   }
-  return { section, valuesPath };
+
+  if (help) {
+    return { kind: 'help' };
+  }
+
+  if (positionals.length !== 1) {
+    throw new Error(releaseUsageError());
+  }
+
+  return { kind: 'render', section: positionals[0], valuesPath, format };
 }
 
 function runReleaseCli() {
-  const parsed = parseReleaseCliArgs(process.argv);
-  if ('error' in parsed && parsed.error) {
-    process.stderr.write(`${parsed.error}\n`);
+  let parsed;
+  try {
+    parsed = parseReleaseCliArgs(process.argv);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'invalid arguments';
+    process.stderr.write(`${message}\n`);
     process.exit(1);
   }
-  const { section, valuesPath } = parsed;
+
+  if (parsed.kind === 'help') {
+    printReleaseHelp();
+    return;
+  }
+
+  const { section, valuesPath, format } = parsed;
   if (!RELEASE_SECTIONS.has(section)) {
     process.stderr.write(`unsupported section: ${section}\n`);
     process.exit(1);
   }
   try {
-    const documents = renderWorkloadDocuments({ profile: 'release', section, valuesPath });
-    process.stdout.write(renderWorkloadYaml(documents));
+    const documents = renderWorkloadDocuments({
+      profile: 'release',
+      section,
+      valuesPath,
+    });
+    process.stdout.write(formatManifestDocuments(documents, format));
   } catch (error) {
     const message = error instanceof Error ? error.message : 'render failed';
     process.stderr.write(`${message}\n`);

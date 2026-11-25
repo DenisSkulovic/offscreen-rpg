@@ -20,6 +20,8 @@ Current baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. See [selected target]
 | Optional release services | individual [Redis](kubernetes-redis.md), [RabbitMQ](kubernetes-rabbitmq.md), [observability](kubernetes-observability.md) runbooks |
 | Inspect cluster UI | [Tilt / Headlamp](kubernetes-developer-ui.md) |
 | Verify expected capabilities | `pnpm infra:verify --suite source`; `pnpm infra:verify --suite diagnostic` (source + existing local readiness, private per-run JSON); [catalog](../../infra/verification/CAPABILITIES.md) |
+| Inspect platform manifests (readable YAML) | `pnpm infra:render <service> <dev\|release> [section]` (default section `all`); direct CLI defaults to compact legacy JSON: `node infra/platform/common/cli.mjs render <service> <dev\|release> [section] [--format yaml\|json\|legacy]` |
+| Inspect workload release manifests (readable YAML) | `pnpm infra:render:workloads [section]` (default section `all`); direct CLI: `node infra/workloads/render.mjs release [section] [--format yaml\|json\|legacy] [--values PATH]` |
 
 Do not use proposed flags on current commands. Linux/WSL is the current host assumption. Prefer source tests when a stack is unnecessary; run only selected authorized live cases. On capacity failure stop only the attempted owned workload set, preserve tenants, report blocker; do not delete another stack or lower gates. No production connection or paid-provider proof. Report exact current command, phase and next action rather than improvising kubectl writes.
 
@@ -52,7 +54,10 @@ Per-role CPU overrides are not supported. Only the keys above plus `replicas` / 
 Keep override files outside Git (for example under `/tmp` or a personal ignored path). Pass them only through the existing renderer:
 
 ```bash
+pnpm infra:render:workloads all --values /path/to/my-overrides.yaml
+# or explicit format / legacy compact JSON:
 node infra/workloads/render.mjs release all --values /path/to/my-overrides.yaml
+node infra/workloads/render.mjs release all --format yaml --values /path/to/my-overrides.yaml
 ```
 
 A valid override is a YAML mapping using only the permitted keys, for example:

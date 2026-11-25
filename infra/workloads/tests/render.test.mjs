@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
+import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 import test from 'node:test';
+import { parseAllDocuments } from 'yaml';
 import { deriveDevWorkloadBindings } from './helpers/dev-bindings.mjs';
 import {
   assertHelmAvailable,
@@ -24,6 +27,24 @@ function writeValuesFile(contents) {
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 const renderCli = join(repoRoot, 'infra/workloads/render.mjs');
 
+function spawnWorkloadCli(args, options = {}) {
+  return spawnSync(process.execPath, [renderCli, ...args], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    ...options,
+  });
+}
+
+function spawnWorkloadCliWithoutHelm(args) {
+  return spawnWorkloadCli(args, {
+    env: { ...process.env, PATH: '' },
+  });
+}
+
+function parseYamlManifestDocuments(text) {
+  return parseAllDocuments(text).map((doc) => doc.toJS());
+}
+
 test('assertHelmAvailable accepts helm v3/v4', () => {
   const version = assertHelmAvailable();
   assert.match(version, /^v[34]\./);
@@ -31,52 +52,172 @@ test('assertHelmAvailable accepts helm v3/v4', () => {
 
 test('renderWorkloadDocuments returns ordered dev-1 graph', () => {
   const { bindings } = deriveDevWorkloadBindings('dev-1', 3100);
-  const docs = renderWorkloadDocuments({ profile: 'development', section: 'all', bindings });
+  const docs = renderWorkloadDocuments({
+    profile: 'development',
+    section: 'all',
+    bindings,
+  });
   assert.equal(docs.length, 10);
   assert.equal(docs[0].kind, 'Namespace');
   assert.deepEqual(
-    docs.filter((doc) => doc.kind === 'Deployment').map((doc) => doc.metadata.name),
-    ['game-web', 'game-api', 'game-authority', 'game-control', 'game-executor', 'game-relay'],
+    docs
+      .filter((doc) => doc.kind === 'Deployment')
+      .map((doc) => doc.metadata.name),
+    [
+      'game-web',
+      'game-api',
+      'game-authority',
+      'game-control',
+      'game-executor',
+      'game-relay',
+    ],
   );
 });
 
 test('renderWorkloadYaml emits JSON documents separated by ---', () => {
-  const docs = [{ apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'x' } }];
+  const docs = [
+    { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'x' } },
+  ];
   const text = renderWorkloadYaml(docs);
   assert.match(text, /^---\n\{/);
   assert.equal(parseWorkloadDocuments(text).length, 1);
 });
 
-test('release CLI prints manifest only', () => {
-  const result = spawnSync(process.execPath, [renderCli, 'release', 'services'], {
-    cwd: repoRoot,
-    encoding: 'utf8',
+test('release CLI help exits zero without invoking helm', () => {
+  for (const args of [['--help'], ['release', '--help']]) {
+    const result = spawnWorkloadCliWithoutHelm(args);
+    assert.equal(result.status, 0, args.join(' '));
+    assert.ok(result.stdout.length > 0, args.join(' '));
+    assert.equal(result.stderr, '');
+  }
+});
+
+test('release CLI rejects unknown and duplicate flags before helm', () => {
+  const cases = [
+    ['release', '--bogus', 'services'],
+    ['release', '--format'],
+    ['release', '--format', 'xml', 'services'],
+    ['release', '--format', 'yaml', '--format', 'json', 'services'],
+    ['release', 'services', '--help', '--help'],
+    ['release', 'services', 'extra'],
+    ['release', '--values'],
+  ];
+  for (const args of cases) {
+    const result = spawnWorkloadCliWithoutHelm(args);
+    assert.notEqual(result.status, 0, args.join(' '));
+    assert.ok(result.stderr.length > 0, args.join(' '));
+    assert.equal(result.stdout, '');
+  }
+});
+
+test('release CLI yaml and json formats match legacy documents', () => {
+  const cases = [
+    ['release', 'services'],
+    ['release', '--format', 'yaml', 'services'],
+    ['release', 'services', '--format', 'json'],
+  ];
+  const outputs = cases.map((args) => {
+    const result = spawnWorkloadCli(args);
+    assert.equal(result.status, 0, `${args.join(' ')}: ${result.stderr}`);
+    return result.stdout;
   });
+  const legacyDocs = parseWorkloadDocuments(outputs[0]);
+  const yamlDocs = parseYamlManifestDocuments(outputs[1]);
+  const jsonDocs = JSON.parse(outputs[2]);
+  assert.ok(
+    isDeepStrictEqual(yamlDocs, legacyDocs),
+    'yaml documents should match legacy semantics',
+  );
+  assert.ok(
+    isDeepStrictEqual(jsonDocs, legacyDocs),
+    'json documents should match legacy semantics',
+  );
+});
+
+test('release CLI yaml/json with values override match legacy semantics', () => {
+  const values = writeValuesFile('replicasByRole:\n  api: 2\n');
+  try {
+    const baseline = spawnWorkloadCli([
+      'release',
+      'edge',
+      '--values',
+      values.file,
+    ]);
+    assert.equal(baseline.status, 0, baseline.stderr);
+    const legacyDocs = parseWorkloadDocuments(baseline.stdout);
+    const yamlResult = spawnWorkloadCli([
+      'release',
+      '--format',
+      'yaml',
+      'edge',
+      '--values',
+      values.file,
+    ]);
+    assert.equal(yamlResult.status, 0, yamlResult.stderr);
+    assert.ok(
+      isDeepStrictEqual(
+        parseYamlManifestDocuments(yamlResult.stdout),
+        legacyDocs,
+      ),
+      'yaml with values should match legacy semantics',
+    );
+
+    const jsonResult = spawnWorkloadCli([
+      'release',
+      'edge',
+      '--values',
+      values.file,
+      '--format',
+      'json',
+    ]);
+    assert.equal(jsonResult.status, 0, jsonResult.stderr);
+    assert.ok(
+      isDeepStrictEqual(JSON.parse(jsonResult.stdout), legacyDocs),
+      'json with values should match legacy semantics',
+    );
+  } finally {
+    values.cleanup();
+  }
+});
+
+test('release CLI prints manifest only', () => {
+  const result = spawnWorkloadCli(['release', 'services']);
   assert.equal(result.status, 0, result.stderr);
   const docs = parseWorkloadDocuments(result.stdout);
   assert.ok(docs.every((doc) => doc.kind === 'Service'));
 });
 
 test('release CLI rejects unknown section', () => {
-  const result = spawnSync(process.execPath, [renderCli, 'release', 'not-valid'], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-  });
+  const result = spawnWorkloadCli(['release', 'not-valid']);
   assert.notEqual(result.status, 0);
 });
 
 test('parseWorkloadDocuments rejects duplicates and unknown kinds', () => {
-  const ok = parseWorkloadDocuments('---\n# comment\n{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"a"}}\n');
+  const ok = parseWorkloadDocuments(
+    '---\n# comment\n{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"a"}}\n',
+  );
   assert.equal(ok.length, 1);
   assert.throws(
-    () => parseWorkloadDocuments('{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"a"}}\n{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"a"}}'),
+    () =>
+      parseWorkloadDocuments(
+        '{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"a"}}\n{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"a"}}',
+      ),
     /duplicate workload identity/,
   );
   assert.throws(
-    () => parseWorkloadDocuments('{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"a"}}'),
+    () =>
+      parseWorkloadDocuments(
+        '{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"a"}}',
+      ),
     /unknown resource kind/,
   );
-  assert.equal(documentIdentity({ kind: 'Deployment', metadata: { namespace: 'ns', name: 'x' } }), 'Deployment/ns/x');
+  assert.equal(
+    documentIdentity({
+      kind: 'Deployment',
+      metadata: { namespace: 'ns', name: 'x' },
+    }),
+    'Deployment/ns/x',
+  );
 });
 
 test('renderWorkloadDocuments does not invoke kubectl', () => {
@@ -86,8 +227,14 @@ test('renderWorkloadDocuments does not invoke kubectl', () => {
     return spawnSync(cmd, args, opts);
   };
   const { bindings } = deriveDevWorkloadBindings('dev-2', 3200);
-  renderWorkloadDocuments({ profile: 'development', section: 'all', bindings }, { run: fakeRun });
-  assert.equal(calls.some((line) => line.startsWith('kubectl')), false);
+  renderWorkloadDocuments(
+    { profile: 'development', section: 'all', bindings },
+    { run: fakeRun },
+  );
+  assert.equal(
+    calls.some((line) => line.startsWith('kubectl')),
+    false,
+  );
   assert.ok(calls.some((line) => line.startsWith('helm template')));
 });
 
@@ -110,14 +257,23 @@ resources:
       section: 'all',
       valuesPath: values.file,
     });
-    const api = docs.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api');
+    const api = docs.find(
+      (doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api',
+    );
     const executor = docs.find(
-      (doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-executor',
+      (doc) =>
+        doc.kind === 'Deployment' && doc.metadata.name === 'game-executor',
     );
     assert.ok(api);
     assert.equal(api.spec.replicas, 2);
-    assert.equal(api.spec.template.spec.containers[0].resources.requests.cpu, '100m');
-    assert.equal(api.spec.template.spec.containers[0].resources.requests.memory, '512Mi');
+    assert.equal(
+      api.spec.template.spec.containers[0].resources.requests.cpu,
+      '100m',
+    );
+    assert.equal(
+      api.spec.template.spec.containers[0].resources.requests.memory,
+      '512Mi',
+    );
     assert.equal(executor?.spec.replicas, 3);
   } finally {
     values.cleanup();
@@ -217,10 +373,18 @@ test('development values override: resource override works', () => {
       bindings,
       valuesPath: values.file,
     });
-    const web = docs.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-web');
+    const web = docs.find(
+      (doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-web',
+    );
     assert.ok(web);
-    assert.equal(web.spec.template.spec.containers[0].resources.requests.cpu, '75m');
-    assert.equal(web.spec.template.spec.containers[0].resources.requests.memory, '256Mi');
+    assert.equal(
+      web.spec.template.spec.containers[0].resources.requests.cpu,
+      '75m',
+    );
+    assert.equal(
+      web.spec.template.spec.containers[0].resources.requests.memory,
+      '256Mi',
+    );
   } finally {
     values.cleanup();
   }
@@ -248,10 +412,12 @@ test('development values override: replicas 2 refused', () => {
 test('release CLI accepts --values path', () => {
   const values = writeValuesFile('replicasByRole:\n  api: 2\n');
   try {
-    const result = spawnSync(process.execPath, [renderCli, 'release', 'edge', '--values', values.file], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-    });
+    const result = spawnWorkloadCli([
+      'release',
+      'edge',
+      '--values',
+      values.file,
+    ]);
     assert.equal(result.status, 0, result.stderr);
     const api = parseWorkloadDocuments(result.stdout).find(
       (doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api',

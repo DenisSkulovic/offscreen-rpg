@@ -362,4 +362,4 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## Infrastructure operator experience (2026-11-25)
 
-[INF55](open/2026-11-25--inf55-readable-manifests/CHANGE.md) and [INF56](open/2026-11-25--inf56-platform-cli-presentation/CHANGE.md) — source commissioned, independent implementation; serialize catalog/runbook joins. [Standard](../../docs/technical/platform/infrastructure-operator-experience.md). Topology presentation after INF54; other CLI surfaces remain staged for source review. No live authorization.
+[INF55](archive/2026-11/platform-operations/2026-11-25--inf55-readable-manifests/CHANGE.md) — source Done (human acceptance NOT-RUN); readable YAML/JSON/legacy manifest render plus root aliases. [INF56](open/2026-11-25--inf56-platform-cli-presentation/CHANGE.md) — source commissioned, independent; serialize catalog/runbook joins with peers. [Standard](../../docs/technical/platform/infrastructure-operator-experience.md). Topology presentation after INF54; other CLI surfaces remain staged for source review. No live authorization.

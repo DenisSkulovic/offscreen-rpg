@@ -65,6 +65,8 @@
     "infra:monitor:status": "python3 infra/monitoring/report.py status",
     "infra:monitor:report": "python3 infra/monitoring/report.py report",
     "infra:monitor:export": "python3 infra/monitoring/export.py",
+    "infra:render": "node infra/platform/common/cli.mjs render --format yaml",
+    "infra:render:workloads": "node infra/workloads/render.mjs release --format yaml",
     "fixture:import": "node scripts/repo-tools/import-pinned-fixture.mjs",
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0",
     "repo:commit:check:test": "node --test scripts/repo-tools/check-commit-message.test.mjs",
@@ -92,6 +94,7 @@
     "turbo": "2.10.13",
     "typescript": "5.9.3",
     "typescript-eslint": "8.70.0",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "yaml": "2.8.2"
   }
 }

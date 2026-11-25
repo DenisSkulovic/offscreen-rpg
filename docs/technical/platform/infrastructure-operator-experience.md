@@ -42,7 +42,7 @@ Keep orchestration and observation independent from presentation. Use a small pu
 
 | Order | Surface | Observed baseline / work |
 | --- | --- | --- |
-| 1 | Manifest inspection | infra/platform/common/cli.mjs + render.mjs; infra/workloads/render.mjs: compact JSON documents. Preserve internal serialization and parse contracts; add readable public rendering and proof of semantic equivalence. |
+| 1 | Manifest inspection | **INF55 source Done (human acceptance NOT-RUN).** Shared `formatManifestDocuments` plus `--format yaml\|json\|legacy` on platform/workload render CLIs; root aliases `pnpm infra:render` / `pnpm infra:render:workloads` default YAML. Direct CLI default remains compact legacy JSON. Internal Helm JSON-line parse and installer serialization unchanged. |
 | 2 | Platform and PostgreSQL commands | infra/environments/infra-cli.mjs plan/up/status and infra/platform/postgres/topology-cli.mjs: JSON-first. Human summaries, help, progress when actual events exist. Wait for INF54 source join before touching topology entrypoint. |
 | 3 | Dev and release stack | tools/dev-environments/src/cli/dev-tilt.mjs, application/dev-status.mjs, dev-startup-timing.mjs; scripts/repo-tools/stack.mjs. Preserve good startup display and receipts, improve status/help/failure consistency; coordinate with INF38. |
 | 4 | Images and service installers | infra/images and infra/platform/*/install.sh, environment assembly and Kind manager. Review human vs internal callers first; reduce noisy logs, keep explicit targets and useful failures. No lifecycle rewrite. |

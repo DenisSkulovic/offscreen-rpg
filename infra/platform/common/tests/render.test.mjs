@@ -4,7 +4,9 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 import test from 'node:test';
+import { parseAllDocuments } from 'yaml';
 import { runPlatformCommand } from '../commands.mjs';
 import {
   assertHelmAvailable,
@@ -22,6 +24,24 @@ const repoRoot = join(commonRoot, '../../..');
 const cliPath = join(commonRoot, 'cli.mjs');
 
 const POSTGRES_IMAGE = 'ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie';
+
+function spawnCli(args, options = {}) {
+  return spawnSync(process.execPath, [cliPath, ...args], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    ...options,
+  });
+}
+
+function spawnCliWithoutHelm(args) {
+  return spawnCli(args, {
+    env: { ...process.env, PATH: '' },
+  });
+}
+
+function parseYamlManifestDocuments(text) {
+  return parseAllDocuments(text).map((doc) => doc.toJS());
+}
 
 function fixtureHelmRun(command, args, options) {
   if (command !== 'helm') {
@@ -228,16 +248,88 @@ test('renderPlatformDocuments rejects malformed helm stdout from fake runner', (
 });
 
 test('cli render rejects unsupported profile without chart access', () => {
-  const result = spawnSync(
-    process.execPath,
-    [cliPath, 'render', 'postgres', 'staging', 'all'],
-    {
-      cwd: repoRoot,
-      encoding: 'utf8',
-    },
-  );
+  const result = spawnCliWithoutHelm(['render', 'postgres', 'staging', 'all']);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /unsupported profile/);
+});
+
+test('cli help exits zero without invoking helm', () => {
+  for (const args of [['--help'], ['render', '--help'], ['target', '--help']]) {
+    const result = spawnCliWithoutHelm(args);
+    assert.equal(result.status, 0, args.join(' '));
+    assert.ok(result.stdout.length > 0, args.join(' '));
+    assert.equal(result.stderr, '');
+  }
+});
+
+test('cli render rejects unknown and duplicate flags before helm', () => {
+  const cases = [
+    ['render', '--bogus', 'postgres', 'dev', 'all'],
+    ['render', '--format'],
+    ['render', '--format', 'xml', 'postgres', 'dev', 'all'],
+    [
+      'render',
+      '--format',
+      'yaml',
+      '--format',
+      'json',
+      'postgres',
+      'dev',
+      'all',
+    ],
+    ['render', 'postgres', 'dev', 'all', '--help', '--help'],
+    ['render', 'postgres', 'dev', 'all', 'extra'],
+  ];
+  for (const args of cases) {
+    const result = spawnCliWithoutHelm(args);
+    assert.notEqual(result.status, 0, args.join(' '));
+    assert.ok(result.stderr.length > 0, args.join(' '));
+    assert.equal(result.stdout, '');
+  }
+});
+
+test('cli target rejects extra arguments', () => {
+  const result = spawnCliWithoutHelm(['target', 'dev', 'extra']);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /unexpected argument/);
+});
+
+test('cli render default legacy output is parsePlatformDocuments-compatible', () => {
+  const result = spawnCli(['render', 'postgres', 'dev', 'namespace']);
+  assert.equal(result.status, 0, result.stderr);
+  const docs = parsePlatformDocuments(result.stdout, {
+    service: 'postgres',
+    profile: 'dev',
+  });
+  assert.equal(docs.length, 1);
+  assert.equal(docs[0].kind, 'Namespace');
+});
+
+test('cli render yaml and json formats match legacy documents', () => {
+  const cases = [
+    ['render', 'postgres', 'dev', 'namespace'],
+    ['render', '--format', 'yaml', 'postgres', 'dev', 'namespace'],
+    ['render', 'postgres', 'dev', 'namespace', '--format', 'json'],
+  ];
+  const outputs = cases.map((args) => {
+    const result = spawnCli(args);
+    assert.equal(result.status, 0, `${args.join(' ')}: ${result.stderr}`);
+    return result.stdout;
+  });
+  const legacyDocs = parsePlatformDocuments(outputs[0], {
+    service: 'postgres',
+    profile: 'dev',
+  });
+  const yamlDocs = parseYamlManifestDocuments(outputs[1]);
+  const jsonDocs = JSON.parse(outputs[2]);
+  assert.ok(
+    isDeepStrictEqual(yamlDocs, legacyDocs),
+    'yaml documents should match legacy semantics',
+  );
+  assert.ok(
+    isDeepStrictEqual(jsonDocs, legacyDocs),
+    'json documents should match legacy semantics',
+  );
 });
 
 test('verifyManifestBytes used for fixture bytes sanity', () => {
