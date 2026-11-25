@@ -2,7 +2,7 @@
 
 **Status: Proposed; owner review required. No implementation commission.**
 
-Original source baseline: main 03ea79c469d0, 2026-11-25. Next review: 2026-11-26 or earlier with owner. Next decision: inspect actual Helm rendering and decide the remaining persistence/cutover details with the owner. Existing Temporal infra directory deliberately excluded; no live cluster inspected. PostgreSQL tuning deferred.
+Original source baseline: main 03ea79c469d0, 2026-11-25. Next review: 2026-11-26 or earlier with owner. Next decision: confirm pinned image render, actual SQL catalog and credential/reconciliation contract. Existing Temporal infra directory deliberately excluded; read-only CNPG cluster evidence collected; no legacy Temporal inventory. PostgreSQL tuning deferred.
 
 ## Architecture
 
@@ -45,10 +45,11 @@ No local chart templates, persistence DSL, shell installer or duplicate bootstra
 5. [VERIFICATION.md](VERIFICATION.md): source tests, rendering and live proof.
 6. [REVIEW.md](REVIEW.md): decisions, review history and outstanding acceptance gates.
 7. [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md): one mandatory replacement Change, optional persistence predecessor; not commissioned.
-8. [EXPERIMENTS.md](EXPERIMENTS.md): sequential manual terminal experiments, starting without Kubernetes access.
+8. [EXPERIMENTS.md](EXPERIMENTS.md): sequential manual terminal experiments.
+9. [FINDINGS.md](FINDINGS.md): dated observed evidence, decisions and outstanding proof.
 
 ## Outstanding evidence
 
-Candidate chart 1.8.0 tagged source inspected; published artifact URL and checksum recorded. [Concrete values specimen](specimen/README.md) and [source-derived inventory](specimen/RESOURCE-INVENTORY.md) available. Archive-byte verification and actual render still outstanding. Concrete PG credential integration and full caller migration map remain unresolved. Existing deployment adoption requires separate permission; no destructive default.
+Candidate chart 1.8.0 tagged source inspected; published artifact URL and checksum recorded. [Concrete values specimen](specimen/README.md) and [source-derived inventory](specimen/RESOURCE-INVENTORY.md) available. Archive checksum and both baseline renders observed; final digest-pinned render pending. See [findings](FINDINGS.md). Concrete PG credential integration and full caller migration map remain unresolved. Existing deployment adoption requires separate permission; no destructive default.
 
 After owner acceptance, reconcile permanent technical/runbook owners before selecting implementation Changes. See [design lifecycle](../../README.md).
