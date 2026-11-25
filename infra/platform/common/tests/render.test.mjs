@@ -114,7 +114,7 @@ test('assertPlatformRenderRequest accepts redis on dev and rejects unknown secti
   );
   assert.throws(
     () => assertPlatformRenderRequest('temporal', 'dev', 'admin'),
-    /release-only/,
+    /unsupported service/,
   );
 });
 
