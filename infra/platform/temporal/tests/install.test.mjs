@@ -7,6 +7,7 @@ import { ensureTemporal } from '../install.mjs';
 const context = 'kind-offscreen-dev';
 const namespace = 'offscreen-dev-temporal';
 const authorization = { confirmContext: context };
+const pinnedValues = parse(readFileSync(new URL('../values.yaml', import.meta.url), 'utf8'));
 
 function fixture({ state = 'absent', namespaceExists = false, lowMemory = false, changedValues = false, badDownload = false } = {}) {
   const calls = [];
@@ -49,8 +50,8 @@ function fixture({ state = 'absent', namespaceExists = false, lowMemory = false,
     const type = args[get + 1];
     const name = args[get + 2] === '-n' ? args[get + 4] : args[get + 2];
     if (type === 'namespace') {
-      if (name === namespace && !namespaceExists) return ok();
-      return ok({ metadata: { name, uid: 'namespace-uid', labels: { 'offscreen.dev/owner': 'offscreen-dev' } } });
+      if (name === namespace && !namespaceExists && state !== 'deployed') return ok();
+      return ok({ metadata: { name, uid: 'namespace-uid', labels: { 'offscreen.dev/owner': 'offscreen-dev', 'app.kubernetes.io/part-of': 'temporal' } } });
     }
     const metadata = {
       name, namespace, generation: 1,
@@ -58,7 +59,7 @@ function fixture({ state = 'absent', namespaceExists = false, lowMemory = false,
       annotations: { 'meta.helm.sh/release-name': 'temporal', 'meta.helm.sh/release-namespace': namespace },
     };
     if (type === 'deployment') return ok({
-      metadata, spec: { replicas: 1 },
+      metadata, spec: { replicas: 1, template: { spec: { containers: [{ image: 'temporalio/image:' + pinnedValues[name === 'temporal-web' ? 'web' : name === 'temporal-admintools' ? 'admintools' : 'server'].image.tag }] } } },
       status: { observedGeneration: 1, replicas: 1, updatedReplicas: 1, readyReplicas: 1, availableReplicas: 1 },
     });
     if (type === 'service') return ok({
