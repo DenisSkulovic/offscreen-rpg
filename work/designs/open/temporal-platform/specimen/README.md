@@ -1,9 +1,9 @@
 # Proposed Temporal Helm configuration specimen
 
-Design only; not part of runtime infrastructure. Do not install. Tagged upstream source reviewed at [temporal-1.7.0](https://github.com/temporalio/helm-charts/tree/temporal-1.7.0), release commit ab89869a913207bd191e60a90193512bd9adcb80. Chart 1.7.0 defaults: server/admin-tools 1.32.0, UI 2.54.1. Inherit image tags from the pinned package; no duplicate version declarations. Registry image digest enforcement remains unresolved.
+Design only; not part of runtime infrastructure. Do not install. Tagged upstream source reviewed at [temporal-1.8.0](https://github.com/temporalio/helm-charts/tree/temporal-1.8.0), release commit 01210ac0212049d8f66cf0c249665a031b6852b8. Chart 1.8.0 defaults: server/admin-tools 1.32.2, UI 2.56.1. Inherit image tags from the pinned package; no duplicate version declarations. Registry image digest enforcement remains unresolved.
 
 Files:
-- chart.pin: candidate version; URL and checksum deliberately UNVERIFIED.
+- chart.pin: published version, URL and SHA-256 from upstream gh-pages index. Downloaded bytes not verified.
 - values.yaml: shared configuration; proposed fresh topology and credential names.
 - profiles/: only actual endpoint differences. No cluster or Kubernetes namespace duplicated.
 
@@ -11,15 +11,15 @@ Design decisions: fullnameOverride temporal provides predictable service names f
 
 ## Render evidence
 
-NOT RUN: sandbox has no helm executable and cannot resolve go.temporal.io; web index fetch rejects YAML content type. Upstream release existence and tagged configuration/template source inspected. No archive bytes, checksum or rendered resource counts verified. Do not interpret expected names as observed render.
+NOT RUN: sandbox has no helm executable and cannot resolve go.temporal.io; web index fetch rejects YAML content type. Upstream release existence and tagged configuration/template source inspected. Published checksum and URL obtained directly from the upstream index; no archive bytes or rendered resource counts verified. Do not interpret expected names as observed render.
 
 When the archive is available, verify published index digest against downloaded bytes and record URL and SHA-256. Then use only local, non-mutating Helm commands from this folder:
 ```sh
-helm pull temporal --repo https://go.temporal.io/helm-charts/ --version 1.7.0 --destination /tmp
-sha256sum /tmp/temporal-1.7.0.tgz
-helm lint /tmp/temporal-1.7.0.tgz -f values.yaml -f profiles/development.yaml
-helm lint /tmp/temporal-1.7.0.tgz -f values.yaml -f profiles/release.yaml
-helm template temporal /tmp/temporal-1.7.0.tgz --namespace offscreen-dev-temporal -f values.yaml -f profiles/development.yaml > /tmp/temporal-dev-render.yaml
-helm template temporal /tmp/temporal-1.7.0.tgz --namespace lab-temporal -f values.yaml -f profiles/release.yaml > /tmp/temporal-release-render.yaml
+helm pull temporal --repo https://go.temporal.io/helm-charts/ --version 1.8.0 --destination /tmp
+printf '%s  %s\n' e65b454d620129f3d7da2c16611a7f754e2d89b20b7a135dc5f0916a062f3a9e /tmp/temporal-1.8.0.tgz | sha256sum -c -
+helm lint /tmp/temporal-1.8.0.tgz -f values.yaml -f profiles/development.yaml
+helm lint /tmp/temporal-1.8.0.tgz -f values.yaml -f profiles/release.yaml
+helm template temporal /tmp/temporal-1.8.0.tgz --namespace offscreen-dev-temporal -f values.yaml -f profiles/development.yaml > /tmp/temporal-dev-render.yaml
+helm template temporal /tmp/temporal-1.8.0.tgz --namespace lab-temporal -f values.yaml -f profiles/release.yaml > /tmp/temporal-release-render.yaml
 ```
-Compare published digest before treating these outputs as evidence. No kube context, kubectl apply, Helm install or secrets required. Review output against [HELM.md](../HELM.md). Confirm probe service and SQL credential wiring, schema hooks, no bundled databases, no namespace setup or public ingress. Record rendered names and counts only after actual execution.
+Compare published digest before treating these outputs as evidence. No kube context, kubectl apply, Helm install or secrets required. Review output against [HELM.md](../HELM.md) and [source-derived resource inventory](RESOURCE-INVENTORY.md). Confirm probe service and SQL credential wiring, schema hooks, no bundled databases, no namespace setup or public ingress. Record rendered names and counts only after actual execution.
