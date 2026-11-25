@@ -170,7 +170,7 @@ test('chart render preflight touches only selected services', () => {
   assert.equal(rendered.length, 1);
   assert.match(rendered[0], /postgres\/chart$/);
   assert.equal(
-    linted.some((path) => /postgres|object-storage/.test(path)),
+    linted.some((path) => /temporal|object-storage/.test(path)),
     false,
   );
 });
