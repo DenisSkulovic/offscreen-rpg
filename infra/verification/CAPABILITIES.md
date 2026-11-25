@@ -79,16 +79,18 @@ pnpm infra:verify --suite source --json
 Measure cold/warm wall time and source-edit latency; report actual seconds, not arbitrary SLA. First smoke is one owned full slot cold/start/status/edit/failure/recovery/stop/resume; then selective profiles and multi-replica cases only when implemented. Do not require four full stacks on a limited workstation. Stop polishing when ordinary supported flows are proven; record failures as bounded corrective Changes.
 
 
-## Workstation observability (target, INF44–47)
+## Workstation observability (INF44–47)
 
-| ID | Capability | Required observation | Evidence |
+Python `unittest` discovery under `infra/monitoring/tests/test_*.py` and the Node `operation-event` suite are scheduled only by `pnpm infra:verify --suite diagnostic` (`source:monitoring-python` and `source:infra/monitoring/tests/operation-event.test.mjs`). They are not part of the Node TAP `pnpm infra:verify --suite source` groups. A fixture-tier diagnostic PASS records source proof only; every row's live acceptance remains **NOT-RUN** until separately authorized install/activation and measured host observation. Canonical per-row module mapping is frozen in `infra/verification/verify.mjs` as `MON_FIXTURE_EVIDENCE`.
+
+| ID | Capability | Required observation | Source fixture evidence (live NOT-RUN) |
 | --- | --- | --- | --- |
-| MON-01 | Independent persistent collectors | Service restart preserves retained history; WSL down gap visible; no game/cluster dependency | source fixtures for install plan and collector stop; live service restart NOT RUN |
-| MON-02 | Sub-second memory evidence | 200ms sample offsets; observed min/max/sum/count/coverage, short pulse test, kernel peak scope separate | source fixtures PASS; live host sampling NOT RUN |
-| MON-03 | Safe process history | PID/start identity, CPU/RSS/HWM, missing exited process coverage, no argv/env export | source fixtures PASS; live /proc NOT RUN |
-| MON-04 | Nested runtime attribution | Docker/Kind pod UID+container identity, source timestamps, cgroup scope, absent runtime gap, no double-count | source fixtures PASS (runtime/kube/cgroup); live Docker/Kind/cgroup visibility NOT RUN |
-| MON-05 | Resource failure evidence | OOM/restart/event/counter reset; no inferred OOM from capacity guard | source counter-reset and coverage fixtures PASS; live OOM NOT RUN |
-| MON-06 | Retention and fidelity | Min/max/sum/count rollups, partial coverage, cap/rotation, restart gap, actual oldest retained | source retention and rollup fixtures PASS; live disk span NOT RUN |
-| MON-07 | Operation correlation | Unique attempt/phase spans, overlaps, incomplete crash, rollback events, no secret fields | source fixtures PASS (operation writer, startup timing, infra/stack/verify entrypoints); live host correlation NOT RUN |
-| MON-08 | Historical queries/export | Time/slot report with explicit coverage, bounded sanitized export, no raw argv | target-only |
-| MON-09 | Observer overhead | Comparable measured idle before/after, private memory/CPU/disk budget; reduced cadence reported | target-only |
+| MON-01 | Independent persistent collectors | Service restart preserves retained history; WSL down gap visible; no game/cluster dependency | `source:monitoring-python`; `test_install.py`, `test_collector.py`, `test_storage.py`; live service restart NOT RUN |
+| MON-02 | Sub-second memory evidence | 200ms sample offsets; observed min/max/sum/count/coverage, short pulse test, kernel peak scope separate | `source:monitoring-python`; `test_host.py`, `test_report.py`; live host sampling NOT RUN |
+| MON-03 | Safe process history | PID/start identity, CPU/RSS/HWM, missing exited process coverage, no argv/env export | `source:monitoring-python`; `test_processes.py`, `test_report.py`; live /proc NOT RUN |
+| MON-04 | Nested runtime attribution | Docker/Kind pod UID+container identity, source timestamps, cgroup scope, absent runtime gap, no double-count | `source:monitoring-python`; `test_runtime.py`, `test_kube.py`, `test_cgroup.py`, `test_runtime_collector.py`, `test_report.py`; live Docker/Kind/cgroup visibility NOT RUN |
+| MON-05 | Resource failure evidence | OOM/restart/event/counter reset; no inferred OOM from capacity guard | `source:monitoring-python`; `test_host.py`, `test_kube.py`, `test_storage.py`; live OOM NOT RUN |
+| MON-06 | Retention and fidelity | Min/max/sum/count rollups, partial coverage, cap/rotation, restart gap, actual oldest retained | `source:monitoring-python`; `test_storage.py`, `test_host.py`, `test_report.py`; live disk span NOT RUN |
+| MON-07 | Operation correlation | Unique attempt/phase spans, overlaps, incomplete crash, rollback events, no secret fields | `source:infra/monitoring/tests/operation-event.test.mjs` (MON-07) plus report span readers in `test_report.py`; live host correlation NOT RUN |
+| MON-08 | Historical queries/export | Time/slot report with explicit coverage, bounded sanitized export, no raw argv | `source:monitoring-python`; `test_report.py`, `test_export.py`; live Netdata/historical query NOT RUN |
+| MON-09 | Observer overhead | Comparable measured idle before/after, private memory/CPU/disk budget; reduced cadence reported | `source:monitoring-python`; `test_collector.py` cadence/scheduling bounds only; measured idle before/after separately authorized, NOT RUN |

@@ -16,6 +16,8 @@ import {
   runVerifyCli,
   SCENARIO_TIER_MAP,
   SOURCE_SUITE_DEFINITIONS,
+  MON_FIXTURE_EVIDENCE,
+  DIAGNOSTIC_CHECK_CAPABILITY_LINKS,
 } from './verify.mjs';
 
 const TAP_OK = `# tests 2
@@ -264,6 +266,25 @@ test('buildCatalogScenarios never marks live acceptance PASS from source', () =>
 test('runVerifyCli returns exit 2 for invalid suite without live commands', () => {
   const code = runVerifyCli(['--suite', 'smoke'], { write: () => {} });
   assert.equal(code, 2);
+});
+
+test('MON fixture evidence covers MON-01..09 with report and export modules for MON-08', () => {
+  const monIds = CATALOG_SCENARIO_IDS.filter((id) => id.startsWith('MON-'));
+  assert.equal(monIds.length, 9);
+  for (const id of monIds) {
+    assert.ok(MON_FIXTURE_EVIDENCE[id], `missing MON_FIXTURE_EVIDENCE for ${id}`);
+    assert.ok(MON_FIXTURE_EVIDENCE[id].diagnosticChecks.length > 0);
+  }
+  const mon08 = MON_FIXTURE_EVIDENCE['MON-08'];
+  assert.ok(mon08.modules.some((path) => path.endsWith('test_report.py')));
+  assert.ok(mon08.modules.some((path) => path.endsWith('test_export.py')));
+  assert.ok(
+    DIAGNOSTIC_CHECK_CAPABILITY_LINKS['source:monitoring-python'].includes('MON-08'),
+  );
+  assert.deepEqual(
+    DIAGNOSTIC_CHECK_CAPABILITY_LINKS['source:infra/monitoring/tests/operation-event.test.mjs'],
+    ['MON-07'],
+  );
 });
 
 test('aggregateExitCode is zero only when every suite passed', () => {

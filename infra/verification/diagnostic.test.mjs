@@ -45,6 +45,30 @@ test('live cluster failure blocks only its own service observations', async () =
 });
 
 
+test('monitoring diagnostic checks discover python fixtures and tag MON-07', () => {
+  const checks = buildDiagnosticChecks({
+    repoRoot: '/fixture',
+    definitions: [],
+    resolveFiles: () => [],
+    parseCounts: () => ({ complete: false }),
+  });
+  const python = checks.find((check) => check.id === 'source:monitoring-python');
+  assert.ok(python);
+  assert.deepEqual(python.command.slice(0, 4), [
+    'python3',
+    '-m',
+    'unittest',
+    'discover',
+  ]);
+  assert.match(python.command.join(' '), /infra\/monitoring\/tests/);
+  assert.match(python.command.join(' '), /test_\*\.py/);
+  const operation = checks.filter(
+    (check) => check.id === 'source:infra/monitoring/tests/operation-event.test.mjs',
+  );
+  assert.equal(operation.length, 1);
+  assert.equal(operation[0].capability, 'MON-07');
+});
+
 test('additional platform tests are explicitly scheduled with Helm prerequisites', () => {
   const checks = buildDiagnosticChecks({ repoRoot: '/fixture', definitions: [], resolveFiles: () => [], parseCounts: () => ({ complete: false }) });
   for (const { file, requiresHelm } of ADDITIONAL_PLATFORM_TESTS) {

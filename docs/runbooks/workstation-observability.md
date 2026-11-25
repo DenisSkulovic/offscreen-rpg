@@ -1,6 +1,6 @@
 # Workstation observability | operator runbook
 
-**Do not activate on a production workstation from this repository alone.** Source composition for [INF49](../../work/changes/archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) is proven by staged fixture tests (real `install.sh` tree + real `collector.py --config` under unprivileged temp roots). [INF47](../../work/changes/open/2026-11-24--inf47-historical-observability-queries/CHANGE.md) follows for historical CLI/query. Live native install, Netdata activation, and nested runtime visibility remain **separately operator-authorized**.
+**Do not activate on a production workstation from this repository alone.** Source composition for [INF49](../../work/changes/archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) is proven by staged fixture tests (real `install.sh` tree + real `collector.py --config` under unprivileged temp roots). Historical status/report/export CLIs for [INF47](../../work/changes/archive/2026-11/platform-operations/2026-11-24--inf47-historical-observability-queries/CHANGE.md) are fixture-tested against private temp state. Live native install, Netdata activation, nested runtime visibility, and live historical queries remain **separately operator-authorized**.
 
 [Technical contract](../technical/platform/workstation-observability.md). Workstation collector independent of Kubernetes and game. No cloud connection, no raw process argv exports.
 
@@ -61,7 +61,7 @@ Enables and starts `offscreen-monitor@$USER.service`, verifies loopback `127.0.0
 
 Native dashboard after authorized install: **http://127.0.0.1:19999** (loopback only).
 
-## Inspection (planned CLI, INF47)
+## Inspection (source CLI, INF47; live data separately authorized)
 
 ```sh
 pnpm infra:monitor:status
@@ -69,6 +69,23 @@ pnpm infra:monitor:report --last 30m
 pnpm infra:monitor:report --from 2026-11-24T18:00:00Z --to 2026-11-24T19:00:00Z --slot dev-10 --json
 pnpm infra:monitor:export --from 2026-11-24T00:00:00Z --to 2026-11-25T00:00:00Z --out /tmp/offscreen-incident
 ```
+
+### Query a time range
+
+1. Confirm companion coverage first: `pnpm infra:monitor:status` and note disabled streams, heartbeat age, and storage oldest/newest.
+2. Choose an absolute UTC window (90 days maximum) with `pnpm infra:monitor:report --from ISO --to ISO [--slot dev-N] [--json]`.
+3. Read `partialRange`, segment `gaps`, source timestamps, and `correlationNote` in the JSON; treat overlap as **temporal evidence only**—do not rank causes from timestamps alone.
+
+### Identify resource consumers (no causal ranking)
+
+| Layer | Where to look | Interpretation |
+|-------|----------------|----------------|
+| Host memory fast path | Report `host.MemAvailable` (mean, retained spike max) | Observed sample extrema; sub-second peaks may be absent between samples |
+| Top processes | Report `process.rssTop` / `cpuTop` / `pssTop` | Per-process peaks are **not additive**; PSS is separate |
+| Nested runtime | Report `runtime.docker` / `pods` / `cgroups` | Keep pod, container, and host layers separate; watch `doubleCountRisk` |
+| Native metrics | Netdata dashboard **http://127.0.0.1:19999** (loopback only) | Vendor dbengine series; use CLI report for correlated supplemental evidence |
+
+Export (`infra:monitor:export`) writes a sanitized bundle outside the tracked tree (or a verified git-ignored path): manifest, events, supplemental JSONL, and a small CSV summary. Cap 100 MiB; refuses secrets, kubeconfig bodies, raw atop, and argv/env. Missing optional streams are listed under `partialSources` without failing unless the supplemental state root itself is absent.
 
 Read current coverage before interpretation. Min/max observed vs kernel peak, source measurement timestamp vs collection time, separate nested scopes, unknown gaps and collector cost. No live data export without user request. Service stop is not data deletion; never clear vendor DB to fix a query. Retention actual may be shorter than targets.
 

@@ -148,6 +148,99 @@ export const SCENARIO_SOURCE_SUITE_MAP = Object.freeze({
   'REL-04': Object.freeze(['release']),
 });
 
+/**
+ * Workstation observability catalog rows proved by diagnostic fixture checks,
+ * not the Node TAP source suite. Fixture PASS does not imply live acceptance.
+ */
+export const MON_FIXTURE_EVIDENCE = Object.freeze({
+  'MON-01': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze([
+      'infra/monitoring/tests/test_install.py',
+      'infra/monitoring/tests/test_collector.py',
+      'infra/monitoring/tests/test_storage.py',
+    ]),
+  }),
+  'MON-02': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze([
+      'infra/monitoring/tests/test_host.py',
+      'infra/monitoring/tests/test_report.py',
+    ]),
+  }),
+  'MON-03': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze([
+      'infra/monitoring/tests/test_processes.py',
+      'infra/monitoring/tests/test_report.py',
+    ]),
+  }),
+  'MON-04': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze([
+      'infra/monitoring/tests/test_runtime.py',
+      'infra/monitoring/tests/test_kube.py',
+      'infra/monitoring/tests/test_cgroup.py',
+      'infra/monitoring/tests/test_runtime_collector.py',
+      'infra/monitoring/tests/test_report.py',
+    ]),
+  }),
+  'MON-05': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze([
+      'infra/monitoring/tests/test_host.py',
+      'infra/monitoring/tests/test_kube.py',
+      'infra/monitoring/tests/test_storage.py',
+    ]),
+  }),
+  'MON-06': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze([
+      'infra/monitoring/tests/test_storage.py',
+      'infra/monitoring/tests/test_host.py',
+      'infra/monitoring/tests/test_report.py',
+    ]),
+  }),
+  'MON-07': Object.freeze({
+    diagnosticChecks: Object.freeze([
+      'source:infra/monitoring/tests/operation-event.test.mjs',
+      'source:monitoring-python',
+    ]),
+    modules: Object.freeze([
+      'infra/monitoring/tests/operation-event.test.mjs',
+      'infra/monitoring/tests/test_report.py',
+    ]),
+  }),
+  'MON-08': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze([
+      'infra/monitoring/tests/test_report.py',
+      'infra/monitoring/tests/test_export.py',
+    ]),
+  }),
+  'MON-09': Object.freeze({
+    diagnosticChecks: Object.freeze(['source:monitoring-python']),
+    modules: Object.freeze(['infra/monitoring/tests/test_collector.py']),
+    liveNote:
+      'Cadence and scheduling bounds only; comparable idle before/after overhead is separately authorized live proof, not inferred from fixtures.',
+  }),
+});
+
+/** Diagnostic check IDs that attach observations to MON catalog rows when the check runs. */
+export const DIAGNOSTIC_CHECK_CAPABILITY_LINKS = Object.freeze({
+  'source:monitoring-python': Object.freeze([
+    'MON-01',
+    'MON-02',
+    'MON-03',
+    'MON-04',
+    'MON-05',
+    'MON-06',
+    'MON-08',
+    'MON-09',
+  ]),
+  'source:infra/monitoring/tests/operation-event.test.mjs': Object.freeze(['MON-07']),
+});
+
 const NOT_IMPLEMENTED_SUITES = new Set(['smoke', 'full']);
 
 /**
@@ -527,7 +620,15 @@ if (IS_CLI_MAIN) {
   const parsed = parseVerifyArgs(process.argv.slice(2));
   if (parsed.ok && parsed.suite === 'diagnostic') {
     try {
-      process.exitCode = await runDiagnostic({ repoRoot: REPO_ROOT, definitions: SOURCE_SUITE_DEFINITIONS, resolveFiles: resolveSuiteFiles, parseCounts: parseTapCounts, catalogIds: CATALOG_SCENARIO_IDS, json: parsed.json });
+      process.exitCode = await runDiagnostic({
+        repoRoot: REPO_ROOT,
+        definitions: SOURCE_SUITE_DEFINITIONS,
+        resolveFiles: resolveSuiteFiles,
+        parseCounts: parseTapCounts,
+        catalogIds: CATALOG_SCENARIO_IDS,
+        checkCapabilityLinks: DIAGNOSTIC_CHECK_CAPABILITY_LINKS,
+        json: parsed.json,
+      });
     } catch (error) {
       process.stderr.write('Diagnostic stopped: ' + error.message + '\n');
       process.exitCode = 1;

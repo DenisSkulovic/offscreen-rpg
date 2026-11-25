@@ -1,6 +1,6 @@
 # Local developer platform | composition implementation
 
-**Current checkpoint:** [consolidation](CONSOLIDATION.md) supersedes older dispatch summaries; INF29 evidence only, INF50 residual regressions source Done, INF49 composition source Done, INF47 Ready, INF38 Ready, INF48 Proposed, INF51 archived, INF52 lifecycle proof after VER01. Main target.
+**Current checkpoint:** [consolidation](CONSOLIDATION.md) supersedes older dispatch summaries; INF29 evidence only, INF50 residual regressions source Done, INF49 composition source Done, INF47 historical CLI source Done, INF38 Ready, INF48 Proposed, INF51 archived, INF52 lifecycle proof after VER01. Main target.
 
 **Workstation resource flight recorder:** [INF44–47](WORKSTATION-OBSERVABILITY.md) is a separate source implementation wave; persistent monitoring before further optimization. INF29 live corrective work remains independent.
 
