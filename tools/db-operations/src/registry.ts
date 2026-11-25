@@ -3,7 +3,10 @@ import {
   operationKey,
   validateManifest,
 } from './contract.js';
-import type { RegisteredAtomicOperation } from './execution/operation.js';
+import type {
+  RegisteredAtomicOperation,
+  RegisteredBatchedOperation,
+} from './execution/operation.js';
 
 export class OperationRegistryError extends Error {
   constructor(message: string) {
@@ -17,6 +20,9 @@ const REGISTRY_SOURCE: readonly OperationManifest[] = [];
 
 /** Explicit compile-time atomic handlers (no filesystem discovery). */
 const OPERATION_SOURCE: readonly RegisteredAtomicOperation[] = [];
+
+/** Explicit compile-time batched handlers (no filesystem discovery). */
+const BATCHED_OPERATION_SOURCE: readonly RegisteredBatchedOperation[] = [];
 
 function assertUniqueKeys(manifests: readonly OperationManifest[]): void {
   const seen = new Set<string>();
@@ -55,6 +61,38 @@ function assertUniqueOperationKeys(
 
 assertUniqueOperationKeys(REGISTRY_SOURCE, OPERATION_SOURCE);
 
+function assertUniqueBatchedOperationKeys(
+  registeredManifests: readonly OperationManifest[],
+  registeredOperations: readonly RegisteredBatchedOperation[],
+): void {
+  const manifestKeys = new Set(
+    registeredManifests.map((entry) => operationKey(entry)),
+  );
+  const seen = new Set<string>();
+  for (const operation of registeredOperations) {
+    const key = operationKey(operation.manifest);
+    if (seen.has(key)) {
+      throw new OperationRegistryError(`duplicate operation key: ${key}`);
+    }
+    seen.add(key);
+    if (!manifestKeys.has(key)) {
+      throw new OperationRegistryError(
+        `operation missing manifest for key: ${key}`,
+      );
+    }
+    const atomicCollision = OPERATION_SOURCE.find(
+      (entry) => operationKey(entry.manifest) === key,
+    );
+    if (atomicCollision !== undefined) {
+      throw new OperationRegistryError(
+        `batched operation key collides with atomic handler: ${key}`,
+      );
+    }
+  }
+}
+
+assertUniqueBatchedOperationKeys(REGISTRY_SOURCE, BATCHED_OPERATION_SOURCE);
+
 /** Frozen manifests registered for lookup. */
 export const manifests: readonly OperationManifest[] = Object.freeze([
   ...REGISTRY_SOURCE,
@@ -65,6 +103,10 @@ export const operations: readonly RegisteredAtomicOperation[] = Object.freeze([
   ...OPERATION_SOURCE,
 ]);
 
+/** Frozen batched operations registered for execution. */
+export const batchedOperations: readonly RegisteredBatchedOperation[] =
+  Object.freeze([...BATCHED_OPERATION_SOURCE]);
+
 export function lookup(key: string): OperationManifest | undefined {
   return manifests.find((entry) => operationKey(entry) === key);
 }
@@ -73,6 +115,14 @@ export function lookupOperation(
   key: string,
 ): RegisteredAtomicOperation | undefined {
   return operations.find((entry) => operationKey(entry.manifest) === key);
+}
+
+export function lookupBatchedOperation(
+  key: string,
+): RegisteredBatchedOperation | undefined {
+  return batchedOperations.find(
+    (entry) => operationKey(entry.manifest) === key,
+  );
 }
 
 /**

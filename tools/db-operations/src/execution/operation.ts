@@ -37,12 +37,46 @@ export type RegisteredAtomicOperation = Readonly<{
   verify(query: OperationQuery): Promise<boolean>;
 }>;
 
+export type BatchedNextBatchResult = Readonly<{
+  lastId: bigint;
+  affectedRows: bigint;
+  done: boolean;
+}>;
+
+export type RegisteredBatchedOperation = Readonly<{
+  manifest: OperationManifest;
+  plan(query: OperationQuery): Promise<AtomicPlanResult>;
+  nextBatch(
+    query: OperationQuery,
+    afterId: bigint,
+    limit: number,
+  ): Promise<BatchedNextBatchResult>;
+  verify(query: OperationQuery): Promise<boolean>;
+}>;
+
+export type RegisteredOperation =
+  RegisteredAtomicOperation | RegisteredBatchedOperation;
+
 export class AtomicOperationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'AtomicOperationError';
   }
 }
+
+export class BatchedOperationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BatchedOperationError';
+  }
+}
+
+export const DEFAULT_BATCH_SIZE = 100;
+export const DEFAULT_MAX_BATCHES = 20;
+export const MIN_BATCH_SIZE = 1;
+export const MAX_BATCH_SIZE = 500;
+export const MIN_MAX_BATCHES = 1;
+export const MAX_MAX_BATCHES = 100;
 
 export function assertActorSyntax(actor: string): void {
   if (!ACTOR_PATTERN.test(actor)) {
@@ -85,6 +119,50 @@ export function assertRunnableAtomicManifest(
   }
 }
 
+export function assertRunnableBatchedManifest(
+  manifest: OperationManifest,
+): void {
+  if (manifest.mode !== 'batched') {
+    throw new BatchedOperationError('operation mode must be batched');
+  }
+  if (manifest.risk === 'high') {
+    throw new BatchedOperationError('high-risk batched execution refused');
+  }
+  if (manifest.risk !== 'low' && manifest.risk !== 'medium') {
+    throw new BatchedOperationError('operation risk must be low or medium');
+  }
+}
+
+export function resolveBatchedDispatchBounds(
+  batchSize: number | undefined,
+  maxBatches: number | undefined,
+): Readonly<{ batchSize: number; maxBatches: number }> {
+  const resolvedBatchSize = batchSize ?? DEFAULT_BATCH_SIZE;
+  const resolvedMaxBatches = maxBatches ?? DEFAULT_MAX_BATCHES;
+  if (
+    !Number.isInteger(resolvedBatchSize) ||
+    resolvedBatchSize < MIN_BATCH_SIZE ||
+    resolvedBatchSize > MAX_BATCH_SIZE
+  ) {
+    throw new BatchedOperationError(
+      `batchSize must be an integer between ${MIN_BATCH_SIZE} and ${MAX_BATCH_SIZE}`,
+    );
+  }
+  if (
+    !Number.isInteger(resolvedMaxBatches) ||
+    resolvedMaxBatches < MIN_MAX_BATCHES ||
+    resolvedMaxBatches > MAX_MAX_BATCHES
+  ) {
+    throw new BatchedOperationError(
+      `maxBatches must be an integer between ${MIN_MAX_BATCHES} and ${MAX_MAX_BATCHES}`,
+    );
+  }
+  return Object.freeze({
+    batchSize: resolvedBatchSize,
+    maxBatches: resolvedMaxBatches,
+  });
+}
+
 export function manifestOperationKey(manifest: OperationManifest): string {
   return operationKey(manifest);
 }
@@ -100,6 +178,21 @@ export function freezeRegisteredOperation(
     manifest,
     plan: entry.plan,
     execute: entry.execute,
+    verify: entry.verify,
+  });
+}
+
+export function freezeRegisteredBatchedOperation(
+  entry: RegisteredBatchedOperation,
+): RegisteredBatchedOperation {
+  const manifest = Object.freeze({
+    ...entry.manifest,
+    affectedTables: Object.freeze([...entry.manifest.affectedTables]),
+  });
+  return Object.freeze({
+    manifest,
+    plan: entry.plan,
+    nextBatch: entry.nextBatch,
     verify: entry.verify,
   });
 }

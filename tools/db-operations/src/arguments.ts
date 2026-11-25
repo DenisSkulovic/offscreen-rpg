@@ -15,6 +15,18 @@ export type CliCommand =
       confirmTarget: string;
       actor: string;
       json: boolean;
+      batchSize?: number;
+      maxBatches?: number;
+    }>
+  | Readonly<{
+      kind: 'resume';
+      key: string;
+      targetId: string;
+      confirmTarget: string;
+      actor: string;
+      json: boolean;
+      batchSize?: number;
+      maxBatches?: number;
     }>;
 
 type UsageFailure = Readonly<{ ok: false; exitCode: 2; message: string }>;
@@ -46,7 +58,37 @@ function isUsageRefusal(
 type KeyedCommandOptions = Readonly<{
   requireConfirmTarget?: boolean;
   requireActor?: boolean;
+  allowBatchDispatch?: boolean;
 }>;
+
+type RunLikeCommand = Readonly<{
+  kind: 'run' | 'resume';
+  key: string;
+  targetId: string;
+  confirmTarget: string;
+  actor: string;
+  json: boolean;
+  batchSize?: number;
+  maxBatches?: number;
+}>;
+
+function parseDispatchInt(
+  head: string,
+  flag: string,
+  raw: string,
+): number | UsageFailure {
+  if (raw.length === 0) {
+    return refuseUsage(`${head} ${flag} requires a value`);
+  }
+  if (!/^\d+$/.test(raw)) {
+    return refuseUsage(`${head} ${flag} requires a decimal integer`);
+  }
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value)) {
+    return refuseUsage(`${head} ${flag} requires a decimal integer`);
+  }
+  return value;
+}
 
 function parseKeyedTargetCommand(
   head: string,
@@ -68,6 +110,8 @@ function parseKeyedTargetCommand(
   let targetId: string | undefined;
   let confirmTarget: string | undefined;
   let actor: string | undefined;
+  let batchSize: number | undefined;
+  let maxBatches: number | undefined;
   const seen = new Set<string>();
 
   for (let index = 1; index < rest.length; index += 1) {
@@ -152,6 +196,64 @@ function parseKeyedTargetCommand(
       actor = value;
       continue;
     }
+    if (options.allowBatchDispatch === true) {
+      if (token === '--batch-size') {
+        const value = rest[index + 1];
+        if (value === undefined || value.startsWith('--')) {
+          return refuseUsage(`${head} --batch-size requires a value`);
+        }
+        if (batchSize !== undefined) {
+          return refuseUsage('duplicate option: --batch-size');
+        }
+        const parsed = parseDispatchInt(head, '--batch-size', value);
+        if (typeof parsed !== 'number') {
+          return parsed;
+        }
+        batchSize = parsed;
+        index += 1;
+        continue;
+      }
+      if (token.startsWith('--batch-size=')) {
+        const value = token.slice('--batch-size='.length);
+        if (batchSize !== undefined) {
+          return refuseUsage('duplicate option: --batch-size');
+        }
+        const parsed = parseDispatchInt(head, '--batch-size', value);
+        if (typeof parsed !== 'number') {
+          return parsed;
+        }
+        batchSize = parsed;
+        continue;
+      }
+      if (token === '--max-batches') {
+        const value = rest[index + 1];
+        if (value === undefined || value.startsWith('--')) {
+          return refuseUsage(`${head} --max-batches requires a value`);
+        }
+        if (maxBatches !== undefined) {
+          return refuseUsage('duplicate option: --max-batches');
+        }
+        const parsed = parseDispatchInt(head, '--max-batches', value);
+        if (typeof parsed !== 'number') {
+          return parsed;
+        }
+        maxBatches = parsed;
+        index += 1;
+        continue;
+      }
+      if (token.startsWith('--max-batches=')) {
+        const value = token.slice('--max-batches='.length);
+        if (maxBatches !== undefined) {
+          return refuseUsage('duplicate option: --max-batches');
+        }
+        const parsed = parseDispatchInt(head, '--max-batches', value);
+        if (typeof parsed !== 'number') {
+          return parsed;
+        }
+        maxBatches = parsed;
+        continue;
+      }
+    }
     if (token.startsWith('--')) {
       return refuseUsage(`unknown option: ${token}`);
     }
@@ -183,16 +285,19 @@ function parseKeyedTargetCommand(
       command: { kind: 'status', key, targetId } as const,
     });
   }
+  const runLike: RunLikeCommand = Object.freeze({
+    kind: head === 'resume' ? 'resume' : 'run',
+    key,
+    targetId,
+    confirmTarget: confirmTarget ?? '',
+    actor: actor ?? '',
+    json,
+    ...(batchSize === undefined ? {} : { batchSize }),
+    ...(maxBatches === undefined ? {} : { maxBatches }),
+  });
   return Object.freeze({
     ok: true,
-    command: {
-      kind: 'run',
-      key,
-      targetId,
-      confirmTarget: confirmTarget ?? '',
-      actor: actor ?? '',
-      json,
-    } as const,
+    command: runLike,
   });
 }
 
@@ -313,6 +418,15 @@ export function parseCliArguments(
     return parseKeyedTargetCommand('run', argv.slice(1), {
       requireConfirmTarget: true,
       requireActor: true,
+      allowBatchDispatch: true,
+    });
+  }
+
+  if (head === 'resume') {
+    return parseKeyedTargetCommand('resume', argv.slice(1), {
+      requireConfirmTarget: true,
+      requireActor: true,
+      allowBatchDispatch: true,
     });
   }
 
