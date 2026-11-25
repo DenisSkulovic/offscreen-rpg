@@ -93,7 +93,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 CACHE09, CACHE10, CACHE11 and CQ06 archived Done (source). CACHE12 held for planner migration; no global queue change.
 
 ## Database craftsmanship wave
-- [DB11 Database package navigation and test ownership](2026-11-25--db11-db-navigation/CHANGE.md) — Ready, source only.
+- DB11 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--db11-db-navigation/CHANGE.md).
 - [DB12 Repair managed transaction outcome and cleanup safety](2026-11-25--db12-db-transaction-outcomes/CHANGE.md) — Ready (dependency-gated), source only.
 - [DB13 Migration runner postcondition and failure reporting](2026-11-25--db13-db-migration-runner/CHANGE.md) — Ready (dependency-gated), source only.
 - [DB14 Explicit admission telemetry ownership and probe navigation](2026-11-25--db14-db-admission-ownership/CHANGE.md) — Ready (dependency-gated), source only.
