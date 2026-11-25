@@ -49,7 +49,9 @@ saves/
 .grepai/
 .offscreen/dev-session.json
 .offscreen/dev-startup-timing.json
-.offscreen/dev-startup-timing.json.phases.jsonl
+# Per-run child phase receipts use .<operationId>.phases.jsonl; keep the bare .phases.jsonl too.
+.offscreen/dev-startup-timing.json*.phases.jsonl
+.offscreen/tilt-image-refs/
 .offscreen-dev-runtime/
 
 # Private autonomous infrastructure verification receipts
