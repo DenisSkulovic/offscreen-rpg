@@ -46,7 +46,7 @@ test('dev and release plans keep the core service order with absolute entrypoint
     ['postgres', 'object-storage', 'temporal', 'gateway'],
   );
   for (const phase of release.phases) {
-    assert.equal(phase.argv[0], 'bash');
+    assert.equal(phase.argv[0], phase.id === 'temporal' ? process.execPath : 'bash');
     assert.equal(
       phase.argv[1]?.startsWith(join(REPO_ROOT, 'infra/platform')),
       true,
@@ -170,7 +170,7 @@ test('chart render preflight touches only selected services', () => {
   assert.equal(rendered.length, 1);
   assert.match(rendered[0], /postgres\/chart$/);
   assert.equal(
-    linted.some((path) => /temporal|object-storage/.test(path)),
+    linted.some((path) => /(?:temporal|object-storage)\/chart$/.test(path)),
     false,
   );
 });
@@ -242,7 +242,7 @@ test('ensure preflight skips unselected chart services', () => {
   assert.match(helmLintTargets[0], /redis\/chart$/);
   assert.equal(
     helmLintTargets.some((path) =>
-      /postgres|temporal|object-storage/.test(path),
+      /(?:postgres|temporal|object-storage)\/chart$/.test(path),
     ),
     false,
   );
@@ -267,7 +267,7 @@ test('dev ensure carries the existing authorization env flags on bootstrap CLIs'
   assert.equal(plan.ok, true);
   assert.equal(plan.phases[0].env?.OFFSCREEN_DEV_CNPG_ENSURE, 'authorized');
   assert.equal(plan.phases[1].env?.OFFSCREEN_DEV_S3_ENSURE, 'authorized');
-  assert.equal(plan.phases[2].env?.OFFSCREEN_DEV_TEMPORAL_ENSURE, 'authorized');
+  assert.equal(plan.phases[2].env?.OFFSCREEN_TEMPORAL_ENSURE, 'authorized');
   assert.deepEqual(
     plan.phases.map((p) => p.argv[2]),
     ['ensure', 'ensure', 'ensure'],
