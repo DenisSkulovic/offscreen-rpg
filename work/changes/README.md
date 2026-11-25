@@ -369,6 +369,6 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 [INF57](archive/2026-11/platform-operations/2026-11-25--inf57-postgres-infrastructure-readability/CHANGE.md) — Done (source). Topology/bootstrap ownership split, cycle removed, truthful plan/status readiness text; focused 78/78 + related 71/71 PASS; live K8s NOT-RUN.
 
 ## Redis infrastructure source wave
-- [INF58 Redis chart configuration and rollout identity](open/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Ready; source only.
+- [INF58 Redis chart configuration and rollout identity](archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); 13/13 render tests; live NOT-RUN.
 - [INF59 Redis installer safety and readiness](open/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Ready; source only.
-- [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — dependency-gated; source only.
+- [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — dependency-gated on INF58+INF59; source only.

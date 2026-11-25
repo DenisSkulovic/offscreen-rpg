@@ -3,3 +3,15 @@ mode: placeholder
 namespace: placeholder
 images:
   redis: placeholder-redis
+redis:
+  maxmemoryMiB: 32
+  evictionPolicy: allkeys-lru
+resources:
+  requests:
+    cpuMilli: 20
+    memoryMiB: 32
+  limits:
+    cpuMilli: 500
+    memoryMiB: 128
+data:
+  emptyDirMiB: 32

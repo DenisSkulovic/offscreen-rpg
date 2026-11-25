@@ -1,7 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["mode", "namespace", "section", "images"],
+  "required": [
+    "mode",
+    "namespace",
+    "section",
+    "images",
+    "redis",
+    "resources",
+    "data"
+  ],
   "properties": {
     "mode": { "enum": ["development", "release"] },
     "namespace": { "type": "string", "minLength": 1 },
@@ -11,6 +19,68 @@
       "required": ["redis"],
       "properties": {
         "redis": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "redis": {
+      "type": "object",
+      "required": ["maxmemoryMiB", "evictionPolicy"],
+      "properties": {
+        "maxmemoryMiB": { "type": "integer", "minimum": 1, "maximum": 32768 },
+        "evictionPolicy": { "enum": ["allkeys-lru", "allkeys-lfu"] }
+      },
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object",
+      "required": ["requests", "limits"],
+      "properties": {
+        "requests": {
+          "type": "object",
+          "required": ["cpuMilli", "memoryMiB"],
+          "properties": {
+            "cpuMilli": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32000
+            },
+            "memoryMiB": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65536
+            }
+          },
+          "additionalProperties": false
+        },
+        "limits": {
+          "type": "object",
+          "required": ["cpuMilli", "memoryMiB"],
+          "properties": {
+            "cpuMilli": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32000
+            },
+            "memoryMiB": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65536
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "data": {
+      "type": "object",
+      "required": ["emptyDirMiB"],
+      "properties": {
+        "emptyDirMiB": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        }
       },
       "additionalProperties": false
     }

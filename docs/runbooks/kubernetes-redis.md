@@ -4,11 +4,11 @@ Disposable Redis on the [Kubernetes lab](kubernetes-lab.md) cluster. This is **o
 
 The cache rule stays on [Redis boundary](../technical/platform/persistence-and-caching.md#redis-boundary). PostgreSQL remains the authoritative record. Redis is an unauthenticated, explicitly isolated, disposable instance. It is not an automatic application runtime and not a shared dev cache until a separate CACHE isolation and authentication contract is selected.
 
-Chart, install script, and focused render tests live in `infra/platform/redis/`. The Helm chart is `infra/platform/redis/chart/`. Only the **release** profile renders or installs Redis; `node infra/platform/common/cli.mjs render redis dev …` refuses with `release-only`. Dev worktree stacks do not include this Service.
+Chart, install script, and focused render tests live in `infra/platform/redis/`. The Helm chart is `infra/platform/redis/chart/`. Both **development** and **release** profiles render the same three identities (ConfigMap `redis-config`, Deployment `redis`, Service `redis`) with profile-owned namespaces (`offscreen-dev-redis` / `lab-a`). Disposable lab install and smoke remain release/`lab-a` procedures below; installer ownership and readiness remain with that path. Dev worktree application stacks do not wire this Service by default.
 
 ## What this procedure is
 
-Run one Redis process in `lab-a` behind a ClusterIP Service named `redis`. The process has a memory cap, a CPU cap, and a `redis-cli ping` liveness probe. Snapshotting and the append-only file are off, and the data directory is an emptyDir that dies with the pod.
+Run one Redis process behind a ClusterIP Service named `redis`. The process has a memory cap, a CPU cap, and a `redis-cli ping` liveness probe. Snapshotting and the append-only file are off, and the data directory is an emptyDir that dies with the pod. Chart defaults keep `maxmemory` 32mb, eviction `allkeys-lru`, requests `20m`/`32Mi`, limits `500m`/`128Mi`, and emptyDir `32Mi`. Those budgets are explicit values (`redis.*`, `resources.*`, `data.emptyDirMiB`) with schema and cross-field Helm validation (`request <= limit`, `maxmemoryMiB <= floor(memory limit / 2)`). A single rendered `redis.conf` string feeds the ConfigMap and the Deployment pod-template annotation `offscreen.rpg/redis-config-sha256`; strategy is Recreate with one replica, so a config change rolls the pod and discards emptyDir cache contents. CPU-only resource edits change the pod resources without rewriting that config digest.
 
 `OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed infra/verification/smoke/redis/smoke.sh` checks three losses:
 
@@ -37,7 +37,7 @@ The cluster comes from [Kubernetes lab](kubernetes-lab.md). This procedure adds 
 | --- | --- |
 | Redis | `docker.io/library/redis:8.2.1-alpine` (the same tag as the lab release Redis image) |
 
-The container runs as uid 999 and gid 1000, which is the `redis` account in that image. The memory limit is 128Mi and the CPU limit is 500m. `maxmemory` inside Redis is 32mb.
+The container runs as uid 999 and gid 1000, which is the `redis` account in that image. Default chart budgets remain memory limit 128Mi, CPU limit 500m, and `maxmemory` 32mb unless an overlay changes validated values.
 
 ## Create, smoke, and delete
 
