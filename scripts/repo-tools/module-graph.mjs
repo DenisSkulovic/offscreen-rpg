@@ -24,6 +24,60 @@ const SUMMARY_LIMIT = 12;
 const WORKSPACE_SCOPE = '@offscreen/';
 export const FORBIDDEN_APPLICATION_IMPORT = '@offscreen/application';
 export const RETIRED_CONTRACTS_PACKAGE = '@offscreen/contracts';
+export const DB_PACKAGE = '@offscreen/db';
+export const IDENTITY_PERSISTENCE_PACKAGE = '@offscreen/identity-persistence';
+export const STORY_PERSISTENCE_PACKAGE = '@offscreen/story-persistence';
+export const DB_MIGRATIONS_PACKAGE = '@offscreen/db-migrations';
+/** @offscreen/config is the only workspace package allowed on the DB package manifest. */
+export const DB_ALLOWED_DEV_WORKSPACE = '@offscreen/config';
+/** Public DB export subpaths besides the root (`.`). */
+export const ALLOWED_DB_EXPORT_SUBPATHS = new Set(['', 'migrate']);
+/** Retired schema and outbox subpaths; imports fail even if an export alias returns. */
+export const RETIRED_DB_EXPORT_SUBPATHS = new Set([
+  'schema',
+  'terminal-auth-schema',
+  'draft-schema',
+  'generation-schema',
+  'story-schema',
+  'launch-schema',
+  'campaign-schema',
+  'storyteller-schema',
+  'admin-schema',
+  'qa-schema',
+  'outbox-schema',
+  'outbox',
+  'outbox-relay',
+]);
+export const FORBIDDEN_SQL_CLOSURE_PACKAGES = new Set([
+  DB_PACKAGE,
+  IDENTITY_PERSISTENCE_PACKAGE,
+  STORY_PERSISTENCE_PACKAGE,
+  '@offscreen/outbox',
+  '@offscreen/admin',
+  '@offscreen/lab-support',
+]);
+export const FORBIDDEN_SQL_CLOSURE_EXTERNAL = new Set([
+  'drizzle-orm',
+  'pg',
+  'postgres',
+  '@neondatabase/serverless',
+]);
+const MANIFEST_DEPENDENCY_FIELDS = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+];
+const PERSISTENCE_LEAF_ALLOWED_RUNTIME = Object.freeze({
+  [IDENTITY_PERSISTENCE_PACKAGE]: {
+    workspace: new Set(),
+    external: new Set(['drizzle-orm']),
+  },
+  [STORY_PERSISTENCE_PACKAGE]: {
+    workspace: new Set([IDENTITY_PERSISTENCE_PACKAGE]),
+    external: new Set(['drizzle-orm']),
+  },
+});
 /** Schema-only and pure packages that must not depend on Story Engine or Lab Support. */
 export const INTERFACE_LEAF_PACKAGES = new Set([
   '@offscreen/game',
@@ -34,6 +88,12 @@ export const INTERFACE_LEAF_PACKAGES = new Set([
   '@offscreen/cache-port',
   '@offscreen/lab-interface',
 ]);
+export const SQL_FREE_CLOSURE_ROOTS = [
+  '@offscreen/web',
+  '@offscreen/workflows',
+  '@offscreen/storyteller',
+  ...INTERFACE_LEAF_PACKAGES,
+];
 const FORBIDDEN_LEAF_TO_APPLICATION = new Set([
   '@offscreen/story-engine',
   '@offscreen/lab-support',
@@ -173,7 +233,10 @@ export function buildModuleGraph(input) {
   const warnings = [];
 
   for (const item of packages) {
-    for (const field of ['dependencies', 'devDependencies']) {
+    validateDbPackageManifest(item, errors);
+    validatePersistenceLeafManifest(item, errors);
+    validateDbPublicExports(item, errors);
+    for (const field of MANIFEST_DEPENDENCY_FIELDS) {
       const block = item.manifest[field];
       if (!block || typeof block !== 'object') continue;
       for (const name of Object.keys(block).sort()) {
@@ -313,6 +376,14 @@ export function buildModuleGraph(input) {
       message: `Type-only intra-application cycle: ${cycle.join(' → ')}`,
     });
   }
+
+  validateSqlFreeRuntimeClosures({
+    packages,
+    byName,
+    declaredEdges,
+    sourceEdges,
+    errors,
+  });
 
   const storyEngineFileNodes = input.sources
     .map((source) => normalize(source.path))
@@ -646,6 +717,218 @@ export function matchWorkspacePackage(specifier, packageNames) {
 }
 
 /**
+ * @param {PackageRecord} item
+ * @param {Array<Record<string, string>>} errors
+ */
+function validateDbPackageManifest(item, errors) {
+  if (item.name !== DB_PACKAGE) return;
+  for (const field of MANIFEST_DEPENDENCY_FIELDS) {
+    const block = item.manifest[field];
+    if (!block || typeof block !== 'object') continue;
+    for (const name of Object.keys(block).sort()) {
+      if (!name.startsWith(WORKSPACE_SCOPE)) continue;
+      if (
+        field === 'devDependencies' &&
+        name === DB_ALLOWED_DEV_WORKSPACE
+      ) {
+        continue;
+      }
+      errors.push({
+        code: 'forbidden-db-workspace-dependency',
+        message: `${DB_PACKAGE} must not depend on domain workspace ${name} (${field})`,
+      });
+    }
+  }
+}
+
+/**
+ * @param {PackageRecord} item
+ * @param {Array<Record<string, string>>} errors
+ */
+function validateDbPublicExports(item, errors) {
+  if (item.name !== DB_PACKAGE) return;
+  const exportsField = item.manifest.exports;
+  if (exportsField == null) return;
+  const keys =
+    typeof exportsField === 'string'
+      ? ['.']
+      : typeof exportsField === 'object' && !Array.isArray(exportsField)
+        ? Object.keys(/** @type {Record<string, unknown>} */ (exportsField))
+        : [];
+  for (const key of keys.sort()) {
+    const subpath = key === '.' ? '' : key.replace(/^\.\//u, '');
+    if (!ALLOWED_DB_EXPORT_SUBPATHS.has(subpath)) {
+      errors.push({
+        code: 'forbidden-db-export-subpath',
+        message: `${DB_PACKAGE} export ${key} is not public; only . and ./migrate are allowed`,
+      });
+    }
+  }
+}
+
+/**
+ * @param {PackageRecord} item
+ * @param {Array<Record<string, string>>} errors
+ */
+function validatePersistenceLeafManifest(item, errors) {
+  const allowed = PERSISTENCE_LEAF_ALLOWED_RUNTIME[item.name];
+  if (!allowed) return;
+  for (const field of MANIFEST_DEPENDENCY_FIELDS) {
+    const block = item.manifest[field];
+    if (!block || typeof block !== 'object') continue;
+    for (const name of Object.keys(block).sort()) {
+      if (name === DB_ALLOWED_DEV_WORKSPACE && field === 'devDependencies') {
+        continue;
+      }
+      if (name.startsWith(WORKSPACE_SCOPE)) {
+        if (field === 'dependencies' && allowed.workspace.has(name)) continue;
+        errors.push({
+          code: 'forbidden-persistence-leaf-dependency',
+          message: `${item.name} must not declare workspace dependency ${name} (${field})`,
+        });
+        continue;
+      }
+      if (field !== 'dependencies') continue;
+      if (allowed.external.has(name)) continue;
+      errors.push({
+        code: 'forbidden-persistence-leaf-dependency',
+        message: `${item.name} dependencies may only include ${[...allowed.external].join(', ')} and ${[...allowed.workspace].join(', ') || 'no workspace packages'}`,
+      });
+    }
+  }
+}
+
+/**
+ * @param {string | null} ownerName
+ * @param {string} specifier
+ * @param {string | null} targetName
+ * @param {boolean} production
+ * @param {Array<Record<string, string>>} errors
+ * @param {string} file
+ * @param {number} line
+ */
+function validatePersistenceLeafSourceImport(
+  ownerName,
+  specifier,
+  targetName,
+  production,
+  errors,
+  file,
+  line,
+) {
+  if (!production || !ownerName) return;
+  const allowed = PERSISTENCE_LEAF_ALLOWED_RUNTIME[ownerName];
+  if (!allowed) return;
+  if (targetName?.startsWith(WORKSPACE_SCOPE)) {
+    if (allowed.workspace.has(targetName)) return;
+    errors.push({
+      code: 'forbidden-persistence-leaf-source-import',
+      message: `${file}:${line} ${ownerName} must not import workspace ${specifier}`,
+      file,
+      specifier,
+    });
+    return;
+  }
+  if (!specifier.startsWith('.') && !specifier.startsWith(WORKSPACE_SCOPE)) {
+    const externalRoot = specifier.split('/')[0];
+    if (allowed.external.has(externalRoot)) return;
+    errors.push({
+      code: 'forbidden-persistence-leaf-source-import',
+      message: `${file}:${line} ${ownerName} must not import external runtime ${specifier}`,
+      file,
+      specifier,
+    });
+  }
+}
+
+/**
+ * @param {{
+ *   packages: PackageRecord[],
+ *   byName: Map<string, PackageRecord>,
+ *   declaredEdges: Array<Record<string, unknown>>,
+ *   sourceEdges: Array<Record<string, unknown>>,
+ *   errors: Array<Record<string, string>>,
+ * }} input
+ */
+function validateSqlFreeRuntimeClosures(input) {
+  const adjacency = buildSqlClosureAdjacency(
+    input.declaredEdges,
+    input.sourceEdges,
+  );
+  const byName = new Map(input.packages.map((item) => [item.name, item]));
+  for (const root of SQL_FREE_CLOSURE_ROOTS) {
+    if (!byName.has(root)) continue;
+    const visited = new Set();
+    /** @type {Array<{ current: string, path: string[] }>} */
+    const queue = [{ current: root, path: [root] }];
+    while (queue.length > 0) {
+      const { current, path } = queue.shift();
+      if (visited.has(current)) continue;
+      visited.add(current);
+      const pkg = byName.get(current);
+      if (pkg) {
+        const dependencies = pkg.manifest.dependencies;
+        if (dependencies && typeof dependencies === 'object') {
+          for (const name of Object.keys(dependencies).sort()) {
+            if (FORBIDDEN_SQL_CLOSURE_EXTERNAL.has(name)) {
+              input.errors.push({
+                code: 'forbidden-sql-free-closure',
+                message: `SQL-free closure from ${root} reaches ${current} with external ${name}: ${path.join(' → ')} → ${name}`,
+              });
+            }
+          }
+        }
+      }
+      if (FORBIDDEN_SQL_CLOSURE_PACKAGES.has(current) && current !== root) {
+        input.errors.push({
+          code: 'forbidden-sql-free-closure',
+          message: `SQL-free closure from ${root} reaches forbidden package ${current}: ${path.join(' → ')}`,
+        });
+      }
+      if (
+        current === DB_MIGRATIONS_PACKAGE &&
+        root !== DB_MIGRATIONS_PACKAGE
+      ) {
+        input.errors.push({
+          code: 'forbidden-migration-tool-runtime-closure',
+          message: `Runtime app closure from ${root} must not reach ${DB_MIGRATIONS_PACKAGE}: ${path.join(' → ')}`,
+        });
+      }
+      for (const next of adjacency.get(current) ?? []) {
+        if (visited.has(next)) continue;
+        queue.push({ current: next, path: [...path, next] });
+      }
+    }
+  }
+}
+
+/**
+ * @param {Array<Record<string, unknown>>} declaredEdges
+ * @param {Array<Record<string, unknown>>} sourceEdges
+ */
+function buildSqlClosureAdjacency(declaredEdges, sourceEdges) {
+  /** @type {Map<string, Set<string>>} */
+  const adjacency = new Map();
+  const add = (from, to) => {
+    if (!from || !to || from === to) return;
+    if (!adjacency.has(from)) adjacency.set(from, new Set());
+    adjacency.get(from).add(to);
+  };
+  for (const edge of declaredEdges) {
+    if (edge.field !== 'dependencies' && edge.field !== 'peerDependencies') {
+      continue;
+    }
+    add(String(edge.from), String(edge.to));
+  }
+  for (const edge of sourceEdges) {
+    if (edge.production !== true || edge.resolved !== true) continue;
+    if (!edge.fromPackage || !edge.toPackage) continue;
+    add(String(edge.fromPackage), String(edge.toPackage));
+  }
+  return adjacency;
+}
+
+/**
  * @param {object} input
  */
 function classifySpecifier(input) {
@@ -679,8 +962,41 @@ function classifySpecifier(input) {
     }
     return;
   }
+  if (match.name === DB_PACKAGE) {
+    if (
+      match.subpath.length > 0 &&
+      RETIRED_DB_EXPORT_SUBPATHS.has(match.subpath)
+    ) {
+      pushMismatch(input, 'forbidden-retired-db-import', true);
+      return;
+    }
+    if (
+      match.subpath.length > 0 &&
+      !ALLOWED_DB_EXPORT_SUBPATHS.has(match.subpath)
+    ) {
+      pushMismatch(input, 'forbidden-retired-db-import', true);
+      return;
+    }
+  }
   const target = input.byName.get(match.name);
   const production = owner ? isProductionSource(file) : false;
+  if (
+    production &&
+    owner?.name === DB_PACKAGE &&
+    match.name.startsWith(WORKSPACE_SCOPE)
+  ) {
+    pushMismatch(input, 'forbidden-db-domain-source-import', true);
+    return;
+  }
+  validatePersistenceLeafSourceImport(
+    owner?.name ?? null,
+    specifier.specifier,
+    match.name,
+    production,
+    input.errors,
+    file,
+    specifier.line,
+  );
   const resolved = Boolean(
     target && subpathIsExported(target.manifest, match.subpath),
   );

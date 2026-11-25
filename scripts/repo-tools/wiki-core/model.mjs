@@ -258,8 +258,20 @@ function classifyPackageExport(name, text) {
   };
 }
 
+function isPersistedEntitySchemaPath(name) {
+  if (!name.endsWith('.ts')) return false;
+  if (name === 'packages/identity-persistence/src/auth.ts') return true;
+  if (name === 'packages/identity-persistence/src/terminal-auth.ts') return true;
+  if (name === 'packages/admin/src/persistence/schema.ts') return true;
+  if (name === 'packages/lab-support/src/persistence/schema.ts') return true;
+  if (name === 'packages/outbox/src/schema.ts') return true;
+  if (/^packages\/story-persistence\/src\/[^/]+\.ts$/.test(name)) return true;
+  if (/^packages\/story-persistence\/src\/storyteller\/[^/]+\.ts$/.test(name)) return true;
+  return false;
+}
+
 function classifyPersistedEntity(name, text) {
-  if (!name.startsWith('packages/db/') || !name.endsWith('.ts')) return null;
+  if (!isPersistedEntitySchemaPath(name)) return null;
   const tables = [...text.matchAll(TABLE_EXPORT)].map((match) => match[1]);
   if (tables.length === 0) return null;
   return {

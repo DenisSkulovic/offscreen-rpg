@@ -1,8 +1,20 @@
 # Story Engine SQL ownership
 
-Navigation map of the code that actually reads and writes SQL, inspected on `undertaking/storyteller-workshop` at `ade6cfbf`. This is not a claim that every query is exactly-once, highly available, or scalable. `@offscreen/db` defines tables and the connection; Story Engine functions own transactions, locks, and idempotency.
+Navigation map of the code that actually reads and writes SQL, inspected on `main` at `cf038a61`. This is not a claim that every query is exactly-once, highly available, or scalable. `@offscreen/db` owns the pool, migrations, and transaction primitives only; Story Engine functions own transactions, locks, and idempotency.
 
-Table declarations for the 20 Storyteller tables stay behind `@offscreen/story-persistence/storyteller` ([barrel](../story-persistence/src/storyteller.ts)).
+## Where SQL tables are declared
+
+| Domain | Drizzle declaration module |
+| --- | --- |
+| Story drafts / generations / stories / launch / campaign | `@offscreen/story-persistence` (`drafts`, `generations`, `stories`, `launch`, `campaign`) |
+| Writer / Storyteller custody (20 tables) | `@offscreen/story-persistence/storyteller` ([barrel](../story-persistence/src/storyteller.ts), modules under [storyteller/](../story-persistence/src/storyteller/)) |
+| Player identity / Better Auth | `@offscreen/identity-persistence/auth` ([auth.ts](../identity-persistence/src/auth.ts)) |
+| Terminal pairing / access tokens | `@offscreen/identity-persistence/terminal-auth` ([terminal-auth.ts](../identity-persistence/src/terminal-auth.ts)) |
+| Admin staff / audit / cases | `@offscreen/admin/persistence/schema` |
+| Lab QA runs / stages | `@offscreen/lab-support/persistence/schema` |
+| Durable delivery | `@offscreen/outbox/schema` ([schema.ts](../outbox/src/schema.ts)) |
+
+Canonical platform ownership and migration assets are in [database infrastructure](../../docs/technical/platform/database-infrastructure.md). Historical SQL and the journal remain [packages/db/migrations](../db/migrations); the generic runner is `@offscreen/db/migrate`.
 
 ## Where a command starts a transaction
 

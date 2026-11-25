@@ -109,10 +109,43 @@ test('classifies only the five bounded source boundaries', () => {
   );
   assert.equal(classifyKnowledgeBoundary('packages/widgets/src/index.ts', 'export {}\n'), null);
 
-  const table = 'packages/db/src/schema/widget.ts';
+  const persistedFixtures = [
+    ['packages/identity-persistence/src/auth.ts', 'export const user = pgTable("user", {});\n'],
+    [
+      'packages/identity-persistence/src/terminal-auth.ts',
+      'export const terminalDevicePairing = pgTable("terminal_device_pairing", {});\n',
+    ],
+    ['packages/story-persistence/src/stories.ts', 'export const story = pgTable("story", {});\n'],
+    [
+      'packages/story-persistence/src/storyteller/writer.ts',
+      'export const storytellerRun = pgTable("storyteller_run", {});\n',
+    ],
+    [
+      'packages/admin/src/persistence/schema.ts',
+      'export const adminStaffPrincipal = pgTable("admin_staff_principal", {});\n',
+    ],
+    [
+      'packages/lab-support/src/persistence/schema.ts',
+      'export const labQaRun = pgTable("lab_qa_run", {});\n',
+    ],
+    ['packages/outbox/src/schema.ts', 'export const outbox = pgTable("outbox", {});\n'],
+  ];
+  for (const [rel, text] of persistedFixtures) {
+    assert.equal(classifyKnowledgeBoundary(rel, text).kind, 'persisted-entity', rel);
+  }
   assert.equal(
-    classifyKnowledgeBoundary(table, 'export const widget = pgTable("widget", {});\n').kind,
-    'persisted-entity',
+    classifyKnowledgeBoundary(
+      'packages/story-persistence/src/storyteller.ts',
+      'export { storytellerRun } from "./storyteller/writer.js";\n',
+    ),
+    null,
+  );
+  assert.equal(
+    classifyKnowledgeBoundary(
+      'packages/db/src/schema/widget.ts',
+      'export const widget = pgTable("widget", {});\n',
+    ),
+    null,
   );
   assert.equal(
     classifyKnowledgeBoundary(

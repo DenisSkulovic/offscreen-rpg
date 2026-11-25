@@ -14,14 +14,17 @@ import {
   typeOnlyCycles,
 } from './module-graph-core.mjs';
 import {
+  ALLOWED_DB_EXPORT_SUBPATHS,
   buildModuleGraph,
   collectRequireSpecifiers,
+  DB_PACKAGE,
   isApplicationImportBanScope,
   isForbiddenApplicationSpecifier,
   isProductionSource,
   renderHuman,
   renderMermaid,
   resolveRelative,
+  RETIRED_DB_EXPORT_SUBPATHS,
   SCHEMA,
 } from './module-graph.mjs';
 
@@ -934,5 +937,158 @@ test('web production source importing private authority protocol fails type-only
         item.file === 'apps/web/src/features/play/lib/version.ts',
     ),
   );
+  assert.equal(report.result, 'fail');
+});
+
+test('DB manifest rejects domain workspace dependencies outside dev config', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'db10',
+    typescript,
+    packages: [
+      packageRecord(
+        'packages/db',
+        DB_PACKAGE,
+        { '.': './dist/index.js', './migrate': './dist/migrate.js' },
+        {
+          '@offscreen/story-persistence': 'workspace:*',
+          'drizzle-orm': '0.45.2',
+        },
+        { '@offscreen/config': 'workspace:*' },
+      ),
+    ],
+    sources: [],
+  });
+  assert.ok(
+    report.errors.some(
+      (item) => item.code === 'forbidden-db-workspace-dependency',
+    ),
+  );
+  assert.equal(report.result, 'fail');
+});
+
+test('retired @offscreen/db schema subpaths fail even when aliased in exports', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'db10',
+    typescript,
+    packages: [
+      packageRecord(
+        'packages/db',
+        DB_PACKAGE,
+        {
+          '.': './dist/index.js',
+          './storyteller-schema': './dist/schema.js',
+        },
+        {},
+        {},
+      ),
+      packageRecord('packages/story-engine', '@offscreen/story-engine', {
+        '.': './dist/index.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'packages/story-engine/src/stories/index.ts',
+        text: "import { storytellerPublication } from '@offscreen/db/storyteller-schema';\nexport const x = storytellerPublication;\n",
+      },
+    ],
+  });
+  assert.ok(
+    report.errors.some(
+      (item) =>
+        item.code === 'forbidden-db-export-subpath' ||
+        item.code === 'forbidden-retired-db-import',
+    ),
+  );
+  assert.equal(report.result, 'fail');
+  assert.ok(RETIRED_DB_EXPORT_SUBPATHS.has('storyteller-schema'));
+  assert.ok(ALLOWED_DB_EXPORT_SUBPATHS.has('migrate'));
+});
+
+test('identity persistence leaf rejects workspace runtime dependencies', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'db10',
+    typescript,
+    packages: [
+      packageRecord(
+        'packages/identity-persistence',
+        '@offscreen/identity-persistence',
+        { './auth': './dist/auth.js' },
+        { '@offscreen/db': 'workspace:*', 'drizzle-orm': '0.45.2' },
+      ),
+    ],
+    sources: [],
+  });
+  assert.ok(
+    report.errors.some(
+      (item) => item.code === 'forbidden-persistence-leaf-dependency',
+    ),
+  );
+  assert.equal(report.result, 'fail');
+});
+
+test('SQL-free closure from web rejects transitive story-persistence type imports', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'db10',
+    typescript,
+    packages: [
+      packageRecord('apps/web', '@offscreen/web', { '.': './dist/index.js' }),
+      packageRecord('packages/game', '@offscreen/game', {
+        '.': './dist/index.js',
+      }),
+      packageRecord(
+        'packages/story-persistence',
+        '@offscreen/story-persistence',
+        { './stories': './dist/stories.js' },
+        {
+          '@offscreen/identity-persistence': 'workspace:*',
+          'drizzle-orm': '0.45.2',
+        },
+      ),
+    ],
+    sources: [
+      {
+        path: 'apps/web/src/features/play/ui/frame.tsx',
+        text: "import type { story } from '@offscreen/story-persistence/stories';\nexport type Probe = typeof story;\n",
+      },
+    ],
+  });
+  assert.ok(
+    report.errors.some((item) => item.code === 'forbidden-sql-free-closure'),
+  );
+  assert.equal(report.result, 'fail');
+});
+
+test('SQL-free closure reports a path without revisiting nodes', () => {
+  const report = buildModuleGraph({
+    baselineSha: 'db10',
+    typescript,
+    packages: [
+      packageRecord(
+        'packages/workflows',
+        '@offscreen/workflows',
+        { '.': './dist/index.js' },
+        { '@offscreen/game': 'workspace:*' },
+      ),
+      packageRecord('packages/game', '@offscreen/game', {
+        '.': './dist/index.js',
+      }),
+      packageRecord('packages/outbox', '@offscreen/outbox', {
+        './schema': './dist/schema.js',
+      }),
+    ],
+    sources: [
+      {
+        path: 'packages/workflows/src/demo.ts',
+        text: "export { outbox } from '@offscreen/outbox/schema';\n",
+      },
+    ],
+  });
+  const hit = report.errors.find(
+    (item) =>
+      item.code === 'forbidden-sql-free-closure' &&
+      item.message.includes('@offscreen/workflows'),
+  );
+  assert.ok(hit);
+  assert.match(hit.message, /@offscreen\/workflows → @offscreen\/outbox/);
   assert.equal(report.result, 'fail');
 });

@@ -13,18 +13,53 @@ import {
 import { tmpdir } from 'node:os';
 import { AppliedMigrationPrefixError } from '../src/migrations/journal';
 import { sql } from 'drizzle-orm';
-import { Client } from 'pg';
-import { createDatabase, readDatabaseConfig } from '../src';
+import { Client, type PoolClient, type QueryResult } from 'pg';
+import { createDatabase, readDatabaseConfig, DatabaseTransactionError } from '../src';
 import { applyMigrations } from '../src/migrate';
+import { createManagedClientRuntime } from '../src/connection/managed-client';
+import { executeManagedTransaction } from '../src/transaction/execute';
+import type { TransactionPolicy } from '../src/transaction/policy';
 
 const url = process.env['DATABASE_TEST_URL'];
-if (!url || new URL(url).pathname !== '/offscreen_db_test') {
+if (!url) {
+  throw new Error(
+    'DATABASE_TEST_URL is required. Use an operator-confirmed dedicated disposable offscreen_db_test on loopback only; never a shared tenant or production database.',
+  );
+}
+const parsedTestUrl = new URL(url);
+if (parsedTestUrl.pathname !== '/offscreen_db_test') {
   throw new Error(
     'DATABASE_TEST_URL must explicitly target the disposable offscreen_db_test database.',
   );
 }
+const testHost = parsedTestUrl.hostname;
+if (testHost !== '127.0.0.1' && testHost !== 'localhost') {
+  throw new Error(
+    'DATABASE_TEST_URL must use loopback host 127.0.0.1 or localhost.',
+  );
+}
 const config = readDatabaseConfig({ DATABASE_URL: url });
 const fixtures = resolve(__dirname, '../../test/fixtures/migrations');
+
+function componentPolicy(
+  overrides: Partial<TransactionPolicy> = {},
+): TransactionPolicy {
+  return {
+    name: 'worker.batch',
+    workload: 'worker',
+    isolation: 'read committed',
+    readOnly: false,
+    retry: 'none',
+    timeoutMs: 10_000,
+    statementTimeoutMs: 8_000,
+    lockTimeoutMs: 2_000,
+    ...overrides,
+  };
+}
+
+function okQueryResult(command: string): QueryResult {
+  return { command, rowCount: 0, rows: [], oid: 0, fields: [] };
+}
 
 function findSqlStateCode(error: unknown, code: string): boolean {
   let current: unknown = error;
@@ -230,6 +265,300 @@ test('PostgreSQL persistence component', async (t) => {
         }
       }
     });
+
+    await t.test('managed transaction commits a successful update', async () => {
+      await admin.query('UPDATE db_component_fixture SET amount = 10 WHERE id = 1');
+      await database.transaction(componentPolicy(), async (tx) => {
+        await tx.execute(
+          sql`UPDATE db_component_fixture SET amount = 20 WHERE id = 1`,
+        );
+      });
+      const result = await admin.query(
+        'SELECT amount FROM db_component_fixture WHERE id = 1',
+      );
+      assert.equal(result.rows[0]?.amount, 20);
+    });
+
+    await t.test(
+      'managed transaction rolls back when the callback rejects',
+      async () => {
+        await admin.query(
+          'UPDATE db_component_fixture SET amount = 10 WHERE id = 1',
+        );
+        const rejection = new Error('managed callback rejection');
+        await assert.rejects(
+          database.transaction(componentPolicy(), async (tx) => {
+            await tx.execute(
+              sql`UPDATE db_component_fixture SET amount = 30 WHERE id = 1`,
+            );
+            throw rejection;
+          }),
+          (error: unknown) => {
+            assert.ok(error instanceof DatabaseTransactionError);
+            assert.equal(error.cause, rejection);
+            return true;
+          },
+        );
+        const result = await admin.query(
+          'SELECT amount FROM db_component_fixture WHERE id = 1',
+        );
+        assert.equal(result.rows[0]?.amount, 10);
+      },
+    );
+
+    await t.test(
+      'managed read-only transaction refuses writes and leaves rows unchanged',
+      async () => {
+        await admin.query(
+          'UPDATE db_component_fixture SET amount = 10 WHERE id = 1',
+        );
+        await assert.rejects(
+          database.transaction(
+            componentPolicy({ readOnly: true }),
+            async (tx) => {
+              await tx.execute(
+                sql`UPDATE db_component_fixture SET amount = 99 WHERE id = 1`,
+              );
+            },
+          ),
+        );
+        const result = await admin.query(
+          'SELECT amount FROM db_component_fixture WHERE id = 1',
+        );
+        assert.equal(result.rows[0]?.amount, 10);
+      },
+    );
+
+    await t.test(
+      'managed lock timeout is typed and the pool recovers on the next lease',
+      async () => {
+        const holder = new Client(config);
+        await holder.connect();
+        try {
+          await holder.query('BEGIN');
+          await holder.query(
+            'SELECT * FROM db_component_fixture WHERE id = 1 FOR UPDATE',
+          );
+          await assert.rejects(
+            database.transaction(
+              componentPolicy({ lockTimeoutMs: 50 }),
+              async (tx) => {
+                await tx.execute(
+                  sql`UPDATE db_component_fixture SET amount = 40 WHERE id = 1`,
+                );
+              },
+            ),
+            (error: unknown) => {
+              assert.ok(error instanceof DatabaseTransactionError);
+              assert.equal(error.category, 'lock-timeout');
+              return true;
+            },
+          );
+        } finally {
+          await holder.query('ROLLBACK');
+          await holder.end();
+        }
+        await database.transaction(
+          componentPolicy({ lockTimeoutMs: 2_000 }),
+          async (tx) => {
+            await tx.execute(
+              sql`UPDATE db_component_fixture SET amount = 41 WHERE id = 1`,
+            );
+          },
+        );
+        const result = await admin.query(
+          'SELECT amount FROM db_component_fixture WHERE id = 1',
+        );
+        assert.equal(result.rows[0]?.amount, 41);
+        await database.checkConnection();
+      },
+    );
+
+    await t.test(
+      'serializable concurrent updates retry once and increment exactly twice',
+      async () => {
+        await admin.query(
+          'UPDATE db_component_fixture SET amount = 10 WHERE id = 1',
+        );
+        const pair = createDatabase(
+          { ...config, max: 2 },
+          (error) => backgroundErrors.push(error),
+        );
+        let readsDone = 0;
+        let releaseReads!: () => void;
+        const bothRead = new Promise<void>((resolve) => {
+          releaseReads = resolve;
+        });
+        let attemptA = 0;
+        let attemptB = 0;
+        try {
+          const runSide = async (side: 'a' | 'b') => {
+            await pair.transaction(
+              componentPolicy({
+                isolation: 'serializable',
+                retry: 'sql-only-conflicts',
+                timeoutMs: 30_000,
+              }),
+              async (tx) => {
+                const attempts = side === 'a' ? attemptA : attemptB;
+                if (side === 'a') {
+                  attemptA += 1;
+                } else {
+                  attemptB += 1;
+                }
+                await tx.execute(
+                  sql`SELECT amount FROM db_component_fixture WHERE id = 1`,
+                );
+                readsDone += 1;
+                if (readsDone === 2) {
+                  releaseReads();
+                }
+                if (attempts === 0) {
+                  await bothRead;
+                }
+                await tx.execute(
+                  sql`UPDATE db_component_fixture SET amount = amount + 1 WHERE id = 1`,
+                );
+              },
+            );
+          };
+          await Promise.all([runSide('a'), runSide('b')]);
+          const result = await admin.query(
+            'SELECT amount FROM db_component_fixture WHERE id = 1',
+          );
+          assert.equal(result.rows[0]?.amount, 12);
+          assert.equal(attemptA + attemptB, 3);
+        } finally {
+          await pair.close();
+        }
+      },
+    );
+
+    await t.test(
+      'managed admission saturates a third waiter while one active and one queued complete',
+      async () => {
+        const limited = createDatabase(
+          {
+            ...config,
+            max: 1,
+            managed: { queueLimit: 1, acquireTimeoutMs: 5_000 },
+          },
+          (error) => backgroundErrors.push(error),
+        );
+        let releaseActive!: () => void;
+        const holdActive = new Promise<void>((resolve) => {
+          releaseActive = resolve;
+        });
+        let activeEntered!: () => void;
+        const activeReady = new Promise<void>((resolve) => {
+          activeEntered = resolve;
+        });
+        const activeTx = limited.transaction(
+          componentPolicy({ timeoutMs: 60_000 }),
+          async () => {
+            activeEntered();
+            await holdActive;
+          },
+        );
+        await activeReady;
+
+        let queuedEntered!: () => void;
+        const queuedReady = new Promise<void>((resolve) => {
+          queuedEntered = resolve;
+        });
+        const queuedTx = limited.transaction(
+          componentPolicy({ timeoutMs: 60_000 }),
+          async (tx) => {
+            queuedEntered();
+            await tx.execute(sql`SELECT 1`);
+          },
+        );
+        await queuedReady;
+
+        await assert.rejects(
+          limited.transaction(componentPolicy(), async (tx) => {
+            await tx.execute(sql`SELECT 1`);
+          }),
+          (error: unknown) => {
+            assert.ok(error instanceof DatabaseTransactionError);
+            assert.equal(error.category, 'saturated');
+            return true;
+          },
+        );
+
+        releaseActive();
+        await Promise.all([activeTx, queuedTx]);
+        await limited.checkConnection();
+        await limited.close();
+      },
+    );
+
+    await t.test(
+      'deterministic commit-unknown fixture discards client without killing live connections',
+      async () => {
+        const transportError = new Error('fixture commit transport loss');
+        const recordingClient = {
+          queries: [] as string[],
+          releases: 0,
+          discardCalls: 0,
+          async query(text: string): Promise<QueryResult> {
+            this.queries.push(text);
+            if (text === 'BEGIN ISOLATION LEVEL READ COMMITTED') {
+              return okQueryResult('BEGIN');
+            }
+            if (text.startsWith('SELECT set_config')) {
+              return okQueryResult('SELECT');
+            }
+            if (text === 'COMMIT') {
+              throw transportError;
+            }
+            if (text === 'ROLLBACK') {
+              return okQueryResult('ROLLBACK');
+            }
+            return okQueryResult('SELECT');
+          },
+          release(err?: Error | boolean) {
+            this.releases += 1;
+            if (err === true) {
+              this.discardCalls += 1;
+            }
+          },
+        } as PoolClient & {
+          queries: string[];
+          releases: number;
+          discardCalls: number;
+        };
+
+        const runtime = createManagedClientRuntime<PoolClient>({
+          maxActive: 1,
+          maxQueued: 0,
+          acquireTimeoutMs: 5_000,
+          connect: async () => recordingClient,
+          end: async () => {},
+        });
+
+        await assert.rejects(
+          executeManagedTransaction(
+            {
+              withClient: runtime.withClient.bind(runtime),
+              onBackgroundError: () => {},
+            },
+            componentPolicy(),
+            async () => 'done',
+          ),
+          (error: unknown) => {
+            assert.ok(error instanceof DatabaseTransactionError);
+            assert.equal(error.category, 'commit-unknown');
+            return true;
+          },
+        );
+        assert.equal(recordingClient.discardCalls, 1);
+        assert.equal(
+          recordingClient.queries.filter((text) => text === 'ROLLBACK').length,
+          0,
+        );
+      },
+    );
 
     await t.test(
       'transaction constraint failure rolls back all preceding writes',

@@ -21,6 +21,8 @@ test('API production closure keeps Game Authority and drops Lab packages', () =>
   assert.ok(closure.includes('apps/api'));
   assert.ok(closure.includes('apps/game-authority'));
   assert.ok(closure.includes('packages/story-engine'));
+  assert.ok(closure.includes('packages/identity-persistence'));
+  assert.ok(closure.includes('packages/story-persistence'));
   assert.equal(closure.includes('packages/lab-support'), false);
   assert.equal(closure.includes('packages/lab-interface'), false);
   assert.equal(closure.includes('tools/api-lab'), false);
@@ -40,6 +42,9 @@ test('Game Authority, Worker and Web closures keep their runtime workspace depen
   const worker = productionWorkspaceClosure(repoRoot, 'apps/worker');
   assert.ok(worker.includes('packages/lab-support'));
   assert.ok(worker.includes('packages/workflows'));
+  assert.ok(worker.includes('packages/outbox'));
+  assert.ok(worker.includes('packages/identity-persistence'));
+  assert.ok(worker.includes('packages/story-persistence'));
   assert.equal(worker.includes('apps/game-authority'), false);
 
   const web = productionWorkspaceClosure(repoRoot, 'apps/web');

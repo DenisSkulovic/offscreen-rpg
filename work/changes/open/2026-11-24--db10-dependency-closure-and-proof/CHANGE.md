@@ -1,6 +1,6 @@
 # DB10 | Final graph guard and integrated DB proof
 
-**Status: Ready (dependency-gated) / owner-commissioned source implementation. Kind: implementation. Profile: PROOF.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB03/04/05/07/09 joined; DB08 source joined. Live execution requires separately authorized disposable PostgreSQL. No further planner promotion for the frozen scope.
+**Status: Active / source T01–T03 landed; live proof NOT RUN. Kind: implementation. Profile: PROOF.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; execution HEAD cf038a61615b64d3966ee7c37a318bb458c7bceb; target main. T01 graph/closure, T02 wiki/docs, T03 managed harness source accepted. Live disposable PostgreSQL remains separately gated; packet stays open until live acceptance or explicit owner disposition.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -31,6 +31,7 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Final graph guard and integrated DB proof | database-infrastructure | pending | NOT RUN | TASKS | pending |
+| Final graph guard (T01–T02 source) | database-infrastructure | T01–T02 on change/db10; module-graph + wiki owners | pure PASS (focused); full `pnpm repo:module-graph` still fails pre-existing `forbidden-authority-writer-import` in action-executions.ts | retired db subpath / non-table path refusal | README, SQL-OWNERSHIP, realization updated |
+| Integrated disposable SQL proof (T03) | database-infrastructure | harness in packages/db/test/database.integration.ts + test:integration wiring | build+unit PASS; live NOT RUN (DATABASE_TEST_URL unset) | loopback/offscreen_db_test guard throws without URL | pending live |
 
 Read [EXECUTION.md](EXECUTION.md) for frozen source mapping and implementation decisions before dispatch. The revised TASKS supersede older outcome shorthand wherever more precise. No new live resource permission.

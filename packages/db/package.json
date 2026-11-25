@@ -17,7 +17,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "node --test dist/test/config.test.js dist/test/db06-admission.test.js dist/test/db06-pool.test.js dist/test/db07-errors.test.js dist/test/db07-transaction.test.js dist/test/db08-journal.test.js dist/test/db08-runner.test.js dist/test/db09-telemetry.test.js dist/test/db09-concurrency.test.js",
-    "test:integration": "node --test dist/test/database.integration.js"
+    "test:integration": "node --test --test-concurrency=1 dist/test/database.integration.js dist/test/obs00-current-authority.migration.integration.js dist/test/wr05s-scene-checkpoint-schema.integration.js dist/test/wr07l-launch-ledger.integration.js"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
