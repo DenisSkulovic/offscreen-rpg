@@ -25,7 +25,7 @@ Cluster IDs remain offscreen-dev and offscreen-release. The release environment 
 
 ## Developer commands (target, not present yet)
 
-- `pnpm infra:up --env dev --services none|core|all|postgres,redis` (release also supported); cluster create/reuse then explicitly selected platform ensures. `infra:status --env dev|release` read-only. A plan path must expose exact selected operations without mutation.
+- `pnpm infra:up --env dev --services none|core|all|postgres,redis` (release also supported); cluster create/reuse then explicitly selected platform ensures. `infra:status --env dev|release` read-only. A plan path must expose exact selected operations without mutation. Default stdout for plan/up/status remains JSON; explicit `--human` selects plain presentation (INF56 source); default switch awaits mapped consumers.
 - `pnpm dev --profile api|web|full`, `pnpm dev:new --profile ...`, existing `--instance` selection, reserve/attach/status/stop. Default dev remains full. Change profile by explicit stop then start, not in-place hot profile transitions for first slice. No automatic provision of unselected tenant dependencies.
 - `pnpm stack:up --profile api|web|full --values PATH` uses release build/install authority, with ordinary values overlays, no Tilt release graph. Preserve existing no-arg behavior until new path accepted. Explicitly select release experiment; no default extra replicas.
 - `pnpm infra:verify --suite source|smoke|full` target unified repeatable entry. Source suite no mutation. Live suites require explicit scoped authorization and availability; full means all selected catalog cases, blocked cases report BLOCKED/NOT-RUN, never pass by omission. No production credentials or provider spend.

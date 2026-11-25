@@ -4,9 +4,9 @@ Current baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. See [selected target]
 
 | Need | Current command / route |
 | --- | --- |
-| Plan selected dev/release platform ensures | `pnpm infra:plan --env dev --services core` |
-| Ensure cluster and selected platform services | `pnpm infra:up --env dev --services core` |
-| Read-only cluster and service status | `pnpm infra:status --env dev --services core` |
+| Plan selected dev/release platform ensures | `pnpm infra:plan --env dev --services core` (default JSON; add `--human` for plain text) |
+| Ensure cluster and selected platform services | `pnpm infra:up --env dev --services core` (default JSON; `--human` adds phase progress on stderr) |
+| Read-only cluster and service status | `pnpm infra:status --env dev --services core` (default JSON; add `--human` for plain text) |
 | Start dev application (full) | `pnpm dev`; [dev lifecycle](dev-worktree-stacks.md) |
 | Allocate another full environment | `pnpm dev:new` |
 | Reserve or attach without starting | `pnpm dev:reserve`, `pnpm dev:attach --instance dev-N` |
@@ -23,7 +23,13 @@ Current baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. See [selected target]
 | Inspect platform manifests (readable YAML) | `pnpm infra:render <service> <dev\|release> [section]` (default section `all`); direct CLI defaults to compact legacy JSON: `node infra/platform/common/cli.mjs render <service> <dev\|release> [section] [--format yaml\|json\|legacy]` |
 | Inspect workload release manifests (readable YAML) | `pnpm infra:render:workloads [section]` (default section `all`); direct CLI: `node infra/workloads/render.mjs release [section] [--format yaml\|json\|legacy] [--values PATH]` |
 
-Do not use proposed flags on current commands. Linux/WSL is the current host assumption. Prefer source tests when a stack is unnecessary; run only selected authorized live cases. On capacity failure stop only the attempted owned workload set, preserve tenants, report blocker; do not delete another stack or lower gates. No production connection or paid-provider proof. Report exact current command, phase and next action rather than improvising kubectl writes.
+Do not use proposed flags on current commands except the documented `--human` / `--json` / `--help` / `--no-color` output modes on `infra:plan` / `infra:up` / `infra:status`. Linux/WSL is the current host assumption. Prefer source tests when a stack is unnecessary; run only selected authorized live cases. On capacity failure stop only the attempted owned workload set, preserve tenants, report blocker; do not delete another stack or lower gates. No production connection or paid-provider proof. Report exact current command, phase and next action rather than improvising kubectl writes.
+
+## Platform CLI human output (INF56 source)
+
+Default stdout for `pnpm infra:plan|up|status` remains one JSON object for existing machine callers. Explicit `--json` is equivalent. Explicit `--human` prints a plain multi-line summary on stdout and, for `up` only, phase `START`/`OK`/`FAIL` lines with elapsed ms on stderr. `--help` is static and makes zero host/cluster calls. `--no-color` is accepted only with `--human` (output is already plain). Mutually exclusive or repeated flags refuse before any runner.
+
+Limits: human text allowlists service/phase/refusal ids and never prints raw child stderr, argv, or env; overall `ok` is not equated with every service healthy; failed `up` does not claim data unchanged. Source fixtures cover both profiles; live readiness and human operator acceptance remain NOT-RUN. Topology CLI presentation is out of scope here.
 
 ## Workload chart defaults and local values overrides
 

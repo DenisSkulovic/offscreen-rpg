@@ -18,6 +18,7 @@ import {
   MIN_HOST_MEMORY_MIB,
   parseMeminfoMiB,
 } from '../clusters/kind/manager/host-probe.mjs';
+import { createInfraProgressReporter } from './infra-progress.mjs';
 
 const environmentsRoot = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = resolve(environmentsRoot, '../..');
@@ -453,9 +454,16 @@ export function runGatewayInstallPreflight(deps = {}) {
   } catch {
     throw new Error('Gateway image digest inspection returned invalid JSON');
   }
-  const expectedRefs = ['traefik', 'library/traefik', 'docker.io/library/traefik', 'docker.io/traefik']
-    .map(name => `${name}@${GATEWAY_TRAEFIK_DIGEST}`);
-  if (!Array.isArray(digests) || !digests.some(ref => expectedRefs.includes(ref))) {
+  const expectedRefs = [
+    'traefik',
+    'library/traefik',
+    'docker.io/library/traefik',
+    'docker.io/traefik',
+  ].map((name) => `${name}@${GATEWAY_TRAEFIK_DIGEST}`);
+  if (
+    !Array.isArray(digests) ||
+    !digests.some((ref) => expectedRefs.includes(ref))
+  ) {
     throw new Error(
       `Refusing to install: ${GATEWAY_TRAEFIK_IMAGE} is not ${GATEWAY_TRAEFIK_DIGEST}.`,
     );
@@ -492,6 +500,9 @@ export function runGatewayInstallPreflight(deps = {}) {
  *   run?: typeof runPlatformCommand,
  *   memoryMiB?: number | null,
  *   selectedServices?: string[],
+ *   onProgress?: import('./infra-progress.mjs').InfraProgressCallback,
+ *   now?: () => number,
+ *   progress?: ReturnType<typeof createInfraProgressReporter>,
  * }} [deps]
  */
 export function runEnsurePreflight(profileId, command, deps = {}) {
@@ -506,30 +517,65 @@ export function runEnsurePreflight(profileId, command, deps = {}) {
     return { ok: true, steps: [] };
   }
 
+  const progress =
+    deps.progress ??
+    (deps.onProgress != null
+      ? createInfraProgressReporter({
+          onProgress: deps.onProgress,
+          now: deps.now,
+        })
+      : null);
+
   const run = deps.run ?? runPlatformCommand;
   /** @type {string[]} */
   const steps = [];
-  assertPlatformTarget(profileId, { run });
-  steps.push('target');
-  const memoryMiB = deps.memoryMiB ?? readHostMemoryMiB({ run });
-  assertPlatformMemoryGate(memoryMiB);
-  steps.push('memory');
-  const chartServices = selectedChartServices(selectedServices);
-  if (profileId === 'release') {
-    if (chartServices.length > 0 || selectedServices.includes('gateway')) {
-      assertHelmAvailable({ run });
-      steps.push('helm');
+  /** @type {string | undefined} */
+  let activeStep;
+  try {
+    activeStep = 'target';
+    progress?.phaseStart('preflight:target');
+    assertPlatformTarget(profileId, { run });
+    progress?.phaseOk('preflight:target');
+    steps.push('target');
+
+    activeStep = 'memory';
+    progress?.phaseStart('preflight:memory');
+    const memoryMiB = deps.memoryMiB ?? readHostMemoryMiB({ run });
+    assertPlatformMemoryGate(memoryMiB);
+    progress?.phaseOk('preflight:memory');
+    steps.push('memory');
+
+    const chartServices = selectedChartServices(selectedServices);
+    if (profileId === 'release') {
+      if (chartServices.length > 0 || selectedServices.includes('gateway')) {
+        activeStep = 'helm';
+        progress?.phaseStart('preflight:helm');
+        assertHelmAvailable({ run });
+        progress?.phaseOk('preflight:helm');
+        steps.push('helm');
+      }
     }
+    if (chartServices.length > 0) {
+      activeStep = 'chart-render';
+      progress?.phaseStart('preflight:chart-render');
+      runChartRenderPreflight(profileId, selectedServices, { run });
+      progress?.phaseOk('preflight:chart-render');
+      steps.push('chart-render');
+    }
+    if (profileId === 'release' && selectedServices.includes('gateway')) {
+      activeStep = 'gateway-install';
+      progress?.phaseStart('preflight:gateway-install');
+      runGatewayInstallPreflight({ run });
+      progress?.phaseOk('preflight:gateway-install');
+      steps.push('gateway-install');
+    }
+    return { ok: true, steps };
+  } catch (error) {
+    if (activeStep) {
+      progress?.phaseFail(`preflight:${activeStep}`);
+    }
+    throw error;
   }
-  if (chartServices.length > 0) {
-    runChartRenderPreflight(profileId, selectedServices, { run });
-    steps.push('chart-render');
-  }
-  if (profileId === 'release' && selectedServices.includes('gateway')) {
-    runGatewayInstallPreflight({ run });
-    steps.push('gateway-install');
-  }
-  return { ok: true, steps };
 }
 
 /**
@@ -671,7 +717,13 @@ export function defaultPlatformRunner(argv, options = {}) {
 /**
  * @param {PlatformPlan} plan
  * @param {(argv: string[], options?: { env?: Record<string, string>, phaseId?: string }) => { ok: boolean, status?: number | null, stdout?: string, stderr?: string }} runner
- * @param {{ memoryMiB?: number | null, run?: typeof runPlatformCommand }} [deps]
+ * @param {{
+ *   memoryMiB?: number | null,
+ *   run?: typeof runPlatformCommand,
+ *   onProgress?: import('./infra-progress.mjs').InfraProgressCallback,
+ *   now?: () => number,
+ *   progress?: ReturnType<typeof createInfraProgressReporter>,
+ * }} [deps]
  * @returns {PlatformRunReceipt}
  */
 export function runPlatformPlan(plan, runner, deps = {}) {
@@ -686,6 +738,15 @@ export function runPlatformPlan(plan, runner, deps = {}) {
       rollback: false,
     };
   }
+
+  const progress =
+    deps.progress ??
+    (deps.onProgress != null
+      ? createInfraProgressReporter({
+          onProgress: deps.onProgress,
+          now: deps.now,
+        })
+      : null);
 
   if (plan.command === 'ensure') {
     try {
@@ -735,9 +796,11 @@ export function runPlatformPlan(plan, runner, deps = {}) {
     }
 
     const env = { ...process.env, ...(phase.env ?? {}) };
+    progress?.phaseStart(phase.id);
     const result = runner(phase.argv, { env, phaseId: phase.id });
     ran.push(phase);
     if (!result.ok) {
+      progress?.phaseFail(phase.id);
       const detail =
         (result.stderr ?? '').trim() ||
         (result.stdout ?? '').trim() ||
@@ -765,6 +828,7 @@ export function runPlatformPlan(plan, runner, deps = {}) {
         rollback: false,
       };
     }
+    progress?.phaseOk(phase.id);
     phaseReceipts.push({ id: phase.id, ok: true });
   }
 

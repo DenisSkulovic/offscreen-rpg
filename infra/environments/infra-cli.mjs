@@ -27,8 +27,14 @@ import {
   REPO_ROOT,
 } from './platform-plan.mjs';
 import { runTrackedEntrypoint } from '../monitoring/operation-entrypoint.mjs';
+import { formatInfraResult } from './infra-presentation.mjs';
+import {
+  createInfraProgressReporter,
+  formatInfraProgressLine,
+} from './infra-progress.mjs';
 
 /** @typedef {'plan' | 'up' | 'status'} InfraCommand */
+/** @typedef {'json' | 'human'} InfraOutputMode */
 /** @typedef {'dev' | 'release'} InfraProfileId */
 
 export const DEV_CLUSTER_CLI = join(
@@ -40,6 +46,77 @@ export const RELEASE_CLUSTER_UP = join(
   'infra/clusters/kind/release/up.sh',
 );
 
+const INFRA_COMMANDS = ['plan', 'up', 'status'];
+
+/**
+ * @param {InfraCommand | undefined} [focusedCommand]
+ * @returns {string}
+ */
+export function buildInfraCliHelp(focusedCommand) {
+  /** @type {string[]} */
+  const lines = [
+    'OFFSCREEN PLATFORM',
+    '',
+    'usage: node infra/environments/infra-cli.mjs <plan|up|status> [options]',
+    '',
+    'commands:',
+    '  plan    read-only ensure preview (no cluster mutation)',
+    '  status  read-only cluster and service observation',
+    '  up      may create cluster and apply selected services',
+    '',
+    'options:',
+    '  --env dev|release           target profile (required except --help)',
+    '  --services <selection>    none, core, all, or comma-separated ids',
+    '  --human                     plain multi-line summary on stdout',
+    '  --json                      single JSON object on stdout (default)',
+    '  --no-color                  accepted with --human only (plain text)',
+    '  --help                      show this help and exit',
+    '',
+    'profiles:',
+    '  dev      context kind-offscreen-dev',
+    '  release  context kind-offscreen-release',
+    '',
+    'service examples:',
+    '  --services none',
+    '  --services core',
+    '  --services postgres,redis',
+    '',
+    'read-only vs mutating:',
+    '  plan and status perform no Helm apply or cluster create',
+    '  up may run cluster ensure, verify, and platform ensure phases',
+    '',
+    'output examples:',
+    '  node infra/environments/infra-cli.mjs status --env dev --json',
+    '    {"ok":true,"phase":"status",...}',
+    '  node infra/environments/infra-cli.mjs status --env dev --human',
+    '    OFFSCREEN',
+    '    PLATFORM',
+    '    cmd: status',
+    '    env: dev',
+    '',
+    'examples:',
+    '  node infra/environments/infra-cli.mjs plan --env dev --services core',
+    '  node infra/environments/infra-cli.mjs status --env release --services postgres',
+    '  node infra/environments/infra-cli.mjs up --env dev --services none --human',
+  ];
+  if (focusedCommand) {
+    lines.splice(
+      2,
+      0,
+      '',
+      `focused: ${focusedCommand} (${focusedCommand === 'up' ? 'mutating' : 'read-only'})`,
+    );
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+/**
+ * @param {string} option
+ */
+function duplicateOptionMessage(option) {
+  return `duplicate option: ${option}`;
+}
+
 /**
  * @param {string[]} argv
  */
@@ -47,20 +124,105 @@ export function parseInfraCliArgs(argv) {
   if (argv.length === 0) {
     return { ok: false, exitCode: 2, message: 'missing command' };
   }
+
+  if (argv.length === 1 && (argv[0] === '--help' || argv[0] === '-h')) {
+    return { ok: true, help: true };
+  }
+
   const command = argv[0];
-  if (command !== 'plan' && command !== 'up' && command !== 'status') {
+  if (!INFRA_COMMANDS.includes(command)) {
+    if (command === '--help' || command === '-h') {
+      return { ok: true, help: true };
+    }
     return { ok: false, exitCode: 2, message: `unknown command: ${command}` };
   }
 
   /** @type {InfraProfileId | undefined} */
   let profileId;
   let services = 'core';
+  /** @type {InfraOutputMode} */
+  let outputMode = 'json';
+  let noColor = false;
+  let help = false;
+  let humanSeen = false;
+  let jsonSeen = false;
+  let noColorSeen = false;
+  let envSeen = false;
+  let servicesSeen = false;
   /** @type {string[]} */
   const positional = [];
 
   for (let index = 1; index < argv.length; index += 1) {
     const token = argv[index];
+    if (token === '--help' || token === '-h') {
+      if (help) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: duplicateOptionMessage('--help'),
+        };
+      }
+      help = true;
+      continue;
+    }
+    if (token === '--human') {
+      if (humanSeen) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: duplicateOptionMessage('--human'),
+        };
+      }
+      if (jsonSeen) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: 'conflicting options: --human and --json',
+        };
+      }
+      humanSeen = true;
+      outputMode = 'human';
+      continue;
+    }
+    if (token === '--json') {
+      if (jsonSeen) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: duplicateOptionMessage('--json'),
+        };
+      }
+      if (humanSeen) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: 'conflicting options: --human and --json',
+        };
+      }
+      jsonSeen = true;
+      outputMode = 'json';
+      continue;
+    }
+    if (token === '--no-color') {
+      if (noColorSeen) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: duplicateOptionMessage('--no-color'),
+        };
+      }
+      noColorSeen = true;
+      noColor = true;
+      continue;
+    }
     if (token === '--env') {
+      if (envSeen) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: duplicateOptionMessage('--env'),
+        };
+      }
       if (index + 1 >= argv.length) {
         return { ok: false, exitCode: 2, message: '--env requires a value' };
       }
@@ -69,10 +231,18 @@ export function parseInfraCliArgs(argv) {
       if (env !== 'dev' && env !== 'release') {
         return { ok: false, exitCode: 2, message: `unsupported --env: ${env}` };
       }
+      envSeen = true;
       profileId = env;
       continue;
     }
     if (token === '--services') {
+      if (servicesSeen) {
+        return {
+          ok: false,
+          exitCode: 2,
+          message: duplicateOptionMessage('--services'),
+        };
+      }
       if (index + 1 >= argv.length) {
         return {
           ok: false,
@@ -81,6 +251,7 @@ export function parseInfraCliArgs(argv) {
         };
       }
       index += 1;
+      servicesSeen = true;
       services = argv[index];
       continue;
     }
@@ -88,6 +259,22 @@ export function parseInfraCliArgs(argv) {
       return { ok: false, exitCode: 2, message: `unknown option: ${token}` };
     }
     positional.push(token);
+  }
+
+  if (noColor && outputMode !== 'human') {
+    return {
+      ok: false,
+      exitCode: 2,
+      message: '--no-color requires --human',
+    };
+  }
+
+  if (help) {
+    return {
+      ok: true,
+      help: true,
+      command: /** @type {InfraCommand} */ (command),
+    };
   }
 
   if (positional.length > 0) {
@@ -106,6 +293,8 @@ export function parseInfraCliArgs(argv) {
     command: /** @type {InfraCommand} */ (command),
     profileId,
     services,
+    outputMode,
+    noColor,
   };
 }
 
@@ -606,6 +795,8 @@ export function buildInfraEnsurePreview(input) {
  *   run?: typeof runPlatformCommand,
  *   runner?: typeof defaultPlatformRunner,
  *   memoryMiB?: number | null,
+ *   onProgress?: import('./infra-progress.mjs').InfraProgressCallback,
+ *   now?: () => number,
  * }} input
  */
 export function runInfraUp(input) {
@@ -626,9 +817,18 @@ export function runInfraUp(input) {
 
   const run = input.run ?? runPlatformCommand;
   const runner = input.runner ?? defaultPlatformRunner;
+  const progressReporter =
+    input.onProgress != null
+      ? createInfraProgressReporter({
+          onProgress: input.onProgress,
+          now: input.now,
+        })
+      : null;
 
+  progressReporter?.phaseStart('cluster-inventory');
   const inventory = inventoryKindClusters(run);
   if (!inventory.ok) {
+    progressReporter?.phaseFail('cluster-inventory');
     process.stderr.write(`cluster inventory: ${inventory.reason}\n`);
     return {
       ok: false,
@@ -638,6 +838,7 @@ export function runInfraUp(input) {
       ran: [],
     };
   }
+  progressReporter?.phaseOk('cluster-inventory');
 
   const clusterPresent = inventory.clusters.includes(profile.clusterName);
   /** @type {string[]} */
@@ -648,6 +849,7 @@ export function runInfraUp(input) {
       input.profileId === 'dev'
         ? [process.execPath, DEV_CLUSTER_CLI, 'ensure']
         : ['bash', RELEASE_CLUSTER_UP];
+    progressReporter?.phaseStart('cluster-ensure');
     const result = runner(argv, {
       env:
         input.profileId === 'dev'
@@ -657,6 +859,7 @@ export function runInfraUp(input) {
     });
     clusterPhases.push('cluster-ensure');
     if (!result.ok) {
+      progressReporter?.phaseFail('cluster-ensure');
       process.stderr.write('cluster ensure failed\n');
       return {
         ok: false,
@@ -665,15 +868,19 @@ export function runInfraUp(input) {
         ran: clusterPhases,
       };
     }
+    progressReporter?.phaseOk('cluster-ensure');
   } else {
+    progressReporter?.phaseStart('cluster-verify');
     try {
       assertPlatformTarget(input.profileId, { run });
       verifyClusterNodesReady(input.profileId, run);
       if (input.profileId === 'release') {
         verifyReleaseLocalPathProvisioner(run, profile.contextName);
       }
+      progressReporter?.phaseOk('cluster-verify');
       clusterPhases.push('cluster-verify');
     } catch (error) {
+      progressReporter?.phaseFail('cluster-verify');
       const message = error instanceof Error ? error.message : String(error);
       process.stderr.write(`${message}\n`);
       return {
@@ -707,6 +914,7 @@ export function runInfraUp(input) {
   const receipt = runPlatformPlan(plan, runner, {
     run,
     memoryMiB: input.memoryMiB,
+    progress: progressReporter ?? undefined,
   });
 
   if (!receipt.ok) {
@@ -845,38 +1053,72 @@ export function dispatchInfraCli(parsed, deps = {}) {
   return { exitCode: 0, payload: result };
 }
 
-function usage() {
-  process.stderr.write(
+/**
+ * @param {(chunk: string) => void} writeError
+ */
+function usage(writeError) {
+  writeError(
     'usage: node infra/environments/infra-cli.mjs <plan|up|status> --env dev|release [--services none|core|all|service,...]\n',
   );
 }
 
 /**
  * @param {string[]} argv
- * @param {{ run?: typeof runPlatformCommand, runner?: typeof defaultPlatformRunner, memoryMiB?: number | null, operationDeps?: object }} [deps]
+ * @param {{
+ *   run?: typeof runPlatformCommand,
+ *   runner?: typeof defaultPlatformRunner,
+ *   memoryMiB?: number | null,
+ *   operationDeps?: object,
+ *   onProgress?: import('./infra-progress.mjs').InfraProgressCallback,
+ *   now?: () => number,
+ *   io?: { write?: (chunk: string) => void, writeError?: (chunk: string) => void },
+ * }} [deps]
  */
 export function runInfraCliArgv(argv, deps = {}) {
+  const write = deps.io?.write ?? ((chunk) => process.stdout.write(chunk));
+  const writeError =
+    deps.io?.writeError ?? ((chunk) => process.stderr.write(chunk));
+
   const parsed = parseInfraCliArgs(argv);
+  if (parsed.ok && parsed.help) {
+    write(buildInfraCliHelp(parsed.command));
+    return { exitCode: 0, wroteHelp: true };
+  }
   if (!parsed.ok) {
-    usage();
-    process.stderr.write(`${parsed.message}\n`);
+    usage(writeError);
+    writeError(`${parsed.message}\n`);
     return { exitCode: parsed.exitCode, wroteUsage: true };
   }
 
   const writeDispatch = (result) => {
-    process.stdout.write(`${JSON.stringify(result.payload)}\n`);
-    if (result.stderr) {
-      process.stderr.write(result.stderr);
+    if (parsed.outputMode === 'human') {
+      write(
+        formatInfraResult(parsed.command, parsed.profileId, result.payload, {
+          services: parsed.services,
+        }),
+      );
+    } else {
+      write(`${JSON.stringify(result.payload)}\n`);
+      if (result.stderr) {
+        writeError(result.stderr);
+      }
     }
     return result.exitCode;
   };
 
   if (parsed.command === 'up') {
+    /** @type {typeof deps} */
+    const upDeps = { ...deps };
+    if (parsed.outputMode === 'human' && upDeps.onProgress == null) {
+      upDeps.onProgress = (event) => {
+        writeError(formatInfraProgressLine(event));
+      };
+    }
     let dispatchResult;
     runTrackedEntrypoint(
       `infra.up.${parsed.profileId}`,
       () => {
-        dispatchResult = dispatchInfraCli(parsed, deps);
+        dispatchResult = dispatchInfraCli(parsed, upDeps);
         return {
           exitCode: dispatchResult.exitCode,
           refused: dispatchResult.exitCode === 2,

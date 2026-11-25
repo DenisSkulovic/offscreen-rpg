@@ -4,11 +4,13 @@ import test from 'node:test';
 import {
   DEV_CLUSTER_CLI,
   RELEASE_CLUSTER_UP,
+  buildInfraCliHelp,
   buildInfraEnsurePreview,
   dispatchInfraCli,
   inventoryKindClusters,
   observeSelectedServiceState,
   parseInfraCliArgs,
+  runInfraCliArgv,
   runInfraStatus,
   runInfraUp,
 } from './infra-cli.mjs';
@@ -187,6 +189,157 @@ test('parseInfraCliArgs rejects unknown commands, missing env, and positionals',
   assert.equal(parseInfraCliArgs(['plan', 'dev']).ok, false);
   assert.equal(parseInfraCliArgs(['plan', '--env', 'dev', 'extra']).ok, false);
   assert.equal(parseInfraCliArgs(['plan', '--env', 'staging']).ok, false);
+});
+
+test('parseInfraCliArgs rejects duplicate, conflicting, and invalid format flags', () => {
+  assert.equal(
+    parseInfraCliArgs(['plan', '--env', 'dev', '--env', 'release']).message,
+    'duplicate option: --env',
+  );
+  assert.equal(
+    parseInfraCliArgs([
+      'status',
+      '--env',
+      'dev',
+      '--services',
+      'core',
+      '--services',
+      'none',
+    ]).message,
+    'duplicate option: --services',
+  );
+  assert.match(
+    parseInfraCliArgs(['plan', '--env', 'dev', '--human', '--json']).message,
+    /conflicting options/,
+  );
+  assert.equal(
+    parseInfraCliArgs(['plan', '--env', 'dev', '--no-color']).message,
+    '--no-color requires --human',
+  );
+  assert.equal(
+    parseInfraCliArgs(['plan', '--env', 'dev', '--human', '--human']).ok,
+    false,
+  );
+  assert.equal(parseInfraCliArgs(['--help']).ok, true);
+  assert.equal(parseInfraCliArgs(['plan', '--help']).ok, true);
+});
+
+test('buildInfraCliHelp is static and needs no host access', () => {
+  const text = buildInfraCliHelp('plan');
+  assert.match(text, /plan\s+read-only/);
+  assert.match(text, /up\s+may create cluster/);
+  assert.match(text, /--human/);
+  assert.match(text, /--json/);
+  assert.match(text, /focused: plan/);
+});
+
+test('default and explicit --json stdout stay equivalent', () => {
+  /** @type {string[]} */
+  const defaultOut = [];
+  /** @type {string[]} */
+  const jsonOut = [];
+  const argv = ['plan', '--env', 'dev', '--services', 'none'];
+  const io = (buffer) => ({
+    write: (chunk) => buffer.push(chunk),
+    writeError: () => {},
+  });
+  const baseline = runInfraCliArgv(argv, { io: io(defaultOut) });
+  const explicit = runInfraCliArgv([...argv, '--json'], { io: io(jsonOut) });
+  assert.equal(baseline.exitCode, 0);
+  assert.equal(explicit.exitCode, 0);
+  assert.equal(defaultOut.join(''), jsonOut.join(''));
+  assert.doesNotMatch(defaultOut.join(''), /\x1b\[[0-9;]*m/);
+});
+
+test('--help exits zero without runner', () => {
+  /** @type {string[]} */
+  const out = [];
+  let runnerCalled = false;
+  const result = runInfraCliArgv(['status', '--help'], {
+    io: {
+      write: (chunk) => out.push(chunk),
+      writeError: () => {},
+    },
+    runner: () => {
+      runnerCalled = true;
+      return { ok: true, status: 0 };
+    },
+    run: () => {
+      throw new Error('run should not be called for help');
+    },
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal(runnerCalled, false);
+  assert.match(out.join(''), /read-only vs mutating/);
+});
+
+test('human status for dev and release avoids ANSI on stdout', () => {
+  /** @type {string[]} */
+  const out = [];
+  runInfraCliArgv(
+    ['status', '--env', 'dev', '--services', 'postgres', '--human'],
+    {
+      io: {
+        write: (chunk) => out.push(chunk),
+        writeError: () => {},
+      },
+      run: devWarmRun(false),
+    },
+  );
+  const devText = out.join('');
+  assert.match(devText, /env: dev/);
+  assert.match(devText, /cluster: ABSENT/);
+  assert.equal(/\x1b\[[0-9;]*m/.test(devText), false);
+
+  out.length = 0;
+  runInfraCliArgv(
+    ['status', '--env', 'release', '--services', 'postgres', '--human'],
+    {
+      io: {
+        write: (chunk) => out.push(chunk),
+        writeError: () => {},
+      },
+      run: releaseWarmRun(false),
+    },
+  );
+  const releaseText = out.join('');
+  assert.match(releaseText, /env: release/);
+  assert.match(releaseText, /cluster: ABSENT/);
+  assert.equal(/\x1b\[[0-9;]*m/.test(releaseText), false);
+});
+
+test('human refusal uses formatter stdout without dispatch stderr', () => {
+  /** @type {string[]} */
+  const stdout = [];
+  /** @type {string[]} */
+  const stderr = [];
+  const human = runInfraCliArgv(
+    ['plan', '--env', 'dev', '--services', 'rabbitmq', '--human'],
+    {
+      io: {
+        write: (chunk) => stdout.push(chunk),
+        writeError: (chunk) => stderr.push(chunk),
+      },
+    },
+  );
+  assert.equal(human.exitCode, 2);
+  assert.equal(stderr.join(''), '');
+  assert.match(stdout.join(''), /result: REFUSED/);
+
+  stdout.length = 0;
+  stderr.length = 0;
+  const json = runInfraCliArgv(
+    ['plan', '--env', 'dev', '--services', 'rabbitmq'],
+    {
+      io: {
+        write: (chunk) => stdout.push(chunk),
+        writeError: (chunk) => stderr.push(chunk),
+      },
+    },
+  );
+  assert.equal(json.exitCode, 2);
+  assert.ok(stderr.join('').length > 0);
+  assert.match(stdout.join(''), /"ok":false/);
 });
 
 test('plan preview reports ensure phases without invoking a runner', () => {
