@@ -363,3 +363,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 ## Infrastructure operator experience (2026-11-25)
 
 [INF55](archive/2026-11/platform-operations/2026-11-25--inf55-readable-manifests/CHANGE.md) — source Done (human acceptance NOT-RUN); readable YAML/JSON/legacy manifest render plus root aliases. [INF56](archive/2026-11/platform-operations/2026-11-25--inf56-platform-cli-presentation/CHANGE.md) — source Done (61/61; default JSON retained; human acceptance NOT-RUN). [Standard](../../docs/technical/platform/infrastructure-operator-experience.md). Topology presentation after INF54; other CLI surfaces remain staged for source review. No live authorization.
+
+## PostgreSQL readability (2026-11-25)
+
+[INF57](open/2026-11-25--inf57-postgres-infrastructure-readability/CHANGE.md) — source refactor commissioned; break dependency cycle, split topology/bootstrap, remove duplicate dev manifest projection, fix misleading readiness presentation. No live permission or behavioral redesign.
