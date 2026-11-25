@@ -154,7 +154,7 @@ test('chart render preflight touches only selected services', () => {
         ok: true,
         stdout: `${JSON.stringify({
           kind: 'Namespace',
-          metadata: { name: 'offscreen-dev-temporal' },
+          metadata: { name: 'offscreen-dev-postgres' },
         })}\n`,
       };
     }
@@ -164,11 +164,11 @@ test('chart render preflight touches only selected services', () => {
     }
     return { ok: true, stdout: '', stderr: '' };
   };
-  runChartRenderPreflight('dev', ['temporal'], { run: fixtureHelm });
+  runChartRenderPreflight('dev', ['postgres', 'temporal'], { run: fixtureHelm });
   assert.equal(linted.length, 1);
-  assert.match(linted[0], /temporal\/chart$/);
+  assert.match(linted[0], /postgres\/chart$/);
   assert.equal(rendered.length, 1);
-  assert.match(rendered[0], /temporal\/chart$/);
+  assert.match(rendered[0], /postgres\/chart$/);
   assert.equal(
     linted.some((path) => /postgres|object-storage/.test(path)),
     false,
