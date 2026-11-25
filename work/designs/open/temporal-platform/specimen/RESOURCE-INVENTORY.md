@@ -38,9 +38,9 @@ server-deployment.yaml uses TEMPORAL_DEFAULT_STORE_PASSWORD and TEMPORAL_VISIBIL
 - Upstream config template contains a publicClient hostPort value pointing to the frontend service. This is Temporal client configuration, not Kubernetes hostPort exposure. Do not confuse the two during render review.
 - Upstream config uses the pod IP for membership and dynamically loads configuration every 10s. No custom service discovery code needed.
 - Schema hook and health test use admin-tools image from one chart value. No separate hard-coded CLI image per slot.
-- Chart 1.8.0 allows per-role image override, but none is selected. Image construction still uses repository:tag, so server tag+digest render succeeded; all three index digests recorded and added to specimen. Final pinned render pending.
+- Chart 1.8.0 allows per-role image override, but none is selected. Image construction still uses repository:tag, so server tag+digest render succeeded; all three index digests recorded and added to specimen. Pinned dev render confirmed ten image-only substitutions; pinned release render not run.
 - Version 1.8.0 fixes helper address construction and removes Helm-only schema fields before server config; no reason to prefer earlier candidate based on inspected changes. Existing data/version compatibility remains unverified.
 
 ## Evidence needed next
 
-See [observed terminal evidence](../FINDINGS.md). Final digest-pinned rendering, runtime schema and connectivity, API acceptance, and migration remain unproven. No generated manifests committed as desired source.
+See [observed terminal evidence](../FINDINGS.md). Final pinned dev rendering confirmed via equivalent overlay; pinned release render, exact final integrated regression, runtime schema/connectivity, API acceptance and migration remain unproven. No generated manifests committed as desired source.
