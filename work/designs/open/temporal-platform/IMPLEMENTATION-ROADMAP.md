@@ -25,7 +25,7 @@ A is a task within C. B is a conditional predecessor, otherwise also a task with
 | Gate | Evidence required | Blocks |
 | --- | --- | --- |
 | Architecture acceptance | Owner accepts upstream chart, four local roles and narrow fresh-install lifecycle | all |
-| Chart | Download archive 1.8.0; verify published SHA; lint/render both profiles; exact names/probes/credential env and image strategy | C |
+| Chart | Archive SHA, baseline both profiles, pinned dev lint/render and image strategy observed; exact committed file and pinned release regression remain | C final proof |
 | Pin | Exact old PostgreSQL image and digest meaning; identify all consumers and matching test fixture | A |
 | PG | Verify current CNPG CRD/role/database/ACL support; select exact existing owner, credentials and projection algorithm | B |
 | Runtime transition | Owner-approved read-only old-folder inventory and live identity evidence, select preserve/migrate or explicitly disposable reset **per cluster** | C activation and final replacement mapping |
@@ -113,7 +113,7 @@ Fresh installation and preservation are **different runbooks**, not branches of 
 | B broad cleanup/research group | exact bounded caller groups, final deletion inventory planner-owned | authorized legacy inventory |
 | C duplicate proof programme | fold basic verification into replacement | exact existing fixture and runner contract |
 | Custom upgrade policy | no automated upgrades in initial scope | maintenance contract |
-| Repeated artifact render/download | one planner specimen proof and final regression | actual archive bytes |
+| Repeated artifact render/download | one planner specimen proof and final regression | pinned release and exact committed files |
 | Unowned runtime transition | explicit maintenance boundary and per-cluster migration decision | owner authorization/inventory |
 | Release namespace and PG pin hazards | explicit separate ownership | exact live proof |
 | Existing fixture dangerous assumptions | no blind invocation; bounded owned fixture | exact fixture contract |
