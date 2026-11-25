@@ -2,7 +2,7 @@
 
 **Status: Proposed; owner review required. No implementation commission.**
 
-Original source baseline: main 03ea79c469d0, 2026-11-25. Next review: 2026-11-26 or earlier with owner. Next decision: confirm pinned image render, actual SQL catalog and credential/reconciliation contract. Existing Temporal infra directory deliberately excluded; read-only CNPG cluster evidence collected; no legacy Temporal inventory. PostgreSQL tuning deferred.
+Original source baseline: main 03ea79c469d0, 2026-11-25. Next review: 2026-11-26 or earlier with owner. Next decision: settle release ACL policy, fresh provisioning contract and authorized legacy retirement inventory. Existing Temporal infra directory deliberately excluded; read-only CNPG cluster evidence collected; no legacy Temporal inventory. PostgreSQL tuning deferred.
 
 ## Architecture
 
@@ -50,6 +50,6 @@ No local chart templates, persistence DSL, shell installer or duplicate bootstra
 
 ## Outstanding evidence
 
-Candidate chart 1.8.0 tagged source inspected; published artifact URL and checksum recorded. [Concrete values specimen](specimen/README.md) and [source-derived inventory](specimen/RESOURCE-INVENTORY.md) available. Archive checksum and both baseline renders observed; final digest-pinned render pending. See [findings](FINDINGS.md). Concrete PG credential integration and full caller migration map remain unresolved. Existing deployment adoption requires separate permission; no destructive default.
+Candidate chart 1.8.0 tagged source inspected; published artifact URL and checksum recorded. [Concrete values specimen](specimen/README.md) and [source-derived inventory](specimen/RESOURCE-INVENTORY.md) available. Archive checksum, both baseline renders and pinned development render observed; pinned release render remains a regression check. See [findings](FINDINGS.md). Concrete PG credential integration and full caller migration map remain unresolved. Existing deployment adoption requires separate permission; no destructive default.
 
 After owner acceptance, reconcile permanent technical/runbook owners before selecting implementation Changes. See [design lifecycle](../../README.md).
