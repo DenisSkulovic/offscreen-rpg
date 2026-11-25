@@ -27,7 +27,9 @@ flowchart TD
   Unknown -->|No| Authority["Check selected product + technical authority"]
   Design --> Defense{"Formal design defense passed?"}
   Defense -->|No: revise or obtain evidence| Design
-  Defense -->|Yes| Approve{"Owner accepts decision?"}
+  Defense -->|Yes| Committee{"Fresh-chat committee passes?"}
+  Committee -->|No: revise and re-defend| Design
+  Committee -->|Yes| Approve{"Owner accepts decision?"}
   Approve -->|No| Hold["Keep Proposed; investigate or retire"]
   Approve -->|Yes| Authority
   Authority --> Docs["Reconcile canonical product/technical docs FIRST"]
@@ -104,7 +106,7 @@ When all selected child outcomes are complete, review the integrated docs, sourc
 
 ## 4. Design first; documentation before implementation
 
-For substantial work, choose an [adaptive design workshop](.agents/rules/target-driven-renewal.md#adaptive-design-workshop-choose-the-investigation-not-a-universal-sequence) suited to the domain. Keep speculative specimens and experiments isolated; converge through evidence and the [mandatory formal architecture defense](.agents/rules/target-driven-renewal.md#mandatory-formal-architecture-defense-and-convergence) before projecting the design into implementation. A material objection requires revision and re-defense; decisive unavailable evidence gates the affected scope. Record a verdict before owner acceptance and implementation planning. Direct implementation, Cursor or hybrid are execution choices, not design methods.
+For substantial work, choose an [adaptive design workshop](.agents/rules/target-driven-renewal.md#adaptive-design-workshop-choose-the-investigation-not-a-universal-sequence) suited to the domain. Keep speculative specimens and experiments isolated; converge through evidence and the [mandatory formal architecture defense](.agents/rules/target-driven-renewal.md#mandatory-formal-architecture-defense-and-convergence) before projecting the design into implementation. A material objection requires revision and re-defense; decisive unavailable evidence gates the affected scope. Record the designer's verdict, then require a [fresh-chat independent committee verdict](.agents/rules/target-driven-renewal.md#mandatory-independent-design-committee) on the exact candidate revision before owner acceptance and implementation planning. Direct implementation, Cursor or hybrid are execution choices, not design methods.
 
 **Product docs decide what should happen** ([`docs/product/`](docs/product/README.md)). **Technical docs decide what must be guaranteed** ([`docs/technical/`](docs/technical/README.md)), including identity, permissions, schemas, transaction fences, concurrency, failure/retry, spend and backward compatibility. **Code/tests/STATUS/evidence show what has actually been realized.**
 
