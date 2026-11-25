@@ -2,7 +2,7 @@
 
 **State:** Done / source-only.
 **Kind:** implementation. **Profile:** CONTRACT.
-**Baseline:** d08e36d809bb53c48fef3351224994bae92b6e7c; **target:** main. DB04 joined (includes DB03); DB01 Transaction root export remains. T01–T03 accepted. Joined main at `PENDING_JOIN_SHA`. Live PostgreSQL remains separately gated and is not part of this Change's accepted proof.
+**Baseline:** d08e36d809bb53c48fef3351224994bae92b6e7c; **target:** main. DB04 joined (includes DB03); DB01 Transaction root export remains. T01–T03 accepted. Joined main at `0531f1724fb437aa6b8e23b6454f98ef08009f7a`. Live PostgreSQL remains separately gated and is not part of this Change's accepted proof.
 
 [Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
