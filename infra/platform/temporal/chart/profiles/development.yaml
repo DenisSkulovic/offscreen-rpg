@@ -1,5 +1,0 @@
-mode: development
-namespace: offscreen-dev-temporal
-storageClass: standard
-ownerLabelKey: offscreen.dev/owner
-ownerValue: offscreen-dev

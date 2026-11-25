@@ -1,9 +1,0 @@
-{{- include "platform-temporal.validate" . -}}
-{{- $section := default "all" .Values.section -}}
-{{- $ctx := . -}}
-{{- if or (eq $section "all") (eq $section "server") -}}
-{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.server-scripts" "ctx" $ctx) -}}
-{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.server-dynamic" "ctx" $ctx) -}}
-{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.server-deployment" "ctx" $ctx) -}}
-{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.server-service" "ctx" $ctx) -}}
-{{- end -}}

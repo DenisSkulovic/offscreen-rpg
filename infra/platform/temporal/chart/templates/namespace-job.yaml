@@ -1,5 +1,0 @@
-{{- include "platform-temporal.validate" . -}}
-{{- $section := default "all" .Values.section -}}
-{{- if and (eq .Values.mode "release") (or (eq $section "all") (eq $section "namespace-job")) -}}
-{{- include "platform-temporal.jsonFrom" (dict "name" "platform-temporal.doc.namespace-job" "ctx" .) -}}
-{{- end -}}
