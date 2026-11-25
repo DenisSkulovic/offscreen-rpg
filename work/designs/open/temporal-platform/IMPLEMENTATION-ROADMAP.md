@@ -1,71 +1,78 @@
-# Implementation roadmap | proposed, not commissioned
+# Implementation roadmap | revised after strict review
 
-Baseline: main aa85115ddd47e1a0d18a1e85a3e783b5b93bb48a; outside-Temporal source cross-checked against original ZIP 03ea79c469d0 and targeted current GitHub reads. The existing Temporal infrastructure directory remains excluded. This is a design of future Changes, not actual Change packets, T-ID commissions or permission to edit/run infrastructure. No IDs reserved. No live worktree/cluster state asserted.
+Proposed only; no Change folders, IDs, commission or live permission. Reviewed main 4702f5637d6e6e167d7126606e7960343149e983; previous roadmap 72ef80ea. Existing Temporal directory deliberately excluded. This is the execution design, not a dispatchable packet.
 
-## 1. Strategy
+## 1. Review verdict
 
-Prefer **two source implementation Changes plus one verification Change**, with a planner gate before them and operator-owned live cutover after source acceptance. Earlier tentative three implementation Changes would split native chart and caller migration or introduce an intermediate transport; reject that because it leaves an incompatible or duplicate deployment authority on main. A Change is an independently useful integrated outcome, not one file. Small Composer assignments remain inside each Change.
+Reject previous A/B/C partition as written. It bundled unrelated pin relocation with a new PG provisioning API, hid broad caller rewrites in B6, duplicated fixture work in C, and treated source merge as sufficient to switch runtime topology. The installer design also overreached: custom safe-values whitelist, independent CLI, repeated lint/render and speculative upgrade machinery are unnecessary for the first local installation. Preserve safety outcomes, not previous custom machinery.
+
+Selected minimal programme: **one small independent prerequisite correction, one narrow persistence Change, one coherent platform replacement.** No mandatory fourth verification Change. Integrate the basic fixture and consumer compatibility in the replacement. Advanced resilience/restore is a separate future decision, not part of this commission.
 
 ```text
-Planner gates: render, persistence contract, legacy inventory + migration choice
-        |
-        v
-A  Shared PostgreSQL prerequisites and pin decoupling
-        |
-        v
-B  Atomic Temporal Helm replacement + all active callers
-        |
-        v
-C  Independent repeatable functional verification
-        |
-        v
-Owner-approved serial dev then release cutover/proof
+                       ChatGPT planning gates
+                      /                     \
+ A: decouple PG verification pin     B: PG persistence prerequisites
+                      \                     /
+                       C: atomic Helm replacement
+                                  |
+                  approved dev then release activation
 ```
 
-A and B may have disjoint preparation work in separate worktrees once interfaces are frozen, but B depends on A's actual exports and acceptance, and B touches shared environment assembly. Do not dispatch them concurrently by default. C may prepare independent fixture source against frozen endpoint/fixture contract after B is settled; integration after B. No simultaneous live cluster experiments, no new Kind cluster or parallel Temporal platform. Source tests are the default; authorized live proof is separate. One integration custodian (owner or nominated Cursor parent) serializes joins/docs/catalog updates. Per Change one branch/worktree; parent generally one cheap Composer child at a time, at most two only if exact disjoint writes/build outputs proven. Parent runs final focused checks once, not repeated whole-repo audits.
+A and B are independent source outcomes, not mandatory separate paid chats: one parent can implement sequentially if cheaper. Parallel only after disjoint file/test owners frozen. C joins both. No second Temporal platform, no temporal-next, no partial runtime authority switch. Source tests before integration, operator live permission separate. One integration custodian; one branch/worktree per actual Change. No paid agent research assignment.
 
-## 2. Pre-packet planner gates (ChatGPT, not Cursor)
+## 2. First resolve planning gates, not write packets
 
-| Gate | Required concrete evidence / decision | Affects |
+| Gate | Evidence required | Blocks |
 | --- | --- | --- |
-| P0 | Owner accepts four-role local upstream Helm architecture, which replaces earlier compact singleton design | all |
-| P1 | Obtain archive 1.8.0, verify published SHA, lint/template both profiles; review exact objects, Secret refs, Job env, readiness, CLI command, image identity strategy. No cluster needed. | B/C |
-| P2 | Verify CNPG operator/CRD support, exact role/database status fields and closed-before-grants algorithm, existing PG pin/digest semantics and credential projection ownership. No PG tuning. | A |
-| P3 | Owner authorizes narrowly scoped existing Temporal source inspection and read-only live inventory; map legacy resources and all active callers/tests, current persistence identity/versions/shards/namespaces/workflows, and select preserve/migrate or explicit disposable reset. No write permission implied. | B / live |
-| P4 | Resolve lock/process lifetime, time budgets, exact release ownership and safe config change policy; prove process fixture locally; verify CLI error discrimination and endpoint/namespace registration. | B |
-| P5 | Reconcile accepted architecture to permanent technical/runbook owners, old held INF64–69 programme, and INF29 evidence tracker; check current branches and active changes. | packet creation |
+| Architecture acceptance | Owner accepts upstream chart, four local roles and narrow fresh-install lifecycle | all |
+| Chart | Download archive 1.8.0; verify published SHA; lint/render both profiles; exact names/probes/credential env and image strategy | C |
+| Pin | Exact old PostgreSQL image and digest meaning; identify all consumers and matching test fixture | A |
+| PG | Verify current CNPG CRD/role/database/ACL support; select exact existing owner, credentials and projection algorithm | B |
+| Runtime transition | Owner-approved read-only old-folder inventory and live identity evidence, select preserve/migrate or explicitly disposable reset **per cluster** | C activation and final replacement mapping |
+| Operations | Resolve exact parent authorization, lock/timeout lifetime and release namespace preparation; verify CLI output/error semantics | C |
+| Packet review | Reconcile selected permanent docs, existing INF64–69 candidates, active branches and source maps; exact tests and G0–G7 child simulations | commission |
 
-P1, P2, P3 and P4 are substantive unresolved planner decisions, not dependencies masquerading as blockers. Do not create packets until appropriate gates settled and owner approves roadmap. Prior forbidden directory not opened by this roadmap. If user maintains exclusion, B cannot responsibly become dispatchable; planner must receive explicit permission or complete legacy inventory supplied by owner. No automatic migration/reset.
+No actual packet creation until owner approves roadmap and material decisions settled. Do not conflate unavailable live permission with deterministic source-test readiness. Existing folder exclusion is respected; cannot claim exhaustive retirement map without that inspection. No permission to inspect it inferred.
 
-## 3. Future Change A: PostgreSQL-owned shared persistence prerequisites
+## 3. A: remove unrelated verification pin dependency
 
-Outcome: PG-owned preparation for two Temporal stores, stable scoped role and credential projection, independently usable/testable without installing Temporal. No change to active old Temporal deployment; no database capacity/storage/connection settings or app schema changes.
+One small PATCH, not a PG subsystem redesign.
 
-Candidate owned files: infra/platform/postgres/temporal-persistence.mjs and tests/temporal-persistence.test.mjs (final placement after inspecting PG source ownership); tools/verification/resources/postgres/docker-plan.mjs loadPinnedPostgresImage and matching tests; dedicated verification image pin under PG verification resource ownership if the existing operator.pin cannot express identical digest semantics. Do not add a generic database framework. Existing dev SQL adapter is reference, not reused directly. Interface proposed ensureTemporalPersistence({profileId, confirmation}, deps) -> {ok,detail}; only called by explicit installer after target/admission/lock. Separate read-only observation if independently needed, not a generic provisioner.
+- Anchor: tools/verification/resources/postgres/docker-plan.mjs loadPinnedPostgresImage, normalizeImageId and resolvePinnedPostgresImageId. Existing reads Temporal images.pin, returns POSTGRES_IMAGE and POSTGRES_DIGEST. Docker image ID is not a registry manifest digest. Preserve exact image/digest and comparison behavior.
+- Selected destination: verification-owned postgres pin adjacent to docker-plan.mjs (proposed image.pin, only POSTGRES_IMAGE and POSTGRES_DIGEST). Use common parsePins; keep legacy pin intact for old Temporal until C. No change to CNPG operator pin or deployed images.
+- Exact matching test paths and current pin bytes still need source inventory. Positive proof identical image/digest, negative missing/invalid digest refuses; independent test proving legacy pin absent from fixture. No Docker pull, cluster or PG mutation.
+- A may be folded into C as its first tiny task if owner wants one less Change; no dependency on B. Do not create a large packet for a two-key relocation.
 
-Internal task groups (not actual T-IDs):
-- A1: PG verification pin decoupling. Existing loadPinnedPostgresImage reads infra/platform/temporal/images.pin using TEMPORAL_IMAGE_PIN_KEYS and returns POSTGRES_IMAGE + POSTGRES_DIGEST. Move that exact verification image/digest contract to an appropriate PG-owned pin, preserve semantics; no substitution of CNPG image or registry digest for Docker image ID without evidence. This can be integrated independently and is mandatory before deleting legacy pin. Actual values require authorized source access or a supplied pin; do not guess.
-- A2: role/database/Secret preparation with narrow fresh/adoption checks and retained CNPG resources. Use existing target/profile, exact role/database identities, scoped ownership, create-only credentials and verify projection; observe status/catalog before allowing connection. No auto rotation, no foreign adoption, no role superuser mount in Temporal. Apply only authorized fresh/adopted identities; mismatch refuses. Prove creation order, no-op and denied/mismatch fixtures. PG baseline bootstrap alone must not automatically provision Temporal.
-- A3: bounded integration review and tests for adapter, pin consumer and existing PG verification; no changes in Temporal folder or app slot flows. A is source-only until explicit operator run, not a new live DB initialization commission.
+## 4. B: narrow CNPG persistence preparation
 
-Acceptance: deterministic tests cover missing/foreign resources, retained reclaim policy, role scope, password never output, retries don't rewrite credentials, denied target no writes, correct pin/digest result unchanged. Test source PG verification dependency remains intact even if legacy Temporal pin removed. Existing PG cluster creation/scaling and dev SQL tenant behavior unaffected. No live PG tuning.
+Independent CONTRACT outcome, source-only: prepare the two stores and scoped credential prerequisites, without deploying Temporal. No generic shared DB abstraction, no provisioning during PG baseline startup, no PG tuning.
 
-## 4. Future Change B: atomic native Helm platform replacement
+- Candidate owner: infra/platform/postgres/temporal-persistence.mjs with focused test. Final owner and exact inputs chosen at PG gate. Existing dev SQL adapter is evidence of CNPG pattern, not code to import blindly. PostgreSQL owns role/databases, Temporal namespace owner owns its projected Secret; do not make PG responsible for Temporal workload namespace creation.
+- Use native CNPG CRs for one role and two retained DBs, stable credential source. Verify actual CRD and installed operator first. A closed database cannot be connected to for in-database ACL verification: settle correct ordering/privilege mechanism here, not Cursor. Verify negative access to application stores without broadly changing unrelated DB ACLs. No blanket superuser grants, no secret logs or auto rotation.
+- Target namespace creation and credential projection have explicit ownership and collision refusal; projection mismatch is not automatic rotation. No implicit adoption, schema initialization, migration or reset.
+- Expose one narrow preparation contract consumed by C. Do not invent status CLI, plugin framework or generic resource DSL. Only explicit platform operation invokes it after authorization and shared lock.
+- Tests: denied/foreign/mismatched prerequisite refuses before mutations; correct create order and retained policies; repeat ensure no credential rewrite; bounded failure with partial resources preserved; no app tenant changes. No live test required for source closure; actual CNPG reconciliation separately observed.
 
-Outcome: one deployment authority at infra/platform/temporal/ for both environments; existing CLI, app bindings, tenant operations, status, verification and guards reference the new topology in the same integrated diff. No temporal-next, legacy runtime compatibility framework or in-place refactoring of discarded templates. Replace old code directly once migration contract approved. Preserve data and meaningful authorization guarantees, not legacy abstractions.
+B needs a precise PG owner/ACL/Secret decision before becoming a packet. The user deferred PG redesign; if existing preparation is already adequate, B reduces to declarative config and a small adapter, not a new subsystem.
 
-Internal task groups, ordered to minimize repeated reads:
+## 5. C: replace active Temporal architecture in one integration
 
-| Group | Writes / outcome | Focused proof |
+Outcome: one upstream Helm release authority and all current consumers coherent on the same branch. No incremental cleanup of discarded old code. Initial automatic lifecycle **install absent / observe existing / refuse mismatch**. No automated same-version upgrade or version migration engine in baseline. Explicit human maintenance can use native Helm upgrade with separately reviewed configuration and schema compatibility. No custom values whitelist or generalized YAML merge policy; see OPERATIONS.md. Parent existing platform CLI owns plan, target confirmation and admission; do not expose another public Temporal CLI.
+
+Proposed task sequence, not T-IDs (exact source/test paths frozen by planner before dispatch):
+
+| Group | Narrow owned work | Proof |
 | --- | --- | --- |
-| B1 chart/config | README.md, chart.pin, values.yaml, profiles/{development,release}.yaml; remove obsolete chart/ only at final join; carry actual verified specimen | Both profiles lint/render with exact archive, no secret payload, vendor schema hooks, expected resources; reject bad checksum |
-| B2 observation | readiness.mjs, tests/readiness.test.mjs; shared release/core/admin/UI observations, endpoint contract | Wrong target, absent vs unreadable, failed/pending release, stale rollout, unavailable admin/RPC; no writes |
-| B3 install | install.mjs, tests/install.test.mjs; explicit ensure only, A interface, lock, artifact acquisition, native Helm, bounded diagnostics | Denied/missing prerequisite, no-op, mismatch refusal, one install/upgrade, failed hook, timeout/lock; no automatic rollback |
-| B4 environment dispatch | infra/environments/platform-plan.mjs and tests; common/render.mjs and pins.mjs + tests; infra-cli.mjs and tests; release install.sh and guard test | Both profiles route same installer; plan no writes; explicit context and memory gate; only Temporal bypasses legacy JSON renderer; other services unchanged |
-| B5 tenant and workloads | dev-temporal-tenant.mjs, dev-slot-startup.mjs, dev-shared-core-readiness.mjs, dev-slot-app-graph.mjs, release values, relevant tests/fixtures; retire obsolete bootstrap CLI/test only after replacement | Read-only shared startup, same slot namespace and 1d retention, genuine namespace absence vs transport error, chart admin exec, new endpoint in all app roles; release namespace retained or explicitly provisioned |
-| B6 proof consumer reconciliation + final deletion | existing diagnostics, smoke, tenant trial, release preflight, volume/layout guards, old pin/module/CLI imports; update permanent operator docs/runbook | No dangling imports or old active endpoint/resource references; focused tests and source suite; old layout guards replaced by meaningful safety checks; no live work |
+| C1 | Move reviewed specimen pin/values/profiles into final folder, concise README; native Helm render test using verified local archive, no repeated downloads in deterministic suite | Exact rendered identities, no bundled DB, no public listeners, correct schema hooks and Secret refs |
+| C2 | readiness.mjs and its tests; release/core/admin/UI observation; shared endpoint identity | Missing vs unreadable, wrong target, pending release, stale rollout, RPC failure, no mutating calls |
+| C3 | install.mjs and its tests; parent-invoked authorized install/no-op/refusal, call B, checksum, shared lock, native Helm wait | denied target, no-op no download or hook, foreign/legacy refusal, one install, failed hook and timeout, no destructive recovery |
+| C4 | platform-plan.mjs, common/render.mjs/pins.mjs and focused tests; native Temporal path, keep other service paths | both profiles same authority, plan read-only, old JSON renderer only removed for Temporal, admission preserved |
+| C5 | dev-shared-core-readiness, dev-slot-startup, dev-temporal-tenant and endpoint projection tests; existing tenant policy | preserve slot namespace/retention, absence vs failure, no ephemeral admin pod, no shared platform mutation on startup |
+| C6 | release workload profile/install prerequisite and release namespace preparation; relevant overlay and binding fixtures | default namespace explicit, create/describe only on authorized release preparation, correct frontend DNS, no app startup before ready |
+| C7 | infra-cli diagnostics, verification catalog, TURN03 preflight and exact matching tests | preserve diagnostic shape, no obsolete SQL probes or permanent schema Job check; unsupported proof honestly NOT RUN |
+| C8 | existing tenant trial / smoke compatibility and basic repeatable fixture; remove old code and tests by exact planner deletion manifest; volume/layout guards and final docs | isolated bounded proof harness, no stale imports/pins/endpoint, preserve negative safety tests; parent final integrated source proof |
 
-B1–B3 may be authored in sequence (B2 and B1 parallel only if frozen object names and no overlap). B4/B5 can follow frozen B2/B3 interfaces in separate task assignments, but no partial main integration that routes to absent infrastructure. B6 parent join after all. Keep task routes short with 2–5 start anchors and exact tests; if a group is too big subdivide mechanically by disjoint file ownership, not new architecture. Do not make a child discover all consumers or design migrations. Final deletion inventory is planner-owned after P3.
+C8 is not a license for broad cleanup. Split it into bounded assignments when exact inventory known: fixture, deletion, guard updates are different responsibilities. Existing tenant trial currently hardcodes dev-1/dev-2, fixed 7244 forward, conflates failed describe with absence, and lacks reliable finally cleanup. Do not run it blindly or retain those hazards. Existing release smoke deletes server pods and queries embedded PG lab_effect; it is a destructive resilience experiment, NOT basic acceptance. Disable/refuse obsolete invocation explicitly until replacement, preserve historical evidence and intended durability guarantee. Basic fixture may reuse SDK slotPing code but use an explicitly owned fixture namespace, unique queue and workflow ID, ephemeral loopback port and bounded cleanup; no production queues or shared slot workloads, no restart by default. Exact fixture selection remains planner work; no new global verifier. Advanced restart/side-effect proof not claimed by basic fixture.
 
 ### Cross-check discovered additional external dependencies
 
@@ -81,52 +88,34 @@ Source search across original ZIP explicitly skipped infra/platform/temporal/**;
 - tools/verification/resources/postgres/docker-plan.mjs depends on Temporal pin; A removes this dependency before B removes pin.
 - Existing source suite glob and package/script registrations must be mapped completely at P3. Archived docs/history may retain historical names; active executable/current runbook must not. No broad replacement of every string 'temporal-server' (vendor binary/image names remain valid).
 
-### Atomic acceptance
 
-On integrated B branch, test all affected callers and guard suites; render both chart profiles from verified archive; no active old deployment writer or incompatible imports; source suite truthful PASS/FAIL/NOT-RUN. Parent code-craft review and changed-file format/lint. Main runtime cutover is not automatic when source merges: coordinate operator maintenance boundary before next live ensure/start. If current live legacy resources are still present, new installer refuses rather than coexisting or taking over. Preserve old data and Git history. Approved migration runbook may require source and live steps in a tighter ordered maintenance window; decide at P3 before commission.
 
-## 5. Future Change C: independent reusable verification
+## 6. Source integration is not live cutover
 
-Outcome: a provider-free Temporal verification fixture using existing verification infrastructure (not a second global runner), able to prove actual workflow durability/visibility on approved local target. Existing smoke/tenant trial source must already be compatible at B close. C may be unnecessary as a standalone Change if that fixture already satisfies all requirements after B; do not create a packet merely to fill roadmap.
+Previous roadmap omitted an operational hazard: once C merges, old worktrees can still execute old infrastructure writers and new application configs cannot use an unconverted cluster. Git integration is not a distributed lock. Before C joins main, owner selects and records maintenance boundary: stop affected app callers, prevent old worktree platform operations, maintain explicit per-cluster compatibility/status and coordinate activation. No second runtime installation in same namespace. No automatic deletion, adoption or migration. If live cutover not yet approved, do not claim current platform operational under new source; delay integration if the owner cannot tolerate downtime or select a deliberate maintenance window.
 
-Task groups:
-- C1: reuse or narrowly adapt existing deterministic SDK workflow/activity/timer/signal fixtures and worker; unique owned namespace/workflow ID, idempotent activity effects, bounded waits. No game/LLM/provider calls.
-- C2: register with existing verification runner and evidence receipt conventions; choose exact command and suite owner after inspecting current verify.mjs and verification programme. infra:verify supports source/diagnostic today, not a fictional smoke/full suite. Keep source tests deterministic with no cluster.
-- C3: basic acceptance script: validate target, database schema compatibility (separate diagnostic, not slot readiness), frontend RPC, namespace, workflow completion/history and visibility, repeat ensure no revision change/no intentional rollout, denied target. Explicit report of skipped/unrun checks.
-- C4 (optional, separate live permission): worker interruption then same run completion; server interruption only on explicitly authorized idle/owned service. No shared cluster restart, PG failover/restore or production HA proof in default baseline. No automated destructive cleanup, preserve fixture evidence; cleanup only owned data/resources and separately approved.
+Fresh installation and preservation are **different runbooks**, not branches of a generic installer. Fresh path requires explicitly authorized empty/owned stores and no legacy resource collision. Preserve path needs actual server version, schema versions, shard count, DB identity and namespace IDs/retention, active execution inventory, coherent backups and tested restore/migration procedure. Decide per cluster; release default namespace is preserved unless explicitly changed. Do not turn migration into a paid agent investigation. No cluster reset or data loss authorization implied. Dev first, release second after observed evidence. A/B source changes do not touch existing live resources.
 
-Acceptance: harness works with injected deterministic transport and exact negative results without live cluster; live acceptance receipts separate. C does not rewrite installer or source architecture; defects return to planner/owning Change.
+## 7. Scope and proof discipline
 
-## 6. Parallelism and collisions
+- Reuse existing infra verification runner; source tests and basic fixture belong to C, not duplicate Change C plus D. No PG failover, full restore, load testing, hosted TLS/HA, workflow/application redesign or paid provider calls.
+- Pinned chart render is planner evidence once; regression test consumes local verified archive or reports explicit NOT RUN, no hidden network in generic source suite. Re-run once on final integrated configuration; not each child.
+- Distinguish health from actual execution, source PASS from live PASS. Verify repeat explicit ensure causes no Helm revision/intentional rollout, not immutable pod UIDs.
+- Exact source map and tests are still incomplete because old folder excluded. Do not label ready, assign speculative code counts, or claim full independent audit. After planner gates, run full packet G0–G7 review separately.
+- Previous programme INF64–69 held, proposed A/B absorb relevant INF64 prerequisites; C absorbs INF65–69 local deployment and basic verification. No duplicate execution or reopening archived INF61–63/70–71. Existing INF29 live tracker stays. No change to queue or broader undertaking estimates; no live progress.
+- Default serial parent children. A/B parallel source only after frozen paths/test outputs and active branch checks. C1–C8 sequential by default; optional disjoint child concurrency only if actual proof benefit. Parent integrates and reviews once; no repetitive repo-wide agent audits.
 
-| Pair | Decision | Reason |
+## 8. Strict review disposition
+
+| Previous weakness | Correction | Remaining evidence |
 | --- | --- | --- |
-| A/B | depends-on | A owns prerequisite interface and verification pin; B cannot delete old pin until A lands |
-| B/C | depends-on at join | B owns active smoke compatibility and shared diagnostic registrations; C consumes final endpoint/fixture |
-| B1/B2 | conditional parallel-write | disjoint files only after render confirms object identities; no common outputs |
-| B4/B5 | conditional parallel-write | disjoint paths if exact tests/fixtures separated; parent serializes final shared registrations |
-| Live dev/release | serial-shared-resource | one host memory budget, persistent state and operator approval |
-| INF60 / other DB work | no assumed parallel safety | check current branches; no shared PG authority edits, package manifest or verification catalog collisions |
+| A mixed independent pin and PG work | separate small prerequisite; optional fold | old pin and test map |
+| B broad cleanup/research group | exact bounded caller groups, final deletion inventory planner-owned | authorized legacy inventory |
+| C duplicate proof programme | fold basic verification into replacement | exact existing fixture and runner contract |
+| Custom upgrade policy | no automated upgrades in initial scope | maintenance contract |
+| Repeated artifact render/download | one planner specimen proof and final regression | actual archive bytes |
+| Unowned runtime transition | explicit maintenance boundary and per-cluster migration decision | owner authorization/inventory |
+| Release namespace and PG pin hazards | explicit separate ownership | exact live proof |
+| Existing fixture dangerous assumptions | no blind invocation; bounded owned fixture | exact fixture contract |
 
-No new IDs until catalog collision check. Existing TEMPORAL-INFRASTRUCTURE.md has planner-held INF64–69: proposed roadmap consolidates INF64 into A; INF65–68 into B; INF69 into C (narrow local scope). Do not dispatch those old candidates in parallel, reopen archived INF61–63/70–71, or count their source receipts as runtime proof. On owner acceptance reconcile programme and catalog instead of creating duplicate packets. INF29 remains live evidence tracker; DBOPS/SCALE/DATAOPS/AI01 and other broad initiatives unchanged. No global queue change now.
-
-## 7. Operator live cutover (not a Cursor source Change)
-
-Planner selects exact runbook only after permitted inventory. Default preserve: capture identities, schema versions, shard count, namespace IDs/retention, active executions, and coherent backup/recovery evidence before moving persistence; stop relevant app callers, ensure exclusive approved maintenance; prepare PG stores; migrate or explicitly approved fresh initialization; install verified Helm release; confirm core/namespace readiness and real workflow proof; rebind/start only authorized applications. Old resources/data not deleted automatically. If owner instead explicitly chooses disposable reset, enumerate exact resources, data loss, target and cleanup actions; no implicit reset from 'replace folder'. Verify dev first, release after dev evidence; release data/namespace policy separately checked. Failure stops, captures diagnostics, no automatic rollback of schema. No live permission implied by roadmap or source merge.
-
-## 8. Roadmap adversarial cross-check
-
-| Question | Disposition |
-| --- | --- |
-| Can all packets start today? | No. P0–P4 material decisions remain, no packet creation/commission. |
-| Does splitting native Helm code and caller routing create a broken intermediate main? | Avoided by B atomic source boundary. |
-| Can A land without changing active Temporal? | Yes in concept; source-only PG preparation and pin decoupling, no automatic provisioning. Exact A file/CR contract still planner-held. |
-| Can old pin be deleted without breaking unrelated PG proof? | Only after A decouples consumer and tests. |
-| Is release default namespace silently lost? | No; preserve current contract and explicitly verify/provision as needed. |
-| Can a successful Helm hook be mistaken for permanent Job readiness? | No; observe core and RPC; schema proof separately. |
-| Does plan require child architecture research? | No future task may do so; P1–P4 explicitly planner-owned. Current roadmap not ready. |
-| Is source acceptance mistaken for live adoption? | No; source evidence and operator cutover separate. |
-| Is verification another bespoke framework? | No; reuse existing runner and fixture; collapse C if B already meets it. |
-| Does it honor old-folder exclusion? | Yes for this review; explicitly prevents deletion/commission until authorized inventory. |
-
-Before actual packet authoring: re-read current HEAD, complete exact source maps and positive/negative commands per task, simulate parent and every child route, then independent G0–G7 audit. No readiness percentages override blockers. This document is the roadmap only; no Change folders created.
+Verdict: revised roadmap is materially leaner but **not approved or dispatchable**. No Changes created. Stop before implementation packet authoring; complete missing planner evidence and owner review.
