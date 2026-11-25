@@ -1,6 +1,6 @@
 # CACHE08 | Cache runtime residual correctness
 
-**State: Done (source implementation only).** Source proof `pnpm --filter @offscreen/cache test` 93/93; live Redis/SQL acceptance remains separately gated under VER07/VER08 and is not claimed here. Reconciled and joined main .
+**State: Done (source implementation only).** Source proof `pnpm --filter @offscreen/cache test` 93/93; live Redis/SQL acceptance remains separately gated under VER07/VER08 and is not claimed here. Reconciled and joined main `06153d898b77e62e646bc9c18495d3b002fa3b59`.
 
 [Cache architecture](../../../../../../docs/technical/platform/persistence-and-caching.md) · [Verification contract](../../../../../../docs/technical/platform/verification-programmes.md) · [TASKS](TASKS.md).
 
