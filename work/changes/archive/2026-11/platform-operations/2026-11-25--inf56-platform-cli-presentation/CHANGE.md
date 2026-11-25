@@ -1,6 +1,6 @@
 # INF56 | Human-readable platform CLI
 
-**State: Done (source implementation; human acceptance NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf56-platform-cli-presentation`; squash-joined main after INF55 at base `e538337798ba688afc47526b24905ebbe06a5c69`. Kind: implementation. Profile: PATCH. Planning baseline `a652df1ac53daec1eecbe02878c41c2708baf5b9`. [Operator experience standard](../../../../../../docs/technical/platform/infrastructure-operator-experience.md) · [Tasks](TASKS.md) · [PROOF](PROOF.md).
+**State: Done (source implementation; human acceptance NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf56-platform-cli-presentation` from main `e538337798ba688afc47526b24905ebbe06a5c69`. Joined main at `982a7d56ddef8f493fb92ace000c6b400fbd7ffd`. Kind: implementation. Profile: PATCH. Planning baseline `a652df1ac53daec1eecbe02878c41c2708baf5b9`. [Operator experience standard](../../../../../../docs/technical/platform/infrastructure-operator-experience.md) · [Tasks](TASKS.md) · [PROOF](PROOF.md).
 
 Outcome: human presentation and useful help for existing `infra:plan` / `infra:up` / `infra:status`, with explicit `--human` and `--json`. Default JSON unchanged (compatibility-first). Pure formatter, static help, human-only `up` phase progress on stderr. No root manifest edits or topology CLI edits. Independent of INF55; shared catalog/runbook joins serialized against concurrent INF55 landing. No live resources.
 
