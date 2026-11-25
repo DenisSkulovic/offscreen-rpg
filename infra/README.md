@@ -6,6 +6,8 @@
 
 Selected source layout, 2026-11-24. Implementation is staged by INF01–INF05; paths in the target tree become real only as their changes integrate. The existing release environment is a local production-style acceptance environment, not a deployed production service. Use **release** and **development** for source ownership and human-facing terms. Do not introduce a catch-all lab directory or new lab-prefixed source names. Historical proof names and existing runtime identity strings remain compatibility contracts, not naming precedent.
 
+**Operator experience:** [CLI and inspection standard](../docs/technical/platform/infrastructure-operator-experience.md) (selected target; incremental migration, not current command behavior).
+
 ## Selected layout
 
 - clusters/kind/{dev,release}: cluster topology/bootstrap and context fences.

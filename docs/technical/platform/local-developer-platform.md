@@ -4,6 +4,8 @@
 
 Owner direction 2026-11-24. Reviewed integration baseline `91bc2af40a94cdf9a95ee7db31a846d60f3abd0c` (INF36). Target design, NOT a claim that all capabilities are implemented. Current operational commands are in [developer platform runbook](../../runbooks/local-development-platform.md); repeatable acceptance belongs to [capability catalog](../../../infra/verification/CAPABILITIES.md). Existing [environment identity and lifecycle contract](developer-environments.md) remains authoritative for ownership and data preservation.
 
+**Operator presentation and inspection:** [infrastructure operator experience](infrastructure-operator-experience.md) defines shared CLI output, progress, diagnostics and migration standards; implementation is incremental.
+
 ## Goal and non-goals
 
 A developer with limited DevOps knowledge or a cheap coding agent can run a cluster, selected backing services, an application profile, or a realistic multi-replica release experiment using a few predictable commands. Standard Kind, Helm, Tilt and Kubernetes do the actual work. Reuse existing installers, chart, image factory, and slot manager. No second controller, scheduler, configuration language, daemon, Terraform, GitOps or enterprise hardening program. Optimize actual daily feedback time and reliable behavior.
