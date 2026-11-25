@@ -642,3 +642,36 @@ test('release generation references use full digest and preserve repository fami
   assert.throws(() => releaseGenerationRef(alias, 'sha256:bad'));
   assert.notEqual(generation, releaseGenerationRef(alias, 'sha256:' + 'b'.repeat(64)));
 });
+
+test('historical import wrapper accepts identical executable config across packaging generations', () => {
+  const blobs = new Map();
+  const blob = body => {
+    const raw = JSON.stringify(body);
+    const digest = 'sha256:' + createHash('sha256').update(raw).digest('hex');
+    blobs.set(digest, raw);
+    return digest;
+  };
+  const index = 'application/vnd.oci.image.index.v1+json';
+  const manifest = 'application/vnd.oci.image.manifest.v1+json';
+  const config = 'sha256:' + 'a'.repeat(64);
+  const makeManifest = id => blob({ schemaVersion: 2, mediaType: manifest, config: { digest: id }, layers: [] });
+  const m = makeManifest(config);
+  const target = (annotation, digest = m) => blob({ schemaVersion: 2, mediaType: index,
+    annotations: { generation: annotation }, manifests: [{ mediaType: manifest, digest, platform: { os: 'linux', architecture: 'amd64' } }] });
+  const expected = target('current');
+  const historical = target('previous');
+  const wrap = digest => blob({ schemaVersion: 2, mediaType: index, manifests: [{ mediaType: index, digest }] });
+  const run = (command, args) => {
+    if (command === 'kind') return { status: 0, stdout: NODE_CP + '\n' + NODE_WORKER };
+    if (args[0] === 'inspect') return { status: 0, stdout: args[2].includes('architecture') ? 'amd64' : args[2].includes('.os') ? 'linux' : 'offscreen-release' };
+    const raw = blobs.get(args.at(-1));
+    return { status: raw === undefined ? 1 : 0, stdout: raw ?? '' };
+  };
+  const check = observedDigest => matchesRuntimeImageDigest({ profileId: 'release', node: NODE_WORKER,
+    observedDigest, expectedDigest: expected, acceptedIds: [expected, config, m], run });
+  assert.equal(check(wrap(historical)), true);
+  assert.equal(check(wrap(target('foreign', makeManifest('sha256:' + 'b'.repeat(64))))), false);
+  const tampered = wrap(historical);
+  blobs.set(tampered, blobs.get(tampered) + ' ');
+  assert.equal(check(tampered), false);
+});

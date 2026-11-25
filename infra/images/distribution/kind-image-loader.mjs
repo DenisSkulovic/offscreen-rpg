@@ -684,7 +684,8 @@ if (isCli()) {
 /**
  * A containerd import may report a synthetic OCI index wrapping the loaded
  * target. Accept only a content-hash-verified, single-child index chain ending
- * at the expected target. Never accept a multi-image index by membership.
+ * at the expected target, or prove identical platform configuration through
+ * both hash-verified descriptor graphs. Never accept by alias membership.
  */
 export function matchesRuntimeImageDigest({ profileId, node, observedDigest, expectedDigest, acceptedIds, run = defaultRun }) {
   if (!isValidSha256Digest(observedDigest) || !isValidSha256Digest(expectedDigest)) return false;
@@ -693,25 +694,41 @@ export function matchesRuntimeImageDigest({ profileId, node, observedDigest, exp
   if (!profile.roles.some(role => node === profile.clusterName + '-' + role)) return false;
   try {
     if (!discoverKindNodes(profile, run).includes(node)) return false;
-    let digest = observedDigest;
-    const visited = new Set();
-    for (let depth = 0; depth < 4; depth++) {
-      if (digest === expectedDigest) return true;
-      if (visited.has(digest)) return false;
-      visited.add(digest);
-      const result = run('docker', ['exec', node, 'ctr', '-n', 'k8s.io', 'content', 'get', digest]);
-      if (result.status !== 0 || typeof result.stdout !== 'string' || result.stdout.length > 1024 * 1024) return false;
-      // Hash the exact bytes, not a parsed or reserialized representation.
-      if ('sha256:' + createHash('sha256').update(result.stdout).digest('hex') !== digest) return false;
-      const body = JSON.parse(result.stdout);
-      if (body.schemaVersion !== 2 || !INDEX_MEDIA_TYPES.has(body.mediaType) ||
-          !Array.isArray(body.manifests) || body.manifests.length !== 1) return false;
-      const child = body.manifests[0];
-      if ((!INDEX_MEDIA_TYPES.has(child?.mediaType) && !MANIFEST_MEDIA_TYPES.has(child?.mediaType)) ||
-          !isValidSha256Digest(child?.digest) || child.artifactType) return false;
-      digest = child.digest;
-    }
-    return digest === expectedDigest;
+    // An import wrapper can point to an older packaging index whose platform
+    // manifest still commits to the very same executable configuration.
+    // Resolve both graphs from the scheduled node's content-addressed store.
+    const resolveConfig = (root, stopAtExpected = false) => {
+      let digest = root;
+      const visited = new Set();
+      for (let depth = 0; depth < 8; depth++) {
+        if (stopAtExpected && digest === expectedDigest) return { exact: true };
+        if (visited.has(digest)) throw new Error('cyclic image graph');
+        visited.add(digest);
+        const result = run('docker', ['exec', node, 'ctr', '-n', 'k8s.io', 'content', 'get', digest]);
+        if (result.status !== 0 || typeof result.stdout !== 'string' || result.stdout.length > 1024 * 1024 ||
+            'sha256:' + createHash('sha256').update(result.stdout).digest('hex') !== digest) throw new Error('unverified image content');
+        const body = JSON.parse(result.stdout);
+        if (body.schemaVersion !== 2 || body.artifactType) throw new Error('invalid image descriptor');
+        if (MANIFEST_MEDIA_TYPES.has(body.mediaType)) {
+          return { config: manifestConfigDigestFromObject(body) };
+        }
+        if (!INDEX_MEDIA_TYPES.has(body.mediaType) || !Array.isArray(body.manifests)) throw new Error('invalid image index');
+        const child = body.manifests[0];
+        if (body.manifests.length === 1 && !child?.platform &&
+            !child?.artifactType && (INDEX_MEDIA_TYPES.has(child?.mediaType) || MANIFEST_MEDIA_TYPES.has(child?.mediaType))) {
+          if (!isValidSha256Digest(child.digest)) throw new Error('invalid wrapper digest');
+          digest = child.digest;
+        } else {
+          const platform = inspectNodePlatform(node, run);
+          digest = resolveManifestDigestFromIndex(result.stdout, platform.os, platform.architecture);
+        }
+      }
+      throw new Error('image graph depth exceeded');
+    };
+    const observed = resolveConfig(observedDigest, true);
+    if (observed.exact) return true;
+    const expected = resolveConfig(expectedDigest);
+    return isValidSha256Digest(observed.config) && observed.config === expected.config;
   } catch {
     return false;
   }
