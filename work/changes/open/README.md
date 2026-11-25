@@ -99,8 +99,8 @@ CACHE09, CACHE10, CACHE11 and CQ06 archived Done (source). CACHE12 held for plan
 No live authorization or queue change; DBOPS01 remains separate.
 
 ## Database operations wave
-- [DBOPS03 Database operations catalog and local target guard](2026-11-25--dbops03-db-operation-catalog/CHANGE.md) — Ready; source only.
-- [DBOPS04 Explicit enrollment and atomic operation ledger](2026-11-25--dbops04-db-operation-ledger/CHANGE.md) — Ready (dependency-gated); source only.
+- [DBOPS04 Explicit enrollment and atomic operation ledger](2026-11-25--dbops04-db-operation-ledger/CHANGE.md) — Ready (dependency-gated); source only. After Done DBOPS03.
 - [DBOPS05 Resumable bounded data-operation engine](2026-11-25--dbops05-db-batched-operations/CHANGE.md) — Ready (dependency-gated); source only.
+- DBOPS03 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--dbops03-db-operation-catalog/CHANGE.md).
 - DBOPS06 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--dbops06-schema-change-review/CHANGE.md).
 No global queue change or live permission; DBOPS01 metadata and release proof remain separate.

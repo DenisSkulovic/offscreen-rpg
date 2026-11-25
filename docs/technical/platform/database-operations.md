@@ -14,3 +14,6 @@ Dedicated scoped executor role, short-lived credentials/SSO through identity pro
 
 ## Proof
 Source fixtures first; actual SQL atomicity, lock contention, restart/unknown commit and recovery require separately authorized VER02-owned disposable PostgreSQL. Existing DB10/VER04/05 remain distinct. No live evidence or new product acceptance from this design.
+
+## Realization record
+DBOPS03 source-lands `@offscreen/db-operations`: explicit empty registry, `validateManifest` / `operationKey`, loopback-only `DB_OPS_URL` parsing, injectable read-only CLI (`help` / `list` / `inspect` / `target`), and root `pnpm db:ops`. Fixture-tested (27/27); live PostgreSQL NOT RUN. DBOPS06 source-lands offline `review:change` in tools/db-migrations. Enrollment, ledger and batched execution remain later Changes. Loopback labeling remains accidental-target protection, not environment attestation.
