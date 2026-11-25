@@ -13,7 +13,7 @@ import {
   storyPassage,
   storySceneCheckpoint,
 } from '@offscreen/story-persistence/stories';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { campaign, campaignSettings } from '@offscreen/story-persistence/campaign';
 import { DocumentStorageError, LocalDocumentStore } from '@offscreen/documents';
 import { generation } from '@offscreen/story-persistence/generations';

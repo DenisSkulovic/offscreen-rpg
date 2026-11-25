@@ -25,7 +25,7 @@ import type {
   WriterRoundModelPolicy,
 } from '@offscreen/storyteller/providers/writer-round-transport';
 import type { DocumentStore } from '@offscreen/documents';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import {
   createStorytellerBudget,
   settleStorytellerAttemptInTransaction,

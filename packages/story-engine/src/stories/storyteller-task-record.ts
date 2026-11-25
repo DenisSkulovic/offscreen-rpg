@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { generation } from '@offscreen/story-persistence/generations';
 import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
-import type { Transaction } from '@offscreen/db/outbox';
-import { enqueue } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
+import { enqueue } from '@offscreen/outbox/enqueue';
 import {
   storytellerTaskSchema,
   type StorytellerTask,

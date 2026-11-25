@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { and, eq, gt, gte, isNull, or, sql } from 'drizzle-orm';
 import { generation } from '@offscreen/story-persistence/generations';
-import { enqueue } from '@offscreen/db/outbox';
-import type { Transaction } from '@offscreen/db/outbox';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { enqueue } from '@offscreen/outbox/enqueue';
+import type { Transaction } from '@offscreen/db';
+import { outbox } from '@offscreen/outbox/schema';
 import { storyPassage, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import {
   storytellerCurrentOwnerGrant,

@@ -8,7 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { campaign, gameActionExecution } from '@offscreen/story-persistence/campaign';
 import { generation } from '@offscreen/story-persistence/generations';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { storyPassage, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import {
   storytellerWriterMission,

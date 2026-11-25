@@ -12,7 +12,7 @@ import { hashCanonicalJson, LocalDocumentStore } from '@offscreen/documents';
 import { storyLaunch } from '@offscreen/story-persistence/launch';
 import { story, storyPassage } from '@offscreen/story-persistence/stories';
 import { generation } from '@offscreen/story-persistence/generations';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { storytellerWriterMission } from '@offscreen/story-persistence/storyteller';
 import { createPinnedLibraryNavigation } from '@offscreen/story-engine/storyteller/library-navigation';
 import {

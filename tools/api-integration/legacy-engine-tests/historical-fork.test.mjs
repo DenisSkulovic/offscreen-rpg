@@ -9,7 +9,7 @@ import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { campaign, campaignSettings } from '@offscreen/story-persistence/campaign';
 import { generation } from '@offscreen/story-persistence/generations';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import {
   story,
   storyItem,

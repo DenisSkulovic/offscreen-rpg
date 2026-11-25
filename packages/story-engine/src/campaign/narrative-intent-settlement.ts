@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { narrativeIntentPlanSchema } from '@offscreen/game/narrative-intent';
 import { realMsUntilGameSecond } from '@offscreen/game/time';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import {
   campaign,
   gameActionExecution,

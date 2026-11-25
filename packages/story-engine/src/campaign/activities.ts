@@ -31,7 +31,8 @@ import {
   consumePreparedActivityPlan,
   immediateActionAvailable,
 } from '@offscreen/game/immediate-actions';
-import { enqueue, type Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
+import type { Transaction } from '@offscreen/db';
 import {
   lockStoryById,
   incrementStoryViewVersion,

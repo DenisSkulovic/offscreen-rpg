@@ -14,7 +14,7 @@ import {
 } from '@offscreen/db';
 import { generation } from '@offscreen/story-persistence/generations';
 import { storyLaunch } from '@offscreen/story-persistence/launch';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { storytellerOperation } from '@offscreen/story-persistence/storyteller';
 import { hashCanonicalJson } from '@offscreen/documents';
 import {

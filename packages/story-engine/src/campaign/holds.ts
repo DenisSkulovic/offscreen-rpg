@@ -4,7 +4,7 @@ import {
   campaignHoldSchema,
   campaignHoldsSchema,
 } from '@offscreen/story-interface/campaign-holds';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { projectCampaignClock } from './clock';
 import type { CampaignRecord } from './persistence';
 

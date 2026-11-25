@@ -16,7 +16,7 @@ import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { storytellerKind } from '../generations/storyteller-kinds';
 import { lockOwnedStory, incrementStoryViewVersion } from './persistence';
 import { StoryError, parseStoryIdentifier } from './errors';
-import { enqueue } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
 import {
   evaluateStorytellerRetryGate,
   type StorytellerAttemptLifecycleState,

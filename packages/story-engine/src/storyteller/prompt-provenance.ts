@@ -6,7 +6,7 @@ import {
   storytellerPromptComponentCatalogueV1,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import type { Database } from '@offscreen/db';
 
 const sha256 = z.string().regex(/^[0-9a-f]{64}$/);

@@ -1,6 +1,6 @@
 # Database redesign | parallel program
 
-Planning baseline dbaefc4dafe84fbacb74067ccfa6f372f135545c; documentation commit fa77f2d3614ee821b8e4ad849a46a66342000132; historical target undertaking/storyteller-workshop; current integration target main (owner decision 2026-11-24). [Selected architecture](../../../docs/technical/platform/database-infrastructure.md). DB01, DB02, DB03, DB04, DB06, DB07, and DB08 are Done source-only and archived. DB01, DB06, and DB08 were commissioned on 7033f654091a4fc66c7de6b0dce37e2b8fb504c1 and joined on undertaking/storyteller-workshop. DB02, DB03, DB04, and DB07 joined source-only on main; live SQL remains NOT RUN. Three remaining Changes are commissioned for source implementation as of 2026-11-25; source baseline d08e36d809bb53c48fef3351224994bae92b6e7c, packet refresh dabc729235a92c1740fb31ebdc04a6f96e7136f1. Schema lane next: DB05 (DB04 joined); DB09 after joined DB07; DB10 dependency-gated. DB06 does not consume DB01 types, DB08 uses only existing config/migration APIs. No redesign by Cursor; enforce the selected source maps and execution decisions. Cache work is already commissioned; preserve its ownership. DB06/08 infrastructure do not depend on Cache consumer edits; DB05 waits for DB04 and CACHE04/06B. No shared live DB tests.
+Planning baseline dbaefc4dafe84fbacb74067ccfa6f372f135545c; documentation commit fa77f2d3614ee821b8e4ad849a46a66342000132; historical target undertaking/storyteller-workshop; current integration target main (owner decision 2026-11-24). [Selected architecture](../../../docs/technical/platform/database-infrastructure.md). DB01, DB02, DB03, DB04, DB05, DB06, DB07, and DB08 are Done source-only and archived. DB01, DB06, and DB08 were commissioned on 7033f654091a4fc66c7de6b0dce37e2b8fb504c1 and joined on undertaking/storyteller-workshop. DB02, DB03, DB04, DB05, and DB07 joined source-only on main; live SQL remains NOT RUN. Two remaining Changes are commissioned for source implementation as of 2026-11-25; source baseline d08e36d809bb53c48fef3351224994bae92b6e7c, packet refresh dabc729235a92c1740fb31ebdc04a6f96e7136f1. Schema lane complete through DB05; DB09 after joined DB07; DB10 dependency-gated. DB06 does not consume DB01 types, DB08 uses only existing config/migration APIs. No redesign by Cursor; enforce the selected source maps and execution decisions. Cache work is already commissioned; preserve its ownership. DB06/08 infrastructure do not depend on Cache consumer edits; DB05 waits for DB04 and CACHE04/06B. No shared live DB tests.
 
 ```mermaid
 flowchart TD
@@ -21,7 +21,7 @@ flowchart TD
 
 | Lane | First | Successor | Last |
 | --- | --- | --- | --- |
-| Schema | DB04 (Done) | DB05 | — |
+| Schema | DB05 (Done) | — | — |
 | Runtime | DB07 Done source-only | DB09 | — |
 | Final join | DB10 after both lanes | source first | authorized disposable SQL proof |
 
@@ -65,11 +65,11 @@ Current source baseline `7322b6f1a6df6f5ae612763b9786563dca2989eb`; main is the 
 
 ## Current dispatch (2026-11-25)
 
-Run two Cursor parents at most for this DB program. DB04 is Done source-only; schema-lane custodian for the next join is the DB05 parent. DB05 may proceed after joined DB04 (shared DB exports, tool registry/dependency keys, and overlapping consumer manifests). DB09 may run after joined DB07, owning instrumentation and concurrency only. No concurrent independent pushes; reconcile lockfile against combined manifests before joining. Each successor gets its own branch/worktree from latest main, not from predecessor Change branch. No automatic dispatch of unnamed backlog work. DB10 T01–T03 source may integrate as progress even if live authorization absent, but keep packet OPEN until required proof or explicit owner disposition.
+Run two Cursor parents at most for this DB program. DB05 is Done source-only; schema lane is complete. DB09 may run after joined DB07, owning instrumentation and concurrency only. No concurrent independent pushes; reconcile lockfile against combined manifests before joining. Each successor gets its own branch/worktree from latest main, not from predecessor Change branch. No automatic dispatch of unnamed backlog work. DB10 T01–T03 source may integrate as progress even if live authorization absent, but keep packet OPEN until required proof or explicit owner disposition.
 
 - [DB03 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db03-story-persistence/SOURCE-MAP.md)
 - [DB04 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db04-admin-lab-persistence/SOURCE-MAP.md)
-- [DB05 source map](../../changes/open/2026-11-24--db05-durable-outbox/SOURCE-MAP.md)
+- [DB05 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db05-durable-outbox/SOURCE-MAP.md)
 - [DB07 execution](../../changes/archive/2026-11/platform-operations/2026-11-24--db07-managed-transactions/EXECUTION.md)
 - [DB09 execution](../../changes/open/2026-11-24--db09-telemetry-and-concurrency/EXECUTION.md)
 - [DB10 execution](../../changes/open/2026-11-24--db10-dependency-closure-and-proof/EXECUTION.md)

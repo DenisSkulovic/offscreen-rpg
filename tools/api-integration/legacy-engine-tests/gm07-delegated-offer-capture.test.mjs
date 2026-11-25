@@ -8,7 +8,7 @@ import {
   campaignDelegatedOffer,
   storyDelegationPolicy,
 } from '@offscreen/story-persistence/campaign';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import {
   declineHarmlessInvitationWithdrawalPlan,

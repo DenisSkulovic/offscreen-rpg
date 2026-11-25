@@ -5,7 +5,7 @@ import {
   storytellerRun as run,
 } from '@offscreen/story-persistence/storyteller';
 import { executionPolicySchema, type ExecutionPolicy } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 
 type ProviderExecution = Extract<ExecutionPolicy, { mode: 'provider' }>;
 

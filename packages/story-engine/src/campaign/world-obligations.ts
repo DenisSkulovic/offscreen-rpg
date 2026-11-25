@@ -11,8 +11,8 @@ import {
   applyWorldObligationCondition,
   worldObligationSchema,
 } from '@offscreen/game/world-obligations';
-import type { Transaction } from '@offscreen/db/outbox';
-import { enqueue } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
+import { enqueue } from '@offscreen/outbox/enqueue';
 import type { StoryRecord } from '../stories/persistence';
 import { campaignHoldsSchema } from './holds';
 import type { CampaignRecord } from './persistence';

@@ -17,7 +17,7 @@ Table declarations for the 20 Storyteller tables stay behind `@offscreen/story-p
 | Writer attempt funding               | `createStorytellerBudget` and `lockAllowance` in [storyteller/budget.ts](src/storyteller/budget.ts)                                                                             | `pg_advisory_xact_lock(714092631)` then `FOR UPDATE` on funding and run. Accounting transactions do not take the story lock                             |
 | Writer mission lease / CAS           | `casWriterStep`, `reserveWriterMissionProviderAttempt`, `acquireGlobalBudgetAdvisoryLock` in [storyteller/writer-mission-custody.ts](src/storyteller/writer-mission-custody.ts) | Step compare-and-swap and the same budget advisory lock. `planWriterProviderStepInTransaction` does not take that lock; strict callers acquire it first |
 
-`apps/game-authority` and the SQL-capable worker compose these use cases. The no-SQL execution worker does not import the database package. Generic outbox insert/relay stays in `packages/db/src/outbox.ts` and `outbox-relay.ts`; domain code decides when a transaction calls them.
+`apps/game-authority` and the SQL-capable worker compose these use cases. The no-SQL execution worker does not import the database package. Generic outbox insert/relay stays in `packages/outbox/src/enqueue.ts` and `relay.ts`; domain code decides when a transaction calls them.
 
 ## Two-hop examples
 

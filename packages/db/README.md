@@ -10,13 +10,13 @@
 | Managed admission / withClient | [connection/admission.ts](src/connection/admission.ts), [connection/managed-client.ts](src/connection/managed-client.ts) |
 | Managed SQL transactions and errors | [database.ts](src/database.ts) `transaction`, [transaction/execute.ts](src/transaction/execute.ts), [transaction/errors.ts](src/transaction/errors.ts), [transaction/policy.ts](src/transaction/policy.ts) |
 | Controlled migration execution | [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts) |
-| Outbox table declaration (until DB05 extraction) | [schema/outbox.ts](src/schema/outbox.ts) via `@offscreen/db/outbox-schema` |
+| Durable delivery (outbox) | `@offscreen/outbox` (`./schema`, `./enqueue`, `./relay`) |
 | Identity / auth tables | `@offscreen/identity-persistence` |
 | Story Engine durable schema | `@offscreen/story-persistence` (`drafts`, `generations`, `stories`, `launch`, `campaign`, `storyteller`) |
 | Admin staff / audit tables | `@offscreen/admin/persistence/schema` |
 | Lab QA run/stage tables | `@offscreen/lab-support/persistence/schema` |
 
-`@offscreen/db` owns the pool, the Drizzle client, migrations, the remaining outbox declaration/relay until DB05, and low-level persistence helpers. It does not own domain business tables, campaign authorization, story-state mutation, Writer spend, or the transaction boundary those commands use. Those owners are mapped in [Story Engine SQL ownership](../story-engine/SQL-OWNERSHIP.md) and [database infrastructure](../../docs/technical/platform/database-infrastructure.md).
+`@offscreen/db` owns the pool, the Drizzle client, migrations, and low-level persistence helpers. Delivery table declaration, enqueue and relay live in `@offscreen/outbox`. It does not own domain business tables, campaign authorization, story-state mutation, Writer spend, or the transaction boundary those commands use. Those owners are mapped in [Story Engine SQL ownership](../story-engine/SQL-OWNERSHIP.md) and [database infrastructure](../../docs/technical/platform/database-infrastructure.md).
 
 The named public exports are in [package.json](package.json). Baseline SQL/migration metadata remain under [migrations/](migrations). [Canonical files](../../docs/technical/storyteller/context-and-memory.md) also defines a **future/mixed** file-ownership target; do not infer live migration completion from that design.
 

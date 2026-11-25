@@ -31,7 +31,8 @@ import {
   makeValidatedAppearanceForPublication,
   readOptionalSceneAppearance,
 } from '@offscreen/story-interface/scene-publication';
-import { enqueue, type Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
+import type { Transaction } from '@offscreen/db';
 import { knowledgeIndexTopic } from './documents';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { readDatabaseClockMs } from './persistence';

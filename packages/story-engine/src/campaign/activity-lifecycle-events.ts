@@ -1,4 +1,4 @@
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { recordActivityEvent, type ActivityEventKind } from './persistence';
 
 /** Maps a terminal or transitional activity state to its player-visible ledger kind. */

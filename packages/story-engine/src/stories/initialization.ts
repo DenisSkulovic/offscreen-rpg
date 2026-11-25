@@ -16,7 +16,7 @@ import {
   type InitialStory,
 } from './command-policy';
 import { StoryError, parseStoryIdentifier } from './errors';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import {
   checkpointPinsForRoot,

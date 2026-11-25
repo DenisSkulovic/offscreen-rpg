@@ -1,1 +1,1 @@
-export { outbox } from '@offscreen/db/outbox-schema';
+export { outbox } from '@offscreen/outbox/schema';

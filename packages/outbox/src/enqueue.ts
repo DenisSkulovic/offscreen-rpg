@@ -1,8 +1,7 @@
 import { eq } from 'drizzle-orm';
-import type { Transaction } from './transaction/types';
-import { outbox } from './schema/outbox';
+import type { Transaction } from '@offscreen/db';
+import { outbox } from './schema';
 
-export type { Transaction } from './transaction/types';
 export type Notice = {
   id: string;
   topic: string;

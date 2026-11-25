@@ -27,7 +27,7 @@ import {
   playablePresentation,
   playableProposalSchema,
 } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { initializeStoryInTransaction } from './initialization';
 import { publishStorytellerNotes } from './continuity-notes';
 import { StoryError } from './errors';

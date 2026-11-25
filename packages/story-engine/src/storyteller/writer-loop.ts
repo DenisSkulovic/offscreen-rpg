@@ -21,7 +21,7 @@ import {
   type WriterToolInvocationResult,
   type WriterToolName,
 } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import {
   advanceWriterMissionProviderStep,
   hashWriterMissionSerializedResponse,

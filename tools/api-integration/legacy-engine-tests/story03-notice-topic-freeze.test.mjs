@@ -7,10 +7,10 @@ import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { generation } from '@offscreen/story-persistence/generations';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
-import { enqueue } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
 import {
   insertStorytellerTask,
   readFrozenStorytellerNoticeTopic,

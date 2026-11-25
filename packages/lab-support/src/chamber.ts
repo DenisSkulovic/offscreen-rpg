@@ -18,7 +18,7 @@ import {
   StoryError,
 } from '@offscreen/story-engine/stories';
 import type { StoryApplicationOptions } from '@offscreen/story-engine/stories';
-import { enqueue } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
 import { storytellerNoticeTopicForWake } from '@offscreen/story-engine/storyteller/records';
 import type { ChamberStorytellerControl } from './storyteller-control';
 

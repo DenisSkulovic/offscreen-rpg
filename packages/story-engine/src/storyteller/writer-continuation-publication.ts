@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq, sql } from 'drizzle-orm';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { campaign, gameOffer } from '@offscreen/story-persistence/campaign';
 import { generation } from '@offscreen/story-persistence/generations';
 import {

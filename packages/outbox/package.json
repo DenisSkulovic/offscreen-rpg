@@ -1,0 +1,32 @@
+{
+  "name": "@offscreen/outbox",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./schema": {
+      "types": "./dist/src/schema.d.ts",
+      "default": "./dist/src/schema.js"
+    },
+    "./enqueue": {
+      "types": "./dist/src/enqueue.d.ts",
+      "default": "./dist/src/enqueue.js"
+    },
+    "./relay": {
+      "types": "./dist/src/relay.d.ts",
+      "default": "./dist/src/relay.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@offscreen/db": "workspace:*",
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

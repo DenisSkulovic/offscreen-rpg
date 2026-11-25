@@ -4,8 +4,8 @@
 import { randomUUID, createHash } from 'node:crypto';
 import { and, asc, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { enqueue } from '@offscreen/db/outbox';
-import type { Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
+import type { Transaction } from '@offscreen/db';
 import {
   storytellerWriterChild,
   storytellerWriterMission,

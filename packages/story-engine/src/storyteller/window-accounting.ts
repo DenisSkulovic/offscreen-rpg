@@ -7,7 +7,7 @@ import type {
 } from '@offscreen/usage-policy/usage-policy';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import type { ProviderUsage } from '@offscreen/storyteller/providers/openrouter';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 
 export class UsageWindowError extends Error {
   constructor(public readonly windowId: string) {

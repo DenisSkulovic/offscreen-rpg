@@ -32,7 +32,7 @@ import {
   activityOccurrencesSchema,
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { appendPublicStoryEvent } from '../stories/public-events';
 import {
   advanceStoryView,

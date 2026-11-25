@@ -15,8 +15,8 @@ import {
 } from '@offscreen/story-persistence/stories';
 import { interactionSubmissionSchema } from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
-import type { Transaction } from '@offscreen/db/outbox';
-import { enqueue } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
+import { enqueue } from '@offscreen/outbox/enqueue';
 import type {
   PreparedStorytellerResolution,
   StorytellerResolutionContextSqlCapture,

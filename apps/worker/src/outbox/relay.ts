@@ -1,6 +1,6 @@
 import { setTimeout as delay } from 'node:timers/promises';
-import type { createOutbox } from '@offscreen/db/outbox-relay';
-import type { Notice } from '@offscreen/db/outbox';
+import type { createOutbox } from '@offscreen/outbox/relay';
+import type { Notice } from '@offscreen/outbox/enqueue';
 
 export class OutboxRelayError extends Error {
   override readonly name = 'OutboxRelayError';

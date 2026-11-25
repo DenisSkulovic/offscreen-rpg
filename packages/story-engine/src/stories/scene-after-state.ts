@@ -8,7 +8,7 @@ import {
   worldObligation,
 } from '@offscreen/story-persistence/campaign';
 import { story, storyItem } from '@offscreen/story-persistence/stories';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { eq } from 'drizzle-orm';
 import type { StoryContinuation } from './command-policy';
 import { projectStoryItemEffects, type StoryItemSnapshot } from './persistence';

@@ -7,7 +7,7 @@ import {
   storyDelegationPolicyCommand,
 } from '@offscreen/story-persistence/campaign';
 import { DECLINE_HARMLESS_INVITATION_CLASS } from '@offscreen/game/delegation-eligibility';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { revokeArmedDelegatedOffersOnPolicyDisable } from '../campaign/delegated-offer';
 import { incrementStoryViewVersion, lockOwnedStory } from './persistence';
 import { StoryError, parseStoryIdentifier } from './errors';

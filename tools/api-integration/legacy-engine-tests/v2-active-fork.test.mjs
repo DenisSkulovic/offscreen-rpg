@@ -15,7 +15,7 @@ import {
   worldObligation,
 } from '@offscreen/story-persistence/campaign';
 import { generation } from '@offscreen/story-persistence/generations';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import {
   story,
   storyPassage,

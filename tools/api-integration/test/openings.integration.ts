@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import type { Database } from '@offscreen/db';
-import { createOutbox } from '@offscreen/db/outbox-relay';
+import { createOutbox } from '@offscreen/outbox/relay';
 import {
   scriptedOpeningTopic,
   createScriptedOpenings,

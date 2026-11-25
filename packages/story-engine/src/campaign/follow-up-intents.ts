@@ -1,4 +1,4 @@
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { holdCampaignForStorytellerIntent } from './holds';
 import {
   requestActionNarration,
@@ -9,7 +9,7 @@ import { requestActivityReport } from './reports';
 import type { StoryRecord } from '../stories/persistence';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { transitionStorytellerIntentToGeneration } from './holds';
-import { enqueue } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
 import {
   storytellerNoticeTopicForWake,
   isProvisionalContextCapture,

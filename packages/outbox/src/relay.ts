@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq, isNull, lte, sql, inArray } from 'drizzle-orm';
-import type { Database } from './database';
-import { outbox } from './schema/outbox';
-import type { Notice } from './outbox';
+import type { Database } from '@offscreen/db';
+import { outbox } from './schema';
+import type { Notice } from './enqueue';
 
 /** Short leases protect delivery attempts, not execution of the referenced work. */
 export function createOutbox(database: Database) {

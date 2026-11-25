@@ -5,7 +5,7 @@ import {
   type SceneCheckpointV2,
 } from '@offscreen/documents';
 import { offerSchema } from '@offscreen/game/offers';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { StoryError } from './errors';
 import { readSceneAfterState } from './scene-after-state';
 import {

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { generation } from '@offscreen/story-persistence/generations';
 import { storyLaunch } from '@offscreen/story-persistence/launch';
 import {

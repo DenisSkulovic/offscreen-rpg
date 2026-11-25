@@ -2,7 +2,7 @@
  * WR04 T02: child registry authority and shared mission microusd suballocation fences.
  */
 import { and, eq, sql } from 'drizzle-orm';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import {
   storytellerAttempt,
   storytellerWriterChild,

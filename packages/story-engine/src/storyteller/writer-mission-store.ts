@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { sql } from 'drizzle-orm';
 import {
   storytellerWriterChild,

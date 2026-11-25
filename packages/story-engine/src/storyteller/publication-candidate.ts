@@ -44,7 +44,7 @@ import {
   type SceneAfterStateGameOffer,
 } from '../stories/scene-after-state';
 import { toV2FictionalState } from '../stories/scene-checkpoint-v2';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import type { ActiveSceneRecallCue } from '../stories/persistence';
 
 export const STORYTELLER_PUBLICATION_OFFER_SOURCE =

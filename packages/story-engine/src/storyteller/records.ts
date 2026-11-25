@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import {
   storytellerTaskSchema,
   storytellerOutputSchema,

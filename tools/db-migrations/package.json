@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@offscreen/admin": "workspace:*",
-    "@offscreen/db": "workspace:*",
     "@offscreen/lab-support": "workspace:*",
     "@offscreen/identity-persistence": "workspace:*",
+    "@offscreen/outbox": "workspace:*",
     "@offscreen/story-persistence": "workspace:*",
     "drizzle-orm": "0.45.2"
   },

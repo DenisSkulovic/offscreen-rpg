@@ -8,7 +8,7 @@ import {
 } from '@offscreen/story-persistence/campaign';
 import type { GameOffer } from '@offscreen/game/offers';
 import type { NarrativeIntentPlan } from '@offscreen/game/narrative-intent';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import {
   incrementStoryViewVersion,
   readDatabaseClockMs,

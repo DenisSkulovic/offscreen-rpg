@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { generation } from '@offscreen/story-persistence/generations';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import {
   campaign,
   gameActionExecution,

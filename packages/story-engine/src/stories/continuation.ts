@@ -6,7 +6,7 @@ import {
 } from '@offscreen/story-interface/interactions';
 import type { Database } from '@offscreen/db';
 import { campaign } from '@offscreen/story-persistence/campaign';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { type DocumentStore, type SceneCheckpoint } from '@offscreen/documents';
 import {
   activeWaitBlocksContinuation,
@@ -57,7 +57,7 @@ import {
 } from '@offscreen/story-persistence/stories';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
-import { enqueue } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
 
 export {
   stageSupportedContinuationCheckpoint,

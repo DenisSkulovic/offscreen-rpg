@@ -17,7 +17,7 @@ import { join } from 'node:path';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/story-persistence/generations';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { storytellerPublication } from '@offscreen/story-persistence/storyteller';
 import {
   buildLongStoryMemoryCorpus,

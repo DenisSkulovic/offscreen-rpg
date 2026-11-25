@@ -11,7 +11,7 @@ import {
   type StorytellerResult,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { storytellerKind } from '../generations/storyteller-kinds';
 
 export type ProjectStorytellerNotesInput = {

@@ -15,7 +15,7 @@ import {
 } from '@offscreen/story-interface/openings';
 import { storySnapshotSchema } from '@offscreen/story-interface/stories';
 import { createChamberStorytellerControl } from '@offscreen/lab-support';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { worldObligation } from '@offscreen/story-persistence/campaign';
 import { story, storyPassage, storySceneCheckpoint } from '@offscreen/story-persistence/stories';
 import {

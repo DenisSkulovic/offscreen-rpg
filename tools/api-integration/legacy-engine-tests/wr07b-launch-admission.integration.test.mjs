@@ -7,7 +7,7 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { hashCanonicalJson } from '@offscreen/documents';
 import { generation } from '@offscreen/story-persistence/generations';
 import { storyLaunch } from '@offscreen/story-persistence/launch';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import {
   storytellerOperation,
   storytellerWriterMission,

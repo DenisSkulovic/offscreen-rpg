@@ -320,6 +320,9 @@ importers:
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
+      '@offscreen/outbox':
+        specifier: workspace:*
+        version: link:../../packages/outbox
       '@offscreen/runtime-logging':
         specifier: workspace:*
         version: link:../../packages/runtime-logging
@@ -622,6 +625,9 @@ importers:
       '@offscreen/lab-interface':
         specifier: workspace:*
         version: link:../lab-interface
+      '@offscreen/outbox':
+        specifier: workspace:*
+        version: link:../outbox
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../story-engine
@@ -670,6 +676,25 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/outbox:
+    dependencies:
+      '@offscreen/db':
+        specifier: workspace:*
+        version: link:../db
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   packages/runtime-logging:
     devDependencies:
       '@offscreen/config':
@@ -702,6 +727,9 @@ importers:
       '@offscreen/identity-persistence':
         specifier: workspace:*
         version: link:../identity-persistence
+      '@offscreen/outbox':
+        specifier: workspace:*
+        version: link:../outbox
       '@offscreen/story-interface':
         specifier: workspace:*
         version: link:../story-interface
@@ -861,6 +889,9 @@ importers:
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
+      '@offscreen/outbox':
+        specifier: workspace:*
+        version: link:../../packages/outbox
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
@@ -983,6 +1014,9 @@ importers:
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
+      '@offscreen/outbox':
+        specifier: workspace:*
+        version: link:../../packages/outbox
       '@offscreen/story-engine':
         specifier: workspace:*
         version: link:../../packages/story-engine
@@ -1026,15 +1060,15 @@ importers:
       '@offscreen/admin':
         specifier: workspace:*
         version: link:../../packages/admin
-      '@offscreen/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@offscreen/identity-persistence':
         specifier: workspace:*
         version: link:../../packages/identity-persistence
       '@offscreen/lab-support':
         specifier: workspace:*
         version: link:../../packages/lab-support
+      '@offscreen/outbox':
+        specifier: workspace:*
+        version: link:../../packages/outbox
       '@offscreen/story-persistence':
         specifier: workspace:*
         version: link:../../packages/story-persistence

@@ -5,7 +5,7 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { campaign } from '@offscreen/story-persistence/campaign';
 import { user } from '@offscreen/identity-persistence/auth';
 import { story } from '@offscreen/story-persistence/stories';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import {
   sceneCheckpointSchema,
   sceneCheckpointV1Schema,

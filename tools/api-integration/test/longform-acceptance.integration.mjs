@@ -13,7 +13,7 @@ import {
   storyPassage,
   storySceneCheckpoint,
 } from '@offscreen/story-persistence/stories';
-import { outbox } from '@offscreen/db/outbox-schema';
+import { outbox } from '@offscreen/outbox/schema';
 import { StoryError } from '@offscreen/story-engine/stories';
 import { createGameAuthoritySeam } from '../../../apps/game-authority/dist/src/application.js';
 import {

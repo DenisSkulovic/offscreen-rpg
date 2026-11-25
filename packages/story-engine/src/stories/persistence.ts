@@ -11,7 +11,8 @@ import {
 } from '@offscreen/story-persistence/stories';
 import { and, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
-import { enqueue, type Transaction } from '@offscreen/db/outbox';
+import { enqueue } from '@offscreen/outbox/enqueue';
+import type { Transaction } from '@offscreen/db';
 import type { IntervalControl, StoryContinuation } from './command-policy';
 import { StoryError } from './errors';
 import {

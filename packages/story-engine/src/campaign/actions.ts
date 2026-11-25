@@ -37,7 +37,7 @@ import {
   readStoryItemHolders,
   type StoryRecord,
 } from '../stories/persistence';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { canonicalPlanFingerprint } from './delegated-offer';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import { commandReceipt, saveCommand } from './settings';

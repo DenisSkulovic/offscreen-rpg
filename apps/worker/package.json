@@ -39,6 +39,7 @@
     "@offscreen/story-engine": "workspace:*",
     "@offscreen/story-persistence": "workspace:*",
     "@offscreen/db": "workspace:*",
+    "@offscreen/outbox": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/workflows": "workspace:*",
     "@offscreen/storyteller": "workspace:*",

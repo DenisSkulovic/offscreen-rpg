@@ -8,7 +8,7 @@ import { z } from 'zod';
 import type { Database } from '@offscreen/db';
 import { storyPublicEvent } from '@offscreen/story-persistence/campaign';
 import { story } from '@offscreen/story-persistence/stories';
-import type { Transaction } from '@offscreen/db/outbox';
+import type { Transaction } from '@offscreen/db';
 import { StoryError, parseStoryIdentifier } from './errors';
 
 export const publicStoryEventKindSchema = z.enum([

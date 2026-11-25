@@ -36,6 +36,7 @@
     "@offscreen/lab-interface": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/db": "workspace:*",
+    "@offscreen/outbox": "workspace:*",
     "@offscreen/identity-persistence": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/game": "workspace:*",
