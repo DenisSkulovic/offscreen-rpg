@@ -1,6 +1,7 @@
 import process from 'node:process';
 import { assertPlatformTarget } from './commands.mjs';
 import { formatManifestDocuments } from './manifest-output.mjs';
+import { renderTemporalChart } from '../temporal/install.mjs';
 import {
   assertPlatformRenderRequest,
   renderPlatformDocuments,
@@ -191,8 +192,14 @@ function parsePlatformCliArgv(argv) {
 
 function runRenderCli(service, profile, section, format) {
   try {
-    assertPlatformRenderRequest(service, profile, section);
-    const documents = renderPlatformDocuments({ service, profile, section });
+    let documents;
+    if (service === 'temporal') {
+      if (section !== 'all') throw new Error('Temporal upstream chart supports only the all section');
+      documents = renderTemporalChart(profile);
+    } else {
+      assertPlatformRenderRequest(service, profile, section);
+      documents = renderPlatformDocuments({ service, profile, section });
+    }
     process.stdout.write(formatManifestDocuments(documents, format));
   } catch (error) {
     const message = error instanceof Error ? error.message : 'render failed';
