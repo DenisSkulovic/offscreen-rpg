@@ -41,6 +41,19 @@ function readResources(profile) {
     ) {
       throw new Error('unexpected Temporal persistence resource identity');
     }
+    const spec = resource.spec;
+    if (
+      spec.ensure !== 'present' ||
+      (kind === 'DatabaseRole' &&
+        (spec.login !== false || spec.inherit !== false ||
+          ['superuser', 'createdb', 'createrole', 'replication', 'bypassrls'].some((key) => spec[key] !== false) ||
+          !Array.isArray(spec.inRoles) || spec.inRoles.length !== 0 ||
+          spec.databaseRoleReclaimPolicy !== 'retain' || spec.passwordSecret?.name !== SECRET)) ||
+      (kind === 'Database' &&
+        (spec.owner !== ROLE || spec.allowConnections !== false || spec.databaseReclaimPolicy !== 'retain'))
+    ) {
+      throw new Error('unsafe Temporal persistence declaration');
+    }
     resource.metadata.namespace = profile.namespaces.postgres;
     resource.metadata.labels = {
       [profile.id === 'dev' ? 'offscreen.dev/owner' : 'offscreen.rpg/lab']:
@@ -95,6 +108,7 @@ function createAccess(profile, run) {
   ) {
     throw new Error('foreign or terminating PostgreSQL namespace');
   }
+  const namespaceUid = namespaceObject.metadata.uid;
   const cluster = requireObject(CLUSTER_RESOURCE, clusterName);
   const clusterUid = cluster.metadata?.uid;
   const pin = parseCnpgPin(readFileSync(new URL('../operator.pin', import.meta.url), 'utf8'));
@@ -109,7 +123,19 @@ function createAccess(profile, run) {
     throw new Error('foreign PostgreSQL baseline cluster');
   }
 
+  function assertNamespace() {
+    const current = requireObject('namespace', namespace, true);
+    if (
+      current.metadata?.uid !== namespaceUid ||
+      current.metadata?.labels?.[ownerKey] !== profile.ownerValue ||
+      current.metadata?.deletionTimestamp
+    ) {
+      throw new Error('PostgreSQL namespace identity changed');
+    }
+  }
+
   function primary() {
+    assertNamespace();
     const current = requireObject(CLUSTER_RESOURCE, clusterName);
     if (current.metadata?.uid !== clusterUid || current.metadata?.deletionTimestamp) {
       throw new Error('PostgreSQL cluster identity changed');
@@ -146,18 +172,39 @@ function createAccess(profile, run) {
   }
 
   function create(resource) {
-    kubectl(['create', '-f', '-'], { input: JSON.stringify(resource) });
-    const type = resource.kind === 'DatabaseRole' ? ROLE_RESOURCE :
-      resource.kind === 'Database' ? DATABASE_RESOURCE : 'secret';
-    return requireObject(type, resource.metadata.name);
+    primary();
+    const created = JSON.parse(kubectl(['create', '-f', '-', '-o', 'json'], {
+      input: JSON.stringify(resource),
+    }));
+    if (
+      created.kind !== resource.kind ||
+      created.metadata?.name !== resource.metadata.name ||
+      created.metadata?.namespace !== namespace ||
+      !created.metadata?.uid ||
+      !created.metadata?.resourceVersion
+    ) {
+      throw new Error('created Temporal resource identity mismatch');
+    }
+    return created;
   }
 
   function patch(type, name, object, spec) {
-    kubectl(['patch', type, name, '--type=merge', '-p', JSON.stringify({
-      metadata: { resourceVersion: object.metadata.resourceVersion },
-      spec,
-    })]);
-    return requireObject(type, name);
+    primary();
+    const updated = JSON.parse(kubectl([
+      'patch', type, name, '--type=merge', '-p', JSON.stringify({
+        metadata: { resourceVersion: object.metadata.resourceVersion },
+        spec,
+      }), '-o', 'json',
+    ]));
+    if (
+      updated.metadata?.uid !== object.metadata?.uid ||
+      updated.metadata?.name !== name ||
+      updated.metadata?.namespace !== namespace ||
+      Object.entries(spec).some(([key, value]) => updated.spec?.[key] !== value)
+    ) {
+      throw new Error('patched Temporal resource identity or spec mismatch');
+    }
+    return updated;
   }
 
   return { read, requireObject, kubectl, sql, authenticate, create, patch };
@@ -319,6 +366,18 @@ export function prepareFreshTemporalPersistence(
       AND has_database_privilege('temporal', oid, 'CONNECT')
   )`) !== 't') {
     throw new Error('Temporal role can connect to unrelated databases');
+  }
+  if (access.sql(`SELECT EXISTS (
+    SELECT FROM pg_roles WHERE rolname = 'temporal' AND NOT rolcanlogin
+      AND NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls OR rolinherit)
+      AND NOT EXISTS (SELECT FROM pg_auth_members WHERE member = pg_roles.oid)
+  )`) !== 't') {
+    throw new Error('Temporal non-login role privilege mismatch');
+  }
+  const beforeLogin = access.requireObject('secret', SECRET);
+  if (beforeLogin.metadata?.uid !== secret.metadata.uid ||
+      beforeLogin.metadata?.resourceVersion !== secretVersion) {
+    throw new Error('Temporal source credential changed before enabling login');
   }
   role = access.patch(ROLE_RESOURCE, ROLE, role, { login: true });
   waitApplied(access, ROLE_RESOURCE, role, deadline, secretVersion);
