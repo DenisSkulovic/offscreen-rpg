@@ -66,3 +66,8 @@ Owner terminal on main after integration a2e2e7b1, 2026-11-26: `pnpm infra:rende
 ## Integrated render inventory and legacy development state
 
 Owner terminal: both integrated renders contain exactly 16 resources: two ConfigMaps, six Services, six Deployments, one Helm test Pod and one pre-install/pre-upgrade schema Job. Full diff shows only namespace, two runtime SQL endpoints, two schema SQL_HOST values, and four server configuration checksum substitutions. No other rendered differences observed. Development namespace offscreen-dev-temporal exists, age 3d, with no Helm release listed; legacy temporal-postgres and temporal-server Deployments both 1/1, corresponding ClusterIP Services, completed temporal-schema Job, Bound 1Gi standard RWO temporal-postgres PVC (PV pvc-f3db27b3-4336-427a-adde-786f96d64836), and Opaque temporal-db Secret with one key. Existing history and active consumers not yet inventoried; no deletion or adoption authorized. Fresh installer must refuse existing namespace. Next: read-only consumer/history inventory and explicit preservation or disposal decision before cutover.
+
+
+## Legacy dev data inventory
+
+Owner terminal: dev-11 has six ready application Deployments; all ten other slots have zero replicas. Legacy temporal-postgres contains 40 public tables in temporal and 14 rows in temporal_visibility.executions_visibility. Visibility count is not proof of total retained history or execution completion. No live mutations. Before cutover, identify dev-11 owner and park through its owned lifecycle, inspect execution statuses, and obtain explicit data disposition decision. Shared CNPG/S3/Redis and slot data remain outside retirement scope.
