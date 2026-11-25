@@ -1,6 +1,6 @@
 # INF63 | Reject unidentified resource ownership
 
-**State: Done (source implementation; live Kubernetes NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf63-temporal-explicit-ownership` from main `039801bc47ca`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes/Docker, provider, tenant, SQL or Temporal mutations. Exclusive writes: `schema-policy.mjs` and `tests/schema-policy.test.mjs`. INF61 and INF62 remain open Ready siblings; this parent was sole active join writer for INF63. No successor auto-started. Live tests NOT-RUN, source evidence only.
+**State: Done (source implementation; live Kubernetes NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf63-temporal-explicit-ownership` from main `039801bc47ca`. Joined main at `24b8244b8cb65d412c316db6c3f18b6f28b548df`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes/Docker, provider, tenant, SQL or Temporal mutations. Exclusive writes: `schema-policy.mjs` and `tests/schema-policy.test.mjs`. INF61 and INF62 remain open Ready siblings; this parent was sole active join writer for INF63. No successor auto-started. Live tests NOT-RUN, source evidence only.
 
 ## Outcome
 Reject unidentified resource ownership so Temporal bootstrap refuses resources that lack an explicit matching owner label or trusted-adapter `foreign===false` verdict. Uid alone never proves ownership.
