@@ -3,7 +3,8 @@ import { PgDialect } from 'drizzle-orm/pg-core/dialect';
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import type { PoolClient, QueryResult } from 'pg';
 import type { ManagedClientRuntime } from '../connection/managed-client.js';
-import type { DatabaseTelemetry } from '../telemetry/types.js';
+import type { DatabaseTelemetryHandle } from '../telemetry/runtime.js';
+import { resolveRegisteredOperationName } from '../telemetry/types.js';
 import type { Transaction } from './types.js';
 import {
   type DatabaseWorkload,
@@ -46,8 +47,6 @@ const ISOLATION_SQL: Record<TransactionIsolation, string> = {
 
 type FullSchema = Record<string, never>;
 type Schema = ExtractTablesWithRelations<FullSchema>;
-
-const noopTelemetry: DatabaseTelemetry = () => {};
 
 function isPositiveBudgetMs(value: number): boolean {
   return (
@@ -190,7 +189,9 @@ async function runOneAttempt<T>(
   discard: () => void,
   run: (tx: Transaction) => Promise<T>,
   attemptState: AttemptState,
+  telemetry: DatabaseTelemetryHandle | undefined,
 ): Promise<T> {
+  const operationName = resolveRegisteredOperationName(policy.name);
   const requireBudget = (phase: string): void => {
     if (floorRemainingMs() < MIN_BUDGET_MS) {
       throw databaseTransactionError(
@@ -224,8 +225,23 @@ async function runOneAttempt<T>(
         try {
           await client.query('ROLLBACK');
           attemptState.confirmedRollback = true;
+          telemetry?.emit({
+            operation: 'rollback',
+            outcome: 'ok',
+            workload: policy.workload,
+            isolation: policy.isolation,
+            operationName,
+          });
         } catch {
           discard();
+          telemetry?.emit({
+            operation: 'rollback',
+            outcome: 'error',
+            workload: policy.workload,
+            isolation: policy.isolation,
+            operationName,
+            category: 'unavailable',
+          });
         }
       }
     }
@@ -236,7 +252,7 @@ async function runOneAttempt<T>(
 export interface ExecuteManagedTransactionOptions {
   withClient: ManagedClientRuntime<PoolClient>['withClient'];
   onBackgroundError: (error: Error) => void;
-  telemetry?: DatabaseTelemetry;
+  telemetry?: DatabaseTelemetryHandle;
 }
 
 export async function executeManagedTransaction<T>(
@@ -246,7 +262,8 @@ export async function executeManagedTransaction<T>(
   jitter?: JitterFn,
 ): Promise<T> {
   validateTransactionPolicy(policy);
-  const telemetry = options.telemetry ?? noopTelemetry;
+  const telemetry = options.telemetry;
+  const operationName = resolveRegisteredOperationName(policy.name);
 
   const startedAt = performance.now();
   const absoluteDeadline = startedAt + policy.timeoutMs;
@@ -269,7 +286,11 @@ export async function executeManagedTransaction<T>(
 
     try {
       const result = await options.withClient(
-        { timeoutMs: remainingForAcquire },
+        {
+          timeoutMs: remainingForAcquire,
+          workload: policy.workload,
+          operationName,
+        },
         async (client, admissionRemainingMs, discard) => {
           const floorRemainingMs = () => {
             const left = Math.min(budgetRemainingMs(), admissionRemainingMs());
@@ -283,14 +304,18 @@ export async function executeManagedTransaction<T>(
             discard,
             run,
             attemptState,
+            telemetry,
           );
         },
       );
 
-      telemetry({
+      telemetry?.emit({
         operation: 'transaction',
         outcome: 'ok',
         workload: policy.workload,
+        isolation: policy.isolation,
+        operationName,
+        durationMs: Math.max(0, Math.floor(performance.now() - startedAt)),
       });
       return result;
     } catch (error) {
@@ -306,10 +331,12 @@ export async function executeManagedTransaction<T>(
       );
 
       if (decision.action === 'retry') {
-        telemetry({
+        telemetry?.emit({
           operation: 'retry',
           outcome: 'ok',
           workload: policy.workload,
+          isolation: policy.isolation,
+          operationName,
           count: attemptIndex + 1,
         });
         await sleepMs(decision.afterMs);
@@ -324,11 +351,15 @@ export async function executeManagedTransaction<T>(
         continue;
       }
 
-      telemetry({
+      const finalCategory = decision.error?.category ?? classified.category;
+      telemetry?.emit({
         operation: 'transaction',
         outcome: 'error',
         workload: policy.workload,
-        category: decision.error?.category ?? classified.category,
+        isolation: policy.isolation,
+        operationName,
+        category: finalCategory,
+        durationMs: Math.max(0, Math.floor(performance.now() - startedAt)),
       });
 
       throw decision.action === 'propagate' ? decision.error : classified;

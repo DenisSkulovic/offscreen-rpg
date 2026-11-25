@@ -7,5 +7,17 @@ export type {
   DatabaseErrorCategory,
   TransactionPolicy,
 } from './transaction/policy';
-export type { DatabaseTelemetryEvent } from './telemetry/types';
-export { DatabaseTransactionError } from './transaction/errors';
+export type {
+  DatabaseTelemetry,
+  DatabaseTelemetryEvent,
+  DatabaseTelemetrySnapshot,
+} from './telemetry/types';
+export { createDatabaseTelemetry } from './telemetry/runtime';
+export {
+  AffectedRowConflictError,
+  DatabaseTransactionError,
+} from './transaction/errors';
+export {
+  acquireTransactionAdvisoryLock,
+  expectOneAffected,
+} from './transaction/concurrency';

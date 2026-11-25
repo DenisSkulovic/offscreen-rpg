@@ -1,3 +1,13 @@
+import type { DatabaseRegisteredOperationName } from '../telemetry/types.js';
+import {
+  takePendingAdmissionInstrumentation,
+  type PendingAdmissionInstrumentation,
+} from '../telemetry/runtime.js';
+import type {
+  DatabaseErrorCategory,
+  DatabaseWorkload,
+} from '../transaction/policy.js';
+
 export type DatabaseAdmissionErrorCategory =
   'saturated' | 'timeout' | 'cancelled' | 'closed';
 
@@ -41,6 +51,8 @@ export interface AdmissionControllerOptions<
 export interface AcquireOptions {
   timeoutMs: number;
   signal?: AbortSignal;
+  workload?: DatabaseWorkload;
+  operationName?: DatabaseRegisteredOperationName;
 }
 
 export interface AdmissionController<C extends ReleasableClient> {
@@ -81,10 +93,26 @@ function validateAcquireTimeout(timeoutMs: number): void {
   }
 }
 
+function admissionCategoryForTelemetry(
+  category: DatabaseAdmissionErrorCategory,
+): DatabaseErrorCategory {
+  return category;
+}
+
+function telemetryWorkload(options: AcquireOptions): DatabaseWorkload {
+  return options.workload ?? 'interactive';
+}
+
+type AcquireSettlement = {
+  startedAt: number;
+  queuedAt?: number;
+};
+
 type QueuedWaiter = {
   options: AcquireOptions;
   totalDeadline: number;
   acquisitionDeadline: number;
+  settlement: AcquireSettlement;
   run: (
     client: ReleasableClient,
     remainingMs: () => number,
@@ -112,6 +140,8 @@ function admissionExpired(
 export function createAdmissionController<C extends ReleasableClient>(
   options: AdmissionControllerOptions<C>,
 ): AdmissionController<C> {
+  const instrumentation: PendingAdmissionInstrumentation | undefined =
+    takePendingAdmissionInstrumentation();
   const clock = options.clock ?? defaultClock();
   const maxActive = options.maxActive;
   const maxQueued = options.maxQueued;
@@ -125,6 +155,39 @@ export function createAdmissionController<C extends ReleasableClient>(
 
   let drainPromise: Promise<void> | undefined;
   let resolveDrain: (() => void) | undefined;
+
+  instrumentation?.registerAdmissionGauges(() => ({
+    active,
+    queued: queue.length,
+  }));
+
+  const emitAcquire = (
+    acquireOptions: AcquireOptions,
+    settlement: AcquireSettlement,
+    outcome: 'ok' | 'error',
+    category?: DatabaseErrorCategory,
+  ): void => {
+    if (!instrumentation) {
+      return;
+    }
+    const now = clock.now();
+    const durationMs = Math.max(0, Math.floor(now - settlement.startedAt));
+    const queueDurationMs =
+      settlement.queuedAt === undefined
+        ? undefined
+        : Math.max(0, Math.floor(now - settlement.queuedAt));
+    instrumentation.emit({
+      operation: 'acquire',
+      outcome,
+      workload: telemetryWorkload(acquireOptions),
+      durationMs,
+      ...(acquireOptions.operationName
+        ? { operationName: acquireOptions.operationName }
+        : {}),
+      ...(queueDurationMs === undefined ? {} : { queueDurationMs }),
+      ...(category === undefined ? {} : { category }),
+    });
+  };
 
   const remainingMs = (totalDeadline: number) =>
     Math.max(0, totalDeadline - clock.now());
@@ -199,6 +262,7 @@ export function createAdmissionController<C extends ReleasableClient>(
         waiter.options,
         waiter.totalDeadline,
         waiter.acquisitionDeadline,
+        waiter.settlement,
         waiter.run as never,
       )
         .then(waiter.resolve, waiter.reject)
@@ -216,6 +280,7 @@ export function createAdmissionController<C extends ReleasableClient>(
     acquireOptions: AcquireOptions,
     totalDeadline: number,
     acquisitionDeadline: number,
+    settlement: AcquireSettlement,
     run: (
       client: C,
       remainingMs: () => number,
@@ -238,6 +303,12 @@ export function createAdmissionController<C extends ReleasableClient>(
         admissionRejected = true;
         admissionError = error;
         clearGuards();
+        emitAcquire(
+          acquireOptions,
+          settlement,
+          'error',
+          admissionCategoryForTelemetry(error.category),
+        );
         reject(error);
       };
 
@@ -296,6 +367,7 @@ export function createAdmissionController<C extends ReleasableClient>(
       if (admissionExpired(clock.now(), totalDeadline, acquisitionDeadline)) {
         clearGuards();
         releaseActivePermit();
+        emitAcquire(acquireOptions, settlement, 'error', 'timeout');
         reject(new DatabaseAdmissionError('timeout'));
         return;
       }
@@ -307,6 +379,7 @@ export function createAdmissionController<C extends ReleasableClient>(
         clearGuards();
         releaseActivePermit();
         if (!admissionRejected) {
+          emitAcquire(acquireOptions, settlement, 'error', 'unavailable');
           reject(error);
         }
         return;
@@ -337,6 +410,10 @@ export function createAdmissionController<C extends ReleasableClient>(
               // Timeout refusal still releases once.
             }
             releaseActivePermit();
+            const lateCategory = acquireOptions.signal?.aborted
+              ? 'cancelled'
+              : 'timeout';
+            emitAcquire(acquireOptions, settlement, 'error', lateCategory);
             reject(
               acquireOptions.signal?.aborted
                 ? new DatabaseAdmissionError('cancelled')
@@ -352,11 +429,13 @@ export function createAdmissionController<C extends ReleasableClient>(
               // Closed refusal still releases once.
             }
             releaseActivePermit();
+            emitAcquire(acquireOptions, settlement, 'error', 'closed');
             reject(new DatabaseAdmissionError('closed'));
             return;
           }
 
           callbackStarted = true;
+          emitAcquire(acquireOptions, settlement, 'ok');
           let discarded = false;
           let callbackSucceeded = false;
           let callbackFailed = false;
@@ -386,6 +465,17 @@ export function createAdmissionController<C extends ReleasableClient>(
           try {
             client.release(discarded ? true : undefined);
           } catch (releaseError) {
+            if (callbackSucceeded && instrumentation) {
+              instrumentation.emit({
+                operation: 'connection',
+                outcome: 'error',
+                workload: telemetryWorkload(acquireOptions),
+                category: 'application',
+                ...(acquireOptions.operationName
+                  ? { operationName: acquireOptions.operationName }
+                  : {}),
+              });
+            }
             void releaseError;
           }
 
@@ -406,6 +496,11 @@ export function createAdmissionController<C extends ReleasableClient>(
           clearGuards();
           releaseActivePermit();
           if (!admissionRejected) {
+            const category =
+              error instanceof DatabaseAdmissionError
+                ? admissionCategoryForTelemetry(error.category)
+                : 'unavailable';
+            emitAcquire(acquireOptions, settlement, 'error', category);
             reject(error);
           }
         });
@@ -422,10 +517,14 @@ export function createAdmissionController<C extends ReleasableClient>(
   ): Promise<T> => {
     validateAcquireTimeout(acquireOptions.timeoutMs);
 
+    const settlement: AcquireSettlement = { startedAt: clock.now() };
+
     if (acquireOptions.signal?.aborted) {
+      emitAcquire(acquireOptions, settlement, 'error', 'cancelled');
       throw new DatabaseAdmissionError('cancelled');
     }
     if (closed) {
+      emitAcquire(acquireOptions, settlement, 'error', 'closed');
       throw new DatabaseAdmissionError('closed');
     }
 
@@ -441,19 +540,26 @@ export function createAdmissionController<C extends ReleasableClient>(
         acquireOptions,
         totalDeadline,
         acquisitionDeadline,
+        settlement,
         run,
       );
     }
 
     if (queue.length >= maxQueued) {
+      emitAcquire(acquireOptions, settlement, 'error', 'saturated');
       throw new DatabaseAdmissionError('saturated');
     }
 
     return new Promise<T>((resolve, reject) => {
+      const queuedSettlement: AcquireSettlement = {
+        startedAt: settlement.startedAt,
+        queuedAt: clock.now(),
+      };
       const waiter: QueuedWaiter = {
         options: acquireOptions,
         totalDeadline,
         acquisitionDeadline,
+        settlement: queuedSettlement,
         run: run as QueuedWaiter['run'],
         resolve: resolve as (value: unknown) => void,
         reject,
@@ -467,12 +573,14 @@ export function createAdmissionController<C extends ReleasableClient>(
         );
         if (now >= queueDeadline) {
           removeQueuedWaiter(waiter);
+          emitAcquire(acquireOptions, queuedSettlement, 'error', 'timeout');
           reject(new DatabaseAdmissionError('timeout'));
           return;
         }
         const queueDelayMs = Math.max(0, queueDeadline - now);
         waiter.queueTimer = clock.setTimeout(() => {
           removeQueuedWaiter(waiter);
+          emitAcquire(acquireOptions, queuedSettlement, 'error', 'timeout');
           reject(new DatabaseAdmissionError('timeout'));
         }, queueDelayMs);
       };
@@ -482,6 +590,7 @@ export function createAdmissionController<C extends ReleasableClient>(
       if (acquireOptions.signal) {
         waiter.abortListener = () => {
           removeQueuedWaiter(waiter);
+          emitAcquire(acquireOptions, queuedSettlement, 'error', 'cancelled');
           reject(new DatabaseAdmissionError('cancelled'));
         };
         acquireOptions.signal.addEventListener('abort', waiter.abortListener, {

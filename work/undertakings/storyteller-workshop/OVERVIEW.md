@@ -15,7 +15,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 - Library and domain ownership improved; generic contracts workspace removed. Five recognized Authority-to-Writer exceptions remain.
 - Cache original eight Changes archived; CACHE04 source Done, CACHE07 superseded, no SQL/Redis live acceptance. CACHE08 residual runtime fixes Ready; VER06–08 commissioned verification lane after VER01/02. No outcome credit.
-- DB01/02/03/04/05/06/07/08 source Done; two remaining packets commissioned on main: DB09 after DB07, then DB10 closure. Eight of ten DB packets archived; no additional outcome credit. Managed transaction helper exists; domain adoption and live SQL remain open.
+- DB01/02/03/04/05/06/07/08/09 source Done; one remaining packet commissioned on main: DB10 closure. Nine of ten DB packets archived; no additional outcome credit. Managed transaction helper and bounded telemetry/concurrency helpers exist; domain adoption and live SQL remain open.
 - Infrastructure normalized; INF29 live evidence tracker; INF51 diagnostic archived source-only; INF50 residual regression fixes, INF38 selective profiles remain. INF52 reusable lifecycle acceptance after VER01/INF50. Last-night diagnostic/startup observations are operator-reported, not full acceptance.
 - INF44–46 source archives exist; INF49 actual composition Ready, INF47 historical reports after staged source proof. No host activation implied.
 - Operator recovered Windows disk from ~25 to ~611 GB free; Docker VHDX ~296 GB, storage lifecycle remains a design priority, not an emergency.
@@ -24,7 +24,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 1. INF49 runnable recorder and narrowed INF50 regression corrections (independent).
 2. INF47 historical query/verification after composition; explicit operator monitoring activation.
-3. INF38 selective dev after INF50 if both dispatched; INF48 storage backlog; DB schema lane Done through DB05 source-only; DB09 after DB07, then DB10. DB successors dependency-gated; no live DB permission implied.
+3. INF38 selective dev after INF50 if both dispatched; INF48 storage backlog; DB schema/runtime Done through DB09 source-only; DB10 final dependency-gated. No live DB permission implied.
 4. INF52 reusable owned-slot verification and INF29/DXK09 evidence; then TURN03 real ordinary player scene2 and historical fork.
 5. Release, fault, restore and scale acceptance separately gated.
 

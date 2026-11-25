@@ -1,5 +1,6 @@
 import {
   createAdmissionController,
+  type AcquireOptions,
   type AdmissionClock,
   type ReleasableClient,
 } from './admission';
@@ -15,7 +16,10 @@ export interface ManagedClientOptions<C extends ReleasableClient> {
 
 export interface ManagedClientRuntime<C extends ReleasableClient> {
   withClient<T>(
-    options: { timeoutMs: number; signal?: AbortSignal },
+    options: Pick<
+      AcquireOptions,
+      'timeoutMs' | 'signal' | 'workload' | 'operationName'
+    >,
     run: (
       client: C,
       remainingMs: () => number,
@@ -76,7 +80,10 @@ export function createManagedClientRuntime<C extends ReleasableClient>(
   let ended = false;
 
   const withClient = async <T>(
-    acquireOptions: { timeoutMs: number; signal?: AbortSignal },
+    acquireOptions: Pick<
+      AcquireOptions,
+      'timeoutMs' | 'signal' | 'workload' | 'operationName'
+    >,
     run: (
       client: C,
       remainingMs: () => number,

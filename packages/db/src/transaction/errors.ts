@@ -249,6 +249,19 @@ function findRetrySqlState(error: unknown): string | undefined {
   return undefined;
 }
 
+export class AffectedRowConflictError extends DatabaseTransactionError {
+  readonly affectedCount: number;
+
+  constructor(affectedCount: number) {
+    super(
+      'application',
+      `Expected exactly one affected row, got ${String(affectedCount)}.`,
+    );
+    this.name = 'AffectedRowConflictError';
+    this.affectedCount = affectedCount;
+  }
+}
+
 export function databaseTransactionError(
   category: DatabaseErrorCategory,
   cause?: unknown,

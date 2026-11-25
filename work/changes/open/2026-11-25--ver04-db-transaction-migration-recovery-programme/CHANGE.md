@@ -1,6 +1,6 @@
 # VER04 | DB programme: transactions, migration, telemetry and recovery
 
-**Status: Ready (dependency-gated) / owner-commissioned source implementation. Kind: implementation. Profile: PROOF.** Baseline 0c45ae7318295398d706511b9d702720a55c8a92; target main. VER03 joined; DB09 source joined for telemetry/helpers; DB10 component source tests available on main (live acceptance not prerequisite).
+**Status: Ready (dependency-gated) / owner-commissioned source implementation. Kind: implementation. Profile: PROOF.** Baseline 0c45ae7318295398d706511b9d702720a55c8a92; target main. VER03 joined; DB09 source Done for telemetry/helpers; DB10 component source tests available on main (live acceptance not prerequisite).
 
 [Normative verification programme](../../../../docs/technical/platform/verification-programmes.md) · [Program and ownership](../../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [TASKS](TASKS.md)
 

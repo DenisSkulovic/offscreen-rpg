@@ -1,6 +1,6 @@
 # VER03 | Bounded Composer tasks
 
-Baseline 0c45ae7318295398d706511b9d702720a55c8a92; main; VER02 joined; DB07 joined (verified); DB09 not required for core assertions, telemetry-specific sections wait DB09. MODEL=Composer Standard / DEPTH=PATCH. One child at a time. Parent owns manifests, lockfile and join. Read normative verification contract once; dispatch only selected task + anchors. All commands from repo root; stop on actual safety/semantic contradiction; no live mutation unless separately invoked by operator. Receipt paths, command, result, source/fixture/live tier, cleanup and SHA.
+Baseline 0c45ae7318295398d706511b9d702720a55c8a92; main; VER02 joined; DB07 joined (verified); DB09 source Done (telemetry sections may use joined helpers). MODEL=Composer Standard / DEPTH=PATCH. One child at a time. Parent owns manifests, lockfile and join. Read normative verification contract once; dispatch only selected task + anchors. All commands from repo root; stop on actual safety/semantic contradiction; no live mutation unless separately invoked by operator. Receipt paths, command, result, source/fixture/live tier, cleanup and SHA.
 
 ## T01 | DB suite scaffold and public smoke
 

@@ -9,7 +9,7 @@ Reconciled 2026-11-25; target main; source baseline 86c9461a1fa117ef2aaf90029411
 | Report | [INF47](../../changes/open/2026-11-24--inf47-historical-observability-queries/CHANGE.md) | INF49 emitted schema |
 | Selective dev | [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) | Ready; after INF50 if concurrent |
 | Storage | [INF48](../../changes/backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) | Proposed GC/ownership design |
-| DB | [DB05 and DB09](DB-PARALLEL.md) | DB04 source Done; DB05 schema lane next; DB09 after DB07; DB10 final; no live permission |
+| DB | [DB10](DB-PARALLEL.md) | DB01–DB09 source Done; DB10 final dependency-gated; no live permission |
 | Cache | CACHE04/CACHE07 | Existing SQL/Redis proof |
 | Platform | INF29/DXK09 | INF29 evidence only; INF52 after VER01/INF50; explicit live permission |
 | Product | TURN03 | Real authenticated scene2/fork/cross-Pod proof |
