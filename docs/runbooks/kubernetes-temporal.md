@@ -14,7 +14,7 @@ A separate worker image runs one toy workflow, `labOnce`, on task queue `lab-onc
 
 The server container limits are 700m CPU and 768Mi memory. PostgreSQL limits are 500m CPU and 384Mi memory. The worker limits are 500m CPU and 640Mi memory. There is no authorizer. `--allow-no-auth` is a lab limit, not a production authentication design.
 
-Platform install is `infra/platform/temporal/install.sh`, which renders the Helm chart under `infra/platform/temporal/chart/` through `release-install.mjs` (flat `namespace.yaml`, `postgres.yaml`, `schema-job.yaml`, `server.yaml`, `admin.yaml`, and `namespace-job.yaml` were removed in favor of chart sections). Verification scripts and the toy worker live under `infra/verification/smoke/temporal/`; `smoke.sh` builds and imports the worker image. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
+Platform install is `infra/platform/temporal/install.sh`, which renders the Helm chart under `infra/platform/temporal/chart/` through `release-install.mjs` (section wrappers `namespace.yaml`, `postgres.yaml`, `schema-job.yaml`, `server.yaml`, `admin.yaml`, and `namespace-job.yaml` select chart sections). Named document and script defines live in ownership partials (`_namespace.tpl`, `_postgres.tpl`, `_schema.tpl`, `_server.tpl`, `_admin.tpl`, `_namespace-job.tpl`); `_helpers.tpl` keeps shared `jsonFrom` and `validate` only. Verification scripts and the toy worker live under `infra/verification/smoke/temporal/`; `smoke.sh` builds and imports the worker image. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
 
 ## What it must not do
 

@@ -373,6 +373,12 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 - [INF59 Redis installer safety and readiness](archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); observe/reconcile CAS + readiness; focused 79/79; live NOT-RUN.
 - [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready after INF58+INF59 source; not auto-started; source only.
 
+## Temporal infrastructure source wave
+- [INF61 Helm chart decomposition](archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md) — Done (source); ownership partials; render 6/6; live NOT-RUN.
+- [INF62 Honest bootstrap SQL gates](open/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md) — Ready, source-only.
+- [INF63 Reject unidentified resource ownership](archive/2026-11/platform-operations/2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md) — Done (source); 36/36; live NOT-RUN.
+[Programme](../undertakings/storyteller-workshop/TEMPORAL-INFRASTRUCTURE.md). No global queue change or live permission.
+
 ## Cache craftsmanship wave
 - [CACHE09 Cache navigation and behavioral test names](archive/2026-11/cache/2026-11-25--cache09-cache-navigation/CHANGE.md) — Done (source); navigation/test names only; 93/93; live NOT-RUN.
 - [CACHE10 Memory and single-flight readability](archive/2026-11/cache/2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Done (source); memory/single-flight/tier readability; 106/106; live NOT-RUN.
