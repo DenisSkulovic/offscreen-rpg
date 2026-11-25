@@ -100,7 +100,6 @@ const GATEWAY_TRAEFIK_DIGEST =
 const DEV_ENSURE_ENV = Object.freeze({
   cnpg: { OFFSCREEN_DEV_CNPG_ENSURE: 'authorized' },
   'object-storage': { OFFSCREEN_DEV_S3_ENSURE: 'authorized' },
-  temporal: { OFFSCREEN_DEV_TEMPORAL_ENSURE: 'authorized' },
   redis: { OFFSCREEN_DEV_REDIS_ENSURE: 'authorized' },
 });
 
@@ -113,17 +112,12 @@ const DEV_CLI = Object.freeze({
     REPO_ROOT,
     'tools/dev-environments/src/adapters/dev-object-store-bootstrap-cli.mjs',
   ),
-  temporal: join(
-    REPO_ROOT,
-    'tools/dev-environments/src/adapters/dev-temporal-bootstrap-cli.mjs',
-  ),
   redis: join(REPO_ROOT, 'infra/platform/redis/dev-install.mjs'),
 });
 
 const RELEASE_INSTALL = Object.freeze({
   postgres: join(REPO_ROOT, 'infra/platform/postgres/install.sh'),
   'object-storage': join(REPO_ROOT, 'infra/platform/object-storage/install.sh'),
-  temporal: join(REPO_ROOT, 'infra/platform/temporal/install.sh'),
   gateway: join(REPO_ROOT, 'infra/platform/gateway/install.sh'),
   redis: join(REPO_ROOT, 'infra/platform/redis/install.sh'),
   rabbitmq: join(REPO_ROOT, 'infra/platform/rabbitmq/install.sh'),
@@ -298,6 +292,21 @@ export function corePhases(profileId, command, selectedServices) {
   const phases = [];
 
   for (const logicalId of selectedServices) {
+    if (logicalId === 'temporal') {
+      phases.push({
+        id: 'temporal',
+        argv: [
+          process.execPath,
+          join(REPO_ROOT, 'infra/platform/temporal/install.mjs'),
+          subcommand,
+          profileId,
+          readPlatformProfile(profileId).contextName,
+        ],
+        env: mutate ? { OFFSCREEN_TEMPORAL_ENSURE: 'authorized' } : undefined,
+        mutate,
+      });
+      continue;
+    }
     if (profileId === 'dev') {
       if (logicalId === 'postgres') {
         phases.push({
@@ -314,14 +323,6 @@ export function corePhases(profileId, command, selectedServices) {
             command === 'ensure'
               ? { ...DEV_ENSURE_ENV['object-storage'] }
               : undefined,
-          mutate,
-        });
-      } else if (logicalId === 'temporal') {
-        phases.push({
-          id: 'temporal',
-          argv: [process.execPath, DEV_CLI.temporal, subcommand],
-          env:
-            command === 'ensure' ? { ...DEV_ENSURE_ENV.temporal } : undefined,
           mutate,
         });
       } else if (logicalId === 'redis') {
@@ -354,7 +355,7 @@ export function corePhases(profileId, command, selectedServices) {
  */
 function selectedChartServices(selectedServices) {
   return selectedServices.filter(
-    (service) => service !== 'gateway' && PLATFORM_SERVICES.has(service),
+    (service) => service !== 'gateway' && service !== 'temporal' && PLATFORM_SERVICES.has(service),
   );
 }
 
@@ -370,7 +371,7 @@ function plannedPreflightSteps(profileId, command, selectedServices) {
   /** @type {string[]} */
   const steps = ['target', 'memory'];
   const chartServices = selectedChartServices(selectedServices);
-  if (profileId === 'release') {
+  if (profileId === 'release' || selectedServices.includes('temporal')) {
     steps.push('helm');
   }
   if (chartServices.length > 0) {
@@ -546,14 +547,13 @@ export function runEnsurePreflight(profileId, command, deps = {}) {
     steps.push('memory');
 
     const chartServices = selectedChartServices(selectedServices);
-    if (profileId === 'release') {
-      if (chartServices.length > 0 || selectedServices.includes('gateway')) {
-        activeStep = 'helm';
-        progress?.phaseStart('preflight:helm');
-        assertHelmAvailable({ run });
-        progress?.phaseOk('preflight:helm');
-        steps.push('helm');
-      }
+    if (selectedServices.includes('temporal') ||
+        (profileId === 'release' && (chartServices.length > 0 || selectedServices.includes('gateway')))) {
+      activeStep = 'helm';
+      progress?.phaseStart('preflight:helm');
+      assertHelmAvailable({ run });
+      progress?.phaseOk('preflight:helm');
+      steps.push('helm');
     }
     if (chartServices.length > 0) {
       activeStep = 'chart-render';
@@ -691,14 +691,14 @@ export function redactPlatformReceipt(receipt) {
 
 /**
  * @param {string[]} argv
- * @param {{ env?: Record<string, string> }} [options]
+ * @param {{ env?: Record<string, string>, phaseId?: string }} [options]
  * @returns {{ ok: boolean, status: number | null, stdout: string, stderr: string }}
  */
 export function defaultPlatformRunner(argv, options = {}) {
   const result = spawnSync(argv[0], argv.slice(1), {
     encoding: 'utf8',
     env: { ...process.env, ...(options.env ?? {}) },
-    timeout: 600_000,
+    timeout: options.phaseId === 'temporal' ? 1_200_000 : 600_000,
     maxBuffer: 8 * 1024 * 1024,
     windowsHide: true,
   });
