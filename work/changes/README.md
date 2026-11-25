@@ -359,3 +359,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 ## Shared PostgreSQL topology (2026-11-25)
 
 [INF53](archive/2026-11/platform-operations/2026-11-25--inf53-postgres-instance-topology/CHANGE.md) — source Done (live topology NOT-RUN); [INF54](open/2026-11-25--inf54-postgres-owned-clusters/CHANGE.md) — Ready, predecessor source joined. Both dev/release; no live permission, no application sharding. SCALE02 remains separate.
+
+## Infrastructure operator experience (2026-11-25)
+
+[INF55](open/2026-11-25--inf55-readable-manifests/CHANGE.md) and [INF56](open/2026-11-25--inf56-platform-cli-presentation/CHANGE.md) — source commissioned, independent implementation; serialize catalog/runbook joins. [Standard](../../docs/technical/platform/infrastructure-operator-experience.md). Topology presentation after INF54; other CLI surfaces remain staged for source review. No live authorization.
