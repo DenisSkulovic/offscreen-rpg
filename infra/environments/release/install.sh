@@ -136,8 +136,8 @@ if ! "${KUBECTL[@]}" -n lab-objects get service object-store >/dev/null 2>&1; th
   exit 1
 fi
 
-if ! "${KUBECTL[@]}" -n lab-temporal get service temporal-server >/dev/null 2>&1; then
-  echo "Refusing install: Service temporal-server is missing in lab-temporal." >&2
+if ! "${KUBECTL[@]}" -n lab-temporal get service temporal-frontend >/dev/null 2>&1; then
+  echo "Refusing install: Service temporal-frontend is missing in lab-temporal." >&2
   exit 1
 fi
 
