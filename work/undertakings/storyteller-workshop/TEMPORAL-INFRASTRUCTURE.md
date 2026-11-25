@@ -25,3 +25,10 @@ Wave A source closed. INF64–69 remain planner-held. No global queue change. Li
 | INF69 verification | INF64–68 | Owned isolated DB and Temporal resources, explicit live gates, workflow recovery through restart and PG failover, schema restore proof; integrate existing verification programme rather than manual Cursor repetition |
 
 Do not dispatch these candidates as investigation tasks. ChatGPT must resolve and author executable packets. Preserve legacy PVCs, Secrets, namespaces and database histories until migration evidence. No app workflow changes. No production readiness claim.
+
+## Corrective wave (after post-implementation audit at d622ec7e25200b03ab75cb3fa87e2f67506b40a1)
+
+- [INF70](../../changes/open/2026-11-25--inf70-temporal-sql-authentication/CHANGE.md): Ready; repair existing SQL credential wiring, no architecture refactor.
+- [INF71](../../changes/open/2026-11-25--inf71-temporal-execution-refusals/CHANGE.md): Ready dependency-gated on INF70; fail closed on refused plans and execution gate errors. Sequential source and joins, no new approval required. Both source-only.
+
+INF61–63 remain archived, but their receipts do not establish runtime readiness. INF62's TCP probe omitted libpq password mapping. INF67 must replace partial pending-Job success, full resource inventory/ownership (including namespace Job, Services and ConfigMaps), and duplicated reconciliation. INF64–65 retire legacy SQL probes after migration contract; INF66 evaluates upstream chart before any more template restructuring. All INF64–69 remain planner-held, now dependent on corrective wave where relevant. No additional completion credit.
