@@ -1,6 +1,6 @@
 # INF55 | Readable manifest inspection
 
-**State: Done (source implementation; human acceptance NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf55-readable-manifests` from main `2dffa84dc966d0c07e3c6782a6c08e85f9587612` (packet planning SHA `a652df1ac53daec1eecbe02878c41c2708baf5b9` is an ancestor). Kind: implementation. Profile: PATCH. [Operator experience standard](../../../../../../docs/technical/platform/infrastructure-operator-experience.md) · [Tasks](TASKS.md).
+**State: Done (source implementation; human acceptance NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf55-readable-manifests` from main `2dffa84dc966d0c07e3c6782a6c08e85f9587612`. Joined main at `6f01d92331a3f0c0eefa9f7f0fcf719dc6f6abc6` (packet planning SHA `a652df1ac53daec1eecbe02878c41c2708baf5b9` is an ancestor). Kind: implementation. Profile: PATCH. [Operator experience standard](../../../../../../docs/technical/platform/infrastructure-operator-experience.md) · [Tasks](TASKS.md).
 
 Outcome: shared `formatManifestDocuments` with yaml/json/legacy; platform and workload render CLIs accept `--format` (default legacy on direct invocation) and `--help` without Helm; root aliases `pnpm infra:render` / `pnpm infra:render:workloads` default YAML. Internal Helm JSON-line parse and installer serialization unchanged. No live resources, paid providers, or cluster mutation. Human acceptance remains separate NOT-RUN.
 
