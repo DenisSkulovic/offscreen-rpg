@@ -10,10 +10,10 @@ import { createManagedClientRuntime } from '../src/connection/managed-client';
 import { DatabaseTransactionError } from '../src/transaction/errors';
 import { executeManagedTransaction } from '../src/transaction/execute';
 import type { TransactionPolicy } from '../src/transaction/policy';
-import type { Transaction } from '../src/transaction/types';
 import {
   createDatabaseTelemetry,
-  setPendingAdmissionInstrumentation,
+  type AdmissionInstrumentation,
+  type DatabaseTelemetryHandle,
 } from '../src/telemetry/runtime';
 import type { DatabaseTelemetryEvent } from '../src/telemetry/types';
 
@@ -109,16 +109,24 @@ function basePolicy(
   };
 }
 
+function instrumentationFor(
+  telemetry: DatabaseTelemetryHandle,
+): AdmissionInstrumentation {
+  return {
+    emit: (event) => telemetry.emit(event),
+    registerAdmissionGauges: (reader) =>
+      telemetry.registerAdmissionGauges(reader),
+  };
+}
+
 function attachInstrumentation(
   observer?: (event: DatabaseTelemetryEvent) => void,
 ) {
   const telemetry = createDatabaseTelemetry(observer);
-  setPendingAdmissionInstrumentation({
-    emit: (event) => telemetry.emit(event),
-    registerAdmissionGauges: (reader) =>
-      telemetry.registerAdmissionGauges(reader),
-  });
-  return telemetry;
+  return {
+    telemetry,
+    instrumentation: instrumentationFor(telemetry),
+  };
 }
 
 function instrumentedRuntime(
@@ -126,7 +134,7 @@ function instrumentedRuntime(
   clock: FakeClock,
   observer?: (event: DatabaseTelemetryEvent) => void,
 ) {
-  const telemetry = attachInstrumentation(observer);
+  const { telemetry, instrumentation } = attachInstrumentation(observer);
   const runtime = createManagedClientRuntime<FakeClient>({
     maxActive: 1,
     maxQueued: 1,
@@ -134,6 +142,7 @@ function instrumentedRuntime(
     clock,
     connect,
     end: async () => {},
+    instrumentation,
   });
   return { runtime, telemetry };
 }
@@ -152,7 +161,7 @@ const ALLOWED_EVENT_KEYS = new Set([
 
 test('observer exceptions are isolated and do not break acquire', async () => {
   let calls = 0;
-  const telemetry = attachInstrumentation(() => {
+  const { telemetry, instrumentation } = attachInstrumentation(() => {
     calls += 1;
     throw new Error('observer boom');
   });
@@ -163,6 +172,7 @@ test('observer exceptions are isolated and do not break acquire', async () => {
     acquireTimeoutMs: 1_000,
     connect: async () => client,
     end: async () => {},
+    instrumentation,
   });
 
   await runtime.withClient({ timeoutMs: 100 }, async () => 'ok');
@@ -175,7 +185,7 @@ test('saturation increments bounded acquire error counter', async () => {
   const client = createFakeClient();
   let releaseHold: (() => void) | undefined;
 
-  const telemetry = attachInstrumentation();
+  const { telemetry, instrumentation } = attachInstrumentation();
   const runtime = createManagedClientRuntime<FakeClient>({
     maxActive: 1,
     maxQueued: 1,
@@ -183,6 +193,7 @@ test('saturation increments bounded acquire error counter', async () => {
     clock,
     connect: async () => client,
     end: async () => {},
+    instrumentation,
   });
 
   const hold = runtime.withClient({ timeoutMs: 5_000 }, async () => {
@@ -216,7 +227,9 @@ test('saturation increments bounded acquire error counter', async () => {
 
 test('managed transaction maps semantic policy name to database.transaction', async () => {
   const events: DatabaseTelemetryEvent[] = [];
-  const telemetry = attachInstrumentation((event) => events.push(event));
+  const { telemetry, instrumentation } = attachInstrumentation((event) =>
+    events.push(event),
+  );
   const client = createFakeClient();
   const runtime = createManagedClientRuntime<FakeClient>({
     maxActive: 1,
@@ -224,6 +237,7 @@ test('managed transaction maps semantic policy name to database.transaction', as
     acquireTimeoutMs: 1_000,
     connect: async () => client,
     end: async () => {},
+    instrumentation,
   });
 
   await executeManagedTransaction(
@@ -233,7 +247,7 @@ test('managed transaction maps semantic policy name to database.transaction', as
       telemetry,
     },
     basePolicy(),
-    async (_tx: Transaction) => 'ok',
+    async () => 'ok',
   );
 
   const transactionEvent = events.find(
@@ -314,7 +328,7 @@ test('commit-unknown is classified on final transaction error', async () => {
 
 test('observer receives allowlisted fields only even when callback throws secret-bearing error', async () => {
   const observed: DatabaseTelemetryEvent[] = [];
-  const telemetry = attachInstrumentation((event) => {
+  const { telemetry, instrumentation } = attachInstrumentation((event) => {
     observed.push(event);
     for (const key of Object.keys(event as object)) {
       assert.ok(ALLOWED_EVENT_KEYS.has(key));
@@ -327,6 +341,7 @@ test('observer receives allowlisted fields only even when callback throws secret
     acquireTimeoutMs: 1_000,
     connect: async () => client,
     end: async () => {},
+    instrumentation,
   });
 
   const secret = Object.assign(new Error('failed with dsn=postgres://secret'), {
@@ -379,6 +394,96 @@ test('release failure after successful callback records committed connection err
     telemetry.snapshot().counters['connection|error|interactive|application'],
     1,
   );
+});
+
+test('interleaved runtimes isolate gauges, counters, and observers', async () => {
+  const eventsA: DatabaseTelemetryEvent[] = [];
+  const eventsB: DatabaseTelemetryEvent[] = [];
+  const { telemetry: telemetryA, instrumentation: instrumentationA } =
+    attachInstrumentation((event) => eventsA.push(event));
+  const { telemetry: telemetryB, instrumentation: instrumentationB } =
+    attachInstrumentation((event) => eventsB.push(event));
+
+  const clientA = createFakeClient();
+  const clientB = createFakeClient();
+
+  const runtimeA = createManagedClientRuntime<FakeClient>({
+    maxActive: 1,
+    maxQueued: 1,
+    acquireTimeoutMs: 5_000,
+    connect: async () => clientA,
+    end: async () => {},
+    instrumentation: instrumentationA,
+  });
+  const runtimeB = createManagedClientRuntime<FakeClient>({
+    maxActive: 1,
+    maxQueued: 1,
+    acquireTimeoutMs: 5_000,
+    connect: async () => clientB,
+    end: async () => {},
+    instrumentation: instrumentationB,
+  });
+
+  let releaseA: (() => void) | undefined;
+  let releaseB: (() => void) | undefined;
+
+  const holdA = runtimeA.withClient({ timeoutMs: 5_000 }, async () => {
+    await new Promise<void>((resolve) => {
+      releaseA = resolve;
+    });
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  void runtimeA.withClient({ timeoutMs: 5_000 }, async () => 'queued-a');
+
+  const holdB = runtimeB.withClient({ timeoutMs: 5_000 }, async () => {
+    await new Promise<void>((resolve) => {
+      releaseB = resolve;
+    });
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  void runtimeB.withClient({ timeoutMs: 5_000 }, async () => 'queued-b');
+
+  const snapA = telemetryA.snapshot();
+  const snapB = telemetryB.snapshot();
+
+  assert.equal(snapA.gauges.admissionActive, 1);
+  assert.equal(snapA.gauges.admissionQueued, 1);
+  assert.equal(snapB.gauges.admissionActive, 1);
+  assert.equal(snapB.gauges.admissionQueued, 1);
+  assert.equal(snapA.counters['acquire|ok|interactive'], 1);
+  assert.equal(snapB.counters['acquire|ok|interactive'], 1);
+  assert.equal(snapA.counters['acquire|error|interactive|saturated'] ?? 0, 0);
+  assert.equal(snapB.counters['acquire|error|interactive|saturated'] ?? 0, 0);
+
+  assert.equal(eventsA.length, 1);
+  assert.equal(eventsB.length, 1);
+  assert.equal(eventsA[0]?.operation, 'acquire');
+  assert.equal(eventsB[0]?.operation, 'acquire');
+
+  await assert.rejects(
+    runtimeA.withClient({ timeoutMs: 5_000 }, async () => 'saturate-a'),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseAdmissionError);
+      assert.equal(error.category, 'saturated');
+      return true;
+    },
+  );
+
+  assert.equal(
+    telemetryA.snapshot().counters['acquire|error|interactive|saturated'],
+    1,
+  );
+  assert.equal(
+    telemetryB.snapshot().counters['acquire|error|interactive|saturated'] ?? 0,
+    0,
+  );
+  assert.equal(eventsA.length, 2);
+  assert.equal(eventsB.length, 1);
+
+  releaseA?.();
+  releaseB?.();
+  await holdA.catch(() => {});
+  await holdB.catch(() => {});
 });
 
 test('telemetry snapshot exposes nonnegative gauges and monotonic elapsed time', async () => {

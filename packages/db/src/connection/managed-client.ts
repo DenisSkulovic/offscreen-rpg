@@ -4,6 +4,7 @@ import {
   type AdmissionClock,
   type ReleasableClient,
 } from './admission';
+import type { AdmissionInstrumentation } from '../telemetry/runtime.js';
 
 export interface ManagedClientOptions<C extends ReleasableClient> {
   maxActive: number;
@@ -12,6 +13,7 @@ export interface ManagedClientOptions<C extends ReleasableClient> {
   connect: () => Promise<C>;
   end: () => Promise<void>;
   clock?: AdmissionClock;
+  instrumentation?: AdmissionInstrumentation;
 }
 
 export interface ManagedClientRuntime<C extends ReleasableClient> {
@@ -50,6 +52,9 @@ export function createManagedClientRuntime<C extends ReleasableClient>(
     acquireTimeoutMs: options.acquireTimeoutMs,
     connect: options.connect,
     ...(options.clock ? { clock: options.clock } : {}),
+    ...(options.instrumentation
+      ? { instrumentation: options.instrumentation }
+      : {}),
   });
 
   let outstanding = 0;

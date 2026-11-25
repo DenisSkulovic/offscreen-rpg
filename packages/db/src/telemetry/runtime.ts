@@ -160,23 +160,7 @@ export function createDatabaseTelemetry(
   return { emit, snapshot, registerAdmissionGauges, setPoolGauges };
 }
 
-export type PendingAdmissionInstrumentation = Readonly<{
+export type AdmissionInstrumentation = Readonly<{
   emit: (event: DatabaseTelemetryEvent) => void;
   registerAdmissionGauges: (reader: AdmissionGaugeReader) => void;
 }>;
-
-let pendingAdmissionInstrumentation:
-  PendingAdmissionInstrumentation | undefined;
-
-export function setPendingAdmissionInstrumentation(
-  instrumentation: PendingAdmissionInstrumentation | undefined,
-): void {
-  pendingAdmissionInstrumentation = instrumentation;
-}
-
-export function takePendingAdmissionInstrumentation():
-  PendingAdmissionInstrumentation | undefined {
-  const current = pendingAdmissionInstrumentation;
-  pendingAdmissionInstrumentation = undefined;
-  return current;
-}

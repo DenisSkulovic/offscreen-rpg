@@ -1,41 +1,25 @@
 import type { DatabaseRegisteredOperationName } from '../telemetry/types.js';
-import {
-  takePendingAdmissionInstrumentation,
-  type PendingAdmissionInstrumentation,
-} from '../telemetry/runtime.js';
+import type { AdmissionInstrumentation } from '../telemetry/runtime.js';
 import type {
   DatabaseErrorCategory,
   DatabaseWorkload,
 } from '../transaction/policy.js';
+import {
+  DatabaseAdmissionError,
+  type DatabaseAdmissionErrorCategory,
+} from './admission-error.js';
+import {
+  admissionExpired,
+  defaultClock,
+  type AdmissionClock,
+  validateAcquireTimeout,
+} from './admission-deadline.js';
 
-export type DatabaseAdmissionErrorCategory =
-  'saturated' | 'timeout' | 'cancelled' | 'closed';
-
-const ADMISSION_MESSAGES: Record<DatabaseAdmissionErrorCategory, string> = {
-  saturated: 'Database admission queue is saturated.',
-  timeout: 'Database admission timeout while waiting for a connection.',
-  cancelled: 'Database admission was cancelled.',
-  closed: 'Database admission controller is closed.',
-};
-
-export class DatabaseAdmissionError extends Error {
-  readonly category: DatabaseAdmissionErrorCategory;
-
-  constructor(category: DatabaseAdmissionErrorCategory) {
-    super(ADMISSION_MESSAGES[category]);
-    this.name = 'DatabaseAdmissionError';
-    this.category = category;
-  }
-}
+export { DatabaseAdmissionError, type DatabaseAdmissionErrorCategory };
+export type { AdmissionClock };
 
 export interface ReleasableClient {
   release(err?: Error | boolean): void;
-}
-
-export interface AdmissionClock {
-  now: () => number;
-  setTimeout: (fn: () => void, delayMs: number) => unknown;
-  clearTimeout: (handle: unknown) => void;
 }
 
 export interface AdmissionControllerOptions<
@@ -46,6 +30,7 @@ export interface AdmissionControllerOptions<
   acquireTimeoutMs: number;
   connect: () => Promise<C>;
   clock?: AdmissionClock;
+  instrumentation?: AdmissionInstrumentation;
 }
 
 export interface AcquireOptions {
@@ -66,31 +51,6 @@ export interface AdmissionController<C extends ReleasableClient> {
   ): Promise<T>;
   close(): void;
   whenDrained(): Promise<void>;
-}
-
-const MIN_TIMEOUT_MS = 1;
-const MAX_TIMEOUT_MS = 300_000;
-
-function defaultClock(): AdmissionClock {
-  return {
-    now: () => performance.now(),
-    setTimeout: (fn, delayMs) => setTimeout(fn, delayMs),
-    clearTimeout: (handle) =>
-      clearTimeout(handle as ReturnType<typeof setTimeout>),
-  };
-}
-
-function validateAcquireTimeout(timeoutMs: number): void {
-  if (
-    !Number.isFinite(timeoutMs) ||
-    !Number.isInteger(timeoutMs) ||
-    timeoutMs < MIN_TIMEOUT_MS ||
-    timeoutMs > MAX_TIMEOUT_MS
-  ) {
-    throw new RangeError(
-      `Admission timeout must be a positive integer between ${MIN_TIMEOUT_MS} and ${MAX_TIMEOUT_MS}.`,
-    );
-  }
 }
 
 function admissionCategoryForTelemetry(
@@ -129,19 +89,10 @@ type PendingAcquisition = {
   clearGuards: () => void;
 };
 
-function admissionExpired(
-  now: number,
-  totalDeadline: number,
-  acquisitionDeadline: number,
-): boolean {
-  return now >= totalDeadline || now >= acquisitionDeadline;
-}
-
 export function createAdmissionController<C extends ReleasableClient>(
   options: AdmissionControllerOptions<C>,
 ): AdmissionController<C> {
-  const instrumentation: PendingAdmissionInstrumentation | undefined =
-    takePendingAdmissionInstrumentation();
+  const instrumentation = options.instrumentation;
   const clock = options.clock ?? defaultClock();
   const maxActive = options.maxActive;
   const maxQueued = options.maxQueued;
@@ -287,6 +238,7 @@ export function createAdmissionController<C extends ReleasableClient>(
       discard: () => void,
     ) => Promise<T>,
   ): Promise<T> => {
+    // Reserve: consume one active permit before connect or callback work begins.
     active += 1;
 
     return new Promise<T>((resolve, reject) => {
@@ -332,6 +284,7 @@ export function createAdmissionController<C extends ReleasableClient>(
       pending.clearGuards = clearGuards;
       pendingAcquisitions.add(pending);
 
+      // Pre-connect guards: caller refusal via timeout/abort before `connect()` settles.
       const scheduleAcquisitionTimeout = () => {
         const now = clock.now();
         if (admissionExpired(now, totalDeadline, acquisitionDeadline)) {
@@ -359,6 +312,7 @@ export function createAdmissionController<C extends ReleasableClient>(
         }
       }
 
+      // Caller refusal while reserved but connect has not started yet.
       if (admissionRejected) {
         releaseActivePermit();
         return;
@@ -372,6 +326,7 @@ export function createAdmissionController<C extends ReleasableClient>(
         return;
       }
 
+      // Actual connect settlement: pool hands back a physical client (or rejects).
       let connectPromise: Promise<C>;
       try {
         connectPromise = connect();
@@ -400,6 +355,7 @@ export function createAdmissionController<C extends ReleasableClient>(
             return;
           }
 
+          // Caller refusal after physical connect: release client; distinct from connect failure.
           if (
             admissionExpired(now, totalDeadline, acquisitionDeadline) ||
             (acquireOptions.signal?.aborted ?? false)
@@ -434,6 +390,7 @@ export function createAdmissionController<C extends ReleasableClient>(
             return;
           }
 
+          // Callback lease: caller runs while the admission slot stays reserved.
           callbackStarted = true;
           emitAcquire(acquireOptions, settlement, 'ok');
           let discarded = false;
@@ -462,6 +419,7 @@ export function createAdmissionController<C extends ReleasableClient>(
             callbackError = new DatabaseAdmissionError('timeout');
           }
 
+          // Release/drain: return client to pool and free the active permit for the queue.
           try {
             client.release(discarded ? true : undefined);
           } catch (releaseError) {
@@ -519,6 +477,7 @@ export function createAdmissionController<C extends ReleasableClient>(
 
     const settlement: AcquireSettlement = { startedAt: clock.now() };
 
+    // Pre-connect guards: immediate caller refusal without reserving queue capacity.
     if (acquireOptions.signal?.aborted) {
       emitAcquire(acquireOptions, settlement, 'error', 'cancelled');
       throw new DatabaseAdmissionError('cancelled');
@@ -534,6 +493,7 @@ export function createAdmissionController<C extends ReleasableClient>(
       clock.now() + acquireTimeoutMs,
     );
 
+    // Reserve: grant an active permit immediately or enqueue for later drain.
     const canGrantImmediately = active < maxActive && queue.length === 0;
     if (canGrantImmediately) {
       return beginAcquire(
@@ -545,11 +505,13 @@ export function createAdmissionController<C extends ReleasableClient>(
       );
     }
 
+    // Caller refusal: queue saturation without entering the wait list.
     if (queue.length >= maxQueued) {
       emitAcquire(acquireOptions, settlement, 'error', 'saturated');
       throw new DatabaseAdmissionError('saturated');
     }
 
+    // Queued wait: timers/abort refuse before `beginAcquire` reserves a permit on drain.
     return new Promise<T>((resolve, reject) => {
       const queuedSettlement: AcquireSettlement = {
         startedAt: settlement.startedAt,

@@ -31,9 +31,10 @@ Live transaction, migration recovery, telemetry workload, and replicated-topolog
 | Need | Source |
 | --- | --- |
 | Connection and config | [database.ts](src/database.ts) `createDatabase`, [config.ts](src/config.ts) `readDatabaseConfig` |
-| Managed admission / withClient | [connection/admission.ts](src/connection/admission.ts), [connection/managed-client.ts](src/connection/managed-client.ts) |
+| Managed admission / withClient | [connection/admission.ts](src/connection/admission.ts) (controller; reexports error/clock), [connection/admission-error.ts](src/connection/admission-error.ts), [connection/admission-deadline.ts](src/connection/admission-deadline.ts), [connection/managed-client.ts](src/connection/managed-client.ts) |
+| Health probe | [connection/probe.ts](src/connection/probe.ts) `checkDatabaseConnection`; [database.ts](src/database.ts) `checkConnection` delegates with factory-computed timeout |
 | Managed SQL transactions and errors | [database.ts](src/database.ts) `transaction`, [transaction/execute.ts](src/transaction/execute.ts), [transaction/errors.ts](src/transaction/errors.ts), [transaction/policy.ts](src/transaction/policy.ts) |
-| Telemetry sink and snapshot | [telemetry/runtime.ts](src/telemetry/runtime.ts) `createDatabaseTelemetry`, [database.ts](src/database.ts) optional observer / `telemetrySnapshot` |
+| Telemetry sink and snapshot | [telemetry/runtime.ts](src/telemetry/runtime.ts) `createDatabaseTelemetry` + explicit `AdmissionInstrumentation` options; [database.ts](src/database.ts) optional observer / `telemetrySnapshot` |
 | Narrow concurrency helpers | [transaction/concurrency.ts](src/transaction/concurrency.ts) `expectOneAffected`, `acquireTransactionAdvisoryLock` |
 | Controlled migration execution | [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts) (`packages/db/migrations` asset folder) |
 | Schema registry / verification | `tools/db-migrations` (`check:schema`, guarded `generate`) — [package.json](../../tools/db-migrations/package.json) |
