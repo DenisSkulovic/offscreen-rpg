@@ -74,7 +74,7 @@ release:
   s3Endpoint: http://object-store.lab-objects.svc.cluster.local:8333
   s3ForcePathStyle: "true"
   ruleRootHash: d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab
-  temporalAddress: temporal-server.lab-temporal.svc.cluster.local:7233
+  temporalAddress: temporal-frontend.lab-temporal.svc.cluster.local:7233
   temporalNamespace: default
   authorityOrigin: http://game-authority.lab-authority.svc.cluster.local:3002
   apiProxyOrigin: http://game-api.lab-edge.svc.cluster.local:3001
