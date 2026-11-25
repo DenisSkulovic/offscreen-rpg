@@ -397,6 +397,7 @@ export async function reconcileOwnedDevSlot(input) {
   const { projectDevSlot } = await import('../rendering/dev-slot-project.mjs');
   const { readPlatformProfile } = await import('../../../../infra/platform/common/profile.mjs');
   const { observeTemporalReady } = await import('../../../../infra/platform/temporal/readiness.mjs');
+  const { describeTemporalNamespace, createTemporalNamespace } = await import('../../../../infra/platform/temporal/namespaces.mjs');
   const temporal = readPlatformProfile('dev');
 
   return reconcileDevSlot(
@@ -481,37 +482,8 @@ export async function reconcileOwnedDevSlot(input) {
                 ready: observeTemporalReady('dev').ok,
               };
             },
-            async describe(name) {
-              const described = spawnSync('kubectl', [
-                '--context', temporal.contextName,
-                '-n', temporal.namespaces.temporal,
-                'exec', 'deploy/temporal-admintools', '--',
-                'temporal', 'operator', 'namespace', 'describe',
-                '--namespace', name, '--address', 'temporal-frontend:7233',
-                '--output', 'json',
-              ], { encoding: 'utf8', timeout: 60000 });
-              if (described.error || described.signal) {
-                return { failure: 'command-failed', detail: 'Temporal describe transport failed' };
-              }
-              return temporalTenant.parseTemporalDescribe(
-                described.status === 0 ? described.stdout : described.stderr,
-                described.status ?? 1,
-              );
-            },
-            async create(names) {
-              const created = spawnSync('kubectl', [
-                '--context', temporal.contextName,
-                '-n', temporal.namespaces.temporal,
-                'exec', 'deploy/temporal-admintools', '--',
-                'temporal', 'operator', 'namespace', 'create',
-                '--namespace', names.temporalNamespace,
-                '--retention', '1d', '--address', 'temporal-frontend:7233',
-              ], { encoding: 'utf8', timeout: 60000 });
-              if (created.error || created.signal ||
-                  (created.status !== 0 && !/NamespaceAlreadyExists|namespace[^\n]+already exists/i.test(created.stderr ?? ''))) {
-                throw new Error('Temporal namespace create failed');
-              }
-            },
+            describe: (name) => describeTemporalNamespace('dev', name),
+            create: (names) => createTemporalNamespace('dev', names.temporalNamespace, 1),
             wait: () => new Promise((resolve) => setTimeout(resolve, 1000)),
           },
         }),
