@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { parse } from 'yaml';
 import { execPath } from 'node:process';
 import test from 'node:test';
 import {
@@ -854,6 +856,7 @@ test('release Temporal status observes Helm-owned workloads and frontend health 
   const calls = [];
   const context = 'kind-offscreen-release';
   const namespace = 'lab-temporal';
+  const pinnedValues = parse(readFileSync(new URL('../platform/temporal/values.yaml', import.meta.url), 'utf8'));
   const ok = (body) => ({ ok: true, status: 0, stdout: typeof body === 'string' ? body : JSON.stringify(body) });
   function run(command, args) {
     calls.push({ command, args });
@@ -875,7 +878,7 @@ test('release Temporal status observes Helm-owned workloads and frontend health 
     const resource = args[3];
     if (resource === 'namespace') {
       return ok({ metadata: {
-        name: args[4], uid: 'baseline-uid', labels: { 'offscreen.rpg/lab': 'disposable' },
+        name: args[4], uid: 'baseline-uid', labels: { 'offscreen.rpg/lab': 'disposable', 'app.kubernetes.io/part-of': 'temporal' },
       } });
     }
     const metadata = {
@@ -892,7 +895,7 @@ test('release Temporal status observes Helm-owned workloads and frontend health 
     });
     assert.equal(resource, 'deployment');
     return ok({
-      metadata, spec: { replicas: 1 },
+      metadata, spec: { replicas: 1, template: { spec: { containers: [{ image: 'temporalio/image:' + pinnedValues[metadata.name === 'temporal-web' ? 'web' : metadata.name === 'temporal-admintools' ? 'admintools' : 'server'].image.tag }] } } },
       status: { observedGeneration: 1, replicas: 1, updatedReplicas: 1, readyReplicas: 1, availableReplicas: 1 },
     });
   }
