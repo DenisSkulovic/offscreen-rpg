@@ -34,3 +34,7 @@ Revised candidate to chart 1.8.0 after inspecting upstream gh-pages index, 1.7.0
 ## Architecture defense and next evidence
 
 One mandatory replacement Change, pin relocation inside it, separate persistence predecessor only if independently substantive. Removed automatic upgrades, generic values merge and custom release-description hash; compare Helm recorded user values against exact two-address overlay. Download/checksum before database preparation. No additional configuration system or verification Change. Manual terminal experiments are next, beginning with local Helm rendering; no live mutation or old-folder inspection implied. See [EXPERIMENTS.md](EXPERIMENTS.md). No implementation commission.
+
+## Owner terminal evidence (2026-11-25)
+
+Baseline archive integrity, both profile renders, release lint, registry image indexes and read-only CNPG discovery/status schema/service inventory observed. See [FINDINGS.md](FINDINGS.md) for exact observations and limitations. Final pinned render, catalog/ACL/credential sequence, legacy inventory and runtime proof pending. No implementation commission.
