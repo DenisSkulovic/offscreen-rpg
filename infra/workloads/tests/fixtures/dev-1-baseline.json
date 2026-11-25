@@ -563,7 +563,7 @@
                 },
                 {
                   "name": "TEMPORAL_ADDRESS",
-                  "value": "temporal-server.offscreen-dev-temporal.svc.cluster.local:7233"
+                  "value": "temporal-frontend.offscreen-dev-temporal.svc.cluster.local:7233"
                 },
                 {
                   "name": "TEMPORAL_NAMESPACE",
@@ -654,7 +654,7 @@
                 },
                 {
                   "name": "TEMPORAL_ADDRESS",
-                  "value": "temporal-server.offscreen-dev-temporal.svc.cluster.local:7233"
+                  "value": "temporal-frontend.offscreen-dev-temporal.svc.cluster.local:7233"
                 },
                 {
                   "name": "TEMPORAL_NAMESPACE",
@@ -775,7 +775,7 @@
                 },
                 {
                   "name": "TEMPORAL_ADDRESS",
-                  "value": "temporal-server.offscreen-dev-temporal.svc.cluster.local:7233"
+                  "value": "temporal-frontend.offscreen-dev-temporal.svc.cluster.local:7233"
                 },
                 {
                   "name": "TEMPORAL_NAMESPACE",
