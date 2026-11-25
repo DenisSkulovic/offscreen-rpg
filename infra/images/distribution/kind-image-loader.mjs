@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import { writeSync } from 'node:fs';
+import { isatty } from 'node:tty';
 import { createHash } from 'node:crypto';
 import { readKindProfile } from '../../clusters/kind/manager/config.mjs';
 
@@ -412,6 +414,10 @@ export function parseCtrDigest(stdout, normalizedRef) {
  */
 function logKindLoad(node, result) {
   console.error(`phase=kind-load node=${node} result=${result}`);
+  // FD3 is opened by the interactive dev image loader; no raw subprocess data.
+  if (process.env.OFFSCREEN_DEV_PROGRESS !== 'quiet' && /^offscreen-dev-(control-plane|worker)$/.test(node)) {
+    try { if (isatty(3)) writeSync(3, '[dev] images / ' + node + ': ' + result + '\n'); } catch { /* no terminal */ }
+  }
 }
 
 /**

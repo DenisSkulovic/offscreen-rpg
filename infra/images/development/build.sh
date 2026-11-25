@@ -40,8 +40,10 @@ ensureDevArtifact() {
   local docker_started
   docker_started="$(startup_timing_begin)"
   if [[ "$recorded" == "$fingerprint" ]]; then
+    if declare -F image_progress >/dev/null; then image_progress "Docker cache hit"; fi
     startup_timing_end docker-build images hit "$docker_started"
   else
+    if declare -F image_progress >/dev/null; then image_progress "building new Docker generation"; fi
     echo "phase=docker-build role=union" >&2
     temp_tag="offscreen-dev-workspace:union-build-$$-${RANDOM}"
     docker build \

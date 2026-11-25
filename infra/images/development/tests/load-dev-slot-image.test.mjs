@@ -442,3 +442,10 @@ test('warm and reconciled image handoffs both select immutable canonical generat
   assert.equal([...source.matchAll(/write_image_ref_receipt "\$OFFSCREEN_IMAGE_REF_FILE" "\$canonical"/g)].length, 2);
   assert.doesNotMatch(source, /receipt_ref="offscreen-dev-workspace:/);
 });
+
+test('image progress is separate from machine output and distribution has a timing boundary', () => {
+  const source = readFileSync(slotLoader, 'utf8');
+  assert.match(source, /exec 3>\/dev\/tty/);
+  assert.match(source, /printf .*>&3/);
+  assert.match(source, /startup_timing_end kind-distribution images/);
+});

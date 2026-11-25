@@ -77,6 +77,18 @@ read_offscreen_toolchain_pin "$repo"
 source "$repo/infra/images/development/startup-timing.sh"
 # shellcheck source=build.sh
 source "$repo/infra/images/development/build.sh"
+# Human-only progress bypasses captured machine stdout/stderr in an interactive
+# launch. No arbitrary build output or secrets are sent to the terminal.
+image_progress() {
+  if [[ "${OFFSCREEN_DEV_PROGRESS:-}" == quiet || "$tilt_ref_mode" == true ]]; then return 0; fi
+  if [[ -t 3 ]]; then
+    printf '[dev] images / %s\n' "$*" >&3 || true
+  fi
+}
+if [[ "$tilt_ref_mode" != true && "${OFFSCREEN_DEV_PROGRESS:-}" != quiet ]]; then
+  { exec 3>/dev/tty; } 2>/dev/null || true
+fi
+image_progress "checking fingerprint and waiting for image lock"
 mkdir -p "${TMPDIR:-/tmp}/offscreen-dev-image-locks"
 fingerprint_hint="${OFFSCREEN_IMAGE_FINGERPRINT:-}"
 fingerprint_started="$(startup_timing_begin)"
@@ -102,20 +114,27 @@ else
   flock 9
 fi
 startup_timing_end fingerprint images "$fingerprint_cache" "$fingerprint_started"
+image_progress "fingerprint verified; checking Docker artifact"
 ensureDevArtifact "$fingerprint"
 canonical="$DEV_CANONICAL_REF"
 digest="$DEV_ARTIFACT_DIGEST"
 builds="$DEV_ARTIFACT_BUILDS"
+image_progress "artifact ready; builds=$builds; checking node images and aliases"
 # Exact immutable target equality proves every alias in one inventory per node.
 # Any missing/stale/unreadable identity uses the existing full reconciliation.
 if [[ "$builds" == 0 ]] && node "$repo/infra/images/development/verify-warm-aliases.mjs" "$slot" "$role" "$canonical" "$digest"; then
   if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
     write_image_ref_receipt "$OFFSCREEN_IMAGE_REF_FILE" "$canonical"
   fi
+  image_progress "warm image reuse verified on both nodes"
   echo "builds=0 kindLoads=0 digest=${digest} ref=${canonical} warmAliasProof=hit"
   exit 0
 fi
+image_progress "reconciling canonical image on Kind nodes"
+kind_started="$(startup_timing_begin)"
 kind_json="$(node "$repo/infra/images/distribution/kind-image-loader.mjs" dev "$canonical" "$digest")"
+startup_timing_end kind-distribution images "" "$kind_started"
+image_progress "canonical distribution verified; reconciling slot aliases"
 kind_loads="$(node --input-type=module -e "
 const receipt = JSON.parse(process.argv[1]);
 process.stdout.write(String(receipt.loadedNodes.length));
@@ -128,6 +147,7 @@ kind_node_identity() {
 roles=(web api authority worker)
 if [[ "$role" != "all" ]]; then roles=("$role"); fi
 for alias_role in "${roles[@]}"; do
+  image_progress "verifying aliases for $alias_role"
   ref="offscreen-dev-workspace:${slot}-${alias_role}"
   docker tag "$canonical" "$ref"
   canonical_cp="$(kind_node_identity "${cluster}-control-plane" "$canonical")"
@@ -196,6 +216,7 @@ if (!result.ok) {
 }
 ' "$digest" "$alias_cp" "$alias_worker" "$canonical_cp" "$canonical_worker"
 done
+image_progress "all requested aliases verified"
 if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
   write_image_ref_receipt "$OFFSCREEN_IMAGE_REF_FILE" "$canonical"
 fi
