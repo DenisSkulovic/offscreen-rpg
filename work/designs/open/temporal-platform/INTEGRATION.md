@@ -45,3 +45,7 @@ New architecture replaces old authority, not runs beside it. Existing Temporal f
 - `dev-temporal-bootstrap-cli.mjs:4–5,26–51` imports old bootstrap/probe and checks mutation token. Retire after platform-plan corePhases routes explicit dev/release ensure to install.mjs; preserve explicit target confirmation and admission. Never treat injected test output as live authorization.
 
 These source findings correct the earlier speculative conditional slot bootstrap. No existing Temporal folder read; exact final rendered names and endpoint migration still require review.
+
+## Implementation roadmap cross-check
+
+Additional endpoint, verification-pin, workload fixture and guard dependencies are recorded in [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md). Existing release workload namespace is explicitly `default`; do not silently change it. The roadmap consolidates held INF64–69 candidates after owner approval, without reopening archived source Changes.
