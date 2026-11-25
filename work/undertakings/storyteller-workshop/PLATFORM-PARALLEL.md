@@ -1,5 +1,7 @@
 # Platform normalization | INF09–INF15
 
+**Temporal supersession (2026-11-26):** the INF11 local-chart/section renderer and legacy bootstrap/smoke instructions below are historical, not current executable work. Use [native Helm technical contract](../../../docs/technical/platform/temporal-infrastructure.md) and [current outcome](TEMPORAL-INFRASTRUCTURE.md).
+
 Owner commissioned 2026-11-24. INF08 source Done at 66ed7551a02ffcbee90a97db4452a4ffdfc8bc34; no new live acceptance credit. Human owner integration custodian. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged.
 
 | Change | Depends | Exclusive owner | Status |
