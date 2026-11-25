@@ -395,8 +395,9 @@ export async function reconcileOwnedDevSlot(input) {
   const temporalTenant = await import('../adapters/dev-temporal-tenant.mjs');
   const { ensureDevTemporalTenant } = temporalTenant;
   const { projectDevSlot } = await import('../rendering/dev-slot-project.mjs');
-  const temporal =
-    await import('../../../../infra/platform/temporal/dev-bootstrap.mjs');
+  const { readPlatformProfile } = await import('../../../../infra/platform/common/profile.mjs');
+  const { observeTemporalReady } = await import('../../../../infra/platform/temporal/readiness.mjs');
+  const temporal = readPlatformProfile('dev');
 
   return reconcileDevSlot(
     { ...input, owner: input.owner },
@@ -473,106 +474,45 @@ export async function reconcileOwnedDevSlot(input) {
           authorizeLive: 'kind-offscreen-dev-temporal-tenant-live',
           adapter: {
             identity() {
-              const listed = spawnSync(
-                'kubectl',
-                [
-                  '--context',
-                  temporal.DEV_TEMPORAL_CONTEXT,
-                  '-n',
-                  temporal.DEV_TEMPORAL_NAMESPACE,
-                  'get',
-                  'deploy',
-                  'temporal-server',
-                  '-o',
-                  'jsonpath={.spec.template.spec.containers[0].image}',
-                ],
-                { encoding: 'utf8' },
-              );
               return {
-                context: temporal.DEV_TEMPORAL_CONTEXT,
-                namespace: temporal.DEV_TEMPORAL_NAMESPACE,
-                owner: temporal.DEV_TEMPORAL_OWNER,
-                image: (listed.stdout ?? '').trim(),
+                context: temporal.contextName,
+                namespace: temporal.namespaces.temporal,
+                owner: temporal.ownerValue,
+                ready: observeTemporalReady('dev').ok,
               };
             },
             async describe(name) {
-              const described = spawnSync(
-                'kubectl',
-                [
-                  '--context',
-                  temporal.DEV_TEMPORAL_CONTEXT,
-                  '-n',
-                  temporal.DEV_TEMPORAL_NAMESPACE,
-                  'run',
-                  `temporal-admin-describe-${Date.now()}`,
-                  '--rm',
-                  '-i',
-                  '--restart=Never',
-                  '--image',
-                  'docker.io/temporalio/admin-tools:1.32.2',
-                  '--command',
-                  '--',
-                  'temporal',
-                  'operator',
-                  'namespace',
-                  'describe',
-                  '--namespace',
-                  name,
-                  '--address',
-                  'temporal-server:7233',
-                  '--output',
-                  'json',
-                ],
-                { encoding: 'utf8', timeout: 60000 },
-              );
-              const text = `${described.stdout ?? ''}\n${described.stderr ?? ''}`;
-              const parsed = temporalTenant.parseTemporalDescribe(
-                text,
+              const described = spawnSync('kubectl', [
+                '--context', temporal.contextName,
+                '-n', temporal.namespaces.temporal,
+                'exec', 'deploy/temporal-admintools', '--',
+                'temporal', 'operator', 'namespace', 'describe',
+                '--namespace', name, '--address', 'temporal-frontend:7233',
+                '--output', 'json',
+              ], { encoding: 'utf8', timeout: 60000 });
+              if (described.error || described.signal) {
+                return { failure: 'command-failed', detail: 'Temporal describe transport failed' };
+              }
+              return temporalTenant.parseTemporalDescribe(
+                described.status === 0 ? described.stdout : described.stderr,
                 described.status ?? 1,
               );
-              if (parsed.status === 'absent') return null;
-              if (parsed.status !== 'ready')
-                return { failure: parsed.status, detail: parsed.detail };
-              return {
-                id: parsed.id,
-                retentionSeconds: parsed.retentionSeconds,
-              };
             },
             async create(names) {
-              const created = spawnSync(
-                'kubectl',
-                [
-                  '--context',
-                  temporal.DEV_TEMPORAL_CONTEXT,
-                  '-n',
-                  temporal.DEV_TEMPORAL_NAMESPACE,
-                  'run',
-                  `temporal-admin-create-${Date.now()}`,
-                  '--rm',
-                  '-i',
-                  '--restart=Never',
-                  '--image',
-                  'docker.io/temporalio/admin-tools:1.32.2',
-                  '--command',
-                  '--',
-                  'temporal',
-                  'operator',
-                  'namespace',
-                  'create',
-                  '--namespace',
-                  names.temporalNamespace,
-                  '--retention',
-                  '1d',
-                  '--address',
-                  'temporal-server:7233',
-                ],
-                { encoding: 'utf8', timeout: 60000 },
-              );
-              const text = `${created.stdout ?? ''}${created.stderr ?? ''}`;
-              if (created.status !== 0 && !text.includes('already exists')) {
-                throw new Error('temporal namespace create failed');
+              const created = spawnSync('kubectl', [
+                '--context', temporal.contextName,
+                '-n', temporal.namespaces.temporal,
+                'exec', 'deploy/temporal-admintools', '--',
+                'temporal', 'operator', 'namespace', 'create',
+                '--namespace', names.temporalNamespace,
+                '--retention', '1d', '--address', 'temporal-frontend:7233',
+              ], { encoding: 'utf8', timeout: 60000 });
+              if (created.error || created.signal ||
+                  (created.status !== 0 && !/NamespaceAlreadyExists|namespace[^\n]+already exists/i.test(created.stderr ?? ''))) {
+                throw new Error('Temporal namespace create failed');
               }
             },
+            wait: () => new Promise((resolve) => setTimeout(resolve, 1000)),
           },
         }),
       project: (owner, migration) =>
