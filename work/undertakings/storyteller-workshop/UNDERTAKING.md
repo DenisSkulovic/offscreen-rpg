@@ -220,3 +220,5 @@ Target **long-lived** topology after Change integration: **two branches only**:
 - 2026-11-25 [DB craftsmanship wave](DB-CRAFT.md): DB11–DB14 source Done (DB14 admission telemetry/probe navigation; 106/106; live NOT-RUN). Post-commit admission-deadline contract remains planner work. DB10 live NOT-RUN; VER04/05 independent; DBOPS01 metadata held. No new outcome credit; estimates ~75/40/30/45 with broad uncertainty.
 
 - 2026-11-25 [DB operations programme](DB-OPERATIONS.md): DBOPS03 source Done (catalog/CLI/loopback target guard; live NOT-RUN); DBOPS04 source Done (enroll/ledger/atomic plan-status-run; 60/60; live NOT-RUN); DBOPS05 source Done (batched runner/resume/CLI bounds; 86/86; live NOT-RUN); DBOPS06 source Done (offline `review:change`; 16/16; live NOT-RUN). No hosted IAM, no live permission. DBOPS01 remains backlog. No outcome credit; estimates ~75/40/30/45 (broad uncertainty).
+
+**2026-11-25 Temporal infrastructure:** [INF61–63](TEMPORAL-INFRASTRUCTURE.md) Ready source-only; preserve embedded PG and existing tenants until reviewed cutover; no queue change or live/outcome credit. INF64–69 planner-held.

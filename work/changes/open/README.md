@@ -104,3 +104,11 @@ No live authorization or queue change; DBOPS01 remains separate.
 - DBOPS05 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--dbops05-db-batched-operations/CHANGE.md).
 - DBOPS06 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--dbops06-schema-change-review/CHANGE.md).
 No global queue change or live permission; DBOPS01 metadata and release proof remain separate.
+
+## Temporal infrastructure (2026-11-25)
+
+- [INF61 Helm chart decomposition](2026-11-25--inf61-temporal-chart-ownership/CHANGE.md): Ready, source-only.
+- [INF62 Honest bootstrap SQL gates](2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md): Ready, source-only.
+- [INF63 Reject unidentified resource ownership](2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md): Ready, source-only.
+
+[Programme and later gates](../../undertakings/storyteller-workshop/TEMPORAL-INFRASTRUCTURE.md).
