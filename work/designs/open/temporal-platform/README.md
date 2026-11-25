@@ -47,6 +47,6 @@ No local chart templates, persistence DSL, shell installer or duplicate bootstra
 
 ## Outstanding evidence
 
-Candidate chart 1.7.0 tagged source inspected; exact released package and checksum, complete values specimen and rendered resources still outstanding. Concrete PG credential integration and full caller migration map remain unresolved. Existing deployment adoption requires separate permission; no destructive default.
+Candidate chart 1.8.0 tagged source inspected; published artifact URL and checksum recorded. [Concrete values specimen](specimen/README.md) and [source-derived inventory](specimen/RESOURCE-INVENTORY.md) available. Archive-byte verification and actual render still outstanding. Concrete PG credential integration and full caller migration map remain unresolved. Existing deployment adoption requires separate permission; no destructive default.
 
 After owner acceptance, reconcile permanent technical/runbook owners before selecting implementation Changes. See [design lifecycle](../../README.md).
