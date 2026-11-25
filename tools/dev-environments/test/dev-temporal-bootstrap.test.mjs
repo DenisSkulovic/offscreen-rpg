@@ -19,6 +19,18 @@ import {
   executeAuthorizedDevTemporal,
   renderDevTemporal,
 } from '../../../infra/platform/temporal/dev-bootstrap.mjs';
+import { TEMPORAL_AUTHENTICATED_SQL_QUERY } from '../../../infra/platform/temporal/legacy-sql-probe.mjs';
+import {
+  TEMPORAL_SQL_DATABASES_QUERY,
+  TEMPORAL_SQL_SCHEMA_VERSION_QUERY,
+} from '../../../infra/platform/temporal/schema-policy.mjs';
+
+/** @param {string[]} args */
+function readTemporalPostgresSqlArgs(args) {
+  const marker = args.indexOf('temporal-sql');
+  if (marker < 0 || marker + 2 >= args.length) return undefined;
+  return { database: args[marker + 1], query: args[marker + 2] };
+}
 
 const ready = {
   context: DEV_TEMPORAL_CONTEXT,
@@ -32,7 +44,7 @@ const ready = {
   resources: [],
 };
 
-/** @param {Record<string, string | ((joined: string) => { ok: boolean, stdout?: string } | undefined)>} [overrides] */
+/** @param {Record<string, string | ((sql: { database: string, query: string }) => { ok: boolean, stdout?: string } | undefined)>} [overrides] */
 function fakeDevKubectlRun(overrides = {}) {
   return function run(_command, args, options = {}) {
     const joined = args.join(' ');
@@ -41,7 +53,39 @@ function fakeDevKubectlRun(overrides = {}) {
     if (namespaceFlag >= 0) {
       assert.equal(args[namespaceFlag + 1], DEV_TEMPORAL_NAMESPACE);
     }
+    const sql = readTemporalPostgresSqlArgs(args);
+    if (sql) {
+      if (typeof overrides.exec === 'function') {
+        const hit = overrides.exec(sql);
+        if (hit !== undefined) return hit;
+      }
+      for (const [needle, value] of Object.entries(overrides)) {
+        if (needle !== `db:${sql.database}`) continue;
+        if (typeof value === 'function') {
+          const hit = value(sql);
+          if (hit !== undefined) return hit;
+        } else {
+          return { ok: true, stdout: value };
+        }
+      }
+      if (
+        sql.database === 'postgres' &&
+        (sql.query === TEMPORAL_AUTHENTICATED_SQL_QUERY ||
+          sql.query === TEMPORAL_SQL_DATABASES_QUERY)
+      ) {
+        return { ok: true, stdout: '1' };
+      }
+      if (
+        (sql.database === 'temporal' ||
+          sql.database === 'temporal_visibility') &&
+        sql.query === TEMPORAL_SQL_SCHEMA_VERSION_QUERY
+      ) {
+        return { ok: true, stdout: 't' };
+      }
+      return { ok: true, stdout: 't' };
+    }
     for (const [needle, value] of Object.entries(overrides)) {
+      if (needle.startsWith('db:')) continue;
       if (!joined.includes(needle)) continue;
       if (typeof value === 'function') {
         const hit = value(joined);
@@ -53,10 +97,6 @@ function fakeDevKubectlRun(overrides = {}) {
     if (joined.includes('availableReplicas')) return { ok: true, stdout: '1' };
     if (joined.includes('status.succeeded')) return { ok: true, stdout: '1' };
     if (joined.includes('status.failed')) return { ok: true, stdout: '0' };
-    if (joined.includes('exec') && joined.includes('temporal-postgres')) {
-      if (joined.includes('-d postgres')) return { ok: true, stdout: '1' };
-      return { ok: true, stdout: 't' };
-    }
     return { ok: true, stdout: options.input ?? '' };
   };
 }
@@ -172,8 +212,15 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
       const line = args.join(' ');
       calls.push(line);
       if (line.includes('availableReplicas')) return { ok: true, stdout: '1' };
-      if (line.includes('exec') && line.includes('temporal-postgres')) {
-        if (line.includes('-d postgres')) return { ok: true, stdout: '1' };
+      const sql = readTemporalPostgresSqlArgs(args);
+      if (sql) {
+        if (
+          sql.database === 'postgres' &&
+          (sql.query === TEMPORAL_AUTHENTICATED_SQL_QUERY ||
+            sql.query === TEMPORAL_SQL_DATABASES_QUERY)
+        ) {
+          return { ok: true, stdout: '1' };
+        }
         return { ok: true, stdout: 't' };
       }
       return { ok: true, stdout: '1' };
@@ -326,7 +373,7 @@ test('dev SQL gates probe authenticated and schema stores and fail closed', () =
     collect: () => ready,
     generatePassword: () => 'temporal-password-value',
     run: fakeDevKubectlRun({
-      '-d postgres': () => ({ ok: true, stdout: '0' }),
+      'db:postgres': () => ({ ok: true, stdout: '0' }),
     }),
   });
   assert.equal(badAuth.ok, false);
@@ -359,10 +406,20 @@ test('dev SQL gates probe authenticated and schema stores and fail closed', () =
         return { ok: true, stdout: '1' };
       if (joined.includes('status.succeeded')) return { ok: true, stdout: '1' };
       if (joined.includes('status.failed')) return { ok: true, stdout: '0' };
-      if (joined.includes('-d postgres')) return { ok: true, stdout: '1' };
-      if (joined.includes('-d temporal_visibility'))
+      const sql = readTemporalPostgresSqlArgs(args);
+      if (sql?.database === 'postgres') return { ok: true, stdout: '1' };
+      if (
+        sql?.database === 'temporal_visibility' &&
+        sql.query === TEMPORAL_SQL_SCHEMA_VERSION_QUERY
+      ) {
         return { ok: true, stdout: 'f' };
-      if (joined.includes('-d temporal')) return { ok: true, stdout: 't' };
+      }
+      if (
+        sql?.database === 'temporal' &&
+        sql.query === TEMPORAL_SQL_SCHEMA_VERSION_QUERY
+      ) {
+        return { ok: true, stdout: 't' };
+      }
       return { ok: true, stdout: '' };
     },
   });

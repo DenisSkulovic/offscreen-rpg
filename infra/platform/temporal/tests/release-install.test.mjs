@@ -1,11 +1,32 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { TEMPORAL_LEGACY_YAML_SUCCESSORS } from '../dev-bootstrap.mjs';
+import { TEMPORAL_AUTHENTICATED_SQL_QUERY } from '../legacy-sql-probe.mjs';
 import {
   executeReleaseTemporalInstall,
   planReleaseTemporalInstall,
   verifyReleaseRenderedPins,
 } from '../release-install.mjs';
+
+const TEMPORAL_SQL_ARGV_LITERAL =
+  ': "${POSTGRES_PASSWORD:?missing database password}"; export PGPASSWORD="$POSTGRES_PASSWORD"; exec psql -w -h 127.0.0.1 -U temporal -d "$1" -Atqc "$2"';
+
+/** @param {string[]} args */
+function readTemporalPostgresSqlArgs(args) {
+  const marker = args.indexOf('temporal-sql');
+  if (marker < 0 || marker + 2 >= args.length) return undefined;
+  return { database: args[marker + 1], query: args[marker + 2] };
+}
+
+/** @param {string[]} args @param {Record<string, { ok: boolean, stdout?: string }>} responses */
+function fakeReleasePostgresSqlExec(args, responses) {
+  const sql = readTemporalPostgresSqlArgs(args);
+  if (!sql) return undefined;
+  return responses[sql.database];
+}
 
 const absent = { state: 'absent' };
 const presentOwned = (uid = 'uid-1') => ({
@@ -46,6 +67,35 @@ function successfulGateDeps(overrides = {}) {
     ...overrides,
   };
 }
+
+test('release SQL exec fake matches database and query argv tail', () => {
+  const source = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), '../release-install.mjs'),
+    'utf8',
+  );
+  assert.ok(source.includes(`'${TEMPORAL_SQL_ARGV_LITERAL}'`));
+  assert.match(source, /'temporal-sql',\s*\n\s*database,\s*\n\s*query,/);
+  const argv = [
+    'exec',
+    'deploy/temporal-postgres',
+    '--',
+    'bash',
+    '-c',
+    TEMPORAL_SQL_ARGV_LITERAL,
+    'temporal-sql',
+    'postgres',
+    TEMPORAL_AUTHENTICATED_SQL_QUERY,
+  ];
+  assert.deepEqual(readTemporalPostgresSqlArgs(argv), {
+    database: 'postgres',
+    query: TEMPORAL_AUTHENTICATED_SQL_QUERY,
+  });
+  assert.equal(
+    fakeReleasePostgresSqlExec(argv, { postgres: { ok: true, stdout: '1' } })
+      ?.stdout,
+    '1',
+  );
+});
 
 test('legacy flat YAML successors map chart sections', () => {
   assert.equal(

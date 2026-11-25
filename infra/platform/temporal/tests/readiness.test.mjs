@@ -7,10 +7,21 @@ import {
   DEV_TEMPORAL_SCHEMA_JOB,
 } from '../dev-bootstrap.mjs';
 import { observeDevTemporalReady } from '../readiness.mjs';
+import {
+  TEMPORAL_SQL_DATABASES_QUERY,
+  TEMPORAL_SQL_SCHEMA_VERSION_QUERY,
+} from '../schema-policy.mjs';
 
 const BASELINE_NAMESPACE = 'offscreen-dev-system';
 const DEV_CLUSTER_NAME = 'offscreen-dev';
 const WRITE_PATTERN = /\b(apply|create|delete|patch|replace)\b/i;
+
+/** @param {string[]} args */
+function readTemporalPostgresSqlArgs(args) {
+  const marker = args.indexOf('temporal-sql');
+  if (marker < 0 || marker + 2 >= args.length) return undefined;
+  return { database: args[marker + 1], query: args[marker + 2] };
+}
 
 /**
  * @param {{
@@ -125,18 +136,27 @@ function createMockRun(options = {}) {
     }
 
     if (command === 'kubectl' && args.includes('exec')) {
-      const joined = args.join(' ');
-      if (joined.includes("datname IN ('temporal','temporal_visibility')")) {
+      const sql = readTemporalPostgresSqlArgs(args);
+      if (
+        sql?.database === 'postgres' &&
+        sql.query === TEMPORAL_SQL_DATABASES_QUERY
+      ) {
         return legacyHealthy
           ? { ok: true, status: 0, stdout: 'temporal\ntemporal_visibility\n' }
           : { ok: true, status: 0, stdout: 'temporal\n' };
       }
-      if (joined.includes('-d temporal_visibility')) {
+      if (
+        sql?.database === 'temporal_visibility' &&
+        sql.query === TEMPORAL_SQL_SCHEMA_VERSION_QUERY
+      ) {
         return legacyHealthy
           ? { ok: true, status: 0, stdout: 't\n' }
           : { ok: true, status: 0, stdout: 'f\n' };
       }
-      if (joined.includes('-d temporal')) {
+      if (
+        sql?.database === 'temporal' &&
+        sql.query === TEMPORAL_SQL_SCHEMA_VERSION_QUERY
+      ) {
         return legacyHealthy
           ? { ok: true, status: 0, stdout: 't\n' }
           : { ok: true, status: 0, stdout: 'f\n' };

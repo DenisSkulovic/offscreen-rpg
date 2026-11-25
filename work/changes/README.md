@@ -377,6 +377,8 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 - [INF61 Helm chart decomposition](archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md) — Done (source); ownership partials; render 6/6; live NOT-RUN.
 - [INF62 Honest bootstrap SQL gates](archive/2026-11/platform-operations/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md) — Done (source); SQL existence gates; 49/49 with schema-policy; live NOT-RUN.
 - [INF63 Reject unidentified resource ownership](archive/2026-11/platform-operations/2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md) — Done (source); 36/36; live NOT-RUN.
+- [INF70 Authenticate existing Temporal SQL probes](archive/2026-11/platform-operations/2026-11-25--inf70-temporal-sql-authentication/CHANGE.md) — Done (source); PGPASSWORD + positional argv; 28/28; live auth NOT-RUN.
+- [INF71 Temporal execution refusals](open/2026-11-25--inf71-temporal-execution-refusals/CHANGE.md) — Ready after INF70; not auto-started; source only.
 [Programme](../undertakings/storyteller-workshop/TEMPORAL-INFRASTRUCTURE.md). No global queue change or live permission.
 
 ## Cache craftsmanship wave

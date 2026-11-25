@@ -223,4 +223,4 @@ Target **long-lived** topology after Change integration: **two branches only**:
 
 **2026-11-25 Temporal infrastructure:** [INF61](../changes/archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md) source Done (render 6/6; live NOT-RUN); [INF62](../changes/archive/2026-11/platform-operations/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md) source Done (honest SQL existence gates; 49/49 with schema-policy; live NOT-RUN); [INF63](../changes/archive/2026-11/platform-operations/2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md) source Done (36/36; live NOT-RUN). Preserve embedded PG and existing tenants until reviewed cutover; no queue change or live/outcome credit. INF64–69 planner-held.
 
-2026-11-25: [Temporal corrective wave](TEMPORAL-INFRASTRUCTURE.md) INF70–71 source-only; SQL authentication and executor refusal defects from post-integration audit. No live or completion credit.
+2026-11-25: [Temporal corrective wave](TEMPORAL-INFRASTRUCTURE.md): INF70 source Done (SQL probe auth; 28/28; live NOT-RUN); INF71 Ready after INF70 for executor refusals. No live or completion credit.

@@ -69,8 +69,11 @@ function execTemporalPostgresSql(run, database, query) {
       `deploy/${POSTGRES_DEPLOY}`,
       '--',
       'bash',
-      '-lc',
-      `psql -h 127.0.0.1 -U temporal -d ${database} -Atqc ${JSON.stringify(query)}`,
+      '-c',
+      ': "${POSTGRES_PASSWORD:?missing database password}"; export PGPASSWORD="$POSTGRES_PASSWORD"; exec psql -w -h 127.0.0.1 -U temporal -d "$1" -Atqc "$2"',
+      'temporal-sql',
+      database,
+      query,
     ],
     { timeoutMs: SQL_PROBE_TIMEOUT_MS },
   );
