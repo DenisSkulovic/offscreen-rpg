@@ -22,4 +22,4 @@ Only after owner explicitly lifts existing Temporal folder exclusion for retirem
 
 Use small local subprocess fixtures for lock/timeout behavior if needed; inspect actual Helm get values and health CLI semantics on approved target. Freeze exact caller maps, release namespace policy and fixture contracts. Record evidence and revise design. Only after owner review, prepare actual Change packets. Live install/cutover is separately authorized later.
 
-Current next step E1 only. Do not automatically continue into cluster operations. Every result is evidence with PASS/FAIL/NOT RUN, not progress percentages.
+Current next step: E3 actual status and catalog inspection, plus final digest-pinned E2 render. E1 and baseline E2 completed; E3 partially complete. See [FINDINGS.md](FINDINGS.md). Record evidence before advancing. Do not automatically continue into mutations or legacy inventory. Every result is evidence with PASS/FAIL/NOT RUN, not progress percentages.
