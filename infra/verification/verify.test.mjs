@@ -120,7 +120,7 @@ test('runSourceVerification passes when all suites pass', () => {
     })(),
   });
   assert.equal(report.exitCode, 0);
-  assert.equal(report.suites.length, 4);
+  assert.equal(report.suites.length, 7);
   assert.ok(report.suites.every((suite) => suite.status === 'PASS'));
   assert.ok(
     report.suites.every((suite) =>
@@ -185,7 +185,7 @@ test('runSourceVerification blocks workloads without helm but runs other suites'
       ({ args }) => !args.includes('docker') && !args.includes('tilt'),
     ),
   );
-  assert.equal(calls.length, 3);
+  assert.equal(calls.length, 6);
 });
 
 test('expandTestGlob returns sorted filenames without shell expansion', () => {

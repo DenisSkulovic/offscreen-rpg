@@ -62,6 +62,28 @@ export const SOURCE_SUITE_DEFINITIONS = Object.freeze([
     requiresHelm: false,
     globDir: 'infra/environments/release/test',
   },
+  {
+    id: 'infra-dev-lifecycle',
+    requiresHelm: false,
+    files: Object.freeze([
+      'infra/verification/dev-environments/lifecycle-programme.test.mjs',
+    ]),
+  },
+  {
+    id: 'infra-dev-recovery',
+    requiresHelm: false,
+    files: Object.freeze([
+      'infra/verification/dev-environments/recovery-programme.test.mjs',
+      'infra/verification/dev-environments/tenant-retention-programme.test.mjs',
+    ]),
+  },
+  {
+    id: 'infra-dev-selective',
+    requiresHelm: false,
+    files: Object.freeze([
+      'infra/verification/dev-environments/selective-profile-programme.test.mjs',
+    ]),
+  },
 ]);
 
 /** Stable catalog IDs from infra/verification/CAPABILITIES.md */
@@ -130,6 +152,16 @@ export const SCENARIO_TIER_MAP = Object.freeze({
   'DEV-01': 'SOURCE',
   'DEV-11': 'SOURCE',
   'DEV-13': 'SOURCE',
+  'DEV-02': 'FIXTURE',
+  'DEV-03': 'FIXTURE',
+  'DEV-07': 'FIXTURE',
+  'DEV-08': 'FIXTURE',
+  'DEV-09': 'FIXTURE',
+  'DEV-10': 'FIXTURE',
+  'DEV-04': 'FIXTURE',
+  'DEV-05': 'FIXTURE',
+  'DEV-14': 'FIXTURE',
+  'DATA-01': 'FIXTURE',
   'REL-02': 'SOURCE',
   'REL-04': 'FIXTURE',
 });
@@ -144,6 +176,16 @@ export const SCENARIO_SOURCE_SUITE_MAP = Object.freeze({
   'DEV-01': Object.freeze(['dev-environments']),
   'DEV-11': Object.freeze(['dev-environments']),
   'DEV-13': Object.freeze(['dev-environments']),
+  'DEV-02': Object.freeze(['infra-dev-lifecycle']),
+  'DEV-03': Object.freeze(['infra-dev-lifecycle']),
+  'DEV-07': Object.freeze(['infra-dev-recovery']),
+  'DEV-08': Object.freeze(['infra-dev-recovery']),
+  'DEV-09': Object.freeze(['infra-dev-recovery']),
+  'DEV-10': Object.freeze(['infra-dev-lifecycle']),
+  'DEV-04': Object.freeze(['infra-dev-selective']),
+  'DEV-05': Object.freeze(['infra-dev-selective']),
+  'DEV-14': Object.freeze(['infra-dev-selective']),
+  'DATA-01': Object.freeze(['infra-dev-recovery']),
   'REL-02': Object.freeze(['release']),
   'REL-04': Object.freeze(['release']),
 });

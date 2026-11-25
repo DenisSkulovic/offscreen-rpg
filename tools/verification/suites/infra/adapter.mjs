@@ -1,6 +1,8 @@
 import { join, relative } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { runCommand } from '../../../../infra/verification/diagnostic-engine.mjs';
 import {
+  DEV_ENVIRONMENT_LIVE_SCENARIO_IDS,
   INFRA_SECTION_BY_ID,
   infraScenarioHasFixtureProof,
 } from './manifest.mjs';
@@ -270,6 +272,19 @@ export function createInfraScenarioRunner(plan, deps) {
           },
         };
       }
+      if (definition.programme) {
+        return { ok: true, programme: true, durationMs: 0 };
+      }
+      if (!definition.childSuite) {
+        return {
+          ok: false,
+          outcome: {
+            status: 'FAIL',
+            reason: 'invalid-child-suite',
+            reasonCode: 'invalid-child-suite',
+          },
+        };
+      }
       return invokeInfraVerifyChild({
         repoRoot: deps.repoRoot,
         childSuite: definition.childSuite,
@@ -285,12 +300,67 @@ export function createInfraScenarioRunner(plan, deps) {
   }
 
   return async function runInfraScenario({ section, scenarioId, runContext }) {
+    const definition = INFRA_SECTION_BY_ID.get(section.id);
+    if (definition?.programme) {
+      if (!runContext.live) {
+        return {
+          status: 'NOT-RUN',
+          reason: 'live-not-authorized',
+          reasonCode: 'live-not-authorized',
+          durationMs: 0,
+        };
+      }
+      if (!DEV_ENVIRONMENT_LIVE_SCENARIO_IDS.includes(scenarioId)) {
+        return {
+          status: 'NOT-RUN',
+          reason: 'missing-scenario-in-child-report',
+          reasonCode: 'missing-scenario-in-child-report',
+          durationMs: 0,
+        };
+      }
+      const programmePath = join(deps.repoRoot, definition.programme);
+      const {
+        runDevEnvironmentLiveProgramme,
+        DEV_LIFECYCLE_LIVE_TOKEN,
+      } = await import(pathToFileURL(programmePath).href);
+      const started = Date.now();
+      const outcome = await runDevEnvironmentLiveProgramme({
+        scenarioId,
+        live: true,
+        authorizeToken: DEV_LIFECYCLE_LIVE_TOKEN,
+        worktree: deps.repoRoot,
+        ownedSlotId: runContext.ownedSlotId ?? null,
+        mixedSlotExplicit: Boolean(runContext.mixedSlotExplicit),
+        measuredCapacity: Boolean(runContext.measuredCapacity),
+      });
+      return {
+        ...engineChildOutcome({
+          status: outcome.status,
+          reason: outcome.reason,
+          reasonCode: outcome.reasonCode ?? outcome.reason,
+        }),
+        durationMs:
+          typeof outcome.durationMs === 'number'
+            ? outcome.durationMs
+            : Math.max(0, Date.now() - started),
+      };
+    }
+
     const child = await loadSectionChild(section.id);
     const durationMs =
       typeof child.durationMs === 'number' ? child.durationMs : 0;
 
     if (!child.ok) {
       return { ...child.outcome, durationMs };
+    }
+
+    if (!child.childSuite || !child.childReport) {
+      return {
+        status: 'FAIL',
+        reason: 'invalid-child-result',
+        reasonCode: 'invalid-child-result',
+        durationMs,
+      };
     }
 
     const mapped = mapInfraScenarioFromChild(

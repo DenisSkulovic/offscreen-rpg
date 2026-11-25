@@ -26,3 +26,17 @@ Edit, TypeScript recovery, stop, warm restart, and tenant survival remain NOT-RU
 ## 2026-11-25 reconciliation
 
 Current main c9ad30652dbf43140bc1e8154a786adc8af073b8. Later startup, release and diagnostic fixes have landed; no repeat source repair commission. Owner recalls successful last-night startup/verification; prior conversation reported 90/90 diagnostic and 10/10 release startup phases, but raw report, exact revision and complete lifecycle receipt are not attached here. Treat as operator-reported observations only. DEV edit/recovery/park/resume and retained tenant acceptance remain NOT-RUN at this baseline until INF52 evidence. No claim that all historical failures reproduce.
+
+## INF52 programme wiring (source-only, live NOT-RUN)
+
+[INF52](../../archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) registers VER01 live sections that dispatch through `infra/verification/dev-environments/dev-environment-live-dispatch.mjs`:
+
+| Capability | Programme | Live status on current HEAD |
+| --- | --- | --- |
+| DEV-02/03/10 | `lifecycle-programme.mjs` | NOT-RUN until explicit `--live` |
+| DEV-07/08/09 | `recovery-programme.mjs` | NOT-RUN |
+| DATA-01 | `tenant-retention-programme.mjs` | NOT-RUN |
+| DEV-04/05/14 | `selective-profile-programme.mjs` | BLOCKED `selective-profiles-unimplemented` until INF38 `--profile` is joined; source fixture proof only |
+| DEV-12 | `selective-profile-programme.mjs` optional mixed-slot section | NOT-RUN unless explicit profile selection and measured capacity |
+
+No INF29 closure from these registrations. Selective profile PASS requires INF38 product CLI, not verification catalogue alone.

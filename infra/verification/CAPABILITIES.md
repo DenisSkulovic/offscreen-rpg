@@ -28,24 +28,24 @@ Agent reads this catalog and current operator entry, verifies HEAD, checkout, ho
 | PL-07 | Gateway selection | gateway release installer | loopback route fixture passes; no app inferred | release live NOT-RUN; dev gateway only if selected use case |
 | PL-08 | arbitrary supported combination; none/core/all | platform-plan fixed core today | exact selected dependency plan; omission never removes existing service | target-only |
 | PL-09 | warm backing ensure | existing platform installers | existing DB/PVC/credential identities retained, no schema replay | live NOT-RUN |
-| DATA-01 | local persisted tenant | existing SQL/S3/Temporal tenant adapters | own data survives park/resume, no peer changes | live NOT-RUN |
+| DATA-01 | local persisted tenant | `infra/verification/dev-environments/tenant-retention-programme.mjs` | own data survives park/resume, no peer changes | live NOT-RUN |
 | DATA-02 | sanitized snapshot restore | DB restore/runbook owner | compatible schema, local-only copy, no prod write | target design / explicit data permission |
 | DATA-03 | external isolated staging binding | target binding contract | compatible schema; no implicit migration or shared queue; explicit test identity | target-only |
 | DATA-04 | production read-only diagnostic | target diagnostic contract | write/migration/app activation refused; no actual prod access in routine suite | target-only |
 | DEV-01 | reserve/attach without runtime | pnpm dev:reserve, dev:attach | no Pods/tenant/build effects | source + live host NOT-RUN |
 | DEV-02 | cold full dev | pnpm dev | six current roles, host HTTP, own Tilt, timings; no story claim | historical DXK09 proof; current NOT-RUN |
 | DEV-03 | warm full dev | pnpm dev:stop then dev | cache reuse, same tenant IDs, no unnecessary builds; timing | live NOT-RUN |
-| DEV-04 | api profile | target profile | API+authority current; four roles inactive; SQL/S3 only if boot proof permits | target-only |
-| DEV-05 | web profile | target profile | Web/API/authority current, three workers inactive; authenticated read flow | target-only |
+| DEV-04 | api profile | `infra/verification/dev-environments/selective-profile-programme.mjs` | API+authority current; four roles inactive; `/api/health/ready`; BLOCKED until INF38 `--profile` joined | FIXTURE source; live NOT-RUN |
+| DEV-05 | web profile | `infra/verification/dev-environments/selective-profile-programme.mjs` | Web/API/authority current, three workers inactive; host HTTP readiness; INF38 gate | FIXTURE source; live NOT-RUN |
 | DEV-06 | ui-only | explicit mock/test API | Web current, no local API/authority/workers; UI flow against declared binding | target-only |
-| DEV-07 | source edit | Tilt sync + compile supervisor | Web edit visible; API edit current without needless artifact rebuild | live NOT-RUN |
-| DEV-08 | shared-package edit | image sync-plan | affected artifact rebuilt, loaded bytes correct | live NOT-RUN |
-| DEV-09 | invalid TypeScript then fix | runtime compile-watch | NOT READY then current generation; no duplicate runtime | live NOT-RUN |
+| DEV-07 | source edit | `infra/verification/dev-environments/recovery-programme.mjs` | Web edit visible; API edit current without needless artifact rebuild | live NOT-RUN |
+| DEV-08 | shared-package edit | `infra/verification/dev-environments/recovery-programme.mjs` | affected artifact rebuilt, loaded bytes correct | live NOT-RUN |
+| DEV-09 | invalid TypeScript then fix | `infra/verification/dev-environments/recovery-programme.mjs` | NOT READY then current generation; no duplicate runtime | live NOT-RUN |
 | DEV-10 | stop/resume and cancel | dev-lifecycle | zero owned replicas/listeners after stop/cancel, tenants retained, restart works | live NOT-RUN |
 | DEV-11 | simultaneous same-slot startup | INF30 lock | one activation, other meaningful busy refusal | source + live NOT-RUN |
-| DEV-12 | two independent slots, mixed profiles | registry and target profiles | distinct ports/tenant/process identity; stopping A leaves B healthy | full/full historical only; mixed target-only |
+| DEV-12 | two independent slots, mixed profiles | `infra/verification/dev-environments/selective-profile-programme.mjs` (optional `dev-selective-mixed-slots` section) | distinct ports/tenant/process identity; explicit profile + measured capacity only; never automatic second slot | NOT-RUN unless explicitly authorized |
 | DEV-13 | capacity refusal | existing admission gate | refusal before writes or owned rollback; no retry storm | source + live NOT-RUN |
-| DEV-14 | profile change | stop then selected start | no old active roles, tenant data retained | target-only |
+| DEV-14 | profile change | `infra/verification/dev-environments/selective-profile-programme.mjs` | stop then `--profile` start; inactive replicas zero; tenant identity retained; INF38 gate | FIXTURE source; live NOT-RUN |
 | DEV-15 | explicit idle reservation retirement | future dev:release contract | owned idle reservation/ports released, active or foreign refusal, retained tenant IDs/data unchanged, no ID reuse | target-only; not commissioned |
 | RES-01 | small/default resource preset | workload/platform Helm values | observed requests/limits match chosen preset; useful flow within measured budget | target-only |
 | RES-02 | per-role custom override | workload chart render overlay | only specified resource/replica keys differ, invalid config refuses | target-only |

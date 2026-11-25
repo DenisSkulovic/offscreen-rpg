@@ -160,6 +160,13 @@ export const INFRA_SUITE = Object.freeze({
     diagnostic: Object.freeze({
       sections: Object.freeze(['diagnostic-suite']),
     }),
+    lifecycle: Object.freeze({
+      sections: Object.freeze([
+        'dev-lifecycle',
+        'dev-recovery',
+        'dev-selective-profiles',
+      ]),
+    }),
   }),
 });
 
@@ -352,6 +359,20 @@ export function buildVerificationPlan(input) {
       };
     }
     const selected = input.section ? [input.section] : sectionIds;
+    const sections = selected.map((id) => {
+      const definition = INFRA_SECTION_BY_ID.get(id);
+      const requiresLive = definition?.tier === 'LIVE';
+      const plannedStatus = requiresLive && !input.live ? 'NOT-RUN' : 'PLANNED';
+      return {
+        id,
+        tier: definition?.tier ?? (id === 'source-suite' ? 'SOURCE' : 'FIXTURE'),
+        plannedStatus,
+        scenarioIds: definition?.scenarioIds ?? [],
+        timeoutMs: definition?.timeoutMs ?? null,
+      };
+    });
+    const incomplete =
+      !input.live && sections.some((row) => row.plannedStatus === 'NOT-RUN');
     return {
       ok: true,
       plan: {
@@ -359,16 +380,8 @@ export function buildVerificationPlan(input) {
         profile: profileId,
         live: Boolean(input.live),
         mode: input.live ? 'live' : 'source',
-        sections: selected.map((id) => {
-          const definition = INFRA_SECTION_BY_ID.get(id);
-          return {
-            id,
-            tier: definition?.tier ?? (id === 'source-suite' ? 'SOURCE' : 'FIXTURE'),
-            plannedStatus: 'PLANNED',
-            scenarioIds: definition?.scenarioIds ?? [],
-            timeoutMs: definition?.timeoutMs ?? null,
-          };
-        }),
+        incomplete,
+        sections,
         adapter: subject.adapter,
       },
     };

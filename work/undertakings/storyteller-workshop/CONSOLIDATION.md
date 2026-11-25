@@ -11,7 +11,7 @@ Reconciled 2026-11-25; target main; source baseline 86c9461a1fa117ef2aaf90029411
 | Storage | [INF48](../../changes/backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) | Proposed GC/ownership design |
 | DB | [DB10](DB-PARALLEL.md) | DB01–DB09 source Done; DB10 final dependency-gated; no live permission |
 | Cache | CACHE04/CACHE07 | Existing SQL/Redis proof |
-| Platform | INF29/DXK09 | INF29 evidence only; INF52 after VER01 (INF50 source Done); explicit live permission |
+| Platform | INF29/DXK09 | INF29 live evidence only; [INF52](../../changes/archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) programmes source Done (live NOT-RUN); explicit live permission |
 | Product | TURN03 | Real authenticated scene2/fork/cross-Pod proof |
 
 Every integration must include actual composition proof at its selected tier, not just helper/constant tests. Unavailable prerequisites BLOCKED/NOT-RUN. Localized contract-preserving bugs may be fixed and tested without repeated approval; material architecture/data/security contradictions return to planner. No provider spend or host/cluster mutation implied.

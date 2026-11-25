@@ -1,6 +1,6 @@
 # Local developer platform | composition implementation
 
-**Current checkpoint:** [consolidation](CONSOLIDATION.md) supersedes older dispatch summaries; INF29 evidence only, INF50 residual regressions source Done, INF49 composition source Done, INF47 historical CLI source Done, INF38 Ready, INF48 Proposed, INF51 archived, INF52 lifecycle proof after VER01. Main target.
+**Current checkpoint:** [consolidation](CONSOLIDATION.md) supersedes older dispatch summaries; INF29 evidence only, INF50 residual regressions source Done, INF49 composition source Done, INF47 historical CLI source Done, INF38 Ready, INF48 Proposed, INF51 archived, INF52 lifecycle programmes source Done (live NOT-RUN). Main target.
 
 **Workstation resource flight recorder:** [INF44–47](WORKSTATION-OBSERVABILITY.md) is a separate source implementation wave; persistent monitoring before further optimization. INF29 live corrective work remains independent.
 
@@ -18,4 +18,4 @@ Parallel first wave INF43 + INF37 + INF39, separate source worktrees. INF37 pack
 
 Historical baseline retained; current integration target main, audited 86c9461a1fa117ef2aaf90029411981a8eefbfc1. Owner commissioned source implementation 2026-11-24. No live cluster/Docker/Tilt/tenant/production/remote data mutation by these packets. INF29 live proof remains independent; no edits in its checkout. Preserve existing defaults, isolation and data. No new orchestration framework, daemon, scheduler, custom YAML language or security expansion. Separate Change worktree, node scripts/repo-tools/change-branch-guard.mjs --change ID --target main; one bounded child per task, parent integrates and archives; no automatic successor dispatch. Shared package.json/docs/catalog edits serialized by human integration custodian. Mechanical predecessor path joins allowed; material source contradiction returns to planner with exact evidence. Focused tests at repo root; changed-file quality/docs health; report actual commands/counts, source vs live NOT-RUN.
 
-Current source review confirms API/authority boot without Temporal, Redis optional fallback, API /api/health/ready, and current batched union alias path. INF38 Ready; INF50 source Done. INF52 owns reusable acceptance; no live proof claimed. Native macOS/external bindings remain uncommissioned.
+Current source review confirms API/authority boot without Temporal, Redis optional fallback, API /api/health/ready, and current batched union alias path. INF38 Ready; INF50 source Done. [INF52](../../changes/archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) programmes source Done; live acceptance remains with INF29, not claimed here. Native macOS/external bindings remain uncommissioned.
