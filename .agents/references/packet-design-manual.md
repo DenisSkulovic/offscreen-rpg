@@ -6,13 +6,15 @@ Owner direction (2026-11-24): distinguish design readiness, execution dependency
 
 **Owner:** ChatGPT planner. **Purpose:** design an implementation Change that a Cursor parent can dispatch after brief orientation, and Composer children can execute with small local reads. **Authority:** complements, does not replace, [change work-unit standard](change-work-unit-standard.md), [packet profiles](change-packet-profiles.md), [planner investigation](planner-investigation-standard.md), [Composer tasks](composer-first-execution.md), and [branch/integration policy](bounded-parent-orchestration.md). Product/technical docs remain the authority for behavior. This document sets a *planning technique*, not a new Change state or permission.
 
+**Entry gate:** This is an execution-packet manual, not an architecture-design method. For material new design or renewal, finish the [design-led renewal gate](../rules/target-driven-renewal.md) in the active Design first, with independent review, specimens, experiments and accepted target. Only use this manual when packet-based delegation is actually selected. Do not convert an unresolved Design into a series of Change folders.
+
 ## 1. Plan backward from cheap execution, not forward from document completion
 
 Imagine the parent has received `do ID`. The first useful actions should be branch/worktree guard, read the short front door and task queue, and **dispatch a ready task**, without surveying the architecture. Imagine the child sees only its T-ID and 2–5 named anchors. It should be able to open those anchors, write the planned edit, run an exact focused positive and negative proof, and return a short receipt. If either agent must first determine who owns a contract, which callers exist, what semantics are intended, or how to test the change, the *planner* is not finished.
 
 **Important:** "small initial read" is a dispatch goal, not a prohibition on targeted debugging, inspecting real local code, or exercising engineering judgment. Do not mistake fewer tokens for correctness. Optimize accepted Changes per total spend including rework and safety failures.
 
-## 2. Complete the expensive source investigation first
+## 2. Complete the expensive source investigation against the accepted target
 
 1. Inspect actual selected integration branch and HEAD, live source, tests, manifests, ownership and concurrent work. Read the repository's current instructions; memory/older packet claims are not proof. Record inspected SHA and any inaccessible worktree.
 2. Set the accepted end state: what changes and what explicitly must not, and which selected product/technical owners authorize it. Distinguish proposed, ratified, observed and tested.

@@ -105,10 +105,10 @@ When all selected child outcomes are complete, review the integrated docs, sourc
 **Product docs decide what should happen** ([`docs/product/`](docs/product/README.md)). **Technical docs decide what must be guaranteed** ([`docs/technical/`](docs/technical/README.md)), including identity, permissions, schemas, transaction fences, concurrency, failure/retry, spend and backward compatibility. **Code/tests/STATUS/evidence show what has actually been realized.**
 
 For new behavior or changed guarantees:
-1. Investigate actual existing rules/source and plausible alternatives. Work unresolved questions in a [Design](work/designs/README.md) when warranted; don't manufacture one for a settled decision.
+1. For substantial design or renewal, follow the [design-led renewal rule](.agents/rules/target-driven-renewal.md). Establish intent, research credible alternatives, build concrete specimens, independently challenge and revise, and run authorized experiments before Change planning. Clean-slate design may deliberately exclude legacy internals until the target is coherent; inspect integration and preservation constraints before implementation. Work in [Designs](work/designs/README.md); do not manufacture a dossier for a settled small fix.
 2. Obtain necessary owner product/technical authority. Mark proposals, selected-but-unimplemented behavior and observed implementation distinctly.
 3. **For newly accepted product behavior or changed architecture/authority, reconcile the canonical documents on the reference/Undertaking branch *before* commissioning Cursor.** A substantive doc revision can itself be a [documentation Change](.agents/references/change-work-unit-standard.md), with normal lifecycle/negative review. A small editorial adjustment need not become a packet.
-4. Only then prepare implementation Changes against that selected target. Existing accepted contracts for bug fixes or implementation details may simply be cited, with any discovered drift reconciled before Change closure; no-op rewrites are not a quality gate.
+4. Only then choose direct planner implementation, bounded Cursor Changes, or a hybrid against that selected target. Packet generation is optional; scope, branch ownership, proof and permission gates are not. Existing accepted contracts for bug fixes or implementation details may simply be cited, with any discovered drift reconciled before Change closure; no-op rewrites are not a quality gate.
 
 After implementation, update realized-state claims, source mappings, proofs and any necessary technical details **again**. Documentation-first does **not** imply falsely labeling future behavior implemented. If reality challenges the selected design, return the decision to ChatGPT/owner, rather than silently changing the product bible to match code.
 
@@ -136,7 +136,9 @@ flowchart TD
 
 Do not fabricate concurrency by splitting an atomic transaction or introducing repeated merge conflicts. Parallelism saves elapsed time only when it doesn't multiply Cursor tokens. **No retroactive change to WR02–WR08 is implied by this guide.** [Parallel Change scheduling standard](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19).
 
-## 6. ChatGPT's expensive planning produces cheap Cursor packets
+## 6. After design convergence: cheap execution, with or without Cursor
+
+The direct route can use ChatGPT-authored source/configuration and iterative owner terminal feedback, especially for disposable local infrastructure. Do not generate a Cursor packet solely to transfer a task the planner can execute competently. Record exact scope, decisions and actual proof; do not relax the Git or permission rules. The packet layers below apply when delegation is selected.
 
 For a **nontrivial implementation Change**, ChatGPT verifies current branch/HEAD and current agent rules first, then inspects real entrypoints, owners, affected source/tests, interfaces, schema and migration conventions, concurrency and failure paths, security/privacy/spend and the dependency graph. Explicitly **decide** the algorithm, input/output contract, transaction/lock/CAS, error/negative behavior and compatibility. Mark any genuinely unsettled design **not ready**.
 

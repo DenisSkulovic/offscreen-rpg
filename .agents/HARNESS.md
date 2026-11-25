@@ -76,7 +76,7 @@ For substantial source investigations, design handoffs, reviews and writes, name
 
 Stop widening when you can state the authority, current route, meaningful negative case and next action. A missing detail is not a reason to ingest an entire library. Exact reading/token counts are evaluation data, not arbitrary hard caps.
 
-At a role change, pass **decisions and evidence identifiers**, not the transcript. The owner's current two-tool default is **ChatGPT design/source investigation/review → Cursor inexpensive implementation**. Optional Claude/subagents are not a step by default. Start a fresh Cursor context for unrelated work and follow the nearest [source-adjacent README](../apps/web/README.md) before deep source. Do not let Cursor rediscover product requirements from raw implementation. Do not require three separate models to review the same 50 files.
+At a role change, pass **decisions and evidence identifiers**, not the transcript. The owner's design-led default is **ChatGPT + owner research/design/experiments/review → chosen execution route**. Use [target-driven renewal](rules/target-driven-renewal.md) before packets for material design; direct planner implementation with owner terminal feedback, Cursor implementation, or hybrid are valid. Cursor is not mandatory. Optional Claude/subagents are not a step by default. Start a fresh Cursor context for unrelated work and follow the nearest [source-adjacent README](../apps/web/README.md) before deep source. Do not let Cursor rediscover product requirements from raw implementation. Do not require three separate models to review the same 50 files.
 
 ## Guardrails and review economics
 

@@ -33,6 +33,8 @@ A technical target may describe a system that doesn't exist yet. That's not auto
 
 **Trace an example:** The principle that beginning a shift does not award wages belongs in [time and autonomy](docs/product/gameplay/time-and-autonomy.md); [chronology and activities](docs/technical/engine/chronology-and-activities.md) define state/time semantics; [application activity settlement](packages/application/src/campaign/activities.ts) and [integration checks](tools/api-integration/test/storyteller.integration.ts) show the implementation and test cases. The historical warehouse-shift observation is not general proof of future recall.
 
+The Temporal infrastructure renewal demonstrated this distinction in practice: independent target design, upstream Helm research, concrete rendered specimens, repeated review, then direct implementation with owner-operated terminal experiments. The clean development install succeeded in 66 seconds and subsequent ensure in 2 seconds; release and cold-cluster proof remain open. The [design-led engineering rule](.agents/rules/target-driven-renewal.md) governs this method; Cursor is one execution option, not an architectural prerequisite.
+
 ## 2. Make a “Change” a bounded, falsifiable implementation unit
 
 A **Change** is a planned lasting implementation **or substantive authoritative-document** diff, not synonymous with a game feature or a broad initiative. Its smallest useful dossier identifies the desired behavior, source/technical authority, baseline, intended files, exclusions, a normal case, a meaningful negative case and cheap verification. Significant work can add a short PLAN/checkpoint.
