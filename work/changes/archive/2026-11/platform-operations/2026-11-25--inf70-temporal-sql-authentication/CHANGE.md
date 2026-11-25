@@ -1,6 +1,6 @@
 # INF70 | Authenticate existing Temporal SQL probes
 
-**State: Done (source implementation; live Kubernetes/SQL authentication NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf70-temporal-sql-authentication` from main `a5bd6cc82a87`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes, Docker, SQL, provider or destructive operations. Exclusive writes: three SQL command builders and focused tests named in TASKS. No successor auto-started (INF71 remains Ready, dependency-gated). Live authentication NOT-RUN; stub/source evidence only.
+**State: Done (source implementation; live Kubernetes/SQL authentication NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf70-temporal-sql-authentication` from main `a5bd6cc82a87`. Joined main at `a5670bd150e6663a78fe3cd9f68732bd20962924`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes, Docker, SQL, provider or destructive operations. Exclusive writes: three SQL command builders and focused tests named in TASKS. No successor auto-started (INF71 remains Ready, dependency-gated). Live authentication NOT-RUN; stub/source evidence only.
 
 ## Outcome
 Existing Temporal kubectl SQL probes map container `POSTGRES_PASSWORD` into `PGPASSWORD`, forbid interactive prompts with `psql -w`, and pass database/query as positional argv so SQL bytes including shell metacharacters are preserved without embedding secrets in argv or receipts.
