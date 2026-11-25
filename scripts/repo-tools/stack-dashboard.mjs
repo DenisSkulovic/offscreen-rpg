@@ -124,7 +124,7 @@ export async function runStackDashboard(script, argv) {
   const frame = () => dashboardLines(state, { elapsed: (Date.now()-started)/1000, cpu, mem: memory(),
     columns: output.columns ?? 80, rows: output.rows ?? 24, exitCode, host }).map(color).join('\r\n');
   // Alternate buffer isolates redraws from shell scrollback and terminal resize.
-  const render = () => output.write('\x1b[H' + frame() + '\x1b[J');
+  const render = () => output.write('\x1b[H\x1b[2J' + frame() + '\x1b[J');
   const child = spawn(process.execPath, [script, ...argv], {
     stdio: ['ignore','pipe','pipe'], env: { ...process.env, OFFSCREEN_STACK_PROGRESS: '1', OFFSCREEN_STACK_UI: 'plain' },
   });

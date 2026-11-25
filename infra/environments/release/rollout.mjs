@@ -619,7 +619,7 @@ export function verifySelectedReleaseRollouts(input) {
   );
 
   let done = 0;
-  const total = selectedFamilies.reduce((sum, family) => sum + (FAMILY_DEPLOYMENTS[family]?.length ?? 0), 0);
+  const total = [...selectedFamilies].reduce((sum, family) => sum + (FAMILY_DEPLOYMENTS[family]?.length ?? 0), 0);
   const progress = text => {
     if (process.env.OFFSCREEN_STACK_PROGRESS === '1') process.stderr.write('@offscreen-stack ' + JSON.stringify({ type: 'substep', id: 'rollout', done, total, text }) + '\n');
   };
