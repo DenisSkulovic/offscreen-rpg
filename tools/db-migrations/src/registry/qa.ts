@@ -1,1 +1,1 @@
-export { qaRun, qaRunStage } from '@offscreen/db/qa-schema';
+export { qaRun, qaRunStage } from '@offscreen/lab-support/persistence/schema';

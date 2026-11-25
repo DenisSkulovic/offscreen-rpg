@@ -22,6 +22,10 @@
     "./interfaces/live-evaluation": {
       "types": "./dist/interfaces/live-evaluation.d.ts",
       "default": "./dist/interfaces/live-evaluation.js"
+    },
+    "./persistence/schema": {
+      "types": "./dist/persistence/schema.d.ts",
+      "default": "./dist/persistence/schema.js"
     }
   },
   "scripts": {
@@ -32,6 +36,7 @@
     "@offscreen/lab-interface": "workspace:*",
     "@offscreen/usage-policy": "workspace:*",
     "@offscreen/db": "workspace:*",
+    "@offscreen/identity-persistence": "workspace:*",
     "@offscreen/documents": "workspace:*",
     "@offscreen/game": "workspace:*",
     "@offscreen/story-engine": "workspace:*",

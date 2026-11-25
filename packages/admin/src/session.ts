@@ -5,7 +5,7 @@ import {
   adminCapabilityAssignment,
   adminStaffPrincipal,
   adminStaffSession,
-} from '@offscreen/db/admin-schema';
+} from './persistence/schema.js';
 import {
   ADMIN_BOOTSTRAP_PACKAGE_ID,
   ADMIN_BOOTSTRAP_PACKAGE_VERSION,

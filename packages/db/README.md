@@ -10,15 +10,15 @@
 | Managed admission / withClient | [connection/admission.ts](src/connection/admission.ts), [connection/managed-client.ts](src/connection/managed-client.ts) |
 | Managed SQL transactions and errors | [database.ts](src/database.ts) `transaction`, [transaction/execute.ts](src/transaction/execute.ts), [transaction/errors.ts](src/transaction/errors.ts), [transaction/policy.ts](src/transaction/policy.ts) |
 | Controlled migration execution | [migrate.ts](src/migrate.ts), [migrate-cli.ts](src/migrate-cli.ts) |
-| Story, passage, item, and scene-checkpoint selector | [schema/stories.ts](src/schema/stories.ts) `story`, `storyPassage`, `storyItem`, `storySceneCheckpoint` |
-| Launch admission ledger, reserved ids, no story row | [schema/launch.ts](src/schema/launch.ts) `storyLaunch` |
-| Campaign clocks, actions and activities | [schema/campaign.ts](src/schema/campaign.ts) |
-| Generation, provider attempt and financial records | [schema/generations.ts](src/schema/generations.ts), [schema/storyteller.ts](src/schema/storyteller.ts) barrel over [capture](src/schema/storyteller/capture.ts), [funding](src/schema/storyteller/funding.ts), [execution](src/schema/storyteller/execution.ts), [policy](src/schema/storyteller/policy.ts), and [writer](src/schema/storyteller/writer.ts) |
-| Authentication, drafts, outbox and QA | [schema/auth.ts](src/schema/auth.ts), [schema/drafts.ts](src/schema/drafts.ts), [schema/outbox.ts](src/schema/outbox.ts), [schema/qa.ts](src/schema/qa.ts) |
+| Outbox table declaration (until DB05 extraction) | [schema/outbox.ts](src/schema/outbox.ts) via `@offscreen/db/outbox-schema` |
+| Identity / auth tables | `@offscreen/identity-persistence` |
+| Story Engine durable schema | `@offscreen/story-persistence` (`drafts`, `generations`, `stories`, `launch`, `campaign`, `storyteller`) |
+| Admin staff / audit tables | `@offscreen/admin/persistence/schema` |
+| Lab QA run/stage tables | `@offscreen/lab-support/persistence/schema` |
 
-`@offscreen/db` owns the pool, the Drizzle client, migrations, table definitions, the generic outbox relay, and low-level persistence helpers. It does not decide campaign authorization, story-state mutation, Writer spend, or the transaction boundary those commands use. Those owners are mapped in [Story Engine SQL ownership](../story-engine/SQL-OWNERSHIP.md). Splitting the Storyteller declarations into lifecycle files does not change table identity or SQL behavior.
+`@offscreen/db` owns the pool, the Drizzle client, migrations, the remaining outbox declaration/relay until DB05, and low-level persistence helpers. It does not own domain business tables, campaign authorization, story-state mutation, Writer spend, or the transaction boundary those commands use. Those owners are mapped in [Story Engine SQL ownership](../story-engine/SQL-OWNERSHIP.md) and [database infrastructure](../../docs/technical/platform/database-infrastructure.md).
 
-The named public exports are in [package.json](package.json). Story domain schema subpaths (`drafts`, `generations`, `stories`, `launch`, `campaign`, `storyteller`) are published from `@offscreen/story-persistence`. Baseline SQL/migration metadata are under [migrations/](migrations). [Canonical files](../../docs/technical/storyteller/context-and-memory.md) also defines a **future/mixed** file-ownership target; do not infer live migration completion from that design.
+The named public exports are in [package.json](package.json). Baseline SQL/migration metadata remain under [migrations/](migrations). [Canonical files](../../docs/technical/storyteller/context-and-memory.md) also defines a **future/mixed** file-ownership target; do not infer live migration completion from that design.
 
 ## Side effects and verification
 

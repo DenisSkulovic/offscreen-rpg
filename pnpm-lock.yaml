@@ -474,9 +474,6 @@ importers:
 
   packages/db:
     dependencies:
-      '@offscreen/identity-persistence':
-        specifier: workspace:*
-        version: link:../identity-persistence
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
@@ -619,6 +616,9 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/identity-persistence':
+        specifier: workspace:*
+        version: link:../identity-persistence
       '@offscreen/lab-interface':
         specifier: workspace:*
         version: link:../lab-interface
@@ -1023,12 +1023,18 @@ importers:
 
   tools/db-migrations:
     dependencies:
+      '@offscreen/admin':
+        specifier: workspace:*
+        version: link:../../packages/admin
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
       '@offscreen/identity-persistence':
         specifier: workspace:*
         version: link:../../packages/identity-persistence
+      '@offscreen/lab-support':
+        specifier: workspace:*
+        version: link:../../packages/lab-support
       '@offscreen/story-persistence':
         specifier: workspace:*
         version: link:../../packages/story-persistence

@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { adminCapabilityAssignment } from '@offscreen/db/admin-schema';
+import { adminCapabilityAssignment } from './persistence/schema.js';
 import {
   evaluateAdminAccess,
   workspaceFamiliesFromAssignments,

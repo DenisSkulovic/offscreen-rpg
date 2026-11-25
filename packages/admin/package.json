@@ -6,6 +6,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./persistence/schema": {
+      "types": "./dist/persistence/schema.d.ts",
+      "default": "./dist/persistence/schema.js"
     }
   },
   "scripts": {

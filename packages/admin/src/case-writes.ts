@@ -5,7 +5,7 @@ import {
   adminCase,
   adminCaseLink,
   adminStaffPrincipal,
-} from '@offscreen/db/admin-schema';
+} from './persistence/schema.js';
 import type {
   CaseCreateRequestV1,
   CaseSummaryPageV1,

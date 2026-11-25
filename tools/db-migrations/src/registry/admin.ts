@@ -5,4 +5,4 @@ export {
   adminAuditEvent,
   adminCase,
   adminCaseLink,
-} from '@offscreen/db/admin-schema';
+} from '@offscreen/admin/persistence/schema';

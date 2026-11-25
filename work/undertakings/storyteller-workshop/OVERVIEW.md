@@ -15,7 +15,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 - Library and domain ownership improved; generic contracts workspace removed. Five recognized Authority-to-Writer exceptions remain.
 - Cache primitives/adapters landed; CACHE04/CACHE07 SQL consistency and distributed Redis proof remain.
-- DB01/02/03/06/07/08 source Done; four remaining packets commissioned on main: DB04→DB05 schema lane after DB03, DB09 after DB07, then DB10 closure. Six of ten DB packets archived; no additional outcome credit. Managed transaction helper exists; domain adoption and live SQL remain open.
+- DB01/02/03/04/06/07/08 source Done; three remaining packets commissioned on main: DB05 after DB04, DB09 after DB07, then DB10 closure. Seven of ten DB packets archived; no additional outcome credit. Managed transaction helper exists; domain adoption and live SQL remain open.
 - Infrastructure normalized; INF29 source fixes integrated, live acceptance open. INF38 selective activation not implemented, INF40/41 future.
 - INF44–46 source archives exist; actual monitoring service composition defective. Do not activate before INF49 and INF47 proof.
 - Operator recovered Windows disk from ~25 to ~611 GB free; Docker VHDX ~296 GB, storage lifecycle remains a design priority, not an emergency.
@@ -24,7 +24,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 1. INF49 runnable recorder and INF50 bounded corrections; no implementation tonight.
 2. INF47 historical query/verification after composition; explicit operator monitoring activation.
-3. INF38 planner closure and selective dev; INF48 storage design; DB07 runtime lane Done source-only; DB04 schema lane next after joined DB03. DB successors dependency-gated; no live DB permission implied.
+3. INF38 planner closure and selective dev; INF48 storage design; DB04 schema lane Done source-only; DB05 next after joined DB04, DB09 after DB07. DB successors dependency-gated; no live DB permission implied.
 4. One measured owned-slot INF29/DXK09 proof; then TURN03 real ordinary player scene2 and historical fork.
 5. Release, fault, restore and scale acceptance separately gated.
 

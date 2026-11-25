@@ -9,7 +9,7 @@
  */
 import { and, desc, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { adminCase, adminCaseLink } from '@offscreen/db/admin-schema';
+import { adminCase, adminCaseLink } from './persistence/schema.js';
 import {
   campaign,
   gameActionExecution,

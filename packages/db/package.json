@@ -22,14 +22,6 @@
     "./outbox-relay": {
       "types": "./dist/src/outbox-relay.d.ts",
       "default": "./dist/src/outbox-relay.js"
-    },
-    "./qa-schema": {
-      "types": "./dist/src/schema/qa.d.ts",
-      "default": "./dist/src/schema/qa.js"
-    },
-    "./admin-schema": {
-      "types": "./dist/src/schema/admin.d.ts",
-      "default": "./dist/src/schema/admin.js"
     }
   },
   "scripts": {
@@ -40,7 +32,6 @@
     "test:integration": "node --test dist/test/database.integration.js"
   },
   "dependencies": {
-    "@offscreen/identity-persistence": "workspace:*",
     "drizzle-orm": "0.45.2",
     "pg": "8.23.0",
     "zod": "4.6.5"

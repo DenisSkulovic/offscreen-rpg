@@ -1,6 +1,6 @@
 import { and, desc, eq, lt } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { adminAuditEvent } from '@offscreen/db/admin-schema';
+import { adminAuditEvent } from './persistence/schema.js';
 import type {
   AdminAuditEventV1,
   AdminAuditPageV1,

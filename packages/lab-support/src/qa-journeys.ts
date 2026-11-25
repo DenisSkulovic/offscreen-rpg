@@ -12,7 +12,7 @@ import {
   type qaGitStateSchema,
 } from '@offscreen/lab-interface/qa';
 import type { Database } from '@offscreen/db';
-import { qaRun, qaRunStage } from '@offscreen/db/qa-schema';
+import { qaRun, qaRunStage } from './persistence/schema';
 import { and, asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { findQaJourneyCase, listQaJourneyCases } from './qa-catalog';

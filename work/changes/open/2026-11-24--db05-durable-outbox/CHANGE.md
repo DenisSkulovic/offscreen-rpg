@@ -1,6 +1,6 @@
 # DB05 | Delivery package extraction
 
-**Status: Ready (dependency-gated) / owner-commissioned source implementation. Kind: implementation. Profile: CONTRACT.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB04 joined (includes DB03); DB01 Transaction root export remains. No further planner promotion for the frozen scope.
+**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: CONTRACT.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB04 joined (includes DB03); DB01 Transaction root export remains. No further planner promotion for the frozen scope.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 

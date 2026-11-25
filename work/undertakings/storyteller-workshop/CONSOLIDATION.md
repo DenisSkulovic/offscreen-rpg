@@ -9,7 +9,7 @@ Planning-only checkpoint; target main; audited baseline 45251aa99ffe9ff4dc8d7496
 | Report | [INF47](../../changes/open/2026-11-24--inf47-historical-observability-queries/CHANGE.md) | INF49 emitted schema |
 | Selective dev | [INF38](../../changes/open/2026-11-24--inf38-selective-dev-profiles/CHANGE.md) | Transitive boot closure and API endpoint |
 | Storage | [INF48](../../changes/backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) | Proposed GC/ownership design |
-| DB | [DB04 and DB07](DB-PARALLEL.md) | DB03 source Done; DB04→DB05 schema lane; DB09 after DB07; DB10 final; no live permission |
+| DB | [DB05 and DB09](DB-PARALLEL.md) | DB04 source Done; DB05 schema lane next; DB09 after DB07; DB10 final; no live permission |
 | Cache | CACHE04/CACHE07 | Existing SQL/Redis proof |
 | Platform | INF29/DXK09 | Authorized one slot, measured headroom |
 | Product | TURN03 | Real authenticated scene2/fork/cross-Pod proof |

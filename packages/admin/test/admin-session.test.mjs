@@ -4,7 +4,7 @@ import {
   adminAuditEvent,
   adminStaffPrincipal,
   adminStaffSession,
-} from '@offscreen/db/admin-schema';
+} from '@offscreen/admin/persistence/schema';
 import {
   ADMIN_DEV_COOKIE,
   ADMIN_HOST_COOKIE,

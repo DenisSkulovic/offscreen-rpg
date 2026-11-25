@@ -26,7 +26,7 @@
 
 **Infrastructure ownership cleanup (2026-11-24):** [INF01–INF05](INF-PARALLEL.md) source relocation is Done. The generic `infra/kubernetes/lab` bucket is empty. Release, development, and verification source are split; runtime identities are unchanged. Live cluster proof is NOT-RUN and is not acceptance credit. Overall ~40%, architecture ~70%, Storyteller ~40%, distributed ~25% (±20 pp), unchanged.
 
-**Database architecture (2026-11-24):** [Selected infrastructure and persistence](../../../docs/technical/platform/database-infrastructure.md), [DB01–DB10 DAG](DB-PARALLEL.md). DB01/02/03/06/07/08 source Done. Schema lane next DB04→DB05; DB09 after joined DB07; DB10 final dependency-gated; main only. Live PostgreSQL remains NOT RUN. No outcome credit, global queue change or live authorization. DBOPS01/02 and SQL01 remain distinct backlog.
+**Database architecture (2026-11-24):** [Selected infrastructure and persistence](../../../docs/technical/platform/database-infrastructure.md), [DB01–DB10 DAG](DB-PARALLEL.md). DB01/02/03/04/06/07/08 source Done. Schema lane next DB05 after joined DB04; DB09 after joined DB07; DB10 final dependency-gated; main only. Live PostgreSQL remains NOT RUN. No outcome credit, global queue change or live authorization. DBOPS01/02 and SQL01 remain distinct backlog.
 
 **Cache release (2026-11-24):** owner commissioned all eight Changes at f26ce36dcee1bda6e9eee4d305ec6200ef924b44. [Execution DAG and gates](CACHE-PARALLEL.md). CACHE01, CACHE02, CACHE03, and CACHE05 are joined source-only. CACHE02 parent still coordinates wave 2. Future gates are conditional, no further owner release needed; semantic contradictions stop. No global selection or live resource authorization change.
 
