@@ -12,6 +12,7 @@ Unaccepted designs and investigations that still need an owner decision, selecte
 
 | Item | Status |
 | --- | --- |
+| [Temporal platform](open/temporal-platform/README.md) | **Proposed 2026-11-25:** greenfield Helm deployment, PostgreSQL ownership, resource/lifecycle design; owner review 2026-11-26; no implementation commissioned |
 | [Code architecture health](open/code-architecture-health/README.md) | Unresolved code ownership/trust-boundary investigation; concrete CQ Change packets remain separate |
 | [Story creation and writer's workbench](open/story-creation-and-writers-workbench/README.md) | **Promoted to permanent wiki on integration branch:** Storyteller/Library/Play target now lives in `docs/product/` and `docs/technical/`. WR01/WRD02–WRD04 are archived Done; this research dossier is temporarily retained for source traceability pending owner review, then becomes a retirement candidate |
 | [Kubernetes-first developer experience](open/kubernetes-first-developer-experience-2026-11-20/README.md) | **Owner-selected end state / implementation not yet proven:** DXK01–07, finite Cursor handoff, real TURN02/TURN03 predecessors, no active Compose after completion |
