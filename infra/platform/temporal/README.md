@@ -13,4 +13,4 @@ Public entrypoints remain `pnpm infra:plan`, `pnpm infra:up`, `pnpm infra:status
 
 Installation is fresh-only. An existing release must match the pinned values and pass readiness; partial or foreign state is refused without deletion, adoption, automatic upgrade, rollback or credential rotation. Development namespaces retain one day; release uses `default` (three days when newly created). Release database isolation must be resolved before installation.
 
-Source integration is in progress; live installation, schema execution and workflow smoke acceptance are NOT-RUN. Historical embedded-database proofs do not certify this architecture.
+Development native Helm installation and CNPG schema initialization observed; server SERVING and browser UI working on pinned 2.58.1, repeat ensure successful. Workflow smoke, release and fresh-clone cold-cluster proof remain NOT-RUN. See [live findings](../../../work/designs/open/temporal-platform/FINDINGS.md). Historical embedded-database proofs do not certify this architecture.
