@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import { parseAllDocuments } from 'yaml';
 import {
   assertPlatformTarget,
@@ -190,9 +191,14 @@ function createAccess(profile, run) {
 
   function patch(type, name, object, spec) {
     primary();
+    const latest = requireObject(type, name);
+    if (latest.metadata.uid !== object.metadata.uid || latest.metadata.deletionTimestamp ||
+        !sameDeclaration(type, object, latest)) {
+      throw new Error('Temporal declaration changed before patch');
+    }
     const updated = JSON.parse(kubectl([
       'patch', type, name, '--type=merge', '-p', JSON.stringify({
-        metadata: { resourceVersion: object.metadata.resourceVersion },
+        metadata: { resourceVersion: latest.metadata.resourceVersion },
         spec,
       }), '-o', 'json',
     ]));
@@ -246,6 +252,25 @@ function assertFresh(access) {
   }
 }
 
+// CNPG 1.30.2 serializes false role flags and empty memberships away.
+// Compare effective desired state, not raw generation equality.
+function canonicalSpec(type, spec) {
+  const normalized = { ...spec };
+  if (type === ROLE_RESOURCE) {
+    for (const key of ['login', 'superuser', 'createdb', 'createrole', 'replication', 'bypassrls']) {
+      if (normalized[key] === false) delete normalized[key];
+    }
+    if (Array.isArray(normalized.inRoles) && normalized.inRoles.length === 0) delete normalized.inRoles;
+    if (normalized.connectionLimit === -1) delete normalized.connectionLimit;
+  }
+  return normalized;
+}
+
+function sameDeclaration(type, expected, actual) {
+  return isDeepStrictEqual(canonicalSpec(type, expected.spec), canonicalSpec(type, actual.spec)) &&
+    Object.entries(expected.metadata.labels ?? {}).every(([key, value]) => actual.metadata.labels?.[key] === value);
+}
+
 function waitApplied(access, type, created, deadline, secretVersion) {
   const name = created.metadata?.name;
   const uid = created.metadata?.uid;
@@ -255,7 +280,9 @@ function waitApplied(access, type, created, deadline, secretVersion) {
     if (
       current.metadata?.uid !== uid ||
       current.metadata?.deletionTimestamp ||
-      current.metadata?.generation !== created.metadata?.generation
+      !Number.isInteger(current.metadata?.generation) ||
+      current.metadata.generation < created.metadata.generation ||
+      !sameDeclaration(type, created, current)
     ) {
       throw new Error(`CNPG resource ${name} changed during reconciliation`);
     }
