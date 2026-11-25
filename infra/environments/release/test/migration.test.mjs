@@ -50,6 +50,8 @@ function buildStubRun(options) {
     jobAfterDelete = 'absent',
     finalJobAnnotation = CONFIG_DIGEST,
     finalJobSucceeded = true,
+    extraPods = [],
+    omitCurrentPod = false,
   } = options;
 
   /** @type {Array<{ command: string, args: string[], input?: string }>} */
@@ -204,6 +206,9 @@ function buildStubRun(options) {
       };
     }
 
+    if (joined.includes(' wait --for=delete')) {
+      return { ok: jobAfterDelete === 'absent', status: jobAfterDelete === 'absent' ? 0 : 1, stdout: '', stderr: '' };
+    }
     if (joined.includes(' wait --for=condition=complete')) {
       if (!waitOk) {
         return {
@@ -234,11 +239,16 @@ function buildStubRun(options) {
         status: 0,
         stdout: JSON.stringify({
           items: [
-            {
-              status: {
-                containerStatuses: [{ imageID: podImageId }],
-              },
-            },
+            ...extraPods,
+            ...(omitCurrentPod ? [] : [{
+              metadata: { ownerReferences: [{ apiVersion: 'batch/v1', kind: 'Job', name: 'game-migrate',
+                uid: (created ? defaultJob : jobObject ?? defaultJob).metadata.uid, controller: true }] },
+              spec: { nodeName: 'offscreen-release-worker', containers: templateJob.spec.template.spec.containers },
+              status: { phase: 'Succeeded', containerStatuses: [{
+                name: templateJob.spec.template.spec.containers[0].name, imageID: podImageId,
+                state: { terminated: { exitCode: 0 } },
+              }] },
+            }]),
           ],
         }),
         stderr: '',
@@ -760,6 +770,7 @@ test('verifyCompletedMigrationExecution rejects unknown pod image', () => {
       annotations: { 'offscreen.rpg/migration-image-id': CONFIG_DIGEST },
     },
     status: { succeeded: 1 },
+    spec: templateJob.spec,
   };
   const { run } = buildStubRun({
     jobState: 'present',
@@ -795,4 +806,15 @@ test('deleteMigrationJobWithUidPrecondition uses raw delete body', () => {
 test('install.sh passes bash -n', () => {
   const result = spawnSync('bash', ['-n', installSh], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
+});
+
+test('migration verification ignores old succeeded Pods sharing the Job name', () => {
+  const oldPod = { metadata: { ownerReferences: [{ apiVersion: 'batch/v1', kind: 'Job', name: 'game-migrate', uid: 'retired-job', controller: true }] },
+    spec: { containers: templateJob.spec.template.spec.containers }, status: { phase: 'Succeeded',
+      containerStatuses: [{ name: templateJob.spec.template.spec.containers[0].name,
+        imageID: FOREIGN_DIGEST, state: { terminated: { exitCode: 0 } } }] } };
+  const { run } = buildStubRun({ jobState: 'present', extraPods: [oldPod] });
+  assert.doesNotThrow(() => verifyCompletedMigrationExecution(run, CONFIG_DIGEST, acceptedIds()));
+  const missing = buildStubRun({ jobState: 'present', extraPods: [oldPod], omitCurrentPod: true });
+  assert.throws(() => verifyCompletedMigrationExecution(missing.run, CONFIG_DIGEST, acceptedIds()), /current successful Pod missing/);
 });

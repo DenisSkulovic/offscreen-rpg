@@ -335,6 +335,7 @@ export function deleteMigrationJobWithUidPrecondition(run, contextName, uid) {
     kind: 'DeleteOptions',
     apiVersion: 'v1',
     preconditions: { uid },
+    propagationPolicy: 'Foreground',
   };
   const result = run(
     'kubectl',
@@ -359,6 +360,11 @@ export function deleteMigrationJobWithUidPrecondition(run, contextName, uid) {
  * @param {string} contextName
  */
 function waitMigrationJobAbsent(run, contextName) {
+  const waited = run('kubectl', [
+    '--context', contextName, '-n', JOB_NAMESPACE, 'wait', '--for=delete',
+    'job/' + JOB_NAME, '--timeout=90s',
+  ], { timeoutMs: 95000 });
+  if (!waited.ok) throw migrationRefusal('migration Job still present after delete (wait failed)');
   const observation = readPlatformObject(
     {
       profileId: PROFILE_ID,
@@ -449,10 +455,23 @@ export function verifyCompletedMigrationExecution(
   } catch {
     throw migrationRefusal('migration Job pod list malformed');
   }
-  const pod = (body.items ?? []).find(
-    (item) => typeof item?.status?.containerStatuses?.[0]?.imageID === 'string',
-  );
-  const imageId = pod?.status?.containerStatuses?.[0]?.imageID;
+  if (!isProvenOwnedMigrationJob(job)) throw migrationRefusal('foreign migration Job after completion');
+  const containerName = job.spec?.template?.spec?.containers?.[0]?.name;
+  const containerImage = job.spec?.template?.spec?.containers?.[0]?.image;
+  if (!containerName || !containerImage) throw migrationRefusal('migration Job container identity missing');
+  const owned = Array.isArray(body.items) ? body.items.filter(item =>
+    item.metadata?.ownerReferences?.some(owner =>
+      owner.apiVersion === 'batch/v1' && owner.kind === 'Job' &&
+      owner.name === JOB_NAME && owner.uid === uid && owner.controller === true)) : [];
+  const successful = owned.filter(item => item.status?.phase === 'Succeeded' && !item.metadata?.deletionTimestamp);
+  if (successful.length !== 1) throw migrationRefusal('migration Job current successful Pod missing or ambiguous');
+  const pod = successful[0];
+  if (pod.spec?.containers?.find(c => c.name === containerName)?.image !== containerImage) {
+    throw migrationRefusal('migration Job Pod template image mismatch');
+  }
+  const status = pod.status?.containerStatuses?.find(c => c.name === containerName);
+  if (status?.state?.terminated?.exitCode !== 0) throw migrationRefusal('migration Job container termination not successful');
+  const imageId = status.imageID;
   const podDigest = digestFromPodImageId(imageId ?? '');
   if (!matchesRuntimeImageDigest({
     profileId: PROFILE_ID, node: pod?.spec?.nodeName, observedDigest: podDigest,
@@ -462,7 +481,7 @@ export function verifyCompletedMigrationExecution(
       return { ...result, status: result.ok ? 0 : 1 };
     },
   })) {
-    throw migrationRefusal('migration Job pod image identity is unknown');
+    throw migrationRefusal('migration Job pod image identity is unknown (expected=' + expectedDigest + ', observed=' + (podDigest ?? 'missing') + ', node=' + pod.spec?.nodeName + ')');
   }
 }
 
@@ -640,7 +659,7 @@ function main() {
       loaderReceipt: process.env.OFFSCREEN_MIGRATION_LOADER_RECEIPT,
       apiSelected,
     });
-    if (receipt.mutations > 0) {
+    {
       process.stderr.write(
         `Release migration reconciled (${receipt.action}).\n`,
       );
