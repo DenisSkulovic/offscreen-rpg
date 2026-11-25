@@ -1,3 +1,5 @@
+> Historical record only. Superseded by VER06–08 and CACHE08; do not execute historical live commands. Current acceptance remains NOT-RUN unless measured in new programme.
+
 # CACHE04 | bounded Composer tasks
 
 Frozen interfaces, ownership and wave gates: [CACHE-PARALLEL](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md). Lane-specific source and tests only; no shared-file changes during parallel dispatch. One child at a time, DEPTH=PATCH, Composer Standard. Receipt: paths, command/cwd, positive and negative result, limitations. Stop on exact contradiction; no research swarm.

@@ -1,3 +1,5 @@
+> Historical record only. Superseded by VER06–08 and CACHE08; do not execute historical live commands. Current acceptance remains NOT-RUN unless measured in new programme.
+
 # CACHE07 | exact proof fixture and execution authorization boundary
 
 Source baseline c0d3c283e60e1c06d627f9a9b96603f7294d5202. Wave 2 source joined; CACHE04 SQL proof remains NOT-RUN, not a prerequisite to this isolated cache mechanism proof. Source implementation of the following new harness is commissioned and Ready. Actual Docker run requires explicit owner permission; it does not require any additional planner decision or pre-existing fixture. No K8S10 harness dependency. No Kubernetes, SQL, provider, S3, real story data, shared Redis or cluster operations.

@@ -1,5 +1,12 @@
 # CACHE04 | Story snapshot migration
 
+**State: Done (source implementation only).** Reconciled 816b9e6e447041e119b2208cca7d62a66827de0c on main 2026-11-25. Implementation joined 83746d67; current reads.ts and read-cache-options.ts retain owner preflight and observed build identity. SQL acceptance NOT-RUN; transferred to VER08 dedicated SQL-origin/actual story consumer suite.
+
+[Historical tasks](TASKS.md) · [Current verification programme](../../../../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). No new execution from this archive. Historical details below retained for provenance, not dispatch.
+
+---
+
+
 **Status: In progress / source-only landed; SQL acceptance open. Kind: implementation. Profile: CONTRACT.** Source baseline 7e2b554fbaaede28cbdbbf536c44c44a9ac511e5; release baseline f26ce36dcee1bda6e9eee4d305ec6200ef924b44. Target undertaking/storyteller-workshop. Prerequisite: joined CACHE02/CACHE03/CACHE05 plus wave-2 dependency wiring; no overlapping Story Engine reads owner (lane A). Owner commissioned the entire finite CACHE batch on 2026-11-24. No additional owner commission is needed after dependency and readiness gates pass.
 
 [Selected architecture](../../../../docs/technical/platform/persistence-and-caching.md) · [TASKS](TASKS.md) · [Frozen interfaces and parallel ownership](../../../undertakings/storyteller-workshop/CACHE-PARALLEL.md)

@@ -1,4 +1,11 @@
-# CACHE07 | Distributed reliability evidence
+# CACHE07 | Distributed reliability harness
+
+**State: Superseded (source harness preserved, live acceptance transferred).** Reconciled 816b9e6e447041e119b2208cca7d62a66827de0c on main 2026-11-25. Harness files exist; prior source receipt 76/76 package, 19/19 harness, no live PASS. Existing CLI unsafe: process.exit before finally, incomplete ownership, unbounded RPC, false-positive recovery/pressure and eviction. Do not run legacy command; VER06 owns safe migration, VER07 owns distributed acceptance. CACHE08 owns identified production defects. No production readiness inferred.
+
+[Historical tasks](TASKS.md) · [Current verification programme](../../../../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). No new execution from this archive. Historical details below retained for provenance, not dispatch.
+
+---
+
 
 **Status: Source harness implemented; live execution NOT-RUN and still owner-gated. Kind: implementation. Profile: PROOF. Not Done.** Current baseline c0d3c283e60e1c06d627f9a9b96603f7294d5202; target undertaking/storyteller-workshop. Wave 2 source joined. [Exact fixture and commands](PLAN.md). No further commission needed for source. Actual local disposable Docker Redis run requires explicit owner permission; CACHE04 SQL proof remains independent.
 

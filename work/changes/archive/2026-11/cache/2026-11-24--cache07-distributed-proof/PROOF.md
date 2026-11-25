@@ -1,3 +1,5 @@
+> Historical record only. Superseded by VER06–08 and CACHE08; do not execute historical live commands. Current acceptance remains NOT-RUN unless measured in new programme.
+
 # CACHE07 proof receipt
 
 Tier: **source-only**. Two-process plus disposable local Redis proof is **NOT-RUN**. No cross-Pod, capacity, production-readiness, or lease claim.

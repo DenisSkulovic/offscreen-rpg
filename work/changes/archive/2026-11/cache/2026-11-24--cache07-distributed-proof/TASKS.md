@@ -1,3 +1,5 @@
+> Historical record only. Superseded by VER06–08 and CACHE08; do not execute historical live commands. Current acceptance remains NOT-RUN unless measured in new programme.
+
 # CACHE07 | bounded Composer tasks
 
 [Exact fixture and commands](PLAN.md). Source Ready at c0d3c283e60e1c06d627f9a9b96603f7294d5202. One child at a time, Composer Standard, isolated Change worktree. No live permission required for T01/T02 source implementation. No other production code edits without planner decision.
