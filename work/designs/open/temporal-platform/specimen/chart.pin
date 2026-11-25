@@ -1,4 +1,4 @@
-# DESIGN ONLY: deliberately incomplete, must refuse installation.
-CHART_VERSION=1.7.0
-CHART_URL=UNVERIFIED
-CHART_SHA256=UNVERIFIED
+# DESIGN SPECIMEN ONLY. Published index metadata, archive bytes not yet checked.
+CHART_VERSION=1.8.0
+CHART_URL=https://github.com/temporalio/helm-charts/releases/download/temporal-1.8.0/temporal-1.8.0.tgz
+CHART_SHA256=e65b454d620129f3d7da2c16611a7f754e2d89b20b7a135dc5f0916a062f3a9e
