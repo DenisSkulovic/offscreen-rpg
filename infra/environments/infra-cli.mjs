@@ -15,6 +15,7 @@ import { assessCnpgClusterTopologyReadiness } from '../platform/postgres/cluster
 import { observeDevTemporalReady } from '../platform/temporal/readiness.mjs';
 import { TEMPORAL_SQL_SCHEMA_VERSION_QUERY } from '../platform/temporal/schema-policy.mjs';
 import { observeDevRedisReady } from '../platform/redis/dev-install.mjs';
+import { observeRedisReady } from '../platform/redis/readiness.mjs';
 import {
   BROKER_NAME,
   NAMESPACE as RABBITMQ_NAMESPACE,
@@ -654,20 +655,7 @@ function observeReleaseServiceState(serviceId, deps = {}) {
   }
 
   if (serviceId === 'redis') {
-    const redisNamespace = profile.namespaces.redis ?? 'lab-a';
-    const deployment = read('deployment', 'redis', redisNamespace);
-    const service = read('service', 'redis', redisNamespace);
-    if (deployment.state === 'unreadable' || service.state === 'unreadable') {
-      return { state: 'unreadable' };
-    }
-    if (deployment.state === 'absent' && service.state === 'absent') {
-      return { state: 'not-installed' };
-    }
-    const ready =
-      deployment.state === 'present' &&
-      deploymentIsReady(deployment.object) &&
-      service.state === 'present';
-    return { state: ready ? 'installed' : 'not-ready' };
+    return devReadinessToServiceState(observeRedisReady('release', deps));
   }
 
   if (serviceId === 'rabbitmq') {

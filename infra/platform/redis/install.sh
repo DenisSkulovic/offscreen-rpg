@@ -11,33 +11,21 @@ fi
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../clusters/kind/release/lib.sh"
 REDIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_CLI="$REDIS_DIR/../common/cli.mjs"
-source "$REDIS_DIR/../common/ensure-lab-namespace.sh"
+
+command -v node >/dev/null
 
 if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   echo "Cluster ${CLUSTER_NAME} is not running. Run up.sh first." >&2
   exit 1
 fi
 
-rendered="$(mktemp)"
-trap 'rm -f "$rendered"' EXIT
+assert_loopback_only
 
-node "$COMMON_CLI" target release
-node "$COMMON_CLI" render redis release all >"$rendered"
-
-if grep -Ei 'requirepass|REDIS_PASSWORD|password:' "$rendered" >/dev/null; then
-  echo "Refusing to apply Redis: rendered manifest contains authentication material." >&2
-  exit 1
-fi
-
-ensure_lab_namespace lab-a
-"${KUBECTL[@]}" apply -f "$rendered"
-"${KUBECTL[@]}" -n lab-a rollout status deployment/redis --timeout=180s
-
-svc_type="$("${KUBECTL[@]}" -n lab-a get svc redis -o jsonpath='{.spec.type}')"
-if [[ "$svc_type" != "ClusterIP" ]]; then
-  echo "Redis Service is not ClusterIP." >&2
-  exit 1
+node "$REDIS_DIR/release-install.mjs"
+install_rc=$?
+if [[ "$install_rc" -ne 0 ]]; then
+  echo "Redis release install failed." >&2
+  exit "$install_rc"
 fi
 
 assert_loopback_only

@@ -183,6 +183,162 @@ function releaseWarmRun(clusterPresent = true) {
   };
 }
 
+const RELEASE_LAB_OWNER = 'disposable';
+
+/**
+ * @param {'dev' | 'release'} profileId
+ */
+function redisNamespaceName(profileId) {
+  return profileId === 'dev' ? 'offscreen-dev-redis' : 'lab-a';
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {boolean} owned
+ */
+function redisNamespaceObject(profileId, owned = true) {
+  const ownerKey =
+    profileId === 'dev' ? 'offscreen.dev/owner' : 'offscreen.rpg/lab';
+  const owner = profileId === 'dev' ? DEV_CLUSTER_OWNER : RELEASE_LAB_OWNER;
+  return {
+    metadata: {
+      name: redisNamespaceName(profileId),
+      uid: `${profileId}-redis-ns`,
+      labels: owned ? { [ownerKey]: owner } : { [ownerKey]: 'foreign-owner' },
+    },
+  };
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {{ staleGeneration?: boolean, foreign?: boolean }} [options]
+ */
+function redisDeploymentObject(profileId, options = {}) {
+  const ownerKey =
+    profileId === 'dev' ? 'offscreen.dev/owner' : 'offscreen.rpg/lab';
+  const owner = options.foreign
+    ? 'foreign-owner'
+    : profileId === 'dev'
+      ? DEV_CLUSTER_OWNER
+      : RELEASE_LAB_OWNER;
+  const namespace = redisNamespaceName(profileId);
+  return {
+    metadata: {
+      name: 'redis',
+      namespace,
+      uid: 'redis-dep-uid',
+      resourceVersion: 'redis-dep-rv',
+      generation: options.staleGeneration ? 2 : 1,
+      labels: { app: 'redis', [ownerKey]: owner },
+    },
+    spec: { replicas: 1, selector: { matchLabels: { app: 'redis' } } },
+    status: {
+      observedGeneration: options.staleGeneration ? 1 : 1,
+      updatedReplicas: options.staleGeneration ? 0 : 1,
+      readyReplicas: options.staleGeneration ? 0 : 1,
+      availableReplicas: options.staleGeneration ? 0 : 1,
+      replicas: 1,
+    },
+  };
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ */
+function redisServiceObject(profileId) {
+  const ownerKey =
+    profileId === 'dev' ? 'offscreen.dev/owner' : 'offscreen.rpg/lab';
+  const owner = profileId === 'dev' ? DEV_CLUSTER_OWNER : RELEASE_LAB_OWNER;
+  const namespace = redisNamespaceName(profileId);
+  return {
+    metadata: {
+      name: 'redis',
+      namespace,
+      uid: 'redis-svc-uid',
+      resourceVersion: 'redis-svc-rv',
+      labels: { app: 'redis', [ownerKey]: owner },
+    },
+    spec: {
+      type: 'ClusterIP',
+      selector: { app: 'redis' },
+      ports: [
+        { name: 'redis', port: 6379, protocol: 'TCP', targetPort: 'redis' },
+      ],
+    },
+  };
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {{ missingData?: boolean }} [options]
+ */
+function redisConfigMapObject(profileId, options = {}) {
+  const ownerKey =
+    profileId === 'dev' ? 'offscreen.dev/owner' : 'offscreen.rpg/lab';
+  const owner = profileId === 'dev' ? DEV_CLUSTER_OWNER : RELEASE_LAB_OWNER;
+  const namespace = redisNamespaceName(profileId);
+  return {
+    metadata: {
+      name: 'redis-config',
+      namespace,
+      uid: 'redis-cm-uid',
+      resourceVersion: 'redis-cm-rv',
+      labels: { app: 'redis', [ownerKey]: owner },
+    },
+    data: options.missingData ? {} : { 'redis.conf': 'maxmemory 64mb\n' },
+  };
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {{
+ *   namespace?: object | null | 'unreadable',
+ *   deployment?: object | null | 'unreadable',
+ *   service?: object | null | 'unreadable',
+ *   configMap?: object | null | 'unreadable',
+ * }} fixtures
+ */
+function buildRedisObserveRun(profileId, fixtures) {
+  const warm = profileId === 'dev' ? devWarmRun(true) : releaseWarmRun(true);
+  const redisNs = redisNamespaceName(profileId);
+
+  /**
+   * @param {unknown} fixture
+   */
+  function fixtureResponse(fixture) {
+    if (fixture === 'unreadable') {
+      return { ok: false, stdout: '', stderr: 'observation failed' };
+    }
+    if (fixture == null) {
+      return { ok: true, stdout: '' };
+    }
+    return { ok: true, stdout: JSON.stringify(fixture) };
+  }
+
+  return (command, args) => {
+    if (command === 'kubectl') {
+      const joined = args.join(' ');
+      if (joined.includes(`namespace ${redisNs}`)) {
+        return fixtureResponse(
+          fixtures.namespace === undefined
+            ? redisNamespaceObject(profileId)
+            : fixtures.namespace,
+        );
+      }
+      if (joined.includes('deployment') && joined.includes('redis')) {
+        return fixtureResponse(fixtures.deployment);
+      }
+      if (joined.includes('service') && joined.includes('redis')) {
+        return fixtureResponse(fixtures.service);
+      }
+      if (joined.includes('configmap') && joined.includes('redis-config')) {
+        return fixtureResponse(fixtures.configMap);
+      }
+    }
+    return warm(command, args);
+  };
+}
+
 test('parseInfraCliArgs rejects unknown commands, missing env, and positionals', () => {
   assert.equal(parseInfraCliArgs(['bootstrap']).ok, false);
   assert.equal(parseInfraCliArgs(['plan']).ok, false);
@@ -541,16 +697,12 @@ test('status performs read-only kind and kubectl observation', () => {
 });
 
 test('status reports dev redis absent when deployment and service are missing', () => {
-  const run = (command, args) => {
-    const warm = devWarmRun(true)(command, args);
-    if (
-      command === 'kubectl' &&
-      args.join(' ').includes('offscreen-dev-redis')
-    ) {
-      return { ok: true, stdout: '' };
-    }
-    return warm;
-  };
+  const run = buildRedisObserveRun('dev', {
+    namespace: null,
+    deployment: null,
+    service: null,
+    configMap: null,
+  });
   const result = runInfraStatus({
     profileId: 'dev',
     services: 'redis',
@@ -558,6 +710,74 @@ test('status reports dev redis absent when deployment and service are missing', 
   });
   assert.equal(result.ok, true);
   assert.equal(result.services.redis.state, 'not-installed');
+});
+
+test('redis status uses shared readiness for dev and release profiles', () => {
+  const readyFixtures = {
+    deployment: redisDeploymentObject('dev'),
+    service: redisServiceObject('dev'),
+    configMap: redisConfigMapObject('dev'),
+  };
+  const devInstalled = observeSelectedServiceState('dev', 'redis', {
+    run: buildRedisObserveRun('dev', readyFixtures),
+  });
+  assert.equal(devInstalled.state, 'installed');
+
+  const releaseReady = {
+    deployment: redisDeploymentObject('release'),
+    service: redisServiceObject('release'),
+    configMap: redisConfigMapObject('release'),
+  };
+  const releaseInstalled = observeSelectedServiceState('release', 'redis', {
+    run: buildRedisObserveRun('release', releaseReady),
+  });
+  assert.equal(releaseInstalled.state, 'installed');
+
+  const devForeign = observeSelectedServiceState('dev', 'redis', {
+    run: buildRedisObserveRun('dev', {
+      ...readyFixtures,
+      deployment: redisDeploymentObject('dev', { foreign: true }),
+    }),
+  });
+  assert.equal(devForeign.state, 'not-ready');
+  assert.match(devForeign.detail ?? '', /foreign-owned/i);
+
+  const devStale = observeSelectedServiceState('dev', 'redis', {
+    run: buildRedisObserveRun('dev', {
+      ...readyFixtures,
+      deployment: redisDeploymentObject('dev', { staleGeneration: true }),
+    }),
+  });
+  assert.equal(devStale.state, 'not-ready');
+  assert.match(devStale.detail ?? '', /not ready/i);
+
+  const devMissingConfig = observeSelectedServiceState('dev', 'redis', {
+    run: buildRedisObserveRun('dev', {
+      ...readyFixtures,
+      configMap: redisConfigMapObject('dev', { missingData: true }),
+    }),
+  });
+  assert.equal(devMissingConfig.state, 'not-ready');
+  assert.match(devMissingConfig.detail ?? '', /configuration is missing/i);
+
+  const devUnreadable = observeSelectedServiceState('dev', 'redis', {
+    run: buildRedisObserveRun('dev', {
+      ...readyFixtures,
+      configMap: 'unreadable',
+    }),
+  });
+  assert.equal(devUnreadable.state, 'unreadable');
+  assert.match(devUnreadable.detail ?? '', /unreadable/i);
+
+  const releasePartial = observeSelectedServiceState('release', 'redis', {
+    run: buildRedisObserveRun('release', {
+      deployment: redisDeploymentObject('release'),
+      service: redisServiceObject('release'),
+      configMap: null,
+    }),
+  });
+  assert.equal(releasePartial.state, 'not-ready');
+  assert.doesNotMatch(releasePartial.detail ?? '', /absent/i);
 });
 
 test('inventoryKindClusters requires exact kind success', () => {

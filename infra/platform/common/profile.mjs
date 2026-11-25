@@ -23,6 +23,7 @@ const PLATFORM_HOME = Object.freeze({
       postgres: 'lab-postgres',
       temporal: 'lab-temporal',
       objectStorage: 'lab-objects',
+      redis: 'lab-a',
     }),
   }),
 });

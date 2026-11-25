@@ -84,7 +84,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 ## Redis infrastructure source wave (2026-11-25)
 
 - [INF58 Redis chart configuration and rollout identity](../archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); live NOT-RUN.
-- [INF59 Redis installer safety and readiness](2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Ready, source-only.
-- [INF60 Named Redis pools and operator inspection](2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready, gated on INF58 + INF59.
+- [INF59 Redis installer safety and readiness](../archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); live NOT-RUN.
+- [INF60 Named Redis pools and operator inspection](2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready after INF58 + INF59 source; not auto-started.
 
 [Decisions and dependency graph](../../undertakings/storyteller-workshop/REDIS-INFRASTRUCTURE.md). No live authorization or global queue change.

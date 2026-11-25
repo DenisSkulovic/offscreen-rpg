@@ -10,7 +10,7 @@ Player snapshots are runtime-validated projections built in a read-only repeatab
 
 ## Redis boundary
 
-Redis is optional disposable acceleration. Cache loss, eviction, restart and failover do not alter command semantics, permissions, spending, settlement, timers, publication, outbox or durable state. Optional degraded Redis does not fail readiness. No generic write-behind, ORM query caching, business distributed locks, cached command preconditions, sole copies of records or cached authorization. Browser/API story responses remain no-store. [Kubernetes Redis](../../runbooks/kubernetes-redis.md) owns the disposable lab procedure, not production proof.
+Redis is optional disposable acceleration. Cache loss, eviction, restart and failover do not alter command semantics, permissions, spending, settlement, timers, publication, outbox or durable state. Optional degraded Redis does not fail readiness. No generic write-behind, ORM query caching, business distributed locks, cached command preconditions, sole copies of records or cached authorization. Browser/API story responses remain no-store. Local Kind installers enforce owned identities, create-or-CAS patch, and refuse auth material in rendered config; that is a disposable lab fence, not hosted authentication, TLS, or multi-operator safety. [Kubernetes Redis](../../runbooks/kubernetes-redis.md) owns the disposable lab procedure, not production proof.
 
 ## Package ownership and public API
 
