@@ -16,4 +16,4 @@ node --test infra/platform/postgres/tests/*.test.mjs
 
 ## Verification alignment (T03)
 
-Canonical owners updated: [verification-programmes.md](../../../../../../docs/technical/platform/verification-programmes.md) (future CNPG adapter consumes INF54 shared builder; dev slots stay on `dev-pg`; VER02 Docker contract preserved), [kubernetes-postgres.md](../../../../../../docs/runbooks/kubernetes-postgres.md) (owned cluster CLI examples), [VER02 CHANGE](../../../../open/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md) (alignment note only).
+Canonical owners updated: [verification-programmes.md](../../../../../../docs/technical/platform/verification-programmes.md) (future CNPG adapter consumes INF54 shared builder; dev slots stay on `dev-pg`; VER02 Docker contract preserved), [kubernetes-postgres.md](../../../../../../docs/runbooks/kubernetes-postgres.md) (owned cluster CLI examples), [VER02 CHANGE](../2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md) (alignment note only).

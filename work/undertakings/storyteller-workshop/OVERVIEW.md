@@ -29,6 +29,6 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 5. Release, fault, restore and scale acceptance separately gated.
 
 Finish line: ordinary authenticated player creates story, resolves scene, reaches scene2, forks and continues coherently with durable evidence; local dev operations are bounded and boring. Main trunk promotion is not product acceptance. Prior overview recoverable at audited SHA; dated checkpoints remain in UNDERTAKING and PROGRAM.
-- New reusable verification programme selected: [VER01–VER05](VERIFICATION-PROGRAMME.md), DB first. VER01 source Done (`pnpm verify` catalog/CLI/executor + infra adapter; live disposable acceptance NOT-RUN); no outcome credit. Existing DB work continues.
+- New reusable verification programme selected: [VER01–VER05](VERIFICATION-PROGRAMME.md), DB first. VER01 source Done (`pnpm verify` catalog/CLI/executor + infra adapter; live disposable acceptance NOT-RUN). VER02 source Done (owned Postgres Docker plan/create/fault/cleanup adapter; fixture 22/22; live Docker NOT-RUN); no outcome credit. Existing DB work continues.
 
 - 2026-11-25: INF53 shared local PostgreSQL baseline topology source joined (chart instances + topology-cli CAS ensure; live scale NOT-RUN). INF54 owned independent clusters source joined (`--owner`, create-only ensure, CAS resize; 59/59 source PASS; live dual-cluster experiment NOT-RUN). No live/outcome credit; percentages unchanged (~75/40/30/45). Normal shared `dev-pg` tenant topology preserved.

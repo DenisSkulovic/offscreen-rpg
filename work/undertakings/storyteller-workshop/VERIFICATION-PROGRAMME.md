@@ -5,7 +5,7 @@ Baseline 0c45ae7318295398d706511b9d702720a55c8a92 (DB03/07 archived; DB04/05/09/
 | Change | Gate | Outcome |
 | --- | --- | --- |
 | [VER01](../../changes/archive/2026-11/platform-operations/2026-11-25--ver01-unified-verification-runner/CHANGE.md) | Done (source joined; live NOT-RUN). | Unified verification entrypoint and evidence runner |
-| [VER02](../../changes/open/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md) | VER01 joined; can implement while DB03–10 continue; no DB runtime API changes. | Disposable PostgreSQL resource adapter |
+| [VER02](../../changes/archive/2026-11/platform-operations/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md) | Done (source joined; live Docker acquire/fault/cleanup NOT-RUN). | Disposable PostgreSQL resource adapter |
 | [VER03](../../changes/open/2026-11-25--ver03-db-admission-workloads/CHANGE.md) | VER02 joined; DB07 joined (verified); DB09 source Done (telemetry sections may use joined helpers). | DB programme: admission, pressure and process isolation |
 | [VER04](../../changes/open/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md) | VER03 joined; DB09 source Done for telemetry/helpers; DB10 component source tests available on main (live acceptance not prerequisite). | DB programme: transactions, migration, telemetry and recovery |
 | [VER05](../../changes/open/2026-11-25--ver05-db-replicated-topology-programme/CHANGE.md) | VER02/03/04 source joined. Requires verified local dev Kind and pinned CNPG operator already installed for live; no operator changes. | DB programme: replicated and independent PostgreSQL topologies |
