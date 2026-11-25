@@ -1,0 +1,84 @@
+# DESIGN SPECIMEN ONLY. Not approved for installation.
+# Upstream chart temporal 1.7.0; image versions inherited from that exact chart.
+# Local trusted Kind clusters; not a production security profile.
+fullnameOverride: temporal
+
+server:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+  config:
+    logLevel: info
+    namespaces:
+      create: false # environment tenant lifecycle owns application namespaces
+    persistence:
+      defaultStore: default
+      visibilityStore: visibility
+      numHistoryShards: 512 # fresh stores only; preserve existing shard count on adoption
+      datastores:
+        default:
+          sql:
+            pluginName: postgres12
+            databaseName: temporal
+            connectProtocol: tcp
+            user: temporal
+            existingSecret: temporal-db
+            secretKey: password
+            createDatabase: false
+            manageSchema: true
+        visibility:
+          sql:
+            pluginName: postgres12
+            databaseName: temporal_visibility
+            connectProtocol: tcp
+            user: temporal
+            existingSecret: temporal-db
+            secretKey: password
+            createDatabase: false
+            manageSchema: true
+  frontend:
+    service:
+      type: ClusterIP
+    ingress:
+      enabled: false
+    readinessProbe:
+      grpc:
+        port: 7233
+        service: temporal.api.workflowservice.v1.WorkflowService
+  internal-frontend:
+    enabled: false
+  metrics:
+    annotations:
+      enabled: true
+    serviceMonitor:
+      enabled: false
+
+web:
+  enabled: true
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+admintools:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+schema:
+  useHelmHooks: true
+  # Bound failed SQL attempts; leave the failed Job available for diagnosis.
+  backoffLimit: 1
+  activeDeadlineSeconds: 240
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
