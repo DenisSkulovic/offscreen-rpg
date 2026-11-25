@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { assertPlatformTarget, readPlatformObject, runPlatformCommand } from '../../platform/common/commands.mjs';
-import { ensureKindImage, matchesRuntimeImageDigest } from '../../images/distribution/kind-image-loader.mjs';
+import { ensureReleaseGenerationImage, releaseGenerationRef, matchesRuntimeImageDigest } from '../../images/distribution/kind-image-loader.mjs';
 import { EXPECTED_IMPORT_ROOTS } from '../../verification/release-acceptance/turn03/fixture-import-roots.mjs';
 
 const NAMESPACE = 'lab-edge';
@@ -49,7 +49,7 @@ export function buildFixtureJob(action, digest) {
         restartPolicy: 'Never', automountServiceAccountToken: false, enableServiceLinks: false,
         securityContext: { runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, seccompProfile: { type: 'RuntimeDefault' } },
         containers: [{
-          name: action, image: IMAGE, imagePullPolicy: 'Never',
+          name: action, image: releaseGenerationRef(IMAGE, digest), imagePullPolicy: 'Never',
           command: ['node'], args: ['scripts/repo-tools/' + (action === 'importer' ? 'import' : 'read') + '-pinned-fixture.mjs', '--s3'],
           env: [
             ...Object.entries(env).map(([name, value]) => ({ name, value })),
@@ -130,7 +130,7 @@ function executeJob(action, receipt, run) {
  * Uses the already projected application S3 identity to prove actual runtime access.
  * The separate least-privilege reader acceptance scenario remains distinct.
  */
-export function ensureReleaseContent({ run = runPlatformCommand, load = ensureKindImage, verifyTarget = assertPlatformTarget } = {}) {
+export function ensureReleaseContent({ run = runPlatformCommand, load = ensureReleaseGenerationImage, verifyTarget = assertPlatformTarget } = {}) {
   verifyTarget('release', { run });
   const credentials = named('secret', 'game-runtime', run);
   if (credentials.state !== 'present' || credentials.object.metadata?.labels?.[OWNER] !== 'disposable' ||
@@ -141,6 +141,7 @@ export function ensureReleaseContent({ run = runPlatformCommand, load = ensureKi
     const r = run(command, args, { timeoutMs: 180000 });
     return { ...r, status: r.ok ? 0 : 1 };
   } });
+  if (receipt.runtimeRef !== releaseGenerationRef(IMAGE, receipt.digest)) fail('bootstrap generation receipt mismatch');
   executeJob('importer', receipt, run);
   const roots = executeJob('reader', receipt, run);
   return { ok: true, roots };

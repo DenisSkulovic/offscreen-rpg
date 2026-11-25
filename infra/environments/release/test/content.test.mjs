@@ -21,6 +21,7 @@ test('content Jobs reference runtime S3 identity without embedding credentials o
     const spec = job.spec.template.spec;
     assert.equal(spec.automountServiceAccountToken, false);
     assert.equal(spec.containers[0].imagePullPolicy, 'Never');
+    assert.equal(spec.containers[0].image, 'offscreen-lab-content-bootstrap:sha256-' + 'a'.repeat(64));
     assert.deepEqual(spec.volumes, [{ name: 'scratch', emptyDir: {} }]);
     assert.equal(spec.containers[0].env.filter(e => e.valueFrom?.secretKeyRef?.name === 'game-runtime').length, 2);
     assert.ok(spec.containers[0].args[0].endsWith((action === 'importer' ? 'import' : 'read') + '-pinned-fixture.mjs'));

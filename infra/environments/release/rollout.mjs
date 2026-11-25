@@ -183,7 +183,9 @@ export function buildFilteredApplyManifest(input) {
         `rendered Deployment ${name} image does not match loader receipt for ${family}`,
       );
     }
-    output.push(annotateDeploymentPodTemplate(doc, receipt.digest));
+    const manifest = annotateDeploymentPodTemplate(doc, receipt.digest);
+    if (receipt.runtimeRef) manifest.spec.template.spec.containers[0].image = receipt.runtimeRef;
+    output.push(manifest);
   }
   return output;
 }
@@ -623,7 +625,7 @@ export function verifySelectedReleaseRollouts(input) {
         `loader receipt is missing for selected family ${family}`,
       );
     }
-    const acceptedIds = collectAcceptedIds(receipt.ref, run);
+    const acceptedIds = collectAcceptedIds(receipt.runtimeRef ?? receipt.ref, run);
     if (!acceptedIds.includes(receipt.digest)) {
       throw rolloutRefusal(
         `loader receipt digest is not among accepted CRI image identities for ${family}`,

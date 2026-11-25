@@ -197,7 +197,7 @@ load_image_if_changed() {
     return 0
   fi
   local receipt
-  if ! receipt="$(node "$KIND_IMAGE_LOADER" release "$image")"; then
+  if ! receipt="$(node "$KIND_IMAGE_LOADER" release-generation "$image")"; then
     echo "Refusing install: could not verify/load ${image} into ${CLUSTER_NAME}." >&2
     exit 1
   fi

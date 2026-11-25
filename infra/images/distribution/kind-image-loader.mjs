@@ -30,6 +30,7 @@ const RELEASE_PINNED = new Set([
 ]);
 
 const RELEASE_REPO_RES = [
+  /^offscreen-lab-content-bootstrap:sha256-[a-f0-9]{64}$/,
   /^offscreen-lab-game-web:[A-Za-z0-9._-]+$/,
   /^offscreen-lab-app-release-api:[A-Za-z0-9._-]+$/,
   /^offscreen-lab-app-release-ga:[A-Za-z0-9._-]+$/,
@@ -642,7 +643,14 @@ function isCli() {
 
 if (isCli()) {
   const command = process.argv[2];
-  if (command === 'inspect') {
+  if (command === 'release-generation') {
+    try {
+      process.stdout.write(JSON.stringify(ensureReleaseGenerationImage({ ref: process.argv[3] })) + '\n');
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+  } else if (command === 'inspect') {
     const profileId = process.argv[3];
     const ref = process.argv[4];
     const node = process.argv[5];
@@ -707,4 +715,36 @@ export function matchesRuntimeImageDigest({ profileId, node, observedDigest, exp
   } catch {
     return false;
   }
+}
+
+/** Full digest tags are immutable by contract; never overwrite a conflicting tag. */
+export function releaseGenerationRef(ref, digest) {
+  validateRefForProfile('release', ref);
+  if (!isValidSha256Digest(digest)) throw new Error('invalid release generation digest');
+  return ref.split(':')[0] + ':sha256-' + digest.slice(7);
+}
+
+export function ensureReleaseGenerationImage({ ref, run = defaultRun }) {
+  validateRefForProfile('release', ref);
+  const digest = inspectHostDigest(ref, run);
+  const generationRef = releaseGenerationRef(ref, digest);
+  const nodes = discoverKindNodes(readKindProfile('release'), run);
+  // Refuse any existing node mapping that contradicts the content-addressed name.
+  for (const node of nodes) {
+    const existing = readKindImageIdentity({ node, ref: generationRef, run });
+    if (existing && existing.targetDigest !== digest) throw new Error('immutable release node tag conflict: ' + node);
+  }
+  const listed = run('docker', ['image', 'ls', '--filter', 'reference=' + generationRef, '--format', '{{.Repository}}:{{.Tag}}']);
+  if (listed.status !== 0) throw new Error('release generation host inventory unreadable');
+  const names = listed.stdout.trim().split('\n').filter(Boolean);
+  if (names.some(name => name !== generationRef) || names.length > 1) throw new Error('ambiguous release generation host inventory');
+  if (names.length === 0) {
+    // Tag by immutable ID, not the mutable build alias.
+    const tagged = run('docker', ['image', 'tag', digest, generationRef]);
+    if (tagged.status !== 0) throw new Error('release generation host tag failed');
+  }
+  if (inspectHostDigest(generationRef, run) !== digest) throw new Error('immutable release host tag conflict');
+  const receipt = ensureKindImage({ profileId: 'release', ref: generationRef, expectedDigest: digest, run });
+  if (inspectHostDigest(ref, run) !== digest) throw new Error('release build alias changed during generation load');
+  return { ...receipt, ref, runtimeRef: generationRef };
 }

@@ -630,3 +630,15 @@ test('runtime import wrapper proves exact target by content hash, not alias name
   assert.equal(check([expected], true), false);
   assert.equal(check([expected], false, 'offscreen-dev-worker'), false);
 });
+
+import { releaseGenerationRef } from './kind-image-loader.mjs';
+test('release generation references use full digest and preserve repository family', () => {
+  const d = 'sha256:' + 'a'.repeat(64);
+  const alias = 'offscreen-lab-content-bootstrap:boot02';
+  const generation = releaseGenerationRef(alias, d);
+  assert.equal(generation, 'offscreen-lab-content-bootstrap:sha256-' + 'a'.repeat(64));
+  assert.equal(validateRefForProfile('release', generation), generation);
+  assert.throws(() => validateRefForProfile('dev', generation));
+  assert.throws(() => releaseGenerationRef(alias, 'sha256:bad'));
+  assert.notEqual(generation, releaseGenerationRef(alias, 'sha256:' + 'b'.repeat(64)));
+});

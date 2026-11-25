@@ -7,6 +7,7 @@ import {
   discoverKindNodes,
   isValidSha256Digest,
   matchesRuntimeImageDigest,
+  releaseGenerationRef,
   readKindImageIdentity,
   validateRefForProfile,
 } from '../../images/distribution/kind-image-loader.mjs';
@@ -97,7 +98,11 @@ export function parseLoaderReceipt(text) {
       nodes[node] = { configId, manifestDigest, targetDigest };
     }
   }
-  return { ref, digest, nodes };
+  const runtimeRef = receipt.runtimeRef;
+  if (runtimeRef !== undefined && runtimeRef !== releaseGenerationRef(ref, digest)) {
+    throw migrationRefusal('loader receipt runtime generation ref mismatch');
+  }
+  return { ref, digest, nodes, runtimeRef };
 }
 
 /**
@@ -532,7 +537,7 @@ export function ensureReleaseMigration(input) {
     );
   }
 
-  const acceptedIds = collectAcceptedIds(receipt.ref, run);
+  const acceptedIds = collectAcceptedIds(receipt.runtimeRef ?? receipt.ref, run);
   if (!acceptedIds.includes(receipt.digest)) {
     throw migrationRefusal(
       'loader receipt digest is not among accepted CRI image identities',
@@ -547,6 +552,7 @@ export function ensureReleaseMigration(input) {
     templateJob,
     receipt.digest,
   );
+  if (receipt.runtimeRef) annotatedManifest.spec.template.spec.containers[0].image = receipt.runtimeRef;
   const phase =
     jobRead.state === 'absent'
       ? 'absent'
