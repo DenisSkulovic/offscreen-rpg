@@ -53,11 +53,12 @@ test('wrong cluster, retention conflict and missing authorization stop', async (
 });
 
 test('describe distinguishes json visibility, parse failure and a single create', async () => {
-  const parsed = parseTemporalDescribe('noise {"namespaceInfo":{"id":"d9f8f0d7-27e6-455c-b820-127cceab82ec","name":"offscreen-dev-6"},"config":{"workflowExecutionRetentionTtl":"86400s"}}\nextra', 0);
+  const parsed = parseTemporalDescribe('{"namespaceInfo":{"id":"d9f8f0d7-27e6-455c-b820-127cceab82ec","name":"offscreen-dev-6"},"config":{"workflowExecutionRetentionTtl":"86400s"}}', 0);
   assert.equal(parsed.id, 'd9f8f0d7-27e6-455c-b820-127cceab82ec');
   assert.equal(parsed.retentionSeconds, 86400);
   assert.equal(parseTemporalDescribe('namespace dev-1 not found', 1).status, 'absent');
   assert.equal(parseTemporalDescribe('boom', 1).status, 'command-failed');
+  assert.equal(parseTemporalDescribe('pods "temporal-admintools" not found', 1).status, 'command-failed');
   assert.equal(parseTemporalDescribe('no id here', 0).status, 'malformed-output');
   const store = adapter();
   let describes = 0;
