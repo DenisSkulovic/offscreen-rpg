@@ -18,6 +18,8 @@ Human explanation: [Developer environments, illustrated](../../architecture/10-d
 
 ## One owner for the active development image
 
+The development image fingerprint hashes the pinned toolchain, Dockerfile, Dockerfile-specific ignore policy and actual COPY inputs (root workspace manifests, copied npm configuration, apps/packages/tools). Host-only infrastructure, verification and image orchestration scripts outside these inputs do not create new image generations. Changes to the Dockerfile COPY operands must reconcile the fingerprint input map and tests. The tools tree remains a conservative copied input until its image packaging is narrowed.
+
 **Selected decision (2026-11-23):** Tilt is the only active development **Deployment Pod-template desired-state writer**. Image preparation creates or reuses the canonical artifact, distributes it to the required Kind nodes and verifies availability; it must **not patch or scale active Deployments**. Kubernetes performs rollouts from desired Deployment changes. Readiness must be observational, never a repair/controller loop.
 
 ```mermaid

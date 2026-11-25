@@ -1,12 +1,12 @@
 /**
  * Cross-slot identity for the dev role images.
- * The key is the Docker build context after Dockerfile.dockerignore,
+ * The key is the Dockerfile COPY inputs after Dockerfile.dockerignore,
  * plus the Dockerfile recipe and the role build argument.
  * Slot ids, worktree paths and Git HEAD are not inputs.
  */
 
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, lstatSync } from 'node:fs';
 import { join, relative, posix } from 'node:path';
 
 export const UNION_ROLE_FILTER =
@@ -205,6 +205,18 @@ export function fingerprintDevImageContextCached(root, input) {
   return { ...fresh, cache: fresh.ok ? 'miss' : undefined };
 }
 
+// Match the source operands of the current Dockerfile COPY instructions.
+export const DEV_IMAGE_COPY_FILES = Object.freeze([
+  'infra/images/common/docker.npmrc',
+  'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'turbo.json',
+]);
+export const DEV_IMAGE_COPY_DIRS = Object.freeze(['apps', 'packages', 'tools']);
+
+export function isDevImageCopyInput(path) {
+  return DEV_IMAGE_COPY_FILES.includes(path) ||
+    DEV_IMAGE_COPY_DIRS.some(dir => path === dir || path.startsWith(dir + '/'));
+}
+
 function listContextFiles(root, rules) {
   /** @type {{ path: string, bytes: Buffer }[]} */
   const files = [];
@@ -213,7 +225,8 @@ function listContextFiles(root, rules) {
       const absolute = join(directory, name);
       const rel = relative(root, absolute).split('\\').join('/');
       if (isDockerignored(rel, rules)) continue;
-      const info = statSync(absolute);
+      if (!isDevImageCopyInput(rel) && !DEV_IMAGE_COPY_FILES.some(file => file.startsWith(rel + '/'))) continue;
+      const info = lstatSync(absolute);
       if (info.isSymbolicLink()) throw new Error('symlink');
       if (info.isDirectory()) visit(absolute);
       else if (info.isFile())

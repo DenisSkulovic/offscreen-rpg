@@ -27,19 +27,13 @@ export const BUILD_CRITICAL_ROOT_FILES = Object.freeze([
   'turbo.json',
   'infra/images/common/docker.npmrc',
   'infra/images/common/toolchain.pin',
-  'infra/images/common/workspace-graph.mjs',
   'infra/images/development/Dockerfile',
   'infra/images/development/Dockerfile.dockerignore',
-  'infra/images/development/build.sh',
-  'infra/images/development/load-dev-slot-image.sh',
-  'infra/images/development/packaging.mjs',
   'tools/dev-environments/runtime/check-packaging.mjs',
   'tools/dev-environments/runtime/compile-watch.mjs',
   'tools/dev-environments/runtime/generation.mjs',
   'tools/dev-environments/runtime/launch-loaded.mjs',
   'tools/dev-environments/runtime/status.mjs',
-  'infra/images/distribution/kind-image-loader.mjs',
-  'infra/images/development/image-plan.mjs',
 ]);
 
 const BUILD_CRITICAL_ROOT_FILE_SET = new Set(BUILD_CRITICAL_ROOT_FILES);

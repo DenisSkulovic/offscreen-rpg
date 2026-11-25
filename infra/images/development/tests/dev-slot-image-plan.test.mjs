@@ -537,3 +537,32 @@ test('empty tree with missing toolchain pin is unreadable-recipe', () => {
   assert.equal(result.ok, false);
   assert.equal(result.reason, 'unreadable-recipe');
 });
+
+
+test('host loader, monitoring and verification edits do not invalidate copied image inputs', () => {
+  const root = checkout('ctx-host-only-');
+  const original = fingerprint(root).fingerprint;
+  for (const path of [
+    'infra/images/development/load-dev-slot-image.sh',
+    'infra/images/development/image-plan.mjs',
+    'infra/images/common/workspace-graph.mjs',
+    'infra/verification/resource-snapshot.mjs',
+    'scripts/repo-tools/stack.mjs',
+  ]) {
+    mkdirSync(join(root, path, '..'), { recursive: true });
+    writeFileSync(join(root, path), 'host edit');
+    assert.equal(fingerprint(root).fingerprint, original, path);
+  }
+  mkdirSync(join(root, 'tools/dev-environments/runtime'), { recursive: true });
+  writeFileSync(join(root, 'tools/dev-environments/runtime/compile-watch.mjs'), 'runtime edit');
+  assert.notEqual(fingerprint(root).fingerprint, original);
+});
+test('Dockerfile and copied npm configuration remain fingerprint inputs', () => {
+  const root = checkout('ctx-copy-');
+  const original = fingerprint(root).fingerprint;
+  writeFileSync(join(root, 'infra/images/common/docker.npmrc'), 'registry=https://example.invalid');
+  const changed = fingerprint(root).fingerprint;
+  assert.notEqual(changed, original);
+  writeFileSync(join(root, 'infra/images/development/Dockerfile'), RECIPE + '\n# recipe change\n');
+  assert.notEqual(fingerprint(root).fingerprint, changed);
+});

@@ -101,13 +101,10 @@ test('dev runtime helper rebuilds all runtime images', () => {
   assert.deepEqual(result.images, ALL_RUNTIME_IMAGES);
 });
 
-test('image-plan module is build-critical for all runtime images', () => {
-  const result = resolveDevSync(
-    'infra/images/development/image-plan.mjs',
-    repoRoot,
-  );
-  assert.equal(result.mode, 'rebuild');
-  assert.deepEqual(result.images, ALL_RUNTIME_IMAGES);
+test('host-only image planning edits do not trigger workload builds', () => {
+  for (const file of ["infra/images/common/workspace-graph.mjs","infra/images/development/build.sh","infra/images/development/load-dev-slot-image.sh","infra/images/development/packaging.mjs","infra/images/distribution/kind-image-loader.mjs","infra/images/development/image-plan.mjs"]) {
+    assert.equal(resolveDevSync(file, repoRoot).mode, 'none', file);
+  }
 });
 
 test('sync-plan does not import release image selector', () => {
