@@ -36,12 +36,19 @@ test('createWeightedLru: mutation isolation via copy on get and set', () => {
   original.data.push(99);
 
   const hit = lru.get('k');
-  assert.ok(hit);
-  assert.deepEqual(hit!.data, [1, 2, 3]);
-  hit!.data.push(100);
+  assert.ok(hit !== undefined);
+  if (hit === undefined) {
+    throw new Error('expected hit');
+  }
+  assert.deepEqual(hit.data, [1, 2, 3]);
+  hit.data.push(100);
 
   const again = lru.get('k');
-  assert.deepEqual(again!.data, [1, 2, 3]);
+  assert.ok(again !== undefined);
+  if (again === undefined) {
+    throw new Error('expected second hit');
+  }
+  assert.deepEqual(again.data, [1, 2, 3]);
 });
 
 test('createWeightedLru: evicts least-recently-used entries for bytes and count', () => {
@@ -170,6 +177,108 @@ test('createWeightedLru: invalid weight rejects without evicting neighbors', () 
   assert.equal(lru.set('keep', { w: 10 }), true);
   assert.equal(lru.set('bad', { w: 1.5 as unknown as number }), false);
   assert.equal(lru.get('keep')?.w, 10);
+});
+
+test('createWeightedLru: remove clear and reinsert keep byte accounting correct', () => {
+  const unitCost = OVERHEAD + 4;
+  const lru = createWeightedLru<string>({
+    maxBytes: unitCost * 3,
+    maxEntries: 10,
+    weight: (v) => v.length,
+    copy: (v) => v,
+  });
+
+  assert.equal(lru.set('a', 'aaaa'), true);
+  assert.equal(lru.set('b', 'bbbb'), true);
+  lru.delete('a');
+  assert.equal(lru.get('a'), undefined);
+  assert.equal(lru.set('c', 'cccc'), true);
+
+  lru.clear();
+  assert.equal(lru.set('fresh', 'zzzz'), true);
+  assert.equal(lru.get('fresh'), 'zzzz');
+  assert.equal(lru.get('b'), undefined);
+});
+
+test('createWeightedLru: zero payload weight is admitted with overhead only', () => {
+  const lru = createWeightedLru<Uint8Array>({
+    maxBytes: OVERHEAD * 2,
+    maxEntries: 4,
+    weight: (v) => v.length,
+    copy: (v) => new Uint8Array(v),
+  });
+
+  assert.equal(lru.set('empty', new Uint8Array(0)), true);
+  assert.equal(lru.set('also', new Uint8Array(0)), true);
+  assert.deepEqual(lru.get('empty'), new Uint8Array(0));
+  assert.equal(lru.set('third', new Uint8Array(0)), true);
+  assert.equal(lru.get('also'), undefined);
+});
+
+test('createMemoryStore: set copies bytes so input mutation does not affect stored value', async () => {
+  const clock = () => 1_000;
+  const store = createMemoryStore({ maxBytes: 4_096, maxEntries: 8, clock });
+
+  const bytes = new Uint8Array([4, 5, 6]);
+  const entry = {
+    bytes,
+    observedAtMs: 100,
+    expiresAtMs: 9_000,
+  };
+  await store.set('buf', entry);
+  bytes[0] = 99;
+  entry.bytes = new Uint8Array([7, 8, 9]);
+
+  const hit = await store.get('buf');
+  assert.equal(hit.kind, 'hit');
+  if (hit.kind === 'hit') {
+    assert.deepEqual([...hit.entry.bytes], [4, 5, 6]);
+  }
+});
+
+test('createMemoryStore: expired get deletes entry', async () => {
+  const clockMs = { now: 500 };
+  const clock = () => clockMs.now;
+  const store = createMemoryStore({ maxBytes: 4_096, maxEntries: 8, clock });
+
+  await store.set('gone', liveEntry('x', 100, 1_000));
+  clockMs.now = 2_000;
+
+  const first = await store.get('gone');
+  assert.equal(first.kind, 'bypass');
+  if (first.kind === 'bypass') {
+    assert.equal(first.reason, 'expired');
+  }
+
+  const second = await store.get('gone');
+  assert.equal(second.kind, 'miss');
+});
+
+test('createMemoryStore: rejected expired read does not promote LRU recency', async () => {
+  const clockMs = { now: 100 };
+  const clock = () => clockMs.now;
+  const unitCost = OVERHEAD + 2;
+  const store = createMemoryStore({
+    maxBytes: unitCost * 4,
+    maxEntries: 2,
+    clock,
+  });
+
+  await store.set('mid', liveEntry('md', 50, 500));
+  await store.set('mr', liveEntry('mr', 50, 50_000));
+
+  clockMs.now = 2_000;
+  const expired = await store.get('mid');
+  assert.equal(expired.kind, 'bypass');
+
+  await store.set('lr', liveEntry('lr', 50, 50_000));
+  const newcomer = await store.set('new', liveEntry('nw', 50, 50_000));
+  assert.equal(newcomer.kind, 'stored');
+
+  const lrStill = await store.get('lr');
+  assert.equal(lrStill.kind, 'hit');
+  const mrGone = await store.get('mr');
+  assert.equal(mrGone.kind, 'miss');
 });
 
 test('createMemoryStore: get copies bytes so caller mutation does not affect stored value', async () => {

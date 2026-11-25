@@ -9,7 +9,7 @@ import {
 import { jsonCodec } from './codecs/json-codec.js';
 import { defineCache, makeCacheKey, type CacheStore } from './core/index.js';
 import { createFakeStore } from './core/test-stores.js';
-import { createTieredStore } from './memory/tiered-store.js';
+import { createTieredStore } from './tiered-store.js';
 import { createRedisCircuitBreaker } from './redis/redis-circuit-breaker.js';
 import {
   CacheOverloadError,

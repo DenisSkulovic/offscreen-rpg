@@ -375,7 +375,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## Cache craftsmanship wave
 - [CACHE09 Cache navigation and behavioral test names](archive/2026-11/cache/2026-11-25--cache09-cache-navigation/CHANGE.md) — Done (source); navigation/test names only; 93/93; live NOT-RUN.
-- [CACHE10 Memory and single-flight readability](open/2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Ready after CACHE09 source; source only.
+- [CACHE10 Memory and single-flight readability](archive/2026-11/cache/2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Done (source); memory/single-flight/tier readability; 106/106; live NOT-RUN.
 - [CACHE11 Redis envelope and bounded command executor](archive/2026-11/cache/2026-11-25--cache11-cache-redis-execution/CHANGE.md) — Done (source); redis/ owners, envelope + command executor; 98/98; live NOT-RUN.
 - [CQ06 Changed-code craftsmanship diagnostics](archive/2026-11/other/2026-11-25--cq06-code-craft-diagnostics/CHANGE.md) — Done (2026-11-25); advisory AST/naming/boundary diagnostics.
 CACHE12 held for planner migration; no global queue change.

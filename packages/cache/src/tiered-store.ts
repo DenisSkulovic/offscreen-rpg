@@ -5,7 +5,7 @@ import {
   type CacheLookup,
   type CacheStore,
   type CacheWriteResult,
-} from '../core/cache-store.js';
+} from './core/cache-store.js';
 
 function copyCacheEntry(entry: CacheEntry): CacheEntry {
   return {

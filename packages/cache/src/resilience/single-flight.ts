@@ -18,7 +18,8 @@ type WaiterEntry<T> = {
 
 type InFlightGeneration<T> = {
   key: string;
-  waiters: WaiterEntry<T>[];
+  waiters: Set<WaiterEntry<T>>;
+  attachedCoalesced: number;
 };
 
 export type SingleFlight<T> = {
@@ -51,9 +52,8 @@ function detachWaiter<T>(
   entry.detached = true;
   entry.abortCleanup?.();
   entry.reject(abortError(signal));
-  const index = generation.waiters.indexOf(entry);
-  if (index >= 0) {
-    generation.waiters.splice(index, 1);
+  if (generation.waiters.delete(entry) && entry.coalesced) {
+    generation.attachedCoalesced -= 1;
   }
 }
 
@@ -84,7 +84,10 @@ function attachWaiter<T>(
       };
     }
 
-    generation.waiters.push(entry);
+    generation.waiters.add(entry);
+    if (coalesced) {
+      generation.attachedCoalesced += 1;
+    }
   });
 }
 
@@ -104,7 +107,8 @@ function settleGeneration<T>(
       waiter.reject(outcome.error);
     }
   }
-  generation.waiters.length = 0;
+  generation.waiters.clear();
+  generation.attachedCoalesced = 0;
 }
 
 export function createSingleFlight<T>(options: {
@@ -113,22 +117,13 @@ export function createSingleFlight<T>(options: {
 }): SingleFlight<T> {
   const { maxActiveKeys, maxWaitersPerKey } = options;
   const mappedByKey = new Map<string, InFlightGeneration<T>>();
-  const inFlightCountByKey = new Map<string, number>();
+  let activeGenerations = 0;
 
-  function totalActiveGenerations(): number {
-    let total = 0;
-    for (const count of inFlightCountByKey.values()) {
-      total += count;
-    }
-    return total;
-  }
-
-  function beginInFlightGeneration(key: string): void {
-    if (totalActiveGenerations() >= maxActiveKeys) {
+  function beginInFlightGeneration(): void {
+    if (activeGenerations >= maxActiveKeys) {
       throw new CacheOverloadError();
     }
-    const current = inFlightCountByKey.get(key) ?? 0;
-    inFlightCountByKey.set(key, current + 1);
+    activeGenerations += 1;
   }
 
   function endInFlightGeneration(
@@ -138,12 +133,7 @@ export function createSingleFlight<T>(options: {
     if (mappedByKey.get(key) === generation) {
       mappedByKey.delete(key);
     }
-    const next = (inFlightCountByKey.get(key) ?? 1) - 1;
-    if (next <= 0) {
-      inFlightCountByKey.delete(key);
-    } else {
-      inFlightCountByKey.set(key, next);
-    }
+    activeGenerations -= 1;
   }
 
   async function executeLoader(
@@ -161,31 +151,23 @@ export function createSingleFlight<T>(options: {
     }
   }
 
-  function run(
-    key: string,
-    load: (canPublish: () => boolean) => Promise<T>,
+  function joinMappedGeneration(
+    generation: InFlightGeneration<T>,
     signal?: AbortSignal,
   ): Promise<WaiterResult<T>> {
-    const mapped = mappedByKey.get(key);
-    if (mapped) {
-      const attachedCoalesced = mapped.waiters.filter(
-        (waiter) => waiter.coalesced && !waiter.detached,
-      ).length;
-      if (attachedCoalesced >= maxWaitersPerKey) {
-        throw new CacheOverloadError();
-      }
-      return attachWaiter(mapped, true, signal);
+    if (generation.attachedCoalesced >= maxWaitersPerKey) {
+      throw new CacheOverloadError();
     }
+    return attachWaiter(generation, true, signal);
+  }
 
-    beginInFlightGeneration(key);
-    const generation: InFlightGeneration<T> = {
-      key,
-      waiters: [],
-    };
-    mappedByKey.set(key, generation);
-
-    const leader = attachWaiter(generation, false, signal);
-    const hasActiveLeader = generation.waiters.some(
+  function startLoaderWhenLeaderActive(
+    key: string,
+    generation: InFlightGeneration<T>,
+    load: (canPublish: () => boolean) => Promise<T>,
+    leader: Promise<WaiterResult<T>>,
+  ): Promise<WaiterResult<T>> {
+    const hasActiveLeader = [...generation.waiters].some(
       (waiter) => !waiter.coalesced && !waiter.detached,
     );
     if (!hasActiveLeader) {
@@ -198,6 +180,28 @@ export function createSingleFlight<T>(options: {
 
     void executeLoader(generation, load);
     return leader;
+  }
+
+  function run(
+    key: string,
+    load: (canPublish: () => boolean) => Promise<T>,
+    signal?: AbortSignal,
+  ): Promise<WaiterResult<T>> {
+    const mapped = mappedByKey.get(key);
+    if (mapped) {
+      return joinMappedGeneration(mapped, signal);
+    }
+
+    beginInFlightGeneration();
+    const generation: InFlightGeneration<T> = {
+      key,
+      waiters: new Set(),
+      attachedCoalesced: 0,
+    };
+    mappedByKey.set(key, generation);
+
+    const leader = attachWaiter(generation, false, signal);
+    return startLoaderWhenLeaderActive(key, generation, load, leader);
   }
 
   function invalidate(key: string): void {

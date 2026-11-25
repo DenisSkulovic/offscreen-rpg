@@ -3,7 +3,7 @@
 Baseline 9c2c29513a94e1ff6d1ad6a24f9baf939cfc33a6, main. Source-only owner commission. Keep typed byte store, versioned identity, origin bulkhead, local single-flight, Redis deadline/actual-settlement distinction, optional cache semantics. No wire format changes, no distributed locks, no changes to SQL authority or verification workloads.
 
 - [CACHE09 Cache navigation and behavioral test names](../../changes/archive/2026-11/cache/2026-11-25--cache09-cache-navigation/CHANGE.md): Done (source). Mechanical source organization only; package tests 93/93; VER07/08 public imports unchanged; live NOT-RUN.
-- [CACHE10 Memory and single-flight readability](../../changes/open/2026-11-25--cache10-cache-memory-concurrency/CHANGE.md): Ready. After CACHE09 source joined. Own memory and single-flight only; CACHE11 can run concurrently after CACHE09.
+- [CACHE10 Memory and single-flight readability](../../changes/archive/2026-11/cache/2026-11-25--cache10-cache-memory-concurrency/CHANGE.md): Done (source). Weighted LRU + memory store modules, tier at `src/tiered-store.ts`, single-flight scalar activeGenerations and Set waiters; package tests 106/106 after CACHE11 refresh; public contracts unchanged; live NOT-RUN.
 - [CACHE11 Redis envelope and bounded command executor](../../changes/archive/2026-11/cache/2026-11-25--cache11-cache-redis-execution/CHANGE.md): Done (source). Redis modules under `src/redis/`, envelope + shared command executor extracted, adapter composition thin; package tests 98/98; live NOT-RUN.
 - [CQ06 Changed-code craftsmanship diagnostics](../../changes/archive/2026-11/other/2026-11-25--cq06-code-craft-diagnostics/CHANGE.md): Done (2026-11-25). Advisory AST/naming/boundary diagnostics and scoped `--base` report; independent of cache Changes.
 

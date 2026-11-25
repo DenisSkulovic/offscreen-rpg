@@ -90,5 +90,4 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 [Decisions and dependency graph](../../undertakings/storyteller-workshop/REDIS-INFRASTRUCTURE.md). No live authorization or global queue change.
 
 ## Cache craftsmanship wave
-- [CACHE10 Memory and single-flight readability](2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Ready after CACHE09 source; source only.
-CACHE09 and CQ06 archived Done (source). CACHE12 held for planner migration; no global queue change.
+CACHE09, CACHE10, CACHE11 and CQ06 archived Done (source). CACHE12 held for planner migration; no global queue change.

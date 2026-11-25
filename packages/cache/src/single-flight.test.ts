@@ -187,3 +187,108 @@ test('maxWaitersPerKey rejects one extra waiter without second loader', async ()
   release();
   await Promise.all([leader, waiterOne, waiterTwo]);
 });
+
+test('held invalidated generation still counts toward active cap', async () => {
+  const flight = createSingleFlight<string>({
+    maxActiveKeys: 2,
+    maxWaitersPerKey: 8,
+  });
+  let releaseA!: (value: string) => void;
+  const hangA = new Promise<string>((resolve) => {
+    releaseA = resolve;
+  });
+  let releaseB!: (value: string) => void;
+  const hangB = new Promise<string>((resolve) => {
+    releaseB = resolve;
+  });
+
+  const genA = flight.run('x', async () => hangA);
+  const genB = flight.run('y', async () => hangB);
+  await Promise.resolve();
+
+  flight.invalidate('x');
+  assert.throws(() => {
+    void flight.run('z', async () => 'blocked');
+  }, CacheOverloadError);
+
+  releaseA('a');
+  await genA;
+  const admitted = await flight.run('z', async () => 'ok');
+  assert.equal(admitted.value, 'ok');
+
+  releaseB('b');
+  await genB;
+});
+
+test('overlapping replacement on same key keeps both generations active', async () => {
+  const flight = createSingleFlight<string>({
+    maxActiveKeys: 2,
+    maxWaitersPerKey: 8,
+  });
+  let releaseFirst!: (value: string) => void;
+  const firstHang = new Promise<string>((resolve) => {
+    releaseFirst = resolve;
+  });
+  let releaseSecond!: (value: string) => void;
+  const secondHang = new Promise<string>((resolve) => {
+    releaseSecond = resolve;
+  });
+  let secondLoads = 0;
+
+  const first = flight.run('k', async () => firstHang);
+  await Promise.resolve();
+  flight.invalidate('k');
+
+  const second = flight.run('k', async () => {
+    secondLoads += 1;
+    return secondHang;
+  });
+  await Promise.resolve();
+
+  assert.throws(() => {
+    void flight.run('other', async () => 'full');
+  }, CacheOverloadError);
+
+  releaseFirst('stale');
+  const firstResult = await first;
+  assert.equal(firstResult.value, 'stale');
+
+  releaseSecond('replacement');
+  const secondResult = await second;
+  assert.equal(secondResult.value, 'replacement');
+  assert.equal(secondLoads, 1);
+});
+
+test('cancelled coalesced waiter frees a waiter slot', async () => {
+  const flight = createSingleFlight<number>({
+    maxActiveKeys: 4,
+    maxWaitersPerKey: 2,
+  });
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  const leader = flight.run('slot', async () => {
+    await gate;
+    return 1;
+  });
+  const c1 = new AbortController();
+  const w1 = flight.run('slot', async () => 1, c1.signal);
+  const w2 = flight.run('slot', async () => 1);
+
+  assert.throws(() => {
+    void flight.run('slot', async () => 1);
+  }, CacheOverloadError);
+
+  c1.abort();
+  await assert.rejects(w1, (error: unknown) => {
+    assert.ok(error instanceof Error);
+    assert.equal(error.name, 'AbortError');
+    return true;
+  });
+
+  const w3 = flight.run('slot', async () => 1);
+  release();
+  await Promise.all([leader, w2, w3]);
+});
