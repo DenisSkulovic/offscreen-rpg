@@ -693,7 +693,7 @@
               "env": [
                 {
                   "name": "TEMPORAL_ADDRESS",
-                  "value": "temporal-server.lab-temporal.svc.cluster.local:7233"
+                  "value": "temporal-frontend.lab-temporal.svc.cluster.local:7233"
                 },
                 {
                   "name": "TEMPORAL_NAMESPACE",
@@ -789,7 +789,7 @@
               "env": [
                 {
                   "name": "TEMPORAL_ADDRESS",
-                  "value": "temporal-server.lab-temporal.svc.cluster.local:7233"
+                  "value": "temporal-frontend.lab-temporal.svc.cluster.local:7233"
                 },
                 {
                   "name": "TEMPORAL_NAMESPACE",
@@ -898,7 +898,7 @@
                 },
                 {
                   "name": "TEMPORAL_ADDRESS",
-                  "value": "temporal-server.lab-temporal.svc.cluster.local:7233"
+                  "value": "temporal-frontend.lab-temporal.svc.cluster.local:7233"
                 },
                 {
                   "name": "TEMPORAL_NAMESPACE",
