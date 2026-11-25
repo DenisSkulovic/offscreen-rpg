@@ -23,4 +23,5 @@ export { makeCacheKey, validateCacheIdentity } from './cache-key.js';
 export type { CacheTelemetry } from './cache-telemetry.js';
 export { emitCacheTelemetry } from './cache-telemetry.js';
 
-export { createDisabledStore, createFakeStore } from './test-stores.js';
+export { createDisabledStore } from './disabled-store.js';
+export { createFakeStore } from './test-stores.js';

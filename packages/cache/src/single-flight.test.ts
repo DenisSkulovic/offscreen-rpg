@@ -121,11 +121,15 @@ test('hung capacity, invalidate, and settlement release slots', async () => {
   });
   const releases: Array<(value: string) => void> = [];
 
-  function hungKey(tag: string): Promise<{ value: string; coalesced: boolean }> {
-    return flight.run(tag, () =>
-      new Promise<string>((resolve) => {
-        releases.push(resolve);
-      }),
+  function hungKey(
+    tag: string,
+  ): Promise<{ value: string; coalesced: boolean }> {
+    return flight.run(
+      tag,
+      () =>
+        new Promise<string>((resolve) => {
+          releases.push(resolve);
+        }),
     );
   }
 
@@ -133,24 +137,21 @@ test('hung capacity, invalidate, and settlement release slots', async () => {
   const hungB = hungKey('b');
   await Promise.resolve();
 
-  assert.throws(
-    () => {
-      void flight.run('c', async () => 'blocked');
-    },
-    CacheOverloadError,
-  );
+  assert.throws(() => {
+    void flight.run('c', async () => 'blocked');
+  }, CacheOverloadError);
 
   flight.invalidate('a');
-  assert.throws(
-    () => {
-      void flight.run('d', async () => 'still blocked');
-    },
-    CacheOverloadError,
-  );
+  assert.throws(() => {
+    void flight.run('d', async () => 'still blocked');
+  }, CacheOverloadError);
 
   releases.shift()?.('done-a');
   await hungA;
-  const admittedAfterFirstSettle = await flight.run('e', async () => 'admitted-early');
+  const admittedAfterFirstSettle = await flight.run(
+    'e',
+    async () => 'admitted-early',
+  );
   assert.equal(admittedAfterFirstSettle.value, 'admitted-early');
 
   releases.shift()?.('done-b');
@@ -178,12 +179,9 @@ test('maxWaitersPerKey rejects one extra waiter without second loader', async ()
   const waiterOne = flight.run('waiters', async () => 1);
   const waiterTwo = flight.run('waiters', async () => 1);
 
-  assert.throws(
-    () => {
-      void flight.run('waiters', async () => 1);
-    },
-    CacheOverloadError,
-  );
+  assert.throws(() => {
+    void flight.run('waiters', async () => 1);
+  }, CacheOverloadError);
   assert.equal(loads, 1);
 
   release();

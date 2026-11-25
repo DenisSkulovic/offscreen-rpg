@@ -215,4 +215,4 @@ Target **long-lived** topology after Change integration: **two branches only**:
 
 **2026-11-25 Redis exploration:** [INF58–INF60](REDIS-INFRASTRUCTURE.md) owner-commissioned source only; INF58 and INF59 parallel, INF60 gated. No queue change, no live permission or outcome credit. Hosted security and topology decisions held for planner, not delegated.
 
-- 2026-11-25 [Cache craftsmanship wave](CACHE-CRAFT.md): CACHE09 and CQ06 commissioned, CACHE10/11 after CACHE09; CACHE12 held for caller migration design. VER07/08 independent; no live/outcome credit. Estimates remain ~75/40/30/45 with broad uncertainty.
+- 2026-11-25 [Cache craftsmanship wave](CACHE-CRAFT.md): CACHE09 source Done (navigation/test names; 93/93; live NOT-RUN); CQ06 still commissioned; CACHE10/11 Ready after CACHE09; CACHE12 held for caller migration design. VER07/08 independent; no live/outcome credit. Estimates remain ~75/40/30/45 with broad uncertainty.

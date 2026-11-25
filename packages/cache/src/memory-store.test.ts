@@ -127,7 +127,10 @@ test('createMemoryStore: oversize write is skipped and does not evict neighbors'
   const maxBytes = OVERHEAD + neighborPayload + 1;
   const store = createMemoryStore({ maxBytes, maxEntries: 4, clock });
 
-  await store.set('neighbor', liveEntry('n'.repeat(neighborPayload), 100, 9_000));
+  await store.set(
+    'neighbor',
+    liveEntry('n'.repeat(neighborPayload), 100, 9_000),
+  );
 
   const tooBig = liveEntry('huge', 100, 9_000);
   tooBig.bytes = new Uint8Array(maxBytes - OVERHEAD + 1);
