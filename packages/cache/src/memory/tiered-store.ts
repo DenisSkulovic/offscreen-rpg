@@ -106,7 +106,9 @@ export function createTieredStore(options: {
       const l1Attempt = await safeSet(l1, key, entry);
       const l2Attempt = await safeSet(l2, key, entry);
 
-      if (l1Attempt.ok && l1Attempt.result.kind === 'stored') {
+      const l1Stored = l1Attempt.ok && l1Attempt.result.kind === 'stored';
+      const l2Stored = l2Attempt.ok && l2Attempt.result.kind === 'stored';
+      if (l1Stored || l2Stored) {
         return { kind: 'stored' };
       }
       if (l1Attempt.ok) {

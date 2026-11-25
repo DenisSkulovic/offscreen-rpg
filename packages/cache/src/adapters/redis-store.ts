@@ -14,6 +14,13 @@ import {
 import type { RedisConnection } from '../runtime/redis-connection.js';
 
 export const REDIS_ENTRY_MAX_BYTES = 1_048_576;
+const REDIS_ENTRY_MAX_ENCODED_BASE64_LENGTH =
+  Math.ceil(REDIS_ENTRY_MAX_BYTES / 3) * 4;
+const REDIS_ENVELOPE_RAW_MAX_LENGTH =
+  REDIS_ENTRY_MAX_ENCODED_BASE64_LENGTH + 256;
+const CANONICAL_BASE64_PATTERN =
+  /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/;
+
 const DEFAULT_OPERATION_TIMEOUT_MS = 100;
 const DEFAULT_MAX_OUTSTANDING_COMMANDS = 256;
 
@@ -53,12 +60,25 @@ function encodeEnvelope(entry: CacheEntry): string {
   return JSON.stringify(envelope);
 }
 
+function isCanonicalBase64Payload(encoded: string): boolean {
+  if (
+    encoded.length === 0 ||
+    encoded.length > REDIS_ENTRY_MAX_ENCODED_BASE64_LENGTH
+  ) {
+    return false;
+  }
+  return CANONICAL_BASE64_PATTERN.test(encoded);
+}
+
 function decodeEnvelope(
   raw: string,
   nowMs: number,
 ):
   | { kind: 'hit'; entry: CacheEntry }
   | { kind: 'bypass'; reason: 'invalid' | 'expired' | 'oversize' } {
+  if (raw.length > REDIS_ENVELOPE_RAW_MAX_LENGTH) {
+    return { kind: 'bypass', reason: 'invalid' };
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -73,7 +93,10 @@ function decodeEnvelope(
     return { kind: 'bypass', reason: 'invalid' };
   }
   const envelope = parsed as EnvelopeV1;
-  if (typeof envelope.p !== 'string' || envelope.p.length === 0) {
+  if (typeof envelope.p !== 'string') {
+    return { kind: 'bypass', reason: 'invalid' };
+  }
+  if (envelope.p.length > 0 && !isCanonicalBase64Payload(envelope.p)) {
     return { kind: 'bypass', reason: 'invalid' };
   }
   if (!Number.isSafeInteger(envelope.o) || !Number.isSafeInteger(envelope.e)) {
@@ -86,17 +109,18 @@ function decodeEnvelope(
     return { kind: 'bypass', reason: 'expired' };
   }
   let bytes: Uint8Array;
-  try {
-    const buf = Buffer.from(envelope.p, 'base64');
-    if (buf.length === 0 && envelope.p !== '') {
+  if (envelope.p.length === 0) {
+    bytes = new Uint8Array(0);
+  } else {
+    try {
+      const buf = Buffer.from(envelope.p, 'base64');
+      if (buf.length > REDIS_ENTRY_MAX_BYTES) {
+        return { kind: 'bypass', reason: 'oversize' };
+      }
+      bytes = new Uint8Array(buf);
+    } catch {
       return { kind: 'bypass', reason: 'invalid' };
     }
-    if (buf.length > REDIS_ENTRY_MAX_BYTES) {
-      return { kind: 'bypass', reason: 'oversize' };
-    }
-    bytes = new Uint8Array(buf);
-  } catch {
-    return { kind: 'bypass', reason: 'invalid' };
   }
   const entry: CacheEntry = {
     bytes,

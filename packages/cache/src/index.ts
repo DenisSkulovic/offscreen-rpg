@@ -1,5 +1,4 @@
 import type { ReadCache } from '@offscreen/cache-port/read-cache';
-import type { RedisClientType } from 'redis';
 
 import {
   createRedisStore,
@@ -12,6 +11,7 @@ import {
   resolveRedisConnectionSettings,
 } from './runtime/redis-config.js';
 import {
+  createLazyRedisLifecycleClient,
   createRedisConnectionFromRedisEnv,
   type RedisClientFactory,
   type RedisConnection,
@@ -89,49 +89,19 @@ function createCommandCapturingClientFactory(): Readonly<{
   getCommands: () => CacheAdapterRedisCommands | null;
 }> {
   let commands: CacheAdapterRedisCommands | null = null;
-  const factory: RedisClientFactory = (settings) => {
-    let client: RedisClientType | undefined;
-    return {
-      get isOpen() {
-        return client?.isOpen ?? false;
+  const factory: RedisClientFactory = (settings) =>
+    createLazyRedisLifecycleClient(settings, {
+      onSdkCreated(client) {
+        const active = client;
+        commands = {
+          get: (key) => active.get(key),
+          set: (key, value, options) => active.set(key, value, options),
+        };
       },
-      get isReady() {
-        return client?.isReady ?? false;
-      },
-      async connect() {
-        if (!client) {
-          const { createClient } = await import('redis');
-          client = createClient({
-            url: settings.url,
-            disableOfflineQueue: true,
-            socket: {
-              connectTimeout: settings.connectTimeoutMs,
-              reconnectStrategy: false,
-            },
-          });
-          client.on('error', () => {});
-          const active = client;
-          commands = {
-            get: (key) => active.get(key),
-            set: (key, value, options) => active.set(key, value, options),
-          };
-        }
-        await client.connect();
-      },
-      async close() {
+      onSdkClosed() {
         commands = null;
-        if (client?.isOpen) {
-          await client.close();
-        }
       },
-      on(event, listener) {
-        client?.on(event, listener as never);
-      },
-      off(event, listener) {
-        client?.off(event, listener as never);
-      },
-    };
-  };
+    });
   return {
     factory,
     getCommands: () => commands,

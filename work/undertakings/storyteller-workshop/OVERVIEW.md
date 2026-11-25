@@ -14,7 +14,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 ## Achieved and unresolved
 
 - Library and domain ownership improved; generic contracts workspace removed. Five recognized Authority-to-Writer exceptions remain.
-- Cache original eight Changes archived; CACHE04 source Done, CACHE07 superseded, no SQL/Redis live acceptance. CACHE08 residual runtime fixes Ready; VER06–08 commissioned verification lane after VER01/02. No outcome credit.
+- Cache original eight Changes archived; CACHE04 source Done, CACHE07 superseded, CACHE08 source Done (runtime residuals; package fakes). No SQL/Redis live acceptance. VER06–08 commissioned verification lane after VER01/02. No outcome credit.
 - DB01–DB09 source Done; DB10 source T01–T03 joined main (`a658f707`); live disposable SQL proof still NOT RUN and packet remains open. No live/outcome credit. Domain adoption remains open.
 - Infrastructure normalized; INF29 live evidence tracker; INF51 diagnostic archived source-only; INF50 residual regression source Done (live NOT-RUN); INF38 selective profiles remain. INF52 reusable lifecycle acceptance after VER01. Last-night diagnostic/startup observations are operator-reported, not full acceptance.
 - INF44–46 source archives exist; INF49 composition source Done (staged install+entrypoint); INF47 historical CLI source Done (live query NOT-RUN). No host activation implied.

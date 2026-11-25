@@ -79,4 +79,4 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 
 ## Cache reconciliation (2026-11-25)
 
-Original CACHE01–07 eight Changes archived. CACHE04 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). CACHE08 Ready; VER06 after VER01/02; VER07 after VER06/CACHE08; VER08 after VER07/02. No legacy live command, no global queue change.
+Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. CACHE04/CACHE08 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). VER06 after VER01/02; VER07 after VER06/CACHE08; VER08 after VER07/02. No legacy live command, no global queue change.

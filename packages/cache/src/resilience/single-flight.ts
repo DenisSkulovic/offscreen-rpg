@@ -18,7 +18,6 @@ type WaiterEntry<T> = {
 
 type InFlightGeneration<T> = {
   key: string;
-  generation: number;
   waiters: WaiterEntry<T>[];
 };
 
@@ -41,13 +40,21 @@ function abortError(signal: AbortSignal): Error {
   return error;
 }
 
-function detachWaiter<T>(entry: WaiterEntry<T>, signal: AbortSignal): void {
+function detachWaiter<T>(
+  generation: InFlightGeneration<T>,
+  entry: WaiterEntry<T>,
+  signal: AbortSignal,
+): void {
   if (entry.detached) {
     return;
   }
   entry.detached = true;
   entry.abortCleanup?.();
   entry.reject(abortError(signal));
+  const index = generation.waiters.indexOf(entry);
+  if (index >= 0) {
+    generation.waiters.splice(index, 1);
+  }
 }
 
 function attachWaiter<T>(
@@ -65,11 +72,11 @@ function attachWaiter<T>(
 
     if (signal) {
       if (signal.aborted) {
-        detachWaiter(entry, signal);
+        detachWaiter(generation, entry, signal);
         return;
       }
       const onAbort = () => {
-        detachWaiter(entry, signal);
+        detachWaiter(generation, entry, signal);
       };
       signal.addEventListener('abort', onAbort, { once: true });
       entry.abortCleanup = () => {
@@ -84,8 +91,7 @@ function attachWaiter<T>(
 function settleGeneration<T>(
   generation: InFlightGeneration<T>,
   outcome:
-    | { kind: 'fulfilled'; value: T }
-    | { kind: 'rejected'; error: unknown },
+    { kind: 'fulfilled'; value: T } | { kind: 'rejected'; error: unknown },
 ): void {
   for (const waiter of generation.waiters) {
     if (waiter.detached) {
@@ -98,6 +104,7 @@ function settleGeneration<T>(
       waiter.reject(outcome.error);
     }
   }
+  generation.waiters.length = 0;
 }
 
 export function createSingleFlight<T>(options: {
@@ -107,21 +114,27 @@ export function createSingleFlight<T>(options: {
   const { maxActiveKeys, maxWaitersPerKey } = options;
   const mappedByKey = new Map<string, InFlightGeneration<T>>();
   const inFlightCountByKey = new Map<string, number>();
-  const generationCounterByKey = new Map<string, number>();
 
-  function countDistinctInFlightKeys(): number {
-    return inFlightCountByKey.size;
+  function totalActiveGenerations(): number {
+    let total = 0;
+    for (const count of inFlightCountByKey.values()) {
+      total += count;
+    }
+    return total;
   }
 
   function beginInFlightGeneration(key: string): void {
-    const current = inFlightCountByKey.get(key) ?? 0;
-    if (current === 0 && countDistinctInFlightKeys() >= maxActiveKeys) {
+    if (totalActiveGenerations() >= maxActiveKeys) {
       throw new CacheOverloadError();
     }
+    const current = inFlightCountByKey.get(key) ?? 0;
     inFlightCountByKey.set(key, current + 1);
   }
 
-  function endInFlightGeneration(key: string, generation: InFlightGeneration<T>): void {
+  function endInFlightGeneration(
+    key: string,
+    generation: InFlightGeneration<T>,
+  ): void {
     if (mappedByKey.get(key) === generation) {
       mappedByKey.delete(key);
     }
@@ -131,12 +144,6 @@ export function createSingleFlight<T>(options: {
     } else {
       inFlightCountByKey.set(key, next);
     }
-  }
-
-  function nextGenerationNumber(key: string): number {
-    const next = (generationCounterByKey.get(key) ?? 0) + 1;
-    generationCounterByKey.set(key, next);
-    return next;
   }
 
   async function executeLoader(
@@ -173,12 +180,22 @@ export function createSingleFlight<T>(options: {
     beginInFlightGeneration(key);
     const generation: InFlightGeneration<T> = {
       key,
-      generation: nextGenerationNumber(key),
       waiters: [],
     };
     mappedByKey.set(key, generation);
 
     const leader = attachWaiter(generation, false, signal);
+    const hasActiveLeader = generation.waiters.some(
+      (waiter) => !waiter.coalesced && !waiter.detached,
+    );
+    if (!hasActiveLeader) {
+      if (mappedByKey.get(key) === generation) {
+        mappedByKey.delete(key);
+      }
+      endInFlightGeneration(key, generation);
+      return leader;
+    }
+
     void executeLoader(generation, load);
     return leader;
   }

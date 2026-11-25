@@ -100,6 +100,11 @@ export function bindCache<T>(
       return { kind: 'miss' };
     }
 
+    if (lookup.entry.bytes.byteLength > policy.maxEntryBytes) {
+      telemetryEvent({ tier: 'l2', operation: 'get', outcome: 'bypass' });
+      return { kind: 'miss' };
+    }
+
     try {
       const value = definition.codec.decode(lookup.entry.bytes);
       telemetryEvent({ tier: 'l2', operation: 'get', outcome: 'hit' });

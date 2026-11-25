@@ -8,6 +8,7 @@ import {
   type CacheAdapterRedisCommands,
 } from './index.js';
 import {
+  createLazyRedisLifecycleClient,
   createRedisConnection,
   type RedisClientFactory,
   type RedisLifecycleClient,
@@ -16,9 +17,21 @@ type FakeClientOptions = Readonly<{
   shouldFailConnect?: (attempt: number) => boolean;
 }>;
 
-function createFakeClient(
-  options: FakeClientOptions,
-): RedisLifecycleClient & { connectAttempts: number } {
+function failConnectOnce(): (attempt: number) => boolean {
+  let failed = false;
+  return (_attempt) => {
+    if (failed) {
+      return false;
+    }
+    failed = true;
+    return true;
+  };
+}
+
+function createFakeClient(options: FakeClientOptions): RedisLifecycleClient & {
+  connectAttempts: number;
+  simulateEnd(): void;
+} {
   let open = false;
   let ready = false;
   let connectAttempts = 0;
@@ -65,6 +78,11 @@ function createFakeClient(
     off(event, listener) {
       listeners.get(event)?.delete(listener);
     },
+    simulateEnd() {
+      open = false;
+      ready = false;
+      emit('end');
+    },
   };
 }
 
@@ -108,16 +126,25 @@ function createHarnessFactory(options: FakeClientOptions): Readonly<{
   };
 }
 
-type TimerJob = Readonly<{ delayMs: number; run: () => void }>;
+type TimerJob = Readonly<{ delayMs: number; run: () => void; id: number }>;
 
 function createControllableTimers() {
   const jobs: TimerJob[] = [];
+  let nextId = 0;
   return {
     setTimer(fn: () => void, delayMs: number) {
-      jobs.push({ delayMs, run: fn });
-      return delayMs as unknown as ReturnType<typeof setTimeout>;
+      const id = nextId;
+      nextId += 1;
+      jobs.push({ delayMs, run: fn, id });
+      return id as unknown as ReturnType<typeof setTimeout>;
     },
-    clearTimer() {},
+    clearTimer(handle: ReturnType<typeof setTimeout>) {
+      const timerId = handle as unknown as number;
+      const index = jobs.findIndex((job) => job.id === timerId);
+      if (index >= 0) {
+        jobs.splice(index, 1);
+      }
+    },
     async runAll() {
       jobs.sort((left, right) => left.delayMs - right.delayMs);
       while (jobs.length > 0) {
@@ -231,7 +258,7 @@ test('ready adapter enables legacy JSON wire with qualified prefix keys', async 
 test('store follows live readiness while enabled stays at startup snapshot', async () => {
   const timers = createControllableTimers();
   const harness = createHarnessFactory({
-    shouldFailConnect: (attempt) => attempt === 1,
+    shouldFailConnect: failConnectOnce(),
   });
   const connection = createRedisConnection(configuredEnv, {
     clientFactory: harness.factory,
@@ -269,6 +296,69 @@ test('store follows live readiness while enabled stays at startup snapshot', asy
   assert.deepEqual(write, { kind: 'stored' });
 
   await adapter.close();
+});
+
+test('lazy default-style factory clears captured commands on terminal close', async () => {
+  const storage = new Map<string, string>();
+  let commands: CacheAdapterRedisCommands | null = null;
+  const factory: RedisClientFactory = (settings) =>
+    createLazyRedisLifecycleClient(settings, {
+      createSdkClient: async () => {
+        const backing = createInMemoryCommands(storage);
+        return {
+          isOpen: false,
+          isReady: true,
+          on() {},
+          off() {},
+          async connect() {},
+          async close() {},
+          get: backing.get.bind(backing),
+          set: backing.set.bind(backing),
+        } as never;
+      },
+      onSdkCreated(client) {
+        const active = client as never as CacheAdapterRedisCommands;
+        commands = {
+          get: (key) => active.get(key),
+          set: (key, value, options) => active.set(key, value, options),
+        };
+      },
+      onSdkClosed() {
+        commands = null;
+      },
+    });
+
+  const adapter = await createCacheAdapter(configuredEnv, undefined, {
+    clientFactory: factory,
+    getCommands: () => commands,
+  });
+  assert.equal(adapter.enabled, true);
+  assert.notEqual(commands, null);
+  await adapter.close();
+  assert.equal(commands, null);
+});
+
+test('disconnect during live use obtains a fresh client generation on reconnect', async () => {
+  const timers = createControllableTimers();
+  const harness = createHarnessFactory({});
+  const connection = createRedisConnection(configuredEnv, {
+    clientFactory: harness.factory,
+    random: () => 0,
+    setTimer: timers.setTimer,
+    clearTimer: timers.clearTimer,
+  });
+
+  await connection.start();
+  const clientBefore = harness.holder.current;
+
+  harness.holder.current?.simulateEnd();
+  assert.equal(connection.admitsTraffic(), false);
+
+  await timers.runAll();
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(connection.admitsTraffic(), true);
+  assert.notEqual(harness.holder.current, clientBefore);
+  await connection.close();
 });
 
 function sampleEntry(): CacheEntry {

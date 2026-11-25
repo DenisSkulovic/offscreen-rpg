@@ -1,0 +1,29 @@
+# CACHE08 | Cache runtime residual correctness
+
+**State: Done (source implementation only).** Source proof `pnpm --filter @offscreen/cache test` 93/93; live Redis/SQL acceptance remains separately gated under VER07/VER08 and is not claimed here. Join SHA recorded after main squash.
+
+[Cache architecture](../../../../../../docs/technical/platform/persistence-and-caching.md) · [Verification contract](../../../../../../docs/technical/platform/verification-programmes.md) · [TASKS](TASKS.md).
+
+Separate linked Change worktree from current main; branch guard --change CACHE08 --target main. One bounded Composer child at a time, parent serializes shared manifest/lockfile/catalog joins. Source implementation and focused tests commissioned; live resources only explicit operator --live through common runner. No shared Redis/SQL, production, provider, tenant, or deployment mutation. Preserve public API/domain authority and existing work. Record exact SHA, paths, command/cwd, positive/negative tests and tier. Source join does not confer live acceptance. Actual safety or semantic contradiction returns to planner with exact evidence; missing live permission not source blocker. No unselected successor.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because no gameplay, authorization or spend promise moves | none | no product edit |
+| Technical | changed: docs/technical/platform/persistence-and-caching.md#current-state and docs/technical/platform/verification-programmes.md record CACHE08 source lifecycle/flight/tier/payload corrections without claiming live PASS | work/undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md; packages/cache/README.md | source realization only |
+| Code | change: packages/cache/src/runtime/redis-connection.ts, packages/cache/src/index.ts, packages/cache/src/resilience/single-flight.ts, packages/cache/src/memory/tiered-store.ts, packages/cache/src/adapters/redis-store.ts, packages/cache/src/strategies/index.ts plus tests packages/cache/src/cache02-connection.test.ts, packages/cache/src/cache02-adapter.test.ts, packages/cache/src/cache08-bounded.test.ts; negative: close-during-connect, pre-aborted loader, oversize/malformed envelope, invalidate-at-cap overload | packages/cache/README.md | fixture-tested package suite |
+| Related | changed: archive/catalog/ledger/OVERVIEW/CACHE-PARALLEL links after Done; VER06/VER07 packets remain open owners of harness/live proof | work/changes/README.md; work/changes/ledger/2026-11.md | catalog reconciled |
+
+## Diff paths
+
+packages/cache/src/runtime/redis-connection.ts packages/cache/src/index.ts packages/cache/src/resilience/single-flight.ts packages/cache/src/memory/tiered-store.ts packages/cache/src/adapters/redis-store.ts packages/cache/src/strategies/index.ts packages/cache/src/cache02-connection.test.ts packages/cache/src/cache02-adapter.test.ts packages/cache/src/cache08-bounded.test.ts packages/cache/README.md docs/technical/platform/persistence-and-caching.md docs/technical/platform/verification-programmes.md work/undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md work/undertakings/storyteller-workshop/OVERVIEW.md work/undertakings/storyteller-workshop/CACHE-PARALLEL.md work/changes/README.md work/changes/open/README.md work/changes/ledger/2026-11.md
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/technical/platform/persistence-and-caching.md#current-state Redis lifecycle, single-flight retention, tier write verdict, envelope/decode bounds | docs/technical/platform/persistence-and-caching.md | changed: Current state now records CACHE08 source corrections (bounded startup settle, generation fence, maxActiveKeys, tier stored-or-deterministic L1/L2, canonical envelope bounds and maxEntryBytes before decode) without live Redis PASS | packages/cache/src/runtime/redis-connection.ts packages/cache/src/resilience/single-flight.ts packages/cache/src/memory/tiered-store.ts packages/cache/src/adapters/redis-store.ts packages/cache/src/strategies/index.ts @ pending-join | fixture-tested (`pnpm --filter @offscreen/cache test` 93/93) | close-during-connect cannot resurrect; pre-aborted leader loads===0; invalidate at cap throws CacheOverloadError; non-canonical/oversize base64 bypass invalid; oversize hit reloads origin | packages/cache/README.md; work/undertakings/storyteller-workshop/CACHE-PARALLEL.md |
+| docs/technical/platform/verification-programmes.md Cache programme residual runtime defects | docs/technical/platform/verification-programmes.md | changed: programme text now states CACHE08 source Done for lifecycle/flight/tier/payload and keeps live Redis/memory under VER07 | packages/cache/src/cache08-bounded.test.ts @ pending-join | fixture-tested | malformed/oversize envelope and overload paths remain diagnostic negatives in package suite | work/undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md |
+| Live Redis/SQL cache acceptance | docs/technical/platform/verification-programmes.md | unchanged because this Change is source-only and VER07/VER08 own live profiles | no source behavior changed for live harness ownership | source-observed | claiming live PASS from package fakes would be the failure | N/A |
+| Product gameplay/auth/spend | none | no product/technical behavior impacted because CACHE08 does not alter player authority or spend | no source behavior changed | source-observed | no product page rewrite authorized | N/A |
