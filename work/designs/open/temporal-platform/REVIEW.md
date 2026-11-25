@@ -26,3 +26,7 @@ Reviewed current main 72e07201, original uploaded baseline (unchanged source out
 ## Fourth revision
 
 Split dossier by file responsibility; original full design remains in Git at c39cab3189251cba33a76120597bf2788ebf7346. No change to accepted architecture (none yet accepted). Explicitly identify readiness.test.mjs as a proposed test owner. Concrete configuration specimen and released archive render remain outstanding. Next owner review 2026-11-26 or earlier.
+
+## Artifact review (2026-11-25)
+
+Revised candidate to chart 1.8.0 after inspecting upstream gh-pages index, 1.7.0-to-1.8.0 comparison and tagged templates. Published SHA-256 and archive URL recorded; actual bytes and Helm render NOT RUN (sandbox lacks Helm and DNS for upstream repository). See [specimen](specimen/README.md). No live migration decision or implementation authorization.
