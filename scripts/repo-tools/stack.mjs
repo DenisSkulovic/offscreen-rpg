@@ -24,7 +24,7 @@ export function runPlannedCommand(command, input, runner) {
   /** @type {string[][]} */
   const ran = [];
   for (const argv of plan.commands) {
-    const result = runner(argv);
+    const result = runner(argv, { planned: true });
     ran.push(argv);
     if (result.status !== 0) {
       const detail = (result.stderr ?? '').trim() || `${argv.join(' ')} failed`;
@@ -258,7 +258,23 @@ export function readLiveStatusObservation(runner) {
   };
 }
 
-function defaultRunner(argv) {
+function defaultRunner(argv, { planned = false } = {}) {
+  if (planned) {
+    const started = Date.now();
+    const phase = argv[1]?.endsWith('platform.mjs') ? 'Platform services' :
+      argv[1]?.endsWith('install.sh') ? 'Release application' :
+      argv[1]?.endsWith('/up.sh') ? 'Cluster startup' :
+      argv[1]?.endsWith('/destroy.sh') ? 'Cluster reset' : 'Owned resource operation';
+    process.stderr.write('\n[release] ▶ ' + phase + '\n');
+    // Only plan-approved operations stream. JSON observations and secret reads stay captured.
+    const result = spawnSync(argv[0], argv.slice(1), {
+      stdio: ['ignore', 'inherit', 'inherit'], env: process.env,
+    });
+    const elapsed = ((Date.now() - started) / 1000).toFixed(1);
+    const ok = result.status === 0 && !result.error;
+    process.stderr.write('[release] ' + (ok ? '✓ ' : '✗ ') + phase + ' (' + elapsed + 's)\n');
+    return { status: ok ? 0 : result.status || 1, stdout: '', stderr: ok ? '' : phase + ' failed; see live output above.' };
+  }
   const result = spawnSync(argv[0], argv.slice(1), {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],

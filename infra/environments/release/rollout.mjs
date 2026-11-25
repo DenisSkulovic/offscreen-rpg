@@ -639,6 +639,7 @@ export function verifySelectedReleaseRollouts(input) {
           ? 'lab-workers'
           : 'lab-edge';
     for (const deploymentName of deploymentNames) {
+      console.error('[rollout] Waiting for ' + namespace + '/' + deploymentName);
       waitDeploymentRollout(
         run,
         profile.contextName,

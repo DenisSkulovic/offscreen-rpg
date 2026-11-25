@@ -120,7 +120,7 @@ function executeJob(action, receipt, run) {
     profileId: 'release', node: pod.spec.nodeName, observedDigest, expectedDigest: receipt.digest,
     acceptedIds: [identity.configId, identity.manifestDigest, identity.targetDigest],
     run: (command, args) => { const r = run(command, args); return { ...r, status: r.ok ? 0 : 1 }; },
-  })) fail(name + ' image provenance mismatch');
+  })) fail(name + ' image provenance mismatch (expected=' + receipt.digest + ', observed=' + (observedDigest ?? 'missing') + ', node=' + pod.spec?.nodeName + ')');
   const logs = run('kubectl', kubectl(['logs', 'pod/' + pod.metadata.name, '-c', action]));
   if (!logs.ok) fail(name + ' receipt unreadable');
   return fixtureRootsFromReceipt(logs.stdout, action);
@@ -135,14 +135,18 @@ export function ensureReleaseContent({ run = runPlatformCommand, load = ensureRe
   const credentials = named('secret', 'game-runtime', run);
   if (credentials.state !== 'present' || credentials.object.metadata?.labels?.[OWNER] !== 'disposable' ||
       !credentials.object.metadata?.uid || !credentials.object.data?.['access-key-id'] || !credentials.object.data?.['secret-access-key']) fail('runtime S3 credential projection missing or foreign');
+  console.error('[content] Building pinned fixture image');
   const built = run('bash', [BUILD], { timeoutMs: 900000 });
   if (!built.ok) fail('bootstrap image build failed; run ' + BUILD + ' for build diagnostics');
+  console.error('[content] Distributing fixture image');
   const receipt = load({ profileId: 'release', ref: IMAGE, run: (command, args) => {
     const r = run(command, args, { timeoutMs: 180000 });
     return { ...r, status: r.ok ? 0 : 1 };
   } });
   if (receipt.runtimeRef !== releaseGenerationRef(IMAGE, receipt.digest)) fail('bootstrap generation receipt mismatch');
+  console.error('[content] Publishing pinned fixture');
   executeJob('importer', receipt, run);
+  console.error('[content] Verifying pinned fixture from a fresh Pod');
   const roots = executeJob('reader', receipt, run);
   return { ok: true, roots };
 }
