@@ -38,3 +38,7 @@ One mandatory replacement Change, pin relocation inside it, separate persistence
 ## Owner terminal evidence (2026-11-25)
 
 Baseline archive integrity, both profile renders, release lint, registry image indexes and read-only CNPG discovery/status schema/service inventory observed. See [FINDINGS.md](FINDINGS.md) for exact observations and limitations. Final pinned render, catalog/ACL/credential sequence, legacy inventory and runtime proof pending. No implementation commission.
+
+## Pinned development render (2026-11-25)
+
+Owner terminal lint passed; render with all three actual image index digests via equivalent overlay produced exactly ten image substitutions and no other diff. Native values image tag@index-digest selected. Baseline release lint/render passed earlier; final pinned release render and exact committed-file regression remain. See FINDINGS.md. No runtime proof or implementation commission.
