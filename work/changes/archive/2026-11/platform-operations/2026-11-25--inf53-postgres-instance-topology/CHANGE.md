@@ -1,6 +1,6 @@
 # INF53 | Shared PostgreSQL instance topology
 
-**State: Done (source implementation; live topology NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf53-postgres-instance-topology` from main `0c5221d3591bd60804349881818772924169fb6a`. Kind: implementation. Profile: RELEASE. [Selected topology](../../../../../../docs/technical/platform/database-infrastructure.md#local-cnpg-topology-selected-2026-11-25) · [TASKS](TASKS.md) · [PROOF](PROOF.md). Join SHA recorded after squash into main.
+**State: Done (source implementation; live topology NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf53-postgres-instance-topology` from main `0c5221d3591bd60804349881818772924169fb6a`. Kind: implementation. Profile: RELEASE. [Selected topology](../../../../../../docs/technical/platform/database-infrastructure.md#local-cnpg-topology-selected-2026-11-25) · [TASKS](TASKS.md) · [PROOF](PROOF.md). Joined main at `6ba9eebea490b2b77b820d1f01d402084d15a260`.
 
 Outcome: shared explicit baseline scaling for dev/release, configurable chart count, normal bootstrap retains existing compatible count. No new operator installer. Shared dev baseline is not a per-slot database; ordinary agents must never resize it. No independent cluster creation until INF54. Existing one-instance pod replacement smoke remains intentionally single-instance. Live owner experiments remain separate from this source join.
 
