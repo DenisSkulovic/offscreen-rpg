@@ -377,5 +377,5 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 - [CACHE09 Cache navigation and behavioral test names](open/2026-11-25--cache09-cache-navigation/CHANGE.md) — Ready; source only.
 - [CACHE10 Memory and single-flight readability](open/2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Ready (dependency-gated); source only.
 - [CACHE11 Redis envelope and bounded command executor](open/2026-11-25--cache11-cache-redis-execution/CHANGE.md) — Ready (dependency-gated); source only.
-- [CQ06 Changed-code craftsmanship diagnostics](open/2026-11-25--cq06-code-craft-diagnostics/CHANGE.md) — Ready; source only.
+- [CQ06 Changed-code craftsmanship diagnostics](archive/2026-11/other/2026-11-25--cq06-code-craft-diagnostics/CHANGE.md) — Done (2026-11-25); advisory AST/naming/boundary diagnostics.
 CACHE12 held for planner migration; no global queue change.

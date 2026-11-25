@@ -14,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 import {
   CODE_HEALTH_MISSING,
   isProductionSource,
+  isTrackedTestSource,
+  normalizePath,
   scanCodeHealth,
   THRESHOLDS,
 } from './code-health-core.mjs';
@@ -208,12 +210,81 @@ export function topLargestFiles(files, limit = 10) {
     .slice(0, limit);
 }
 
+const HUMAN_CHANGED_DIAGNOSTIC_LIMIT = 40;
+
+/**
+ * @param {import('./code-health-core.mjs').CodeHealthFinding} finding
+ */
+export function conciseFinding(finding) {
+  const row = {
+    id: finding.id,
+    kind: finding.kind,
+    path: finding.path,
+    severity: finding.severity,
+    message: finding.message,
+  };
+  if (finding.line != null) {
+    row.line = finding.line;
+  }
+  if (finding.name != null) {
+    row.name = finding.name;
+  }
+  return row;
+}
+
+/**
+ * When a baseline is available, partition review findings to the changed diff
+ * without inventing per-line deltas on unchanged files.
+ *
+ * @param {ReturnType<typeof scanCodeHealth>} scan
+ * @param {{
+ *   modifiedScopedPaths?: Set<string> | Iterable<string>;
+ *   baselineAvailable: boolean;
+ *   baselineRef: string | null;
+ * }} input
+ */
+export function buildDiagnosticsScope(scan, input) {
+  if (!input.baselineRef || !input.baselineAvailable) {
+    return null;
+  }
+  const changedPathSet = new Set(
+    [...(input.modifiedScopedPaths ?? [])].map((rel) => normalizePath(rel)),
+  );
+  /** @type {import('./code-health-core.mjs').CodeHealthFinding[]} */
+  const changedFindings = [];
+  /** @type {Set<string>} */
+  const existingDebtFiles = new Set();
+  let existingDebtFindingCount = 0;
+
+  for (const finding of scan.findings) {
+    if (changedPathSet.has(normalizePath(finding.path))) {
+      changedFindings.push(finding);
+    } else {
+      existingDebtFindingCount += 1;
+      existingDebtFiles.add(finding.path);
+    }
+  }
+
+  changedFindings.sort((a, b) => a.id.localeCompare(b.id));
+
+  return {
+    changedPathCount: changedPathSet.size,
+    changedFindings: changedFindings.map(conciseFinding),
+    changedFindingCount: changedFindings.length,
+    existingDebt: {
+      findingCount: existingDebtFindingCount,
+      fileCount: existingDebtFiles.size,
+    },
+  };
+}
+
 /**
  * @param {{
  *   scan: ReturnType<typeof scanCodeHealth>;
  *   head: string | null;
  *   baselineRef: string | null;
  *   forceBaselineUnavailable?: boolean;
+ *   modifiedScopedPaths?: Set<string> | Iterable<string>;
  * }} input
  */
 export function formatJsonReport({
@@ -221,19 +292,27 @@ export function formatJsonReport({
   head,
   baselineRef,
   forceBaselineUnavailable = false,
+  modifiedScopedPaths,
 }) {
+  const baselineAvailable = forceBaselineUnavailable
+    ? false
+    : scan.baselineAvailable;
+  const diagnosticsScope = buildDiagnosticsScope(scan, {
+    modifiedScopedPaths,
+    baselineAvailable,
+    baselineRef,
+  });
   return {
     schema: SCHEMA,
     head,
     baselineRef,
-    baselineAvailable: forceBaselineUnavailable
-      ? false
-      : scan.baselineAvailable,
+    baselineAvailable,
     summary: scan.summary,
     files: scan.files,
     directories: scan.directories,
     findings: scan.findings,
     strictRegressions: forceBaselineUnavailable ? [] : scan.strictRegressions,
+    diagnosticsScope,
     thresholdsVersion: scan.thresholdsVersion,
   };
 }
@@ -246,6 +325,40 @@ export function renderHuman(report) {
     `${SCHEMA} ${report.head ?? 'no-sha'} baseline=${report.baselineRef ?? 'none'} available=${report.baselineAvailable}`,
     `production files ${report.summary.productionFiles}  findings ${report.summary.findings}  strict ${report.summary.strictRegressions}`,
   ];
+
+  if (report.diagnosticsScope) {
+    const scope = report.diagnosticsScope;
+    lines.push(
+      `Changed paths in diff ${scope.changedPathCount}  changed/new diagnostics ${scope.changedFindingCount}  existing debt on unchanged files ${scope.existingDebt.findingCount} (${scope.existingDebt.fileCount} files)`,
+    );
+    if (scope.changedFindingCount > 0) {
+      lines.push('Changed/new diagnostics (scoped to diff):');
+      const preview = scope.changedFindings.slice(
+        0,
+        HUMAN_CHANGED_DIAGNOSTIC_LIMIT,
+      );
+      for (const item of preview) {
+        const linePart = item.line != null ? `:${item.line}` : '';
+        const namePart = item.name ? ` ${item.name}` : '';
+        lines.push(
+          `  ${item.kind}  ${item.path}${linePart}${namePart}  ${item.message}`,
+        );
+      }
+      const omitted = scope.changedFindingCount - preview.length;
+      if (omitted > 0) {
+        lines.push(
+          `  ... and ${omitted} more (see --json diagnosticsScope.changedFindings)`,
+        );
+      }
+    }
+    if (report.strictRegressions.length > 0) {
+      lines.push('Strict-new regressions:');
+      for (const item of report.strictRegressions) {
+        lines.push(`  ${item.kind}  ${item.path}  ${item.message}`);
+      }
+    }
+  }
+
   const largest = topLargestFiles(report.files);
   if (largest.length > 0) {
     lines.push('Largest source files:');
@@ -339,6 +452,8 @@ export function buildCodeHealthReport(options) {
   let baselineEntries;
   /** @type {Set<string>} */
   let modifiedPaths = new Set();
+  /** @type {Set<string>} */
+  let modifiedScopedPaths = new Set();
 
   if (baselineRef) {
     const verify = gitCapture(['rev-parse', '--verify', baselineRef]);
@@ -370,8 +485,12 @@ export function buildCodeHealthReport(options) {
         failure: `Git could not diff the working tree against "${baselineRef}".`,
       };
     }
-    modifiedPaths = new Set(
-      parseNulPaths(diff.stdout).filter((rel) => isProductionSource(rel)),
+    const diffPaths = parseNulPaths(diff.stdout);
+    modifiedPaths = new Set(diffPaths.filter((rel) => isProductionSource(rel)));
+    modifiedScopedPaths = new Set(
+      diffPaths.filter(
+        (rel) => isProductionSource(rel) || isTrackedTestSource(rel),
+      ),
     );
   }
 
@@ -430,6 +549,7 @@ export function buildCodeHealthReport(options) {
     baselineRef: resolvedBaseline,
     scan,
     forceBaselineUnavailable,
+    modifiedScopedPaths,
   };
 }
 
@@ -473,6 +593,7 @@ export function main(argv = process.argv.slice(2), overrides = {}) {
     head: built.head,
     baselineRef: built.baselineRef,
     forceBaselineUnavailable: built.forceBaselineUnavailable,
+    modifiedScopedPaths: built.modifiedScopedPaths,
   });
 
   if (json) {

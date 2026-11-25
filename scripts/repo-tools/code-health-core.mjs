@@ -8,28 +8,41 @@ import ts from 'typescript';
 export const CODE_HEALTH_MISSING = 'CODE_HEALTH_MISSING';
 
 export const THRESHOLDS = {
-  thresholdsVersion: 'cq05.v1',
+  thresholdsVersion: 'cq06.v1',
+  fileLinesAdvisory: 300,
   fileLinesReview: 700,
   fileLinesHigh: 1200,
+  functionBodySpanReview: 60,
+  functionBodySpanSevere: 100,
   functionLinesReview: 120,
+  cyclomaticComplexityReview: 12,
+  controlFlowNestingAdvisory: 3,
   controlFlowNestingReview: 5,
+  parameterCountReview: 5,
   directFilesReview: 35,
 };
 
 const PRODUCTION_ROOTS = ['apps/', 'packages/', 'tools/'];
-const EXCLUDED_SEGMENTS = new Set([
+const HARD_EXCLUDED_SEGMENTS = new Set([
   'dist',
   '.next',
   'generated',
   'node_modules',
   'coverage',
+]);
+const PRODUCTION_EXCLUDED_SEGMENTS = new Set([
+  ...HARD_EXCLUDED_SEGMENTS,
   'test',
   'tests',
   '__tests__',
   'fixtures',
 ]);
+const TEST_PATH_SEGMENTS = new Set(['test', 'tests', '__tests__', 'fixtures']);
 const SOURCE_EXT_RE = /\.(ts|tsx|mts|cts)$/;
 const TEST_NAME_RE = /\.(test|spec|integration)\.(ts|tsx|mts|cts)$/;
+/** Basename (no extension) begins with packet id + hyphen/underscore or cache-wave prefix. */
+const PACKET_STYLE_TEST_BASENAME_RE =
+  /^(?:[A-Za-z]{2,}\d{2}[-_]|cache-wave\d+-)/u;
 
 const CONTROL_FLOW_KINDS = new Set([
   ts.SyntaxKind.IfStatement,
@@ -51,8 +64,8 @@ export function normalizePath(rel) {
   return String(rel).replaceAll('\\', '/');
 }
 
-/** Whether a repo-relative path is in-scope production TypeScript source. */
-export function isProductionSource(rel) {
+/** Whether a repo-relative path is in-scope TypeScript under apps/packages/tools. */
+export function isInScopeSource(rel) {
   const normalized = normalizePath(rel);
   if (!PRODUCTION_ROOTS.some((prefix) => normalized.startsWith(prefix))) {
     return false;
@@ -60,16 +73,302 @@ export function isProductionSource(rel) {
   if (!SOURCE_EXT_RE.test(normalized)) {
     return false;
   }
+  for (const segment of normalized.split('/')) {
+    if (HARD_EXCLUDED_SEGMENTS.has(segment)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Whether a repo-relative path is in-scope production TypeScript source. */
+export function isProductionSource(rel) {
+  const normalized = normalizePath(rel);
+  if (!isInScopeSource(normalized)) {
+    return false;
+  }
   const baseName = normalized.slice(normalized.lastIndexOf('/') + 1);
   if (TEST_NAME_RE.test(baseName)) {
     return false;
   }
   for (const segment of normalized.split('/')) {
-    if (EXCLUDED_SEGMENTS.has(segment)) {
+    if (PRODUCTION_EXCLUDED_SEGMENTS.has(segment)) {
       return false;
     }
   }
   return true;
+}
+
+/** Tracked test/fixture TypeScript inventory (separate from production sizing). */
+export function isTrackedTestSource(rel) {
+  const normalized = normalizePath(rel);
+  if (!isInScopeSource(normalized)) {
+    return false;
+  }
+  if (isProductionSource(normalized)) {
+    return false;
+  }
+  const baseName = normalized.slice(normalized.lastIndexOf('/') + 1);
+  if (TEST_NAME_RE.test(baseName)) {
+    return true;
+  }
+  for (const segment of normalized.split('/')) {
+    if (TEST_PATH_SEGMENTS.has(segment)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @param {string} rel
+ */
+export function testBasenameWithoutExtension(rel) {
+  const normalized = normalizePath(rel);
+  const baseName = normalized.slice(normalized.lastIndexOf('/') + 1);
+  return baseName.replace(/\.(ts|tsx|mts|cts)$/u, '');
+}
+
+/** Packet-style test filename debt (e.g. cq06-foo, cache03-bar, cache-wave1-x). */
+export function hasPacketStyleTestBasename(rel) {
+  return PACKET_STYLE_TEST_BASENAME_RE.test(testBasenameWithoutExtension(rel));
+}
+
+/**
+ * @param {string} relPath
+ */
+function posixNormalizeRelative(relPath) {
+  /** @type {string[]} */
+  const parts = [];
+  for (const part of normalizePath(relPath).split('/')) {
+    if (part === '' || part === '.') {
+      continue;
+    }
+    if (part === '..') {
+      parts.pop();
+      continue;
+    }
+    parts.push(part);
+  }
+  return parts.join('/');
+}
+
+/**
+ * Resolve a static relative module specifier from a repo-relative file path.
+ * @param {string} fromFile
+ * @param {string} specifier
+ */
+export function resolveStaticRelativeImport(fromFile, specifier) {
+  const normalized = normalizePath(specifier);
+  if (!normalized.startsWith('./') && !normalized.startsWith('../')) {
+    return null;
+  }
+  const normalizedFrom = normalizePath(fromFile);
+  const directory = normalizedFrom.includes('/')
+    ? normalizedFrom.slice(0, normalizedFrom.lastIndexOf('/'))
+    : '';
+  return posixNormalizeRelative(`${directory}/${normalized}`);
+}
+
+/**
+ * @param {string} resolvedPath
+ */
+function resolvedPathTouchesTestBoundary(resolvedPath) {
+  const normalized = normalizePath(resolvedPath);
+  const segments = normalized.split('/');
+  for (const segment of segments) {
+    if (
+      segment === 'test-stores' ||
+      segment === 'test-stores.js' ||
+      segment.startsWith('test-stores.')
+    ) {
+      return { match: true, reason: 'target includes test-stores helper path' };
+    }
+    if (segment === 'test' || segment === 'tests') {
+      return { match: true, reason: 'target includes test directory segment' };
+    }
+    if (segment === 'fixtures') {
+      return { match: true, reason: 'target includes fixtures segment' };
+    }
+    if (segment === '__tests__') {
+      return { match: true, reason: 'target includes __tests__ segment' };
+    }
+  }
+  return { match: false, reason: '' };
+}
+
+/**
+ * @param {import('typescript').ImportDeclaration} node
+ */
+function importIsTypeOnly(node) {
+  if (node.importClause?.isTypeOnly) {
+    return true;
+  }
+  const bindings = node.importClause?.namedBindings;
+  if (
+    bindings &&
+    ts.isNamedImports(bindings) &&
+    bindings.elements.length > 0 &&
+    bindings.elements.every((element) => element.isTypeOnly) &&
+    !node.importClause?.name
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {import('typescript').ExportDeclaration} node
+ */
+function exportIsTypeOnly(node) {
+  if (node.isTypeOnly) {
+    return true;
+  }
+  const clause = node.exportClause;
+  if (
+    clause &&
+    ts.isNamedExports(clause) &&
+    clause.elements.length > 0 &&
+    clause.elements.every((element) => element.isTypeOnly)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {import('typescript').SourceFile} sourceFile
+ * @param {string} path
+ */
+function productionTestBoundaryFindings(sourceFile, path) {
+  /** @type {import('./code-health-core.mjs').CodeHealthFinding[]} */
+  const findings = [];
+
+  function inspect(node) {
+    if (
+      ts.isImportDeclaration(node) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      if (!importIsTypeOnly(node)) {
+        const specifier = node.moduleSpecifier.text;
+        const resolved = resolveStaticRelativeImport(path, specifier);
+        if (resolved) {
+          const boundary = resolvedPathTouchesTestBoundary(resolved);
+          if (boundary.match) {
+            const line =
+              sourceFile.getLineAndCharacterOfPosition(
+                node.getStart(sourceFile),
+              ).line + 1;
+            findings.push({
+              id: `production-test-boundary-import:${path}:${line}:${specifier}`,
+              kind: 'production-test-boundary-import',
+              severity: 'info',
+              path,
+              line,
+              specifier,
+              resolvedTarget: resolved,
+              reason: boundary.reason,
+              message: `Production file imports test-scoped module (${boundary.reason}).`,
+            });
+          }
+        }
+      }
+    } else if (
+      ts.isExportDeclaration(node) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      if (!exportIsTypeOnly(node)) {
+        const specifier = node.moduleSpecifier.text;
+        const resolved = resolveStaticRelativeImport(path, specifier);
+        if (resolved) {
+          const boundary = resolvedPathTouchesTestBoundary(resolved);
+          if (boundary.match) {
+            const line =
+              sourceFile.getLineAndCharacterOfPosition(
+                node.getStart(sourceFile),
+              ).line + 1;
+            findings.push({
+              id: `production-test-boundary-export:${path}:${line}:${specifier}`,
+              kind: 'production-test-boundary-export',
+              severity: 'info',
+              path,
+              line,
+              specifier,
+              resolvedTarget: resolved,
+              reason: boundary.reason,
+              message: `Production file re-exports from test-scoped module (${boundary.reason}).`,
+            });
+          }
+        }
+      }
+    }
+    ts.forEachChild(node, inspect);
+  }
+
+  inspect(sourceFile);
+  return findings;
+}
+
+/**
+ * @param {string} path
+ * @param {(path: string) => string | null | undefined} readText
+ * @param {(text: string, path: string) => import('typescript').SourceFile} parseFn
+ */
+function collectProductionBoundaryImportKeys(path, readText, parseFn) {
+  const text = readSourceText(readText, path);
+  if (text == null) {
+    return [];
+  }
+  try {
+    const sourceFile = parseFn(text, path);
+    return productionTestBoundaryFindings(sourceFile, path).map(
+      (finding) =>
+        `${finding.path}|${finding.resolvedTarget}|${finding.specifier}|${finding.kind}`,
+    );
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * @param {string[]} baselineEntries
+ * @param {(path: string) => string | null | undefined} readBaseline
+ * @param {(text: string, path: string) => import('typescript').SourceFile} parseFn
+ */
+function indexBaselineBoundaryImports(baselineEntries, readBaseline, parseFn) {
+  /** @type {Set<string>} */
+  const keys = new Set();
+  for (const entry of baselineEntries.map(normalizePath)) {
+    if (!isProductionSource(entry)) {
+      continue;
+    }
+    for (const key of collectProductionBoundaryImportKeys(
+      entry,
+      readBaseline,
+      parseFn,
+    )) {
+      keys.add(key);
+    }
+  }
+  return keys;
+}
+
+/**
+ * @param {string} testPath
+ */
+function testNamingDebtFinding(testPath) {
+  return {
+    id: `test-naming-packet-debt-new:${testPath}`,
+    kind: 'test-naming-packet-debt-new',
+    severity: 'info',
+    path: testPath,
+    metric: 'test-basename',
+    value: testBasenameWithoutExtension(testPath),
+    message:
+      'New or renamed test uses packet-style basename; prefer behavior-oriented naming.',
+  };
 }
 
 /**
@@ -116,12 +415,51 @@ function defaultParse(text, path) {
   return ts.createSourceFile(path, text, ts.ScriptTarget.ESNext, true, kind);
 }
 
-function isFunctionNode(node) {
+function isFunctionLikeNode(node) {
   return (
     ts.isFunctionDeclaration(node) ||
     ts.isFunctionExpression(node) ||
-    ts.isArrowFunction(node)
+    ts.isArrowFunction(node) ||
+    ts.isMethodDeclaration(node) ||
+    ts.isConstructorDeclaration(node) ||
+    ts.isGetAccessorDeclaration(node) ||
+    ts.isSetAccessorDeclaration(node)
   );
+}
+
+/**
+ * @param {import('typescript').FunctionLikeDeclaration} node
+ */
+function getFunctionLikeName(node) {
+  if (ts.isConstructorDeclaration(node)) {
+    return 'constructor';
+  }
+  const name = node.name;
+  if (name && ts.isIdentifier(name)) {
+    return name.text;
+  }
+  return '<anonymous>';
+}
+
+/**
+ * @param {import('typescript').FunctionLikeDeclaration} fnNode
+ * @param {import('typescript').SourceFile} sourceFile
+ */
+function functionBodySpanLines(fnNode, sourceFile) {
+  const start = sourceFile.getLineAndCharacterOfPosition(
+    fnNode.getStart(sourceFile),
+  );
+  const end = sourceFile.getLineAndCharacterOfPosition(
+    Math.max(fnNode.getStart(sourceFile), fnNode.getEnd() - 1),
+  );
+  return end.line - start.line + 1;
+}
+
+/**
+ * @param {import('typescript').FunctionLikeDeclaration} fnNode
+ */
+function countParameters(fnNode) {
+  return fnNode.parameters?.length ?? 0;
 }
 
 /**
@@ -139,7 +477,7 @@ function measureControlFlowNesting(fnNode) {
 
   /** @param {import('typescript').Node} node @param {number} depth */
   function walk(node, depth) {
-    if (isFunctionNode(node) && node !== fnNode) {
+    if (isFunctionLikeNode(node) && node !== fnNode) {
       return;
     }
 
@@ -154,6 +492,132 @@ function measureControlFlowNesting(fnNode) {
 
   walk(body, 0);
   return maxDepth;
+}
+
+const CYCLOMATIC_LOOP_KINDS = new Set([
+  ts.SyntaxKind.ForStatement,
+  ts.SyntaxKind.ForOfStatement,
+  ts.SyntaxKind.ForInStatement,
+  ts.SyntaxKind.WhileStatement,
+  ts.SyntaxKind.DoStatement,
+]);
+
+/**
+ * Cyclomatic complexity within one function body; nested callables are omitted.
+ * @param {import('typescript').FunctionLikeDeclaration} fnNode
+ */
+function measureCyclomaticComplexity(fnNode) {
+  const body = fnNode.body;
+  if (!body) {
+    return 1;
+  }
+
+  let count = 1;
+
+  /** @param {import('typescript').Node} node */
+  function walk(node) {
+    if (isFunctionLikeNode(node) && node !== fnNode) {
+      return;
+    }
+
+    if (ts.isIfStatement(node)) {
+      count += 1;
+    } else if (CYCLOMATIC_LOOP_KINDS.has(node.kind)) {
+      count += 1;
+    } else if (ts.isSwitchStatement(node)) {
+      for (const clause of node.caseBlock.clauses) {
+        if (ts.isCaseClause(clause)) {
+          count += 1;
+        }
+      }
+    }
+
+    ts.forEachChild(node, walk);
+  }
+
+  walk(body);
+  return count;
+}
+
+/**
+ * @param {import('typescript').FunctionLikeDeclaration} fnNode
+ * @param {import('typescript').SourceFile} sourceFile
+ * @param {string} path
+ */
+function buildFunctionAdvisoryFindings(fnNode, sourceFile, path) {
+  /** @type {import('./code-health-core.mjs').CodeHealthFinding[]} */
+  const findings = [];
+  const name = getFunctionLikeName(fnNode);
+  const line =
+    sourceFile.getLineAndCharacterOfPosition(fnNode.getStart(sourceFile)).line +
+    1;
+  const span = functionBodySpanLines(fnNode, sourceFile);
+  const nesting = measureControlFlowNesting(fnNode);
+  const cyclomatic = measureCyclomaticComplexity(fnNode);
+  const parameters = countParameters(fnNode);
+
+  const base = { path, line, name, severity: 'info' };
+
+  if (span >= THRESHOLDS.functionBodySpanSevere) {
+    findings.push({
+      ...base,
+      id: `function-body-span-severe:${path}:${line}:${name}`,
+      kind: 'function-body-span-severe',
+      severity: 'warning',
+      metric: 'body-span-lines',
+      value: span,
+      threshold: THRESHOLDS.functionBodySpanSevere,
+      message: `${name} body span is ${span} lines (>= ${THRESHOLDS.functionBodySpanSevere}).`,
+    });
+  } else if (span >= THRESHOLDS.functionBodySpanReview) {
+    findings.push({
+      ...base,
+      id: `function-body-span-review:${path}:${line}:${name}`,
+      kind: 'function-body-span-review',
+      metric: 'body-span-lines',
+      value: span,
+      threshold: THRESHOLDS.functionBodySpanReview,
+      message: `${name} body span is ${span} lines (>= ${THRESHOLDS.functionBodySpanReview}).`,
+    });
+  }
+
+  if (cyclomatic > THRESHOLDS.cyclomaticComplexityReview) {
+    findings.push({
+      ...base,
+      id: `cyclomatic-complexity-review:${path}:${line}:${name}`,
+      kind: 'cyclomatic-complexity-review',
+      metric: 'cyclomatic-complexity',
+      value: cyclomatic,
+      threshold: THRESHOLDS.cyclomaticComplexityReview,
+      message: `${name} cyclomatic complexity is ${cyclomatic} (> ${THRESHOLDS.cyclomaticComplexityReview}).`,
+    });
+  }
+
+  if (nesting > THRESHOLDS.controlFlowNestingAdvisory) {
+    findings.push({
+      ...base,
+      id: `function-nesting-advisory:${path}:${line}:${name}`,
+      kind: 'function-nesting-advisory',
+      metric: 'control-flow-nesting',
+      value: nesting,
+      threshold: THRESHOLDS.controlFlowNestingAdvisory,
+      message: `${name} control-flow nesting is ${nesting} (> ${THRESHOLDS.controlFlowNestingAdvisory}).`,
+    });
+  }
+
+  if (parameters > THRESHOLDS.parameterCountReview) {
+    findings.push({
+      ...base,
+      id: `parameter-count-review:${path}:${line}:${name}`,
+      kind: 'parameter-count-review',
+      metric: 'parameter-count',
+      value: parameters,
+      threshold: THRESHOLDS.parameterCountReview,
+      message: `${name} has ${parameters} parameters (> ${THRESHOLDS.parameterCountReview}).`,
+    });
+  }
+
+  return findings;
 }
 
 /**
@@ -186,24 +650,21 @@ function diagnosticsToFindings(path, sourceFile) {
 
 /**
  * @param {import('typescript').SourceFile} sourceFile
+ * @param {string} path
  */
-function analyzeSourceFile(sourceFile) {
+function analyzeSourceFile(sourceFile, path) {
   let functionCount = 0;
   let maxFunctionLines = 0;
   let maxControlFlowNesting = 0;
   let assertionCount = 0;
   let nonNullCount = 0;
   let anyCount = 0;
+  /** @type {import('./code-health-core.mjs').CodeHealthFinding[]} */
+  const functionAdvisoryFindings = [];
 
   function recordFunction(fnNode) {
     functionCount += 1;
-    const start = sourceFile.getLineAndCharacterOfPosition(
-      fnNode.getStart(sourceFile),
-    );
-    const end = sourceFile.getLineAndCharacterOfPosition(
-      Math.max(fnNode.getStart(sourceFile), fnNode.getEnd() - 1),
-    );
-    const span = end.line - start.line + 1;
+    const span = functionBodySpanLines(fnNode, sourceFile);
     if (span > maxFunctionLines) {
       maxFunctionLines = span;
     }
@@ -211,10 +672,13 @@ function analyzeSourceFile(sourceFile) {
     if (nesting > maxControlFlowNesting) {
       maxControlFlowNesting = nesting;
     }
+    functionAdvisoryFindings.push(
+      ...buildFunctionAdvisoryFindings(fnNode, sourceFile, path),
+    );
   }
 
   function walk(node) {
-    if (isFunctionNode(node)) {
+    if (isFunctionLikeNode(node)) {
       recordFunction(node);
     }
     if (ts.isAsExpression(node)) {
@@ -238,6 +702,7 @@ function analyzeSourceFile(sourceFile) {
     assertionCount,
     nonNullCount,
     anyCount,
+    functionAdvisoryFindings,
   };
 }
 
@@ -248,6 +713,19 @@ function analyzeSourceFile(sourceFile) {
 function fileThresholdFindings(file) {
   /** @type {import('./code-health-core.mjs').CodeHealthFinding[]} */
   const findings = [];
+
+  if (file.lines >= THRESHOLDS.fileLinesAdvisory) {
+    findings.push({
+      id: `file-lines-advisory:${file.path}`,
+      kind: 'file-lines-advisory',
+      severity: 'info',
+      path: file.path,
+      metric: 'file-lines',
+      value: file.lines,
+      threshold: THRESHOLDS.fileLinesAdvisory,
+      message: `File has ${file.lines} lines (>= ${THRESHOLDS.fileLinesAdvisory}).`,
+    });
+  }
 
   if (file.lines >= THRESHOLDS.fileLinesHigh) {
     findings.push({
@@ -562,18 +1040,65 @@ export function scanCodeHealth(entries, options) {
   const readText = options.readText;
   const parseFn = options.parse ?? defaultParse;
 
-  const scopedEntries = [
+  const normalizedEntries = [
     ...new Set(entries.map((entry) => normalizePath(entry))),
-  ]
+  ].sort((a, b) => a.localeCompare(b));
+
+  const productionPaths = normalizedEntries
     .filter(isProductionSource)
+    .sort((a, b) => a.localeCompare(b));
+  const testPaths = normalizedEntries
+    .filter(isTrackedTestSource)
     .sort((a, b) => a.localeCompare(b));
 
   /** @type {import('./code-health-core.mjs').CodeHealthFileRecord[]} */
   const files = [];
+  /** @type {import('./code-health-core.mjs').CodeHealthTestRecord[]} */
+  const tests = [];
   /** @type {import('./code-health-core.mjs').CodeHealthFinding[]} */
   const findings = [];
 
-  for (const path of scopedEntries) {
+  const wantsBaseline = baselineRequested(options);
+  /** @type {Set<string>} */
+  let baselineTestPaths = new Set();
+  /** @type {Set<string>} */
+  let baselineBoundaryImportKeys = new Set();
+
+  if (wantsBaseline && typeof options.readBaseline === 'function') {
+    const baselineEntries = (options.baselineEntries ?? entries).map(
+      normalizePath,
+    );
+    // Production paths are not indexed here: new-debt gates only need baseline
+    // test paths (packet-style names) and baseline boundary import keys.
+    baselineTestPaths = new Set(
+      baselineEntries.filter((p) => isTrackedTestSource(p)),
+    );
+    baselineBoundaryImportKeys = indexBaselineBoundaryImports(
+      baselineEntries,
+      options.readBaseline,
+      parseFn,
+    );
+  }
+
+  for (const path of testPaths) {
+    const text = readSourceText(readText, path);
+    if (text == null) {
+      continue;
+    }
+    tests.push({
+      path,
+      lines: countLines(text),
+      bytes: Buffer.byteLength(text, 'utf8'),
+    });
+    if (hasPacketStyleTestBasename(path)) {
+      const isLegacyUnchanged = baselineTestPaths.has(path);
+      if (!isLegacyUnchanged) {
+        findings.push(testNamingDebtFinding(path));
+      }
+    }
+  }
+
+  for (const path of productionPaths) {
     const text = readSourceText(readText, path);
     if (text == null) {
       continue;
@@ -589,12 +1114,23 @@ export function scanCodeHealth(entries, options) {
       assertionCount: 0,
       nonNullCount: 0,
       anyCount: 0,
+      functionAdvisoryFindings: [],
     };
 
     try {
       const sourceFile = parseFn(text, path);
-      metrics = analyzeSourceFile(sourceFile);
+      metrics = analyzeSourceFile(sourceFile, path);
       findings.push(...diagnosticsToFindings(path, sourceFile));
+      findings.push(...metrics.functionAdvisoryFindings);
+      for (const boundaryFinding of productionTestBoundaryFindings(
+        sourceFile,
+        path,
+      )) {
+        const key = `${boundaryFinding.path}|${boundaryFinding.resolvedTarget}|${boundaryFinding.specifier}|${boundaryFinding.kind}`;
+        if (!baselineBoundaryImportKeys.has(key)) {
+          findings.push(boundaryFinding);
+        }
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Source parse failed.';
@@ -623,6 +1159,7 @@ export function scanCodeHealth(entries, options) {
   }
 
   files.sort((a, b) => a.path.localeCompare(b.path));
+  tests.sort((a, b) => a.path.localeCompare(b.path));
 
   const directories = buildDirectoryMetrics(files);
   for (const directory of directories) {
@@ -631,7 +1168,6 @@ export function scanCodeHealth(entries, options) {
 
   findings.sort((a, b) => a.id.localeCompare(b.id));
 
-  const wantsBaseline = baselineRequested(options);
   let baselineAvailable = false;
   /** @type {import('./code-health-core.mjs').CodeHealthStrictRegression[]} */
   let strictRegressions = [];
@@ -658,6 +1194,7 @@ export function scanCodeHealth(entries, options) {
 
   const summary = {
     productionFiles: files.length,
+    testFiles: tests.length,
     productionDirectories: directories.length,
     findings: findings.length,
     strictRegressions: strictRegressions.length,
@@ -674,6 +1211,7 @@ export function scanCodeHealth(entries, options) {
     thresholdsVersion: THRESHOLDS.thresholdsVersion,
     baselineAvailable,
     files,
+    tests,
     directories,
     findings,
     strictRegressions,

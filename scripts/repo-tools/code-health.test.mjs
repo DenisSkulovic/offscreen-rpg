@@ -13,7 +13,11 @@ import test from 'node:test';
 import {
   CODE_HEALTH_MISSING,
   countLines,
+  hasPacketStyleTestBasename,
   isProductionSource,
+  isTrackedTestSource,
+  normalizePath,
+  resolveStaticRelativeImport,
   scanCodeHealth,
   THRESHOLDS,
 } from './code-health-core.mjs';
@@ -21,6 +25,7 @@ import {
   SCHEMA,
   buildBaselineReadSet,
   buildCodeHealthReport,
+  buildDiagnosticsScope,
   collectWorkingEntries,
   createGitCapture,
   createGitShow,
@@ -79,6 +84,118 @@ test('isProductionSource excludes tests, fixtures, and dist segments', () => {
   assert.equal(isProductionSource('docs/foo.ts'), false);
 });
 
+test('tracked test inventory is separate from production sizing', () => {
+  const prod = 'packages/sample/src/live.ts';
+  const unit = 'packages/sample/src/live.test.ts';
+  const fixture = 'packages/sample/src/fixtures/demo.ts';
+  const paths = [prod, unit, fixture];
+  const { readText } = memoryReader({
+    [prod]: lineBlock(10),
+    [unit]: 'import test from "node:test";\n',
+    [fixture]: 'export const fixture = 1;\n',
+  });
+  const report = scanCodeHealth(paths, { readText });
+  assert.equal(report.summary.productionFiles, 1);
+  assert.equal(report.summary.testFiles, 2);
+  assert.equal(report.files[0].path, prod);
+  assert.equal(report.files[0].lines, 10);
+  assert.deepEqual(
+    report.tests.map((item) => item.path),
+    [fixture, unit],
+  );
+  assert.ok(isTrackedTestSource(unit));
+  assert.ok(!isProductionSource(unit));
+});
+
+test('new packet-style test basenames are advisory naming debt', () => {
+  const legacy = 'packages/cache/src/cache03-strategies.test.ts';
+  const fresh = 'packages/cache/src/cq06-new-behavior.test.ts';
+  const good = 'packages/cache/src/redis-connection.test.ts';
+  const paths = [legacy, fresh, good];
+  const { readText } = memoryReader(
+    Object.fromEntries(
+      paths.map((path) => [path, 'import test from "node:test";\n']),
+    ),
+  );
+  const withoutBaseline = scanCodeHealth(paths, { readText });
+  assert.ok(hasPacketStyleTestBasename(legacy));
+  assert.ok(hasPacketStyleTestBasename(fresh));
+  assert.ok(!hasPacketStyleTestBasename(good));
+  const debtPaths = withoutBaseline.findings
+    .filter((item) => item.kind === 'test-naming-packet-debt-new')
+    .map((item) => item.path);
+  assert.ok(debtPaths.includes(fresh));
+  assert.ok(debtPaths.includes(legacy));
+
+  const withBaseline = scanCodeHealth(paths, {
+    readText,
+    baselineEntries: [legacy, good],
+    readBaseline(path) {
+      return path === legacy || path === good
+        ? 'import test from "node:test";\n'
+        : null;
+    },
+  });
+  const gatedPaths = withBaseline.findings
+    .filter((item) => item.kind === 'test-naming-packet-debt-new')
+    .map((item) => item.path);
+  assert.deepEqual(gatedPaths, [fresh]);
+});
+
+test('production static imports from test paths are advisory with reason and line', () => {
+  const prod = 'packages/cache/src/cache-adapter.ts';
+  const source = `
+import { createDisabledStore } from './core/test-stores.js';
+import type { Fake } from './core/test-stores.js';
+import { jsonCodec } from './codecs/json-codec.js';
+`;
+  const { readText } = memoryReader({ [prod]: source });
+  const report = scanCodeHealth([prod], { readText });
+  const boundary = report.findings.filter(
+    (item) => item.kind === 'production-test-boundary-import',
+  );
+  assert.equal(boundary.length, 1);
+  assert.equal(boundary[0].line, 2);
+  assert.match(boundary[0].reason, /test-stores/);
+  assert.equal(
+    boundary[0].resolvedTarget,
+    'packages/cache/src/core/test-stores.js',
+  );
+});
+
+test('resolveStaticRelativeImport normalizes Windows-style separators', () => {
+  const from = 'packages\\cache\\src\\adapter.ts';
+  const resolved = resolveStaticRelativeImport(
+    from,
+    '..\\core\\test-stores.js',
+  );
+  assert.equal(resolved, 'packages/cache/core/test-stores.js');
+  assert.equal(
+    normalizePath('packages\\sample\\cq06-new.test.ts'),
+    'packages/sample/cq06-new.test.ts',
+  );
+});
+
+test('unchanged legacy production test helper imports stay below new-debt gate', () => {
+  const prod = 'packages/cache/src/index.ts';
+  const legacySource = `import { createDisabledStore } from './core/test-stores.js';\n`;
+  const { readText } = memoryReader({ [prod]: legacySource });
+  const withBaseline = scanCodeHealth([prod], {
+    readText,
+    baselineEntries: [prod],
+    readBaseline(path) {
+      return path === prod ? legacySource : null;
+    },
+  });
+  assert.equal(
+    withBaseline.findings.filter(
+      (item) => item.kind === 'production-test-boundary-import',
+    ).length,
+    0,
+  );
+  assert.equal(withBaseline.strictRegressions.length, 0);
+});
+
 test('35 direct production files trigger directory-direct-files-review', () => {
   const paths = entryPaths(35);
   const { readText } = memoryReader(
@@ -118,6 +235,186 @@ test('1200-line module is file-lines-high', () => {
     ),
   );
   assert.equal(report.files[0].lines, 1200);
+});
+
+test('class methods, accessors, and constructors count as function-like nodes', () => {
+  const path = 'packages/ast/class-methods.ts';
+  const source = `
+export class Widget {
+  constructor(
+    private a: number,
+    private b: number,
+    private c: number,
+    private d: number,
+    private e: number,
+    private f: number,
+  ) {
+    this.a = a;
+  }
+
+  run(): number {
+    return this.a;
+  }
+
+  get value(): number {
+    return this.a;
+  }
+}
+`;
+  const { readText } = memoryReader({ [path]: source });
+  const report = scanCodeHealth([path], { readText });
+  const file = report.files[0];
+  assert.equal(file.functionCount, 3);
+  assert.ok(
+    report.findings.some(
+      (item) =>
+        item.kind === 'parameter-count-review' &&
+        item.name === 'constructor' &&
+        item.value === 6,
+    ),
+  );
+});
+
+test('nested callables do not inflate parent cyclomatic complexity', () => {
+  const path = 'packages/ast/nested-cyclomatic.ts';
+  const outerBranches = Array.from(
+    { length: 11 },
+    (_, i) => `  if (v === ${i}) { return ${i}; }`,
+  ).join('\n');
+  const innerBranches = Array.from(
+    { length: 14 },
+    (_, i) => `    if (n === ${i}) { return ${i}; }`,
+  ).join('\n');
+  const source = `
+export function outer(v: number) {
+${outerBranches}
+  const inner = () => {
+${innerBranches}
+    return -1;
+  };
+  return inner();
+}
+`;
+  const { readText } = memoryReader({ [path]: source });
+  const report = scanCodeHealth([path], { readText });
+  const outerFinding = report.findings.filter(
+    (item) =>
+      item.kind === 'cyclomatic-complexity-review' && item.name === 'outer',
+  );
+  const innerFinding = report.findings.filter(
+    (item) =>
+      item.kind === 'cyclomatic-complexity-review' &&
+      item.name === '<anonymous>',
+  );
+  assert.equal(outerFinding.length, 0);
+  assert.equal(innerFinding.length, 1);
+  assert.ok(innerFinding[0].value > THRESHOLDS.cyclomaticComplexityReview);
+});
+
+test('short simple functions stay below advisory thresholds', () => {
+  const path = 'packages/ast/simple.ts';
+  const source = `
+export function tiny(a: number, b: number): number {
+  return a + b;
+}
+`;
+  const { readText } = memoryReader({ [path]: source });
+  const report = scanCodeHealth([path], { readText });
+  const advisoryKinds = new Set([
+    'function-body-span-review',
+    'function-body-span-severe',
+    'cyclomatic-complexity-review',
+    'function-nesting-advisory',
+    'parameter-count-review',
+  ]);
+  assert.ok(!report.findings.some((item) => advisoryKinds.has(item.kind)));
+});
+
+test('advisory boundary values for span, nesting, parameters, and file size', () => {
+  const longBody = lineBlock(58, '  const step =').trim();
+  const longFn = `export function longBody() {\n${longBody}\n}\n`;
+  const pathLongFn = 'packages/ast/long-body.ts';
+  const multiParamFn = `export function wide(\n${Array.from(
+    { length: 6 },
+    (_, i) => `  p${i}: number,`,
+  ).join('\n')}\n) {\n  return 0;\n}\n`;
+  const pathWideFn = 'packages/ast/wide-fn.ts';
+  const nestPath = 'packages/ast/nest-boundary.ts';
+  const nestSource = `
+export function shallow() {
+  if (a) {
+    if (b) {
+      if (c) {
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+export function deep() {
+  if (a) {
+    if (b) {
+      if (c) {
+        if (d) {
+          return 1;
+        }
+      }
+    }
+  }
+  return 0;
+}
+`;
+  const filePath = 'packages/ast/medium-file.ts';
+  const { readText } = memoryReader({
+    [pathLongFn]: longFn,
+    [pathWideFn]: multiParamFn,
+    [nestPath]: nestSource,
+    [filePath]: lineBlock(300),
+  });
+  const report = scanCodeHealth([pathLongFn, pathWideFn, nestPath, filePath], {
+    readText,
+  });
+
+  assert.ok(
+    report.findings.some(
+      (item) =>
+        item.kind === 'function-body-span-review' &&
+        item.name === 'longBody' &&
+        item.value >= THRESHOLDS.functionBodySpanReview,
+    ),
+  );
+  assert.ok(
+    !report.findings.some(
+      (item) =>
+        item.kind === 'function-nesting-advisory' && item.name === 'shallow',
+    ),
+  );
+  assert.ok(
+    report.findings.some(
+      (item) =>
+        item.kind === 'function-nesting-advisory' &&
+        item.name === 'deep' &&
+        item.value === 4,
+    ),
+  );
+  assert.ok(
+    report.findings.some(
+      (item) =>
+        item.kind === 'parameter-count-review' &&
+        item.name === 'wide' &&
+        item.value === 6,
+    ),
+  );
+  assert.ok(
+    report.findings.some(
+      (item) => item.kind === 'file-lines-advisory' && item.path === filePath,
+    ),
+  );
+  assert.ok(
+    !report.findings.some(
+      (item) => item.kind === 'file-lines-review' && item.path === filePath,
+    ),
+  );
 });
 
 test('AST function span and control-flow nesting beat brace-count heuristics', () => {
@@ -686,6 +983,85 @@ test('baseline content reads skip unchanged production files', () => {
   } finally {
     fx.cleanup();
   }
+});
+
+test('diagnostics scope separates changed findings from existing debt', () => {
+  const changedProd = 'packages/sample/src/changed.ts';
+  const unchangedProd = 'packages/sample/src/legacy.ts';
+  const changedTest = 'packages/sample/src/cq06-scope.test.ts';
+  const paths = [changedProd, unchangedProd, changedTest];
+  const { readText } = memoryReader(
+    Object.fromEntries([
+      [changedProd, lineBlock(301)],
+      [unchangedProd, lineBlock(301)],
+      [changedTest, 'import test from "node:test";\n'],
+    ]),
+  );
+  const scan = scanCodeHealth(paths, { readText });
+  const scope = buildDiagnosticsScope(scan, {
+    modifiedScopedPaths: new Set([changedProd, changedTest]),
+    baselineAvailable: true,
+    baselineRef: 'base-sha',
+  });
+  assert.ok(scope);
+  assert.equal(scope.changedPathCount, 2);
+  assert.ok(
+    scope.changedFindings.some(
+      (item) =>
+        item.kind === 'file-lines-advisory' && item.path === changedProd,
+    ),
+  );
+  assert.ok(
+    scope.changedFindings.some(
+      (item) => item.kind === 'test-naming-packet-debt-new',
+    ),
+  );
+  assert.ok(!scope.changedFindings.some((item) => item.path === unchangedProd));
+  assert.ok(scope.existingDebt.findingCount >= 1);
+  assert.ok(scope.existingDebt.fileCount >= 1);
+
+  const scanWithBaseline = scanCodeHealth(paths, {
+    readText,
+    baselineEntries: [unchangedProd],
+    readBaseline(path) {
+      return path === unchangedProd ? lineBlock(301) : null;
+    },
+  });
+  const payload = formatJsonReport({
+    scan: scanWithBaseline,
+    head: 'head-sha',
+    baselineRef: 'base-sha',
+    modifiedScopedPaths: new Set([changedProd, changedTest]),
+  });
+  assert.ok(payload.diagnosticsScope);
+  assert.equal(
+    payload.diagnosticsScope.changedFindingCount,
+    scope.changedFindingCount,
+  );
+  assert.equal(payload.diagnosticsScope.existingDebt.fileCount, 1);
+
+  const human = renderHuman(payload);
+  assert.match(human, /Changed\/new diagnostics \(scoped to diff\)/);
+  assert.match(human, /existing debt on unchanged files/);
+});
+
+test('diagnostics scope is omitted without baseline', () => {
+  const path = 'packages/sample/src/only.ts';
+  const { readText } = memoryReader({ [path]: lineBlock(10) });
+  const scan = scanCodeHealth([path], { readText });
+  assert.equal(
+    buildDiagnosticsScope(scan, {
+      baselineAvailable: false,
+      baselineRef: null,
+    }),
+    null,
+  );
+  const payload = formatJsonReport({
+    scan,
+    head: 'head-sha',
+    baselineRef: null,
+  });
+  assert.equal(payload.diagnosticsScope, null);
 });
 
 test('changed-file history cap refuses a partial strict baseline', () => {
