@@ -354,6 +354,49 @@ export const INF08_SUCCESSOR_RELOCATIONS = [
   },
 ];
 
+// Historical relocation rows remain immutable. These specific destinations were
+// retired by the upstream Temporal Helm replacement, not silently omitted.
+const RETIRED_TEMPORAL_DESTINATIONS = new Set([
+  'tools/dev-environments/src/adapters/dev-temporal-bootstrap-cli.mjs',
+  'tools/dev-environments/src/adapters/dev-temporal-bootstrap.mjs',
+  'tools/dev-environments/src/adapters/dev-temporal-host-probe.mjs',
+  'tools/dev-environments/src/adapters/dev-temporal-tenant-trial.mjs',
+  'tools/dev-environments/test/dev-temporal-bootstrap.test.mjs',
+  'infra/verification/dev-environments/dev-temporal-tenant-trial.mjs',
+  'infra/platform/temporal/images.pin',
+  'infra/platform/temporal/install.sh',
+  'infra/platform/temporal/dev-bootstrap.mjs',
+  'infra/platform/temporal/dev-host-probe.mjs',
+  'infra/platform/temporal/admin.yaml',
+  'infra/platform/temporal/chart/templates/admin.yaml',
+  'infra/platform/temporal/namespace-job.yaml',
+  'infra/platform/temporal/chart/templates/namespace-job.yaml',
+  'infra/platform/temporal/namespace.yaml',
+  'infra/platform/temporal/chart/templates/namespace.yaml',
+  'infra/platform/temporal/postgres.yaml',
+  'infra/platform/temporal/chart/templates/postgres.yaml',
+  'infra/platform/temporal/schema-job.yaml',
+  'infra/platform/temporal/chart/templates/schema-job.yaml',
+  'infra/platform/temporal/server.yaml',
+  'infra/platform/temporal/chart/templates/server.yaml',
+  'infra/verification/smoke/temporal/read-history.mjs',
+  'infra/verification/smoke/temporal/smoke.sh',
+  'infra/verification/smoke/temporal/start-job.yaml',
+  'infra/verification/smoke/temporal/worker.yaml',
+  'infra/verification/smoke/temporal/worker/Dockerfile',
+  'infra/verification/smoke/temporal/worker/activities.mjs',
+  'infra/verification/smoke/temporal/worker/package-lock.json',
+  'infra/verification/smoke/temporal/worker/package.json',
+  'infra/verification/smoke/temporal/worker/start.mjs',
+  'infra/verification/smoke/temporal/worker/worker.mjs',
+  'infra/verification/smoke/temporal/worker/workflows.mjs',
+]);
+
+function retiredTemporalDestination(root, destination) {
+  return RETIRED_TEMPORAL_DESTINATIONS.has(destination) &&
+    !existsSync(join(root, destination));
+}
+
 function effectiveMoveDestination(destination) {
   let current = destination;
   for (const table of [
@@ -427,6 +470,10 @@ export function assertInf15PlatformChartSuccessors(root) {
   for (const row of INF15_SUCCESSOR_RELOCATIONS) {
     const oldExists = existsSync(join(root, row.from));
     const newExists = existsSync(join(root, row.to));
+    if (RETIRED_TEMPORAL_DESTINATIONS.has(row.to)) {
+      assert.equal(oldExists || newExists, false, 'retired Temporal chart path reappeared');
+      continue;
+    }
     if (INF15_STAGING_PREDECESSOR_PATHS.includes(row.from)) {
       if (!newExists) {
         throw new Error(`INF15 successor destination missing: ${row.to}`);
@@ -627,6 +674,7 @@ export function assertLabInventoryCoverage(rows, trackedLabPaths) {
         repoRoot,
         effectiveMoveDestination(row.to),
       ) ||
+        retiredTemporalDestination(repoRoot, effectiveMoveDestination(row.to)) ||
         (effectiveMoveDestination(row.to) === INF16_RETIRED_RELEASE_TILT_PATH &&
           !existsSync(join(repoRoot, INF16_RETIRED_RELEASE_TILT_PATH))))
     ) {
@@ -646,6 +694,7 @@ export function assertTrackedModes(rows) {
     const trackedMode = gitTrackedMode(row.from);
     if (!trackedMode) {
       const destination = effectiveMoveDestination(row.to);
+      if (retiredTemporalDestination(repoRoot, destination)) continue;
       if (
         destination === INF16_RETIRED_RELEASE_TILT_PATH &&
         !existsSync(join(repoRoot, destination))
@@ -684,6 +733,10 @@ export function assertStagedMovePaths(
     const destination = effectiveMoveDestination(row.to);
     const oldExists = existsSync(join(root, row.from));
     const newExists = existsSync(join(root, destination));
+    if (RETIRED_TEMPORAL_DESTINATIONS.has(destination)) {
+      assert.equal(oldExists || newExists, false, 'retired Temporal move path reappeared');
+      continue;
+    }
     if (oldExists && newExists) {
       throw new Error(
         `staged move violation (both paths present): ${row.from} and ${destination}`,
@@ -798,6 +851,26 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   for (const [change, count] of Object.entries(EXPECTED_ROW_COUNTS)) {
     assert.equal(byChange[change], count, `row count for ${change}`);
   }
+});
+
+test('native Temporal replacement owns the current files and retires old paths', () => {
+  for (const path of RETIRED_TEMPORAL_DESTINATIONS) {
+    assert.equal(existsSync(join(repoRoot, path)), false, path);
+  }
+  for (const path of [
+    'infra/platform/temporal/chart.pin',
+    'infra/platform/temporal/values.yaml',
+    'infra/platform/temporal/install.mjs',
+    'infra/platform/temporal/readiness.mjs',
+    'infra/platform/temporal/namespaces.mjs',
+    'infra/platform/temporal/profiles/development.yaml',
+    'infra/platform/temporal/profiles/release.yaml',
+    'infra/platform/postgres/temporal-persistence/resources.yaml',
+    'tools/verification/resources/postgres/image.pin',
+  ]) {
+    assert.ok(existsSync(join(repoRoot, path)), path);
+  }
+  assert.equal(existsSync(join(repoRoot, 'infra/platform/temporal/chart')), false);
 });
 
 test('fixture negative: duplicate destination is rejected', () => {
