@@ -1,6 +1,6 @@
 # INF61 | Helm chart decomposition
 
-**State: Done (source implementation; live Kubernetes NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf61-temporal-chart-ownership` from main `039801bc47cae0fd68f65e7e32d1b8b09a80119b`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes/Docker/SQL mutations, provider calls, tenant deletion or data migration. Exclusive source writes were chart templates (and optional render tests); render contracts unchanged. INF62 may proceed next as join custodian; INF63 after INF62. Live tests NOT-RUN, source evidence only.
+**State: Done (source implementation; live Kubernetes NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf61-temporal-chart-ownership` from main `039801bc47cae0fd68f65e7e32d1b8b09a80119b`. Joined main at `f1d4a69516820967c71411d4114d5926e4e49232`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes/Docker/SQL mutations, provider calls, tenant deletion or data migration. Exclusive source writes were chart templates (and optional render tests); render contracts unchanged. INF63 already joined on main before this squash; INF62 remains the Wave A custodian. Live tests NOT-RUN, source evidence only.
 
 ## Outcome and ownership
 Helm chart decomposition. Dependencies: None. Exclusive source writes: `infra/platform/temporal/chart/templates` (and focused render fixtures). [Tasks](TASKS.md) · [Programme](../../../../../undertakings/storyteller-workshop/TEMPORAL-INFRASTRUCTURE.md).
@@ -32,4 +32,4 @@ Touched documentation/status paths: `docs/runbooks/kubernetes-temporal.md`, `wor
 Every task proof passes, source compatibility and identities preserved, no unrelated changes. Report actual SHA, tests and remaining limits. Archive and integrate on main under repository workflow. Live NOT RUN.
 
 ## Acceptance receipt
-T01 PASS. Pre/post render deep equality across all 14 profile×section pairs. Focused render suite 6/6. Negative: release-only sections refuse on dev; no admin Deployment or namespace Job in `dev` `all`. Live Kubernetes NOT-RUN. Join SHA recorded after integration.
+T01 PASS. Pre/post render deep equality across all 14 profile×section pairs. Focused render suite 6/6. Negative: release-only sections refuse on dev; no admin Deployment or namespace Job in `dev` `all`. Live Kubernetes NOT-RUN. Joined main at `f1d4a69516820967c71411d4114d5926e4e49232`.
