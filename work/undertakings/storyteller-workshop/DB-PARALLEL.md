@@ -65,7 +65,7 @@ Current source baseline `7322b6f1a6df6f5ae612763b9786563dca2989eb`; main is the 
 
 ## Current dispatch (2026-11-25)
 
-Run one Cursor parent at most for this DB program. DB09 is Done source-only; schema and runtime lanes are complete. DB10 may run after both lanes, owning final graph guards and integrated proof. No concurrent independent pushes; reconcile lockfile against combined manifests before joining. Each successor gets its own branch/worktree from latest main, not from predecessor Change branch. No automatic dispatch of unnamed backlog work. DB10 T01–T03 source may integrate as progress even if live authorization absent, but keep packet OPEN until required proof or explicit owner disposition.
+Run one Cursor parent at most for this DB program. DB09 is Done source-only; schema and runtime lanes are complete. DB10 T01–T03 source joined main at `a658f707` (graph/wiki/harness); live disposable proof remains NOT RUN. Keep packet OPEN until live acceptance or explicit owner disposition. No automatic successor dispatch.
 
 - [DB03 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db03-story-persistence/SOURCE-MAP.md)
 - [DB04 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db04-admin-lab-persistence/SOURCE-MAP.md)

@@ -1,6 +1,6 @@
 # DB10 | Final graph guard and integrated DB proof
 
-**Status: Active / source T01–T03 landed; live proof NOT RUN. Kind: implementation. Profile: PROOF.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; execution HEAD cf038a61615b64d3966ee7c37a318bb458c7bceb; target main. T01 graph/closure, T02 wiki/docs, T03 managed harness source accepted. Live disposable PostgreSQL remains separately gated; packet stays open until live acceptance or explicit owner disposition.
+**Status: Active / source T01–T03 joined main; live proof NOT RUN. Kind: implementation. Profile: PROOF.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; main join `a658f707aeb93d425f3712cbcd63a577855cf1d8`. T01 graph/closure, T02 wiki/docs, T03 managed harness source accepted and integrated. Live disposable PostgreSQL remains separately gated; packet stays open until live acceptance or explicit owner disposition.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
