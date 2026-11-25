@@ -1,0 +1,45 @@
+# Fresh provisioning only. prepare.mjs supplies the PG namespace and cluster.
+# Never apply these initial closed/non-login resources to an existing store.
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: temporal
+spec:
+  cluster: {}
+  name: temporal
+  ensure: present
+  login: false
+  inherit: false
+  superuser: false
+  createdb: false
+  createrole: false
+  replication: false
+  bypassrls: false
+  inRoles: []
+  databaseRoleReclaimPolicy: retain
+  passwordSecret:
+    name: temporal-db
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: temporal
+spec:
+  cluster: {}
+  name: temporal
+  owner: temporal
+  ensure: present
+  allowConnections: false
+  databaseReclaimPolicy: retain
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: temporal-visibility
+spec:
+  cluster: {}
+  name: temporal_visibility
+  owner: temporal
+  ensure: present
+  allowConnections: false
+  databaseReclaimPolicy: retain
