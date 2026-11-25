@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url';
 import { runPlatformCommand } from './commands.mjs';
 import {
   POSTGRES_OPERATOR_PIN_KEYS,
-  TEMPORAL_IMAGE_PIN_KEYS,
   parsePins,
 } from './pins.mjs';
 import { readPlatformProfile } from './profile.mjs';
@@ -17,7 +16,6 @@ const DIAGNOSTIC_LIMIT = 1000;
 
 export const PLATFORM_SERVICES = new Set([
   'postgres',
-  'temporal',
   'object-storage',
   'redis',
   'rabbitmq',
@@ -29,22 +27,11 @@ const RELEASE_ONLY_SERVICES = new Set(['rabbitmq', 'observability']);
 /** @type {Record<string, Set<string>>} */
 const SERVICE_SECTIONS = {
   postgres: new Set(['all', 'namespace', 'cluster']),
-  temporal: new Set([
-    'all',
-    'namespace',
-    'postgres',
-    'schema',
-    'server',
-    'admin',
-    'namespace-job',
-  ]),
   'object-storage': new Set(['all', 'namespace', 'workloads']),
   redis: new Set(['all']),
   rabbitmq: new Set(['all', 'namespace', 'broker']),
   observability: new Set(['all']),
 };
-
-const TEMPORAL_RELEASE_ONLY_SECTIONS = new Set(['admin', 'namespace-job']);
 
 const ALLOWED_KINDS = new Set([
   'Namespace',
@@ -65,7 +52,6 @@ const ALLOWED_KINDS = new Set([
 export function allowedNamespacesForService(service, profileId) {
   const profile = readPlatformProfile(profileId);
   if (service === 'postgres') return new Set([profile.namespaces.postgres]);
-  if (service === 'temporal') return new Set([profile.namespaces.temporal]);
   if (service === 'object-storage')
     return new Set([profile.namespaces.objectStorage]);
   if (service === 'redis') {
@@ -228,20 +214,6 @@ function readPinOverlay(service) {
     const pins = parsePins(text, POSTGRES_OPERATOR_PIN_KEYS);
     return { images: { postgres: pins.POSTGRES_IMAGE } };
   }
-  if (service === 'temporal') {
-    const text = readFileSync(
-      join(platformRoot, 'temporal', 'images.pin'),
-      'utf8',
-    );
-    const pins = parsePins(text, TEMPORAL_IMAGE_PIN_KEYS);
-    return {
-      images: {
-        server: pins.SERVER_IMAGE,
-        admin: pins.ADMIN_IMAGE,
-        postgres: pins.POSTGRES_IMAGE,
-      },
-    };
-  }
   return {};
 }
 
@@ -263,13 +235,6 @@ export function assertPlatformRenderRequest(service, profile, section) {
   const sections = SERVICE_SECTIONS[service];
   if (!sections?.has(section)) {
     throw new Error(`unsupported section: ${section}`);
-  }
-  if (
-    service === 'temporal' &&
-    TEMPORAL_RELEASE_ONLY_SECTIONS.has(section) &&
-    profile === 'dev'
-  ) {
-    throw new Error(`section ${section} is release-only`);
   }
 }
 
