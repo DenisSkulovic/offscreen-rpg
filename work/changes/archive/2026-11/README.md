@@ -335,3 +335,6 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-21--cq04-document-store-capability-guards](../../../../work/changes/archive/2026-11/other/2026-11-21--cq04-document-store-capability-guards/CHANGE.md)
 - [2026-11-11--s3a-continuity-report](../../../../work/changes/archive/2026-11/other/2026-11-11--s3a-continuity-report/CHANGE.md)
 
+
+- [CACHE04](cache/2026-11-24--cache04-story-snapshot/CHANGE.md): Done source-only, SQL proof transferred to VER08.
+- [CACHE07](cache/2026-11-24--cache07-distributed-proof/CHANGE.md): Superseded, source preserved, proof transferred to VER06–07.

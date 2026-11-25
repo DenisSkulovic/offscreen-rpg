@@ -76,3 +76,7 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 ## Infrastructure reconciliation (2026-11-25)
 
 [INF38](2026-11-24--inf38-selective-dev-profiles/CHANGE.md), [INF49](2026-11-24--inf49-monitor-composition/CHANGE.md), [INF50](2026-11-24--inf50-infrastructure-correctness/CHANGE.md) Ready source-only. INF50 precedes INF38 if both dispatched (overlapping startup/tests). [INF47](2026-11-24--inf47-historical-observability-queries/CHANGE.md) after INF49 staged source proof. [INF52](2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) after VER01 and INF50; INF38 gates selective scenarios only. INF29 live evidence tracker, no separate Cursor implementation. INF51 archived source-only. INF48 backlog. See [consolidation](../../undertakings/storyteller-workshop/CONSOLIDATION.md). No live permission or global queue change.
+
+## Cache reconciliation (2026-11-25)
+
+Original CACHE01–07 eight Changes archived. CACHE04 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). CACHE08 Ready; VER06 after VER01/02; VER07 after VER06/CACHE08; VER08 after VER07/02. No legacy live command, no global queue change.
