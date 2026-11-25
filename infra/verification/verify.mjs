@@ -45,6 +45,10 @@ export const SOURCE_SUITE_DEFINITIONS = Object.freeze([
       'infra/environments/platform-plan.test.mjs',
       'infra/images/distribution/kind-image-loader.test.mjs',
       'infra/images/development/sync-plan.test.mjs',
+      'infra/platform/temporal/tests/readiness.test.mjs',
+      'infra/platform/temporal/tests/install.test.mjs',
+      'infra/platform/temporal/tests/namespaces.test.mjs',
+      'infra/platform/postgres/tests/temporal-persistence.test.mjs',
     ]),
   },
   {
