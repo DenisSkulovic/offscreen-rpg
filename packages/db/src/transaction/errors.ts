@@ -1,4 +1,5 @@
 import { DatabaseAdmissionError } from '../connection/admission.js';
+import { DatabaseError } from 'pg';
 import type { DatabaseErrorCategory, TransactionRetry } from './policy.js';
 
 export const MAX_CAUSE_LINKS = 4;
@@ -7,6 +8,9 @@ export const MAX_RETRY_JITTER_MS = 200;
 export const MAX_TRANSACTION_ATTEMPTS = 3;
 
 const RETRYABLE_SQLSTATES = new Set(['40001', '40P01']);
+
+/** Definitive COMMIT server refusals (pg ErrorResponse with ERROR severity only). */
+const DEFINITIVE_COMMIT_SQLSTATE = /^(40001|40P01|23[0-9A-Z]{3})$/;
 
 export type JitterFn = (minMs: number, maxMs: number) => number;
 
@@ -101,6 +105,29 @@ function nextCauseLink(error: unknown): unknown | undefined {
     return error.cause;
   }
   return undefined;
+}
+
+function isDefinitiveCommitRefusal(error: unknown): boolean {
+  if (!(error instanceof DatabaseError)) {
+    return false;
+  }
+  if (error.severity !== 'ERROR') {
+    return false;
+  }
+  const code = error.code;
+  if (typeof code !== 'string' || code.length < 2) {
+    return false;
+  }
+  return DEFINITIVE_COMMIT_SQLSTATE.test(code.toUpperCase());
+}
+
+export function classifyCommitRejection(
+  error: unknown,
+): DatabaseTransactionError {
+  if (isDefinitiveCommitRefusal(error)) {
+    return classifyDatabaseError(error);
+  }
+  return databaseTransactionError('commit-unknown', error);
 }
 
 export function classifyDatabaseError(
