@@ -372,3 +372,10 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 - [INF58 Redis chart configuration and rollout identity](archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); 13/13 render tests; live NOT-RUN.
 - [INF59 Redis installer safety and readiness](archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); observe/reconcile CAS + readiness; focused 79/79; live NOT-RUN.
 - [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready after INF58+INF59 source; not auto-started; source only.
+
+## Cache craftsmanship wave
+- [CACHE09 Cache navigation and behavioral test names](open/2026-11-25--cache09-cache-navigation/CHANGE.md) — Ready; source only.
+- [CACHE10 Memory and single-flight readability](open/2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Ready (dependency-gated); source only.
+- [CACHE11 Redis envelope and bounded command executor](open/2026-11-25--cache11-cache-redis-execution/CHANGE.md) — Ready (dependency-gated); source only.
+- [CQ06 Changed-code craftsmanship diagnostics](open/2026-11-25--cq06-code-craft-diagnostics/CHANGE.md) — Ready; source only.
+CACHE12 held for planner migration; no global queue change.

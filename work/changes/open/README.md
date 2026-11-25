@@ -88,3 +88,10 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 - [INF60 Named Redis pools and operator inspection](2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready after INF58 + INF59 source; not auto-started.
 
 [Decisions and dependency graph](../../undertakings/storyteller-workshop/REDIS-INFRASTRUCTURE.md). No live authorization or global queue change.
+
+## Cache craftsmanship wave
+- [CACHE09 Cache navigation and behavioral test names](2026-11-25--cache09-cache-navigation/CHANGE.md) — Ready; source only.
+- [CACHE10 Memory and single-flight readability](2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Ready (dependency-gated); source only.
+- [CACHE11 Redis envelope and bounded command executor](2026-11-25--cache11-cache-redis-execution/CHANGE.md) — Ready (dependency-gated); source only.
+- [CQ06 Changed-code craftsmanship diagnostics](2026-11-25--cq06-code-craft-diagnostics/CHANGE.md) — Ready; source only.
+CACHE12 held for planner migration; no global queue change.
