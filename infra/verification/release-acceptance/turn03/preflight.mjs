@@ -208,7 +208,7 @@ export async function runTurn03Preflight(options = {}) {
     'lab-temporal',
     'get',
     'service',
-    'temporal-server',
+    'temporal-frontend',
   ]);
   const temporalPresent = temporalResult.status === 0;
   if (!temporalPresent) {
