@@ -362,3 +362,17 @@ test('gateway preflight uses JSON Docker template and exact repository digest', 
   }
   assert.throws(() => runGatewayInstallPreflight({ run: runner('', false) }), /digest check failed/);
 });
+
+test('both Temporal profiles select the same native installer and exact confirmation', () => {
+  for (const profileId of ['dev', 'release']) {
+    const context = profileId === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
+    const plan = buildPlatformPlan({ profileId, command: 'ensure', services: 'temporal', confirmation: context });
+    assert.equal(plan.ok, true);
+    assert.equal(plan.phases.length, 1);
+    const phase = plan.phases[0];
+    assert.match(phase.argv[1], /infra\/platform\/temporal\/install\.mjs$/);
+    assert.deepEqual(phase.argv.slice(2), ['ensure', profileId, context]);
+    assert.equal(phase.env.OFFSCREEN_TEMPORAL_ENSURE, 'authorized');
+    assert.ok(plan.preflight.includes('helm'));
+  }
+});
