@@ -1,10 +1,10 @@
 # DB10 | bounded Composer tasks
 
-Base SHA fa77f2d3614ee821b8e4ad849a46a66342000132; state Proposed / planner-gated. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base SHA 7322b6f1a6df6f5ae612763b9786563dca2989eb; state Proposed / planner-gated. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
 
 ## T01 | Enforce final graph | PLANNER-BLOCKED until promotion
 
-Requires: DB02–DB09 integrated; Cache waves joined; authorized disposable proof resources.
+Requires: DB02–DB09 source integrated; Cache source waves joined; disposable resource authorization gates T02 live execution only, not T01.
 Read: scripts/repo-tools/module-graph.mjs; scripts/repo-tools/module-graph.test.mjs; eslint.config.mjs; infra/images/release/production-workspace-closure.test.mjs.
 May write: exact source/test destinations in algorithm, no peer ownership. 
 Algorithm: Reject DB domain workspace imports and retired schema subpaths, identity/story schema leaves runtime imports except Drizzle/identity, browser/workflows/SQL-free executor transitive SQL closure. Add fixtures per negative. Reconcile direct manifests, lock, package READMEs/SQL-OWNERSHIP; require no residual old alias. Existing migration asset paths unchanged.

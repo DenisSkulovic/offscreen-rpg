@@ -1,6 +1,6 @@
 # DB07 | Managed SQL transaction execution
 
-**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: STATE.** Baseline 2fb3f056; target undertaking/storyteller-workshop. DB01 and DB06 joined. Executable now; no further promotion. Live SQL separately gated.
+**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: STATE.** Baseline 7322b6f1a6df6f5ae612763b9786563dca2989eb; target main. DB01 and DB06 joined. Executable now; no further promotion. Live SQL separately gated.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -11,7 +11,7 @@
 
 ## Execution and ownership
 
-Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guard.mjs --change DB07 --target undertaking/storyteller-workshop`. One bounded Composer child at a time; no next Change authorization. Named custodian serializes shared manifest/lockfile/registry keys and docs joins; do not edit peer work. No SQL DDL or historical migration byte changes for extraction; no changes to authorization, spend, locks, wire contracts or publication behavior unless explicitly selected in this packet. No provider calls, protected DB writes or live cluster mutation.
+Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guard.mjs --change DB07 --target main`. One bounded Composer child at a time; no next Change authorization. Named custodian serializes shared manifest/lockfile/registry keys and docs joins; do not edit peer work. No SQL DDL or historical migration byte changes for extraction; no changes to authorization, spend, locks, wire contracts or publication behavior unless explicitly selected in this packet. No provider calls, protected DB writes or live cluster mutation.
 
 ## Acceptance and stop
 

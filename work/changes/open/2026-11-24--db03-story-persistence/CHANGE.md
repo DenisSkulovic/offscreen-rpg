@@ -1,6 +1,6 @@
 # DB03 | Story Engine-owned durable schema leaf
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: CONTRACT.** Baseline fa77f2d3614ee821b8e4ad849a46a66342000132; target undertaking/storyteller-workshop. Prerequisite: DB02 and CACHE04/CACHE06B joins; no concurrent Story Engine/GA/worker consumers. Owner-selected near-term planning, not execution permission.
+**Status: Proposed / not commissioned. Kind: implementation. Profile: CONTRACT.** Baseline 7322b6f1a6df6f5ae612763b9786563dca2989eb; target main. Prerequisite: DB02 and CACHE04/CACHE06B joins; no concurrent Story Engine/GA/worker consumers. Owner-selected near-term planning, not execution permission.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -12,7 +12,7 @@
 
 ## Execution and ownership
 
-Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guard.mjs --change DB03 --target undertaking/storyteller-workshop`. One bounded Composer child at a time; no next Change authorization. Named custodian serializes shared manifest/lockfile/registry keys and docs joins; do not edit peer work. No SQL DDL or historical migration byte changes for extraction; no changes to authorization, spend, locks, wire contracts or publication behavior unless explicitly selected in this packet. No provider calls, protected DB writes or live cluster mutation.
+Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guard.mjs --change DB03 --target main`. One bounded Composer child at a time; no next Change authorization. Named custodian serializes shared manifest/lockfile/registry keys and docs joins; do not edit peer work. No SQL DDL or historical migration byte changes for extraction; no changes to authorization, spend, locks, wire contracts or publication behavior unless explicitly selected in this packet. No provider calls, protected DB writes or live cluster mutation.
 
 ## Acceptance and stop
 

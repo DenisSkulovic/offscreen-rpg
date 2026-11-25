@@ -1,10 +1,10 @@
 # DB07 | bounded Composer tasks
 
-Base SHA 2fb3f056; Ready / commissioned; DB01 and DB06 joined. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base SHA 7322b6f1a6df6f5ae612763b9786563dca2989eb; Ready / commissioned; DB01 and DB06 joined. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
 
 ## T00 | Correct inherited DB06 admission deadline and actual drain
 
-Implement the correction and tests in EXECUTION.md before T01. Run DB06 focused tests.
+Implement the correction and tests in EXECUTION.md before T01. Run `pnpm --filter @offscreen/db build && pnpm --filter @offscreen/db test`. Current admission.ts and managed-client.ts still exhibit all four inherited failures. Add regression tests in existing db06-admission.test.ts and db06-pool.test.ts; do not edit schema ownership or migrations.
 
 ## T01 | Classify failures and retry policy | READY
 
