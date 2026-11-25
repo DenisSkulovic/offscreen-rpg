@@ -2,7 +2,7 @@
 
 **Status: Proposed; owner review required. No implementation commission.**
 
-Original source baseline: main 03ea79c469d0, 2026-11-25. Next review: 2026-11-26 or earlier with owner. Next decision: approve exact file responsibilities and configuration specimen. Existing Temporal infra directory deliberately excluded; no live cluster inspected. PostgreSQL tuning deferred.
+Original source baseline: main 03ea79c469d0, 2026-11-25. Next review: 2026-11-26 or earlier with owner. Next decision: inspect actual Helm rendering and decide the remaining persistence/cutover details with the owner. Existing Temporal infra directory deliberately excluded; no live cluster inspected. PostgreSQL tuning deferred.
 
 ## Architecture
 
@@ -44,7 +44,8 @@ No local chart templates, persistence DSL, shell installer or duplicate bootstra
 4. [INTEGRATION.md](INTEGRATION.md): existing external callers and common utilities.
 5. [VERIFICATION.md](VERIFICATION.md): source tests, rendering and live proof.
 6. [REVIEW.md](REVIEW.md): decisions, review history and outstanding acceptance gates.
-7. [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md): proposed Change boundaries, dependency order, migration and acceptance gates; not commissioned.
+7. [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md): one mandatory replacement Change, optional persistence predecessor; not commissioned.
+8. [EXPERIMENTS.md](EXPERIMENTS.md): sequential manual terminal experiments, starting without Kubernetes access.
 
 ## Outstanding evidence
 
