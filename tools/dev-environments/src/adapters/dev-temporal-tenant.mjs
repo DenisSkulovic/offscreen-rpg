@@ -25,41 +25,7 @@ export function deriveDevTemporalTenant(slotId) {
   };
 }
 
-export function parseTemporalDescribe(text, status) {
-  const body = String(text ?? '');
-  if (status !== 0) {
-    if (/NamespaceNotFound|namespace\s+[^\n]+\s+(?:not found|does not exist)/i.test(body)) return { status: 'absent' };
-    return { status: 'command-failed', detail: 'temporal describe exited non-zero' };
-  }
-  const start = body.indexOf('{');
-  if (start >= 0) {
-    let depth = 0;
-    for (let index = start; index < body.length; index += 1) {
-      if (body[index] === '{') depth += 1;
-      else if (body[index] === '}') {
-        depth -= 1;
-        if (depth === 0) {
-          try {
-            const data = JSON.parse(body.slice(start, index + 1));
-            const info = data.namespaceInfo ?? data.NamespaceInfo ?? {};
-            const config = data.config ?? data.Config ?? {};
-            const raw = config.workflowExecutionRetentionTtl ?? config.WorkflowExecutionRetentionTtl;
-            const retentionSeconds = raw === '86400s' || raw === 86400 || raw === '24h0m0s' ? 86400 : Number(raw) || 0;
-            if (!info.id && !info.Id) return { status: 'malformed-output', detail: 'namespace id missing' };
-            return { status: 'ready', id: info.id ?? info.Id, retentionSeconds };
-          } catch {
-            return { status: 'malformed-output', detail: 'temporal describe JSON could not be parsed' };
-          }
-        }
-      }
-    }
-    return { status: 'malformed-output', detail: 'temporal describe JSON was incomplete' };
-  }
-  const id = body.match(/Id\s+([0-9a-f-]{36})/i)?.[1] ?? null;
-  if (!id) return { status: 'malformed-output', detail: 'temporal describe had no namespace id' };
-  const retentionSeconds = /24h0m0s|1d|86400/.test(body) ? 86400 : 0;
-  return { status: 'ready', id, retentionSeconds };
-}
+export { parseTemporalDescribe } from '../../../../infra/platform/temporal/namespaces.mjs';
 
 function describeOutcome(value) {
   if (!value) return { status: 'absent' };
