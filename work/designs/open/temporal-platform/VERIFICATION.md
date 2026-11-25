@@ -4,13 +4,13 @@ Proposed design only. Keep existing verification runner; no additional global fr
 
 ## tests/ directory
 
-Proposed install.test.mjs covers command arguments, profile, target refusal, missing prerequisite, pin mismatch, healthy no-op, drift/upgrade refusal, failure/timeout and serialization. Add readiness.test.mjs for observation state distinctions, rollout and gRPC failures, optional UI/admin failure, and proof that no mutating command is invoked. Inject existing command runner; use node:test. Tests are deterministic and do not start clusters. Keep render checks against real pinned archive separate from mocked command tests.
+Proposed install.test.mjs covers command arguments, profile, target refusal, missing prerequisite, pin mismatch, healthy no-op, configuration/version mismatch refusal, failure/timeout and serialization. Add readiness.test.mjs for observation state distinctions, rollout and gRPC failures, optional UI/admin failure, and proof that no mutating command is invoked. Inject existing command runner; use node:test. Tests are deterministic and do not start clusters. Keep render checks against real pinned archive separate from mocked command tests.
 
 ## Live verification
 
-Initial acceptance/source tests: archive checksum refusal; both profiles render with exact selected archive; inspect YAML for four deployments, services, correct image refs, no bundled DB, no leaked Secrets, schema hooks and correct DB references, no public listeners; context mismatch and missing PG/Secret refuse before Helm; healthy no-op; version drift refuses normal ensure; timeout and failed Job never reported ready; simultaneous ensure serialized; profile selection and parent receipt compatibility. Use existing node:test style where needed, Helm lint/template where supported. No new test framework.
+Initial acceptance/source tests: archive checksum refusal; both profiles render with exact selected archive; inspect YAML for four core deployments plus UI/admin, services, correct image refs, no bundled DB, no leaked Secrets, schema hooks and correct DB references, no public listeners; context mismatch and missing PG/Secret refuse before Helm; healthy no-op; configuration or version mismatch refuses normal ensure; timeout and failed Job never reported ready; simultaneous ensure serialized; profile selection and parent receipt compatibility. Use existing node:test style where needed, Helm lint/template where supported. No new test framework.
 
-Initial live acceptance (separately authorized, use existing infra verification runner and owned resources):
+Initial live acceptance (separately authorized, use existing infra verification runner and owned resources; basic fixture is part of the replacement Change):
 - Observe explicit cluster UID, CNPG readiness and schema versions; frontend health and service connectivity from app network.
 - Deterministic SDK workflow with activity, timer and signal; unique fixture ID/namespace, no LLM/game/paid calls. Assert result and history; list completed workflow via visibility with bounded eventual-consistency wait.
 
