@@ -1,0 +1,11 @@
+# DESIGN SPECIMEN ONLY. Expected CNPG service; verify before adoption.
+server:
+  config:
+    persistence:
+      datastores:
+        default:
+          sql:
+            connectAddr: "lab-pg-rw.lab-postgres.svc:5432"
+        visibility:
+          sql:
+            connectAddr: "lab-pg-rw.lab-postgres.svc:5432"
