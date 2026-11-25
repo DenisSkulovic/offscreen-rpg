@@ -12,6 +12,7 @@ import { MIN_HOST_MEMORY_MIB, parseMeminfoMiB } from '../../clusters/kind/manage
 import { baselineCnpgClusterName } from '../postgres/config.mjs';
 import { prepareFreshTemporalPersistence } from '../postgres/temporal-persistence/prepare.mjs';
 import { observeTemporalRelease, observeTemporalReady } from './readiness.mjs';
+import { describeTemporalNamespace, createTemporalNamespace } from './namespaces.mjs';
 
 const RELEASE = 'temporal';
 const SECRET = 'temporal-db';
@@ -161,6 +162,24 @@ function helmScope(profile) {
   return ['--kube-context', profile.contextName, '--namespace', profile.namespaces.temporal];
 }
 
+function assertReleaseNamespace(profile, run, fresh) {
+  if (profile.id !== 'release') return;
+  let observed = describeTemporalNamespace('release', 'default', { run });
+  if (fresh && observed.status === 'absent') {
+    // Use the upstream chart's default retention for the local release namespace.
+    // Existing namespaces are never modified by ensure.
+    createTemporalNamespace('release', 'default', 3, { run });
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      observed = describeTemporalNamespace('release', 'default', { run });
+      if (observed.status !== 'absent') break;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
+    }
+  }
+  if (observed.status !== 'ready') {
+    throw new Error('release Temporal default namespace is not verified; explicit maintenance required');
+  }
+}
+
 function observeUnchanged(profile, configuration, release, run) {
   if (release.chartVersion !== configuration.pin.CHART_VERSION) {
     throw new Error('Temporal chart version differs; explicit maintenance required');
@@ -180,6 +199,7 @@ function observeUnchanged(profile, configuration, release, run) {
   if (!readiness.ok || !readiness.webReady) {
     throw new Error('existing Temporal release is unhealthy; explicit maintenance required');
   }
+  assertReleaseNamespace(profile, run, false);
   return { ok: true, detail: 'Temporal release unchanged and ready', mutated: false };
 }
 
@@ -226,6 +246,7 @@ export function ensureTemporal(profileId, authorization, { run = runPlatformComm
     if (!ready.ok || !ready.webReady) {
       throw new Error('Temporal installed but readiness failed; inspect release without retrying');
     }
+    assertReleaseNamespace(profile, run, true);
     return { ok: true, detail: 'Temporal installed and ready', mutated: true };
   } finally {
     rmSync(directory, { recursive: true, force: true });
