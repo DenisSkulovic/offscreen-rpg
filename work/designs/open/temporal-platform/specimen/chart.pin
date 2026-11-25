@@ -1,0 +1,4 @@
+# DESIGN ONLY: deliberately incomplete, must refuse installation.
+CHART_VERSION=1.7.0
+CHART_URL=UNVERIFIED
+CHART_SHA256=UNVERIFIED
