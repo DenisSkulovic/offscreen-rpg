@@ -1,6 +1,6 @@
 # PostgreSQL platform renewal | design workshop
 
-**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, round 7 (detailed legacy gap analysis). Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
+**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, round 8 (architecture defense and experiment plan). Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
 
 ## Intent
 
@@ -33,11 +33,11 @@ Current canonical sources: [database infrastructure](../../../../docs/technical/
 4. Resource/connection budget — source model complete, measurement and final sizing gated; see [capacity](CAPACITY.md).
 5. Tenant and persistence — proposed target, see [tenancy](TENANCY.md); migration and live proof gated.
 6. Concrete specimens — provisional renderer and layout selected, see [specimens](SPECIMENS.md).
-7. Detailed source gap map and preserve/replace decisions, actual callers/tests/commands and historical runtime identity.
+7. Core source gap analysis — see [gap map](GAP-ANALYSIS.md); exhaustive caller closure still required before edits.
 8. Architecture defense and bounded experiment sequence; revise based on findings.
 9. Convergence, canonical promotion and execution choice only after gates.
 
-Next action: audit actual PostgreSQL orchestration, common helpers, callers and tests against target; map preserve/replace/retire decisions and compatibility risks. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
+Next action: challenge target and prioritize bounded read-only/disposable proof, resolve implementation staging and remaining integration closure. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
 
 ## Evidence discipline
 
